@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbZHRM5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbZHRM7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbZHRM5d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 08:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758896AbZHRM5d
+	id S1758901AbZHRM7N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 08:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758882AbZHRM7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 08:57:33 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39804 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758894AbZHRM5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 08:57:32 -0400
-Date: Tue, 18 Aug 2009 13:57:35 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] page-allocator: Move pcp static fields for high
-	and batch off-pcp and onto the zone
-Message-ID: <20090818125735.GC31469@csn.ul.ie>
-References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie> <1250594162-17322-4-git-send-email-mel@csn.ul.ie> <20090818114752.GP9962@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090818114752.GP9962@wotan.suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 18 Aug 2009 08:59:12 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:48973 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758866AbZHRM7L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 08:59:11 -0400
+X-SourceIP: 213.93.53.227
+Subject: RE: [PATCH] perf_counter: Fix a race on perf_counter_ctx
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC1CB7725@irsmsx504.ger.corp.intel.com>
+References: <928CFBE8E7CB0040959E56B4EA41A77EC1BFEFEB@irsmsx504.ger.corp.intel.com>
+	 <20090807103127.GA23139@elte.hu> <20090807103610.GA23728@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF02D@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF048@irsmsx504.ger.corp.intel.com>
+	 <20090807112421.GB30014@elte.hu> <20090807113349.GA31673@elte.hu>
+	 <1249667341.17467.5.camel@twins> <20090808120315.GA14086@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
+	 <20090810134608.GA8295@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF78D@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB7725@irsmsx504.ger.corp.intel.com>
+Content-Type: text/plain
+Date: Tue, 18 Aug 2009 14:59:08 +0200
+Message-Id: <1250600348.7583.280.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 01:47:52PM +0200, Nick Piggin wrote:
-> On Tue, Aug 18, 2009 at 12:16:02PM +0100, Mel Gorman wrote:
-> > Having multiple lists per PCPU increased the size of the per-pcpu
-> > structure. Two of the fields, high and batch, do not change within a
-> > zone making that information redundant. This patch moves those fields
-> > off the PCP and onto the zone to reduce the size of the PCPU.
+On Tue, 2009-08-18 at 13:49 +0100, Metzger, Markus T wrote:
+> Hi Ingo, Peter,
 > 
-> Hmm.. I did have some patches a long long time ago that among other
-> things made the lists larger for the local node only....
+> Did you say that branch tracing is working for you?
 > 
-
-To reduce the remote node lists, one could look at applying some fixed factor
-to the high value or basing remote lists on some percentage of high.
-
-> But I guess if something like that is ever shown to be a good idea
-> then we can go back to the old scheme. So yeah this seems OK.
+> On my system, the kernel hangs.
 > 
+> Could it be that it simply takes too long to copy the trace? When I set the number
+> of samples to 10, everything seems to work OK. When I increase that number to 1000,
+> the kernel is getting very slow and eventually hangs.
+> 
+> I get a message "hrtimer: interrupt too slow", and I get a soft lockup bug. The rest
+> of the message log seems pretty garbled.
+> 
+> In that case, I should probably defer the perf_counter_output() and simply switch
+> buffers in the interrupt handler. This would use twice as much locked memory, though, and
+> it will likely lose trace when tracing kernel branches. I would further need to make
+> sure that the counter does not go away when I do the perf_counter_output(). If possible,
+> I should also stall the task until its trace has been processed.
+> 
+> All in all, it adds complexity and makes the feature more expensive. If you think that
+> this could cause the problem of the hanging kernel, I would give it a try.
+> 
+> 
+> One more thing, Peter's patch seems to make the problem appear much more reliably
+> than before. Without the patch, I only got the kernel hang when I ran perf top
+> in the background. Now, the kernel hangs for every perf record that uses branch
+> tracing. This could give another hint to the problem, but I did not find anything
+> when I looked at the patch. Do you have any idea, Peter?
 
-Thanks.
+Not much, I don't appear to have a single system with serial output (or
+another reliable console) that has BTS hardware.
 
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  include/linux/mmzone.h |    9 +++++----
-> >  mm/page_alloc.c        |   47 +++++++++++++++++++++++++----------------------
-> >  mm/vmstat.c            |    4 ++--
-> >  3 files changed, 32 insertions(+), 28 deletions(-)
-> > 
-> > <SNIP>
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
