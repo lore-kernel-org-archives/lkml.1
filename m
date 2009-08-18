@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932161AbZHRQJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbZHRQMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932161AbZHRQJO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 12:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZHRQJN
+	id S1759031AbZHRQMv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 12:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZHRQMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 12:09:13 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35473 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752612AbZHRQJM (ORCPT
+	Tue, 18 Aug 2009 12:12:50 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42850 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbZHRQMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 12:09:12 -0400
-Date: Tue, 18 Aug 2009 12:09:11 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-Message-ID: <20090818160911.GA21243@goodmis.org>
-References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>
+	Tue, 18 Aug 2009 12:12:49 -0400
+Message-ID: <4A8AD2E6.8090703@cs.helsinki.fi>
+Date: Tue, 18 Aug 2009 19:12:22 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090818104905.GC5231@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Amerigo Wang <amwang@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>, Matt Mackall <mpm@selenic.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Patch] proc: drop write permission on 'timer_list' and 'slabinfo'
+References: <20090817094525.6355.88682.sendpatchset@localhost.localdomain>  <20090817094822.GA17838@elte.hu> <1250502847.5038.16.camel@penberg-laptop> <alpine.DEB.1.10.0908171228300.16267@gentwo.org> <4A8986BB.80409@cs.helsinki.fi> <alpine.DEB.1.10.0908171240370.16267@gentwo.org> <4A8A0B0D.6080400@redhat.com> <4A8A0B14.8040700@cn.fujitsu.com>
+In-Reply-To: <4A8A0B14.8040700@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 12:49:06PM +0200, Frederic Weisbecker wrote:
-> On Thu, Aug 13, 2009 at 08:42:21AM -0700, Justin P. Mattock wrote:
-> > I posted already and had no reply,
-> > I cannot boot my system with the latest git
-> >
-> > seems to be stuck in some lock:
-> >
-> > [   0.655640] [<ffffffff81440c33>] panic+0x84/0x129
-> > [   0.655883] [<ffffffff81063f96>]  do_exit+0x84/0x67e
-> > [   0.656125] [<ffffffff81445044>] oops_end+0x9c/0xb7
-> > [   0.656368] [<ffffffff81044a6c>] no_context+0x200/0x223
-> > [   0.656611] [<ffffffff81442d3d>] ? __mutex_lock_slowpath+0x226/0x249
-> > [   0.656848] [<ffffffff81044c36>] __bad_area_nosemaphore+0x1a7/0x1e1
-> > [   0.657097] [<ffffffff81442b01>]? mutex_unlock+0x1c/0x32
-> > [   0.657097] [<ffffffff811ce094>] ? inode_doinit_with_dentry+0x533/0x5be
-> > [   0.657579] [<ffffffff81443ee0>] ? _spin_unlock+0x1c/0x32
-> > [   0.657822] [<ffffffff81044c91>] bad_area_nosemaphore+0x2a/0x40
-> > [   0.658066] [<ffffffff811ce149>] ? selinux_d_instantiate+0x2a/0x40
-> > [   0.658309] [<ffffffff8144687d>] do_page_fault+0x192/0x2dd
-> > [   0.658549] [<ffffffff814444cf>] page_fault+0x1f/0x30
-> > [   0.658791] [<ffffffff8120e856>] ? strcmp+0x17/0x46
-> > [   0.659040] [<ffffffff810b9ca0>] event_create_dir+0x49/0x37b
+Li Zefan wrote:
+>>  static int __init slab_proc_init(void)
+>>  {
+>> -	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+>> +	proc_create("slabinfo",S_IRUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
 > 
+> S_IRUSR|S_IRUGO == S_IRUGO
 > 
+>>  	return 0;
+>>  }
+>>  module_init(slab_proc_init);
 > 
-> Ouch...
-> 
-> I've never seen such panic. Could you send me your config, hopefully
-> I could reproduce it?
 
-Send me the config too please.
-
--- Steve
-
+I went ahead and fixed that. Applied, thanks everyone!
