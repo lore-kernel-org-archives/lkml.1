@@ -1,136 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZHRJjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbZHRJkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbZHRJjB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 05:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZHRJjA
+	id S1755044AbZHRJkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 05:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZHRJkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 05:39:00 -0400
-Received: from mga03.intel.com ([143.182.124.21]:31757 "EHLO mga03.intel.com"
+	Tue, 18 Aug 2009 05:40:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32990 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753210AbZHRJjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 05:39:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,401,1246863600"; 
-   d="scan'208";a="176970834"
-Date: Tue, 18 Aug 2009 17:31:19 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090818093119.GA12679@localhost>
-References: <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost> <20090806210955.GA14201@c2.user-mode-linux.org> <20090816031827.GA6888@localhost> <4A87829C.4090908@redhat.com> <20090816051502.GB13740@localhost> <20090816112910.GA3208@localhost> <28c262360908170733q4bc5ddb8ob2fc976b6a468d6e@mail.gmail.com> <20090818023438.GB7958@localhost> <20090818131734.3d5bceb2.minchan.kim@barrios-desktop>
+	id S1751559AbZHRJkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 05:40:35 -0400
+Date: Tue, 18 Aug 2009 09:39:35 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       kyle@mcmartin.ca, fweisbec@gmail.com, tglx@linutronix.de, deller@gmx.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       kyle@mcmartin.ca, fweisbec@gmail.com, tglx@linutronix.de, deller@gmx.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/urgent] perf_counter: Fix the PARISC build
+Message-ID: <tip-f738eb1b63edf664da1b4ac76895d988749b2f07@git.kernel.org>
+Git-Commit-ID: f738eb1b63edf664da1b4ac76895d988749b2f07
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090818131734.3d5bceb2.minchan.kim@barrios-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 18 Aug 2009 09:39:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 12:17:34PM +0800, Minchan Kim wrote:
-> On Tue, 18 Aug 2009 10:34:38 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Minchan,
-> > 
-> > On Mon, Aug 17, 2009 at 10:33:54PM +0800, Minchan Kim wrote:
-> > > On Sun, Aug 16, 2009 at 8:29 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > > > On Sun, Aug 16, 2009 at 01:15:02PM +0800, Wu Fengguang wrote:
-> > > >> On Sun, Aug 16, 2009 at 11:53:00AM +0800, Rik van Riel wrote:
-> > > >> > Wu Fengguang wrote:
-> > > >> > > On Fri, Aug 07, 2009 at 05:09:55AM +0800, Jeff Dike wrote:
-> > > >> > >> Side question -
-> > > >> > >>  Is there a good reason for this to be in shrink_active_list()
-> > > >> > >> as opposed to __isolate_lru_page?
-> > > >> > >>
-> > > >> > >>          if (unlikely(!page_evictable(page, NULL))) {
-> > > >> > >>                  putback_lru_page(page);
-> > > >> > >>                  continue;
-> > > >> > >>          }
-> > > >> > >>
-> > > >> > >> Maybe we want to minimize the amount of code under the lru lock or
-> > > >> > >> avoid duplicate logic in the isolate_page functions.
-> > > >> > >
-> > > >> > > I guess the quick test means to avoid the expensive page_referenced()
-> > > >> > > call that follows it. But that should be mostly one shot cost - the
-> > > >> > > unevictable pages are unlikely to cycle in active/inactive list again
-> > > >> > > and again.
-> > > >> >
-> > > >> > Please read what putback_lru_page does.
-> > > >> >
-> > > >> > It moves the page onto the unevictable list, so that
-> > > >> > it will not end up in this scan again.
-> > > >>
-> > > >> Yes it does. I said 'mostly' because there is a small hole that an
-> > > >> unevictable page may be scanned but still not moved to unevictable
-> > > >> list: when a page is mapped in two places, the first pte has the
-> > > >> referenced bit set, the _second_ VMA has VM_LOCKED bit set, then
-> > > >> page_referenced() will return 1 and shrink_page_list() will move it
-> > > >> into active list instead of unevictable list. Shall we fix this rare
-> > > >> case?
-> > > 
-> > > I think it's not a big deal.
-> > 
-> > Maybe, otherwise I should bring up this issue long time before :)
-> > 
-> > > As you mentioned, it's rare case so there would be few pages in active
-> > > list instead of unevictable list.
-> > 
-> > Yes.
-> > 
-> > > When next time to scan comes, we can try to move the pages into
-> > > unevictable list, again.
-> > 
-> > Will PG_mlocked be set by then? Otherwise the situation is not likely 
-> > to change and the VM_LOCKED pages may circulate in active/inactive
-> > list for countless times.
-> 
-> PG_mlocked is not important in that case. 
-> Important thing is VM_LOCKED vma. 
-> I think below annotaion can help you to understand my point. :)
+Commit-ID:  f738eb1b63edf664da1b4ac76895d988749b2f07
+Gitweb:     http://git.kernel.org/tip/f738eb1b63edf664da1b4ac76895d988749b2f07
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 18 Aug 2009 11:32:24 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 18 Aug 2009 11:34:13 +0200
 
-Hmm, it looks like pages under VM_LOCKED vma is guaranteed to have
-PG_mlocked set, and so will be caught by page_evictable(). Is it?
-Then I was worrying about a null problem. Sorry for the confusion!
+perf_counter: Fix the PARISC build
 
-Thanks,
-Fengguang
+PARISC does not build:
 
-> ----
-> 
-> /*
->  * called from munlock()/munmap() path with page supposedly on the LRU.
->  *
->  * Note:  unlike mlock_vma_page(), we can't just clear the PageMlocked
->  * [in try_to_munlock()] and then attempt to isolate the page.  We must
->  * isolate the page to keep others from messing with its unevictable
->  * and mlocked state while trying to munlock.  However, we pre-clear the
->  * mlocked state anyway as we might lose the isolation race and we might
->  * not get another chance to clear PageMlocked.  If we successfully
->  * isolate the page and try_to_munlock() detects other VM_LOCKED vmas
->  * mapping the page, it will restore the PageMlocked state, unless the page
->  * is mapped in a non-linear vma.  So, we go ahead and SetPageMlocked(),
->  * perhaps redundantly.
->  * If we lose the isolation race, and the page is mapped by other VM_LOCKED
->  * vmas, we'll detect this in vmscan--via try_to_munlock() or try_to_unmap()
->  * either of which will restore the PageMlocked state by calling
->  * mlock_vma_page() above, if it can grab the vma's mmap sem.
->  */
-> static void munlock_vma_page(struct page *page)
-> {
-> ...
-> 
-> -- 
-> Kind regards,
-> Minchan Kim
+/home/mingo/tip/kernel/perf_counter.c: In function 'perf_counter_index':
+/home/mingo/tip/kernel/perf_counter.c:2016: error: 'PERF_COUNTER_INDEX_OFFSET' undeclared (first use in this function)
+/home/mingo/tip/kernel/perf_counter.c:2016: error: (Each undeclared identifier is reported only once
+/home/mingo/tip/kernel/perf_counter.c:2016: error: for each function it appears in.)
+
+As PERF_COUNTER_INDEX_OFFSET is not defined.
+
+Now, we could define it in the architecture - but lets also provide
+a core default of 0 (which happens to be what all but one
+architecture uses at the moment).
+
+Architectures that need a different index offset should set this
+value in their asm/perf_counter.h files.
+
+Cc: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-parisc@vger.kernel.org
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/perf_counter.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index b8fe739..36f65e2 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -2019,6 +2019,10 @@ int perf_counter_task_disable(void)
+ 	return 0;
+ }
+ 
++#ifndef PERF_COUNTER_INDEX_OFFSET
++# define PERF_COUNTER_INDEX_OFFSET 0
++#endif
++
+ static int perf_counter_index(struct perf_counter *counter)
+ {
+ 	if (counter->state != PERF_COUNTER_STATE_ACTIVE)
