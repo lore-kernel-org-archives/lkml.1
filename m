@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbZHRDH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZHRDSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755316AbZHRDH0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Aug 2009 23:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZHRDHZ
+	id S1751964AbZHRDSz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Aug 2009 23:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbZHRDSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Aug 2009 23:07:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48032 "EHLO mx2.redhat.com"
+	Mon, 17 Aug 2009 23:18:55 -0400
+Received: from ozlabs.org ([203.10.76.45]:35742 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbZHRDHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Aug 2009 23:07:25 -0400
-Message-ID: <4A8A1B2E.20505@redhat.com>
-Date: Tue, 18 Aug 2009 11:08:30 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	id S1750835AbZHRDSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Aug 2009 23:18:54 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+Date: Tue, 18 Aug 2009 12:48:52 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
+Cc: Helge Deller <deller@gmx.de>,
+       "linux-parisc" <linux-parisc@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4A89CC4D.5040801@gmx.de> <1250549376.7858.96.camel@mulgrave.site>
+In-Reply-To: <1250549376.7858.96.camel@mulgrave.site>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-mm@kvack.org,
-       David Rientjes <rientjes@google.com>, Matt Mackall <mpm@selenic.com>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [Patch] proc: drop write permission on 'timer_list' and 'slabinfo'
-References: <20090817094525.6355.88682.sendpatchset@localhost.localdomain>  <20090817094822.GA17838@elte.hu> <1250502847.5038.16.camel@penberg-laptop> <alpine.DEB.1.10.0908171228300.16267@gentwo.org> <4A8986BB.80409@cs.helsinki.fi> <alpine.DEB.1.10.0908171240370.16267@gentwo.org> <4A8A0B0D.6080400@redhat.com> <4A8A0B14.8040700@cn.fujitsu.com>
-In-Reply-To: <4A8A0B14.8040700@cn.fujitsu.com>
-Content-Type: multipart/mixed;
- boundary="------------000201070303040303050302"
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908181248.52572.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000201070303040303050302
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 18 Aug 2009 08:19:36 am James Bottomley wrote:
+> The root cause is a duplicate section name (.text); is this legal?
 
-Li Zefan wrote:
->>  static int __init slab_proc_init(void)
->>  {
->> -	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
->> +	proc_create("slabinfo",S_IRUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
->>     
->
-> S_IRUSR|S_IRUGO == S_IRUGO
->
->   
+I'd be happy to fail to load it.  There might be sysfs issues with it
+too.
 
-Ah, yeah. Thanks!
+> However, there's a problem with commit
+> 6d76013381ed28979cd122eb4b249a88b5e384fa in that if you fail to allocate
+> a mod->sect_attrs (in this case it's null because of the duplication),
+> it still gets used without checking in add_notes_attrs()
+> 
+> This should fix it
 
-Update it.
+No, the real problem is that it ignores failure.  I'd much rather fail
+the module load than various features mysteriously MIA.
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
+Which brings us to "patches which don't go thru the maintainer" (or
+perhaps, non-responsive maintainers who get bypassed).
 
-
-
---------------000201070303040303050302
-Content-Type: text/plain;
- name="proc-file-write-permission-fix2.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="proc-file-write-permission-fix2.diff"
-
-diff --git a/mm/slub.c b/mm/slub.c
-index b9f1491..61398c0 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -4726,7 +4726,7 @@ static const struct file_operations proc_slabinfo_operations = {
- 
- static int __init slab_proc_init(void)
- {
--	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
-+	proc_create("slabinfo",S_IRUGO,NULL,&proc_slabinfo_operations);
- 	return 0;
- }
- module_init(slab_proc_init);
-
---------------000201070303040303050302--
+Thanks,
+Rusty.
