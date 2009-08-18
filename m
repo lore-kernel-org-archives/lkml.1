@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbZHRFcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbZHRFc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751920AbZHRFcc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 01:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZHRFcb
+	id S1751997AbZHRFc5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 01:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZHRFc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 01:32:31 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:1956 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751226AbZHRFcb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 01:32:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:mime-version:content-type
-         :content-disposition:user-agent:message-id;
-        b=AYjVZ4trJlwOXfcCzzkX7hr/ql8o90oRkcrV+o5zk67w0fbPFgej16hj/6/sh4ZQbd
-         qRPjX6lNpTa9jmuH/ilTsNbNi6w1IO3nsD1hKv5sXqNQ6RqIDn9T+K5yCkgdX9hKPGOc
-         movWUZlBeYDOoLqZkYSqHdFflC1yQl0IrG6F4=
-Date: Mon, 17 Aug 2009 22:32:27 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Dell-laptop is not working without wireless
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090818060340.E1C7A526EA5@mailhub.coreip.homeip.net>
+	Tue, 18 Aug 2009 01:32:57 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34489 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751553AbZHRFc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 01:32:56 -0400
+Date: Tue, 18 Aug 2009 15:32:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: linux-next: drbd tree build failure
+Message-Id: <20090818153250.5ce293b5.sfr@canb.auug.org.au>
+In-Reply-To: <yq1prbk59bv.fsf@sermon.lab.mkp.net>
+References: <20090729152938.791a81c3.sfr@canb.auug.org.au>
+	<yq1prbk59bv.fsf@sermon.lab.mkp.net>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__18_Aug_2009_15_32_50_+1000_hPJQkj64O8=/s.mY"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew,
+--Signature=_Tue__18_Aug_2009_15_32_50_+1000_hPJQkj64O8=/s.mY
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Not sure if this has already been reported, but here it goes:
+Hi Martin, Jens,
 
-dell-laptop module does not work on my Latitude d630 unless driver for
-my wireless card (which happens to be iwl3945) is already loaded.
-Otherwise dcsbas_smi_request() returns all zeroes which causes
-dell-laptop to not create any rfkill devices nor install backlight
-device:
+On Wed, 29 Jul 2009 01:47:48 -0400 "Martin K. Petersen" <martin.petersen@or=
+acle.com> wrote:
+>
+> >>>>> "Stephen" =3D=3D Stephen Rothwell <sfr@canb.auug.org.au> writes:
+>=20
+> Stephen> drivers/block/drbd/drbd_nl.c: In function
+> Stephen> 'drbd_setup_queue_param': drivers/block/drbd/drbd_nl.c:707:
+> Stephen> error: implicit declaration of function
+> Stephen> 'blk_queue_stack_limits'
+>=20
+> We've decided to keep blk_queue_stack_limits as a wrapper to ease the
+> transition.  I sent Jens a patch earlier today that does this.
 
-[  766.262842] dell-laptop: dell_setup_rfkill() - 0, 0, 0, 0
-[  766.263087] dell-laptop: max intensity is 0
-[  780.388460] iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network
-Connection driver for Linux, 1.2.26kds
-[  780.388464] iwl3945: Copyright(c) 2003-2009 Intel Corporation
-[  780.388584] iwl3945 0000:0c:00.0: PCI INT A -> GSI 17 (level, low) ->
-IRQ 17
-[  780.388605] iwl3945 0000:0c:00.0: setting latency timer to 64
-[  780.446318] iwl3945 0000:0c:00.0: Tunable channels: 11 802.11bg, 13
-802.11a channels
-[  780.446322] iwl3945 0000:0c:00.0: Detected Intel Wireless WiFi Link
-3945ABG
-[  780.446474] iwl3945 0000:0c:00.0: irq 29 for MSI/MSI-X
-[  780.451713] phy1: Selected rate control algorithm 'iwl-3945-rs'
-[  785.216846] iwl3945 0000:0c:00.0: firmware: requesting
-iwlwifi-3945-2.ucode
-[  785.233257] iwl3945 0000:0c:00.0: loaded firmware version 15.32.2.9
-[  785.303299] Registered led device: iwl-phy1::radio
-[  785.303445] Registered led device: iwl-phy1::assoc
-[  785.303522] Registered led device: iwl-phy1::RX
-[  785.303597] Registered led device: iwl-phy1::TX
-[  799.213373] dell-laptop: dell_setup_rfkill() - 0, 1031f, 100, 1
-[  799.213383] dell-laptop: setting up dell-wifi rfkill
-[  799.213971] dell-laptop: setting up dell-bluetooth rfkill
-[  799.214726] dell-laptop: max intensity is 7
+I am still getting this error (3 weeks later) ...  :-(
 
-Thanks.
+Maybe my original patch should be applied to the drbd tree?
 
--- 
-Dmitry
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__18_Aug_2009_15_32_50_+1000_hPJQkj64O8=/s.mY
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqKPQIACgkQjjKRsyhoI8z8JgCgp2ofV77nzlTBb2L/XSRstZZE
+eDYAnA6Rdm6rhTrf5ZqQVJBnpuLogZle
+=Zmer
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__18_Aug_2009_15_32_50_+1000_hPJQkj64O8=/s.mY--
