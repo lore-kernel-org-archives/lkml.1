@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbZHRJzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZHRJ5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758309AbZHRJzg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 05:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758064AbZHRJzg
+	id S1758077AbZHRJ5X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 05:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZHRJ5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 05:55:36 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:57797 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758051AbZHRJzb (ORCPT
+	Tue, 18 Aug 2009 05:57:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34013 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244AbZHRJ5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 05:55:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Do7N7y5PFyonkUl3YinPoH7FpFIqqIsN/sur51Ydet81oF45UXnSiEZAn8tUo5H/gD
-         +uNzlyjTTSELVucrQRlZdQASWz6dC/dRxNHLso9SAkPXjakksZcfh7sp4BzfoCE5hr/f
-         lWu3/4xQvPD0X5Rr7HCKQle9sovU9HQMGOGdQ=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH 2/2] Staging: sep: fix warnings
-Date: Tue, 18 Aug 2009 13:48:52 +0400
-Message-Id: <1250588932-7595-2-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.4
-In-Reply-To: <1250588932-7595-1-git-send-email-a.beregalov@gmail.com>
-References: <1250588932-7595-1-git-send-email-a.beregalov@gmail.com>
+	Tue, 18 Aug 2009 05:57:21 -0400
+Date: Tue, 18 Aug 2009 11:57:18 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: fs/namespace.c:638 mntput_no_expire warn_on in 2.6.30.2
+Message-ID: <20090818095718.GA21869@basil.fritz.box>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this warnings
-drivers/staging/sep/sep_driver.c:290: warning: format '%d' expects type 'int', but argument 2 has type 'long unsigned int'
-drivers/staging/sep/sep_driver.c:382: warning: unused variable 'sep'
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- drivers/staging/sep/sep_driver.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+To whom it concerns or for kerneloops.org. I didn't look too closely,
+but it seems to have leaked a reference on a device mapper mount point
+so I couldn't umount anymore. This was with a kpartx loop back mount
+of a file.
 
-diff --git a/drivers/staging/sep/sep_driver.c b/drivers/staging/sep/sep_driver.c
-index 531814b..e131c9d 100644
---- a/drivers/staging/sep/sep_driver.c
-+++ b/drivers/staging/sep/sep_driver.c
-@@ -287,7 +287,7 @@ static int sep_map_and_alloc_shared_area(struct sep_device *sep,
- 	sep->shared_area = sep->shared_addr;
- 	/* set the physical address of the shared area */
- 	sep->shared_area_bus = sep->shared_bus;
--	edbg("sep: shared_area %d bytes @%p (bus %08llx)\n",
-+	edbg("sep: shared_area %lu bytes @%p (bus %08llx)\n",
- 		size, sep->shared_addr, (unsigned long long)sep->shared_bus);
- 	return 0;
- }
-@@ -379,7 +379,7 @@ end_function:
- -------------------------------------------------------------*/
- static int sep_release(struct inode *inode_ptr, struct file *filp)
- {
--	struct sep_driver *sep =  filp->private_data;
-+/*	struct sep_driver *sep =  filp->private_data; */
- 	dbg("----------->SEP Driver: sep_release start\n");
- 
- #if 0				/*!SEP_DRIVER_POLLING_MODE */
+Kernel 2.6.30.2 (+ some totally unrelated patches)
+
+-Andi
+
+------------[ cut here ]------------
+WARNING: at /home/lsrc/linux-2.6.30/fs/namespace.c:638 mntput_no_expire+0xcf/0x11b()
+Hardware name:         
+Modules linked in:  ...
+Pid: 7180, comm: umount Tainted: G      D    2.6.30.2-BASIL #7
+Call Trace:
+ [<ffffffff8020e284>] dump_trace+0x6e/0x292
+ [<ffffffff805bccb3>] dump_stack+0x69/0x6f
+ [<ffffffff802376db>] warn_slowpath_common+0x77/0xa2
+ [<ffffffff802b78a1>] mntput_no_expire+0xcf/0x11b
+ [<ffffffff802b7e27>] sys_umount+0x2b7/0x2e2
+ [<ffffffff8020ba6b>] system_call_fastpath+0x16/0x1b
+ [<00007fa4d9d1c1c7>] 0x7fa4d9d1c1c7
+---[ end trace 12f3f532ce924b4b ]---
+
+
 -- 
-1.6.4
-
+ak@linux.intel.com -- Speaking for myself only.
