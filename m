@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbZHRX64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZHRX7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555AbZHRX64 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 19:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZHRX6q
+	id S1752623AbZHRX7m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 19:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbZHRX7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 19:58:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:27977 "EHLO
+	Tue, 18 Aug 2009 19:59:41 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:28008 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbZHRX6p (ORCPT
+	with ESMTP id S1752579AbZHRX7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 19:58:45 -0400
+	Tue, 18 Aug 2009 19:59:04 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=from:subject:to:cc:date:message-id:in-reply-to:references:
 	user-agent:mime-version:content-type:
 	content-transfer-encoding:x-system-of-record;
-	b=yLpz/PmaHmkGUbbaaremzrexCZuYAuD5YVwTy5Bo9brvFDPhMuIIU6ztMMr/3PsYU
-	H8+wd+hE7r2tS1NoLri1w==
+	b=RoQs1yOVPmPVryRRXbebzoffNanSJoXoRXAvN6lXbno0oY1rTFh0PcbwQ2Fx7Dmbk
+	UtIGzUeRaMGiTYYfE6QRQ==
 From: Paul Menage <menage@google.com>
-Subject: [PATCH 4/8] Use vmalloc for large cgroups pidlist allocations
+Subject: [PATCH 7/8] Adds functionality to read/write lock CLONE_THREAD
+	fork()ing per-threadgroup
 To: akpm@linux-foundation.org, bblum@andrew.cmu.edu, lizf@cn.fujitsu.com
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Date: Tue, 18 Aug 2009 16:58:27 -0700
-Message-ID: <20090818235827.22531.60306.stgit@menage.mtv.corp.google.com>
+Date: Tue, 18 Aug 2009 16:58:43 -0700
+Message-ID: <20090818235843.22531.57310.stgit@menage.mtv.corp.google.com>
 In-Reply-To: <20090818235059.22531.42618.stgit@menage.mtv.corp.google.com>
 References: <20090818235059.22531.42618.stgit@menage.mtv.corp.google.com>
 User-Agent: StGIT/0.14.3
@@ -36,114 +37,277 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Ben Blum <bblum@google.com>
 
 
-Use vmalloc for large cgroups pidlist allocations
+Adds functionality to read/write lock CLONE_THREAD fork()ing per-threadgroup
 
-Separates all pidlist allocation requests to a separate function that judges
-based on the requested size whether or not the array needs to be vmalloced or
-can be gotten via kmalloc, and similar for kfree/vfree.
+This patch adds an rwsem that lives in a threadgroup's sighand_struct (next to
+the sighand's atomic count, to piggyback on its cacheline), and two functions
+in kernel/cgroup.c (for now) for easily+safely obtaining and releasing it. If
+another part of the kernel later wants to use such a locking mechanism, the
+CONFIG_CGROUPS ifdefs should be changed to a higher-up flag that CGROUPS and
+the other system would both depend on, and the lock/unlock functions could be
+moved to sched.c or so.
 
 Signed-off-by: Ben Blum <bblum@google.com>
 Signed-off-by: Paul Menage <menage@google.com>
 
 ---
 
- kernel/cgroup.c |   47 ++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 42 insertions(+), 5 deletions(-)
+ include/linux/cgroup.h    |   14 +++++--
+ include/linux/init_task.h |    9 +++++
+ include/linux/sched.h     |   15 ++++++++
+ kernel/cgroup.c           |   87 ++++++++++++++++++++++++++++++++++++++++++++-
+ kernel/fork.c             |    9 +++--
+ 5 files changed, 125 insertions(+), 9 deletions(-)
 
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index b62bb92..642a47f 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -30,10 +30,12 @@ extern int cgroup_init(void);
+ extern void cgroup_lock(void);
+ extern bool cgroup_lock_live_group(struct cgroup *cgrp);
+ extern void cgroup_unlock(void);
+-extern void cgroup_fork(struct task_struct *p);
++extern void cgroup_fork(struct task_struct *p, unsigned long clone_flags);
+ extern void cgroup_fork_callbacks(struct task_struct *p);
+-extern void cgroup_post_fork(struct task_struct *p);
++extern void cgroup_post_fork(struct task_struct *p, unsigned long clone_flags);
+ extern void cgroup_exit(struct task_struct *p, int run_callbacks);
++extern void cgroup_fork_failed(struct task_struct *p, int run_callbacks,
++			       unsigned long clone_flags);
+ extern int cgroupstats_build(struct cgroupstats *stats,
+ 				struct dentry *dentry);
+ 
+@@ -568,10 +570,14 @@ unsigned short css_depth(struct cgroup_subsys_state *css);
+ 
+ static inline int cgroup_init_early(void) { return 0; }
+ static inline int cgroup_init(void) { return 0; }
+-static inline void cgroup_fork(struct task_struct *p) {}
++static inline void cgroup_fork(struct task_struct *p,
++			       unsigned long clone_flags) {}
+ static inline void cgroup_fork_callbacks(struct task_struct *p) {}
+-static inline void cgroup_post_fork(struct task_struct *p) {}
++static inline void cgroup_post_fork(struct task_struct *p,
++				    unsigned long clone_flags) {}
+ static inline void cgroup_exit(struct task_struct *p, int callbacks) {}
++static inline void cgroup_fork_failed(struct task_struct *p, int callbacks,
++				      unsigned long clone_flags) {}
+ 
+ static inline void cgroup_lock(void) {}
+ static inline void cgroup_unlock(void) {}
+diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+index 20cbdd2..42da017 100644
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -41,7 +41,16 @@ extern struct nsproxy init_nsproxy;
+ 	INIT_IPC_NS(ipc_ns)						\
+ }
+ 
++#ifdef CONFIG_CGROUPS
++# define INIT_THREADGROUP_FORK_LOCK(sighand)				\
++	.threadgroup_fork_lock = 					\
++		__RWSEM_INITIALIZER(sighand.threadgroup_fork_lock),
++#else
++# define INIT_THREADGROUP_FORK_LOCK(sighand)
++#endif
++
+ #define INIT_SIGHAND(sighand) {						\
++	INIT_THREADGROUP_FORK_LOCK(sighand)				\
+ 	.count		= ATOMIC_INIT(1), 				\
+ 	.action		= { { { .sa_handler = NULL, } }, },		\
+ 	.siglock	= __SPIN_LOCK_UNLOCKED(sighand.siglock),	\
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index e6aa408..f3d5275 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -479,6 +479,21 @@ extern int get_dumpable(struct mm_struct *mm);
+ #define MMF_INIT_MASK		(MMF_DUMPABLE_MASK | MMF_DUMP_FILTER_MASK)
+ 
+ struct sighand_struct {
++#ifdef CONFIG_CGROUPS
++	/*
++	 * The threadgroup_fork_lock is used to prevent any threads in a
++	 * threadgroup from forking with CLONE_THREAD while held for writing,
++	 * used for threadgroup-wide operations that are fork-sensitive. It
++	 * lives here next to sighand.count as a cacheline optimization.
++	 *
++	 * TODO: if anybody besides cgroups uses this lock, change the
++	 * CONFIG_CGROUPS to a higher-up CONFIG_* that the other user and
++	 * cgroups would both depend upon. Also, they'll want to move where
++	 * the readlock happens - it currently lives in kernel/cgroup.c in
++	 * cgroup_{fork,post_fork,fork_failed}().
++	 */
++	struct rw_semaphore	threadgroup_fork_lock;
++#endif
+ 	atomic_t		count;
+ 	struct k_sigaction	action[_NSIG];
+ 	spinlock_t		siglock;
 diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index d207871..7e2b285 100644
+index fb3ba27..d49488f 100644
 --- a/kernel/cgroup.c
 +++ b/kernel/cgroup.c
-@@ -50,6 +50,7 @@
- #include <linux/smp_lock.h>
- #include <linux/pid_namespace.h>
- #include <linux/idr.h>
-+#include <linux/vmalloc.h> /* TODO: replace with more sophisticated array */
+@@ -1529,6 +1529,65 @@ int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen)
+ }
  
- #include <asm/atomic.h>
- 
-@@ -2351,6 +2352,42 @@ int cgroup_scan_tasks(struct cgroup_scanner *scan)
-  */
- 
- /*
-+ * The following two functions "fix" the issue where there are more pids
-+ * than kmalloc will give memory for; in such cases, we use vmalloc/vfree.
-+ * TODO: replace with a kernel-wide solution to this problem
+ /**
++ * threadgroup_fork_lock - block all CLONE_THREAD forks in the threadgroup
++ * @tsk: the task whose threadgroup should be locked
++ *
++ * Takes the threadgroup_lock_mutex in the threadgroup's sighand_struct, by
++ * means of searching the threadgroup list for a live thread in the group.
++ * Returns the sighand_struct that should be given to threadgroup_fork_unlock,
++ * or NULL if all threads in the group are exiting and have cleared their
++ * sighand pointers.
 + */
-+#define PIDLIST_TOO_LARGE(c) ((c) * sizeof(pid_t) > (PAGE_SIZE * 2))
-+static void *pidlist_allocate(int count)
++struct sighand_struct *threadgroup_fork_lock(struct task_struct *tsk)
 +{
-+	if (PIDLIST_TOO_LARGE(count))
-+		return vmalloc(count * sizeof(pid_t));
-+	else
-+		return kmalloc(count * sizeof(pid_t), GFP_KERNEL);
-+}
-+static void pidlist_free(void *p)
-+{
-+	if (is_vmalloc_addr(p))
-+		vfree(p);
-+	else
-+		kfree(p);
-+}
-+static void *pidlist_resize(void *p, int newcount)
-+{
-+	void *newlist;
-+	/* note: if new alloc fails, old p will still be valid either way */
-+	if (is_vmalloc_addr(p)) {
-+		newlist = vmalloc(newcount * sizeof(pid_t));
-+		if (!newlist)
-+			return NULL;
-+		memcpy(newlist, p, newcount * sizeof(pid_t));
-+		vfree(p);
++	struct sighand_struct *sighand;
++	struct task_struct *p;
++
++	/* tasklist lock protects sighand_struct's disappearance in exit(). */
++	read_lock(&tasklist_lock);
++	if (likely(tsk->sighand)) {
++		/* simple case - check the thread we were given first */
++		sighand = tsk->sighand;
 +	} else {
-+		newlist = krealloc(p, newcount * sizeof(pid_t), GFP_KERNEL);
++		sighand = NULL;
++		/*
++		 * tsk is exiting; try to find another thread in the group
++		 * whose sighand pointer is still alive.
++		 */
++		rcu_read_lock();
++		list_for_each_entry_rcu(p, &tsk->thread_group, thread_group) {
++			if (p->sighand) {
++				sighand = tsk->sighand;
++				break;
++			}
++		}
++		rcu_read_unlock();
 +	}
-+	return newlist;
++	/* prevent sighand from vanishing before we let go of tasklist_lock */
++	if (likely(sighand))
++		atomic_inc(&sighand->count);
++
++	/* done searching. */
++	read_unlock(&tasklist_lock);
++
++	if (likely(sighand))
++		down_write(&sighand->threadgroup_fork_lock);
++	return sighand;
 +}
 +
-+/*
-  * pidlist_uniq - given a kmalloc()ed list, strip out all duplicate entries
-  * If the new stripped list is sufficiently smaller and there's enough memory
-  * to allocate a new buffer, will let go of the unneeded memory. Returns the
-@@ -2389,7 +2426,7 @@ after:
- 	 * we'll just stay with what we've got.
- 	 */
- 	if (PIDLIST_REALLOC_DIFFERENCE(length, dest)) {
--		newlist = krealloc(list, dest * sizeof(pid_t), GFP_KERNEL);
-+		newlist = pidlist_resize(list, dest);
- 		if (newlist)
- 			*p = newlist;
++/**
++ * threadgroup_fork_lock - let threadgroup resume CLONE_THREAD forks.
++ * @sighand: the threadgroup's sighand that threadgroup_fork_lock gave back
++ *
++ * Lets go of the threadgroup_fork_lock, and drops the sighand reference.
++ */
++void threadgroup_fork_unlock(struct sighand_struct *sighand)
++{
++	up_write(&sighand->threadgroup_fork_lock);
++	__cleanup_sighand(sighand);
++}
++
++/**
+  * cgroup_attach_task - attach task 'tsk' to cgroup 'cgrp'
+  * @cgrp: the cgroup the task is attaching to
+  * @tsk: the task to be attached
+@@ -3421,8 +3480,10 @@ static struct file_operations proc_cgroupstats_operations = {
+  * At the point that cgroup_fork() is called, 'current' is the parent
+  * task, and the passed argument 'child' points to the child task.
+  */
+-void cgroup_fork(struct task_struct *child)
++void cgroup_fork(struct task_struct *child, unsigned long clone_flags)
+ {
++	if (clone_flags & CLONE_THREAD)
++		down_read(&current->sighand->threadgroup_fork_lock);
+ 	task_lock(current);
+ 	child->cgroups = current->cgroups;
+ 	get_css_set(child->cgroups);
+@@ -3459,7 +3520,7 @@ void cgroup_fork_callbacks(struct task_struct *child)
+  * with the first call to cgroup_iter_start() - to guarantee that the
+  * new task ends up on its list.
+  */
+-void cgroup_post_fork(struct task_struct *child)
++void cgroup_post_fork(struct task_struct *child, unsigned long clone_flags)
+ {
+ 	if (use_task_css_set_links) {
+ 		write_lock(&css_set_lock);
+@@ -3469,6 +3530,8 @@ void cgroup_post_fork(struct task_struct *child)
+ 		task_unlock(child);
+ 		write_unlock(&css_set_lock);
  	}
-@@ -2470,7 +2507,7 @@ static int pidlist_array_load(struct cgroup *cgrp, enum cgroup_filetype type,
- 	 * show up until sometime later on.
- 	 */
- 	length = cgroup_task_count(cgrp);
--	array = kmalloc(length * sizeof(pid_t), GFP_KERNEL);
-+	array = pidlist_allocate(length);
- 	if (!array)
++	if (clone_flags & CLONE_THREAD)
++		up_read(&current->sighand->threadgroup_fork_lock);
+ }
+ /**
+  * cgroup_exit - detach cgroup from exiting task
+@@ -3540,6 +3603,26 @@ void cgroup_exit(struct task_struct *tsk, int run_callbacks)
+ }
+ 
+ /**
++ * cgroup_fork_failed - undo operations for fork failure
++ * @tsk: pointer to  task_struct of exiting process
++ * @run_callback: run exit callbacks?
++ *
++ * Description: Undo cgroup operations after cgroup_fork in fork failure.
++ *
++ * We release the read lock that was taken in cgroup_fork(), since it is
++ * supposed to be dropped in cgroup_post_fork in the success case. The other
++ * thing that wants to be done is detaching the failed child task from the
++ * cgroup, so we wrap cgroup_exit.
++ */
++void cgroup_fork_failed(struct task_struct *tsk, int run_callbacks,
++			unsigned long clone_flags)
++{
++	if (clone_flags & CLONE_THREAD)
++		up_read(&current->sighand->threadgroup_fork_lock);
++	cgroup_exit(tsk, run_callbacks);
++}
++
++/**
+  * cgroup_clone - clone the cgroup the given subsystem is attached to
+  * @tsk: the task to be moved
+  * @subsys: the given subsystem
+diff --git a/kernel/fork.c b/kernel/fork.c
+index a010918..0db5289 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -806,6 +806,9 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
  		return -ENOMEM;
- 	/* now, populate the array */
-@@ -2494,11 +2531,11 @@ static int pidlist_array_load(struct cgroup *cgrp, enum cgroup_filetype type,
- 		length = pidlist_uniq(&array, length);
- 	l = cgroup_pidlist_find(cgrp, type);
- 	if (!l) {
--		kfree(array);
-+		pidlist_free(array);
- 		return -ENOMEM;
- 	}
- 	/* store array, freeing old if necessary - lock already held */
--	kfree(l->list);
-+	pidlist_free(l->list);
- 	l->list = array;
- 	l->length = length;
- 	l->use_count++;
-@@ -2659,7 +2696,7 @@ static void cgroup_release_pid_array(struct cgroup_pidlist *l)
- 		/* we're the last user if refcount is 0; remove and free */
- 		list_del(&l->links);
- 		mutex_unlock(&l->owner->pidlist_mutex);
--		kfree(l->list);
-+		pidlist_free(l->list);
- 		put_pid_ns(l->key.ns);
- 		up_write(&l->mutex);
- 		kfree(l);
+ 	atomic_set(&sig->count, 1);
+ 	memcpy(sig->action, current->sighand->action, sizeof(sig->action));
++#ifdef CONFIG_CGROUPS
++	init_rwsem(&sig->threadgroup_fork_lock);
++#endif
+ 	return 0;
+ }
+ 
+@@ -1097,7 +1100,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	monotonic_to_bootbased(&p->real_start_time);
+ 	p->io_context = NULL;
+ 	p->audit_context = NULL;
+-	cgroup_fork(p);
++	cgroup_fork(p, clone_flags);
+ #ifdef CONFIG_NUMA
+ 	p->mempolicy = mpol_dup(p->mempolicy);
+  	if (IS_ERR(p->mempolicy)) {
+@@ -1315,7 +1318,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	spin_unlock(&current->sighand->siglock);
+ 	write_unlock_irq(&tasklist_lock);
+ 	proc_fork_connector(p);
+-	cgroup_post_fork(p);
++	cgroup_post_fork(p, clone_flags);
+ 	perf_counter_fork(p);
+ 	return p;
+ 
+@@ -1347,7 +1350,7 @@ bad_fork_cleanup_policy:
+ 	mpol_put(p->mempolicy);
+ bad_fork_cleanup_cgroup:
+ #endif
+-	cgroup_exit(p, cgroup_callbacks_done);
++	cgroup_fork_failed(p, cgroup_callbacks_done, clone_flags);
+ 	delayacct_tsk_free(p);
+ 	module_put(task_thread_info(p)->exec_domain->module);
+ bad_fork_cleanup_count:
 
