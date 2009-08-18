@@ -1,58 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbZHRIqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbZHRIrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbZHRIqo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 04:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757206AbZHRIqm
+	id S1757214AbZHRIrx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 04:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZHRIrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 04:46:42 -0400
-Received: from 1wt.eu ([62.212.114.60]:44441 "EHLO 1wt.eu"
+	Tue, 18 Aug 2009 04:47:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35841 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751492AbZHRIqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 04:46:40 -0400
-Date: Tue, 18 Aug 2009 10:46:25 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] splice: update mtime and atime on files
-Message-ID: <20090818084625.GF18709@1wt.eu>
-References: <E1MbyLM-0006Xd-OE@pomaz-ex.szeredi.hu> <20090815064241.GE12579@kernel.dk> <20090818050027.GE11624@1wt.eu> <20090818083547.GK12579@kernel.dk>
-Mime-Version: 1.0
+	id S1750886AbZHRIrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 04:47:51 -0400
+Date: Tue, 18 Aug 2009 11:46:06 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       Avi Kivity <avi@redhat.com>, alacrityvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
+	vbus_driver objects
+Message-ID: <20090818084606.GA13878@redhat.com>
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <20090817174142.GA11140@redhat.com> <4A89BAC5.9040400@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090818083547.GK12579@kernel.dk>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <4A89BAC5.9040400@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 10:35:48AM +0200, Jens Axboe wrote:
-> On Tue, Aug 18 2009, Willy Tarreau wrote:
-> > On Sat, Aug 15, 2009 at 08:42:41AM +0200, Jens Axboe wrote:
-> > > On Fri, Aug 14 2009, Miklos Szeredi wrote:
-> > > > From: Miklos Szeredi <mszeredi@suse.cz>
-> > > > 
-> > > > Splice should update the modification and access times on regular
-> > > > files just like read and write.  Not updating mtime will confuse
-> > > > backup tools, etc...
-> > > > 
-> > > > This patch only adds the time updates for regular files.  For pipes
-> > > > and other special files that splice touches the need for updating the
-> > > > times is less clear.  Let's discuss and fix that separately.
-> > > 
-> > > Thanks Miklos, I've queued this one up.
+On Mon, Aug 17, 2009 at 04:17:09PM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Mon, Aug 17, 2009 at 10:14:56AM -0400, Gregory Haskins wrote:
+> >> Case in point: Take an upstream kernel and you can modprobe the
+> >> vbus-pcibridge in and virtio devices will work over that transport
+> >> unmodified.
+> >>
+> >> See http://lkml.org/lkml/2009/8/6/244 for details.
 > > 
-> > wouldn't it make sense to send that to stable too ? The patch is not
-> > intrusive and looks like a fix to me.
+> > The modprobe you are talking about would need
+> > to be done in guest kernel, correct?
 > 
-> It doesn't really meet the stable criteria, as it's not a security issue
-> nor does it crash the kernel.
+> Yes, and your point is? "unmodified" (pardon the psuedo pun) modifies
+> "virtio", not "guest".
+>  It means you can take an off-the-shelf kernel
+> with off-the-shelf virtio (ala distro-kernel) and modprobe
+> vbus-pcibridge and get alacrityvm acceleration.
 
-Oh there are many other things which go to stable, especially bug
-fixes and minor improvements. We *could* classify this in the bug
-fixes as, I Miklos suggested it, this could have an impact on
-modified files which would currently not be backed up for instance.
+Heh, by that logic ksplice does not modify running kernel either :)
 
-Regards,
-Willy
+> It is not a design goal of mine to forbid the loading of a new driver,
+> so I am ok with that requirement.
+> 
+> >> OTOH, Michael's patch is purely targeted at improving virtio-net on kvm,
+> >> and its likewise constrained by various limitations of that decision
+> >> (such as its reliance of the PCI model, and the kvm memory scheme).
+> > 
+> > vhost is actually not related to PCI in any way. It simply leaves all
+> > setup for userspace to do.  And the memory scheme was intentionally
+> > separated from kvm so that it can easily support e.g. lguest.
+> > 
+> 
+> I think you have missed my point. I mean that vhost requires a separate
+> bus-model (ala qemu-pci).
 
+So? That can be in userspace, and can be anything including vbus.
+
+> And no, your memory scheme is not separated,
+> at least, not very well.  It still assumes memory-regions and
+> copy_to_user(), which is very kvm-esque.
+
+I don't think so: works for lguest, kvm, UML and containers
+
+> Vbus has people using things
+> like userspace containers (no regions),
+
+vhost by default works without regions
+
+> and physical hardware (dma
+> controllers, so no regions or copy_to_user) so your scheme quickly falls
+> apart once you get away from KVM.
+
+Someone took a driver and is building hardware for it ... so what?
+
+> Don't get me wrong:  That design may have its place.  Perhaps you only
+> care about fixing KVM, which is a perfectly acceptable strategy.
+> Its just not a strategy that I think is the best approach.  Essentially you
+> are promoting the proliferation of competing backends, and I am trying
+> to unify them (which is ironic that this thread started with concerns I
+> was fragmenting things ;).
+
+So, you don't see how venet fragments things? It's pretty obvious ...
+
+> The bottom line is, you have a simpler solution that is more finely
+> targeted at KVM and virtio-networking.  It fixes probably a lot of
+> problems with the existing implementation, but it still has limitations.
+> 
+> OTOH, what I am promoting is more complex, but more flexible.  That is
+> the tradeoff.  You can't have both ;)
+
+We can. connect eventfds to hypercalls, and vhost will work with vbus.
+
+> So do not for one second think
+> that what you implemented is equivalent, because they are not.
+> 
+> In fact, I believe I warned you about this potential problem when you
+> decided to implement your own version.  I think I said something to the
+> effect of "you will either have a subset of functionality, or you will
+> ultimately reinvent what I did".  Right now you are in the subset phase.
+
+No. Unlike vbus, vhost supports unmodified guests and live migration.
+
+> Perhaps someday you will be in the complete-reinvent phase.  Why you
+> wanted to go that route when I had already worked though the issues is
+> something perhaps only you will ever know, but I'm sure you had your
+> reasons. But do note you could have saved yourself grief by reusing my
+> already implemented and tested variant, as I politely offered to work
+> with you on making it meet your needs.
+> Kind Regards
+> -Greg
+> 
+
+you have a midlayer.  I could not use it without pulling in all of it.
+
+-- 
+MST
