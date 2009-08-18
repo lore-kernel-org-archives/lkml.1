@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZHRHRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753137AbZHRHSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753050AbZHRHRK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 03:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZHRHRJ
+	id S1753137AbZHRHSK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 03:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZHRHSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 03:17:09 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:55221 "EHLO smtps.tip.net.au"
+	Tue, 18 Aug 2009 03:18:09 -0400
+Received: from mga14.intel.com ([143.182.124.37]:28123 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752148AbZHRHRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 03:17:09 -0400
-Date: Tue, 18 Aug 2009 17:17:02 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Felix Blyakher <felixb@sgi.com>
-Cc: David Chinner <david@fromorbit.com>, xfs-masters@oss.sgi.com,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Eric Sandeen <sandeen@sandeen.net>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: linux-next: manual merge of the xfs tree with Linus' tree
-Message-Id: <20090818171702.3faea920.sfr@canb.auug.org.au>
-In-Reply-To: <523385BE-5397-49A3-A158-FD1B9D12F067@sgi.com>
-References: <20090818101215.aba4d0bf.sfr@canb.auug.org.au>
-	<523385BE-5397-49A3-A158-FD1B9D12F067@sgi.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	id S1751492AbZHRHSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 03:18:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,401,1246863600"; 
+   d="scan'208";a="176911436"
+Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
+From: Zhang Rui <rui.zhang@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
+In-Reply-To: <200908170215.21173.rjw@sisk.pl>
+References: <200908122218.13975.rjw@sisk.pl>
+	 <200908170215.21173.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 18 Aug 2009 15:16:33 +0800
+Message-Id: <1250579793.5351.79.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__18_Aug_2009_17_17_02_+1000_T2xiKNXEzHC1HcEm"
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__18_Aug_2009_17_17_02_+1000_T2xiKNXEzHC1HcEm
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-08-17 at 08:15 +0800, Rafael J. Wysocki wrote:
+> On Wednesday 12 August 2009, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > The following patches introduce a mechanism allowing us to execute device
+> > drivers' suspend and resume callbacks asynchronously during system sleep
+> > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
+> > message.
+> 
+> Changes:
+> 
+> * Added [1/7] that fixes kerneldoc comments in drivers/base/power/main.c
+>   (this is a 2.6.32 candidate).
+> 
+> * Added [2/7] adding a framework for representing PM link (idea described
+>   in the patch message).
+> 
+> * [3/7] is the async resume patch (idea described in the patch message).
+> 
+> * [4/7] is the async suspend patch.
+> 
+> * [5/7] - [7/7] set async_suspend for devices in a few selected subsystems.
+> 
+> The patches have been tested on HP nx6325.
+> 
+I tried this patch set and it does work. :)
+But unfortunately it doesn't save too much time.
 
-Hi Felix,
+I still think that the child device should inherit its parent's
+async_suspend flag to do the asynchronous resume more efficiently.
 
-On Tue, 18 Aug 2009 01:49:52 -0500 Felix Blyakher <felixb@sgi.com> wrote:
->
-> Thanks for the fix, but there is no need to carrying it separately
-> from the xfs master tree. I merged the bc990f5 commit back into the
-> the master tree, and fixed all conflicts (there was another one in
-> fs/xfs/xfs_iget.c). I planned to do it anyway for 2.6.32.
+or at least we should provide such an interface
+in ﻿drivers/base/power/common.c, so that device can tell the device core
+to inherit this flag if there is no off-tree dependency.
 
-Thanks.
+thanks,
+rui
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> Thanks,
+> Rafael
+> 
 
---Signature=_Tue__18_Aug_2009_17_17_02_+1000_T2xiKNXEzHC1HcEm
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqKVW4ACgkQjjKRsyhoI8wp5QCffu5AQbebon4gmSqHHCqsCHeH
-VIgAoJHvVyt1EmlWe2hQd+pr6GBDlshS
-=DL1X
------END PGP SIGNATURE-----
-
---Signature=_Tue__18_Aug_2009_17_17_02_+1000_T2xiKNXEzHC1HcEm--
