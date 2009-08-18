@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbZHRFc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbZHRFrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751997AbZHRFc5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 01:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZHRFc5
+	id S1751748AbZHRFrW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 01:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbZHRFrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 01:32:57 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34489 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553AbZHRFc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 01:32:56 -0400
-Date: Tue, 18 Aug 2009 15:32:50 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: linux-next: drbd tree build failure
-Message-Id: <20090818153250.5ce293b5.sfr@canb.auug.org.au>
-In-Reply-To: <yq1prbk59bv.fsf@sermon.lab.mkp.net>
-References: <20090729152938.791a81c3.sfr@canb.auug.org.au>
-	<yq1prbk59bv.fsf@sermon.lab.mkp.net>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Tue, 18 Aug 2009 01:47:22 -0400
+Received: from mail.windriver.com ([147.11.1.11]:44567 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbZHRFrV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 01:47:21 -0400
+Subject: Re: [PATCH] drivers/net: fixed drivers that support netpoll use
+	ndo_start_xmit()
+From: DDD <Dongdong.deng@windriver.com>
+To: David Miller <davem@davemloft.net>, mpm@selenic.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bruce.Ashfield@windriver.com, jason.wessel@windriver.com
+In-Reply-To: <20090814.163232.234331420.davem@davemloft.net>
+References: <1250226751.29401.82.camel@dengdd-desktop>
+	 <1250264019.3807.1301.camel@calx>
+	 <20090814.163232.234331420.davem@davemloft.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 18 Aug 2009 13:59:26 +0800
+Message-Id: <1250575166.29401.183.camel@dengdd-desktop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__18_Aug_2009_15_32_50_+1000_hPJQkj64O8=/s.mY"
+X-Mailer: Evolution 2.22.3.1 
+X-OriginalArrivalTime: 18 Aug 2009 05:47:00.0657 (UTC) FILETIME=[4E542210:01CA1FC7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__18_Aug_2009_15_32_50_+1000_hPJQkj64O8=/s.mY
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2009-08-14 at 16:32 -0700, David Miller wrote:
+> From: Matt Mackall <mpm@selenic.com>
+> Date: Fri, 14 Aug 2009 10:33:39 -0500
+> 
+> > On Fri, 2009-08-14 at 13:12 +0800, DDD wrote:
+> >> The NETPOLL API requires that interrupts remain disabled in
+> >> netpoll_send_skb(). The use of spin_lock_irq() and
+> spin_unlock_irq()
+> >> in the NETPOLL API callbacks causes the interrupts to get enabled
+> and
+> >> can lead to kernel instability.
+> >> 
+> >> The solution is to use spin_lock_irqsave() and
+> spin_unlock_restore()
+> >> to prevent the irqs from getting enabled while in
+> netpoll_send_skb().
+> ...
+> >> Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
+> >> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> >> Acked-by: Bruce Ashfield <bruce.ashfield@windriver.com>
+> > 
+> > Acked-by: Matt Mackall <mpm@selenic.com>
+> 
+> Applied, thanks everyone.
+Thanks. :-)
 
-Hi Martin, Jens,
+> 
+> > Perhaps we should also have a WARN_ONCE if start_xmit returns with
+> > interrupts enabled?
+> 
+> Probably a good idea.
+I think it is a good idea too, thanks for your suggestion, Matt.
+I will do a tiny patch for it shortly.
 
-On Wed, 29 Jul 2009 01:47:48 -0400 "Martin K. Petersen" <martin.petersen@or=
-acle.com> wrote:
->
-> >>>>> "Stephen" =3D=3D Stephen Rothwell <sfr@canb.auug.org.au> writes:
->=20
-> Stephen> drivers/block/drbd/drbd_nl.c: In function
-> Stephen> 'drbd_setup_queue_param': drivers/block/drbd/drbd_nl.c:707:
-> Stephen> error: implicit declaration of function
-> Stephen> 'blk_queue_stack_limits'
->=20
-> We've decided to keep blk_queue_stack_limits as a wrapper to ease the
-> transition.  I sent Jens a patch earlier today that does this.
 
-I am still getting this error (3 weeks later) ...  :-(
-
-Maybe my original patch should be applied to the drbd tree?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__18_Aug_2009_15_32_50_+1000_hPJQkj64O8=/s.mY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqKPQIACgkQjjKRsyhoI8z8JgCgp2ofV77nzlTBb2L/XSRstZZE
-eDYAnA6Rdm6rhTrf5ZqQVJBnpuLogZle
-=Zmer
------END PGP SIGNATURE-----
-
---Signature=_Tue__18_Aug_2009_15_32_50_+1000_hPJQkj64O8=/s.mY--
+Dongdong
