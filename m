@@ -1,368 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbZHRVqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZHRVsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751464AbZHRVqb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 17:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbZHRVqa
+	id S1751353AbZHRVsH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 17:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbZHRVsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 17:46:30 -0400
-Received: from ru.mvista.com ([213.79.90.228]:43974 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751441AbZHRVq1 (ORCPT
+	Tue, 18 Aug 2009 17:48:06 -0400
+Received: from mail-yw0-f173.google.com ([209.85.211.173]:38184 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbZHRVsF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 17:46:27 -0400
-Date: Wed, 19 Aug 2009 01:46:28 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] mtd: m25p80: Add support for CAT25xxx serial EEPROMs
-Message-ID: <20090818214628.GB22651@oksana.dev.rtsoft.ru>
-References: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
+	Tue, 18 Aug 2009 17:48:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=JYZbO5I/F3YPqYaEhgWgE5MSlpmy3yWo0cVHRoWcRfjH7C8gUYZOx0KjwSu1U28eJn
+         fel6swFCSRE1etBQovLqukzW1Yz0Q6koAeb0pyp4tNgc/cmte+TTOYImclYZOL0J14ib
+         bmurTsa+f/2HLaY3r2V6bHvXEVUKenbSAPI/g=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090818214449.GA12848@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090818145801.GA32343@elte.hu>
+References: <20090818145801.GA32343@elte.hu>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 18 Aug 2009 17:47:46 -0400
+Message-ID: <8bd0f97a0908181447i66a8571fg152868c8ec4233b5@mail.gmail.com>
+Subject: Re: [PATCH] Blackfin: Fix link errors with binutils 2.19 and GCC 4.3
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CAT25 chips (as manufactured by On Semiconductor, previously Catalyst
-Semiconductor) are similar to the original M25Px0 chips, except:
+On Tue, Aug 18, 2009 at 10:58, Ingo Molnar wrote:
+> Not sure whether this has been reported/fixed before.
+>
+> Today I built a Blackfin tool-chain from scratch for -tip testing,
+> and it triggers:
+>
+>  arch/blackfin/kernel/vmlinux.lds:1238: undefined section `.data_a_l1' referenced in expression
+>
+> and:
+>
+>  arch/blackfin/kernel/vmlinux.lds:1238: undefined section `.text_data_l1'
+> referenced in expression
+>
+> Now i dont have any way to test this linker script, but it now at
+> least builds fine after fixing what appears to be typos in those
+> assert statements.
 
-- Address width can vary (1-2 bytes, in contrast to 3 bytes in M25P
-  chips). So, implement convenient m25p_addr2cmd() and m25p_cmdsz()
-  calls, and place address width information into flash_info struct;
-
-- Page size can vary, therefore we shouldn't hardcode it, so get rid
-  of FLASH_PAGESIZE definition, and place the page size information
-  into flash_info struct;
-
-- CAT25 EEPROMs don't need to be erased, so add NO_ERASE flag, and
-  propagate it to the mtd subsystem.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mtd/devices/m25p80.c |  172 ++++++++++++++++++++++++------------------
- 1 files changed, 97 insertions(+), 75 deletions(-)
-
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index b75e319..8930266 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -29,9 +29,6 @@
- #include <linux/spi/spi.h>
- #include <linux/spi/flash.h>
- 
--
--#define FLASH_PAGESIZE		256
--
- /* Flash opcodes. */
- #define	OPCODE_WREN		0x06	/* Write enable */
- #define	OPCODE_RDSR		0x05	/* Read status register */
-@@ -56,7 +53,7 @@
- 
- /* Define max times to check status register before we give up. */
- #define	MAX_READY_WAIT_JIFFIES	(40 * HZ)	/* M25P16 specs 40s max chip erase */
--#define	CMD_SIZE		4
-+#define	MAX_CMD_SIZE		4
- 
- #ifdef CONFIG_M25PXX_USE_FAST_READ
- #define OPCODE_READ 	OPCODE_FAST_READ
-@@ -73,8 +70,10 @@ struct m25p {
- 	struct mutex		lock;
- 	struct mtd_info		mtd;
- 	unsigned		partitioned:1;
-+	u16			page_size;
-+	u16			addr_width;
- 	u8			erase_opcode;
--	u8			command[CMD_SIZE + FAST_READ_DUMMY_BYTE];
-+	u8			command[MAX_CMD_SIZE + FAST_READ_DUMMY_BYTE];
- };
- 
- static inline struct m25p *mtd_to_m25p(struct mtd_info *mtd)
-@@ -184,6 +183,19 @@ static int erase_chip(struct m25p *flash)
- 	return 0;
- }
- 
-+static void m25p_addr2cmd(struct m25p *flash, unsigned int addr, u8 *cmd)
-+{
-+	/* opcode is in cmd[0] */
-+	cmd[1] = addr >> (flash->addr_width * 8 -  8);
-+	cmd[2] = addr >> (flash->addr_width * 8 - 16);
-+	cmd[3] = addr >> (flash->addr_width * 8 - 24);
-+}
-+
-+static int m25p_cmdsz(struct m25p *flash)
-+{
-+	return 1 + flash->addr_width;
-+}
-+
- /*
-  * Erase one sector of flash memory at offset ``offset'' which is any
-  * address within the sector which should be erased.
-@@ -205,11 +217,9 @@ static int erase_sector(struct m25p *flash, u32 offset)
- 
- 	/* Set up command buffer. */
- 	flash->command[0] = flash->erase_opcode;
--	flash->command[1] = offset >> 16;
--	flash->command[2] = offset >> 8;
--	flash->command[3] = offset;
-+	m25p_addr2cmd(flash, offset, flash->command);
- 
--	spi_write(flash->spi, flash->command, CMD_SIZE);
-+	spi_write(flash->spi, flash->command, m25p_cmdsz(flash));
- 
- 	return 0;
- }
-@@ -311,7 +321,7 @@ static int m25p80_read(struct mtd_info *mtd, loff_t from, size_t len,
- 	 * Should add 1 byte DUMMY_BYTE.
- 	 */
- 	t[0].tx_buf = flash->command;
--	t[0].len = CMD_SIZE + FAST_READ_DUMMY_BYTE;
-+	t[0].len = m25p_cmdsz(flash) + FAST_READ_DUMMY_BYTE;
- 	spi_message_add_tail(&t[0], &m);
- 
- 	t[1].rx_buf = buf;
-@@ -338,13 +348,11 @@ static int m25p80_read(struct mtd_info *mtd, loff_t from, size_t len,
- 
- 	/* Set up the write data buffer. */
- 	flash->command[0] = OPCODE_READ;
--	flash->command[1] = from >> 16;
--	flash->command[2] = from >> 8;
--	flash->command[3] = from;
-+	m25p_addr2cmd(flash, from, flash->command);
- 
- 	spi_sync(flash->spi, &m);
- 
--	*retlen = m.actual_length - CMD_SIZE - FAST_READ_DUMMY_BYTE;
-+	*retlen = m.actual_length - m25p_cmdsz(flash) - FAST_READ_DUMMY_BYTE;
- 
- 	mutex_unlock(&flash->lock);
- 
-@@ -382,7 +390,7 @@ static int m25p80_write(struct mtd_info *mtd, loff_t to, size_t len,
- 	memset(t, 0, (sizeof t));
- 
- 	t[0].tx_buf = flash->command;
--	t[0].len = CMD_SIZE;
-+	t[0].len = m25p_cmdsz(flash);
- 	spi_message_add_tail(&t[0], &m);
- 
- 	t[1].tx_buf = buf;
-@@ -400,41 +408,36 @@ static int m25p80_write(struct mtd_info *mtd, loff_t to, size_t len,
- 
- 	/* Set up the opcode in the write buffer. */
- 	flash->command[0] = OPCODE_PP;
--	flash->command[1] = to >> 16;
--	flash->command[2] = to >> 8;
--	flash->command[3] = to;
-+	m25p_addr2cmd(flash, to, flash->command);
- 
--	/* what page do we start with? */
--	page_offset = to % FLASH_PAGESIZE;
-+	page_offset = to & (flash->page_size - 1);
- 
- 	/* do all the bytes fit onto one page? */
--	if (page_offset + len <= FLASH_PAGESIZE) {
-+	if (page_offset + len <= flash->page_size) {
- 		t[1].len = len;
- 
- 		spi_sync(flash->spi, &m);
- 
--		*retlen = m.actual_length - CMD_SIZE;
-+		*retlen = m.actual_length - m25p_cmdsz(flash);
- 	} else {
- 		u32 i;
- 
- 		/* the size of data remaining on the first page */
--		page_size = FLASH_PAGESIZE - page_offset;
-+		page_size = flash->page_size - page_offset;
- 
- 		t[1].len = page_size;
- 		spi_sync(flash->spi, &m);
- 
--		*retlen = m.actual_length - CMD_SIZE;
-+		*retlen = m.actual_length - m25p_cmdsz(flash);
- 
--		/* write everything in PAGESIZE chunks */
-+		/* write everything in flash->page_size chunks */
- 		for (i = page_size; i < len; i += page_size) {
- 			page_size = len - i;
--			if (page_size > FLASH_PAGESIZE)
--				page_size = FLASH_PAGESIZE;
-+			if (page_size > flash->page_size)
-+				page_size = flash->page_size;
- 
- 			/* write the next page to flash */
--			flash->command[1] = (to + i) >> 16;
--			flash->command[2] = (to + i) >> 8;
--			flash->command[3] = (to + i);
-+			m25p_addr2cmd(flash, to + i, flash->command);
- 
- 			t[1].tx_buf = buf + i;
- 			t[1].len = page_size;
-@@ -446,7 +449,7 @@ static int m25p80_write(struct mtd_info *mtd, loff_t to, size_t len,
- 			spi_sync(flash->spi, &m);
- 
- 			if (retlen)
--				*retlen += m.actual_length - CMD_SIZE;
-+				*retlen += m.actual_length - m25p_cmdsz(flash);
- 		}
- 	}
- 
-@@ -476,16 +479,23 @@ struct flash_info {
- 	unsigned	sector_size;
- 	u16		n_sectors;
- 
-+	u16		page_size;
-+	u16		addr_width;
-+
- 	u16		flags;
- #define	SECT_4K		0x01		/* OPCODE_BE_4K works uniformly */
-+#define	M25P_NO_ERASE	0x02		/* No erase command needed */
- };
- 
--#define INFO(_jedec_id, _ext_id, _sector_size, _n_sectors, _flags)	\
-+#define INFO(_jedec_id, _ext_id, _sector_size, _n_sectors, _page_size,	\
-+		_addr_width, _flags)					\
- 	((kernel_ulong_t)&(struct flash_info) {				\
- 		.jedec_id = (_jedec_id),				\
- 		.ext_id = (_ext_id),					\
- 		.sector_size = (_sector_size),				\
- 		.n_sectors = (_n_sectors),				\
-+		.page_size = (_page_size),				\
-+		.addr_width = (_addr_width),				\
- 		.flags = (_flags),					\
- 	})
- 
-@@ -495,63 +505,70 @@ struct flash_info {
-  */
- static const struct spi_device_id m25p_ids[] = {
- 	/* Atmel -- some are (confusingly) marketed as "DataFlash" */
--	{ "at25fs010",  INFO(0x1f6601, 0, 32 * 1024, 4, SECT_4K) },
--	{ "at25fs040",  INFO(0x1f6604, 0, 64 * 1024, 8, SECT_4K) },
-+	{ "at25fs010",  INFO(0x1f6601, 0, 32 * 1024, 4, 256, 3, SECT_4K) },
-+	{ "at25fs040",  INFO(0x1f6604, 0, 64 * 1024, 8, 256, 3, SECT_4K) },
- 
--	{ "at25df041a", INFO(0x1f4401, 0, 64 * 1024, 8, SECT_4K) },
--	{ "at25df641",  INFO(0x1f4800, 0, 64 * 1024, 128, SECT_4K) },
-+	{ "at25df041a", INFO(0x1f4401, 0, 64 * 1024, 8, 256, 3, SECT_4K) },
-+	{ "at25df641",  INFO(0x1f4800, 0, 64 * 1024, 128, 256, 3, SECT_4K) },
- 
--	{ "at26f004",   INFO(0x1f0400, 0, 64 * 1024, 8, SECT_4K) },
--	{ "at26df081a", INFO(0x1f4501, 0, 64 * 1024, 16, SECT_4K) },
--	{ "at26df161a", INFO(0x1f4601, 0, 64 * 1024, 32, SECT_4K) },
--	{ "at26df321",  INFO(0x1f4701, 0, 64 * 1024, 64, SECT_4K) },
-+	{ "at26f004",   INFO(0x1f0400, 0, 64 * 1024, 8, 256, 3, SECT_4K) },
-+	{ "at26df081a", INFO(0x1f4501, 0, 64 * 1024, 16, 256, 3, SECT_4K) },
-+	{ "at26df161a", INFO(0x1f4601, 0, 64 * 1024, 32, 256, 3, SECT_4K) },
-+	{ "at26df321",  INFO(0x1f4701, 0, 64 * 1024, 64, 256, 3, SECT_4K) },
- 
- 	/* Macronix */
--	{ "mx25l12805d", INFO(0xc22018, 0, 64 * 1024, 256, 0) },
-+	{ "mx25l12805d", INFO(0xc22018, 0, 64 * 1024, 256, 256, 3, 0) },
- 
- 	/* Spansion -- single (large) sector size only, at least
- 	 * for the chips listed here (without boot sectors).
- 	 */
--	{ "s25sl004a",  INFO(0x010212, 0, 64 * 1024, 8, 0) },
--	{ "s25sl008a",  INFO(0x010213, 0, 64 * 1024, 16, 0) },
--	{ "s25sl016a",  INFO(0x010214, 0, 64 * 1024, 32, 0) },
--	{ "s25sl032a",  INFO(0x010215, 0, 64 * 1024, 64, 0) },
--	{ "s25sl064a",  INFO(0x010216, 0, 64 * 1024, 128, 0) },
--	{ "s25sl12800", INFO(0x012018, 0x0300, 256 * 1024, 64, 0) },
--	{ "s25sl12801", INFO(0x012018, 0x0301, 64 * 1024, 256, 0) },
-+	{ "s25sl004a",  INFO(0x010212, 0, 64 * 1024, 8, 256, 3, 0) },
-+	{ "s25sl008a",  INFO(0x010213, 0, 64 * 1024, 16, 256, 3, 0) },
-+	{ "s25sl016a",  INFO(0x010214, 0, 64 * 1024, 32, 256, 3, 0) },
-+	{ "s25sl032a",  INFO(0x010215, 0, 64 * 1024, 64, 256, 3, 0) },
-+	{ "s25sl064a",  INFO(0x010216, 0, 64 * 1024, 128, 256, 3, 0) },
-+	{ "s25sl12800", INFO(0x012018, 0x0300, 256 * 1024, 64, 256, 3, 0) },
-+	{ "s25sl12801", INFO(0x012018, 0x0301, 64 * 1024, 256, 256, 3, 0) },
- 
- 	/* SST -- large erase sizes are "overlays", "sectors" are 4K */
--	{ "sst25vf040b", INFO(0xbf258d, 0, 64 * 1024, 8, SECT_4K) },
--	{ "sst25vf080b", INFO(0xbf258e, 0, 64 * 1024, 16, SECT_4K) },
--	{ "sst25vf016b", INFO(0xbf2541, 0, 64 * 1024, 32, SECT_4K) },
--	{ "sst25vf032b", INFO(0xbf254a, 0, 64 * 1024, 64, SECT_4K) },
-+	{ "sst25vf040b", INFO(0xbf258d, 0, 64 * 1024, 8, 256, 3, SECT_4K) },
-+	{ "sst25vf080b", INFO(0xbf258e, 0, 64 * 1024, 16, 256, 3, SECT_4K) },
-+	{ "sst25vf016b", INFO(0xbf2541, 0, 64 * 1024, 32, 256, 3, SECT_4K) },
-+	{ "sst25vf032b", INFO(0xbf254a, 0, 64 * 1024, 64, 256, 3, SECT_4K) },
- 
- 	/* ST Microelectronics -- newer production may have feature updates */
--	{ "m25p05",  INFO(0x202010,  0, 32 * 1024, 2, 0) },
--	{ "m25p10",  INFO(0x202011,  0, 32 * 1024, 4, 0) },
--	{ "m25p20",  INFO(0x202012,  0, 64 * 1024, 4, 0) },
--	{ "m25p40",  INFO(0x202013,  0, 64 * 1024, 8, 0) },
--	{ "m25p80",  INFO(0x202014,  0, 64 * 1024, 16, 0) },
--	{ "m25p16",  INFO(0x202015,  0, 64 * 1024, 32, 0) },
--	{ "m25p32",  INFO(0x202016,  0, 64 * 1024, 64, 0) },
--	{ "m25p64",  INFO(0x202017,  0, 64 * 1024, 128, 0) },
--	{ "m25p128", INFO(0x202018, 0, 256 * 1024, 64, 0) },
--
--	{ "m45pe10", INFO(0x204011,  0, 64 * 1024, 2, 0) },
--	{ "m45pe80", INFO(0x204014,  0, 64 * 1024, 16, 0) },
--	{ "m45pe16", INFO(0x204015,  0, 64 * 1024, 32, 0) },
--
--	{ "m25pe80", INFO(0x208014,  0, 64 * 1024, 16, 0) },
--	{ "m25pe16", INFO(0x208015,  0, 64 * 1024, 32, SECT_4K) },
-+	{ "m25p05",  INFO(0x202010,  0, 32 * 1024, 2, 256, 3, 0) },
-+	{ "m25p10",  INFO(0x202011,  0, 32 * 1024, 4, 256, 3, 0) },
-+	{ "m25p20",  INFO(0x202012,  0, 64 * 1024, 4, 256, 3, 0) },
-+	{ "m25p40",  INFO(0x202013,  0, 64 * 1024, 8, 256, 3, 0) },
-+	{ "m25p80",  INFO(0x202014,  0, 64 * 1024, 16, 256, 3, 0) },
-+	{ "m25p16",  INFO(0x202015,  0, 64 * 1024, 32, 256, 3, 0) },
-+	{ "m25p32",  INFO(0x202016,  0, 64 * 1024, 64, 256, 3, 0) },
-+	{ "m25p64",  INFO(0x202017,  0, 64 * 1024, 128, 256, 3, 0) },
-+	{ "m25p128", INFO(0x202018, 0, 256 * 1024, 64, 256, 3, 0) },
-+
-+	{ "m45pe10", INFO(0x204011,  0, 64 * 1024, 2, 256, 3, 0) },
-+	{ "m45pe80", INFO(0x204014,  0, 64 * 1024, 16, 256, 3, 0) },
-+	{ "m45pe16", INFO(0x204015,  0, 64 * 1024, 32, 256, 3, 0) },
-+
-+	{ "m25pe80", INFO(0x208014,  0, 64 * 1024, 16, 256, 3, 0) },
-+	{ "m25pe16", INFO(0x208015,  0, 64 * 1024, 32, 256, 3, SECT_4K) },
- 
- 	/* Winbond -- w25x "blocks" are 64K, "sectors" are 4KiB */
--	{ "w25x10", INFO(0xef3011, 0, 64 * 1024, 2, SECT_4K) },
--	{ "w25x20", INFO(0xef3012, 0, 64 * 1024, 4, SECT_4K) },
--	{ "w25x40", INFO(0xef3013, 0, 64 * 1024, 8, SECT_4K) },
--	{ "w25x80", INFO(0xef3014, 0, 64 * 1024, 16, SECT_4K) },
--	{ "w25x16", INFO(0xef3015, 0, 64 * 1024, 32, SECT_4K) },
--	{ "w25x32", INFO(0xef3016, 0, 64 * 1024, 64, SECT_4K) },
--	{ "w25x64", INFO(0xef3017, 0, 64 * 1024, 128, SECT_4K) },
-+	{ "w25x10", INFO(0xef3011, 0, 64 * 1024, 2, 256, 3, SECT_4K) },
-+	{ "w25x20", INFO(0xef3012, 0, 64 * 1024, 4, 256, 3, SECT_4K) },
-+	{ "w25x40", INFO(0xef3013, 0, 64 * 1024, 8, 256, 3, SECT_4K) },
-+	{ "w25x80", INFO(0xef3014, 0, 64 * 1024, 16, 256, 3, SECT_4K) },
-+	{ "w25x16", INFO(0xef3015, 0, 64 * 1024, 32, 256, 3, SECT_4K) },
-+	{ "w25x32", INFO(0xef3016, 0, 64 * 1024, 64, 256, 3, SECT_4K) },
-+	{ "w25x64", INFO(0xef3017, 0, 64 * 1024, 128, 256, 3, SECT_4K) },
-+
-+	/* Catalyst / On Semiconductor -- non-JEDEC */
-+	{ "cat25c11",  INFO(0x0, 0,   16, 8, 16, 1, M25P_NO_ERASE) },
-+	{ "cat25c03",  INFO(0x0, 0,   32, 8, 16, 2, M25P_NO_ERASE) },
-+	{ "cat25c09",  INFO(0x0, 0,  128, 8, 32, 2, M25P_NO_ERASE) },
-+	{ "cat25c17",  INFO(0x0, 0,  256, 8, 32, 2, M25P_NO_ERASE) },
-+	{ "cat25128",  INFO(0x0, 0, 2048, 8, 64, 2, M25P_NO_ERASE) },
- 	{ },
- };
- MODULE_DEVICE_TABLE(spi, m25p_ids);
-@@ -702,7 +719,12 @@ static int __devinit m25p_probe(struct spi_device *spi)
- 		flash->mtd.erasesize = info->sector_size;
- 	}
- 
-+	if (info->flags & M25P_NO_ERASE)
-+		flash->mtd.flags |= MTD_NO_ERASE;
-+
- 	flash->mtd.dev.parent = &spi->dev;
-+	flash->page_size = info->page_size;
-+	flash->addr_width = info->addr_width;
- 
- 	dev_info(&spi->dev, "%s (%lld Kbytes)\n", id->name,
- 			(long long)flash->mtd.size >> 10);
--- 
-1.6.3.3
+they're def typos made when i copy & pasted earlier lines.  but
+binutils-2.17 apparently doesnt mind which is why i didnt notice.  ive
+merged this into the Blackfin tree, thanks
+-mike
