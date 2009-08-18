@@ -1,102 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbZHRLQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbZHRLQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758782AbZHRLQI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758737AbZHRLQH
+	id S1758789AbZHRLQK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758783AbZHRLQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:16:07 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:50477 "EHLO gir.skynet.ie"
+	Tue, 18 Aug 2009 07:16:09 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:50494 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752086AbZHRLQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758051AbZHRLQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Aug 2009 07:16:06 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Linux Memory Management List <linux-mm@kvack.org>
 Cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Mel Gorman <mel@csn.ul.ie>
-Subject: [RFC PATCH 0/3] Reduce searching in the page allocator fast-path
-Date: Tue, 18 Aug 2009 12:15:59 +0100
-Message-Id: <1250594162-17322-1-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 3/3] page-allocator: Move pcp static fields for high and batch off-pcp and onto the zone
+Date: Tue, 18 Aug 2009 12:16:02 +0100
+Message-Id: <1250594162-17322-4-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1250594162-17322-1-git-send-email-mel@csn.ul.ie>
+References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following three patches are a revisit of the proposal to remove searching
-in the page allocator fast-path by maintaining multiple free-lists in the
-per-cpu structure. At the time the search was introduced, increasing the
-per-cpu structures would waste a lot of memory as per-cpu structures were
-statically allocated at compile-time. This is no longer the case.
+Having multiple lists per PCPU increased the size of the per-pcpu
+structure. Two of the fields, high and batch, do not change within a
+zone making that information redundant. This patch moves those fields
+off the PCP and onto the zone to reduce the size of the PCPU.
 
-These patches have been brought up before but the results as to whether
-they helped or not were inconclusive and I was worried about the pcpu drain
-path. While the patches in various guises have been ACKd, they were never
-merged because the performance results were always shaky. I beefed up the
-of the testing methodology and the results indicate either no improvements
-or small gains with two exceptionally large gains. I'm marginally happier
-with the free path than I was previously.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ include/linux/mmzone.h |    9 +++++----
+ mm/page_alloc.c        |   47 +++++++++++++++++++++++++----------------------
+ mm/vmstat.c            |    4 ++--
+ 3 files changed, 32 insertions(+), 28 deletions(-)
 
-The patches are as follows. They are based on mmotm-2009-08-12.
-
-Patch 1 adds multiple lists to struct per_cpu_pages, one per
-	migratetype that can be stored on the PCP lists.
-
-Patch 2 notes that the pcpu drain path check empty lists multiple times. The
-	patch  reduces the number of checks by maintaining a count of free
-	lists encountered. Lists containing pages will then free multiple
-	pages in batch
-
-Patch 3 notes that the per-cpu structure is larger than it needs to be because
-	pcpu->high and batch are read-mostly variables shared by the
-	zone. The patch moves those fields to struct zone.
-
-The patches were tested with kernbench, aim9, netperf udp/tcp, hackbench and
-sysbench.  The netperf tests were not bound to any CPU in particular and
-were run such that the results should be 99% confidence that the reported
-results are within 1% of the estimated mean. sysbench was run with a
-postgres background and read-only tests. Similar to netperf, it was run
-multiple times so that it's 99% confidence results are within 1%. The
-patches were tested on x86, x86-64 and ppc64 as
-
-x86:	Intel Pentium D 3GHz with 8G RAM (no-brand machine)
-	kernbench	- No significant difference, variance well within noise
-	aim9		- 3-6% gain on page_test and brk_test
-	netperf-udp	- No significant differences
-	netperf-tcp	- Small variances, very close to noise
-	hackbench	- Small variances, very close to noise
-	sysbench	- Small gains, very close to noise
-
-x86-64:	AMD Phenom 9950 1.3GHz with 8G RAM (no-brand machine)
-	kernbench	- No significant difference, variance well within noise
-	aim9		- No significant difference
-	netperf-udp	- No difference until buffer >= PAGE_SIZE
-				4096	+1.39%
-				8192	+6.80%
-				16384	+9.55%
-	netperf-tcp	- No difference until buffer >= PAGE_SIZE
-				4096	+14.14%
-				8192	+ 0.23% (not significant)
-				16384	-12.56%
-	hackbench	- Small gains, very close to noise
-	sysbench	- Small gains/losses, very close to noise
-
-ppc64:	PPC970MP 2.5GHz with 10GB RAM (it's a terrasoft powerstation)
-	kernbench	- No significant difference, variance well within noise
-	aim9		- No significant difference
-	netperf-udp	- 2-3% gain for almost all buffer sizes tested
-	netperf-tcp	- losses on small buffers, gains on larger buffers
-			  possibly indicates some bad caching effect. Suspect
-			  struct zone could be laid out much better
-	hackbench	- Small 1-2% gains
-	sysbench	- 5-7% gain
-
-For the most part, performance differences are marginal with some noticeable
-exceptions. netperf-udp on x86-64 gained heavily as did sysbench on ppc64. I
-suspect the TCP results, particularly for small buffers, point to some
-cache line bouncing effect which I haven't pinned down yet.
-
- include/linux/mmzone.h |   10 ++-
- mm/page_alloc.c        |  162 +++++++++++++++++++++++++++---------------------
- mm/vmstat.c            |    4 +-
- 3 files changed, 100 insertions(+), 76 deletions(-)
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 6e0b624..57a3ef0 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -167,12 +167,10 @@ enum zone_watermarks {
+ #define high_wmark_pages(z) (z->watermark[WMARK_HIGH])
+ 
+ struct per_cpu_pages {
+-	int count;		/* number of pages in the list */
+-	int high;		/* high watermark, emptying needed */
+-	int batch;		/* chunk size for buddy add/remove */
+-
+ 	/* Lists of pages, one per migrate type stored on the pcp-lists */
+ 	struct list_head lists[MIGRATE_PCPTYPES];
++
++	int count;		/* number of pages in the list */
+ };
+ 
+ struct per_cpu_pageset {
+@@ -284,6 +282,9 @@ struct zone {
+ 	/* zone watermarks, access with *_wmark_pages(zone) macros */
+ 	unsigned long watermark[NR_WMARK];
+ 
++	int pcp_high;		/* high watermark, emptying needed */
++	int pcp_batch;		/* chunk size for buddy add/remove */
++
+ 	/*
+ 	 * We don't know if the memory that we're going to allocate will be freeable
+ 	 * or/and it will be released eventually, so to avoid totally wasting several
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index dd3f306..65cdfbf 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -988,8 +988,8 @@ void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp)
+ 	int to_drain;
+ 
+ 	local_irq_save(flags);
+-	if (pcp->count >= pcp->batch)
+-		to_drain = pcp->batch;
++	if (pcp->count >= zone->pcp_batch)
++		to_drain = zone->pcp_batch;
+ 	else
+ 		to_drain = pcp->count;
+ 	free_pcppages_bulk(zone, to_drain, pcp);
+@@ -1129,9 +1129,9 @@ static void free_hot_cold_page(struct page *page, int cold)
+ 	else
+ 		list_add(&page->lru, &pcp->lists[migratetype]);
+ 	pcp->count++;
+-	if (pcp->count >= pcp->high) {
+-		free_pcppages_bulk(zone, pcp->batch, pcp);
+-		pcp->count -= pcp->batch;
++	if (pcp->count >= zone->pcp_high) {
++		free_pcppages_bulk(zone, zone->pcp_batch, pcp);
++		pcp->count -= zone->pcp_batch;
+ 	}
+ 
+ out:
+@@ -1199,7 +1199,7 @@ again:
+ 		local_irq_save(flags);
+ 		if (list_empty(list)) {
+ 			pcp->count += rmqueue_bulk(zone, 0,
+-					pcp->batch, list,
++					zone->pcp_batch, list,
+ 					migratetype, cold);
+ 			if (unlikely(list_empty(list)))
+ 				goto failed;
+@@ -2178,8 +2178,8 @@ void show_free_areas(void)
+ 			pageset = zone_pcp(zone, cpu);
+ 
+ 			printk("CPU %4d: hi:%5d, btch:%4d usd:%4d\n",
+-			       cpu, pageset->pcp.high,
+-			       pageset->pcp.batch, pageset->pcp.count);
++			       cpu, zone->pcp_high,
++			       zone->pcp_batch, pageset->pcp.count);
+ 		}
+ 	}
+ 
+@@ -3045,7 +3045,9 @@ static int zone_batchsize(struct zone *zone)
+ #endif
+ }
+ 
+-static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
++static void setup_pageset(struct zone *zone,
++				struct per_cpu_pageset *p,
++				unsigned long batch)
+ {
+ 	struct per_cpu_pages *pcp;
+ 	int migratetype;
+@@ -3054,8 +3056,8 @@ static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
+ 
+ 	pcp = &p->pcp;
+ 	pcp->count = 0;
+-	pcp->high = 6 * batch;
+-	pcp->batch = max(1UL, 1 * batch);
++	zone->pcp_high = 6 * batch;
++	zone->pcp_batch = max(1UL, 1 * batch);
+ 	for (migratetype = 0; migratetype < MIGRATE_PCPTYPES; migratetype++)
+ 		INIT_LIST_HEAD(&pcp->lists[migratetype]);
+ }
+@@ -3065,16 +3067,17 @@ static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
+  * to the value high for the pageset p.
+  */
+ 
+-static void setup_pagelist_highmark(struct per_cpu_pageset *p,
++static void setup_pagelist_highmark(struct zone *zone,
++				struct per_cpu_pageset *p,
+ 				unsigned long high)
+ {
+ 	struct per_cpu_pages *pcp;
+ 
+ 	pcp = &p->pcp;
+-	pcp->high = high;
+-	pcp->batch = max(1UL, high/4);
++	zone->pcp_high = high;
++	zone->pcp_batch = max(1UL, high/4);
+ 	if ((high/4) > (PAGE_SHIFT * 8))
+-		pcp->batch = PAGE_SHIFT * 8;
++		zone->pcp_batch = PAGE_SHIFT * 8;
+ }
+ 
+ 
+@@ -3115,10 +3118,10 @@ static int __cpuinit process_zones(int cpu)
+ 		if (!zone_pcp(zone, cpu))
+ 			goto bad;
+ 
+-		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
++		setup_pageset(zone, zone_pcp(zone, cpu), zone_batchsize(zone));
+ 
+ 		if (percpu_pagelist_fraction)
+-			setup_pagelist_highmark(zone_pcp(zone, cpu),
++			setup_pagelist_highmark(zone, zone_pcp(zone, cpu),
+ 			 	(zone->present_pages / percpu_pagelist_fraction));
+ 	}
+ 
+@@ -3250,7 +3253,7 @@ static int __zone_pcp_update(void *data)
+ 
+ 		local_irq_save(flags);
+ 		free_pcppages_bulk(zone, pcp->count, pcp);
+-		setup_pageset(pset, batch);
++		setup_pageset(zone, pset, batch);
+ 		local_irq_restore(flags);
+ 	}
+ 	return 0;
+@@ -3270,9 +3273,9 @@ static __meminit void zone_pcp_init(struct zone *zone)
+ #ifdef CONFIG_NUMA
+ 		/* Early boot. Slab allocator not functional yet */
+ 		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+-		setup_pageset(&boot_pageset[cpu],0);
++		setup_pageset(zone, &boot_pageset[cpu],0);
+ #else
+-		setup_pageset(zone_pcp(zone,cpu), batch);
++		setup_pageset(zone, zone_pcp(zone,cpu), batch);
+ #endif
+ 	}
+ 	if (zone->present_pages)
+@@ -4781,7 +4784,7 @@ int lowmem_reserve_ratio_sysctl_handler(ctl_table *table, int write,
+ }
+ 
+ /*
+- * percpu_pagelist_fraction - changes the pcp->high for each zone on each
++ * percpu_pagelist_fraction - changes the zone->pcp_high for each zone on each
+  * cpu.  It is the fraction of total pages in each zone that a hot per cpu pagelist
+  * can have before it gets flushed back to buddy allocator.
+  */
+@@ -4800,7 +4803,7 @@ int percpu_pagelist_fraction_sysctl_handler(ctl_table *table, int write,
+ 		for_each_online_cpu(cpu) {
+ 			unsigned long  high;
+ 			high = zone->present_pages / percpu_pagelist_fraction;
+-			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
++			setup_pagelist_highmark(zone, zone_pcp(zone, cpu), high);
+ 		}
+ 	}
+ 	return 0;
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index c81321f..a9d23c3 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -746,8 +746,8 @@ static void zoneinfo_show_print(struct seq_file *m, pg_data_t *pgdat,
+ 			   "\n              batch: %i",
+ 			   i,
+ 			   pageset->pcp.count,
+-			   pageset->pcp.high,
+-			   pageset->pcp.batch);
++			   zone->pcp_high,
++			   zone->pcp_batch);
+ #ifdef CONFIG_SMP
+ 		seq_printf(m, "\n  vm stats threshold: %d",
+ 				pageset->stat_threshold);
+-- 
+1.6.3.3
 
