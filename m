@@ -1,266 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbZHRRLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbZHRR0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759431AbZHRRLT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 13:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759326AbZHRRLT
+	id S1759329AbZHRR0L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 13:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZHRR0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 13:11:19 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:41821 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751087AbZHRRLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 13:11:18 -0400
-From: "Madhusudhan" <madhu.cr@ti.com>
-To: "'Adrian Hunter'" <adrian.hunter@nokia.com>
-Cc: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       <linux-omap@vger.kernel.org>, <linux-arm-kernel@lists.arm.linux.org.uk>
-References: <60037.192.168.10.88.1250546653.squirrel@dbdmail.itg.ti.com> <4A8A4FC1.1090206@nokia.com> <006501ca2018$4bb7a170$544ff780@am.dhcp.ti.com>
-Subject: RE: [PATCH] omap_hsmmc: Fix for the db clock failure message
-Date: Tue, 18 Aug 2009 12:10:25 -0500
-Message-ID: <000b01ca2026$c72e5930$544ff780@am.dhcp.ti.com>
+	Tue, 18 Aug 2009 13:26:09 -0400
+Received: from ausc60pc101.us.dell.com ([143.166.85.206]:14383 "EHLO
+	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754999AbZHRR0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 13:26:08 -0400
+X-Loopcount0: from 10.9.160.253
+Message-ID: <4A8AE459.8060102@dell.com>
+Date: Tue, 18 Aug 2009 12:26:49 -0500
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090804)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-Thread-Index: Acof0IIb48bsCq8CSYO0oKRq22IuXQARq5KAAAMmuJA=
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-In-Reply-To: <006501ca2018$4bb7a170$544ff780@am.dhcp.ti.com>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+CC: Marcel Holtmann <marcel@holtmann.org>, cezary.jackiewicz@gmail.com,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
+References: <4A89E768.7010207@dell.com>	 <1250558643.30166.109.camel@localhost.localdomain>	 <9b2b86520908180044l72cb8642j6256e246662f7971@mail.gmail.com> <9b2b86520908180752k66feda09rf9034a96ac6ef470@mail.gmail.com>
+In-Reply-To: <9b2b86520908180752k66feda09rf9034a96ac6ef470@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig636105176039FD4839FF816F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig636105176039FD4839FF816F
+Content-Type: multipart/mixed;
+ boundary="------------000307070207010402050108"
 
+This is a multi-part message in MIME format.
+--------------000307070207010402050108
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> -----Original Message-----
-> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> owner@vger.kernel.org] On Behalf Of Madhusudhan
-> Sent: Tuesday, August 18, 2009 10:27 AM
-> To: 'Adrian Hunter'
-> Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org; linux-
-> omap@vger.kernel.org; linux-arm-kernel@lists.arm.linux.org.uk
-> Subject: RE: [PATCH] omap_hsmmc: Fix for the db clock failure message
-> 
-> 
-> 
-> > -----Original Message-----
-> > From: Adrian Hunter [mailto:adrian.hunter@nokia.com]
-> > Sent: Tuesday, August 18, 2009 1:53 AM
-> > To: Madhusudhan Chikkature
-> > Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org; linux-
-> > omap@vger.kernel.org; linux-arm-kernel@lists.arm.linux.org.uk
-> > Subject: Re: [PATCH] omap_hsmmc: Fix for the db clock failure message
-> >
-> > Madhusudhan Chikkature wrote:
-> > > This patch applies on top of the series "[PATCH V2 0/32] mmc and
-> > omap_hsmmc
-> > > patches" posted by Adrian Hunter.
-> > >
-> > > -------------------------------------------------
-> > >
-> > >
-> > >
-> > > This patch removes the error message "Failed to get debounce clock.."
-> > printed
-> > > out by the HSMMC driver on OMAP3430. The debounce clock needs to be
-> > handled only
-> > > for OMAP2430.
-> >
-> > I have a suggestion that may make it tidier.
-> >
-> > What about renaming host->dbclk_enabled to host->got_dbclk and leaving
-> it
-> > alone
-> > after it is set in the probe function.  Then create a macro to use in
-> > conditions:
-> >
-> > #define have_dbclk(host) (cpu_is_omap2430() && (host)->got_dbclk)
-> >
-> > So the following:
-> >
-> > -	if (host->dbclk_enabled)
-> > +	if (cpu_is_omap2430() && host->dbclk_enabled) {
-> >  		clk_disable(host->dbclk);
-> > +		host->dbclk_enabled = 0;
-> > +	}
-> >
-> > becomes:
-> >
-> > -	if (host->dbclk_enabled)
-> > +	if (have_dbclk(host))
-> >  		clk_disable(host->dbclk);
-> >
-> > Or alternatively, forget the macro, and let the code always compile in:
-> >
-> > -	if (host->dbclk_enabled)
-> > +	if (host->got_dbclk)
-> >  		clk_disable(host->dbclk);
-> >
-> In both the cases how about the enable path? We want to enable the
-> debounce
-> clock only for OMAP2430, Right? Otherwise we will still end up throwing an
-> error message for 3430 if we check the result of clk_enable for db clock.
-> 
-> Regards,
-> Madhu
-> 
-I got your point after looking at the patch again. I guess you want to set
-the "host->got_dbclk" only once in probe if the clk_get succeeds for db clk
-and handle clk_enable/disable only based on got_dbclk. That should be fine.
-I will resubmit the patch.
+Hi Alan & Marcel:
 
-Regards,
-Madhu
-> >
-> > >
-> > > Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
-> > > ---
-> > >  drivers/mmc/host/omap_hsmmc.c |   63 +++++++++++++++++++++++++++-----
-> --
-> > --------
-> > >  1 file changed, 41 insertions(+), 22 deletions(-)
-> > >
-> > > Index: linux-2.6/drivers/mmc/host/omap_hsmmc.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/drivers/mmc/host/omap_hsmmc.c
-> > > +++ linux-2.6/drivers/mmc/host/omap_hsmmc.c
-> > > @@ -735,8 +735,10 @@ static int omap_hsmmc_switch_opcond(stru
-> > >  	/* Disable the clocks */
-> > >  	clk_disable(host->fclk);
-> > >  	clk_disable(host->iclk);
-> > > -	if (host->dbclk_enabled)
-> > > +	if (cpu_is_omap2430() && host->dbclk_enabled) {
-> > >  		clk_disable(host->dbclk);
-> > > +		host->dbclk_enabled = 0;
-> > > +	}
-> > >
-> > >  	/* Turn the power off */
-> > >  	ret = mmc_slot(host).set_power(host->dev, host->slot_id, 0, 0);
-> > > @@ -746,9 +748,14 @@ static int omap_hsmmc_switch_opcond(stru
-> > >  		ret = mmc_slot(host).set_power(host->dev, host->slot_id, 1,
-> > >  					       vdd);
-> > >  	clk_enable(host->iclk);
-> > > -	if (host->dbclk_enabled)
-> > > -		clk_enable(host->dbclk);
-> > >  	clk_enable(host->fclk);
-> > > +	if (cpu_is_omap2430() && !host->dbclk_enabled) {
-> > > +		if (clk_enable(host->dbclk) != 0)
-> > > +			dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
-> > > +						" clk failed\n");
-> > > +		else
-> > > +			host->dbclk_enabled = 1;
-> > > +	}
-> > >
-> > >  	if (ret != 0)
-> > >  		goto err;
-> > > @@ -1697,18 +1704,21 @@ static int __init omap_hsmmc_probe(struc
-> > >  		goto err1;
-> > >  	}
-> > >
-> > > -	host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
-> > > -	/*
-> > > -	 * MMC can still work without debounce clock.
-> > > -	 */
-> > > -	if (IS_ERR(host->dbclk))
-> > > -		dev_warn(mmc_dev(host->mmc), "Failed to get debounce
-> > clock\n");
-> > > -	else
-> > > -		if (clk_enable(host->dbclk) != 0)
-> > > -			dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
-> > > -							" clk failed\n");
-> > > +	if (cpu_is_omap2430()) {
-> > > +		host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
-> > > +		/*
-> > > +		 * MMC can still work without debounce clock.
-> > > +		 */
-> > > +		if (IS_ERR(host->dbclk))
-> > > +			dev_warn(mmc_dev(host->mmc),
-> > > +				"Failed to get debounce clock\n");
-> > >  		else
-> > > -			host->dbclk_enabled = 1;
-> > > +			if (clk_enable(host->dbclk) != 0)
-> > > +				dev_dbg(mmc_dev(host->mmc), "Enabling
-> debounce"
-> > > +							" clk failed\n");
-> > > +			else
-> > > +				host->dbclk_enabled = 1;
-> > > +	}
-> > >
-> > >  	/* Since we do only SG emulation, we can have as many segs
-> > >  	 * as we want. */
-> > > @@ -1825,8 +1835,9 @@ err_irq:
-> > >  	clk_disable(host->iclk);
-> > >  	clk_put(host->fclk);
-> > >  	clk_put(host->iclk);
-> > > -	if (host->dbclk_enabled) {
-> > > -		clk_disable(host->dbclk);
-> > > +	if (cpu_is_omap2430()) {
-> > > +		if (host->dbclk_enabled)
-> > > +			clk_disable(host->dbclk);
-> > >  		clk_put(host->dbclk);
-> > >  	}
-> > >
-> > > @@ -1859,8 +1870,9 @@ static int omap_hsmmc_remove(struct plat
-> > >  		clk_disable(host->iclk);
-> > >  		clk_put(host->fclk);
-> > >  		clk_put(host->iclk);
-> > > -		if (host->dbclk_enabled) {
-> > > -			clk_disable(host->dbclk);
-> > > +		if (cpu_is_omap2430()) {
-> > > +			if (host->dbclk_enabled)
-> > > +				clk_disable(host->dbclk);
-> > >  			clk_put(host->dbclk);
-> > >  		}
-> > >
-> > > @@ -1910,8 +1922,10 @@ static int omap_hsmmc_suspend(struct pla
-> > >  				OMAP_HSMMC_READ(host->base, HCTL) & ~SDBP);
-> > >  			mmc_host_disable(host->mmc);
-> > >  			clk_disable(host->iclk);
-> > > -			if (host->dbclk_enabled)
-> > > +			if (cpu_is_omap2430() && host->dbclk_enabled) {
-> > >  				clk_disable(host->dbclk);
-> > > +				host->dbclk_enabled = 0;
-> > > +			}
-> > >  		} else {
-> > >  			host->suspended = 0;
-> > >  			if (host->pdata->resume) {
-> > > @@ -1942,14 +1956,19 @@ static int omap_hsmmc_resume(struct plat
-> > >  		if (ret)
-> > >  			goto clk_en_err;
-> > >
-> > > -		if (host->dbclk_enabled)
-> > > -			clk_enable(host->dbclk);
-> > > -
-> > >  		if (mmc_host_enable(host->mmc) != 0) {
-> > >  			clk_disable(host->iclk);
-> > >  			goto clk_en_err;
-> > >  		}
-> > >
-> > > +		if (cpu_is_omap2430() && !host->dbclk_enabled) {
-> > > +			if (clk_enable(host->dbclk) != 0)
-> > > +				dev_dbg(mmc_dev(host->mmc), "Enabling
-> debounce"
-> > > +							" clk failed\n");
-> > > +			else
-> > > +				host->dbclk_enabled = 1;
-> > > +		}
-> > > +
-> > >  		omap_hsmmc_conf_bus_power(host);
-> > >
-> > >  		if (host->pdata->resume) {
-> > >
-> > >
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-omap"
-> in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > >
-> >
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Alan Jenkins wrote:
+> Also, you're missing the calls to rfkill_destroy() here.
+>
+> Whew, I think that's everything.  I hope you find the feedback useful,
+> despite it being a little fragmented.
+>
+>  =20
+Thanks for all the feedback.  I think i've addressed all of the concerns
+that were pointed out.  I appreciate the pointer to scripts/cleanpatch,
+that does significantly help in finding whitespace problems that the
+naked eye just browses over.
 
+I'm attaching the updated patch (sorry, git send-email seems to still
+not be very graceful with line breaks when the SMTP implementation is
+exchange from what i've seen)
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
 
+--------------000307070207010402050108
+Content-Type: text/x-patch;
+ name="02_add_rfkill_support.diff"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline;
+ filename="02_add_rfkill_support.diff"
+
+--- compal-laptop.old	2009-08-18 00:17:43.056669380 -0500
++++ compal-laptop.c	2009-08-18 01:23:33.485833067 -0500
+@@ -52,6 +52,7 @@
+ #include <linux/backlight.h>
+ #include <linux/platform_device.h>
+ #include <linux/autoconf.h>
++#include <linux/rfkill.h>
+=20
+ #define COMPAL_DRIVER_VERSION "0.2.6"
+=20
+@@ -64,6 +65,10 @@
+ #define WLAN_MASK	0x01
+ #define BT_MASK 	0x02
+=20
++static struct rfkill *wifi_rfkill;
++static struct rfkill *bt_rfkill;
++static struct platform_device *compal_device;
++
+ static int force;
+ module_param(force, bool, 0);
+ MODULE_PARM_DESC(force, "Force driver load, ignore DMI data");
+@@ -89,6 +94,86 @@
+ 	return (int) result;
+ }
+=20
++static void compal_rfkill_poll(struct rfkill *rfkill, void *data)
++{
++	unsigned long radio =3D (unsigned long) data;
++	u8 result;
++	bool hw_blocked;
++	bool sw_blocked;
++
++	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
++
++	hw_blocked =3D !(result & KILLSWITCH_MASK);
++	sw_blocked =3D (!hw_blocked && !(result & radio));
++
++	rfkill_set_states(rfkill, sw_blocked, hw_blocked);
++}
++
++static int compal_rfkill_set(void *data, bool blocked)
++{
++	unsigned long radio =3D (unsigned long) data;
++	u8 result, value;
++
++	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
++
++	if ((result & KILLSWITCH_MASK) =3D=3D 0)
++		return -EINVAL;
++
++	if (!blocked)
++		value =3D (u8) (result | radio);
++	else
++		value =3D (u8) (result & ~radio);
++	ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
++
++	return 0;
++}
++
++static const struct rfkill_ops compal_rfkill_ops =3D {
++	.poll =3D compal_rfkill_poll,
++	.set_block =3D compal_rfkill_set,
++};
++
++static int setup_rfkill(void)
++{
++	int ret;
++
++	wifi_rfkill =3D rfkill_alloc("compal-wifi", &compal_device->dev,=20
++				RFKILL_TYPE_WLAN, &compal_rfkill_ops,=20
++				(void *) WLAN_MASK);
++	if (!wifi_rfkill) {
++		ret =3D -ENOMEM;
++		goto err_wifi;
++	}
++	ret =3D rfkill_register(wifi_rfkill);
++	if (ret) {
++		rfkill_unregister(wifi_rfkill);
++		goto err_wifi;
++	}
++
++	bt_rfkill =3D rfkill_alloc("compal-bluetooth", &compal_device->dev,=20
++				RFKILL_TYPE_BLUETOOTH, &compal_rfkill_ops,=20
++				(void *) BT_MASK);
++	if (!bt_rfkill) {
++		ret =3D -ENOMEM;
++		goto err_bt;
++	}
++	ret =3D rfkill_register(bt_rfkill);
++	if (ret) {
++		rfkill_unregister(bt_rfkill);
++		goto err_bt;
++	}
++
++	return 0;
++
++err_bt:
++	rfkill_destroy(bt_rfkill);
++
++err_wifi:
++	rfkill_destroy(wifi_rfkill);
++
++	return ret;
++}
++
+ static int set_wlan_state(int state)
+ {
+ 	u8 result, value;
+@@ -258,8 +343,6 @@
+ 	}
+ };
+=20
+-static struct platform_device *compal_device;
+-
+ /* Initialization */
+=20
+ static int dmi_check_cb(const struct dmi_system_id *id)
+@@ -389,6 +472,10 @@
+ 	if (ret)
+ 		goto fail_platform_device2;
+=20
++	ret =3D setup_rfkill();
++	if (ret)
++		printk(KERN_WARNING "compal-laptop: Unable to setup rfkill\n");
++
+ 	printk(KERN_INFO "compal-laptop: driver "COMPAL_DRIVER_VERSION
+ 		" successfully loaded.\n");
+=20
+@@ -420,6 +507,10 @@
+ 	platform_device_unregister(compal_device);
+ 	platform_driver_unregister(&compal_driver);
+ 	backlight_device_unregister(compalbl_device);
++	rfkill_unregister(wifi_rfkill);
++	rfkill_destroy(wifi_rfkill);
++	rfkill_unregister(bt_rfkill);
++	rfkill_destroy(bt_rfkill);
+=20
+ 	printk(KERN_INFO "compal-laptop: driver unloaded.\n");
+ }
+
+--------------000307070207010402050108--
+
+--------------enig636105176039FD4839FF816F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkqK5FkACgkQ2CrZjkA73YtPTwCgjrt13H+uT32DfODJfgLKR/x5
+t1IAn1QfxJn1goQOTBWEmDGG+Nqug+6Q
+=8tVx
+-----END PGP SIGNATURE-----
+
+--------------enig636105176039FD4839FF816F--
