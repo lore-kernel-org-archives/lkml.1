@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751514AbZHRWZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752009AbZHRW0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751514AbZHRWZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 18:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbZHRWZ6
+	id S1752009AbZHRW0H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 18:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZHRW0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 18:25:58 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:33430 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbZHRWZ6 (ORCPT
+	Tue, 18 Aug 2009 18:26:05 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:37630 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751015AbZHRWZ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 18:25:58 -0400
-Date: Tue, 18 Aug 2009 15:25:55 -0700
+	Tue, 18 Aug 2009 18:25:59 -0400
+Date: Tue, 18 Aug 2009 15:27:05 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
 Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Samuel Ortiz <sameo@linux.intel.com>
-Subject: [PATCH -next] mfd: fix mc13783 build error
-Message-Id: <20090818152555.793773ad.randy.dunlap@oracle.com>
+       davem@davemloft.net
+Subject: [PATCH -next] net: fix ks8851 build errors
+Message-Id: <20090818152705.64557a0b.randy.dunlap@oracle.com>
 In-Reply-To: <20090818184215.fdf1c7ae.sfr@canb.auug.org.au>
 References: <20090818184215.fdf1c7ae.sfr@canb.auug.org.au>
 Organization: Oracle Linux Eng.
@@ -26,35 +27,34 @@ Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-Source-IP: abhmt006.oracle.com [141.146.116.15]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4A8B2A65.0039:SCFSTAT5015188,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090201.4A8B2A68.00A8:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix build errors due to missing Kconfig dependency:
+Fix build errors due to missing Kconfig selects:
 
-mc13783-core.c:(.text+0x11bbaf): undefined reference to `spi_sync'
-mc13783-core.c:(.init.text+0xb6b3): undefined reference to `spi_register_driver'
-mc13783-core.c:(.devinit.text+0x1fd8b): undefined reference to `spi_setup'
-drivers/built-in.o:(.data+0x157c0): undefined reference to `spi_bus_type'
+ks8851.c:(.text+0x7d2ee): undefined reference to `crc32_le'
+ks8851.c:(.text+0x7d2f5): undefined reference to `bitrev32'
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/mfd/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/Kconfig |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- linux-next-20090818.orig/drivers/mfd/Kconfig
-+++ linux-next-20090818/drivers/mfd/Kconfig
-@@ -240,6 +240,7 @@ config MFD_PCF50633
+--- linux-next-20090818.orig/drivers/net/Kconfig
++++ linux-next-20090818/drivers/net/Kconfig
+@@ -1733,6 +1733,8 @@ config KS8851
+        tristate "Micrel KS8851 SPI"
+        depends on SPI
+        select MII
++	select CRC32
++	select BITREVERSE
+        help
+          SPI driver for Micrel KS8851 SPI attached network chip.
  
- config MFD_MC13783
- 	tristate "Support Freescale MC13783"
-+	depends on SPI_MASTER
- 	select MFD_CORE
- 	help
- 	  Support for the Freescale (Atlas) MC13783 PMIC and audio CODEC.
 
 
 
