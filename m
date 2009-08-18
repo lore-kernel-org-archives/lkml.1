@@ -1,92 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758429AbZHRKWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758621AbZHRKXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758429AbZHRKWY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 06:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZHRKWY
+	id S1758621AbZHRKXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 06:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbZHRKXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 06:22:24 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:52316 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbZHRKWX (ORCPT
+	Tue, 18 Aug 2009 06:23:24 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:62048 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbZHRKXX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 06:22:23 -0400
-Date: Tue, 18 Aug 2009 12:21:36 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Marco Stornelli <marco.stornelli@gmail.com>
-Cc: Johannes Stezenbach <js@sig21.net>,
-       Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
-Subject: Re: New fast(?)-boot results on ARM
-Message-ID: <20090818102136.GN29655@pengutronix.de>
-References: <20090814170228.GM13320@pengutronix.de> <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com> <20090814204305.GA31727@pengutronix.de> <20090815103532.GA5596@sig21.net> <4A8A7D38.5020201@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4A8A7D38.5020201@gmail.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 12:13:13 up 12 days, 21:32, 53 users,  load average: 6.51, 6.04,
-	4.11
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: rsc@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Tue, 18 Aug 2009 06:23:23 -0400
+Date: Tue, 18 Aug 2009 12:22:39 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mundt <lethal@linux-sh.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Jason Baron <jbaron@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Wu Zhangjin <wuzj@lemote.com>, linux-next@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [S390] ftrace: update system call tracer support
+Message-ID: <20090818122239.03ca8bcc@skybase>
+In-Reply-To: <20090818100526.GA14374@elte.hu>
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com>
+	<20090812091133.GA21655@elte.hu>
+	<20090818004654.GA4402@linux-sh.org>
+	<20090818073211.GA26670@elte.hu>
+	<20090818085110.GA2074@elte.hu>
+	<20090818105927.30f6a140@skybase>
+	<20090818100526.GA14374@elte.hu>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marco,
+On Tue, 18 Aug 2009 12:05:26 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-On Tue, Aug 18, 2009 at 12:06:48PM +0200, Marco Stornelli wrote:
-> Yeah, I agree, do you really need udevd, device file creation at every
-> start-up in /dev? Usually static devices nodes and mdev for hotplug are
-> enough or at least you could use a simple script to create only once
-> time the devices file (mdev -s). About the fs, do you really need a
-> rootfs with ubifs? I mean, you could "split" your fs. You could use a
-> read-only fs (SquashFS for example) for your root-fs, ubifs for
-> permanent storage data (mounted under /data for example) and a ram fs
-> for volatile data.
+> 
+> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> 
+> > On Tue, 18 Aug 2009 10:51:10 +0200
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > * Paul Mundt <lethal@linux-sh.org> wrote:
+> > > > 
+> > > > > [ Adding to Cc everyone that now has a broken tree thanks to this .. ]
+> > > > > 
+> > > > > On Wed, Aug 12, 2009 at 11:11:33AM +0200, Ingo Molnar wrote:
+> > > > > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > > > > > > This pull request integrate one cleanup/fix for ftrace and an 
+> > > > > > > update for syscall tracing: the migration from old-style tracer to 
+> > > > > > > individual tracepoints/trace_events and the support for perf 
+> > > > > > > counter.
+> > > > > > > 
+> > > > > > > I've tested it with success either with ftrace (every syscall 
+> > > > > > > tracepoints enabled at the same time without problems) and with 
+> > > > > > > perfcounter.
+> > > > > > > 
+> > > > > > > May be one drawback: it creates so much trace events that the 
+> > > > > > > ftrace selftests can take some time :-)
+> > > > > > 
+> > > > > > Pulled, thanks a lot!
+> > > > > 
+> > > > > And this has now subsequently broken every single SH and S390 
+> > > > > configuration, [...]
+> > > > 
+> > > > I test SH cross-builds regularly. I just checked the SH defconfig 
+> > > > and it builds just fine here:
+> > > > 
+> > > > $ make -j32 CROSS_COMPILE=sh3-linux- ARCH=sh vmlinux
+> > > 
+> > > The s390 build indeed broke. (This got masked by the s390 toolchain 
+> > > i'm using not having been able to build Linus's tree - i fixed 
+> > > that.)
+> > > 
+> > > Could you try the fix below? It does the trick here.
+> > > 
+> > > Martin, Heiko - does the fix look good to you? regs->gprs[2] seems 
+> > > to be the register used for both the syscall number (enter 
+> > > callback) and for the return code (exit callback).
+> > 
+> > Correct, for do_syscall_trace_{enter,exit} the code in entry.S 
+> > stores the system call number in regs->gprs[2]. The fix is fine. 
+> > Thanks Ingo.
+> 
+> Thanks, i've added your Acked-by to the commit. I suspect you dont 
+> want to pull tracing infrastructure changes into the S390 tree, so 
+> keeping this fix in the tracing tree would be the best option?
 
-Well, we try to find out what is possible with a fast booting Linux
-system which *still* is as "vanilla" as possible.
+Indeed, the patch that introduced the api change is in the tracing tree
+so it makes sense to put the s390 adaptions there too.
 
-All the "boot-in-one-second" systems out there are highly squeezed,
-which is surely good if you have a scenario with high production
-volumes. You can do the optimization in the last steps then and it
-doesn't really matter how much time you spend with testing to come from
-a system that works for a developer to a production system.
-
-For most of our use cases here at Pengutronix, we see that:
-
-- Customers want in-system upgradability on a per-packet base; so the
-  flash filesystems should be normally r/o, but may be remounted r/w.
-
-- Development systems should be close to production systems, in order to
-  be able to have more "early testing"; so things like printk-ripout or
-  special non-mainline patches/tweaks should be avoided as far as
-  possible.
-
-- In general we want to have our systems close to what the mainline
-  does; Automation & Embedded is only a small market, and anything
-  which is *not* specific to these markets but mainline is good.
-
-So let's see what we'll reach while trying what people have suggested.
-
-Thanks,
-rsc
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
