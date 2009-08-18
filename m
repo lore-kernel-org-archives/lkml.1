@@ -1,85 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbZHRLIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbZHRLJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758756AbZHRLIy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 07:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758737AbZHRLIx
+	id S1758758AbZHRLJw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 07:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbZHRLJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 07:08:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44769 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758731AbZHRLIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 07:08:52 -0400
-Date: Tue, 18 Aug 2009 14:07:08 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
-	vbus_driver objects
-Message-ID: <20090818110708.GG13878@redhat.com>
-References: <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <20090818095313.GC13878@redhat.com> <4A8A7BB9.2020906@redhat.com> <20090818100945.GD13878@redhat.com> <4A8A7EE5.6090209@redhat.com> <20090818102840.GF13878@redhat.com> <4A8A8631.1040006@redhat.com>
+	Tue, 18 Aug 2009 07:09:51 -0400
+Received: from sg2ehsobe005.messaging.microsoft.com ([207.46.51.79]:35187 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750934AbZHRLJv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 07:09:51 -0400
+X-SpamScore: -4
+X-BigFish: VPS-4(zz936eMzz1202hzzz32i6bh203h64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KOKJM6-02-69H-02
+X-M-MSG: 
+Date: Tue, 18 Aug 2009 12:54:06 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 03/12] sched: Seperate out build of NUMA sched domain from
+	__build_sched_domains
+Message-ID: <20090818105406.GD29515@alberich.amd.com>
+References: <20090818104944.GA29515@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <4A8A8631.1040006@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090818104944.GA29515@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 18 Aug 2009 10:54:06.0469 (UTC) FILETIME=[34F7EB50:01CA1FF2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 01:45:05PM +0300, Avi Kivity wrote:
-> On 08/18/2009 01:28 PM, Michael S. Tsirkin wrote:
->>
->>> Suppose a nested guest has two devices.  One a virtual device backed by
->>> its host (our guest), and one a virtual device backed by us (the real
->>> host), and assigned by the guest to the nested guest.  If both devices
->>> use hypercalls, there is no way to distinguish between them.
->>>      
->> Not sure I understand. What I had in mind is that devices would have to
->> either use different hypercalls and map hypercall to address during
->> setup, or pass address with each hypercall.  We get the hypercall,
->> translate the address as if it was pio access, and know the destination?
->>    
->
-> There are no different hypercalls.  There's just one hypercall  
-> instruction, and there's no standard on how it's used.  If a nested call  
-> issues a hypercall instruction, you have no idea if it's calling a  
-> Hyper-V hypercall or a vbus/virtio kick.
 
-userspace will know which it is, because hypercall capability
-in the device has been activated, and can tell kernel, using
-something similar to iosignalfd. No?
+... to further strip down __build_sched_domains().
 
-> You could have a protocol where you register the hypercall instruction's  
-> address with its recipient, but it quickly becomes a tangled mess.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ kernel/sched.c |   57 +++++++++++++++++++++++++++++++------------------------
+ 1 files changed, 32 insertions(+), 25 deletions(-)
 
-I really thought we could pass the io address in register as an input
-parameter. Is there a way to do this in a secure manner?
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 5aa7dad..e696cd9 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8588,6 +8588,37 @@ static enum s_alloc __visit_domain_allocation_hell(struct s_data *d,
+ 	return sa_rootdomain;
+ }
+ 
++static struct sched_domain *__build_numa_sched_domains(struct s_data *d,
++	const struct cpumask *cpu_map, struct sched_domain_attr *attr, int i)
++{
++	struct sched_domain *sd = NULL;
++#ifdef CONFIG_NUMA
++	struct sched_domain *parent;
++
++	d->sd_allnodes = 0;
++	if (cpumask_weight(cpu_map) >
++	    SD_NODES_PER_DOMAIN * cpumask_weight(d->nodemask)) {
++		sd = &per_cpu(allnodes_domains, i).sd;
++		SD_INIT(sd, ALLNODES);
++		set_domain_attribute(sd, attr);
++		cpumask_copy(sched_domain_span(sd), cpu_map);
++		cpu_to_allnodes_group(i, cpu_map, &sd->groups, d->tmpmask);
++		d->sd_allnodes = 1;
++	}
++	parent = sd;
++
++	sd = &per_cpu(node_domains, i).sd;
++	SD_INIT(sd, NODE);
++	set_domain_attribute(sd, attr);
++	sched_domain_node_span(cpu_to_node(i), sched_domain_span(sd));
++	sd->parent = parent;
++	if (parent)
++		parent->child = sd;
++	cpumask_and(sched_domain_span(sd), sched_domain_span(sd), cpu_map);
++#endif
++	return sd;
++}
++
+ /*
+  * Build sched domains for a given set of cpus and attach the sched domains
+  * to the individual cpus
+@@ -8616,31 +8647,7 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+ 		cpumask_and(d.nodemask, cpumask_of_node(cpu_to_node(i)),
+ 			    cpu_map);
+ 
+-#ifdef CONFIG_NUMA
+-		if (cpumask_weight(cpu_map) >
+-				SD_NODES_PER_DOMAIN*cpumask_weight(d.nodemask)) {
+-			sd = &per_cpu(allnodes_domains, i).sd;
+-			SD_INIT(sd, ALLNODES);
+-			set_domain_attribute(sd, attr);
+-			cpumask_copy(sched_domain_span(sd), cpu_map);
+-			cpu_to_allnodes_group(i, cpu_map, &sd->groups,
+-					      d.tmpmask);
+-			p = sd;
+-			d.sd_allnodes = 1;
+-		} else
+-			p = NULL;
+-
+-		sd = &per_cpu(node_domains, i).sd;
+-		SD_INIT(sd, NODE);
+-		set_domain_attribute(sd, attr);
+-		sched_domain_node_span(cpu_to_node(i), sched_domain_span(sd));
+-		sd->parent = p;
+-		if (p)
+-			p->child = sd;
+-		cpumask_and(sched_domain_span(sd),
+-			    sched_domain_span(sd), cpu_map);
+-#endif
+-
++		sd = __build_numa_sched_domains(&d, cpu_map, attr, i);
+ 		p = sd;
+ 		sd = &per_cpu(phys_domains, i).sd;
+ 		SD_INIT(sd, CPU);
+-- 
+1.6.4
 
-Hmm. Doesn't kvm use hypercalls now? How does this work with nesting?
-For example, in this code in arch/x86/kvm/x86.c:
 
-        switch (nr) {
-        case KVM_HC_VAPIC_POLL_IRQ:
-                ret = 0;
-                break;
-        case KVM_HC_MMU_OP:
-                r = kvm_pv_mmu_op(vcpu, a0, hc_gpa(vcpu, a1, a2), &ret);
-                break;
-        default:
-                ret = -KVM_ENOSYS;
-                break;
-        }
 
-how do we know that it's the guest and not the nested guest performing
-the hypercall?
-
-> And  for what?  pio and hypercalls have the same performance characteristics.
-
-No idea about that. I'm assuming Gregory knows why he wants to use hypercalls,
-I was just trying to help find a way that is also palatable, and flexible.
-
-> -- 
-> error compiling committee.c: too many arguments to function
