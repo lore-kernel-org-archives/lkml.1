@@ -1,55 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbZHSMBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbZHSMBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751979AbZHSMBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 08:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZHSMBS
+	id S1752005AbZHSMBe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 08:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZHSMBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 08:01:18 -0400
-Received: from cinke.fazekas.hu ([195.199.244.225]:41595 "EHLO
-	cinke.fazekas.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbZHSMBR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 08:01:17 -0400
-Date: Wed, 19 Aug 2009 14:01:17 +0200 (CEST)
-From: Marton Balint <cus@fazekas.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: CPU scheduler weirdness?
-In-Reply-To: <1250665455.7583.326.camel@twins>
-Message-ID: <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu>
-References: <20090813084257.GA761@rhlx01.hs-esslingen.de>  <alpine.LNX.2.00.0908131720050.8321@cinke.fazekas.hu>  <20090813155812.GA15714@rhlx01.hs-esslingen.de>  <alpine.LNX.2.00.0908171758340.2764@cinke.fazekas.hu> <1250665455.7583.326.camel@twins>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 19 Aug 2009 08:01:34 -0400
+Received: from mga14.intel.com ([143.182.124.37]:52370 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751812AbZHSMBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 08:01:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,408,1246863600"; 
+   d="scan'208";a="177655635"
+Date: Wed, 19 Aug 2009 20:01:17 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
+       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090819120117.GB7306@localhost>
+References: <20090816051502.GB13740@localhost> <20090816112910.GA3208@localhost> <20090818234310.A64B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090818234310.A64B.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Aug 2009, Peter Zijlstra wrote:
-> On Tue, 2009-08-18 at 21:49 +0200, Marton Balint wrote:
->
->> In the meantime, I was able to create a tiny C program which always
->> succesfully reproduces the bug. It's basically an endless loop which does
->> not stop while the process is running on the last CPU core. The program
->> creates multiple instances of itself, to be able to keep all of the CPU
->> cores busy. After 1 second, the processes running on other than the last
->> CPU core die, the processes running on the last CPU core remain stuck
->> there...
->>
->> I tested it on my dual core system, if someone could test it on a quad
->> core and report back that would probably be useful.
->>
->> Usage: ./schedtest <number of CPU cores>
->>
->> And don't forget to kill the stuck processes after using the program! :)
->
-> So what's the bug? Sure one task will stay on the cpu, and because there
-> is no contention it doesn't get migrated, and therefore won't quit,
-> how's that a problem?
+On Tue, Aug 18, 2009 at 11:57:54PM +0800, KOSAKI Motohiro wrote:
+> > > Yes it does. I said 'mostly' because there is a small hole that an
+> > > unevictable page may be scanned but still not moved to unevictable
+> > > list: when a page is mapped in two places, the first pte has the
+> > > referenced bit set, the _second_ VMA has VM_LOCKED bit set, then
+> > > page_referenced() will return 1 and shrink_page_list() will move it
+> > > into active list instead of unevictable list. Shall we fix this rare
+> > > case?
+> > 
+> > How about this fix?
+> 
+> Good spotting.
+> Yes, this is rare case. but I also don't think your patch introduce
+> performance degression.
 
-Problem is that more than one processes remain on that CPU core, and none 
-of them get migrated to other (idle) cores. I tested it with my E8400 
-processor and 2.6.31-rc5-git3 kernel.
+Thanks.
 
-Regards,
-   Marton
+> However, I think your patch have one bug.
+
+Hehe, sorry for being careless :)
+
+> > 
+> > ---
+> > mm: stop circulating of referenced mlocked pages
+> > 
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> > 
+> > --- linux.orig/mm/rmap.c	2009-08-16 19:11:13.000000000 +0800
+> > +++ linux/mm/rmap.c	2009-08-16 19:22:46.000000000 +0800
+> > @@ -358,6 +358,7 @@ static int page_referenced_one(struct pa
+> >  	 */
+> >  	if (vma->vm_flags & VM_LOCKED) {
+> >  		*mapcount = 1;	/* break early from loop */
+> > +		*vm_flags |= VM_LOCKED;
+> >  		goto out_unmap;
+> >  	}
+> >  
+> > @@ -482,6 +483,8 @@ static int page_referenced_file(struct p
+> >  	}
+> >  
+> >  	spin_unlock(&mapping->i_mmap_lock);
+> > +	if (*vm_flags & VM_LOCKED)
+> > +		referenced = 0;
+> >  	return referenced;
+> >  }
+> >  
+> 
+> page_referenced_file?
+> I think we should change page_referenced().
+
+Yeah, good catch.
+
+> 
+> Instead, How about this?
+> ==============================================
+> 
+> Subject: [PATCH] mm: stop circulating of referenced mlocked pages
+> 
+> Currently, mlock() systemcall doesn't gurantee to mark the page PG_Mlocked
+
+                                                    mark PG_mlocked
+
+> because some race prevent page grabbing.
+> In that case, instead vmscan move the page to unevictable lru.
+> 
+> However, Recently Wu Fengguang pointed out current vmscan logic isn't so
+> efficient.
+> mlocked page can move circulatly active and inactive list because
+> vmscan check the page is referenced _before_ cull mlocked page.
+> 
+> Plus, vmscan should mark PG_Mlocked when cull mlocked page.
+
+                           PG_mlocked
+
+> Otherwise vm stastics show strange number.
+> 
+> This patch does that.
+
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+
+> Reported-by: Wu Fengguang <fengguang.wu@intel.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/internal.h |    5 +++--
+>  mm/rmap.c     |    8 +++++++-
+>  mm/vmscan.c   |    2 +-
+>  3 files changed, 11 insertions(+), 4 deletions(-)
+> 
+> Index: b/mm/internal.h
+> ===================================================================
+> --- a/mm/internal.h	2009-06-26 21:06:43.000000000 +0900
+> +++ b/mm/internal.h	2009-08-18 23:31:11.000000000 +0900
+> @@ -91,7 +91,8 @@ static inline void unevictable_migrate_p
+>   * to determine if it's being mapped into a LOCKED vma.
+>   * If so, mark page as mlocked.
+>   */
+> -static inline int is_mlocked_vma(struct vm_area_struct *vma, struct page *page)
+> +static inline int try_set_page_mlocked(struct vm_area_struct *vma,
+> +				       struct page *page)
+>  {
+>  	VM_BUG_ON(PageLRU(page));
+>  
+> @@ -144,7 +145,7 @@ static inline void mlock_migrate_page(st
+>  }
+>  
+>  #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
+> -static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
+> +static inline int try_set_page_mlocked(struct vm_area_struct *v, struct page *p)
+>  {
+>  	return 0;
+>  }
+> Index: b/mm/rmap.c
+> ===================================================================
+> --- a/mm/rmap.c	2009-08-18 19:48:14.000000000 +0900
+> +++ b/mm/rmap.c	2009-08-18 23:47:34.000000000 +0900
+> @@ -362,7 +362,9 @@ static int page_referenced_one(struct pa
+>  	 * unevictable list.
+>  	 */
+>  	if (vma->vm_flags & VM_LOCKED) {
+> -		*mapcount = 1;	/* break early from loop */
+> +		*mapcount = 1;		/* break early from loop */
+> +		*vm_flags |= VM_LOCKED;	/* for prevent to move active list */
+
+> +		try_set_page_mlocked(vma, page);
+
+That call is not absolutely necessary?
+
+Thanks,
+Fengguang
+
+>  		goto out_unmap;
+>  	}
+>  
+> @@ -531,6 +533,9 @@ int page_referenced(struct page *page,
+>  	if (page_test_and_clear_young(page))
+>  		referenced++;
+>  
+> +	if (unlikely(*vm_flags & VM_LOCKED))
+> +		referenced = 0;
+> +
+>  	return referenced;
+>  }
+>  
+> @@ -784,6 +789,7 @@ static int try_to_unmap_one(struct page 
+>  	 */
+>  	if (!(flags & TTU_IGNORE_MLOCK)) {
+>  		if (vma->vm_flags & VM_LOCKED) {
+> +			try_set_page_mlocked(vma, page);
+>  			ret = SWAP_MLOCK;
+>  			goto out_unmap;
+>  		}
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c	2009-08-18 19:48:14.000000000 +0900
+> +++ b/mm/vmscan.c	2009-08-18 23:30:51.000000000 +0900
+> @@ -2666,7 +2666,7 @@ int page_evictable(struct page *page, st
+>  	if (mapping_unevictable(page_mapping(page)))
+>  		return 0;
+>  
+> -	if (PageMlocked(page) || (vma && is_mlocked_vma(vma, page)))
+> +	if (PageMlocked(page) || (vma && try_set_page_mlocked(vma, page)))
+>  		return 0;
+>  
+>  	return 1;
+> 
+> 
+> 
+> 
+> 
+> 
+> 
