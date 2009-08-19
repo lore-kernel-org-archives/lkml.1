@@ -1,62 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbZHSWQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZHSWSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbZHSWQa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 18:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZHSWQ3
+	id S1753339AbZHSWSx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 18:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZHSWSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 18:16:29 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:42313 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753251AbZHSWQ3 convert rfc822-to-8bit (ORCPT
+	Wed, 19 Aug 2009 18:18:52 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:39411 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753253AbZHSWSu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 18:16:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nEyMx9dirZDbylcKhTejm3k9MKx4vCFh0mZsCakhBLjrOaSMd4gHEYNTeg0c2euQXU
-         YAfxTHwC+7guB8gSu3Wd9OZHLVIp2JzrhAXE9oG9rcpxcCUjB/RLm7iGi1f6iNnv6anW
-         4kOwrqHwa64NMR6SaV6ZzrKqSBXcy89igZYAE=
+	Wed, 19 Aug 2009 18:18:50 -0400
+Date: Wed, 19 Aug 2009 15:16:55 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Ingo Molnar <mingo@elte.hu>,
+       Anthony Liguori <anthony@codemonkey.ws>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: configfs/sysfs
+Message-ID: <20090819221654.GA29503@mail.oracle.com>
+Mail-Followup-To: Avi Kivity <avi@redhat.com>,
+	"Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Anthony Liguori <anthony@codemonkey.ws>, kvm@vger.kernel.org,
+	alacrityvm-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	"Ira W. Snyder" <iws@ovro.caltech.edu>
+References: <4A8971A8.2040102@gmail.com>
+ <20090817150844.GA3307@elte.hu>
+ <4A89B08A.4010103@gmail.com>
+ <4A8A674E.8070200@redhat.com>
+ <4A8ABEC9.6090006@gmail.com>
+ <4A8AD678.7050609@redhat.com>
+ <4A8B9B79.9050004@gmail.com>
+ <4A8BA5AE.3030308@redhat.com>
+ <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
+ <4A8C5CBB.10605@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20090818211946.GA23309@kroah.com>
-References: <589ee1d0908160656u40672d47i7a7abe9923681f09@mail.gmail.com>
-	 <20090817044450.GB20884@kroah.com>
-	 <589ee1d0908171837u70e14c41hdd6fd4ab0aa50c7@mail.gmail.com>
-	 <20090818015504.GA29939@kroah.com>
-	 <589ee1d0908181353o5a648242p702ec607b78c2e56@mail.gmail.com>
-	 <20090818211946.GA23309@kroah.com>
-Date: Wed, 19 Aug 2009 23:16:28 +0100
-Message-ID: <589ee1d0908191516v173d448bt87f72a324284d92d@mail.gmail.com>
-Subject: Re: Oops: sysfs: duplicate filename 'usbdev3.3_ep81' can not be 
-	created
-From: Christian Roche <christian.roche.fr@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8C5CBB.10605@redhat.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4A8C7A19.0170:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> In particular I get the following error :
->> > setserial /dev/ttyACM0
->> /dev/ttyACM0: Input/output error
->
-> That's a different error.
+On Wed, Aug 19, 2009 at 11:12:43PM +0300, Avi Kivity wrote:
+> On 08/19/2009 09:23 PM, Nicholas A. Bellinger wrote:
+> >Anyways, I was wondering if you might be interesting in sharing your
+> >concerns wrt to configfs (conigfs maintainer CC'ed), at some point..?
+> 
+> My concerns aren't specifically with configfs, but with all the text
+> based pseudo filesystems that the kernel exposes.
 
-Yes indeed, in fact the error was simply due to the fact that I needed
-to modprobe usbserial before rather than after the switch. So it was
-totally unrelated.
+	Phew!  It's not just me :-)
 
-> That's some other problem.  It would be great if you could try out the
-> 2.6.31-rc kernel as work has gone on in this area.
+> My high level concern is that we're optimizing for the active
+> sysadmin, not for libraries and management programs.  configfs and
+> sysfs are easy to use from the shell, discoverable, and easily
+> scripted.  But they discourage documentation, the text format is
+> ambiguous, and they require a lot of boilerplate to use in code.
 
-Well I'm willing to do that, however I think I'll have to wait until
-they compile one 2.6.31 kernel for Fedora 11, because it looks like
-currently I would have to totally mess up my installation to do that.
-Since the whole issue is only a warning I guess this is not too much
-of a problem, unless you deem it important in which case I'm ok to try
-it.
+	I don't think they "discourage documentation" anymore than any
+ioctl we've ever had.  At least you can look at the names and values and
+take a good stab at it (configfs is better than sysfs at this, by virtue
+of what it does, but discoverability is certainly not as good as real
+documentation).
+	With an ioctl() that isn't (well) documented, you have to go
+read the structure and probably even read the code that uses the
+structure to be sure what you are doing.
 
-Thanks a lot for your help !
-Chris
+> You could argue that you can wrap *fs in a library that hides the
+> details of accessing it, but that's the wrong approach IMO.  We
+> should make the information easy to use and manipulate for programs;
+> one of these programs can be a fuse filesystem for the active
+> sysadmin if someone thinks it's important.
+
+	You are absolutely correct that they are a boon to the sysadmin,
+where in theory programs can do better with binary interfaces.  Except
+what programs?  I can't do an ioctl or a syscall from a shell script
+(no, using bash's network capabilities to talk to netlink does not
+count).  Same with perl/python/whatever where you have to write
+boilerplate to create binary structures.
+	These interfaces have two opposing forces acting on them.  They
+provide a reasonably nice way to cross the user<->kernel boundary, so
+people want to use them.  Programmatic things, like a power management
+daemon for example, don't want sysadmins touching anything.  It's just
+an interface for the daemon.  Conversely, some things are really knobs
+for the sysadmin.  There's nothing else to it.  Why should they have to
+code up a C program just to turn a knob?  Configfs, as its name implies,
+really does exist for that second case.  It turns out that it's quite
+nice to use for the first case too, but if folks wanted to go the
+syscall route, no worries.
+	I've said it many times.  We will never come up with one
+over-arching solution to all the disparate use cases.  Instead, we
+should use each facility - syscalls, ioctls, sysfs, configfs, etc - as
+appropriate.  Even in the same program or subsystem.
+
+> - atomicity
+> 
+> One attribute per file means that, lacking userspace-visible
+> transactions, there is no way to change several attributes at once.
+> When you read attributes, there is no way to read several attributes
+> atomically so you can be sure their values correlate.  Another
+> example of a problem is when an object disappears while reading its
+> attributes.  Sure, openat() can mitigate this, but it's better to
+> avoid introducing problem than having a fix.
+
+	configfs has some atomicity capabilities, but not full
+atomicity.  It's not the right too for that sort of thing.
+
+> - ambiguity
+> 
+> What format is the attribute?  does it accept lowercase or uppercase
+> hex digits?  is there a newline at the end?  how many digits can it
+> take before the attribute overflows?  All of this has to be
+> documented and checked by the OS, otherwise we risk regressions
+> later.  In contrast, __u64 says everything in a binary interface.
+
+	Um, is that __u64 a pointer to a userspace object?  A key to a
+lookup table?  A file descriptor that is padded out?  It's no less
+ambiguous.
+
+> - lifetime and access control
+> 
+> If a process brings an object into being (using mkdir) and then
+> dies, the object remains behind.  The syscall/ioctl approach ties
+> the object into an fd, which will be destroyed when the process
+> dies, and which can be passed around using SCM_RIGHTS, allowing a
+> server process to create and configure an object before passing it
+> to an unprivileged program
+
+	Most things here do *not* want to be tied to the lifetime of one
+process.  We don't want our cpu_freq governor changing just because the
+power manager died.
+
+ 
+> You may argue, correctly, that syscalls and ioctls are not as
+> flexible.  But this is because no one has invested the effort in
+> making them so.  A struct passed as an argument to a syscall is not
+> extensible.  But if you pass the size of the structure, and also a
+> bitmap of which attributes are present, you gain extensibility and
+> retain the atomicity property of a syscall interface.  I don't think
+> a lot of effort is needed to make an extensible syscall interface
+> just as usable and a lot more efficient than configfs/sysfs.  It
+> should also be simple to bolt a fuse interface on top to expose it
+> to us commandline types.
+
+	Your extensible syscall still needs to be known.  The
+flexibility provided by configfs and sysfs is of generic access to
+non-generic things.  It's different.
+	The follow-ups regarding the perf_counter call are a good
+example.  If you know the perf_counter call, you can code up a C program
+that asks what attributes or things are there.  But if you don't, you've
+first got to find out that there's a perf_counter call, then learn how
+to use it.  With configfs/sysfs, you notice that there's now a
+perf_counter directory under a tree, and you can figure out what
+attributes and items are there.
+	But this is not the be-all-end-all.  Our syscalls should be more
+flexible in the perf_counter way.  Not everything really needs to be
+listable by some yokel sysadmin.
+
+> configfs is more maintainable that a bunch of hand-maintained
+> ioctls.  But if we put some effort into an extendable syscall
+> infrastructure (perhaps to the point of using an IDL) I'm sure we
+> can improve on that without the problems pseudo filesystems
+> introduce.
+
+	Oh, boy, IDL :-)  Seriously, if you can solve the "how do I just
+poke around without actually writing C code or installing a
+domain-specific binary" problem, you will probably get somewhere.
+ 
+> I can't really fault a project for using configfs; it's an accepted
+> and recommented (by the community) interface.  I'd much prefer it
+> though if there was an effort to create a usable fd/struct based
+> alternative.
+
+	Oh, and configfs was explicitly designed to be interface
+agnostic to the client.  The filesystem portions, to the best of my
+ability, are not exposed to client drivers.  So you can replace the
+configfs filesystem interface with a system call set that does the same
+operations, and no configfs user will actually need to change their
+code (if you want to change from text values to non-text, that would
+require changing the show/store operation prototypes, but that's about
+it).
+
+Joel
+
+-- 
+
+A good programming language should have features that make the
+kind of people who use the phrase "software engineering" shake
+their heads disapprovingly.
+	- Paul Graham
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
