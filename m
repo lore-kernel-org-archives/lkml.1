@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbZHSNce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbZHSNcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752808AbZHSNce (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZHSNce
+	id S1752821AbZHSNcj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZHSNch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:32:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34662 "EHLO hera.kernel.org"
+	Wed, 19 Aug 2009 09:32:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34666 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751596AbZHSNcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:32:33 -0400
-Date: Wed, 19 Aug 2009 13:31:47 GMT
+	id S1752304AbZHSNcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:32:35 -0400
+Date: Wed, 19 Aug 2009 13:32:00 GMT
 From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,138 +18,260 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        lizf@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
        tglx@linutronix.de, jbaron@redhat.com, mingo@elte.hu
-In-Reply-To: <4A8BAFB8.1010304@cn.fujitsu.com>
-References: <4A8BAFB8.1010304@cn.fujitsu.com>
-Subject: [tip:tracing/core] tracing/events: Add trace_define_common_fields()
-Message-ID: <tip-e647d6b314266adb904d4b84973eda0afa856946@git.kernel.org>
-Git-Commit-ID: e647d6b314266adb904d4b84973eda0afa856946
+In-Reply-To: <4A8BAFCB.1040006@cn.fujitsu.com>
+References: <4A8BAFCB.1040006@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing/syscalls: Add filtering support
+Message-ID: <tip-540b7b8d65575c80162f2a0f38e1d313c92a6042@git.kernel.org>
+Git-Commit-ID: 540b7b8d65575c80162f2a0f38e1d313c92a6042
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 19 Aug 2009 13:31:48 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 19 Aug 2009 13:32:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e647d6b314266adb904d4b84973eda0afa856946
-Gitweb:     http://git.kernel.org/tip/e647d6b314266adb904d4b84973eda0afa856946
+Commit-ID:  540b7b8d65575c80162f2a0f38e1d313c92a6042
+Gitweb:     http://git.kernel.org/tip/540b7b8d65575c80162f2a0f38e1d313c92a6042
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Wed, 19 Aug 2009 15:54:32 +0800
+AuthorDate: Wed, 19 Aug 2009 15:54:51 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 19 Aug 2009 15:02:24 +0200
 
-tracing/events: Add trace_define_common_fields()
+tracing/syscalls: Add filtering support
 
-Extract duplicate code. Also prepare for the later patch.
+Add filtering support for syscall events:
+
+ # echo 'mode == 0666' > events/syscalls/sys_enter_open
+ # echo 'ret == 0' > events/syscalls/sys_exit_open
+ # echo 1 > events/syscalls/sys_enter_open
+ # echo 1 > events/syscalls/sys_exit_open
+ # cat trace
+ ...
+   modprobe-3084 [001] 117.463140: sys_open(filename: 917d3e8, flags: 0, mode: 1b6)
+   modprobe-3084 [001] 117.463176: sys_open -> 0x0
+       less-3086 [001] 117.510455: sys_open(filename: 9c6bdb8, flags: 8000, mode: 1b6)
+   sendmail-2574 [001] 122.145840: sys_open(filename: b807a365, flags: 0, mode: 1b6)
+ ...
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Jason Baron <jbaron@redhat.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <4A8BAFB8.1010304@cn.fujitsu.com>
+LKML-Reference: <4A8BAFCB.1040006@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/ftrace_event.h |    8 +-------
- include/trace/ftrace.h       |    8 +++-----
- kernel/trace/trace_events.c  |   22 ++++++++++++++++++++++
- kernel/trace/trace_export.c  |    8 +++-----
- 4 files changed, 29 insertions(+), 17 deletions(-)
+ include/linux/ftrace_event.h  |    5 ++-
+ include/linux/syscalls.h      |   16 +++++++++----
+ include/trace/syscall.h       |    7 +++++
+ kernel/trace/trace_events.c   |    5 ++-
+ kernel/trace/trace_syscalls.c |   51 +++++++++++++++++++++++++++++++++++++---
+ 5 files changed, 71 insertions(+), 13 deletions(-)
 
 diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 35b3a4a..427cbae 100644
+index 427cbae..df5b085 100644
 --- a/include/linux/ftrace_event.h
 +++ b/include/linux/ftrace_event.h
-@@ -142,6 +142,7 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+@@ -140,8 +140,9 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+ 					void *rec,
+ 					struct ring_buffer_event *event);
  
- extern int trace_define_field(struct ftrace_event_call *call, char *type,
- 			      char *name, int offset, int size, int is_signed);
-+extern int trace_define_common_fields(struct ftrace_event_call *call);
+-extern int trace_define_field(struct ftrace_event_call *call, char *type,
+-			      char *name, int offset, int size, int is_signed);
++extern int trace_define_field(struct ftrace_event_call *call,
++			      const char *type, const char *name,
++			      int offset, int size, int is_signed);
+ extern int trace_define_common_fields(struct ftrace_event_call *call);
  
  #define is_signed_type(type)	(((type)(-1)) < 0)
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 8d57f77..f124c89 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -190,6 +190,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *event_call) \
+ 		.event                  = &event_syscall_enter,		\
+ 		.raw_init		= init_enter_##sname,		\
+ 		.show_format		= syscall_enter_format,		\
++		.define_fields		= syscall_enter_define_fields,	\
+ 		.regfunc		= reg_event_syscall_enter,	\
+ 		.unregfunc		= unreg_event_syscall_enter,	\
+ 		.data			= "sys"#sname,			\
+@@ -226,6 +227,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *event_call) \
+ 		.event                  = &event_syscall_exit,		\
+ 		.raw_init		= init_exit_##sname,		\
+ 		.show_format		= syscall_exit_format,		\
++		.define_fields		= syscall_exit_define_fields,	\
+ 		.regfunc		= reg_event_syscall_exit,	\
+ 		.unregfunc		= unreg_event_syscall_exit,	\
+ 		.data			= "sys"#sname,			\
+@@ -233,6 +235,8 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *event_call) \
+ 	}
  
-@@ -166,11 +167,4 @@ do {									\
- 		__trace_printk(ip, fmt, ##args);			\
- } while (0)
+ #define SYSCALL_METADATA(sname, nb)				\
++	SYSCALL_TRACE_ENTER_EVENT(sname);			\
++	SYSCALL_TRACE_EXIT_EVENT(sname);			\
+ 	static const struct syscall_metadata __used		\
+ 	  __attribute__((__aligned__(4)))			\
+ 	  __attribute__((section("__syscalls_metadata")))	\
+@@ -241,20 +245,22 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *event_call) \
+ 		.nb_args 	= nb,				\
+ 		.types		= types_##sname,		\
+ 		.args		= args_##sname,			\
+-	};							\
+-	SYSCALL_TRACE_ENTER_EVENT(sname);			\
+-	SYSCALL_TRACE_EXIT_EVENT(sname);
++		.enter_event	= &event_enter_##sname,		\
++		.exit_event	= &event_exit_##sname,		\
++	};
  
--#define __common_field(type, item, is_signed)				\
--	ret = trace_define_field(event_call, #type, "common_" #item,	\
--				 offsetof(typeof(field.ent), item),	\
--				 sizeof(field.ent.item), is_signed);	\
--	if (ret)							\
--		return ret;
--
- #endif /* _LINUX_FTRACE_EVENT_H */
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 4e81c9b..1274002 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -299,11 +299,9 @@ ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
- 	struct ftrace_raw_##call field;					\
- 	int ret;							\
- 									\
--	__common_field(int, type, 1);					\
--	__common_field(unsigned char, flags, 0);			\
--	__common_field(unsigned char, preempt_count, 0);		\
--	__common_field(int, pid, 1);					\
--	__common_field(int, tgid, 1);					\
-+	ret = trace_define_common_fields(event_call);			\
-+	if (ret)							\
-+		return ret;						\
- 									\
- 	tstruct;							\
- 									\
+ #define SYSCALL_DEFINE0(sname)					\
++	SYSCALL_TRACE_ENTER_EVENT(_##sname);			\
++	SYSCALL_TRACE_EXIT_EVENT(_##sname);			\
+ 	static const struct syscall_metadata __used		\
+ 	  __attribute__((__aligned__(4)))			\
+ 	  __attribute__((section("__syscalls_metadata")))	\
+ 	  __syscall_meta_##sname = {				\
+ 		.name 		= "sys_"#sname,			\
+ 		.nb_args 	= 0,				\
++		.enter_event	= &event_enter__##sname,	\
++		.exit_event	= &event_exit__##sname,		\
+ 	};							\
+-	SYSCALL_TRACE_ENTER_EVENT(_##sname);			\
+-	SYSCALL_TRACE_EXIT_EVENT(_##sname);			\
+ 	asmlinkage long sys_##sname(void)
+ #else
+ #define SYSCALL_DEFINE0(name)	   asmlinkage long sys_##name(void)
+diff --git a/include/trace/syscall.h b/include/trace/syscall.h
+index 5ce85d7..9661dd4 100644
+--- a/include/trace/syscall.h
++++ b/include/trace/syscall.h
+@@ -34,6 +34,8 @@ DECLARE_TRACE_WITH_CALLBACK(syscall_exit,
+  * @args: list of args as strings (args[i] matches types[i])
+  * @enter_id: associated ftrace enter event id
+  * @exit_id: associated ftrace exit event id
++ * @enter_event: associated syscall_enter trace event
++ * @exit_event: associated syscall_exit trace event
+  */
+ struct syscall_metadata {
+ 	const char	*name;
+@@ -42,6 +44,9 @@ struct syscall_metadata {
+ 	const char	**args;
+ 	int		enter_id;
+ 	int		exit_id;
++
++	struct ftrace_event_call *enter_event;
++	struct ftrace_event_call *exit_event;
+ };
+ 
+ #ifdef CONFIG_FTRACE_SYSCALLS
+@@ -59,6 +64,8 @@ extern int syscall_enter_format(struct ftrace_event_call *call,
+ 				struct trace_seq *s);
+ extern int syscall_exit_format(struct ftrace_event_call *call,
+ 				struct trace_seq *s);
++extern int syscall_enter_define_fields(struct ftrace_event_call *call);
++extern int syscall_exit_define_fields(struct ftrace_event_call *call);
+ enum print_line_t print_syscall_enter(struct trace_iterator *iter, int flags);
+ enum print_line_t print_syscall_exit(struct trace_iterator *iter, int flags);
+ #endif
 diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index af8fb8e..9c7ecfb 100644
+index 9c7ecfb..79d3520 100644
 --- a/kernel/trace/trace_events.c
 +++ b/kernel/trace/trace_events.c
-@@ -62,6 +62,28 @@ err:
- }
- EXPORT_SYMBOL_GPL(trace_define_field);
+@@ -27,8 +27,8 @@ DEFINE_MUTEX(event_mutex);
  
-+#define __common_field(type, item)					\
-+	ret = trace_define_field(call, #type, "common_" #item,		\
-+				 offsetof(typeof(ent), item),		\
-+				 sizeof(ent.item),			\
-+				 is_signed_type(type));			\
-+	if (ret)							\
+ LIST_HEAD(ftrace_events);
+ 
+-int trace_define_field(struct ftrace_event_call *call, char *type,
+-		       char *name, int offset, int size, int is_signed)
++int trace_define_field(struct ftrace_event_call *call, const char *type,
++		       const char *name, int offset, int size, int is_signed)
+ {
+ 	struct ftrace_event_field *field;
+ 
+@@ -83,6 +83,7 @@ int trace_define_common_fields(struct ftrace_event_call *call)
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(trace_define_common_fields);
+ 
+ #ifdef CONFIG_MODULES
+ 
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index 7336b6c..28e4dae 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -165,6 +165,49 @@ int syscall_exit_format(struct ftrace_event_call *call, struct trace_seq *s)
+ 	return trace_seq_printf(s, "\nprint fmt: \"0x%%lx\", REC->ret\n");
+ }
+ 
++int syscall_enter_define_fields(struct ftrace_event_call *call)
++{
++	struct syscall_trace_enter trace;
++	struct syscall_metadata *meta;
++	int ret;
++	int nr;
++	int i;
++	int offset = offsetof(typeof(trace), args);
++
++	nr = syscall_name_to_nr(call->data);
++	meta = syscall_nr_to_meta(nr);
++
++	if (!meta)
++		return 0;
++
++	ret = trace_define_common_fields(call);
++	if (ret)
 +		return ret;
 +
-+int trace_define_common_fields(struct ftrace_event_call *call)
-+{
-+	int ret;
-+	struct trace_entry ent;
-+
-+	__common_field(unsigned short, type);
-+	__common_field(unsigned char, flags);
-+	__common_field(unsigned char, preempt_count);
-+	__common_field(int, pid);
-+	__common_field(int, tgid);
++	for (i = 0; i < meta->nb_args; i++) {
++		ret = trace_define_field(call, meta->types[i],
++					 meta->args[i], offset,
++					 sizeof(unsigned long), 0);
++		offset += sizeof(unsigned long);
++	}
 +
 +	return ret;
 +}
 +
- #ifdef CONFIG_MODULES
++int syscall_exit_define_fields(struct ftrace_event_call *call)
++{
++	struct syscall_trace_exit trace;
++	int ret;
++
++	ret = trace_define_common_fields(call);
++	if (ret)
++		return ret;
++
++	ret = trace_define_field(call, SYSCALL_FIELD(unsigned long, ret), 0);
++
++	return ret;
++}
++
+ void ftrace_syscall_enter(struct pt_regs *regs, long id)
+ {
+ 	struct syscall_trace_enter *entry;
+@@ -192,8 +235,8 @@ void ftrace_syscall_enter(struct pt_regs *regs, long id)
+ 	entry->nr = syscall_nr;
+ 	syscall_get_arguments(current, regs, 0, sys_data->nb_args, entry->args);
  
- static void trace_destroy_fields(struct ftrace_event_call *call)
-diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index cf2c752..7087530 100644
---- a/kernel/trace/trace_export.c
-+++ b/kernel/trace/trace_export.c
-@@ -189,11 +189,9 @@ ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
- 	struct args field;						\
- 	int ret;							\
- 									\
--	__common_field(unsigned char, type, 0);				\
--	__common_field(unsigned char, flags, 0);			\
--	__common_field(unsigned char, preempt_count, 0);		\
--	__common_field(int, pid, 1);					\
--	__common_field(int, tgid, 1);					\
-+	ret = trace_define_common_fields(event_call);			\
-+	if (ret)							\
-+		return ret;						\
- 									\
- 	tstruct;							\
- 									\
+-	trace_current_buffer_unlock_commit(event, 0, 0);
+-	trace_wake_up();
++	if (!filter_current_check_discard(sys_data->enter_event, entry, event))
++		trace_current_buffer_unlock_commit(event, 0, 0);
+ }
+ 
+ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
+@@ -220,8 +263,8 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
+ 	entry->nr = syscall_nr;
+ 	entry->ret = syscall_get_return_value(current, regs);
+ 
+-	trace_current_buffer_unlock_commit(event, 0, 0);
+-	trace_wake_up();
++	if (!filter_current_check_discard(sys_data->exit_event, entry, event))
++		trace_current_buffer_unlock_commit(event, 0, 0);
+ }
+ 
+ int reg_event_syscall_enter(void *ptr)
