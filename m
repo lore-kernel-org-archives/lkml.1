@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751222AbZHSBKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751170AbZHSBML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751222AbZHSBKB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 21:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbZHSBKA
+	id S1751170AbZHSBML (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 21:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbZHSBML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 21:10:00 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:43518 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751016AbZHSBKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 21:10:00 -0400
-Subject: Re: clock freezes??
-From: john stultz <johnstul@us.ibm.com>
-To: Victor =?ISO-8859-1?Q?Matar=E9?= <matare@lih.rwth-aachen.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200908181743.20381.matare@lih.rwth-aachen.de>
-References: <4A69C03E.3090706@lih.rwth-aachen.de>
-	 <4A8190C0.5030400@lih.rwth-aachen.de> <1250008935.30440.8.camel@work-vm>
-	 <200908181743.20381.matare@lih.rwth-aachen.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 18 Aug 2009 18:08:55 -0700
-Message-Id: <1250644135.7002.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 8bit
+	Tue, 18 Aug 2009 21:12:11 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54313 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750806AbZHSBMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 21:12:10 -0400
+Message-ID: <4A8B5113.20102@cn.fujitsu.com>
+Date: Wed, 19 Aug 2009 09:10:43 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>  <20090818160911.GA21243@goodmis.org> <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com> <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com> <4A8B4607.6090303@gmail.com>
+In-Reply-To: <4A8B4607.6090303@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-18 at 17:43 +0200, Victor Mataré wrote:
-> just to be clear:
-> > Can you trigger the problem yourself using date -s ?
-> nope.
+>> BTW, how did you get the dmesg? Is it from a clean boot?
+>>
+>> Since it works fine in -rc5 but breaks in -rc6, could you do a git bisect
+>> on it? It shouldn't take too long.
+>>
+>> Thanks,
+>>
+>> -- Steve
+>>
+>>    
+> well grub2 sure works o.k.
+> the new gfxload is pretty good.
+> problem is the screen just says
+> [Linux-bzImage etc.....]
+> and that's it. (was hoping to make the
+> font smaller to reveal the bug).
+> 
+> at this point the only choice I have is to undo
+> commits until I hit the right one.
+> 
 
-Ok. Then I suspect the hang isn't ntp related, but we'll keep watching
-it.
-
-thanks
--john
+You still can do bisect manually. or use quilt?
 
