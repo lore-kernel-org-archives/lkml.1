@@ -1,60 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751694AbZHSJj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751433AbZHSJja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751694AbZHSJj2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 05:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZHSJj0
+	id S1751433AbZHSJja (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 05:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZHSJj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 05:39:26 -0400
-Received: from mga09.intel.com ([134.134.136.24]:54910 "EHLO mga09.intel.com"
+	Wed, 19 Aug 2009 05:39:28 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56301 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275AbZHSJjX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 05:39:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,407,1246863600"; 
-   d="scan'208,223";a="542789975"
-Date: Wed, 19 Aug 2009 17:38:54 +0800
-From: Alek Du <alek.du@intel.com>
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <linux-kbuild@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH] Makefile: Fix size_append issue for bzip2/lzma kernel
-Message-ID: <20090819173854.2250758f@dxy.sh.intel.com>
-Organization: Intel Corp.
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	id S1751528AbZHSJjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 05:39:02 -0400
+Date: Wed, 19 Aug 2009 10:39:05 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Alexey Korolev <akorolex@gmail.com>
+Cc: Alexey Korolev <akorolev@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: HTLB mapping for drivers. Driver example
+Message-ID: <20090819093905.GD24809@csn.ul.ie>
+References: <alpine.LFD.2.00.0908172346460.32114@casper.infradead.org> <20090818083024.GB31469@csn.ul.ie> <202cde0e0908190201p4c2e2701xf18bdecbc53df905@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <202cde0e0908190201p4c2e2701xf18bdecbc53df905@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 6d755cbd7a136a4314f6976275aaa6c9d10bf3e4 Mon Sep 17 00:00:00 2001
-From: Alek Du <alek.du@intel.com>
-Date: Wed, 19 Aug 2009 17:18:39 +0800
-Subject: [PATCH] Makefile: Fix size_append issue for bzip2/lzma kernel
+On Wed, Aug 19, 2009 at 09:01:17PM +1200, Alexey Korolev wrote:
+> > This seems a lot of burden to put on a device driver, particularly with
+> > respect to the reservations.
+> 
+> Thanks a lot for review you did. That is right.  I don't like this
+> burden as well.
+> >
+> >> File operations of /dev/hpage_map do the following:
+> >>
+> >> In file open we  associate mappings of /dev/xxx with the file on hugetlbfs (like it is done in ipc/shm.c)
+> >>       file->f_mapping = h_file->f_mapping;
+> >>
+> >> In get_unmapped_area we should tell about addressing constraints in case of huge pages by calling hugetlbfs procedures. (as in ipc/shm.c)
+> >>       return get_unmapped_area(h_file, addr, len, pgoff, flags);
+> >>
+> >> We need to let hugetlbfs do architecture specific operations with mapping in mmap call. This driver does not reserve any memory for private mappings
+> >> so driver requests reservation from hugetlbfs. (Actually driver can do this as well but it will make it more complex)
+> >>
+> >> The exit procedure:
+> >> * removes memory from page cache
+> >> * deletes file on hugetlbfs vfs mount
+> >> *  free pages
+> >>
+> >> Application example is not shown here but it is very simple. It does the following: open file /dev/hpage_map, mmap a region, read/write memory, unmap file, close file.
+> >>
+> >
+> > For the use-model you have in mind, could you look at Eric Munson's patches
+> > and determine if the target application would have been happy to call the
+> > following please?
+> >
+> > mmap(0, len, prot, MAP_ANONYMOUS|MAP_HUGETLB, 0, 0)
+> >
+> Hmm. But how can I at least identify which driver this call is addressed to?
+> 
 
-The Makefile.lib will call "echo -ne" to append uncompressed kernel size to
-bzip2/lzma kernel image. The "echo" here depends on the shell that /bin/sh pointing
-to. On Ubuntu system, the /bin/sh is pointing to dash, which does not support
-"echo -e" at all. Use /bin/echo instead of shell echo should always be safe.
+The example you gave was for /dev/hpage_map so in this specific case, it
+would have appeared that the application didn't want hugepages belonging to
+a particular driver, but huge pages in general. Furthermore, your example
+driver was not populating the hugepages with data so in this case, calling
+mmap(MAP_ANONYMOUS|MAP_HUGETLB) would have been sufficient. If all the data
+in your target application is populated from userspace, it's worth considering
+instead of a different driver.
 
-Signed-off-by: Alek Du <alek.du@intel.com>
----
- scripts/Makefile.lib |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+However, lets assume you have a driver that provides the data from
+somewher. The implementation for MAP_HUGETLB is basically a call to a
+hugetlbfs_file_setup()-like function that is very straight-forward. It
+creates a hugetlbfs file and ensures that the reservations are there which
+is important and tricky to get right.
 
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 7a77787..c63c941 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -208,7 +208,7 @@ cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
- 
- # Bzip2 and LZMA do not include size in file... so we have to fake that;
- # append the size as a 32-bit littleendian number as gzip does.
--size_append = echo -ne $(shell						\
-+size_append = /bin/echo -ne $(shell						\
- dec_size=0;								\
- for F in $1; do								\
- 	fsize=$$(stat -c "%s" $$F);					\
+Would it be possible for your driver to do
+
+On file open
+	Create hugetlbfs-backed-file using helper similar to Eric's
+		or maybe even Eric's helper for MAP_HUGETLB
+	Copy get_unmapped_area handle from hugetlbfs-file so mappings
+		are properly placed on mmap()
+
+On file mmap
+	Use a new helper to get a reference to each page within the
+		file and populate it with driver-specific data. You
+		would need a new patch for this helper because it
+		doesn't exist.
+	Call h_file->f_op->mmap(h_file, vma)
+
+On file fault
+	The data is already in the page cache so the normal hugetlbfs
+		handlers should do the job
+
+On file close
+	Drop the hugetlbfs inode
+
+Using the helper for getting a reference to a hugetlbfs-file, your driver
+would no longer be responsible for placing the mapping, handling reservations
+or handling page cache manipulations.
+
 -- 
-1.6.0.4
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
