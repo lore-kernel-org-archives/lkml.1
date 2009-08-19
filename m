@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752895AbZHSQtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZHSQw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752895AbZHSQtS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZHSQtS
+	id S1753232AbZHSQw0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbZHSQw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:49:18 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33143 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752054AbZHSQtR (ORCPT
+	Wed, 19 Aug 2009 12:52:26 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:2364 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752423AbZHSQwZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:49:17 -0400
-Message-ID: <4A8C2CDE.1010405@zytor.com>
-Date: Wed, 19 Aug 2009 09:48:30 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Wed, 19 Aug 2009 12:52:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QriyGXJEAiJelC47yVlxbfpHn5UlY164OG0YQI8hBx7pkPHDTSKpb3ZOXN9wVkO+HL
+         0E+eUa+Nj7WUOUT/cv3S5EAVB8Cbn1dMEvBYeLIsLfERjoU6GS6LCzOcw1XTZSYIg7p+
+         bgHPz8m1nRU8+pjLyeQgL+y24EYRj3eFCCWbE=
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: make use of inc/dec conditional
-References: <4A8BCA850200007800010836@vpn.id2.novell.com>
-In-Reply-To: <4A8BCA850200007800010836@vpn.id2.novell.com>
+In-Reply-To: <20090819143223.GU5065@prithivi.gnumonks.org>
+References: <20090609083406.GE25316@prithivi.gnumonks.org>
+	 <20090619231132.22296525@hyperion.delvare>
+	 <191fb4ca0906271134r2c9761e3la56bdea3f66b60f4@mail.gmail.com>
+	 <191fb4ca0908131142m4f976d98yb434da72257f64ea@mail.gmail.com>
+	 <20090819143223.GU5065@prithivi.gnumonks.org>
+Date: Wed, 19 Aug 2009 09:52:25 -0700
+Message-ID: <191fb4ca0908190952l773fca65y5b38c88a1bf029d2@mail.gmail.com>
+Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core 
+	temperature
+From: Juerg Haefliger <juergh@gmail.com>
+To: Harald Welte <HaraldWelte@viatech.com>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/19/2009 12:48 AM, Jan Beulich wrote:
-> According to gcc's instruction selection, inc/dec can be used without
-> penalty on most CPU models, but should be avoided on others. Hence we
-> should have a config option controlling the use of inc/dec, and
-> respective abstraction macros to avoid making the resulting code too
-> ugly. There are a few instances of inc/dec that must be retained in
-> assembly code, due to that code's dependency on the instruction not
-> changing the carry flag.
-
-One thing: I doubt it matters one measurable iota when it comes to
-locked operations.
-
-Furthermore:
-
--		     "decl %2	;\n"
-+		     _ASM_DECL "%2	;\n"
- 		     "jne 1b		;\n"
- 		     "adcl $0, %0	;\n"
-
-It looks to me that the carry flag is live across the dec there.  The
-other csum code look scary to me too.
-
-The rest of them look technically okay, but you're bloating them by two
-bytes (one byte in 64-bit mode) for every instance.  You may want to
-consider if any particular instance is more icache-critical than
-stall-critical.  This is probably more of a concern for inlines than for
-regular single-instance code like the string operations.
-
-	-hpa
+Hi Harald,
 
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+> On Thu, Aug 13, 2009 at 11:42:17AM -0700, Juerg Haefliger wrote:
+>> Jean,
+>>
+>> Harald seems to be to busy to answer emails. Can we push my driver upstream?
+>
+> Well, I am not too busy anymore.  A terrible number of weeks just behind me.
 
+Good to hear :-)
+
+
+> Sorry for the delays.
+>
+> I personally don't really care which driver is merged, just as long as one of
+> them ends up in mainline.
+
+
+Do you have any answers to my previous questions:
+
+1) My driver uses the CPUID instruction to read the performance
+registers that contain the temp and voltage data. Harald's driver
+reads MSRs. I don't know if there are any benefits of using one method
+over the other.
+
+2) If we pick Harald's, it would be nice if his driver can also read
+and export the CPU core voltage.
+
+3) Quite a few testers of my driver reported 0 temp readings for some
+C7 CPUs. I was never able to figure out why some CPUs return 0 temp
+but I'm guessing it depends on the thermal monitor settings. I'd like
+to understand what is going on and hope Harald can shed some light.
+
+
+...juerg
+
+
+> - Harald Welte <HaraldWelte@viatech.com>            http://linux.via.com.tw/
+> ============================================================================
+> VIA Free and Open Source Software Liaison
+>
