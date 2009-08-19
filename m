@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751556AbZHSKLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751550AbZHSKRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751556AbZHSKLn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 06:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbZHSKLm
+	id S1751550AbZHSKRl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 06:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbZHSKRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 06:11:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38095 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbZHSKLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 06:11:42 -0400
-Date: Wed, 19 Aug 2009 12:11:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH] Blackfin: Fix link errors with binutils 2.19 and GCC
-	4.3
-Message-ID: <20090819101132.GA27405@elte.hu>
-References: <20090818145801.GA32343@elte.hu> <8bd0f97a0908181447i66a8571fg152868c8ec4233b5@mail.gmail.com>
+	Wed, 19 Aug 2009 06:17:40 -0400
+Received: from mail-px0-f182.google.com ([209.85.216.182]:65256 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbZHSKRj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 06:17:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LftR7tbN5jY54BDqFFHW1NDT41aP0CjCzeXJjxGdMlnS8on3l7p2epqYX27vLfe3s6
+         JA/Fbz9ZtW63crvkWHyGlwGeHrHXjaBCVDBCEyKOWwfNQ2C9OPcqDousUqMhk8JkVP4a
+         vT1B2Q/CCjCYAbnO54XOn4cwiU8TS5oVlGA6M=
+Date: Wed, 19 Aug 2009 18:19:55 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Alek Du <alek.du@intel.com>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH] scripts: use non-builtin echo for '-e'
+Message-ID: <20090819101955.GC5057@cr0.nay.redhat.com>
+References: <20090819173854.2250758f@dxy.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0908181447i66a8571fg152868c8ec4233b5@mail.gmail.com>
+In-Reply-To: <20090819173854.2250758f@dxy.sh.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Frysinger <vapier.adi@gmail.com> wrote:
+Alek reported that on Ubuntu, where dash is used, 'echo -e'
+can't work, so let's use non-builtin echo in this case.
 
-> On Tue, Aug 18, 2009 at 10:58, Ingo Molnar wrote:
-> > Not sure whether this has been reported/fixed before.
-> >
-> > Today I built a Blackfin tool-chain from scratch for -tip testing,
-> > and it triggers:
-> >
-> >  arch/blackfin/kernel/vmlinux.lds:1238: undefined section `.data_a_l1' referenced in expression
-> >
-> > and:
-> >
-> >  arch/blackfin/kernel/vmlinux.lds:1238: undefined section `.text_data_l1'
-> > referenced in expression
-> >
-> > Now i dont have any way to test this linker script, but it now at
-> > least builds fine after fixing what appears to be typos in those
-> > assert statements.
-> 
-> they're def typos made when i copy & pasted earlier lines.  but 
-> binutils-2.17 apparently doesnt mind which is why i didnt notice.  
-> ive merged this into the Blackfin tree, thanks
+Reported-by: Alek Du <alek.du@intel.com>
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-yeah, i used binutils-2.19.1.
+---
+diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+index c29be8f..bace250 100644
+--- a/scripts/Kbuild.include
++++ b/scripts/Kbuild.include
+@@ -99,7 +99,7 @@ as-option = $(call try-run,\
+ # Usage: cflags-y += $(call as-instr,instr,option1,option2)
+ 
+ as-instr = $(call try-run,\
+-	echo -e "$(1)" | $(CC) $(KBUILD_AFLAGS) -c -xassembler -o "$$TMP" -,$(2),$(3))
++	/bin/echo -e "$(1)" | $(CC) $(KBUILD_AFLAGS) -c -xassembler -o "$$TMP" -,$(2),$(3))
+ 
+ # cc-option
+ # Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
+diff --git a/scripts/checkkconfigsymbols.sh b/scripts/checkkconfigsymbols.sh
+index 39677c8..46be3c5 100755
+--- a/scripts/checkkconfigsymbols.sh
++++ b/scripts/checkkconfigsymbols.sh
+@@ -9,7 +9,7 @@ paths="$@"
+ # Doing this once at the beginning saves a lot of time, on a cache-hot tree.
+ Kconfigs="`find . -name 'Kconfig' -o -name 'Kconfig*[^~]'`"
+ 
+-echo -e "File list \tundefined symbol used"
++/bin/echo -e "File list \tundefined symbol used"
+ find $paths -name '*.[chS]' -o -name 'Makefile' -o -name 'Makefile*[^~]'| while read i
+ do
+ 	# Output the bare Kconfig variable and the filename; the _MODULE part at
+@@ -54,6 +54,6 @@ while read symb files; do
+ 	# beyond the purpose of this script.
+ 	symb_bare=`echo $symb | sed -e 's/_MODULE//'`
+ 	if ! grep -q "\<$symb_bare\>" $Kconfigs; then
+-		echo -e "$files: \t$symb"
++		/bin/echo -e "$files: \t$symb"
+ 	fi
+ done|sort
 
-	Ingo
