@@ -1,19 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbZHSXZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbZHSXZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753694AbZHSXZN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZHSXZL
+	id S1753453AbZHSXZZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 19:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZHSXZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 19:25:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34216 "EHLO ogre.sisk.pl"
+	Wed, 19 Aug 2009 19:25:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34223 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753643AbZHSXZG convert rfc822-to-8bit (ORCPT
+	id S1753695AbZHSXZR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 19:25:06 -0400
+	Wed, 19 Aug 2009 19:25:17 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Daniel Mack" <daniel@caiaq.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "Roel Kluin" <roel.kluin@gmail.com>
+       "Bernhard Rosenkraenzer" <bero@arklinux.org>
 References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
 In-Reply-To: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <ADSuNT6McuD.A.fc.7NIjKB@chimera>
-Subject: [Bug #13947] Libertas: Association request to the driver failed
+Message-ID: <ADSuNT6McuD.A.K7H.uNIjKB@chimera>
+Subject: [Bug #14003] Infinite loop on bootup while handling DMAR
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed, 19 Aug 2009 22:26:58 +0200 (CEST)
+Date: Wed, 19 Aug 2009 22:27:00 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,12 +35,9 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13947
-Subject		: Libertas: Association request to the driver failed
-Submitter	: Daniel Mack <daniel@caiaq.de>
-Date		: 2009-08-07 19:11 (13 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=57921c312e8cef72ba35a4cfe870b376da0b1b87
-References	: http://marc.info/?l=linux-kernel&m=124967234311481&w=4
-Handled-By	: Roel Kluin <roel.kluin@gmail.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14003
+Subject		: Infinite loop on bootup while handling DMAR
+Submitter	: Bernhard Rosenkraenzer <bero@arklinux.org>
+Date		: 2009-08-18 14:54 (2 days old)
 
 
