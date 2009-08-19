@@ -1,237 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751478AbZHSJW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751514AbZHSJXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751478AbZHSJW5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 05:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbZHSJW5
+	id S1751514AbZHSJXD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 05:23:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZHSJXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 05:22:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60897 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbZHSJW4 (ORCPT
+	Wed, 19 Aug 2009 05:23:01 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33190 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbZHSJW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 05:22:56 -0400
-Message-Id: <20090819092023.980284148@chello.nl>
+	Wed, 19 Aug 2009 05:22:59 -0400
+Message-Id: <20090819092023.812428023@chello.nl>
 References: <20090819091823.916851355@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 19 Aug 2009 11:18:27 +0200
+Date: Wed, 19 Aug 2009 11:18:25 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       stephane eranian <eranian@googlemail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 4/4][RFC] perf_counter: Allow sharing of output channels
-Content-Disposition: inline; filename=perf-output-channel.patch
+Subject: [PATCH 2/4] perf_counter: powerpc: Support the anonymized kernel callchain bits
+Content-Disposition: inline; filename=perf-sekure-ppc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide the ability to configure a counter to send its output to
-another (already existing) counter's output stream.
+Adds support for anonymized kernel callchains to the powerpc callchain
+code.
 
-[ compile tested only ]
+This patch is not folded into the patch that introduces this feature
+because the powerpc callchain code isn't upstream yet, and this allows
+re-ordering the patches.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: stephane eranian <eranian@googlemail.com>
 ---
- include/linux/perf_counter.h |    5 ++
- kernel/perf_counter.c        |   83 +++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 85 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/perf_callchain.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Index: linux-2.6/include/linux/perf_counter.h
+Index: linux-2.6/arch/powerpc/kernel/perf_callchain.c
 ===================================================================
---- linux-2.6.orig/include/linux/perf_counter.h
-+++ linux-2.6/include/linux/perf_counter.h
-@@ -216,6 +216,7 @@ struct perf_counter_attr {
- #define PERF_COUNTER_IOC_REFRESH	_IO ('$', 2)
- #define PERF_COUNTER_IOC_RESET		_IO ('$', 3)
- #define PERF_COUNTER_IOC_PERIOD		_IOW('$', 4, u64)
-+#define PERF_COUNTER_IOC_SET_OUTPUT	_IO ('$', 5)
- 
- enum perf_counter_ioc_flags {
- 	PERF_IOC_FLAG_GROUP		= 1U << 0,
-@@ -415,6 +416,9 @@ enum perf_callchain_context {
- 	PERF_CONTEXT_MAX		= (__u64)-4095,
- };
- 
-+#define PERF_FLAG_FD_NO_GROUP	(1U << 0)
-+#define PERF_FLAG_FD_OUTPUT	(1U << 1)
-+
- #ifdef __KERNEL__
- /*
-  * Kernel-internal data types and definitions:
-@@ -536,6 +540,7 @@ struct perf_counter {
- 	struct list_head		sibling_list;
- 	int				nr_siblings;
- 	struct perf_counter		*group_leader;
-+	struct perf_counter		*output;
- 	const struct pmu		*pmu;
- 
- 	enum perf_counter_active_state	state;
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -1686,6 +1686,11 @@ static void free_counter(struct perf_cou
- 			atomic_dec(&nr_task_counters);
- 	}
- 
-+	if (counter->output) {
-+		fput(counter->output->filp);
-+		counter->output = NULL;
+--- linux-2.6.orig/arch/powerpc/kernel/perf_callchain.c
++++ linux-2.6/arch/powerpc/kernel/perf_callchain.c
+@@ -70,6 +70,11 @@ static void perf_callchain_kernel(struct
+ 	lr = regs->link;
+ 	sp = regs->gpr[1];
+ 	callchain_store(entry, PERF_CONTEXT_KERNEL);
++	next_ip = perf_paranoid_anon_ip();
++	if (next_ip) {
++		callchain_store(entry, next_ip);
++		return;
 +	}
-+
- 	if (counter->destroy)
- 		counter->destroy(counter);
+ 	callchain_store(entry, regs->nip);
  
-@@ -1971,6 +1976,8 @@ unlock:
- 	return ret;
- }
- 
-+int perf_counter_set_output(struct perf_counter *counter, int output_fd);
-+
- static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	struct perf_counter *counter = file->private_data;
-@@ -1994,6 +2001,9 @@ static long perf_ioctl(struct file *file
- 	case PERF_COUNTER_IOC_PERIOD:
- 		return perf_counter_period(counter, (u64 __user *)arg);
- 
-+	case PERF_COUNTER_IOC_SET_OUTPUT:
-+		return perf_counter_set_output(counter, arg);
-+
- 	default:
- 		return -ENOTTY;
- 	}
-@@ -2264,6 +2274,11 @@ static int perf_mmap(struct file *file, 
- 
- 	WARN_ON_ONCE(counter->ctx->parent_ctx);
- 	mutex_lock(&counter->mmap_mutex);
-+	if (counter->output) {
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
-+
- 	if (atomic_inc_not_zero(&counter->mmap_count)) {
- 		if (nr_pages != counter->data->nr_pages)
- 			ret = -EINVAL;
-@@ -2649,6 +2664,7 @@ static int perf_output_begin(struct perf
- 			     struct perf_counter *counter, unsigned int size,
- 			     int nmi, int sample)
- {
-+	struct perf_counter *output_counter;
- 	struct perf_mmap_data *data;
- 	unsigned int offset, head;
- 	int have_lost;
-@@ -2658,13 +2674,17 @@ static int perf_output_begin(struct perf
- 		u64			 lost;
- 	} lost_event;
- 
-+	rcu_read_lock();
- 	/*
- 	 * For inherited counters we send all the output towards the parent.
- 	 */
- 	if (counter->parent)
- 		counter = counter->parent;
- 
--	rcu_read_lock();
-+	output_counter = rcu_dereference(counter->output);
-+	if (output_counter)
-+		counter = output_counter;
-+
- 	data = rcu_dereference(counter->data);
- 	if (!data)
- 		goto out;
-@@ -4214,6 +4234,57 @@ err_size:
- 	goto out;
- }
- 
-+int perf_counter_set_output(struct perf_counter *counter, int output_fd)
-+{
-+	struct perf_counter *output_counter = NULL;
-+	struct file *output_file = NULL;
-+	struct perf_counter *old_output;
-+	int fput_needed = 0;
-+	int ret = -EINVAL;
-+
-+	if (!output_fd)
-+		goto set;
-+
-+	output_file = fget_light(output_fd, &fput_needed);
-+	if (!output_file)
-+		return -EBADF;
-+
-+	if (output_file->f_op != &perf_fops)
-+		goto out;
-+
-+	output_counter = output_file->private_data;
-+
-+	/* Don't chain output fds */
-+	if (output_counter->output)
-+		goto out;
-+
-+	/* Don't set an output fd when we already have an output channel */
-+	if (counter->data)
-+		goto out;
-+
-+	atomic_long_inc(&output_file->f_count);
-+
-+set:
-+	mutex_lock(&counter->mmap_mutex);
-+	old_output = counter->output;
-+	rcu_assign_pointer(counter->output, output_counter);
-+	mutex_unlock(&counter->mmap_mutex);
-+
-+	if (old_output) {
-+		/*
-+		 * we need to make sure no existing perf_output_*()
-+		 * is still referencing this counter.
-+		 */
-+		synchronize_rcu();
-+		fput(old_output->filp);
-+	}
-+
-+	ret = 0;
-+out:
-+	fput_light(output_file, fput_needed);
-+	return ret;
-+}
-+
- /**
-  * sys_perf_counter_open - open a performance counter, associate it to a task/cpu
-  *
-@@ -4236,7 +4307,7 @@ SYSCALL_DEFINE5(perf_counter_open,
- 	int ret;
- 
- 	/* for future expandability... */
--	if (flags)
-+	if (flags & ~(PERF_FLAG_FD_NO_GROUP | PERF_FLAG_FD_OUTPUT))
- 		return -EINVAL;
- 
- 	ret = perf_copy_attr(attr_uptr, &attr);
-@@ -4264,7 +4335,7 @@ SYSCALL_DEFINE5(perf_counter_open,
- 	 * Look up the group leader (we will attach this counter to it):
- 	 */
- 	group_leader = NULL;
--	if (group_fd != -1) {
-+	if (group_fd != -1 && !(flags & PERF_FLAG_FD_NO_GROUP)) {
- 		ret = -EINVAL;
- 		group_file = fget_light(group_fd, &fput_needed);
- 		if (!group_file)
-@@ -4306,6 +4377,12 @@ SYSCALL_DEFINE5(perf_counter_open,
- 	if (!counter_file)
- 		goto err_free_put_context;
- 
-+	if (flags & PERF_FLAG_FD_OUTPUT) {
-+		ret = perf_counter_set_output(counter, group_fd);
-+		if (ret)
-+			goto err_free_put_context;
-+	}
-+
- 	counter->filp = counter_file;
- 	WARN_ON_ONCE(ctx->parent_ctx);
- 	mutex_lock(&ctx->mutex);
+ 	if (!validate_sp(sp, current, STACK_FRAME_OVERHEAD))
 
 -- 
 
