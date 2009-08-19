@@ -1,93 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZHSPyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752826AbZHSP64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbZHSPyG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 11:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZHSPyF
+	id S1752826AbZHSP64 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 11:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZHSP64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 11:54:05 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:60556 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbZHSPyD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 11:54:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=AUW280VOl1Ls4NEjuNU+eLBz7fnfMQm6uHwuH9yX30vJCvKkza02Y1bwt6xcRqtu5H
-         MT6anZQD4OZ3QJVCdG7UyV/dC1ccV2Xn1HGEqtVyRlpn46S6Fx+q54aw8IGiC6w9U6q2
-         9haxj3ROTi1zTAetns641qed4zzEWgxhe891Q=
-Message-ID: <4A8C2012.6090809@gmail.com>
-Date: Thu, 20 Aug 2009 00:53:54 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Wed, 19 Aug 2009 11:58:56 -0400
+Received: from www.tglx.de ([62.245.132.106]:50155 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752135AbZHSP6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 11:58:55 -0400
+Date: Wed, 19 Aug 2009 17:57:55 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH v2 10/10] x86/apic: Early setup IOAPIC for APB timer
+In-Reply-To: <43F901BD926A4E43B106BF17856F0755643EBDFC@orsmsx508.amr.corp.intel.com>
+Message-ID: <alpine.LFD.2.00.0908191753040.3361@localhost.localdomain>
+References: <43F901BD926A4E43B106BF17856F0755643EBDFC@orsmsx508.amr.corp.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Mark Lord <liml@rtr.ca>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] libata: use single threaded work queue
-References: <20090819112554.GY12579@kernel.dk>	<4A8BE932.5090300@garzik.org>	<20090819120458.GZ12579@kernel.dk>	<4A8BECC2.2060607@rtr.ca>	<20090819122320.GA12579@kernel.dk>	<4A8BFC79.1000004@garzik.org>	<4A8BFDE2.1010904@garzik.org>	<4A8C0820.8060200@gmail.com> <20090819162147.16aeb2db@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090819162147.16aeb2db@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Alan.
 
-Alan Cox wrote:
-> Somewhat simpler for the general case would be to implement
 
-Yeah, it would be great if there's a much simpler solution.  Latency
-based one could be a good compromise.
+On Thu, 16 Jul 2009, Pan, Jacob jun wrote:
 
-> create_workqueue(min_threads,max_threads, max_thread_idle_time);
-> queue_work_within();
+> >From ba824feed1fc5aa5029f6506b0d54145b949d48d Mon Sep 17 00:00:00 2001
+> From: Jacob Pan <jacob.jun.pan@intel.com>
+> Date: Wed, 15 Jul 2009 11:30:40 -0700
+> Subject: [PATCH] x86/apic: Early setup IOAPIC for APB timer
 > 
-> at which point you can queue work to the workqueue but with a per
-> workqueue timing running so you know when you might need to create a new
-> thread if the current work hasn't finished. Idle threads would then sleep
-> and either expire or pick up new work - so that under load we don't keep
-> destructing threads.
+> Intel Moorestown platform uses APB system timers which rely
+> on IOAPIC to deliver its interrupts. Early setup the APIC
+> system is necessary to allow timer interrupts.
+> 
+> Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+> ---
+>  arch/x86/include/asm/apic.h    |    1 +
+>  arch/x86/kernel/apic/io_apic.c |   68 ++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 69 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+> index bb7d479..a74cb30 100644
+> --- a/arch/x86/include/asm/apic.h
+> +++ b/arch/x86/include/asm/apic.h
+> @@ -87,6 +87,7 @@ extern void xapic_wait_icr_idle(void);
+>  extern u32 safe_xapic_wait_icr_idle(void);
+>  extern void xapic_icr_write(u32, u32);
+>  extern int setup_profiling_timer(unsigned int);
+> +extern void pre_init_apic_IRQ(void);
+>  
+>  static inline void native_apic_mem_write(u32 reg, u32 v)
+>  {
+> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+> index 645c8eb..9bcbfa3 100644
+> --- a/arch/x86/kernel/apic/io_apic.c
+> +++ b/arch/x86/kernel/apic/io_apic.c
+> @@ -36,6 +36,7 @@
+>  #include <linux/freezer.h>
+>  #include <linux/kthread.h>
+>  #include <linux/jiffies.h>	/* time_after() */
+> +#include <linux/sfi.h>
+>  #ifdef CONFIG_ACPI
+>  #include <acpi/acpi_bus.h>
+>  #endif
+> @@ -63,6 +64,7 @@
+>  #include <asm/uv/uv_hub.h>
+>  #include <asm/uv/uv_irq.h>
+>  #include <asm/platform_feature.h>
+> +#include <asm/apb_timer.h>
+>  #include <asm/apic.h>
+>  
+>  #define __apicdebuginit(type) static type __init
+> @@ -2884,6 +2886,13 @@ static inline void __init check_timer(void)
+>  
+>  	local_irq_save(flags);
+>  
+> +	if (platform_has(X86_PLATFORM_FEATURE_APBT)) {
+> +		if (timer_irq_works()) {
+> +			printk(KERN_INFO "APB timer works\n");
+> +			return;
 
-Are work threads per workqueue?  Combined with per-cpu binding,
-dynamic thread pool per workqueue can get quite messy.  All three
-factors end up getting multiplied - ie. #cpus * pool_size which can be
-enlarged by the same work hopping around * #workqueues.
+  What restores interrupt flags ?
 
-> That might need a single thread (for the system) that does nothing but
-> create workqueue threads to order. It could manage the "next workqueue
-> deadline" timer and thread creation.
+> +		} else
+> +			panic("Check APB timer failed\n");
+> +	}
+>  	/*
+>  	 * get/set the timer IRQ vector:
+>  	 */
+> @@ -4225,3 +4234,62 @@ static int __init ioapic_insert_resources(void)
+>  /* Insert the IO APIC resources after PCI initialization has occured to handle
+>   * IO APICS that are mapped in on a BAR in PCI space. */
+>  late_initcall(ioapic_insert_resources);
+> +
+> +/* Enable IOAPIC early just for system timer */
+> +void __init pre_init_apic_IRQ(void)
+> +{
+> +	struct irq_cfg *cfg;
+> +
+> +	printk(KERN_INFO "Early APIC setup for system timer\n");
+> +#ifndef CONFIG_SMP
+> +	phys_cpu_present_map = physid_mask_of_physid(boot_cpu_physical_apicid);
+> +#endif
+> +	setup_local_APIC();
+> +	cfg = irq_cfg(0);
+> +	add_pin_to_irq_node(cfg, 0, 0, 0);
+> +	setup_timer_IRQ0_pin(0, 0, cfg->vector);
+> +}
+> +
+> +#ifdef CONFIG_APB_TIMER
+> +int arch_setup_apbt_irqs(int irq, int trigger, int mask, int cpu)
+> +{
 
-Another problem is that if we apply this to the existing default
-workqueue which is used by many different supposed-to-be-short works
-in essentially batch mode, we might end up enlarging cache footprint
-by scheduling unnecessarily many threads, which, in tight situations,
-might show up as small but noticeable performance regression.
+  This looks wrong. It's conflicting with the generic affinity
+  setting. I need to have a closer look to figure out the details.
 
-> The threads would then pick up their work queue work. There is an
-> intrinsic race where if we are just on the limit we might create a
-> thread just as there is no work to be done - but it would be rare
-> and would just then go away.
+Thanks,
 
-Agreed.  As long as the pool size is reduced gradually maybe with some
-buffer, I don't think this would be an issue.
+	tglx
 
-> I see no point tring to fix ata when applying sanity to the workqueue
-> logic would sort a lot of other cases out nicely.
-
-About the same problem exists for in-kernel media presence polling.
-Currently, I'm thinking about creating a worker thread per any device
-which requires polling.  It isn't too bad but it would still be far
-better if I can just schedule a work and don't have to worry about
-managing concurrency.
-
-Thanks.
-
--- 
-tejun
