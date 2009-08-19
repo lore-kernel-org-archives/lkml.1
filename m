@@ -1,205 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbZHSSpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZHSSqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753025AbZHSSpJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZHSSpI
+	id S1753019AbZHSSqm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZHSSql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:45:08 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:35356 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbZHSSpE (ORCPT
+	Wed, 19 Aug 2009 14:46:41 -0400
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:49413 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752486AbZHSSql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:45:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=HUXFCNnOTSQAfoXhEuTP3bnOeKX23EMdZivH7fijrvKDT9AOW+4LCbkE1nVlA1mbAU
-         phlJNg7sOlX6Ot458+1kEpAqelpigoRg2Bvk7wPePA9mymiURqgxnrAFqW8U/f4R77Be
-         BvLZpls8V0yaWagPnABvMSwUHELK9bVGt3Yeg=
-Message-ID: <4A8C46FF.1070107@gmail.com>
-Date: Wed, 19 Aug 2009 14:39:59 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Wed, 19 Aug 2009 14:46:41 -0400
+X-Loopcount0: from 10.9.160.253
+Message-ID: <4A8C48BA.1000009@dell.com>
+Date: Wed, 19 Aug 2009 13:47:22 -0500
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090804)
 MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Anthony Liguori <anthony@codemonkey.ws>, kvm@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       Joel Becker <joel.becker@oracle.com>
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net>	 <20090814154308.26116.46980.stgit@dev.haskins.net>	 <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com>	 <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com>	 <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com>	 <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com>	 <4A8AD678.7050609@redhat.com> <4A8B9B79.9050004@gmail.com>	 <4A8BA5AE.3030308@redhat.com> <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
-X-Enigmail-Version: 0.96.0
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: cezary.jackiewicz@gmail.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
+References: <1250706969-10382-1-git-send-email-Mario_Limonciello@Dell.com> <1250707376.8073.4.camel@johannes.local>
+In-Reply-To: <1250707376.8073.4.camel@johannes.local>
+X-Enigmail-Version: 0.95.7
 Content-Type: multipart/signed; micalg=pgp-sha1;
  protocol="application/pgp-signature";
- boundary="------------enig1EC63A1CC4E8B5D19A0BDEE6"
+ boundary="------------enigB6BB6021364367E83410BC28"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig1EC63A1CC4E8B5D19A0BDEE6
+--------------enigB6BB6021364367E83410BC28
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Hi Nicholas
+Johannes:
 
-Nicholas A. Bellinger wrote:
-> On Wed, 2009-08-19 at 10:11 +0300, Avi Kivity wrote:
->> On 08/19/2009 09:28 AM, Gregory Haskins wrote:
->>> Avi Kivity wrote:
->=20
-> <SNIP>
->=20
->>> Basically, what it comes down to is both vbus and vhost need
->>> configuration/management.  Vbus does it with sysfs/configfs, and vhos=
-t
->>> does it with ioctls.  I ultimately decided to go with sysfs/configfs
->>> because, at least that the time I looked, it seemed like the "blessed=
-"
->>> way to do user->kernel interfaces.
->>>   =20
->> I really dislike that trend but that's an unrelated discussion.
->>
->>>> They need to be connected to the real world somehow.  What about
->>>> security?  can any user create a container and devices and link them=
- to
->>>> real interfaces?  If not, do you need to run the VM as root?
->>>>     =20
->>> Today it has to be root as a result of weak mode support in configfs,=
- so
->>> you have me there.  I am looking for help patching this limitation, t=
-hough.
->>>
->>>   =20
->> Well, do you plan to address this before submission for inclusion?
->>
->=20
-> Greetings Avi and Co,
->=20
-> I have been following this thread, and although I cannot say that I am
-> intimately fimilar with all of the virtualization considerations
-> involved to really add anything use to that side of the discussion, I
-> think you guys are doing a good job of explaining the technical issues
-> for the non virtualization wizards following this thread.  :-)
->=20
-> Anyways, I was wondering if you might be interesting in sharing your
-> concerns wrt to configfs (conigfs maintainer CC'ed), at some point..?
-
-So for those tuning in, the reference here is the use of configfs for
-the management of this component of AlacrityVM, called "virtual-bus"
-
-http://developer.novell.com/wiki/index.php/Virtual-bus
-
-> As you may recall, I have been using configfs extensively for the 3.x
-> generic target core infrastructure and iSCSI fabric modules living in
-> lio-core-2.6.git/drivers/target/target_core_configfs.c and
-> lio-core-2.6.git/drivers/lio-core/iscsi_target_config.c, and have found=
-
-> it to be extraordinarly useful for the purposes of a implementing a
-> complex kernel level target mode stack that is expected to manage
-> massive amounts of metadata, allow for real-time configuration, share
-> data structures (eg: SCSI Target Ports) between other kernel fabric
-> modules and manage the entire set of fabrics using only intrepetered
-> userspace code.
-
-I concur.  Configfs provided me a very natural model to express
-resource-containers and their respective virtual-device objects.
-
->=20
-> Using the 10000 1:1 mapped TCM Virtual HBA+FILEIO LUNs <-> iSCSI Target=
-
-> Endpoints inside of a KVM Guest (from the results in May posted with
-> IOMMU aware 10 Gb on modern Nahelem hardware, see
-> http://linux-iscsi.org/index.php/KVM-LIO-Target), we have been able to
-> dump the entire running target fabric configfs hierarchy to a single
-> struct file on a KVM Guest root device using python code on the order o=
-f
-> ~30 seconds for those 10000 active iSCSI endpoints.  In configfs terms,=
-
-> this means:
->=20
-> *) 7 configfs groups (directories), ~50 configfs attributes (files) per=
-
-> Virtual HBA+FILEIO LUN
-> *) 15 configfs groups (directories), ~60 configfs attributes (files per=
-
-> iSCSI fabric Endpoint
->=20
-> Which comes out to a total of ~220000 groups and ~1100000 attributes
-> active configfs objects living in the configfs_dir_cache that are being=
-
-> dumped inside of the single KVM guest instances, including symlinks
-> between the fabric modules to establish the SCSI ports containing
-> complete set of SPC-4 and RFC-3720 features, et al.
->=20
-> Also on the kernel <-> user API interaction compatibility side, I have
-> found the 3.x configfs enabled code adventagous over the LIO 2.9 code
-> (that used an ioctl for everything) because it allows us to do backward=
-s
-> compat for future versions without using any userspace C code, which in=
-
-> IMHO makes maintaining userspace packages for complex kernel stacks wit=
-h
-> massive amounts of metadata + real-time configuration considerations.
-> No longer having ioctl compatibility issues between LIO versions as the=
-
-> structures passed via ioctl change, and being able to do backwards
-> compat with small amounts of interpreted code against configfs layout
-> changes makes maintaining the kernel <-> user API really have made this=
-
-> that much easier for me.
->=20
-> Anyways, I though these might be useful to the discussion as it releate=
-s
-> to potental uses of configfs on the KVM Host or other projects that
-> really make sense, and/or to improve the upstream implementation so tha=
-t
-> other users (like myself) can benefit from improvements to configfs.
->=20
-> Many thanks for your most valuable of time,
-
-Thank you for the explanation of your setup.
-
-Configfs mostly works for the vbus project "as is".  As Avi pointed out,
-I currently have a limitation w.r.t. perms.  Forgive me if what I am
-about to say is overly simplistic.  Its been quite a few months since I
-worked on the configfs portion of the code, so my details may be fuzzy.
-
-What it boiled down to is I need is a way to better manage perms (and to
-be able to do it cross sysfs and configfs would be ideal).
-
-For instance, I would like to be able to assign groups to configfs
-directories, like /config/vbus/devices, such that
-
-mkdir /config/vbus/devices/foo
-
-would not require root if that GID was permitted.
-
-Are there ways to do this (now, or in upcoming releases)?  If not, I may
-be interested in helping to add this feature, so please advise how best
-to achieve this.
-
-Kind Regards,
--Greg
+Johannes Berg wrote:
+> On Wed, 2009-08-19 at 13:36 -0500, Mario Limonciello wrote:
+>  =20
+>
+>  =20
+>
+> Isn't that missing sysfs_remove_group()?
+>
+> johannes
+>  =20
+The third patch in the (updated) series is dropping the sysfs bits, so
+sysfs_remove_group is removed there.
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
 
 
---------------enig1EC63A1CC4E8B5D19A0BDEE6
+--------------enigB6BB6021364367E83410BC28
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iEYEARECAAYFAkqMRv8ACgkQP5K2CMvXmqHeRQCeJY81bGWt1LtAHKIiJHQKxZGP
-nmkAnjDHQkMKWDFt6L/C1SotbO4x4Ozr
-=fraX
+iEYEARECAAYFAkqMSLoACgkQ2CrZjkA73YsU6QCgkOtaczvK4YUYRZ0wVPIDa3nu
+Ph4An0md7zA/kWObwbWk6od0dTAn9cDJ
+=yUa8
 -----END PGP SIGNATURE-----
 
---------------enig1EC63A1CC4E8B5D19A0BDEE6--
+--------------enigB6BB6021364367E83410BC28--
