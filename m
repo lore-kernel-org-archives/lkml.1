@@ -1,103 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752216AbZHSNuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752061AbZHSNyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752216AbZHSNuR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZHSNuQ
+	id S1752061AbZHSNyB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:54:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZHSNyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:50:16 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:58718 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752029AbZHSNuO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:50:14 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsgEAK+bi0pMRdTz/2dsb2JhbACBUtVdgjOBZwU
-Date: Wed, 19 Aug 2009 09:50:12 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Josh Stone <jistone@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, jiayingz@google.com,
-       mbligh@google.com, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH] tracing: Create generic syscall TRACE_EVENTs
-Message-ID: <20090819135011.GA8674@Krystal>
-References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250634359-31642-1-git-send-email-jistone@redhat.com> <4A8B5624.9040607@cn.fujitsu.com> <4A8B6C01.1060503@redhat.com> <20090819130517.GB14215@elte.hu>
-Mime-Version: 1.0
+	Wed, 19 Aug 2009 09:54:00 -0400
+Received: from kroah.org ([198.145.64.141]:55430 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751652AbZHSNyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:54:00 -0400
+Date: Wed, 19 Aug 2009 06:52:39 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: linux-next: usb tree build failure
+Message-ID: <20090819135239.GB30892@kroah.com>
+References: <20090819183402.77be5c3b.sfr@canb.auug.org.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090819130517.GB14215@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 09:45:53 up 1 day, 35 min,  2 users,  load average: 0.10, 0.36,
-	0.32
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090819183402.77be5c3b.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+On Wed, Aug 19, 2009 at 06:34:02PM +1000, Stephen Rothwell wrote:
+> Hi Greg,
 > 
-> * Josh Stone <jistone@redhat.com> wrote:
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
 > 
-> > On 08/18/2009 06:32 PM, Li Zefan wrote:
-> > > It would be much better to see a sample output of these TRACE_EVENTs,
-> > > so we'll see the what's the output if a syscall has less than 6 args.
-> > > 
-> > > And I guess it should be "(%lx, %lx, ..., %lx)"? Otherwise I think we'll
-> > > see some negative values.
-> > 
-> > Thanks, you're right -- the args should be unsigned long.  Whether they
-> > are hex or decimal doesn't matter to me, but I guess that does make
-> > pointers easier to spot.
-> > 
-> > Here's some output that I get on x86_64:
-> > 
-> > > # tail trace
-> > >             tail-1106  [000] 113218.474657: syscall_enter: NR 2 (7f2d34dd38f0, 0, 7f2d35009010, 5, 4, ffffffffffffffb0)
-> > > 
-> > >             tail-1106  [000] 113218.474809: syscall_enter: NR 5 (3, 7f2d35009040, 7f2d35009040, 5, 4, ffffffffffffffb0)
-> > > 
-> > >             tail-1106  [000] 113218.474855: syscall_enter: NR 9 (0, 50d3ad0, 1, 2, 3, 0)
-> > > 
-> > >             tail-1106  [000] 113218.474946: syscall_enter: NR 3 (3, 7f2d2f9a0000, 5e22, 2, 3, 0)
-> > > 
-> > >             tail-1106  [000] 113218.475673: syscall_enter: NR 2 (7fff5e42a654, 0, 0, 7fff5e429600, 80, 3)
-> > 
-> > It's very raw indeed, but that's what Ingo asked for. :) The 
-> > extra args show up as whatever happened to be in those registers.
+> arch/x86/built-in.o: In function `setup_early_printk':
+> early_printk.c:(.init.text+0x159de): undefined reference to `early_dbgp_init'
+> early_printk.c:(.init.text+0x159f9): undefined reference to `early_dbgp_console'
 > 
-> If the syscalls are handled as a single tracepoint, then they 
-> cannot really have per syscall properties.
+> Caused by commit 77f162cc16ff4bff1adefe47dbe48ab6b2d9247b ("USB: ehci
+> early_printk: split ehci debug driver from early_printk.c").
 > 
-> The per syscall tracepoints on the other hand give very finegrained 
-> information.
-> 
+> I have reverted that commit for today (along with commits
+> 37e541af790703d66ba88cf3a71b5ae97654b753 ("USB: early_printk: insert cr
+> prior to nl as needed"), 71c0553ae63d2738a126d4f5b37730dfaa7a2fd7 ("USB:
+> ehci-dbgp: Execute early BIOS hand off"),
+> 3f038d06f259fd02142aaaaa47addfb4934d4faa ("USB: early_printk: EHCI debug
+> controller initialization delays") and
+> f6ee359e79de27b46213f8b5293251a26bc22b1e ("USB: ehci-dbgp: stability
+> improvements and external re-init") that depended on it).
 
-Hi Ingo,
+Ick.  Jason, what happened here?  It builds on i386 :)
 
-Aiming to identify the event payload type with the event ID alone, I
-would recommend either:
+thanks,
 
-- one tracepoint per syscall argument set types (e.g. same syscall
-  prototype)
-or
-- one tracepoint per syscall (seems to be more straightforward)
-
-Otherwise getting to fit a struct sockaddr into an integer might be
-cumbersome.
-
-Thanks,
-
-Mathieu
-
-> Note that via the use of filters one can limit the generic 
-> tracepoint to only output certain syscall NRs, and only with 
-> certain parameters.
-> 
-> 	Ingo
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+greg k-h
