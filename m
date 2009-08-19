@@ -1,98 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbZHSOoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbZHSOxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752486AbZHSOoR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 10:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbZHSOoQ
+	id S1752484AbZHSOxB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 10:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZHSOxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 10:44:16 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:45040 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbZHSOoP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 10:44:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=cmn4CPmgpSZTs8SgrngRBVmdUlSS1O39b9o7RAdyOCz3yHsv3ft1AjZvXqAJ04u8cM
-         E7aAFSDukyrxPmNsYnrM8SanBGaNFPURUsizJ+fTo5UYpBfBCsf81getYH3yTXZhnFDc
-         CeeRLtziB8k0O6mwiaVASY5f1OqY6SiOsA8PU=
-Message-ID: <4A8C0FBA.50502@tuffmail.co.uk>
-Date: Wed, 19 Aug 2009 15:44:10 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 19 Aug 2009 10:53:00 -0400
+Received: from www.tglx.de ([62.245.132.106]:52084 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751654AbZHSOxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 10:53:00 -0400
+Date: Wed, 19 Aug 2009 16:51:57 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH v2 3/10] x86: introduce a set of platform feature flags
+In-Reply-To: <43F901BD926A4E43B106BF17856F0755643EBDF5@orsmsx508.amr.corp.intel.com>
+Message-ID: <alpine.LFD.2.00.0908191641120.3361@localhost.localdomain>
+References: <43F901BD926A4E43B106BF17856F0755643EBDF5@orsmsx508.amr.corp.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: marcel@holtmann.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: [PATCH 6/5] dell-laptop: remove duplicate Kconfig entry under drivers/misc
-References: <4A8C0623.8030808@tuffmail.co.uk> <1250690811-21203-5-git-send-email-alan-jenkins@tuffmail.co.uk> <20090819141322.GA15937@srcf.ucam.org>
-In-Reply-To: <20090819141322.GA15937@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> On Wed, Aug 19, 2009 at 03:06:51PM +0100, Alan Jenkins wrote:
->   
->> This is controlled by a hardware switch, so we should poll it in order
->> to pick up changes.  (There does not appear to be an interrupt or any
->> other notification mechanism).
->>     
->
-> With the exception of this one they all look fine - I'm moving house 
-> next week and won't have access to any Dell hardware for over a month, 
-> so if anyone else could confirm that these work that would be excellent.
->
->   
+Jacob,
 
-Ok, thanks!
+On Thu, 16 Jul 2009, Pan, Jacob jun wrote:
 
-Here's something else I just noticed.  I was able to test this one myself.
+> >From 697d29ca621fffa63bc0bac022861f582d1905a6 Mon Sep 17 00:00:00 2001
+> From: Jacob Pan <jacob.jun.pan@intel.com>
+> Date: Thu, 11 Jun 2009 09:37:26 -0700
+> Subject: [PATCH] x86: introduce a set of platform feature flags
+> 
+> This patch introduces a set of x86 pc platform feature flags. the intention is
+> to clean up setup code based on the availability of patform features.
 
-----------------------------------------------------------------------
->From 7efa12d3ea8bb70897358b4a87f8dedce9b78cca Mon Sep 17 00:00:00 2001
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Date: Wed, 19 Aug 2009 15:32:17 +0100
-Subject: [PATCH] dell-laptop: remove duplicate Kconfig entry under drivers/misc
-
-This showed up as an unselectable option when using xconfig and
-searching for "dell".  It must been overlooked when dell-laptop
-was moved to drivers/platform/x86.
-
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
----
- drivers/misc/Kconfig |   13 -------------
- 1 files changed, 0 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 68ab39d..22414c5 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -210,19 +210,6 @@ config SGI_GRU_DEBUG
- 	This option enables addition debugging code for the SGI GRU driver. If
- 	you are unsure, say N.
+Hmm, if it would be used to cleanup the setup code, fine. But as I can
+see in the later patches it just adds lots of conditionals based on
+that feature flags.
  
--config DELL_LAPTOP
--	tristate "Dell Laptop Extras (EXPERIMENTAL)"
--	depends on X86
--	depends on DCDBAS
--	depends on EXPERIMENTAL
--	depends on BACKLIGHT_CLASS_DEVICE
--	depends on RFKILL
--	depends on POWER_SUPPLY
--	default n
--	---help---
--	This driver adds support for rfkill and backlight control to Dell
--	laptops.
--
- config ISL29003
- 	tristate "Intersil ISL29003 ambient light sensor"
- 	depends on I2C && SYSFS
--- 
-1.6.3.2
+> +#ifndef _ASM_X86_PLATFORM_FEATURE_H
+> +#define _ASM_X86_PLATFORM_FEATURE_H
+> +
+> +#ifndef __ASSEMBLY__
+> +#include <linux/bitops.h>
+> +#endif
+> +#include <asm/required-features.h>
 
+Why does this header require asm/required-features.h ?
 
+> diff --git a/arch/x86/kernel/mkx86pcflags.pl b/arch/x86/kernel/mkx86pcflags.pl
+> new file mode 100644
+> index 0000000..19c13aa
+> --- /dev/null
+> +++ b/arch/x86/kernel/mkx86pcflags.pl
+> @@ -0,0 +1,32 @@
+> +#!/usr/bin/perl
+> +#
+> +# Generate the x86_platform_available_feature[] array from arch/x86/include/asm/platform_feature.h
 
+  What's the purpose of this ? Creating an array of strings ?
+
+> +static ssize_t
+> +sysfs_show_available_platform_feature(struct sys_device *dev,
+> +				struct sysdev_attribute *attr, char *buf)
+> +{
+> +	ssize_t count = 0;
+> +	int i;
+> +
+> +	for (i = 0; i < 32*N_PLATFORM_CAPINTS; i++) {
+> +		if (x86_platform_available_feature[i] != NULL) {
+> +			count += snprintf(buf + count,
+> +					max((ssize_t)PAGE_SIZE - count,
+> +						(ssize_t)0), "%s ",
+> +				x86_platform_available_feature[i]);
+> +		}
+> +	}
+
+Is this really worth an extra sysfs machinery ?  IMO it's sufficient
+to printk the hex value of the set feature bits once during boot.
+
+> +/*
+> + * Initialize a set of default feature flags based on subarch IDs
+> + * Currently, only MRST platform has non-X86 PC standard feature set.
+> + */
+> +void platform_feature_init_default(void)
+> +{
+> +	int subarch_id = boot_params.hdr.hardware_subarch;
+> +
+> +	if ((subarch_id >= 0) && (subarch_id < N_X86_SUBARCHS)) {
+> +		if (subarch_id == X86_SUBARCH_MRST) {
+> +			setup_mrst_default_feature();
+> +			return;
+> +		}
+> +	} else {
+> +		printk(KERN_INFO "Use default X86 platform feature set\n");
+> +	}
+> +	/* platforms such as Moorestown and paravirt should be filtered out */
+> +	if (platform_has(X86_PLATFORM_FEATURE_BIOS))
+> +		x86_quirks->reserve_ebda_region = reserve_ebda_region;
+
+I don't like that at all. We do not want tons of places where we init
+parts of the setup depending on different platforms. platform setup
+has to be done in a platform file and there we override quirks or
+platform functions. Not on some random place.
+
+Thanks,
+
+	tglx
