@@ -1,86 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbZHSSWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbZHSSXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752386AbZHSSWb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZHSSWa
+	id S1752506AbZHSSXs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZHSSXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:22:30 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:17706 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751432AbZHSSW3 (ORCPT
+	Wed, 19 Aug 2009 14:23:48 -0400
+Received: from n17.bullet.mail.mud.yahoo.com ([68.142.206.144]:25434 "HELO
+	n17.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751342AbZHSSXr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:22:29 -0400
-Message-ID: <4A8C4348.7030601@sdgsystems.com>
-Date: Wed, 19 Aug 2009 14:24:08 -0400
-From: "Aric D. Blumer" <aric@sdgsystems.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Eric Miao <eric.y.miao@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mike Rapoport <mike@compulab.co.il>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: linux-next: usb/pxa trees build failure
-References: <20090818135852.0b3b648d.sfr@canb.auug.org.au> <20090818114242.GA28534@kroah.com> <4A8AB525.7050404@gmail.com> <20090818145800.GB6074@kroah.com> <4A8B64DE.6000506@gmail.com> <20090819172223.GA4398@kroah.com>
-In-Reply-To: <20090819172223.GA4398@kroah.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Aug 2009 14:23:47 -0400
+X-Yahoo-Newman-Id: 120521.41069.bm@omp423.mail.mud.yahoo.com
+X-YMail-OSG: oisQsfQVM1lmIUlY7IVOwpMgkifZZ4T5PgC2nM32FJXT.IRolSGWMGyHA5TPUzT_Ptf.8GTE.2xE5CRT5fLwoMnJl.fEaosyI9FPfGtaB346SwR4tsT9akEA039RScW9qmXcsw9CrmMfn.Om9B9SCoWXcI1BVMahp3QGbamjxLm9F9yTe4zGGkWF13lz8CgVjgHwGvFcbkWFIYW79KslhPNWWZRVpiiNp2iiZdeJean.2ja.jz43H9lC7hI3nOAScbiz0nwhKW9sYU1NoydnfHSzOzPib6Fyt_pd8Oow2PGGsqcIFu_axvX13GXG3lwezz967fuK
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
+	vbus_driver objects
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Avi Kivity <avi@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
+       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>,
+       Joel Becker <joel.becker@oracle.com>
+In-Reply-To: <4A8BA5AE.3030308@redhat.com>
+References: <20090814154125.26116.70709.stgit@dev.haskins.net>
+	 <20090814154308.26116.46980.stgit@dev.haskins.net>
+	 <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com>
+	 <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com>
+	 <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com>
+	 <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com>
+	 <4A8AD678.7050609@redhat.com> <4A8B9B79.9050004@gmail.com>
+	 <4A8BA5AE.3030308@redhat.com>
+Content-Type: text/plain
+Date: Wed, 19 Aug 2009 11:23:47 -0700
+Message-Id: <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Aug 19, 2009 at 10:35:10AM +0800, Eric Miao wrote:
->   
->> Greg KH wrote:
->>     
->>> On Tue, Aug 18, 2009 at 10:05:25PM +0800, Eric Miao wrote:
->>>       
->>>> Greg KH wrote:
->>>>         
->>>>> On Tue, Aug 18, 2009 at 01:58:52PM +1000, Stephen Rothwell wrote:
->>>>>           
->>>>>> Hi Eric, Greg,
->>>>>>
->>>>>> The next-20090817 (and a few before) build (arm trizeps4_defconfig)
->>>>>> failed like this:
->>>>>>
->>>>>> drivers/usb/host/ohci-pxa27x.c:507: error: 'pdev' undeclared (first use in this function)
->>>>>>
->>>>>> Caused by the interaction of commit
->>>>>> 6458baec17e19d38b9d4eb1f96c213f91609c0e3 ("USB: ohci-pxa27x: Reconfigure
->>>>>> power settings on resume") from the usb tree with commit
->>>>>> b8fb7d4317bcea1b48c9560d23dff81121870ece ("[ARM] pxa: update
->>>>>> ohci-pxa27x.c to use 'struct dev_pm_ops'"). from the pxa tree.
->>>>>>
->>>>>> Greg/Aric, maybe that usb tree patch needs to go through the pxa tree?
->>>>>> (and maybe "USB: ohci-pxa27x: Allow NOCP and OCPM to be cleared" as well?)
->>>>>>
->>>>>> [this also broke the following configs: magician_defconfig,
->>>>>> em_x270_defconfig and cm_x2xx_defconfig.]
->>>>>>             
->>>>> Ick, not good.  Aric, should I drop this patch from my tree?
->>>>>
->>>>>           
->>>> I think so, might be better to go through the pxa tree so that I can give
->>>> another review. (the fiber across the pacific seems to be broken again, so
->>>> I have to look into this tomorrow, still fetching -next, sigh).
->>>>         
->>> Ok, let me know if you want me to drop these patches from my tree.
->>>
->>>       
->> OK, so the problem is 'pdev' is no longer part of the dev_pm_ops, ('dev' is used
->> instead), and the 'inf' pointer can just be referenced from 'dev->platform_data',
->> so the fix is actually trivial, but it does have dependency issue.
->>
->> Greg,
->>
->> It looks to me would be better if this goes the pxa tree, and I'll send out the
->> updated patch of 6458baec later.
->>     
->
-> Ok, should I drop just this one patch from my tree, or any others as
-> well
+On Wed, 2009-08-19 at 10:11 +0300, Avi Kivity wrote:
+> On 08/19/2009 09:28 AM, Gregory Haskins wrote:
+> > Avi Kivity wrote:
 
-It is an isolated patch, so dropping it alone should be fine.
+<SNIP>
+
+> > Basically, what it comes down to is both vbus and vhost need
+> > configuration/management.  Vbus does it with sysfs/configfs, and vhost
+> > does it with ioctls.  I ultimately decided to go with sysfs/configfs
+> > because, at least that the time I looked, it seemed like the "blessed"
+> > way to do user->kernel interfaces.
+> >    
+> 
+> I really dislike that trend but that's an unrelated discussion.
+> 
+> >> They need to be connected to the real world somehow.  What about
+> >> security?  can any user create a container and devices and link them to
+> >> real interfaces?  If not, do you need to run the VM as root?
+> >>      
+> > Today it has to be root as a result of weak mode support in configfs, so
+> > you have me there.  I am looking for help patching this limitation, though.
+> >
+> >    
+> 
+> Well, do you plan to address this before submission for inclusion?
+> 
+
+Greetings Avi and Co,
+
+I have been following this thread, and although I cannot say that I am
+intimately fimilar with all of the virtualization considerations
+involved to really add anything use to that side of the discussion, I
+think you guys are doing a good job of explaining the technical issues
+for the non virtualization wizards following this thread.  :-)
+
+Anyways, I was wondering if you might be interesting in sharing your
+concerns wrt to configfs (conigfs maintainer CC'ed), at some point..?
+As you may recall, I have been using configfs extensively for the 3.x
+generic target core infrastructure and iSCSI fabric modules living in
+lio-core-2.6.git/drivers/target/target_core_configfs.c and
+lio-core-2.6.git/drivers/lio-core/iscsi_target_config.c, and have found
+it to be extraordinarly useful for the purposes of a implementing a
+complex kernel level target mode stack that is expected to manage
+massive amounts of metadata, allow for real-time configuration, share
+data structures (eg: SCSI Target Ports) between other kernel fabric
+modules and manage the entire set of fabrics using only intrepetered
+userspace code.
+
+Using the 10000 1:1 mapped TCM Virtual HBA+FILEIO LUNs <-> iSCSI Target
+Endpoints inside of a KVM Guest (from the results in May posted with
+IOMMU aware 10 Gb on modern Nahelem hardware, see
+http://linux-iscsi.org/index.php/KVM-LIO-Target), we have been able to
+dump the entire running target fabric configfs hierarchy to a single
+struct file on a KVM Guest root device using python code on the order of
+~30 seconds for those 10000 active iSCSI endpoints.  In configfs terms,
+this means:
+
+*) 7 configfs groups (directories), ~50 configfs attributes (files) per
+Virtual HBA+FILEIO LUN
+*) 15 configfs groups (directories), ~60 configfs attributes (files per
+iSCSI fabric Endpoint
+
+Which comes out to a total of ~220000 groups and ~1100000 attributes
+active configfs objects living in the configfs_dir_cache that are being
+dumped inside of the single KVM guest instances, including symlinks
+between the fabric modules to establish the SCSI ports containing
+complete set of SPC-4 and RFC-3720 features, et al.
+
+Also on the kernel <-> user API interaction compatibility side, I have
+found the 3.x configfs enabled code adventagous over the LIO 2.9 code
+(that used an ioctl for everything) because it allows us to do backwards
+compat for future versions without using any userspace C code, which in
+IMHO makes maintaining userspace packages for complex kernel stacks with
+massive amounts of metadata + real-time configuration considerations.
+No longer having ioctl compatibility issues between LIO versions as the
+structures passed via ioctl change, and being able to do backwards
+compat with small amounts of interpreted code against configfs layout
+changes makes maintaining the kernel <-> user API really have made this
+that much easier for me.
+
+Anyways, I though these might be useful to the discussion as it releates
+to potental uses of configfs on the KVM Host or other projects that
+really make sense, and/or to improve the upstream implementation so that
+other users (like myself) can benefit from improvements to configfs.
+
+Many thanks for your most valuable of time,
+
+--nab
+
+
