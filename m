@@ -1,740 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbZHSVAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbZHSVB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753191AbZHSVAT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 17:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZHSVAS
+	id S1753207AbZHSVB0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 17:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbZHSVB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 17:00:18 -0400
-Received: from www84.your-server.de ([213.133.104.84]:52319 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbZHSVAQ (ORCPT
+	Wed, 19 Aug 2009 17:01:26 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35731 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752312AbZHSVBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 17:00:16 -0400
-Subject: Re: [PATCH 4/7] kfifo: rename kfifo_put... into kfifo_in... and
- kfifo_get... into kfifo_out...
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-In-Reply-To: <1250714990.13476.3.camel@wall-e>
-References: <1250714990.13476.3.camel@wall-e>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 23:00:06 +0200
-Message-Id: <1250715606.13476.15.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Wed, 19 Aug 2009 17:01:25 -0400
+Date: Wed, 19 Aug 2009 17:01:24 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+In-Reply-To: <20090819221532.6b4e8a4a@neptune.home>
+Message-ID: <Pine.LNX.4.44L0.0908191648160.3229-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rename kfifo_put... into kfifo_in... to prevent miss use of old non in kernel-tree drivers
-ditto for kfifo_get... -> kfifo_out...
-Improve the prototypes of kfifo_in and kfifo_out to make the kerneldoc annotations more readable.
-Add mini "howto porting to the new API" in kfifo.h
+On Wed, 19 Aug 2009, Bruno [UTF-8] Prémont wrote:
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- drivers/char/nozomi.c                       |    4 +-
- drivers/char/sonypi.c                       |    8 ++---
- drivers/infiniband/hw/cxgb3/cxio_resource.c |   16 +++++------
- drivers/media/video/meye.c                  |   16 +++++------
- drivers/net/wireless/libertas/main.c        |    4 +-
- drivers/platform/x86/fujitsu-laptop.c       |    4 +-
- drivers/platform/x86/sony-laptop.c          |    8 ++---
- drivers/scsi/libiscsi.c                     |   14 +++++-----
- drivers/scsi/libiscsi_tcp.c                 |   18 ++++++------
- drivers/scsi/libsrp.c                       |    6 ++--
- drivers/usb/host/fhci.h                     |    4 +-
- include/linux/kfifo.h                       |   39 ++++++++++++++++++++--------
- kernel/kfifo.c                              |   32 +++++++++++-----------
- net/dccp/probe.c                            |    4 +-
- 14 files changed, 98 insertions(+), 79 deletions(-)
+> I've added WARN_ON()s in usb_serial_put() and usb_serial_get_by_index()
+> in order to have information on who called us (easier than searching
+> around and adding lots of printk()s and output is also more verbose :)
+> 
+> Below, my changes to usb-serial.c and dmesg extracts for crash cases with
+> pl2302 and ftdi_sio.
+> 
+> You have guessed right, there are calls to serial_do_free() after
+> destroy_serial() in the crash cases. destroy_serial when disconnecting
+> device and final serial_do_free() when exiting minicom.
 
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/char/nozomi.c linux-2.6.31-rc4-kfifo4/drivers/char/nozomi.c
---- linux-2.6.31-rc4-kfifo3/drivers/char/nozomi.c	2009-08-11 13:14:26.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/char/nozomi.c	2009-08-11 13:26:07.000000000 +0200
-@@ -797,7 +797,7 @@
- 	struct tty_struct *tty = tty_port_tty_get(&port->port);
- 
- 	/* Get data from tty and place in buf for now */
--	size = kfifo_get(&port->fifo_ul, dc->send_buf,
-+	size = kfifo_out(&port->fifo_ul, dc->send_buf,
- 			   ul_size < SEND_BUF_MAX ? ul_size : SEND_BUF_MAX);
- 
- 	if (size == 0) {
-@@ -1671,7 +1671,7 @@
- 		goto exit;
- 	}
- 
--	rval = kfifo_put(&port->fifo_ul, (unsigned char *)buffer, count);
-+	rval = kfifo_in(&port->fifo_ul, (unsigned char *)buffer, count);
- 
- 	/* notify card */
- 	if (unlikely(dc == NULL)) {
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/char/sonypi.c linux-2.6.31-rc4-kfifo4/drivers/char/sonypi.c
---- linux-2.6.31-rc4-kfifo3/drivers/char/sonypi.c	2009-08-11 12:56:44.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/char/sonypi.c	2009-08-11 13:26:11.000000000 +0200
-@@ -776,7 +776,7 @@
- {
- 	struct sonypi_keypress kp;
- 
--	while (kfifo_get_locked(&sonypi_device.input_fifo, (unsigned char *)&kp,
-+	while (kfifo_out_locked(&sonypi_device.input_fifo, (unsigned char *)&kp,
- 			 sizeof(kp), &sonypi_device.input_fifo_lock)
- 			== sizeof(kp)) {
- 		msleep(10);
-@@ -827,7 +827,7 @@
- 	if (kp.dev) {
- 		input_report_key(kp.dev, kp.key, 1);
- 		input_sync(kp.dev);
--		kfifo_put_locked(&sonypi_device.input_fifo,
-+		kfifo_in_locked(&sonypi_device.input_fifo,
- 			(unsigned char *)&kp, sizeof(kp),
- 			&sonypi_device.input_fifo_lock);
- 		schedule_work(&sonypi_device.input_work);
-@@ -881,7 +881,7 @@
- 		acpi_bus_generate_proc_event(sonypi_acpi_device, 1, event);
- #endif
- 
--	kfifo_put_locked(&sonypi_device.fifo, (unsigned char *)&event,
-+	kfifo_in_locked(&sonypi_device.fifo, (unsigned char *)&event,
- 			sizeof(event), &sonypi_device.fifo_lock);
- 	kill_fasync(&sonypi_device.fifo_async, SIGIO, POLL_IN);
- 	wake_up_interruptible(&sonypi_device.fifo_proc_list);
-@@ -931,7 +931,7 @@
- 		return ret;
- 
- 	while (ret < count &&
--	       (kfifo_get_locked(&sonypi_device.fifo, &c, sizeof(c),
-+	       (kfifo_out_locked(&sonypi_device.fifo, &c, sizeof(c),
- 				 &sonypi_device.fifo_lock) == sizeof(c))) {
- 		if (put_user(c, buf++))
- 			return -EFAULT;
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/infiniband/hw/cxgb3/cxio_resource.c linux-2.6.31-rc4-kfifo4/drivers/infiniband/hw/cxgb3/cxio_resource.c
---- linux-2.6.31-rc4-kfifo3/drivers/infiniband/hw/cxgb3/cxio_resource.c	2009-08-11 13:14:18.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/infiniband/hw/cxgb3/cxio_resource.c	2009-08-11 13:26:03.000000000 +0200
-@@ -59,7 +59,7 @@
- 		return -ENOMEM;
- 
- 	for (i = 0; i < skip_low + skip_high; i++)
--		kfifo_put(fifo, (unsigned char *) &entry, sizeof(u32));
-+		kfifo_in(fifo, (unsigned char *) &entry, sizeof(u32));
- 	if (random) {
- 		j = 0;
- 		random_bytes = random32();
-@@ -71,22 +71,22 @@
- 				random_bytes = random32();
- 			}
- 			idx = (random_bytes >> (j * 2)) & 0xF;
--			kfifo_put(fifo,
-+			kfifo_in(fifo,
- 				(unsigned char *) &rarray[idx],
- 				sizeof(u32));
- 			rarray[idx] = i;
- 			j++;
- 		}
- 		for (i = 0; i < RANDOM_SIZE; i++)
--			kfifo_put(fifo,
-+			kfifo_in(fifo,
- 				(unsigned char *) &rarray[i],
- 				sizeof(u32));
- 	} else
- 		for (i = skip_low; i < nr - skip_high; i++)
--			kfifo_put(fifo, (unsigned char *) &i, sizeof(u32));
-+			kfifo_in(fifo, (unsigned char *) &i, sizeof(u32));
- 
- 	for (i = 0; i < skip_low + skip_high; i++)
--		kfifo_get_locked(fifo, (unsigned char *) &entry,
-+		kfifo_out_locked(fifo, (unsigned char *) &entry,
- 				sizeof(u32), fifo_lock);
- 	return 0;
- }
-@@ -119,7 +119,7 @@
- 
- 	for (i = 16; i < T3_MAX_NUM_QP; i++)
- 		if (!(i & rdev_p->qpmask))
--			kfifo_put(&rdev_p->rscp->qpid_fifo,
-+			kfifo_in(&rdev_p->rscp->qpid_fifo,
- 				    (unsigned char *) &i, sizeof(u32));
- 	return 0;
- }
-@@ -180,7 +180,7 @@
- static u32 cxio_hal_get_resource(struct kfifo *fifo, spinlock_t * lock)
- {
- 	u32 entry;
--	if (kfifo_get_locked(fifo, (unsigned char *) &entry, sizeof(u32), lock))
-+	if (kfifo_out_locked(fifo, (unsigned char *) &entry, sizeof(u32), lock))
- 		return entry;
- 	else
- 		return 0;	/* fifo emptry */
-@@ -190,7 +190,7 @@
- 		u32 entry)
- {
- 	BUG_ON(
--	kfifo_put_locked(fifo, (unsigned char *) &entry, sizeof(u32), lock)
-+	kfifo_in_locked(fifo, (unsigned char *) &entry, sizeof(u32), lock)
- 	== 0);
- }
- 
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/media/video/meye.c linux-2.6.31-rc4-kfifo4/drivers/media/video/meye.c
---- linux-2.6.31-rc4-kfifo3/drivers/media/video/meye.c	2009-08-09 11:40:34.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/media/video/meye.c	2009-08-11 13:25:56.000000000 +0200
-@@ -799,7 +799,7 @@
- 		return IRQ_HANDLED;
- 
- 	if (meye.mchip_mode == MCHIP_HIC_MODE_CONT_OUT) {
--		if (kfifo_get_locked(&meye.grabq, (unsigned char *)&reqnr,
-+		if (kfifo_out_locked(&meye.grabq, (unsigned char *)&reqnr,
- 			      sizeof(int), &meye.grabq_lock) != sizeof(int)) {
- 			mchip_free_frame();
- 			return IRQ_HANDLED;
-@@ -810,7 +810,7 @@
- 		meye.grab_buffer[reqnr].state = MEYE_BUF_DONE;
- 		do_gettimeofday(&meye.grab_buffer[reqnr].timestamp);
- 		meye.grab_buffer[reqnr].sequence = sequence++;
--		kfifo_put_locked(&meye.doneq, (unsigned char *)&reqnr,
-+		kfifo_in_locked(&meye.doneq, (unsigned char *)&reqnr,
- 				sizeof(int), &meye.doneq_lock);
- 		wake_up_interruptible(&meye.proc_list);
- 	} else {
-@@ -820,7 +820,7 @@
- 			mchip_free_frame();
- 			goto again;
- 		}
--		if (kfifo_get_locked(&meye.grabq, (unsigned char *)&reqnr,
-+		if (kfifo_out_locked(&meye.grabq, (unsigned char *)&reqnr,
- 			      sizeof(int), &meye.grabq_lock) != sizeof(int)) {
- 			mchip_free_frame();
- 			goto again;
-@@ -831,7 +831,7 @@
- 		meye.grab_buffer[reqnr].state = MEYE_BUF_DONE;
- 		do_gettimeofday(&meye.grab_buffer[reqnr].timestamp);
- 		meye.grab_buffer[reqnr].sequence = sequence++;
--		kfifo_put_locked(&meye.doneq, (unsigned char *)&reqnr,
-+		kfifo_in_locked(&meye.doneq, (unsigned char *)&reqnr,
- 				sizeof(int), &meye.doneq_lock);
- 		wake_up_interruptible(&meye.proc_list);
- 	}
-@@ -934,7 +934,7 @@
- 		mchip_cont_compression_start();
- 
- 	meye.grab_buffer[*nb].state = MEYE_BUF_USING;
--	kfifo_put_locked(&meye.grabq, (unsigned char *)nb, sizeof(int),
-+	kfifo_in_locked(&meye.grabq, (unsigned char *)nb, sizeof(int),
- 			 &meye.grabq_lock);
- 	mutex_unlock(&meye.lock);
- 
-@@ -967,7 +967,7 @@
- 		/* fall through */
- 	case MEYE_BUF_DONE:
- 		meye.grab_buffer[*i].state = MEYE_BUF_UNUSED;
--		kfifo_get_locked(&meye.doneq, (unsigned char *)&unused,
-+		kfifo_out_locked(&meye.doneq, (unsigned char *)&unused,
- 				sizeof(int), &meye.doneq_lock);
- 	}
- 	*i = meye.grab_buffer[*i].size;
-@@ -1455,7 +1455,7 @@
- 	buf->flags |= V4L2_BUF_FLAG_QUEUED;
- 	buf->flags &= ~V4L2_BUF_FLAG_DONE;
- 	meye.grab_buffer[buf->index].state = MEYE_BUF_USING;
--	kfifo_put_locked(&meye.grabq, (unsigned char *)&buf->index,
-+	kfifo_in_locked(&meye.grabq, (unsigned char *)&buf->index,
- 			sizeof(int), &meye.grabq_lock);
- 	mutex_unlock(&meye.lock);
- 
-@@ -1482,7 +1482,7 @@
- 		return -EINTR;
- 	}
- 
--	if (!kfifo_get_locked(&meye.doneq, (unsigned char *)&reqnr,
-+	if (!kfifo_out_locked(&meye.doneq, (unsigned char *)&reqnr,
- 		       sizeof(int), &meye.doneq_lock)) {
- 		mutex_unlock(&meye.lock);
- 		return -EBUSY;
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/main.c linux-2.6.31-rc4-kfifo4/drivers/net/wireless/libertas/main.c
---- linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/main.c	2009-08-11 13:14:41.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/net/wireless/libertas/main.c	2009-08-11 13:26:16.000000000 +0200
-@@ -854,7 +854,7 @@
- 		while (kfifo_len(&priv->event_fifo)) {
- 			u32 event;
- 
--			kfifo_get(&priv->event_fifo, (unsigned char *) &event,
-+			kfifo_out(&priv->event_fifo, (unsigned char *) &event,
- 				sizeof(event));
- 			spin_unlock_irq(&priv->driver_lock);
- 			lbs_process_event(priv, event);
-@@ -1578,7 +1578,7 @@
- 	if (priv->psstate == PS_STATE_SLEEP)
- 		priv->psstate = PS_STATE_AWAKE;
- 
--	kfifo_put(&priv->event_fifo, (unsigned char *) &event, sizeof(u32));
-+	kfifo_in(&priv->event_fifo, (unsigned char *) &event, sizeof(u32));
- 
- 	wake_up_interruptible(&priv->waitq);
- 
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/platform/x86/fujitsu-laptop.c linux-2.6.31-rc4-kfifo4/drivers/platform/x86/fujitsu-laptop.c
---- linux-2.6.31-rc4-kfifo3/drivers/platform/x86/fujitsu-laptop.c	2009-08-11 22:47:25.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/platform/x86/fujitsu-laptop.c	2009-08-11 22:47:40.000000000 +0200
-@@ -1007,7 +1007,7 @@
- 				vdbg_printk(FUJLAPTOP_DBG_TRACE,
- 					"Push keycode into ringbuffer [%d]\n",
- 					keycode);
--				status = kfifo_put_locked(&fujitsu_hotkey->fifo,
-+				status = kfifo_in_locked(&fujitsu_hotkey->fifo,
- 						   (unsigned char *)&keycode,
- 						   sizeof(keycode),
- 						   &fujitsu_hotkey->fifo_lock);
-@@ -1021,7 +1021,7 @@
- 				}
- 			} else if (keycode == 0) {
- 				while ((status =
--					kfifo_get_locked(
-+					kfifo_out_locked(
- 					 &fujitsu_hotkey->fifo,
- 					 (unsigned char *) &keycode_r,
- 					 sizeof(keycode_r),
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/platform/x86/sony-laptop.c linux-2.6.31-rc4-kfifo4/drivers/platform/x86/sony-laptop.c
---- linux-2.6.31-rc4-kfifo3/drivers/platform/x86/sony-laptop.c	2009-08-11 13:13:24.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/platform/x86/sony-laptop.c	2009-08-11 13:25:37.000000000 +0200
-@@ -300,7 +300,7 @@
- {
- 	struct sony_laptop_keypress kp;
- 
--	while (kfifo_get_locked(&sony_laptop_input.fifo, (unsigned char *)&kp,
-+	while (kfifo_out_locked(&sony_laptop_input.fifo, (unsigned char *)&kp,
- 			sizeof(kp), &sony_laptop_input.fifo_lock)
- 			== sizeof(kp)) {
- 		msleep(10);
-@@ -363,7 +363,7 @@
- 		/* we emit the scancode so we can always remap the key */
- 		input_event(kp.dev, EV_MSC, MSC_SCAN, event);
- 		input_sync(kp.dev);
--		kfifo_put_locked(&sony_laptop_input.fifo,
-+		kfifo_in_locked(&sony_laptop_input.fifo,
- 			  (unsigned char *)&kp, sizeof(kp),
- 			  &sony_laptop_input.fifo_lock);
- 
-@@ -2144,7 +2144,7 @@
- 		return ret;
- 
- 	while (ret < count &&
--	       (kfifo_get_locked(&sonypi_compat.fifo, &c, sizeof(c),
-+	       (kfifo_out_locked(&sonypi_compat.fifo, &c, sizeof(c),
- 			  &sonypi_compat.fifo_lock) == sizeof(c))) {
- 		if (put_user(c, buf++))
- 			return -EFAULT;
-@@ -2324,7 +2324,7 @@
- 
- static void sonypi_compat_report_event(u8 event)
- {
--	kfifo_put_locked(&sonypi_compat.fifo, (unsigned char *)&event,
-+	kfifo_in_locked(&sonypi_compat.fifo, (unsigned char *)&event,
- 			sizeof(event), &sonypi_compat.fifo_lock);
- 	kill_fasync(&sonypi_compat.fifo_async, SIGIO, POLL_IN);
- 	wake_up_interruptible(&sonypi_compat.fifo_proc_list);
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi.c linux-2.6.31-rc4-kfifo4/drivers/scsi/libiscsi.c
---- linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi.c	2009-08-11 13:13:43.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/scsi/libiscsi.c	2009-08-11 13:25:42.000000000 +0200
-@@ -428,7 +428,7 @@
- 	if (conn->login_task == task)
- 		return;
- 
--	kfifo_put(&session->cmdpool.queue, (void*)&task, sizeof(void*));
-+	kfifo_in(&session->cmdpool.queue, (void*)&task, sizeof(void*));
- 
- 	if (sc) {
- 		task->sc = NULL;
-@@ -614,7 +614,7 @@
- 		BUG_ON(conn->c_stage == ISCSI_CONN_INITIAL_STAGE);
- 		BUG_ON(conn->c_stage == ISCSI_CONN_STOPPED);
- 
--		if (!kfifo_get(&session->cmdpool.queue,
-+		if (!kfifo_out(&session->cmdpool.queue,
- 				 (void*)&task, sizeof(void*)))
- 			return NULL;
- 	}
-@@ -1376,7 +1376,7 @@
- {
- 	struct iscsi_task *task;
- 
--	if (!kfifo_get(&conn->session->cmdpool.queue,
-+	if (!kfifo_out(&conn->session->cmdpool.queue,
- 			 (void *) &task, sizeof(void *)))
- 		return NULL;
- 
-@@ -2129,7 +2129,7 @@
- 			q->max = i;
- 			goto enomem;
- 		}
--		kfifo_put(&q->queue, (void*)&q->pool[i], sizeof(void*));
-+		kfifo_in(&q->queue, (void*)&q->pool[i], sizeof(void*));
- 	}
- 
- 	if (items) {
-@@ -2476,7 +2476,7 @@
- 
- 	/* allocate login_task used for the login/text sequences */
- 	spin_lock_bh(&session->lock);
--	if (!kfifo_get(&session->cmdpool.queue,
-+	if (!kfifo_out(&session->cmdpool.queue,
-                          (void*)&conn->login_task,
- 			 sizeof(void*))) {
- 		spin_unlock_bh(&session->lock);
-@@ -2496,7 +2496,7 @@
- 	return cls_conn;
- 
- login_task_data_alloc_fail:
--	kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
-+	kfifo_in(&session->cmdpool.queue, (void*)&conn->login_task,
- 		    sizeof(void*));
- login_task_alloc_fail:
- 	iscsi_destroy_conn(cls_conn);
-@@ -2559,7 +2559,7 @@
- 	free_pages((unsigned long) conn->data,
- 		   get_order(ISCSI_DEF_MAX_RECV_SEG_LEN));
- 	kfree(conn->persistent_address);
--	kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
-+	kfifo_in(&session->cmdpool.queue, (void*)&conn->login_task,
- 		    sizeof(void*));
- 	if (session->leadconn == conn)
- 		session->leadconn = NULL;
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi_tcp.c linux-2.6.31-rc4-kfifo4/drivers/scsi/libiscsi_tcp.c
---- linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi_tcp.c	2009-08-11 22:41:20.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/scsi/libiscsi_tcp.c	2009-08-11 22:41:29.000000000 +0200
-@@ -445,15 +445,15 @@
- 		return;
- 
- 	/* flush task's r2t queues */
--	while (kfifo_get(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*))) {
--		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
-+	while (kfifo_out(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*))) {
-+		kfifo_in(&tcp_task->r2tpool.queue, (void*)&r2t,
- 			    sizeof(void*));
- 		ISCSI_DBG_TCP(task->conn, "pending r2t dropped\n");
- 	}
- 
- 	r2t = tcp_task->r2t;
- 	if (r2t != NULL) {
--		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
-+		kfifo_in(&tcp_task->r2tpool.queue, (void*)&r2t,
- 			    sizeof(void*));
- 		tcp_task->r2t = NULL;
- 	}
-@@ -541,7 +541,7 @@
- 		return 0;
- 	}
- 
--	rc = kfifo_get(&tcp_task->r2tpool.queue, (void*)&r2t, sizeof(void*));
-+	rc = kfifo_out(&tcp_task->r2tpool.queue, (void*)&r2t, sizeof(void*));
- 	if (!rc) {
- 		iscsi_conn_printk(KERN_ERR, conn, "Could not allocate R2T. "
- 				  "Target has sent more R2Ts than it "
-@@ -554,7 +554,7 @@
- 	if (r2t->data_length == 0) {
- 		iscsi_conn_printk(KERN_ERR, conn,
- 				  "invalid R2T with zero data len\n");
--		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
-+		kfifo_in(&tcp_task->r2tpool.queue, (void*)&r2t,
- 			    sizeof(void*));
- 		return ISCSI_ERR_DATALEN;
- 	}
-@@ -570,7 +570,7 @@
- 				  "invalid R2T with data len %u at offset %u "
- 				  "and total length %d\n", r2t->data_length,
- 				  r2t->data_offset, scsi_out(task->sc)->length);
--		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
-+		kfifo_in(&tcp_task->r2tpool.queue, (void*)&r2t,
- 			    sizeof(void*));
- 		return ISCSI_ERR_DATALEN;
- 	}
-@@ -580,7 +580,7 @@
- 	r2t->sent = 0;
- 
- 	tcp_task->exp_datasn = r2tsn + 1;
--	kfifo_put(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*));
-+	kfifo_in(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*));
- 	conn->r2t_pdus_cnt++;
- 
- 	iscsi_requeue_task(task);
-@@ -982,7 +982,7 @@
- 			if (r2t->data_length <= r2t->sent) {
- 				ISCSI_DBG_TCP(task->conn,
- 					      "  done with r2t %p\n", r2t);
--				kfifo_put(&tcp_task->r2tpool.queue,
-+				kfifo_in(&tcp_task->r2tpool.queue,
- 					    (void *)&tcp_task->r2t,
- 					    sizeof(void *));
- 				tcp_task->r2t = r2t = NULL;
-@@ -990,7 +990,7 @@
- 		}
- 
- 		if (r2t == NULL) {
--			kfifo_get(&tcp_task->r2tqueue,
-+			kfifo_out(&tcp_task->r2tqueue,
- 				    (void *)&tcp_task->r2t, sizeof(void *));
- 			r2t = tcp_task->r2t;
- 		}
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/scsi/libsrp.c linux-2.6.31-rc4-kfifo4/drivers/scsi/libsrp.c
---- linux-2.6.31-rc4-kfifo3/drivers/scsi/libsrp.c	2009-08-11 13:14:12.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/scsi/libsrp.c	2009-08-11 13:25:50.000000000 +0200
-@@ -61,7 +61,7 @@
- 	kfifo_init(&q->queue, (void *) q->pool, max * sizeof(void *));
- 
- 	for (i = 0, iue = q->items; i < max; i++) {
--		kfifo_put(&q->queue, (void *) &iue, sizeof(void *));
-+		kfifo_in(&q->queue, (void *) &iue, sizeof(void *));
- 		iue->sbuf = ring[i];
- 		iue++;
- 	}
-@@ -163,7 +163,7 @@
- {
- 	struct iu_entry *iue = NULL;
- 
--	kfifo_get_locked(&target->iu_queue.queue, (void *) &iue,
-+	kfifo_out_locked(&target->iu_queue.queue, (void *) &iue,
- 			sizeof(void *), &target->iu_queue.lock);
- 	if (!iue)
- 		return iue;
-@@ -176,7 +176,7 @@
- 
- void srp_iu_put(struct iu_entry *iue)
- {
--	kfifo_put_locked(&iue->target->iu_queue.queue, (void *) &iue,
-+	kfifo_in_locked(&iue->target->iu_queue.queue, (void *) &iue,
- 			sizeof(void *), &iue->target->iu_queue.lock);
- }
- EXPORT_SYMBOL_GPL(srp_iu_put);
-diff -u -N -r linux-2.6.31-rc4-kfifo3/drivers/usb/host/fhci.h linux-2.6.31-rc4-kfifo4/drivers/usb/host/fhci.h
---- linux-2.6.31-rc4-kfifo3/drivers/usb/host/fhci.h	2009-08-11 13:14:36.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/drivers/usb/host/fhci.h	2009-08-11 13:26:13.000000000 +0200
-@@ -510,14 +510,14 @@
- 
- static inline int cq_put(struct kfifo *kfifo, void *p)
- {
--	return kfifo_put(kfifo, (void *)&p, sizeof(p));
-+	return kfifo_in(kfifo, (void *)&p, sizeof(p));
- }
- 
- static inline void *cq_get(struct kfifo *kfifo)
- {
- 	void *p = NULL;
- 
--	kfifo_get(kfifo, (void *)&p, sizeof(p));
-+	kfifo_out(kfifo, (void *)&p, sizeof(p));
- 	return p;
- }
- 
-diff -u -N -r linux-2.6.31-rc4-kfifo3/include/linux/kfifo.h linux-2.6.31-rc4-kfifo4/include/linux/kfifo.h
---- linux-2.6.31-rc4-kfifo3/include/linux/kfifo.h	2009-08-16 22:15:37.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/include/linux/kfifo.h	2009-08-19 22:38:10.000000000 +0200
-@@ -19,6 +19,25 @@
-  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  *
-  */
-+
-+/*
-+ * Howto porting drivers to the new generic fifo API:
-+ *
-+ * - Modify the declaration of the "struct kfifo *" object into a
-+ *   in-place "struct kfifo" object
-+ * - Init the in-place object with kfifo_alloc() or kfifo_init()
-+ *   Note: The address of the in-place "struct kfifo" object must be
-+ *   passed as the first argument to this functions
-+ * - Replace the use of __kfifo_put into kfifo_in and __kfifo_get
-+ *   into kfifo_out
-+ * - Replace the use of kfifo_put into kfifo_in_locked and kfifo_get
-+ *   into kfifo_out_locked
-+ *   Note: the spinlock pointer formerly passed to kfifo_init/kfifo_alloc
-+ *   must be passed now to the kfifo_in_locked and kfifo_out_locked
-+ *   as the last parameter.
-+ * - All formerly name __kfifo_* functions has been renamed into kfifo_*
-+ */
-+
- #ifndef _LINUX_KFIFO_H
- #define _LINUX_KFIFO_H
- 
-@@ -37,10 +56,10 @@
- extern __must_check int kfifo_alloc(struct kfifo *fifo, unsigned int size,
- 			gfp_t gfp_mask);
- extern void kfifo_free(struct kfifo *fifo);
--extern unsigned int kfifo_put(struct kfifo *fifo,
--				const unsigned char *buffer, unsigned int len);
--extern unsigned int kfifo_get(struct kfifo *fifo,
--				unsigned char *buffer, unsigned int len);
-+extern __must_check unsigned int kfifo_in(struct kfifo *fifo,
-+				const unsigned char *from, unsigned int len);
-+extern __must_check unsigned int kfifo_out(struct kfifo *fifo,
-+				unsigned char *to, unsigned int len);
- 
- /**
-  * kfifo_reset - removes the entire FIFO contents
-@@ -65,7 +84,7 @@
- }
- 
- /**
-- * kfifo_put_locked - puts some data into the FIFO using a spinlock for locking
-+ * kfifo_in_locked - puts some data into the FIFO using a spinlock for locking
-  * @fifo: the fifo to be used.
-  * @from: the data to be added.
-  * @len: the length of the data to be added.
-@@ -75,7 +94,7 @@
-  * the FIFO depending on the free space, and returns the number of
-  * bytes copied.
-  */
--static inline __must_check unsigned int kfifo_put_locked(struct kfifo *fifo,
-+static inline __must_check unsigned int kfifo_in_locked(struct kfifo *fifo,
- 		const unsigned char *from, unsigned int n, spinlock_t *lock)
- {
- 	unsigned long flags;
-@@ -83,7 +102,7 @@
- 
- 	spin_lock_irqsave(lock, flags);
- 
--	ret = kfifo_put(fifo, from, n);
-+	ret = kfifo_in(fifo, from, n);
- 
- 	spin_unlock_irqrestore(lock, flags);
- 
-@@ -91,7 +110,7 @@
- }
- 
- /**
-- * kfifo_get_locked - gets some data from the FIFO using a spinlock for locking
-+ * kfifo_out_locked - gets some data from the FIFO using a spinlock for locking
-  * @fifo: the fifo to be used.
-  * @to: where the data must be copied.
-  * @len: the size of the destination buffer.
-@@ -100,7 +119,7 @@
-  * This function copies at most @len bytes from the FIFO into the
-  * @to buffer and returns the number of copied bytes.
-  */
--static inline __must_check unsigned int kfifo_get_locked(struct kfifo *fifo,
-+static inline __must_check unsigned int kfifo_out_locked(struct kfifo *fifo,
- 	unsigned char *to, unsigned int n, spinlock_t *lock)
- {
- 	unsigned long flags;
-@@ -108,7 +127,7 @@
- 
- 	spin_lock_irqsave(lock, flags);
- 
--	ret = kfifo_get(fifo, to, n);
-+	ret = kfifo_out(fifo, to, n);
- 
- 	/*
- 	 * optimization: if the FIFO is empty, set the indices to 0
-diff -u -N -r linux-2.6.31-rc4-kfifo3/kernel/kfifo.c linux-2.6.31-rc4-kfifo4/kernel/kfifo.c
---- linux-2.6.31-rc4-kfifo3/kernel/kfifo.c	2009-08-16 22:08:48.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/kernel/kfifo.c	2009-08-16 22:08:56.000000000 +0200
-@@ -100,20 +100,20 @@
- EXPORT_SYMBOL(kfifo_free);
- 
- /**
-- * kfifo_put - puts some data into the FIFO, no locking version
-+ * kfifo_in - puts some data into the FIFO
-  * @fifo: the fifo to be used.
-- * @buffer: the data to be added.
-+ * @from: the data to be added.
-  * @len: the length of the data to be added.
-  *
-- * This function copies at most @len bytes from the @buffer into
-+ * This function copies at most @len bytes from the @from buffer into
-  * the FIFO depending on the free space, and returns the number of
-  * bytes copied.
-  *
-  * Note that with only one concurrent reader and one concurrent
-  * writer, you don't need extra locking to use these functions.
-  */
--unsigned int kfifo_put(struct kfifo *fifo,
--			const unsigned char *buffer, unsigned int len)
-+unsigned int kfifo_in(struct kfifo *fifo,
-+			const unsigned char *from, unsigned int len)
- {
- 	unsigned int l;
- 
-@@ -128,10 +128,10 @@
- 
- 	/* first put the data starting from fifo->in to buffer end */
- 	l = min(len, fifo->size - (fifo->in & (fifo->size - 1)));
--	memcpy(fifo->buffer + (fifo->in & (fifo->size - 1)), buffer, l);
-+	memcpy(fifo->buffer + (fifo->in & (fifo->size - 1)), from, l);
- 
- 	/* then put the rest (if any) at the beginning of the buffer */
--	memcpy(fifo->buffer, buffer + l, len - l);
-+	memcpy(fifo->buffer, from + l, len - l);
- 
- 	/*
- 	 * Ensure that we add the bytes to the kfifo -before-
-@@ -144,22 +144,22 @@
- 
- 	return len;
- }
--EXPORT_SYMBOL(kfifo_put);
-+EXPORT_SYMBOL(kfifo_in);
- 
- /**
-- * kfifo_get - gets some data from the FIFO, no locking version
-+ * kfifo_out - gets some data from the FIFO
-  * @fifo: the fifo to be used.
-- * @buffer: where the data must be copied.
-+ * @to: where the data must be copied.
-  * @len: the size of the destination buffer.
-  *
-  * This function copies at most @len bytes from the FIFO into the
-- * @buffer and returns the number of copied bytes.
-+ * @to buffer and returns the number of copied bytes.
-  *
-  * Note that with only one concurrent reader and one concurrent
-  * writer, you don't need extra locking to use these functions.
-  */
--unsigned int kfifo_get(struct kfifo *fifo,
--			 unsigned char *buffer, unsigned int len)
-+unsigned int kfifo_out(struct kfifo *fifo,
-+			 unsigned char *to, unsigned int len)
- {
- 	unsigned int l;
- 
-@@ -174,10 +174,10 @@
- 
- 	/* first get the data from fifo->out until the end of the buffer */
- 	l = min(len, fifo->size - (fifo->out & (fifo->size - 1)));
--	memcpy(buffer, fifo->buffer + (fifo->out & (fifo->size - 1)), l);
-+	memcpy(to, fifo->buffer + (fifo->out & (fifo->size - 1)), l);
- 
- 	/* then get the rest (if any) from the beginning of the buffer */
--	memcpy(buffer + l, fifo->buffer, len - l);
-+	memcpy(to + l, fifo->buffer, len - l);
- 
- 	/*
- 	 * Ensure that we remove the bytes from the kfifo -before-
-@@ -190,4 +190,4 @@
- 
- 	return len;
- }
--EXPORT_SYMBOL(kfifo_get);
-+EXPORT_SYMBOL(kfifo_out);
-diff -u -N -r linux-2.6.31-rc4-kfifo3/net/dccp/probe.c linux-2.6.31-rc4-kfifo4/net/dccp/probe.c
---- linux-2.6.31-rc4-kfifo3/net/dccp/probe.c	2009-08-11 13:15:34.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo4/net/dccp/probe.c	2009-08-11 13:26:33.000000000 +0200
-@@ -67,7 +67,7 @@
- 	len += vscnprintf(tbuf+len, sizeof(tbuf)-len, fmt, args);
- 	va_end(args);
- 
--	kfifo_put_locked(&dccpw.fifo, tbuf, len, &dccpw.lock);
-+	kfifo_in_locked(&dccpw.fifo, tbuf, len, &dccpw.lock);
- 	wake_up(&dccpw.wait);
- }
- 
-@@ -136,7 +136,7 @@
- 	if (error)
- 		goto out_free;
- 
--	cnt = kfifo_get_locked(&dccpw.fifo, tbuf, len, &dccpw.lock);
-+	cnt = kfifo_out_locked(&dccpw.fifo, tbuf, len, &dccpw.lock);
- 	error = copy_to_user(buf, tbuf, cnt) ? -EFAULT : 0;
- 
- out_free:
+Good work.  This shows clearly where the problem is.
 
+> [  417.320036] usb 2-1: new full speed USB device using uhci_hcd and address 3
+> [  417.486198] usb 2-1: New USB device found, idVendor=067b, idProduct=2303
+> [  417.486418] usb 2-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+> [  417.486663] usb 2-1: Product: USB-Serial Controller
+> [  417.486820] usb 2-1: Manufacturer: Prolific Technology Inc.
+> [  417.487238] usb 2-1: configuration #1 chosen from 1 choice
+> [  417.490544] pl2303 2-1:1.0: pl2303 converter detected
+> [  417.502366] usb 2-1: pl2303 converter now attached to ttyUSB0
+
+The pl2303 was plugged in.
+
+> [  419.476126] usb_serial_get_by_index(index 0): @d9cc2720
+> [  419.476320] ------------[ cut here ]------------
+> [  419.476518] WARNING: at /usr/src/linux-2.6/drivers/usb/serial/usb-serial.c:78 usb_serial_get_by_index+0x42/0x70 [usbserial]()
+> [  419.476870] Hardware name: TravelMate 660
+> [  419.477016] Modules linked in: pl2303 usbserial squashfs zlib_inflate nfs lockd nfs_acl sunrpc 8021q snd_pcm_oss snd_mixer_oss xfs exportfs loop snd_intel8x0 snd_ac97_codec ac97_bus uhci_hcd snd_pcm ehci_hcd nsc_ircc usbcore snd_timer irda snd pcspkr i2c_i801 snd_page_alloc crc_ccitt
+> [  419.478371] Pid: 2186, comm: minicom Tainted: G   M    W  2.6.31-rc6 #1
+> [  419.478609] Call Trace:
+> [  419.478704]  [<c12b7052>] ? printk+0x18/0x1e
+> [  419.478869]  [<dea49182>] ? usb_serial_get_by_index+0x42/0x70 [usbserial]
+> [  419.479092]  [<c10236fc>] warn_slowpath_common+0x6c/0xc0
+> [  419.487714]  [<dea49182>] ? usb_serial_get_by_index+0x42/0x70 [usbserial]
+> [  419.496407]  [<c1023765>] warn_slowpath_null+0x15/0x20
+> [  419.505172]  [<dea49182>] usb_serial_get_by_index+0x42/0x70 [usbserial]
+> [  419.514032]  [<dea4936d>] serial_open+0x2d/0x250 [usbserial]
+
+Minicom opened the device file.
+
+> [  434.000189] usb 2-1: USB disconnect, address 3
+> [  434.001726] pl2303 ttyUSB0: pl2303 converter now disconnected from ttyUSB0
+> [  434.001986] usb_serial_put(serial @d9cc2720)
+> [  434.002126] ------------[ cut here ]------------
+> [  434.002310] WARNING: at /usr/src/linux-2.6/drivers/usb/serial/usb-serial.c:179 usb_serial_put+0x2b/0x60 [usbserial]()
+> [  434.002650] Hardware name: TravelMate 660
+> [  434.002795] Modules linked in: pl2303 usbserial squashfs zlib_inflate nfs lockd nfs_acl sunrpc 8021q snd_pcm_oss snd_mixer_oss xfs exportfs loop snd_intel8x0 snd_ac97_codec ac97_bus uhci_hcd snd_pcm ehci_hcd nsc_ircc usbcore snd_timer irda snd pcspkr i2c_i801 snd_page_alloc crc_ccitt
+> [  434.004145] Pid: 978, comm: khubd Tainted: G   M    W  2.6.31-rc6 #1
+> [  434.004361] Call Trace:
+> [  434.004455]  [<c12b7052>] ? printk+0x18/0x1e
+> [  434.004620]  [<dea48ceb>] ? usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.004818]  [<c10236fc>] warn_slowpath_common+0x6c/0xc0
+> [  434.005014]  [<dea48ceb>] ? usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.005208]  [<c1023765>] warn_slowpath_null+0x15/0x20
+> [  434.005398]  [<dea48ceb>] usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.005594]  [<dea48f81>] usb_serial_disconnect+0xf1/0x160 [usbserial]
+...
+> [  434.008710] pl2303 2-1:1.0: device disconnected
+
+The pl2303 was unplugged.
+
+> [  434.009183] usb_serial_get_by_index(index 0): @d9cc2720
+> [  434.009354] ------------[ cut here ]------------
+> [  434.009532] WARNING: at /usr/src/linux-2.6/drivers/usb/serial/usb-serial.c:78 usb_serial_get_by_index+0x42/0x70 [usbserial]()
+> [  434.009885] Hardware name: TravelMate 660
+> [  434.010054] Modules linked in: pl2303 usbserial squashfs zlib_inflate nfs lockd nfs_acl sunrpc 8021q snd_pcm_oss snd_mixer_oss xfs exportfs loop snd_intel8x0 snd_ac97_codec ac97_bus uhci_hcd snd_pcm ehci_hcd nsc_ircc usbcore snd_timer irda snd pcspkr i2c_i801 snd_page_alloc crc_ccitt
+> [  434.011402] Pid: 2186, comm: minicom Tainted: G   M    W  2.6.31-rc6 #1
+> [  434.011626] Call Trace:
+> [  434.011714]  [<c12b7052>] ? printk+0x18/0x1e
+> [  434.011877]  [<dea49182>] ? usb_serial_get_by_index+0x42/0x70 [usbserial]
+> [  434.012097]  [<c10236fc>] warn_slowpath_common+0x6c/0xc0
+> [  434.012293]  [<dea49182>] ? usb_serial_get_by_index+0x42/0x70 [usbserial]
+> [  434.012511]  [<c1023765>] warn_slowpath_null+0x15/0x20
+> [  434.012701]  [<dea49182>] usb_serial_get_by_index+0x42/0x70 [usbserial]
+> [  434.012920]  [<dea4936d>] serial_open+0x2d/0x250 [usbserial]
+> [  434.013123]  [<c10897b6>] ? mntput_no_expire+0x16/0x60
+> [  434.013292]  [<c115fa4d>] tty_open+0x1bd/0x4b0
+
+For some reason, minicom attempted to reopen the device file 
+immediately.
+
+> [  434.079109] usb_serial_put(serial @d9cc2720)
+> [  434.083537] ------------[ cut here ]------------
+> [  434.087641] WARNING: at /usr/src/linux-2.6/drivers/usb/serial/usb-serial.c:179 usb_serial_put+0x2b/0x60 [usbserial]()
+> [  434.091916] Hardware name: TravelMate 660
+> [  434.096132] Modules linked in: pl2303 usbserial squashfs zlib_inflate nfs lockd nfs_acl sunrpc 8021q snd_pcm_oss snd_mixer_oss xfs exportfs loop snd_intel8x0 snd_ac97_codec ac97_bus uhci_hcd snd_pcm ehci_hcd nsc_ircc usbcore snd_timer irda snd pcspkr i2c_i801 snd_page_alloc crc_ccitt
+> [  434.105454] Pid: 2186, comm: minicom Tainted: G   M    W  2.6.31-rc6 #1
+> [  434.109980] Call Trace:
+> [  434.114426]  [<c12b7052>] ? printk+0x18/0x1e
+> [  434.118801]  [<dea48ceb>] ? usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.123133]  [<c10236fc>] warn_slowpath_common+0x6c/0xc0
+> [  434.127306]  [<dea48ceb>] ? usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.131466]  [<c1023765>] warn_slowpath_null+0x15/0x20
+> [  434.135581]  [<dea48ceb>] usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.139755]  [<dea493b0>] serial_open+0x70/0x250 [usbserial]
+> [  434.143923]  [<c115fa4d>] tty_open+0x1bd/0x4b0
+
+The open failed, because the device had been unplugged.  serial_open()
+would therefore return -ENODEV.
+
+> [  434.193345] tty_port_close_start: count = -1
+> [  434.290041] serial_do_free(port @d8df5c00)
+> [  434.299763]   serial @d9cc2720
+> [  434.309450]   type   @de77dc20
+> [  434.319321] usb_serial_put(serial @d9cc2720)
+> [  434.323540] ------------[ cut here ]------------
+> [  434.327490] WARNING: at /usr/src/linux-2.6/drivers/usb/serial/usb-serial.c:179 usb_serial_put+0x2b/0x60 [usbserial]()
+> [  434.331601] Hardware name: TravelMate 660
+> [  434.335662] Modules linked in: pl2303 usbserial squashfs zlib_inflate nfs lockd nfs_acl sunrpc 8021q snd_pcm_oss snd_mixer_oss xfs exportfs loop snd_intel8x0 snd_ac97_codec ac97_bus uhci_hcd snd_pcm ehci_hcd nsc_ircc usbcore snd_timer irda snd pcspkr i2c_i801 snd_page_alloc crc_ccitt
+> [  434.344746] Pid: 2186, comm: minicom Tainted: G   M    W  2.6.31-rc6 #1
+> [  434.349160] Call Trace:
+> [  434.353463]  [<c12b7052>] ? printk+0x18/0x1e
+> [  434.357707]  [<dea48ceb>] ? usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.361868]  [<c10236fc>] warn_slowpath_common+0x6c/0xc0
+> [  434.365907]  [<dea48ceb>] ? usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.369882]  [<c1023765>] warn_slowpath_null+0x15/0x20
+> [  434.373881]  [<dea48ceb>] usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.377868]  [<dea48db9>] serial_do_free+0x99/0xd0 [usbserial]
+> [  434.381857]  [<dea48e57>] serial_close+0x67/0xa0 [usbserial]
+> [  434.385792]  [<c115d1a5>] ? tty_fasync+0x55/0xe0
+> [  434.389716]  [<c115f2e0>] tty_release_dev+0x130/0x490
+> [  434.393638]  [<dea48ceb>] ? usb_serial_put+0x2b/0x60 [usbserial]
+> [  434.397546]  [<c10207e3>] ? __cond_resched+0x23/0x40
+> [  434.401443]  [<c12b7d7e>] ? mutex_lock+0xe/0x20
+> [  434.405321]  [<dea48d0b>] ? usb_serial_put+0x4b/0x60 [usbserial]
+> [  434.409216]  [<dea493b0>] ? serial_open+0x70/0x250 [usbserial]
+> [  434.413153]  [<c115fced>] tty_open+0x45d/0x4b0
+
+This is the key.  When the open failed, tty_open() went on to call
+tty_release_dev(), which in turn called serial_close().  In other
+words, the TTY layer was trying to close a device reference which had
+never successfully been opened!  This resulted in an unbalanced call
+to usb_serial_put().
+
+> [  434.459076] destroy_serial(kref @d9cc2754)
+> [  434.462686]   serial @d9cc2720
+
+The extra put caused the data structure to be released too soon.
+
+> [  454.363600] serial_do_free(port @d8df5c00)
+> [  454.363745]   serial @d8df5a00
+> [  454.363868]   type   @(null)
+> [  454.363992] BUG: unable to handle kernel NULL pointer dereference at 0000001c
+> [  454.364252] IP: [<dea48d8d>] serial_do_free+0x6d/0xd0 [usbserial]
+> [  454.364487] *pde = 00000000 
+> [  454.364609] Oops: 0000 [#1] 
+> [  454.364731] last sysfs file: /sys/devices/virtual/hwmon/hwmon0/temp1_input
+> [  454.364974] Modules linked in: pl2303 usbserial squashfs zlib_inflate nfs lockd nfs_acl sunrpc 8021q snd_pcm_oss snd_mixer_oss xfs exportfs loop snd_intel8x0 snd_ac97_codec ac97_bus uhci_hcd snd_pcm ehci_hcd nsc_ircc usbcore snd_timer irda snd pcspkr i2c_i801 snd_page_alloc crc_ccitt
+> [  454.366315] 
+> [  454.366391] Pid: 2186, comm: minicom Tainted: G   M    W  (2.6.31-rc6 #1) TravelMate 660
+> [  454.366644] EIP: 0060:[<dea48d8d>] EFLAGS: 00010282 CPU: 0
+> [  454.366844] EIP is at serial_do_free+0x6d/0xd0 [usbserial]
+> [  454.367018] EAX: 00000000 EBX: d8df5c00 ECX: ffffffff EDX: c13c6584
+> [  454.367245] ESI: d8df5a00 EDI: 00000000 EBP: d8cc3e24 ESP: d8cc3e10
+> [  454.367444]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> [  454.367633] Process minicom (pid: 2186, ti=d8cc3000 task=dd8e1dd0 task.ti=d8cc3000)
+> [  454.367870] Stack:
+> [  454.367954]  dea4cc4e 00000000 d8df5c00 dd0d8c00 00000000 d8cc3e4c dea48e57 00000000
+> [  454.368329] <0> d8cc3e4c c115d1a5 dd0d8ca0 dd8d1180 dd0d8c00 00000000 00000000 d8cc3edc
+> [  454.368749] <0> c115f2e0 40000000 d8cc3e94 00000082 dd8d1180 00000000 00000000 00000000
+> [  454.369178] Call Trace:
+> [  454.369290]  [<dea48e57>] ? serial_close+0x67/0xa0 [usbserial]
+> [  454.369483]  [<c115d1a5>] ? tty_fasync+0x55/0xe0
+> [  454.369652]  [<c115f2e0>] ? tty_release_dev+0x130/0x490
+> [  454.369828]  [<c1056d72>] ? put_page+0x42/0x120
+> [  454.369993]  [<c105435a>] ? free_hot_page+0xa/0x10
+> [  454.370195]  [<c105438f>] ? __free_pages+0x2f/0x40
+> [  454.370356]  [<c107042e>] ? __free_slab+0xae/0x160
+> [  454.370530]  [<c115f64a>] ? tty_release+0xa/0x10
+> [  454.370681]  [<c1075f1c>] ? __fput+0xdc/0x1d0
+> [  454.370840]  [<c107602f>] ? fput+0x1f/0x30
+> [  454.370976]  [<c1072f8e>] ? filp_close+0x3e/0x70
+> [  454.371148]  [<c1024fa2>] ? put_files_struct+0xa2/0xc0
+> [  454.371315]  [<c1024fdc>] ? exit_files+0x1c/0x20
+> [  454.371483]  [<c1026339>] ? do_exit+0xb9/0x630
+
+And this is the actual close that occurred when minicom exited.  But
+by then it was too late.
+
+So Alan, what's the explanation?  An unsuccessful open method call
+should not lead to a close method call.
+
+Alan Stern
 
