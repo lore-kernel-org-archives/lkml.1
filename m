@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752258AbZHSQEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbZHSQFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752258AbZHSQEx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZHSQEw
+	id S1752817AbZHSQFG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZHSQEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:04:52 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55917 "EHLO mx1.suse.de"
+	Wed, 19 Aug 2009 12:04:51 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54210 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751324AbZHSQEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751490AbZHSQEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Aug 2009 12:04:46 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: hch@infradead.org, Jan Kara <jack@suse.cz>,
-       Evgeniy Polyakov <zbr@ioremap.net>, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 02/17] vfs: Export __generic_file_aio_write() and add some comments
-Date: Wed, 19 Aug 2009 18:04:29 +0200
-Message-Id: <1250697884-22288-3-git-send-email-jack@suse.cz>
+Cc: hch@infradead.org, Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org
+Subject: [PATCH 08/17] ext2: Update comment about generic_osync_inode
+Date: Wed, 19 Aug 2009 18:04:35 +0200
+Message-Id: <1250697884-22288-9-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1250697884-22288-1-git-send-email-jack@suse.cz>
 References: <1250697884-22288-1-git-send-email-jack@suse.cz>
@@ -24,129 +22,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename __generic_file_aio_write_nolock() to __generic_file_aio_write(), add
-comments to write helpers explaining how they should be used and export
-__generic_file_aio_write() since it will be used by some filesystems.
+We rely on generic_write_sync() now.
 
-CC: Evgeniy Polyakov <zbr@ioremap.net>
-CC: ocfs2-devel@oss.oracle.com
-CC: Joel Becker <joel.becker@oracle.com>
+CC: linux-ext4@vger.kernel.org
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- include/linux/fs.h |    2 +
- mm/filemap.c       |   57 +++++++++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 52 insertions(+), 7 deletions(-)
+ fs/ext2/inode.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index cb365ad..1edd159 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -2195,6 +2195,8 @@ extern int generic_file_readonly_mmap(struct file *, struct vm_area_struct *);
- extern int file_read_actor(read_descriptor_t * desc, struct page *page, unsigned long offset, unsigned long size);
- int generic_write_checks(struct file *file, loff_t *pos, size_t *count, int isblk);
- extern ssize_t generic_file_aio_read(struct kiocb *, const struct iovec *, unsigned long, loff_t);
-+extern ssize_t __generic_file_aio_write(struct kiocb *, const struct iovec *, unsigned long,
-+		loff_t *);
- extern ssize_t generic_file_aio_write(struct kiocb *, const struct iovec *, unsigned long, loff_t);
- extern ssize_t generic_file_aio_write_nolock(struct kiocb *, const struct iovec *,
- 		unsigned long, loff_t);
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 65b2e50..554a396 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2368,9 +2368,27 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
- }
- EXPORT_SYMBOL(generic_file_buffered_write);
- 
--static ssize_t
--__generic_file_aio_write_nolock(struct kiocb *iocb, const struct iovec *iov,
--				unsigned long nr_segs, loff_t *ppos)
-+/**
-+ * __generic_file_aio_write - write data to a file
-+ * @iocb:	IO state structure (file, offset, etc.)
-+ * @iov:	vector with data to write
-+ * @nr_segs:	number of segments in the vector
-+ * @ppos:	position where to write
-+ *
-+ * This function does all the work needed for actually writing data to a
-+ * file. It does all basic checks, removes SUID from the file, updates
-+ * modification times and calls proper subroutines depending on whether we
-+ * do direct IO or a standard buffered write.
-+ *
-+ * It expects i_mutex to be grabbed unless we work on a block device or similar
-+ * object which does not need locking at all.
-+ *
-+ * This function does *not* take care of syncing data in case of O_SYNC write.
-+ * A caller has to handle it. This is mainly due to the fact that we want to
-+ * avoid syncing under i_mutex.
-+ */
-+ssize_t __generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
-+				 unsigned long nr_segs, loff_t *ppos)
- {
- 	struct file *file = iocb->ki_filp;
- 	struct address_space * mapping = file->f_mapping;
-@@ -2467,7 +2485,23 @@ out:
- 	current->backing_dev_info = NULL;
- 	return written ? written : err;
- }
-+EXPORT_SYMBOL(__generic_file_aio_write);
-+
- 
-+/**
-+ * generic_file_aio_write_nolock - write data, usually to a device
-+ * @iocb:	IO state structure
-+ * @iov:	vector with data to write
-+ * @nr_segs:	number of segments in the vector
-+ * @pos:	position in file where to write
-+ *
-+ * This is a wrapper around __generic_file_aio_write() which takes care of
-+ * syncing the file in case of O_SYNC file. It does not take i_mutex for the
-+ * write itself but may do so during syncing. It is meant for users like block
-+ * devices which do not need i_mutex during write. If your filesystem needs to
-+ * do a write but already holds i_mutex, use __generic_file_aio_write()
-+ * directly and then sync the file like generic_file_aio_write().
-+ */
- ssize_t generic_file_aio_write_nolock(struct kiocb *iocb,
- 		const struct iovec *iov, unsigned long nr_segs, loff_t pos)
- {
-@@ -2478,8 +2512,7 @@ ssize_t generic_file_aio_write_nolock(struct kiocb *iocb,
- 
- 	BUG_ON(iocb->ki_pos != pos);
- 
--	ret = __generic_file_aio_write_nolock(iocb, iov, nr_segs,
--			&iocb->ki_pos);
-+	ret = __generic_file_aio_write(iocb, iov, nr_segs, &iocb->ki_pos);
- 
- 	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
- 		ssize_t err;
-@@ -2492,6 +2525,17 @@ ssize_t generic_file_aio_write_nolock(struct kiocb *iocb,
- }
- EXPORT_SYMBOL(generic_file_aio_write_nolock);
- 
-+/**
-+ * generic_file_aio_write - write data to a file
-+ * @iocb:	IO state structure
-+ * @iov:	vector with data to write
-+ * @nr_segs:	number of segments in the vector
-+ * @pos:	position in file where to write
-+ *
-+ * This is a wrapper around __generic_file_aio_write() to be used by most
-+ * filesystems. It takes care of syncing the file in case of O_SYNC file
-+ * and acquires i_mutex as needed.
-+ */
- ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
- 		unsigned long nr_segs, loff_t pos)
- {
-@@ -2503,8 +2547,7 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
- 	BUG_ON(iocb->ki_pos != pos);
- 
- 	mutex_lock(&inode->i_mutex);
--	ret = __generic_file_aio_write_nolock(iocb, iov, nr_segs,
--			&iocb->ki_pos);
-+	ret = __generic_file_aio_write(iocb, iov, nr_segs, &iocb->ki_pos);
- 	mutex_unlock(&inode->i_mutex);
- 
- 	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
+index e271303..1c1638f 100644
+--- a/fs/ext2/inode.c
++++ b/fs/ext2/inode.c
+@@ -482,7 +482,7 @@ static int ext2_alloc_branch(struct inode *inode,
+ 		unlock_buffer(bh);
+ 		mark_buffer_dirty_inode(bh, inode);
+ 		/* We used to sync bh here if IS_SYNC(inode).
+-		 * But we now rely upon generic_osync_inode()
++		 * But we now rely upon generic_write_sync()
+ 		 * and b_inode_buffers.  But not for directories.
+ 		 */
+ 		if (S_ISDIR(inode->i_mode) && IS_DIRSYNC(inode))
 -- 
 1.6.0.2
 
