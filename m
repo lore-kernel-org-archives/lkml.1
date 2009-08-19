@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751705AbZHSCeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751710AbZHSCfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751705AbZHSCeH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 22:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbZHSCeG
+	id S1751710AbZHSCfl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 22:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZHSCfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 22:34:06 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62451 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751596AbZHSCeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 22:34:06 -0400
-Message-ID: <4A8B6481.7040906@cn.fujitsu.com>
-Date: Wed, 19 Aug 2009 10:33:37 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 18 Aug 2009 22:35:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49849 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751199AbZHSCfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 22:35:40 -0400
+Message-ID: <4A8B652E.40905@redhat.com>
+Date: Wed, 19 Aug 2009 10:36:30 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing, sched: mark preempt_schedule() notrace
-References: <4A8A5FF5.8080609@cn.fujitsu.com> <20090818103853.GB5231@nowhere>
-In-Reply-To: <20090818103853.GB5231@nowhere>
-Content-Type: text/plain; charset=UTF-8
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Li Zefan <lizf@cn.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-mm@kvack.org,
+       David Rientjes <rientjes@google.com>, Matt Mackall <mpm@selenic.com>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [Patch] proc: drop write permission on 'timer_list' and	'slabinfo'
+References: <20090817094525.6355.88682.sendpatchset@localhost.localdomain> <20090817094822.GA17838@elte.hu> <1250502847.5038.16.camel@penberg-laptop> <alpine.DEB.1.10.0908171228300.16267@gentwo.org> <4A8986BB.80409@cs.helsinki.fi> <alpine.DEB.1.10.0908171240370.16267@gentwo.org> <4A8A0B0D.6080400@redhat.com> <4A8A0B14.8040700@cn.fujitsu.com> <4A8A1B2E.20505@redhat.com> <20090818120032.GA22152@localhost>
+In-Reply-To: <20090818120032.GA22152@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Tue, Aug 18, 2009 at 04:01:57PM +0800, Lai Jiangshan wrote:
->> Current preempt_schedule() is not marked notrace. It may be
->> infinite recursion in __trace_graph_return().
->>
->> preempt_schedule()
->>   __trace_graph_return()
->>     ftrace_preempt_disable() (!!return false!!)
->>     ftrace_preempt_enable()
->>       preempt_enable_notrace()
->>          preempt_schedule() (need_resched() may be true again)
-> 
-> 
-> 
-> It would happen in __trace_graph_return() , when preempt_schedule()
-> has finished its job. It's very unlikely the TIF_NEED_RESCHED is
-> set just after (because it has just been cleared).
+Wu Fengguang wrote:
+> On Tue, Aug 18, 2009 at 11:08:30AM +0800, Amerigo Wang wrote:
+>
+>   
+>> -	proc_create("slabinfo",S_IWUSR|S_IRUGO,NULL,&proc_slabinfo_operations);
+>> +	proc_create("slabinfo",S_IRUGO,NULL,&proc_slabinfo_operations);
+>>     
+>
+> Style nitpick. The spaces were packed to fit into 80-col I guess.
+>
+>   
 
-It hardly happen ...
-This doesn't mean it'll never happen.
+Yeah, I noticed this too, the reason I didn't fix this is that I don't 
+want to mix coding style fix with this one. We can fix it in another 
+patch, if you want. :)
 
-> But why not. In that case, preempt_schedule() is called again but it's
-> not a real tracing recursion.
-> 
-> That seems like a normal behaviour actually.
-> 
-> 
-
-It's not normal behavior, preempt_schedule() will not call
-preempt_schedule() recursively in any situation when trace is off.
-
-Here, preempt_schedule() is called from __trace_graph_return()
-when trace_function_graph is on.
-
-preempt_schedule()
-  __trace_graph_return()
-    preempt_schedule()
-      __trace_graph_return()
-        ....
-
-So, it's a real tracing recursion.
-It hurts the stack.
-
-
-
-
-
-
+Thanks.
 
