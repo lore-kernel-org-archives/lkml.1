@@ -1,541 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbZHSUzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbZHSU6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753134AbZHSUzj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 16:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbZHSUzj
+	id S1753184AbZHSU6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 16:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbZHSU6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 16:55:39 -0400
-Received: from www84.your-server.de ([213.133.104.84]:52029 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbZHSUzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 16:55:38 -0400
-Subject: Re: [PATCH 3/7] kfifo: cleanup namespace
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
-In-Reply-To: <1250714990.13476.3.camel@wall-e>
-References: <1250714990.13476.3.camel@wall-e>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 22:55:31 +0200
-Message-Id: <1250715331.13476.10.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Wed, 19 Aug 2009 16:58:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33672 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751835AbZHSU6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 16:58:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] drivers/base/power: reset transition_started at dpm_resume_noirq
+Date: Wed, 19 Aug 2009 22:58:58 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Xiaotian Feng <dfeng@redhat.com>, gregkh@suse.de, pavel@ucw.cz,
+       len.brown@intel.com, damm@igel.co.jp,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0908191009330.3001-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908191009330.3001-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Message-Id: <200908192258.58356.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-change name of __kfifo_* functions to kfifo_*, because 
-the prefix __kfifo should be reserved for internal functions only.
+On Wednesday 19 August 2009, Alan Stern wrote:
+> On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+> 
+> > On Monday 17 August 2009, Xiaotian Feng wrote:
+> > > transition_started should be set once the preparation of devices for
+> > > a PM has started, reset before starting to resume devices. When resuming
+> > > devices, kernel calls dpm_resume_noirq then dpm_resume_end(dpm_resume).
+> > > Thus we should reset transition_started at dpm_resume_noirq.
+> > > 
+> > > This patch fixes acpi warning when resuming from suspend/hibernate:
+> > > 
+> > > ACPI: \_SB_.PCI0.IDE1.PRI1.MAS1 - docking
+> > > ------------[ cut here ]------------
+> > > WARNING: at drivers/base/power/main.c:87 device_pm_add+0x8b/0xcc()
+> > > Hardware name: OptiPlex 760
+> > > Device: acpi
+> > > Parentless device registered during a PM transaction
+> > > Modules linked in: fuse sco bridge stp llc bnep l2cap bluetooth sunrpc ip6t_REJECT nf_conntrack_ipv6 ip6table_filter ip6_tables ipv6 dm_multipath uinput snd_hda_codec_analog radeon ppdev parport_pc snd_hda_intel ttm snd_hda_codec serio_raw snd_hwdep iTCO_wdt drm i2c_i801 parport iTCO_vendor_support pcspkr snd_pcm snd_timer i2c_algo_bit i2c_core snd dcdbas wmi e1000e soundcore snd_page_alloc ata_generic pata_acpi [last unloaded: speedstep_lib]
+> > > Pid: 33, comm: kacpi_hotplug Not tainted 2.6.31-rc5 #51
+> > > Call Trace:
+> > >  [<ffffffff8104ece1>] warn_slowpath_common+0x7c/0x94
+> > >  [<ffffffff8104ed50>] warn_slowpath_fmt+0x41/0x43
+> > >  [<ffffffff812ae827>] device_pm_add+0x8b/0xcc
+> > >  [<ffffffff812a820b>] device_add+0x36f/0x519
+> > >  [<ffffffff812a83d3>] device_register+0x1e/0x22
+> > >  [<ffffffff81245c86>] acpi_add_single_object+0xb48/0xd68
+> > >  [<ffffffff810750d6>] ? trace_hardirqs_on_caller+0x1f/0x159
+> > >  [<ffffffff8107521d>] ? trace_hardirqs_on+0xd/0xf
+> > >  [<ffffffff812461cb>] acpi_bus_add+0x2a/0x40
+> > >  [<ffffffff81244128>] ? acpi_bus_get_device+0x47/0x66
+> > >  [<ffffffff81247c52>] hotplug_dock_devices+0x109/0x133
+> > >  [<ffffffff812423b1>] ? acpi_os_execute_hp_deferred+0x0/0x43
+> > >  [<ffffffff81248013>] acpi_dock_deferred_cb+0xbf/0x192
+> > >  [<ffffffff812423e7>] acpi_os_execute_hp_deferred+0x36/0x43
+> > >  [<ffffffff8106099a>] worker_thread+0x215/0x31d
+> > >  [<ffffffff81060945>] ? worker_thread+0x1c0/0x31d
+> > >  [<ffffffff81415f34>] ? thread_return+0x3e/0xaf
+> > >  [<ffffffff810739bb>] ? lock_release_holdtime+0x2c/0x11d
+> > >  [<ffffffff8106549e>] ? autoremove_wake_function+0x0/0x39
+> > >  [<ffffffff81060785>] ? worker_thread+0x0/0x31d
+> > >  [<ffffffff8106513c>] kthread+0x8a/0x92
+> > >  [<ffffffff81012d4a>] child_rip+0xa/0x20
+> > >  [<ffffffff810126d0>] ? restore_args+0x0/0x30
+> > >  [<ffffffff810650b2>] ? kthread+0x0/0x92
+> > >  [<ffffffff81012d40>] ? child_rip+0x0/0x20
+> > > ---[ end trace 6f4892372e7d9f1a ]---
+> > > 
+> > > Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+> > 
+> > OK, we can do this IMO.
+> > 
+> > Alan, what do you think?
+> 
+> I suppose so.  The difference between dpm_resume() and 
+> dpm_resume_noirq() is minimal.
+> 
+> But at the same time, I wonder if this isn't really a bug in ACPI.  
+> Why does it want to register a new top-level device during the 
+> resume_noirq phase?
+> 
+> The stack trace indicates that the registration occurred from within a
+> workqueue.  Maybe it should be moved to a freezable workqueue; that
+> would prevent it from happening too early.
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- drivers/char/nozomi.c                       |   12 +++++-----
- drivers/infiniband/hw/cxgb3/cxio_resource.c |   10 ++++----
- drivers/net/wireless/libertas/cmd.c         |    4 +--
- drivers/net/wireless/libertas/main.c        |    8 +++----
- drivers/platform/x86/sony-laptop.c          |    2 -
- drivers/scsi/libiscsi.c                     |   14 ++++++------
- drivers/scsi/libiscsi_tcp.c                 |   20 ++++++++---------
- drivers/scsi/libsrp.c                       |    2 -
- drivers/usb/host/fhci.h                     |    6 ++---
- include/linux/kfifo.h                       |   32 ++++++----------------------
- kernel/kfifo.c                              |   12 +++++-----
- net/dccp/probe.c                            |    2 -
- 12 files changed, 53 insertions(+), 71 deletions(-)
+This looks like the box was put into a docking station while suspended or
+something like this, which would indicate that the action was legitimate.
 
-diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/char/nozomi.c linux-2.6.31-rc4-kfifo3/drivers/char/nozomi.c
---- linux-2.6.31-rc4-kfifo2/drivers/char/nozomi.c	2009-08-11 12:46:56.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/drivers/char/nozomi.c	2009-08-11 13:14:26.000000000 +0200
-@@ -797,7 +797,7 @@
- 	struct tty_struct *tty = tty_port_tty_get(&port->port);
- 
- 	/* Get data from tty and place in buf for now */
--	size = __kfifo_get(&port->fifo_ul, dc->send_buf,
-+	size = kfifo_get(&port->fifo_ul, dc->send_buf,
- 			   ul_size < SEND_BUF_MAX ? ul_size : SEND_BUF_MAX);
- 
- 	if (size == 0) {
-@@ -987,11 +987,11 @@
- 
- 	} else if (old_ctrl.CTS == 0 && ctrl_dl.CTS == 1) {
- 
--		if (__kfifo_len(&dc->port[port].fifo_ul)) {
-+		if (kfifo_len(&dc->port[port].fifo_ul)) {
- 			DBG1("Enable interrupt (0x%04X) on port: %d",
- 				enable_ier, port);
- 			DBG1("Data in buffer [%d], enable transmit! ",
--				__kfifo_len(&dc->port[port].fifo_ul));
-+				kfifo_len(&dc->port[port].fifo_ul));
- 			enable_transmit_ul(port, dc);
- 		} else {
- 			DBG1("No data in buffer...");
-@@ -1671,7 +1671,7 @@
- 		goto exit;
- 	}
- 
--	rval = __kfifo_put(&port->fifo_ul, (unsigned char *)buffer, count);
-+	rval = kfifo_put(&port->fifo_ul, (unsigned char *)buffer, count);
- 
- 	/* notify card */
- 	if (unlikely(dc == NULL)) {
-@@ -1719,7 +1719,7 @@
- 	if (!port->port.count)
- 		goto exit;
- 
--	room = port->fifo_ul.size - __kfifo_len(&port->fifo_ul);
-+	room = port->fifo_ul.size - kfifo_len(&port->fifo_ul);
- 
- exit:
- 	mutex_unlock(&port->tty_sem);
-@@ -1876,7 +1876,7 @@
- 		goto exit_in_buffer;
- 	}
- 
--	rval = __kfifo_len(&port->fifo_ul);
-+	rval = kfifo_len(&port->fifo_ul);
- 
- exit_in_buffer:
- 	return rval;
-diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/infiniband/hw/cxgb3/cxio_resource.c linux-2.6.31-rc4-kfifo3/drivers/infiniband/hw/cxgb3/cxio_resource.c
---- linux-2.6.31-rc4-kfifo2/drivers/infiniband/hw/cxgb3/cxio_resource.c	2009-08-11 12:47:57.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/drivers/infiniband/hw/cxgb3/cxio_resource.c	2009-08-11 13:14:18.000000000 +0200
-@@ -59,7 +59,7 @@
- 		return -ENOMEM;
- 
- 	for (i = 0; i < skip_low + skip_high; i++)
--		__kfifo_put(fifo, (unsigned char *) &entry, sizeof(u32));
-+		kfifo_put(fifo, (unsigned char *) &entry, sizeof(u32));
- 	if (random) {
- 		j = 0;
- 		random_bytes = random32();
-@@ -71,19 +71,19 @@
- 				random_bytes = random32();
- 			}
- 			idx = (random_bytes >> (j * 2)) & 0xF;
--			__kfifo_put(fifo,
-+			kfifo_put(fifo,
- 				(unsigned char *) &rarray[idx],
- 				sizeof(u32));
- 			rarray[idx] = i;
- 			j++;
- 		}
- 		for (i = 0; i < RANDOM_SIZE; i++)
--			__kfifo_put(fifo,
-+			kfifo_put(fifo,
- 				(unsigned char *) &rarray[i],
- 				sizeof(u32));
- 	} else
- 		for (i = skip_low; i < nr - skip_high; i++)
--			__kfifo_put(fifo, (unsigned char *) &i, sizeof(u32));
-+			kfifo_put(fifo, (unsigned char *) &i, sizeof(u32));
- 
- 	for (i = 0; i < skip_low + skip_high; i++)
- 		kfifo_get_locked(fifo, (unsigned char *) &entry,
-@@ -119,7 +119,7 @@
- 
- 	for (i = 16; i < T3_MAX_NUM_QP; i++)
- 		if (!(i & rdev_p->qpmask))
--			__kfifo_put(&rdev_p->rscp->qpid_fifo,
-+			kfifo_put(&rdev_p->rscp->qpid_fifo,
- 				    (unsigned char *) &i, sizeof(u32));
- 	return 0;
- }
-diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/cmd.c linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/cmd.c
---- linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/cmd.c	2009-08-11 12:51:53.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/cmd.c	2009-08-11 13:14:45.000000000 +0200
-@@ -1862,7 +1862,7 @@
- 	priv->dnld_sent = DNLD_RES_RECEIVED;
- 
- 	/* If nothing to do, go back to sleep (?) */
--	if (!__kfifo_len(&priv->event_fifo) && !priv->resp_len[priv->resp_idx])
-+	if (!kfifo_len(&priv->event_fifo) && !priv->resp_len[priv->resp_idx])
- 		priv->psstate = PS_STATE_SLEEP;
- 
- 	spin_unlock_irqrestore(&priv->driver_lock, flags);
-@@ -1936,7 +1936,7 @@
- 	}
- 
- 	/* Pending events or command responses? */
--	if (__kfifo_len(&priv->event_fifo) || priv->resp_len[priv->resp_idx]) {
-+	if (kfifo_len(&priv->event_fifo) || priv->resp_len[priv->resp_idx]) {
- 		allowed = 0;
- 		lbs_deb_host("pending events or command responses\n");
- 	}
-diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/main.c linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/main.c
---- linux-2.6.31-rc4-kfifo2/drivers/net/wireless/libertas/main.c	2009-08-11 12:45:53.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/drivers/net/wireless/libertas/main.c	2009-08-11 13:14:41.000000000 +0200
-@@ -772,7 +772,7 @@
- 			shouldsleep = 1;	/* Can't send a command; one already running */
- 		else if (!list_empty(&priv->cmdpendingq))
- 			shouldsleep = 0;	/* We have a command to send */
--		else if (__kfifo_len(&priv->event_fifo))
-+		else if (kfifo_len(&priv->event_fifo))
- 			shouldsleep = 0;	/* We have an event to process */
- 		else
- 			shouldsleep = 1;	/* No command */
-@@ -851,10 +851,10 @@
- 
- 		/* Process hardware events, e.g. card removed, link lost */
- 		spin_lock_irq(&priv->driver_lock);
--		while (__kfifo_len(&priv->event_fifo)) {
-+		while (kfifo_len(&priv->event_fifo)) {
- 			u32 event;
- 
--			__kfifo_get(&priv->event_fifo, (unsigned char *) &event,
-+			kfifo_get(&priv->event_fifo, (unsigned char *) &event,
- 				sizeof(event));
- 			spin_unlock_irq(&priv->driver_lock);
- 			lbs_process_event(priv, event);
-@@ -1578,7 +1578,7 @@
- 	if (priv->psstate == PS_STATE_SLEEP)
- 		priv->psstate = PS_STATE_AWAKE;
- 
--	__kfifo_put(&priv->event_fifo, (unsigned char *) &event, sizeof(u32));
-+	kfifo_put(&priv->event_fifo, (unsigned char *) &event, sizeof(u32));
- 
- 	wake_up_interruptible(&priv->waitq);
- 
-diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/platform/x86/sony-laptop.c linux-2.6.31-rc4-kfifo3/drivers/platform/x86/sony-laptop.c
---- linux-2.6.31-rc4-kfifo2/drivers/platform/x86/sony-laptop.c	2009-08-11 12:49:23.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/drivers/platform/x86/sony-laptop.c	2009-08-11 13:13:24.000000000 +0200
-@@ -2121,7 +2121,7 @@
- 	spin_lock_irqsave(&sonypi_compat.fifo_lock, flags);
- 
- 	if (atomic_inc_return(&sonypi_compat.open_count) == 1)
--		__kfifo_reset(&sonypi_compat.fifo);
-+		kfifo_reset(&sonypi_compat.fifo);
- 
- 	spin_unlock_irqrestore(&sonypi_compat.fifo_lock, flags);
- 
-diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi.c linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi.c
---- linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi.c	2009-08-09 16:15:00.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi.c	2009-08-11 13:13:43.000000000 +0200
-@@ -428,7 +428,7 @@
- 	if (conn->login_task == task)
- 		return;
- 
--	__kfifo_put(&session->cmdpool.queue, (void*)&task, sizeof(void*));
-+	kfifo_put(&session->cmdpool.queue, (void*)&task, sizeof(void*));
- 
- 	if (sc) {
- 		task->sc = NULL;
-@@ -614,7 +614,7 @@
- 		BUG_ON(conn->c_stage == ISCSI_CONN_INITIAL_STAGE);
- 		BUG_ON(conn->c_stage == ISCSI_CONN_STOPPED);
- 
--		if (!__kfifo_get(&session->cmdpool.queue,
-+		if (!kfifo_get(&session->cmdpool.queue,
- 				 (void*)&task, sizeof(void*)))
- 			return NULL;
- 	}
-@@ -1376,7 +1376,7 @@
- {
- 	struct iscsi_task *task;
- 
--	if (!__kfifo_get(&conn->session->cmdpool.queue,
-+	if (!kfifo_get(&conn->session->cmdpool.queue,
- 			 (void *) &task, sizeof(void *)))
- 		return NULL;
- 
-@@ -2129,7 +2129,7 @@
- 			q->max = i;
- 			goto enomem;
- 		}
--		__kfifo_put(&q->queue, (void*)&q->pool[i], sizeof(void*));
-+		kfifo_put(&q->queue, (void*)&q->pool[i], sizeof(void*));
- 	}
- 
- 	if (items) {
-@@ -2476,7 +2476,7 @@
- 
- 	/* allocate login_task used for the login/text sequences */
- 	spin_lock_bh(&session->lock);
--	if (!__kfifo_get(&session->cmdpool.queue,
-+	if (!kfifo_get(&session->cmdpool.queue,
-                          (void*)&conn->login_task,
- 			 sizeof(void*))) {
- 		spin_unlock_bh(&session->lock);
-@@ -2496,7 +2496,7 @@
- 	return cls_conn;
- 
- login_task_data_alloc_fail:
--	__kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
-+	kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
- 		    sizeof(void*));
- login_task_alloc_fail:
- 	iscsi_destroy_conn(cls_conn);
-@@ -2559,7 +2559,7 @@
- 	free_pages((unsigned long) conn->data,
- 		   get_order(ISCSI_DEF_MAX_RECV_SEG_LEN));
- 	kfree(conn->persistent_address);
--	__kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
-+	kfifo_put(&session->cmdpool.queue, (void*)&conn->login_task,
- 		    sizeof(void*));
- 	if (session->leadconn == conn)
- 		session->leadconn = NULL;
-diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi_tcp.c linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi_tcp.c
---- linux-2.6.31-rc4-kfifo2/drivers/scsi/libiscsi_tcp.c	2009-08-11 22:41:11.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/drivers/scsi/libiscsi_tcp.c	2009-08-11 22:41:20.000000000 +0200
-@@ -445,15 +445,15 @@
- 		return;
- 
- 	/* flush task's r2t queues */
--	while (__kfifo_get(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*))) {
--		__kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
-+	while (kfifo_get(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*))) {
-+		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
- 			    sizeof(void*));
- 		ISCSI_DBG_TCP(task->conn, "pending r2t dropped\n");
- 	}
- 
- 	r2t = tcp_task->r2t;
- 	if (r2t != NULL) {
--		__kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
-+		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
- 			    sizeof(void*));
- 		tcp_task->r2t = NULL;
- 	}
-@@ -541,7 +541,7 @@
- 		return 0;
- 	}
- 
--	rc = __kfifo_get(&tcp_task->r2tpool.queue, (void*)&r2t, sizeof(void*));
-+	rc = kfifo_get(&tcp_task->r2tpool.queue, (void*)&r2t, sizeof(void*));
- 	if (!rc) {
- 		iscsi_conn_printk(KERN_ERR, conn, "Could not allocate R2T. "
- 				  "Target has sent more R2Ts than it "
-@@ -554,7 +554,7 @@
- 	if (r2t->data_length == 0) {
- 		iscsi_conn_printk(KERN_ERR, conn,
- 				  "invalid R2T with zero data len\n");
--		__kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
-+		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
- 			    sizeof(void*));
- 		return ISCSI_ERR_DATALEN;
- 	}
-@@ -570,7 +570,7 @@
- 				  "invalid R2T with data len %u at offset %u "
- 				  "and total length %d\n", r2t->data_length,
- 				  r2t->data_offset, scsi_out(task->sc)->length);
--		__kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
-+		kfifo_put(&tcp_task->r2tpool.queue, (void*)&r2t,
- 			    sizeof(void*));
- 		return ISCSI_ERR_DATALEN;
- 	}
-@@ -580,7 +580,7 @@
- 	r2t->sent = 0;
- 
- 	tcp_task->exp_datasn = r2tsn + 1;
--	__kfifo_put(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*));
-+	kfifo_put(&tcp_task->r2tqueue, (void*)&r2t, sizeof(void*));
- 	conn->r2t_pdus_cnt++;
- 
- 	iscsi_requeue_task(task);
-@@ -951,7 +951,7 @@
- 		return conn->session->tt->init_pdu(task, 0, task->data_count);
- 	}
- 
--	BUG_ON(__kfifo_len(&tcp_task->r2tqueue));
-+	BUG_ON(kfifo_len(&tcp_task->r2tqueue));
- 	tcp_task->exp_datasn = 0;
- 
- 	/* Prepare PDU, optionally w/ immediate data */
-@@ -982,7 +982,7 @@
- 			if (r2t->data_length <= r2t->sent) {
- 				ISCSI_DBG_TCP(task->conn,
- 					      "  done with r2t %p\n", r2t);
--				__kfifo_put(&tcp_task->r2tpool.queue,
-+				kfifo_put(&tcp_task->r2tpool.queue,
- 					    (void *)&tcp_task->r2t,
- 					    sizeof(void *));
- 				tcp_task->r2t = r2t = NULL;
-@@ -990,7 +990,7 @@
- 		}
- 
- 		if (r2t == NULL) {
--			__kfifo_get(&tcp_task->r2tqueue,
-+			kfifo_get(&tcp_task->r2tqueue,
- 				    (void *)&tcp_task->r2t, sizeof(void *));
- 			r2t = tcp_task->r2t;
- 		}
-diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/scsi/libsrp.c linux-2.6.31-rc4-kfifo3/drivers/scsi/libsrp.c
---- linux-2.6.31-rc4-kfifo2/drivers/scsi/libsrp.c	2009-08-09 16:18:53.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/drivers/scsi/libsrp.c	2009-08-11 13:14:12.000000000 +0200
-@@ -61,7 +61,7 @@
- 	kfifo_init(&q->queue, (void *) q->pool, max * sizeof(void *));
- 
- 	for (i = 0, iue = q->items; i < max; i++) {
--		__kfifo_put(&q->queue, (void *) &iue, sizeof(void *));
-+		kfifo_put(&q->queue, (void *) &iue, sizeof(void *));
- 		iue->sbuf = ring[i];
- 		iue++;
- 	}
-diff -u -N -r linux-2.6.31-rc4-kfifo2/drivers/usb/host/fhci.h linux-2.6.31-rc4-kfifo3/drivers/usb/host/fhci.h
---- linux-2.6.31-rc4-kfifo2/drivers/usb/host/fhci.h	2009-08-11 12:46:08.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/drivers/usb/host/fhci.h	2009-08-11 13:14:36.000000000 +0200
-@@ -505,19 +505,19 @@
- 
- static inline unsigned int cq_howmany(struct kfifo *kfifo)
- {
--	return __kfifo_len(kfifo) / sizeof(void *);
-+	return kfifo_len(kfifo) / sizeof(void *);
- }
- 
- static inline int cq_put(struct kfifo *kfifo, void *p)
- {
--	return __kfifo_put(kfifo, (void *)&p, sizeof(p));
-+	return kfifo_put(kfifo, (void *)&p, sizeof(p));
- }
- 
- static inline void *cq_get(struct kfifo *kfifo)
- {
- 	void *p = NULL;
- 
--	__kfifo_get(kfifo, (void *)&p, sizeof(p));
-+	kfifo_get(kfifo, (void *)&p, sizeof(p));
- 	return p;
- }
- 
-diff -u -N -r linux-2.6.31-rc4-kfifo2/include/linux/kfifo.h linux-2.6.31-rc4-kfifo3/include/linux/kfifo.h
---- linux-2.6.31-rc4-kfifo2/include/linux/kfifo.h	2009-08-16 22:18:26.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/include/linux/kfifo.h	2009-08-16 22:15:37.000000000 +0200
-@@ -37,34 +37,25 @@
- extern __must_check int kfifo_alloc(struct kfifo *fifo, unsigned int size,
- 			gfp_t gfp_mask);
- extern void kfifo_free(struct kfifo *fifo);
--extern unsigned int __kfifo_put(struct kfifo *fifo,
-+extern unsigned int kfifo_put(struct kfifo *fifo,
- 				const unsigned char *buffer, unsigned int len);
--extern unsigned int __kfifo_get(struct kfifo *fifo,
-+extern unsigned int kfifo_get(struct kfifo *fifo,
- 				unsigned char *buffer, unsigned int len);
- 
- /**
-- * __kfifo_reset - removes the entire FIFO contents, no locking version
-- * @fifo: the fifo to be emptied.
-- */
--static inline void __kfifo_reset(struct kfifo *fifo)
--{
--	fifo->in = fifo->out = 0;
--}
--
--/**
-  * kfifo_reset - removes the entire FIFO contents
-  * @fifo: the fifo to be emptied.
-  */
- static inline void kfifo_reset(struct kfifo *fifo)
- {
--	__kfifo_reset(fifo);
-+	fifo->in = fifo->out = 0;
- }
- 
- /**
-- * __kfifo_len - returns the number of bytes available in the FIFO
-+ * kfifo_len - returns the number of used bytes in the FIFO
-  * @fifo: the fifo to be used.
-  */
--static inline unsigned int __kfifo_len(struct kfifo *fifo)
-+static inline unsigned int kfifo_len(struct kfifo *fifo)
- {
- 	register unsigned int	out;
- 
-@@ -92,7 +83,7 @@
- 
- 	spin_lock_irqsave(lock, flags);
- 
--	ret = __kfifo_put(fifo, from, n);
-+	ret = kfifo_put(fifo, from, n);
- 
- 	spin_unlock_irqrestore(lock, flags);
- 
-@@ -117,7 +108,7 @@
- 
- 	spin_lock_irqsave(lock, flags);
- 
--	ret = __kfifo_get(fifo, to, n);
-+	ret = kfifo_get(fifo, to, n);
- 
- 	/*
- 	 * optimization: if the FIFO is empty, set the indices to 0
-@@ -131,13 +122,4 @@
- 	return ret;
- }
- 
--/**
-- * kfifo_len - returns the number of bytes available in the FIFO
-- * @fifo: the fifo to be used.
-- */
--static inline unsigned int kfifo_len(struct kfifo *fifo)
--{
--	return __kfifo_len(fifo);
--}
--
- #endif
-diff -u -N -r linux-2.6.31-rc4-kfifo2/kernel/kfifo.c linux-2.6.31-rc4-kfifo3/kernel/kfifo.c
---- linux-2.6.31-rc4-kfifo2/kernel/kfifo.c	2009-08-16 22:08:37.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/kernel/kfifo.c	2009-08-16 22:08:48.000000000 +0200
-@@ -100,7 +100,7 @@
- EXPORT_SYMBOL(kfifo_free);
- 
- /**
-- * __kfifo_put - puts some data into the FIFO, no locking version
-+ * kfifo_put - puts some data into the FIFO, no locking version
-  * @fifo: the fifo to be used.
-  * @buffer: the data to be added.
-  * @len: the length of the data to be added.
-@@ -112,7 +112,7 @@
-  * Note that with only one concurrent reader and one concurrent
-  * writer, you don't need extra locking to use these functions.
-  */
--unsigned int __kfifo_put(struct kfifo *fifo,
-+unsigned int kfifo_put(struct kfifo *fifo,
- 			const unsigned char *buffer, unsigned int len)
- {
- 	unsigned int l;
-@@ -144,10 +144,10 @@
- 
- 	return len;
- }
--EXPORT_SYMBOL(__kfifo_put);
-+EXPORT_SYMBOL(kfifo_put);
- 
- /**
-- * __kfifo_get - gets some data from the FIFO, no locking version
-+ * kfifo_get - gets some data from the FIFO, no locking version
-  * @fifo: the fifo to be used.
-  * @buffer: where the data must be copied.
-  * @len: the size of the destination buffer.
-@@ -158,7 +158,7 @@
-  * Note that with only one concurrent reader and one concurrent
-  * writer, you don't need extra locking to use these functions.
-  */
--unsigned int __kfifo_get(struct kfifo *fifo,
-+unsigned int kfifo_get(struct kfifo *fifo,
- 			 unsigned char *buffer, unsigned int len)
- {
- 	unsigned int l;
-@@ -190,4 +190,4 @@
- 
- 	return len;
- }
--EXPORT_SYMBOL(__kfifo_get);
-+EXPORT_SYMBOL(kfifo_get);
-diff -u -N -r linux-2.6.31-rc4-kfifo2/net/dccp/probe.c linux-2.6.31-rc4-kfifo3/net/dccp/probe.c
---- linux-2.6.31-rc4-kfifo2/net/dccp/probe.c	2009-08-11 12:50:28.000000000 +0200
-+++ linux-2.6.31-rc4-kfifo3/net/dccp/probe.c	2009-08-11 13:15:34.000000000 +0200
-@@ -132,7 +132,7 @@
- 		return -ENOMEM;
- 
- 	error = wait_event_interruptible(dccpw.wait,
--					 __kfifo_len(&dccpw.fifo) != 0);
-+					 kfifo_len(&dccpw.fifo) != 0);
- 	if (error)
- 		goto out_free;
- 
+Anyway, I don't think that's anything the core has to care about. :-)
 
-
+Thanks,
+Rafael
