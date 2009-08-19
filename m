@@ -1,27 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751337AbZHSG2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751139AbZHSGkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751337AbZHSG2o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 02:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbZHSG2n
+	id S1751139AbZHSGkp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 02:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZHSGkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 02:28:43 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:13043 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751140AbZHSG2m convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 02:28:42 -0400
-Message-Id: <4A8BB7B802000078000107DC@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Wed, 19 Aug 2009 07:28:40 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Robert Richter" <robert.richter@amd.com>
-Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>,
-       <hpa@zytor.com>
-Subject: Re: [PATCH] i386: fix section mismatches for init code
-	 with!HOTPLUG_CPU
-References: <4A8AE7CD020000780001054B@vpn.id2.novell.com>
- <20090818175740.GV9915@erda.amd.com>
-In-Reply-To: <20090818175740.GV9915@erda.amd.com>
+	Wed, 19 Aug 2009 02:40:42 -0400
+Received: from sinclair.provo.novell.com ([137.65.248.137]:45407 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbZHSGkl convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-ghaskins@novell.com;6:2>);
+	Wed, 19 Aug 2009 02:40:41 -0400
+Message-Id: <4A8B66280200005A00052A54@sinclair.provo.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 Beta 
+Date: Wed, 19 Aug 2009 00:40:40 -0600
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Gregory Haskins" <gregory.haskins@gmail.com>,
+       "Avi Kivity" <avi@redhat.com>
+Cc: "Anthony Liguori" <anthony@codemonkey.ws>, "Ingo Molnar" <mingo@elte.hu>,
+       <alacrityvm-devel@lists.sourceforge.net>,
+       "Michael S. Tsirkin" <mst@redhat.com>, <kvm@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
+	 vbus_driver objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net>
+ <20090814154308.26116.46980.stgit@dev.haskins.net>
+ <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws>
+ <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws>
+ <4A8AA9BD.2070909@gmail.com> <4A8AB076.6080906@redhat.com>
+ <4A8ACE1F.6020402@gmail.com> <20090818165139.GC19846@redhat.com>
+ <4A8B8F4E.80207@gmail.com> <4A8B9241.20300@redhat.com>
+In-Reply-To: <4A8B9241.20300@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -30,19 +38,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Robert Richter <robert.richter@amd.com> 18.08.09 19:57 >>>
->On 18.08.09 16:41:33, Jan Beulich wrote:
->> Commit 0e83815be719d3391bf5ea24b7fe696c07dbd417 changed the section the
->> initial_code variable gets allocated in, in an attempt to address a
->> section conflict warning. This, however created a new section conflict
->> when building without HOTPLUG_CPU. The apparently only (reasonable) way
->> to address this is to always use __REFDATA.
->
->Hmm, not sure if I am missing something, but my patch actually
->shouldn't have changed the !HOTPLUG_CPU case:
+>>> On 8/19/2009 at  1:48 AM, in message <4A8B9241.20300@redhat.com>, Avi Kivity
+<avi@redhat.com> wrote: 
+> On 08/19/2009 08:36 AM, Gregory Haskins wrote:
+>>> If virtio net in guest could be improved instead, everyone would
+>>> benefit.
+>>>      
+>> So if I whip up a virtio-net backend for vbus with a PCI compliant
+>> connector, you are happy?
+>>    
+> 
+> This doesn't improve virtio-net in any way.
 
-Correct, but it also didn't take care of it, despite changing the code in
-question.
+Any why not?  (Did you notice I said "PCI compliant", i.e. over virtio-pci)
 
-Jan
+
+> 
+>>> I am doing this, and I wish more people would join.  Instead,
+>>> you change ABI in a incompatible way.
+>>>      
+>> Only by choice of my particular connector.  The ABI is a function of the
+>> connector design.  So one such model is to terminate the connector in
+>> qemu, and surface the resulting objects as PCI devices.  I choose not to
+>> use this particular design for my connector that I am pushing upstream
+>> because I am of the opinion that I can do better by terminating it in
+>> the guest directly as a PV optimized bus.  However, both connectors can
+>> theoretically coexist peacefully.
+>>    
+> 
+> virtio already supports this model; see lguest and s390.  Transporting 
+> virtio over vbus and vbus over something else doesn't gain anything over 
+> directly transporting virtio over that something else.
+
+This is not what I am advocating.
+
+Kind Regards,
+-Greg
+
+
+
+
 
