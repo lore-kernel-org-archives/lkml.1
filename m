@@ -1,121 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbZHSAXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZHSAbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751448AbZHSAXF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 20:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbZHSAXE
+	id S1751287AbZHSAbP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 20:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbZHSAbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 20:23:04 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:36528 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbZHSAXC (ORCPT
+	Tue, 18 Aug 2009 20:31:14 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60427 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750960AbZHSAbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 20:23:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=I0VGpaLVqQQB7SyIEzGSewlyPqg4YOGQ2/9Ay9tkz2zhMJlN+hqaxA6dvzzuTe/vOi
-         IrtmfK74RZg4s+zHlHUwB1QtokWyaZWRPiy38m2IPhOCYSQ3+N2TjJVzkvvHiAfseHBM
-         O50b0w4U31SNS20tfNB4ZIHYMjTbtwWNsjt/o=
-Message-ID: <4A8B4607.6090303@gmail.com>
-Date: Tue, 18 Aug 2009 17:23:35 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
+	Tue, 18 Aug 2009 20:31:14 -0400
+Date: Tue, 18 Aug 2009 20:31:10 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: system gets stuck in a lock during boot
+In-Reply-To: <4A8B4607.6090303@gmail.com>
+Message-ID: <alpine.DEB.2.00.0908182030450.18648@gandalf.stny.rr.com>
 References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>  <20090818160911.GA21243@goodmis.org> <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com> <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+ <4A8B4607.6090303@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Tue, 18 Aug 2009, Justin Mattock wrote:
->
->    
->> On Tue, Aug 18, 2009 at 9:09 AM, Steven Rostedt<rostedt@goodmis.org>  wrote:
->>      
->>> On Tue, Aug 18, 2009 at 12:49:06PM +0200, Frederic Weisbecker wrote:
->>>        
->>>> On Thu, Aug 13, 2009 at 08:42:21AM -0700, Justin P. Mattock wrote:
->>>>          
->>>>> I posted already and had no reply,
->>>>> I cannot boot my system with the latest git
->>>>>
->>>>> seems to be stuck in some lock:
->>>>>            
->
-> BTW, it does not look like it got stuck in a lock. The backtrace shows
-> that it paniced inside event_create_dir due to a bad pointer.
->
->    
->>>>> [   0.655640] [<ffffffff81440c33>] panic+0x84/0x129
->>>>> [   0.655883] [<ffffffff81063f96>]  do_exit+0x84/0x67e
->>>>> [   0.656125] [<ffffffff81445044>] oops_end+0x9c/0xb7
->>>>> [   0.656368] [<ffffffff81044a6c>] no_context+0x200/0x223
->>>>> [   0.656611] [<ffffffff81442d3d>] ? __mutex_lock_slowpath+0x226/0x249
->>>>> [   0.656848] [<ffffffff81044c36>] __bad_area_nosemaphore+0x1a7/0x1e1
->>>>> [   0.657097] [<ffffffff81442b01>]? mutex_unlock+0x1c/0x32
->>>>> [   0.657097] [<ffffffff811ce094>] ? inode_doinit_with_dentry+0x533/0x5be
->>>>> [   0.657579] [<ffffffff81443ee0>] ? _spin_unlock+0x1c/0x32
->>>>> [   0.657822] [<ffffffff81044c91>] bad_area_nosemaphore+0x2a/0x40
->>>>> [   0.658066] [<ffffffff811ce149>] ? selinux_d_instantiate+0x2a/0x40
->>>>> [   0.658309] [<ffffffff8144687d>] do_page_fault+0x192/0x2dd
->>>>> [   0.658549] [<ffffffff814444cf>] page_fault+0x1f/0x30
->>>>> [   0.658791] [<ffffffff8120e856>] ? strcmp+0x17/0x46
->>>>> [   0.659040] [<ffffffff810b9ca0>] event_create_dir+0x49/0x37b
->>>>>            
->>>>
->>>> Ouch...
->>>>
->>>> I've never seen such panic. Could you send me your config, hopefully
->>>> I could reproduce it?
->>>>          
->>> Send me the config too please.
->>>
->>> -- Steve
->>>
->>>
->>>        
->> yeah this happens with rc6 but not with rc5.
->>
->> The system is a linux from scratch build
->> x86_64 I used these flags for building everything:
->>
->>   CFLAGS=" -m64 -mtune=core2 -march=core2 -mfpmath=both  -O2 -pipe
->>   -fomit-frame-pointer -fstack-protector" CXXFLAGS="${CFLAGS}" MAKEOPTS="{-j3}"
->>
->> also:  I have a macbook(not x86_64) that is running rc6 that seems
->> to be fine.(I can double check).
->>
->> attached is .config, dmesg as well.
->>      
->
-> BTW, how did you get the dmesg? Is it from a clean boot?
->
-> Since it works fine in -rc5 but breaks in -rc6, could you do a git bisect
-> on it? It shouldn't take too long.
->
-> Thanks,
->
-> -- Steve
->
->    
-well grub2 sure works o.k.
-the new gfxload is pretty good.
-problem is the screen just says
-[Linux-bzImage etc.....]
-and that's it. (was hoping to make the
-font smaller to reveal the bug).
 
-at this point the only choice I have is to undo
-commits until I hit the right one.
+On Tue, 18 Aug 2009, Justin P. Mattock wrote:
+> well grub2 sure works o.k.
+> the new gfxload is pretty good.
+> problem is the screen just says
+> [Linux-bzImage etc.....]
+> and that's it. (was hoping to make the
+> font smaller to reveal the bug).
+> 
+> at this point the only choice I have is to undo
+> commits until I hit the right one.
 
+How come you can not do a git bisect?
 
-Justin P. Mattock
+It would be faster.
+
+-- Steve
 
