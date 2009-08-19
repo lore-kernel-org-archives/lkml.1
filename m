@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbZHSDAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbZHSDCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751994AbZHSDAk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 23:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbZHSDAj
+	id S1752178AbZHSDCV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 23:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbZHSDAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 23:00:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60917 "EHLO
+	Tue, 18 Aug 2009 23:00:43 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:60989 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751857AbZHSDAg (ORCPT
+	with ESMTP id S1751882AbZHSDAh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 23:00:36 -0400
-Message-Id: <20090819025634.987354707@goodmis.org>
+	Tue, 18 Aug 2009 23:00:37 -0400
+Message-Id: <20090819030037.495409646@goodmis.org>
+References: <20090819025634.987354707@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 18 Aug 2009 22:56:34 -0400
+Date: Tue, 18 Aug 2009 22:56:40 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -25,80 +26,77 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
        Alan Jenkins <sourcejedi.lkml@googlemail.com>,
        Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH 00/14] kconfig: streamline distro configs for testers
+Subject: [PATCH 06/14] kconfig: enable CONFIG_IKCONFIG from streamline_config.pl
+Content-Disposition: inline; filename=0006-kconfig-enable-CONFIG_IKCONFIG-from-streamline_confi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's my rebase of the prior push of streamline-config.pl.
+From: Steven Rostedt <srostedt@redhat.com>
 
-What this patch series does, is add my streamline-config.pl as a make
-option for users. What streamline-config.pl does is to look at the
-modules loaded in the system (lsmod) and then scans all the Makefiles
-and Kconfigs in the current directory tree to find what configs need
-to be set for the modules that are loaded.
+Ingo Molnar suggested that the streamline_config.pl should enable
+CONFIG_IKCONFIG to keep the current config in the kernel.
+Then we can use scripts/extract-ikconfig to find the current
+modules.
 
-It then looks at the .config (if .config is not found, it looks
-in /boot, /proc/config.gz, vmlinux, configs.ko for .configs that it
-may be able to use). This script will remove all options set as =m that
-does not need to be set in order to build the modules found by lsmod.
+This patch changes streamline_config.pl to check if CONFIG_IKCONFIG
+is not set, and if it is not, it enables it to be a module.
 
-NOTE: This does not touch any =y option. If you do make allyesconfig
-and then run this, it will have not effect anything. Nor does this enable
-any thing that is not set. Although we may change this in the future.
+[ Impact: make current config options easier to find ]
 
-This patch series provides:
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ scripts/kconfig/streamline_config.pl |   33 +++++++++++++++++++++++----------
+ 1 files changed, 23 insertions(+), 10 deletions(-)
 
-  make localmodconfig
+diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
+index caac952..2334641 100644
+--- a/scripts/kconfig/streamline_config.pl
++++ b/scripts/kconfig/streamline_config.pl
+@@ -256,18 +256,31 @@ my %setconfigs;
+ # Finally, read the .config file and turn off any module enabled that
+ # we could not find a reason to keep enabled.
+ while(<CIN>) {
+-	if (/^(CONFIG.*)=(m|y)/) {
+-		if (defined($configs{$1})) {
+-		    $setconfigs{$1} = $2;
+-		    print;
+-		} elsif ($2 eq "m") {
+-		    print "# $1 is not set\n";
+-		} else {
+-		    print;
+-		}
++
++    if (/CONFIG_IKCONFIG/) {
++	if (/# CONFIG_IKCONFIG is not set/) {
++	    # enable IKCONFIG at least as a module
++	    print "CONFIG_IKCONFIG=m\n";
++	    # don't ask about PROC
++	    print "# CONFIG_IKCONFIG is not set\n";
++	} else {
++	    print;
++	}
++	next;
++    }
++
++    if (/^(CONFIG.*)=(m|y)/) {
++	if (defined($configs{$1})) {
++	    $setconfigs{$1} = $2;
++	    print;
++	} elsif ($2 eq "m") {
++	    print "# $1 is not set\n";
+ 	} else {
+-		print;
++	    print;
+ 	}
++    } else {
++	print;
++    }
+ }
+ close(CIN);
+ 
+-- 
+1.6.3.3
 
-which will look for a .config to streamline. Then it will run silentoldconfig
-to clean up any missing options.
-
-  make localyesconfig
-
-will remove all =m that is not needed to build the modules provided
-by lsmod, and then convert the rest to =y. Note, once you do this, no more
-changes will be made by these scripts.
-
-This is idea to help testers. Since a lot of people download a kernel
-from kernel.org and then uses the distro config to configure it. This can
-take hours to build. Now all a tester needs to do, is to download the
-kernel from kernel.org and run "make localmodconfig". This will disable
-most of the modules that are set in distro kernels and speed up the
-build time by magnitudes!
-
-Lets try to get this in soon,
-
--- Steve
-
-
-The following patches are in:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-
-    branch: kconfig
-
-
-Steven Rostedt (14):
-      kconfig: add streamline_config.pl to scripts
-      kconfig: make localmodconfig to run streamline_config.pl
-      kconfig: add make localyesconfig option
-      kconfig: streamline_config.pl do not stop with no depends
-      kconfig: do not warn about modules built in
-      kconfig: enable CONFIG_IKCONFIG from streamline_config.pl
-      kconfig: add check if end exists in extract-ikconfig
-      kconfig: have extract-ikconfig read ELF files
-      kconfig: keep config.gz around even if CONFIG_IKCONFIG_PROC is not set
-      kconfig: search for a config to base the local(mod|yes)config on
-      kconfig: unset IKCONFIG_PROC and clean up nesting
-      kconfig: test for /boot/config-uname after /proc/config.gz in localconfig
-      kconfig: make local .config default for streamline_config
-      kconfig: test if a .config already exists
-
-----
- kernel/Makefile                      |    2 +-
- scripts/extract-ikconfig             |   14 ++
- scripts/kconfig/Makefile             |   34 +++-
- scripts/kconfig/streamline_config.pl |  366 ++++++++++++++++++++++++++++++++++
- 4 files changed, 414 insertions(+), 2 deletions(-)
 -- 
