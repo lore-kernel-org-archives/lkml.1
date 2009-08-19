@@ -1,94 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZHSNHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbZHSNHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752543AbZHSNHx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZHSNEf
+	id S1752479AbZHSNHk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZHSNHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:04:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50584 "EHLO mx2.redhat.com"
+	Wed, 19 Aug 2009 09:07:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34948 "EHLO mx2.redhat.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752018AbZHSNCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:02:49 -0400
-From: Avi Kivity <avi@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 37/47] KVM: introduce module parameter for ignoring unknown MSRs accesses
-Date: Wed, 19 Aug 2009 16:02:33 +0300
-Message-Id: <1250686963-8357-38-git-send-email-avi@redhat.com>
-In-Reply-To: <1250686963-8357-1-git-send-email-avi@redhat.com>
-References: <1250686963-8357-1-git-send-email-avi@redhat.com>
+	id S1752208AbZHSNHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:07:35 -0400
+Date: Wed, 19 Aug 2009 16:04:17 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
+Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090819130417.GB3080@redhat.com>
+References: <cover.1250187913.git.mst@redhat.com> <200908141340.36176.arnd@arndb.de> <20090816065110.GA3008@redhat.com> <200908191104.50672.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908191104.50672.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andre Przywara <andre.przywara@amd.com>
+On Wed, Aug 19, 2009 at 11:04:50AM +0200, Arnd Bergmann wrote:
+> On Sunday 16 August 2009, Michael S. Tsirkin wrote:
+> > On Fri, Aug 14, 2009 at 01:40:36PM +0200, Arnd Bergmann wrote:
+> > > 
+> > > * most of the transports are sockets, tap uses a character device.
+> > >   This could be dealt with by having both a struct socket * in
+> > >   struct vhost_net *and* a struct file *, or by always keeping the
+> > >   struct file and calling vfs_readv/vfs_writev for the data transport
+> > >   in both cases.
+> > 
+> > I am concerned that character devices might have weird side effects with
+> > read/write operations and that calling them from kernel thread the way I
+> > do might have security implications. Can't point at anything specific
+> > though at the moment.
+> 
+> I understand your feelings about passing a chardev fd into your driver
+> and I agree that we need to be very careful if we want to allow it.
+> 
+> Maybe we could instead extend the 'splice' system call to work on a
+> vhost_net file descriptor.  If we do that, we can put the access back
+> into a user thread (or two) that stays in splice indefinetely
 
-KVM will inject a #GP into the guest if that tries to access unhandled
-MSRs. This will crash many guests. Although it would be the correct
-way to actually handle these MSRs, we introduce a runtime switchable
-module param called "ignore_msrs" (defaults to 0). If this is Y, unknown
-MSR reads will return 0, while MSR writes are simply dropped. In both cases
-we print a message to dmesg to inform the user about that.
+An issue with exposing internal threading model to userspace
+in this way is that we lose control of e.g. CPU locality -
+and it is very hard for userspace to get it right.
 
-You can change the behaviour at any time by saying:
+> to
+> avoid some of the implications of kernel threads like the missing
+> ability to handle transfer errors in user space.
 
- # echo 1 > /sys/modules/kvm/parameters/ignore_msrs
+Are you talking about TCP here?
+Transfer errors are typically asynchronous - possibly eventfd
+as I expose for vhost net is sufficient there.
 
-Signed-off-by: Andre Przywara <andre.przywara@amd.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- arch/x86/kvm/x86.c |   24 ++++++++++++++++++++----
- 1 files changed, 20 insertions(+), 4 deletions(-)
+> > I wonder - can we expose the underlying socket used by tap, or will that
+> > create complex lifetime issues?
+> 
+> I think this could get more messy in the long run than calling vfs_readv
+> on a random fd. It would mean deep internal knowledge of the tap driver
+> in vhost_net, which I really would prefer to avoid.
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 6aace61..0be75d5 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -83,6 +83,9 @@ struct kvm_cpuid_entry2 *kvm_find_cpuid_entry(struct kvm_vcpu *vcpu,
- struct kvm_x86_ops *kvm_x86_ops;
- EXPORT_SYMBOL_GPL(kvm_x86_ops);
- 
-+int ignore_msrs = 0;
-+module_param_named(ignore_msrs, ignore_msrs, bool, S_IRUGO | S_IWUSR);
-+
- struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "pf_fixed", VCPU_STAT(pf_fixed) },
- 	{ "pf_guest", VCPU_STAT(pf_guest) },
-@@ -930,8 +933,15 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 data)
- 			"0x%x data 0x%llx\n", msr, data);
- 		break;
- 	default:
--		pr_unimpl(vcpu, "unhandled wrmsr: 0x%x data %llx\n", msr, data);
--		return 1;
-+		if (!ignore_msrs) {
-+			pr_unimpl(vcpu, "unhandled wrmsr: 0x%x data %llx\n",
-+				msr, data);
-+			return 1;
-+		} else {
-+			pr_unimpl(vcpu, "ignored wrmsr: 0x%x data %llx\n",
-+				msr, data);
-+			break;
-+		}
- 	}
- 	return 0;
- }
-@@ -1078,8 +1088,14 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
- 	case MSR_IA32_MC0_CTL ... MSR_IA32_MC0_CTL + 4 * KVM_MAX_MCE_BANKS - 1:
- 		return get_msr_mce(vcpu, msr, pdata);
- 	default:
--		pr_unimpl(vcpu, "unhandled rdmsr: 0x%x\n", msr);
--		return 1;
-+		if (!ignore_msrs) {
-+			pr_unimpl(vcpu, "unhandled rdmsr: 0x%x\n", msr);
-+			return 1;
-+		} else {
-+			pr_unimpl(vcpu, "ignored rdmsr: 0x%x\n", msr);
-+			data = 0;
-+		}
-+		break;
- 	}
- 	*pdata = data;
- 	return 0;
+No, what I had in mind is adding a GET_SOCKET ioctl to tap.
+vhost would then just use the socket.
+
+> > > * Each transport has a slightly different header, we have
+> > >   - raw ethernet frames (raw, udp multicast, tap)
+> > >   - 32-bit length + raw frames, possibly fragmented (tcp)
+> > >   - 80-bit header + raw frames, possibly fragmented (tap with vnet_hdr)
+> > >   To handle these three cases, we need either different ioctl numbers
+> > >   so that vhost_net can choose the right one, or a flags field in
+> > >   VHOST_NET_SET_SOCKET, like
+> > > 
+> > >   #define VHOST_NET_RAW		1
+> > >   #define VHOST_NET_LEN_HDR	2
+> > >   #define VHOST_NET_VNET_HDR	4
+> > > 
+> > >   struct vhost_net_socket {
+> > > 	unsigned int flags;
+> > > 	int fd;
+> > >   };
+> > >   #define VHOST_NET_SET_SOCKET _IOW(VHOST_VIRTIO, 0x30, struct vhost_net_socket)
+> > 
+> > It seems we can query the socket to find out the type, 
+> 
+> yes, I understand that you can do that, but I still think that decision
+> should be left to user space. Adding a length header for TCP streams but
+> not for UDP is something that we would normally want to do, but IMHO
+> vhost_net should not need to know about this.
+> 
+> > or use the features ioctl.
+> 
+> Right, I had forgotten about that one. It's probably equivalent
+> to the flags I suggested, except that one allows you to set features
+> after starting the communication, while the other one prevents
+> you from doing that.
+> 
+> > > Qemu could then automatically try to use vhost_net, if it's available
+> > > in the kernel, or just fall back on software vlan otherwise.
+> > > Does that make sense?
+> > 
+> > I agree, long term it should be enabled automatically when possible.
+> 
+> So how about making the qemu command line interface an extension to
+> what Or Gerlitz has done for the raw packet sockets?
+> 
+> 	Arnd <><
+
+Not sure I see the connection, but I have not thought about qemu
+side of things too much yet - trying to get kernel bits in place
+first so that there's a stable ABI to work with.
+
 -- 
-1.6.3.3
-
+MST
