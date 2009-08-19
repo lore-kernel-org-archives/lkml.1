@@ -1,90 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbZHSROJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZHSRXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752146AbZHSROJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 13:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbZHSROI
+	id S1752347AbZHSRXO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 13:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbZHSRXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 13:14:08 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:43291 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737AbZHSROH (ORCPT
+	Wed, 19 Aug 2009 13:23:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52752 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752064AbZHSRXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 13:14:07 -0400
-Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Mario Limonciello <mario_limonciello@dell.com>
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Marcel Holtmann <marcel@holtmann.org>, cezary.jackiewicz@gmail.com,
-       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <4A8C2C6C.2020007@dell.com>
-References: <4A89E768.7010207@dell.com>
-	 <1250558643.30166.109.camel@localhost.localdomain>
-	 <9b2b86520908180044l72cb8642j6256e246662f7971@mail.gmail.com>
-	 <9b2b86520908180752k66feda09rf9034a96ac6ef470@mail.gmail.com>
-	 <4A8AE459.8060102@dell.com>
-	 <9b2b86520908181408v5f7875b6sea31d8d95cc08c0b@mail.gmail.com>
-	 <1250631063.16393.14.camel@johannes.local>  <4A8B246D.7050004@dell.com>
-	 <1250672475.25419.7.camel@johannes.local>  <4A8C2C6C.2020007@dell.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-peNaJbSVQwLh1Yb1SwHX"
-Date: Wed, 19 Aug 2009 19:13:32 +0200
-Message-Id: <1250702012.8073.1.camel@johannes.local>
+	Wed, 19 Aug 2009 13:23:12 -0400
+Date: Wed, 19 Aug 2009 18:23:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Mark Lord <liml@rtr.ca>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] libata: use single threaded work queue
+Message-ID: <20090819182314.6fe6b081@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A8C2F27.5010104@gmail.com>
+References: <20090819112554.GY12579@kernel.dk>
+	<4A8BE932.5090300@garzik.org>
+	<20090819120458.GZ12579@kernel.dk>
+	<4A8BECC2.2060607@rtr.ca>
+	<20090819122320.GA12579@kernel.dk>
+	<4A8BFC79.1000004@garzik.org>
+	<4A8BFDE2.1010904@garzik.org>
+	<4A8C0820.8060200@gmail.com>
+	<20090819162147.16aeb2db@lxorguk.ukuu.org.uk>
+	<4A8C2012.6090809@gmail.com>
+	<20090819171510.68bef78f@lxorguk.ukuu.org.uk>
+	<4A8C2F27.5010104@gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.27.90 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> It's not about needing per-cpu binding but if works can be executed on
+> the same cpu they were issued, it's almost always beneficial.  The
+> only reason why we have single threaded workqueue now is to limit the
+> number of threads.
 
---=-peNaJbSVQwLh1Yb1SwHX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+That would argue very strongly for putting all the logic in one place so
+everything shares queues.
 
-Hi Mario,
+> > Only if you make the default assumed max wait time for the work too low -
+> > its a tunable behaviour in fact.
+> 
+> If the default workqueue is made to manage concurrency well, most
+> works should be able to just use it, so the queue will contain both
+> long running ones and short running ones which can disturb the current
+> batch like processing of the default workqueue which is assumed to
+> have only short ones.
 
-First, let me say I agree with Alan, the option 1 is more desirable if
-possible to do with the hardware. But this looks ok from an rfkill POV
-now, except there's a small bug:
+Not sure why it matters - the short ones will instead end up being
+processed serially in parallel to the hog.
 
-> +       ret =3D setup_rfkill();
-> +       if (ret)
-> +               printk(KERN_WARNING "compal-laptop: Unable to setup
-> rfkill\n");
+> kthreads).  It would be great if a single work API is exported and
+> concurrency is managed automatically so that no one else has to worry
+> about concurrency but achieving that requires much more intelligence
+> on the workqueue implementation as the basic concurrency policies
+> which used to be imposed by those segregations need to be handled
+> automatically.  Maybe it's better trade-off to leave those
+> segregations as-are and just add another workqueue type with dynamic
+> thread pool.
 
-That doesn't error out, so
-
-> +       rfkill_unregister(wifi_rfkill);
-> +       rfkill_destroy(wifi_rfkill);
-> +       rfkill_unregister(bt_rfkill);
-> +       rfkill_destroy(bt_rfkill);
-
-this will crash without NULL checks.
-
-(and you have to explicitly assign NULL in setup_rfkill() too, when
-bluetooth fails and wifi is freed)
-
-johannes
-
---=-peNaJbSVQwLh1Yb1SwHX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKjDK5AAoJEODzc/N7+QmacT8P/j9aU1peDCZGQRYhfJZcYi/z
-i+YQeL2Xrkbri+BUnA6LUWimK5I19JOmP5IVmllK9IC0Zp6rH8Safl5FpgfAj6oa
-j/1xgsaVPrNd9dr3mh8p3NdYPVcLhS05UG1hbiHE+hQRnBIYt6HVi1/as7sv3Qjr
-FxAL510WOSagm3JXO1G0KRZkhA5z3igVSOQRi+d3yTQ4PAMX74CfHHTLm/d+iBn6
-Yi7bUyJ0a21Gptj1Xeen4CNvPxbtq07f0INkquXdeeiQgCuumszUpyG21C3yRaQM
-WuWNhtCoXR+InOiKNn7y2a5weo1iOxb4/Pns7XkAwaR6OAkjpjV2Pd4VyzxVtNvF
-dQNrWkkwpwFM5+21e9cw4JdNkYn0/I/N7wJyQrSF/l14p+XViNSCkVDI1NPem9mW
-StP7XghlumIX+QH9dOE4ijkk2biI2UbOqjsvR9VPa2Qf8GtIVkI8vOZaoqrI29K2
-dCV/eFSZPHm4uv7xHA9/uEYOf9Pe+lehlFK/hytOkONdB5uUT4QqLGmTFpGVdYlM
-qeLOVJQojesRzhHU6JGd2dQX1nAu79vpZPgg+Ca88kVUOlidjPoZgMTAJgX3RtpJ
-TiovoizVA6IqZv0A0Kg+iBjrlUpY7c8+BEo684xfPgU1GbHTe+s2vg27iHutHXAJ
-ZuK41NMnseeD1kil1zER
-=wbhm
------END PGP SIGNATURE-----
-
---=-peNaJbSVQwLh1Yb1SwHX--
+The more intelligence in the workqueue logic, the less in the drivers and
+the more it can be adjusted and adapt itself. Consider things like power
+management which might argue for breaking the cpu affinity to avoid
+waking up a sleeping CPU in preference to jumping work between processors
 
