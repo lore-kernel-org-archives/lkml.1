@@ -1,46 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751849AbZHSLsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751878AbZHSLuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751849AbZHSLsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 07:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZHSLsR
+	id S1751878AbZHSLuN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 07:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbZHSLuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 07:48:17 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:38418 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751494AbZHSLsR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 07:48:17 -0400
-Date: Wed, 19 Aug 2009 07:48:12 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 0/3] Reduce searching in the page allocator
- fast-path
-In-Reply-To: <20090819090843.GB24809@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0908190747190.5621@gentwo.org>
-References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0908181019130.32284@gentwo.org> <20090818165340.GB13435@csn.ul.ie> <alpine.DEB.1.10.0908181357100.3840@gentwo.org> <20090819090843.GB24809@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 19 Aug 2009 07:50:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34343 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751494AbZHSLuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 07:50:09 -0400
+Message-ID: <4A8BE6D2.3090107@redhat.com>
+Date: Wed, 19 Aug 2009 14:49:38 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       alacrityvm-devel@lists.sourceforge.net,
+       "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for		 vbus_driver
+ objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws> <4A8AA9BD.2070909@gmail.com> <4A8AB076.6080906@redhat.com> <4A8ACE1F.6020402@gmail.com> <20090818165139.GC19846@redhat.com> <4A8B8F4E.80207@gmail.com> <4A8B9241.20300@redhat.com> <4A8B66280200005A00052A54@sinclair.provo.novell.com> <4A8BA635.9010902@redhat.com> <4A8BAC750200005A00052A83@sinclair.provo.novell.com>
+In-Reply-To: <4A8BAC750200005A00052A83@sinclair.provo.novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Aug 2009, Mel Gorman wrote:
+On 08/19/2009 02:40 PM, Gregory Haskins wrote:
+>
+>>>>> So if I whip up a virtio-net backend for vbus with a PCI compliant
+>>>>> connector, you are happy?
+>>>>>
+>>>>>
+>>>>>            
+>>>> This doesn't improve virtio-net in any way.
+>>>>
+>>>>          
+>>> Any why not?  (Did you notice I said "PCI compliant", i.e. over virtio-pci)
+>>>
+>>>        
+>> Because virtio-net will have gained nothing that it didn't have before.
+>>      
+> ??
+>
+> *) ABI is virtio-pci compatible, as you like
+>    
 
-> Ok, I don't see this particular patch merged, is it in a merge queue somewhere?
+That's not a gain, that's staying in the same place.
 
-The patch depends on Tejun's work to be merged that makes the per cpu
-allocator available on all platforms. I believe that is in the queue for
-2.6.32.
+> *) fast-path is in-kernel, as we all like
+>    
 
-> After glancing through, I can see how it might help.  I'm going to drop patch
-> 3 of this set that shuffles data from the PCP to the zone and take a closer
-> look at those patches. Patch 1 and 2 of this set should still go ahead. Do
-> you agree?
+That's not a gain as we have vhost-net (sure, in development, but your 
+proposed backend isn't even there yet).
 
-Yes.
+> *) model is in vbus so it would work in all environments that vbus supports.
+>    
+
+The ABI can be virtio-pci compatible or it can be vbus-comaptible.  How 
+can it be both?  The ABIs are different.
+
+Note that if you had submitted a virtio-net backend I'd have asked you 
+to strip away all the management / bus layers and we'd have ended up 
+with vhost-net.
+
+>>>> virtio already supports this model; see lguest and s390.  Transporting
+>>>> virtio over vbus and vbus over something else doesn't gain anything over
+>>>> directly transporting virtio over that something else.
+>>>>
+>>>>          
+>>> This is not what I am advocating.
+>>>
+>>>
+>>>        
+>> What are you advocating?  As far as I can tell your virtio-vbus
+>> connector plus the vbus-kvm connector is just that.
+>>      
+> I wouldn't classify it anything like that, no.  Its just virtio over vbus.
+>    
+
+We're in a loop.  Doesn't virtio over vbus need a virtio-vbus 
+connector?  and doesn't vbus need a connector to talk to the hypervisor?
+
+-- 
+error compiling committee.c: too many arguments to function
 
