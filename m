@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbZHSXkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbZHSXjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbZHSXkf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZHSXju
+	id S1754094AbZHSXjv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 19:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbZHSXjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 19:39:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34475 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754058AbZHSXjs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Aug 2009 19:39:48 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "dienet" <dienet@poczta.fm>
-References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
-In-Reply-To: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Received: from kroah.org ([198.145.64.141]:60551 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753902AbZHSXjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 19:39:42 -0400
+Date: Wed, 19 Aug 2009 16:36:01 -0700
+From: Greg KH <greg@kroah.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org
+Subject: Re: linux-next: suspend tree build warnings
+Message-ID: <20090819233601.GA2875@kroah.com>
+References: <20090819172419.2cf53008.sfr@canb.auug.org.au>
+ <200908192338.03910.rjw@sisk.pl>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <Era7U-todKF.A.qLC.ylIjKB@chimera>
-Subject: [Bug #13898] Intel 3945ABG - problems on 2.6.30.X
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed, 19 Aug 2009 22:40:47 +0200 (CEST)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200908192338.03910.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.29 and 2.6.30.
+On Wed, Aug 19, 2009 at 11:38:03PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday 19 August 2009, Stephen Rothwell wrote:
+> > Hi Rafael,
+> 
+> Hi,
+> 
+> > Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+> > 
+> > drivers/media/dvb/frontends/dib7000p.c: In function ‘dib7000p_i2c_enumeration’:
+> > drivers/media/dvb/frontends/dib7000p.c:1315: warning: the frame size of 2256 bytes is larger than 2048 bytes
+> > drivers/media/dvb/frontends/dib3000mc.c: In function ‘dib3000mc_i2c_enumeration’:
+> > drivers/media/dvb/frontends/dib3000mc.c:853: warning: the frame size of 2160 bytes is larger than 2048 bytes
+> > 
+> > Introduced by commit 99307958cc9c1b0b2e0dad4bbefdafaf9ac5a681 ("PM:
+> > Introduce core framework for run-time PM of I/O devices (rev. 17)").
+> 
+> Well.
+> 
+> This commit increases the size of struct device quite a bit and both of the
+> drivers above create a "state" object on the stack that contains struct device
+> among other things.
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-be listed and let me know (either way).
+Ick.  struct device should _never_ be on the stack, why would this code
+want to do such a thing?
 
+thanks,
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13898
-Subject		: Intel 3945ABG - problems on 2.6.30.X
-Submitter	: dienet <dienet@poczta.fm>
-Date		: 2009-07-31 15:17 (20 days old)
-References	: http://marc.info/?l=linux-kernel&m=124905346729959&w=4
-
-
+greg k-h
