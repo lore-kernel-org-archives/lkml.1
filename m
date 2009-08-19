@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751123AbZHSIu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221AbZHSIv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751123AbZHSIu3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 04:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbZHSIu2
+	id S1751221AbZHSIv0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 04:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751011AbZHSIv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 04:50:28 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45227 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbZHSIu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 04:50:27 -0400
-Date: Wed, 19 Aug 2009 10:50:29 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: w@1wt.eu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] splice: update mtime and atime on files
-Message-ID: <20090819085028.GU12579@kernel.dk>
-References: <E1MbyLM-0006Xd-OE@pomaz-ex.szeredi.hu> <20090815064241.GE12579@kernel.dk> <20090818050027.GE11624@1wt.eu> <20090818083547.GK12579@kernel.dk> <20090818084625.GF18709@1wt.eu> <20090818085051.GM12579@kernel.dk> <E1MdNM6-0003y3-4t@pomaz-ex.szeredi.hu>
+	Wed, 19 Aug 2009 04:51:26 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:62089 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbZHSIvY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 04:51:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xpq5dzW1NzAlw+C47CwyWrTGeaePMT7tRCMXQ/c1S5eGmA6izR046tTC5m9bOuNDII
+         C1l9CZ9Su2BwWHeDhAzkOR2fEJFzA27oGovokV7NhyefUuiIzwvs0cNyRKNVArn7qqF5
+         heBP1+9HqC0+XsGvLCYU1pc9zI8KrBAaSZ69A=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1MdNM6-0003y3-4t@pomaz-ex.szeredi.hu>
+In-Reply-To: <4A8B246D.7050004@dell.com>
+References: <4A89E768.7010207@dell.com>
+	 <1250558643.30166.109.camel@localhost.localdomain>
+	 <9b2b86520908180044l72cb8642j6256e246662f7971@mail.gmail.com>
+	 <9b2b86520908180752k66feda09rf9034a96ac6ef470@mail.gmail.com>
+	 <4A8AE459.8060102@dell.com>
+	 <9b2b86520908181408v5f7875b6sea31d8d95cc08c0b@mail.gmail.com>
+	 <1250631063.16393.14.camel@johannes.local> <4A8B246D.7050004@dell.com>
+Date: Wed, 19 Aug 2009 09:51:24 +0100
+Message-ID: <9b2b86520908190151p2bf136lb490ab721d320dad@mail.gmail.com>
+Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Mario Limonciello <mario_limonciello@dell.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Marcel Holtmann <marcel@holtmann.org>, cezary.jackiewicz@gmail.com,
+       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18 2009, Miklos Szeredi wrote:
-> On Tue, 18 Aug 2009, Jens Axboe wrote:
-> > I've never heard anyone complain about this, and I suspect that Miklos
-> > found it from code inspection rather than experiencing an issue with it.
-> 
-> Right, I found it by code inspection.
-> 
-> > So while it can indeed be classified as a bug (and it is), the impact is
-> > not huge.
-> > 
-> > That said, I don't have a huge issue with shoving this in -stable. I
-> > just don't think it's a big deal.
-> 
-> I agree that it's not a huge issue, however it might be worth it to
-> add it to -stable for the sake of distro kernels which are usually
-> based on the long term stable branch.  If new apps start to use the
-> splice interface then we want those to work well on distros as well as
-> the latest kernel.org kernels.
+On 8/18/09, Mario Limonciello <mario_limonciello@dell.com> wrote:
+> Hi Guys:
 
-As I said, I don't have a problem with adding it to -stable, even if it
-isn't a critical issue. The patch is straight forward and fixes a real
-issue, so risk is low (and benefit high).
+Hi again Mario
 
--- 
-Jens Axboe
+> Alan Jenkins wrote:
+>
+>> ... but you *do* need to unregister wifi_rfkill here, before you go on
+>> to destroy it.
+>>
+>> +err_wifi:
+>> +	rfkill_destroy(wifi_rfkill);
+>> +
+>> +	return ret;
+>> +}
+>>
+>> Regards
+>> Alan
+>>
+> I think I've addressed this properly now and only go through each of the
+> error handlers as necessary.
 
+Yes, that looks better.  I'm still a bit confused about poll(), I'll
+have to leave that for Johannes to verify.  Feel free to add
+
+Reviewed-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+
+Regards
+Alan
