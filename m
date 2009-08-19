@@ -1,97 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZHSXju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZHSXjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbZHSXju (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZHSXjs
+	id S1754110AbZHSXjz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 19:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZHSXjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 19:39:48 -0400
-Received: from kroah.org ([198.145.64.141]:60560 "EHLO coco.kroah.org"
+	Wed, 19 Aug 2009 19:39:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34477 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754040AbZHSXjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 19:39:43 -0400
-Date: Wed, 19 Aug 2009 16:37:44 -0700
-From: Greg KH <greg@kroah.com>
-To: "Aric D. Blumer" <aric@sdgsystems.com>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mike Rapoport <mike@compulab.co.il>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: linux-next: usb/pxa trees build failure
-Message-ID: <20090819233744.GC2875@kroah.com>
-References: <20090818135852.0b3b648d.sfr@canb.auug.org.au>
- <20090818114242.GA28534@kroah.com>
- <4A8AB525.7050404@gmail.com>
- <20090818145800.GB6074@kroah.com>
- <4A8B64DE.6000506@gmail.com>
- <20090819172223.GA4398@kroah.com>
- <4A8C4348.7030601@sdgsystems.com>
+	id S1754089AbZHSXjv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 19:39:51 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Marco Siviero" <darker1985@slacky.it>
+References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
+In-Reply-To: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A8C4348.7030601@sdgsystems.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <Era7U-todKF.A.w8B.qlIjKB@chimera>
+Subject: [Bug #13958] ath5k Atheros AR5001 low signal
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Wed, 19 Aug 2009 22:40:48 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 02:24:08PM -0400, Aric D. Blumer wrote:
-> Greg KH wrote:
-> > On Wed, Aug 19, 2009 at 10:35:10AM +0800, Eric Miao wrote:
-> >   
-> >> Greg KH wrote:
-> >>     
-> >>> On Tue, Aug 18, 2009 at 10:05:25PM +0800, Eric Miao wrote:
-> >>>       
-> >>>> Greg KH wrote:
-> >>>>         
-> >>>>> On Tue, Aug 18, 2009 at 01:58:52PM +1000, Stephen Rothwell wrote:
-> >>>>>           
-> >>>>>> Hi Eric, Greg,
-> >>>>>>
-> >>>>>> The next-20090817 (and a few before) build (arm trizeps4_defconfig)
-> >>>>>> failed like this:
-> >>>>>>
-> >>>>>> drivers/usb/host/ohci-pxa27x.c:507: error: 'pdev' undeclared (first use in this function)
-> >>>>>>
-> >>>>>> Caused by the interaction of commit
-> >>>>>> 6458baec17e19d38b9d4eb1f96c213f91609c0e3 ("USB: ohci-pxa27x: Reconfigure
-> >>>>>> power settings on resume") from the usb tree with commit
-> >>>>>> b8fb7d4317bcea1b48c9560d23dff81121870ece ("[ARM] pxa: update
-> >>>>>> ohci-pxa27x.c to use 'struct dev_pm_ops'"). from the pxa tree.
-> >>>>>>
-> >>>>>> Greg/Aric, maybe that usb tree patch needs to go through the pxa tree?
-> >>>>>> (and maybe "USB: ohci-pxa27x: Allow NOCP and OCPM to be cleared" as well?)
-> >>>>>>
-> >>>>>> [this also broke the following configs: magician_defconfig,
-> >>>>>> em_x270_defconfig and cm_x2xx_defconfig.]
-> >>>>>>             
-> >>>>> Ick, not good.  Aric, should I drop this patch from my tree?
-> >>>>>
-> >>>>>           
-> >>>> I think so, might be better to go through the pxa tree so that I can give
-> >>>> another review. (the fiber across the pacific seems to be broken again, so
-> >>>> I have to look into this tomorrow, still fetching -next, sigh).
-> >>>>         
-> >>> Ok, let me know if you want me to drop these patches from my tree.
-> >>>
-> >>>       
-> >> OK, so the problem is 'pdev' is no longer part of the dev_pm_ops, ('dev' is used
-> >> instead), and the 'inf' pointer can just be referenced from 'dev->platform_data',
-> >> so the fix is actually trivial, but it does have dependency issue.
-> >>
-> >> Greg,
-> >>
-> >> It looks to me would be better if this goes the pxa tree, and I'll send out the
-> >> updated patch of 6458baec later.
-> >>     
-> >
-> > Ok, should I drop just this one patch from my tree, or any others as
-> > well
-> 
-> It is an isolated patch, so dropping it alone should be fine.
+This message has been generated automatically as a part of a report
+of regressions introduced between 2.6.29 and 2.6.30.
 
-Ok, it's now dropped from my tree, linux-next should now be happy :)
+The following bug entry is on the current list of known regressions
+introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+be listed and let me know (either way).
 
-thanks,
 
-greg k-h
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13958
+Subject		: ath5k Atheros AR5001 low signal
+Submitter	: Marco Siviero <darker1985@slacky.it>
+Date		: 2009-08-10 15:03 (10 days old)
+
+
