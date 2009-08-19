@@ -1,176 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZHSQkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZHSQl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbZHSQkb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZHSQkb
+	id S1753229AbZHSQl4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZHSQlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:40:31 -0400
-Received: from edu.joroinen.fi ([194.89.68.130]:53113 "EHLO edu.joroinen.fi"
+	Wed, 19 Aug 2009 12:41:55 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:47928 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752531AbZHSQk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:40:28 -0400
-Date: Wed, 19 Aug 2009 19:40:29 +0300
-From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
-To: Wang Jinpu <jack_wang@usish.com>
-Cc: Nick Cheng <nick.cheng@areca.com.tw>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Michael Fuckner'" <michael@fuckner.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       "'Erich Chen'" <erich@areca.com.tw>
-Subject: Re: Re: Performance issues with Areca 1680 SAS Controllers
-Message-ID: <20090819164029.GZ19938@edu.joroinen.fi>
-References: <20090819140848.GW19938@edu.joroinen.fi> <200908192247543597389@usish.com>
+	id S1752617AbZHSQly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 12:41:54 -0400
+Message-ID: <52236.192.168.10.88.1250700055.squirrel@dbdmail.itg.ti.com>
+Date: Wed, 19 Aug 2009 22:10:55 +0530 (IST)
+Subject: [PATCH V2] omap_hsmmc: Fix for the db clock failure message
+From: "Madhusudhan Chikkature" <madhu.cr@ti.com>
+To: akpm@linux-foundation.org, linux-mmc@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908192247543597389@usish.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 10:48:00PM +0800, Wang Jinpu wrote:
-> 
-> 
-> 
-> 
-> 
-> 
-> ???????? Pasi K?rkk?inen 
-> ?????????? 2009-08-19  22:34:28 
-> ???????? Nick Cheng 
-> ?????? 'Andrew Morton'; 'Michael Fuckner'; linux-kernel; linux-scsi; 'Erich Chen' 
-> ?????? Re: Performance issues with Areca 1680 SAS Controllers 
->  
-> On Thu, Nov 20, 2008 at 03:39:40PM +0800, Nick Cheng wrote:
-> > Hi Michael,
-> > I will get around handling your issue.
-> > Thanks for your kindly patience,
-> > 
-> Hello,
-> Was this issue resolved? I'm seeing similar behaviour.. I think it's related
-> to flushing the controller cache?
-> Waiting a while (after the disk leds stop blinking) performance is back to
-> normal.. 
-> -- Pasi
-> 
-> In my memory ??It's because the write cache is not enable??You can verify
-> it using sdparm 
+Hi,
 
-I'm using battery backed write-back write cache on Areca controller, and it's enabled.
-Or did you mean caches in each harddisk?
+The patch applies on top of the series "[PATCH V2 0/32] mmc and omap_hsmmc
+patches" posted by Adrian Hunter.
 
-More information about my setup:
+Regards,
+Madhu
+----
 
-- Areca 1680 24-port SAS RAID controller
-- Physical disks 1-4 are raid-10 for the OS (boot volume, /dev/sda)
-- Physical disks 5-18 are raid-60 for the data (/dev/sdb)
 
-I downloaded ltp-base-20090731.tgz from http://ltp.sf.net and compiled it. 
+This patch removes the error message "Failed to get debounce clock.." printed
+out by the MMC driver on OMAP3430. The debounce clock needs to be handled only
+for OMAP2430.
 
-from testcases/kernel/io/disktest/ I run:
+Signed-off-by: Madhusudhan Chikkature <madhu.cr@ti.com>
+---
+ drivers/mmc/host/omap_hsmmc.c |   46 ++++++++++++++++++++++--------------------
+ 1 file changed, 25 insertions(+), 21 deletions(-)
 
-# echo 3 > /proc/sys/vm/drop_caches
-# ./disktest -w -K16 -B 4k -T 60 -pr -Ibd -PA /dev/sdb
+Index: linux-2.6/drivers/mmc/host/omap_hsmmc.c
+===================================================================
+--- linux-2.6.orig/drivers/mmc/host/omap_hsmmc.c
++++ linux-2.6/drivers/mmc/host/omap_hsmmc.c
+@@ -160,7 +160,7 @@ struct omap_hsmmc_host {
+ 	int			use_dma, dma_ch;
+ 	int			dma_line_tx, dma_line_rx;
+ 	int			slot_id;
+-	int			dbclk_enabled;
++	int			got_dbclk;
+ 	int			response_busy;
+ 	int			context_loss;
+ 	int			dpm_state;
+@@ -735,7 +735,7 @@ static int omap_hsmmc_switch_opcond(stru
+ 	/* Disable the clocks */
+ 	clk_disable(host->fclk);
+ 	clk_disable(host->iclk);
+-	if (host->dbclk_enabled)
++	if (host->got_dbclk)
+ 		clk_disable(host->dbclk);
 
-(sdb is the raid-60 data array).
+ 	/* Turn the power off */
+@@ -746,9 +746,9 @@ static int omap_hsmmc_switch_opcond(stru
+ 		ret = mmc_slot(host).set_power(host->dev, host->slot_id, 1,
+ 					       vdd);
+ 	clk_enable(host->iclk);
+-	if (host->dbclk_enabled)
+-		clk_enable(host->dbclk);
+ 	clk_enable(host->fclk);
++	if (host->got_dbclk)
++		clk_enable(host->dbclk);
 
-So the disktest benchmark is running 4 kB random writes using 16 threads and direct-IO
-(bypassing kernel caches) for 60 seconds.
+ 	if (ret != 0)
+ 		goto err;
+@@ -1697,18 +1697,22 @@ static int __init omap_hsmmc_probe(struc
+ 		goto err1;
+ 	}
 
-The test completes after 60 seconds, just like it should, but the disk leds will
-keep blinking for many minutes more.. 
+-	host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
+-	/*
+-	 * MMC can still work without debounce clock.
+-	 */
+-	if (IS_ERR(host->dbclk))
+-		dev_warn(mmc_dev(host->mmc), "Failed to get debounce clock\n");
+-	else
+-		if (clk_enable(host->dbclk) != 0)
+-			dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
+-							" clk failed\n");
++	if (cpu_is_omap2430()) {
++		host->dbclk = clk_get(&pdev->dev, "mmchsdb_fck");
++		/*
++		 * MMC can still work without debounce clock.
++		 */
++		if (IS_ERR(host->dbclk))
++			dev_warn(mmc_dev(host->mmc),
++				"Failed to get debounce clock\n");
+ 		else
+-			host->dbclk_enabled = 1;
++			host->got_dbclk = 1;
++
++		if (host->got_dbclk)
++			if (clk_enable(host->dbclk) != 0)
++				dev_dbg(mmc_dev(host->mmc), "Enabling debounce"
++							" clk failed\n");
++	}
 
-So basicly Areca controller is first caching the random write IOs and then flushing
-them from the cache (2 GB) to the disks.. 
+ 	/* Since we do only SG emulation, we can have as many segs
+ 	 * as we want. */
+@@ -1825,7 +1829,7 @@ err_irq:
+ 	clk_disable(host->iclk);
+ 	clk_put(host->fclk);
+ 	clk_put(host->iclk);
+-	if (host->dbclk_enabled) {
++	if (host->got_dbclk) {
+ 		clk_disable(host->dbclk);
+ 		clk_put(host->dbclk);
+ 	}
+@@ -1859,7 +1863,7 @@ static int omap_hsmmc_remove(struct plat
+ 		clk_disable(host->iclk);
+ 		clk_put(host->fclk);
+ 		clk_put(host->iclk);
+-		if (host->dbclk_enabled) {
++		if (host->got_dbclk) {
+ 			clk_disable(host->dbclk);
+ 			clk_put(host->dbclk);
+ 		}
+@@ -1910,7 +1914,7 @@ static int omap_hsmmc_suspend(struct pla
+ 				OMAP_HSMMC_READ(host->base, HCTL) & ~SDBP);
+ 			mmc_host_disable(host->mmc);
+ 			clk_disable(host->iclk);
+-			if (host->dbclk_enabled)
++			if (host->got_dbclk)
+ 				clk_disable(host->dbclk);
+ 		} else {
+ 			host->suspended = 0;
+@@ -1942,14 +1946,14 @@ static int omap_hsmmc_resume(struct plat
+ 		if (ret)
+ 			goto clk_en_err;
 
-The problem is while Areca is doing the flushing _all_ IOs are really slow,
-including the other raid-10 array for the OS, which uses totally separate physical disks. 
+-		if (host->dbclk_enabled)
+-			clk_enable(host->dbclk);
+-
+ 		if (mmc_host_enable(host->mmc) != 0) {
+ 			clk_disable(host->iclk);
+ 			goto clk_en_err;
+ 		}
 
-Opening another shell in screen takes at least 30 seconds, starting "top"
-takes forever etc.. 
++		if (host->got_dbclk)
++			clk_enable(host->dbclk);
++
+ 		omap_hsmmc_conf_bus_power(host);
 
-While Areca is flushing the caches (and all the IOs are slow), "iostat 1"
-doesn't show any "leftover" IOs from the benchmark. So the benchmark was
-really using direct IO, bypassing kernel caches.
+ 		if (host->pdata->resume) {
 
-I tried with different io-schedulers (cfq,deadline,noop) but they didn't
-have big effect.. which makes sense, since the OS/kernel is not doing any
-big IO when the 'stalling' happens.
 
-Is there some way to make Areca NOT use all cpu-power for cache flushing? 
-
-OS is CentOS 5.3 x86_64 with linux-2.6.18-128 kernel.
-
--- Pasi
-
-> 2009-08-19 
-> 
-> 
-> 
-> Wang Jinpu 
-> > -----Original Message-----
-> > From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-> > Sent: Thursday, November 20, 2008 9:18 AM
-> > To: Michael Fuckner
-> > Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; Nick Cheng;
-> > Erich Chen
-> > Subject: Re: Performance issues with Areca 1680 SAS Controllers
-> > 
-> > (cc's added)
-> > 
-> > On Wed, 19 Nov 2008 13:16:56 +0100
-> > Michael Fuckner <michael@fuckner.net> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > I am using an Areca 1680-SAS-Controller with 16 SAS-HDD (Seagate 1TB
-> > > ST31000640SS). I set up a Raid6 with all 16 disks and formatted it with
-> > > XFS. The Controller has 512MB RAM and a BBU. The OS is installed to
-> > > another disk attached to the onboard AHCI controller.
-> > > 
-> > > After doing some IO, the areca raidset is slower compared to the rate 
-> > > directly
-> > > after boot.
-> > > 
-> > > 
-> > > [root@storage ~]# dd if=/dev/sdb1 of=/dev/null bs=1M count=50k
-> > iflag=direct
-> > > 51200+0 records in
-> > > 51200+0 records out
-> > > 53687091200 bytes (54 GB) copied, 59.6494 seconds, 900 MB/s
-> > > [root@storage ~]# mount /dev/sdb1 /data
-> > > [root@storage ~]# cd /data/
-> > > [root@storage data]# ./iozone -i 0 -i 1 -s 32g -r 16m -S 6144 -t 8 -+r
-> > > -o  >raid6_sync_t8.log
-> > > [root@storage data]# cd
-> > > [root@storage ~]# umount /data/
-> > > [root@storage ~]# dd if=/dev/sdb1 of=/dev/null bs=1M count=50k
-> > iflag=direct
-> > > 51200+0 records in
-> > > 51200+0 records out
-> > > 53687091200 bytes (54 GB) copied, 76.4036 seconds, 703 MB/s
-> > > 
-> > > I tested different Versions of Linux (Centos 5.2, OpenSUSE 11, Debian
-> > > Lenny) and Vanilla kernels 2.6.22-2.6.27, all show this behaviour.
-> > > 
-> > > Idea why the device slows down after IO- or better: how to keep the high
-> > > rate? Is this reproducible foer Areca SATA Controllers (Type 11XX and
-> > 12XX)
-> > > 
-> > > Regards,
-> > >    Michael!
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> __________ Information from ESET NOD32 Antivirus, version of virus signature database 4347 (20090819) __________
-> The message was checked by ESET NOD32 Antivirus.
-> http://www.eset.com
