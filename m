@@ -1,294 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbZHSUjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752365AbZHSUo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752918AbZHSUjq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 16:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZHSUjp
+	id S1752365AbZHSUo4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 16:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZHSUoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 16:39:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36435 "EHLO mx3.mail.elte.hu"
+	Wed, 19 Aug 2009 16:44:55 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59288 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752505AbZHSUjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 16:39:44 -0400
-Date: Wed, 19 Aug 2009 22:39:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: xfs@oss.sgi.com, linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, liml@rtr.ca, jens.axboe@oracle.com
-Subject: Re: [PATCH, RFC] xfs: batched discard support
-Message-ID: <20090819203916.GA25296@elte.hu>
-References: <20090816004705.GA7347@infradead.org>
+	id S1751698AbZHSUoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 16:44:54 -0400
+Message-ID: <4A8C5CBB.10605@redhat.com>
+Date: Wed, 19 Aug 2009 23:12:43 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090816004705.GA7347@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: Ingo Molnar <mingo@elte.hu>, Anthony Liguori <anthony@codemonkey.ws>,
+       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>,
+       Joel Becker <joel.becker@oracle.com>
+Subject: configfs/sysfs
+References: <20090814154125.26116.70709.stgit@dev.haskins.net>	 <20090814154308.26116.46980.stgit@dev.haskins.net>	 <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com>	 <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com>	 <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com>	 <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com>	 <4A8AD678.7050609@redhat.com> <4A8B9B79.9050004@gmail.com>	 <4A8BA5AE.3030308@redhat.com> <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/19/2009 09:23 PM, Nicholas A. Bellinger wrote:
+> Anyways, I was wondering if you might be interesting in sharing your
+> concerns wrt to configfs (conigfs maintainer CC'ed), at some point..?
+>    
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+My concerns aren't specifically with configfs, but with all the text 
+based pseudo filesystems that the kernel exposes.
 
-> Given that everyone is so big in the discard discussion 
-> I'd like to present what I had started to prepare for 
-> XFS.  I didn't plan to send it out until I get my hands 
-> onto a TRIM capable device (or at least get time to add 
-> support to qemu), and so far it's only been tested in 
-> dry-run mode.
-> 
-> The basic idea is to add an ioctl which walks the free 
-> space btrees in each allocation group and simply 
-> discard everythin that is free. [...]
+My high level concern is that we're optimizing for the active sysadmin, 
+not for libraries and management programs.  configfs and sysfs are easy 
+to use from the shell, discoverable, and easily scripted.  But they 
+discourage documentation, the text format is ambiguous, and they require 
+a lot of boilerplate to use in code.
 
-A general interface design question: you added a new 
-ioctl XFS_IOC_TRIM case. It's a sub-case of an 
-ugly-looking demultiplexing xfs_file_ioctl().
+You could argue that you can wrap *fs in a library that hides the 
+details of accessing it, but that's the wrong approach IMO.  We should 
+make the information easy to use and manipulate for programs; one of 
+these programs can be a fuse filesystem for the active sysadmin if 
+someone thinks it's important.
 
-What is your threshold for turning something into a 
-syscall? When are ioctls acceptable in your opinion?
+Now for the low level concerns:
 
-I'm asking this because we are facing a similar problem 
-with perfcounters: we need to extend the ioctl 
-functionality there but introducing a new syscall looks 
-wasteful.
+- efficiency
 
-So i'm torn about the 'syscall versus ioctl' issue, i'd 
-like to avoid making interface design mistakes and i'd 
-like to solicit some opinions about this. I've attached 
-the perfcounters ioctl patch below.
+Each attribute access requires an open/read/close triplet and 
+binary->ascii->binary conversions.  In contrast an ordinary 
+syscall/ioctl interface can fetch all attributes of an object, or even 
+all attributes of all objects, in one call.
 
-Thanks,
+- atomicity
 
-	Ingo
+One attribute per file means that, lacking userspace-visible 
+transactions, there is no way to change several attributes at once.  
+When you read attributes, there is no way to read several attributes 
+atomically so you can be sure their values correlate.  Another example 
+of a problem is when an object disappears while reading its attributes.  
+Sure, openat() can mitigate this, but it's better to avoid introducing 
+problem than having a fix.
 
------ Forwarded message from Peter Zijlstra <a.p.zijlstra@chello.nl> -----
+- ambiguity
 
-Date: Wed, 19 Aug 2009 11:18:27 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 4/4][RFC] perf_counter: Allow sharing of output channels
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-	stephane eranian <eranian@googlemail.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>
+What format is the attribute?  does it accept lowercase or uppercase hex 
+digits?  is there a newline at the end?  how many digits can it take 
+before the attribute overflows?  All of this has to be documented and 
+checked by the OS, otherwise we risk regressions later.  In contrast, 
+__u64 says everything in a binary interface.
 
-Provide the ability to configure a counter to send its output to
-another (already existing) counter's output stream.
+- lifetime and access control
 
-[ compile tested only ]
+If a process brings an object into being (using mkdir) and then dies, 
+the object remains behind.  The syscall/ioctl approach ties the object 
+into an fd, which will be destroyed when the process dies, and which can 
+be passed around using SCM_RIGHTS, allowing a server process to create 
+and configure an object before passing it to an unprivileged program
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: stephane eranian <eranian@googlemail.com>
----
- include/linux/perf_counter.h |    5 ++
- kernel/perf_counter.c        |   83 +++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 85 insertions(+), 3 deletions(-)
+- notifications
 
-Index: linux-2.6/include/linux/perf_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_counter.h
-+++ linux-2.6/include/linux/perf_counter.h
-@@ -216,6 +216,7 @@ struct perf_counter_attr {
- #define PERF_COUNTER_IOC_REFRESH	_IO ('$', 2)
- #define PERF_COUNTER_IOC_RESET		_IO ('$', 3)
- #define PERF_COUNTER_IOC_PERIOD		_IOW('$', 4, u64)
-+#define PERF_COUNTER_IOC_SET_OUTPUT	_IO ('$', 5)
- 
- enum perf_counter_ioc_flags {
- 	PERF_IOC_FLAG_GROUP		= 1U << 0,
-@@ -415,6 +416,9 @@ enum perf_callchain_context {
- 	PERF_CONTEXT_MAX		= (__u64)-4095,
- };
- 
-+#define PERF_FLAG_FD_NO_GROUP	(1U << 0)
-+#define PERF_FLAG_FD_OUTPUT	(1U << 1)
-+
- #ifdef __KERNEL__
- /*
-  * Kernel-internal data types and definitions:
-@@ -536,6 +540,7 @@ struct perf_counter {
- 	struct list_head		sibling_list;
- 	int				nr_siblings;
- 	struct perf_counter		*group_leader;
-+	struct perf_counter		*output;
- 	const struct pmu		*pmu;
- 
- 	enum perf_counter_active_state	state;
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -1686,6 +1686,11 @@ static void free_counter(struct perf_cou
- 			atomic_dec(&nr_task_counters);
- 	}
- 
-+	if (counter->output) {
-+		fput(counter->output->filp);
-+		counter->output = NULL;
-+	}
-+
- 	if (counter->destroy)
- 		counter->destroy(counter);
- 
-@@ -1971,6 +1976,8 @@ unlock:
- 	return ret;
- }
- 
-+int perf_counter_set_output(struct perf_counter *counter, int output_fd);
-+
- static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	struct perf_counter *counter = file->private_data;
-@@ -1994,6 +2001,9 @@ static long perf_ioctl(struct file *file
- 	case PERF_COUNTER_IOC_PERIOD:
- 		return perf_counter_period(counter, (u64 __user *)arg);
- 
-+	case PERF_COUNTER_IOC_SET_OUTPUT:
-+		return perf_counter_set_output(counter, arg);
-+
- 	default:
- 		return -ENOTTY;
- 	}
-@@ -2264,6 +2274,11 @@ static int perf_mmap(struct file *file, 
- 
- 	WARN_ON_ONCE(counter->ctx->parent_ctx);
- 	mutex_lock(&counter->mmap_mutex);
-+	if (counter->output) {
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
-+
- 	if (atomic_inc_not_zero(&counter->mmap_count)) {
- 		if (nr_pages != counter->data->nr_pages)
- 			ret = -EINVAL;
-@@ -2649,6 +2664,7 @@ static int perf_output_begin(struct perf
- 			     struct perf_counter *counter, unsigned int size,
- 			     int nmi, int sample)
- {
-+	struct perf_counter *output_counter;
- 	struct perf_mmap_data *data;
- 	unsigned int offset, head;
- 	int have_lost;
-@@ -2658,13 +2674,17 @@ static int perf_output_begin(struct perf
- 		u64			 lost;
- 	} lost_event;
- 
-+	rcu_read_lock();
- 	/*
- 	 * For inherited counters we send all the output towards the parent.
- 	 */
- 	if (counter->parent)
- 		counter = counter->parent;
- 
--	rcu_read_lock();
-+	output_counter = rcu_dereference(counter->output);
-+	if (output_counter)
-+		counter = output_counter;
-+
- 	data = rcu_dereference(counter->data);
- 	if (!data)
- 		goto out;
-@@ -4214,6 +4234,57 @@ err_size:
- 	goto out;
- }
- 
-+int perf_counter_set_output(struct perf_counter *counter, int output_fd)
-+{
-+	struct perf_counter *output_counter = NULL;
-+	struct file *output_file = NULL;
-+	struct perf_counter *old_output;
-+	int fput_needed = 0;
-+	int ret = -EINVAL;
-+
-+	if (!output_fd)
-+		goto set;
-+
-+	output_file = fget_light(output_fd, &fput_needed);
-+	if (!output_file)
-+		return -EBADF;
-+
-+	if (output_file->f_op != &perf_fops)
-+		goto out;
-+
-+	output_counter = output_file->private_data;
-+
-+	/* Don't chain output fds */
-+	if (output_counter->output)
-+		goto out;
-+
-+	/* Don't set an output fd when we already have an output channel */
-+	if (counter->data)
-+		goto out;
-+
-+	atomic_long_inc(&output_file->f_count);
-+
-+set:
-+	mutex_lock(&counter->mmap_mutex);
-+	old_output = counter->output;
-+	rcu_assign_pointer(counter->output, output_counter);
-+	mutex_unlock(&counter->mmap_mutex);
-+
-+	if (old_output) {
-+		/*
-+		 * we need to make sure no existing perf_output_*()
-+		 * is still referencing this counter.
-+		 */
-+		synchronize_rcu();
-+		fput(old_output->filp);
-+	}
-+
-+	ret = 0;
-+out:
-+	fput_light(output_file, fput_needed);
-+	return ret;
-+}
-+
- /**
-  * sys_perf_counter_open - open a performance counter, associate it to a task/cpu
-  *
-@@ -4236,7 +4307,7 @@ SYSCALL_DEFINE5(perf_counter_open,
- 	int ret;
- 
- 	/* for future expandability... */
--	if (flags)
-+	if (flags & ~(PERF_FLAG_FD_NO_GROUP | PERF_FLAG_FD_OUTPUT))
- 		return -EINVAL;
- 
- 	ret = perf_copy_attr(attr_uptr, &attr);
-@@ -4264,7 +4335,7 @@ SYSCALL_DEFINE5(perf_counter_open,
- 	 * Look up the group leader (we will attach this counter to it):
- 	 */
- 	group_leader = NULL;
--	if (group_fd != -1) {
-+	if (group_fd != -1 && !(flags & PERF_FLAG_FD_NO_GROUP)) {
- 		ret = -EINVAL;
- 		group_file = fget_light(group_fd, &fput_needed);
- 		if (!group_file)
-@@ -4306,6 +4377,12 @@ SYSCALL_DEFINE5(perf_counter_open,
- 	if (!counter_file)
- 		goto err_free_put_context;
- 
-+	if (flags & PERF_FLAG_FD_OUTPUT) {
-+		ret = perf_counter_set_output(counter, group_fd);
-+		if (ret)
-+			goto err_free_put_context;
-+	}
-+
- 	counter->filp = counter_file;
- 	WARN_ON_ONCE(ctx->parent_ctx);
- 	mutex_lock(&ctx->mutex);
+It's hard to notify users about changes in attributes.  Sure, you can 
+use inotify, but that limits you to watching subtrees.  Once you do get 
+the notification, you run into the atomicity problem.  When do you know 
+all attributes are valid?  This can be solved using sequence counters, 
+but that's just gratuitous complexity.  Netlink type interfaces are much 
+more robust and flexible.
+
+- readdir
+
+You can either list everything, or nothing.  Sure, you can have trees to 
+ease searching, even multiple views of the same data, but it's painful.
+
+You may argue, correctly, that syscalls and ioctls are not as flexible.  
+But this is because no one has invested the effort in making them so.  A 
+struct passed as an argument to a syscall is not extensible.  But if you 
+pass the size of the structure, and also a bitmap of which attributes 
+are present, you gain extensibility and retain the atomicity property of 
+a syscall interface.  I don't think a lot of effort is needed to make an 
+extensible syscall interface just as usable and a lot more efficient 
+than configfs/sysfs.  It should also be simple to bolt a fuse interface 
+on top to expose it to us commandline types.
+
+> As you may recall, I have been using configfs extensively for the 3.x
+> generic target core infrastructure and iSCSI fabric modules living in
+> lio-core-2.6.git/drivers/target/target_core_configfs.c and
+> lio-core-2.6.git/drivers/lio-core/iscsi_target_config.c, and have found
+> it to be extraordinarly useful for the purposes of a implementing a
+> complex kernel level target mode stack that is expected to manage
+> massive amounts of metadata, allow for real-time configuration, share
+> data structures (eg: SCSI Target Ports) between other kernel fabric
+> modules and manage the entire set of fabrics using only intrepetered
+> userspace code.
+>
+> Using the 10000 1:1 mapped TCM Virtual HBA+FILEIO LUNs<->  iSCSI Target
+> Endpoints inside of a KVM Guest (from the results in May posted with
+> IOMMU aware 10 Gb on modern Nahelem hardware, see
+> http://linux-iscsi.org/index.php/KVM-LIO-Target), we have been able to
+> dump the entire running target fabric configfs hierarchy to a single
+> struct file on a KVM Guest root device using python code on the order of
+> ~30 seconds for those 10000 active iSCSI endpoints.  In configfs terms,
+> this means:
+>
+> *) 7 configfs groups (directories), ~50 configfs attributes (files) per
+> Virtual HBA+FILEIO LUN
+> *) 15 configfs groups (directories), ~60 configfs attributes (files per
+> iSCSI fabric Endpoint
+>
+> Which comes out to a total of ~220000 groups and ~1100000 attributes
+> active configfs objects living in the configfs_dir_cache that are being
+> dumped inside of the single KVM guest instances, including symlinks
+> between the fabric modules to establish the SCSI ports containing
+> complete set of SPC-4 and RFC-3720 features, et al.
+>    
+
+You achieved 3 million syscalls/sec from Python code?  That's very 
+impressive.
+
+Note with syscalls you could have done it with 10K syscalls (Python 
+supports packing and unpacking structs quite well, and also directly 
+calling C code IIRC).
+
+> Also on the kernel<->  user API interaction compatibility side, I have
+> found the 3.x configfs enabled code adventagous over the LIO 2.9 code
+> (that used an ioctl for everything) because it allows us to do backwards
+> compat for future versions without using any userspace C code, which in
+> IMHO makes maintaining userspace packages for complex kernel stacks with
+> massive amounts of metadata + real-time configuration considerations.
+> No longer having ioctl compatibility issues between LIO versions as the
+> structures passed via ioctl change, and being able to do backwards
+> compat with small amounts of interpreted code against configfs layout
+> changes makes maintaining the kernel<->  user API really have made this
+> that much easier for me.
+>    
+
+configfs is more maintainable that a bunch of hand-maintained ioctls.  
+But if we put some effort into an extendable syscall infrastructure 
+(perhaps to the point of using an IDL) I'm sure we can improve on that 
+without the problems pseudo filesystems introduce.
+
+> Anyways, I though these might be useful to the discussion as it releates
+> to potental uses of configfs on the KVM Host or other projects that
+> really make sense, and/or to improve the upstream implementation so that
+> other users (like myself) can benefit from improvements to configfs.
+>    
+
+I can't really fault a project for using configfs; it's an accepted and 
+recommented (by the community) interface.  I'd much prefer it though if 
+there was an effort to create a usable fd/struct based alternative.
 
 -- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
------ End forwarded message -----
