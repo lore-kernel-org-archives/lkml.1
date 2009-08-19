@@ -1,127 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZHSVCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbZHSVDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753216AbZHSVCx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 17:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZHSVCw
+	id S1753242AbZHSVDj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 17:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZHSVDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 17:02:52 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:12101 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752604AbZHSVCw (ORCPT
+	Wed, 19 Aug 2009 17:03:39 -0400
+Received: from www84.your-server.de ([213.133.104.84]:52404 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbZHSVDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 17:02:52 -0400
-Date: Wed, 19 Aug 2009 15:02:51 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
-Message-ID: <20090819210251.GD13061@ldl.fc.hp.com>
-References: <20090814163618.GQ7185@ldl.fc.hp.com> <1250276831.3077.17.camel@sbs-t61.sc.intel.com> <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250279799.3077.41.camel@sbs-t61.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 19 Aug 2009 17:03:38 -0400
+Subject: Re: [PATCH 5/7] kfifo: add DEFINE_KFIFO and friends, add very tiny
+ functions
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
+In-Reply-To: <1250714990.13476.3.camel@wall-e>
+References: <1250714990.13476.3.camel@wall-e>
+Content-Type: text/plain
+Date: Wed, 19 Aug 2009 23:03:11 +0200
+Message-Id: <1250715791.13476.17.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Suresh,
+ Add DECLARE_KFIFO - macro to declare a kfifo and the associated buffer inside a struct
+ Add INIT_KFIFO - Initialize a kfifo declared by DECLARED_KFIFO
+ Add DEFINE_KFIFO - macro to define and initialize a kfifo as a global or local object
+ Add kfifo_size() - returns the size of the fifo in bytes
+ Add kfifo_is_empty() - returns true if the fifo is empty
+ Add kfifo_is_full() - returns true if the fifo is full
+ Add kfifo_avail() - returns the number of bytes available in the FIFO
+ Do some code cleanup
 
-Thanks for having the patience to educate me. I appreciate the
-effort. :)
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+---
+ include/linux/kfifo.h |   47 ++++++++++++++++
+ kernel/kfifo.c        |  139 ++++++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 170 insertions(+), 16 deletions(-)
 
-A few more questions...
-
-* Suresh Siddha <suresh.b.siddha@intel.com>:
-> On Fri, 2009-08-14 at 12:27 -0700, Alex Chiang wrote:
-> > Hm, I'm not entirely sure about that, for two reasons.
-> > 
-> > First (and this is the weaker reason), I'd prefer not to keep
-> > adding new fields to /proc/cpuinfo if we can help it, as it just
-> > makes for a continually more complicated ABI/API for userspace.
-> 
-> Overriding same field with different values based on the system will be
-> confusing. On some systems it will be derived from cpuid, some will be
-> based on physical slots. This is too confusing.
-> 
-> > Second, I guess I'm not sure what else 'physical id' /should/
-> > represent. I'm willing to be corrected on this point, so if I'm
-> > wrong, just call it simple ignorance. :)
-> 
-> As far as possible we kept these fields closer to what the cpuid
-> instruction says, so that firmware won't mess up the topology detection
-> etc by having wrong values in the bios tables.
-
-I understand your point about keeping the output of /proc/cpuinfo
-close to what the cpuid instruction says.
-
-But in regard to the particular field that we're talking about
-here -- 'physical id' -- that doesn't seem to be represented from
-cpuid anyway. We're stuffing an APIC ID into that field, even
-when we already have other APIC ID output.
-
-So my point was that we're already kinda doing something funny to
-'physical id' and I'd like to fix it for my platform so that it
-matches the actual chassis.
-
-> > My quick grep earlier led me to believe that as long as the
-> > phys_proc_ids were /consistent/ then it didn't seem to matter
-> > what their /values/ were.
-> 
-> This is correct. But there are several assumptions in the patch that
-> might break in the future and where ever possible we simply don't want
-> to depend on what bios says and rather depend on what the cpu/hardware
-> says.
-> 
-> For example, we shouldn't assume that original phys proc id's calculated
-> from cpuid etc need not be contiguous and start from 0 etc. This is
-> platform dependent and may vary from one version to another version of
-> processor etc.
-
-Sorry, I'm having a hard time parsing this sentence. Do you mean
-to say:
-
-	we shouldn't assume that phys_proc_id calculated from
-	cpuid are contiguous and start from 0
-
-?
-
-I agree with you (although I thought that they should be 0-based)
-but this quirk addresses a specific platform, where I can assume
-certain things about the BIOS, etc.
-
-> Also, you are selecting the fixup table based on number of present cpu
-> etc. I am just nervous that how this all workout across cpu generations
-> having different cores, sparsely populated sockets in the platform etc.
-> We just can't afford to go and fix all the old kernels if we have any
-> problem in the future config setups.
+diff -u -N -r linux-2.6.31-rc4-kfifo4/include/linux/kfifo.h linux-2.6.31-rc4-kfifo5/include/linux/kfifo.h
+--- linux-2.6.31-rc4-kfifo4/include/linux/kfifo.h	2009-08-19 22:38:10.000000000 +0200
++++ linux-2.6.31-rc4-kfifo5/include/linux/kfifo.h	2009-08-17 17:26:39.000000000 +0200
+@@ -51,6 +51,57 @@
+ 	unsigned int out;	/* data is extracted from off. (out % size) */
+ };
  
-I agree with you in general, but again, this is a specific
-platform quirk where I have a good idea of what is a supported
-configuration.
++/*
++ * Macros for declaration and initialization of the kfifo datatype
++ */
++
++#define __kfifo_initializer(s, b) \
++	(struct kfifo) { \
++		.size	= s, \
++		.in	= 0, \
++		.out	= 0, \
++		.buffer = b \
++	}
++
++/**
++ * DECLARE_KFIFO - macro to declare a kfifo and the associated buffer
++ * @name: name of the declared kfifo datatype
++ * @size: size of the fifo buffer
++ *
++ * Note: the macro can be used inside struct or union declaration
++ * Note: the macro creates two objects:
++ *  A kfifo object with the given name and a buffer for the kfifo
++ *  object named name##kfifo_buffer
++ */
++#define DECLARE_KFIFO(name, size) \
++union { \
++	struct kfifo name; \
++	unsigned char name##kfifo_buffer[size + sizeof(struct kfifo)]; \
++}
++
++/**
++ * INIT_KFIFO - Initialize a kfifo declared by DECLARED_KFIFO
++ * @name: name of the declared kfifo datatype
++ * @size: size of the fifo buffer
++ */
++#define INIT_KFIFO(name) \
++	name = __kfifo_initializer(sizeof(name##kfifo_buffer) - \
++				sizeof(struct kfifo), name##kfifo_buffer)
++
++/**
++ * DEFINE_KFIFO - macro to define and initialize a kfifo
++ * @name: name of the declared kfifo datatype
++ * @size: size of the fifo buffer
++ *
++ * Note: the macro can be used for global and local kfifo data type variables
++ * Note: the macro creates two objects:
++ *  A kfifo object with the given name and a buffer for the kfifo
++ *  object named name##kfifo_buffer
++ */
++#define DEFINE_KFIFO(name, size) \
++	unsigned char name##kfifo_buffer[size]; \
++	struct kfifo name = __kfifo_initializer(size, name##kfifo_buffer)
++
+ extern void kfifo_init(struct kfifo *fifo, unsigned char *buffer,
+ 			unsigned int size);
+ extern __must_check int kfifo_alloc(struct kfifo *fifo, unsigned int size,
+@@ -71,6 +122,15 @@
+ }
+ 
+ /**
++ * kfifo_size - returns the size of the fifo in bytes
++ * @fifo: the fifo to be used.
++ */
++static inline __must_check unsigned int kfifo_size(struct kfifo *fifo)
++{
++	return fifo->size;
++}
++
++/**
+  * kfifo_len - returns the number of used bytes in the FIFO
+  * @fifo: the fifo to be used.
+  */
+@@ -84,6 +144,33 @@
+ }
+ 
+ /**
++ * kfifo_is_empty - returns true if the fifo is empty
++ * @fifo: the fifo to be used.
++ */
++static inline __must_check int kfifo_is_empty(struct kfifo *fifo)
++{
++	return fifo->in == fifo->out;
++}
++
++/**
++ * kfifo_is_full - returns true if the fifo is full
++ * @fifo: the fifo to be used.
++ */
++static inline __must_check int kfifo_is_full(struct kfifo *fifo)
++{
++	return kfifo_len(fifo) == kfifo_size(fifo);
++}
++
++/**
++ * kfifo_avail - returns the number of bytes available in the FIFO
++ * @fifo: the fifo to be used.
++ */
++static inline __must_check unsigned int kfifo_avail(struct kfifo *fifo)
++{
++	return kfifo_size(fifo) - kfifo_len(fifo);
++}
++
++/**
+  * kfifo_in_locked - puts some data into the FIFO using a spinlock for locking
+  * @fifo: the fifo to be used.
+  * @from: the data to be added.
+@@ -133,8 +220,8 @@
+ 	 * optimization: if the FIFO is empty, set the indices to 0
+ 	 * so we don't wrap the next time
+ 	 */
+-	if (fifo->in == fifo->out)
+-		fifo->in = fifo->out = 0;
++	if (kfifo_is_empty(fifo))
++		kfifo_reset(fifo);
+ 
+ 	spin_unlock_irqrestore(lock, flags);
+ 
 
-I take your point though, and can rework the patch so that if we
-don't find a configuration that we're expecting (either 4p or 8p)
-then just revert to the default behaviour and don't break
-anything.
-
-> Easiest route will be to add a new entry in /proc/cpuinfo
-
-Well, if you remain unconvinced that fixing up 'physical id' is
-the proper thing to do, here are some alternate proposals:
-
-	/proc/cpuinfo/chassis id
-	/sys/devices/system/cpu/$cpu/chassis id
-	/sys/devices/system/cpu/$cpu/topology/chassis id
-
-Thoughts?
-
-Thanks.
-
-/ac
 
