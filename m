@@ -1,61 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbZHSXjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZHSXju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbZHSXjv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbZHSXjs
+	id S1754079AbZHSXju (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 19:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZHSXjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 19 Aug 2009 19:39:48 -0400
-Received: from kroah.org ([198.145.64.141]:60551 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:60560 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753902AbZHSXjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 19:39:42 -0400
-Date: Wed, 19 Aug 2009 16:36:01 -0700
+	id S1754040AbZHSXjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 19:39:43 -0400
+Date: Wed, 19 Aug 2009 16:37:44 -0700
 From: Greg KH <greg@kroah.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-media@vger.kernel.org
-Subject: Re: linux-next: suspend tree build warnings
-Message-ID: <20090819233601.GA2875@kroah.com>
-References: <20090819172419.2cf53008.sfr@canb.auug.org.au>
- <200908192338.03910.rjw@sisk.pl>
+To: "Aric D. Blumer" <aric@sdgsystems.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mike Rapoport <mike@compulab.co.il>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: linux-next: usb/pxa trees build failure
+Message-ID: <20090819233744.GC2875@kroah.com>
+References: <20090818135852.0b3b648d.sfr@canb.auug.org.au>
+ <20090818114242.GA28534@kroah.com>
+ <4A8AB525.7050404@gmail.com>
+ <20090818145800.GB6074@kroah.com>
+ <4A8B64DE.6000506@gmail.com>
+ <20090819172223.GA4398@kroah.com>
+ <4A8C4348.7030601@sdgsystems.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200908192338.03910.rjw@sisk.pl>
+In-Reply-To: <4A8C4348.7030601@sdgsystems.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 11:38:03PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday 19 August 2009, Stephen Rothwell wrote:
-> > Hi Rafael,
+On Wed, Aug 19, 2009 at 02:24:08PM -0400, Aric D. Blumer wrote:
+> Greg KH wrote:
+> > On Wed, Aug 19, 2009 at 10:35:10AM +0800, Eric Miao wrote:
+> >   
+> >> Greg KH wrote:
+> >>     
+> >>> On Tue, Aug 18, 2009 at 10:05:25PM +0800, Eric Miao wrote:
+> >>>       
+> >>>> Greg KH wrote:
+> >>>>         
+> >>>>> On Tue, Aug 18, 2009 at 01:58:52PM +1000, Stephen Rothwell wrote:
+> >>>>>           
+> >>>>>> Hi Eric, Greg,
+> >>>>>>
+> >>>>>> The next-20090817 (and a few before) build (arm trizeps4_defconfig)
+> >>>>>> failed like this:
+> >>>>>>
+> >>>>>> drivers/usb/host/ohci-pxa27x.c:507: error: 'pdev' undeclared (first use in this function)
+> >>>>>>
+> >>>>>> Caused by the interaction of commit
+> >>>>>> 6458baec17e19d38b9d4eb1f96c213f91609c0e3 ("USB: ohci-pxa27x: Reconfigure
+> >>>>>> power settings on resume") from the usb tree with commit
+> >>>>>> b8fb7d4317bcea1b48c9560d23dff81121870ece ("[ARM] pxa: update
+> >>>>>> ohci-pxa27x.c to use 'struct dev_pm_ops'"). from the pxa tree.
+> >>>>>>
+> >>>>>> Greg/Aric, maybe that usb tree patch needs to go through the pxa tree?
+> >>>>>> (and maybe "USB: ohci-pxa27x: Allow NOCP and OCPM to be cleared" as well?)
+> >>>>>>
+> >>>>>> [this also broke the following configs: magician_defconfig,
+> >>>>>> em_x270_defconfig and cm_x2xx_defconfig.]
+> >>>>>>             
+> >>>>> Ick, not good.  Aric, should I drop this patch from my tree?
+> >>>>>
+> >>>>>           
+> >>>> I think so, might be better to go through the pxa tree so that I can give
+> >>>> another review. (the fiber across the pacific seems to be broken again, so
+> >>>> I have to look into this tomorrow, still fetching -next, sigh).
+> >>>>         
+> >>> Ok, let me know if you want me to drop these patches from my tree.
+> >>>
+> >>>       
+> >> OK, so the problem is 'pdev' is no longer part of the dev_pm_ops, ('dev' is used
+> >> instead), and the 'inf' pointer can just be referenced from 'dev->platform_data',
+> >> so the fix is actually trivial, but it does have dependency issue.
+> >>
+> >> Greg,
+> >>
+> >> It looks to me would be better if this goes the pxa tree, and I'll send out the
+> >> updated patch of 6458baec later.
+> >>     
+> >
+> > Ok, should I drop just this one patch from my tree, or any others as
+> > well
 > 
-> Hi,
-> 
-> > Today's linux-next build (x86_64 allmodconfig) produced these warnings:
-> > 
-> > drivers/media/dvb/frontends/dib7000p.c: In function ‘dib7000p_i2c_enumeration’:
-> > drivers/media/dvb/frontends/dib7000p.c:1315: warning: the frame size of 2256 bytes is larger than 2048 bytes
-> > drivers/media/dvb/frontends/dib3000mc.c: In function ‘dib3000mc_i2c_enumeration’:
-> > drivers/media/dvb/frontends/dib3000mc.c:853: warning: the frame size of 2160 bytes is larger than 2048 bytes
-> > 
-> > Introduced by commit 99307958cc9c1b0b2e0dad4bbefdafaf9ac5a681 ("PM:
-> > Introduce core framework for run-time PM of I/O devices (rev. 17)").
-> 
-> Well.
-> 
-> This commit increases the size of struct device quite a bit and both of the
-> drivers above create a "state" object on the stack that contains struct device
-> among other things.
+> It is an isolated patch, so dropping it alone should be fine.
 
-Ick.  struct device should _never_ be on the stack, why would this code
-want to do such a thing?
+Ok, it's now dropped from my tree, linux-next should now be happy :)
 
 thanks,
 
