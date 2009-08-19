@@ -1,303 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751714AbZHSAba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750853AbZHSAiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751714AbZHSAba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 20:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZHSAb3
+	id S1750853AbZHSAiP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 20:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZHSAiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 20:31:29 -0400
-Received: from mga11.intel.com ([192.55.52.93]:24717 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbZHSAb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 20:31:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,405,1246863600"; 
-   d="scan'208";a="718316869"
-Subject: [patch] x86: Rendezvous all the cpu's for MTRR/PAT init
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Cc: venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 18 Aug 2009 17:30:35 -0700
-Message-Id: <1250641835.2744.56.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Aug 2009 20:38:14 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:53454 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbZHSAiM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 20:38:12 -0400
+Date: Tue, 18 Aug 2009 17:38:12 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Avi Kivity <avi@redhat.com>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
+	model for vbus_driver objects
+Message-ID: <20090819003812.GA11168@ovro.caltech.edu>
+References: <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu> <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu> <4A8B1C7F.4060008@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8B1C7F.4060008@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 18 Aug 2009 17:38:13 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please consider applying this patch after the clockevents bugfix posted
-yesterday http://marc.info/?l=linux-kernel&m=125054497316006&w=2
+On Wed, Aug 19, 2009 at 12:26:23AM +0300, Avi Kivity wrote:
+> On 08/18/2009 11:59 PM, Ira W. Snyder wrote:
+>> On a non shared-memory system (where the guest's RAM is not just a chunk
+>> of userspace RAM in the host system), virtio's management model seems to
+>> fall apart. Feature negotiation doesn't work as one would expect.
+>>    
+>
+> In your case, virtio-net on the main board accesses PCI config space  
+> registers to perform the feature negotiation; software on your PCI cards  
+> needs to trap these config space accesses and respond to them according  
+> to virtio ABI.
+>
 
-thanks,
-suresh
----
+Is this "real PCI" (physical hardware) or "fake PCI" (software PCI
+emulation) that you are describing?
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: x86: Rendezvous all the cpu's for MTRR/PAT init
+The host (x86, PCI master) must use "real PCI" to actually configure the
+boards, enable bus mastering, etc. Just like any other PCI device, such
+as a network card.
 
-SDM Vol 3a section titled "MTRR considerations in MP systems" specifies
-the need for synchronizing the logical cpu's while initializing/updating
-MTRR.
+On the guests (ppc, PCI agents) I cannot add/change PCI functions (the
+last .[0-9] in the PCI address) nor can I change PCI BAR's once the
+board has started. I'm pretty sure that would violate the PCI spec,
+since the PCI master would need to re-scan the bus, and re-assign
+addresses, which is a task for the BIOS.
 
-Currently Linux kernel does the synchronization of all cpu's only when
-a single MTRR register is programmed/updated. During an AP online
-(during boot/cpu-online/resume)  where we initialize all the MTRR/PAT registers,
-we don't follow this synchronization algorithm.
+> (There's no real guest on your setup, right?  just a kernel running on  
+> and x86 system and other kernels running on the PCI cards?)
+>
 
-This can lead to scenarios where during a dynamic cpu online, that logical cpu
-is initializing MTRR/PAT with cache disabled (cr0.cd=1) etc while other logical
-HT sibling continue to run (also with cache disabled because of cr0.cd=1
-on its sibling).
+Yes, the x86 (PCI master) runs Linux (booted via PXELinux). The ppc's
+(PCI agents) also run Linux (booted via U-Boot). They are independent
+Linux systems, with a physical PCI interconnect.
 
-Starting from Westmere, VMX transitions with cr0.cd=1 don't work properly
-(because of some VMX performance optimizations) and the above scenario
-(with one logical cpu doing VMX activity and another logical cpu coming online)
-can result in system crash.
+The x86 has CONFIG_PCI=y, however the ppc's have CONFIG_PCI=n. Linux's
+PCI stack does bad things as a PCI agent. It always assumes it is a PCI
+master.
 
-Fix the MTRR initialization by doing rendezvous of all the cpus. During
-boot and resume, we delay the MTRR/PAT init for APs till all the
-logical cpu's come online and the rendezvous process at the end of AP's bringup,
-will initialize the MTRR/PAT for all AP's.
+It is possible for me to enable CONFIG_PCI=y on the ppc's by removing
+the PCI bus from their list of devices provided by OpenFirmware. They
+can not access PCI via normal methods. PCI drivers cannot work on the
+ppc's, because Linux assumes it is a PCI master.
 
-For dynamic single cpu online, we synchronize all the logical cpus and
-do the MTRR/PAT init on the AP that is coming online.
+To the best of my knowledge, I cannot trap configuration space accesses
+on the PCI agents. I haven't needed that for anything I've done thus
+far.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
+>> This does appear to be solved by vbus, though I haven't written a
+>> vbus-over-PCI implementation, so I cannot be completely sure.
+>>    
+>
+> Even if virtio-pci doesn't work out for some reason (though it should),  
+> you can write your own virtio transport and implement its config space  
+> however you like.
+>
 
-Index: tip/arch/x86/include/asm/mtrr.h
-===================================================================
---- tip.orig/arch/x86/include/asm/mtrr.h
-+++ tip/arch/x86/include/asm/mtrr.h
-@@ -121,8 +121,12 @@ extern int mtrr_del_page(int reg, unsign
- extern void mtrr_centaur_report_mcr(int mcr, u32 lo, u32 hi);
- extern void mtrr_ap_init(void);
- extern void mtrr_bp_init(void);
-+extern void set_mtrr_aps_delayed_init(void);
-+extern void mtrr_aps_init(void);
-+extern void mtrr_bp_restore(void);
- extern int mtrr_trim_uncached_memory(unsigned long end_pfn);
- extern int amd_special_default_mtrr(void);
-+extern u32 mtrr_aps_delayed_init;
- #  else
- static inline u8 mtrr_type_lookup(u64 addr, u64 end)
- {
-@@ -161,6 +165,9 @@ static inline void mtrr_centaur_report_m
- 
- #define mtrr_ap_init() do {} while (0)
- #define mtrr_bp_init() do {} while (0)
-+#define set_mtrr_aps_delayed_init() do {} while (0)
-+#define mtrr_aps_init() do {} while (0)
-+#define mtrr_bp_restore() do {} while (0)
- #  endif
- 
- #ifdef CONFIG_COMPAT
-Index: tip/arch/x86/kernel/cpu/common.c
-===================================================================
---- tip.orig/arch/x86/kernel/cpu/common.c
-+++ tip/arch/x86/kernel/cpu/common.c
-@@ -880,7 +880,12 @@ void __cpuinit identify_secondary_cpu(st
- #ifdef CONFIG_X86_32
- 	enable_sep_cpu();
- #endif
-+	/*
-+	 * mtrr_ap_init() uses smp_call_function. Enable interrupts.
-+	 */
-+	local_irq_enable();
- 	mtrr_ap_init();
-+	local_irq_disable();
- }
- 
- struct msr_range {
-Index: tip/arch/x86/kernel/cpu/mtrr/main.c
-===================================================================
---- tip.orig/arch/x86/kernel/cpu/mtrr/main.c
-+++ tip/arch/x86/kernel/cpu/mtrr/main.c
-@@ -58,6 +58,7 @@ unsigned int mtrr_usage_table[MTRR_MAX_V
- static DEFINE_MUTEX(mtrr_mutex);
- 
- u64 size_or_mask, size_and_mask;
-+u32 mtrr_aps_delayed_init;
- 
- static struct mtrr_ops *mtrr_ops[X86_VENDOR_NUM];
- 
-@@ -163,7 +164,10 @@ static void ipi_handler(void *info)
- 	if (data->smp_reg != ~0U) {
- 		mtrr_if->set(data->smp_reg, data->smp_base,
- 			     data->smp_size, data->smp_type);
--	} else {
-+	} else if (mtrr_aps_delayed_init) {
-+		/*
-+		 * Initialize the MTRRs inaddition to the synchronisation.
-+		 */
- 		mtrr_if->set_all();
- 	}
- 
-@@ -265,6 +269,8 @@ set_mtrr(unsigned int reg, unsigned long
- 	 */
- 	if (reg != ~0U)
- 		mtrr_if->set(reg, base, size, type);
-+	else if (!mtrr_aps_delayed_init)
-+		mtrr_if->set_all();
- 
- 	/* Wait for the others */
- 	while (atomic_read(&data.count))
-@@ -721,9 +727,7 @@ void __init mtrr_bp_init(void)
- 
- void mtrr_ap_init(void)
- {
--	unsigned long flags;
--
--	if (!mtrr_if || !use_intel())
-+	if (!use_intel() || mtrr_aps_delayed_init)
- 		return;
- 	/*
- 	 * Ideally we should hold mtrr_mutex here to avoid mtrr entries
-@@ -738,11 +742,7 @@ void mtrr_ap_init(void)
- 	 *   2. cpu hotadd time. We let mtrr_add/del_page hold cpuhotplug
- 	 *      lock to prevent mtrr entry changes
- 	 */
--	local_irq_save(flags);
--
--	mtrr_if->set_all();
--
--	local_irq_restore(flags);
-+	set_mtrr(~0U, 0, 0, 0);
- }
- 
- /**
-@@ -753,6 +753,42 @@ void mtrr_save_state(void)
- 	smp_call_function_single(0, mtrr_save_fixed_ranges, NULL, 1);
- }
- 
-+void set_mtrr_aps_delayed_init(void)
-+{
-+	if (!use_intel())
-+		return;
-+
-+	mtrr_aps_delayed_init = 1;
-+}
-+
-+/*
-+ * MTRR initialization for all AP's
-+ */
-+void mtrr_aps_init(void)
-+{
-+	if (!use_intel())
-+		return;
-+
-+	/*
-+	 * Ideally we should hold mtrr_mutex here to avoid mtrr entries changed,
-+	 * but this routine will be called in cpu boot time, holding the lock
-+	 * breaks it. This routine is called in two cases: 1.very earily time
-+	 * of software resume, when there absolutely isn't mtrr entry changes;
-+	 * 2.cpu hotadd time. We let mtrr_add/del_page hold cpuhotplug lock to
-+	 * prevent mtrr entry changes
-+	 */
-+	set_mtrr(~0U, 0, 0, 0);
-+	mtrr_aps_delayed_init = 0;
-+}
-+
-+void mtrr_bp_restore(void)
-+{
-+	if (!use_intel())
-+		return;
-+
-+	mtrr_if->set_all();
-+}
-+
- static int __init mtrr_init_finialize(void)
- {
- 	if (!mtrr_if)
-Index: tip/arch/x86/kernel/smpboot.c
-===================================================================
---- tip.orig/arch/x86/kernel/smpboot.c
-+++ tip/arch/x86/kernel/smpboot.c
-@@ -1118,9 +1118,22 @@ void __init native_smp_prepare_cpus(unsi
- 
- 	if (is_uv_system())
- 		uv_system_init();
-+
-+	set_mtrr_aps_delayed_init();
- out:
- 	preempt_enable();
- }
-+
-+void arch_enable_nonboot_cpus_begin(void)
-+{
-+	set_mtrr_aps_delayed_init();
-+}
-+
-+void arch_enable_nonboot_cpus_end(void)
-+{
-+	mtrr_aps_init();
-+}
-+
- /*
-  * Early setup to make printk work.
-  */
-@@ -1142,6 +1155,7 @@ void __init native_smp_cpus_done(unsigne
- 	setup_ioapic_dest();
- #endif
- 	check_nmi_watchdog();
-+	mtrr_aps_init();
- }
- 
- static int __initdata setup_possible_cpus = -1;
-Index: tip/arch/x86/power/cpu.c
-===================================================================
---- tip.orig/arch/x86/power/cpu.c
-+++ tip/arch/x86/power/cpu.c
-@@ -224,7 +224,7 @@ static void __restore_processor_state(st
- 	fix_processor_context();
- 
- 	do_fpu_end();
--	mtrr_ap_init();
-+	mtrr_bp_restore();
- 
- #ifdef CONFIG_X86_OLD_MCE
- 	mcheck_init(&boot_cpu_data);
-Index: tip/kernel/cpu.c
-===================================================================
---- tip.orig/kernel/cpu.c
-+++ tip/kernel/cpu.c
-@@ -413,6 +413,14 @@ int disable_nonboot_cpus(void)
- 	return error;
- }
- 
-+void __attribute__((weak)) arch_enable_nonboot_cpus_begin(void)
-+{
-+}
-+
-+void __attribute__((weak)) arch_enable_nonboot_cpus_end(void)
-+{
-+}
-+
- void __ref enable_nonboot_cpus(void)
- {
- 	int cpu, error;
-@@ -424,6 +432,9 @@ void __ref enable_nonboot_cpus(void)
- 		goto out;
- 
- 	printk("Enabling non-boot CPUs ...\n");
-+
-+	arch_enable_nonboot_cpus_begin();
-+
- 	for_each_cpu(cpu, frozen_cpus) {
- 		error = _cpu_up(cpu, 1);
- 		if (!error) {
-@@ -432,6 +443,9 @@ void __ref enable_nonboot_cpus(void)
- 		}
- 		printk(KERN_WARNING "Error taking CPU%d up: %d\n", cpu, error);
- 	}
-+
-+	arch_enable_nonboot_cpus_end();
-+
- 	cpumask_clear(frozen_cpus);
- out:
- 	cpu_maps_update_done();
+This is what I did with virtio-over-PCI. The way virtio-net negotiates
+features makes this work non-intuitively.
 
+>> I'm not at all clear on how to get feature negotiation to work on a
+>> system like mine. From my study of lguest and kvm (see below) it looks
+>> like userspace will need to be involved, via a miscdevice.
+>>    
+>
+> I don't see why.  Is the kernel on the PCI cards in full control of all  
+> accesses?
+>
 
+I'm not sure what you mean by this. Could you be more specific? This is
+a normal, unmodified vanilla Linux kernel running on the PCI agents.
+
+>> Ok. I thought I should at least express my concerns while we're
+>> discussing this, rather than being too late after finding the time to
+>> study the driver.
+>>
+>> Off the top of my head, I would think that transporting userspace
+>> addresses in the ring (for copy_(to|from)_user()) vs. physical addresses
+>> (for DMAEngine) might be a problem. Pinning userspace pages into memory
+>> for DMA is a bit of a pain, though it is possible.
+>>    
+>
+> Oh, the ring doesn't transport userspace addresses.  It transports guest  
+> addresses, and it's up to vhost to do something with them.
+>
+> Currently vhost supports two translation modes:
+>
+> 1. virtio address == host virtual address (using copy_to_user)
+> 2. virtio address == offsetted host virtual address (using copy_to_user)
+>
+> The latter mode is used for kvm guests (with multiple offsets, skipping  
+> some details).
+>
+> I think you need to add a third mode, virtio address == host physical  
+> address (using dma engine).  Once you do that, and wire up the  
+> signalling, things should work.
+>
+
+Ok.
+
+In my virtio-over-PCI patch, I hooked two virtio-net's together. I wrote
+an algorithm to pair the tx/rx queues together. Since virtio-net
+pre-fills its rx queues with buffers, I was able to use the DMA engine
+to copy from the tx queue into the pre-allocated memory in the rx queue.
+
+I have an intuitive idea about how I think vhost-net works in this case.
+
+>> There is also the problem of different endianness between host and guest
+>> in virtio-net. The struct virtio_net_hdr (include/linux/virtio_net.h)
+>> defines fields in host byte order. Which totally breaks if the guest has
+>> a different endianness. This is a virtio-net problem though, and is not
+>> transport specific.
+>>    
+>
+> Yeah.  You'll need to add byteswaps.
+>
+
+I wonder if Rusty would accept a new feature:
+VIRTIO_F_NET_LITTLE_ENDIAN, which would allow the virtio-net driver to
+use LE for all of it's multi-byte fields.
+
+I don't think the transport should have to care about the endianness.
+
+>> I've browsed over both the kvm and lguest code, and it looks like they
+>> each re-invent a mechanism for transporting interrupts between the host
+>> and guest, using eventfd. They both do this by implementing a
+>> miscdevice, which is basically their management interface.
+>>
+>> See drivers/lguest/lguest_user.c (see write() and LHREQ_EVENTFD) and
+>> kvm-kmod-devel-88/x86/kvm_main.c (see kvm_vm_ioctl(), called via
+>> kvm_dev_ioctl()) for how they hook up eventfd's.
+>>
+>> I can now imagine how two userspace programs (host and guest) could work
+>> together to implement a management interface, including hotplug of
+>> devices, etc. Of course, this would basically reinvent the vbus
+>> management interface into a specific driver.
+>>    
+>
+> You don't need anything in the guest userspace (virtio-net) side.
+>
+>> I think this is partly what Greg is trying to abstract out into generic
+>> code. I haven't studied the actual data transport mechanisms in vbus,
+>> though I have studied virtio's transport mechanism. I think a generic
+>> management interface for virtio might be a good thing to consider,
+>> because it seems there are at least two implementations already: kvm and
+>> lguest.
+>>    
+>
+> Management code in the kernel doesn't really help unless you plan to  
+> manage things with echo and cat.
+>
+
+True. It's slowpath setup, so I don't care how fast it is. For reasons
+outside my control, the x86 (PCI master) is running a RHEL5 system. This
+means glibc-2.5, which doesn't have eventfd support, AFAIK. I could try
+and push for an upgrade. This obviously makes cat/echo really nice, it
+doesn't depend on glibc, only the kernel version.
+
+I don't give much weight to the above, because I can use the eventfd
+syscalls directly, without glibc support. It is just more painful.
+
+Ira
