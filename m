@@ -1,46 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbZHSQJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751357AbZHSQKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbZHSQJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZHSQJR
+	id S1751357AbZHSQKx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbZHSQKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:09:17 -0400
-Received: from kroah.org ([198.145.64.141]:50473 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbZHSQJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:09:16 -0400
-Date: Wed, 19 Aug 2009 09:01:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [RFC] [PATCH v3 1/2] introduce ALS sysfs class
-Message-ID: <20090819160144.GB1020@kroah.com>
-References: <1250671229.17853.51.camel@rzhang-dt>
+	Wed, 19 Aug 2009 12:10:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33563 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbZHSQKw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 12:10:52 -0400
+Date: Wed, 19 Aug 2009 12:10:53 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, hch@infradead.org
+Subject: Re: [PATCH 01/17] vfs: Introduce filemap_fdatawait_range
+Message-ID: <20090819161053.GA6150@infradead.org>
+References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-2-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250671229.17853.51.camel@rzhang-dt>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1250697884-22288-2-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 04:40:29PM +0800, Zhang Rui wrote:
-> --- /dev/null
-> +++ linux-2.6/Documentation/ABI/testing/sysfs-class-als
-> @@ -0,0 +1,137 @@
-> +Ambient Light Sensor Sysfs driver How To
-> +=========================
+On Wed, Aug 19, 2009 at 06:04:28PM +0200, Jan Kara wrote:
+> This simple helper saves some filesystems conversion from byte offset
+> to page numbers and also makes the fdata* interface more complete.
 
-<snip>
+Looks good to me,
 
-While this is a nice document, it does not follow the standard that the
-files in Documentation/ABI/ should be in.  Can you please read
-Documentation/ABI/README and convert the file to follow that?
 
-thanks,
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 
-greg k-h
