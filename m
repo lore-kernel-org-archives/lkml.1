@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbZHSC64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbZHSDAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751913AbZHSC64 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 22:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZHSC6z
+	id S1752111AbZHSDAu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 23:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZHSDAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 22:58:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44925 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751793AbZHSC6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 22:58:55 -0400
-Message-ID: <4A8B6A48.5080500@kernel.org>
-Date: Wed, 19 Aug 2009 11:58:16 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, Amerigo Wang <amwang@redhat.com>
-Subject: Re: [GIT PULL] percpu fixes for 2.6.31-rc6
-References: <4A84ED76.2050107@kernel.org> <4A8B57AF.9000000@kernel.org> <alpine.LFD.2.01.0908181954110.3158@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0908181954110.3158@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 19 Aug 2009 02:58:31 +0000 (UTC)
+	Tue, 18 Aug 2009 23:00:49 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34909 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbZHSDAl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 23:00:41 -0400
+Message-Id: <20090819030037.884039050@goodmis.org>
+References: <20090819025634.987354707@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 18 Aug 2009 22:56:41 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       Greg KH <greg@kroah.com>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: [PATCH 07/14] kconfig: add check if end exists in extract-ikconfig
+Content-Disposition: inline; filename=0007-kconfig-add-check-if-end-exists-in-extract-ikconfig.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Wed, 19 Aug 2009, Tejun Heo wrote:
-> 
->> Hello,
->>
->> Tejun Heo wrote:
->>> Please consider pulling from the following percpu fixes tree.
->>>
->>>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-linus
->> Any news about this?  This affects booting on some sparc64 machines.
->> If the change is too pervasive at this stage, we can consider
->> reverting dynamic percpu allocator conversion for sparc64.
-> 
-> Ok, that just fell between the cracks in my email. Pulled.
+From: Steven Rostedt <srostedt@redhat.com>
 
-Great, thanks.
+Both start and end should be tested for existence before continuing
+to parse the config.gz file.
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ scripts/extract-ikconfig |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
+index 72997c3..42d6bce 100755
+--- a/scripts/extract-ikconfig
++++ b/scripts/extract-ikconfig
+@@ -17,6 +17,10 @@ dump_config() {
+ 	return
+     fi
+     end=`$binoffset $file $IKCFG_ED 2>/dev/null`
++    [ "$?" != "0" ] && end="-1"
++    if [ "$end" -eq "-1" ]; then
++	return
++    fi
+ 
+     start=`expr $start + 8`
+     size=`expr $end - $start`
+-- 
+1.6.3.3
 
 -- 
-tejun
