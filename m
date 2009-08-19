@@ -1,131 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbZHSRdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbZHSRhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752440AbZHSRdF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 13:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbZHSRdE
+	id S1751564AbZHSRhk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 13:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZHSRhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 13:33:04 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:36173 "EHLO
+	Wed, 19 Aug 2009 13:37:39 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:61613 "EHLO
 	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbZHSRdD (ORCPT
+	with ESMTP id S1751133AbZHSRhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 13:33:03 -0400
+	Wed, 19 Aug 2009 13:37:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=BJJeAUQ54+F/6zWOHcKVsItyK416vbzGaRQKjPuy8RzY1swxtc1jUhwuPCcW5vr4AU
-         Vp/LqRP8uaMaHg0Q//gc3yoT39YG1GdLNk9zbr9EFy6CKlN7GkGmKzbZgzTzqoxCmjHX
-         18DtAlRbGelpsvTxNdw9HVQb0Hy1ApAiFkhNs=
-Date: Wed, 19 Aug 2009 19:33:00 +0200
+        b=H/kw9it6xALlg8nOWFxX3JVrKmu6rKEZPlWS4u5m4cVHQm2kE0fF4gB305rbz+eGF6
+         5ETmmvJWtVhGlDDQB3VcCL25uWUGInPWLyfooXTeFOCEqjPoaNmizgS+frlfgV9oTmOq
+         ciw6N9ZuhUumwQslHNgssUTSRWj3vCPLMWMqc=
+Date: Wed, 19 Aug 2009 19:37:35 +0200
 From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Patch 0/1] HW-BKPT: Allow per-cpu kernel-space Hardware
-	Breakpoint requests
-Message-ID: <20090819173259.GF4972@nowhere>
-References: <20090817124641.GA13354@in.ibm.com> <20090819161119.GA3633@in.ibm.com>
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH 15/16] tracing: Add fields format definition for
+	syscall events
+Message-ID: <20090819173734.GG4972@nowhere>
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <1250016545-6601-16-git-send-email-fweisbec@gmail.com> <4A8C3290.3070900@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090819161119.GA3633@in.ibm.com>
+In-Reply-To: <4A8C3290.3070900@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 09:41:19PM +0530, K.Prasad wrote:
-> On Mon, Aug 17, 2009 at 06:16:41PM +0530, K.Prasad wrote:
-> > Hi All,
-> > 	Please find a patch that enables kernel-space breakpoints to be
-> > requested for a subset of the available CPUs in the system. This allows
-> > per-CPU breakpoints and comes with the associated benefit of reduced
-> > overhead during (un)registration.
+On Wed, Aug 19, 2009 at 01:12:48PM -0400, Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+> > Define the format of the syscall trace fields to parse the binary
+> > values from a raw trace using the syscall events "format" file.
 > > 
-> > This enhancement allows exploitation of hardware breakpoint registers by
-> > 'perf' which produces a CPU-wise information.
+> > This is defined dynamically using the syscalls metadata.
+> > It prepares the export of syscall event raw records to perf
+> > counters.
 > > 
-> > Design changes
-> > --------------
-> > - Every breakpoint request 'consumes' the first available debug register
-> >   (starting from HBP_NUM) in each CPU represented by 'cpumask' field in
-> >   'struct hw_breakpoint'.
+> > Example:
 > > 
-> > - 'hbp_kernel_pos' (that separates kernel-space breakpoints from the
-> >   free/user-space breakpoints) now points to the maximum of debug
-> >   registers consumed on any given CPU.
-> >   -- 'hbp_kernel_pos' is decremented (one-at-a-time) to allow a new-slot
-> >      for kernel-space requests iff all debug registers on the given CPU
-> >      (from HBP_NUM - 1 to 'hbp_kernel_pos' are already consumed.
-> >   -- 'hbp_kernel_pos' is incremented (one-at-a-time) to free a slot iff
-> >      a removal request results in the release of a bkpt request that
-> >      consumed maximum debug registers for kernel-space.
+> > $ cat /debug/tracing/events/syscalls/sys_enter_sched_getparam/format
+> > name: sys_enter_sched_getparam
+> > ID: 39
+> > format:
+> > 	field:unsigned short common_type;	offset:0;	size:2;
+> > 	field:unsigned char common_flags;	offset:2;	size:1;
+> > 	field:unsigned char common_preempt_count;	offset:3;	size:1;
+> > 	field:int common_pid;	offset:4;	size:4;
+> > 	field:int common_tgid;	offset:8;	size:4;
 > > 
-> > - Every removal request results in compaction of breakpoint registers
-> >   (on a per-cpu basis) to occupy the vacant debug register.
-> >  
-> > The patch is based on commit b6c720b811aed0eeda89f277f13c1bd1bdf721fd of
-> > -tip tree and has been tested to work fine on an x86 machine for both
-> > cases (i.e. system-wide kernel breakpoints and bkpts for a subset of CPUs).
+> > 	field:pid_t pid;	offset:12;	size:8;
+> > 	field:struct sched_param * param;	offset:20;	size:8;
 > > 
-> > Please let me know your comments on the same.
-> > 
-> > Thanks,
-> > K.Prasad
-> > 
+> > print fmt: "pid: 0x%08lx, param: 0x%08lx", ((unsigned long)(REC->pid)), ((unsigned long)(REC->param))
 > 
 > Hi Frederic,
-> 	Do you find these patches, that provide the ability to restrict
-> kernel-space breakpoints to any given subset of CPUs, to bring the
-> requisite features for exploitation of hw-bkpt by 'perf tools'?
 > 
-> Also of interest would be the reduced overhead associated with
-> (un)register_kernel_hw_breakpoint() operations (no IPI in case of
-> single-CPU breakpoint request).
+> I've found that the formats of some syscall events were too big.
 > 
-> Thanks,
-> K.Prasad
+> ---
+> $ for i in sys_enter* ;do grep name $i/format > /dev/null || echo $i has broken format. ; done sys_enter_getegid has broken format.
+> sys_enter_geteuid has broken format.
+> sys_enter_getgid has broken format.
+> sys_enter_getpgrp has broken format.
+> sys_enter_getpid has broken format.
+> sys_enter_getppid has broken format.
+> sys_enter_gettid has broken format.
+> sys_enter_getuid has broken format.
+> sys_enter_inotify_init has broken format.
+> sys_enter_munlockall has broken format.
+> sys_enter_pause has broken format.
+> sys_enter_restart_syscall has broken format.
+> sys_enter_sched_yield has broken format.
+> sys_enter_setsid has broken format.
+> sys_enter_sync has broken format.
+> sys_enter_vhangup has broken format.
 > 
+> $ cat sys_enter_getegid/format
+> FORMAT TOO BIG
+> ---
+> 
+> And it causes an error on ./perf trace.
+> 
+> ---
+> $ ./perf record -R -e syscalls:sys_enter_read -a -f  cat libperf.a > /dev/null
+> 
+> $ ./perf trace
+>   Fatal: Error: expected 'name' but read 'FORMAT'
+> version = 0.5
+> ---
+> 
+> Thank you,
 
 
-Nice.
-Yeah I just reviewed the patch and it looks good.
+Yeah, I have yet to fix this, that because syscalls that have no parameters
+raise a small bug in the return value of trace_seq_printf() while printing
+their format, returning 0 as if the buffer was full and lost some bits.
 
-Now I guess we should meet two others requirements for a pmu
-through this high level Api:
+However, It's possible that the last patches from Li fix this, since he did
+a total/better refactoring of the format definition for syscall events.
 
-- only update the hardware registers when needed: while switching
-  to another thread of a same group, the hardware register switching
-  is wasteful.
-  BTW, I wonder if we need a flag while creating a user bp that tells whether
-  the bp is inherited through fork/clone calls.
-
-- having a callback that quickly swap two breakpoints in order to support
-  the hardware register multiplexing. I guess the pmu object would just need
-  to call it when the multiplexing is decided.
-
-
-Providing those would let us build a pmu struct on top of this high level API,
-hopefully.
-
-All that would be a benefit in both sides. It avoids us building a low level PMU
-that reinvent the wheel, ie: the hardware breakpoints API handles a lot of things
-both in arch and core sides (debug register setting tricks with dr7 and co,
-cpu hotplug, kexec, etc...).
-In the bp API it brings more power (register switching only if needed, per cpu
-support, clone inheritance support, etc...)
-
-And in the end we have a pmu (which unifies the control of this profiling
-unit through a well established and known object for perfcounter) controlled by
-a high level API that could also benefit to other debugging subsystems.
-
-What do you think?
-It would be also nice to have Peter's and Ingo opinion about it, to be sure
-we are not going in the wrong direction.
-
-Thanks.
+I'll check this,
+Thanks!
 
