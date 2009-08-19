@@ -1,140 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbZHSP26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbZHSPhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbZHSP26 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 11:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZHSP25
+	id S1752676AbZHSPhh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 11:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbZHSPhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 11:28:57 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:55703 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbZHSP24 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 11:28:56 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
-Date: Wed, 19 Aug 2009 17:27:07 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
-References: <cover.1250187913.git.mst@redhat.com> <200908191546.44193.arnd@arndb.de> <20090819142038.GA3862@redhat.com>
-In-Reply-To: <20090819142038.GA3862@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 19 Aug 2009 11:37:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56490 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752530AbZHSPhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 11:37:35 -0400
+Message-ID: <4A8C1C22.3010101@redhat.com>
+Date: Wed, 19 Aug 2009 18:37:06 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
+ model for vbus_driver objects
+References: <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu> <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu> <4A8B1C7F.4060008@redhat.com> <20090819003812.GA11168@ovro.caltech.edu> <4A8B9051.3020505@redhat.com> <20090819152811.GA22294@ovro.caltech.edu>
+In-Reply-To: <20090819152811.GA22294@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908191727.07681.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19GVjRvBpFI3JjRcVJ+ajGzxjGPzGP5ZdqC2Ke
- ul/moTMGxcdu5mbiMpJRHKM1U+/qSE403ygKjQm0jM22NPq16m
- p0m0l5rN2NMLoXQZ10OOA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 August 2009, Michael S. Tsirkin wrote:
-> On Wed, Aug 19, 2009 at 03:46:44PM +0200, Arnd Bergmann wrote:
-> > On Wednesday 19 August 2009, Michael S. Tsirkin wrote:
-> >
-> > Leaving that aside for now, you could replace VHOST_NET_SET_SOCKET,
-> > VHOST_SET_OWNER, VHOST_RESET_OWNER
-> 
-> SET/RESET OWNER is still needed: otherwise if you share a descriptor
-> with another process, it can corrupt your memory.
+On 08/19/2009 06:28 PM, Ira W. Snyder wrote:
+>
+>> Well, if you can't do that, you can't use virtio-pci on the host.
+>> You'll need another virtio transport (equivalent to "fake pci" you
+>> mentioned above).
+>>
+>>      
+> Ok.
+>
+> Is there something similar that I can study as an example? Should I look
+> at virtio-pci?
+>
+>    
 
-How? The point of using user threads is that you only ever access the
-address space of the thread that called the ioctl.
+There's virtio-lguest, virtio-s390, and virtio-vbus.
 
-> > and your kernel thread with a new
-> > VHOST_NET_SPLICE blocking ioctl that does all the transfers in the
-> > context of the calling thread.
-> 
-> For one, you'd want a thread per virtqueue.
+>> I think you tried to take two virtio-nets and make them talk together?
+>> That won't work.  You need the code from qemu to talk to virtio-net
+>> config space, and vhost-net to pump the rings.
+>>
+>>      
+> It *is* possible to make two unmodified virtio-net's talk together. I've
+> done it, and it is exactly what the virtio-over-PCI patch does. Study it
+> and you'll see how I connected the rx/tx queues together.
+>    
 
-Don't understand why. The thread can be blocked on all four ends
-of the device and wake up whenever there is some work do to in
-any direction. If we have data to be transferred in both ways,
-we save one thread switch. It probably won't hurt much to have one
-thread per direction, but I don't see the point.
+Right, crossing the cables works, but feature negotiation is screwed up, 
+and both sides think the data is in their RAM.
 
-> Second, an incoming traffic might arrive on another CPU, we want
-> to keep it local.  I guess you would also want ioctls to wake up
-> the threads spuriously ...
+vhost-net doesn't do negotiation and doesn't assume the data lives in 
+its address space.
 
-Outbound traffic should just stay on whatever CPU was sending it
-from the guest. For inbound traffic, we should only wake up
-the thread on the CPU that got the data to start with.
+>> Please find a name other than virtio-over-PCI since it conflicts with
+>> virtio-pci.  You're tunnelling virtio config cycles (which are usually
+>> done on pci config cycles) on a new protocol which is itself tunnelled
+>> over PCI shared memory.
+>>
+>>      
+> Sorry about that. Do you have suggestions for a better name?
+>
+>    
 
-Why would I wake up the threads spuriously? Do you mean for
-stopping the transmission or something else? I guess a pthread_kill
-would be enough for shutting it down.
+virtio-$yourhardware or maybe virtio-dma
 
-> > This would improve the driver on various fronts:
-> > 
-> > - no need for playing tricks with use_mm/unuse_mm
-> > - possibly fewer global TLB flushes from switch_mm, which
-> >   may improve performance.
-> 
-> Why would there be less flushes?
+> I called it virtio-over-PCI in my previous postings to LKML, so until a
+> new patch is written and posted, I'll keep referring to it by the name
+> used in the past, so people can search for it.
+>
+> When I post virtio patches, should I CC another mailing list in addition
+> to LKML?
+>    
 
-I just read up on task->active_mm handling. There probably wouldn't
-be any. I got that wrong.
+virtualization@lists.linux-foundation.org is virtio's home.
 
-> > - based on that, the ability to use any kind of file
-> >   descriptor that can do writev/readv or sendmsg/recvmsg
-> >   without the nastiness you mentioned.
-> 
-> Yes, it's an interesting approach. As I said, need to tread very
-> carefully though, I don't think all issues are figured out. For example:
-> what happens if we pass our own fd here? Will refcount on file ever get
-> to 0 on exit?  There may be others ...
+> That said, I'm not sure how qemu-system-ppc running on x86 could
+> possibly communicate using virtio-net. This would mean the guest is an
+> emulated big-endian PPC, while the host is a little-endian x86. I
+> haven't actually tested this situation, so perhaps I am wrong.
+>    
 
-right.
+I'm confused now.  You don't actually have any guest, do you, so why 
+would you run qemu at all?
 
-> > The disadvantage of course is that you need to add a user
-> > thread for each guest device to make up for the workqueue
-> > that you save.
-> 
-> More importantly, you lose control of CPU locality.  Simply put, a
-> natural threading model in virtualization is one thread per guest vcpu.
-> Asking applications to add multiple helper threads just so they can
-> block forever is wrong, IMO, as userspace has no idea which CPU
-> they should be on, what priority to use, etc.
+>> The x86 side only needs to run virtio-net, which is present in RHEL 5.3.
+>> You'd only need to run virtio-tunnel or however it's called.  All the
+>> eventfd magic takes place on the PCI agents.
+>>
+>>      
+> I can upgrade the kernel to anything I want on both the x86 and ppc's.
+> I'd like to avoid changing the x86 (RHEL5) userspace, though. On the
+> ppc's, I have full control over the userspace environment.
+>    
 
-But the kernel also doesn't know this, you get the same problem in
-another way. If you have multiple guests running at different priorities,
-the kernel will use those priorities to do the more important transfers
-first, while with a global workqueue every guest gets the same priority.
+You don't need any userspace on virtio-net's side.
 
-You say that the natural model is to have one thread per guest
-CPU, but you have a thread per host CPU instead. If the numbers
-are different, you probably lose either way. It gets worse if you
-try to apply NUMA policies.
- 
-> > > > to
-> > > > avoid some of the implications of kernel threads like the missing
-> > > > ability to handle transfer errors in user space.
-> > > 
-> > > Are you talking about TCP here?
-> > > Transfer errors are typically asynchronous - possibly eventfd
-> > > as I expose for vhost net is sufficient there.
-> > 
-> > I mean errors in general if we allow random file descriptors to be used.
-> > E.g. tun_chr_aio_read could return EBADFD, EINVAL, EFAULT, ERESTARTSYS,
-> > EIO, EAGAIN and possibly others. We can handle some in kernel, others
-> > should never happen with vhost_net, but if something unexpected happens
-> > it would be nice to just bail out to user space.
-> 
-> And note that there might be more than one error.  I guess, that's
-> another problem with trying to layer on top of vfs.
+Your ppc boards emulate a virtio-net device, so all you need is the 
+virtio-net module (and virtio bindings).  If you chose to emulate, say, 
+an e1000 card all you'd need is the e1000 driver.
 
-Why is that different from any other system call? We just return when
-we hit the first error condition.
+-- 
+error compiling committee.c: too many arguments to function
 
-	Arnd <><
