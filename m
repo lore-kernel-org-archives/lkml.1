@@ -1,47 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZHSSSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbZHSSU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbZHSSSj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZHSSSi
+	id S1752149AbZHSSU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZHSSU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:18:38 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55016 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751026AbZHSSSi (ORCPT
+	Wed, 19 Aug 2009 14:20:26 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:36532 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751413AbZHSSUZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:18:38 -0400
-Date: Wed, 19 Aug 2009 19:19:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Cc: "Greg KH" <greg@kroah.com>, "Linux USB" <linux-usb@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Subject: Re: Purpose of parameter in sysfs binary read
-Message-ID: <20090819191944.23e6e0ee@lxorguk.ukuu.org.uk>
-In-Reply-To: <5ea7c6a46fa1e051d69a302fdc8961ac.squirrel@intranet.cs.nmsu.edu>
-References: <9f97a27ccc13bd63ce99be04018b6bde.squirrel@intranet.cs.nmsu.edu>
-	<20090818151427.GA6295@kroah.com>
-	<ead4b2f9b7e5b1a415d010c524812e3a.squirrel@intranet.cs.nmsu.edu>
-	<20090819170501.1dbd29a8@lxorguk.ukuu.org.uk>
-	<5ea7c6a46fa1e051d69a302fdc8961ac.squirrel@intranet.cs.nmsu.edu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 14:20:25 -0400
+Date: Wed, 19 Aug 2009 14:20:27 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+cc: Greg KH <gregkh@suse.de>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+In-Reply-To: <20090819192256.0e907b54@neptune.home>
+Message-ID: <Pine.LNX.4.44L0.0908191413460.3229-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But, in addition to sending keystroke output you can send a usb control
-> message to change the backlight color and an interrupt message to load a
-> bitmap as an image.
+On Wed, 19 Aug 2009, Bruno [UTF-8] Prémont wrote:
 
-Ok that actually fits the LCD interface model a bit better, but the LCD
-class right now is a hack inside of a single driver so eventually needs
-fixing
+> I did try to understand what happens exactly, using backtrace from
+> kernel compiled with debug info and running objdump on usbserial.ko.
 
-> The bitmap itself is simple, but requires a specific format. Byte 0 must
-> be 0x03 followed by 31 bytes of null. The low bit of byte 32 is x,y (0,0)
-> second high bit is (0,1)... with low bit of byte 33 being (1,0)...
+> Verifying by adding a few printk()'s inside serial_do_free() confirms my
+> understanding of the objdump and also tells me that after unplug
+> serial_do_free() is called twice (with different addresses for port->serial->type)!
 
-How big is it and can it be used for general purpose graphics - I know
-the G19 is something like 320x240 but the G13 ?
+In fact, with different values for port->serial.  Probably because port 
+was deallocated before the second call occurred.
+
+> The first one (right after unplug) survives, the second one (when exiting
+> minicom) crashes.
+> 
+> Extract from the logs with my printk()'s
+> [  266.290632] ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
+> [  266.290938] ftdi_sio 2-2:1.1: device disconnected
+> [  266.292378] tty_port_close_start: count = -1
+> [  266.292535] serial_do_free(port @da0d9000)
+> [  266.292692]   serial @da3e9840
+> [  266.292791]   type   @deb45660
+> /* exit minicom */
+> [  290.728196] serial_do_free(port @da0d9000)
+> [  290.728341]   serial @da0d9200
+> [  290.728461]   type   @3a6e6967
+> [  290.728591] BUG: unable to handle kernel paging request at 3a6e6983
+> [  290.728823] IP: [<deb02d5d>] serial_do_free+0x6d/0xd0 [usbserial]
+
+> Printk's were added:
+> 
+> 	if (port->console)
+> 		return;
+> 	/* here */
+> 	serial = serial->port;
+> 	owner = serial->type->driver.owner /* crash here */
+> 
+> Is it useful to check calls to serial_do_free() for my pl2303
+> usb2serial converter? (e.g. to compare behavior from both of them)
+
+You could try; it wouldn't hurt.  More useful would be to add some 
+debugging messages to destroy_serial().  There should not be any calls 
+to serial_do_free() after destroy_serial() runs.
+
+Also add some messages to the places that call usb_serial_put() and
+usb_serial_get_by_index().
+
+Alan Stern
+
