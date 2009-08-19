@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbZHSVRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZHSV0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbZHSVRQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 17:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbZHSVRQ
+	id S1753177AbZHSV0M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 17:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZHSV0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 17:17:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33750 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752486AbZHSVRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 17:17:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
-Date: Wed, 19 Aug 2009 23:17:41 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
-References: <Pine.LNX.4.44L0.0908191004560.3001-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908191004560.3001-100000@iolanthe.rowland.org>
+	Wed, 19 Aug 2009 17:26:11 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:26276 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753144AbZHSV0K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 17:26:10 -0400
+Date: Wed, 19 Aug 2009 15:26:11 -0600
+From: Troy Heber <troy.heber@hp.com>
+To: David Woodhouse <dwmw2@infradead.org>, iommu@lists.linux-foundation.org
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] pci/dmar: correct off-by-one error
+Message-ID: <20090819212611.GA7964@pc.troyhebe>
+Mail-Followup-To: David Woodhouse <dwmw2@infradead.org>,
+	iommu@lists.linux-foundation.org, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908192317.41253.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 August 2009, Alan Stern wrote:
-> On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > There's a problem that for safety reasons I maintain the ordering of dpm_list
-> > and the callbacks are scheduled for async execution in the same order in
-> > which they would have been executed synchronously.  If were to change this,
-> > we'd have to be _very_ careful.
-> 
-> Why?  The order in which jobs are scheduled for async execution doesn't 
-> bear any particular relation to the order in which they get run.
+pci/dmar: correct off-by-one error in dmar_fault()
+    
+DMAR faults are recorded into a ring of "fault recording registers".
+fault_index is a 0-based index into the ring. The code allows the
+0-based fault_index to be equal to the total number of fault registers
+available from the cap_num_fault_regs() macro, which causes access
+beyond the last available register. 
+    
+Signed-off-by Troy Heber <troy.heber@hp.com>
 
-Yes, it does, if all of the async threads are busy and we add more async jobs
-to the queue.  We must ensure that none of the jobs being executed will wait
-for any jobs in the queue.
+---
+ drivers/pci/dmar.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Also, if any devices are handled synchronously, they must not wait for any
-"async" devices that haven't been scheduled yet.
-
-With a master thread that would do all the waiting that wouldn't be a problem
-any more, but I'm not sure how to implement such a thread efficiently.  The
-problem is that each device may depend on multiple other devices, so even
-if one callback finishes, there's no guarantee there will be any device with
-satisfied dependencies, so it looks like the master thread would have to
-browse dpm_list continuously searching it for devices that are ready for
-suspending.
-
-Also I don't think we can change the ordering of dpm_list as a result of
-asynchronous execution.
-
-Thanks,
-Rafael
+diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
+index 7b287cb..c0c776f 100644
+--- a/drivers/pci/dmar.c
++++ b/drivers/pci/dmar.c
+@@ -1212,7 +1212,7 @@ irqreturn_t dmar_fault(int irq, void *dev_id)
+ 				source_id, guest_addr);
+ 
+ 		fault_index++;
+-		if (fault_index > cap_num_fault_regs(iommu->cap))
++		if (fault_index >= cap_num_fault_regs(iommu->cap))
+ 			fault_index = 0;
+ 		spin_lock_irqsave(&iommu->register_lock, flag);
+ 	}
