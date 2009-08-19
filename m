@@ -1,105 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbZHSVq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZHSVt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbZHSVq5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 17:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZHSVq4
+	id S1753216AbZHSVt2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 17:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbZHSVt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 17:46:56 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:45445 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753193AbZHSVq4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 17:46:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=j5icfcKCTE96kUdYNJU+YcpFj9lgzm3Q9kbIKKO1tCFzEGqJv66lzc2di5LLeb+iFG
-         Quv8pm1Pk0m+HCjHy8yvp1O/Nrcj/vEXvN+/D/4q4/9s+sb+Hb23954etUzOJYkUJ1W6
-         FAKgE21JHqjcHlaA9OElWBtsHCIFPwtlKoCIk=
+	Wed, 19 Aug 2009 17:49:28 -0400
+Received: from www.tglx.de ([62.245.132.106]:45811 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752223AbZHSVt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 17:49:27 -0400
+Date: Wed, 19 Aug 2009 23:48:30 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>
+Subject: [ANNOUNCE] 2.6.31-rc6-rt5
+In-Reply-To: <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
+ <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
+ <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
+ <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <m14os3lkb9.fsf@fess.ebiederm.org>
-References: <d12c1890908101630m2a4d0d68yf6dc1e0e0e4f4314@mail.gmail.com>
-	 <4A80C2F8.2040208@gmail.com>
-	 <d12c1890908101825t44138bf4x9a4733ece6f74b88@mail.gmail.com>
-	 <d12c1890908111528p47cdd30bw24749e34fc1cc8d3@mail.gmail.com>
-	 <4A835760.2050803@gmail.com> <m14os3lkb9.fsf@fess.ebiederm.org>
-Date: Wed, 19 Aug 2009 18:46:56 -0300
-Message-ID: <d12c1890908191446k5497d9c8t2f355074eb7ca4ff@mail.gmail.com>
-Subject: Re: Flooded by do_IRQ: 0.91 No irq handler for vector
-From: Luis Fernando Planella Gonzalez <lfpg.dev@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have changed my distro to sidux, so it won't be an easy task to
-return to 2.6.24....
-Anyway, I do use the 64bit kernel.
-But I've downloaded the 32 bit version (sidux 2009.02 with the
-2.6.30.1 kernel), and the very same error occurs. I've just used the
-live cd, and it does happen.
-Something that changed from 2.6.28 to 2.6.30 is that it no longer
-happens the 0.99 message. All complaints are about 0.91...
-One more thing: Deleting /usr/sbin/irqbalance changed nothing, which
-is no surprise, as I had already tested the noirqbalance kernel
-option....
+We are pleased to announce the next update to our new preempt-rt
+series.
+ 
+    - update to Linus' latest
+ 
+    - Fixed the Pseries mystery: missed to exclude per cpu timers from
+      forced threading so the IPI handlers got threaded
 
-I'm pasting here something I had previously replied personally to
-Robert Hancock, and may be useful:
+    - cgroup memcontrol preemption problem fixed
 
-Well, as I've installed sidux, it has upgraded the kernel to 2.6.30.5,
-but the error is the same.
-I've also tried:
-* noapic: the message changes to do_IRQ: 0.55 No irq handler for
-vector (irq -1), but then the X server fails to start
-* noacpi: have no effect on the error message.
+So the only known remaining one is ARM highmem
 
+Download locations:
 
-Thanks a lot.
---
-Luis Fernando Planella Gonzalez
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
 
+Git release branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31-rc6
+ 
+Git development branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
 
-2009/8/19 Eric W. Biederman <ebiederm@xmission.com>:
-> Robert Hancock <hancockrwd@gmail.com> writes:
->
->> On 08/11/2009 04:28 PM, Luis Fernando Planella Gonzalez wrote:
->>> I'm really concerned that all those interrupts might slow down the
->>> computer somehow...
->>> Here is an attached syslog part after a reboot.
->>> Sometimes, the ratelimit says that thousands of callbacks were suppressed.
->>> Is there a way to make this message be displayed only once?
->>>
->>> In arch/x86/kernel/irq.c, the line 213 is:
->>> irq = __get_cpu_var(vector_irq)[vector];
->>>
->>> In my case, the returned irq is -1. Doesn't it makes sense to not log
->>> the "No irq handler for vector" message when irq<  0?
->>>
->>> Or even a deeper answer: Why, in my case, the resulting irq is -1?
->>
->> Not logging would just cover up the problem, the issue in your case is that
->> something seems to be asserting a ton of interrupts on an IRQ line that no
->> driver has claimed..
->
-> It is slightly worse.  We are seeing interrupts asserted and we don't
-> know which IRQ line they belong to.  This should never happen.
->
-> You say it is first 0.99 and 0.91 so it is moving.
->
-> Luis are you running a 64bit kernel?  I think you would have to be
-> for your symptoms to go all of the way back to 2.6.24.
->
-> My primary suspect is that something the irq migration code is not
-> working properly on your computer.  Could you disable
-> /usr/sbin/irqbalance (possibly just by deleting it) and tell me if
-> that fixes your symptoms?
->
-> If not we have a very nasty bug in how your ioapics are being programmed.
->
-> Eric
->
+Gitweb:
+    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31-rc6
+ 
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.31-rc6-rt5 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.31-rc6.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rc6-rt5.bz2
+
+Enjoy !
+
+       tglx
