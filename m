@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZHSSin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbZHSSjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbZHSSin (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbZHSSim
+	id S1752923AbZHSSjl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZHSSjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:38:42 -0400
-Received: from ausxippc101.us.dell.com ([143.166.85.207]:6305 "EHLO
-	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752633AbZHSSim (ORCPT
+	Wed, 19 Aug 2009 14:39:41 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:57748 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbZHSSjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:38:42 -0400
-X-Loopcount0: from 10.9.160.253
-Message-ID: <4A8C46DB.8040904@dell.com>
-Date: Wed, 19 Aug 2009 13:39:23 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090804)
+	Wed, 19 Aug 2009 14:39:40 -0400
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Luis Fernando Planella Gonzalez <lfpg.dev@gmail.com>,
+       linux-kernel@vger.kernel.org
+References: <d12c1890908101630m2a4d0d68yf6dc1e0e0e4f4314@mail.gmail.com>
+	<4A80C2F8.2040208@gmail.com>
+	<d12c1890908101825t44138bf4x9a4733ece6f74b88@mail.gmail.com>
+	<d12c1890908111528p47cdd30bw24749e34fc1cc8d3@mail.gmail.com>
+	<4A835760.2050803@gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 19 Aug 2009 11:39:38 -0700
+In-Reply-To: <4A835760.2050803@gmail.com> (Robert Hancock's message of "Wed\, 12 Aug 2009 17\:59\:28 -0600")
+Message-ID: <m14os3lkb9.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Marcel Holtmann <marcel@holtmann.org>, cezary.jackiewicz@gmail.com,
-       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
-References: <4A89E768.7010207@dell.com>	 <1250558643.30166.109.camel@localhost.localdomain>	 <9b2b86520908180044l72cb8642j6256e246662f7971@mail.gmail.com>	 <9b2b86520908180752k66feda09rf9034a96ac6ef470@mail.gmail.com>	 <4A8AE459.8060102@dell.com>	 <9b2b86520908181408v5f7875b6sea31d8d95cc08c0b@mail.gmail.com>	 <1250631063.16393.14.camel@johannes.local>  <4A8B246D.7050004@dell.com>	 <1250672475.25419.7.camel@johannes.local>  <4A8C2C6C.2020007@dell.com> <1250702012.8073.1.camel@johannes.local>
-In-Reply-To: <1250702012.8073.1.camel@johannes.local>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5A57CF88BCAD1AC6B4DB370D"
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: hancockrwd@gmail.com, linux-kernel@vger.kernel.org, lfpg.dev@gmail.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Robert Hancock <hancockrwd@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: Flooded by do_IRQ: 0.91 No irq handler for vector
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5A57CF88BCAD1AC6B4DB370D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Robert Hancock <hancockrwd@gmail.com> writes:
 
-Johannes:
+> On 08/11/2009 04:28 PM, Luis Fernando Planella Gonzalez wrote:
+>> I'm really concerned that all those interrupts might slow down the
+>> computer somehow...
+>> Here is an attached syslog part after a reboot.
+>> Sometimes, the ratelimit says that thousands of callbacks were suppressed.
+>> Is there a way to make this message be displayed only once?
+>>
+>> In arch/x86/kernel/irq.c, the line 213 is:
+>> irq = __get_cpu_var(vector_irq)[vector];
+>>
+>> In my case, the returned irq is -1. Doesn't it makes sense to not log
+>> the "No irq handler for vector" message when irq<  0?
+>>
+>> Or even a deeper answer: Why, in my case, the resulting irq is -1?
+>
+> Not logging would just cover up the problem, the issue in your case is that
+> something seems to be asserting a ton of interrupts on an IRQ line that no
+> driver has claimed..
 
-Johannes Berg wrote:
-> Hi Mario,
->
-> First, let me say I agree with Alan, the option 1 is more desirable if
-> possible to do with the hardware. But this looks ok from an rfkill POV
-> now, except there's a small bug:
->
->  =20
-It looks like option 1 works properly on my hardware, so I've switched
-the other code around.
->
-> That doesn't error out, so
->
->  =20
->
-> this will crash without NULL checks.
->
-> (and you have to explicitly assign NULL in setup_rfkill() too, when
-> bluetooth fails and wifi is freed)
->
->  =20
-OK, i've cleaned that up to just error out on the module if rfkill
-doesn't get initialized right.
-> johannes
->  =20
-I've resent separately, and think I have git send-email working, so
-hopefully won't have to attach in the future.
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
+It is slightly worse.  We are seeing interrupts asserted and we don't
+know which IRQ line they belong to.  This should never happen.
 
+You say it is first 0.99 and 0.91 so it is moving.
 
---------------enig5A57CF88BCAD1AC6B4DB370D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Luis are you running a 64bit kernel?  I think you would have to be
+for your symptoms to go all of the way back to 2.6.24.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+My primary suspect is that something the irq migration code is not
+working properly on your computer.  Could you disable
+/usr/sbin/irqbalance (possibly just by deleting it) and tell me if
+that fixes your symptoms?
 
-iEYEARECAAYFAkqMRtsACgkQ2CrZjkA73YsZhgCgm+ZhkjIR2LMEVe0Oqr3Ziyxr
-SJkAnRYT316wWHMYM6pzJ8eTnnysGqRw
-=1+Ll
------END PGP SIGNATURE-----
+If not we have a very nasty bug in how your ioapics are being programmed.
 
---------------enig5A57CF88BCAD1AC6B4DB370D--
+Eric
