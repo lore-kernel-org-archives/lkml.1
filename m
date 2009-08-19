@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751246AbZHSFsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751404AbZHSFsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751246AbZHSFsM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 01:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZHSFsL
+	id S1751404AbZHSFsr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 01:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZHSFsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 01:48:11 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:12309 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbZHSFsK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 01:48:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fYE2DbFPtvAQPpJJcKljiawenoXPWQcoKxX12oIs9jaiLzbd6eFc8p4z4Zap7nYD5a
-         S9F2NnlqFxyzPcsBWrL18myWu5EBPd/GJDt5q+ju5zVa2FwCcYOeIDsBbDHrUCz6QU3L
-         mJRA5IHk0WXGuL+12+4pNIEE6norf880HGVs4=
+	Wed, 19 Aug 2009 01:48:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43087 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750913AbZHSFsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 01:48:45 -0400
+Message-ID: <4A8B9241.20300@redhat.com>
+Date: Wed, 19 Aug 2009 08:48:49 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-In-Reply-To: <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com>
-References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org>
-	 <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com>
-Date: Wed, 19 Aug 2009 17:48:11 +1200
-Message-ID: <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com>
-Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
-From: Alexey Korolev <akorolex@gmail.com>
-To: Eric Munson <linux-mm@mgebm.net>
-Cc: Alexey Korolev <akorolev@infradead.org>, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
+ objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws> <4A8AA9BD.2070909@gmail.com> <4A8AB076.6080906@redhat.com> <4A8ACE1F.6020402@gmail.com> <20090818165139.GC19846@redhat.com> <4A8B8F4E.80207@gmail.com>
+In-Reply-To: <4A8B8F4E.80207@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
->
-> It sounds like this patch set working towards the same goal as my
-> MAP_HUGETLB set.  The only difference I see is you allocate huge page
-> at a time and (if I am understanding the patch) fault the page in
-> immediately, where MAP_HUGETLB only faults pages as needed.  Does the
-> MAP_HUGETLB patch set provide the functionality that you need, and if
-> not, what can be done to provide what you need?
->
-> Eric
->
-Thanks a lot for willing to help. I'll be much appreciate if you have
-an interesting idea how HTLB mapping for drivers can be done.
+On 08/19/2009 08:36 AM, Gregory Haskins wrote:
+>> If virtio net in guest could be improved instead, everyone would
+>> benefit.
+>>      
+> So if I whip up a virtio-net backend for vbus with a PCI compliant
+> connector, you are happy?
+>    
 
-It is better to describe use case in order to make it clear what needs
-to be done.
-Driver provides mapping of device DMA buffers to user level
-applications. User level applications process the data.
-Device is using a master DMA to send data to the user buffer, buffer
-size can be >1GB and performance is very important. (So huge pages
-mapping really makes sense.)
+This doesn't improve virtio-net in any way.
 
-In addition we have to mention that:
-1. It is hard for user to tell how much huge pages needs to be
-reserved by the driver.
-2. Devices add constrains on memory regions. For example it needs to
-be contiguous with in the physical address space. It is necessary to
-have ability to specify special gfp flags.
-3 The HW needs to access physical memory before the user level
-software can access it. (Hugetlbfs picks up pages on page fault from
-pool).
-It means memory allocation needs to be driven by device driver.
+>> I am doing this, and I wish more people would join.  Instead,
+>> you change ABI in a incompatible way.
+>>      
+> Only by choice of my particular connector.  The ABI is a function of the
+> connector design.  So one such model is to terminate the connector in
+> qemu, and surface the resulting objects as PCI devices.  I choose not to
+> use this particular design for my connector that I am pushing upstream
+> because I am of the opinion that I can do better by terminating it in
+> the guest directly as a PV optimized bus.  However, both connectors can
+> theoretically coexist peacefully.
+>    
 
-Original idea was: create hugetlbfs file which has common mapping with
-device file. Allocate memory. Populate page cache of hugetlbfs file
-with allocated pages.
-When fault occurs, page will be taken from page cache and then
-remapped to user space by hugetlbfs.
+virtio already supports this model; see lguest and s390.  Transporting 
+virtio over vbus and vbus over something else doesn't gain anything over 
+directly transporting virtio over that something else.
 
-Another possible approach is described here:
-http://marc.info/?l=linux-mm&m=125065257431410&w=2
-But currently not sure  will it work or not.
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-
-Thanks,
-Alexey
