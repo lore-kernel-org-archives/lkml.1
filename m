@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751011AbZHSQ4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751361AbZHSQ4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751011AbZHSQ4c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbZHSQ4c
+	id S1751361AbZHSQ4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbZHSQ4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:56:32 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38065 "EHLO
+	Wed, 19 Aug 2009 12:56:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38069 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750763AbZHSQ4b (ORCPT
+	with ESMTP id S1751160AbZHSQ4h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:56:31 -0400
+	Wed, 19 Aug 2009 12:56:37 -0400
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 1/2] pohmelfs: fix atomic type spew
+Subject: [PATCH 2/2] pohmelfs: fix type errors
 To: greg@kroah.com, linux-kernel@vger.kernel.org
-Date: Wed, 19 Aug 2009 17:52:02 +0100
-Message-ID: <20090819165201.14632.96567.stgit@localhost.localdomain>
+Date: Wed, 19 Aug 2009 17:52:08 +0100
+Message-ID: <20090819165207.14632.3743.stgit@localhost.localdomain>
+In-Reply-To: <20090819165201.14632.96567.stgit@localhost.localdomain>
+References: <20090819165201.14632.96567.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -23,40 +25,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-atomic_long != atomic
-
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/staging/pohmelfs/inode.c |    2 +-
- drivers/staging/pohmelfs/net.c   |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/staging/pohmelfs/config.c |    3 +--
+ drivers/staging/pohmelfs/dir.c    |    2 +-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
 
-diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
-index 7b60579..834edc5 100644
---- a/drivers/staging/pohmelfs/inode.c
-+++ b/drivers/staging/pohmelfs/inode.c
-@@ -1865,7 +1865,7 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
- 	INIT_LIST_HEAD(&psb->crypto_active_list);
+diff --git a/drivers/staging/pohmelfs/config.c b/drivers/staging/pohmelfs/config.c
+index a6eaa42..99ae1d9 100644
+--- a/drivers/staging/pohmelfs/config.c
++++ b/drivers/staging/pohmelfs/config.c
+@@ -446,9 +446,8 @@ out_unlock:
+ 	return err;
+ }
  
- 	atomic_set(&psb->trans_gen, 1);
--	atomic_set(&psb->total_inodes, 0);
-+	atomic_long_set(&psb->total_inodes, 0);
+-static void pohmelfs_cn_callback(void *data)
++static void pohmelfs_cn_callback(struct cn_msg *msg)
+ {
+-	struct cn_msg *msg = data;
+ 	int err;
  
- 	mutex_init(&psb->state_lock);
- 	INIT_LIST_HEAD(&psb->state_list);
-diff --git a/drivers/staging/pohmelfs/net.c b/drivers/staging/pohmelfs/net.c
-index 5f312c9..bdaab69 100644
---- a/drivers/staging/pohmelfs/net.c
-+++ b/drivers/staging/pohmelfs/net.c
-@@ -680,7 +680,7 @@ static int pohmelfs_root_cap_response(struct netfs_state *st)
- 		printk(KERN_INFO "Mounting POHMELFS (%d) "
- 			"with extended attributes support.\n", psb->idx);
+ 	switch (msg->flags) {
+diff --git a/drivers/staging/pohmelfs/dir.c b/drivers/staging/pohmelfs/dir.c
+index 4c58e22..4c63a4c 100644
+--- a/drivers/staging/pohmelfs/dir.c
++++ b/drivers/staging/pohmelfs/dir.c
+@@ -412,7 +412,7 @@ static int pohmelfs_readdir(struct file *file, void *dirent, filldir_t filldir)
+ 				__func__, file->f_pos, pi->ino, n->data, n->len,
+ 				n->ino, n->mode, mode, file->f_pos, n->hash);
  
--	if (atomic_read(&psb->total_inodes) <= 1)
-+	if (atomic_long_read(&psb->total_inodes) <= 1)
- 		atomic_long_set(&psb->total_inodes, cap->nr_files);
+-		file->private_data = (void *)n->hash;
++		file->private_data = (void *)(unsigned long)n->hash;
  
- 	dprintk("%s: total: %llu, avail: %llu, flags: %llx, inodes: %llu.\n",
+ 		len = n->len;
+ 		err = filldir(dirent, n->data, n->len, file->f_pos, n->ino, mode);
 
