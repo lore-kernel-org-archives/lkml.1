@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZHSWeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbZHSWoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753380AbZHSWeL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 18:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZHSWeK
+	id S1753389AbZHSWoH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 18:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbZHSWoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 18:34:10 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:42835 "HELO
+	Wed, 19 Aug 2009 18:44:06 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:38839 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753344AbZHSWeJ (ORCPT
+	with SMTP id S1753254AbZHSWoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 18:34:09 -0400
-Date: Wed, 19 Aug 2009 18:34:11 -0400 (EDT)
+	Wed, 19 Aug 2009 18:44:05 -0400
+Date: Wed, 19 Aug 2009 18:44:06 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
-Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
-In-Reply-To: <200908192317.41253.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908191829510.26174-100000@iolanthe.rowland.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Bruno =?ISO-8859-14?B?UHLpbW9udA==?= <bonbons@linux-vserver.org>,
+       Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+In-Reply-To: <20090819225034.470c52e8@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0908191834180.26174-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+On Wed, 19 Aug 2009, Alan Cox wrote:
 
-> On Wednesday 19 August 2009, Alan Stern wrote:
-> > On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
-> > 
-> > > There's a problem that for safety reasons I maintain the ordering of dpm_list
-> > > and the callbacks are scheduled for async execution in the same order in
-> > > which they would have been executed synchronously.  If were to change this,
-> > > we'd have to be _very_ careful.
-> > 
-> > Why?  The order in which jobs are scheduled for async execution doesn't 
-> > bear any particular relation to the order in which they get run.
+> > So Alan, what's the explanation?  An unsuccessful open method call
+> > should not lead to a close method call.
 > 
-> Yes, it does, if all of the async threads are busy and we add more async jobs
-> to the queue.  We must ensure that none of the jobs being executed will wait
-> for any jobs in the queue.
+> For tty it always has since back in 0.9x, and most drivers depend upon
+> this behaviour.
 
-That's part of the reason for the dependencies: to make sure that where
-it matters, things don't run in the wrong order.
+Curiouser and curiouser...
 
-> Also, if any devices are handled synchronously, they must not wait for any
-> "async" devices that haven't been scheduled yet.
-
-I'm not sure what you mean.  If a device is handled synchronously, it 
-must wait for all the devices preceding it on the list, regardless of 
-whether those devices are handled asynchronously.
-
-> With a master thread that would do all the waiting that wouldn't be a problem
-> any more, but I'm not sure how to implement such a thread efficiently.  The
-> problem is that each device may depend on multiple other devices, so even
-> if one callback finishes, there's no guarantee there will be any device with
-> satisfied dependencies, so it looks like the master thread would have to
-> browse dpm_list continuously searching it for devices that are ready for
-> suspending.
-> 
-> Also I don't think we can change the ordering of dpm_list as a result of
-> asynchronous execution.
-
-Okay, so I'll try to write something.  We'll see how it comes out.
+Okay Bruno, try out this patch and let's see if it helps.  It should 
+fix the problem with the pl2303.  I'm not so sure about the FTDI device 
+because that driver maintains its own reference count for its private 
+data.
 
 Alan Stern
+
+
+Index: usb-2.6/drivers/usb/serial/usb-serial.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/serial/usb-serial.c
++++ usb-2.6/drivers/usb/serial/usb-serial.c
+@@ -209,8 +209,13 @@ static int serial_open (struct tty_struc
+ 	 * to be acquired while serial->disc_mutex is held.
+ 	 */
+ 	mutex_unlock(&serial->disc_mutex);
++
++	/* For reasons that have been lost in antiquity, the TTY layer calls
++	 * our close method even if the open call fails.  Hence we must not
++	 * drop the reference obtained by usb_serial_get_by_index().
++	 */
+ 	if (retval)
+-		goto bailout_serial_put;
++		return retval;
+ 
+ 	if (mutex_lock_interruptible(&port->mutex)) {
+ 		retval = -ERESTARTSYS;
+@@ -276,8 +281,6 @@ bailout_mutex_unlock:
+ 	mutex_unlock(&port->mutex);
+ bailout_port_put:
+ 	put_device(&port->dev);
+-bailout_serial_put:
+-	usb_serial_put(serial);
+ 	return retval;
+ }
+ 
 
