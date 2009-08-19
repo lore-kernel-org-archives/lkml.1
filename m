@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751611AbZHSHY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751590AbZHSH3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751611AbZHSHY2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 03:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZHSHY2
+	id S1751590AbZHSH3f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 03:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZHSH3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 03:24:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44055 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751509AbZHSHY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 03:24:27 -0400
-Date: Wed, 19 Aug 2009 17:24:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: suspend tree build warnings
-Message-Id: <20090819172419.2cf53008.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__19_Aug_2009_17_24_19_+1000_TFfUs1HCNqM8xAoP"
+	Wed, 19 Aug 2009 03:29:35 -0400
+Received: from mail-yw0-f173.google.com ([209.85.211.173]:40363 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751031AbZHSH3e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 03:29:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Kyle7whncrtEQ+shVJU7UhI5Per7L9ZFCf9zCp2ORPddpKPKGA/pzmZ2GvKOKy95x4
+         iPgc905uo126sVaACWQ3hUDVA9AB7WlbGdARneLMnzDWuU4885sS4ontrsKK/aKwj85q
+         uyMRXoyAnwchnV113cs4virzP9xDjcMFXMTUc=
+MIME-Version: 1.0
+In-Reply-To: <18eba5a10908190014q6f903399y30478b4c0a7f256b@mail.gmail.com>
+References: <18eba5a10908181841t145e4db1wc2daf90f7337aa6e@mail.gmail.com>
+	 <20090819114408.ab9c8a78.minchan.kim@barrios-desktop>
+	 <4A8B7508.4040001@vflare.org>
+	 <20090819135105.e6b69a8d.minchan.kim@barrios-desktop>
+	 <18eba5a10908182324x45261d06y83e0f042e9ee6b20@mail.gmail.com>
+	 <20090819154958.18a34aa5.minchan.kim@barrios-desktop>
+	 <18eba5a10908190014q6f903399y30478b4c0a7f256b@mail.gmail.com>
+Date: Wed, 19 Aug 2009 16:29:35 +0900
+Message-ID: <28c262360908190029j1153b00fva11c4a215d5932d6@mail.gmail.com>
+Subject: Re: abnormal OOM killer message
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Chungki woo <chungki.woo@gmail.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, ngupta@vflare.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com, riel@redhat.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__19_Aug_2009_17_24_19_+1000_TFfUs1HCNqM8xAoP
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Aug 19, 2009 at 4:14 PM, Chungki woo<chungki.woo@gmail.com> wrote:
+>> You means your pages with 79M are swap out in compcache's reserved
+>> memory?
+>
+> Compcache don't have reserved memory.
+> When it needs memory, and then allocate memory.
 
-Hi Rafael,
+Okay. reserved is not important. :)
+My point was that 79M with pages are swap out in compcache swap device ?
+Is the number real ?
+Can we believe it ?
 
-Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+>
+> Thanks.
+>
 
-drivers/media/dvb/frontends/dib7000p.c: In function =E2=80=98dib7000p_i2c_e=
-numeration=E2=80=99:
-drivers/media/dvb/frontends/dib7000p.c:1315: warning: the frame size of 225=
-6 bytes is larger than 2048 bytes
-drivers/media/dvb/frontends/dib3000mc.c: In function =E2=80=98dib3000mc_i2c=
-_enumeration=E2=80=99:
-drivers/media/dvb/frontends/dib3000mc.c:853: warning: the frame size of 216=
-0 bytes is larger than 2048 bytes
 
-Introduced by commit 99307958cc9c1b0b2e0dad4bbefdafaf9ac5a681 ("PM:
-Introduce core framework for run-time PM of I/O devices (rev. 17)").
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__19_Aug_2009_17_24_19_+1000_TFfUs1HCNqM8xAoP
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqLqKMACgkQjjKRsyhoI8wrpACdF4HO6Fjg2DBJ9f9s/foijm6Q
-W24AniaTv4x9imuRgdkRJeGIcks2lmIN
-=IFlD
------END PGP SIGNATURE-----
-
---Signature=_Wed__19_Aug_2009_17_24_19_+1000_TFfUs1HCNqM8xAoP--
+-- 
+Kind regards,
+Minchan Kim
