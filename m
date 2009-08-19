@@ -1,181 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbZHSTeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751048AbZHSTvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753104AbZHSTeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 15:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbZHSTeP
+	id S1751048AbZHSTvd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 15:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbZHSTvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 15:34:15 -0400
-Received: from n11a.bullet.mail.mud.yahoo.com ([209.191.125.176]:41583 "HELO
-	n11a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752694AbZHSTeN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 15:34:13 -0400
-X-Yahoo-Newman-Id: 158602.11962.bm@omp410.mail.mud.yahoo.com
-X-YMail-OSG: lZ0EaagVM1mPhyae6N_irBAVeY5VLNWDolWu7FSG_3KyMUq7iMo7yNJlHXMOTM_X9clJj8NBB5QITpmbi7jM5j4Lv0.vCzZsxGW4wDF8RGfwko1EwUqcP1zot2FGBbboegy55bKW_JhdYAlhb0yNEq7oRyqeHbhx5Dot2VKpiRBkw06izhu3ammqJzNxHFNNO9QZ3hm9_7wt3ODRFDIRQrGVcCtIPJEzPSbsQDz77EU98w.sBg--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
-	vbus_driver objects
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Anthony Liguori <anthony@codemonkey.ws>, kvm@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       Joel Becker <joel.becker@oracle.com>
-In-Reply-To: <1250709574.27590.178.camel@haakon2.linux-iscsi.org>
-References: <20090814154125.26116.70709.stgit@dev.haskins.net>
-	 <20090814154308.26116.46980.stgit@dev.haskins.net>
-	 <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com>
-	 <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com>
-	 <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com>
-	 <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com>
-	 <4A8AD678.7050609@redhat.com> <4A8B9B79.9050004@gmail.com>
-	 <4A8BA5AE.3030308@redhat.com>
-	 <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
-	 <4A8C46FF.1070107@gmail.com>
-	 <1250709574.27590.178.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 12:34:13 -0700
-Message-Id: <1250710453.27590.192.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 15:51:33 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:31565 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750857AbZHSTvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 15:51:32 -0400
+X-Greylist: delayed 2810 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Aug 2009 15:51:32 EDT
+Message-ID: <4A8C4CAA.5070101@redhat.com>
+Date: Wed, 19 Aug 2009 15:04:10 -0400
+From: William Cohen <wcohen@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add minimal support for software performance counters
+ for ia64
+References: <4A8C2290.3040707@redhat.com> <1250698351.8282.106.camel@twins>
+In-Reply-To: <1250698351.8282.106.camel@twins>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------080605000302000100080003"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 12:19 -0700, Nicholas A. Bellinger wrote:
-> On Wed, 2009-08-19 at 14:39 -0400, Gregory Haskins wrote:
-> > Hi Nicholas
-> > 
-> > Nicholas A. Bellinger wrote:
-> > > On Wed, 2009-08-19 at 10:11 +0300, Avi Kivity wrote:
-> > >> On 08/19/2009 09:28 AM, Gregory Haskins wrote:
-> > >>> Avi Kivity wrote:
-> > > 
-> > > <SNIP>
-> > > 
-> > >>> Basically, what it comes down to is both vbus and vhost need
-> > >>> configuration/management.  Vbus does it with sysfs/configfs, and vhost
-> > >>> does it with ioctls.  I ultimately decided to go with sysfs/configfs
-> > >>> because, at least that the time I looked, it seemed like the "blessed"
-> > >>> way to do user->kernel interfaces.
-> > >>>    
-> > >> I really dislike that trend but that's an unrelated discussion.
-> > >>
-> > >>>> They need to be connected to the real world somehow.  What about
-> > >>>> security?  can any user create a container and devices and link them to
-> > >>>> real interfaces?  If not, do you need to run the VM as root?
-> > >>>>      
-> > >>> Today it has to be root as a result of weak mode support in configfs, so
-> > >>> you have me there.  I am looking for help patching this limitation, though.
-> > >>>
-> > >>>    
-> > >> Well, do you plan to address this before submission for inclusion?
-> > >>
-> > > 
-> > > Greetings Avi and Co,
-> > > 
-> > > I have been following this thread, and although I cannot say that I am
-> > > intimately fimilar with all of the virtualization considerations
-> > > involved to really add anything use to that side of the discussion, I
-> > > think you guys are doing a good job of explaining the technical issues
-> > > for the non virtualization wizards following this thread.  :-)
-> > > 
-> > > Anyways, I was wondering if you might be interesting in sharing your
-> > > concerns wrt to configfs (conigfs maintainer CC'ed), at some point..?
-> > 
-> > So for those tuning in, the reference here is the use of configfs for
-> > the management of this component of AlacrityVM, called "virtual-bus"
-> > 
-> > http://developer.novell.com/wiki/index.php/Virtual-bus
-> > 
-> > > As you may recall, I have been using configfs extensively for the 3.x
-> > > generic target core infrastructure and iSCSI fabric modules living in
-> > > lio-core-2.6.git/drivers/target/target_core_configfs.c and
-> > > lio-core-2.6.git/drivers/lio-core/iscsi_target_config.c, and have found
-> > > it to be extraordinarly useful for the purposes of a implementing a
-> > > complex kernel level target mode stack that is expected to manage
-> > > massive amounts of metadata, allow for real-time configuration, share
-> > > data structures (eg: SCSI Target Ports) between other kernel fabric
-> > > modules and manage the entire set of fabrics using only intrepetered
-> > > userspace code.
-> > 
-> > I concur.  Configfs provided me a very natural model to express
-> > resource-containers and their respective virtual-device objects.
-> > 
-> > > 
-> > > Using the 10000 1:1 mapped TCM Virtual HBA+FILEIO LUNs <-> iSCSI Target
-> > > Endpoints inside of a KVM Guest (from the results in May posted with
-> > > IOMMU aware 10 Gb on modern Nahelem hardware, see
-> > > http://linux-iscsi.org/index.php/KVM-LIO-Target), we have been able to
-> > > dump the entire running target fabric configfs hierarchy to a single
-> > > struct file on a KVM Guest root device using python code on the order of
-> > > ~30 seconds for those 10000 active iSCSI endpoints.  In configfs terms,
-> > > this means:
-> > > 
-> > > *) 7 configfs groups (directories), ~50 configfs attributes (files) per
-> > > Virtual HBA+FILEIO LUN
-> > > *) 15 configfs groups (directories), ~60 configfs attributes (files per
-> > > iSCSI fabric Endpoint
-> > > 
-> > > Which comes out to a total of ~220000 groups and ~1100000 attributes
-> > > active configfs objects living in the configfs_dir_cache that are being
-> > > dumped inside of the single KVM guest instances, including symlinks
-> > > between the fabric modules to establish the SCSI ports containing
-> > > complete set of SPC-4 and RFC-3720 features, et al.
-> > > 
-> > > Also on the kernel <-> user API interaction compatibility side, I have
-> > > found the 3.x configfs enabled code adventagous over the LIO 2.9 code
-> > > (that used an ioctl for everything) because it allows us to do backwards
-> > > compat for future versions without using any userspace C code, which in
-> > > IMHO makes maintaining userspace packages for complex kernel stacks with
-> > > massive amounts of metadata + real-time configuration considerations.
-> > > No longer having ioctl compatibility issues between LIO versions as the
-> > > structures passed via ioctl change, and being able to do backwards
-> > > compat with small amounts of interpreted code against configfs layout
-> > > changes makes maintaining the kernel <-> user API really have made this
-> > > that much easier for me.
-> > > 
-> > > Anyways, I though these might be useful to the discussion as it releates
-> > > to potental uses of configfs on the KVM Host or other projects that
-> > > really make sense, and/or to improve the upstream implementation so that
-> > > other users (like myself) can benefit from improvements to configfs.
-> > > 
-> > > Many thanks for your most valuable of time,
-> > 
-> > Thank you for the explanation of your setup.
-> > 
-> > Configfs mostly works for the vbus project "as is".  As Avi pointed out,
-> > I currently have a limitation w.r.t. perms.  Forgive me if what I am
-> > about to say is overly simplistic.  Its been quite a few months since I
-> > worked on the configfs portion of the code, so my details may be fuzzy.
-> > 
-> > What it boiled down to is I need is a way to better manage perms
+This is a multi-part message in MIME format.
+--------------080605000302000100080003
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Peter Zijlstra wrote:
+> On Wed, 2009-08-19 at 12:04 -0400, William Cohen wrote:
+>> +#ifdef __ia64__
+>> +#include "../../arch/ia64/include/asm/unistd.h"
+>> +#define rmb()          asm volatile("" ::: "memory")
+>> +#define cpu_relax()    asm volatile("" ::: "memory");
+>> +#endif
 > 
-> I have not looked at implementing this personally, so I am not sure how
-> this would look in fs/configfs/ off the top of my head..  Joel, have you
-> had any thoughts on this..?
+> Surely the itanic has a real memory barrier? The kernel seems to use
+> something along the lines of mf.
+> 
+> Also, cpu_relax() seems to end up being asm volatile("hint @pause" :::
+> "memory"), although we don't seem to have an actual user of cpu_relax()
+> in perf atm.
+> 
+> 
 > 
 
-Actually, something that I have been using is for simple stuff is:
+Peter, thanks for the comment. I took a look at the rmb() and cpu_relax() code
+in the kernel and revised the patch with the appropriate defines
 
-	if (!capable(CAP_SYS_ADMIN))
+-Will
 
-for controlling I/O to configfs attributes from non priviledged users
-for iSCSI authentication information living in struct
-config_item_operations lio_target_nacl_auth_cit, the code is here:
+--------------080605000302000100080003
+Content-Type: text/plain;
+ name="perf_ia64b.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="perf_ia64b.patch"
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=blob;f=drivers/lio-core/iscsi_target_configfs.c;h=1230b74577076a184b756b3883fb56c6050c7d87;hb=HEAD#l803
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 170042b..8471526 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -29,6 +29,7 @@ config IA64
+ 	select HAVE_KVM
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_DMA_API_DEBUG
++	select HAVE_PERF_COUNTERS
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
+diff --git a/arch/ia64/include/asm/unistd.h b/arch/ia64/include/asm/unistd.h
+index 5a5347f..f69d1c9 100644
+--- a/arch/ia64/include/asm/unistd.h
++++ b/arch/ia64/include/asm/unistd.h
+@@ -311,11 +311,12 @@
+ #define __NR_preadv			1319
+ #define __NR_pwritev			1320
+ #define __NR_rt_tgsigqueueinfo		1321
++#define __NR_perf_counter_open		1322
+ 
+ #ifdef __KERNEL__
+ 
+ 
+-#define NR_syscalls			298 /* length of syscall table */
++#define NR_syscalls			299 /* length of syscall table */
+ 
+ /*
+  * The following defines stop scripts/checksyscalls.sh from complaining about
+diff --git a/arch/ia64/kernel/entry.S b/arch/ia64/kernel/entry.S
+index d0e7d37..4cf88b0 100644
+--- a/arch/ia64/kernel/entry.S
++++ b/arch/ia64/kernel/entry.S
+@@ -1806,6 +1806,7 @@ sys_call_table:
+ 	data8 sys_preadv
+ 	data8 sys_pwritev			// 1320
+ 	data8 sys_rt_tgsigqueueinfo
++	data8 sys_perf_counter_open
+ 
+ 	.org sys_call_table + 8*NR_syscalls	// guard against failures to increase NR_syscalls
+ #endif /* __IA64_ASM_PARAVIRTUALIZED_NATIVE */
+diff --git a/include/asm-ia64/perf_counter.h b/include/asm-ia64/perf_counter.h
+new file mode 100644
+index 0000000..cab4352
+--- /dev/null
++++ b/include/asm-ia64/perf_counter.h
+@@ -0,0 +1,9 @@
++#ifndef __ASM_IA64_PERF_COUNTER_H
++#define __ASM_IA64_PERF_COUNTER_H
++
++/* IA64 only supports software counters through this interface. */
++static inline void set_perf_counter_pending(void) {}
++
++#define PERF_COUNTER_INDEX_OFFSET	0
++
++#endif /* __ASM_IA64_PERF_COUNTER_H */
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index c481a51..69db3de 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -159,8 +159,10 @@ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+ 
+ # If we're on a 64-bit kernel, use -m64
+ ifndef NO_64BIT
+-	ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
+-	  M64 := -m64
++	ifeq ($(patsubst %ia64,%,$(uname_M)),$(uname_M))
++	  ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
++	    M64 := -m64
++	  endif
+ 	endif
+ endif
+ 
+@@ -169,9 +171,9 @@ endif
+ #
+ # Include saner warnings here, which can catch bugs:
+ #
+-EXTRA_WARNINGS = -Wcast-align -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
++EXTRA_WARNINGS = -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
+ 
+-CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
++CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 -fno-strict-aliasing $(EXTRA_WARNINGS)
+ LDFLAGS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index e5148e2..c849337 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -41,6 +41,12 @@
+ #define cpu_relax()	asm volatile("" ::: "memory");
+ #endif
+ 
++#ifdef __ia64__
++#include "../../arch/ia64/include/asm/unistd.h"
++#define rmb()		asm volatile("mf" ::: "memory")
++#define cpu_relax()	asm volatile("hint @pause" ::: "memory")
++#endif
++
+ #include <time.h>
+ #include <unistd.h>
+ #include <sys/types.h>
 
-I am also using the CONFIGFS Extended Macros, CONFIGS_EATTR() which I
-created to allow me to use more than one struct config_groups per parent
-structure, and use less lines of code when defining configfs attributes
-using generic store() and show() functions:
-
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=blob;f=include/target/configfs_macros.h
-
---nab
-
-
+--------------080605000302000100080003--
