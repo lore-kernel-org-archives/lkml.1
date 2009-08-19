@@ -1,91 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751968AbZHSME7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbZHSMFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751968AbZHSME7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 08:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbZHSME6
+	id S1751999AbZHSMFW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 08:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZHSMFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 08:04:58 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:51524 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbZHSME5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 08:04:57 -0400
-Date: Wed, 19 Aug 2009 14:04:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, htejun@gmail.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] libata: use single threaded work queue
-Message-ID: <20090819120458.GZ12579@kernel.dk>
-References: <20090819112554.GY12579@kernel.dk> <4A8BE932.5090300@garzik.org>
+	Wed, 19 Aug 2009 08:05:21 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:39029 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbZHSMFT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 08:05:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=fPx7R5E9nSiYEy/EtzXIAVG/TFLXcydH7xQ73cw49AnXFUWciNCGRg8NUsNp6nVBZe
+         URLex0A4x2ugDk4/IaZXPHWaxiIzQIjsZN1XLH2qQxlRRoQngDBrC3sEA+KL1yfifkOs
+         j0d1QIn5w5A8xGPGg/vYYx/hRv0GYfjadQP2E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8BE932.5090300@garzik.org>
+In-Reply-To: <20090819120117.GB7306@localhost>
+References: <20090816051502.GB13740@localhost>
+	 <20090816112910.GA3208@localhost>
+	 <20090818234310.A64B.A69D9226@jp.fujitsu.com>
+	 <20090819120117.GB7306@localhost>
+Date: Wed, 19 Aug 2009 21:05:19 +0900
+X-Google-Sender-Auth: ec82b635e5ed236f
+Message-ID: <2f11576a0908190505h6da96280xf67c962aa3f5ba07@mail.gmail.com>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
+       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19 2009, Jeff Garzik wrote:
-> On 08/19/2009 07:25 AM, Jens Axboe wrote:
->> Hi,
->>
->> On boxes with lots of CPUs, we have so many kernel threads it's not
->> funny. The basic problem is that create_workqueue() creates a per-cpu
->> thread, where we could easily get by with a single thread for a lot of
->> cases.
->>
->> One such case appears to be ata_wq. You want at most one per pio drive,
->> not one per CPU. I'd suggest just dropping it to a single threaded wq.
->>
->> Signed-off-by: Jens Axboe<jens.axboe@oracle.com>
->>
->> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
->> index 072ba5e..0d78628 100644
->> --- a/drivers/ata/libata-core.c
->> +++ b/drivers/ata/libata-core.c
->> @@ -6580,7 +6580,7 @@ static int __init ata_init(void)
->>   {
->>   	ata_parse_force_param();
->>
->> -	ata_wq = create_workqueue("ata");
->> +	ata_wq = create_singlethread_workqueue("ata");
->>   	if (!ata_wq)
->>   		goto free_force_tbl;
+>> page_referenced_file?
+>> I think we should change page_referenced().
 >
+> Yeah, good catch.
 >
-> I agree with one-thread-per-cpu is too much, in these modern multi-core  
-> times, but one thread is too little.  You have essentially re-created  
-> simplex DMA -- blocking and waiting such that one drive out of ~4 can be  
-> used at any one time.
+>>
+>> Instead, How about this?
+>> ==============================================
+>>
+>> Subject: [PATCH] mm: stop circulating of referenced mlocked pages
+>>
+>> Currently, mlock() systemcall doesn't gurantee to mark the page PG_Mlocked
 >
-> ata_pio_task() is in a workqueue so that it can sleep and/or spend a  
-> long time polling ATA registers.  That means an active task can  
-> definitely starve all other tasks in the workqueue, if only one thread  
-> is available.  If starvation occurs, it will potentially pause the  
-> unrelated task for several seconds.
+>                                                    mark PG_mlocked
 >
-> The proposed patch actually expands an existing problem -- uniprocessor  
-> case, where there is only one workqueue thread.  For the reasons  
-> outlined above, we actually want multiple threads even in the UP case.  
-> If you have more than one PIO device, latency is bloody awful, with  
-> occasional multi-second "hiccups" as one PIO devices waits for another.  
-> It's an ugly wart that users DO occasionally complain about; luckily  
-> most users have at most one PIO polled device.
+>> because some race prevent page grabbing.
+>> In that case, instead vmscan move the page to unevictable lru.
+>>
+>> However, Recently Wu Fengguang pointed out current vmscan logic isn't so
+>> efficient.
+>> mlocked page can move circulatly active and inactive list because
+>> vmscan check the page is referenced _before_ cull mlocked page.
+>>
+>> Plus, vmscan should mark PG_Mlocked when cull mlocked page.
 >
-> It would be nice if we could replace this workqueue with a thread pool,  
-> where thread count inside the pool ranges from zero to $N depending on  
-> level of thread pool activity.  Our common case in libata would be  
-> _zero_ threads, if so...
+>                           PG_mlocked
+>
+>> Otherwise vm stastics show strange number.
+>>
+>> This patch does that.
+>
+> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
 
-That would be ideal, N essentially be:
+Thanks.
 
-        N = min(nr_cpus, nr_drives_that_need_pio);
 
-How can I easily test whether we will ever need a pio thread for a
-drive in libata? For a simple patch, I would suggest simply creating a
-single threaded workqueue per ap instead, if that ata_port would ever
-want PIO.
 
--- 
-Jens Axboe
+>> Index: b/mm/rmap.c
+>> ===================================================================
+>> --- a/mm/rmap.c       2009-08-18 19:48:14.000000000 +0900
+>> +++ b/mm/rmap.c       2009-08-18 23:47:34.000000000 +0900
+>> @@ -362,7 +362,9 @@ static int page_referenced_one(struct pa
+>>        * unevictable list.
+>>        */
+>>       if (vma->vm_flags & VM_LOCKED) {
+>> -             *mapcount = 1;  /* break early from loop */
+>> +             *mapcount = 1;          /* break early from loop */
+>> +             *vm_flags |= VM_LOCKED; /* for prevent to move active list */
+>
+>> +             try_set_page_mlocked(vma, page);
+>
+> That call is not absolutely necessary?
 
+Why? I haven't catch your point.
