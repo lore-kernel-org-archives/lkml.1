@@ -1,78 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbZHSNFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497AbZHSNIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752440AbZHSNFk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbZHSNFh
+	id S1752497AbZHSNIP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:08:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZHSNEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:05:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42579 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752044AbZHSNFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:05:33 -0400
-Date: Wed, 19 Aug 2009 15:05:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Josh Stone <jistone@redhat.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH] tracing: Create generic syscall TRACE_EVENTs
-Message-ID: <20090819130517.GB14215@elte.hu>
-References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250634359-31642-1-git-send-email-jistone@redhat.com> <4A8B5624.9040607@cn.fujitsu.com> <4A8B6C01.1060503@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8B6C01.1060503@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 19 Aug 2009 09:04:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50586 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752021AbZHSNCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:02:49 -0400
+From: Avi Kivity <avi@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 34/47] KVM: x86: missing locking in PIT/IRQCHIP/SET_BSP_CPU ioctl paths
+Date: Wed, 19 Aug 2009 16:02:30 +0300
+Message-Id: <1250686963-8357-35-git-send-email-avi@redhat.com>
+In-Reply-To: <1250686963-8357-1-git-send-email-avi@redhat.com>
+References: <1250686963-8357-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-* Josh Stone <jistone@redhat.com> wrote:
+Correct missing locking in a few places in x86's vm_ioctl handling path.
 
-> On 08/18/2009 06:32 PM, Li Zefan wrote:
-> > It would be much better to see a sample output of these TRACE_EVENTs,
-> > so we'll see the what's the output if a syscall has less than 6 args.
-> > 
-> > And I guess it should be "(%lx, %lx, ..., %lx)"? Otherwise I think we'll
-> > see some negative values.
-> 
-> Thanks, you're right -- the args should be unsigned long.  Whether they
-> are hex or decimal doesn't matter to me, but I guess that does make
-> pointers easier to spot.
-> 
-> Here's some output that I get on x86_64:
-> 
-> > # tail trace
-> >             tail-1106  [000] 113218.474657: syscall_enter: NR 2 (7f2d34dd38f0, 0, 7f2d35009010, 5, 4, ffffffffffffffb0)
-> > 
-> >             tail-1106  [000] 113218.474809: syscall_enter: NR 5 (3, 7f2d35009040, 7f2d35009040, 5, 4, ffffffffffffffb0)
-> > 
-> >             tail-1106  [000] 113218.474855: syscall_enter: NR 9 (0, 50d3ad0, 1, 2, 3, 0)
-> > 
-> >             tail-1106  [000] 113218.474946: syscall_enter: NR 3 (3, 7f2d2f9a0000, 5e22, 2, 3, 0)
-> > 
-> >             tail-1106  [000] 113218.475673: syscall_enter: NR 2 (7fff5e42a654, 0, 0, 7fff5e429600, 80, 3)
-> 
-> It's very raw indeed, but that's what Ingo asked for. :) The 
-> extra args show up as whatever happened to be in those registers.
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/i8254.c |    2 --
+ arch/x86/kvm/x86.c   |   12 ++++++++++++
+ virt/kvm/kvm_main.c  |    2 ++
+ 3 files changed, 14 insertions(+), 2 deletions(-)
 
-If the syscalls are handled as a single tracepoint, then they 
-cannot really have per syscall properties.
+diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+index 15fc95b..bcd00c7 100644
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -345,9 +345,7 @@ static void pit_load_count(struct kvm *kvm, int channel, u32 val)
+ 
+ void kvm_pit_load_count(struct kvm *kvm, int channel, u32 val)
+ {
+-	mutex_lock(&kvm->arch.vpit->pit_state.lock);
+ 	pit_load_count(kvm, channel, val);
+-	mutex_unlock(&kvm->arch.vpit->pit_state.lock);
+ }
+ 
+ static inline struct kvm_pit *dev_to_pit(struct kvm_io_device *dev)
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 57e76b3..e9b0982 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1987,19 +1987,25 @@ static int kvm_vm_ioctl_set_irqchip(struct kvm *kvm, struct kvm_irqchip *chip)
+ 	r = 0;
+ 	switch (chip->chip_id) {
+ 	case KVM_IRQCHIP_PIC_MASTER:
++		spin_lock(&pic_irqchip(kvm)->lock);
+ 		memcpy(&pic_irqchip(kvm)->pics[0],
+ 			&chip->chip.pic,
+ 			sizeof(struct kvm_pic_state));
++		spin_unlock(&pic_irqchip(kvm)->lock);
+ 		break;
+ 	case KVM_IRQCHIP_PIC_SLAVE:
++		spin_lock(&pic_irqchip(kvm)->lock);
+ 		memcpy(&pic_irqchip(kvm)->pics[1],
+ 			&chip->chip.pic,
+ 			sizeof(struct kvm_pic_state));
++		spin_unlock(&pic_irqchip(kvm)->lock);
+ 		break;
+ 	case KVM_IRQCHIP_IOAPIC:
++		mutex_lock(&kvm->irq_lock);
+ 		memcpy(ioapic_irqchip(kvm),
+ 			&chip->chip.ioapic,
+ 			sizeof(struct kvm_ioapic_state));
++		mutex_unlock(&kvm->irq_lock);
+ 		break;
+ 	default:
+ 		r = -EINVAL;
+@@ -2013,7 +2019,9 @@ static int kvm_vm_ioctl_get_pit(struct kvm *kvm, struct kvm_pit_state *ps)
+ {
+ 	int r = 0;
+ 
++	mutex_lock(&kvm->arch.vpit->pit_state.lock);
+ 	memcpy(ps, &kvm->arch.vpit->pit_state, sizeof(struct kvm_pit_state));
++	mutex_unlock(&kvm->arch.vpit->pit_state.lock);
+ 	return r;
+ }
+ 
+@@ -2021,8 +2029,10 @@ static int kvm_vm_ioctl_set_pit(struct kvm *kvm, struct kvm_pit_state *ps)
+ {
+ 	int r = 0;
+ 
++	mutex_lock(&kvm->arch.vpit->pit_state.lock);
+ 	memcpy(&kvm->arch.vpit->pit_state, ps, sizeof(struct kvm_pit_state));
+ 	kvm_pit_load_count(kvm, 0, ps->channels[0].count);
++	mutex_unlock(&kvm->arch.vpit->pit_state.lock);
+ 	return r;
+ }
+ 
+@@ -2031,7 +2041,9 @@ static int kvm_vm_ioctl_reinject(struct kvm *kvm,
+ {
+ 	if (!kvm->arch.vpit)
+ 		return -ENXIO;
++	mutex_lock(&kvm->arch.vpit->pit_state.lock);
+ 	kvm->arch.vpit->pit_state.pit_timer.reinject = control->pit_reinject;
++	mutex_unlock(&kvm->arch.vpit->pit_state.lock);
+ 	return 0;
+ }
+ 
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 8361662..f1e2e8c 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -2274,10 +2274,12 @@ static long kvm_vm_ioctl(struct file *filp,
+ #ifdef CONFIG_KVM_APIC_ARCHITECTURE
+ 	case KVM_SET_BOOT_CPU_ID:
+ 		r = 0;
++		mutex_lock(&kvm->lock);
+ 		if (atomic_read(&kvm->online_vcpus) != 0)
+ 			r = -EBUSY;
+ 		else
+ 			kvm->bsp_vcpu_id = arg;
++		mutex_unlock(&kvm->lock);
+ 		break;
+ #endif
+ 	default:
+-- 
+1.6.3.3
 
-The per syscall tracepoints on the other hand give very finegrained 
-information.
-
-Note that via the use of filters one can limit the generic 
-tracepoint to only output certain syscall NRs, and only with 
-certain parameters.
-
-	Ingo
