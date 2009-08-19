@@ -1,165 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbZHSNiH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZHSNip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752304AbZHSNiH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:38:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZHSNiG
+	id S1752633AbZHSNip (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZHSNip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:38:06 -0400
-Received: from mail-yx0-f175.google.com ([209.85.210.175]:36168 "EHLO
-	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751746AbZHSNiE convert rfc822-to-8bit (ORCPT
+	Wed, 19 Aug 2009 09:38:45 -0400
+Received: from mail-vw0-f172.google.com ([209.85.212.172]:50230 "EHLO
+	mail-vw0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbZHSNio (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:38:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LAhAKoF6jWl+/yjQ/koEhNuHLF8jrCT8HmupqzIciY1XG6WAWeHGWwm9oi8GC19po2
-         STWfpTPGn+5GYR0Rdne/9Qw1voPmd+ftzsxqoqLReWJ15cM+lLS7K1AMBmPru2GEga5R
-         x6fejOnYX7UAuS47SOHaNX7XObXRC0BbveYZ4=
+	Wed, 19 Aug 2009 09:38:44 -0400
 MIME-Version: 1.0
-In-Reply-To: <20090819132420.GA6137@localhost>
-References: <20090816051502.GB13740@localhost>
-	 <20090816112910.GA3208@localhost>
-	 <20090818234310.A64B.A69D9226@jp.fujitsu.com>
-	 <20090819120117.GB7306@localhost>
-	 <2f11576a0908190505h6da96280xf67c962aa3f5ba07@mail.gmail.com>
-	 <20090819121017.GA8226@localhost>
-	 <28c262360908190525i6e56ead0mb8dcb01c3d1a69f1@mail.gmail.com>
-	 <20090819132420.GA6137@localhost>
-Date: Wed, 19 Aug 2009 22:38:05 +0900
-Message-ID: <28c262360908190638g521e55bcje14cb321c9a22c51@mail.gmail.com>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <200908181443.46652.christoph.thielecke@gmx.de>
+References: <200908181443.46652.christoph.thielecke@gmx.de>
+Date: Wed, 19 Aug 2009 09:38:44 -0400
+Message-ID: <7e0fb38c0908190638g23f22b59v53a192182b9ee9a4@mail.gmail.com>
+Subject: Re: kernel bug 2.6.31-rc6
+From: Eric Paris <eparis@parisplace.org>
+To: christoph.thielecke@gmx.de
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       eparis@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 10:24 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> On Wed, Aug 19, 2009 at 08:25:56PM +0800, Minchan Kim wrote:
->> On Wed, Aug 19, 2009 at 9:10 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
->> > On Wed, Aug 19, 2009 at 08:05:19PM +0800, KOSAKI Motohiro wrote:
->> >> >> page_referenced_file?
->> >> >> I think we should change page_referenced().
->> >> >
->> >> > Yeah, good catch.
->> >> >
->> >> >>
->> >> >> Instead, How about this?
->> >> >> ==============================================
->> >> >>
->> >> >> Subject: [PATCH] mm: stop circulating of referenced mlocked pages
->> >> >>
->> >> >> Currently, mlock() systemcall doesn't gurantee to mark the page PG_Mlocked
->> >> >
->> >> >                                                    mark PG_mlocked
->> >> >
->> >> >> because some race prevent page grabbing.
->> >> >> In that case, instead vmscan move the page to unevictable lru.
->> >> >>
->> >> >> However, Recently Wu Fengguang pointed out current vmscan logic isn't so
->> >> >> efficient.
->> >> >> mlocked page can move circulatly active and inactive list because
->> >> >> vmscan check the page is referenced _before_ cull mlocked page.
->> >> >>
->> >> >> Plus, vmscan should mark PG_Mlocked when cull mlocked page.
->> >> >
->> >> >                           PG_mlocked
->> >> >
->> >> >> Otherwise vm stastics show strange number.
->> >> >>
->> >> >> This patch does that.
->> >> >
->> >> > Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
->> >>
->> >> Thanks.
->> >>
->> >>
->> >>
->> >> >> Index: b/mm/rmap.c
->> >> >> ===================================================================
->> >> >> --- a/mm/rmap.c       2009-08-18 19:48:14.000000000 +0900
->> >> >> +++ b/mm/rmap.c       2009-08-18 23:47:34.000000000 +0900
->> >> >> @@ -362,7 +362,9 @@ static int page_referenced_one(struct pa
->> >> >>        * unevictable list.
->> >> >>        */
->> >> >>       if (vma->vm_flags & VM_LOCKED) {
->> >> >> -             *mapcount = 1;  /* break early from loop */
->> >> >> +             *mapcount = 1;          /* break early from loop */
->> >> >> +             *vm_flags |= VM_LOCKED; /* for prevent to move active list */
->> >> >
->> >> >> +             try_set_page_mlocked(vma, page);
->> >> >
->> >> > That call is not absolutely necessary?
->> >>
->> >> Why? I haven't catch your point.
->> >
->> > Because we'll eventually hit another try_set_page_mlocked() when
->> > trying to unmap the page. Ie. duplicated with another call you added
->> > in this patch.
->>
->> Yes. we don't have to call it and we can make patch simple.
->> I already sent patch on yesterday.
->>
->> http://marc.info/?l=linux-mm&m=125059325722370&w=2
->>
->> I think It's more simple than KOSAKI's idea.
->> Is any problem in my patch ?
+On Tue, Aug 18, 2009 at 8:43 AM, Christoph
+Thielecke<christoph.thielecke@gmx.de> wrote:
+> Hello list,
 >
-> No, IMHO your patch is simple and good, while KOSAKI's is more
-> complete :)
+> I got an kernel bug using 2.6.31-rc6 (machine freeze, sysreq not working).
+> Interesting: I use kde3 (user crissi) and start an second xserver in
+> userspace (xephyr) (user kde-devel). I allow to write the xserver on my
+> display via xhost +.
 >
-> - the try_set_page_mlocked() rename is suitable
-> - the call to try_set_page_mlocked() is necessary on try_to_unmap()
-
-We don't need try_set_page_mlocked call in try_to_unmap.
-That's because try_to_unmap_xxx will call try_to_mlock_page if the
-page is included in any VM_LOCKED vma. Eventually, It can move
-unevictable list.
-
-> - the "if (VM_LOCKED) referenced = 0" in page_referenced() could
->  cover both active/inactive vmscan
-
-ASAP we set PG_mlocked in page, we can save unnecessary vmscan cost from
-active list to inactive list. But I think it's rare case so that there
-would be few pages.
-So I think that will be not big overhead.
-
-As I know, Rescue by vmscan page losing the isolation race was the
-Lee's design.
-But as you pointed out, it have a bug that vmscan can't rescue the
-page due to reach try_to_unmap.
-
-So I think this approach is proper. :)
-
-> I did like your proposed
+> @linus
+> This is different from bug before because I start there a new session via kdm
+> (2x xorg).
 >
->                if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
-> -                                       referenced && page_mapping_inuse(page))
-> +                                       referenced && page_mapping_inuse(page)
-> +                                       && !(vm_flags & VM_LOCKED))
->                        goto activate_locked;
 >
-> which looks more intuitive and less confusing.
->
-> Thanks,
-> Fengguang
->
+> Aug 18 10:24:09 develop kernel: idr_remove called for id=2147483647 which is
+> not allocated.
+
+2147483647 = 0x7FFFFFFF = INT_MAX
+
+I don't use INT_MAX in my code anywhere!  Anyone on list have a clue
+what could rewrite it to INT_MAX?  This doesn't look to me
+
+Only thing I can think of is that it got freed and reused by something else ??
 
 
+> Aug 18 10:24:09 develop kernel: Pid: 17363, comm: kded4 Tainted: P
+> 2.6.31-rc6 #2
+> Aug 18 10:24:09 develop kernel: Call Trace:
+> Aug 18 10:24:09 develop kernel: [<c133a0b0>] ? printk+0x18/0x20
+> Aug 18 10:24:09 develop kernel: [<c11d00c0>] idr_remove+0x79/0x1ad
+> Aug 18 10:24:09 develop kernel: [<c10db9d1>] ?
+> fsnotify_add_notify_event+0x105/0x205
+> Aug 18 10:24:09 develop kernel: [<c10ddce3>] inotify_remove_from_idr+0x21/0x34
+> Aug 18 10:24:09 develop kernel: [<c10de1ae>]
+> inotify_ignored_and_remove_idr+0x85/0xb7
+> Aug 18 10:24:09 develop kernel: [<c10dd753>] inotify_freeing_mark+0x8/0xa
+> Aug 18 10:24:09 develop kernel: [<c10dc3ab>]
+> fsnotify_destroy_mark_by_entry+0xf3/0x132
+> Aug 18 10:24:09 develop kernel: [<c10ddc82>] sys_inotify_rm_watch+0x5e/0x8d
+> Aug 18 10:24:09 develop kernel: [<c1003610>] sysenter_do_call+0x12/0x2c
 
--- 
-Kind regards,
-Minchan Kim
+So the syscall wd was correct, the entry was found in the idr, but the
+entry->wd = INT_MAX which is not what it is supposed to be.  At some
+point that entry had to be correct, since it was returned to userspace
+from inotify_update_watch().
+
+That function looks horrid, so I'll recheck it, but I'm once again stumped...
+
+-Eric
