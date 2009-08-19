@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752979AbZHSQPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZHSQPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752979AbZHSQPG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbZHSQPF
+	id S1753024AbZHSQPK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbZHSQPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:15:05 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:53083 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbZHSQPD (ORCPT
+	Wed, 19 Aug 2009 12:15:06 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40338 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752468AbZHSQPD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Aug 2009 12:15:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ui5Dg3PJtJlFlEGczl/9GthnNQofpUomO0Cy1z9c3Z2+wNebCC7LrqXXYfVvlBHYho
-         a5Hki8cK8rjxTdXiA7rx7T7jgt+h/7tJ67bRktoG5ClK3s6jXO1oR0z19fPwZoN2kWYf
-         yCK6IUKryTKbYYs73IVDL/0/VD5vsqlD2CkTc=
-Date: Wed, 19 Aug 2009 20:15:00 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC -tip] x86,apic: set cpu_has_apic manually for discrete
-	apic
-Message-ID: <20090819161500.GA5457@lenovo>
-References: <20090816195736.GB4788@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090816195736.GB4788@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Wed, 19 Aug 2009 17:15:10 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Mark Lord <liml@rtr.ca>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] libata: use single threaded work queue
+Message-ID: <20090819171510.68bef78f@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A8C2012.6090809@gmail.com>
+References: <20090819112554.GY12579@kernel.dk>
+	<4A8BE932.5090300@garzik.org>
+	<20090819120458.GZ12579@kernel.dk>
+	<4A8BECC2.2060607@rtr.ca>
+	<20090819122320.GA12579@kernel.dk>
+	<4A8BFC79.1000004@garzik.org>
+	<4A8BFDE2.1010904@garzik.org>
+	<4A8C0820.8060200@gmail.com>
+	<20090819162147.16aeb2db@lxorguk.ukuu.org.uk>
+	<4A8C2012.6090809@gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sun, Aug 16, 2009 at 11:57:36PM +0400]
-|
-| In case of discrete apic (due to hardware or firmware reason)
-| cpuid may not retrieve cpu_has_apic bit. But we rely on this
-| bit in SMP compiled kernels. So instead of long condition checking
-| we set cpu_has_apic bit manually and check it only in further
-| code flow.
-| 
-| Note that the case is applied to x86-32 pretty old machines only.
-| Also verify_local_APIC is the only place where such a trick
-| could be done. We can't do it earlier since there could be
-| a BIOS bug and other checks which we are to pass to ensure
-| that APIC is functional.
-| 
-| The patch also make lapic_shutdown, disable_IO_APIC callable
-| which should take place even on discrete apics.
-| 
-| As a side effect it makes lapic sysfs device available
-| for such machines so lets check for apic being integrated
-| since we don't support suspend/resume for disrete apics.
-| 
-| Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-| ---
+> Are work threads per workqueue?  Combined with per-cpu binding,
+> dynamic thread pool per workqueue can get quite messy.  All three
+> factors end up getting multiplied - ie. #cpus * pool_size which can be
+> enlarged by the same work hopping around * #workqueues.
 
-Please drop this RFC now as to eliminate side effects
-a number of quirks (MCE,MSI) would be needed. I didn't trigger
-problems because not all interrupt types were covered
-with qemu. The simpliest (and more safe) approach will
-be just to fix lapic_shutdown and disable_IO_APIC for
-discrete apic case. Will cook a patch.
+Stop a moment. Exactly how many work queue users need per cpu binding
+wizardry ?
 
-	-- Cyrill
+> Another problem is that if we apply this to the existing default
+> workqueue which is used by many different supposed-to-be-short works
+> in essentially batch mode, we might end up enlarging cache footprint
+> by scheduling unnecessarily many threads, which, in tight situations,
+> might show up as small but noticeable performance regression.
+
+Only if you make the default assumed max wait time for the work too low -
+its a tunable behaviour in fact.
+
+Alan
