@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751568AbZHSByr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751550AbZHSCQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751568AbZHSByr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 21:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZHSByq
+	id S1751550AbZHSCQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 22:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbZHSCQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 21:54:46 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:65011 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943AbZHSByq (ORCPT
+	Tue, 18 Aug 2009 22:16:47 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44243
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751231AbZHSCQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 21:54:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=npMfAWKL9dII/f0J3E6ehzh7M0fyYbHAchjPFiSEExmBDH+3Qy3oBuZvehB84x4Ld/
-         mLplX4T8eHthHxNVNAvMor5VdqeMhjXWDJcNfczR9dNX2fkO6Bjtqp6mxB8dHhpIcK9B
-         QQDXZRy/Omc1GCy44XrSknRw8cL3wsUt4ZxEQ=
-Message-ID: <4A8B5B5C.3050906@gmail.com>
-Date: Wed, 19 Aug 2009 10:54:36 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Harald Dunkel <harald.dunkel@t-online.de>,
-       =?ISO-8859-2?Q?Fr=E9d=E9ri?= =?ISO-8859-2?Q?c_Weisbecker?= 
-	<fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jeff Mahoney <jeffm@suse.com>
-Subject: Re: [Bug #13374] reiserfs blocked for more than 120secs
-References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera> <200908122315.09420.rjw@sisk.pl> <4A8AE52F.6030606@t-online.de> <200908182112.53486.rjw@sisk.pl>
-In-Reply-To: <200908182112.53486.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-2
+	Tue, 18 Aug 2009 22:16:47 -0400
+Date: Tue, 18 Aug 2009 19:16:58 -0700 (PDT)
+Message-Id: <20090818.191658.138119023.davem@davemloft.net>
+To: tj@kernel.org
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       amwang@redhat.com
+Subject: Re: [GIT PULL] percpu fixes for 2.6.31-rc6
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4A8B57AF.9000000@kernel.org>
+References: <4A84ED76.2050107@kernel.org>
+	<4A8B57AF.9000000@kernel.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Tejun Heo <tj@kernel.org>
+Date: Wed, 19 Aug 2009 10:38:55 +0900
 
-Rafael J. Wysocki wrote:
-> Unfortunately, I don't have much experience with debugging issues of
-> this kind.  Perhaps Tejun will have some hints (CC added)?
+> Tejun Heo wrote:
+>> Please consider pulling from the following percpu fixes tree.
+>> 
+>>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-linus
+> 
+> Any news about this?  This affects booting on some sparc64 machines.
+> If the change is too pervasive at this stage, we can consider
+> reverting dynamic percpu allocator conversion for sparc64.
 
-Eh... I don't have much experience either and from the reported
-information I can't tell much.  The question would be what the thread
-which is holding the lock was doing and whether it traces down to IO
-layer.  So, as Jeff said, we'll need sysrq-t output to tell what's
-going on.  The current trace only reveals the victim not the offender.
-
-Thanks.
-
--- 
-tejun
+I'm all for these changes, especially since they fix those
+sparc64 systems :-)
