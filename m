@@ -1,78 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbZHSXff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbZHSXhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbZHSXff (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZHSXfd
+	id S1752648AbZHSXhj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 19:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbZHSXhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 19:35:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56758 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753718AbZHSXfc (ORCPT
+	Wed, 19 Aug 2009 19:37:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34381 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752052AbZHSXhh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 19:35:32 -0400
-Date: Wed, 19 Aug 2009 16:34:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: dimitri.gorokhovik@free.fr
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Scott James Remnant <scott@canonical.com>, Julia Lawall <julia@diku.dk>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] nftl: fix offset alignments
-Message-Id: <20090819163426.fa90cf9f.akpm@linux-foundation.org>
-In-Reply-To: <785022442.3397251250633188592.JavaMail.root@zimbra3-e1.priv.proxad.net>
-References: <605152405.3397101250633087167.JavaMail.root@zimbra3-e1.priv.proxad.net>
-	<785022442.3397251250633188592.JavaMail.root@zimbra3-e1.priv.proxad.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 19:37:37 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "David Hill" <hilld@binarystorm.net>
+References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
+In-Reply-To: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <Era7U-todKF.A.5IE.yoIjKB@chimera>
+Subject: [Bug #13219] Intel 440GX: Since kernel 2.6.30-rc1, computers hangs randomly but not with kernel <= 2.6.29.6
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Wed, 19 Aug 2009 22:40:39 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Aug 2009 00:06:28 +0200 (CEST) dimitri.gorokhovik@free.fr wrote:
+This message has been generated automatically as a part of a report
+of regressions introduced between 2.6.29 and 2.6.30.
 
-> Arithmetic conversion in the mask computation makes the upper word 
-> of the second argument passed down to mtd->read_oob(), be always 0
-> (assuming 'offs' being a 64-bit signed long long type, and 
-> 'mtd->writesize' being a 32-bit unsigned int type). 
-> 
-> This patch applies over the other one adding masking in nftl_write,
-> "nftl: write support is broken".
-> 
-> Signed-off-by: <dimitri.gorokhovik@free.fr>
-> ---
->  
-> diff --git a/drivers/mtd/nftlcore.c b/drivers/mtd/nftlcore.c
-> index 665d3eb..d2fd066 100644
-> --- a/drivers/mtd/nftlcore.c
-> +++ b/drivers/mtd/nftlcore.c
-> @@ -135,16 +135,17 @@ static void nftl_remove_dev(struct mtd_blktrans_dev *dev)
->  int nftl_read_oob(struct mtd_info *mtd, loff_t offs, size_t len,
->  		  size_t *retlen, uint8_t *buf)
->  {
-> +	typeof(offs) mask = mtd->writesize - 1;
+The following bug entry is on the current list of known regressions
+introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+be listed and let me know (either way).
 
-I see no reason to use typeof here.  Plain old
 
-	loff_t mask = mtd->writesize - 1;
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13219
+Subject		: Intel 440GX: Since kernel 2.6.30-rc1, computers hangs randomly but not with kernel <= 2.6.29.6
+Submitter	: David Hill <hilld@binarystorm.net>
+Date		: 2009-05-01 16:57 (111 days old)
 
-would be more conventional.
-
->  	struct mtd_oob_ops ops;
->  	int res;
->  
->  	ops.mode = MTD_OOB_PLACE;
-> -	ops.ooboffs = offs & (mtd->writesize - 1);
-> +	ops.ooboffs = offs & mask;
->  	ops.ooblen = len;
->  	ops.oobbuf = buf;
->  	ops.datbuf = NULL;
->  
-> -	res = mtd->read_oob(mtd, offs & ~(mtd->writesize - 1), &ops);
-> +	res = mtd->read_oob(mtd, offs & ~mask, &ops);
-
-yup.
 
