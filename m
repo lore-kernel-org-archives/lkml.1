@@ -1,297 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751391AbZHSJCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZHSJGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751391AbZHSJCr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 05:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZHSJCq
+	id S1751287AbZHSJGG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 05:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750923AbZHSJGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 05:02:46 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52817 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750997AbZHSJCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 05:02:44 -0400
-Date: Wed, 19 Aug 2009 19:02:33 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for August 19
-Message-Id: <20090819190233.86e78493.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__19_Aug_2009_19_02_33_+1000_nQoektf+wMc/T=Rx"
+	Wed, 19 Aug 2009 05:06:05 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:51781 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbZHSJGD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 05:06:03 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
+Date: Wed, 19 Aug 2009 11:04:50 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
+References: <cover.1250187913.git.mst@redhat.com> <200908141340.36176.arnd@arndb.de> <20090816065110.GA3008@redhat.com>
+In-Reply-To: <20090816065110.GA3008@redhat.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908191104.50672.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/xEYq6V4r7YlW85jvOfyIxAOYp5WdJnV/fVxj
+ VrbEhTjWRJ6c29Va6i2HxattS3N0hrk5V/HcgYL6mDjhwZO1pu
+ TtDh/ZOQ6MQZYv2piCgvQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__19_Aug_2009_19_02_33_+1000_nQoektf+wMc/T=Rx
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sunday 16 August 2009, Michael S. Tsirkin wrote:
+> On Fri, Aug 14, 2009 at 01:40:36PM +0200, Arnd Bergmann wrote:
+> > 
+> > * most of the transports are sockets, tap uses a character device.
+> >   This could be dealt with by having both a struct socket * in
+> >   struct vhost_net *and* a struct file *, or by always keeping the
+> >   struct file and calling vfs_readv/vfs_writev for the data transport
+> >   in both cases.
+> 
+> I am concerned that character devices might have weird side effects with
+> read/write operations and that calling them from kernel thread the way I
+> do might have security implications. Can't point at anything specific
+> though at the moment.
 
-Hi all,
+I understand your feelings about passing a chardev fd into your driver
+and I agree that we need to be very careful if we want to allow it.
 
-Changes since 20090818:
+Maybe we could instead extend the 'splice' system call to work on a
+vhost_net file descriptor. If we do that, we can put the access back
+into a user thread (or two) that stays in splice indefinetely to
+avoid some of the implications of kernel threads like the missing
+ability to handle transfer errors in user space.
 
-This tree fails to build for powerpc allyesconfig (due to a TOC overflow
-problem in the final link).
+> I wonder - can we expose the underlying socket used by tap, or will that
+> create complex lifetime issues?
 
-The mips tree lost all its conflicts.
+I think this could get more messy in the long run than calling vfs_readv
+on a random fd. It would mean deep internal knowledge of the tap driver
+in vhost_net, which I really would prefer to avoid.
 
-The omap tree gained a conflict against the arm tree.
+> > * Each transport has a slightly different header, we have
+> >   - raw ethernet frames (raw, udp multicast, tap)
+> >   - 32-bit length + raw frames, possibly fragmented (tcp)
+> >   - 80-bit header + raw frames, possibly fragmented (tap with vnet_hdr)
+> >   To handle these three cases, we need either different ioctl numbers
+> >   so that vhost_net can choose the right one, or a flags field in
+> >   VHOST_NET_SET_SOCKET, like
+> > 
+> >   #define VHOST_NET_RAW		1
+> >   #define VHOST_NET_LEN_HDR	2
+> >   #define VHOST_NET_VNET_HDR	4
+> > 
+> >   struct vhost_net_socket {
+> > 	unsigned int flags;
+> > 	int fd;
+> >   };
+> >   #define VHOST_NET_SET_SOCKET _IOW(VHOST_VIRTIO, 0x30, struct vhost_net_socket)
+> 
+> It seems we can query the socket to find out the type, 
 
-The suspend tree lost its build failure.
+yes, I understand that you can do that, but I still think that decision
+should be left to user space. Adding a length header for TCP streams but
+not for UDP is something that we would normally want to do, but IMHO
+vhost_net should not need to know about this.
 
-The tip tree gained a conflict against Linus' tree.
+> or use the features ioctl.
 
-The usb tree gained a conflict against the tip tree and a build failure
-for which I reverted a commit (and those dependent on it).
+Right, I had forgotten about that one. It's probably equivalent
+to the flags I suggested, except that one allows you to set features
+after starting the communication, while the other one prevents
+you from doing that.
 
-----------------------------------------------------------------------------
+> > Qemu could then automatically try to use vhost_net, if it's available
+> > in the kernel, or just fall back on software vlan otherwise.
+> > Does that make sense?
+> 
+> I agree, long term it should be enabled automatically when possible.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+So how about making the qemu command line interface an extension to
+what Or Gerlitz has done for the raw packet sockets?
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 140 trees (counting Linus' and 21 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-Merging thumb-2/thumb-2
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_sync.h
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
-m.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
-355.h
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
-644x.h
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_crtc.c
-CONFLICT (content): Merge conflict in drivers/gpu/drm/i915/intel_sdvo.c
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-4430sdp.c
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_fsnotify.c
-CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_user.c
-CONFLICT (content): Merge conflict in fs/notify/notification.c
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging drbd/drbd
-Applying: drbd: fix for removal of blk_queue_stack_limits
-Merging kmemleak/kmemleak
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
-CONFLICT (content): Merge conflict in include/linux/rcupdate.h
-CONFLICT (content): Merge conflict in kernel/fork.c
-CONFLICT (content): Merge conflict in kernel/irq/manage.c
-CONFLICT (content): Merge conflict in kernel/trace/trace.h
-Merging oprofile/for-next
-CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
-Merging edac-amd/for-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
-CONFLICT (content): Merge conflict in include/linux/topology.h
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
-Merging sfi/sfi-test
-CONFLICT (content): Merge conflict in arch/x86/include/asm/io_apic.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/boot.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/apic/io_apic.c
-CONFLICT (content): Merge conflict in drivers/acpi/internal.h
-CONFLICT (content): Merge conflict in drivers/acpi/tables.c
-CONFLICT (content): Merge conflict in include/linux/acpi.h
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in drivers/base/class.c
-CONFLICT (content): Merge conflict in init/main.c
-Merging quilt/tty
-CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
-Merging quilt/usb
-CONFLICT (content): Merge conflict in kernel/printk.c
-Merging quilt/staging
-CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
-d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
-l/VirtualEthernetLinux.c left in tree.
-$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
-[master 3b220c1] Revert "USB: ehci-dbgp: stability improvements and externa=
-l re-init"
-[master ba9e6a4] Revert "USB: early_printk: EHCI debug controller initializ=
-ation delays"
-[master ed51dea] Revert "USB: ehci-dbgp: Execute early BIOS hand off"
-[master d393cb3] Revert "USB: early_printk: insert cr prior to nl as needed"
-[master 9eeb480] Revert "USB: ehci early_printk: split ehci debug driver fr=
-om early_printk.c"
-Merging scsi-post-merge/master
-
---Signature=_Wed__19_Aug_2009_19_02_33_+1000_nQoektf+wMc/T=Rx
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqLv6kACgkQjjKRsyhoI8zbRQCglmYKphIppTnv5pI/gDTDo2lp
-pTYAnR3PR6ApgT7g1bD4U3dQTqkhWPMD
-=ZkkZ
------END PGP SIGNATURE-----
-
---Signature=_Wed__19_Aug_2009_19_02_33_+1000_nQoektf+wMc/T=Rx--
+	Arnd <><
