@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbZHSXh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbZHSXiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753891AbZHSXh4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbZHSXho
+	id S1753926AbZHSXiZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 19:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZHSXiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 19:37:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34385 "EHLO ogre.sisk.pl"
+	Wed, 19 Aug 2009 19:38:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34411 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752799AbZHSXhm convert rfc822-to-8bit (ORCPT
+	id S1753902AbZHSXiV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 19:37:42 -0400
+	Wed, 19 Aug 2009 19:38:21 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Francis Moreau" <francis.moro@gmail.com>,
-       "netdev" <netdev@vger.kernel.org>
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Jan Scholz" <scholz@fias.uni-frankfurt.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
 References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
 In-Reply-To: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +21,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Era7U-todKF.A.-rD.DoIjKB@chimera>
-Subject: [Bug #13328] b44: eth0: BUG! Timeout waiting for bit 00000002 of register 42c to clear.
+Message-ID: <Era7U-todKF.A.oJD.QnIjKB@chimera>
+Subject: [Bug #13407] adb trackpad disappears after suspend to ram
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed, 19 Aug 2009 22:40:40 +0200 (CEST)
+Date: Wed, 19 Aug 2009 22:40:42 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,10 +37,12 @@ introduced between 2.6.29 and 2.6.30.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13328
-Subject		: b44: eth0: BUG! Timeout waiting for bit 00000002 of register 42c to clear.
-Submitter	: Francis Moreau <francis.moro@gmail.com>
-Date		: 2009-05-03 16:22 (109 days old)
-References	: http://marc.info/?l=linux-kernel&m=124136778012280&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13407
+Subject		: adb trackpad disappears after suspend to ram
+Submitter	: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Date		: 2009-05-28 7:59 (84 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7
+References	: http://marc.info/?l=linux-kernel&m=124349762314976&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
 
 
