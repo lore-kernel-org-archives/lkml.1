@@ -1,43 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbZHSONa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbZHSORc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752637AbZHSONa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 10:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZHSON3
+	id S1752647AbZHSORc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 10:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbZHSORb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 10:13:29 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:48995 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751915AbZHSON2 (ORCPT
+	Wed, 19 Aug 2009 10:17:31 -0400
+Received: from fallback-out2.mxes.net ([216.86.168.191]:54170 "EHLO
+	fallback-in2.mxes.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751361AbZHSORa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 10:13:28 -0400
-Date: Wed, 19 Aug 2009 15:13:22 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+	Wed, 19 Aug 2009 10:17:30 -0400
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+To: mjg@redhat.com
 Cc: marcel@holtmann.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: [PATCH 5/5] dell-laptop: poll the rfkill hard-block
-Message-ID: <20090819141322.GA15937@srcf.ucam.org>
-References: <4A8C0623.8030808@tuffmail.co.uk> <1250690811-21203-5-git-send-email-alan-jenkins@tuffmail.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250690811-21203-5-git-send-email-alan-jenkins@tuffmail.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: [PATCH 2/5] dell-laptop: fix rfkill memory leak on unload and failure paths
+Date: Wed, 19 Aug 2009 15:06:48 +0100
+Message-Id: <1250690811-21203-2-git-send-email-alan-jenkins@tuffmail.co.uk>
+X-Mailer: git-send-email 1.6.3.2
+In-Reply-To: <4A8C0623.8030808@tuffmail.co.uk>
+References: <4A8C0623.8030808@tuffmail.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 03:06:51PM +0100, Alan Jenkins wrote:
-> This is controlled by a hardware switch, so we should poll it in order
-> to pick up changes.  (There does not appear to be an interrupt or any
-> other notification mechanism).
+rfkill_unregister() should always be followed by rfkill_destroy().
 
-With the exception of this one they all look fine - I'm moving house 
-next week and won't have access to any Dell hardware for over a month, 
-so if anyone else could confirm that these work that would be excellent.
+Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+---
+ drivers/platform/x86/dell-laptop.c |   30 ++++++++++++++++++------------
+ 1 files changed, 18 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/platform/x86/dell-laptop.c b/drivers/platform/x86/dell-laptop.c
+index 12b6f33..8fbff38 100644
+--- a/drivers/platform/x86/dell-laptop.c
++++ b/drivers/platform/x86/dell-laptop.c
+@@ -268,6 +268,22 @@ err_wifi:
+ 	return ret;
+ }
+ 
++static void dell_cleanup_rfkill(void)
++{
++	if (wifi_rfkill) {
++		rfkill_unregister(wifi_rfkill);
++		rfkill_destroy(wifi_rfkill);
++	}
++	if (bluetooth_rfkill) {
++		rfkill_unregister(bluetooth_rfkill);
++		rfkill_destroy(bluetooth_rfkill);
++	}
++	if (wwan_rfkill) {
++		rfkill_unregister(wwan_rfkill);
++		rfkill_destroy(wwan_rfkill);
++	}
++}
++
+ static int dell_send_intensity(struct backlight_device *bd)
+ {
+ 	struct calling_interface_buffer buffer;
+@@ -370,12 +386,7 @@ static int __init dell_init(void)
+ 	return 0;
+ 
+ fail_backlight:
+-	if (wifi_rfkill)
+-		rfkill_unregister(wifi_rfkill);
+-	if (bluetooth_rfkill)
+-		rfkill_unregister(bluetooth_rfkill);
+-	if (wwan_rfkill)
+-		rfkill_unregister(wwan_rfkill);
++	dell_cleanup_rfkill();
+ fail_rfkill:
+ 	kfree(da_tokens);
+ 	return ret;
+@@ -384,12 +395,7 @@ fail_rfkill:
+ static void __exit dell_exit(void)
+ {
+ 	backlight_device_unregister(dell_backlight_device);
+-	if (wifi_rfkill)
+-		rfkill_unregister(wifi_rfkill);
+-	if (bluetooth_rfkill)
+-		rfkill_unregister(bluetooth_rfkill);
+-	if (wwan_rfkill)
+-		rfkill_unregister(wwan_rfkill);
++	dell_cleanup_rfkill();
+ }
+ 
+ module_init(dell_init);
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.6.3.2
+
