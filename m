@@ -1,673 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751372AbZHSHGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbZHSHLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751372AbZHSHGs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 03:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbZHSHGr
+	id S1751441AbZHSHLj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 03:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbZHSHLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 03:06:47 -0400
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:58216 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751084AbZHSHGq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 03:06:46 -0400
-Subject: [PATCH] staging/wlan-ng: Convert firmware loading to load binary
- ihex format
-From: Karl Relton <karllinuxtest.relton@ntlworld.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 08:06:39 +0100
-Message-Id: <1250665599.4545.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 19 Aug 2009 03:11:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49794 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751152AbZHSHLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 03:11:37 -0400
+Message-ID: <4A8BA5AE.3030308@redhat.com>
+Date: Wed, 19 Aug 2009 10:11:42 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
+ objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com> <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com> <4A8AD678.7050609@redhat.com> <4A8B9B79.9050004@gmail.com>
+In-Reply-To: <4A8B9B79.9050004@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Cloudmark-Analysis: v=1.0 c=1 a=50HdQx2-poUA:10 a=NLZqzBF-AAAA:8 a=qwBh4nS7iM6vpMrTji4A:9 a=Pgi84-lpEExE1Z8i_SUA:7 a=TORO4ezBL1IjN3fyj6O1f-HZupAA:4 a=_dQi-Dcv4p4A:10 a=j6zqWUphL6X-gR1w:21 a=rNIoBysOGYjkhowH:21
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert prism2_usb firmware loading to load firmware in pre-compiled
-binary 'ihex' format rather than ascii 'srec' format. This moves the
-srec processing and sorting of records out of kernel space into a
-pre-compiler. The driver now just works with the binary image, but
-still does the 'pda plugging' of that image at runtime, as required
-by the prism hardware.
+On 08/19/2009 09:28 AM, Gregory Haskins wrote:
+> Avi Kivity wrote:
+>    
+>> On 08/18/2009 05:46 PM, Gregory Haskins wrote:
+>>      
+>>>        
+>>>> Can you explain how vbus achieves RDMA?
+>>>>
+>>>> I also don't see the connection to real time guests.
+>>>>
+>>>>          
+>>> Both of these are still in development.  Trying to stay true to the
+>>> "release early and often" mantra, the core vbus technology is being
+>>> pushed now so it can be reviewed.  Stay tuned for these other
+>>> developments.
+>>>
+>>>        
+>> Hopefully you can outline how it works.  AFAICT, RDMA and kernel bypass
+>> will need device assignment.  If you're bypassing the call into the host
+>> kernel, it doesn't really matter how that call is made, does it?
+>>      
+> This is for things like the setup of queue-pairs, and the transport of
+> door-bells, and ib-verbs.  I am not on the team doing that work, so I am
+> not an expert in this area.  What I do know is having a flexible and
+> low-latency signal-path was deemed a key requirement.
+>    
 
-Signed-off-by: Karl Relton <karllinuxtest.relton@ntlworld.com>
+That's not a full bypass, then.  AFAIK kernel bypass has userspace 
+talking directly to the device.
 
----
+Given that both virtio and vbus can use ioeventfds, I don't see how one 
+can perform better than the other.
 
-Some Notes:
+> For real-time, a big part of it is relaying the guest scheduler state to
+> the host, but in a smart way.  For instance, the cpu priority for each
+> vcpu is in a shared-table.  When the priority is raised, we can simply
+> update the table without taking a VMEXIT.  When it is lowered, we need
+> to inform the host of the change in case the underlying task needs to
+> reschedule.
+>    
 
-- The firmware is now expected to be in the same 'ihex' (.fw) format
-  used by other drivers.
+This is best done using cr8/tpr so you don't have to exit at all.  See 
+also my vtpr support for Windows which does this in software, generally 
+avoiding the exit even when lowering priority.
 
-- The now driver assumes the data records are already sorted into ascending
-  address order.
+> This is where the really fast call() type mechanism is important.
+>
+> Its also about having the priority flow-end to end, and having the vcpu
+> interrupt state affect the task-priority, etc (e.g. pending interrupts
+> affect the vcpu task prio).
+>
+> etc, etc.
+>
+> I can go on and on (as you know ;), but will wait till this work is more
+> concrete and proven.
+>    
 
-- Plug and crc records are still recognised by special address locations
-  as in original srec processing.
+Generally cpu state shouldn't flow through a device but rather through 
+MSRs, hypercalls, and cpu registers.
 
-- The srec S7 start address record is assumed to have been converted
-  into a data record with another special address location (0xff400000),
-  with the original start address being stored as a 4 byte data word
-  (little endian).
+> Basically, what it comes down to is both vbus and vhost need
+> configuration/management.  Vbus does it with sysfs/configfs, and vhost
+> does it with ioctls.  I ultimately decided to go with sysfs/configfs
+> because, at least that the time I looked, it seemed like the "blessed"
+> way to do user->kernel interfaces.
+>    
+
+I really dislike that trend but that's an unrelated discussion.
+
+>> They need to be connected to the real world somehow.  What about
+>> security?  can any user create a container and devices and link them to
+>> real interfaces?  If not, do you need to run the VM as root?
+>>      
+> Today it has to be root as a result of weak mode support in configfs, so
+> you have me there.  I am looking for help patching this limitation, though.
+>
+>    
+
+Well, do you plan to address this before submission for inclusion?
+
+>> I hope everyone agrees that it's an important issue for me and that I
+>> have to consider non-Linux guests.  I also hope that you're considering
+>> non-Linux guests since they have considerable market share.
+>>      
+> I didn't mean non-Linux guests are not important.  I was disagreeing
+> with your assertion that it only works if its PCI.  There are numerous
+> examples of IHV/ISV "bridge" implementations deployed in Windows, no?
+>    
+
+I don't know.
+
+> If vbus is exposed as a PCI-BRIDGE, how is this different?
+>    
+
+Technically it would work, but given you're not interested in Windows, 
+who would write a driver?
+
+>> Given I'm not the gateway to inclusion of vbus/venet, you don't need to
+>> ask me anything.  I'm still free to give my opinion.
+>>      
+> Agreed, and I didn't mean to suggest otherwise.  It not clear if you are
+> wearing the "kvm maintainer" hat, or the "lkml community member" hat at
+> times, so its important to make that distinction.  Otherwise, its not
+> clear if this is edict as my superior, or input as my peer. ;)
+>    
+
+When I wear a hat, it is a Red Hat.  However I am bareheaded most often.
+
+(that is, look at the contents of my message, not who wrote it or his role).
+
+>> With virtio, the number is 1 (or less if you amortize).  Set up the ring
+>> entries and kick.
+>>      
+> Again, I am just talking about basic PCI here, not the things we build
+> on top.
+>    
+
+Whatever that means, it isn't interesting.  Performance is measure for 
+the whole stack.
+
+> The point is: the things we build on top have costs associated with
+> them, and I aim to minimize it.  For instance, to do a "call()" kind of
+> interface, you generally need to pre-setup some per-cpu mappings so that
+> you can just do a single iowrite32() to kick the call off.  Those
+> per-cpu mappings have a cost if you want them to be high-performance, so
+> my argument is that you ideally want to limit the number of times you
+> have to do this.  My current design reduces this to "once".
+>    
+
+Do you mean minimizing the setup cost?  Seriously?
+
+>> There's no such thing as raw PCI.  Every PCI device has a protocol.  The
+>> protocol virtio chose is optimized for virtualization.
+>>      
+> And its a question of how that protocol scales, more than how the
+> protocol works.
+>
+> Obviously the general idea of the protocol works, as vbus itself is
+> implemented as a PCI-BRIDGE and is therefore limited to the underlying
+> characteristics that I can get out of PCI (like PIO latency).
+>    
+
+I thought we agreed that was insignificant?
+
+>> As I've mentioned before, prioritization is available on x86
+>>      
+> But as Ive mentioned, it doesn't work very well.
+>    
+
+I guess it isn't that important then.  I note that clever prioritization 
+in a guest is pointless if you can't do the same prioritization in the host.
+
+>> , and coalescing scales badly.
+>>      
+> Depends on what is scaling.  Scaling vcpus?  Yes, you are right.
+> Scaling the number of devices?  No, this is where it improves.
+>    
+
+If you queue pending messages instead of walking the device list, you 
+may be right.  Still, if hard interrupt processing takes 10% of your 
+time you'll only have coalesced 10% of interrupts on average.
+
+>> irq window exits ought to be pretty rare, so we're only left with
+>> injection vmexits.  At around 1us/vmexit, even 100,000 interrupts/vcpu
+>> (which is excessive) will only cost you 10% cpu time.
+>>      
+> 1us is too much for what I am building, IMHO.
+
+You can't use current hardware then.
+
+>> You're free to demultiplex an MSI to however many consumers you want,
+>> there's no need for a new bus for that.
+>>      
+> Hmmm...can you elaborate?
+>    
+
+Point all those MSIs at one vector.  Its handler will have to poll all 
+the attached devices though.
+
+>> Do you use DNS.  We use PCI-SIG.  If Novell is a PCI-SIG member you can
+>> get a vendor ID and control your own virtio space.
+>>      
+> Yeah, we have our own id.  I am more concerned about making this design
+> make sense outside of PCI oriented environments.
+>    
+
+IIRC we reuse the PCI IDs for non-PCI.
 
 
---- linux-2.6.31-rc6.orig/drivers/staging/wlan-ng/prism2fw.c	2009-08-17 15:58:27.000000000 +0100
-+++ linux-2.6.31-rc6/drivers/staging/wlan-ng/prism2fw.c	2009-08-17 20:17:05.000000000 +0100
-@@ -47,84 +47,28 @@
- 
- /*================================================================*/
- /* System Includes */
--#include <linux/sort.h>
--#include <linux/firmware.h>
-+#include <linux/ihex.h>
- 
- /*================================================================*/
- /* Local Constants */
- 
--#define PRISM2_USB_FWFILE	"prism2_ru.hex"
-+#define PRISM2_USB_FWFILE	"prism2_ru.fw"
- 
- #define S3DATA_MAX		5000
- #define S3PLUG_MAX		200
- #define S3CRC_MAX		200
- #define S3INFO_MAX		50
--#define SREC_LINE_MAX		264
--#define S3LEN_TXTOFFSET		2
--#define S3LEN_TXTLEN		2
--#define S3ADDR_TXTOFFSET	4
--#define S3ADDR_TXTLEN		8
--#define S3DATA_TXTOFFSET	12
--/*S3DATA_TXTLEN			variable, depends on len field */
--/*S3CKSUM_TXTOFFSET		variable, depends on len field */
--#define S3CKSUM_TXTLEN		2
--#define SERNUM_LEN_MAX		12
--
--#define S3PLUG_ITEMCODE_TXTOFFSET	(S3DATA_TXTOFFSET)
--#define S3PLUG_ITEMCODE_TXTLEN		8
--#define S3PLUG_ADDR_TXTOFFSET		(S3DATA_TXTOFFSET+8)
--#define S3PLUG_ADDR_TXTLEN		8
--#define S3PLUG_LEN_TXTOFFSET		(S3DATA_TXTOFFSET+16)
--#define S3PLUG_LEN_TXTLEN		8
--
--#define S3CRC_ADDR_TXTOFFSET		(S3DATA_TXTOFFSET)
--#define S3CRC_ADDR_TXTLEN		8
--#define S3CRC_LEN_TXTOFFSET		(S3DATA_TXTOFFSET+8)
--#define S3CRC_LEN_TXTLEN		8
--#define S3CRC_DOWRITE_TXTOFFSET		(S3DATA_TXTOFFSET+16)
--#define S3CRC_DOWRITE_TXTLEN		8
--
--#define S3INFO_LEN_TXTOFFSET		(S3DATA_TXTOFFSET)
--#define S3INFO_LEN_TXTLEN		4
--#define S3INFO_TYPE_TXTOFFSET		(S3DATA_TXTOFFSET+4)
--#define S3INFO_TYPE_TXTLEN		4
--#define S3INFO_DATA_TXTOFFSET		(S3DATA_TXTOFFSET+8)
--/* S3INFO_DATA_TXTLEN			variable, depends on INFO_LEN field */
- 
- #define S3ADDR_PLUG		(0xff000000UL)
- #define S3ADDR_CRC		(0xff100000UL)
- #define S3ADDR_INFO		(0xff200000UL)
--
--#define PDAFILE_LINE_MAX	1024
-+#define S3ADDR_START		(0xff400000UL)
- 
- #define CHUNKS_MAX		100
- 
- #define WRITESIZE_MAX		4096
- 
- /*================================================================*/
--/* Local Macros */
--
--#define bswap_16(x) \
--     (__extension__							      \
--      ({ register unsigned short int __v, __x = (x);			      \
--	   __asm__ ("rorw $8, %w0"					      \
--		    : "=r" (__v)					      \
--		    : "0" (__x)						      \
--		    : "cc");						      \
--	 __v; }))
--
--#define bswap_32(x) \
--     (__extension__							      \
--      ({ register unsigned int __v, __x = (x);				      \
--	   __asm__ ("rorw $8, %w0;"					      \
--		    "rorl $16, %0;"					      \
--		    "rorw $8, %w0"					      \
--		    : "=r" (__v)					      \
--		    : "0" (__x)						      \
--		    : "cc");						      \
--	 __v; }))
--
--/*================================================================*/
- /* Local Types */
- 
- typedef struct s3datarec {
-@@ -214,12 +158,11 @@ hfa384x_caplevel_t priid;
- /*================================================================*/
- /* Local Function Declarations */
- 
--int prism2_fwapply(char *rfptr, int rfsize, wlandevice_t * wlandev);
--int read_srecfile(char *rfptr, int rfsize);
-+int prism2_fwapply(const struct ihex_binrec *rfptr, wlandevice_t *wlandev);
-+int read_fwfile(const struct ihex_binrec *rfptr);
- int mkimage(imgchunk_t *clist, unsigned int *ccnt);
- int read_cardpda(pda_t *pda, wlandevice_t *wlandev);
- int mkpdrlist(pda_t *pda);
--int s3datarec_compare(const void *p1, const void *p2);
- int plugimage(imgchunk_t *fchunk, unsigned int nfchunks,
- 	      s3plugrec_t *s3plug, unsigned int ns3plug, pda_t * pda);
- int crcimage(imgchunk_t *fchunk, unsigned int nfchunks,
-@@ -253,7 +196,7 @@ int prism2_fwtry(struct usb_device *udev
- 
- 	printk(KERN_INFO "prism2_usb: Checking for firmware %s\n",
- 	       PRISM2_USB_FWFILE);
--	if (request_firmware(&fw_entry, PRISM2_USB_FWFILE, &udev->dev) != 0) {
-+	if (request_ihex_firmware(&fw_entry, PRISM2_USB_FWFILE, &udev->dev) != 0) {
- 		printk(KERN_INFO
- 		       "prism2_usb: Firmware not available, but not essential\n");
- 		printk(KERN_INFO
-@@ -263,7 +206,7 @@ int prism2_fwtry(struct usb_device *udev
- 
- 	printk(KERN_INFO "prism2_usb: %s will be processed, size %d\n",
- 	       PRISM2_USB_FWFILE, fw_entry->size);
--	prism2_fwapply((char *)fw_entry->data, fw_entry->size, wlandev);
-+	prism2_fwapply((const struct ihex_binrec *)fw_entry->data, wlandev);
- 
- 	release_firmware(fw_entry);
- 	return 0;
-@@ -276,14 +219,13 @@ int prism2_fwtry(struct usb_device *udev
- *
- * Arguments:
- *	rfptr	firmware image in kernel memory
--*	rfsize	firmware size in kernel memory
- *	wlandev device
- *
- * Returns:
- *	0	- success
- *	~0	- failure
- ----------------------------------------------------------------*/
--int prism2_fwapply(char *rfptr, int rfsize, wlandevice_t *wlandev)
-+int prism2_fwapply(const struct ihex_binrec *rfptr, wlandevice_t *wlandev)
- {
- 	signed int result = 0;
- 	p80211msg_dot11req_mibget_t getmsg;
-@@ -356,13 +298,11 @@ int prism2_fwapply(char *rfptr, int rfsi
- 	priid.top = *data++;
- 
- 	/* Read the S3 file */
--	result = read_srecfile(rfptr, rfsize);
-+	result = read_fwfile(rfptr);
- 	if (result) {
- 		printk(KERN_ERR "Failed to read the data exiting.\n");
- 		return (1);
- 	}
--	/* Sort the S3 data records */
--	sort(s3data, ns3data, sizeof(s3datarec_t), s3datarec_compare, NULL);
- 
- 	result = validate_identity();
- 
-@@ -516,10 +456,6 @@ void free_chunks(imgchunk_t *fchunk, uns
- ----------------------------------------------------------------*/
- void free_srecs(void)
- {
--	int i;
--	for (i = 0; i < ns3data; i++) {
--		kfree(s3data[i].data);
--	}
- 	ns3data = 0;
- 	memset(s3data, 0, sizeof(s3data));
- 	ns3plug = 0;
-@@ -598,10 +534,6 @@ int mkimage(imgchunk_t *clist, unsigned 
- 			return (1);
- 		}
- 		memset(clist[i].data, 0, clist[i].len);
--	}
--
--	/* Display chunks */
--	for (i = 0; i < *ccnt; i++) {
- 		pr_debug("chunk[%d]: addr=0x%06x len=%d\n",
- 			 i, clist[i].addr, clist[i].len);
- 	}
-@@ -856,44 +788,20 @@ int read_cardpda(pda_t *pda, wlandevice_
- }
- 
- /*----------------------------------------------------------------
--* copy_line
--*
--* Copies a line of text, up to \n, \0, or SREC_LINE_MAX, or limit of
--* From array
--*
--* Arguments:
--*	from	From addr
--*	to	To addr
--*	limit	Addr of last character in From array that can be copied
--*
--* Returns:
--*	Num characters copied
------------------------------------------------------------------*/
--int copyline(char *from, char *to, char *limit)
--{
--	int c = 0;
--
--	while ((c < SREC_LINE_MAX - 1) && (from + c <= limit) &&
--	       (from[c] != '\n') && (from[c] != '\0')) {
--		to[c] = from[c];
--		c++;
--	}
--
--	to[c] = '\0';
--	return (c < SREC_LINE_MAX - 1) ? c + 1 : c;
--}
--
--/*----------------------------------------------------------------
--* read_srecfile
-+* read_fwfile
- *
--* Reads the given srecord file and loads the records into the
--* s3xxx arrays.  This function can be called repeatedly (once for
--* each of a set of files), if necessary.  This function performs
--* no validation of the data except for the grossest of S-record
--* line format checks.  Don't forget that these will be DOS files...
--* CR/LF at the end of each line.
-+* Reads the given fw file which should have been compiled from an srec
-+* file. Each record in the fw file will either be a plain data record,
-+* a start address record, or other records used for plugging.
-+* 
-+* Note that data records are expected to be sorted into
-+* ascending address order in the fw file.
-+* 
-+* Note also that the start address record, originally an S7 record in
-+* the srec file, is expected in the fw file to be like a data record but
-+* with a certain address to make it identiable.
- *
--* Here's the SREC format we're dealing with:
-+* Here's the SREC format that the fw should have come from:
- * S[37]nnaaaaaaaaddd...dddcc
- *
- *       nn - number of bytes starting with the address field
-@@ -902,8 +810,9 @@ int copyline(char *from, char *to, char 
- *       cc - checksum
- *
- * The S7 record's (there should be only one) address value gets
--* saved in startaddr.  It's the start execution address used
--* for RAM downloads.
-+* converted to an S3 record with address of 0xff400000, with the
-+* start address being stored as a 4 byte data word. That address is
-+* the start execution address used for RAM downloads. 
- *
- * The S3 records have a collection of subformats indicated by the
- * value of aaaaaaaa:
-@@ -926,238 +835,125 @@ int copyline(char *from, char *to, char 
- *                    s3inforec_t for details about types.
- *                d - (s - 1) little endian words giving the contents of
- *                    the given info type.
-+*   
-+*   0xff400000 - Start address record, data field format:
-+*                aaaaaaaa
-+*                a - Address in load image to plug (little endian)
- *
- * Arguments:
--*	rfptr	firmware image (s-record structure) in kernel memory
--*	rfsize	firmware size in kernel memory
-+*	record	firmware image (ihex record structure) in kernel memory
- *
- * Returns:
- *	0	- success
- *	~0	- failure (probably an errno)
- ----------------------------------------------------------------*/
--int read_srecfile(char *rfptr, int rfsize)
-+int read_fwfile(const struct ihex_binrec *record)
- {
--	int result = 0;
--	char buf[SREC_LINE_MAX];
--	char tmpbuf[30];
--	s3datarec_t tmprec;
--	int i, c;
--	int line = 0;
--	u16 *tmpinfo;
--	char *endptr = rfptr + rfsize;
--
--	pr_debug("Reading S-record file ...\n");
--
--	while ((c = copyline(rfptr, buf, endptr)) >= 12) {
--		rfptr = rfptr + c;
--		line++;
--		if (buf[0] != 'S') {
--			printk(KERN_ERR "%d warning: No initial \'S\'\n", line);
--			return 1;
--		}
--		if (buf[1] == '7') {	/* S7 record, start address */
--			buf[12] = '\0';
--			startaddr = simple_strtoul(buf + 4, NULL, 16);
--			pr_debug("  S7 start addr, line=%d "
--				 " addr=0x%08x\n", line, startaddr);
--			continue;
--		} else if (buf[1] == '3') {
--			/* Ok, it's an S3, parse and put it in the right array */
--			/* Record Length field (we only want datalen) */
--			memcpy(tmpbuf, buf + S3LEN_TXTOFFSET, S3LEN_TXTLEN);
--			tmpbuf[S3LEN_TXTLEN] = '\0';
--			tmprec.len = simple_strtoul(tmpbuf, NULL, 16) - 4 - 1;	/* 4=addr, 1=cksum */
--			/* Address field */
--			memcpy(tmpbuf, buf + S3ADDR_TXTOFFSET, S3ADDR_TXTLEN);
--			tmpbuf[S3ADDR_TXTLEN] = '\0';
--			tmprec.addr = simple_strtoul(tmpbuf, NULL, 16);
--			/* Checksum field */
--			tmprec.checksum =
--			    simple_strtoul(buf + strlen(buf) - 2, NULL, 16);
--
--			switch (tmprec.addr) {
--			case S3ADDR_PLUG:
--				memcpy(tmpbuf, buf + S3PLUG_ITEMCODE_TXTOFFSET,
--				       S3PLUG_ITEMCODE_TXTLEN);
--				tmpbuf[S3PLUG_ITEMCODE_TXTLEN] = '\0';
--				s3plug[ns3plug].itemcode =
--				    simple_strtoul(tmpbuf, NULL, 16);
--				s3plug[ns3plug].itemcode =
--				    bswap_32(s3plug[ns3plug].itemcode);
--
--				memcpy(tmpbuf, buf + S3PLUG_ADDR_TXTOFFSET,
--				       S3PLUG_ADDR_TXTLEN);
--				tmpbuf[S3PLUG_ADDR_TXTLEN] = '\0';
--				s3plug[ns3plug].addr =
--				    simple_strtoul(tmpbuf, NULL, 16);
--				s3plug[ns3plug].addr =
--				    bswap_32(s3plug[ns3plug].addr);
--
--				memcpy(tmpbuf, buf + S3PLUG_LEN_TXTOFFSET,
--				       S3PLUG_LEN_TXTLEN);
--				tmpbuf[S3PLUG_LEN_TXTLEN] = '\0';
--				s3plug[ns3plug].len =
--				    simple_strtoul(tmpbuf, NULL, 16);
--				s3plug[ns3plug].len =
--				    bswap_32(s3plug[ns3plug].len);
--
--				pr_debug("  S3 plugrec, line=%d "
--					 "itemcode=0x%04x addr=0x%08x len=%d\n",
--					 line,
--					 s3plug[ns3plug].itemcode,
--					 s3plug[ns3plug].addr,
--					 s3plug[ns3plug].len);
--
--				ns3plug++;
--				if (ns3plug == S3PLUG_MAX) {
--					printk(KERN_ERR
--					       "S3 plugrec limit reached - aborting\n");
--					return 1;
--				}
--				break;
--			case S3ADDR_CRC:
--				memcpy(tmpbuf, buf + S3CRC_ADDR_TXTOFFSET,
--				       S3CRC_ADDR_TXTLEN);
--				tmpbuf[S3CRC_ADDR_TXTLEN] = '\0';
--				s3crc[ns3crc].addr =
--				    simple_strtoul(tmpbuf, NULL, 16);
--				s3crc[ns3crc].addr =
--				    bswap_32(s3crc[ns3crc].addr);
--
--				memcpy(tmpbuf, buf + S3CRC_LEN_TXTOFFSET,
--				       S3CRC_LEN_TXTLEN);
--				tmpbuf[S3CRC_LEN_TXTLEN] = '\0';
--				s3crc[ns3crc].len =
--				    simple_strtoul(tmpbuf, NULL, 16);
--				s3crc[ns3crc].len = bswap_32(s3crc[ns3crc].len);
--
--				memcpy(tmpbuf, buf + S3CRC_DOWRITE_TXTOFFSET,
--				       S3CRC_DOWRITE_TXTLEN);
--				tmpbuf[S3CRC_DOWRITE_TXTLEN] = '\0';
--				s3crc[ns3crc].dowrite =
--				    simple_strtoul(tmpbuf, NULL, 16);
--				s3crc[ns3crc].dowrite =
--				    bswap_32(s3crc[ns3crc].dowrite);
--
--				pr_debug("  S3 crcrec, line=%d "
--					 "addr=0x%08x len=%d write=0x%08x\n",
--					 line,
--					 s3crc[ns3crc].addr,
--					 s3crc[ns3crc].len,
--					 s3crc[ns3crc].dowrite);
--				ns3crc++;
--				if (ns3crc == S3CRC_MAX) {
--					printk(KERN_ERR
--					       "S3 crcrec limit reached - aborting\n");
--					return 1;
--				}
--				break;
--			case S3ADDR_INFO:
--				memcpy(tmpbuf, buf + S3INFO_LEN_TXTOFFSET,
--				       S3INFO_LEN_TXTLEN);
--				tmpbuf[S3INFO_LEN_TXTLEN] = '\0';
--				s3info[ns3info].len =
--				    simple_strtoul(tmpbuf, NULL, 16);
--				s3info[ns3info].len =
--				    bswap_16(s3info[ns3info].len);
--
--				memcpy(tmpbuf, buf + S3INFO_TYPE_TXTOFFSET,
--				       S3INFO_TYPE_TXTLEN);
--				tmpbuf[S3INFO_TYPE_TXTLEN] = '\0';
--				s3info[ns3info].type =
--				    simple_strtoul(tmpbuf, NULL, 16);
--				s3info[ns3info].type =
--				    bswap_16(s3info[ns3info].type);
--
--				pr_debug("  S3 inforec, line=%d "
--					 "len=0x%04x type=0x%04x\n",
--					 line,
--					 s3info[ns3info].len,
--					 s3info[ns3info].type);
--				if (((s3info[ns3info].len - 1) * sizeof(u16)) >
--				    sizeof(s3info[ns3info].info)) {
--					printk(KERN_ERR
--					       " S3 inforec length too long - aborting\n");
--					return 1;
--				}
-+	int		i;
-+	int		rcnt = 0;
-+	u16		*tmpinfo;
-+	u16		*ptr16;
-+	u32		*ptr32, len, addr;
-+
-+	pr_debug("Reading fw file ...\n");
-+
-+	while (record) {
-+
-+		rcnt++;
-+
-+		len = be16_to_cpu(record->len);
-+		addr = be32_to_cpu(record->addr);
-+
-+		/* Point into data for different word lengths */
-+		ptr32 = (u32 *) record->data;
-+		ptr16 = (u16 *) record->data;
-+
-+		/* parse what was an S3 srec and put it in the right array */
-+		switch(addr) {
-+		case S3ADDR_START:
-+			startaddr = *ptr32;
-+			pr_debug("  S7 start addr, record=%d "
-+				      " addr=0x%08x\n", 
-+				      rcnt, 
-+				      startaddr);
-+			break;
-+		case S3ADDR_PLUG:
-+			s3plug[ns3plug].itemcode = *ptr32;
-+			s3plug[ns3plug].addr = *(ptr32 + 1);
-+			s3plug[ns3plug].len = *(ptr32 + 2);
-+
-+			pr_debug("  S3 plugrec, record=%d "
-+				      "itemcode=0x%08x addr=0x%08x len=%d\n",
-+				      rcnt,
-+				      s3plug[ns3plug].itemcode,
-+				      s3plug[ns3plug].addr,
-+				      s3plug[ns3plug].len);
-+
-+			ns3plug++;
-+			if ( ns3plug == S3PLUG_MAX ) {
-+				printk(KERN_ERR "S3 plugrec limit reached - aborting\n");
-+				return 1;
-+			}
-+			break;
-+		case S3ADDR_CRC:
-+			s3crc[ns3crc].addr = *ptr32;
-+			s3crc[ns3crc].len = *(ptr32 + 1);
-+			s3crc[ns3crc].dowrite = *(ptr32 + 2);
-+
-+			pr_debug("  S3 crcrec, record=%d "
-+				      "addr=0x%08x len=%d write=0x%08x\n",
-+				      rcnt,
-+				      s3crc[ns3crc].addr,
-+				      s3crc[ns3crc].len,
-+				      s3crc[ns3crc].dowrite);
-+			ns3crc++;
-+			if ( ns3crc == S3CRC_MAX ) {
-+				printk(KERN_ERR "S3 crcrec limit reached - aborting\n");
-+				return 1;
-+			}
-+			break;
-+		case S3ADDR_INFO:
-+			s3info[ns3info].len = *ptr16;
-+			s3info[ns3info].type = *(ptr16 + 1);
-+			    
-+			pr_debug("  S3 inforec, record=%d "
-+			      "len=0x%04x type=0x%04x\n", 
-+				      rcnt,
-+				      s3info[ns3info].len,
-+				      s3info[ns3info].type);
-+			if ( ((s3info[ns3info].len - 1) * sizeof(u16)) > sizeof(s3info[ns3info].info) ) {
-+				printk(KERN_ERR " S3 inforec length too long - aborting\n");
-+				return 1;
-+			}
- 
--				tmpinfo =
--				    (u16 *) & (s3info[ns3info].info.version);
--				for (i = 0; i < s3info[ns3info].len - 1; i++) {
--					memcpy(tmpbuf,
--					       buf + S3INFO_DATA_TXTOFFSET +
--					       (i * 4), 4);
--					tmpbuf[4] = '\0';
--					tmpinfo[i] =
--					    simple_strtoul(tmpbuf, NULL, 16);
--					tmpinfo[i] = bswap_16(tmpinfo[i]);
--				}
--				pr_debug("            info=");
--				for (i = 0; i < s3info[ns3info].len - 1; i++) {
--					pr_debug("%04x ", tmpinfo[i]);
--				}
--				pr_debug("\n");
-+			tmpinfo = (u16*)&(s3info[ns3info].info.version);
-+			pr_debug("            info=");
-+			for (i = 0; i < s3info[ns3info].len - 1; i++) {
-+				tmpinfo[i] = *(ptr16 + 2 + i);
-+				pr_debug("%04x ", tmpinfo[i]);
-+			}
-+			pr_debug("\n");
- 
--				ns3info++;
--				if (ns3info == S3INFO_MAX) {
--					printk(KERN_ERR
--					       "S3 inforec limit reached - aborting\n");
--					return 1;
--				}
--				break;
--			default:	/* Data record */
--				s3data[ns3data].addr = tmprec.addr;
--				s3data[ns3data].len = tmprec.len;
--				s3data[ns3data].checksum = tmprec.checksum;
--				s3data[ns3data].data =
--				    kmalloc(tmprec.len, GFP_KERNEL);
--				for (i = 0; i < tmprec.len; i++) {
--					memcpy(tmpbuf,
--					       buf + S3DATA_TXTOFFSET + (i * 2),
--					       2);
--					tmpbuf[2] = '\0';
--					s3data[ns3data].data[i] =
--					    simple_strtoul(tmpbuf, NULL, 16);
--				}
--				ns3data++;
--				if (ns3data == S3DATA_MAX) {
--					printk(KERN_ERR
--					       "S3 datarec limit reached - aborting\n");
--					return 1;
--				}
--				break;
-+			ns3info++;
-+			if ( ns3info == S3INFO_MAX ) {
-+				printk(KERN_ERR "S3 inforec limit reached - aborting\n");
-+				return 1;
- 			}
--		} else {
--			printk(KERN_WARNING
--			       "%d warning: Unknown S-record detected.\n",
--			       line);
-+			break;
-+		default:	/* Data record */
-+			s3data[ns3data].addr = addr;
-+			s3data[ns3data].len = len;
-+			s3data[ns3data].data = (uint8_t *) record->data;
-+			ns3data++;
-+			if ( ns3data == S3DATA_MAX ) {
-+				printk(KERN_ERR "S3 datarec limit reached - aborting\n");
-+				return 1;
-+			}
-+			break;
- 		}
-+		record = ihex_next_binrec(record);
- 	}
--	return result;
--}
--
--/*----------------------------------------------------------------
--* s3datarec_compare
--*
--* Comparison function for sort().
--*
--* Arguments:
--*	p1	ptr to the first item
--*	p2	ptr to the second item
--* Returns:
--*	0	items are equal
--*	<0	p1 < p2
--*	>0	p1 > p2
------------------------------------------------------------------*/
--int s3datarec_compare(const void *p1, const void *p2)
--{
--	const s3datarec_t *s1 = p1;
--	const s3datarec_t *s2 = p2;
--	if (s1->addr == s2->addr)
--		return 0;
--	if (s1->addr < s2->addr)
--		return -1;
--	return 1;
-+	return 0;
- }
- 
- /*----------------------------------------------------------------
-@@ -1316,6 +1112,7 @@ int validate_identity(void)
- {
- 	int i;
- 	int result = 1;
-+	int trump = 0;
- 
- 	pr_debug("NIC ID: %#x v%d.%d.%d\n",
- 		 nicid.id, nicid.major, nicid.minor, nicid.variant);
-@@ -1389,8 +1186,7 @@ int validate_identity(void)
- 			    (nicid.id != 0x8008))
- 				continue;
- 
--			if (result != 2)
--				result = 0;
-+			trump = 1;
- 			break;
- 		case 0x8001:
- 			pr_debug("name inforec len %d\n", s3info[i].len);
-@@ -1402,5 +1198,6 @@ int validate_identity(void)
- 	}
- 	// walk through
- 
-+	if (trump && (result != 2)) result = 0;
- 	return result;
- }
 
+
+>>>> That's a bug, not a feature.  It means poor scaling as the number of
+>>>> vcpus increases and as the number of devices increases.
+>>>>          
+> vcpu increases, I agree (and am ok with, as I expect low vcpu count
+> machines to be typical).
+
+I'm not okay with it.  If you wish people to adopt vbus over virtio 
+you'll have to address all concerns, not just yours.
+
+> nr of devices, I disagree.  can you elaborate?
+>    
+
+With message queueing, I retract my remark.
+
+>> Windows,
+>>      
+> Work in progress.
+>    
+
+Interesting.  Do you plan to open source the code?  If not, will the 
+binaries be freely available?
+
+>    
+>> large guests
+>>      
+> Can you elaborate?  I am not familiar with the term.
+>    
+
+Many vcpus.
+
+>    
+>> and multiqueue out of your design.
+>>      
+> AFAICT, multiqueue should work quite nicely with vbus.  Can you
+> elaborate on where you see the problem?
+>    
+
+You said you aren't interested in it previously IIRC.
+
+>>>> x86 APIC is priority aware.
+>>>>
+>>>>          
+>>> Have you ever tried to use it?
+>>>
+>>>        
+>> I haven't, but Windows does.
+>>      
+> Yeah, it doesn't really work well.  Its an extremely rigid model that
+> (IIRC) only lets you prioritize in 16 groups spaced by IDT (0-15 are one
+> level, 16-31 are another, etc).  Most of the embedded PICs I have worked
+> with supported direct remapping, etc.  But in any case, Linux doesn't
+> support it so we are hosed no matter how good it is.
+>    
+
+I agree that it isn't very clever (not that I am a real time expert) but 
+I disagree about dismissing Linux support so easily.  If prioritization 
+is such a win it should be a win on the host as well and we should make 
+it work on the host as well.  Further I don't see how priorities on the 
+guest can work if they don't on the host.
+
+>>>
+>>>        
+>> They had to build connectors just like you propose to do.
+>>      
+> More importantly, they had to build back-end busses too, no?
+>    
+
+They had to write 414 lines in drivers/s390/kvm/kvm_virtio.c and 
+something similar for lguest.
+
+>> But you still need vbus-connector-lguest and vbus-connector-s390 because
+>> they all talk to the host differently.  So what's changed?  the names?
+>>      
+> The fact that they don't need to redo most of the in-kernel backend
+> stuff.  Just the connector.
+>    
+
+So they save 414 lines but have to write a connector which is... how large?
+
+>> Well, venet doesn't complement virtio-net, and virtio-pci doesn't
+>> complement vbus-connector.
+>>      
+> Agreed, but virtio complements vbus by virtue of virtio-vbus.
+>    
+
+I don't see what vbus adds to virtio-net.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
