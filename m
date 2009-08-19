@@ -1,164 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751347AbZHSBlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751434AbZHSBoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751347AbZHSBlx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 21:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbZHSBlw
+	id S1751434AbZHSBoO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 21:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbZHSBoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 21:41:52 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:49983 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbZHSBlw (ORCPT
+	Tue, 18 Aug 2009 21:44:13 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:41139 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbZHSBoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 21:41:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=DEDs3YMFEC0inVsiY63VglBnFA3ct/bvec241G+SmfjzpWMp+ljpRMnCFlPNm2JH6K
-         hl08zqXHO+icWEzzRou37+c/6VYhK1dL9/9i5hIfjXoxnSMxRrQBDzJIHyWwVUH8/O5i
-         vG5+4oZ/B3GGPax3086198WutbFhQ685rvqRw=
-MIME-Version: 1.0
-Date: Wed, 19 Aug 2009 10:41:51 +0900
-Message-ID: <18eba5a10908181841t145e4db1wc2daf90f7337aa6e@mail.gmail.com>
-Subject: abnormal OOM killer message
-From: =?UTF-8?B?7Jqw7Lap6riw?= <chungki.woo@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: fengguang.wu@intel.com, riel@redhat.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com
-Content-Type: text/plain; charset=UTF-8
+	Tue, 18 Aug 2009 21:44:12 -0400
+Date: Wed, 19 Aug 2009 10:43:11 +0900 (JST)
+Message-Id: <20090819.104311.71088788.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
+       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
+       jmarchan@redhat.com
+Subject: Re: [PATCH 18/24] blkio_cgroup patches from Ryo to track async
+ bios.
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090818142636.GA7367@redhat.com>
+References: <1250451046-9966-19-git-send-email-vgoyal@redhat.com>
+	<20090818.204212.59676649.ryov@valinux.co.jp>
+	<20090818142636.GA7367@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all~
-I have got a log message with OOM below. I don't know why this
-phenomenon was happened.
-When direct reclaim routine(try_to_free_pages) in __alloc_pages which
-allocates kernel memory was failed,
-one last chance is given to allocate memory before OOM routine is executed.
-And that time, allocator uses ALLOC_WMARK_HIGH to limit watermark.
-Then, zone_watermark_ok function test this value with current memory
-state and decide 'can allocate' or 'cannot allocate'.
+Hi Vivek,
 
-Here is some kernel source code in __alloc_pages function to understand easily.
-Kernel version is 2.6.18 for arm11. Memory size is 32Mbyte. And I use
-compcache(0.5.2).
--------------------------------------------------------------------------------------------------------------------------------------------------------------
-        ...
-        did_some_progress = try_to_free_pages(zonelist->zones,
-gfp_mask);            <== direct page reclaim
+Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Tue, Aug 18, 2009 at 08:42:12PM +0900, Ryo Tsuruta wrote:
+> > Hi Vivek,
+> > 
+> > Vivek Goyal <vgoyal@redhat.com> wrote:
+> > > o blkio_cgroup patches from Ryo to track async bios.
+> > > 
+> > > o Fernando is also working on another IO tracking mechanism. We are not
+> > >   particular about any IO tracking mechanism. This patchset can make use
+> > >   of any mechanism which makes it to upstream. For the time being making
+> > >   use of Ryo's posting.
+> > 
+> > The patch attached with your mail is obsolete and it may potentially
+> > cause a deadlock when lock_page_cgroup() is called under radix_tree->lock.
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e767e0561d7fd2333df1921f1ab4176211f9036b
+> > 
+> > The latest blkio-cgroup fixes the above issue and reduces IO tracking
+> > overhead since lock_page_cgroup() is no longer used. I would recommend
+> > to update to the latest version.
+> > 
+> 
+> Hi Ryo,
+> 
+> Thanks. In next posting I will move to latest version of io tracking
+> patches.
+> 
+> > And I have a suggestion, how about moving get_cgroup_from_page() to
+> > biotrack.c, I think this function would be useful for people who
+> > want to make use of the IO tracking mechanism.
+> > 
+> > Please let me know your opinion.
+> 
+> Makes sense. In next posting, will move get_cgroup_from_page() to biotrack.c.
 
-        p->reclaim_state = NULL;
-        p->flags &= ~PF_MEMALLOC;
+Thank you for your reply. I'll post the new blkio-cgroup reflected in
+this change by the end of this week. Please use it if you would like to.
 
-        cond_resched();
-
-        if (likely(did_some_progress)) {
-                page = get_page_from_freelist(gfp_mask, order,
-                                                zonelist, alloc_flags);
-                if (page)
-                        goto got_pg;
-        } else if ((gfp_mask & __GFP_FS) && !(gfp_mask &
-__GFP_NORETRY)) {    <== when fail to reclaim
-                /*
-                 * Go through the zonelist yet one more time, keep
-                 * very high watermark here, this is only to catch
-                 * a parallel oom killing, we must fail if we're still
-                 * under heavy pressure.
-                 */
-                page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL,
-order,  <== this is last chance
-                                zonelist,
-ALLOC_WMARK_HIGH|ALLOC_CPUSET);               <== uses
-ALLOC_WMARK_HIGH
-                if (page)
-                        goto got_pg;
-
-                out_of_memory(zonelist, gfp_mask, order);
-                goto restart;
-        }
-        ...
--------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-In my case, you can see free pages(6804KB) is much more higher than
-high watermark value(1084KB) in OOM message.
-And order of allocating is also zero.(order=0)
-In buddy system, the number of 4kbyte page is 867.
-So, I think OOM can't be happend.
-
-How do you think about this?
-Is this side effect of compcache?
-Please explain me.
-Thanks.
-
-This is OOM message.
--------------------------------------------------------------------------------------------------------------------------------------------------------------
-oom-killer: gfp_mask=0x201d2, order=0       (==> __GFP_HIGHMEM,
-__GFP_WAIT, __GFP_IO, __GFP_FS, __GFP_COLD)
-[<c00246c0>] (dump_stack+0x0/0x14) from [<c006ba68>] (out_of_memory+0x38/0x1d0)
-[<c006ba30>] (out_of_memory+0x0/0x1d0) from [<c006d4cc>]
-(__alloc_pages+0x244/0x2c4)
-[<c006d288>] (__alloc_pages+0x0/0x2c4) from [<c006f054>]
-(__do_page_cache_readahead+0x12c/0x2d4)
-[<c006ef28>] (__do_page_cache_readahead+0x0/0x2d4) from [<c006f594>]
-(do_page_cache_readahead+0x60/0x64)
-[<c006f534>] (do_page_cache_readahead+0x0/0x64) from [<c006ac24>]
-(filemap_nopage+0x1b4/0x438)
- r7 = C0D8C320  r6 = C1422000  r5 = 00000001  r4 = 00000000
-[<c006aa70>] (filemap_nopage+0x0/0x438) from [<c0075684>]
-(__handle_mm_fault+0x398/0xb84)
-[<c00752ec>] (__handle_mm_fault+0x0/0xb84) from [<c0027614>]
-(do_page_fault+0xe8/0x224)
-[<c002752c>] (do_page_fault+0x0/0x224) from [<c0027900>]
-(do_DataAbort+0x3c/0xa0)
-[<c00278c4>] (do_DataAbort+0x0/0xa0) from [<c001fde0>]
-(ret_from_exception+0x0/0x10)
- r8 = BE9894B8  r7 = 00000078  r6 = 00000130  r5 = 00000000
- r4 = FFFFFFFF
-Mem-info:
-DMA per-cpu:
-cpu 0 hot: high 6, batch 1 used:0
-cpu 0 cold: high 2, batch 1 used:1
-DMA32 per-cpu: empty
-Normal per-cpu: empty
-HighMem per-cpu: empty
-Free pages:        6804kB (0kB HighMem)
-Active:101 inactive:1527 dirty:0 writeback:0 unstable:0 free:1701
-slab:936 mapped:972 pagetables:379
-DMA free:6804kB min:724kB low:904kB high:1084kB active:404kB
-inactive:6108kB present:32768kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA32 free:0kB min:0kB low:0kB high:0kB active:0kB inactive:0kB
-present:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-Normal free:0kB min:0kB low:0kB high:0kB active:0kB inactive:0kB
-present:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-HighMem free:0kB min:128kB low:128kB high:128kB active:0kB
-inactive:0kB present:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 867*4kB 273*8kB 36*16kB 2*32kB 0*64kB 0*128kB 0*256kB 1*512kB
-0*1024kB 0*2048kB 0*4096kB = 6804kB
-DMA32: empty
-Normal: empty
-HighMem: empty
-Swap cache: add 4597, delete 4488, find 159/299, race 0+0
-Free swap  = 67480kB
-Total swap = 81916kB
-Free swap:        67480kB
-8192 pages of RAM
-1960 free pages
-978 reserved pages
-936 slab pages
-1201 pages shared
-109 pages swap cached
-Out of Memory: Kill process 47 (rc.local) score 849737 and children.
-Out of memory: Killed process 49 (CTaskManager).
-Killed
-SW image is stopped..
-script in BOOT is stopped...
-Starting pid 348, console /dev/ttyS1: '/bin/sh'
--sh: id: not found
-#
--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Thanks,
+Ryo Tsuruta
