@@ -1,77 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbZHSDhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751392AbZHSDoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751596AbZHSDhP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 23:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbZHSDhO
+	id S1751392AbZHSDoc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 23:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbZHSDob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 23:37:14 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56498 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbZHSDhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 23:37:13 -0400
-Message-ID: <4A8B7336.7010800@cn.fujitsu.com>
-Date: Wed, 19 Aug 2009 11:36:22 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Tue, 18 Aug 2009 23:44:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:7545 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbZHSDob (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 23:44:31 -0400
+Message-ID: <4A8B7508.4040001@vflare.org>
+Date: Wed, 19 Aug 2009 09:14:08 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com
-Subject: Re: [PATCH 03/24] io-controller: Common flat fair queuing code in
- elevaotor layer
-References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com> <1250451046-9966-4-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1250451046-9966-4-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Minchan Kim <minchan.kim@gmail.com>
+CC: =?UTF-8?B?7Jqw7Lap6riw?= <chungki.woo@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com, riel@redhat.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: abnormal OOM killer message
+References: <18eba5a10908181841t145e4db1wc2daf90f7337aa6e@mail.gmail.com> <20090819114408.ab9c8a78.minchan.kim@barrios-desktop>
+In-Reply-To: <20090819114408.ab9c8a78.minchan.kim@barrios-desktop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
+On 08/19/2009 08:14 AM, Minchan Kim wrote:
+> On Wed, 19 Aug 2009 10:41:51 +0900
+> 우충기<chungki.woo@gmail.com>  wrote:
+>
+>> Hi all~
+>> I have got a log message with OOM below. I don't know why this
+>> phenomenon was happened.
+>> When direct reclaim routine(try_to_free_pages) in __alloc_pages which
+>> allocates kernel memory was failed,
+>> one last chance is given to allocate memory before OOM routine is executed.
+>> And that time, allocator uses ALLOC_WMARK_HIGH to limit watermark.
+>> Then, zone_watermark_ok function test this value with current memory
+>> state and decide 'can allocate' or 'cannot allocate'.
+>>
+>> Here is some kernel source code in __alloc_pages function to understand easily.
+>> Kernel version is 2.6.18 for arm11. Memory size is 32Mbyte. And I use
+>> compcache(0.5.2).
 
-> +
-> +static void elv_preempt_queue(struct request_queue *q, struct io_queue *ioq)
-> +{
-> +	elv_log_ioq(q->elevator->efqd, ioq, "preempt");
-> +	elv_slice_expired(q);
-> +
-> +	/*
-> +	 * Put the new queue at the front of the of the current list,
-> +	 * so we know that it will be selected next.
-> +	 */
-> +
-> +	requeue_ioq(ioq);
-> +	ioq->slice_start = ioq->slice_end = 0;
+<snip>
 
-I think this assignment is redundant because these two members will be reset
-when this ioq is scheduled.
+>>
+>> In my case, you can see free pages(6804KB) is much more higher than
+>> high watermark value(1084KB) in OOM message.
+>> And order of allocating is also zero.(order=0)
+>> In buddy system, the number of 4kbyte page is 867.
+>> So, I think OOM can't be happend.
+>>
+>
+> Yes. I think so.
+>
+> In that case, even we can also avoid zone defensive algorithm.
+>
+>> How do you think about this?
+>> Is this side effect of compcache?
+>
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+compcache can be storing lot of stale data and this memory space cannot be
+reclaimed (unless overwritten by some other swap data). This is because
+compcache does not know when a swap slot has been freed and hence does not know 
+when its safe to free corresponding memory. You can check current memory usage 
+with /proc/ramzswap (see MemUsedTotal).
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index d04e925..b3c387d 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -2650,7 +2650,6 @@ static void elv_preempt_queue(struct request_queue *q, struct io_queue *ioq)
- 		 */
- 
- 		requeue_ioq(ioq);
--		ioq->slice_start = ioq->slice_end = 0;
- 		elv_mark_ioq_slice_new(ioq);
- 	}
- }
--- 
-1.5.4.rc3
+BTW, with compcache-0.6 there is an experimental kernel patch that gets rid of 
+all this stale data:
+http://patchwork.kernel.org/patch/41083/
 
+However, this compcache version needs at least kernel 2.6.28. This version also 
+fixes all known problems on ARM. compcache-0.5.3 or earlier is known to crash on 
+ARM (see: http://code.google.com/p/compcache/issues/detail?id=33).
 
-
+Thanks,
+Nitin
