@@ -1,81 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbZHSNbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZHSNbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752226AbZHSNbk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZHSNbj
+	id S1752525AbZHSNbp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZHSNbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:31:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43562 "EHLO hera.kernel.org"
+	Wed, 19 Aug 2009 09:31:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43565 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751836AbZHSNbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:31:38 -0400
-Date: Wed, 19 Aug 2009 13:30:54 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+	id S1752052AbZHSNbk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:31:40 -0400
+Date: Wed, 19 Aug 2009 13:31:09 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090819092023.812428023@chello.nl>
-References: <20090819092023.812428023@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: powerpc: Support the anonimized kernel callchain bits
-Message-ID: <tip-512cec5d6f2a71e04464bf4fd76a50571bd0dea1@git.kernel.org>
-Git-Commit-ID: 512cec5d6f2a71e04464bf4fd76a50571bd0dea1
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       lizf@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, jbaron@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, jbaron@redhat.com, mingo@elte.hu
+In-Reply-To: <4A8BAF39.1030404@cn.fujitsu.com>
+References: <4A8BAF39.1030404@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing/syscalls: Fix fields format for enter events
+Message-ID: <tip-e6971969c331caa5c3c88cbd1be4f465b3355452@git.kernel.org>
+Git-Commit-ID: e6971969c331caa5c3c88cbd1be4f465b3355452
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 19 Aug 2009 13:31:08 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 19 Aug 2009 13:31:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  512cec5d6f2a71e04464bf4fd76a50571bd0dea1
-Gitweb:     http://git.kernel.org/tip/512cec5d6f2a71e04464bf4fd76a50571bd0dea1
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Wed, 19 Aug 2009 11:18:25 +0200
+Commit-ID:  e6971969c331caa5c3c88cbd1be4f465b3355452
+Gitweb:     http://git.kernel.org/tip/e6971969c331caa5c3c88cbd1be4f465b3355452
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Wed, 19 Aug 2009 15:52:25 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 19 Aug 2009 14:49:03 +0200
+CommitDate: Wed, 19 Aug 2009 15:02:22 +0200
 
-perf_counter: powerpc: Support the anonimized kernel callchain bits
+tracing/syscalls: Fix fields format for enter events
 
-Adds support for anonimized kernel callchains to the powerpc
-callchain code.
+The "format" file of a trace event is originally for parsers to
+parse ftrace binary output.
 
-This patch is not folded into the patch that introduces this
-feature because the powerpc callchain code isn't upstream yet,
-and this allows re-ordering the patches.
+But the "format" file of a syscall event can only be used by
+perfcounter, because it describes the format of struct
+syscall_enter_record not struct syscall_trace_enter.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+To fix this, we remove struct syscall_enter_record, and then
+struct syscall_trace_enter will be used by both perf profile
+and ftrace.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <20090819092023.812428023@chello.nl>
+LKML-Reference: <4A8BAF39.1030404@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/powerpc/kernel/perf_callchain.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ kernel/trace/trace_syscalls.c |   51 ++++++++++++++++++++++------------------
+ 1 files changed, 28 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/kernel/perf_callchain.c b/arch/powerpc/kernel/perf_callchain.c
-index f74b62c..21fb1ad 100644
---- a/arch/powerpc/kernel/perf_callchain.c
-+++ b/arch/powerpc/kernel/perf_callchain.c
-@@ -70,6 +70,11 @@ static void perf_callchain_kernel(struct pt_regs *regs,
- 	lr = regs->link;
- 	sp = regs->gpr[1];
- 	callchain_store(entry, PERF_CONTEXT_KERNEL);
-+	next_ip = perf_paranoid_anon_ip();
-+	if (next_ip) {
-+		callchain_store(entry, next_ip);
-+		return;
-+	}
- 	callchain_store(entry, regs->nip);
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index f130dac..d10daf0 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -90,26 +90,39 @@ print_syscall_exit(struct trace_iterator *iter, int flags)
+ 	return TRACE_TYPE_HANDLED;
+ }
  
- 	if (!validate_sp(sp, current, STACK_FRAME_OVERHEAD))
++extern char *__bad_type_size(void);
++
++#define SYSCALL_FIELD(type, name)					\
++	sizeof(type) != sizeof(trace.name) ?				\
++		__bad_type_size() :					\
++		#type, #name, offsetof(typeof(trace), name), sizeof(trace.name)
++
+ int ftrace_format_syscall(struct ftrace_event_call *call, struct trace_seq *s)
+ {
+ 	int i;
+ 	int nr;
+-	int ret = 0;
++	int ret;
+ 	struct syscall_metadata *entry;
+-	int offset = sizeof(struct trace_entry);
++	struct syscall_trace_enter trace;
++	int offset = offsetof(struct syscall_trace_enter, args);
+ 
+-	nr = syscall_name_to_nr((char *)call->data);
++	nr = syscall_name_to_nr(call->data);
+ 	entry = syscall_nr_to_meta(nr);
+ 
+ 	if (!entry)
+-		return ret;
++		return 0;
++
++	ret = trace_seq_printf(s, "\tfield:%s %s;\toffset:%zu;\tsize:%zu;\n",
++			       SYSCALL_FIELD(int, nr));
++	if (!ret)
++		return 0;
+ 
+ 	for (i = 0; i < entry->nb_args; i++) {
+ 		ret = trace_seq_printf(s, "\tfield:%s %s;", entry->types[i],
+ 				        entry->args[i]);
+ 		if (!ret)
+ 			return 0;
+-		ret = trace_seq_printf(s, "\toffset:%d;\tsize:%lu;\n", offset,
++		ret = trace_seq_printf(s, "\toffset:%d;\tsize:%zu;\n", offset,
+ 				       sizeof(unsigned long));
+ 		if (!ret)
+ 			return 0;
+@@ -118,7 +131,7 @@ int ftrace_format_syscall(struct ftrace_event_call *call, struct trace_seq *s)
+ 
+ 	trace_seq_printf(s, "\nprint fmt: \"");
+ 	for (i = 0; i < entry->nb_args; i++) {
+-		ret = trace_seq_printf(s, "%s: 0x%%0%lulx%s", entry->args[i],
++		ret = trace_seq_printf(s, "%s: 0x%%0%zulx%s", entry->args[i],
+ 				        sizeof(unsigned long),
+ 					i == entry->nb_args - 1 ? "\", " : ", ");
+ 		if (!ret)
+@@ -287,16 +300,6 @@ struct trace_event event_syscall_exit = {
+ 
+ #ifdef CONFIG_EVENT_PROFILE
+ 
+-struct syscall_enter_record {
+-	struct trace_entry	entry;
+-	unsigned long		args[0];
+-};
+-
+-struct syscall_exit_record {
+-	struct trace_entry	entry;
+-	unsigned long		ret;
+-};
+-
+ static DECLARE_BITMAP(enabled_prof_enter_syscalls, FTRACE_SYSCALL_MAX);
+ static DECLARE_BITMAP(enabled_prof_exit_syscalls, FTRACE_SYSCALL_MAX);
+ static int sys_prof_refcount_enter;
+@@ -304,7 +307,7 @@ static int sys_prof_refcount_exit;
+ 
+ static void prof_syscall_enter(struct pt_regs *regs, long id)
+ {
+-	struct syscall_enter_record *rec;
++	struct syscall_trace_enter *rec;
+ 	struct syscall_metadata *sys_data;
+ 	int syscall_nr;
+ 	int size;
+@@ -328,9 +331,10 @@ static void prof_syscall_enter(struct pt_regs *regs, long id)
+ 		/* zero the dead bytes from align to not leak stack to user */
+ 		*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
+ 
+-		rec = (struct syscall_enter_record *) raw_data;
+-		tracing_generic_entry_update(&rec->entry, 0, 0);
+-		rec->entry.type = sys_data->enter_id;
++		rec = (struct syscall_trace_enter *) raw_data;
++		tracing_generic_entry_update(&rec->ent, 0, 0);
++		rec->ent.type = sys_data->enter_id;
++		rec->nr = syscall_nr;
+ 		syscall_get_arguments(current, regs, 0, sys_data->nb_args,
+ 				       (unsigned long *)&rec->args);
+ 		perf_tpcounter_event(sys_data->enter_id, 0, 1, rec, size);
+@@ -379,7 +383,7 @@ void unreg_prof_syscall_enter(char *name)
+ static void prof_syscall_exit(struct pt_regs *regs, long ret)
+ {
+ 	struct syscall_metadata *sys_data;
+-	struct syscall_exit_record rec;
++	struct syscall_trace_exit rec;
+ 	int syscall_nr;
+ 
+ 	syscall_nr = syscall_get_nr(current, regs);
+@@ -390,8 +394,9 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
+ 	if (!sys_data)
+ 		return;
+ 
+-	tracing_generic_entry_update(&rec.entry, 0, 0);
+-	rec.entry.type = sys_data->exit_id;
++	tracing_generic_entry_update(&rec.ent, 0, 0);
++	rec.ent.type = sys_data->exit_id;
++	rec.nr = syscall_nr;
+ 	rec.ret = syscall_get_return_value(current, regs);
+ 
+ 	perf_tpcounter_event(sys_data->exit_id, 0, 1, &rec, sizeof(rec));
