@@ -1,86 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZHSQ1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbZHSQ3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbZHSQ1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZHSQ1Q
+	id S1753148AbZHSQ3F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZHSQ3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:27:16 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:36121 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbZHSQ1P (ORCPT
+	Wed, 19 Aug 2009 12:29:04 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:36475 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752532AbZHSQ3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:27:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DgXCRvPyMwxJnhdmzGVbIP0CAYt18muIavhfAM82onZ5TdbyOhzjeEqmbWG4kqdD4C
-         UwVhNsfL9EwlXuRP5S/ewYkXgQVzZr6LaIFMDuXcPdOTZusPLvjWKBbXdefy2DY4W0jX
-         8ubccCwV9Zaiy943HykudFp/udialAVNCxnks=
-Date: Wed, 19 Aug 2009 18:27:13 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       stephane eranian <eranian@googlemail.com>
-Subject: Re: [PATCH 4/4][RFC] perf_counter: Allow sharing of output channels
-Message-ID: <20090819162711.GE4972@nowhere>
-References: <20090819091823.916851355@chello.nl> <20090819092023.980284148@chello.nl> <20090819161934.GD4972@nowhere> <1250699068.8282.108.camel@twins>
+	Wed, 19 Aug 2009 12:29:03 -0400
+Date: Wed, 19 Aug 2009 09:29:02 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Avi Kivity <avi@redhat.com>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
+	model for vbus_driver objects
+Message-ID: <20090819162902.GB22294@ovro.caltech.edu>
+References: <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu> <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu> <4A8B1C7F.4060008@redhat.com> <20090819003812.GA11168@ovro.caltech.edu> <4A8B9051.3020505@redhat.com> <20090819152811.GA22294@ovro.caltech.edu> <4A8C1C22.3010101@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250699068.8282.108.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A8C1C22.3010101@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 19 Aug 2009 09:29:04 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 06:24:28PM +0200, Peter Zijlstra wrote:
-> On Wed, 2009-08-19 at 18:19 +0200, Frederic Weisbecker wrote:
-> > On Wed, Aug 19, 2009 at 11:18:27AM +0200, Peter Zijlstra wrote:
-> > > Provide the ability to configure a counter to send its output to
-> > > another (already existing) counter's output stream.
-> > > 
-> > > [ compile tested only ]
-> > > 
-> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > Cc: stephane eranian <eranian@googlemail.com>
-> > > +int perf_counter_set_output(struct perf_counter *counter, int output_fd)
-> > > +{
-> > > +	struct perf_counter *output_counter = NULL;
-> > > +	struct file *output_file = NULL;
-> > > +	struct perf_counter *old_output;
-> > > +	int fput_needed = 0;
-> > > +	int ret = -EINVAL;
-> > > +
-> > > +	if (!output_fd)
-> > > +		goto set;
-> > > +
-> > > +	output_file = fget_light(output_fd, &fput_needed);
-> > > +	if (!output_file)
-> > > +		return -EBADF;
-> > > +
-> > > +	if (output_file->f_op != &perf_fops)
-> > > +		goto out;
-> > > +
-> > > +	output_counter = output_file->private_data;
-> > > +
-> > > +	/* Don't chain output fds */
-> > > +	if (output_counter->output)
-> > > +		goto out;
-> > 
-> > 
-> > 
-> > If you don't chain them, how do you propagate more than one
-> > path of output redirected?
-> 
-> you mean, fd2->fd1->fd0 ?
-> 
-> You don't, that sounds like a silly thing to do, do fd1->fd0, fd2->fd0
-> instead.
-> 
+On Wed, Aug 19, 2009 at 06:37:06PM +0300, Avi Kivity wrote:
+> On 08/19/2009 06:28 PM, Ira W. Snyder wrote:
+>>
+>>> Well, if you can't do that, you can't use virtio-pci on the host.
+>>> You'll need another virtio transport (equivalent to "fake pci" you
+>>> mentioned above).
+>>>
+>>>      
+>> Ok.
+>>
+>> Is there something similar that I can study as an example? Should I look
+>> at virtio-pci?
+>>
+>>    
+>
+> There's virtio-lguest, virtio-s390, and virtio-vbus.
+>
+>>> I think you tried to take two virtio-nets and make them talk together?
+>>> That won't work.  You need the code from qemu to talk to virtio-net
+>>> config space, and vhost-net to pump the rings.
+>>>
+>>>      
+>> It *is* possible to make two unmodified virtio-net's talk together. I've
+>> done it, and it is exactly what the virtio-over-PCI patch does. Study it
+>> and you'll see how I connected the rx/tx queues together.
+>>    
+>
+> Right, crossing the cables works, but feature negotiation is screwed up,  
+> and both sides think the data is in their RAM.
+>
+> vhost-net doesn't do negotiation and doesn't assume the data lives in  
+> its address space.
+>
 
+Yes, that is exactly what I did: crossed the cables (in software).
 
-Ok.
+I'll take a closer look at vhost-net now, and make sure I understand how
+it works.
 
+>>> Please find a name other than virtio-over-PCI since it conflicts with
+>>> virtio-pci.  You're tunnelling virtio config cycles (which are usually
+>>> done on pci config cycles) on a new protocol which is itself tunnelled
+>>> over PCI shared memory.
+>>>
+>>>      
+>> Sorry about that. Do you have suggestions for a better name?
+>>
+>>    
+>
+> virtio-$yourhardware or maybe virtio-dma
+>
+
+How about virtio-phys?
+
+Arnd and BenH are both looking at PPC systems (similar to mine). Grant
+Likely is looking at talking to an processor core running on an FPGA,
+IIRC. Most of the code can be shared, very little should need to be
+board-specific, I hope.
+
+>> I called it virtio-over-PCI in my previous postings to LKML, so until a
+>> new patch is written and posted, I'll keep referring to it by the name
+>> used in the past, so people can search for it.
+>>
+>> When I post virtio patches, should I CC another mailing list in addition
+>> to LKML?
+>>    
+>
+> virtualization@lists.linux-foundation.org is virtio's home.
+>
+>> That said, I'm not sure how qemu-system-ppc running on x86 could
+>> possibly communicate using virtio-net. This would mean the guest is an
+>> emulated big-endian PPC, while the host is a little-endian x86. I
+>> haven't actually tested this situation, so perhaps I am wrong.
+>>    
+>
+> I'm confused now.  You don't actually have any guest, do you, so why  
+> would you run qemu at all?
+>
+
+I do not run qemu. I am just stating a problem with virtio-net that I
+noticed. This is just so someone more knowledgeable can be aware of the
+problem.
+
+>>> The x86 side only needs to run virtio-net, which is present in RHEL 5.3.
+>>> You'd only need to run virtio-tunnel or however it's called.  All the
+>>> eventfd magic takes place on the PCI agents.
+>>>
+>>>      
+>> I can upgrade the kernel to anything I want on both the x86 and ppc's.
+>> I'd like to avoid changing the x86 (RHEL5) userspace, though. On the
+>> ppc's, I have full control over the userspace environment.
+>>    
+>
+> You don't need any userspace on virtio-net's side.
+>
+> Your ppc boards emulate a virtio-net device, so all you need is the  
+> virtio-net module (and virtio bindings).  If you chose to emulate, say,  
+> an e1000 card all you'd need is the e1000 driver.
+>
+
+Thanks for the replies.
+Ira
