@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751060AbZHSBbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751090AbZHSBds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751060AbZHSBbc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 21:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbZHSBbc
+	id S1751090AbZHSBds (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 21:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbZHSBds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 21:31:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45963 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750857AbZHSBbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 21:31:31 -0400
+	Tue, 18 Aug 2009 21:33:48 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51801 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750859AbZHSBdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 21:33:47 -0400
+Message-ID: <4A8B5624.9040607@cn.fujitsu.com>
+Date: Wed, 19 Aug 2009 09:32:20 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Josh Stone <jistone@redhat.com>
+CC: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
+       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH] tracing: Create generic syscall TRACE_EVENTs
+References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250634359-31642-1-git-send-email-jistone@redhat.com>
+In-Reply-To: <1250634359-31642-1-git-send-email-jistone@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-X-Fcc: ~/Mail/linus
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Helge Deller <deller@gmx.de>,
-       linux-parisc <linux-parisc@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kernel segv with 2.6.31-rc6 ?
-In-Reply-To: James Bottomley's message of  Tuesday, 18 August 2009 18:54:21 -0600 <1250643261.18426.8.camel@mulgrave.site>
-References: <4A89CC4D.5040801@gmx.de>
-	<1250549376.7858.96.camel@mulgrave.site>
-	<200908181248.52572.rusty@rustcorp.com.au>
-	<20090818050637.4C3E74730F@magilla.sf.frob.com>
-	<1250640565.15079.3.camel@mulgrave.site>
-	<20090819001424.4C1144730F@magilla.sf.frob.com>
-	<1250643261.18426.8.camel@mulgrave.site>
-X-Zippy-Says: Awright, which one of you hid my PENIS ENVY?
-Message-Id: <20090819013124.7539E4730F@magilla.sf.frob.com>
-Date: Tue, 18 Aug 2009 18:31:24 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Actually, I think we do; the module loader is a runtime linker, after
-> all.  [...]
+Josh Stone wrote:
+> This converts the syscall_enter/exit tracepoints into TRACE_EVENTs, so
+> you can have generic ftrace events that capture all system calls with
+> arguments and return values.
+> 
+> The existing event_syscall_enter/exit trace_event structs are renamed to
+> event_sys_enter/exit, so they don't conflict with the names generated
+> automatically by ftrace.
+> 
 
-Indeed you do.  I've just read some of the parts of ld that normally
-address this issue for HPPA.  They don't run for ld -r.  So this is just
-another fine example of the lunacy of the ET_REL .ko madness that would be
-naturally avoided by a sensible tweaked ET_DYN scheme.  But that battle was
-lost way, way back in the long, long ago, so long ago they were probably
-even still making HPPA machines then.
+It would be much better to see a sample output of these TRACE_EVENTs,
 
-> Now, of course, if the final linker could be persuaded to sprinkle
-> needed stubs through the text section and all we have to do is GOT
-> relocations, we don't need all the jiggery-pokery ... but I'm told this
-> can't be done.
+...
 
-Not with ld -r as it is today.  That's what ld does for you in proper final
-links.  It looks to me like you might be able to enable some special mode
-("finalish link" for -r) with a hack to HPPA ld to apply this stub-creation
-logic based on the assumption that the symbols in the relocs will be
-resolved to themselves, and barf on you if they're used for SHN_UNDEF symbols.
-But nobody cares enough to fiddle with ld.
+> +TRACE_EVENT_WITH_CALLBACK(syscall_enter,
+> +
+> +	TP_PROTO(struct pt_regs *regs, long id),
+> +
+> +	TP_ARGS(regs, id),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	long,	id		)
+> +		__array(	long,	args,	6	)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->id	= id;
+> +		syscall_get_arguments(current, regs, 0, 6, __entry->args);
+> +	),
+> +
+> +	TP_printk("NR %ld (%ld, %ld, %ld, %ld, %ld, %ld)",
+> +		  __entry->id,
+> +		  __entry->args[0], __entry->args[1], __entry->args[2],
+> +		  __entry->args[3], __entry->args[4], __entry->args[5]),
+> +
+
+so we'll see the what's the output if a syscall has less than 6 args.
+
+And I guess it should be "(%lx, %lx, ..., %lx)"? Otherwise I think we'll
+see some negative values.
+
+> +	syscall_regfunc, syscall_unregfunc
+> +);
 
 
-Thanks,
-Roland
