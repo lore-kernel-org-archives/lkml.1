@@ -1,58 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZHSQPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbZHSQQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbZHSQPK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbZHSQPG
+	id S1753037AbZHSQQe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZHSQQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:15:06 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40338 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752468AbZHSQPD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:15:03 -0400
-Date: Wed, 19 Aug 2009 17:15:10 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Mark Lord <liml@rtr.ca>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] libata: use single threaded work queue
-Message-ID: <20090819171510.68bef78f@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A8C2012.6090809@gmail.com>
-References: <20090819112554.GY12579@kernel.dk>
-	<4A8BE932.5090300@garzik.org>
-	<20090819120458.GZ12579@kernel.dk>
-	<4A8BECC2.2060607@rtr.ca>
-	<20090819122320.GA12579@kernel.dk>
-	<4A8BFC79.1000004@garzik.org>
-	<4A8BFDE2.1010904@garzik.org>
-	<4A8C0820.8060200@gmail.com>
-	<20090819162147.16aeb2db@lxorguk.ukuu.org.uk>
-	<4A8C2012.6090809@gmail.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Aug 2009 12:16:33 -0400
+Received: from claw.goop.org ([74.207.240.146]:36774 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751237AbZHSQQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 12:16:32 -0400
+Message-ID: <4A8C2561.5080304@goop.org>
+Date: Wed, 19 Aug 2009 09:16:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Miroslav Rezanina <mrezanin@redhat.com>
+CC: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       Gianluca Guida <gianluca.guida@citrix.com>
+Subject: Re: [PATCH][v2.6.29][XEN] Return unused memory to hypervisor
+References: <1962776416.772071250687130436.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <1962776416.772071250687130436.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Are work threads per workqueue?  Combined with per-cpu binding,
-> dynamic thread pool per workqueue can get quite messy.  All three
-> factors end up getting multiplied - ie. #cpus * pool_size which can be
-> enlarged by the same work hopping around * #workqueues.
+On 08/19/09 06:05, Miroslav Rezanina wrote:
+> when running linux as XEN guest and use boot parameter mem= to set memory lower then is assigned to guest, not used memory should be returned to hypervisor as free. This is working with kernel available on xen.org pages, but is not working with kernel 2.6.29. Comparing both kernels I found code for returning unused memory to hypervisor is missing. Following patch add this functionality to 2.6.29 kernel.
+>   
 
-Stop a moment. Exactly how many work queue users need per cpu binding
-wizardry ?
+The idea is sound, but I think it might be better to walk the e820
+table, and remove any memory ranges which aren't marked as E820_RAM. 
+That makes it possible to carve holes in the address space as well as
+simply truncate it.
 
-> Another problem is that if we apply this to the existing default
-> workqueue which is used by many different supposed-to-be-short works
-> in essentially batch mode, we might end up enlarging cache footprint
-> by scheduling unnecessarily many threads, which, in tight situations,
-> might show up as small but noticeable performance regression.
+Also, something appears to have smashed your indentation.
 
-Only if you make the default assumed max wait time for the work too low -
-its a tunable behaviour in fact.
+    J
 
-Alan
+> Miroslav Rezanina <mrezanin@redhat.com>
+> --
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index 6a8811a..fd6b0e7 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -118,6 +118,10 @@ struct boot_params __initdata boot_params;
+>  struct boot_params boot_params;
+>  #endif
+>  
+> +#ifdef CONFIG_XEN
+> +void __init xen_return_unused_mem(void);
+> +#endif
+> +
+>  /*
+>   * Machine setup..
+>   */
+> @@ -920,6 +924,9 @@ void __init setup_arch(char **cmdline_p)
+>  	paging_init();
+>  	paravirt_pagetable_setup_done(swapper_pg_dir);
+>  	paravirt_post_allocator_init();
+> +#ifdef CONFIG_XEN
+> +	xen_return_unused_mem();
+> +#endif
+>  
+>  #ifdef CONFIG_X86_64
+>  	map_vsyscall();
+> diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+> index 15c6c68..bc5d2bc 100644
+> --- a/arch/x86/xen/setup.c
+> +++ b/arch/x86/xen/setup.c
+> @@ -20,6 +20,7 @@
+>  #include <xen/page.h>
+>  #include <xen/interface/callback.h>
+>  #include <xen/interface/physdev.h>
+> +#include <xen/interface/memory.h>
+>  #include <xen/features.h>
+>  
+>  #include "xen-ops.h"
+> @@ -34,6 +35,36 @@ extern void xen_syscall32_target(void);
+>  
+>  
+>  /**
+> + * Author: Miroslav Rezanina <mrezanin@redhat.com>
+> + * Function retuns unused memory to hypevisor
+> + **/
+> +void __init xen_return_unused_mem(void)
+> +{
+> +	if (xen_start_info->nr_pages > max_pfn) {
+> +        /*
+> +	* the max_pfn was shrunk (probably by mem=
+> +	* kernel parameter); shrink reservation with the HV
+> +	*/
+> +	struct xen_memory_reservation reservation = {
+> +	.address_bits = 0,
+> +	.extent_order = 0,
+> +	.domid = DOMID_SELF
+> +	};
+> +	unsigned int difference;
+> +	int ret;
+> +
+> +	difference = xen_start_info->nr_pages - max_pfn;
+> +
+> +	set_xen_guest_handle(reservation.extent_start,
+> +		((unsigned long *)xen_start_info->mfn_list) + max_pfn);
+> +	reservation.nr_extents = difference;
+> +	ret = HYPERVISOR_memory_op(XENMEM_decrease_reservation,
+> +		&reservation);
+> +	BUG_ON (ret != difference);
+> +	}
+> +}
+> +
+> +/**
+>   * machine_specific_memory_setup - Hook for machine specific memory setup.
+>   **/
+>  
+>
+>   
+
