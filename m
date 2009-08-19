@@ -1,140 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZHSLwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbZHSLyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbZHSLwM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 07:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZHSLwL
+	id S1751906AbZHSLyw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 07:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbZHSLyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 07:52:11 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:23818 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542AbZHSLwJ (ORCPT
+	Wed, 19 Aug 2009 07:54:51 -0400
+Received: from msux-gh1-uea01.nsa.gov ([63.239.67.1]:55187 "EHLO
+	msux-gh1-uea01.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710AbZHSLyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 07:52:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=kh5JHanJegaMKPf/aWwgXrzdF3OupU8TwxttJ/uEFUtpxFUu0ys5XehfnZRF44uTbK
-         BdNuZzKPifBDHPnON5KOTLM9/c7QhuTVsfImLPbWaBr+TjQ6RaKWmSP/HdYu5aqfYEx3
-         6z0ddlp/d6rWwmRvhknZ9r2A+T51AKOP6v62U=
-Message-ID: <4A8BE765.4080507@gmail.com>
-Date: Wed, 19 Aug 2009 07:52:05 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       alacrityvm-devel@lists.sourceforge.net,
-       "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for		 vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws> <4A8AA9BD.2070909@gmail.com> <4A8AB076.6080906@redhat.com> <4A8ACE1F.6020402@gmail.com> <20090818165139.GC19846@redhat.com> <4A8B8F4E.80207@gmail.com> <4A8B9241.20300@redhat.com> <4A8B66280200005A00052A54@sinclair.provo.novell.com> <4A8BA635.9010902@redhat.com> <4A8BAC750200005A00052A83@sinclair.provo.novell.com> <4A8BE6D2.3090107@redhat.com>
-In-Reply-To: <4A8BE6D2.3090107@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF390A7EA939086EFC21A099B"
+	Wed, 19 Aug 2009 07:54:50 -0400
+Subject: Re: [PATCH] Security/sysfs: v2 - Enable security xattrs to be set
+ on sysfs files, directories, and symlinks.
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
+       gregkh@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov
+In-Reply-To: <4A8B81A0.6070206@schaufler-ca.com>
+References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <4A84EF1D.8060408@schaufler-ca.com> <m1my62xde6.fsf@fess.ebiederm.org>
+	 <4A861291.1030404@schaufler-ca.com> <m1tz09j00q.fsf@fess.ebiederm.org>
+	 <4A864008.50907@schaufler-ca.com> <m1my61sjie.fsf@fess.ebiederm.org>
+	 <4A8A2616.8020809@schaufler-ca.com>
+	 <1250597660.3629.204.camel@moss-pluto.epoch.ncsc.mil>
+	 <4A8AB6B0.8010800@schaufler-ca.com>
+	 <1250605386.3629.236.camel@moss-pluto.epoch.ncsc.mil>
+	 <4A8B81A0.6070206@schaufler-ca.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 19 Aug 2009 07:58:09 -0400
+Message-Id: <1250683089.3629.268.camel@moss-pluto.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF390A7EA939086EFC21A099B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-08-18 at 21:37 -0700, Casey Schaufler wrote:
+> Stephen Smalley wrote:
+> > On Tue, 2009-08-18 at 07:12 -0700, Casey Schaufler wrote:
+> >   
+> >> Stephen Smalley wrote:
+> >>     
+> >>> On Mon, 2009-08-17 at 20:55 -0700, Casey Schaufler wrote:
+> >>>   
+> >>>       
+> >>>> From: Casey Schaufler <casey@schaufler-ca.com>
+> >>>>
+> >>>> Another approach to limited xattr support in sysfs.
+> >>>>
+> >>>> I tried to listen to the objections to a linked list representation
+> >>>> and I think that I understand that there isn't really any interest
+> >>>> in supporting xattrs for real, only for those maintained by LSMs.
+> >>>> I also looked carefully into the claims that memory usage is
+> >>>> critical and that the code I had before was duplicating effort.
+> >>>>
+> >>>> This version lets the surrounding code do as much of the work as
+> >>>> possible. Unlike the initial proposal for sysfs xattrs, it does not
+> >>>> introduce any new LSM hooks, it uses hooks that already exist. It
+> >>>> does not support any attributes on its own, it only provides for
+> >>>> the attribute advertised by security_inode_listsecurity(). It could
+> >>>> easily be used by other filesystems to provide the same LSM xattr
+> >>>> support. It could also be extended to do the list based support for
+> >>>> arbitrary xattrs without too much effort.
+> >>>>
+> >>>> Probably the oddest bit is that the inode_getsecurity hooks need to
+> >>>> check to see if they are getting called before the inode is instantiated
+> >>>> and return -ENODATA in that event. It would be possible to do a
+> >>>> filesystem specific check instead, but this way provides for generally
+> >>>> correct behavior at small cost.
+> >>>>
+> >>>> This has been tested with Smack, but not SELinux. I think that
+> >>>> SELinux will work correctly, but it could be that a labeling
+> >>>> behavior that is different than the "usual" instantiation labeling
+> >>>> is actually desired. That would be an easy change.
+> >>>>
+> >>>> As always, let me know if I missed something obvious or if there's a
+> >>>> fatal flaw in the scheme.
+> >>>>     
+> >>>>         
+> >>> The point of the David's patch was to provide a way to save the security
+> >>> xattr in the backing data structure for sysfs entries when an attribute
+> >>> value is set from userspace so that the value can be preserved if the
+> >>> inode is evicted from memory and later re-instantiated.  AFAICS, your
+> >>> patch completely misses the problem.  How about we just go back to
+> >>> David's patch?
+> >>>   
+> >>>       
+> >> Oh no, that would use too much memory!
+> >>
+> >> Either you care about the value the user set, in which case you
+> >> want to save the value the user set, or you don't. If you do, you
+> >> have to save that value, not an LSM's interpretation of that value.
+> >> No secids. No new hooks.
+> >>     
+> >
+> > As the security module is the only component of the kernel that
+> > uses/interprets that value, it isn't unreasonable for the security
+> > module's interpretation of that value to be considered canonical.  In
+> > fact, that is already the case - the hooks within vfs_getxattr() enable
+> > the security module to override/replace the actual security xattr value
+> > returned to userspace.
+> >
+> > In the case of Smack, Smack could just provide a pointer to its own
+> > internal copy of the string, and that could be stored in the wrapped
+> > iattr.  In the case of SELinux, we could provide a secid that could be
+> > stored in the wrapped iattr.  The hook interface could just handle it as
+> > a blob if you prefer.  But either way we don't need extra storage aside
+> > from a pointer-size field in the wrapped iattr.
+> >   
+> 
+> So how often is the SELinux label going to get explicitly set in /sys ?
+> I'm grappling with the value of going hog-wild in optimizing this. If
+> it is something that's quite rare I can see the concern with expanding
+> the d_entry. If it is common, the storage associated with storing the
+> xattr could be an issue. If it is uncommon but not rare there's another
+> story again.
+> 
+> I'm looking at addressing the issues. Thank you.
 
-Avi Kivity wrote:
-> On 08/19/2009 02:40 PM, Gregory Haskins wrote:
->>
->>>>>> So if I whip up a virtio-net backend for vbus with a PCI compliant=
+I'd expect most sysfs nodes to be left in the default label, although we
+don't really know as this would be the first time that people have the
+option of finer-grained control to sysfs.
 
->>>>>> connector, you are happy?
->>>>>>
->>>>>>
->>>>>>           =20
->>>>> This doesn't improve virtio-net in any way.
->>>>>
->>>>>         =20
->>>> Any why not?  (Did you notice I said "PCI compliant", i.e. over
->>>> virtio-pci)
->>>>
->>>>       =20
->>> Because virtio-net will have gained nothing that it didn't have befor=
-e.
->>>     =20
->> ??
->>
->> *) ABI is virtio-pci compatible, as you like
->>   =20
->=20
-> That's not a gain, that's staying in the same place.
->=20
->> *) fast-path is in-kernel, as we all like
->>   =20
->=20
-> That's not a gain as we have vhost-net (sure, in development, but your
-> proposed backend isn't even there yet).
->=20
->> *) model is in vbus so it would work in all environments that vbus
->> supports.
->>   =20
->=20
-> The ABI can be virtio-pci compatible or it can be vbus-comaptible.  How=
+-- 
+Stephen Smalley
+National Security Agency
 
-> can it be both?  The ABIs are different.
->=20
-> Note that if you had submitted a virtio-net backend I'd have asked you
-> to strip away all the management / bus layers and we'd have ended up
-> with vhost-net.
-
-Sigh...
-
-
->=20
->>>>> virtio already supports this model; see lguest and s390.  Transport=
-ing
->>>>> virtio over vbus and vbus over something else doesn't gain anything=
-
->>>>> over
->>>>> directly transporting virtio over that something else.
->>>>>
->>>>>         =20
->>>> This is not what I am advocating.
->>>>
->>>>
->>>>       =20
->>> What are you advocating?  As far as I can tell your virtio-vbus
->>> connector plus the vbus-kvm connector is just that.
->>>     =20
->> I wouldn't classify it anything like that, no.  Its just virtio over
->> vbus.
->>   =20
->=20
-> We're in a loop.  Doesn't virtio over vbus need a virtio-vbus
-> connector?  and doesn't vbus need a connector to talk to the hypervisor=
-?
->=20
-
-No, it doesnt work like that.  There is only one connector.
-
-Kind Regards,
--Greg
-
-
---------------enigF390A7EA939086EFC21A099B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqL52UACgkQP5K2CMvXmqHY7ACeNb1WRGNNTqFwpafFKn+V4aJE
-8o8An1peelxo6QgsHVpBDaaSWJrtUsFg
-=fs0D
------END PGP SIGNATURE-----
-
---------------enigF390A7EA939086EFC21A099B--
