@@ -1,126 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751415AbZHSKFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751494AbZHSKHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751415AbZHSKFw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 06:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZHSKFw
+	id S1751494AbZHSKHJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 06:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbZHSKHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 06:05:52 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48207 "EHLO gir.skynet.ie"
+	Wed, 19 Aug 2009 06:07:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46051 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751106AbZHSKFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 06:05:51 -0400
-Date: Wed, 19 Aug 2009 11:05:54 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alexey Korolev <akorolex@gmail.com>
-Cc: Eric Munson <linux-mm@mgebm.net>, Alexey Korolev <akorolev@infradead.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
-Message-ID: <20090819100553.GE24809@csn.ul.ie>
-References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org> <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com> <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com>
+	id S1751122AbZHSKHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 06:07:06 -0400
+Date: Wed, 19 Aug 2009 10:06:37 GMT
+From: tip-bot for Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       johnstul@us.ibm.com, a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, johnstul@us.ibm.com, schwidefsky@de.ibm.com,
+       tglx@linutronix.de
+In-Reply-To: <20090818170942.3ab80c91@skybase>
+References: <20090818170942.3ab80c91@skybase>
+Subject: [tip:timers/core] clocksource: Avoid clocksource watchdog circular locking dependency
+Message-ID: <tip-01548f4d3e8e94caf323a4f664eb347fd34a34ab@git.kernel.org>
+Git-Commit-ID: 01548f4d3e8e94caf323a4f664eb347fd34a34ab
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 19 Aug 2009 10:06:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 05:48:11PM +1200, Alexey Korolev wrote:
-> Hi,
-> >
-> > It sounds like this patch set working towards the same goal as my
-> > MAP_HUGETLB set.  The only difference I see is you allocate huge page
-> > at a time and (if I am understanding the patch) fault the page in
-> > immediately, where MAP_HUGETLB only faults pages as needed.  Does the
-> > MAP_HUGETLB patch set provide the functionality that you need, and if
-> > not, what can be done to provide what you need?
-> >
->
-> Thanks a lot for willing to help. I'll be much appreciate if you have
-> an interesting idea how HTLB mapping for drivers can be done.
-> 
-> It is better to describe use case in order to make it clear what needs
-> to be done.
-> Driver provides mapping of device DMA buffers to user level
-> applications.
+Commit-ID:  01548f4d3e8e94caf323a4f664eb347fd34a34ab
+Gitweb:     http://git.kernel.org/tip/01548f4d3e8e94caf323a4f664eb347fd34a34ab
+Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
+AuthorDate: Tue, 18 Aug 2009 17:09:42 +0200
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Wed, 19 Aug 2009 12:00:56 +0200
 
-Ok, so the buffer is in normal memory. When mmap() is called, the buffer
-is already populated by data DMA'd from the device. That scenario rules out
-calling mmap(MAP_ANONYMOUS|MAP_HUGETLB) because userspace has access to the
-buffer before it is populated by data from the device.
+clocksource: Avoid clocksource watchdog circular locking dependency
 
-However, it does not rule out mmap(MAP_ANONYMOUS|MAP_HUGETLB) when userspace
-is responsible for populating a buffer for sending to a device. i.e. whether it
-is suitable or not depends on when the buffer is populated and who is doing it.
+stop_machine from a multithreaded workqueue is not allowed because
+of a circular locking dependency between cpu_down and the workqueue
+execution. Use a kernel thread to do the clocksource downgrade.
 
-> User level applications process the data.
-> Device is using a master DMA to send data to the user buffer, buffer
-> size can be >1GB and performance is very important. (So huge pages
-> mapping really makes sense.)
-> 
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: john stultz <johnstul@us.ibm.com>
+LKML-Reference: <20090818170942.3ab80c91@skybase>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-Ok, so the DMA may be faster because you have to do less scatter/gather
-and can DMA in larger chunks and and reading from userspace may be faster
-because there is less translation overhead. Right?
 
-> In addition we have to mention that:
-> 1. It is hard for user to tell how much huge pages needs to be
->    reserved by the driver.
 
-I think you have this problem either way. If the buffer is allocated and
-populated before mmap(), then the driver is going to have to guess how many
-pages it needs. If the DMA occurs as a result of mmap(), it's easier because
-you know the number of huge pages to be reserved at that point and you have
-the option of falling back to small pages if necessary.
+---
+ kernel/time/clocksource.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
 
-> 2. Devices add constrains on memory regions. For example it needs to
->    be contiguous with in the physical address space. It is necessary to
->   have ability to specify special gfp flags.
-
-The contiguity constraints are the same for huge pages. Do you mean there
-are zone restrictions? If so, the hugetlbfs_file_setup() function could be
-extended to specify a GFP mask that is used for the allocation of hugepages
-and associated with the hugetlbfs inode. Right now, there is a htlb_alloc_mask
-mask that is applied to some additional flags so htlb_alloc_mask would be
-the default mask unless otherwise specified.
-
-> 3 The HW needs to access physical memory before the user level
-> software can access it. (Hugetlbfs picks up pages on page fault from
-> pool).
-> It means memory allocation needs to be driven by device driver.
-> 
-
-How about;
-
-	o Extend Eric's helper slightly to take a GFP mask that is
-	  associated with the inode and used for allocations from
-	  outside the hugepage pool
-	o A helper that returns the page at a given offset within
-	  a hugetlbfs file for population before the page has been
-	  faulted.
-
-I know this is a bit hand-wavy, but it would allow significant sharing
-of the existing code and remove much of the hugetlbfs-awareness from
-your current driver.
-
-> Original idea was: create hugetlbfs file which has common mapping with
-> device file. Allocate memory. Populate page cache of hugetlbfs file
-> with allocated pages.
-> When fault occurs, page will be taken from page cache and then
-> remapped to user space by hugetlbfs.
-> 
-> Another possible approach is described here:
-> http://marc.info/?l=linux-mm&m=125065257431410&w=2
-> But currently not sure  will it work or not.
-> 
-> 
-> Thanks,
-> Alexey
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index c6bff11..e0c86ad 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -29,6 +29,7 @@
+ #include <linux/module.h>
+ #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
+ #include <linux/tick.h>
++#include <linux/kthread.h>
+ 
+ void timecounter_init(struct timecounter *tc,
+ 		      const struct cyclecounter *cc,
+@@ -130,7 +131,7 @@ static DEFINE_SPINLOCK(watchdog_lock);
+ static cycle_t watchdog_last;
+ static int watchdog_running;
+ 
+-static void clocksource_watchdog_work(struct work_struct *work);
++static int clocksource_watchdog_kthread(void *data);
+ static void __clocksource_change_rating(struct clocksource *cs, int rating);
+ 
+ /*
+@@ -139,6 +140,15 @@ static void __clocksource_change_rating(struct clocksource *cs, int rating);
+ #define WATCHDOG_INTERVAL (HZ >> 1)
+ #define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 4)
+ 
++static void clocksource_watchdog_work(struct work_struct *work)
++{
++	/*
++	 * If kthread_run fails the next watchdog scan over the
++	 * watchdog_list will find the unstable clock again.
++	 */
++	kthread_run(clocksource_watchdog_kthread, NULL, "kwatchdog");
++}
++
+ static void clocksource_unstable(struct clocksource *cs, int64_t delta)
+ {
+ 	printk(KERN_WARNING "Clocksource %s unstable (delta = %Ld ns)\n",
+@@ -167,8 +177,10 @@ static void clocksource_watchdog(unsigned long data)
+ 	list_for_each_entry(cs, &watchdog_list, wd_list) {
+ 
+ 		/* Clocksource already marked unstable? */
+-		if (cs->flags & CLOCK_SOURCE_UNSTABLE)
++		if (cs->flags & CLOCK_SOURCE_UNSTABLE) {
++			schedule_work(&watchdog_work);
+ 			continue;
++		}
+ 
+ 		csnow = cs->read(cs);
+ 
+@@ -304,7 +316,7 @@ static void clocksource_dequeue_watchdog(struct clocksource *cs)
+ 	spin_unlock_irqrestore(&watchdog_lock, flags);
+ }
+ 
+-static void clocksource_watchdog_work(struct work_struct *work)
++static int clocksource_watchdog_kthread(void *data)
+ {
+ 	struct clocksource *cs, *tmp;
+ 	unsigned long flags;
+@@ -327,6 +339,7 @@ static void clocksource_watchdog_work(struct work_struct *work)
+ 		__clocksource_change_rating(cs, 0);
+ 	}
+ 	mutex_unlock(&clocksource_mutex);
++	return 0;
+ }
+ 
+ #else /* CONFIG_CLOCKSOURCE_WATCHDOG */
