@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475AbZHSHNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751527AbZHSHOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751475AbZHSHNz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 03:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZHSHNy
+	id S1751527AbZHSHOH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 03:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZHSHOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 03:13:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36172 "EHLO mx2.redhat.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751199AbZHSHNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 03:13:53 -0400
-Message-ID: <4A8BA635.9010902@redhat.com>
-Date: Wed, 19 Aug 2009 10:13:57 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 19 Aug 2009 03:14:06 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:33587 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbZHSHOE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 03:14:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XyiArGq2RufGQqjM0Ua6pY4YO4I1CEkrwd1HKyt8Ifr5pi/IA6GIiHhGxAjA/i4i+T
+         P5OIo40A674GD5S4FpbWcDk7cqS48fD7k/py/XZJO8ZeP0AHL86rwtSHprp1TmsGNC2W
+         RCxF4qCLZC8smnrGMJPEycW3kwnyOntIujSys=
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Gregory Haskins <gregory.haskins@gmail.com>,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       alacrityvm-devel@lists.sourceforge.net,
-       "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for	 vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws> <4A8AA9BD.2070909@gmail.com> <4A8AB076.6080906@redhat.com> <4A8ACE1F.6020402@gmail.com> <20090818165139.GC19846@redhat.com> <4A8B8F4E.80207@gmail.com> <4A8B9241.20300@redhat.com> <4A8B66280200005A00052A54@sinclair.provo.novell.com>
-In-Reply-To: <4A8B66280200005A00052A54@sinclair.provo.novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090819154958.18a34aa5.minchan.kim@barrios-desktop>
+References: <18eba5a10908181841t145e4db1wc2daf90f7337aa6e@mail.gmail.com>
+	 <20090819114408.ab9c8a78.minchan.kim@barrios-desktop>
+	 <4A8B7508.4040001@vflare.org>
+	 <20090819135105.e6b69a8d.minchan.kim@barrios-desktop>
+	 <18eba5a10908182324x45261d06y83e0f042e9ee6b20@mail.gmail.com>
+	 <20090819154958.18a34aa5.minchan.kim@barrios-desktop>
+Date: Wed, 19 Aug 2009 16:14:05 +0900
+Message-ID: <18eba5a10908190014q6f903399y30478b4c0a7f256b@mail.gmail.com>
+Subject: Re: abnormal OOM killer message
+From: Chungki woo <chungki.woo@gmail.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, ngupta@vflare.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com, riel@redhat.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/19/2009 09:40 AM, Gregory Haskins wrote:
->
->    
->>> So if I whip up a virtio-net backend for vbus with a PCI compliant
->>> connector, you are happy?
->>>
->>>        
->> This doesn't improve virtio-net in any way.
->>      
-> Any why not?  (Did you notice I said "PCI compliant", i.e. over virtio-pci)
->    
+> You means your pages with 79M are swap out in compcache's reserved
+> memory?
 
-Because virtio-net will have gained nothing that it didn't have before.
+Compcache don't have reserved memory.
+When it needs memory, and then allocate memory.
 
-
-
-
->> virtio already supports this model; see lguest and s390.  Transporting
->> virtio over vbus and vbus over something else doesn't gain anything over
->> directly transporting virtio over that something else.
->>      
-> This is not what I am advocating.
->
->    
-
-What are you advocating?  As far as I can tell your virtio-vbus 
-connector plus the vbus-kvm connector is just that.
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Thanks.
