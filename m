@@ -1,121 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbZHSVBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZHSVCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753171AbZHSVBt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 17:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZHSVBs
+	id S1753216AbZHSVCx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 17:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZHSVCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 17:01:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33699 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752329AbZHSVBr convert rfc822-to-8bit (ORCPT
+	Wed, 19 Aug 2009 17:02:52 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:12101 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752604AbZHSVCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 17:01:47 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
-Date: Wed, 19 Aug 2009 23:02:31 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       Greg KH <gregkh@suse.de>
-References: <200908122218.13975.rjw@sisk.pl> <200908190158.09623.rjw@sisk.pl> <1250643929.17853.11.camel@rzhang-dt>
-In-Reply-To: <1250643929.17853.11.camel@rzhang-dt>
+	Wed, 19 Aug 2009 17:02:52 -0400
+Date: Wed, 19 Aug 2009 15:02:51 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
+Message-ID: <20090819210251.GD13061@ldl.fc.hp.com>
+References: <20090814163618.GQ7185@ldl.fc.hp.com> <1250276831.3077.17.camel@sbs-t61.sc.intel.com> <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200908192302.31453.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250279799.3077.41.camel@sbs-t61.sc.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 August 2009, Zhang Rui wrote:
-> On Wed, 2009-08-19 at 07:58 +0800, Rafael J. Wysocki wrote:
-> > On Tuesday 18 August 2009, Rafael J. Wysocki wrote:
-> > > On Tuesday 18 August 2009, Zhang Rui wrote:
-> > > > On Mon, 2009-08-17 at 08:15 +0800, Rafael J. Wysocki wrote:
-> > > > > On Wednesday 12 August 2009, Rafael J. Wysocki wrote:
-> > > > > > Hi,
-> > > > > > 
-> > > > > > The following patches introduce a mechanism allowing us to execute device
-> > > > > > drivers' suspend and resume callbacks asynchronously during system sleep
-> > > > > > transitions, such as suspend to RAM.  The idea is explained in the [1/1] patch
-> > > > > > message.
-> > > > > 
-> > > > > Changes:
-> > > > > 
-> > > > > * Added [1/7] that fixes kerneldoc comments in drivers/base/power/main.c
-> > > > >   (this is a 2.6.32 candidate).
-> > > > > 
-> > > > > * Added [2/7] adding a framework for representing PM link (idea described
-> > > > >   in the patch message).
-> > > > > 
-> > > > > * [3/7] is the async resume patch (idea described in the patch message).
-> > > > > 
-> > > > > * [4/7] is the async suspend patch.
-> > > > > 
-> > > > > * [5/7] - [7/7] set async_suspend for devices in a few selected subsystems.
-> > > > > 
-> > > > > The patches have been tested on HP nx6325.
-> > > > > 
-> > > > I tried this patch set and it does work. :)
-> > > > But unfortunately it doesn't save too much time.
-> > > > 
-> > > > I still think that the child device should inherit its parent's
-> > > > async_suspend flag to do the asynchronous resume more efficiently.
-> > > > 
-> > > > or at least we should provide such an interface
-> > > > in ﻿drivers/base/power/common.c, so that device can tell the device core
-> > > > to inherit this flag if there is no off-tree dependency.
-> > > 
-> > > Well, I'd prefer to identify all of the off-tree dependencies that have to be
-> > > taken into account and handle all devices asynchronously.
+Hi Suresh,
+
+Thanks for having the patience to educate me. I appreciate the
+effort. :)
+
+A few more questions...
+
+* Suresh Siddha <suresh.b.siddha@intel.com>:
+> On Fri, 2009-08-14 at 12:27 -0700, Alex Chiang wrote:
+> > Hm, I'm not entirely sure about that, for two reasons.
 > > 
-> > Anyway, I have tested the appended patch on top of [1/7]-[7/7] and my test box
-> > appears to work fine with it, although it doesn't work in the "async for all"
-> > case.
-> > 
-> > I guess the next step will be to see which devices are not handled
-> > asynchronously with the patch below and try to figure out which of them
-> > break(s) things.
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > ---
-> >  drivers/base/power/common.c |    6 +++++-
-> >  1 file changed, 5 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/drivers/base/power/common.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/base/power/common.c
-> > +++ linux-2.6/drivers/base/power/common.c
-> > @@ -32,7 +32,11 @@ void device_pm_add(struct device *dev)
-> >  	pr_debug("PM: Adding info for %s:%s\n",
-> >  		 dev->bus ? dev->bus->name : "No Bus",
-> >  		 kobject_name(&dev->kobj));
-> > -	pm_link_add(dev, dev->parent);
-> > +	if (dev->parent) {
-> > +		pm_link_add(dev, dev->parent);
-> > +		if (dev->parent->power.async_suspend)
-> > +			dev->power.async_suspend = true;
-> > +	}
+> > First (and this is the weaker reason), I'd prefer not to keep
+> > adding new fields to /proc/cpuinfo if we can help it, as it just
+> > makes for a continually more complicated ABI/API for userspace.
 > 
-> to use this, we must make sure that ﻿device_enable_async_suspend is
-> called before any of its child device being registered, right?
-> should we check this in ﻿﻿device_enable_async_suspend?
-> or at least we should add the comments stating this issue.
+> Overriding same field with different values based on the system will be
+> confusing. On some systems it will be derived from cpuid, some will be
+> based on physical slots. This is too confusing.
+> 
+> > Second, I guess I'm not sure what else 'physical id' /should/
+> > represent. I'm willing to be corrected on this point, so if I'm
+> > wrong, just call it simple ignorance. :)
+> 
+> As far as possible we kept these fields closer to what the cpuid
+> instruction says, so that firmware won't mess up the topology detection
+> etc by having wrong values in the bios tables.
 
-That's correct in general, but I added the patch for testing purposes only.
+I understand your point about keeping the output of /proc/cpuinfo
+close to what the cpuid instruction says.
 
-The goal still is to identify all of the dependencies that need to be taken
-care of and to represent them appropriately, so that we can safely set
-async_suspend for all devices.
+But in regard to the particular field that we're talking about
+here -- 'physical id' -- that doesn't seem to be represented from
+cpuid anyway. We're stuffing an APIC ID into that field, even
+when we already have other APIC ID output.
 
-I wonder if you get any improvement with this patch applied?
+So my point was that we're already kinda doing something funny to
+'physical id' and I'd like to fix it for my platform so that it
+matches the actual chassis.
 
-Thanks,
-Rafael
+> > My quick grep earlier led me to believe that as long as the
+> > phys_proc_ids were /consistent/ then it didn't seem to matter
+> > what their /values/ were.
+> 
+> This is correct. But there are several assumptions in the patch that
+> might break in the future and where ever possible we simply don't want
+> to depend on what bios says and rather depend on what the cpu/hardware
+> says.
+> 
+> For example, we shouldn't assume that original phys proc id's calculated
+> from cpuid etc need not be contiguous and start from 0 etc. This is
+> platform dependent and may vary from one version to another version of
+> processor etc.
+
+Sorry, I'm having a hard time parsing this sentence. Do you mean
+to say:
+
+	we shouldn't assume that phys_proc_id calculated from
+	cpuid are contiguous and start from 0
+
+?
+
+I agree with you (although I thought that they should be 0-based)
+but this quirk addresses a specific platform, where I can assume
+certain things about the BIOS, etc.
+
+> Also, you are selecting the fixup table based on number of present cpu
+> etc. I am just nervous that how this all workout across cpu generations
+> having different cores, sparsely populated sockets in the platform etc.
+> We just can't afford to go and fix all the old kernels if we have any
+> problem in the future config setups.
+ 
+I agree with you in general, but again, this is a specific
+platform quirk where I have a good idea of what is a supported
+configuration.
+
+I take your point though, and can rework the patch so that if we
+don't find a configuration that we're expecting (either 4p or 8p)
+then just revert to the default behaviour and don't break
+anything.
+
+> Easiest route will be to add a new entry in /proc/cpuinfo
+
+Well, if you remain unconvinced that fixing up 'physical id' is
+the proper thing to do, here are some alternate proposals:
+
+	/proc/cpuinfo/chassis id
+	/sys/devices/system/cpu/$cpu/chassis id
+	/sys/devices/system/cpu/$cpu/topology/chassis id
+
+Thoughts?
+
+Thanks.
+
+/ac
+
