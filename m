@@ -1,138 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZHSNDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbZHSNEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbZHSNDT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbZHSNCv
+	id S1752289AbZHSNEi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZHSNEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:02:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50544 "EHLO mx2.redhat.com"
+	Wed, 19 Aug 2009 09:04:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50585 "EHLO mx2.redhat.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751862AbZHSNCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:02:44 -0400
+	id S1752020AbZHSNCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:02:49 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/47] KVM updates for 2.6.32 merge window (2/4)
-Date: Wed, 19 Aug 2009 16:01:56 +0300
-Message-Id: <1250686963-8357-1-git-send-email-avi@redhat.com>
+Subject: [PATCH 29/47] KVM: x86 emulator: Add sysenter emulation
+Date: Wed, 19 Aug 2009 16:02:25 +0300
+Message-Id: <1250686963-8357-30-git-send-email-avi@redhat.com>
+In-Reply-To: <1250686963-8357-1-git-send-email-avi@redhat.com>
+References: <1250686963-8357-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Second batch of the KVM patch queue.  Happy reviewing.
+From: Andre Przywara <andre.przywara@amd.com>
 
-Alexander Graf (4):
-  x86: Add definition for IGNNE MSR
-  KVM: Implement MSRs used by Hyper-V
-  KVM: SVM: Implement INVLPGA
-  KVM: SVM: Improve nested interrupt injection
+Handle #UD intercept of the sysenter instruction in 32bit compat mode on
+an AMD host.
+Setup the segment descriptors for CS and SS and the EIP/ESP registers
+according to the manual.
 
-Andre Przywara (10):
-  KVM: Move performance counter MSR access interception to generic x86
-    path
-  KVM: Allow emulation of syscalls instructions on #UD
-  KVM: x86 emulator: Add missing EFLAGS bit definitions
-  KVM: x86 emulator: Prepare for emulation of syscall instructions
-  KVM: x86 emulator: add syscall emulation
-  KVM: x86 emulator: Add sysenter emulation
-  KVM: x86 emulator: Add sysexit emulation
-  KVM: ignore AMDs HWCR register access to set the FFDIS bit
-  KVM: ignore reads from AMDs C1E enabled MSR
-  KVM: introduce module parameter for ignoring unknown MSRs accesses
+Signed-off-by: Christoph Egger <christoph.egger@amd.com>
+Signed-off-by: Amit Shah <amit.shah@redhat.com>
+Signed-off-by: Andre Przywara <andre.przywara@amd.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/x86_emulate.c |   70 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 69 insertions(+), 1 deletions(-)
 
-Avi Kivity (3):
-  KVM: Return to userspace on emulation failure
-  KVM: VMX: Only reload guest cr2 if different from host cr2
-  KVM: SVM: Don't save/restore host cr2
-
-Christian Borntraeger (1):
-  KVM: s390: Fix memslot initialization for userspace_addr != 0
-
-Gleb Natapov (2):
-  KVM: Replace pending exception by PF if it happens serially
-  KVM: Optimize searching for highest IRR
-
-Jan Kiszka (2):
-  KVM: Fix racy event propagation in timer
-  KVM: Drop useless atomic test from timer function
-
-Jiri Slaby (1):
-  KVM: fix lock imbalance
-
-Joerg Roedel (2):
-  hugetlbfs: export vma_kernel_pagsize to modules
-  KVM: Prepare memslot data structures for multiple hugepage sizes
-
-Marcelo Tosatti (16):
-  KVM: MMU: introduce is_last_spte helper
-  KVM: MMU audit: update count_writable_mappings / count_rmaps
-  KVM: MMU audit: update audit_write_protection
-  KVM: MMU audit: nontrapping ptes in nonleaf level
-  KVM: MMU audit: audit_mappings tweaks
-  KVM: MMU audit: largepage handling
-  KVM: VMX: more MSR_IA32_VMX_EPT_VPID_CAP capability bits
-  KVM: MMU: make for_each_shadow_entry aware of largepages
-  KVM: MMU: add kvm_mmu_get_spte_hierarchy helper
-  KVM: VMX: EPT misconfiguration handler
-  KVM: VMX: conditionally disable 2M pages
-  KVM: convert custom marker based tracing to event traces
-  KVM: x86: missing locking in PIT/IRQCHIP/SET_BSP_CPU ioctl paths
-  KVM: powerpc: convert marker probes to event trace
-  KVM: remove old KVMTRACE support code
-  KVM: use vcpu_id instead of bsp_vcpu pointer in kvm_vcpu_is_bsp
-
-Michael S. Tsirkin (6):
-  KVM: document locking for kvm_io_device_ops
-  KVM: switch coalesced mmio changes to slots_lock
-  KVM: switch pit creation to slots_lock
-  KVM: convert bus to slots_lock
-  KVM: remove in_range from io devices
-  KVM: document lock nesting rule
-
- arch/ia64/include/asm/kvm_host.h    |    3 +-
- arch/ia64/kvm/Kconfig               |    3 -
- arch/ia64/kvm/kvm-ia64.c            |   28 +---
- arch/powerpc/include/asm/kvm_host.h |    3 +-
- arch/powerpc/kvm/44x_tlb.c          |   11 +-
- arch/powerpc/kvm/Kconfig            |   11 --
- arch/powerpc/kvm/Makefile           |    4 +-
- arch/powerpc/kvm/e500_tlb.c         |   16 +-
- arch/powerpc/kvm/emulate.c          |    3 +-
- arch/powerpc/kvm/powerpc.c          |    3 +
- arch/powerpc/kvm/trace.h            |  104 +++++++++++++
- arch/s390/include/asm/kvm_host.h    |    6 +-
- arch/s390/kvm/Kconfig               |    3 -
- arch/x86/include/asm/kvm_host.h     |   14 +-
- arch/x86/include/asm/msr-index.h    |    1 +
- arch/x86/include/asm/vmx.h          |    7 +
- arch/x86/kvm/Kconfig                |   12 --
- arch/x86/kvm/Makefile               |    5 +-
- arch/x86/kvm/i8254.c                |   56 ++++----
- arch/x86/kvm/i8259.c                |   22 ++-
- arch/x86/kvm/lapic.c                |   75 ++++++----
- arch/x86/kvm/lapic.h                |    1 +
- arch/x86/kvm/mmu.c                  |  222 ++++++++++++++++++++-------
- arch/x86/kvm/mmu.h                  |    2 +
- arch/x86/kvm/paging_tmpl.h          |    3 +-
- arch/x86/kvm/svm.c                  |  175 +++++++++++++---------
- arch/x86/kvm/timer.c                |   14 +-
- arch/x86/kvm/trace.h                |  260 +++++++++++++++++++++++++++++++
- arch/x86/kvm/vmx.c                  |  208 +++++++++++++++++++------
- arch/x86/kvm/x86.c                  |  290 ++++++++++++++++++++---------------
- arch/x86/kvm/x86_emulate.c          |  240 ++++++++++++++++++++++++++++-
- include/linux/kvm.h                 |   38 +----
- include/linux/kvm_host.h            |   47 ++-----
- include/trace/events/kvm.h          |   57 +++++++
- mm/hugetlb.c                        |    1 +
- virt/kvm/coalesced_mmio.c           |   28 ++--
- virt/kvm/ioapic.c                   |   25 ++--
- virt/kvm/iodev.h                    |   42 +++---
- virt/kvm/irq_comm.c                 |    5 +
- virt/kvm/kvm_main.c                 |  119 +++++++++++----
- virt/kvm/kvm_trace.c                |  285 ----------------------------------
- 41 files changed, 1574 insertions(+), 878 deletions(-)
- create mode 100644 arch/powerpc/kvm/trace.h
- create mode 100644 arch/x86/kvm/trace.h
- create mode 100644 include/trace/events/kvm.h
- delete mode 100644 virt/kvm/kvm_trace.c
+diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
+index 4d7256d..7a9bddb 100644
+--- a/arch/x86/kvm/x86_emulate.c
++++ b/arch/x86/kvm/x86_emulate.c
+@@ -1476,6 +1476,71 @@ emulate_syscall(struct x86_emulate_ctxt *ctxt)
+ 	return 0;
+ }
+ 
++static int
++emulate_sysenter(struct x86_emulate_ctxt *ctxt)
++{
++	struct decode_cache *c = &ctxt->decode;
++	struct kvm_segment cs, ss;
++	u64 msr_data;
++
++	/* inject #UD if LOCK prefix is used */
++	if (c->lock_prefix)
++		return -1;
++
++	/* inject #GP if in real mode or paging is disabled */
++	if (ctxt->mode == X86EMUL_MODE_REAL ||
++		!(ctxt->vcpu->arch.cr0 & X86_CR0_PE)) {
++		kvm_inject_gp(ctxt->vcpu, 0);
++		return -1;
++	}
++
++	/* XXX sysenter/sysexit have not been tested in 64bit mode.
++	* Therefore, we inject an #UD.
++	*/
++	if (ctxt->mode == X86EMUL_MODE_PROT64)
++		return -1;
++
++	setup_syscalls_segments(ctxt, &cs, &ss);
++
++	kvm_x86_ops->get_msr(ctxt->vcpu, MSR_IA32_SYSENTER_CS, &msr_data);
++	switch (ctxt->mode) {
++	case X86EMUL_MODE_PROT32:
++		if ((msr_data & 0xfffc) == 0x0) {
++			kvm_inject_gp(ctxt->vcpu, 0);
++			return -1;
++		}
++		break;
++	case X86EMUL_MODE_PROT64:
++		if (msr_data == 0x0) {
++			kvm_inject_gp(ctxt->vcpu, 0);
++			return -1;
++		}
++		break;
++	}
++
++	ctxt->eflags &= ~(EFLG_VM | EFLG_IF | EFLG_RF);
++	cs.selector = (u16)msr_data;
++	cs.selector &= ~SELECTOR_RPL_MASK;
++	ss.selector = cs.selector + 8;
++	ss.selector &= ~SELECTOR_RPL_MASK;
++	if (ctxt->mode == X86EMUL_MODE_PROT64
++		|| is_long_mode(ctxt->vcpu)) {
++		cs.db = 0;
++		cs.l = 1;
++	}
++
++	kvm_x86_ops->set_segment(ctxt->vcpu, &cs, VCPU_SREG_CS);
++	kvm_x86_ops->set_segment(ctxt->vcpu, &ss, VCPU_SREG_SS);
++
++	kvm_x86_ops->get_msr(ctxt->vcpu, MSR_IA32_SYSENTER_EIP, &msr_data);
++	c->eip = msr_data;
++
++	kvm_x86_ops->get_msr(ctxt->vcpu, MSR_IA32_SYSENTER_ESP, &msr_data);
++	c->regs[VCPU_REGS_RSP] = msr_data;
++
++	return 0;
++}
++
+ int
+ x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
+ {
+@@ -2144,7 +2209,10 @@ twobyte_insn:
+ 		c->dst.type = OP_NONE;
+ 		break;
+ 	case 0x34:		/* sysenter */
+-		goto cannot_emulate;
++		if (emulate_sysenter(ctxt) == -1)
++			goto cannot_emulate;
++		else
++			goto writeback;
+ 		break;
+ 	case 0x35:		/* sysexit */
+ 		goto cannot_emulate;
+-- 
+1.6.3.3
 
