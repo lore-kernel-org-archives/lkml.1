@@ -1,171 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751048AbZHSTvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751662AbZHSULo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751048AbZHSTvd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 15:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbZHSTvd
+	id S1751662AbZHSULo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 16:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZHSULo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 15:51:33 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:31565 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750857AbZHSTvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 15:51:32 -0400
-X-Greylist: delayed 2810 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Aug 2009 15:51:32 EDT
-Message-ID: <4A8C4CAA.5070101@redhat.com>
-Date: Wed, 19 Aug 2009 15:04:10 -0400
-From: William Cohen <wcohen@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 19 Aug 2009 16:11:44 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:43369 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbZHSULn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 16:11:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :message-id:content-type:content-transfer-encoding;
+        b=aFDu/zFkWczEOKaMNlHdf2GsmoDTRblSXZEqLkKpWzCaTql4ocG1xzuBu5ALY02y5m
+         UnH5gDWvlZLwKFotwwKKeM1OOiy8LIa0BifCUWesPU8T+A7vZqHBPbVbSr1m0C44R8/k
+         D+cN1TPDqg5gokt7um1uYKEh9lyUP2Uaw3WGk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: [PATCH] ali5451: fix timeout handling in snd_ali_{codecs,timer}_ready()
+Date: Wed, 19 Aug 2009 22:09:50 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc6-dirty; KDE/4.2.4; i686; ; )
+Cc: Jack Byer <ojbyer@usa.net>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add minimal support for software performance counters
- for ia64
-References: <4A8C2290.3040707@redhat.com> <1250698351.8282.106.camel@twins>
-In-Reply-To: <1250698351.8282.106.camel@twins>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------080605000302000100080003"
+Content-Disposition: inline
+Message-Id: <200908192209.50994.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080605000302000100080003
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ali5451: fix timeout handling in snd_ali_{codecs,timer}_ready()
 
-Peter Zijlstra wrote:
-> On Wed, 2009-08-19 at 12:04 -0400, William Cohen wrote:
->> +#ifdef __ia64__
->> +#include "../../arch/ia64/include/asm/unistd.h"
->> +#define rmb()          asm volatile("" ::: "memory")
->> +#define cpu_relax()    asm volatile("" ::: "memory");
->> +#endif
-> 
-> Surely the itanic has a real memory barrier? The kernel seems to use
-> something along the lines of mf.
-> 
-> Also, cpu_relax() seems to end up being asm volatile("hint @pause" :::
-> "memory"), although we don't seem to have an actual user of cpu_relax()
-> in perf atm.
-> 
-> 
-> 
+Modify loops in such way that the register value is checked also after
+the timeout condition, just in case the heavy interrupt load etc. caused
+the thread to sleep for the time period exceeding the timeout value.
 
-Peter, thanks for the comment. I took a look at the rmb() and cpu_relax() code
-in the kernel and revised the patch with the appropriate defines
+While at it remove an extra ALI_STIMER read from snd_ali_stimer_ready().
 
--Will
+Reported-by: Jack Byer <ojbyer@usa.net>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ sound/pci/ali5451/ali5451.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
---------------080605000302000100080003
-Content-Type: text/plain;
- name="perf_ia64b.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="perf_ia64b.patch"
-
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 170042b..8471526 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -29,6 +29,7 @@ config IA64
- 	select HAVE_KVM
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_DMA_API_DEBUG
-+	select HAVE_PERF_COUNTERS
- 	default y
- 	help
- 	  The Itanium Processor Family is Intel's 64-bit successor to
-diff --git a/arch/ia64/include/asm/unistd.h b/arch/ia64/include/asm/unistd.h
-index 5a5347f..f69d1c9 100644
---- a/arch/ia64/include/asm/unistd.h
-+++ b/arch/ia64/include/asm/unistd.h
-@@ -311,11 +311,12 @@
- #define __NR_preadv			1319
- #define __NR_pwritev			1320
- #define __NR_rt_tgsigqueueinfo		1321
-+#define __NR_perf_counter_open		1322
- 
- #ifdef __KERNEL__
- 
- 
--#define NR_syscalls			298 /* length of syscall table */
-+#define NR_syscalls			299 /* length of syscall table */
- 
- /*
-  * The following defines stop scripts/checksyscalls.sh from complaining about
-diff --git a/arch/ia64/kernel/entry.S b/arch/ia64/kernel/entry.S
-index d0e7d37..4cf88b0 100644
---- a/arch/ia64/kernel/entry.S
-+++ b/arch/ia64/kernel/entry.S
-@@ -1806,6 +1806,7 @@ sys_call_table:
- 	data8 sys_preadv
- 	data8 sys_pwritev			// 1320
- 	data8 sys_rt_tgsigqueueinfo
-+	data8 sys_perf_counter_open
- 
- 	.org sys_call_table + 8*NR_syscalls	// guard against failures to increase NR_syscalls
- #endif /* __IA64_ASM_PARAVIRTUALIZED_NATIVE */
-diff --git a/include/asm-ia64/perf_counter.h b/include/asm-ia64/perf_counter.h
-new file mode 100644
-index 0000000..cab4352
---- /dev/null
-+++ b/include/asm-ia64/perf_counter.h
-@@ -0,0 +1,9 @@
-+#ifndef __ASM_IA64_PERF_COUNTER_H
-+#define __ASM_IA64_PERF_COUNTER_H
+Index: b/sound/pci/ali5451/ali5451.c
+===================================================================
+--- a/sound/pci/ali5451/ali5451.c
++++ b/sound/pci/ali5451/ali5451.c
+@@ -314,8 +314,11 @@ static int snd_ali_codec_ready(struct sn
+ 		res = snd_ali_5451_peek(codec,port);
+ 		if (!(res & 0x8000))
+ 			return 0;
++		if (!time_after_eq(end_time, jiffies))
++			break;
+ 		schedule_timeout_uninterruptible(1);
+-	} while (time_after_eq(end_time, jiffies));
++	} while (1);
 +
-+/* IA64 only supports software counters through this interface. */
-+static inline void set_perf_counter_pending(void) {}
+ 	snd_ali_5451_poke(codec, port, res & ~0x8000);
+ 	snd_printdd("ali_codec_ready: codec is not ready.\n ");
+ 	return -EIO;
+@@ -327,15 +330,17 @@ static int snd_ali_stimer_ready(struct s
+ 	unsigned long dwChk1,dwChk2;
+ 	
+ 	dwChk1 = snd_ali_5451_peek(codec, ALI_STIMER);
+-	dwChk2 = snd_ali_5451_peek(codec, ALI_STIMER);
+ 
+ 	end_time = jiffies + msecs_to_jiffies(250);
+ 	do {
+ 		dwChk2 = snd_ali_5451_peek(codec, ALI_STIMER);
+ 		if (dwChk2 != dwChk1)
+ 			return 0;
++		if (!time_after_eq(end_time, jiffies))
++			break;
+ 		schedule_timeout_uninterruptible(1);
+-	} while (time_after_eq(end_time, jiffies));
++	} while (1);
 +
-+#define PERF_COUNTER_INDEX_OFFSET	0
-+
-+#endif /* __ASM_IA64_PERF_COUNTER_H */
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index c481a51..69db3de 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -159,8 +159,10 @@ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
- 
- # If we're on a 64-bit kernel, use -m64
- ifndef NO_64BIT
--	ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
--	  M64 := -m64
-+	ifeq ($(patsubst %ia64,%,$(uname_M)),$(uname_M))
-+	  ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
-+	    M64 := -m64
-+	  endif
- 	endif
- endif
- 
-@@ -169,9 +171,9 @@ endif
- #
- # Include saner warnings here, which can catch bugs:
- #
--EXTRA_WARNINGS = -Wcast-align -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
-+EXTRA_WARNINGS = -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
- 
--CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
-+CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 -fno-strict-aliasing $(EXTRA_WARNINGS)
- LDFLAGS = -lpthread -lrt -lelf -lm
- ALL_CFLAGS = $(CFLAGS)
- ALL_LDFLAGS = $(LDFLAGS)
-diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-index e5148e2..c849337 100644
---- a/tools/perf/perf.h
-+++ b/tools/perf/perf.h
-@@ -41,6 +41,12 @@
- #define cpu_relax()	asm volatile("" ::: "memory");
- #endif
- 
-+#ifdef __ia64__
-+#include "../../arch/ia64/include/asm/unistd.h"
-+#define rmb()		asm volatile("mf" ::: "memory")
-+#define cpu_relax()	asm volatile("hint @pause" ::: "memory")
-+#endif
-+
- #include <time.h>
- #include <unistd.h>
- #include <sys/types.h>
-
---------------080605000302000100080003--
+ 	snd_printk(KERN_ERR "ali_stimer_read: stimer is not ready.\n");
+ 	return -EIO;
+ }
