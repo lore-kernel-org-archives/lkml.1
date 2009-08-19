@@ -1,109 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbZHSQHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbZHSQH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752995AbZHSQHs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZHSQHp
+	id S1753008AbZHSQH4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZHSQHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:07:45 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55950 "EHLO mx1.suse.de"
+	Wed, 19 Aug 2009 12:07:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54201 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751803AbZHSQEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:04:47 -0400
+	id S1751435AbZHSQEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 12:04:45 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: hch@infradead.org, Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
-       tytso@mit.edu
-Subject: [PATCH 10/17] ext4: Remove syncing logic from ext4_file_write
-Date: Wed, 19 Aug 2009 18:04:37 +0200
-Message-Id: <1250697884-22288-11-git-send-email-jack@suse.cz>
+Cc: hch@infradead.org
+Subject: [PATCH 0/17] Make O_SYNC handling use standard syncing path
+Date: Wed, 19 Aug 2009 18:04:27 +0200
+Message-Id: <1250697884-22288-1-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1250697884-22288-1-git-send-email-jack@suse.cz>
-References: <1250697884-22288-1-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The syncing is now properly handled by generic_file_aio_write() so
-no special ext4 code is needed.
 
-CC: linux-ext4@vger.kernel.org
-CC: tytso@mit.edu
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/ext4/file.c |   53 ++---------------------------------------------------
- 1 files changed, 2 insertions(+), 51 deletions(-)
+  Hi,
 
-diff --git a/fs/ext4/file.c b/fs/ext4/file.c
-index 3f1873f..aafe432 100644
---- a/fs/ext4/file.c
-+++ b/fs/ext4/file.c
-@@ -58,10 +58,7 @@ static ssize_t
- ext4_file_write(struct kiocb *iocb, const struct iovec *iov,
- 		unsigned long nr_segs, loff_t pos)
- {
--	struct file *file = iocb->ki_filp;
--	struct inode *inode = file->f_path.dentry->d_inode;
--	ssize_t ret;
--	int err;
-+	struct inode *inode = iocb->ki_filp->f_path.dentry->d_inode;
- 
- 	/*
- 	 * If we have encountered a bitmap-format file, the size limit
-@@ -81,53 +78,7 @@ ext4_file_write(struct kiocb *iocb, const struct iovec *iov,
- 		}
- 	}
- 
--	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
--	/*
--	 * Skip flushing if there was an error, or if nothing was written.
--	 */
--	if (ret <= 0)
--		return ret;
--
--	/*
--	 * If the inode is IS_SYNC, or is O_SYNC and we are doing data
--	 * journalling then we need to make sure that we force the transaction
--	 * to disk to keep all metadata uptodate synchronously.
--	 */
--	if (file->f_flags & O_SYNC) {
--		/*
--		 * If we are non-data-journaled, then the dirty data has
--		 * already been flushed to backing store by generic_osync_inode,
--		 * and the inode has been flushed too if there have been any
--		 * modifications other than mere timestamp updates.
--		 *
--		 * Open question --- do we care about flushing timestamps too
--		 * if the inode is IS_SYNC?
--		 */
--		if (!ext4_should_journal_data(inode))
--			return ret;
--
--		goto force_commit;
--	}
--
--	/*
--	 * So we know that there has been no forced data flush.  If the inode
--	 * is marked IS_SYNC, we need to force one ourselves.
--	 */
--	if (!IS_SYNC(inode))
--		return ret;
--
--	/*
--	 * Open question #2 --- should we force data to disk here too?  If we
--	 * don't, the only impact is that data=writeback filesystems won't
--	 * flush data to disk automatically on IS_SYNC, only metadata (but
--	 * historically, that is what ext2 has done.)
--	 */
--
--force_commit:
--	err = ext4_force_commit(inode->i_sb);
--	if (err)
--		return err;
--	return ret;
-+	return generic_file_aio_write(iocb, iov, nr_segs, pos);
- }
- 
- static struct vm_operations_struct ext4_file_vm_ops = {
--- 
-1.6.0.2
+  below comes a patch series that unifies O_SYNC handling with code doing
+fsync(). After this, we have just one place forcing a single file to disk so
+filesystems like ext3 / ext4 don't have to force a transaction commit in
+ext?_file_write for O_SYNC files / IS_SYNC inodes.
+  The code is also cleaner this way (actually about 150 lines shorter), we
+don't sync the inode several times as it happened previously etc.
+  The patchset touches quite some filesystems. Hopefully I've added all the
+relevant people to CC for the relevant patches. I've tested via blktrace that
+for ext?, xfs, ocfs2 and fat, the file is indeed forced to disk as expected.
+Maintainers of pohmelfs and NTFS might want to check that everything works
+as expected for them after applying the patches.
+  Comments / review welcome.
 
+								Honza
