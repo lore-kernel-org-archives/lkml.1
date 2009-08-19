@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZHSQw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751011AbZHSQ4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753232AbZHSQw0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbZHSQw0
+	id S1751011AbZHSQ4c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbZHSQ4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:52:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:2364 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbZHSQwZ convert rfc822-to-8bit (ORCPT
+	Wed, 19 Aug 2009 12:56:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38065 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750763AbZHSQ4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:52:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QriyGXJEAiJelC47yVlxbfpHn5UlY164OG0YQI8hBx7pkPHDTSKpb3ZOXN9wVkO+HL
-         0E+eUa+Nj7WUOUT/cv3S5EAVB8Cbn1dMEvBYeLIsLfERjoU6GS6LCzOcw1XTZSYIg7p+
-         bgHPz8m1nRU8+pjLyeQgL+y24EYRj3eFCCWbE=
+	Wed, 19 Aug 2009 12:56:31 -0400
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH 1/2] pohmelfs: fix atomic type spew
+To: greg@kroah.com, linux-kernel@vger.kernel.org
+Date: Wed, 19 Aug 2009 17:52:02 +0100
+Message-ID: <20090819165201.14632.96567.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <20090819143223.GU5065@prithivi.gnumonks.org>
-References: <20090609083406.GE25316@prithivi.gnumonks.org>
-	 <20090619231132.22296525@hyperion.delvare>
-	 <191fb4ca0906271134r2c9761e3la56bdea3f66b60f4@mail.gmail.com>
-	 <191fb4ca0908131142m4f976d98yb434da72257f64ea@mail.gmail.com>
-	 <20090819143223.GU5065@prithivi.gnumonks.org>
-Date: Wed, 19 Aug 2009 09:52:25 -0700
-Message-ID: <191fb4ca0908190952l773fca65y5b38c88a1bf029d2@mail.gmail.com>
-Subject: Re: [lm-sensors] [PATCH] hwmon: Add driver for VIA CPU core 
-	temperature
-From: Juerg Haefliger <juergh@gmail.com>
-To: Harald Welte <HaraldWelte@viatech.com>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harald,
+atomic_long != atomic
+
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
+
+ drivers/staging/pohmelfs/inode.c |    2 +-
+ drivers/staging/pohmelfs/net.c   |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 
-> On Thu, Aug 13, 2009 at 11:42:17AM -0700, Juerg Haefliger wrote:
->> Jean,
->>
->> Harald seems to be to busy to answer emails. Can we push my driver upstream?
->
-> Well, I am not too busy anymore.  A terrible number of weeks just behind me.
+diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+index 7b60579..834edc5 100644
+--- a/drivers/staging/pohmelfs/inode.c
++++ b/drivers/staging/pohmelfs/inode.c
+@@ -1865,7 +1865,7 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
+ 	INIT_LIST_HEAD(&psb->crypto_active_list);
+ 
+ 	atomic_set(&psb->trans_gen, 1);
+-	atomic_set(&psb->total_inodes, 0);
++	atomic_long_set(&psb->total_inodes, 0);
+ 
+ 	mutex_init(&psb->state_lock);
+ 	INIT_LIST_HEAD(&psb->state_list);
+diff --git a/drivers/staging/pohmelfs/net.c b/drivers/staging/pohmelfs/net.c
+index 5f312c9..bdaab69 100644
+--- a/drivers/staging/pohmelfs/net.c
++++ b/drivers/staging/pohmelfs/net.c
+@@ -680,7 +680,7 @@ static int pohmelfs_root_cap_response(struct netfs_state *st)
+ 		printk(KERN_INFO "Mounting POHMELFS (%d) "
+ 			"with extended attributes support.\n", psb->idx);
+ 
+-	if (atomic_read(&psb->total_inodes) <= 1)
++	if (atomic_long_read(&psb->total_inodes) <= 1)
+ 		atomic_long_set(&psb->total_inodes, cap->nr_files);
+ 
+ 	dprintk("%s: total: %llu, avail: %llu, flags: %llx, inodes: %llu.\n",
 
-Good to hear :-)
-
-
-> Sorry for the delays.
->
-> I personally don't really care which driver is merged, just as long as one of
-> them ends up in mainline.
-
-
-Do you have any answers to my previous questions:
-
-1) My driver uses the CPUID instruction to read the performance
-registers that contain the temp and voltage data. Harald's driver
-reads MSRs. I don't know if there are any benefits of using one method
-over the other.
-
-2) If we pick Harald's, it would be nice if his driver can also read
-and export the CPU core voltage.
-
-3) Quite a few testers of my driver reported 0 temp readings for some
-C7 CPUs. I was never able to figure out why some CPUs return 0 temp
-but I'm guessing it depends on the thermal monitor settings. I'd like
-to understand what is going on and hope Harald can shed some light.
-
-
-...juerg
-
-
-> - Harald Welte <HaraldWelte@viatech.com>            http://linux.via.com.tw/
-> ============================================================================
-> VIA Free and Open Source Software Liaison
->
