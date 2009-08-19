@@ -1,199 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbZHSTTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbZHST07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbZHSTTg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 15:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbZHSTTg
+	id S1752923AbZHST07 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 15:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbZHST06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 15:19:36 -0400
-Received: from n10.bullet.mail.mud.yahoo.com ([209.191.125.208]:27538 "HELO
-	n10.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751302AbZHSTTf (ORCPT
+	Wed, 19 Aug 2009 15:26:58 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:64332 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752759AbZHST05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 15:19:35 -0400
-X-Yahoo-Newman-Id: 825349.11891.bm@omp415.mail.mud.yahoo.com
-X-YMail-OSG: Zpit4Q8VM1kyArKIidx_LiFJWSYHKFkRicTOtriuEUZ3MU.JAJFz.aiF7xXRolcge9s3PeCw2e8_snidq1LjmKrKa2LWMW5i6cRkdj.TodkKoFfWXdGF3kICOTyaVZyTGJgt2Qbs2GRGgAvICy6rFAOEOdQQAw18WG_4rd2lKEiRK3C0qktHBjXXm4gnKItUbjN40m3656wxTmg2hXFMV4ULifvmN.kMd2gxwU1x3jVAjQ55V1s9CQTYGiOUiG0U_UiObKNjde3sHPOyZ46xKQGL
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
-	vbus_driver objects
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Anthony Liguori <anthony@codemonkey.ws>, kvm@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       Joel Becker <joel.becker@oracle.com>
-In-Reply-To: <4A8C46FF.1070107@gmail.com>
-References: <20090814154125.26116.70709.stgit@dev.haskins.net>
-	 <20090814154308.26116.46980.stgit@dev.haskins.net>
-	 <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com>
-	 <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com>
-	 <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com>
-	 <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com>
-	 <4A8AD678.7050609@redhat.com> <4A8B9B79.9050004@gmail.com>
-	 <4A8BA5AE.3030308@redhat.com>
-	 <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
-	 <4A8C46FF.1070107@gmail.com>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 12:19:34 -0700
-Message-Id: <1250709574.27590.178.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 19 Aug 2009 15:26:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=xCgoODp8VpKaqcf6gbIVcCvgHmVHc/LL5c7p6pmXuWaxaNQj7Yf1nqi7kHNSXOzssV
+         BJdNZHlCx5fzskiG7ZNr5P/NKuCozkecQlH3FG1bGb9e/o7KvzccvDOqMdhRwMKB77CM
+         a3Q7iMi1uvjjHY/WzrW7AFIk91AyDlxFWV03M=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH 00/22] Staging: rt{286,287,307}0: various fixes/cleanups
+Date: Wed, 19 Aug 2009 21:25:59 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc6-dirty; KDE/4.2.4; i686; ; )
+Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+References: <20090816192934.3789.3648.sendpatchset@localhost.localdomain> <1250480865.7243.15.camel@marge.simson.net>
+In-Reply-To: <1250480865.7243.15.camel@marge.simson.net>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200908192125.59395.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 14:39 -0400, Gregory Haskins wrote:
-> Hi Nicholas
-> 
-> Nicholas A. Bellinger wrote:
-> > On Wed, 2009-08-19 at 10:11 +0300, Avi Kivity wrote:
-> >> On 08/19/2009 09:28 AM, Gregory Haskins wrote:
-> >>> Avi Kivity wrote:
+On Monday 17 August 2009 05:47:45 Mike Galbraith wrote:
+> On Sun, 2009-08-16 at 21:29 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > Hi,
 > > 
-> > <SNIP>
+> > Some fixes, some cleanups and a lot of preparations for finally merging
+> > rt{28,30}70 drivers together.
 > > 
-> >>> Basically, what it comes down to is both vbus and vhost need
-> >>> configuration/management.  Vbus does it with sysfs/configfs, and vhost
-> >>> does it with ioctls.  I ultimately decided to go with sysfs/configfs
-> >>> because, at least that the time I looked, it seemed like the "blessed"
-> >>> way to do user->kernel interfaces.
-> >>>    
-> >> I really dislike that trend but that's an unrelated discussion.
-> >>
-> >>>> They need to be connected to the real world somehow.  What about
-> >>>> security?  can any user create a container and devices and link them to
-> >>>> real interfaces?  If not, do you need to run the VM as root?
-> >>>>      
-> >>> Today it has to be root as a result of weak mode support in configfs, so
-> >>> you have me there.  I am looking for help patching this limitation, though.
-> >>>
-> >>>    
-> >> Well, do you plan to address this before submission for inclusion?
-> >>
-> > 
-> > Greetings Avi and Co,
-> > 
-> > I have been following this thread, and although I cannot say that I am
-> > intimately fimilar with all of the virtualization considerations
-> > involved to really add anything use to that side of the discussion, I
-> > think you guys are doing a good job of explaining the technical issues
-> > for the non virtualization wizards following this thread.  :-)
-> > 
-> > Anyways, I was wondering if you might be interesting in sharing your
-> > concerns wrt to configfs (conigfs maintainer CC'ed), at some point..?
+> > Tested with RT2860 (Asus Eee 901) and RT3070 (el cheapo USB dongle that
+> > I've bought recently to speed up the development, I'm posting this mail
+> > using it right now) chipsets.
 > 
-> So for those tuning in, the reference here is the use of configfs for
-> the management of this component of AlacrityVM, called "virtual-bus"
+> I plugged these into tip this morning (3, 5 and 21 needed hammering) and
+> tried my box's onboard USB gizmo:
 > 
-> http://developer.novell.com/wiki/index.php/Virtual-bus
+> Bus 007 Device 003: ID 13d3:3247 IMC Networks 802.11 n/g/b Wireless LAN Adapter
 > 
-> > As you may recall, I have been using configfs extensively for the 3.x
-> > generic target core infrastructure and iSCSI fabric modules living in
-> > lio-core-2.6.git/drivers/target/target_core_configfs.c and
-> > lio-core-2.6.git/drivers/lio-core/iscsi_target_config.c, and have found
-> > it to be extraordinarly useful for the purposes of a implementing a
-> > complex kernel level target mode stack that is expected to manage
-> > massive amounts of metadata, allow for real-time configuration, share
-> > data structures (eg: SCSI Target Ports) between other kernel fabric
-> > modules and manage the entire set of fabrics using only intrepetered
-> > userspace code.
-> 
-> I concur.  Configfs provided me a very natural model to express
-> resource-containers and their respective virtual-device objects.
-> 
-> > 
-> > Using the 10000 1:1 mapped TCM Virtual HBA+FILEIO LUNs <-> iSCSI Target
-> > Endpoints inside of a KVM Guest (from the results in May posted with
-> > IOMMU aware 10 Gb on modern Nahelem hardware, see
-> > http://linux-iscsi.org/index.php/KVM-LIO-Target), we have been able to
-> > dump the entire running target fabric configfs hierarchy to a single
-> > struct file on a KVM Guest root device using python code on the order of
-> > ~30 seconds for those 10000 active iSCSI endpoints.  In configfs terms,
-> > this means:
-> > 
-> > *) 7 configfs groups (directories), ~50 configfs attributes (files) per
-> > Virtual HBA+FILEIO LUN
-> > *) 15 configfs groups (directories), ~60 configfs attributes (files per
-> > iSCSI fabric Endpoint
-> > 
-> > Which comes out to a total of ~220000 groups and ~1100000 attributes
-> > active configfs objects living in the configfs_dir_cache that are being
-> > dumped inside of the single KVM guest instances, including symlinks
-> > between the fabric modules to establish the SCSI ports containing
-> > complete set of SPC-4 and RFC-3720 features, et al.
-> > 
-> > Also on the kernel <-> user API interaction compatibility side, I have
-> > found the 3.x configfs enabled code adventagous over the LIO 2.9 code
-> > (that used an ioctl for everything) because it allows us to do backwards
-> > compat for future versions without using any userspace C code, which in
-> > IMHO makes maintaining userspace packages for complex kernel stacks with
-> > massive amounts of metadata + real-time configuration considerations.
-> > No longer having ioctl compatibility issues between LIO versions as the
-> > structures passed via ioctl change, and being able to do backwards
-> > compat with small amounts of interpreted code against configfs layout
-> > changes makes maintaining the kernel <-> user API really have made this
-> > that much easier for me.
-> > 
-> > Anyways, I though these might be useful to the discussion as it releates
-> > to potental uses of configfs on the KVM Host or other projects that
-> > really make sense, and/or to improve the upstream implementation so that
-> > other users (like myself) can benefit from improvements to configfs.
-> > 
-> > Many thanks for your most valuable of time,
-> 
-> Thank you for the explanation of your setup.
-> 
-> Configfs mostly works for the vbus project "as is".  As Avi pointed out,
-> I currently have a limitation w.r.t. perms.  Forgive me if what I am
-> about to say is overly simplistic.  Its been quite a few months since I
-> worked on the configfs portion of the code, so my details may be fuzzy.
-> 
-> What it boiled down to is I need is a way to better manage perms
+> Works fine here.
 
-I have not looked at implementing this personally, so I am not sure how
-this would look in fs/configfs/ off the top of my head..  Joel, have you
-had any thoughts on this..?
+Thanks a lot for extra testing, could you also check what MAC version is
+this beast using?  I'm now working on merging rt2870 and rt3070 together,
+and I would need somebody with 2870 flavor to verify the end result.. :)
 
->  (and to
-> be able to do it cross sysfs and configfs would be ideal).
+The USB dongle that I'm doing tests with is:
+
+	Bus 004 Device 003: ID 148f:3070 Ralink Technology, Corp.
+
+and is identified by rt2800usb as 3070 flavor:
+
+	phy0 -> rt2x00_set_chip: Info - Chipset detected - rt: 1600, rf: 0005, rev: 30700200.
+
+> > PS I tried using rt2800usb driver found in 2.6.31-rc6 (with overdue fix
+> > for memory corruption in rf cache from Pavel Roskin) for RT3070 chipset
+> > but it doesn't seem to work yet (iwlist wlan0 scan => no stations)..
 > 
+> Yeah, I can ping/traceroute with it, but that's about it, seems to choke
+> as soon as you need to xfer non-dinky packets.  (I would have thought
+> that the corruption fix would swim upstream given it's utterly deadly)
 
-I had coded up a patch last year to to allow configfs to access sysfs
-symlinks in the context of target_core_mod storage object (Linux/SCSI,
-Linux/Block, Linux/FILEIO) registration, which did work but ended up not
-really making sense and was (thankully) rejected by GregKH, more of that
-discussion here:
-
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-10/msg06559.html
-
-I am not sure if the sharing of permissions between sysfs and configfs
-would run into the same types of limitiations as the above..
-
-> For instance, I would like to be able to assign groups to configfs
-> directories, like /config/vbus/devices, such that
-> 
-> mkdir /config/vbus/devices/foo
-> 
-> would not require root if that GID was permitted.
-> 
-> Are there ways to do this (now, or in upcoming releases)?  If not, I may
-> be interested in helping to add this feature, so please advise how best
-> to achieve this.
-> 
-
-Not that I am aware of.  However, I think this would be useful for
-generic configfs, and I think user/group permissions on configfs
-groups/dirs and attribute/items would be quite useful for the LIO 3.x
-configfs enabled generic target engine.
-
-Many thanks for your most valuable of time,
-
---nab
-
-> Kind Regards,
-> -Greg
-> 
-
-
+It it in upstream now, a bit of competition (even if the end goal is
+exactly the same) is never a bad thing.. ;)
