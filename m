@@ -1,82 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751603AbZHSAor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751252AbZHSAqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751603AbZHSAor (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 20:44:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbZHSAoq
+	id S1751252AbZHSAqe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 20:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZHSAqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 20:44:46 -0400
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:58938 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbZHSAop (ORCPT
+	Tue, 18 Aug 2009 20:46:33 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:4579 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbZHSAqc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 20:44:45 -0400
-Date: Tue, 18 Aug 2009 17:44:45 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Avi Kivity <avi@redhat.com>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
-	model for vbus_driver objects
-Message-ID: <20090819004445.GB11168@ovro.caltech.edu>
-References: <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu> <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu> <4A8B1C7F.4060008@redhat.com> <4A8B25F5.7050806@redhat.com>
+	Tue, 18 Aug 2009 20:46:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JXSsrl1KVkQFbZt8qH7bEBYRfsuZ9UmBgzpeclvy9G7aOjmp/H7NTWUu/xKR26kva5
+         8OT5KMhiJoYDEDZLq8CDBM5qRYhGTuF6cwxL7op/1ib+tUSTCwBhopWrfsE8QHnGqdVb
+         jJY+wMmvQwe0CWWZ2sKVKdcw8pa+rkUhIQUGY=
+Date: Wed, 19 Aug 2009 02:46:29 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?utf-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
+       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH -tip v14 03/12] kprobes: checks probe address is
+	instruction boudary on x86
+Message-ID: <20090819004627.GH5231@nowhere>
+References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203428.31965.21939.stgit@localhost.localdomain> <20090818230340.GF5231@nowhere> <4A8B3693.9000301@redhat.com> <20090818234341.GG5231@nowhere> <4A8B4515.3090508@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A8B25F5.7050806@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 18 Aug 2009 17:44:47 -0700 (PDT)
+In-Reply-To: <4A8B4515.3090508@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 01:06:45AM +0300, Avi Kivity wrote:
-> On 08/19/2009 12:26 AM, Avi Kivity wrote:
->>>
->>> Off the top of my head, I would think that transporting userspace
->>> addresses in the ring (for copy_(to|from)_user()) vs. physical addresses
->>> (for DMAEngine) might be a problem. Pinning userspace pages into memory
->>> for DMA is a bit of a pain, though it is possible.
->>
->>
->> Oh, the ring doesn't transport userspace addresses.  It transports  
->> guest addresses, and it's up to vhost to do something with them.
->>
->> Currently vhost supports two translation modes:
->>
->> 1. virtio address == host virtual address (using copy_to_user)
->> 2. virtio address == offsetted host virtual address (using copy_to_user)
->>
->> The latter mode is used for kvm guests (with multiple offsets,  
->> skipping some details).
->>
->> I think you need to add a third mode, virtio address == host physical  
->> address (using dma engine).  Once you do that, and wire up the  
->> signalling, things should work.
->
->
-> You don't need in fact a third mode.  You can mmap the x86 address space  
-> into your ppc userspace and use the second mode.  All you need then is  
-> the dma engine glue and byte swapping.
->
+On Tue, Aug 18, 2009 at 08:19:33PM -0400, Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+> > On Tue, Aug 18, 2009 at 07:17:39PM -0400, Masami Hiramatsu wrote:
+> >> Frederic Weisbecker wrote:
+> >>>> +	while (addr < paddr) {
+> >>>> +		kernel_insn_init(&insn, (void *)addr);
+> >>>> +		insn_get_opcode(&insn);
+> >>>> +
+> >>>> +		/* Check if the instruction has been modified. */
+> >>>> +		if (insn.opcode.bytes[0] == BREAKPOINT_INSTRUCTION) {
+> >>>> +			ret = recover_probed_instruction(buf, addr);
+> >>>
+> >>>
+> >>>
+> >>> I'm confused about the reason of this recovering. Is it to remove
+> >>> kprobes behind the current setting one in the current function?
+> >>
+> >> No, it recovers just an instruction which is probed by a kprobe,
+> >> because we need to know the first byte of this instruction for
+> >> decoding it.
+> 
+> Ah, sorry, it was not accurate. the function recovers an instruction
+> on the buffer(buf), not on the real kernel text. :)
 
-Hmm, I'll have to think about that.
 
-The ppc is a 32-bit processor, so it has 4GB of address space for
-everything, including PCI, SDRAM, flash memory, and all other
-peripherals.
 
-This is exactly like 32bit x86, where you cannot have a PCI card that
-exposes a 4GB PCI BAR. The system would have no address space left for
-its own SDRAM.
+Ah ok. I'll just add a small comment about that then, and apply
+it.
 
-On my x86 computers, I only have 1GB of physical RAM, and so the ppc's
-have plenty of room in their address spaces to map the entire x86 RAM
-into their own address space. That is exactly what I do now. Accesses to
-ppc physical address 0x80000000 "magically" hit x86 physical address
-0x0.
 
-Ira
+ 
+> >>
+> >> Perhaps we'd better to have more generic interface (text_peek?)
+> >> for it because another subsystem (e.g. kgdb) may want to insert int3...
+> >>
+> >> Thank you,
+> > 
+> > 
+> > Aah, I see now, it's to keep a sane check of the instructions
+> > boundaries without int 3 artifacts in the middle.
+> > 
+> > But in that case, you should re-arm the breakpoint after your
+> > check, right?
+> > 
+> > Or may be you could do the check without repatching?
+> 
+> Yes, it doesn't modify kernel text, just recover an original
+> instruction from kernel text and backup byte on a buffer.
+
+
+Ok.
+
+
+> > May be by doing a copy of insn.opcode.bytes and replacing bytes[0]
+> > with what a random kprobe has stolen?
+> 
+> Hm, no, this function is protected from other kprobes by kprobe_mutex.
+> 
+> Thank you,
+
+
+
+Right, thanks!
+
+
+
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America), Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
+
