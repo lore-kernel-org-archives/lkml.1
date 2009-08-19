@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751434AbZHSBoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751529AbZHSBvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751434AbZHSBoO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 21:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbZHSBoN
+	id S1751529AbZHSBvB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 21:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZHSBvB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 21:44:13 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:41139 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbZHSBoM (ORCPT
+	Tue, 18 Aug 2009 21:51:01 -0400
+Received: from ru.mvista.com ([213.79.90.228]:44933 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750992AbZHSBvA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 21:44:12 -0400
-Date: Wed, 19 Aug 2009 10:43:11 +0900 (JST)
-Message-Id: <20090819.104311.71088788.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
-       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
-       jmarchan@redhat.com
-Subject: Re: [PATCH 18/24] blkio_cgroup patches from Ryo to track async
- bios.
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090818142636.GA7367@redhat.com>
-References: <1250451046-9966-19-git-send-email-vgoyal@redhat.com>
-	<20090818.204212.59676649.ryov@valinux.co.jp>
-	<20090818142636.GA7367@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 18 Aug 2009 21:51:00 -0400
+Date: Wed, 19 Aug 2009 05:51:01 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pierre Ossman <pierre@ossman.eu>, David Vrabel <david.vrabel@csr.com>,
+       Ben Dooks <ben@fluff.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+       linux-kernel@vger.kernel.org, sdhci-devel@lists.ossman.eu,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
+Message-ID: <20090819015101.GA10782@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090807195724.GA24020@oksana.dev.rtsoft.ru>
+ <20090807195822.GG2735@oksana.dev.rtsoft.ru>
+ <A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org>
+ <20090818233818.GA29042@oksana.dev.rtsoft.ru>
+ <F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+On Tue, Aug 18, 2009 at 08:24:17PM -0500, Kumar Gala wrote:
+> 
+> On Aug 18, 2009, at 6:38 PM, Anton Vorontsov wrote:
+> 
+> >This patch simply adds sdhci node to the device tree.
+> >
+> >We specify clock-frequency manually, so that eSDHC will work without
+> >upgrading U-Boot. Though, that'll only work for default setup (1500
+> >MHz) on new board revisions. For non-default setups, it's recommended
+> >to upgrade U-Boot, since it will fixup clock-frequency automatically.
+> >
+> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> 
+> out of interest the 85xx eSDHC don't need the sdhci,wp-inverted
+> property?
 
-Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Tue, Aug 18, 2009 at 08:42:12PM +0900, Ryo Tsuruta wrote:
-> > Hi Vivek,
-> > 
-> > Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > o blkio_cgroup patches from Ryo to track async bios.
-> > > 
-> > > o Fernando is also working on another IO tracking mechanism. We are not
-> > >   particular about any IO tracking mechanism. This patchset can make use
-> > >   of any mechanism which makes it to upstream. For the time being making
-> > >   use of Ryo's posting.
-> > 
-> > The patch attached with your mail is obsolete and it may potentially
-> > cause a deadlock when lock_page_cgroup() is called under radix_tree->lock.
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e767e0561d7fd2333df1921f1ab4176211f9036b
-> > 
-> > The latest blkio-cgroup fixes the above issue and reduces IO tracking
-> > overhead since lock_page_cgroup() is no longer used. I would recommend
-> > to update to the latest version.
-> > 
-> 
-> Hi Ryo,
-> 
-> Thanks. In next posting I will move to latest version of io tracking
-> patches.
-> 
-> > And I have a suggestion, how about moving get_cgroup_from_page() to
-> > biotrack.c, I think this function would be useful for people who
-> > want to make use of the IO tracking mechanism.
-> > 
-> > Please let me know your opinion.
-> 
-> Makes sense. In next posting, will move get_cgroup_from_page() to biotrack.c.
+Yes, eSDHC controllers in MPC85xx report normal state in its
+registers.
 
-Thank you for your reply. I'll post the new blkio-cgroup reflected in
-this change by the end of this week. Please use it if you would like to.
+But the funny thing is that the switch itself is inverted,
+so to enable writing, on MPC8569E-MDS and MPC8536DS boards
+we have to place card's write protect tab into "lock" position.
 
-Thanks,
-Ryo Tsuruta
+Unfortunately we can't fix that in software since controller
+doesn't permit write operations if it detects write-protected
+state. On the bright side, IIRC MPC8536DS revision history
+says that WP line level is fixed via BCSR upgrade. Not sure
+if it is possible to fix it for MPC8569E-MDS.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
