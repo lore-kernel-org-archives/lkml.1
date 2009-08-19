@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751840AbZHSLq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751849AbZHSLsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751840AbZHSLq4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 07:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZHSLqz
+	id S1751849AbZHSLsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 07:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZHSLsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 07:46:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42371 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751550AbZHSLqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 07:46:54 -0400
-Date: Wed, 19 Aug 2009 13:46:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org
-Subject: Re: Next Aug 19: s390 build failure (arch/s390/kernel/built-in)
-Message-ID: <20090819114646.GB32317@elte.hu>
-References: <20090819190233.86e78493.sfr@canb.auug.org.au> <4A8BDE59.2010400@in.ibm.com>
+	Wed, 19 Aug 2009 07:48:17 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:38418 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751494AbZHSLsR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 07:48:17 -0400
+Date: Wed, 19 Aug 2009 07:48:12 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 0/3] Reduce searching in the page allocator
+ fast-path
+In-Reply-To: <20090819090843.GB24809@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0908190747190.5621@gentwo.org>
+References: <1250594162-17322-1-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0908181019130.32284@gentwo.org> <20090818165340.GB13435@csn.ul.ie> <alpine.DEB.1.10.0908181357100.3840@gentwo.org> <20090819090843.GB24809@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8BDE59.2010400@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.5
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0952]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 19 Aug 2009, Mel Gorman wrote:
 
-* Sachin Sant <sachinp@in.ibm.com> wrote:
+> Ok, I don't see this particular patch merged, is it in a merge queue somewhere?
 
-> Today's next build failed on s390 with following errors.
->
->  LD      .tmp_vmlinux1
-> arch/s390/kernel/built-in.o: In function `trace_syscall_exit':
-> include/trace/syscall.h:21: undefined reference to `__tracepoint_syscall_exit'
-> include/trace/syscall.h:21: undefined reference to `__tracepoint_syscall_exit'
-> arch/s390/kernel/built-in.o: In function `trace_syscall_enter':
-> include/trace/syscall.h:14: undefined reference to `__tracepoint_syscall_enter'
-> include/trace/syscall.h:14: undefined reference to `__tracepoint_syscall_enter'
-> make: *** [.tmp_vmlinux1] Error 1
+The patch depends on Tejun's work to be merged that makes the per cpu
+allocator available on all platforms. I believe that is in the queue for
+2.6.32.
 
-Could you please send the .config that triggers this?
+> After glancing through, I can see how it might help.  I'm going to drop patch
+> 3 of this set that shuffles data from the PCP to the zone and take a closer
+> look at those patches. Patch 1 and 2 of this set should still go ahead. Do
+> you agree?
 
-Thanks,
+Yes.
 
-	Ingo
