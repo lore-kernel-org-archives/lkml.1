@@ -1,173 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752889AbZHSSf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZHSSfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752889AbZHSSf3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbZHSSf2
+	id S1752946AbZHSSfl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZHSSfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:35:28 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:23099 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752570AbZHSSf1 (ORCPT
+	Wed, 19 Aug 2009 14:35:41 -0400
+Received: from ausxippc101.us.dell.com ([143.166.85.207]:39705 "EHLO
+	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752875AbZHSSfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:35:27 -0400
+	Wed, 19 Aug 2009 14:35:39 -0400
 X-Loopcount0: from 10.9.160.253
 From: Mario Limonciello <Mario_Limonciello@Dell.com>
 To: cezary.jackiewicz@gmail.com
 Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-wireless@vger.kernel.org,
        Mario Limonciello <Mario_Limonciello@Dell.com>
-Subject: [PATCH 2/3] Add rfkill support to compal-laptop
-Date: Wed, 19 Aug 2009 13:36:09 -0500
-Message-Id: <1250706969-10382-1-git-send-email-Mario_Limonciello@Dell.com>
+Subject: [PATCH 3/3] Drop platform sysfs attributes from compal-laptop
+Date: Wed, 19 Aug 2009 13:36:20 -0500
+Message-Id: <1250706980-10424-1-git-send-email-Mario_Limonciello@Dell.com>
 X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ Now that there is rfkill support, there is no need
+ to manually grok the files in sysfs
 Signed-off-by: Mario Limonciello <Mario_Limonciello@Dell.com>
-Reviewed-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 ---
- drivers/platform/x86/compal-laptop.c |   87 +++++++++++++++++++++++++++++++++-
- 1 files changed, 85 insertions(+), 2 deletions(-)
+ drivers/platform/x86/compal-laptop.c |  168 +---------------------------------
+ 1 files changed, 4 insertions(+), 164 deletions(-)
 
 diff --git a/drivers/platform/x86/compal-laptop.c b/drivers/platform/x86/compal-laptop.c
-index c1c8c03..da7ead6 100644
+index da7ead6..2c1ff8f 100644
 --- a/drivers/platform/x86/compal-laptop.c
 +++ b/drivers/platform/x86/compal-laptop.c
-@@ -52,6 +52,7 @@
- #include <linux/backlight.h>
- #include <linux/platform_device.h>
- #include <linux/autoconf.h>
-+#include <linux/rfkill.h>
- 
- #define COMPAL_DRIVER_VERSION "0.2.6"
- 
-@@ -64,6 +65,10 @@
- #define WLAN_MASK	0x01
- #define BT_MASK 	0x02
- 
-+static struct rfkill *wifi_rfkill;
-+static struct rfkill *bt_rfkill;
-+static struct platform_device *compal_device;
-+
- static int force;
- module_param(force, bool, 0);
- MODULE_PARM_DESC(force, "Force driver load, ignore DMI data");
-@@ -89,6 +94,77 @@ static int get_lcd_level(void)
- 	return (int) result;
+@@ -26,17 +26,8 @@
+ /*
+  * comapl-laptop.c - Compal laptop support.
+  *
+- * This driver exports a few files in /sys/devices/platform/compal-laptop/:
+- *
+- *   wlan - wlan subsystem state: contains 0 or 1 (rw)
+- *
+- *   bluetooth - Bluetooth subsystem state: contains 0 or 1 (rw)
+- *
+- *   raw - raw value taken from embedded controller register (ro)
+- *
+- * In addition to these platform device attributes the driver
+- * registers itself in the Linux backlight control subsystem and is
+- * available to userspace under /sys/class/backlight/compal-laptop/.
++ * The driver registers itself with the rfkill subsystem and
++ * the Linux backlight control subsystem.
+  *
+  * This driver might work on other laptops produced by Compal. If you
+  * want to try it you can pass force=1 as argument to the module which
+@@ -165,67 +156,6 @@ err_wifi:
+ 	return ret;
  }
  
-+static int compal_rfkill_set(void *data, bool blocked)
-+{
-+	unsigned long radio = (unsigned long) data;
-+	u8 result, value;
-+
-+	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
-+
-+	if (!blocked)
-+		value = (u8) (result | radio);
-+	else
-+		value = (u8) (result & ~radio);
-+	ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
-+
-+	return 0;
-+}
-+
-+static void compal_rfkill_poll(struct rfkill *rfkill, void *data)
-+{
-+	u8 result;
-+	bool hw_blocked;
-+
-+	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
-+
-+	hw_blocked = !(result & KILLSWITCH_MASK);
-+	rfkill_set_hw_state(rfkill, hw_blocked);
-+}
-+
-+static const struct rfkill_ops compal_rfkill_ops = {
-+	.poll = compal_rfkill_poll,
-+	.set_block = compal_rfkill_set,
-+};
-+
-+static int setup_rfkill(void)
-+{
-+	int ret;
-+
-+	wifi_rfkill = rfkill_alloc("compal-wifi", &compal_device->dev,
-+				RFKILL_TYPE_WLAN, &compal_rfkill_ops,
-+				(void *) WLAN_MASK);
-+	if (!wifi_rfkill)
-+		return -ENOMEM;
-+
-+	ret = rfkill_register(wifi_rfkill);
-+	if (ret)
-+		goto err_wifi;
-+
-+	bt_rfkill = rfkill_alloc("compal-bluetooth", &compal_device->dev,
-+				RFKILL_TYPE_BLUETOOTH, &compal_rfkill_ops,
-+				(void *) BT_MASK);
-+	if (!bt_rfkill) {
-+		ret = -ENOMEM;
-+		goto err_allocate_bt;
-+	}
-+	ret = rfkill_register(bt_rfkill);
-+	if (ret)
-+		goto err_register_bt;
-+
-+	return 0;
-+
-+err_register_bt:
-+	rfkill_destroy(bt_rfkill);
-+
-+err_allocate_bt:
-+	rfkill_unregister(wifi_rfkill);
-+
-+err_wifi:
-+	rfkill_destroy(wifi_rfkill);
-+
-+	return ret;
-+}
-+
- static int set_wlan_state(int state)
- {
- 	u8 result, value;
-@@ -258,8 +334,6 @@ static struct platform_driver compal_driver = {
- 	}
- };
- 
--static struct platform_device *compal_device;
+-static int set_wlan_state(int state)
+-{
+-	u8 result, value;
 -
- /* Initialization */
+-	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
+-
+-	if ((result & KILLSWITCH_MASK) == 0)
+-		return -EINVAL;
+-	else {
+-		if (state)
+-			value = (u8) (result | WLAN_MASK);
+-		else
+-			value = (u8) (result & ~WLAN_MASK);
+-		ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
+-	}
+-
+-	return 0;
+-}
+-
+-static int set_bluetooth_state(int state)
+-{
+-	u8 result, value;
+-
+-	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
+-
+-	if ((result & KILLSWITCH_MASK) == 0)
+-		return -EINVAL;
+-	else {
+-		if (state)
+-			value = (u8) (result | BT_MASK);
+-		else
+-			value = (u8) (result & ~BT_MASK);
+-		ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
+-	}
+-
+-	return 0;
+-}
+-
+-static int get_wireless_state(int *wlan, int *bluetooth)
+-{
+-	u8 result;
+-
+-	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
+-
+-	if (wlan) {
+-		if ((result & KILLSWITCH_MASK) == 0)
+-			*wlan = 0;
+-		else
+-			*wlan = result & WLAN_MASK;
+-	}
+-
+-	if (bluetooth) {
+-		if ((result & KILLSWITCH_MASK) == 0)
+-			*bluetooth = 0;
+-		else
+-			*bluetooth = (result & BT_MASK) >> 1;
+-	}
+-
+-	return 0;
+-}
+-
+ /* Backlight device stuff */
  
- static int dmi_check_cb(const struct dmi_system_id *id)
-@@ -397,11 +471,16 @@ static int __init compal_init(void)
+ static int bl_get_brightness(struct backlight_device *b)
+@@ -246,86 +176,6 @@ static struct backlight_ops compalbl_ops = {
+ 
+ static struct backlight_device *compalbl_device;
+ 
+-/* Platform device */
+-
+-static ssize_t show_wlan(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	int ret, enabled;
+-
+-	ret = get_wireless_state(&enabled, NULL);
+-	if (ret < 0)
+-		return ret;
+-
+-	return sprintf(buf, "%i\n", enabled);
+-}
+-
+-static ssize_t show_raw(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	u8 result;
+-
+-	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
+-
+-	return sprintf(buf, "%i\n", result);
+-}
+-
+-static ssize_t show_bluetooth(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	int ret, enabled;
+-
+-	ret = get_wireless_state(NULL, &enabled);
+-	if (ret < 0)
+-		return ret;
+-
+-	return sprintf(buf, "%i\n", enabled);
+-}
+-
+-static ssize_t store_wlan_state(struct device *dev,
+-	struct device_attribute *attr, const char *buf, size_t count)
+-{
+-	int state, ret;
+-
+-	if (sscanf(buf, "%i", &state) != 1 || (state < 0 || state > 1))
+-		return -EINVAL;
+-
+-	ret = set_wlan_state(state);
+-	if (ret < 0)
+-		return ret;
+-
+-	return count;
+-}
+-
+-static ssize_t store_bluetooth_state(struct device *dev,
+-	struct device_attribute *attr, const char *buf, size_t count)
+-{
+-	int state, ret;
+-
+-	if (sscanf(buf, "%i", &state) != 1 || (state < 0 || state > 1))
+-		return -EINVAL;
+-
+-	ret = set_bluetooth_state(state);
+-	if (ret < 0)
+-		return ret;
+-
+-	return count;
+-}
+-
+-static DEVICE_ATTR(bluetooth, 0644, show_bluetooth, store_bluetooth_state);
+-static DEVICE_ATTR(wlan, 0644, show_wlan, store_wlan_state);
+-static DEVICE_ATTR(raw, 0444, show_raw, NULL);
+-
+-static struct attribute *compal_attributes[] = {
+-	&dev_attr_bluetooth.attr,
+-	&dev_attr_wlan.attr,
+-	&dev_attr_raw.attr,
+-	NULL
+-};
+-
+-static struct attribute_group compal_attribute_group = {
+-	.attrs = compal_attributes
+-};
+ 
+ static struct platform_driver compal_driver = {
+ 	.driver = {
+@@ -464,12 +314,7 @@ static int __init compal_init(void)
+ 
+ 	ret = platform_device_add(compal_device);
  	if (ret)
- 		goto fail_platform_device2;
+-		goto fail_platform_device1;
+-
+-	ret = sysfs_create_group(&compal_device->dev.kobj,
+-		&compal_attribute_group);
+-	if (ret)
+-		goto fail_platform_device2;
++		goto fail_platform_device;
  
-+	ret = setup_rfkill();
-+	if (ret)
-+		goto fail_rfkill;
-+
- 	printk(KERN_INFO "compal-laptop: driver "COMPAL_DRIVER_VERSION
- 		" successfully loaded.\n");
- 
+ 	ret = setup_rfkill();
+ 	if (ret)
+@@ -481,11 +326,7 @@ static int __init compal_init(void)
  	return 0;
  
-+fail_rfkill:
- fail_platform_device2:
+ fail_rfkill:
+-fail_platform_device2:
+-
+-	platform_device_del(compal_device);
+-
+-fail_platform_device1:
++fail_platform_device:
  
- 	platform_device_del(compal_device);
-@@ -428,6 +507,10 @@ static void __exit compal_cleanup(void)
+ 	platform_device_put(compal_device);
+ 
+@@ -503,7 +344,6 @@ fail_backlight:
+ static void __exit compal_cleanup(void)
+ {
+ 
+-	sysfs_remove_group(&compal_device->dev.kobj, &compal_attribute_group);
  	platform_device_unregister(compal_device);
  	platform_driver_unregister(&compal_driver);
  	backlight_device_unregister(compalbl_device);
-+	rfkill_unregister(wifi_rfkill);
-+	rfkill_destroy(wifi_rfkill);
-+	rfkill_unregister(bt_rfkill);
-+	rfkill_destroy(bt_rfkill);
- 
- 	printk(KERN_INFO "compal-laptop: driver unloaded.\n");
- }
 -- 
 1.6.3.3
 
