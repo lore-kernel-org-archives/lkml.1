@@ -1,49 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbZHSSdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbZHSSfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752786AbZHSSdu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbZHSSdu
+	id S1752848AbZHSSfI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:35:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZHSSfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:33:50 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56730 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751850AbZHSSdt (ORCPT
+	Wed, 19 Aug 2009 14:35:07 -0400
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:44491 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbZHSSfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:33:49 -0400
-Date: Wed, 19 Aug 2009 19:34:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Cc: "Greg KH" <greg@kroah.com>, "Linux USB" <linux-usb@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Subject: Re: Purpose of parameter in sysfs binary read
-Message-ID: <20090819193457.538aad95@lxorguk.ukuu.org.uk>
-In-Reply-To: <3eb87686d834e14f35378d3c3c79fb02.squirrel@intranet.cs.nmsu.edu>
-References: <9f97a27ccc13bd63ce99be04018b6bde.squirrel@intranet.cs.nmsu.edu>
-	<20090818151427.GA6295@kroah.com>
-	<ead4b2f9b7e5b1a415d010c524812e3a.squirrel@intranet.cs.nmsu.edu>
-	<20090819170501.1dbd29a8@lxorguk.ukuu.org.uk>
-	<5ea7c6a46fa1e051d69a302fdc8961ac.squirrel@intranet.cs.nmsu.edu>
-	<20090819191944.23e6e0ee@lxorguk.ukuu.org.uk>
-	<3eb87686d834e14f35378d3c3c79fb02.squirrel@intranet.cs.nmsu.edu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 14:35:07 -0400
+X-Loopcount0: from 10.9.160.253
+From: Mario Limonciello <Mario_Limonciello@Dell.com>
+To: cezary.jackiewicz@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Mario Limonciello <Mario_Limonciello@Dell.com>
+Subject: [PATCH 1/3] Add support for known Compal made Dell laptops
+Date: Wed, 19 Aug 2009 13:35:27 -0500
+Message-Id: <1250706927-10344-1-git-send-email-Mario_Limonciello@Dell.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 160x43 --- The same as the G15 and MX5000 keyboards. In fact, it takes the
-> same bitmap pattern as the keyboards.
-> 
-> 160x43 is small, but some graphics are definitely possible, console/text
-> is certainly possible.
+The following Dell laptops are known to have been manufacturer by Compal
+and are supported by the compal-laptop platform driver
+ - Mini 9
+ - Mini 10
+ - Mini 12
+ - Mini 10v
+ - Inspiron 11z
 
-Ultimately it should probably also create a console device of itself, but
-its not something trivial to do and I really wouldn't bother about it
-until it works in current form if ever...
+Signed-off-by: Mario Limonciello <Mario_Limonciello@Dell.com>
+---
+ drivers/platform/x86/compal-laptop.c |   46 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 46 insertions(+), 0 deletions(-)
 
-Mind you a keyboard that has the display built in would be really useful
-for poking around server boxes on racks.
+diff --git a/drivers/platform/x86/compal-laptop.c b/drivers/platform/x86/compal-laptop.c
+index 11003bb..c1c8c03 100644
+--- a/drivers/platform/x86/compal-laptop.c
++++ b/drivers/platform/x86/compal-laptop.c
+@@ -311,6 +311,47 @@ static struct dmi_system_id __initdata compal_dmi_table[] = {
+ 		},
+ 		.callback = dmi_check_cb
+ 	},
++	{
++		.ident = "Dell Mini 9",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 910"),
++		},
++		.callback = dmi_check_cb
++	},
++	{
++		.ident = "Dell Mini 10",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 1010"),
++		},
++		.callback = dmi_check_cb
++	},
++	{
++		.ident = "Dell Mini 10v",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 1011"),
++		},
++		.callback = dmi_check_cb
++	},
++	{
++		.ident = "Dell Inspiron 11z",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 1110"),
++		},
++		.callback = dmi_check_cb
++	},
++	{
++		.ident = "Dell Mini 12",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Inspiron 1210"),
++		},
++		.callback = dmi_check_cb
++	},
++
+ 	{ }
+ };
+ 
+@@ -404,3 +445,8 @@ MODULE_ALIAS("dmi:*:rnIFL90:rvrREFERENCE:*");
+ MODULE_ALIAS("dmi:*:rnIFL91:rvrIFT00:*");
+ MODULE_ALIAS("dmi:*:rnJFL92:rvrIFT00:*");
+ MODULE_ALIAS("dmi:*:rnIFT00:rvrIFT00:*");
++MODULE_ALIAS("dmi:*:svnDellInc.:pnInspiron910:*");
++MODULE_ALIAS("dmi:*:svnDellInc.:pnInspiron1010:*");
++MODULE_ALIAS("dmi:*:svnDellInc.:pnInspiron1011:*");
++MODULE_ALIAS("dmi:*:svnDellInc.:pnInspiron1110:*");
++MODULE_ALIAS("dmi:*:svnDellInc.:pnInspiron1210:*");
+-- 
+1.6.3.3
 
-Alan
