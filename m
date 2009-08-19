@@ -1,111 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbZHSNr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752216AbZHSNuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbZHSNr6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbZHSNr5
+	id S1752216AbZHSNuR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZHSNuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:47:57 -0400
-Received: from us.einfochips.com ([74.54.47.34]:55948 "EHLO us.einfochips.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751997AbZHSNr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:47:57 -0400
-Message-ID: <4A8C02E9.2090701@einfochips.com>
-Date: Wed, 19 Aug 2009 19:19:29 +0530
-From: Dhaval Vasa <dhaval.vasa@einfochips.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-CC: nico@cam.org, linux-kernel@vger.kernel.org, rabeeh@marvell.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH v2] [ARM] Kirkwood: Marvell OpenRD-Base board support
- added to v2.6.31-rc5
-References: <1249906054-572-1-git-send-email-dhaval.vasa@einfochips.com> <20090819151814.7167bad0@marrow.netinsight.se>
-In-Reply-To: <20090819151814.7167bad0@marrow.netinsight.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 19 Aug 2009 09:50:16 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:58718 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752029AbZHSNuO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:50:14 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsgEAK+bi0pMRdTz/2dsb2JhbACBUtVdgjOBZwU
+Date: Wed, 19 Aug 2009 09:50:12 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Josh Stone <jistone@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, jiayingz@google.com,
+       mbligh@google.com, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH] tracing: Create generic syscall TRACE_EVENTs
+Message-ID: <20090819135011.GA8674@Krystal>
+References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250634359-31642-1-git-send-email-jistone@redhat.com> <4A8B5624.9040607@cn.fujitsu.com> <4A8B6C01.1060503@redhat.com> <20090819130517.GB14215@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090819130517.GB14215@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 09:45:53 up 1 day, 35 min,  2 users,  load average: 0.10, 0.36,
+	0.32
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Kagstrom wrote:
-> Hi Dhaval!
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> On Mon, 10 Aug 2009 17:37:34 +0530
-> Dhaval Vasa <dhaval.vasa@einfochips.com> wrote:
+> * Josh Stone <jistone@redhat.com> wrote:
 > 
->> reference:
->> http://open-rd.org
->> http://code.google.com/p/openrd
->>
->> This patch is tested for:
->> 1. Boot from DRAM/NAND flash
->> 2. NAND read/write/erase
->> 3. GbE0
->> 4. USB read/write
->>
->> FIXME:
->> 1. SD/UART1 selection
->> 2. MPP configuration (currently, default)
->> 3. PEX
->>
->> Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
+> > On 08/18/2009 06:32 PM, Li Zefan wrote:
+> > > It would be much better to see a sample output of these TRACE_EVENTs,
+> > > so we'll see the what's the output if a syscall has less than 6 args.
+> > > 
+> > > And I guess it should be "(%lx, %lx, ..., %lx)"? Otherwise I think we'll
+> > > see some negative values.
+> > 
+> > Thanks, you're right -- the args should be unsigned long.  Whether they
+> > are hex or decimal doesn't matter to me, but I guess that does make
+> > pointers easier to spot.
+> > 
+> > Here's some output that I get on x86_64:
+> > 
+> > > # tail trace
+> > >             tail-1106  [000] 113218.474657: syscall_enter: NR 2 (7f2d34dd38f0, 0, 7f2d35009010, 5, 4, ffffffffffffffb0)
+> > > 
+> > >             tail-1106  [000] 113218.474809: syscall_enter: NR 5 (3, 7f2d35009040, 7f2d35009040, 5, 4, ffffffffffffffb0)
+> > > 
+> > >             tail-1106  [000] 113218.474855: syscall_enter: NR 9 (0, 50d3ad0, 1, 2, 3, 0)
+> > > 
+> > >             tail-1106  [000] 113218.474946: syscall_enter: NR 3 (3, 7f2d2f9a0000, 5e22, 2, 3, 0)
+> > > 
+> > >             tail-1106  [000] 113218.475673: syscall_enter: NR 2 (7fff5e42a654, 0, 0, 7fff5e429600, 80, 3)
+> > 
+> > It's very raw indeed, but that's what Ingo asked for. :) The 
+> > extra args show up as whatever happened to be in those registers.
 > 
-> Tested-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
+> If the syscalls are handled as a single tracepoint, then they 
+> cannot really have per syscall properties.
 > 
->> +static unsigned int openrd_base_mpp_config[] __initdata = {
->> +	MPP29_GPIO,	
->                    ^^^^^
-> There is trailing whitespace on this line
-> 
-
-Nicolas has already applied this patch on his orion tree; it would be 
-worth generating separate one for whitespace ?  Suggest.
-
-> Also, I'd suggest merging "[PATCH v2] Kirkwood: Initialise SATA for
-> OpenRD-Base" into this one and resubmit it.
-
-Nicolas has already applied this patch on his orion tree.  Should I 
-re-submit now ?
-
-> 
-> In my patch, I also called kirkwood_i2c_init (see below), which at
-> least make the I2C bus appear (not that I've tested it very much).
-> 
-> // Simon
-> 
-> diff --git a/arch/arm/mach-kirkwood/openrd_base-setup.c b/arch/arm/mach-kirkwood/openrd_base-setup.c
-> index f9a2166..dc0a2fe 100644
-> --- a/arch/arm/mach-kirkwood/openrd_base-setup.c
-> +++ b/arch/arm/mach-kirkwood/openrd_base-setup.c
-> @@ -71,6 +71,8 @@ static void __init openrd_base_init(void)
->         kirkwood_ge00_init(&openrd_base_ge00_data);
->         kirkwood_sata_init(&openrd_base_sata_data);
->         kirkwood_sdio_init(&openrd_base_mvsdio_data);
-> +
-> +       kirkwood_i2c_init();
->  }
->  
->  MACHINE_START(OPENRD_BASE, "Marvell OpenRD Base Board")
-> 
+> The per syscall tracepoints on the other hand give very finegrained 
+> information.
 > 
 
-Can you point me to your patch ?
+Hi Ingo,
 
-- Dhaval
+Aiming to identify the event payload type with the event ID alone, I
+would recommend either:
+
+- one tracepoint per syscall argument set types (e.g. same syscall
+  prototype)
+or
+- one tracepoint per syscall (seems to be more straightforward)
+
+Otherwise getting to fit a struct sockaddr into an integer might be
+cumbersome.
+
+Thanks,
+
+Mathieu
+
+> Note that via the use of filters one can limit the generic 
+> tracepoint to only output certain syscall NRs, and only with 
+> certain parameters.
+> 
+> 	Ingo
+
 -- 
-_____________________________________________________________________
-Disclaimer: This e-mail message and all attachments transmitted with it
-are intended solely for the use of the addressee and may contain legally
-privileged and confidential information. If the reader of this message
-is not the intended recipient, or an employee or agent responsible for
-delivering this message to the intended recipient, you are hereby
-notified that any dissemination, distribution, copying, or other use of
-this message or its attachments is strictly prohibited. If you have
-received this message in error, please notify the sender immediately by
-replying to this message and please delete it from your computer. Any
-views expressed in this message are those of the individual sender
-unless otherwise stated.Company has taken enough precautions to prevent
-the spread of viruses. However the company accepts no liability for any
-damage caused by any virus transmitted by this email.
-_____________________________________________________________________
- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
