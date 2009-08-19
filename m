@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZHSX3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZHSX2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbZHSX3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbZHSX3j
+	id S1753864AbZHSX2y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 19:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZHSXYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 19:29:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34184 "EHLO ogre.sisk.pl"
+	Wed, 19 Aug 2009 19:24:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34193 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753502AbZHSXYm convert rfc822-to-8bit (ORCPT
+	id S1753576AbZHSXYv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 19:24:42 -0400
+	Wed, 19 Aug 2009 19:24:51 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Duncan" <1i5t5.duncan@cox.net>
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       "=?utf-8?q?Martin-=C3=89ric=20Racine?=" <q-funk@iki.fi>
 References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
 In-Reply-To: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <ADSuNT6McuD.A.MLB.VOIjKB@chimera>
-Subject: [Bug #13869] Radeon framebuffer (w/o KMS) corruption at boot.
+Message-ID: <ADSuNT6McuD.A.R0.COIjKB@chimera>
+Subject: [Bug #13941] x86 Geode issue
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed, 19 Aug 2009 22:26:52 +0200 (CEST)
+Date: Wed, 19 Aug 2009 22:26:55 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,9 +36,10 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13869
-Subject		: Radeon framebuffer (w/o KMS) corruption at boot.
-Submitter	: Duncan <1i5t5.duncan@cox.net>
-Date		: 2009-07-29 16:44 (22 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13941
+Subject		: x86 Geode issue
+Submitter	: Martin-Éric Racine <q-funk@iki.fi>
+Date		: 2009-08-03 12:58 (17 days old)
+References	: http://marc.info/?l=linux-kernel&m=124930434732481&w=4
 
 
