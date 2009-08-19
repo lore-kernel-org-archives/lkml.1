@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZHSXop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZHSXn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbZHSXop (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZHSXon
+	id S1754174AbZHSXn5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 19:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZHSXn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 19:44:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34404 "EHLO ogre.sisk.pl"
+	Wed, 19 Aug 2009 19:43:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34436 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752766AbZHSXiT convert rfc822-to-8bit (ORCPT
+	id S1753955AbZHSXjD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 19:38:19 -0400
+	Wed, 19 Aug 2009 19:39:03 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Frans Pop" <elendil@planet.nl>
+       "Matteo" <rootkit85@yahoo.it>
 References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
 In-Reply-To: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Era7U-todKF.A.FSD.hnIjKB@chimera>
-Subject: [Bug #13389] Warning 'Invalid throttling state, reset' gets displayed when it should not be
+Message-ID: <Era7U-todKF.A.WwC.nmIjKB@chimera>
+Subject: [Bug #13581] ath9k doesn't work with newer kernels
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed, 19 Aug 2009 22:40:41 +0200 (CEST)
+Date: Wed, 19 Aug 2009 22:40:45 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,12 +35,9 @@ introduced between 2.6.29 and 2.6.30.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13389
-Subject		: Warning 'Invalid throttling state, reset' gets displayed when it should not be
-Submitter	: Frans Pop <elendil@planet.nl>
-Date		: 2009-05-26 15:24 (86 days old)
-Handled-By	: Frans Pop <elendil@planet.nl>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=21671
-		  http://bugzilla.kernel.org/attachment.cgi?id=21672
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13581
+Subject		: ath9k doesn't work with newer kernels
+Submitter	: Matteo <rootkit85@yahoo.it>
+Date		: 2009-06-19 12:04 (62 days old)
 
 
