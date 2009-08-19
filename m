@@ -1,19 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbZHSXiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbZHSXi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbZHSXiZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZHSXiW
+	id S1753941AbZHSXi3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 19:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZHSXi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 19:38:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34411 "EHLO ogre.sisk.pl"
+	Wed, 19 Aug 2009 19:38:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34407 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753902AbZHSXiV convert rfc822-to-8bit (ORCPT
+	id S1753910AbZHSXiV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Aug 2009 19:38:21 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Jan Scholz" <scholz@fias.uni-frankfurt.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
+       "Daniel Smolik" <marvin@mydatex.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
 References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
 In-Reply-To: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Era7U-todKF.A.oJD.QnIjKB@chimera>
-Subject: [Bug #13407] adb trackpad disappears after suspend to ram
+Message-ID: <Era7U-todKF.A.i4C.5mIjKB@chimera>
+Subject: [Bug #13512] D43 on 2.6.30 doesn't suspend anymore
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed, 19 Aug 2009 22:40:42 +0200 (CEST)
+Date: Wed, 19 Aug 2009 22:40:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,12 +35,9 @@ introduced between 2.6.29 and 2.6.30.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13407
-Subject		: adb trackpad disappears after suspend to ram
-Submitter	: Jan Scholz <scholz@fias.uni-frankfurt.de>
-Date		: 2009-05-28 7:59 (84 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7
-References	: http://marc.info/?l=linux-kernel&m=124349762314976&w=4
-Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13512
+Subject		: D43 on 2.6.30 doesn't suspend anymore
+Submitter	: Daniel Smolik <marvin@mydatex.cz>
+Date		: 2009-06-11 20:12 (70 days old)
 
 
