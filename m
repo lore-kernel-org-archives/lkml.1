@@ -1,163 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbZHSQEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbZHSQEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751432AbZHSQEp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZHSQEn
+	id S1751564AbZHSQEt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZHSQEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:04:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50374 "EHLO mx2.redhat.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750919AbZHSQEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:04:42 -0400
-Message-ID: <4A8C2290.3040707@redhat.com>
-Date: Wed, 19 Aug 2009 12:04:32 -0400
-From: William Cohen <wcohen@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Add minimal support for software performance counters for
- ia64
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------030308010300080207040007"
+	Wed, 19 Aug 2009 12:04:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55914 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751447AbZHSQEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 12:04:45 -0400
+From: Jan Kara <jack@suse.cz>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: hch@infradead.org, Jan Kara <jack@suse.cz>
+Subject: [PATCH 01/17] vfs: Introduce filemap_fdatawait_range
+Date: Wed, 19 Aug 2009 18:04:28 +0200
+Message-Id: <1250697884-22288-2-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1250697884-22288-1-git-send-email-jack@suse.cz>
+References: <1250697884-22288-1-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030308010300080207040007
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+This simple helper saves some filesystems conversion from byte offset
+to page numbers and also makes the fdata* interface more complete.
 
-The following patch adds minimal support for software performance counters for ia64.
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ include/linux/fs.h |    2 ++
+ mm/filemap.c       |   20 ++++++++++++++++++++
+ 2 files changed, 22 insertions(+), 0 deletions(-)
 
-For the kernel the patch enables configuration of the perf counter
-option, adds the perf_counter_open syscall, and includes a minimal machine
-specific asm/perf.h header file.
-
-For the perf tool the header perf.h includes an ia64 specific section
-and the options used in the Makefile were adjusted to allow
-compilation on ia64.  The -Wcast-align gives "cast increases required
-alignment of target type" warning for the list_for_each_entry()
-macro. The "-fno-strict-aliasing" was used to avoid warnings for
-"dereferencing type-punned pointer will break strict-aliasing rules"
-warnings for sscanf() functions in util/trace-event-parse.c
-
--Will
-
-Signed-off-by: William Cohen <wcohen@redhat.com>
-
---------------030308010300080207040007
-Content-Type: text/plain;
- name="perf_ia64a.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="perf_ia64a.patch"
-
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 170042b..8471526 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -29,6 +29,7 @@ config IA64
- 	select HAVE_KVM
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_DMA_API_DEBUG
-+	select HAVE_PERF_COUNTERS
- 	default y
- 	help
- 	  The Itanium Processor Family is Intel's 64-bit successor to
-diff --git a/arch/ia64/include/asm/unistd.h b/arch/ia64/include/asm/unistd.h
-index 5a5347f..f69d1c9 100644
---- a/arch/ia64/include/asm/unistd.h
-+++ b/arch/ia64/include/asm/unistd.h
-@@ -311,11 +311,12 @@
- #define __NR_preadv			1319
- #define __NR_pwritev			1320
- #define __NR_rt_tgsigqueueinfo		1321
-+#define __NR_perf_counter_open		1322
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 67888a9..cb365ad 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2076,6 +2076,8 @@ extern int write_inode_now(struct inode *, int);
+ extern int filemap_fdatawrite(struct address_space *);
+ extern int filemap_flush(struct address_space *);
+ extern int filemap_fdatawait(struct address_space *);
++extern int filemap_fdatawait_range(struct address_space *, loff_t lstart,
++				   loff_t lend);
+ extern int filemap_write_and_wait(struct address_space *mapping);
+ extern int filemap_write_and_wait_range(struct address_space *mapping,
+ 				        loff_t lstart, loff_t lend);
+diff --git a/mm/filemap.c b/mm/filemap.c
+index ccea3b6..65b2e50 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -307,6 +307,26 @@ int wait_on_page_writeback_range(struct address_space *mapping,
+ }
  
- #ifdef __KERNEL__
- 
- 
--#define NR_syscalls			298 /* length of syscall table */
-+#define NR_syscalls			299 /* length of syscall table */
- 
- /*
-  * The following defines stop scripts/checksyscalls.sh from complaining about
-diff --git a/arch/ia64/kernel/entry.S b/arch/ia64/kernel/entry.S
-index d0e7d37..4cf88b0 100644
---- a/arch/ia64/kernel/entry.S
-+++ b/arch/ia64/kernel/entry.S
-@@ -1806,6 +1806,7 @@ sys_call_table:
- 	data8 sys_preadv
- 	data8 sys_pwritev			// 1320
- 	data8 sys_rt_tgsigqueueinfo
-+	data8 sys_perf_counter_open
- 
- 	.org sys_call_table + 8*NR_syscalls	// guard against failures to increase NR_syscalls
- #endif /* __IA64_ASM_PARAVIRTUALIZED_NATIVE */
-diff --git a/include/asm-ia64/perf_counter.h b/include/asm-ia64/perf_counter.h
-new file mode 100644
-index 0000000..cab4352
---- /dev/null
-+++ b/include/asm-ia64/perf_counter.h
-@@ -0,0 +1,9 @@
-+#ifndef __ASM_IA64_PERF_COUNTER_H
-+#define __ASM_IA64_PERF_COUNTER_H
+ /**
++ * filemap_fdatawait_range - wait for all under-writeback pages to complete in a given range
++ * @mapping: address space structure to wait for
++ * @start:	offset in bytes where the range starts
++ * @end:	offset in bytes where the range ends (inclusive)
++ *
++ * Walk the list of under-writeback pages of the given address space
++ * in the given range and wait for all of them.
++ *
++ * This is just a simple wrapper so that callers don't have to convert offsets
++ * to page indexes themselves
++ */
++int filemap_fdatawait_range(struct address_space *mapping, loff_t start,
++			    loff_t end)
++{
++	return wait_on_page_writeback_range(mapping, start >> PAGE_CACHE_SHIFT,
++					    end >> PAGE_CACHE_SHIFT);
++}
++EXPORT_SYMBOL(filemap_fdatawait_range);
 +
-+/* IA64 only supports software counters through this interface. */
-+static inline void set_perf_counter_pending(void) {}
-+
-+#define PERF_COUNTER_INDEX_OFFSET	0
-+
-+#endif /* __ASM_IA64_PERF_COUNTER_H */
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index c481a51..69db3de 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -159,8 +159,10 @@ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
- 
- # If we're on a 64-bit kernel, use -m64
- ifndef NO_64BIT
--	ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
--	  M64 := -m64
-+	ifeq ($(patsubst %ia64,%,$(uname_M)),$(uname_M))
-+	  ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
-+	    M64 := -m64
-+	  endif
- 	endif
- endif
- 
-@@ -169,9 +171,9 @@ endif
- #
- # Include saner warnings here, which can catch bugs:
- #
--EXTRA_WARNINGS = -Wcast-align -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
-+EXTRA_WARNINGS = -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
- 
--CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
-+CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 -fno-strict-aliasing $(EXTRA_WARNINGS)
- LDFLAGS = -lpthread -lrt -lelf -lm
- ALL_CFLAGS = $(CFLAGS)
- ALL_LDFLAGS = $(LDFLAGS)
-diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-index e5148e2..90179c9 100644
---- a/tools/perf/perf.h
-+++ b/tools/perf/perf.h
-@@ -41,6 +41,12 @@
- #define cpu_relax()	asm volatile("" ::: "memory");
- #endif
- 
-+#ifdef __ia64__
-+#include "../../arch/ia64/include/asm/unistd.h"
-+#define rmb()		asm volatile("" ::: "memory")
-+#define cpu_relax()	asm volatile("" ::: "memory");
-+#endif
-+
- #include <time.h>
- #include <unistd.h>
- #include <sys/types.h>
++/**
+  * sync_page_range - write and wait on all pages in the passed range
+  * @inode:	target inode
+  * @mapping:	target address_space
+-- 
+1.6.0.2
 
---------------030308010300080207040007--
