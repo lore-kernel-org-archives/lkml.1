@@ -1,130 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752253AbZHSNWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752020AbZHSNYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752253AbZHSNWK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZHSNWJ
+	id S1752020AbZHSNYg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZHSNYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:22:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58820 "EHLO mail.dvmed.net"
+	Wed, 19 Aug 2009 09:24:36 -0400
+Received: from mga03.intel.com ([143.182.124.21]:48432 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751906AbZHSNWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:22:08 -0400
-Message-ID: <4A8BFC79.1000004@garzik.org>
-Date: Wed, 19 Aug 2009 09:22:01 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1751674AbZHSNYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:24:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,408,1246863600"; 
+   d="scan'208";a="177684099"
+Date: Wed, 19 Aug 2009 21:24:20 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
+       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090819132420.GA6137@localhost>
+References: <20090816051502.GB13740@localhost> <20090816112910.GA3208@localhost> <20090818234310.A64B.A69D9226@jp.fujitsu.com> <20090819120117.GB7306@localhost> <2f11576a0908190505h6da96280xf67c962aa3f5ba07@mail.gmail.com> <20090819121017.GA8226@localhost> <28c262360908190525i6e56ead0mb8dcb01c3d1a69f1@mail.gmail.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Mark Lord <liml@rtr.ca>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] libata: use single threaded work queue
-References: <20090819112554.GY12579@kernel.dk> <4A8BE932.5090300@garzik.org> <20090819120458.GZ12579@kernel.dk> <4A8BECC2.2060607@rtr.ca> <20090819122320.GA12579@kernel.dk>
-In-Reply-To: <20090819122320.GA12579@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262360908190525i6e56ead0mb8dcb01c3d1a69f1@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/19/2009 08:23 AM, Jens Axboe wrote:
-> On Wed, Aug 19 2009, Mark Lord wrote:
->> Jens Axboe wrote:
->>> On Wed, Aug 19 2009, Jeff Garzik wrote:
->>>> On 08/19/2009 07:25 AM, Jens Axboe wrote:
->>>>> Hi,
->>>>>
->>>>> On boxes with lots of CPUs, we have so many kernel threads it's not
->>>>> funny. The basic problem is that create_workqueue() creates a per-cpu
->>>>> thread, where we could easily get by with a single thread for a lot of
->>>>> cases.
->>>>>
->>>>> One such case appears to be ata_wq. You want at most one per pio drive,
->>>>> not one per CPU. I'd suggest just dropping it to a single threaded wq.
->>>>>
->>>>> Signed-off-by: Jens Axboe<jens.axboe@oracle.com>
->>>>>
->>>>> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
->>>>> index 072ba5e..0d78628 100644
->>>>> --- a/drivers/ata/libata-core.c
->>>>> +++ b/drivers/ata/libata-core.c
->>>>> @@ -6580,7 +6580,7 @@ static int __init ata_init(void)
->>>>>    {
->>>>>    	ata_parse_force_param();
->>>>>
->>>>> -	ata_wq = create_workqueue("ata");
->>>>> +	ata_wq = create_singlethread_workqueue("ata");
->>>>>    	if (!ata_wq)
->>>>>    		goto free_force_tbl;
->>>>
->>>> I agree with one-thread-per-cpu is too much, in these modern
->>>> multi-core  times, but one thread is too little.  You have
->>>> essentially re-created  simplex DMA -- blocking and waiting such that
->>>> one drive out of ~4 can be  used at any one time.
->>>>
->>>> ata_pio_task() is in a workqueue so that it can sleep and/or spend a
->>>> long time polling ATA registers.  That means an active task can
->>>> definitely starve all other tasks in the workqueue, if only one
->>>> thread  is available.  If starvation occurs, it will potentially
->>>> pause the  unrelated task for several seconds.
->>>>
->>>> The proposed patch actually expands an existing problem --
->>>> uniprocessor  case, where there is only one workqueue thread.  For
->>>> the reasons  outlined above, we actually want multiple threads even
->>>> in the UP case.  If you have more than one PIO device, latency is
->>>> bloody awful, with  occasional multi-second "hiccups" as one PIO
->>>> devices waits for another.  It's an ugly wart that users DO
->>>> occasionally complain about; luckily  most users have at most one PIO
->>>> polled device.
->>>>
->>>> It would be nice if we could replace this workqueue with a thread
->>>> pool,  where thread count inside the pool ranges from zero to $N
->>>> depending on  level of thread pool activity.  Our common case in
->>>> libata would be  _zero_ threads, if so...
->>>
->>> That would be ideal, N essentially be:
->>>
->>>          N = min(nr_cpus, nr_drives_that_need_pio);
->> ..
->>
->> No, that would leave just a single thread again for UP.
->
-> So one thread per ap would be better, then.
+On Wed, Aug 19, 2009 at 08:25:56PM +0800, Minchan Kim wrote:
+> On Wed, Aug 19, 2009 at 9:10 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> > On Wed, Aug 19, 2009 at 08:05:19PM +0800, KOSAKI Motohiro wrote:
+> >> >> page_referenced_file?
+> >> >> I think we should change page_referenced().
+> >> >
+> >> > Yeah, good catch.
+> >> >
+> >> >>
+> >> >> Instead, How about this?
+> >> >> ==============================================
+> >> >>
+> >> >> Subject: [PATCH] mm: stop circulating of referenced mlocked pages
+> >> >>
+> >> >> Currently, mlock() systemcall doesn't gurantee to mark the page PG_Mlocked
+> >> >
+> >> >                                                    mark PG_mlocked
+> >> >
+> >> >> because some race prevent page grabbing.
+> >> >> In that case, instead vmscan move the page to unevictable lru.
+> >> >>
+> >> >> However, Recently Wu Fengguang pointed out current vmscan logic isn't so
+> >> >> efficient.
+> >> >> mlocked page can move circulatly active and inactive list because
+> >> >> vmscan check the page is referenced _before_ cull mlocked page.
+> >> >>
+> >> >> Plus, vmscan should mark PG_Mlocked when cull mlocked page.
+> >> >
+> >> >                           PG_mlocked
+> >> >
+> >> >> Otherwise vm stastics show strange number.
+> >> >>
+> >> >> This patch does that.
+> >> >
+> >> > Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+> >>
+> >> Thanks.
+> >>
+> >>
+> >>
+> >> >> Index: b/mm/rmap.c
+> >> >> ===================================================================
+> >> >> --- a/mm/rmap.c       2009-08-18 19:48:14.000000000 +0900
+> >> >> +++ b/mm/rmap.c       2009-08-18 23:47:34.000000000 +0900
+> >> >> @@ -362,7 +362,9 @@ static int page_referenced_one(struct pa
+> >> >>        * unevictable list.
+> >> >>        */
+> >> >>       if (vma->vm_flags & VM_LOCKED) {
+> >> >> -             *mapcount = 1;  /* break early from loop */
+> >> >> +             *mapcount = 1;          /* break early from loop */
+> >> >> +             *vm_flags |= VM_LOCKED; /* for prevent to move active list */
+> >> >
+> >> >> +             try_set_page_mlocked(vma, page);
+> >> >
+> >> > That call is not absolutely necessary?
+> >>
+> >> Why? I haven't catch your point.
+> >
+> > Because we'll eventually hit another try_set_page_mlocked() when
+> > trying to unmap the page. Ie. duplicated with another call you added
+> > in this patch.
+> 
+> Yes. we don't have to call it and we can make patch simple.
+> I already sent patch on yesterday.
+> 
+> http://marc.info/?l=linux-mm&m=125059325722370&w=2
+> 
+> I think It's more simple than KOSAKI's idea.
+> Is any problem in my patch ?
 
-Yes.
+No, IMHO your patch is simple and good, while KOSAKI's is more
+complete :)
 
+- the try_set_page_mlocked() rename is suitable
+- the call to try_set_page_mlocked() is necessary on try_to_unmap()
+- the "if (VM_LOCKED) referenced = 0" in page_referenced() could
+  cover both active/inactive vmscan
 
->> It would be nice to just create these threads on-demand,
->> and destroy them again after periods of dis-use.
->> Kind of like how Apache does worker threads.
->
-> Well, that's the same thread pool suggestion that Jeff came up with. And
-> I agree, that's a nicer long term solution (it's also how the per-bdi
-> flushing replacement works). The problem with that appears to be that
-> any suggested patchset for thread pools spiral into certain "but what
-> color should it be?!" death.
+I did like your proposed
 
-Let people complain with code :)  libata has two basic needs in this area:
-(1) specifying a thread count other than "1" or "nr-cpus"
-(2) don't start unneeded threads / idle out unused threads
+                if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
+-                                       referenced && page_mapping_inuse(page))
++                                       referenced && page_mapping_inuse(page)
++                                       && !(vm_flags & VM_LOCKED))
+                        goto activate_locked;
 
+which looks more intuitive and less confusing.
 
-> I'll try and work up a simple create_threadpool() implementation, we can
-> literally cut away hundreds of threads with that.
-
-That would be fantastic.  It really _would_ remove hundreds of threads 
-on this 2x4 (2 quad-core pkgs) system I have, for example.
-
-I bet systems like those sparc64 Niagaras or 32-core MIPS are completely 
-insane with unused kernel threads...
-
-But if create_threadpool() proves too ambitious, having the ability for 
-the subsystem to specify number of threads (#1, above) should suffice to 
-fix your problem and the existing UP-thread-count problem.
-
-	Jeff
-
-
+Thanks,
+Fengguang
