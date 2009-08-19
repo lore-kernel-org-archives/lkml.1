@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751075AbZHSBRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751284AbZHSBSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751075AbZHSBRf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 21:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbZHSBRf
+	id S1751284AbZHSBSe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 21:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbZHSBSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 21:17:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:23378 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbZHSBRe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 21:17:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mKMcthBt7Ki14Lq35RKe8Vh9i0nRliHnKMZfGYL7jjlr0V/GSNxdX8x8wsHRBQs52u
-         u2mxjExt2dWSClAE1nwHPnqwN/02L3l0iqaMnXirayLUSIXdqOu3zYqOKBAR6OEr5tWd
-         Y9a11LV/ww2aUDpucu+A/M2N1uJRLuUnkJbjc=
-Message-ID: <4A8B52CF.4030807@gmail.com>
-Date: Tue, 18 Aug 2009 18:18:07 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
-MIME-Version: 1.0
+	Tue, 18 Aug 2009 21:18:33 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51484 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851AbZHSBSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 21:18:33 -0400
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       linuxppc-dev@ozlabs.org, peterz@infradead.org
+Message-Id: <BB2762BC-C760-4D4C-BDCF-76EFD3E1B18D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>  <20090818160911.GA21243@goodmis.org> <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com> <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com> <4A8B4607.6090303@gmail.com> <alpine.DEB.2.00.0908182030450.18648@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0908182030450.18648@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <alpine.DEB.2.00.0908182003430.18648@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH] spinlock: __raw_spin_is_locked() should return true for UP
+Date: Tue, 18 Aug 2009 20:17:28 -0500
+References: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org> <alpine.LFD.2.01.0908181618420.3158@localhost.localdomain> <alpine.DEB.2.00.0908181931180.28398@gandalf.stny.rr.com> <alpine.LFD.2.01.0908181640120.3158@localhost.localdomain> <alpine.DEB.2.00.0908182003430.18648@gandalf.stny.rr.com>
+X-Mailer: Apple Mail (2.936)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Tue, 18 Aug 2009, Justin P. Mattock wrote:
->    
->> well grub2 sure works o.k.
->> the new gfxload is pretty good.
->> problem is the screen just says
->> [Linux-bzImage etc.....]
->> and that's it. (was hoping to make the
->> font smaller to reveal the bug).
+
+On Aug 18, 2009, at 7:07 PM, Steven Rostedt wrote:
+
+> On Tue, 18 Aug 2009, Linus Torvalds wrote:
 >>
->> at this point the only choice I have is to undo
->> commits until I hit the right one.
->>      
+>>> Thinking about it, UP probably should have spin_is_locked always  
+>>> return
+>>> false, but if you want to make sure you are not in a critical  
+>>> section
+>>> with the lock not held, then use assert_spin_locked, which on UP  
+>>> should be
+>>> a nop.
+>>
+>> That's what we do. That said, I also think we should generally try to
+>> avoid the kind of code that depends on spin_is_locked always  
+>> returning
+>> false, for the same reason we should try to avoid any code that  
+>> depends on
+>> it always returning true.
 >
-> How come you can not do a git bisect?
+> Perhaps we can deprecate spin_is_locked and replace it with
+> "expect_spin_locked" and "expect_spin_unlocked" which on SMP would  
+> return
+> true and false respectively if the lock was locked. But both would  
+> always
+> return true on UP.
 >
-> It would be faster.
->
-> -- Steve
->
->
->    
-I'll give it a try
+> Or do some thing similar, that would remove the ambiguity on UP.
 
+I agree its a little too easy to abuse spin_is_locked.  However we  
+should be consistent between spin_is_locked on UP between with and  
+without CONFIG_DEBUG_SPINLOCK enabled.  How much of this do we want to  
+try and address in .31?
 
-Justin P. Mattock
+The PPC test really should be using assert_spin_locked and I'll send a  
+patch to Ben for that.
+
+- k
