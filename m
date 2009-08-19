@@ -1,90 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbZHSSnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbZHSSn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941AbZHSSnM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZHSSnL
+	id S1753004AbZHSSn2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbZHSSn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:43:11 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:6806 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752041AbZHSSnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:43:10 -0400
-Date: Wed, 19 Aug 2009 14:41:42 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
-       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 02/24] io-controller: Core of the elevator fair queuing
-Message-ID: <20090819184142.GD4391@redhat.com>
-References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com> <1250451046-9966-3-git-send-email-vgoyal@redhat.com> <4A8C21DE.1080001@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8C21DE.1080001@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 19 Aug 2009 14:43:27 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:60439 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752969AbZHSSn0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 14:43:26 -0400
+Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Mario Limonciello <Mario_Limonciello@Dell.com>
+Cc: cezary.jackiewicz@gmail.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-wireless@vger.kernel.org
+In-Reply-To: <1250706969-10382-1-git-send-email-Mario_Limonciello@Dell.com>
+References: <1250706969-10382-1-git-send-email-Mario_Limonciello@Dell.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-nYXA9SiGEd7OD+CwqUNb"
+Date: Wed, 19 Aug 2009 20:42:56 +0200
+Message-Id: <1250707376.8073.4.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.27.90 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 06:01:34PM +0200, Jerome Marchand wrote:
-> Hi Vivek,
-> 
-> Vivek Goyal wrote:
-> > o This is core of the io scheduler implemented at elevator layer. This is a mix
-> >   of cpu CFS scheduler and CFQ IO scheduler. Some of the bits from CFS have
-> >   to be derived so that we can support hierarchical scheduling. Without
-> >   cgroups or with-in group, we should essentially get same behavior as CFQ.
-> > 
-> > o This patch only shows non-hierarchical bits. Hierarhical code comes in later
-> >   patches.
-> > 
-> > o This code is the building base of introducing fair queuing logic in common
-> >   elevator layer so that it can be used by all the four IO schedulers.
-> 
-> > +static void enqueue_io_entity(struct io_entity *entity)
-> > +{
-> > +	struct io_service_tree *st = entity->st;
-> > +	struct io_sched_data *sd = io_entity_sched_data(entity);
-> > +
-> > +	/* In case task ioprio class changed while entity was off tree */
-> > +	io_entity_update_prio(entity);
-> > +	st->nr_active++;
-> > +	sd->nr_active++;
-> > +	entity->on_st = 1;
-> > +	place_entity(st, entity, 0);
-> > +	__enqueue_io_entity(st, entity);
-> > +}
-> 
-> > +static void put_prev_io_entity(struct io_entity *entity)
-> > +{
-> > +	struct io_service_tree *st = entity->st;
-> > +	struct io_sched_data *sd = io_entity_sched_data(entity);
-> > +
-> > +	st->active_entity = NULL;
-> > +	sd->active_entity = NULL;
-> > +
-> > +	if (unlikely(entity->ioprio_changed)) {
-> > +		dequeue_io_entity(entity);
-> > +		io_entity_update_prio(entity);
-> 
-> That call to io_entity_update_prio() looks redundant with the one in
-> enqueue_io_entity().
-> 
 
-thanks Jerome. Yes it does look like a redundant call. Will get rid of it
-in next posting.
+--=-nYXA9SiGEd7OD+CwqUNb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Vivek
+On Wed, 2009-08-19 at 13:36 -0500, Mario Limonciello wrote:
+> Signed-off-by: Mario Limonciello <Mario_Limonciello@Dell.com>
+> Reviewed-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 
-> > +		enqueue_io_entity(entity);
-> > +	} else
-> > +		__enqueue_io_entity(st, entity);
-> > +}
-> 
-> Jerome
+> +	ret =3D setup_rfkill();
+> +	if (ret)
+> +		goto fail_rfkill;
+> +
+>  	printk(KERN_INFO "compal-laptop: driver "COMPAL_DRIVER_VERSION
+>  		" successfully loaded.\n");
+> =20
+>  	return 0;
+> =20
+> +fail_rfkill:
+>  fail_platform_device2:
+
+Isn't that missing sysfs_remove_group()?
+
+johannes
+
+--=-nYXA9SiGEd7OD+CwqUNb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKjEetAAoJEODzc/N7+QmaD/IP/jOs9tXj4Iw4h5kLh2UNKAS6
+n16HcvOKu4EvK/01ag9iCUUxvmbqWvQcN3tv+taTgRpDD8L3Huh355PycoNzN18c
+HbDOp/QYPV0c8YNeLjXH3sHOCwINrp9i8SwW2d5mqE4xocLnV/y9qXRHkYbKWgJG
+IUc0oOf9xC1h/6LuEfKL7OZcG3RyMucPc9nu9hufcmiAx1b/4t7FwuHN4FA7Lyat
+ew+5rhcUiiq/HkUPWUe9S+bso5QmG3KIXn1J0yRuBzWoV9KhqGxKCSccrGL7Size
+EtfJqG3EbGC5dBcoj2NQDBORYuTeZbkdbMUAhs6nP0YaQIJKHe3qy/kvx1mf1JRr
+Q0X4hWg9BiEYl6W3+TEhoi0PCrCeQ/CzY/8aQZ2wriQhEdf7njhsG+Zyop5gW5jY
+pxS2nDArtDYIwQXnsFOfdreZV5wsY9KvZBWuUOiToo+YMdH5OD22zKzanTHtFiNL
+LqlR8pD/OKgZVkrVAkMcb2hDIWzm9xJISAsMdrsgNyID2jAG/3VPI2dXCTGg1g0h
+VU7NnK+Xa/rhTJ3UhUsfYgfahsTaYf5TdmoYDf3ojTZwqzrcXAkWoAwG6UERg69g
+AE2i6QhFazgM9IceHoZsY2ffi/NyemLeO+Wby2VQJ8oRb7z267OJWOT2pvAVWPeb
+qDPYCK9P6VStp8Z6TA3u
+=qCmr
+-----END PGP SIGNATURE-----
+
+--=-nYXA9SiGEd7OD+CwqUNb--
+
