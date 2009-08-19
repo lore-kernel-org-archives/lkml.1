@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbZHSTA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZHSTFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbZHSTA2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 15:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZHSTA1
+	id S1752875AbZHSTFm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 15:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZHSTFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 15:00:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44797 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752049AbZHSTA0 (ORCPT
+	Wed, 19 Aug 2009 15:05:41 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:31356 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752343AbZHSTFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 15:00:26 -0400
-Date: Wed, 19 Aug 2009 11:58:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@intel.com,
-       rui.zhang@intel.com, stable@kernel.org
-Subject: Re: [PATCH 1/2] ACPI processor: force throttling state when BIOS
- returns incorrect value
-Message-Id: <20090819115855.193ea8bb.akpm@linux-foundation.org>
-In-Reply-To: <200908171443.35622.elendil@planet.nl>
-References: <200908171443.35622.elendil@planet.nl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 19 Aug 2009 15:05:41 -0400
+Subject: Re: [PATCH 0/4] Page based O_DIRECT v2
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, zach.brown@oracle.com, hch@infradead.org
+In-Reply-To: <1250584501-31140-1-git-send-email-jens.axboe@oracle.com>
+References: <1250584501-31140-1-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain
+Date: Wed, 19 Aug 2009 15:05:42 -0400
+Message-Id: <1250708742.5589.23.camel@cail>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc stable)
+Hi Jens - 
 
-On Mon, 17 Aug 2009 14:43:34 +0200 Frans Pop <elendil@planet.nl> wrote:
+I'm not using loop, but it appears that there may be a regression in
+regular asynchronous direct I/O sequential write performance when these
+patches are applied. Using my "small" machine (16-way x86_64, 256GB, two
+dual-port 4GB FC HBAs connected through switches to 4 HP MSA1000s - one
+MSA per port), I'm seeing a small but noticeable drop in performance for
+sequential writes on the order of 2 to 6%. Random asynchronous direct
+I/O and sequential reads appear to unaffected.
 
-> If the BIOS reports an invalid throttling state (which seems to be
-> fairly common after system boot), a reset is done to state T0.
-> Because of a check in acpi_processor_get_throttling_ptc(), the reset
-> never actually gets executed, which results in the error reoccurring
-> on every access of for example /proc/acpi/processor/CPU0/throttling.
-> 
-> Add a 'force' option to acpi_processor_set_throttling() to ensure
-> the reset really takes effect.
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=13389
-> 
-> Signed-off-by: Frans Pop <elendil@planet.nl>
-> Acked-by: Zhang Rui <rui.zhang@intel.com>
+http://free.linux.hp.com/~adb/2009-08-19/nc.png
 
-Unfortunately there are changes in linux-next which make this patch
-inapplicable in non-trivial ways.
+has a set of graphs showing the data obtained when utilizing LUNs
+exported by the MSAs (increasing the number of MSAs being used along the
+X-axis). The critical sequential write graph has numbers like (numbers
+expressed in GB/second):
 
-So we'll be needing one flavour of the patch for 2.6.30.x and 2.6.31.x
-(the patch you just sent) and a different flavour for 2.6.32.
+Kernel                    1MSA  2MSAs 3MSAs 4MSAs
+------------------------  ----- ----- ----- -----
+2.6.31-rc6              :  0.17  0.33  0.50  0.65 
+2.6.31-rc6 + loop-direct:  0.15  0.31  0.46  0.61
 
-Or we preempt the pending linux-next changes and jam these patches into the
-tree first.
+Using all 4 devices we're seeing a drop of slightly over 6%. 
 
->
-> This patch, together with the next one, fixes a regression introduced in
-> 2.6.30, listed on the regression list. They have been available for 2.5
-> months now in bugzilla, but have not been picked up, despite various
-> reminders and without any reason given.
-> 
-> Google shows that numerous people are hitting this issue. The issue is in
-> itself relatively minor, but the bug in the code is clear.
-> 
-> The patches have been in all mu kernels and today testing has shown that
-> throttling works correctly with the patches applied when the system
-> overheats (http://bugzilla.kernel.org/show_bug.cgi?id=13918#c14).
+I also typically do runs utilizing just the caches on the MSAs (getting
+rid of physical disk interactions (seeks &c).). Even here we see a small
+drop off in sequential write performance (on the order of about 2.5%
+when using all 4 MSAs)- but noticeable gains for both random reads and
+(especially) random writes. That graph can be seen at:
 
-OK, that sucks.
+http://free.linux.hp.com/~adb/2009-08-19/ca.png
 
-Guys, what happened here?  Fixing regressions surely is our number one
-hair-on-fire priority, yet the ACPI developers have found other things
-to be doing for two and a half months and now we have a mess on our
-hands.
+BTW: The grace/xmgrace files that generated these can be found at - 
 
-Did this just fall through the cracks or is there some problem?
+http://free.linux.hp.com/~adb/2009-08-19/nc.agr
+http://free.linux.hp.com/~adb/2009-08-19/ca.agr
+
+- as the specifics can be seen better whilst running xmgrace on those
+files.
+
+The 2.6.31-rc6 kernel was built using your block git trees master
+branch, and the other one has your loop-direct branch at:
+
+commit 806dec7809e1b383a3a1fc328b9d3dae1f633663
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Tue Aug 18 10:01:34 2009 +0200
+
+At the same time I'm doing this, I'm doing some other testing on my
+large machine - but the test program has hung (using the loop-direct
+branch kernel). I'm tracking that down...
+
+Alan D. Brunelle
+Hewlett-Packard
+
