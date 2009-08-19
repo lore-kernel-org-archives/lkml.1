@@ -1,97 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751694AbZHSKgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751686AbZHSKiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751694AbZHSKgK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 06:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZHSKgJ
+	id S1751686AbZHSKiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 06:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZHSKiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 06:36:09 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41231 "EHLO gir.skynet.ie"
+	Wed, 19 Aug 2009 06:38:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51931 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751616AbZHSKgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 06:36:08 -0400
-Date: Wed, 19 Aug 2009 11:36:11 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: ????????? <chungki.woo@gmail.com>, ngupta@vflare.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com, riel@redhat.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: abnormal OOM killer message
-Message-ID: <20090819103611.GG24809@csn.ul.ie>
-References: <18eba5a10908181841t145e4db1wc2daf90f7337aa6e@mail.gmail.com> <20090819114408.ab9c8a78.minchan.kim@barrios-desktop> <4A8B7508.4040001@vflare.org> <20090819135105.e6b69a8d.minchan.kim@barrios-desktop> <18eba5a10908182324x45261d06y83e0f042e9ee6b20@mail.gmail.com> <20090819154958.18a34aa5.minchan.kim@barrios-desktop>
+	id S1751252AbZHSKiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 06:38:07 -0400
+Date: Wed, 19 Aug 2009 12:37:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: manual merge of the tip tree with Linus' tree
+Message-ID: <20090819103755.GC27405@elte.hu>
+References: <20090819160758.f23f2e8a.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090819154958.18a34aa5.minchan.kim@barrios-desktop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090819160758.f23f2e8a.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 03:49:58PM +0900, Minchan Kim wrote:
-> On Wed, 19 Aug 2009 15:24:54 +0900
-> ????????? <chungki.woo@gmail.com> wrote:
+
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+
+> Hi all,
 > 
-> > Thank you very much for replys.
-> > 
-> > But I think it seems not to relate with stale data problem in compcache.
-> > My question was why last chance to allocate memory was failed.
-> > When OOM killer is executed, memory state is not a condition to
-> > execute OOM killer.
-> > Specially, there are so many pages of order 0. And allocating order is zero.
-> > I think that last allocating memory should have succeeded.
-> > That's my worry.
+> Today's linux-next merge of the tip tree got a conflict in
+> kernel/irq/manage.c between commit
+> 69ab849439b506cd8dd2879527fdb64d95dd5211 ("genirq: Wake up irq thread
+> after action has been installed") from Linus' tree and commit
+> 3c26caa7409ad5367b257de3d7943551d4a959ee ("genirq: Do not wakeup irq
+> thread from __setup_irq() and set action->irq") from the tip tree.
 > 
-> Yes. I agree with you.
-> Mel. Could you give some comment in this situation ?
-> Is it possible that order 0 allocation is failed 
-> even there are many pages in buddy ?
-> 
+> I used the version from Linus' tree (as seems to have been done in
+> tip:master).
 
-Not ordinarily. If it happens, I tend to suspect that the free list data
-is corrupted and would put a check in __rmqueue() that looked like
+Yeah - that's the right resolution - thanks Stephen.
 
-	BUG_ON(list_empty(&area->free_list) && area->nr_free);
-
-The second question is, why are we in direct reclaim this far above the
-watermark? It should only be kswapd that is doing any reclaim at that
-point. That makes me wonder again are the free lists corrupted.
-
-The other possibility is that the zonelist used for allocation in the
-troubled path contains no populated zones. I would put a BUG_ON check in
-get_page_from_freelist() to check if the first zone in the zonelist has no
-pages. If that bug triggers, it might explain why OOMs are triggering for
-no good reason.
-
-I consider both of those possibilities abnormal though.
-
-> > 
-> > -----------------------------------------------------------------------------------------------------------------------------------------------
-> >       page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, order,
-> > <== this is last chance
-> >                            zonelist, ALLOC_WMARK_HIGH|ALLOC_CPUSET);
-> > <== uses ALLOC_WMARK_HIGH
-> >       if (page)
-> >       goto got_pg;
-> > 
-> >       out_of_memory(zonelist, gfp_mask, order);
-> >       goto restart;
-> > -----------------------------------------------------------------------------------------------------------------------------------------------
-> > 
-> > > Let me have a question.
-> > > Now the system has 79M as total swap.
-> > > It's bigger than system memory size.
-> > > Is it possible in compcache?
-> > > Can we believe the number?
-> > 
-> > Yeah, It's possible. 79Mbyte is data size can be swap.
-> > It's not compressed data size. It's just original data size.
-> 
-> You means your pages with 79M are swap out in compcache's reserved
-> memory?
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Ingo
