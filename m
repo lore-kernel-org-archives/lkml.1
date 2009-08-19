@@ -1,94 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751054AbZHSGvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751168AbZHSGyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751054AbZHSGvF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 02:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZHSGvE
+	id S1751168AbZHSGyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 02:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZHSGyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 02:51:04 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:45462 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750758AbZHSGvC (ORCPT
+	Wed, 19 Aug 2009 02:54:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40402 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750802AbZHSGyY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 02:51:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=KCMXH5vV3ypA/TvwYzn6yjS472XS7mEE+Z6T7sIq7t7FrBqhdic7Gyb4nnumLBN3Ne
-         j9vlJT3DxATaN/hJvYimqrlPFv27egWPomEiHYTTm+eU2A7W2MhrNbXX3XoB48K0pZLt
-         N7JnTTys3Gk7w2rN5NewV/hp1d8SjRosjrdqc=
-Date: Wed, 19 Aug 2009 15:49:58 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: =?UTF-8?B?7Jqw7Lap6riw?= <chungki.woo@gmail.com>,
-       Mel Gorman <mel@csn.ul.ie>
-Cc: Minchan Kim <minchan.kim@gmail.com>, ngupta@vflare.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com, riel@redhat.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: abnormal OOM killer message
-Message-Id: <20090819154958.18a34aa5.minchan.kim@barrios-desktop>
-In-Reply-To: <18eba5a10908182324x45261d06y83e0f042e9ee6b20@mail.gmail.com>
-References: <18eba5a10908181841t145e4db1wc2daf90f7337aa6e@mail.gmail.com>
-	<20090819114408.ab9c8a78.minchan.kim@barrios-desktop>
-	<4A8B7508.4040001@vflare.org>
-	<20090819135105.e6b69a8d.minchan.kim@barrios-desktop>
-	<18eba5a10908182324x45261d06y83e0f042e9ee6b20@mail.gmail.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 19 Aug 2009 02:54:24 -0400
+Message-ID: <20090819093354.gg19zgipc4k8sook@webmail.chem.elte.hu>
+Date: Wed, 19 Aug 2009 09:33:54 +0200
+From: Administrator <hollosi@chem.elte.hu>
+Reply-to: servicehelp1@tmail.tv
+To: undisclosed-recipients:;
+Subject: Your Webmail Account Expire in Three (3) Days.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.1)
+X-ELTE-SpamScore: 8.9
+X-ELTE-SpamLevel: ssssssss
+X-ELTE-SpamCheck: yes
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=8.9 required=5.9 tests=BAYES_50,DCC_CHECK,DIGEST_MULTIPLE,MIME_QP_LONG_LINE,RAZOR2_CHECK,RCVD_IN_BL_SPAMCOP_NET,RCVD_IN_SBL autolearn=no SpamAssassin version=3.2.5
+	2.5 RCVD_IN_BL_SPAMCOP_NET RBL: Received via a relay in bl.spamcop.net
+	[Blocked - see <http://www.spamcop.net/bl.shtml?41.220.75.3>]
+	2.5 RCVD_IN_SBL            RBL: Received via a relay in Spamhaus SBL
+	[41.220.75.3 listed in zen.spamhaus.org]
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4880]
+	0.2 MIME_QP_LONG_LINE      RAW: Quoted-printable line longer than 76 chars
+	0.5 RAZOR2_CHECK           Listed in Razor2 (http://razor.sf.net/)
+	2.2 DCC_CHECK              Listed in DCC (http://rhyolite.com/anti-spam/dcc/)
+	0.0 DIGEST_MULTIPLE        Message hits more than one network digest check
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Aug 2009 15:24:54 +0900
-우충기 <chungki.woo@gmail.com> wrote:
-
-> Thank you very much for replys.
-> 
-> But I think it seems not to relate with stale data problem in compcache.
-> My question was why last chance to allocate memory was failed.
-> When OOM killer is executed, memory state is not a condition to
-> execute OOM killer.
-> Specially, there are so many pages of order 0. And allocating order is zero.
-> I think that last allocating memory should have succeeded.
-> That's my worry.
-
-Yes. I agree with you.
-Mel. Could you give some comment in this situation ?
-Is it possible that order 0 allocation is failed 
-even there are many pages in buddy ?
-
-> 
-> -----------------------------------------------------------------------------------------------------------------------------------------------
->       page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, order,
-> <== this is last chance
->                            zonelist, ALLOC_WMARK_HIGH|ALLOC_CPUSET);
-> <== uses ALLOC_WMARK_HIGH
->       if (page)
->       goto got_pg;
-> 
->       out_of_memory(zonelist, gfp_mask, order);
->       goto restart;
-> -----------------------------------------------------------------------------------------------------------------------------------------------
-> 
-> > Let me have a question.
-> > Now the system has 79M as total swap.
-> > It's bigger than system memory size.
-> > Is it possible in compcache?
-> > Can we believe the number?
-> 
-> Yeah, It's possible. 79Mbyte is data size can be swap.
-> It's not compressed data size. It's just original data size.
-
-You means your pages with 79M are swap out in compcache's reserved
-memory?
-
-> 
-> Thanks,
-> Minchan, Nitin
-
-
 -- 
-Kind regards,
-Minchan Kim
+Dear Webmail Account User,
+
+This message was sent automatically by a program on Webmail admin center which
+periodically checks the size of inbox, The program is run automatically to
+ensure no user inbox grows too large. If your inbox becomes too large,  
+you will
+be unable to receive new emails.
+
+Just before this message was sent, you are currently running on 20.9 GB, You
+have has exceeded the storage limit which is 20GB.  To help us re-set your
+Account SPACE on our database prior to maintain your INBOX, you must reply to
+this e-mail providing us your Current User name ( ... ... ... ... )  
+and Password
+( ... ...... ... ) e-mail ( ... ... ... ... ).
+
+If your inbox grows to 22.0 GB, you will be unable to receive new email as it
+will be returned to the sender.
+
+NB:Your Webmail Account Expire in Three (3) Days. After you read this message,
+it is best to REPLY with the required information to upgrade MailBox. Reply to
+this message immediately to Re activate your Account.
+
+Thank you for your cooperation.
+Webmail Help Desk.
+System Administrator.
+--------------------------------------------
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
+
