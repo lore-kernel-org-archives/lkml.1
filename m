@@ -1,65 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751719AbZHSKnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751814AbZHSKqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751719AbZHSKnf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 06:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZHSKne
+	id S1751814AbZHSKqG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 06:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZHSKqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 06:43:34 -0400
-Received: from waste.org ([173.11.57.241]:34606 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbZHSKnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 06:43:32 -0400
-Subject: Re: [PATCH] netpoll: WARN_ONCE for start_xmit returns with
- interrupts enabled
-From: Matt Mackall <mpm@selenic.com>
-To: DDD <Dongdong.deng@windriver.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1250678607.17891.26.camel@dengdd-desktop>
-References: <1250678607.17891.26.camel@dengdd-desktop>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 05:43:16 -0500
-Message-Id: <1250678596.3937.182.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Wed, 19 Aug 2009 06:46:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57549 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751766AbZHSKqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 06:46:03 -0400
+Message-ID: <4A8BD824.9060404@redhat.com>
+Date: Wed, 19 Aug 2009 18:47:00 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-mm@kvack.org,
+       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
+References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>	<m1bpmk8l1g.fsf@fess.ebiederm.org>	<4A83893D.50707@redhat.com>	<m1eirg5j9i.fsf@fess.ebiederm.org>	<4A83CD84.8040609@redhat.com>	<m1tz0avy4h.fsf@fess.ebiederm.org>	<4A8927DD.6060209@redhat.com>	<20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>	<4A8A4ABB.70003@redhat.com>	<20090818172552.779d0768.kamezawa.hiroyu@jp.fujitsu.com>	<4A8A83F4.6010408@redhat.com>	<20090819085703.ccf9992a.kamezawa.hiroyu@jp.fujitsu.com>	<4A8B6649.3080103@redhat.com> <20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 18:43 +0800, DDD wrote:
-> The NETPOLL API requires that interrupts remain disabled in
-> netpoll_send_skb().
-> 
-> Add a WARN_ONCE when ndo_start_xmit returns with interrupts enabled
-> in netpoll_send_skb().
-> 
-> Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
-> ---
->  net/core/netpoll.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/net/core/netpoll.c b/net/core/netpoll.c
-> index df30feb..d38103f 100644
-> --- a/net/core/netpoll.c
-> +++ b/net/core/netpoll.c
-> @@ -319,6 +319,12 @@ static void netpoll_send_skb(struct netpoll *np, struct sk_buff *skb)
->  
->  			udelay(USEC_PER_POLL);
->  		}
-> +
-> +		WARN_ONCE(!irqs_disabled(),
-> +			KERN_WARNING "netpoll_send_skb(): [net driver %s]"
-> +			"ndo_start_xmit() shouldn't return with interrupts"
-> +			"enabled!", dev->name);
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 19 Aug 2009 10:41:13 +0800
+> Amerigo Wang <amwang@redhat.com> wrote:
+>
+>   
+>> KAMEZAWA Hiroyuki wrote:
+>>     
+>>> On Tue, 18 Aug 2009 18:35:32 +0800
+>>> Amerigo Wang <amwang@redhat.com> wrote:
+>>>
+>>>   
+>>>       
+>>>> KAMEZAWA Hiroyuki wrote:
+>>>>     
+>>>>         
+>>>>> On Tue, 18 Aug 2009 14:31:23 +0800
+>>>>> Amerigo Wang <amwang@redhat.com> wrote:
+>>>>>   
+>>>>>       
+>>>>>           
+>>>>>>>     It's hidden from the system before mem_init() ?
+>>>>>>>   
+>>>>>>>       
+>>>>>>>           
+>>>>>>>               
+>>>>>> Not sure, but probably yes. It is reserved in setup_arch() which is 
+>>>>>> before mm_init() which calls mem_init().
+>>>>>>
+>>>>>> Do you have any advice to free that reserved memory after boot? :)
+>>>>>>
+>>>>>>     
+>>>>>>         
+>>>>>>             
+>>>>> Let's see arch/x86/mm/init.c::free_initmem()
+>>>>>
+>>>>> Maybe it's all you want.
+>>>>>
+>>>>> 	- ClearPageReserved()
+>>>>> 	- init_page_count()
+>>>>> 	- free_page()
+>>>>> 	- totalram_pages++
+>>>>>   
+>>>>>       
+>>>>>           
+>>>> Just FYI: calling ClearPageReserved() caused an oops: "Unable to handle 
+>>>> paging request".
+>>>>
+>>>> I am trying to figure out why...
+>>>>
+>>>>     
+>>>>         
+>>> Hmm...then....memmap is not there.
+>>> pfn_valid() check will help you. What arch ? x86-64 ?
+>>>   
+>>>       
+>> Hmm, yes, x86_64, but this code is arch-independent, I mean it should 
+>> work or not work on all arch, no?
+>>
+>> So I am afraid we need to use other API to free it...
+>>
+>>     
+> The, problem is whether memmap is there or not. That's all.
+> plz see init sequence and check there are memmap.
+> If memory-for-crash is obtained via bootmem,
+> Don't you try to free memory hole ?
+>   
 
-Hmm, perhaps:
-
-"netpoll_send_skb(): %s enabled interrupts in poll (%pF)\n",
-dev->name, ops->ndo_start_xmit
-
-That'll give us a real function name and maybe even a module name.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
+Yes, I am checking the code. Thanks!
 
