@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbZHSQ3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbZHSQdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188AbZHSQ3u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZHSQ3t
+	id S1753139AbZHSQdP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZHSQdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:29:49 -0400
-Received: from queueout03-winn.ispmail.ntl.com ([81.103.221.33]:24380 "EHLO
-	queueout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751045AbZHSQ3s (ORCPT
+	Wed, 19 Aug 2009 12:33:15 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52361 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752150AbZHSQdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:29:48 -0400
-Subject: Re: [PATCH] staging/wlan-ng: Convert firmware loading to load
- binary ihex format
-From: Karl Relton <karllinuxtest.relton@ntlworld.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090819154437.GA729@kroah.com>
-References: <1250665599.4545.3.camel@localhost>
-	 <20090819154437.GA729@kroah.com>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 17:20:51 +0100
-Message-Id: <1250698851.4323.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-Cloudmark-Analysis: v=1.0 c=1 a=77gSv6d_8poA:10 a=NLZqzBF-AAAA:8 a=4LfcpmYkVpcdvqRNO00A:9 a=lL-L4dknxU0NDalZ6qsA:7 a=2pkFQK9VfCjo0ILLUorBvyGZT1MA:4 a=_dQi-Dcv4p4A:10
+	Wed, 19 Aug 2009 12:33:14 -0400
+Date: Wed, 19 Aug 2009 12:33:15 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
+       Felix Blyakher <felixb@sgi.com>, xfs@oss.sgi.com
+Subject: Re: [PATCH 14/17] xfs: Use new syncing helper
+Message-ID: <20090819163315.GA19969@infradead.org>
+References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-15-git-send-email-jack@suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250697884-22288-15-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I plan to give the various distributions a utility to pre-compile the
-firmware. It is based on ihex2fw.c.
+On Wed, Aug 19, 2009 at 06:04:41PM +0200, Jan Kara wrote:
+> diff --git a/fs/xfs/linux-2.6/xfs_lrw.c b/fs/xfs/linux-2.6/xfs_lrw.c
+> index 7078974..aeb5a39 100644
+> --- a/fs/xfs/linux-2.6/xfs_lrw.c
+> +++ b/fs/xfs/linux-2.6/xfs_lrw.c
+> @@ -817,7 +817,7 @@ write_retry:
+>  		xfs_iunlock(xip, iolock);
+>  		if (need_i_mutex)
+>  			mutex_unlock(&inode->i_mutex);
+> -		error2 = sync_page_range(inode, mapping, pos, ret);
+> +		error2 = generic_write_sync(file, pos, ret);
 
-I don't think the firmware will ever be accepted into linux-firmware
-because the original licensing cannot be established.
+I don't think this is very optimal for XFS.  This first starts an
+asynchronous writeout of the range in generic_write_sync,
+then calls into ->fsync which waits for all I/O on the file to finish,
+then forces the log inside xfs_fsync,  then waits for the range again in
+generic_write_sync, and after this code calls into
+xfs_write_sync_logforce which forces to log _again_.
 
-Karl
-
-On Wed, 2009-08-19 at 08:44 -0700, Greg KH wrote:
-> On Wed, Aug 19, 2009 at 08:06:39AM +0100, Karl Relton wrote:
-> > Convert prism2_usb firmware loading to load firmware in pre-compiled
-> > binary 'ihex' format rather than ascii 'srec' format. This moves the
-> > srec processing and sorting of records out of kernel space into a
-> > pre-compiler. The driver now just works with the binary image, but
-> > still does the 'pda plugging' of that image at runtime, as required
-> > by the prism hardware.
-> > 
-> > Signed-off-by: Karl Relton <karllinuxtest.relton@ntlworld.com>
-> 
-> 
-> Are the firmware images updated somewhere?  Like in the linux-firmware
-> tree?
-> 
-> thanks,
-> 
-> greg k-h
-> 
-
+We should be fine just doing your new filemap_fdatawrite_range helper
+here and let xfs_write_sync_logforce do the work.  Long term we should
+just get rid of this stupid submit writes before syncing the iode, then
+wait crap which is a pain for all modern filesystems.
