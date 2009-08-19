@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbZHSDBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbZHSDBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752170AbZHSDBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 23:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZHSDAr
+	id S1752205AbZHSDBm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 23:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZHSDBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 23:00:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45391 "EHLO
+	Tue, 18 Aug 2009 23:01:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:56654 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbZHSDAi (ORCPT
+	with ESMTP id S1751857AbZHSDAp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 23:00:38 -0400
-Message-Id: <20090819030039.080007250@goodmis.org>
+	Tue, 18 Aug 2009 23:00:45 -0400
+Message-Id: <20090819030036.506868128@goodmis.org>
 References: <20090819025634.987354707@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 18 Aug 2009 22:56:45 -0400
+Date: Tue, 18 Aug 2009 22:56:37 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -26,56 +26,65 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
        Alan Jenkins <sourcejedi.lkml@googlemail.com>,
        Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH 11/14] kconfig: unset IKCONFIG_PROC and clean up nesting
-Content-Disposition: inline; filename=0011-kconfig-unset-IKCONFIG_PROC-and-clean-up-nesting.patch
+Subject: [PATCH 03/14] kconfig: add make localyesconfig option
+Content-Disposition: inline; filename=0003-kconfig-add-make-localyesconfig-option.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Due to cut and paste error IKCONFIG was both set and cleared.
-It was suppose to be IKCONFIG_PROC to be cleared.
+This adds the option localyesconfig to make. This is similar to
+localmodconfig, but after it removes unnecessary modules it runs
 
-Also cleaned up if nesting.
+  sed -i s/=m/=y/
 
-Reported-by: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+on the .config file. It then runs "make silentoldconfig" to fix any
+wholes that were created by the conversion of modules to core.
+
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- scripts/kconfig/streamline_config.pl |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ scripts/kconfig/Makefile |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
-index 9fa3f81..69b7c3f 100644
---- a/scripts/kconfig/streamline_config.pl
-+++ b/scripts/kconfig/streamline_config.pl
-@@ -323,7 +323,7 @@ while(<CIN>) {
- 	    # enable IKCONFIG at least as a module
- 	    print "CONFIG_IKCONFIG=m\n";
- 	    # don't ask about PROC
--	    print "# CONFIG_IKCONFIG is not set\n";
-+	    print "# CONFIG_IKCONFIG_PROC is not set\n";
- 	} else {
- 	    print;
- 	}
-@@ -333,15 +333,12 @@ while(<CIN>) {
-     if (/^(CONFIG.*)=(m|y)/) {
- 	if (defined($configs{$1})) {
- 	    $setconfigs{$1} = $2;
--	    print;
- 	} elsif ($2 eq "m") {
- 	    print "# $1 is not set\n";
--	} else {
--	    print;
-+	    next;
- 	}
--    } else {
--	print;
-     }
-+    print;
- }
- close(CIN);
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index e4d8394..12a4d9e 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -3,7 +3,7 @@
+ # These targets are used from top-level makefile
  
+ PHONY += oldconfig xconfig gconfig menuconfig config silentoldconfig update-po-config \
+-	localmodconfig
++	localmodconfig localyesconfig
+ 
+ ifdef KBUILD_KCONFIG
+ Kconfig := $(KBUILD_KCONFIG)
+@@ -38,6 +38,16 @@ localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
+ 		 mv -f .config.old.1 .config.old)
+ 	$(Q)rm -f .tmp.config
+ 
++localyesconfig: $(obj)/streamline_config.pl
++	$(Q)perl $< $(Kconfig) > .tmp.config
++	$(Q)sed -i s/=m/=y/ .tmp.config
++	$(Q)cmp -s .tmp.config .config ||		\
++		(mv -f .config .config.old.1;		\
++		 mv -f .tmp.config .config;		\
++		 $(obj)/conf -s $(Kconfig);		\
++		 mv -f .config.old.1 .config.old)
++	$(Q)rm -f .tmp.config
++
+ # Create new linux.pot file
+ # Adjust charset to UTF-8 in .po file to accept UTF-8 in Kconfig files
+ # The symlink is used to repair a deficiency in arch/um
+@@ -94,6 +104,7 @@ help:
+ 	@echo  '  gconfig	  - Update current config utilising a GTK based front-end'
+ 	@echo  '  oldconfig	  - Update current config utilising a provided .config as base'
+ 	@echo  '  localmodconfig  - Update current config disabling modules not loaded'
++	@echo  '  localyesconfig  - Update current config converting local mods to core'
+ 	@echo  '  silentoldconfig - Same as oldconfig, but quietly, additionally update deps'
+ 	@echo  '  randconfig	  - New config with random answer to all options'
+ 	@echo  '  defconfig	  - New config with default answer to all options'
 -- 
 1.6.3.3
 
