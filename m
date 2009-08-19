@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752902AbZHSQGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbZHSQHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752902AbZHSQGE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZHSQGC
+	id S1752386AbZHSQHr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZHSQHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:06:02 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55955 "EHLO mx1.suse.de"
+	Wed, 19 Aug 2009 12:07:44 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55949 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbZHSQEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:04:48 -0400
+	id S1751739AbZHSQEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 12:04:47 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: hch@infradead.org, Jan Kara <jack@suse.cz>,
-       Joel Becker <Joel.Becker@oracle.com>, ocfs2-devel@oss.oracle.com
-Subject: [PATCH 13/17] ocfs2: Update syncing after splicing to match generic version
-Date: Wed, 19 Aug 2009 18:04:40 +0200
-Message-Id: <1250697884-22288-14-git-send-email-jack@suse.cz>
+Cc: hch@infradead.org, Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org
+Subject: [PATCH 09/17] ext3: Remove syncing logic from ext3_file_write
+Date: Wed, 19 Aug 2009 18:04:36 +0200
+Message-Id: <1250697884-22288-10-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1250697884-22288-1-git-send-email-jack@suse.cz>
 References: <1250697884-22288-1-git-send-email-jack@suse.cz>
@@ -23,57 +22,92 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update ocfs2 specific splicing code to use generic syncing helper.
+Syncing is now properly done by generic_file_aio_write() so no special logic is
+needed in ext3.
 
-CC: Joel Becker <Joel.Becker@oracle.com>
-CC: ocfs2-devel@oss.oracle.com
+CC: linux-ext4@vger.kernel.org
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/ocfs2/file.c |   27 ++++++---------------------
- 1 files changed, 6 insertions(+), 21 deletions(-)
+ fs/ext3/file.c |   61 +-------------------------------------------------------
+ 1 files changed, 1 insertions(+), 60 deletions(-)
 
-diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-index 1c71f0a..bd7fdf8 100644
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -1990,31 +1990,16 @@ static ssize_t ocfs2_file_splice_write(struct pipe_inode_info *pipe,
+diff --git a/fs/ext3/file.c b/fs/ext3/file.c
+index 5b49704..51fee5f 100644
+--- a/fs/ext3/file.c
++++ b/fs/ext3/file.c
+@@ -51,71 +51,12 @@ static int ext3_release_file (struct inode * inode, struct file * filp)
+ 	return 0;
+ }
  
- 	if (ret > 0) {
- 		unsigned long nr_pages;
-+		int err;
- 
--		*ppos += ret;
- 		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
- 
--		/*
--		 * If file or inode is SYNC and we actually wrote some data,
--		 * sync it.
--		 */
--		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
--			int err;
+-static ssize_t
+-ext3_file_write(struct kiocb *iocb, const struct iovec *iov,
+-		unsigned long nr_segs, loff_t pos)
+-{
+-	struct file *file = iocb->ki_filp;
+-	struct inode *inode = file->f_path.dentry->d_inode;
+-	ssize_t ret;
+-	int err;
 -
--			mutex_lock(&inode->i_mutex);
--			err = ocfs2_rw_lock(inode, 1);
--			if (err < 0) {
--				mlog_errno(err);
--			} else {
--				err = generic_osync_inode(inode, mapping,
--						  OSYNC_METADATA|OSYNC_DATA);
--				ocfs2_rw_unlock(inode, 1);
--			}
--			mutex_unlock(&inode->i_mutex);
-+		err = generic_write_sync(out, *ppos, ret);
-+		if (err)
-+			ret = err;
-+		else
-+			*ppos += ret;
- 
--			if (err)
--				ret = err;
--		}
- 		balance_dirty_pages_ratelimited_nr(mapping, nr_pages);
- 	}
- 
+-	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
+-
+-	/*
+-	 * Skip flushing if there was an error, or if nothing was written.
+-	 */
+-	if (ret <= 0)
+-		return ret;
+-
+-	/*
+-	 * If the inode is IS_SYNC, or is O_SYNC and we are doing data
+-	 * journalling then we need to make sure that we force the transaction
+-	 * to disk to keep all metadata uptodate synchronously.
+-	 */
+-	if (file->f_flags & O_SYNC) {
+-		/*
+-		 * If we are non-data-journaled, then the dirty data has
+-		 * already been flushed to backing store by generic_osync_inode,
+-		 * and the inode has been flushed too if there have been any
+-		 * modifications other than mere timestamp updates.
+-		 *
+-		 * Open question --- do we care about flushing timestamps too
+-		 * if the inode is IS_SYNC?
+-		 */
+-		if (!ext3_should_journal_data(inode))
+-			return ret;
+-
+-		goto force_commit;
+-	}
+-
+-	/*
+-	 * So we know that there has been no forced data flush.  If the inode
+-	 * is marked IS_SYNC, we need to force one ourselves.
+-	 */
+-	if (!IS_SYNC(inode))
+-		return ret;
+-
+-	/*
+-	 * Open question #2 --- should we force data to disk here too?  If we
+-	 * don't, the only impact is that data=writeback filesystems won't
+-	 * flush data to disk automatically on IS_SYNC, only metadata (but
+-	 * historically, that is what ext2 has done.)
+-	 */
+-
+-force_commit:
+-	err = ext3_force_commit(inode->i_sb);
+-	if (err)
+-		return err;
+-	return ret;
+-}
+-
+ const struct file_operations ext3_file_operations = {
+ 	.llseek		= generic_file_llseek,
+ 	.read		= do_sync_read,
+ 	.write		= do_sync_write,
+ 	.aio_read	= generic_file_aio_read,
+-	.aio_write	= ext3_file_write,
++	.aio_write	= generic_file_aio_write,
+ 	.unlocked_ioctl	= ext3_ioctl,
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl	= ext3_compat_ioctl,
 -- 
 1.6.0.2
 
