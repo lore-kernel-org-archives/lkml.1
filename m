@@ -1,82 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbZHSSmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbZHSSnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752855AbZHSSmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbZHSSmT
+	id S1752941AbZHSSnM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:43:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZHSSnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:42:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60449 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751795AbZHSSmS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:42:18 -0400
-Subject: Re: CPU scheduler weirdness?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Marton Balint <cus@fazekas.hu>
-Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <alpine.LNX.2.00.0908191428300.20409@cinke.fazekas.hu>
-References: <20090813084257.GA761@rhlx01.hs-esslingen.de>
-	 <alpine.LNX.2.00.0908131720050.8321@cinke.fazekas.hu>
-	 <20090813155812.GA15714@rhlx01.hs-esslingen.de>
-	 <alpine.LNX.2.00.0908171758340.2764@cinke.fazekas.hu>
-	 <1250665455.7583.326.camel@twins>
-	 <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu>
-	 <1250683834.7583.360.camel@twins>
-	 <alpine.LNX.2.00.0908191428300.20409@cinke.fazekas.hu>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 20:42:11 +0200
-Message-Id: <1250707331.7154.1.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 14:43:11 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:6806 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752041AbZHSSnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 14:43:10 -0400
+Date: Wed, 19 Aug 2009 14:41:42 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jerome Marchand <jmarchan@redhat.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
+       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH 02/24] io-controller: Core of the elevator fair queuing
+Message-ID: <20090819184142.GD4391@redhat.com>
+References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com> <1250451046-9966-3-git-send-email-vgoyal@redhat.com> <4A8C21DE.1080001@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8C21DE.1080001@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 14:34 +0200, Marton Balint wrote:
+On Wed, Aug 19, 2009 at 06:01:34PM +0200, Jerome Marchand wrote:
+> Hi Vivek,
 > 
-> On Wed, 19 Aug 2009, Peter Zijlstra wrote:
+> Vivek Goyal wrote:
+> > o This is core of the io scheduler implemented at elevator layer. This is a mix
+> >   of cpu CFS scheduler and CFQ IO scheduler. Some of the bits from CFS have
+> >   to be derived so that we can support hierarchical scheduling. Without
+> >   cgroups or with-in group, we should essentially get same behavior as CFQ.
+> > 
+> > o This patch only shows non-hierarchical bits. Hierarhical code comes in later
+> >   patches.
+> > 
+> > o This code is the building base of introducing fair queuing logic in common
+> >   elevator layer so that it can be used by all the four IO schedulers.
 > 
-> > On Wed, 2009-08-19 at 14:01 +0200, Marton Balint wrote:
-> >> On Wed, 19 Aug 2009, Peter Zijlstra wrote:
-> >>> On Tue, 2009-08-18 at 21:49 +0200, Marton Balint wrote:
-> >>>
-> >>>> In the meantime, I was able to create a tiny C program which always
-> >>>> succesfully reproduces the bug. It's basically an endless loop which does
-> >>>> not stop while the process is running on the last CPU core. The program
-> >>>> creates multiple instances of itself, to be able to keep all of the CPU
-> >>>> cores busy. After 1 second, the processes running on other than the last
-> >>>> CPU core die, the processes running on the last CPU core remain stuck
-> >>>> there...
-> >>>>
-> >>>> I tested it on my dual core system, if someone could test it on a quad
-> >>>> core and report back that would probably be useful.
-> >>>>
-> >>>> Usage: ./schedtest <number of CPU cores>
-> >>>>
-> >>>> And don't forget to kill the stuck processes after using the program! :)
-> >>>
-> >>> So what's the bug? Sure one task will stay on the cpu, and because there
-> >>> is no contention it doesn't get migrated, and therefore won't quit,
-> >>> how's that a problem?
-> >>
-> >> Problem is that more than one processes remain on that CPU core, and none
-> >> of them get migrated to other (idle) cores. I tested it with my E8400
-> >> processor and 2.6.31-rc5-git3 kernel.
-> >
-> > Only one remains here.. on a c2q running 2.6.31-rc6-tip
-> >
-> > Do you have a .config handy?
-> >
+> > +static void enqueue_io_entity(struct io_entity *entity)
+> > +{
+> > +	struct io_service_tree *st = entity->st;
+> > +	struct io_sched_data *sd = io_entity_sched_data(entity);
+> > +
+> > +	/* In case task ioprio class changed while entity was off tree */
+> > +	io_entity_update_prio(entity);
+> > +	st->nr_active++;
+> > +	sd->nr_active++;
+> > +	entity->on_st = 1;
+> > +	place_entity(st, entity, 0);
+> > +	__enqueue_io_entity(st, entity);
+> > +}
 > 
-> Yes it's in my original post:
+> > +static void put_prev_io_entity(struct io_entity *entity)
+> > +{
+> > +	struct io_service_tree *st = entity->st;
+> > +	struct io_sched_data *sd = io_entity_sched_data(entity);
+> > +
+> > +	st->active_entity = NULL;
+> > +	sd->active_entity = NULL;
+> > +
+> > +	if (unlikely(entity->ioprio_changed)) {
+> > +		dequeue_io_entity(entity);
+> > +		io_entity_update_prio(entity);
 > 
-> http://marc.info/?l=linux-kernel&m=125012584709800&w=2
+> That call to io_entity_update_prio() looks redundant with the one in
+> enqueue_io_entity().
+> 
 
-Right you are,.. so I build a kernel with the cgroup scheduler in and
-tested it on a dual-core opteron machine, but I can't seem to reproduce
-this.
+thanks Jerome. Yes it does look like a redundant call. Will get rid of it
+in next posting.
 
-Are you using cgroups in any way, or do you simply have it enabled in
-your config?
+Vivek
 
+> > +		enqueue_io_entity(entity);
+> > +	} else
+> > +		__enqueue_io_entity(st, entity);
+> > +}
+> 
+> Jerome
