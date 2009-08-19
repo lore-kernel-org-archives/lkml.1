@@ -1,108 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751433AbZHSJja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751643AbZHSJkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751433AbZHSJja (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 05:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZHSJj2
+	id S1751643AbZHSJkY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 05:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZHSJkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 05:39:28 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56301 "EHLO gir.skynet.ie"
+	Wed, 19 Aug 2009 05:40:23 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:1750 "EHLO dspnet.fr.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751528AbZHSJjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 05:39:02 -0400
-Date: Wed, 19 Aug 2009 10:39:05 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alexey Korolev <akorolex@gmail.com>
-Cc: Alexey Korolev <akorolev@infradead.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: HTLB mapping for drivers. Driver example
-Message-ID: <20090819093905.GD24809@csn.ul.ie>
-References: <alpine.LFD.2.00.0908172346460.32114@casper.infradead.org> <20090818083024.GB31469@csn.ul.ie> <202cde0e0908190201p4c2e2701xf18bdecbc53df905@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	id S1751275AbZHSJkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 05:40:22 -0400
+X-Greylist: delayed 517 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Aug 2009 05:40:22 EDT
+Date: Wed, 19 Aug 2009 11:31:45 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, linuxppc-dev@ozlabs.org,
+       peterz@infradead.org
+Subject: Re: [PATCH] spinlock: __raw_spin_is_locked() should return true for UP
+Message-ID: <20090819093145.GA53298@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Kumar Gala <galak@kernel.crashing.org>,
+	Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+	mingo@elte.hu, tglx@linutronix.de, linuxppc-dev@ozlabs.org,
+	peterz@infradead.org
+References: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org> <alpine.LFD.2.01.0908181618420.3158@localhost.localdomain> <alpine.DEB.2.00.0908181931180.28398@gandalf.stny.rr.com> <alpine.LFD.2.01.0908181640120.3158@localhost.localdomain> <alpine.DEB.2.00.0908182003430.18648@gandalf.stny.rr.com> <BB2762BC-C760-4D4C-BDCF-76EFD3E1B18D@kernel.crashing.org> <alpine.LFD.2.01.0908181937400.3158@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <202cde0e0908190201p4c2e2701xf18bdecbc53df905@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <alpine.LFD.2.01.0908181937400.3158@localhost.localdomain>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 09:01:17PM +1200, Alexey Korolev wrote:
-> > This seems a lot of burden to put on a device driver, particularly with
-> > respect to the reservations.
+On Tue, Aug 18, 2009 at 07:40:16PM -0700, Linus Torvalds wrote:
 > 
-> Thanks a lot for review you did. That is right.  I don't like this
-> burden as well.
-> >
-> >> File operations of /dev/hpage_map do the following:
-> >>
-> >> In file open we  associate mappings of /dev/xxx with the file on hugetlbfs (like it is done in ipc/shm.c)
-> >>       file->f_mapping = h_file->f_mapping;
-> >>
-> >> In get_unmapped_area we should tell about addressing constraints in case of huge pages by calling hugetlbfs procedures. (as in ipc/shm.c)
-> >>       return get_unmapped_area(h_file, addr, len, pgoff, flags);
-> >>
-> >> We need to let hugetlbfs do architecture specific operations with mapping in mmap call. This driver does not reserve any memory for private mappings
-> >> so driver requests reservation from hugetlbfs. (Actually driver can do this as well but it will make it more complex)
-> >>
-> >> The exit procedure:
-> >> * removes memory from page cache
-> >> * deletes file on hugetlbfs vfs mount
-> >> *  free pages
-> >>
-> >> Application example is not shown here but it is very simple. It does the following: open file /dev/hpage_map, mmap a region, read/write memory, unmap file, close file.
-> >>
-> >
-> > For the use-model you have in mind, could you look at Eric Munson's patches
-> > and determine if the target application would have been happy to call the
-> > following please?
-> >
-> > mmap(0, len, prot, MAP_ANONYMOUS|MAP_HUGETLB, 0, 0)
-> >
-> Hmm. But how can I at least identify which driver this call is addressed to?
 > 
+> On Tue, 18 Aug 2009, Kumar Gala wrote:
+> > 
+> > I agree its a little too easy to abuse spin_is_locked.  However we should be
+> > consistent between spin_is_locked on UP between with and without
+> > CONFIG_DEBUG_SPINLOCK enabled.
+> 
+> No we shouldn't.
+> 
+> With CONFIG_DEBUG_SPINLOCK, you have an actual lock variable for debugging 
+> purposes, so spin_is_locked() can clearly return a _valid_ answer, and 
+> should do so.
+> 
+> Without DEBUG_SPINLOCK, there isn't any answer to return.
+> 
+> So there's no way we can or should be consistent. In one case an answer 
+> exists, in another one the answer is meaningless and doesn't exist.
 
-The example you gave was for /dev/hpage_map so in this specific case, it
-would have appeared that the application didn't want hugepages belonging to
-a particular driver, but huge pages in general. Furthermore, your example
-driver was not populating the hugepages with data so in this case, calling
-mmap(MAP_ANONYMOUS|MAP_HUGETLB) would have been sufficient. If all the data
-in your target application is populated from userspace, it's worth considering
-instead of a different driver.
+I always thought behaviour should be consistent between code with
+debugging on and code without.  Otherwise you may end up with cases of
+"it starts working when I turn on debugging" which are a pain to fix.
+Has something changed?
 
-However, lets assume you have a driver that provides the data from
-somewher. The implementation for MAP_HUGETLB is basically a call to a
-hugetlbfs_file_setup()-like function that is very straight-forward. It
-creates a hugetlbfs file and ensures that the reservations are there which
-is important and tricky to get right.
+Or in other words, do you think lockdep should try solving deadlocks
+instead of just reporting them for instance?
 
-Would it be possible for your driver to do
-
-On file open
-	Create hugetlbfs-backed-file using helper similar to Eric's
-		or maybe even Eric's helper for MAP_HUGETLB
-	Copy get_unmapped_area handle from hugetlbfs-file so mappings
-		are properly placed on mmap()
-
-On file mmap
-	Use a new helper to get a reference to each page within the
-		file and populate it with driver-specific data. You
-		would need a new patch for this helper because it
-		doesn't exist.
-	Call h_file->f_op->mmap(h_file, vma)
-
-On file fault
-	The data is already in the page cache so the normal hugetlbfs
-		handlers should do the job
-
-On file close
-	Drop the hugetlbfs inode
-
-Using the helper for getting a reference to a hugetlbfs-file, your driver
-would no longer be responsible for placing the mapping, handling reservations
-or handling page cache manipulations.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+  OG.
