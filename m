@@ -1,123 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbZHSNHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbZHSNIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752479AbZHSNHk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZHSNHi
+	id S1752466AbZHSNIn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZHSNIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:07:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34948 "EHLO mx2.redhat.com"
+	Wed, 19 Aug 2009 09:08:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50571 "EHLO mx2.redhat.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752208AbZHSNHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:07:35 -0400
-Date: Wed, 19 Aug 2009 16:04:17 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
-Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
-Message-ID: <20090819130417.GB3080@redhat.com>
-References: <cover.1250187913.git.mst@redhat.com> <200908141340.36176.arnd@arndb.de> <20090816065110.GA3008@redhat.com> <200908191104.50672.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908191104.50672.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1751974AbZHSNCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:02:48 -0400
+From: Avi Kivity <avi@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 16/47] KVM: Fix racy event propagation in timer
+Date: Wed, 19 Aug 2009 16:02:12 +0300
+Message-Id: <1250686963-8357-17-git-send-email-avi@redhat.com>
+In-Reply-To: <1250686963-8357-1-git-send-email-avi@redhat.com>
+References: <1250686963-8357-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 11:04:50AM +0200, Arnd Bergmann wrote:
-> On Sunday 16 August 2009, Michael S. Tsirkin wrote:
-> > On Fri, Aug 14, 2009 at 01:40:36PM +0200, Arnd Bergmann wrote:
-> > > 
-> > > * most of the transports are sockets, tap uses a character device.
-> > >   This could be dealt with by having both a struct socket * in
-> > >   struct vhost_net *and* a struct file *, or by always keeping the
-> > >   struct file and calling vfs_readv/vfs_writev for the data transport
-> > >   in both cases.
-> > 
-> > I am concerned that character devices might have weird side effects with
-> > read/write operations and that calling them from kernel thread the way I
-> > do might have security implications. Can't point at anything specific
-> > though at the moment.
-> 
-> I understand your feelings about passing a chardev fd into your driver
-> and I agree that we need to be very careful if we want to allow it.
-> 
-> Maybe we could instead extend the 'splice' system call to work on a
-> vhost_net file descriptor.  If we do that, we can put the access back
-> into a user thread (or two) that stays in splice indefinetely
+From: Jan Kiszka <jan.kiszka@siemens.com>
 
-An issue with exposing internal threading model to userspace
-in this way is that we lose control of e.g. CPU locality -
-and it is very hard for userspace to get it right.
+Minor issue that likely had no practical relevance: the kvm timer
+function so far incremented the pending counter and then may reset it
+again to 1 in case reinjection was disabled. This opened a small racy
+window with the corresponding VCPU loop that may have happened to run
+on another (real) CPU and already consumed the value.
 
-> to
-> avoid some of the implications of kernel threads like the missing
-> ability to handle transfer errors in user space.
+Fix it by skipping the incrementation in case pending is already > 0.
+This opens a different race windows, but may only rarely cause lost
+events in case we do not care about them anyway (!reinject).
 
-Are you talking about TCP here?
-Transfer errors are typically asynchronous - possibly eventfd
-as I expose for vhost net is sufficient there.
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/timer.c |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
-> > I wonder - can we expose the underlying socket used by tap, or will that
-> > create complex lifetime issues?
-> 
-> I think this could get more messy in the long run than calling vfs_readv
-> on a random fd. It would mean deep internal knowledge of the tap driver
-> in vhost_net, which I really would prefer to avoid.
-
-No, what I had in mind is adding a GET_SOCKET ioctl to tap.
-vhost would then just use the socket.
-
-> > > * Each transport has a slightly different header, we have
-> > >   - raw ethernet frames (raw, udp multicast, tap)
-> > >   - 32-bit length + raw frames, possibly fragmented (tcp)
-> > >   - 80-bit header + raw frames, possibly fragmented (tap with vnet_hdr)
-> > >   To handle these three cases, we need either different ioctl numbers
-> > >   so that vhost_net can choose the right one, or a flags field in
-> > >   VHOST_NET_SET_SOCKET, like
-> > > 
-> > >   #define VHOST_NET_RAW		1
-> > >   #define VHOST_NET_LEN_HDR	2
-> > >   #define VHOST_NET_VNET_HDR	4
-> > > 
-> > >   struct vhost_net_socket {
-> > > 	unsigned int flags;
-> > > 	int fd;
-> > >   };
-> > >   #define VHOST_NET_SET_SOCKET _IOW(VHOST_VIRTIO, 0x30, struct vhost_net_socket)
-> > 
-> > It seems we can query the socket to find out the type, 
-> 
-> yes, I understand that you can do that, but I still think that decision
-> should be left to user space. Adding a length header for TCP streams but
-> not for UDP is something that we would normally want to do, but IMHO
-> vhost_net should not need to know about this.
-> 
-> > or use the features ioctl.
-> 
-> Right, I had forgotten about that one. It's probably equivalent
-> to the flags I suggested, except that one allows you to set features
-> after starting the communication, while the other one prevents
-> you from doing that.
-> 
-> > > Qemu could then automatically try to use vhost_net, if it's available
-> > > in the kernel, or just fall back on software vlan otherwise.
-> > > Does that make sense?
-> > 
-> > I agree, long term it should be enabled automatically when possible.
-> 
-> So how about making the qemu command line interface an extension to
-> what Or Gerlitz has done for the raw packet sockets?
-> 
-> 	Arnd <><
-
-Not sure I see the connection, but I have not thought about qemu
-side of things too much yet - trying to get kernel bits in place
-first so that there's a stable ABI to work with.
-
+diff --git a/arch/x86/kvm/timer.c b/arch/x86/kvm/timer.c
+index 85cc743..1baed41 100644
+--- a/arch/x86/kvm/timer.c
++++ b/arch/x86/kvm/timer.c
+@@ -9,12 +9,16 @@ static int __kvm_timer_fn(struct kvm_vcpu *vcpu, struct kvm_timer *ktimer)
+ 	int restart_timer = 0;
+ 	wait_queue_head_t *q = &vcpu->wq;
+ 
+-	/* FIXME: this code should not know anything about vcpus */
+-	if (!atomic_inc_and_test(&ktimer->pending))
+-		set_bit(KVM_REQ_PENDING_TIMER, &vcpu->requests);
+-
+-	if (!ktimer->reinject)
+-		atomic_set(&ktimer->pending, 1);
++	/*
++	 * There is a race window between reading and incrementing, but we do
++	 * not care about potentially loosing timer events in the !reinject
++	 * case anyway.
++	 */
++	if (ktimer->reinject || !atomic_read(&ktimer->pending)) {
++		/* FIXME: this code should not know anything about vcpus */
++		if (!atomic_inc_and_test(&ktimer->pending))
++			set_bit(KVM_REQ_PENDING_TIMER, &vcpu->requests);
++	}
+ 
+ 	if (waitqueue_active(q))
+ 		wake_up_interruptible(q);
 -- 
-MST
+1.6.3.3
+
