@@ -1,70 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751493AbZHSMer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751408AbZHSMhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751493AbZHSMer (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 08:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbZHSMeq
+	id S1751408AbZHSMhA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 08:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZHSMg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 08:34:46 -0400
-Received: from cinke.fazekas.hu ([195.199.244.225]:57467 "EHLO
-	cinke.fazekas.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbZHSMeq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 08:34:46 -0400
-Date: Wed, 19 Aug 2009 14:34:45 +0200 (CEST)
-From: Marton Balint <cus@fazekas.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: CPU scheduler weirdness?
-In-Reply-To: <1250683834.7583.360.camel@twins>
-Message-ID: <alpine.LNX.2.00.0908191428300.20409@cinke.fazekas.hu>
-References: <20090813084257.GA761@rhlx01.hs-esslingen.de>  <alpine.LNX.2.00.0908131720050.8321@cinke.fazekas.hu>  <20090813155812.GA15714@rhlx01.hs-esslingen.de>  <alpine.LNX.2.00.0908171758340.2764@cinke.fazekas.hu>  <1250665455.7583.326.camel@twins> 
- <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu> <1250683834.7583.360.camel@twins>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 19 Aug 2009 08:36:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33211 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750858AbZHSMg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 08:36:58 -0400
+Date: Wed, 19 Aug 2009 12:36:38 GMT
+From: tip-bot for Jiri Olsa <jolsa@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, tglx@linutronix.de, jolsa@redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, tglx@linutronix.de, jolsa@redhat.com
+In-Reply-To: <20090811152904.GA26065@jolsa.lab.eng.brq.redhat.com>
+References: <20090811152904.GA26065@jolsa.lab.eng.brq.redhat.com>
+Subject: [tip:tracing/urgent] tracing: handle broken names in ftrace filter
+Message-ID: <tip-eda1e328556565e211b7450250e40d6de751563a@git.kernel.org>
+Git-Commit-ID: eda1e328556565e211b7450250e40d6de751563a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 19 Aug 2009 12:36:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  eda1e328556565e211b7450250e40d6de751563a
+Gitweb:     http://git.kernel.org/tip/eda1e328556565e211b7450250e40d6de751563a
+Author:     Jiri Olsa <jolsa@redhat.com>
+AuthorDate: Tue, 11 Aug 2009 17:29:04 +0200
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Tue, 18 Aug 2009 20:39:48 -0400
+
+tracing: handle broken names in ftrace filter
+
+If one filter item (for set_ftrace_filter and set_ftrace_notrace) is being
+setup by more than 1 consecutive writes (FTRACE_ITER_CONT flag), it won't
+be handled corretly.
+
+I used following program to test/verify:
+
+[snip]
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+
+int main(int argc, char **argv)
+{
+        int fd, i;
+        char *file = argv[1];
+
+        if (-1 == (fd = open(file, O_WRONLY))) {
+                perror("open failed");
+                return -1;
+        }
+
+        for(i = 0; i < (argc - 2); i++) {
+                int len = strlen(argv[2+i]);
+                int cnt, off = 0;
+
+                while(len) {
+                        cnt = write(fd, argv[2+i] + off, len);
+                        len -= cnt;
+                        off += cnt;
+                }
+        }
+
+        close(fd);
+        return 0;
+}
+[snip]
+
+before change:
+sh-4.0# echo > ./set_ftrace_filter
+sh-4.0# /test ./set_ftrace_filter "sys" "_open "
+sh-4.0# cat ./set_ftrace_filter
+#### all functions enabled ####
+sh-4.0#
+
+after change:
+sh-4.0# echo > ./set_ftrace_notrace
+sh-4.0# test ./set_ftrace_notrace "sys" "_open "
+sh-4.0# cat ./set_ftrace_notrace
+sys_open
+sh-4.0#
+
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+LKML-Reference: <20090811152904.GA26065@jolsa.lab.eng.brq.redhat.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
 
-On Wed, 19 Aug 2009, Peter Zijlstra wrote:
+---
+ kernel/trace/ftrace.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
 
-> On Wed, 2009-08-19 at 14:01 +0200, Marton Balint wrote:
->> On Wed, 19 Aug 2009, Peter Zijlstra wrote:
->>> On Tue, 2009-08-18 at 21:49 +0200, Marton Balint wrote:
->>>
->>>> In the meantime, I was able to create a tiny C program which always
->>>> succesfully reproduces the bug. It's basically an endless loop which does
->>>> not stop while the process is running on the last CPU core. The program
->>>> creates multiple instances of itself, to be able to keep all of the CPU
->>>> cores busy. After 1 second, the processes running on other than the last
->>>> CPU core die, the processes running on the last CPU core remain stuck
->>>> there...
->>>>
->>>> I tested it on my dual core system, if someone could test it on a quad
->>>> core and report back that would probably be useful.
->>>>
->>>> Usage: ./schedtest <number of CPU cores>
->>>>
->>>> And don't forget to kill the stuck processes after using the program! :)
->>>
->>> So what's the bug? Sure one task will stay on the cpu, and because there
->>> is no contention it doesn't get migrated, and therefore won't quit,
->>> how's that a problem?
->>
->> Problem is that more than one processes remain on that CPU core, and none
->> of them get migrated to other (idle) cores. I tested it with my E8400
->> processor and 2.6.31-rc5-git3 kernel.
->
-> Only one remains here.. on a c2q running 2.6.31-rc6-tip
->
-> Do you have a .config handy?
->
-
-Yes it's in my original post:
-
-http://marc.info/?l=linux-kernel&m=125012584709800&w=2
-
-Regards,
-   Marton
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 1e1d23c..25edd5c 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2278,7 +2278,11 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
+ 	read++;
+ 	cnt--;
+ 
+-	if (!(iter->flags & ~FTRACE_ITER_CONT)) {
++	/*
++	 * If the parser haven't finished with the last write,
++	 * continue reading the user input without skipping spaces.
++	 */
++	if (!(iter->flags & FTRACE_ITER_CONT)) {
+ 		/* skip white space */
+ 		while (cnt && isspace(ch)) {
+ 			ret = get_user(ch, ubuf++);
+@@ -2288,8 +2292,9 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
+ 			cnt--;
+ 		}
+ 
++		/* only spaces were written */
+ 		if (isspace(ch)) {
+-			file->f_pos += read;
++			*ppos += read;
+ 			ret = read;
+ 			goto out;
+ 		}
+@@ -2319,12 +2324,12 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
+ 		if (ret)
+ 			goto out;
+ 		iter->buffer_idx = 0;
+-	} else
++	} else {
+ 		iter->flags |= FTRACE_ITER_CONT;
++		iter->buffer[iter->buffer_idx++] = ch;
++	}
+ 
+-
+-	file->f_pos += read;
+-
++	*ppos += read;
+ 	ret = read;
+  out:
+ 	mutex_unlock(&ftrace_regex_lock);
