@@ -1,127 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751361AbZHSFgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbZHSFkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751361AbZHSFgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 01:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbZHSFgt
+	id S1751386AbZHSFkh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 01:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZHSFkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 01:36:49 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:21351 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbZHSFgr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 01:36:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=FRXh/tB9VQDPxNmhwTFanAsQ0XdNLEv039+wt8j/SiXUQLZGtYY2xSHw/D+sY4cJhW
-         L8OobNRNqOM1e7uAzSz6/5T6iOvO4JV8liiYL3DZEYLAHPchP/drEzzqWWV8cl883YR+
-         cnUn0pkGnCV1zXjTzswaMh8R+Mw/iymQQU7Gg=
-Message-ID: <4A8B8F6D.9050306@gmail.com>
-Date: Wed, 19 Aug 2009 01:36:45 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Wed, 19 Aug 2009 01:40:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53154 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750753AbZHSFkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 01:40:33 -0400
+Message-ID: <4A8B9051.3020505@redhat.com>
+Date: Wed, 19 Aug 2009 08:40:33 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com> <200908182020.11126.arnd@arndb.de>
-In-Reply-To: <200908182020.11126.arnd@arndb.de>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig50273F24AE0283E955F43A1B"
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
+ model for vbus_driver objects
+References: <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu> <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu> <4A8B1C7F.4060008@redhat.com> <20090819003812.GA11168@ovro.caltech.edu>
+In-Reply-To: <20090819003812.GA11168@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig50273F24AE0283E955F43A1B
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
-
-Arnd Bergmann wrote:
-> On Tuesday 18 August 2009, Gregory Haskins wrote:
->> Avi Kivity wrote:
->>> On 08/17/2009 10:33 PM, Gregory Haskins wrote:
+On 08/19/2009 03:38 AM, Ira W. Snyder wrote:
+> On Wed, Aug 19, 2009 at 12:26:23AM +0300, Avi Kivity wrote:
+>    
+>> On 08/18/2009 11:59 PM, Ira W. Snyder wrote:
+>>      
+>>> On a non shared-memory system (where the guest's RAM is not just a chunk
+>>> of userspace RAM in the host system), virtio's management model seems to
+>>> fall apart. Feature negotiation doesn't work as one would expect.
 >>>
->>> One point of contention is that this is all managementy stuff and sho=
-uld
->>> be kept out of the host kernel.  Exposing shared memory, interrupts, =
-and
->>> guest hypercalls can all be easily done from userspace (as virtio
->>> demonstrates).  True, some devices need kernel acceleration, but that=
-'s
->>> no reason to put everything into the host kernel.
->> See my last reply to Anthony.  My two points here are that:
+>>>        
+>> In your case, virtio-net on the main board accesses PCI config space
+>> registers to perform the feature negotiation; software on your PCI cards
+>> needs to trap these config space accesses and respond to them according
+>> to virtio ABI.
 >>
->> a) having it in-kernel makes it a complete subsystem, which perhaps ha=
-s
->> diminished value in kvm, but adds value in most other places that we a=
-re
->> looking to use vbus.
+>>      
+> Is this "real PCI" (physical hardware) or "fake PCI" (software PCI
+> emulation) that you are describing?
+>
+>    
+
+Real PCI.
+
+> The host (x86, PCI master) must use "real PCI" to actually configure the
+> boards, enable bus mastering, etc. Just like any other PCI device, such
+> as a network card.
+>
+> On the guests (ppc, PCI agents) I cannot add/change PCI functions (the
+> last .[0-9] in the PCI address) nor can I change PCI BAR's once the
+> board has started. I'm pretty sure that would violate the PCI spec,
+> since the PCI master would need to re-scan the bus, and re-assign
+> addresses, which is a task for the BIOS.
+>    
+
+Yes.  Can the boards respond to PCI config space cycles coming from the 
+host, or is the config space implemented in silicon and immutable?  
+(reading on, I see the answer is no).  virtio-pci uses the PCI config 
+space to configure the hardware.
+
+>> (There's no real guest on your setup, right?  just a kernel running on
+>> and x86 system and other kernels running on the PCI cards?)
 >>
->> b) the in-kernel code is being overstated as "complex".  We are not
->> talking about your typical virt thing, like an emulated ICH/PCI chipse=
-t.
->>  Its really a simple list of devices with a handful of attributes.  Th=
-ey
->> are managed using established linux interfaces, like sysfs/configfs.
->=20
-> IMHO the complexity of the code is not so much of a problem. What I
-> see as a problem is the complexity a kernel/user space interface that
-> manages a the devices with global state.
->=20
-> One of the greatest features of Michaels vhost driver is that all
-> the state is associated with open file descriptors that either exist
-> already or belong to the vhost_net misc device. When a process dies,
-> all the file descriptors get closed and the whole state is cleaned
-> up implicitly.
->=20
-> AFAICT, you can't do that with the vbus host model.
+>>      
+> Yes, the x86 (PCI master) runs Linux (booted via PXELinux). The ppc's
+> (PCI agents) also run Linux (booted via U-Boot). They are independent
+> Linux systems, with a physical PCI interconnect.
+>
+> The x86 has CONFIG_PCI=y, however the ppc's have CONFIG_PCI=n. Linux's
+> PCI stack does bad things as a PCI agent. It always assumes it is a PCI
+> master.
+>
+> It is possible for me to enable CONFIG_PCI=y on the ppc's by removing
+> the PCI bus from their list of devices provided by OpenFirmware. They
+> can not access PCI via normal methods. PCI drivers cannot work on the
+> ppc's, because Linux assumes it is a PCI master.
+>
+> To the best of my knowledge, I cannot trap configuration space accesses
+> on the PCI agents. I haven't needed that for anything I've done thus
+> far.
+>
+>    
 
-It should work the same.  When a driver opens a vbus device, it calls
-"interface->connect()" and gets back a "connection" object.  The
-connection->release() method is invoked when the driver "goes away",
-which would include the scenario you present.  This gives the
-device-model the opportunity to cleanup in the same way.
+Well, if you can't do that, you can't use virtio-pci on the host.  
+You'll need another virtio transport (equivalent to "fake pci" you 
+mentioned above).
+
+>>> This does appear to be solved by vbus, though I haven't written a
+>>> vbus-over-PCI implementation, so I cannot be completely sure.
+>>>
+>>>        
+>> Even if virtio-pci doesn't work out for some reason (though it should),
+>> you can write your own virtio transport and implement its config space
+>> however you like.
+>>
+>>      
+> This is what I did with virtio-over-PCI. The way virtio-net negotiates
+> features makes this work non-intuitively.
+>    
+
+I think you tried to take two virtio-nets and make them talk together?  
+That won't work.  You need the code from qemu to talk to virtio-net 
+config space, and vhost-net to pump the rings.
+
+>>> I'm not at all clear on how to get feature negotiation to work on a
+>>> system like mine. From my study of lguest and kvm (see below) it looks
+>>> like userspace will need to be involved, via a miscdevice.
+>>>
+>>>        
+>> I don't see why.  Is the kernel on the PCI cards in full control of all
+>> accesses?
+>>
+>>      
+> I'm not sure what you mean by this. Could you be more specific? This is
+> a normal, unmodified vanilla Linux kernel running on the PCI agents.
+>    
+
+I meant, does board software implement the config space accesses issued 
+from the host, and it seems the answer is no.
 
 
->=20
->>> What performance oriented items have been left unaddressed?
->> Well, the interrupt model to name one.
->=20
-> The performance aspects of your interrupt model are independent
-> of the vbus proxy, or at least they should be. Let's assume for
-> now that your event notification mechanism gives significant
-> performance improvements (which we can't measure independently
-> right now). I don't see a reason why we could not get the
-> same performance out of a paravirtual interrupt controller
-> that uses the same method, and it would be straightforward
-> to implement one and use that together with all the existing
-> emulated PCI devices and virtio devices including vhost_net.
+> In my virtio-over-PCI patch, I hooked two virtio-net's together. I wrote
+> an algorithm to pair the tx/rx queues together. Since virtio-net
+> pre-fills its rx queues with buffers, I was able to use the DMA engine
+> to copy from the tx queue into the pre-allocated memory in the rx queue.
+>
+>    
 
-Agreed.  I proposed this before and Avi rejected the idea.
+Please find a name other than virtio-over-PCI since it conflicts with 
+virtio-pci.  You're tunnelling virtio config cycles (which are usually 
+done on pci config cycles) on a new protocol which is itself tunnelled 
+over PCI shared memory.
 
--Greg
+>>>
+>>>        
+>> Yeah.  You'll need to add byteswaps.
+>>
+>>      
+> I wonder if Rusty would accept a new feature:
+> VIRTIO_F_NET_LITTLE_ENDIAN, which would allow the virtio-net driver to
+> use LE for all of it's multi-byte fields.
+>
+> I don't think the transport should have to care about the endianness.
+>    
 
+Given this is not mainstream use, it would have to have zero impact when 
+configured out.
 
---------------enig50273F24AE0283E955F43A1B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> True. It's slowpath setup, so I don't care how fast it is. For reasons
+> outside my control, the x86 (PCI master) is running a RHEL5 system. This
+> means glibc-2.5, which doesn't have eventfd support, AFAIK. I could try
+> and push for an upgrade. This obviously makes cat/echo really nice, it
+> doesn't depend on glibc, only the kernel version.
+>
+> I don't give much weight to the above, because I can use the eventfd
+> syscalls directly, without glibc support. It is just more painful.
+>    
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+The x86 side only needs to run virtio-net, which is present in RHEL 
+5.3.  You'd only need to run virtio-tunnel or however it's called.  All 
+the eventfd magic takes place on the PCI agents.
 
-iEYEARECAAYFAkqLj20ACgkQP5K2CMvXmqGhVACggTZoIKkRQcAfmIU3y/qxfaQP
-2JUAoIQWTHDn6ENFLqcWDVhQEqnpmLyz
-=CVif
------END PGP SIGNATURE-----
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
---------------enig50273F24AE0283E955F43A1B--
