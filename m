@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbZHSDIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045AbZHSDLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752125AbZHSDIK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 23:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZHSDIK
+	id S1752045AbZHSDLu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 23:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZHSDLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 23:08:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63222 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933AbZHSDIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 23:08:09 -0400
-Message-ID: <4A8B6C80.4050805@cn.fujitsu.com>
-Date: Wed, 19 Aug 2009 11:07:44 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing, sched: mark preempt_schedule() notrace
-References: <4A8A5FF5.8080609@cn.fujitsu.com> <20090818103853.GB5231@nowhere> <alpine.DEB.2.00.0908181220280.7852@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0908181220280.7852@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 18 Aug 2009 23:11:49 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59574
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751836AbZHSDLs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 23:11:48 -0400
+Date: Tue, 18 Aug 2009 20:12:00 -0700 (PDT)
+Message-Id: <20090818.201200.69809801.davem@davemloft.net>
+To: randy.dunlap@oracle.com
+Cc: sfr@canb.auug.org.au, netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -next] net: fix ks8851 build errors
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090818152705.64557a0b.randy.dunlap@oracle.com>
+References: <20090818184215.fdf1c7ae.sfr@canb.auug.org.au>
+	<20090818152705.64557a0b.randy.dunlap@oracle.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> 
-> On Tue, 18 Aug 2009, Frederic Weisbecker wrote:
-> 
->> On Tue, Aug 18, 2009 at 04:01:57PM +0800, Lai Jiangshan wrote:
->>> Current preempt_schedule() is not marked notrace. It may be
->>> infinite recursion in __trace_graph_return().
->>>
->>> preempt_schedule()
->>>   __trace_graph_return()
->>>     ftrace_preempt_disable() (!!return false!!)
->>>     ftrace_preempt_enable()
->>>       preempt_enable_notrace()
->>>          preempt_schedule() (need_resched() may be true again)
->>
->>
->> It would happen in __trace_graph_return() , when preempt_schedule()
->> has finished its job. It's very unlikely the TIF_NEED_RESCHED is
->> set just after (because it has just been cleared).
->> But why not. In that case, preempt_schedule() is called again but it's
->> not a real tracing recursion.
->>
->> That seems like a normal behaviour actually.
-> 
-> In fact, this is actually something to be traced. I would not add a 
-> notrace to it. This is not saving anything, the trace_graph_return does 
-> not need to worry about stack overflow, since the return code already 
-> freed the stack.
-> 
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Date: Tue, 18 Aug 2009 15:27:05 -0700
 
-You're right, I forgot to read trace_graph_return().
-trace_graph_return() protects itself from recursion.
+> --- linux-next-20090818.orig/drivers/net/Kconfig
+> +++ linux-next-20090818/drivers/net/Kconfig
+> @@ -1733,6 +1733,8 @@ config KS8851
+>         tristate "Micrel KS8851 SPI"
+>         depends on SPI
+>         select MII
+> +	select CRC32
+> +	select BITREVERSE
+>         help
+>           SPI driver for Micrel KS8851 SPI attached network chip.
+>  
 
-Since there is no may-recursive trace_func_graph_ret_t.
-Just omit this patch.
-Sorry for bothered you all.
+CRC32 alone is sufficient, because it, in turn, selects BITREVERSE
 
-
+When you resubmit with this simplification, I'll apply the
+patch to net-2.6 since the problem exists in Linus's tree
+too, not just -next.
