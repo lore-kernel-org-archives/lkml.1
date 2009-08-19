@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751814AbZHSKqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751663AbZHSKwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751814AbZHSKqG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 06:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZHSKqF
+	id S1751663AbZHSKwr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 06:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZHSKwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 06:46:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57549 "EHLO mx2.redhat.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751766AbZHSKqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 06:46:03 -0400
-Message-ID: <4A8BD824.9060404@redhat.com>
-Date: Wed, 19 Aug 2009 18:47:00 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-mm@kvack.org,
-       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
-References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>	<m1bpmk8l1g.fsf@fess.ebiederm.org>	<4A83893D.50707@redhat.com>	<m1eirg5j9i.fsf@fess.ebiederm.org>	<4A83CD84.8040609@redhat.com>	<m1tz0avy4h.fsf@fess.ebiederm.org>	<4A8927DD.6060209@redhat.com>	<20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>	<4A8A4ABB.70003@redhat.com>	<20090818172552.779d0768.kamezawa.hiroyu@jp.fujitsu.com>	<4A8A83F4.6010408@redhat.com>	<20090819085703.ccf9992a.kamezawa.hiroyu@jp.fujitsu.com>	<4A8B6649.3080103@redhat.com> <20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 19 Aug 2009 06:52:46 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55933 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751252AbZHSKwq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 06:52:46 -0400
+Date: Wed, 19 Aug 2009 11:53:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, dhowells@redhat.com,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linux-Kernel List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: spin_is_locked() broken for uniprocessor?
+Message-ID: <20090819115301.563be6da@lxorguk.ukuu.org.uk>
+In-Reply-To: <7099.1250674686@redhat.com>
+References: <alpine.LFD.2.00.0908190022570.3361@localhost.localdomain>
+	<DE9C9034-D2CE-4D21-93D9-A10FE2580920@kernel.crashing.org>
+	<7099.1250674686@redhat.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Wed, 19 Aug 2009 10:41:13 +0800
-> Amerigo Wang <amwang@redhat.com> wrote:
->
->   
->> KAMEZAWA Hiroyuki wrote:
->>     
->>> On Tue, 18 Aug 2009 18:35:32 +0800
->>> Amerigo Wang <amwang@redhat.com> wrote:
->>>
->>>   
->>>       
->>>> KAMEZAWA Hiroyuki wrote:
->>>>     
->>>>         
->>>>> On Tue, 18 Aug 2009 14:31:23 +0800
->>>>> Amerigo Wang <amwang@redhat.com> wrote:
->>>>>   
->>>>>       
->>>>>           
->>>>>>>     It's hidden from the system before mem_init() ?
->>>>>>>   
->>>>>>>       
->>>>>>>           
->>>>>>>               
->>>>>> Not sure, but probably yes. It is reserved in setup_arch() which is 
->>>>>> before mm_init() which calls mem_init().
->>>>>>
->>>>>> Do you have any advice to free that reserved memory after boot? :)
->>>>>>
->>>>>>     
->>>>>>         
->>>>>>             
->>>>> Let's see arch/x86/mm/init.c::free_initmem()
->>>>>
->>>>> Maybe it's all you want.
->>>>>
->>>>> 	- ClearPageReserved()
->>>>> 	- init_page_count()
->>>>> 	- free_page()
->>>>> 	- totalram_pages++
->>>>>   
->>>>>       
->>>>>           
->>>> Just FYI: calling ClearPageReserved() caused an oops: "Unable to handle 
->>>> paging request".
->>>>
->>>> I am trying to figure out why...
->>>>
->>>>     
->>>>         
->>> Hmm...then....memmap is not there.
->>> pfn_valid() check will help you. What arch ? x86-64 ?
->>>   
->>>       
->> Hmm, yes, x86_64, but this code is arch-independent, I mean it should 
->> work or not work on all arch, no?
->>
->> So I am afraid we need to use other API to free it...
->>
->>     
-> The, problem is whether memmap is there or not. That's all.
-> plz see init sequence and check there are memmap.
-> If memory-for-crash is obtained via bootmem,
-> Don't you try to free memory hole ?
->   
+On Wed, 19 Aug 2009 10:38:06 +0100
+David Howells <dhowells@redhat.com> wrote:
 
-Yes, I am checking the code. Thanks!
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > > which implies to me that spin_is_locked() will always return false.  Is this
+> > > expected behavior.
+> > 
+> > That's wrong. spin_is_locked should always return true on UP.
+> 
+> Surely it's not that simple?  Maybe spin_is_lock() should be undefined on UP.
 
+That would lead to a lot of
+
+#ifdef CONFIG_SMP
+
+#endif
+
+in drivers because there is driver code that uses spin_is_locked() in
+fairly sensible fashion when dealing with locking.
