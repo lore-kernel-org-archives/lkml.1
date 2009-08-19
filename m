@@ -1,81 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751271AbZHSQEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbZHSQEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751271AbZHSQEm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbZHSQEl
+	id S1751432AbZHSQEp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZHSQEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:04:41 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:56189 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbZHSQEl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:04:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=gWCnm8v481IqrnTA7/lDTjuD/iaeFDD1AK7E5OIhDMt3DZv8b6euWztZzcVCaYjeM7
-         XdA1InLgnplXY0Og3zGA7gbadqIpZxRSjRn3aJ/6pAiohvEUEqzSiQZej5tAcfgu+e4d
-         RqIHr1Rp0RsQVxXXhi0jQAwv20kFvwDAWKAHQ=
-Date: Wed, 19 Aug 2009 18:04:39 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, James Morris <jmorris@namei.org>
-Subject: Re: [PATCH 1/4] perf_counter: Default to higher paranoia level
-Message-ID: <20090819160438.GC4972@nowhere>
-References: <20090819091823.916851355@chello.nl> <20090819092023.728070630@chello.nl> <1250690853.8282.59.camel@twins>
+	Wed, 19 Aug 2009 12:04:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50374 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750919AbZHSQEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 12:04:42 -0400
+Message-ID: <4A8C2290.3040707@redhat.com>
+Date: Wed, 19 Aug 2009 12:04:32 -0400
+From: William Cohen <wcohen@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250690853.8282.59.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Add minimal support for software performance counters for
+ ia64
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------030308010300080207040007"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 04:07:33PM +0200, Peter Zijlstra wrote:
-> On Wed, 2009-08-19 at 11:18 +0200, Peter Zijlstra wrote:
-> 
-> > +static inline bool perf_paranoid_anon(void)
-> > +{
-> > +	return !capable(CAP_SYS_ADMIN) && sysctl_perf_counter_paranoid > 1;
-> >  }
-> >  
-> >  static inline bool perf_paranoid_kernel(void)
-> >  {
-> > -	return sysctl_perf_counter_paranoid > 1;
-> > +	return !capable(CAP_SYS_ADMIN) && sysctl_perf_counter_paranoid > 2;
-> > +}
-> 
-> OK, this is buggy:
-> 
->  - capable() uses current, which is unlikely to be counter->owner,
->  - but even security_real_capable(counter->owner, ...) wouldn't
->    work, since the ->capable() callback isn't NMI safe
->    (selinux takes locks and does allocations in that path).
-> 
-> This puts a severe strain on more complex anonymizers since its
-> basically impossible to tell if counter->owner has permissions on
-> current from NMI context.
-> 
-> I'll fix up this patch to pre-compute the perf_paranoid_anon_ip() per
-> counter based on creation time state, unless somebody has a better idea.
+This is a multi-part message in MIME format.
+--------------030308010300080207040007
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
+The following patch adds minimal support for software performance counters for ia64.
 
-Something I don't understand there: it's about wide per cpu profiling,
-then the task that have been created before the counter can also be
-profiled, then how is the creation time useful here?
+For the kernel the patch enables configuration of the perf counter
+option, adds the perf_counter_open syscall, and includes a minimal machine
+specific asm/perf.h header file.
 
+For the perf tool the header perf.h includes an ia64 specific section
+and the options used in the Makefile were adjusted to allow
+compilation on ia64.  The -Wcast-align gives "cast increases required
+alignment of target type" warning for the list_for_each_entry()
+macro. The "-fno-strict-aliasing" was used to avoid warnings for
+"dereferencing type-punned pointer will break strict-aliasing rules"
+warnings for sscanf() functions in util/trace-event-parse.c
 
+-Will
 
-> I could possibly only anonymize IRQ context (SoftIRQ context is
-> difficult since in_softirq() means both in-softirq and
-> softirq-disabled).
+Signed-off-by: William Cohen <wcohen@redhat.com>
 
+--------------030308010300080207040007
+Content-Type: text/plain;
+ name="perf_ia64a.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="perf_ia64a.patch"
 
-I don't understand why we need to set this paranoid level concerning
-kernel RIPS.
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 170042b..8471526 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -29,6 +29,7 @@ config IA64
+ 	select HAVE_KVM
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_DMA_API_DEBUG
++	select HAVE_PERF_COUNTERS
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
+diff --git a/arch/ia64/include/asm/unistd.h b/arch/ia64/include/asm/unistd.h
+index 5a5347f..f69d1c9 100644
+--- a/arch/ia64/include/asm/unistd.h
++++ b/arch/ia64/include/asm/unistd.h
+@@ -311,11 +311,12 @@
+ #define __NR_preadv			1319
+ #define __NR_pwritev			1320
+ #define __NR_rt_tgsigqueueinfo		1321
++#define __NR_perf_counter_open		1322
+ 
+ #ifdef __KERNEL__
+ 
+ 
+-#define NR_syscalls			298 /* length of syscall table */
++#define NR_syscalls			299 /* length of syscall table */
+ 
+ /*
+  * The following defines stop scripts/checksyscalls.sh from complaining about
+diff --git a/arch/ia64/kernel/entry.S b/arch/ia64/kernel/entry.S
+index d0e7d37..4cf88b0 100644
+--- a/arch/ia64/kernel/entry.S
++++ b/arch/ia64/kernel/entry.S
+@@ -1806,6 +1806,7 @@ sys_call_table:
+ 	data8 sys_preadv
+ 	data8 sys_pwritev			// 1320
+ 	data8 sys_rt_tgsigqueueinfo
++	data8 sys_perf_counter_open
+ 
+ 	.org sys_call_table + 8*NR_syscalls	// guard against failures to increase NR_syscalls
+ #endif /* __IA64_ASM_PARAVIRTUALIZED_NATIVE */
+diff --git a/include/asm-ia64/perf_counter.h b/include/asm-ia64/perf_counter.h
+new file mode 100644
+index 0000000..cab4352
+--- /dev/null
++++ b/include/asm-ia64/perf_counter.h
+@@ -0,0 +1,9 @@
++#ifndef __ASM_IA64_PERF_COUNTER_H
++#define __ASM_IA64_PERF_COUNTER_H
++
++/* IA64 only supports software counters through this interface. */
++static inline void set_perf_counter_pending(void) {}
++
++#define PERF_COUNTER_INDEX_OFFSET	0
++
++#endif /* __ASM_IA64_PERF_COUNTER_H */
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index c481a51..69db3de 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -159,8 +159,10 @@ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+ 
+ # If we're on a 64-bit kernel, use -m64
+ ifndef NO_64BIT
+-	ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
+-	  M64 := -m64
++	ifeq ($(patsubst %ia64,%,$(uname_M)),$(uname_M))
++	  ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
++	    M64 := -m64
++	  endif
+ 	endif
+ endif
+ 
+@@ -169,9 +171,9 @@ endif
+ #
+ # Include saner warnings here, which can catch bugs:
+ #
+-EXTRA_WARNINGS = -Wcast-align -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
++EXTRA_WARNINGS = -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
+ 
+-CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
++CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 -fno-strict-aliasing $(EXTRA_WARNINGS)
+ LDFLAGS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index e5148e2..90179c9 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -41,6 +41,12 @@
+ #define cpu_relax()	asm volatile("" ::: "memory");
+ #endif
+ 
++#ifdef __ia64__
++#include "../../arch/ia64/include/asm/unistd.h"
++#define rmb()		asm volatile("" ::: "memory")
++#define cpu_relax()	asm volatile("" ::: "memory");
++#endif
++
+ #include <time.h>
+ #include <unistd.h>
+ #include <sys/types.h>
 
+--------------030308010300080207040007--
