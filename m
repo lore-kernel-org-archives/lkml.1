@@ -1,111 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752128AbZHSN6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbZHSOBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752128AbZHSN6M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZHSN6M
+	id S1752190AbZHSOBL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 10:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbZHSOBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:58:12 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:46901 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737AbZHSN6K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:58:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uukTClFD/YxrR35+Xuqgt+vI4msKdZ2xiHgQMr4pl+5kr7Bxlh3HdqP5Zxpp5HzUB1
-         wPoWimJ+9iYGKZxVtY4/Om/QAUQkrxJaR+ol9k9hWE3uqTdBJOApGnSZrN8/ernT2oMQ
-         ONSSoeV/S8WgT1yUsSyFYzCAu84+tkBVEdwec=
-Date: Wed, 19 Aug 2009 15:58:05 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       =?utf-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
-       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH -tip v14 07/12] tracing: Introduce TRACE_FIELD_ZERO()
-	macro
-Message-ID: <20090819135802.GA4972@nowhere>
-References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203501.31965.30172.stgit@localhost.localdomain> <20090819010903.GI5231@nowhere> <4A8B615B.7000200@redhat.com>
+	Wed, 19 Aug 2009 10:01:10 -0400
+Received: from mga14.intel.com ([143.182.124.37]:58189 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751336AbZHSOBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 10:01:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,408,1246863600"; 
+   d="scan'208";a="177696491"
+Date: Wed, 19 Aug 2009 22:00:53 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
+       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090819140053.GA7628@localhost>
+References: <20090816051502.GB13740@localhost> <20090816112910.GA3208@localhost> <20090818234310.A64B.A69D9226@jp.fujitsu.com> <20090819120117.GB7306@localhost> <2f11576a0908190505h6da96280xf67c962aa3f5ba07@mail.gmail.com> <20090819121017.GA8226@localhost> <28c262360908190525i6e56ead0mb8dcb01c3d1a69f1@mail.gmail.com> <20090819132420.GA6137@localhost> <28c262360908190638g521e55bcje14cb321c9a22c51@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4A8B615B.7000200@redhat.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262360908190638g521e55bcje14cb321c9a22c51@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 10:20:11PM -0400, Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
-> > On Thu, Aug 13, 2009 at 04:35:01PM -0400, Masami Hiramatsu wrote:
-> >> Use TRACE_FIELD_ZERO(type, item) instead of TRACE_FIELD_ZERO_CHAR(item).
-> >> This also includes a fix of TRACE_ZERO_CHAR() macro.
-> > 
-> > 
-> > I can't find what the fix is about (see below)
+On Wed, Aug 19, 2009 at 09:38:05PM +0800, Minchan Kim wrote:
+> On Wed, Aug 19, 2009 at 10:24 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> > On Wed, Aug 19, 2009 at 08:25:56PM +0800, Minchan Kim wrote:
+> >> On Wed, Aug 19, 2009 at 9:10 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> >> > On Wed, Aug 19, 2009 at 08:05:19PM +0800, KOSAKI Motohiro wrote:
+> >> >> >> page_referenced_file?
+> >> >> >> I think we should change page_referenced().
+> >> >> >
+> >> >> > Yeah, good catch.
+> >> >> >
+> >> >> >>
+> >> >> >> Instead, How about this?
+> >> >> >> ==============================================
+> >> >> >>
+> >> >> >> Subject: [PATCH] mm: stop circulating of referenced mlocked pages
+> >> >> >>
+> >> >> >> Currently, mlock() systemcall doesn't gurantee to mark the page PG_Mlocked
+> >> >> >
+> >> >> >                                                    mark PG_mlocked
+> >> >> >
+> >> >> >> because some race prevent page grabbing.
+> >> >> >> In that case, instead vmscan move the page to unevictable lru.
+> >> >> >>
+> >> >> >> However, Recently Wu Fengguang pointed out current vmscan logic isn't so
+> >> >> >> efficient.
+> >> >> >> mlocked page can move circulatly active and inactive list because
+> >> >> >> vmscan check the page is referenced _before_ cull mlocked page.
+> >> >> >>
+> >> >> >> Plus, vmscan should mark PG_Mlocked when cull mlocked page.
+> >> >> >
+> >> >> >                           PG_mlocked
+> >> >> >
+> >> >> >> Otherwise vm stastics show strange number.
+> >> >> >>
+> >> >> >> This patch does that.
+> >> >> >
+> >> >> > Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+> >> >>
+> >> >> Thanks.
+> >> >>
+> >> >>
+> >> >>
+> >> >> >> Index: b/mm/rmap.c
+> >> >> >> ===================================================================
+> >> >> >> --- a/mm/rmap.c       2009-08-18 19:48:14.000000000 +0900
+> >> >> >> +++ b/mm/rmap.c       2009-08-18 23:47:34.000000000 +0900
+> >> >> >> @@ -362,7 +362,9 @@ static int page_referenced_one(struct pa
+> >> >> >>        * unevictable list.
+> >> >> >>        */
+> >> >> >>       if (vma->vm_flags & VM_LOCKED) {
+> >> >> >> -             *mapcount = 1;  /* break early from loop */
+> >> >> >> +             *mapcount = 1;          /* break early from loop */
+> >> >> >> +             *vm_flags |= VM_LOCKED; /* for prevent to move active list */
+> >> >> >
+> >> >> >> +             try_set_page_mlocked(vma, page);
+> >> >> >
+> >> >> > That call is not absolutely necessary?
+> >> >>
+> >> >> Why? I haven't catch your point.
+> >> >
+> >> > Because we'll eventually hit another try_set_page_mlocked() when
+> >> > trying to unmap the page. Ie. duplicated with another call you added
+> >> > in this patch.
+> >>
+> >> Yes. we don't have to call it and we can make patch simple.
+> >> I already sent patch on yesterday.
+> >>
+> >> http://marc.info/?l=linux-mm&m=125059325722370&w=2
+> >>
+> >> I think It's more simple than KOSAKI's idea.
+> >> Is any problem in my patch ?
+> >
+> > No, IMHO your patch is simple and good, while KOSAKI's is more
+> > complete :)
+> >
+> > - the try_set_page_mlocked() rename is suitable
+> > - the call to try_set_page_mlocked() is necessary on try_to_unmap()
 > 
-> Ah, OK. This patch actually includes two parts.
+> We don't need try_set_page_mlocked call in try_to_unmap.
+> That's because try_to_unmap_xxx will call try_to_mlock_page if the
+> page is included in any VM_LOCKED vma. Eventually, It can move
+> unevictable list.
+
+Yes, indeed!
+
+> > - the "if (VM_LOCKED) referenced = 0" in page_referenced() could
+> >  cover both active/inactive vmscan
 > 
-> One is introducing TRACE_FIELD_ZERO which is more generic than
-> TRACE_FIELD_ZERO_CHAR, I think.
+> ASAP we set PG_mlocked in page, we can save unnecessary vmscan cost from
+> active list to inactive list. But I think it's rare case so that there
+> would be few pages.
+> So I think that will be not big overhead.
+
+The active list case can be persistent, when the mlocked (but without
+PG_mlocked) page is executable and referenced by 2+ processes. But I
+admit that executable pages are relatively rare.
+
+> As I know, Rescue by vmscan page losing the isolation race was the
+> Lee's design.
+> But as you pointed out, it have a bug that vmscan can't rescue the
+> page due to reach try_to_unmap.
 > 
-> Another is a typo fix of TRACE_ZERO_CHAR.
+> So I think this approach is proper. :)
 
+Now you decide :)
 
-Ok.
+Thanks,
+Fengguang
 
- 
-> >>  
-> >> +#undef TRACE_FIELD_ZERO
-> >> +#define TRACE_FIELD_ZERO(type, item)
-> >> +
-> > 
-> > 
-> > 
-> > Is it about the above moving?
-> > If so, could you just tell so that I can add something about
-> > it in the changelog.
+> > I did like your proposed
+> >
+> >                if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
+> > -                                       referenced && page_mapping_inuse(page))
+> > +                                       referenced && page_mapping_inuse(page)
+> > +                                       && !(vm_flags & VM_LOCKED))
+> >                        goto activate_locked;
+> >
+> > which looks more intuitive and less confusing.
+> >
+> > Thanks,
+> > Fengguang
+> >
 > 
-> No, I assume that TRACE_ZERO_CHAR is just a typo of TRACE_FIELD_ZERO_CHAR.
-> (because I couldn't find any other TRACE_ZERO_CHAR)
 > 
-> BTW, this patch may not be needed after applying patch 10/12, since
-> it removes ftrace event definitions of TRACE_KPROBE/KRETPROBE.
 > 
-> Perhaps, would I better merge and split those additional patches(and
-> remove this change)?
-> (It also could make the incremental review hard...)
-> 
-> Thank you,
-> 
-
-
-No let's keep it as is. It should be fine.
-
-Thanks.
-
-
 > -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
-
+> Kind regards,
+> Minchan Kim
