@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbZHSQHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbZHSQHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752386AbZHSQHr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZHSQHo
+	id S1752995AbZHSQHs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZHSQHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:07:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55949 "EHLO mx1.suse.de"
+	Wed, 19 Aug 2009 12:07:45 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55950 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751739AbZHSQEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751803AbZHSQEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Aug 2009 12:04:47 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: hch@infradead.org, Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org
-Subject: [PATCH 09/17] ext3: Remove syncing logic from ext3_file_write
-Date: Wed, 19 Aug 2009 18:04:36 +0200
-Message-Id: <1250697884-22288-10-git-send-email-jack@suse.cz>
+Cc: hch@infradead.org, Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
+       tytso@mit.edu
+Subject: [PATCH 10/17] ext4: Remove syncing logic from ext4_file_write
+Date: Wed, 19 Aug 2009 18:04:37 +0200
+Message-Id: <1250697884-22288-11-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1250697884-22288-1-git-send-email-jack@suse.cz>
 References: <1250697884-22288-1-git-send-email-jack@suse.cz>
@@ -22,34 +23,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Syncing is now properly done by generic_file_aio_write() so no special logic is
-needed in ext3.
+The syncing is now properly handled by generic_file_aio_write() so
+no special ext4 code is needed.
 
 CC: linux-ext4@vger.kernel.org
+CC: tytso@mit.edu
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/ext3/file.c |   61 +-------------------------------------------------------
- 1 files changed, 1 insertions(+), 60 deletions(-)
+ fs/ext4/file.c |   53 ++---------------------------------------------------
+ 1 files changed, 2 insertions(+), 51 deletions(-)
 
-diff --git a/fs/ext3/file.c b/fs/ext3/file.c
-index 5b49704..51fee5f 100644
---- a/fs/ext3/file.c
-+++ b/fs/ext3/file.c
-@@ -51,71 +51,12 @@ static int ext3_release_file (struct inode * inode, struct file * filp)
- 	return 0;
- }
- 
--static ssize_t
--ext3_file_write(struct kiocb *iocb, const struct iovec *iov,
--		unsigned long nr_segs, loff_t pos)
--{
+diff --git a/fs/ext4/file.c b/fs/ext4/file.c
+index 3f1873f..aafe432 100644
+--- a/fs/ext4/file.c
++++ b/fs/ext4/file.c
+@@ -58,10 +58,7 @@ static ssize_t
+ ext4_file_write(struct kiocb *iocb, const struct iovec *iov,
+ 		unsigned long nr_segs, loff_t pos)
+ {
 -	struct file *file = iocb->ki_filp;
 -	struct inode *inode = file->f_path.dentry->d_inode;
 -	ssize_t ret;
 -	int err;
--
++	struct inode *inode = iocb->ki_filp->f_path.dentry->d_inode;
+ 
+ 	/*
+ 	 * If we have encountered a bitmap-format file, the size limit
+@@ -81,53 +78,7 @@ ext4_file_write(struct kiocb *iocb, const struct iovec *iov,
+ 		}
+ 	}
+ 
 -	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
--
 -	/*
 -	 * Skip flushing if there was an error, or if nothing was written.
 -	 */
@@ -71,7 +75,7 @@ index 5b49704..51fee5f 100644
 -		 * Open question --- do we care about flushing timestamps too
 -		 * if the inode is IS_SYNC?
 -		 */
--		if (!ext3_should_journal_data(inode))
+-		if (!ext4_should_journal_data(inode))
 -			return ret;
 -
 -		goto force_commit;
@@ -92,22 +96,14 @@ index 5b49704..51fee5f 100644
 -	 */
 -
 -force_commit:
--	err = ext3_force_commit(inode->i_sb);
+-	err = ext4_force_commit(inode->i_sb);
 -	if (err)
 -		return err;
 -	return ret;
--}
--
- const struct file_operations ext3_file_operations = {
- 	.llseek		= generic_file_llseek,
- 	.read		= do_sync_read,
- 	.write		= do_sync_write,
- 	.aio_read	= generic_file_aio_read,
--	.aio_write	= ext3_file_write,
-+	.aio_write	= generic_file_aio_write,
- 	.unlocked_ioctl	= ext3_ioctl,
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl	= ext3_compat_ioctl,
++	return generic_file_aio_write(iocb, iov, nr_segs, pos);
+ }
+ 
+ static struct vm_operations_struct ext4_file_vm_ops = {
 -- 
 1.6.0.2
 
