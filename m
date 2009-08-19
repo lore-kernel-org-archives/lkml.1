@@ -1,136 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752218AbZHSDCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752012AbZHSDGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752218AbZHSDCw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 23:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZHSDCv
+	id S1752012AbZHSDGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 23:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZHSDGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 23:02:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:61034 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751933AbZHSDAi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 23:00:38 -0400
-Message-Id: <20090819030038.750665213@goodmis.org>
-References: <20090819025634.987354707@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 18 Aug 2009 22:56:44 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Greg KH <greg@kroah.com>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH 10/14] kconfig: search for a config to base the local(mod|yes)config on
-Content-Disposition: inline; filename=0010-kconfig-search-for-a-config-to-base-the-local-mod-ye.patch
+	Tue, 18 Aug 2009 23:06:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53090 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751826AbZHSDGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Aug 2009 23:06:17 -0400
+Message-ID: <4A8B6C01.1060503@redhat.com>
+Date: Tue, 18 Aug 2009 20:05:37 -0700
+From: Josh Stone <jistone@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
+       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH] tracing: Create generic syscall TRACE_EVENTs
+References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250634359-31642-1-git-send-email-jistone@redhat.com> <4A8B5624.9040607@cn.fujitsu.com>
+In-Reply-To: <4A8B5624.9040607@cn.fujitsu.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On 08/18/2009 06:32 PM, Li Zefan wrote:
+> It would be much better to see a sample output of these TRACE_EVENTs,
+> so we'll see the what's the output if a syscall has less than 6 args.
+> 
+> And I guess it should be "(%lx, %lx, ..., %lx)"? Otherwise I think we'll
+> see some negative values.
 
-Instead of using the .config in the local directory. This patch
-changes streamline_config.pl to search various locations for a config.
+Thanks, you're right -- the args should be unsigned long.  Whether they
+are hex or decimal doesn't matter to me, but I guess that does make
+pointers easier to spot.
 
-Here's the list and order of search:
+Here's some output that I get on x86_64:
 
-  /proc/config.gz
-  /boot/vmlinuz-`uname -r`
-  vmlinux  # local to the directory
-  /lib/modules/`uname -r`/kernel/kernel/configs.ko
-  kernel/configs.ko
-  kernel/configs.o
-  .config
+> # tail trace
+>             tail-1106  [000] 113218.474657: syscall_enter: NR 2 (7f2d34dd38f0, 0, 7f2d35009010, 5, 4, ffffffffffffffb0)
+> 
+>             tail-1106  [000] 113218.474809: syscall_enter: NR 5 (3, 7f2d35009040, 7f2d35009040, 5, 4, ffffffffffffffb0)
+> 
+>             tail-1106  [000] 113218.474855: syscall_enter: NR 9 (0, 50d3ad0, 1, 2, 3, 0)
+> 
+>             tail-1106  [000] 113218.474946: syscall_enter: NR 3 (3, 7f2d2f9a0000, 5e22, 2, 3, 0)
+> 
+>             tail-1106  [000] 113218.475673: syscall_enter: NR 2 (7fff5e42a654, 0, 0, 7fff5e429600, 80, 3)
 
-Once it finds a file that contains a config (it checks if the binary
-objects have configs first) it then uses it to create the .config
-with minimum modules needed.
+It's very raw indeed, but that's what Ingo asked for. :)  The extra args
+show up as whatever happened to be in those registers.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- scripts/kconfig/streamline_config.pl |   63 +++++++++++++++++++++++++++++++++-
- 1 files changed, 62 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
-index 2334641..9fa3f81 100644
---- a/scripts/kconfig/streamline_config.pl
-+++ b/scripts/kconfig/streamline_config.pl
-@@ -45,7 +45,68 @@
- my $config = ".config";
- my $linuxpath = ".";
- 
--open(CIN,$config) || die "Can't open current config file: $config";
-+my $uname = `uname -r`;
-+chomp $uname;
-+
-+my @searchconfigs = (
-+	{
-+	    "file" => "/proc/config.gz",
-+	    "exec" => "zcat",
-+	},
-+	{
-+	    "file" => "/boot/vmlinuz-$uname",
-+	    "exec" => "scripts/extract-ikconfig",
-+	    "test" => "scripts/extract-ikconfig",
-+	},
-+	{
-+	    "file" => "vmlinux",
-+	    "exec" => "scripts/extract-ikconfig",
-+	    "test" => "scripts/extract-ikconfig",
-+	},
-+	{
-+	    "file" => "/lib/modules/$uname/kernel/kernel/configs.ko",
-+	    "exec" => "scripts/extract-ikconfig",
-+	    "test" => "scripts/extract-ikconfig",
-+	},
-+	{
-+	    "file" => "kernel/configs.ko",
-+	    "exec" => "scripts/extract-ikconfig",
-+	    "test" => "scripts/extract-ikconfig",
-+	},
-+	{
-+	    "file" => "kernel/configs.o",
-+	    "exec" => "scripts/extract-ikconfig",
-+	    "test" => "scripts/extract-ikconfig",
-+	},
-+	{
-+	    "file" => ".config",
-+	    "exec" => "cat",
-+	},
-+);
-+
-+sub find_config {
-+    foreach my $conf (@searchconfigs) {
-+	my $file = $conf->{"file"};
-+
-+	next if ( ! -f "$file");
-+
-+	if (defined($conf->{"test"})) {
-+	    `$conf->{"test"} $conf->{"file"} 2>/dev/null`;
-+	    next if ($?);
-+	}
-+
-+	my $exec = $conf->{"exec"};
-+
-+	print STDERR "using config: '$file'\n";
-+
-+	open(CIN, "$exec $file |") || die "Failed to run $exec $file";
-+	return;
-+    }
-+    die "No config file found";
-+}
-+
-+find_config;
-+
- my @makefiles = `find $linuxpath -name Makefile`;
- my %depends;
- my %selects;
--- 
-1.6.3.3
-
--- 
+Josh
