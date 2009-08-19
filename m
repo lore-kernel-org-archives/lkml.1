@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbZHSN2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbZHSN21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752611AbZHSN2I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:28:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZHSN2G
+	id S1752750AbZHSN21 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbZHSN2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:28:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52689 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752451AbZHSN2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:28:04 -0400
-Message-ID: <4A8BFDE2.1010904@garzik.org>
-Date: Wed, 19 Aug 2009 09:28:02 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Mark Lord <liml@rtr.ca>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] libata: use single threaded work queue
-References: <20090819112554.GY12579@kernel.dk> <4A8BE932.5090300@garzik.org> <20090819120458.GZ12579@kernel.dk> <4A8BECC2.2060607@rtr.ca> <20090819122320.GA12579@kernel.dk> <4A8BFC79.1000004@garzik.org>
-In-Reply-To: <4A8BFC79.1000004@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 19 Aug 2009 09:28:24 -0400
+Received: from ernst.netinsight.se ([194.16.221.21]:8338 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752638AbZHSN2V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:28:21 -0400
+X-Greylist: delayed 604 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Aug 2009 09:28:21 EDT
+Date: Wed, 19 Aug 2009 15:18:14 +0200
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: Dhaval Vasa <dhaval.vasa@einfochips.com>
+Cc: nico@cam.org, linux-kernel@vger.kernel.org, rabeeh@marvell.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, dhaval.vasa@einfochips.com
+Subject: Re: [PATCH v2] [ARM] Kirkwood: Marvell OpenRD-Base board support
+ added to v2.6.31-rc5
+Message-ID: <20090819151814.7167bad0@marrow.netinsight.se>
+In-Reply-To: <1249906054-572-1-git-send-email-dhaval.vasa@einfochips.com>
+References: <1249906054-572-1-git-send-email-dhaval.vasa@einfochips.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> It would be nice to just create these threads on-demand,
->>> and destroy them again after periods of dis-use.
->>> Kind of like how Apache does worker threads.
->>
->> Well, that's the same thread pool suggestion that Jeff came up with. And
->> I agree, that's a nicer long term solution (it's also how the per-bdi
->> flushing replacement works). The problem with that appears to be that
->> any suggested patchset for thread pools spiral into certain "but what
->> color should it be?!" death.
->
-> Let people complain with code :) libata has two basic needs in this area:
-> (1) specifying a thread count other than "1" or "nr-cpus"
-> (2) don't start unneeded threads / idle out unused threads
+Hi Dhaval!
 
-To be even more general,
+On Mon, 10 Aug 2009 17:37:34 +0530
+Dhaval Vasa <dhaval.vasa@einfochips.com> wrote:
 
-libata needs a workqueue or thread pool that can
+> reference:
+> http://open-rd.org
+> http://code.google.com/p/openrd
+> 
+> This patch is tested for:
+> 1. Boot from DRAM/NAND flash
+> 2. NAND read/write/erase
+> 3. GbE0
+> 4. USB read/write
+> 
+> FIXME:
+> 1. SD/UART1 selection
+> 2. MPP configuration (currently, default)
+> 3. PEX
+> 
+> Signed-off-by: Dhaval Vasa <dhaval.vasa@einfochips.com>
 
-(a) scale up to nr-drives-that-use-pio threads, on demand
-(b) scale down to zero threads, with lack of demand
+Tested-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
 
-That handles the worst case of each PIO-polling drive needing to sleep 
-(thus massively impacting latency, if any other PIO-polling drive must 
-wait for a free thread).
+> +static unsigned int openrd_base_mpp_config[] __initdata = {
+> +	MPP29_GPIO,	
+                   ^^^^^
+There is trailing whitespace on this line
 
-That also handles the best case of not needing any threads at all.
+Also, I'd suggest merging "[PATCH v2] Kirkwood: Initialise SATA for
+OpenRD-Base" into this one and resubmit it.
 
-	Jeff
+In my patch, I also called kirkwood_i2c_init (see below), which at
+least make the I2C bus appear (not that I've tested it very much).
 
+// Simon
 
+diff --git a/arch/arm/mach-kirkwood/openrd_base-setup.c b/arch/arm/mach-kirkwood/openrd_base-setup.c
+index f9a2166..dc0a2fe 100644
+--- a/arch/arm/mach-kirkwood/openrd_base-setup.c
++++ b/arch/arm/mach-kirkwood/openrd_base-setup.c
+@@ -71,6 +71,8 @@ static void __init openrd_base_init(void)
+        kirkwood_ge00_init(&openrd_base_ge00_data);
+        kirkwood_sata_init(&openrd_base_sata_data);
+        kirkwood_sdio_init(&openrd_base_mvsdio_data);
++
++       kirkwood_i2c_init();
+ }
+ 
+ MACHINE_START(OPENRD_BASE, "Marvell OpenRD Base Board")
