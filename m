@@ -1,100 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbZHSMFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZHSMGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751999AbZHSMFW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 08:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZHSMFV
+	id S1751962AbZHSMGl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 08:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZHSMGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 08:05:21 -0400
-Received: from mail-yx0-f175.google.com ([209.85.210.175]:39029 "EHLO
+	Wed, 19 Aug 2009 08:06:41 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:34885 "EHLO
 	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbZHSMFT convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751617AbZHSMGk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 08:05:19 -0400
+	Wed, 19 Aug 2009 08:06:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fPx7R5E9nSiYEy/EtzXIAVG/TFLXcydH7xQ73cw49AnXFUWciNCGRg8NUsNp6nVBZe
-         URLex0A4x2ugDk4/IaZXPHWaxiIzQIjsZN1XLH2qQxlRRoQngDBrC3sEA+KL1yfifkOs
-         j0d1QIn5w5A8xGPGg/vYYx/hRv0GYfjadQP2E=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nI904NROC9IiHFvMEzShK4alYi29AMotTwbM8CQAznYyqtvGK2qwASJmQeI41bTHAN
+         sodw+gUjGlzy0GGDpSLtlOop6rE04H2W5Y6QlZdzA6X+zJTJzewZPHRW9Cc0MjdkJAtQ
+         uT7rQwlGlmGC8KlOXBYpRUTpSjxzDMHg6BrFA=
 MIME-Version: 1.0
-In-Reply-To: <20090819120117.GB7306@localhost>
-References: <20090816051502.GB13740@localhost>
-	 <20090816112910.GA3208@localhost>
-	 <20090818234310.A64B.A69D9226@jp.fujitsu.com>
-	 <20090819120117.GB7306@localhost>
-Date: Wed, 19 Aug 2009 21:05:19 +0900
-X-Google-Sender-Auth: ec82b635e5ed236f
-Message-ID: <2f11576a0908190505h6da96280xf67c962aa3f5ba07@mail.gmail.com>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090819105829.GH24809@csn.ul.ie>
+References: <18eba5a10908181841t145e4db1wc2daf90f7337aa6e@mail.gmail.com>
+	 <20090819114408.ab9c8a78.minchan.kim@barrios-desktop>
+	 <4A8B7508.4040001@vflare.org>
+	 <20090819135105.e6b69a8d.minchan.kim@barrios-desktop>
+	 <18eba5a10908182324x45261d06y83e0f042e9ee6b20@mail.gmail.com>
+	 <20090819154958.18a34aa5.minchan.kim@barrios-desktop>
+	 <20090819103611.GG24809@csn.ul.ie>
+	 <20090819195242.4454a35f.minchan.kim@barrios-desktop>
+	 <20090819105829.GH24809@csn.ul.ie>
+Date: Wed, 19 Aug 2009 21:06:41 +0900
+Message-ID: <18eba5a10908190506y4dfd08auf29a7919dd88be4f@mail.gmail.com>
+Subject: Re: abnormal OOM killer message
+From: Chungki woo <chungki.woo@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Minchan Kim <minchan.kim@gmail.com>, ngupta@vflare.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com, riel@redhat.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> page_referenced_file?
->> I think we should change page_referenced().
->
-> Yeah, good catch.
->
+On Wed, Aug 19, 2009 at 7:58 PM, Mel Gorman<mel@csn.ul.ie> wrote:
+> On Wed, Aug 19, 2009 at 07:52:42PM +0900, Minchan Kim wrote:
+>> Thanks for good comment, Mel.
 >>
->> Instead, How about this?
->> ==============================================
+>> On Wed, 19 Aug 2009 11:36:11 +0100
+>> Mel Gorman <mel@csn.ul.ie> wrote:
 >>
->> Subject: [PATCH] mm: stop circulating of referenced mlocked pages
+>> > On Wed, Aug 19, 2009 at 03:49:58PM +0900, Minchan Kim wrote:
+>> > > On Wed, 19 Aug 2009 15:24:54 +0900
+>> > > ????????? <chungki.woo@gmail.com> wrote:
+>> > >
+>> > > > Thank you very much for replys.
+>> > > >
+>> > > > But I think it seems not to relate with stale data problem in compcache.
+>> > > > My question was why last chance to allocate memory was failed.
+>> > > > When OOM killer is executed, memory state is not a condition to
+>> > > > execute OOM killer.
+>> > > > Specially, there are so many pages of order 0. And allocating order is zero.
+>> > > > I think that last allocating memory should have succeeded.
+>> > > > That's my worry.
+>> > >
+>> > > Yes. I agree with you.
+>> > > Mel. Could you give some comment in this situation ?
+>> > > Is it possible that order 0 allocation is failed
+>> > > even there are many pages in buddy ?
+>> > >
+>> >
+>> > Not ordinarily. If it happens, I tend to suspect that the free list data
+>> > is corrupted and would put a check in __rmqueue() that looked like
+>> >
+>> > Â  Â  BUG_ON(list_empty(&area->free_list) && area->nr_free);
 >>
->> Currently, mlock() systemcall doesn't gurantee to mark the page PG_Mlocked
->
->                                                    mark PG_mlocked
->
->> because some race prevent page grabbing.
->> In that case, instead vmscan move the page to unevictable lru.
+>> If memory is corrupt, it would be not satisfied with both condition.
+>> It would be better to ORed condition.
 >>
->> However, Recently Wu Fengguang pointed out current vmscan logic isn't so
->> efficient.
->> mlocked page can move circulatly active and inactive list because
->> vmscan check the page is referenced _before_ cull mlocked page.
+>> BUG_ON(list_empty(&area->free_list) || area->nr_free);
 >>
->> Plus, vmscan should mark PG_Mlocked when cull mlocked page.
 >
->                           PG_mlocked
+> But it's perfectly reasonable to have nr_free a positive value. The
+> point of the check is ensure the counters make sense. If nr_free > 0 and
+> the list is empty, it means accounting is all messed up and the values
+> reported for "free" in the OOM message are fiction.
 >
->> Otherwise vm stastics show strange number.
+>> > The second question is, why are we in direct reclaim this far above the
+>> > watermark? It should only be kswapd that is doing any reclaim at that
+>> > point. That makes me wonder again are the free lists corrupted.
 >>
->> This patch does that.
+>> It does make sense!
 >
-> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
 
-Thanks.
+'Corrupted free list' makes sense. Thank you very much.
+Inserting BUG_ON code is also good idea to check corruption of free list.
 
+I have one more question.
+As you know, before and after executing direct reclaim
+routine(try_to_free_pages)
+cond_resched() routine is also executed.
+In other words, it can be scheduled at that time.
+Is there no possibility executing kswapd or try_to_free_pages at other
+context at that time?
+I think this fact maybe can explain that gap(between watermark and
+free memory) also.
+How do you think about this?
+But I know this can't explain why last chance to allocate memory was failed.
+I think your idea makes sense.
 
+Anyway, I will try to test again with following BUG_ON code.
 
->> Index: b/mm/rmap.c
->> ===================================================================
->> --- a/mm/rmap.c       2009-08-18 19:48:14.000000000 +0900
->> +++ b/mm/rmap.c       2009-08-18 23:47:34.000000000 +0900
->> @@ -362,7 +362,9 @@ static int page_referenced_one(struct pa
->>        * unevictable list.
->>        */
->>       if (vma->vm_flags & VM_LOCKED) {
->> -             *mapcount = 1;  /* break early from loop */
->> +             *mapcount = 1;          /* break early from loop */
->> +             *vm_flags |= VM_LOCKED; /* for prevent to move active list */
+BUG_ON(list_empty(&area->free_list) && area->nr_free);
+
+Thanks
+Mel, Minchan
+
+>> > The other possibility is that the zonelist used for allocation in the
+>> > troubled path contains no populated zones. I would put a BUG_ON check in
+>> > get_page_from_freelist() to check if the first zone in the zonelist has no
+>> > pages. If that bug triggers, it might explain why OOMs are triggering for
+>> > no good reason.
+>>
+>> Yes. Chungki. Could you put the both BUG_ON in each function and
+>> try to reproduce the problem ?
+>>
+>> > I consider both of those possibilities abnormal though.
+>> >
+>> > > >
+>> > > > -----------------------------------------------------------------------------------------------------------------------------------------------
+>> > > > Â  Â  Â  page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, order,
+>> > > > <== this is last chance
+>> > > > Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â zonelist, ALLOC_WMARK_HIGH|ALLOC_CPUSET);
+>> > > > <== uses ALLOC_WMARK_HIGH
+>> > > > Â  Â  Â  if (page)
+>> > > > Â  Â  Â  goto got_pg;
+>> > > >
+>> > > > Â  Â  Â  out_of_memory(zonelist, gfp_mask, order);
+>> > > > Â  Â  Â  goto restart;
+>> > > > -----------------------------------------------------------------------------------------------------------------------------------------------
+>> > > >
+>> > > > > Let me have a question.
+>> > > > > Now the system has 79M as total swap.
+>> > > > > It's bigger than system memory size.
+>> > > > > Is it possible in compcache?
+>> > > > > Can we believe the number?
+>> > > >
+>> > > > Yeah, It's possible. 79Mbyte is data size can be swap.
+>> > > > It's not compressed data size. It's just original data size.
+>> > >
+>> > > You means your pages with 79M are swap out in compcache's reserved
+>> > > memory?
+>> > >
+>> >
+>> > --
+>> > Mel Gorman
+>> > Part-time Phd Student Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â Linux Technology Center
+>> > University of Limerick Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  IBM Dublin Software Lab
+>>
+>>
+>> --
+>> Kind regards,
+>> Minchan Kim
+>>
 >
->> +             try_set_page_mlocked(vma, page);
+> --
+> Mel Gorman
+> Part-time Phd Student Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â Linux Technology Center
+> University of Limerick Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  IBM Dublin Software Lab
 >
-> That call is not absolutely necessary?
-
-Why? I haven't catch your point.
