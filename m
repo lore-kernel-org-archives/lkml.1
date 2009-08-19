@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751268AbZHSKLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751556AbZHSKLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751268AbZHSKLb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 06:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZHSKLa
+	id S1751556AbZHSKLn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 06:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbZHSKLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 06:11:30 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:59078 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbZHSKLa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 06:11:30 -0400
-Message-ID: <4A8BCFCD.7020301@monstr.eu>
-Date: Wed, 19 Aug 2009 12:11:25 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Wed, 19 Aug 2009 06:11:42 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38095 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbZHSKLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 06:11:42 -0400
+Date: Wed, 19 Aug 2009 12:11:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH] Blackfin: Fix link errors with binutils 2.19 and GCC
+	4.3
+Message-ID: <20090819101132.GA27405@elte.hu>
+References: <20090818145801.GA32343@elte.hu> <8bd0f97a0908181447i66a8571fg152868c8ec4233b5@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] arch/microblaze fixes for 2.6.31-rc7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0908181447i66a8571fg152868c8ec4233b5@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-here are some bug fixes for Microblaze + defconfig update.
+* Mike Frysinger <vapier.adi@gmail.com> wrote:
 
-Thank for pulling,
-Michal
+> On Tue, Aug 18, 2009 at 10:58, Ingo Molnar wrote:
+> > Not sure whether this has been reported/fixed before.
+> >
+> > Today I built a Blackfin tool-chain from scratch for -tip testing,
+> > and it triggers:
+> >
+> >  arch/blackfin/kernel/vmlinux.lds:1238: undefined section `.data_a_l1' referenced in expression
+> >
+> > and:
+> >
+> >  arch/blackfin/kernel/vmlinux.lds:1238: undefined section `.text_data_l1'
+> > referenced in expression
+> >
+> > Now i dont have any way to test this linker script, but it now at
+> > least builds fine after fixing what appears to be typos in those
+> > assert statements.
+> 
+> they're def typos made when i copy & pasted earlier lines.  but 
+> binutils-2.17 apparently doesnt mind which is why i didnt notice.  
+> ive merged this into the Blackfin tree, thanks
 
+yeah, i used binutils-2.19.1.
 
-
-The following changes since commit df4ecf1524c7793de3121b2d4e5fc6bcc0da3bfb:
-  Linus Torvalds (1):
-        Merge branch 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
-
-are available in the git repository at:
-
-  git://git.monstr.eu/linux-2.6-microblaze.git next
-
-Christoph Hellwig (1):
-      microblaze: use the generic ack_bad_irq implementation
-
-John Williams (1):
-      microblaze: Sane handling of missing timer/intc in device tree
-
-Michal Simek (3):
-      microblaze: Enable ppoll syscall
-      microblaze: Use klimit instead of _end for memory init
-      microblaze: Update Microblaze defconfigs
-
- arch/microblaze/configs/mmu_defconfig   |   70 ++++++++++++------------
- arch/microblaze/configs/nommu_defconfig |   91 +++++++++++++++++++------------
- arch/microblaze/include/asm/hardirq.h   |    2 -
- arch/microblaze/kernel/intc.c           |    2 +
- arch/microblaze/kernel/irq.c            |    9 ---
- arch/microblaze/kernel/syscall_table.S  |    2 +-
- arch/microblaze/kernel/timer.c          |    2 +
- arch/microblaze/mm/init.c               |    6 +-
- 8 files changed, 99 insertions(+), 85 deletions(-)
-
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+	Ingo
