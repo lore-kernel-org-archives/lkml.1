@@ -1,137 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbZHSPLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZHSPNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752414AbZHSPLc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 11:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZHSPLc
+	id S1752610AbZHSPNA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 11:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbZHSPM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 11:11:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57482 "EHLO mx2.redhat.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751596AbZHSPLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 11:11:31 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] AFS: Documentation updates
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-afs@lists.infradead.org,
-       Anton Blanchard <anton@samba.org>, David Howells <dhowells@redhat.com>
-Date: Wed, 19 Aug 2009 16:10:16 +0100
-Message-ID: <20090819151016.8833.73577.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 19 Aug 2009 11:12:59 -0400
+Received: from sh.osrg.net ([192.16.179.4]:57619 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751690AbZHSPM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 11:12:59 -0400
+Date: Thu, 20 Aug 2009 00:12:23 +0900 (JST)
+Message-Id: <20090820.001223.91943640.ryusuke@osrg.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [GIT PULL] nilfs2 bug-fixes for 2.6.31-rc7
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 20 Aug 2009 00:12:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Anton Blanchard <anton@samba.org>
+Hi Linus,
 
-Fix some issues with the AFS documentation, found when testing AFS on ppc64:
+nilfs tree has two small fixes.  One will fix an -rc1 regression
+causing kernel oopses and memory leak, and the other adds missing lock
+operations.
 
-- Update AFS features: reading/writing, local caching
-- Typo in kafs sysfs debug file
-- Use modprobe instead of insmod in example
-- Update IPs for grand.central.org
+Please pull from
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+ git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-linus
 
- Documentation/filesystems/afs.txt |   26 ++++++++++++--------------
- 1 files changed, 12 insertions(+), 14 deletions(-)
+to receive
 
+the following changes since commit 64f1607ffbbc772685733ea63e6f7f4183df1b16
+ Linus Torvalds (1):
+      Linux 2.6.31-rc6
 
-diff --git a/Documentation/filesystems/afs.txt b/Documentation/filesystems/afs.txt
-index 12ad6c7..ffef91c 100644
---- a/Documentation/filesystems/afs.txt
-+++ b/Documentation/filesystems/afs.txt
-@@ -23,15 +23,13 @@ it does support include:
- 
-  (*) Security (currently only AFS kaserver and KerberosIV tickets).
- 
-- (*) File reading.
-+ (*) File reading and writing.
- 
-  (*) Automounting.
- 
--It does not yet support the following AFS features:
--
-- (*) Write support.
-+ (*) Local caching (via fscache).
- 
-- (*) Local caching.
-+It does not yet support the following AFS features:
- 
-  (*) pioctl() system call.
- 
-@@ -56,7 +54,7 @@ They permit the debugging messages to be turned on dynamically by manipulating
- the masks in the following files:
- 
- 	/sys/module/af_rxrpc/parameters/debug
--	/sys/module/afs/parameters/debug
-+	/sys/module/kafs/parameters/debug
- 
- 
- =====
-@@ -66,9 +64,9 @@ USAGE
- When inserting the driver modules the root cell must be specified along with a
- list of volume location server IP addresses:
- 
--	insmod af_rxrpc.o
--	insmod rxkad.o
--	insmod kafs.o rootcell=cambridge.redhat.com:172.16.18.73:172.16.18.91
-+	modprobe af_rxrpc
-+	modprobe rxkad
-+	modprobe kafs rootcell=cambridge.redhat.com:172.16.18.73:172.16.18.91
- 
- The first module is the AF_RXRPC network protocol driver.  This provides the
- RxRPC remote operation protocol and may also be accessed from userspace.  See:
-@@ -81,7 +79,7 @@ is the actual filesystem driver for the AFS filesystem.
- Once the module has been loaded, more modules can be added by the following
- procedure:
- 
--	echo add grand.central.org 18.7.14.88:128.2.191.224 >/proc/fs/afs/cells
-+	echo add grand.central.org 18.9.48.14:128.2.203.61:130.237.48.87 >/proc/fs/afs/cells
- 
- Where the parameters to the "add" command are the name of a cell and a list of
- volume location servers within that cell, with the latter separated by colons.
-@@ -101,7 +99,7 @@ The name of the volume can be suffixes with ".backup" or ".readonly" to
- specify connection to only volumes of those types.
- 
- The name of the cell is optional, and if not given during a mount, then the
--named volume will be looked up in the cell specified during insmod.
-+named volume will be looked up in the cell specified during modprobe.
- 
- Additional cells can be added through /proc (see later section).
- 
-@@ -163,14 +161,14 @@ THE CELL DATABASE
- 
- The filesystem maintains an internal database of all the cells it knows and the
- IP addresses of the volume location servers for those cells.  The cell to which
--the system belongs is added to the database when insmod is performed by the
-+the system belongs is added to the database when modprobe is performed by the
- "rootcell=" argument or, if compiled in, using a "kafs.rootcell=" argument on
- the kernel command line.
- 
- Further cells can be added by commands similar to the following:
- 
- 	echo add CELLNAME VLADDR[:VLADDR][:VLADDR]... >/proc/fs/afs/cells
--	echo add grand.central.org 18.7.14.88:128.2.191.224 >/proc/fs/afs/cells
-+	echo add grand.central.org 18.9.48.14:128.2.203.61:130.237.48.87 >/proc/fs/afs/cells
- 
- No other cell database operations are available at this time.
- 
-@@ -233,7 +231,7 @@ insmod /tmp/kafs.o rootcell=cambridge.redhat.com:172.16.18.91
- mount -t afs \%root.afs. /afs
- mount -t afs \%cambridge.redhat.com:root.cell. /afs/cambridge.redhat.com/
- 
--echo add grand.central.org 18.7.14.88:128.2.191.224 > /proc/fs/afs/cells
-+echo add grand.central.org 18.9.48.14:128.2.203.61:130.237.48.87 > /proc/fs/afs/cells
- mount -t afs "#grand.central.org:root.cell." /afs/grand.central.org/
- mount -t afs "#grand.central.org:root.archive." /afs/grand.central.org/archive
- mount -t afs "#grand.central.org:root.contrib." /afs/grand.central.org/contrib
+Ryusuke Konishi (1):
+      nilfs2: fix oopses with doubly mounted snapshots
 
+Zhang Qiang (1):
+      nilfs2: missing a read lock for segment writer in nilfs_attach_checkpoint()
+
+ fs/nilfs2/super.c     |    2 ++
+ fs/nilfs2/the_nilfs.h |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
+--
+
+Thanks,
+Ryusuke Konishi
