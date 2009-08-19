@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751996AbZHSNEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238AbZHSNDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751996AbZHSNEx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZHSNEs
+	id S1752238AbZHSNDy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbZHSNDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:04:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50580 "EHLO mx2.redhat.com"
+	Wed, 19 Aug 2009 09:03:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50589 "EHLO mx2.redhat.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752004AbZHSNCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:02:49 -0400
+	id S1752032AbZHSNCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:02:50 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 40/47] KVM: use vcpu_id instead of bsp_vcpu pointer in kvm_vcpu_is_bsp
-Date: Wed, 19 Aug 2009 16:02:36 +0300
-Message-Id: <1250686963-8357-41-git-send-email-avi@redhat.com>
+Subject: [PATCH 47/47] KVM: fix lock imbalance
+Date: Wed, 19 Aug 2009 16:02:43 +0300
+Message-Id: <1250686963-8357-48-git-send-email-avi@redhat.com>
 In-Reply-To: <1250686963-8357-1-git-send-email-avi@redhat.com>
 References: <1250686963-8357-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcelo Tosatti <mtosatti@redhat.com>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-Change kvm_vcpu_is_bsp to use vcpu_id instead of bsp_vcpu pointer, which
-is only initialized at the end of kvm_vm_ioctl_create_vcpu.
+There is a missing unlock on one fail path in ioapic_mmio_write,
+fix that.
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- include/linux/kvm_host.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ virt/kvm/ioapic.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 0604d56..4ea42c9 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -538,7 +538,7 @@ static inline void kvm_irqfd_release(struct kvm *kvm) {}
- #ifdef CONFIG_KVM_APIC_ARCHITECTURE
- static inline bool kvm_vcpu_is_bsp(struct kvm_vcpu *vcpu)
- {
--	return vcpu->kvm->bsp_vcpu == vcpu;
-+	return vcpu->kvm->bsp_vcpu_id == vcpu->vcpu_id;
+diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+index ddf6aa9..8a9c6cc 100644
+--- a/virt/kvm/ioapic.c
++++ b/virt/kvm/ioapic.c
+@@ -292,7 +292,7 @@ static int ioapic_mmio_write(struct kvm_io_device *this, gpa_t addr, int len,
+ 		data = *(u32 *) val;
+ 	else {
+ 		printk(KERN_WARNING "ioapic: Unsupported size %d\n", len);
+-		return 0;
++		goto unlock;
+ 	}
+ 
+ 	addr &= 0xff;
+@@ -313,6 +313,7 @@ static int ioapic_mmio_write(struct kvm_io_device *this, gpa_t addr, int len,
+ 	default:
+ 		break;
+ 	}
++unlock:
+ 	mutex_unlock(&ioapic->kvm->irq_lock);
+ 	return 0;
  }
- #endif
- #endif
 -- 
 1.6.3.3
 
