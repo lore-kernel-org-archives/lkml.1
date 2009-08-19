@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751448AbZHSJNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751466AbZHSJUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751448AbZHSJNq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 05:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbZHSJNq
+	id S1751466AbZHSJUF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 05:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZHSJUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 05:13:46 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62610 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750762AbZHSJNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 05:13:45 -0400
-Message-ID: <4A8BC301.3080404@cn.fujitsu.com>
-Date: Wed, 19 Aug 2009 17:16:49 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 19 Aug 2009 05:20:04 -0400
+Received: from tim.des.no ([194.63.250.121]:61564 "EHLO tim.des.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750969AbZHSJUD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 05:20:03 -0400
+X-Greylist: delayed 514 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Aug 2009 05:20:03 EDT
+From: =?utf-8?Q?Dag-Erling_Sm=C3=B8rgrav?= <des@des.no>
+To: David Wagner <daw@cs.berkeley.edu>
+Cc: rwatson@FreeBSD.org (Robert Watson), freebsd-hackers@FreeBSD.org,
+       linux-kernel@vger.kernel.org, Oliver Pinter <oliver.pntr@gmail.com>
+Subject: Re: Security: information leaks in /proc enable keystroke recovery
+References: <200908162109.n7GL9JNK029605@taverner.cs.berkeley.edu>
+Date: Wed, 19 Aug 2009 03:57:44 +0200
+In-Reply-To: <200908162109.n7GL9JNK029605@taverner.cs.berkeley.edu> (David
+	Wagner's message of "Sun, 16 Aug 2009 14:09:19 -0700 (PDT)")
+Message-ID: <861vn85zvr.fsf@ds4.des.no>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.92 (berkeley-unix)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Re: [RFC PATCH] Add timer-source of walltime for ftrace
-References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Wed, 19 Aug 2009, KOSAKI Motohiro wrote:
-> 
->>> +u64 notrace trace_clock_walltime(void)
->>> +{
->>> +	u32 remainder;
->>> +	return base_walltime.tv_sec + div_u64_rem(
->>> +			trace_clock() + base_walltime.tv_nsec,
->>> +			NSEC_PER_SEC, &remainder);
->>> +}
->> Why do we need calculate walltime at ring-buffer recordng phase?
->> IOW, Why can't we calculate this at displaing time?
-> 
-> Right! We should have something like this:
-> 
-> 	return (u64)base_walltime.tv_sec * NSEC_PER_SEC +
-> 		trace_clock() + base_walltime.tv_nsec;
-> 
-> And then we could divide it out later.
-> 
-> And then we could even show more fields in the output and not limit 
-> ourselves to seconds.
-> 
-> -- Steve
+David Wagner <daw@cs.berkeley.edu> writes:
+> I agree we certainly shouldn't discuss the keystroke recovery attack
+> as hypothetical, because it is clearly not hypothetical: the authors
+> implemented it and found that it works.
 
-Hello, Steven, Kosaki-san:
+It *is* hypothetical.  They were able to collect some keystrokes (but
+not all) in Linux, but IIUC, all they could do in FreeBSD was figure out
+whether or not a key was pressed at a certain time (or during a certain
+interval).  They *hypothesize* that the interval between keystrokes can
+be used to identify the keys being pressed, but they haven't actually
+done it.  I can imagine - purely hypothetically - that it would be
+possible, but only while the user was typing running text; the
+parameters would vary greatly from typist to typist, and between
+keyboard layouts, and you could probably defeat it pretty easily (at
+least some of the time) by deliberately typing slowly and arythmically,
+e.g. typing in your password with only one finger.
 
-Thanks for your good suggestion,
-I'll fix it in next version.
-
-Thanks
-Zhaolei
-
+DES
+-- 
+Dag-Erling Smørgrav - des@des.no
