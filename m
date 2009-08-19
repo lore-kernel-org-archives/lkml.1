@@ -1,137 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbZHSQ3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbZHSQ3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753148AbZHSQ3F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZHSQ3E
+	id S1753188AbZHSQ3u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZHSQ3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:29:04 -0400
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:36475 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752532AbZHSQ3D (ORCPT
+	Wed, 19 Aug 2009 12:29:49 -0400
+Received: from queueout03-winn.ispmail.ntl.com ([81.103.221.33]:24380 "EHLO
+	queueout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751045AbZHSQ3s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 12:29:03 -0400
-Date: Wed, 19 Aug 2009 09:29:02 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Avi Kivity <avi@redhat.com>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
-	model for vbus_driver objects
-Message-ID: <20090819162902.GB22294@ovro.caltech.edu>
-References: <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu> <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu> <4A8B1C7F.4060008@redhat.com> <20090819003812.GA11168@ovro.caltech.edu> <4A8B9051.3020505@redhat.com> <20090819152811.GA22294@ovro.caltech.edu> <4A8C1C22.3010101@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8C1C22.3010101@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 19 Aug 2009 09:29:04 -0700 (PDT)
+	Wed, 19 Aug 2009 12:29:48 -0400
+Subject: Re: [PATCH] staging/wlan-ng: Convert firmware loading to load
+ binary ihex format
+From: Karl Relton <karllinuxtest.relton@ntlworld.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090819154437.GA729@kroah.com>
+References: <1250665599.4545.3.camel@localhost>
+	 <20090819154437.GA729@kroah.com>
+Content-Type: text/plain
+Date: Wed, 19 Aug 2009 17:20:51 +0100
+Message-Id: <1250698851.4323.9.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-Cloudmark-Analysis: v=1.0 c=1 a=77gSv6d_8poA:10 a=NLZqzBF-AAAA:8 a=4LfcpmYkVpcdvqRNO00A:9 a=lL-L4dknxU0NDalZ6qsA:7 a=2pkFQK9VfCjo0ILLUorBvyGZT1MA:4 a=_dQi-Dcv4p4A:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 06:37:06PM +0300, Avi Kivity wrote:
-> On 08/19/2009 06:28 PM, Ira W. Snyder wrote:
->>
->>> Well, if you can't do that, you can't use virtio-pci on the host.
->>> You'll need another virtio transport (equivalent to "fake pci" you
->>> mentioned above).
->>>
->>>      
->> Ok.
->>
->> Is there something similar that I can study as an example? Should I look
->> at virtio-pci?
->>
->>    
->
-> There's virtio-lguest, virtio-s390, and virtio-vbus.
->
->>> I think you tried to take two virtio-nets and make them talk together?
->>> That won't work.  You need the code from qemu to talk to virtio-net
->>> config space, and vhost-net to pump the rings.
->>>
->>>      
->> It *is* possible to make two unmodified virtio-net's talk together. I've
->> done it, and it is exactly what the virtio-over-PCI patch does. Study it
->> and you'll see how I connected the rx/tx queues together.
->>    
->
-> Right, crossing the cables works, but feature negotiation is screwed up,  
-> and both sides think the data is in their RAM.
->
-> vhost-net doesn't do negotiation and doesn't assume the data lives in  
-> its address space.
->
+I plan to give the various distributions a utility to pre-compile the
+firmware. It is based on ihex2fw.c.
 
-Yes, that is exactly what I did: crossed the cables (in software).
+I don't think the firmware will ever be accepted into linux-firmware
+because the original licensing cannot be established.
 
-I'll take a closer look at vhost-net now, and make sure I understand how
-it works.
+Karl
 
->>> Please find a name other than virtio-over-PCI since it conflicts with
->>> virtio-pci.  You're tunnelling virtio config cycles (which are usually
->>> done on pci config cycles) on a new protocol which is itself tunnelled
->>> over PCI shared memory.
->>>
->>>      
->> Sorry about that. Do you have suggestions for a better name?
->>
->>    
->
-> virtio-$yourhardware or maybe virtio-dma
->
+On Wed, 2009-08-19 at 08:44 -0700, Greg KH wrote:
+> On Wed, Aug 19, 2009 at 08:06:39AM +0100, Karl Relton wrote:
+> > Convert prism2_usb firmware loading to load firmware in pre-compiled
+> > binary 'ihex' format rather than ascii 'srec' format. This moves the
+> > srec processing and sorting of records out of kernel space into a
+> > pre-compiler. The driver now just works with the binary image, but
+> > still does the 'pda plugging' of that image at runtime, as required
+> > by the prism hardware.
+> > 
+> > Signed-off-by: Karl Relton <karllinuxtest.relton@ntlworld.com>
+> 
+> 
+> Are the firmware images updated somewhere?  Like in the linux-firmware
+> tree?
+> 
+> thanks,
+> 
+> greg k-h
+> 
 
-How about virtio-phys?
-
-Arnd and BenH are both looking at PPC systems (similar to mine). Grant
-Likely is looking at talking to an processor core running on an FPGA,
-IIRC. Most of the code can be shared, very little should need to be
-board-specific, I hope.
-
->> I called it virtio-over-PCI in my previous postings to LKML, so until a
->> new patch is written and posted, I'll keep referring to it by the name
->> used in the past, so people can search for it.
->>
->> When I post virtio patches, should I CC another mailing list in addition
->> to LKML?
->>    
->
-> virtualization@lists.linux-foundation.org is virtio's home.
->
->> That said, I'm not sure how qemu-system-ppc running on x86 could
->> possibly communicate using virtio-net. This would mean the guest is an
->> emulated big-endian PPC, while the host is a little-endian x86. I
->> haven't actually tested this situation, so perhaps I am wrong.
->>    
->
-> I'm confused now.  You don't actually have any guest, do you, so why  
-> would you run qemu at all?
->
-
-I do not run qemu. I am just stating a problem with virtio-net that I
-noticed. This is just so someone more knowledgeable can be aware of the
-problem.
-
->>> The x86 side only needs to run virtio-net, which is present in RHEL 5.3.
->>> You'd only need to run virtio-tunnel or however it's called.  All the
->>> eventfd magic takes place on the PCI agents.
->>>
->>>      
->> I can upgrade the kernel to anything I want on both the x86 and ppc's.
->> I'd like to avoid changing the x86 (RHEL5) userspace, though. On the
->> ppc's, I have full control over the userspace environment.
->>    
->
-> You don't need any userspace on virtio-net's side.
->
-> Your ppc boards emulate a virtio-net device, so all you need is the  
-> virtio-net module (and virtio bindings).  If you chose to emulate, say,  
-> an e1000 card all you'd need is the e1000 driver.
->
-
-Thanks for the replies.
-Ira
