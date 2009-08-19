@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbZHSSrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbZHSSuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbZHSSrh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZHSSrg
+	id S1752723AbZHSSuM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZHSSuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:47:36 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48998 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbZHSSrg (ORCPT
+	Wed, 19 Aug 2009 14:50:11 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:53964 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751142AbZHSSuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:47:36 -0400
-Message-ID: <4A8C48AB.1030700@cs.helsinki.fi>
-Date: Wed, 19 Aug 2009 21:47:07 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Amerigo Wang <amwang@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       David Rientjes <rientjes@google.com>, Matt Mackall <mpm@selenic.com>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [Patch] proc: drop write permission on 'timer_list' and	'slabinfo'
-References: <20090817094822.GA17838@elte.hu> <1250502847.5038.16.camel@penberg-laptop> <alpine.DEB.1.10.0908171228300.16267@gentwo.org> <4A8986BB.80409@cs.helsinki.fi> <alpine.DEB.1.10.0908171240370.16267@gentwo.org> <4A8A0B0D.6080400@redhat.com> <4A8A0B14.8040700@cn.fujitsu.com> <4A8A1B2E.20505@redhat.com> <20090818120032.GA22152@localhost> <4A8B652E.40905@redhat.com> <20090819023737.GA17710@localhost> <4A8BD67F.8020007@redhat.com>
-In-Reply-To: <4A8BD67F.8020007@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 14:50:10 -0400
+Date: Wed, 19 Aug 2009 13:50:10 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, mingo@elte.hu,
+       tglx@linutronix.de
+Subject: Re: [PATCH] spinlock: __raw_spin_is_locked() should return true for UP
+Message-ID: <20090819185010.GA12304@b07421-ec1.am.freescale.net>
+References: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org> <alpine.LFD.2.01.0908181618420.3158@localhost.localdomain> <alpine.DEB.2.00.0908181931180.28398@gandalf.stny.rr.com> <alpine.LFD.2.01.0908181640120.3158@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0908181640120.3158@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang wrote:
-> Pekka, could you please also take the patch attached below? It is just a 
-> trivial coding style fix. And it is based on the my previous patch.
+On Tue, Aug 18, 2009 at 04:52:20PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 18 Aug 2009, Steven Rostedt wrote:
+> >
+> > > The thing is, some people may assert that a lock is held, but others could 
+> > > easily be looping until it's not held using something like
+> > > 
+> > > 	while (spin_is_locked(lock))
+> > > 		cpu_relax();
+> > 
+> > Wouldn't something like that be really racey? And anyone doing such a 
+> > thing had better have that code within an #ifdef CONFIG_SMP.
+> 
+> Sure, it's hopefully inside a #ifdef CONFIG_SMP.
+> 
+> And no, it's not necessarily racy. Sure, it's race in itself if that's all 
+> you are doing, but I could imagine writing that kind of code if I knew 
+> some lock was likely held, and I wanted to avoid doing a "try_lock()" 
+> until it got released.
 
-The last hunk was already in slab.git because I fixed your patch up by 
-hand. I applied the rest but can you please send proper patches in the 
-future? That is, no attachments and a "git am" friendly subject line. 
-Thanks!
+So you'd basically have the effect of a spin_lock(), except with the
+bonus of breaking RT hacks that do something other than spin, and
+preventing arch code from doing certain types of relaxation that are only
+appropriate when waiting on a lock (such as mdors on powerpc, which
+de-emphasizes until a reservation is broken).
 
-			Pekka
+Not exactly something we should encourage, IMHO.
+
+-Scott
