@@ -1,62 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751404AbZHSFsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751008AbZHSGGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751404AbZHSFsr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 01:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZHSFsq
+	id S1751008AbZHSGGS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 02:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZHSGGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 01:48:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43087 "EHLO mx2.redhat.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750913AbZHSFsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 01:48:45 -0400
-Message-ID: <4A8B9241.20300@redhat.com>
-Date: Wed, 19 Aug 2009 08:48:49 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 19 Aug 2009 02:06:17 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:38363 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbZHSGGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 02:06:17 -0400
+Date: Tue, 18 Aug 2009 23:06:14 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       hugh.dickins@tiscali.co.uk, benh@kernel.crashing.org
+Subject: Re: [PATCH -tip/core/rcu 1/6] Cleanups and fixes for RCU in face
+	of heavy CPU-hotplug stress
+Message-ID: <20090819060614.GA14383@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090815165153.GA8886@linux.vnet.ibm.com> <1250533487.2709.14.camel@josh-work.beaverton.ibm.com> <20090817192036.GJ6760@linux.vnet.ibm.com> <20090818152643.GA5549@elte.hu> <20090818200701.GG6766@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
- objects
-References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws> <4A8AA9BD.2070909@gmail.com> <4A8AB076.6080906@redhat.com> <4A8ACE1F.6020402@gmail.com> <20090818165139.GC19846@redhat.com> <4A8B8F4E.80207@gmail.com>
-In-Reply-To: <4A8B8F4E.80207@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090818200701.GG6766@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/19/2009 08:36 AM, Gregory Haskins wrote:
->> If virtio net in guest could be improved instead, everyone would
->> benefit.
->>      
-> So if I whip up a virtio-net backend for vbus with a PCI compliant
-> connector, you are happy?
->    
+On Tue, Aug 18, 2009 at 01:07:01PM -0700, Paul E. McKenney wrote:
+> On Tue, Aug 18, 2009 at 05:26:43PM +0200, Ingo Molnar wrote:
+> > 
+> > FYI, i've started triggering hangs in -tip testing recently, during 
+> > CPU hotplug tests:
+> > 
+> > [   57.632003] eth0: no IPv6 routers present
+> > [  103.564010] kmemleak: 29 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+> > [  200.380003] Hangcheck: hangcheck value past margin!
+> > [  248.192003] INFO: task S99local:2974 blocked for more than 120 seconds.
+> > [  248.194532] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> > [  248.202330] S99local      D 0000000c  6256  2974   2687 0x00000000
+> > [  248.208929]  9c7ebe90 00000086 6b67ef8b 0000000c 9f25a610 81a69869 00000001 820b6990
+> > [  248.216123]  820b6990 820b6990 9c6e4c20 9c6e4eb4 82c78990 00000000 6b993559 0000000c
+> > [  248.220616]  9c7ebe90 8105f22a 9c6e4eb4 9c6e4c20 00000001 9c7ebe98 9c7ebeb4 81a65cb3
+> > [  248.229990] Call Trace:
+> > [  248.234049]  [<81a69869>] ? _spin_unlock_irqrestore+0x22/0x37
+> > [  248.239769]  [<8105f22a>] ? prepare_to_wait+0x48/0x4e
+> > [  248.244796]  [<81a65cb3>] rcu_barrier_cpu_hotplug+0xaa/0xc9
+> > [  248.250343]  [<8105f029>] ? autoremove_wake_function+0x0/0x38
+> > [  248.256063]  [<81062cf2>] notifier_call_chain+0x49/0x71
+> > [  248.261263]  [<81062da0>] raw_notifier_call_chain+0x11/0x13
+> > [  248.266809]  [<81a0b475>] _cpu_down+0x272/0x288
+> > [  248.271316]  [<81a0b4d5>] cpu_down+0x4a/0xa2
+> > [  248.275563]  [<81a0c48a>] store_online+0x2a/0x5e
+> > [  248.280156]  [<81a0c460>] ? store_online+0x0/0x5e
+> > [  248.284836]  [<814ddc35>] sysdev_store+0x20/0x28
+> > [  248.289429]  [<8112e403>] sysfs_write_file+0xb8/0xe3
+> > [  248.294369]  [<8112e34b>] ? sysfs_write_file+0x0/0xe3
+> > [  248.299396]  [<810e4c8f>] vfs_write+0x91/0x120
+> > [  248.303817]  [<810e4dc1>] sys_write+0x40/0x65
+> > [  248.308150]  [<81002d73>] sysenter_do_call+0x12/0x28
+> > 
+> > config and bootlog attached. I'd suspect one of these patches:
+> > 
+> > 684ca5c: rcu: Fix typo in rcu_irq_exit() comment header
+> > b612ba8: rcu: Make rcupreempt_trace.c look at offline CPUs
+> > 8064d54: rcu: Make preemptable RCU scan all CPUs when summing RCU counters
+> > 2e59755: rcu: Simplify RCU CPU-hotplug notification
+> > 799e64f: cpu hotplug: Introduce cpu_notifier() to handle !HOTPLUG_CPU case
+> > 2756962: rcu: Split hierarchical RCU initialization into boot-time and CPU-online piece
+> > 
+> > Any ideas?
+> 
+> Gah...  I thought I had fixed that one!!!  I was seeing a deadlock
+> where rcu_barrier_cpu_hotplug() would register the three RCU callbacks,
+> then wait for them.  But in some situations, it would wait for them in
+> a state such that grace period could not complete.  I convinced myself
+> that moving the wait back from CPU_DEAD to CPU_POST_DEAD solved the
+> problem.
+> 
+> I am going to take a more bullet-proof approach, switching from the
+> wait_completion() form to wait_event(), which will allow me to wait
+> for the previous hotplug operation's callbacks at the beginning of the
+> subsequent hotplug operation.
+> 
+> I reserve the right to insert a short delay in the CPU-hotplug path
+> outside of any locks, but would imagine that people would prefer that
+> I avoid that sort of thing, at least until we have bulk CPU-hotplug
+> operations.
 
-This doesn't improve virtio-net in any way.
+And here is a patch that is doing well in testing thus far.  (On the
+other hand tip/core/rcu did fine in my testing.)  I am not 100% confident
+that this new patch hitting the core RCU/CPU-hotplug issue, but this
+is in any case helpful in getting an RCU grace period off of the CPU
+hotunplug critical path.
 
->> I am doing this, and I wish more people would join.  Instead,
->> you change ABI in a incompatible way.
->>      
-> Only by choice of my particular connector.  The ABI is a function of the
-> connector design.  So one such model is to terminate the connector in
-> qemu, and surface the resulting objects as PCI devices.  I choose not to
-> use this particular design for my connector that I am pushing upstream
-> because I am of the opinion that I can do better by terminating it in
-> the guest directly as a PV optimized bus.  However, both connectors can
-> theoretically coexist peacefully.
->    
+Feel free to test if convenient.  The other thing I am considering is
+moving the registering of the three rcu_migrate_head callbacks from the
+CPU_DYING notifier to the CPU_POST_DEAD notifier.
 
-virtio already supports this model; see lguest and s390.  Transporting 
-virtio over vbus and vbus over something else doesn't gain anything over 
-directly transporting virtio over that something else.
+							Thanx, Paul
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+------------------------------------------------------------------------
 
+Delay rcu_barrier() wait until beginning of next CPU-hotunplug operation.
+
+This change moves an RCU grace period delay off of the critical path for
+CPU-hotunplug operations.  Since RCU callback migration is only performed
+on CPU-hotunplug operations, and since the rcu_barrier() race is
+provoked only by consecutive CPU-hotunplug operations, it is not
+necessary to delay the end of a given CPU-hotunplug operation.  We can
+instead choose to delay the beginning of the next CPU-hotunplug
+operation, as shown by the following patch.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ rcupdate.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index 8df1156..bd5d5c8 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -238,7 +238,8 @@ static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
+ 		call_rcu_bh(rcu_migrate_head, rcu_migrate_callback);
+ 		call_rcu_sched(rcu_migrate_head + 1, rcu_migrate_callback);
+ 		call_rcu(rcu_migrate_head + 2, rcu_migrate_callback);
+-	} else if (action == CPU_POST_DEAD) {
++	} else if (action == CPU_DOWN_PREPARE) {
++		/* Don't need to wait until next removal operation. */
+ 		/* rcu_migrate_head is protected by cpu_add_remove_lock */
+ 		wait_migrated_callbacks();
+ 	}
