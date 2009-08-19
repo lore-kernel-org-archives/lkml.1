@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbZHSSU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbZHSSWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752149AbZHSSU1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 14:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZHSSU0
+	id S1752386AbZHSSWb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 14:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZHSSWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 14:20:26 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:36532 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751413AbZHSSUZ (ORCPT
+	Wed, 19 Aug 2009 14:22:30 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:17706 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751432AbZHSSW3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 14:20:25 -0400
-Date: Wed, 19 Aug 2009 14:20:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-cc: Greg KH <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
- in use
-In-Reply-To: <20090819192256.0e907b54@neptune.home>
-Message-ID: <Pine.LNX.4.44L0.0908191413460.3229-100000@iolanthe.rowland.org>
+	Wed, 19 Aug 2009 14:22:29 -0400
+Message-ID: <4A8C4348.7030601@sdgsystems.com>
+Date: Wed, 19 Aug 2009 14:24:08 -0400
+From: "Aric D. Blumer" <aric@sdgsystems.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Greg KH <greg@kroah.com>
+CC: Eric Miao <eric.y.miao@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mike Rapoport <mike@compulab.co.il>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: linux-next: usb/pxa trees build failure
+References: <20090818135852.0b3b648d.sfr@canb.auug.org.au> <20090818114242.GA28534@kroah.com> <4A8AB525.7050404@gmail.com> <20090818145800.GB6074@kroah.com> <4A8B64DE.6000506@gmail.com> <20090819172223.GA4398@kroah.com>
+In-Reply-To: <20090819172223.GA4398@kroah.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Aug 2009, Bruno [UTF-8] Prémont wrote:
+Greg KH wrote:
+> On Wed, Aug 19, 2009 at 10:35:10AM +0800, Eric Miao wrote:
+>   
+>> Greg KH wrote:
+>>     
+>>> On Tue, Aug 18, 2009 at 10:05:25PM +0800, Eric Miao wrote:
+>>>       
+>>>> Greg KH wrote:
+>>>>         
+>>>>> On Tue, Aug 18, 2009 at 01:58:52PM +1000, Stephen Rothwell wrote:
+>>>>>           
+>>>>>> Hi Eric, Greg,
+>>>>>>
+>>>>>> The next-20090817 (and a few before) build (arm trizeps4_defconfig)
+>>>>>> failed like this:
+>>>>>>
+>>>>>> drivers/usb/host/ohci-pxa27x.c:507: error: 'pdev' undeclared (first use in this function)
+>>>>>>
+>>>>>> Caused by the interaction of commit
+>>>>>> 6458baec17e19d38b9d4eb1f96c213f91609c0e3 ("USB: ohci-pxa27x: Reconfigure
+>>>>>> power settings on resume") from the usb tree with commit
+>>>>>> b8fb7d4317bcea1b48c9560d23dff81121870ece ("[ARM] pxa: update
+>>>>>> ohci-pxa27x.c to use 'struct dev_pm_ops'"). from the pxa tree.
+>>>>>>
+>>>>>> Greg/Aric, maybe that usb tree patch needs to go through the pxa tree?
+>>>>>> (and maybe "USB: ohci-pxa27x: Allow NOCP and OCPM to be cleared" as well?)
+>>>>>>
+>>>>>> [this also broke the following configs: magician_defconfig,
+>>>>>> em_x270_defconfig and cm_x2xx_defconfig.]
+>>>>>>             
+>>>>> Ick, not good.  Aric, should I drop this patch from my tree?
+>>>>>
+>>>>>           
+>>>> I think so, might be better to go through the pxa tree so that I can give
+>>>> another review. (the fiber across the pacific seems to be broken again, so
+>>>> I have to look into this tomorrow, still fetching -next, sigh).
+>>>>         
+>>> Ok, let me know if you want me to drop these patches from my tree.
+>>>
+>>>       
+>> OK, so the problem is 'pdev' is no longer part of the dev_pm_ops, ('dev' is used
+>> instead), and the 'inf' pointer can just be referenced from 'dev->platform_data',
+>> so the fix is actually trivial, but it does have dependency issue.
+>>
+>> Greg,
+>>
+>> It looks to me would be better if this goes the pxa tree, and I'll send out the
+>> updated patch of 6458baec later.
+>>     
+>
+> Ok, should I drop just this one patch from my tree, or any others as
+> well
 
-> I did try to understand what happens exactly, using backtrace from
-> kernel compiled with debug info and running objdump on usbserial.ko.
-
-> Verifying by adding a few printk()'s inside serial_do_free() confirms my
-> understanding of the objdump and also tells me that after unplug
-> serial_do_free() is called twice (with different addresses for port->serial->type)!
-
-In fact, with different values for port->serial.  Probably because port 
-was deallocated before the second call occurred.
-
-> The first one (right after unplug) survives, the second one (when exiting
-> minicom) crashes.
-> 
-> Extract from the logs with my printk()'s
-> [  266.290632] ftdi_sio ttyUSB0: FTDI USB Serial Device converter now disconnected from ttyUSB0
-> [  266.290938] ftdi_sio 2-2:1.1: device disconnected
-> [  266.292378] tty_port_close_start: count = -1
-> [  266.292535] serial_do_free(port @da0d9000)
-> [  266.292692]   serial @da3e9840
-> [  266.292791]   type   @deb45660
-> /* exit minicom */
-> [  290.728196] serial_do_free(port @da0d9000)
-> [  290.728341]   serial @da0d9200
-> [  290.728461]   type   @3a6e6967
-> [  290.728591] BUG: unable to handle kernel paging request at 3a6e6983
-> [  290.728823] IP: [<deb02d5d>] serial_do_free+0x6d/0xd0 [usbserial]
-
-> Printk's were added:
-> 
-> 	if (port->console)
-> 		return;
-> 	/* here */
-> 	serial = serial->port;
-> 	owner = serial->type->driver.owner /* crash here */
-> 
-> Is it useful to check calls to serial_do_free() for my pl2303
-> usb2serial converter? (e.g. to compare behavior from both of them)
-
-You could try; it wouldn't hurt.  More useful would be to add some 
-debugging messages to destroy_serial().  There should not be any calls 
-to serial_do_free() after destroy_serial() runs.
-
-Also add some messages to the places that call usb_serial_put() and
-usb_serial_get_by_index().
-
-Alan Stern
-
+It is an isolated patch, so dropping it alone should be fine.
