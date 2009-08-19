@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbZHSM4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751723AbZHSM50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751748AbZHSM4b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 08:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZHSM4a
+	id S1751723AbZHSM50 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 08:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbZHSM5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 08:56:30 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:54591 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbZHSM42 (ORCPT
+	Wed, 19 Aug 2009 08:57:25 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:35604 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751597AbZHSM5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 08:56:28 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 4/4][RFC] perf_counter: Allow sharing of output channels
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       stephane eranian <eranian@googlemail.com>
-In-Reply-To: <19083.61914.571806.395197@cargo.ozlabs.ibm.com>
-References: <20090819091823.916851355@chello.nl>
-	 <20090819092023.980284148@chello.nl>
-	 <19083.61914.571806.395197@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 14:56:26 +0200
-Message-Id: <1250686586.8282.12.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 08:57:25 -0400
+Date: Wed, 19 Aug 2009 18:27:16 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Adam Belay <abelay@novell.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2]: cpuidle: Introducing cpuidle infrastructure to
+	powerpc.
+Message-ID: <20090819125716.GA20627@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 22:36 +1000, Paul Mackerras wrote:
-> Peter Zijlstra writes:
-> 
-> > Provide the ability to configure a counter to send its output to
-> > another (already existing) counter's output stream.
-> 
-> What sort of thing might this be useful for?
+Hi,
 
-Some people complained that its tedious to mmap() for every counter and
-would like to share the mmap() output buffer between counters.
 
-This saves on address space and mlock budget and I guess fd management
-logic.
+**** RFC not for inclusion ****
 
-As long as you're not mixing counters for different tasks/cpus there
-should be no performance penalty, but even if you do that it might work
-well enough on slow samples/small systems..
+"Cpuidle" is a CPU Power Management infrastrusture which helps manage
+idle CPUs in a clean and efficient manner. The architecture can register
+its driver (in this case, tpmd_idle driver) so that it subscribes for
+cpuidle feature. Cpuidle has a set of governors (ladder and menu),
+which will decide the best idle state to be chosen for the current situation,
+based on heuristics, and calculates the expected residency time
+for the current idle state. So based on this, the cpu is put into
+the right idle state.
 
-> Does this only apply to sampling counters?
+Currently, cpuidle infrasture is exploited by ACPI to choose between
+the available ACPI C-states. This patch-set is aimed at enabling
+cpuidle for powerpc and provides a sample implementation for pseries.
 
-Yeah, everything that would otherwise go through the mmap() buffer.
+Currently, in the pseries_dedicated_idle_sleep(), the processor would
+poll for a time period, which is called the snooze, and only then it
+is ceded, which would put the processor in nap state. Cpuidle aims at
+separating this into 2 different idle states. Based on the expected
+residency time predicted by the cpuidle governor, the idle state is
+chosen directly. So, choosing to enter the nap state directly based on
+the decision made by cpuidle would avoid unnecessary snoozing before
+entering nap.
 
-I'm not sure there's anything to be done about the read(2) thing.
+This patch-set tries to achieve the above objective by introducing a
+Thermal and Power Management Device module called tpmd_idle in
+arch/powerpc/platform/pseries/tpmd_idle.c, which implements cpuidle
+idle loop which would replace the pseries_dedicated_idle_sleep()
+when cpuidle is enabled.
 
+Patches included in this set:
+PATCH 1/2 - Enable cpuidle for pSeries.
+PATCH 2/2 - Implement Thermal & Power Management Devices(TPMD) idle module
+
+
+Any feedback on the overall design and idea is immensely valuable.
+
+--arun
