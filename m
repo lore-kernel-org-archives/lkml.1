@@ -1,101 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbZHSMK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZHSMKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752048AbZHSMK3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 08:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZHSMK3
+	id S1752073AbZHSMKe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 08:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZHSMKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 08:10:29 -0400
-Received: from mga14.intel.com ([143.182.124.37]:49343 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbZHSMK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 08:10:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,408,1246863600"; 
-   d="scan'208";a="177659362"
-Date: Wed, 19 Aug 2009 20:10:18 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090819121017.GA8226@localhost>
-References: <20090816051502.GB13740@localhost> <20090816112910.GA3208@localhost> <20090818234310.A64B.A69D9226@jp.fujitsu.com> <20090819120117.GB7306@localhost> <2f11576a0908190505h6da96280xf67c962aa3f5ba07@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2f11576a0908190505h6da96280xf67c962aa3f5ba07@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 19 Aug 2009 08:10:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54184 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbZHSMKb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 08:10:31 -0400
+Subject: Re: CPU scheduler weirdness?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Marton Balint <cus@fazekas.hu>
+Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu>
+References: <20090813084257.GA761@rhlx01.hs-esslingen.de>
+	 <alpine.LNX.2.00.0908131720050.8321@cinke.fazekas.hu>
+	 <20090813155812.GA15714@rhlx01.hs-esslingen.de>
+	 <alpine.LNX.2.00.0908171758340.2764@cinke.fazekas.hu>
+	 <1250665455.7583.326.camel@twins>
+	 <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 19 Aug 2009 14:10:34 +0200
+Message-Id: <1250683834.7583.360.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 08:05:19PM +0800, KOSAKI Motohiro wrote:
-> >> page_referenced_file?
-> >> I think we should change page_referenced().
+On Wed, 2009-08-19 at 14:01 +0200, Marton Balint wrote:
+> On Wed, 19 Aug 2009, Peter Zijlstra wrote:
+> > On Tue, 2009-08-18 at 21:49 +0200, Marton Balint wrote:
 > >
-> > Yeah, good catch.
-> >
+> >> In the meantime, I was able to create a tiny C program which always
+> >> succesfully reproduces the bug. It's basically an endless loop which does
+> >> not stop while the process is running on the last CPU core. The program
+> >> creates multiple instances of itself, to be able to keep all of the CPU
+> >> cores busy. After 1 second, the processes running on other than the last
+> >> CPU core die, the processes running on the last CPU core remain stuck
+> >> there...
 > >>
-> >> Instead, How about this?
-> >> ==============================================
+> >> I tested it on my dual core system, if someone could test it on a quad
+> >> core and report back that would probably be useful.
 > >>
-> >> Subject: [PATCH] mm: stop circulating of referenced mlocked pages
+> >> Usage: ./schedtest <number of CPU cores>
 > >>
-> >> Currently, mlock() systemcall doesn't gurantee to mark the page PG_Mlocked
+> >> And don't forget to kill the stuck processes after using the program! :)
 > >
-> >                                                    mark PG_mlocked
-> >
-> >> because some race prevent page grabbing.
-> >> In that case, instead vmscan move the page to unevictable lru.
-> >>
-> >> However, Recently Wu Fengguang pointed out current vmscan logic isn't so
-> >> efficient.
-> >> mlocked page can move circulatly active and inactive list because
-> >> vmscan check the page is referenced _before_ cull mlocked page.
-> >>
-> >> Plus, vmscan should mark PG_Mlocked when cull mlocked page.
-> >
-> >                           PG_mlocked
-> >
-> >> Otherwise vm stastics show strange number.
-> >>
-> >> This patch does that.
-> >
-> > Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+> > So what's the bug? Sure one task will stay on the cpu, and because there
+> > is no contention it doesn't get migrated, and therefore won't quit,
+> > how's that a problem?
 > 
-> Thanks.
-> 
-> 
-> 
-> >> Index: b/mm/rmap.c
-> >> ===================================================================
-> >> --- a/mm/rmap.c       2009-08-18 19:48:14.000000000 +0900
-> >> +++ b/mm/rmap.c       2009-08-18 23:47:34.000000000 +0900
-> >> @@ -362,7 +362,9 @@ static int page_referenced_one(struct pa
-> >>        * unevictable list.
-> >>        */
-> >>       if (vma->vm_flags & VM_LOCKED) {
-> >> -             *mapcount = 1;  /* break early from loop */
-> >> +             *mapcount = 1;          /* break early from loop */
-> >> +             *vm_flags |= VM_LOCKED; /* for prevent to move active list */
-> >
-> >> +             try_set_page_mlocked(vma, page);
-> >
-> > That call is not absolutely necessary?
-> 
-> Why? I haven't catch your point.
+> Problem is that more than one processes remain on that CPU core, and none 
+> of them get migrated to other (idle) cores. I tested it with my E8400 
+> processor and 2.6.31-rc5-git3 kernel.
 
-Because we'll eventually hit another try_set_page_mlocked() when
-trying to unmap the page. Ie. duplicated with another call you added
-in this patch.
+Only one remains here.. on a c2q running 2.6.31-rc6-tip
 
-Thanks,
-Fengguang
-
+Do you have a .config handy?
