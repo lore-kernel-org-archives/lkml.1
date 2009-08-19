@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752108AbZHSNp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbZHSNrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752108AbZHSNp1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZHSNp1
+	id S1752151AbZHSNrB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZHSNrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:45:27 -0400
-Received: from ernst.netinsight.se ([194.16.221.21]:15697 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751590AbZHSNp0 (ORCPT
+	Wed, 19 Aug 2009 09:47:00 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:46468 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbZHSNq7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:45:26 -0400
-Date: Wed, 19 Aug 2009 15:45:20 +0200
-From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: Dhaval Vasa <dhaval.vasa@einfochips.com>, nico@cam.org,
-       linux-kernel@vger.kernel.org, rabeeh@marvell.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH v2] [ARM] Kirkwood: Marvell OpenRD-Base board support
- added to v2.6.31-rc5
-Message-ID: <20090819154520.61e33fc1@marrow.netinsight.se>
-In-Reply-To: <20090819151814.7167bad0@marrow.netinsight.se>
-References: <1249906054-572-1-git-send-email-dhaval.vasa@einfochips.com>
-	<20090819151814.7167bad0@marrow.netinsight.se>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 09:46:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XWbJ+IuImDtnj6JdyU5lqML8jxIr2cjkse4QE0g7cNiuef0oUZg1KI2qtx5OUrg/9y
+         BOmOpDlxNbLeejx3xCITfGckAxD4Y5mAJsGLDxni1wu3jE2YJG5GncdGJHGzwLCQ4RMN
+         yK40rZFMmYDkFcG4/FWLCR3p3yNshVqKWJUDI=
+MIME-Version: 1.0
+In-Reply-To: <a8e1da0908172112kca79a1en7042fc1738ad1336@mail.gmail.com>
+References: <a8e1da0908172025s728c62ber37acb6c2073f7794@mail.gmail.com>
+	 <20090817203047.6cff48fb.akpm@linux-foundation.org>
+	 <a8e1da0908172112kca79a1en7042fc1738ad1336@mail.gmail.com>
+Date: Wed, 19 Aug 2009 21:47:00 +0800
+Message-ID: <a8e1da0908190647k54cce424m560016ffeec04412@mail.gmail.com>
+Subject: Re: -mm hang while shutdown with printk_delay
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Aug 2009 15:18:14 +0200
-Simon Kagstrom <simon.kagstrom@netinsight.net> wrote:
+On Tue, Aug 18, 2009 at 12:12 PM, Dave Young<hidave.darkstar@gmail.com> wrote:
+> On Tue, Aug 18, 2009 at 11:30 AM, Andrew
+> Morton<akpm@linux-foundation.org> wrote:
+>> On Tue, 18 Aug 2009 11:25:22 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+>>
+>>> Hi,
+>>>
+>>> Test with printk_delay=200,
+>>>
+>>> /sbin/halt -p
+>>>
+>>> kernel hang after following message:
+>>>
+>>> Disabling non-boot CPUs
+>>>
+>>> There's no such problem with 2.6.31-rc6
+>>
+>> umm, OK.  But -mm contains six patches:
+>>
+>> printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec.patch
+>> printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec-fix.patch
+>> printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec-fix-2.patch
+>> printk-add-printk_delay-to-make-messages-readable-for-some-scenarios.patch
+>> printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-fix.patch
+>> printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-cleanup.patch
+>>
+>> from yourself.  Are they the cause?
+>>
+>
+> Actually I tested 2.6.31-rc6 with the above six patches applied,
+> there's no such problem.
+>
 
-> In my patch, I also called kirkwood_i2c_init (see below), which at
-> least make the I2C bus appear (not that I've tested it very much).
+I'm manually bisecting the mm patch series, hope find cause.
 
-And also from my patch, I added initialization of PCIe as well (taken
-from rd88f6281-setup.c). So you could perhaps also add that to your
-patch as well?
+> --
+> Regards
+> dave
+>
 
-If needed:
 
-Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
 
-// Simon
-
-diff --git a/arch/arm/mach-kirkwood/openrd_base-setup.c b/arch/arm/mach-kirkwood/openrd_base-setup.c
-index f9a2166..30f84b1 100644
---- a/arch/arm/mach-kirkwood/openrd_base-setup.c
-+++ b/arch/arm/mach-kirkwood/openrd_base-setup.c
-@@ -71,7 +71,18 @@ static void __init openrd_base_init(void)
-        kirkwood_ge00_init(&openrd_base_ge00_data);
-        kirkwood_sata_init(&openrd_base_sata_data);
-        kirkwood_sdio_init(&openrd_base_mvsdio_data);
-+
-+       kirkwood_i2c_init();
-+}
-+
-+static int __init openrd_base_pci_init(void)
-+{
-+       if (machine_is_openrd_base())
-+               kirkwood_pcie_init();
-+
-+       return 0;
- }
-+subsys_initcall(openrd_base_pci_init);
- 
- MACHINE_START(OPENRD_BASE, "Marvell OpenRD Base Board")
-        /* Maintainer: Dhaval Vasa <dhaval.vasa@einfochips.com> */
+-- 
+Regards
+dave
