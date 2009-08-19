@@ -1,209 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbZHSMBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751968AbZHSME7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752005AbZHSMBe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 08:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZHSMBe
+	id S1751968AbZHSME7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 08:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbZHSME6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 08:01:34 -0400
-Received: from mga14.intel.com ([143.182.124.37]:52370 "EHLO mga14.intel.com"
+	Wed, 19 Aug 2009 08:04:58 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:51524 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751812AbZHSMBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 08:01:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,408,1246863600"; 
-   d="scan'208";a="177655635"
-Date: Wed, 19 Aug 2009 20:01:17 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, Jeff Dike <jdike@addtoit.com>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090819120117.GB7306@localhost>
-References: <20090816051502.GB13740@localhost> <20090816112910.GA3208@localhost> <20090818234310.A64B.A69D9226@jp.fujitsu.com>
+	id S1751535AbZHSME5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 08:04:57 -0400
+Date: Wed, 19 Aug 2009 14:04:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, htejun@gmail.com,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] libata: use single threaded work queue
+Message-ID: <20090819120458.GZ12579@kernel.dk>
+References: <20090819112554.GY12579@kernel.dk> <4A8BE932.5090300@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090818234310.A64B.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A8BE932.5090300@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 11:57:54PM +0800, KOSAKI Motohiro wrote:
-> > > Yes it does. I said 'mostly' because there is a small hole that an
-> > > unevictable page may be scanned but still not moved to unevictable
-> > > list: when a page is mapped in two places, the first pte has the
-> > > referenced bit set, the _second_ VMA has VM_LOCKED bit set, then
-> > > page_referenced() will return 1 and shrink_page_list() will move it
-> > > into active list instead of unevictable list. Shall we fix this rare
-> > > case?
-> > 
-> > How about this fix?
-> 
-> Good spotting.
-> Yes, this is rare case. but I also don't think your patch introduce
-> performance degression.
+On Wed, Aug 19 2009, Jeff Garzik wrote:
+> On 08/19/2009 07:25 AM, Jens Axboe wrote:
+>> Hi,
+>>
+>> On boxes with lots of CPUs, we have so many kernel threads it's not
+>> funny. The basic problem is that create_workqueue() creates a per-cpu
+>> thread, where we could easily get by with a single thread for a lot of
+>> cases.
+>>
+>> One such case appears to be ata_wq. You want at most one per pio drive,
+>> not one per CPU. I'd suggest just dropping it to a single threaded wq.
+>>
+>> Signed-off-by: Jens Axboe<jens.axboe@oracle.com>
+>>
+>> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+>> index 072ba5e..0d78628 100644
+>> --- a/drivers/ata/libata-core.c
+>> +++ b/drivers/ata/libata-core.c
+>> @@ -6580,7 +6580,7 @@ static int __init ata_init(void)
+>>   {
+>>   	ata_parse_force_param();
+>>
+>> -	ata_wq = create_workqueue("ata");
+>> +	ata_wq = create_singlethread_workqueue("ata");
+>>   	if (!ata_wq)
+>>   		goto free_force_tbl;
+>
+>
+> I agree with one-thread-per-cpu is too much, in these modern multi-core  
+> times, but one thread is too little.  You have essentially re-created  
+> simplex DMA -- blocking and waiting such that one drive out of ~4 can be  
+> used at any one time.
+>
+> ata_pio_task() is in a workqueue so that it can sleep and/or spend a  
+> long time polling ATA registers.  That means an active task can  
+> definitely starve all other tasks in the workqueue, if only one thread  
+> is available.  If starvation occurs, it will potentially pause the  
+> unrelated task for several seconds.
+>
+> The proposed patch actually expands an existing problem -- uniprocessor  
+> case, where there is only one workqueue thread.  For the reasons  
+> outlined above, we actually want multiple threads even in the UP case.  
+> If you have more than one PIO device, latency is bloody awful, with  
+> occasional multi-second "hiccups" as one PIO devices waits for another.  
+> It's an ugly wart that users DO occasionally complain about; luckily  
+> most users have at most one PIO polled device.
+>
+> It would be nice if we could replace this workqueue with a thread pool,  
+> where thread count inside the pool ranges from zero to $N depending on  
+> level of thread pool activity.  Our common case in libata would be  
+> _zero_ threads, if so...
 
-Thanks.
+That would be ideal, N essentially be:
 
-> However, I think your patch have one bug.
+        N = min(nr_cpus, nr_drives_that_need_pio);
 
-Hehe, sorry for being careless :)
+How can I easily test whether we will ever need a pio thread for a
+drive in libata? For a simple patch, I would suggest simply creating a
+single threaded workqueue per ap instead, if that ata_port would ever
+want PIO.
 
-> > 
-> > ---
-> > mm: stop circulating of referenced mlocked pages
-> > 
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> > 
-> > --- linux.orig/mm/rmap.c	2009-08-16 19:11:13.000000000 +0800
-> > +++ linux/mm/rmap.c	2009-08-16 19:22:46.000000000 +0800
-> > @@ -358,6 +358,7 @@ static int page_referenced_one(struct pa
-> >  	 */
-> >  	if (vma->vm_flags & VM_LOCKED) {
-> >  		*mapcount = 1;	/* break early from loop */
-> > +		*vm_flags |= VM_LOCKED;
-> >  		goto out_unmap;
-> >  	}
-> >  
-> > @@ -482,6 +483,8 @@ static int page_referenced_file(struct p
-> >  	}
-> >  
-> >  	spin_unlock(&mapping->i_mmap_lock);
-> > +	if (*vm_flags & VM_LOCKED)
-> > +		referenced = 0;
-> >  	return referenced;
-> >  }
-> >  
-> 
-> page_referenced_file?
-> I think we should change page_referenced().
+-- 
+Jens Axboe
 
-Yeah, good catch.
-
-> 
-> Instead, How about this?
-> ==============================================
-> 
-> Subject: [PATCH] mm: stop circulating of referenced mlocked pages
-> 
-> Currently, mlock() systemcall doesn't gurantee to mark the page PG_Mlocked
-
-                                                    mark PG_mlocked
-
-> because some race prevent page grabbing.
-> In that case, instead vmscan move the page to unevictable lru.
-> 
-> However, Recently Wu Fengguang pointed out current vmscan logic isn't so
-> efficient.
-> mlocked page can move circulatly active and inactive list because
-> vmscan check the page is referenced _before_ cull mlocked page.
-> 
-> Plus, vmscan should mark PG_Mlocked when cull mlocked page.
-
-                           PG_mlocked
-
-> Otherwise vm stastics show strange number.
-> 
-> This patch does that.
-
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-
-> Reported-by: Wu Fengguang <fengguang.wu@intel.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/internal.h |    5 +++--
->  mm/rmap.c     |    8 +++++++-
->  mm/vmscan.c   |    2 +-
->  3 files changed, 11 insertions(+), 4 deletions(-)
-> 
-> Index: b/mm/internal.h
-> ===================================================================
-> --- a/mm/internal.h	2009-06-26 21:06:43.000000000 +0900
-> +++ b/mm/internal.h	2009-08-18 23:31:11.000000000 +0900
-> @@ -91,7 +91,8 @@ static inline void unevictable_migrate_p
->   * to determine if it's being mapped into a LOCKED vma.
->   * If so, mark page as mlocked.
->   */
-> -static inline int is_mlocked_vma(struct vm_area_struct *vma, struct page *page)
-> +static inline int try_set_page_mlocked(struct vm_area_struct *vma,
-> +				       struct page *page)
->  {
->  	VM_BUG_ON(PageLRU(page));
->  
-> @@ -144,7 +145,7 @@ static inline void mlock_migrate_page(st
->  }
->  
->  #else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
-> -static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
-> +static inline int try_set_page_mlocked(struct vm_area_struct *v, struct page *p)
->  {
->  	return 0;
->  }
-> Index: b/mm/rmap.c
-> ===================================================================
-> --- a/mm/rmap.c	2009-08-18 19:48:14.000000000 +0900
-> +++ b/mm/rmap.c	2009-08-18 23:47:34.000000000 +0900
-> @@ -362,7 +362,9 @@ static int page_referenced_one(struct pa
->  	 * unevictable list.
->  	 */
->  	if (vma->vm_flags & VM_LOCKED) {
-> -		*mapcount = 1;	/* break early from loop */
-> +		*mapcount = 1;		/* break early from loop */
-> +		*vm_flags |= VM_LOCKED;	/* for prevent to move active list */
-
-> +		try_set_page_mlocked(vma, page);
-
-That call is not absolutely necessary?
-
-Thanks,
-Fengguang
-
->  		goto out_unmap;
->  	}
->  
-> @@ -531,6 +533,9 @@ int page_referenced(struct page *page,
->  	if (page_test_and_clear_young(page))
->  		referenced++;
->  
-> +	if (unlikely(*vm_flags & VM_LOCKED))
-> +		referenced = 0;
-> +
->  	return referenced;
->  }
->  
-> @@ -784,6 +789,7 @@ static int try_to_unmap_one(struct page 
->  	 */
->  	if (!(flags & TTU_IGNORE_MLOCK)) {
->  		if (vma->vm_flags & VM_LOCKED) {
-> +			try_set_page_mlocked(vma, page);
->  			ret = SWAP_MLOCK;
->  			goto out_unmap;
->  		}
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c	2009-08-18 19:48:14.000000000 +0900
-> +++ b/mm/vmscan.c	2009-08-18 23:30:51.000000000 +0900
-> @@ -2666,7 +2666,7 @@ int page_evictable(struct page *page, st
->  	if (mapping_unevictable(page_mapping(page)))
->  		return 0;
->  
-> -	if (PageMlocked(page) || (vma && is_mlocked_vma(vma, page)))
-> +	if (PageMlocked(page) || (vma && try_set_page_mlocked(vma, page)))
->  		return 0;
->  
->  	return 1;
-> 
-> 
-> 
-> 
-> 
-> 
-> 
