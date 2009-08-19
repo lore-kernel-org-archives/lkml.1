@@ -1,144 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751026AbZHSBBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750994AbZHSBFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751026AbZHSBBh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 21:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZHSBBg
+	id S1750994AbZHSBFm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 21:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbZHSBFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 21:01:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35435 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750934AbZHSBBg (ORCPT
+	Tue, 18 Aug 2009 21:05:41 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:60899 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbZHSBFk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 21:01:36 -0400
-Date: Tue, 18 Aug 2009 18:01:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: Rendezvous all the cpu's for MTRR/PAT init
-Message-Id: <20090818180107.29d3f39b.akpm@linux-foundation.org>
-In-Reply-To: <1250641835.2744.56.camel@sbs-t61.sc.intel.com>
-References: <1250641835.2744.56.camel@sbs-t61.sc.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 18 Aug 2009 21:05:40 -0400
+Subject: Re: [PATCH] make tsc=reliable override boot time stability checks
+From: john stultz <johnstul@us.ibm.com>
+To: akataria@vmware.com
+Cc: Stephen Hemminger <shemminger@vyatta.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1250559540.32479.45.camel@ank32.eng.vmware.com>
+References: <20090817090319.20979986@nehalam>
+	 <1250531337.26171.12.camel@work-vm>	<20090817110127.40ee5c29@nehalam>
+	 <1250532954.26171.35.camel@work-vm>	<20090817112704.2b4b2987@nehalam>
+	 <1250543459.7212.41.camel@localhost.localdomain>
+	 <1250545077.7212.49.camel@localhost.localdomain>
+	 <20090817144546.7f1d6572@nehalam>
+	 <1250547802.7212.82.camel@localhost.localdomain>
+	 <20090817160212.029b3e42@nehalam>
+	 <1250551074.7212.84.camel@localhost.localdomain>
+	 <20090817162729.451613b4@nehalam>
+	 <1250552447.7212.92.camel@localhost.localdomain>
+	 <1250559540.32479.45.camel@ank32.eng.vmware.com>
+Content-Type: text/plain
+Date: Tue, 18 Aug 2009 18:04:31 -0700
+Message-Id: <1250643871.7002.24.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Aug 2009 17:30:35 -0700 Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-
-> Please consider applying this patch after the clockevents bugfix posted
-> yesterday http://marc.info/?l=linux-kernel&m=125054497316006&w=2
+On Mon, 2009-08-17 at 18:39 -0700, Alok Kataria wrote:
+> Hi John,
 > 
-> thanks,
-> suresh
-> ---
+> On Mon, 2009-08-17 at 16:40 -0700, john stultz wrote:
+> > On Mon, 2009-08-17 at 16:27 -0700, Stephen Hemminger wrote:
+> > > On Mon, 17 Aug 2009 16:17:54 -0700
+> > > john stultz <johnstul@us.ibm.com> wrote:
+> > > 
+> > > > On Mon, 2009-08-17 at 16:02 -0700, Stephen Hemminger wrote:
+> > > > > This adds tsc, but makes it first?  it is reliable, but do I want
+> > > > > to make it most important?
+> > > > > 
+> > > > > $ cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > > > > tsc acpi_pm
+> > > > 
+> > > > 
+> > > > Well, if you're overriding the system saying that its safe, then sure,
+> > > > its better then anything else, why wouldn't we?
+> > > > 
+> > > 
+> > > That's acceptable, maybe add change to Documentation/kernel-parameters.txt
+> > > 
+> > > 	tsc=		Disable clocksource-must-verify flag for TSC.
+> > > 			Format: <string>
+> > > 			[x86] reliable: mark tsc clocksource as reliable and
+> > >                         makes tsc the default clocksource; this
+> > > 			disables clocksource verification at runtime.
+> > > 			Used to enable high-resolution timer mode on older
+> > > 			hardware, and in virtualized environment.
+> > > 
+> > 
+> > Sounds good. Thanks so much for the bug report and testing!
+> > 
+> > 
+> > This patch makes the tsc=reliable option disable the boot time stability
+> > checks. Currently the option only disables the runtime watchdog checks.
+> > This change allows folks who want to override the boot time TSC
+> > stability checks and use the TSC when the system would otherwise
+> > disqualify it.
+> > 
+> > There still are some situations that the TSC will be disqualified, such
+> > as cpufreq scaling. But these are situations where the box will hang if
+> > allowed.
+> > 
 > 
-> From: Suresh Siddha <suresh.b.siddha@intel.com>
-> Subject: x86: Rendezvous all the cpu's for MTRR/PAT init
-> 
-> SDM Vol 3a section titled "MTRR considerations in MP systems" specifies
-> the need for synchronizing the logical cpu's while initializing/updating
-> MTRR.
-> 
-> Currently Linux kernel does the synchronization of all cpu's only when
-> a single MTRR register is programmed/updated. During an AP online
-> (during boot/cpu-online/resume)  where we initialize all the MTRR/PAT registers,
-> we don't follow this synchronization algorithm.
-> 
-> This can lead to scenarios where during a dynamic cpu online, that logical cpu
-> is initializing MTRR/PAT with cache disabled (cr0.cd=1) etc while other logical
-> HT sibling continue to run (also with cache disabled because of cr0.cd=1
-> on its sibling).
-> 
-> Starting from Westmere, VMX transitions with cr0.cd=1 don't work properly
-> (because of some VMX performance optimizations) and the above scenario
-> (with one logical cpu doing VMX activity and another logical cpu coming online)
-> can result in system crash.
-> 
-> Fix the MTRR initialization by doing rendezvous of all the cpus. During
-> boot and resume, we delay the MTRR/PAT init for APs till all the
-> logical cpu's come online and the rendezvous process at the end of AP's bringup,
-> will initialize the MTRR/PAT for all AP's.
-> 
-> For dynamic single cpu online, we synchronize all the logical cpus and
-> do the MTRR/PAT init on the AP that is coming online.
-> 
-> ...
->
-> @@ -880,7 +880,12 @@ void __cpuinit identify_secondary_cpu(st
->  #ifdef CONFIG_X86_32
->  	enable_sep_cpu();
->  #endif
-> +	/*
-> +	 * mtrr_ap_init() uses smp_call_function. Enable interrupts.
-> +	 */
-> +	local_irq_enable();
->  	mtrr_ap_init();
-> +	local_irq_disable();
->  }
+> I had purposefully kept the tsc=reliable separate from the TSC
+> synchronous checks. 
+> With this patch TSC is marked as usable though the hardware below
+> doesn't export a CONSTANT_TSC, it might not be a problem generally, but
+> since TSC has the highest rating, don't you think that timekeeping might
+> be wayward on such systems ? 
 
-Ick.
+Oh yea, there's a risk of that, but we are telling the kernel to
+override its runtime checking of the clocksource, so it seems reasonable
+to also include the boot time checks. I worry otherwise the option
+becomes too subtle to be really useful to users. 
 
-It's quite unobvious (to me) that this function is reliably called with
-local interrupts disabled.
+> Having said that, I don't think I have a particular problem with the
+> patch as far as we are explicitly mentioning the fact that TSC=reliable
+> means TSC is blindly trusted on this system, and time might be little
+> off on some systems.
 
-If it _is_ reliably called with interrupts disabled then why is it safe
-to randomly reenable them here?  Why not just stop disabling interrupts
-at the top level?
+I think the explicit boot option, along with the kernel-parameters text
+makes it clear enough, but if you have a specific wording in mind that
+works better, please send a patch and I'll ack it.
 
->
-> ...
->
-> +void mtrr_aps_init(void)
-> +{
-> +	if (!use_intel())
-> +		return;
-> +
-> +	/*
-> +	 * Ideally we should hold mtrr_mutex here to avoid mtrr entries changed,
-> +	 * but this routine will be called in cpu boot time, holding the lock
-> +	 * breaks it. This routine is called in two cases: 1.very earily time
-> +	 * of software resume, when there absolutely isn't mtrr entry changes;
-> +	 * 2.cpu hotadd time. We let mtrr_add/del_page hold cpuhotplug lock to
-> +	 * prevent mtrr entry changes
-> +	 */
-
-That's a tantalising little comment.  What does "breaks it" mean?  How
-can reviewers and later code-readers possibly suggest alternative fixes
-to this breakage if they aren't told what it is?
-
-> +	set_mtrr(~0U, 0, 0, 0);
-> +	mtrr_aps_delayed_init = 0;
-> +}
-> +
-> +void mtrr_bp_restore(void)
-> +{
-> +	if (!use_intel())
-> +		return;
-> +
-> +	mtrr_if->set_all();
-> +}
-> +
->
-> ...
->
-> --- tip.orig/kernel/cpu.c
-> +++ tip/kernel/cpu.c
-> @@ -413,6 +413,14 @@ int disable_nonboot_cpus(void)
->  	return error;
->  }
->  
-> +void __attribute__((weak)) arch_enable_nonboot_cpus_begin(void)
-> +{
-> +}
-> +
-> +void __attribute__((weak)) arch_enable_nonboot_cpus_end(void)
-> +{
-> +}
-
-Please use __weak.
-
+thanks
+-john
 
