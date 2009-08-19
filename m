@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZHSOfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbZHSOfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752394AbZHSOfg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 10:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZHSOfc
+	id S1752692AbZHSOfw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 10:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZHSOfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 10:35:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58887 "EHLO mx2.redhat.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751870AbZHSOfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 10:35:31 -0400
-Date: Wed, 19 Aug 2009 17:33:39 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>, Anthony Liguori <anthony@codemonkey.ws>,
-       Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
-       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
-	vbus_driver objects
-Message-ID: <20090819143339.GB3862@redhat.com>
-References: <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A870964.9090408@codemonkey.ws> <4A8965E0.8050608@gmail.com> <4A89FF08.30509@codemonkey.ws> <4A8AA9BD.2070909@gmail.com> <4A8AB076.6080906@redhat.com> <4A8ACE1F.6020402@gmail.com> <20090818165139.GC19846@redhat.com> <4A8B8F4E.80207@gmail.com>
+	Wed, 19 Aug 2009 10:35:51 -0400
+Received: from kroah.org ([198.145.64.141]:49056 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752530AbZHSOfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 10:35:51 -0400
+Date: Wed, 19 Aug 2009 07:29:32 -0700
+From: Greg KH <greg@kroah.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
+Message-ID: <20090819142932.GA31393@kroah.com>
+References: <20090819025634.987354707@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A8B8F4E.80207@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090819025634.987354707@goodmis.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 01:36:14AM -0400, Gregory Haskins wrote:
-> Please post results when you have numbers, as I had to
-> give up my 10GE rig in the lab.
-> I suspect you will have performance
-> issues until you at least address GSO, but you may already be there by now.
+On Tue, Aug 18, 2009 at 10:56:34PM -0400, Steven Rostedt wrote:
+> Here's my rebase of the prior push of streamline-config.pl.
 
-Yes, measuring streaming bandwidth probably does not make sense yet, as
-I do not have GSO, and I do not have VM exit mitigation. But RSN.
+Very nice, thanks for pushing this forward, it's much needed.
 
-Meanwhile udp_rr does not need any of these, so I checked that and numbers look
-like what you'd expect.  My systems seem slower than yours, but the
-virtualization overhead is same: around 20us (sometimes it's a bit higher, up
-to 25us).
-
-host to host:
-
-[root@virtlab18 netperf-2.4.5]# ~mst/netperf-2.4.5/bin/netperf -H 20.1.50.1 -t
-+udp_rr
-UDP REQUEST/RESPONSE TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 20.1.50.1
-+(20.1.50.1) port 0 AF_INET
-Local /Remote
-Socket Size   Request  Resp.   Elapsed  Trans.
-Send   Recv   Size     Size    Time     Rate
-bytes  Bytes  bytes    bytes   secs.    per sec
-
-262144 262144 1        1       10.00    13890.41
-124928 124928
-
-host to guest:
-
-[root@virtlab18 linux-2.6]# ~mst/netperf-2.4.5/bin/netperf -H 20.1.50.3 -t udp_rr
-UDP REQUEST/RESPONSE TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 20.1.50.3
-+(20.1.50.3) port 0 AF_INET
-Local /Remote
-Socket Size   Request  Resp.   Elapsed  Trans.
-Send   Recv   Size     Size    Time     Rate
-bytes  Bytes  bytes    bytes   secs.    per sec
-
-262144 262144 1        1       10.00    10884.78
-124928 124928
-
-
--- 
-MST
+greg k-h
