@@ -1,87 +1,749 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbZHSVFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZHSVGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753275AbZHSVFl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 17:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZHSVFk
+	id S1753247AbZHSVGh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 17:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZHSVGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 17:05:40 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:56425 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752633AbZHSVFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 17:05:39 -0400
-Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
- model for vbus_driver objects
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Stefan Hajnoczi <stefanha@gmail.com>
-In-Reply-To: <4A8C2A87.5060305@redhat.com>
-References: <20090818172752.GC17631@ovro.caltech.edu>
-	 <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu>
-	 <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu>
-	 <4A8B1C7F.4060008@redhat.com> <20090819003812.GA11168@ovro.caltech.edu>
-	 <4A8B9051.3020505@redhat.com> <20090819152811.GA22294@ovro.caltech.edu>
-	 <4A8C1C22.3010101@redhat.com> <20090819162902.GB22294@ovro.caltech.edu>
-	 <4A8C2A87.5060305@redhat.com>
+	Wed, 19 Aug 2009 17:06:36 -0400
+Received: from www84.your-server.de ([213.133.104.84]:39447 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752402AbZHSVGf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 17:06:35 -0400
+Subject: Re: [PATCH 7/7] kfifo: add record handling functions
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>
+In-Reply-To: <1250714990.13476.3.camel@wall-e>
+References: <1250714990.13476.3.camel@wall-e>
 Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Wed, 19 Aug 2009 14:05:20 -0700
-Message-Id: <1250715920.4237.26.camel@slab.beaverton.ibm.com>
+Date: Wed, 19 Aug 2009 23:06:06 +0200
+Message-Id: <1250715966.13476.20.camel@wall-e>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 19:38 +0300, Avi Kivity wrote:
-> On 08/19/2009 07:29 PM, Ira W. Snyder wrote:
-> >
-> >    
-> >> virtio-$yourhardware or maybe virtio-dma
-> >>
-> >>      
-> > How about virtio-phys?
-> >    
-> 
-> Could work.
-> 
-> > Arnd and BenH are both looking at PPC systems (similar to mine). Grant
-> > Likely is looking at talking to an processor core running on an FPGA,
-> > IIRC. Most of the code can be shared, very little should need to be
-> > board-specific, I hope.
-> >    
-> 
-> Excellent.
-> 
-> >>> That said, I'm not sure how qemu-system-ppc running on x86 could
-> >>> possibly communicate using virtio-net. This would mean the guest is an
-> >>> emulated big-endian PPC, while the host is a little-endian x86. I
-> >>> haven't actually tested this situation, so perhaps I am wrong.
-> >>>
-> >>>        
-> >> I'm confused now.  You don't actually have any guest, do you, so why
-> >> would you run qemu at all?
-> >>
-> >>      
-> > I do not run qemu. I am just stating a problem with virtio-net that I
-> > noticed. This is just so someone more knowledgeable can be aware of the
-> > problem.
-> >
-> >    
-> 
-> Ah, it certainly doesn't byteswap.  Maybe nobody tried it.  Hollis?
+ Add kfifo_in_rec() - puts some record data into the FIFO
+ Add kfifo_out_rec() - gets some record data from the FIFO
+ Add kfifo_from_user_rec() - puts some data from user space into the FIFO
+ Add kfifo_to_user_rec() - gets data from the FIFO and write it to user space
+ Add kfifo_peek_rec() - gets the size of the next FIFO record field
+ Add kfifo_skip_rec() - skip the next fifo out record
 
-I've never tried it. I've only used virtio with matching guest/host
-architectures.
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+---
+ include/linux/kfifo.h |  315 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/kfifo.c        |  286 ++++++++++++++++++++++++++++++---------------
+ 2 files changed, 508 insertions(+), 93 deletions(-)
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+diff -u -N -r linux-2.6.31-rc4-kfifo6/include/linux/kfifo.h linux-2.6.31-rc4-kfifo7/include/linux/kfifo.h
+--- linux-2.6.31-rc4-kfifo6/include/linux/kfifo.h	2009-08-17 17:24:07.000000000 +0200
++++ linux-2.6.31-rc4-kfifo7/include/linux/kfifo.h	2009-08-17 17:25:04.000000000 +0200
+@@ -275,4 +275,319 @@
+ 	return off & (fifo->size - 1);
+ }
+ 
++/**
++ * __kfifo_peek_n internal helper function for determinate the length of
++ * the next record in the fifo
++ */
++static inline unsigned int __kfifo_peek_n(struct kfifo *fifo,
++				unsigned int recsize)
++{
++#define	__KFIFO_GET(fifo, off, shift) \
++	((fifo)->buffer[__kfifo_off((fifo), (fifo)->out+(off))] << (shift))
++
++	unsigned int l;
++
++	l = __KFIFO_GET(fifo, 0, 0);
++
++	if (--recsize)
++		l |= __KFIFO_GET(fifo, 1, 8);
++
++	return l;
++}
++
++/**
++ * __kfifo_poke_n internal helper function for storing the length of
++ * the next record into the fifo
++ */
++static inline void __kfifo_poke_n(struct kfifo *fifo,
++			unsigned int recsize, unsigned int n)
++{
++#define	__KFIFO_PUT(fifo, off, val, shift) \
++		( \
++		(fifo)->buffer[__kfifo_off((fifo), (fifo)->in+(off))] = \
++		(unsigned char)((val) >> (shift)) \
++		)
++
++	__KFIFO_PUT(fifo, 0, n, 0);
++
++	if (--recsize)
++		__KFIFO_PUT(fifo, 1, n, 8);
++}
++
++/**
++ * __kfifo_in_... internal functions for put date into the fifo
++ * do not call it directly, use kfifo_in_rec() instead
++ */
++extern unsigned int __kfifo_in_n(struct kfifo *fifo,
++	const void *from, unsigned int n, unsigned int recsize);
++
++extern unsigned int __kfifo_in_generic(struct kfifo *fifo,
++	const void *from, unsigned int n, unsigned int recsize);
++
++static inline unsigned int __kfifo_in_rec(struct kfifo *fifo,
++	const void *from, unsigned int n, unsigned int recsize)
++{
++	unsigned int ret;
++
++	ret = __kfifo_in_n(fifo, from, n, recsize);
++
++	if (likely(ret == 0)) {
++		if (recsize)
++			__kfifo_poke_n(fifo, recsize, n);
++		__kfifo_add_in(fifo, n + recsize);
++	}
++	return ret;
++}
++
++/**
++ * kfifo_in_rec - puts some record data into the FIFO
++ * @fifo: the fifo to be used.
++ * @from: the data to be added.
++ * @n: the length of the data to be added.
++ * @recsize: size of record field
++ *
++ * This function copies @n bytes from the @from into the FIFO and returns
++ * the number of bytes which cannot be copied.
++ * A returned value greater than the @n value means that the record doesn't
++ * fit into the buffer.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++static inline __must_check unsigned int kfifo_in_rec(struct kfifo *fifo,
++	void *from, unsigned int n, unsigned int recsize)
++{
++	if (!__builtin_constant_p(recsize))
++		return __kfifo_in_generic(fifo, from, n, recsize);
++	return __kfifo_in_rec(fifo, from, n, recsize);
++}
++
++/**
++ * __kfifo_out_... internal functions for get date from the fifo
++ * do not call it directly, use kfifo_out_rec() instead
++ */
++extern unsigned int __kfifo_out_n(struct kfifo *fifo,
++	void *to, unsigned int reclen, unsigned int recsize);
++
++extern unsigned int __kfifo_out_generic(struct kfifo *fifo,
++	void *to, unsigned int n,
++	unsigned int recsize, unsigned int *total);
++
++static inline unsigned int __kfifo_out_rec(struct kfifo *fifo,
++	void *to, unsigned int n, unsigned int recsize,
++	unsigned int *total)
++{
++	unsigned int l;
++
++	if (!recsize) {
++		l = n;
++		if (total)
++			*total = l;
++	} else {
++		l = __kfifo_peek_n(fifo, recsize);
++		if (total)
++			*total = l;
++		if (n < l)
++			return l;
++	}
++
++	return __kfifo_out_n(fifo, to, l, recsize);
++}
++
++/**
++ * kfifo_out_rec - gets some record data from the FIFO
++ * @fifo: the fifo to be used.
++ * @to: where the data must be copied.
++ * @n: the size of the destination buffer.
++ * @recsize: size of record field
++ * @total: pointer where the total number of to copied bytes should stored
++ *
++ * This function copies at most @n bytes from the FIFO to @to and returns the
++ * number of bytes which cannot be copied.
++ * A returned value greater than the @n value means that the record doesn't
++ * fit into the @to buffer.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++static inline __must_check unsigned int kfifo_out_rec(struct kfifo *fifo,
++	void *to, unsigned int n, unsigned int recsize,
++	unsigned int *total)
++
++{
++	if (!__builtin_constant_p(recsize))
++		return __kfifo_out_generic(fifo, to, n, recsize, total);
++	return __kfifo_out_rec(fifo, to, n, recsize, total);
++}
++
++/**
++ * __kfifo_from_user_... internal functions for transfer from user space into
++ * the fifo. do not call it directly, use kfifo_from_user_rec() instead
++ */
++extern unsigned int __kfifo_from_user_n(struct kfifo *fifo,
++	const void __user *from, unsigned int n, unsigned int recsize);
++
++extern unsigned int __kfifo_from_user_generic(struct kfifo *fifo,
++	const void __user *from, unsigned int n, unsigned int recsize);
++
++static inline unsigned int __kfifo_from_user_rec(struct kfifo *fifo,
++	const void __user *from, unsigned int n, unsigned int recsize)
++{
++	unsigned int ret;
++
++	ret = __kfifo_from_user_n(fifo, from, n, recsize);
++
++	if (likely(ret == 0)) {
++		if (recsize)
++			__kfifo_poke_n(fifo, recsize, n);
++		__kfifo_add_in(fifo, n + recsize);
++	}
++	return ret;
++}
++
++/**
++ * kfifo_from_user_rec - puts some data from user space into the FIFO
++ * @fifo: the fifo to be used.
++ * @from: pointer to the data to be added.
++ * @n: the length of the data to be added.
++ * @recsize: size of record field
++ *
++ * This function copies @n bytes from the @from into the
++ * FIFO and returns the number of bytes which cannot be copied.
++ *
++ * If the returned value is equal or less the @n value, the copy_from_user()
++ * functions has failed. Otherwise the record doesn't fit into the buffer.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++static inline __must_check unsigned int kfifo_from_user_rec(struct kfifo *fifo,
++	const void __user *from, unsigned int n, unsigned int recsize)
++{
++	if (!__builtin_constant_p(recsize))
++		return __kfifo_from_user_generic(fifo, from, n, recsize);
++	return __kfifo_from_user_rec(fifo, from, n, recsize);
++}
++
++/**
++ * __kfifo_to_user_... internal functions for transfer fifo data into user space
++ * do not call it directly, use kfifo_to_user_rec() instead
++ */
++extern unsigned int __kfifo_to_user_n(struct kfifo *fifo,
++	void __user *to, unsigned int n, unsigned int reclen,
++	unsigned int recsize);
++
++extern unsigned int __kfifo_to_user_generic(struct kfifo *fifo,
++	void __user *to, unsigned int n, unsigned int recsize,
++	unsigned int *total);
++
++static inline unsigned int __kfifo_to_user_rec(struct kfifo *fifo,
++	void __user *to, unsigned int n,
++	unsigned int recsize, unsigned int *total)
++{
++	unsigned int l;
++
++	if (!recsize) {
++		l = n;
++		if (total)
++			*total = l;
++	} else {
++		l = __kfifo_peek_n(fifo, recsize);
++		if (total)
++			*total = l;
++		if (n < l)
++			return l;
++	}
++
++	return __kfifo_to_user_n(fifo, to, n, l, recsize);
++}
++
++/**
++ * kfifo_to_user_rec - gets data from the FIFO and write it to user space
++ * @fifo: the fifo to be used.
++ * @to: where the data must be copied.
++ * @n: the size of the destination buffer.
++ * @recsize: size of record field
++ * @total: pointer where the total number of to copied bytes should stored
++ *
++ * This function copies at most @n bytes from the FIFO to the @to.
++ * In case of an error, the function returns the number of bytes which cannot
++ * be copied.
++ * If the returned value is equal or less the @n value, the copy_to_user()
++ * functions has failed. Otherwise the record doesn't fit into the @to buffer.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++static inline __must_check unsigned int kfifo_to_user_rec(struct kfifo *fifo,
++		void __user *to, unsigned int n, unsigned int recsize,
++		unsigned int *total)
++{
++	if (!__builtin_constant_p(recsize))
++		return __kfifo_to_user_generic(fifo, to, n, recsize, total);
++	return __kfifo_to_user_rec(fifo, to, n, recsize, total);
++}
++
++/**
++ * __kfifo_peek_... internal functions for peek into the next fifo record
++ * do not call it directly, use kfifo_peek_rec() instead
++ */
++extern unsigned int __kfifo_peek_generic(struct kfifo *fifo,
++				unsigned int recsize);
++
++/**
++ * kfifo_peek_rec - gets the size of the next FIFO record data
++ * @fifo: the fifo to be used.
++ * @recsize: size of record field
++ *
++ * This function returns the size of the next FIFO record in number of bytes
++ */
++static inline __must_check unsigned int kfifo_peek_rec(struct kfifo *fifo,
++	unsigned int recsize)
++{
++	if (!__builtin_constant_p(recsize))
++		return __kfifo_peek_generic(fifo, recsize);
++	if (!recsize)
++		return kfifo_len(fifo);
++	return __kfifo_peek_n(fifo, recsize);
++}
++
++/**
++ * __kfifo_skip_... internal functions for skip the next fifo record
++ * do not call it directly, use kfifo_skip_rec() instead
++ */
++extern void __kfifo_skip_generic(struct kfifo *fifo, unsigned int recsize);
++
++static inline void __kfifo_skip_rec(struct kfifo *fifo,
++	unsigned int recsize)
++{
++	unsigned int l;
++
++	if (recsize) {
++		l = __kfifo_peek_n(fifo, recsize);
++
++		if (l + recsize <= kfifo_len(fifo)) {
++			__kfifo_add_out(fifo, l + recsize);
++			return;
++		}
++	}
++	kfifo_reset_out(fifo);
++}
++
++/**
++ * kfifo_skip_rec - skip the next fifo out record
++ * @fifo: the fifo to be used.
++ * @recsize: size of record field
++ *
++ * This function skips the next FIFO record
++ */
++static inline void kfifo_skip_rec(struct kfifo *fifo,
++	unsigned int recsize)
++{
++	if (!__builtin_constant_p(recsize))
++		__kfifo_skip_generic(fifo, recsize);
++	else
++		__kfifo_skip_rec(fifo, recsize);
++}
++
+ #endif
+diff -u -N -r linux-2.6.31-rc4-kfifo6/kernel/kfifo.c linux-2.6.31-rc4-kfifo7/kernel/kfifo.c
+--- linux-2.6.31-rc4-kfifo6/kernel/kfifo.c	2009-08-16 22:09:13.000000000 +0200
++++ linux-2.6.31-rc4-kfifo7/kernel/kfifo.c	2009-08-17 17:18:42.000000000 +0200
+@@ -115,27 +115,11 @@
+ }
+ EXPORT_SYMBOL(kfifo_skip);
+ 
+-/**
+- * kfifo_in - puts some data into the FIFO
+- * @fifo: the fifo to be used.
+- * @from: the data to be added.
+- * @len: the length of the data to be added.
+- *
+- * This function copies at most @len bytes from the @from buffer into
+- * the FIFO depending on the free space, and returns the number of
+- * bytes copied.
+- *
+- * Note that with only one concurrent reader and one concurrent
+- * writer, you don't need extra locking to use these functions.
+- */
+-unsigned int kfifo_in(struct kfifo *fifo,
+-			const unsigned char *from, unsigned int len)
++static inline void __kfifo_in_data(struct kfifo *fifo,
++		const void *from, unsigned int len, unsigned int off)
+ {
+-	unsigned int off;
+ 	unsigned int l;
+ 
+-	len = min(len, fifo->size - fifo->in + fifo->out);
+-
+ 	/*
+ 	 * Ensure that we sample the fifo->out index -before- we
+ 	 * start putting bytes into the kfifo.
+@@ -143,7 +127,7 @@
+ 
+ 	smp_mb();
+ 
+-	off = __kfifo_off(fifo, fifo->in);
++	off = __kfifo_off(fifo, fifo->in + off);
+ 
+ 	/* first put the data starting from fifo->in to buffer end */
+ 	l = min(len, fifo->size - off);
+@@ -151,33 +135,13 @@
+ 
+ 	/* then put the rest (if any) at the beginning of the buffer */
+ 	memcpy(fifo->buffer, from + l, len - l);
+-
+-	__kfifo_add_in(fifo, len);
+-
+-	return len;
+ }
+-EXPORT_SYMBOL(kfifo_in);
+ 
+-/**
+- * kfifo_out - gets some data from the FIFO
+- * @fifo: the fifo to be used.
+- * @to: where the data must be copied.
+- * @len: the size of the destination buffer.
+- *
+- * This function copies at most @len bytes from the FIFO into the
+- * @to buffer and returns the number of copied bytes.
+- *
+- * Note that with only one concurrent reader and one concurrent
+- * writer, you don't need extra locking to use these functions.
+- */
+-unsigned int kfifo_out(struct kfifo *fifo,
+-			 unsigned char *to, unsigned int len)
++static inline void __kfifo_out_data(struct kfifo *fifo,
++		void *to, unsigned int len, unsigned int off)
+ {
+-	unsigned int off;
+ 	unsigned int l;
+ 
+-	len = min(len, fifo->in - fifo->out);
+-
+ 	/*
+ 	 * Ensure that we sample the fifo->in index -before- we
+ 	 * start removing bytes from the kfifo.
+@@ -185,7 +149,7 @@
+ 
+ 	smp_rmb();
+ 
+-	off = __kfifo_off(fifo, fifo->out);
++	off = __kfifo_off(fifo, fifo->out + off);
+ 
+ 	/* first get the data from fifo->out until the end of the buffer */
+ 	l = min(len, fifo->size - off);
+@@ -193,34 +157,14 @@
+ 
+ 	/* then get the rest (if any) from the beginning of the buffer */
+ 	memcpy(to + l, fifo->buffer, len - l);
+-
+-	__kfifo_add_out(fifo, len);
+-
+-	return len;
+ }
+-EXPORT_SYMBOL(kfifo_out);
+ 
+-/**
+- * kfifo_from_user - puts some data from user space into the FIFO
+- * @fifo: the fifo to be used.
+- * @from: pointer to the data to be added.
+- * @len: the length of the data to be added.
+- *
+- * This function copies at most @len bytes from the @from into the
+- * FIFO depending and returns the number of copied bytes.
+- *
+- * Note that with only one concurrent reader and one concurrent
+- * writer, you don't need extra locking to use these functions.
+- */
+-unsigned int kfifo_from_user(struct kfifo *fifo,
+-	const void __user *from, unsigned int len)
++static inline unsigned int __kfifo_from_user_data(struct kfifo *fifo,
++	 const void __user *from, unsigned int len, unsigned int off)
+ {
+-	unsigned int off;
+ 	unsigned int l;
+ 	int ret;
+ 
+-	len = min(len, fifo->size - fifo->in + fifo->out);
+-
+ 	/*
+ 	 * Ensure that we sample the fifo->out index -before- we
+ 	 * start putting bytes into the kfifo.
+@@ -228,29 +172,101 @@
+ 
+ 	smp_mb();
+ 
+-	off = __kfifo_off(fifo, fifo->in);
++	off = __kfifo_off(fifo, fifo->in + off);
+ 
+ 	/* first put the data starting from fifo->in to buffer end */
+ 	l = min(len, fifo->size - off);
+ 	ret = copy_from_user(fifo->buffer + off, from, l);
+ 
+ 	if (unlikely(ret))
+-		return l - ret;
++		return ret + len - l;
+ 
+ 	/* then put the rest (if any) at the beginning of the buffer */
+-	ret = copy_from_user(fifo->buffer, from + l, len - l);
++	return copy_from_user(fifo->buffer, from + l, len - l);
++}
++
++static inline unsigned int __kfifo_to_user_data(struct kfifo *fifo,
++		void __user *to, unsigned int len, unsigned int off)
++{
++	unsigned int l;
++	int ret;
++
++	/*
++	 * Ensure that we sample the fifo->in index -before- we
++	 * start removing bytes from the kfifo.
++	 */
++
++	smp_rmb();
++
++	off = __kfifo_off(fifo, fifo->out + off);
++
++	/* first get the data from fifo->out until the end of the buffer */
++	l = min(len, fifo->size - off);
++	ret = copy_to_user(to, fifo->buffer + off, l);
+ 
+ 	if (unlikely(ret))
+-		return len - ret;
++		return ret + len - l;
+ 
+-	__kfifo_add_in(fifo, len);
++	/* then get the rest (if any) from the beginning of the buffer */
++	return copy_to_user(to + l, fifo->buffer, len - l);
++}
++
++unsigned int __kfifo_in_n(struct kfifo *fifo,
++	const void *from, unsigned int len, unsigned int recsize)
++{
++	if (kfifo_avail(fifo) < len + recsize)
++		return len + 1;
+ 
++	__kfifo_in_data(fifo, from, len, recsize);
++	return 0;
++}
++EXPORT_SYMBOL(__kfifo_in_n);
++
++/**
++ * kfifo_in - puts some data into the FIFO
++ * @fifo: the fifo to be used.
++ * @from: the data to be added.
++ * @len: the length of the data to be added.
++ *
++ * This function copies at most @len bytes from the @from buffer into
++ * the FIFO depending on the free space, and returns the number of
++ * bytes copied.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++unsigned int kfifo_in(struct kfifo *fifo, const unsigned char *from,
++				unsigned int len)
++{
++	len = min(kfifo_avail(fifo), len);
++
++	__kfifo_in_data(fifo, from, len, 0);
++	__kfifo_add_in(fifo, len);
+ 	return len;
+ }
+-EXPORT_SYMBOL(kfifo_from_user);
++EXPORT_SYMBOL(kfifo_in);
++
++unsigned int __kfifo_in_generic(struct kfifo *fifo,
++	const void *from, unsigned int len, unsigned int recsize)
++{
++	return __kfifo_in_rec(fifo, from, len, recsize);
++}
++EXPORT_SYMBOL(__kfifo_in_generic);
++
++unsigned int __kfifo_out_n(struct kfifo *fifo,
++	void *to, unsigned int len, unsigned int recsize)
++{
++	if (kfifo_len(fifo) < len + recsize)
++		return len;
++
++	__kfifo_out_data(fifo, to, len, recsize);
++	__kfifo_add_out(fifo, len + recsize);
++	return 0;
++}
++EXPORT_SYMBOL(__kfifo_out_n);
+ 
+ /**
+- * kfifo_to_user - gets data from the FIFO and write it to user space
++ * kfifo_out - gets some data from the FIFO
+  * @fifo: the fifo to be used.
+  * @to: where the data must be copied.
+  * @len: the size of the destination buffer.
+@@ -261,40 +277,124 @@
+  * Note that with only one concurrent reader and one concurrent
+  * writer, you don't need extra locking to use these functions.
+  */
+-unsigned int kfifo_to_user(struct kfifo *fifo,
+-	void __user *to, unsigned int len)
++unsigned int kfifo_out(struct kfifo *fifo, unsigned char *to, unsigned int len)
+ {
+-	unsigned int off;
+-	unsigned int l;
+-	int ret;
++	len = min(kfifo_len(fifo), len);
+ 
+-	len = min(len, fifo->in - fifo->out);
++	__kfifo_out_data(fifo, to, len, 0);
++	__kfifo_add_out(fifo, len);
+ 
+-	/*
+-	 * Ensure that we sample the fifo->in index -before- we
+-	 * start removing bytes from the kfifo.
+-	 */
++	return len;
++}
++EXPORT_SYMBOL(kfifo_out);
+ 
+-	smp_rmb();
++unsigned int __kfifo_out_generic(struct kfifo *fifo,
++	void *to, unsigned int len, unsigned int recsize,
++	unsigned int *total)
++{
++	return __kfifo_out_rec(fifo, to, len, recsize, total);
++}
++EXPORT_SYMBOL(__kfifo_out_generic);
+ 
+-	off = __kfifo_off(fifo, fifo->out);
++unsigned int __kfifo_from_user_n(struct kfifo *fifo,
++	const void __user *from, unsigned int len, unsigned int recsize)
++{
++	if (kfifo_avail(fifo) < len + recsize)
++		return len + 1;
+ 
+-	/* first get the data from fifo->out until the end of the buffer */
+-	l = min(len, fifo->size - off);
+-	ret = copy_to_user(to, fifo->buffer + off, l);
++	return __kfifo_from_user_data(fifo, from, len, recsize);
++}
++EXPORT_SYMBOL(__kfifo_from_user_n);
+ 
+-	if (unlikely(ret))
+-		return l - ret;
++/**
++ * kfifo_from_user - puts some data from user space into the FIFO
++ * @fifo: the fifo to be used.
++ * @from: pointer to the data to be added.
++ * @len: the length of the data to be added.
++ *
++ * This function copies at most @len bytes from the @from into the
++ * FIFO depending and returns the number of copied bytes.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++unsigned int kfifo_from_user(struct kfifo *fifo,
++	const void __user *from, unsigned int len)
++{
++	len = min(kfifo_avail(fifo), len);
++	len -= __kfifo_from_user_data(fifo, from, len, 0);
++	__kfifo_add_in(fifo, len);
++	return len;
++}
++EXPORT_SYMBOL(kfifo_from_user);
+ 
+-	/* then get the rest (if any) from the beginning of the buffer */
+-	ret = copy_to_user(to + l, fifo->buffer, len - l);
++unsigned int __kfifo_from_user_generic(struct kfifo *fifo,
++	const void __user *from, unsigned int len, unsigned int recsize)
++{
++	return __kfifo_from_user_rec(fifo, from, len, recsize);
++}
++EXPORT_SYMBOL(__kfifo_from_user_generic);
+ 
+-	if (unlikely(ret))
+-		return len - ret;
++unsigned int __kfifo_to_user_n(struct kfifo *fifo,
++	void __user *to, unsigned int len, unsigned int reclen,
++	unsigned int recsize)
++{
++	unsigned int ret;
+ 
+-	__kfifo_add_out(fifo, len);
++	if (kfifo_len(fifo) < reclen + recsize)
++		return len;
+ 
++	ret = __kfifo_to_user_data(fifo, to, reclen, recsize);
++
++	if (likely(ret == 0))
++		__kfifo_add_out(fifo, reclen + recsize);
++
++	return ret;
++}
++EXPORT_SYMBOL(__kfifo_to_user_n);
++
++/**
++ * kfifo_to_user - gets data from the FIFO and write it to user space
++ * @fifo: the fifo to be used.
++ * @to: where the data must be copied.
++ * @len: the size of the destination buffer.
++ *
++ * This function copies at most @len bytes from the FIFO into the
++ * @to buffer and returns the number of copied bytes.
++ *
++ * Note that with only one concurrent reader and one concurrent
++ * writer, you don't need extra locking to use these functions.
++ */
++unsigned int kfifo_to_user(struct kfifo *fifo,
++	void __user *to, unsigned int len)
++{
++	len = min(kfifo_len(fifo), len);
++	len -= __kfifo_to_user_data(fifo, to, len, 0);
++	__kfifo_add_out(fifo, len);
+ 	return len;
+ }
+ EXPORT_SYMBOL(kfifo_to_user);
+ 
++unsigned int __kfifo_to_user_generic(struct kfifo *fifo,
++	void __user *to, unsigned int len, unsigned int recsize,
++	unsigned int *total)
++{
++	return __kfifo_to_user_rec(fifo, to, len, recsize, total);
++}
++EXPORT_SYMBOL(__kfifo_to_user_generic);
++
++unsigned int __kfifo_peek_generic(struct kfifo *fifo, unsigned int recsize)
++{
++	if (recsize == 0)
++		return kfifo_avail(fifo);
++
++	return __kfifo_peek_n(fifo, recsize);
++}
++EXPORT_SYMBOL(__kfifo_peek_generic);
++
++void __kfifo_skip_generic(struct kfifo *fifo, unsigned int recsize)
++{
++	__kfifo_skip_rec(fifo, recsize);
++}
++EXPORT_SYMBOL(__kfifo_skip_generic);
++
+
 
