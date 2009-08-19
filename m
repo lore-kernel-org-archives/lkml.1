@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbZHSQGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZHSQGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752883AbZHSQGA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 12:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbZHSQF6
+	id S1752946AbZHSQGg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 12:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZHSQGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 12:05:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55956 "EHLO mx1.suse.de"
+	Wed, 19 Aug 2009 12:06:01 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55958 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752011AbZHSQEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751953AbZHSQEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Aug 2009 12:04:48 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: hch@infradead.org, Jan Kara <jack@suse.cz>,
-       Felix Blyakher <felixb@sgi.com>, xfs@oss.sgi.com
-Subject: [PATCH 14/17] xfs: Use new syncing helper
-Date: Wed, 19 Aug 2009 18:04:41 +0200
-Message-Id: <1250697884-22288-15-git-send-email-jack@suse.cz>
+Cc: hch@infradead.org, Jan Kara <jack@suse.cz>, linux-nfs@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>
+Subject: [PATCH 16/17] nfs: Remove reference to generic_osync_inode from a comment
+Date: Wed, 19 Aug 2009 18:04:43 +0200
+Message-Id: <1250697884-22288-17-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1250697884-22288-1-git-send-email-jack@suse.cz>
 References: <1250697884-22288-1-git-send-email-jack@suse.cz>
@@ -23,28 +23,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use new generic_write_sync() helper from xfs_write().
+generic_file_direct_write() no longer calls generic_osync_inode() so remove the
+comment.
 
-CC: Felix Blyakher <felixb@sgi.com>
-CC: xfs@oss.sgi.com
+CC: linux-nfs@vger.kernel.org
+CC: Neil Brown <neilb@suse.de>
+CC: "J. Bruce Fields" <bfields@fieldses.org>
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/xfs/linux-2.6/xfs_lrw.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/nfs/direct.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/fs/xfs/linux-2.6/xfs_lrw.c b/fs/xfs/linux-2.6/xfs_lrw.c
-index 7078974..aeb5a39 100644
---- a/fs/xfs/linux-2.6/xfs_lrw.c
-+++ b/fs/xfs/linux-2.6/xfs_lrw.c
-@@ -817,7 +817,7 @@ write_retry:
- 		xfs_iunlock(xip, iolock);
- 		if (need_i_mutex)
- 			mutex_unlock(&inode->i_mutex);
--		error2 = sync_page_range(inode, mapping, pos, ret);
-+		error2 = generic_write_sync(file, pos, ret);
- 		if (!error)
- 			error = error2;
- 		if (need_i_mutex)
+diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
+index 489fc01..fd5fcc9 100644
+--- a/fs/nfs/direct.c
++++ b/fs/nfs/direct.c
+@@ -934,9 +934,6 @@ out:
+  * back into its cache.  We let the server do generic write
+  * parameter checking and report problems.
+  *
+- * We also avoid an unnecessary invocation of generic_osync_inode(),
+- * as it is fairly meaningless to sync the metadata of an NFS file.
+- *
+  * We eliminate local atime updates, see direct read above.
+  *
+  * We avoid unnecessary page cache invalidations for normal cached
 -- 
 1.6.0.2
 
