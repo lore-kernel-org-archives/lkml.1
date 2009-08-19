@@ -1,107 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752150AbZHSNMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbZHSNK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752150AbZHSNMj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZHSNMh
+	id S1752727AbZHSNK7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZHSNK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:12:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50557 "EHLO mx2.redhat.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751922AbZHSNCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:02:47 -0400
-From: Avi Kivity <avi@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 13/47] KVM: VMX: conditionally disable 2M pages
-Date: Wed, 19 Aug 2009 16:02:09 +0300
-Message-Id: <1250686963-8357-14-git-send-email-avi@redhat.com>
-In-Reply-To: <1250686963-8357-1-git-send-email-avi@redhat.com>
-References: <1250686963-8357-1-git-send-email-avi@redhat.com>
+	Wed, 19 Aug 2009 09:10:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50119 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752118AbZHSNK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:10:56 -0400
+Date: Wed, 19 Aug 2009 15:10:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Shaohua Li <shaohua.li@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86: Rendezvous all the cpu's for MTRR/PAT init
+Message-ID: <20090819131039.GC14215@elte.hu>
+References: <1250641835.2744.56.camel@sbs-t61.sc.intel.com> <20090818180107.29d3f39b.akpm@linux-foundation.org> <1250662857.2615.42.camel@sbs-t61> <20090819075034.GD30325@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090819075034.GD30325@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcelo Tosatti <mtosatti@redhat.com>
 
-Disable usage of 2M pages if VMX_EPT_2MB_PAGE_BIT (bit 16) is clear
-in MSR_IA32_VMX_EPT_VPID_CAP and EPT is enabled.
+* Nick Piggin <npiggin@suse.de> wrote:
 
-[avi: s/largepages_disabled/largepages_enabled/ to avoid negative logic]
+> On Tue, Aug 18, 2009 at 11:20:57PM -0700, Suresh B wrote:
+> > To make it clean I can move the smp_store_cpu_info() call before
+> > local_irq_disable() in smp_callin(). But that needs more changes (for
+> > xen etc). So thinking more, I think it is safe to do smp_call_function()
+> > with interrupts disabled as the caller is currently not in the
+> > cpu_online_mask.
+> > 
+> > i.e., no one else sends smp_call_function interrupt to this AP who is
+> > doing smp_call_function() with interrupts disabled and as such there
+> > won't be any deadlocks typically associated with calling
+> > smp_call_function() with interrupts disabled. Copied Nick to confirm or
+> > correct my understanding.
+> > 
+> > New patch appended removes this irq enable/disable sequence around
+> > mtrr_ap_init() and add's a cpu_online() check in smp_call_function
+> > warn-on's.
+> 
+> Yes this seems like a fine idea to me. Maybe also add a
+> WARN_ON(cpu_online) in the interrupt-side as well just to
+> make it clear.
+> 
+> If you split the patch out with its own changelog and give
+> a comment for the special case, then you can add an
+> Acked-by: Nick Piggin <npiggin@suse.de>
+> 
+> Although until you get acks from all arch maintainers, the 
+> functionality would have to only be used on a per-arch basis but 
+> that's probably OK as it's a pretty tricky thing for generic code 
+> to be doing :)
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- arch/x86/kvm/vmx.c       |    3 +++
- include/linux/kvm_host.h |    1 +
- virt/kvm/kvm_main.c      |   14 ++++++++++++--
- 3 files changed, 16 insertions(+), 2 deletions(-)
+Also, Suresh, please generate patches with diffstat included so 
+that the arch impact can be deducted at a glance.
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 94c07ad..fc8d49c 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -1381,6 +1381,9 @@ static __init int hardware_setup(void)
- 	if (!cpu_has_vmx_tpr_shadow())
- 		kvm_x86_ops->update_cr8_intercept = NULL;
- 
-+	if (enable_ept && !cpu_has_vmx_ept_2m_page())
-+		kvm_disable_largepages();
-+
- 	return alloc_kvm_area();
- }
- 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index c6e4d02..6988858 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -224,6 +224,7 @@ int kvm_arch_set_memory_region(struct kvm *kvm,
- 				struct kvm_userspace_memory_region *mem,
- 				struct kvm_memory_slot old,
- 				int user_alloc);
-+void kvm_disable_largepages(void);
- void kvm_arch_flush_shadow(struct kvm *kvm);
- gfn_t unalias_gfn(struct kvm *kvm, gfn_t gfn);
- struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 777fe53..48d5e69 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -85,6 +85,8 @@ static long kvm_vcpu_ioctl(struct file *file, unsigned int ioctl,
- 
- static bool kvm_rebooting;
- 
-+static bool largepages_enabled = true;
-+
- #ifdef KVM_CAP_DEVICE_ASSIGNMENT
- static struct kvm_assigned_dev_kernel *kvm_find_assigned_dev(struct list_head *head,
- 						      int assigned_dev_id)
-@@ -1174,9 +1176,11 @@ int __kvm_set_memory_region(struct kvm *kvm,
- 		ugfn = new.userspace_addr >> PAGE_SHIFT;
- 		/*
- 		 * If the gfn and userspace address are not aligned wrt each
--		 * other, disable large page support for this slot
-+		 * other, or if explicitly asked to, disable large page
-+		 * support for this slot
- 		 */
--		if ((base_gfn ^ ugfn) & (KVM_PAGES_PER_HPAGE - 1))
-+		if ((base_gfn ^ ugfn) & (KVM_PAGES_PER_HPAGE - 1) ||
-+		    !largepages_enabled)
- 			for (i = 0; i < largepages; ++i)
- 				new.lpage_info[i].write_count = 1;
- 	}
-@@ -1291,6 +1295,12 @@ out:
- 	return r;
- }
- 
-+void kvm_disable_largepages(void)
-+{
-+	largepages_enabled = false;
-+}
-+EXPORT_SYMBOL_GPL(kvm_disable_largepages);
-+
- int is_error_page(struct page *page)
- {
- 	return page == bad_page;
--- 
-1.6.3.3
-
+	Ingo
