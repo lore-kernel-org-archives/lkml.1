@@ -1,155 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751399AbZHSBXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751470AbZHSBXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399AbZHSBXB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 21:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZHSBW7
+	id S1751470AbZHSBXR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 21:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZHSBXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 21:22:59 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41750 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751014AbZHSBW6 (ORCPT
+	Tue, 18 Aug 2009 21:23:15 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:5821 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbZHSBXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 21:22:58 -0400
-Date: Tue, 18 Aug 2009 21:22:58 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: lkml <linux-kernel@vger.kernel.org>
-cc: Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL][2.6.31] tracing: handle broken names in ftrace filter
-In-Reply-To: <20090811152904.GA26065@jolsa.lab.eng.brq.redhat.com>
-Message-ID: <alpine.DEB.2.00.0908182121470.18648@gandalf.stny.rr.com>
-References: <20090811152904.GA26065@jolsa.lab.eng.brq.redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 18 Aug 2009 21:23:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=OzasKoO9ditN8+XZYE95G7xr+Js0scEFXskwx2KThF30ivTovLsM+ev1pFSLJ4y2ov
+         QTlaj9v4nLNqqyEqN0tg5lHqSDrsFukNbzuMojSTe+cqB74wf3faXFeHjKniAWz0Q381
+         0Jx6M/97fEFjKmT7RvdyQKWIJ8S732zFrOG/s=
+Date: Wed, 19 Aug 2009 03:23:08 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?utf-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
+       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH -tip v14 08/12] tracing: add kprobe-based event tracer
+Message-ID: <20090819012306.GJ5231@nowhere>
+References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203510.31965.29123.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090813203510.31965.29123.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 13, 2009 at 04:35:11PM -0400, Masami Hiramatsu wrote:
+> Add kprobes-based event tracer on ftrace.
+> 
+> This tracer is similar to the events tracer which is based on Tracepoint
+> infrastructure. Instead of Tracepoint, this tracer is based on kprobes
+> (kprobe and kretprobe). It probes anywhere where kprobes can probe(this
+>  means, all functions body except for __kprobes functions).
+> 
+> Similar to the events tracer, this tracer doesn't need to be activated via
+> current_tracer, instead of that, just set probe points via
+> /sys/kernel/debug/tracing/kprobe_events. And you can set filters on each
+> probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
+> 
+> This tracer supports following probe arguments for each probe.
+> 
+>   %REG  : Fetch register REG
+>   sN    : Fetch Nth entry of stack (N >= 0)
+>   sa    : Fetch stack address.
+>   @ADDR : Fetch memory at ADDR (ADDR should be in kernel)
+>   @SYM[+|-offs] : Fetch memory at SYM +|- offs (SYM should be a data symbol)
+>   aN    : Fetch function argument. (N >= 0)
+>   rv    : Fetch return value.
+>   ra    : Fetch return address.
+>   +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.
+> 
+> See Documentation/trace/kprobetrace.txt for details.
+> 
+> Changes from v13:
+>  - Support 'sa' for stack address.
+>  - Use call->data instead of container_of() macro.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Avi Kivity <avi@redhat.com>
+> Cc: Andi Kleen <ak@linux.intel.com>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: Frank Ch. Eigler <fche@redhat.com>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Jason Baron <jbaron@redhat.com>
+> Cc: Jim Keniston <jkenisto@us.ibm.com>
+> Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Cc: Li Zefan <lizf@cn.fujitsu.com>
+> Cc: Przemysław Pawełczyk <przemyslaw@pawelczyk.it>
+> Cc: Roland McGrath <roland@redhat.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Tom Zanussi <tzanussi@gmail.com>
+> Cc: Vegard Nossum <vegard.nossum@gmail.com>
+> ---
+> 
+>  Documentation/trace/kprobetrace.txt |  139 ++++
 
-Ingo,
 
-Please pull the latest tip/tracing/urgent tree, which can be found at:
+I'll probably split this commit to have the first version of the
+documentation as a separate patch in order to lighten this.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/urgent
-
-
-Jiri Olsa (1):
-      tracing: handle broken names in ftrace filter
-
-----
- kernel/trace/ftrace.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
----------------------------
-commit eda1e328556565e211b7450250e40d6de751563a
-Author: Jiri Olsa <jolsa@redhat.com>
-Date:   Tue Aug 11 17:29:04 2009 +0200
-
-    tracing: handle broken names in ftrace filter
-    
-    If one filter item (for set_ftrace_filter and set_ftrace_notrace) is being
-    setup by more than 1 consecutive writes (FTRACE_ITER_CONT flag), it won't
-    be handled corretly.
-    
-    I used following program to test/verify:
-    
-    [snip]
-    #include <stdio.h>
-    #include <sys/types.h>
-    #include <sys/stat.h>
-    #include <fcntl.h>
-    #include <string.h>
-    
-    int main(int argc, char **argv)
-    {
-            int fd, i;
-            char *file = argv[1];
-    
-            if (-1 == (fd = open(file, O_WRONLY))) {
-                    perror("open failed");
-                    return -1;
-            }
-    
-            for(i = 0; i < (argc - 2); i++) {
-                    int len = strlen(argv[2+i]);
-                    int cnt, off = 0;
-    
-                    while(len) {
-                            cnt = write(fd, argv[2+i] + off, len);
-                            len -= cnt;
-                            off += cnt;
-                    }
-            }
-    
-            close(fd);
-            return 0;
-    }
-    [snip]
-    
-    before change:
-    sh-4.0# echo > ./set_ftrace_filter
-    sh-4.0# /test ./set_ftrace_filter "sys" "_open "
-    sh-4.0# cat ./set_ftrace_filter
-    #### all functions enabled ####
-    sh-4.0#
-    
-    after change:
-    sh-4.0# echo > ./set_ftrace_notrace
-    sh-4.0# test ./set_ftrace_notrace "sys" "_open "
-    sh-4.0# cat ./set_ftrace_notrace
-    sys_open
-    sh-4.0#
-    
-    Signed-off-by: Jiri Olsa <jolsa@redhat.com>
-    LKML-Reference: <20090811152904.GA26065@jolsa.lab.eng.brq.redhat.com>
-    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 1e1d23c..25edd5c 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2278,7 +2278,11 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
- 	read++;
- 	cnt--;
- 
--	if (!(iter->flags & ~FTRACE_ITER_CONT)) {
-+	/*
-+	 * If the parser haven't finished with the last write,
-+	 * continue reading the user input without skipping spaces.
-+	 */
-+	if (!(iter->flags & FTRACE_ITER_CONT)) {
- 		/* skip white space */
- 		while (cnt && isspace(ch)) {
- 			ret = get_user(ch, ubuf++);
-@@ -2288,8 +2292,9 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
- 			cnt--;
- 		}
- 
-+		/* only spaces were written */
- 		if (isspace(ch)) {
--			file->f_pos += read;
-+			*ppos += read;
- 			ret = read;
- 			goto out;
- 		}
-@@ -2319,12 +2324,12 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
- 		if (ret)
- 			goto out;
- 		iter->buffer_idx = 0;
--	} else
-+	} else {
- 		iter->flags |= FTRACE_ITER_CONT;
-+		iter->buffer[iter->buffer_idx++] = ch;
-+	}
- 
--
--	file->f_pos += read;
--
-+	*ppos += read;
- 	ret = read;
-  out:
- 	mutex_unlock(&ftrace_regex_lock);
-
+Frederic.
 
