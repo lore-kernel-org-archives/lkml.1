@@ -1,127 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751252AbZHSAqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750915AbZHSAy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751252AbZHSAqe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 20:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZHSAqd
+	id S1750915AbZHSAy1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 20:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbZHSAy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 20:46:33 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:4579 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbZHSAqc (ORCPT
+	Tue, 18 Aug 2009 20:54:26 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:38868 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750758AbZHSAyZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 20:46:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JXSsrl1KVkQFbZt8qH7bEBYRfsuZ9UmBgzpeclvy9G7aOjmp/H7NTWUu/xKR26kva5
-         8OT5KMhiJoYDEDZLq8CDBM5qRYhGTuF6cwxL7op/1ib+tUSTCwBhopWrfsE8QHnGqdVb
-         jJY+wMmvQwe0CWWZ2sKVKdcw8pa+rkUhIQUGY=
-Date: Wed, 19 Aug 2009 02:46:29 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       =?utf-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
-       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH -tip v14 03/12] kprobes: checks probe address is
-	instruction boudary on x86
-Message-ID: <20090819004627.GH5231@nowhere>
-References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203428.31965.21939.stgit@localhost.localdomain> <20090818230340.GF5231@nowhere> <4A8B3693.9000301@redhat.com> <20090818234341.GG5231@nowhere> <4A8B4515.3090508@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8B4515.3090508@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 18 Aug 2009 20:54:25 -0400
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Helge Deller <deller@gmx.de>,
+       linux-parisc <linux-parisc@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090819001424.4C1144730F@magilla.sf.frob.com>
+References: <4A89CC4D.5040801@gmx.de>
+	 <1250549376.7858.96.camel@mulgrave.site>
+	 <200908181248.52572.rusty@rustcorp.com.au>
+	 <20090818050637.4C3E74730F@magilla.sf.frob.com>
+	 <1250640565.15079.3.camel@mulgrave.site>
+	 <20090819001424.4C1144730F@magilla.sf.frob.com>
+Content-Type: text/plain
+Date: Tue, 18 Aug 2009 18:54:21 -0600
+Message-Id: <1250643261.18426.8.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 08:19:33PM -0400, Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
-> > On Tue, Aug 18, 2009 at 07:17:39PM -0400, Masami Hiramatsu wrote:
-> >> Frederic Weisbecker wrote:
-> >>>> +	while (addr < paddr) {
-> >>>> +		kernel_insn_init(&insn, (void *)addr);
-> >>>> +		insn_get_opcode(&insn);
-> >>>> +
-> >>>> +		/* Check if the instruction has been modified. */
-> >>>> +		if (insn.opcode.bytes[0] == BREAKPOINT_INSTRUCTION) {
-> >>>> +			ret = recover_probed_instruction(buf, addr);
-> >>>
-> >>>
-> >>>
-> >>> I'm confused about the reason of this recovering. Is it to remove
-> >>> kprobes behind the current setting one in the current function?
-> >>
-> >> No, it recovers just an instruction which is probed by a kprobe,
-> >> because we need to know the first byte of this instruction for
-> >> decoding it.
+On Tue, 2009-08-18 at 17:14 -0700, Roland McGrath wrote:
+> > Actually, for parisc, its not reasonable.  It's expected that our modules
+> > have multiple text sections (we have to use -ffunction-sections to
+> > generate them in order that the PCREL17 jump stubs can be interleaved).
 > 
-> Ah, sorry, it was not accurate. the function recovers an instruction
-> on the buffer(buf), not on the real kernel text. :)
+> I don't think you need what you think you need.  Having lots of sections in
+> your .o's when you compile is fine.  These should be combined by the linker
+> script that creates the .ko, however.  Unless I am missing something, there
+> is no purpose to this section distinction at insmod time--it's only
+> important for the relative layout of the parts of the .ko's text, which
+> winds up contiguous whether laid out that way at ld -r (.ko creation) time
+> or at insmod time.
 
+Actually, I think we do; the module loader is a runtime linker, after
+all.  We have specific module bugs we fixed by inserting relocation
+stubs between the text sections.
 
+Our specific problem is that the standard pa relocation is PCREL17 ...
+as you can appreciate, 17 bits of relative jump isn't a lot.  If the
+target isn't within the 17 bits, we have to insert a relocation stub to
+do an indirect absolute jump thought the GOT.  Our problems occur when a
+text section is wider than the 17 bits, which happens a lot in the
+larger modules ... with nowhere to put the stub within range of the
+relocation we can't load them.  Our fix is to split the text sections
+with -ffunction-sections so we can be pretty much assured of having a
+stub location within the 17 bits.
 
-Ah ok. I'll just add a small comment about that then, and apply
-it.
+We don't care what they're called or anything.  We just care that
+the .text is split up into multiple separately relocateable sections so
+we can get the stubs within range of the jumps.
 
+Now, of course, if the final linker could be persuaded to sprinkle
+needed stubs through the text section and all we have to do is GOT
+relocations, we don't need all the jiggery-pokery ... but I'm told this
+can't be done.
 
- 
-> >>
-> >> Perhaps we'd better to have more generic interface (text_peek?)
-> >> for it because another subsystem (e.g. kgdb) may want to insert int3...
-> >>
-> >> Thank you,
-> > 
-> > 
-> > Aah, I see now, it's to keep a sane check of the instructions
-> > boundaries without int 3 artifacts in the middle.
-> > 
-> > But in that case, you should re-arm the breakpoint after your
-> > check, right?
-> > 
-> > Or may be you could do the check without repatching?
-> 
-> Yes, it doesn't modify kernel text, just recover an original
-> instruction from kernel text and backup byte on a buffer.
+James
 
-
-Ok.
-
-
-> > May be by doing a copy of insn.opcode.bytes and replacing bytes[0]
-> > with what a random kprobe has stolen?
-> 
-> Hm, no, this function is protected from other kprobes by kprobe_mutex.
-> 
-> Thank you,
-
-
-
-Right, thanks!
-
-
-
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
 
