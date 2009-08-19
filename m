@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbZHSAFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbZHSAHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752462AbZHSAFU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 20:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZHSAFT
+	id S1752188AbZHSAHh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 20:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZHSAHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 20:05:19 -0400
-Received: from ru.mvista.com ([213.79.90.228]:44583 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750787AbZHSAFS (ORCPT
+	Tue, 18 Aug 2009 20:07:36 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62327 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbZHSAHg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 20:05:18 -0400
-Date: Wed, 19 Aug 2009 04:05:19 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Alan Cox <alan@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] 8250: Now honours baud rate lower bounds
-Message-ID: <20090819000519.GA32588@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090702213624.GA23193@oksana.dev.rtsoft.ru>
- <20090702225312.02f78ec4@lxorguk.ukuu.org.uk>
- <20090702223013.GA26960@oksana.dev.rtsoft.ru>
- <20090703103924.45902824@lxorguk.ukuu.org.uk>
+	Tue, 18 Aug 2009 20:07:36 -0400
+Date: Tue, 18 Aug 2009 20:07:36 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Kumar Gala <galak@kernel.crashing.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, linuxppc-dev@ozlabs.org,
+       peterz@infradead.org
+Subject: Re: [PATCH] spinlock: __raw_spin_is_locked() should return true for
+ UP
+In-Reply-To: <alpine.LFD.2.01.0908181640120.3158@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.0908182003430.18648@gandalf.stny.rr.com>
+References: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org> <alpine.LFD.2.01.0908181618420.3158@localhost.localdomain> <alpine.DEB.2.00.0908181931180.28398@gandalf.stny.rr.com> <alpine.LFD.2.01.0908181640120.3158@localhost.localdomain>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090703103924.45902824@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 10:39:24AM +0100, Alan Cox wrote:
-> > How about this patch down below?
+On Tue, 18 Aug 2009, Linus Torvalds wrote:
 > 
-> Thats much better.
+> > Thinking about it, UP probably should have spin_is_locked always return 
+> > false, but if you want to make sure you are not in a critical section 
+> > with the lock not held, then use assert_spin_locked, which on UP should be 
+> > a nop.
+> 
+> That's what we do. That said, I also think we should generally try to 
+> avoid the kind of code that depends on spin_is_locked always returning 
+> false, for the same reason we should try to avoid any code that depends on 
+> it always returning true. 
 
-Alan, is that patch in your queue? I believe you didn't give up on
-8250 maintenance so I don't have to resend it to Greg, correct?
+Perhaps we can deprecate spin_is_locked and replace it with 
+"expect_spin_locked" and "expect_spin_unlocked" which on SMP would return 
+true and false respectively if the lock was locked. But both would always 
+return true on UP.
 
-Thanks!
+Or do some thing similar, that would remove the ambiguity on UP.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+-- Steve
+
