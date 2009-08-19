@@ -1,152 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbZHSU0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZHSUhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752441AbZHSU0K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 16:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbZHSU0J
+	id S1752541AbZHSUhT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 16:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZHSUhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 16:26:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39247 "EHLO mx3.mail.elte.hu"
+	Wed, 19 Aug 2009 16:37:18 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:35643 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751629AbZHSU0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 16:26:08 -0400
-Date: Wed, 19 Aug 2009 22:25:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [circular locking bug] Re: [patch 00/15] clocksource /
-	timekeeping rework V4 (resend V3 + bug fix)
-Message-ID: <20090819202554.GA19482@elte.hu>
-References: <20090814134717.859098725@de.ibm.com> <1250300765.8269.29.camel@localhost.localdomain> <alpine.LFD.2.00.0908151057500.1283@localhost.localdomain> <20090815095221.GA15831@elte.hu> <alpine.LFD.2.00.0908151207000.1283@localhost.localdomain> <20090817094042.03fe5d38@skybase> <alpine.LFD.2.00.0908171038420.2782@localhost.localdomain> <20090817092807.GA10460@elte.hu> <20090818170942.3ab80c91@skybase>
+	id S1751835AbZHSUhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 16:37:16 -0400
+X-Greylist: delayed 1462 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Aug 2009 16:37:15 EDT
+Message-ID: <4A8C627C.70001@redhat.com>
+Date: Wed, 19 Aug 2009 23:37:16 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090818170942.3ab80c91@skybase>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Gregory Haskins <gregory.haskins@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
+       Patrick Mullaney <pmullaney@novell.com>
+Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for vbus_driver
+ objects
+References: <20090814154125.26116.70709.stgit@dev.haskins.net> <20090814154308.26116.46980.stgit@dev.haskins.net> <20090815103243.GA26749@elte.hu> <4A8954F0.3040402@gmail.com> <20090817142506.GB3602@elte.hu> <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com> <4A8AD678.7050609@redhat.com> <4A8B9B79.9050004@gmail.com> <4A8BA5AE.3030308@redhat.com> <4A8C43D3.7030002@gmail.com>
+In-Reply-To: <4A8C43D3.7030002@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/19/2009 09:26 PM, Gregory Haskins wrote:
+>>> This is for things like the setup of queue-pairs, and the transport of
+>>> door-bells, and ib-verbs.  I am not on the team doing that work, so I am
+>>> not an expert in this area.  What I do know is having a flexible and
+>>> low-latency signal-path was deemed a key requirement.
+>>>
+>>>        
+>> That's not a full bypass, then.  AFAIK kernel bypass has userspace
+>> talking directly to the device.
+>>      
+> Like I said, I am not an expert on the details here.  I only work on the
+> vbus plumbing.  FWIW, the work is derivative from the "Xen-IB" project
+>
+> http://www.openib.org/archives/nov2006sc/xen-ib-presentation.pdf
+>
+> There were issues with getting Xen-IB to map well into the Xen model.
+> Vbus was specifically designed to address some of those short-comings.
+>    
 
-ok, with all the latest patches i re-added these bits to 
--tip, and it triggered this lockdep assert on a testbox:
+Well I'm not an Infiniband expert.  But from what I understand VMM 
+bypass means avoiding the call to the VMM entirely by exposing hardware 
+registers directly to the guest.
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.31-rc6-tip-01234-gcc9be0e-dirty #1054
----------------------------------
-inconsistent {SOFTIRQ-ON-W} -> {IN-SOFTIRQ-W} usage.
-swapper/1 [HC0[0]:SC1[1]:HE0:SE0] takes:
- (clocksource_mutex){+.?.+.}, at: [<c10664d7>] clocksource_unregister+0x17/0x50
-{SOFTIRQ-ON-W} state was registered at:
-  [<c106fb77>] mark_irqflags+0xf7/0x190
-  [<c107177a>] __lock_acquire+0x29a/0x520
-  [<c1071a6a>] lock_acquire+0x6a/0xc0
-  [<c175719b>] __mutex_lock_common+0x3b/0x340
-  [<c1757551>] mutex_lock_nested+0x31/0x40
-  [<c10666b7>] clocksource_register+0x17/0x40
-  [<c1bc68bd>] init_jiffies_clocksource+0xd/0x10
+>> This is best done using cr8/tpr so you don't have to exit at all.  See
+>> also my vtpr support for Windows which does this in software, generally
+>> avoiding the exit even when lowering priority.
+>>      
+> You can think of vTPR as a good model, yes.  Generally, you can't
+> actually use it for our purposes for several reasons, however:
+>
+> 1) the prio granularity is too coarse (16 levels, -rt has 100)
+>
+> 2) it is too scope limited (it covers only interrupts, we need to have
+> additional considerations, like nested guest/host scheduling algorithms
+> against the vcpu, and prio-remap policies)
+>
+> 3) I use "priority" generally..there may be other non-priority based
+> policies that need to add state to the table (such as EDF deadlines, etc).
+>
+> but, otherwise, the idea is the same.  Besides, this was one example.
+>    
 
-see fuller log below.
+Well, if priority is so important then I'd recommend exposing it via a 
+virtual interrupt controller.  A bus is the wrong model to use, because 
+its scope is only the devices it contains, and because it is system-wide 
+in nature, not per-cpu.
 
-	Ingo
+>>> This is where the really fast call() type mechanism is important.
+>>>
+>>> Its also about having the priority flow-end to end, and having the vcpu
+>>> interrupt state affect the task-priority, etc (e.g. pending interrupts
+>>> affect the vcpu task prio).
+>>>
+>>> etc, etc.
+>>>
+>>> I can go on and on (as you know ;), but will wait till this work is more
+>>> concrete and proven.
+>>>
+>>>        
+>> Generally cpu state shouldn't flow through a device but rather through
+>> MSRs, hypercalls, and cpu registers.
+>>      
+>
+> Well, you can blame yourself for that one ;)
+>
+> The original vbus was implemented as cpuid+hypercalls, partly for that
+> reason.  You kicked me out of kvm.ko, so I had to make due with plan B
+> via a less direct PCI-BRIDGE route.
+>    
 
-Switching to clocksource acpi_pm
-initcall init_acpi_pm_clocksource+0x0/0x1a0 returned 0 after 38256 usecs
+A bus has no business doing these things.  But cpu state definitely 
+needs to be manipulated using hypercalls, see the pvmmu and vtpr 
+hypercalls or the pvclock msr.
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.31-rc6-tip-01234-gcc9be0e-dirty #1054
----------------------------------
-inconsistent {SOFTIRQ-ON-W} -> {IN-SOFTIRQ-W} usage.
-swapper/1 [HC0[0]:SC1[1]:HE0:SE0] takes:
- (clocksource_mutex){+.?.+.}, at: [<c10664d7>] clocksource_unregister+0x17/0x50
-{SOFTIRQ-ON-W} state was registered at:
-  [<c106fb77>] mark_irqflags+0xf7/0x190
-  [<c107177a>] __lock_acquire+0x29a/0x520
-  [<c1071a6a>] lock_acquire+0x6a/0xc0
-  [<c175719b>] __mutex_lock_common+0x3b/0x340
-  [<c1757551>] mutex_lock_nested+0x31/0x40
-  [<c10666b7>] clocksource_register+0x17/0x40
-  [<c1bc68bd>] init_jiffies_clocksource+0xd/0x10
-  [<c1001129>] do_one_initcall+0x29/0x160
-  [<c1bb33f7>] do_initcalls+0x27/0x40
-  [<c1bb3436>] do_basic_setup+0x26/0x30
-  [<c1bb3b17>] kernel_init+0x57/0xa0
-  [<c1003ae7>] kernel_thread_helper+0x7/0x10
-irq event stamp: 1135959
-hardirqs last  enabled at (1135958): [<c1045810>] __do_softirq+0x60/0x1d0
-hardirqs last disabled at (1135959): [<c105e328>] hrtimer_switch_to_hres+0x48/0x100
-softirqs last  enabled at (1135840): [<c10458d1>] __do_softirq+0x121/0x1d0
-softirqs last disabled at (1135957): [<c1005b22>] call_on_stack+0x12/0x20
+> But in reality, it doesn't matter much.  You can certainly have "system"
+> devices sitting on vbus that fit a similar role as "MSRs", so the access
+> method is more of an implementation detail.  The key is it needs to be
+> fast, and optimize out extraneous exits when possible.
+>    
 
-other info that might help us debug this:
-1 lock held by swapper/1:
- #0:  (i8253_lock){-.-...}, at: [<c1008ba8>] init_pit_timer+0x18/0xb0
+No, percpu state belongs in the vcpu model, not the device model.  cpu 
+priority is logically a cpu register or state, not device state.
 
-stack backtrace:
-Pid: 1, comm: swapper Not tainted 2.6.31-rc6-tip-01234-gcc9be0e-dirty #1054
-Call Trace:
- [<c106f430>] print_usage_bug+0x130/0x180
- [<c106f5eb>] mark_lock_irq+0x16b/0x260
- [<c106f240>] ? check_usage_forwards+0x0/0xc0
- [<c106f7fe>] mark_lock+0x11e/0x3a0
- [<c106fbff>] mark_irqflags+0x17f/0x190
- [<c107177a>] __lock_acquire+0x29a/0x520
- [<c1071a6a>] lock_acquire+0x6a/0xc0
- [<c10664d7>] ? clocksource_unregister+0x17/0x50
- [<c175719b>] __mutex_lock_common+0x3b/0x340
- [<c10664d7>] ? clocksource_unregister+0x17/0x50
- [<c1757551>] mutex_lock_nested+0x31/0x40
- [<c10664d7>] ? clocksource_unregister+0x17/0x50
- [<c10664d7>] clocksource_unregister+0x17/0x50
- [<c1008b3a>] pit_disable_clocksource+0x2a/0x40
- [<c1008bb9>] init_pit_timer+0x29/0xb0
- [<c106825a>] clockevents_set_mode+0x1a/0x50
- [<c1069a96>] tick_switch_to_oneshot+0x96/0xc0
- [<c1069ad2>] tick_init_highres+0x12/0x20
- [<c105e32d>] hrtimer_switch_to_hres+0x4d/0x100
- [<c105ebbd>] hrtimer_run_pending+0x4d/0x50
- [<c104bb85>] run_timer_softirq+0x25/0x230
- [<c1092df4>] ? cpu_quiet+0x54/0x90
- [<c1092968>] ? cpu_has_callbacks_ready_to_invoke+0x8/0x20
- [<c10932d5>] ? rcu_do_batch+0x15/0x190
- [<c1092ed3>] ? rcu_check_quiescent_state+0x33/0x50
- [<c1045810>] ? __do_softirq+0x60/0x1d0
- [<c10457b0>] ? __do_softirq+0x0/0x1d0
- [<c106fe6a>] ? trace_hardirqs_on_caller+0x7a/0x1b0
- [<c1045868>] __do_softirq+0xb8/0x1d0
- [<c10457b0>] ? __do_softirq+0x0/0x1d0
- <IRQ>  [<c10459f5>] ? irq_exit+0x75/0x80
- [<c175906e>] ? do_IRQ+0x4e/0xb0
- [<c100356e>] ? common_interrupt+0x2e/0x40
- [<c1758b94>] ? _spin_unlock_irqrestore+0x34/0x50
- [<c103007b>] ? set_curr_task_fair+0xb/0x40
- [<c10401c4>] ? vprintk+0x114/0x2a0
- [<c1756f25>] ? __mutex_unlock_slowpath+0xa5/0x160
- [<c106ff4c>] ? trace_hardirqs_on_caller+0x15c/0x1b0
- [<c106ffab>] ? trace_hardirqs_on+0xb/0x10
- [<c1756fed>] ? mutex_unlock+0xd/0x10
- [<c1be9320>] ? init_acpi_pm_clocksource+0x0/0x1a0
- [<c104036b>] ? printk+0x1b/0x20
- [<c1001200>] ? do_one_initcall+0x100/0x160
- [<c1be9320>] ? init_acpi_pm_clocksource+0x0/0x1a0
- [<c1138a45>] ? create_proc_entry+0x65/0xc0
- [<c1092383>] ? register_irq_proc+0xa3/0xc0
- [<c1138981>] ? proc_create_data+0x71/0xd0
- [<c1bb33f7>] ? do_initcalls+0x27/0x40
- [<c1bb3436>] ? do_basic_setup+0x26/0x30
- [<c1bb3b17>] ? kernel_init+0x57/0xa0
- [<c1bb3ac0>] ? kernel_init+0x0/0xa0
- [<c1003ae7>] ? kernel_thread_helper+0x7/0x10
-Switched to high resolution mode on CPU 0
-calling  ssb_modinit+0x0/0x60 @ 1
+
+
+>> Well, do you plan to address this before submission for inclusion?
+>>      
+> Maybe, maybe not.  Its workable for now (i.e. run as root), so its
+> inclusion is not predicated on the availability of the fix, per se (at
+> least IMHO).  If I can get it working before I get to pushing the core,
+> great!  Patches welcome.
+>    
+
+The lack of so many feature indicates the whole thing is immature.  That 
+would be find if the whole thing was the first of its kind, but it isn't.
+
+> For the time being, windows will not be RT, and windows can fall-back to
+> use virtio-net, etc.  So I am ok with this.  It will come in due time.
+>
+>    
+
+So we need to work on optimizing both virtio-net and venet.  Great.
+
+>>> The point is: the things we build on top have costs associated with
+>>> them, and I aim to minimize it.  For instance, to do a "call()" kind of
+>>> interface, you generally need to pre-setup some per-cpu mappings so that
+>>> you can just do a single iowrite32() to kick the call off.  Those
+>>> per-cpu mappings have a cost if you want them to be high-performance, so
+>>> my argument is that you ideally want to limit the number of times you
+>>> have to do this.  My current design reduces this to "once".
+>>>
+>>>        
+>> Do you mean minimizing the setup cost?  Seriously?
+>>      
+> Not the time-to-complete-setup overhead.  The residual costs, like
+> heap/vmap usage at run-time.  You generally have to set up per-cpu
+> mappings to gain maximum performance.  You would need it per-device, I
+> do it per-system.  Its not a big deal in the grand-scheme of things,
+> really.  But chalk that up as an advantage to my approach over yours,
+> nonetheless.
+>    
+
+Without measurements, it's just handwaving.
+>> I guess it isn't that important then.  I note that clever prioritization
+>> in a guest is pointless if you can't do the same prioritization in the
+>> host.
+>>      
+> I answer this below...
+>
+> The point is that I am eliminating as many exits as possible, so 1us,
+> 2us, whatever...it doesn't matter.  The fastest exit is the one you
+> don't have to take.
+>    
+
+You'll still have to exit if the host takes a low priority interrupt, 
+schedule the irq thread according to its priority, and return to the 
+guest.  At this point you may as well inject the interrupt and let the 
+guest do the same thing.
+
+>> IIRC we reuse the PCI IDs for non-PCI.
+>>      
+>
+> You already know how I feel about this gem.
+>    
+
+The earth keeps rotating despite the widespread use of PCI IDs.
+
+>> I'm not okay with it.  If you wish people to adopt vbus over virtio
+>> you'll have to address all concerns, not just yours.
+>>      
+> By building a community around the development of vbus, isnt this what I
+> am doing?  Working towards making it usable for all?
+>    
+
+I've no idea if you're actually doing that.  Maybe inclusion should be 
+predicated on achieving feature parity.
+
+>>>> and multiqueue out of your design.
+>>>>
+>>>>          
+>>> AFAICT, multiqueue should work quite nicely with vbus.  Can you
+>>> elaborate on where you see the problem?
+>>>
+>>>        
+>> You said you aren't interested in it previously IIRC.
+>>
+>>      
+> I don't think so, no.  Perhaps I misspoke or was misunderstood.  I
+> actually think its a good idea and will be looking to do this.
+>    
+
+When I pointed out that multiplexing all interrupts onto a single vector 
+is bad for per-vcpu multiqueue, you said you're not interested in that.
+
+>> I agree that it isn't very clever (not that I am a real time expert) but
+>> I disagree about dismissing Linux support so easily.  If prioritization
+>> is such a win it should be a win on the host as well and we should make
+>> it work on the host as well.  Further I don't see how priorities on the
+>> guest can work if they don't on the host.
+>>      
+> Its more about task priority in the case of real-time.  We do stuff with
+> 802.1p as well for control messages, etc.  But for the most part, this
+> is an orthogonal effort.  And yes, you are right, it would be nice to
+> have this interrupt classification capability in the host.
+>
+> Generally this is mitigated by the use of irq-threads.  You could argue
+> that if irq-threads help the host without a prioritized interrupt
+> controller, why cant the guest?  The answer is simply that the host can
+> afford sub-optimal behavior w.r.t. IDT injection here, where the guest
+> cannot (due to the disparity of hw-injection vs guest-injection overheads).
+>    
+
+Guest injection overhead is not too bad, most of the cost is the exit 
+itself, and you can't avoid that without host task priorities.
+
+
+
+
+>> They had to write 414 lines in drivers/s390/kvm/kvm_virtio.c and
+>> something similar for lguest.
+>>      
+> Well, then I retract that statement.  I think the small amount of code
+> is probably because they are re-using the qemu device-models, however.
+>    
+
+No that's guest code, it isn't related to qemu.
+
+> Note that I am essentially advocating the same basic idea here.
+>    
+
+Right, duplicating existing infrastructure.
+
+>> I don't see what vbus adds to virtio-net.
+>>      
+> Well, as you stated in your last reply, you don't want it.  So I guess
+> that doesn't matter much at this point.  I will continue developing
+> vbus, and pushing things your way.  You can opt to accept or reject
+> those things at your own discretion.
+>    
+
+I'm not the one to merge it.  However my opinion is that it shouldn't be 
+merged.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
