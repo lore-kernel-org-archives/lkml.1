@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbZHSNI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752335AbZHSNFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbZHSNI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZHSNEd
+	id S1752335AbZHSNFY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZHSNEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:04:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50587 "EHLO mx2.redhat.com"
+	Wed, 19 Aug 2009 09:04:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50577 "EHLO mx2.redhat.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752024AbZHSNCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751999AbZHSNCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 19 Aug 2009 09:02:49 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 43/47] KVM: switch pit creation to slots_lock
-Date: Wed, 19 Aug 2009 16:02:39 +0300
-Message-Id: <1250686963-8357-44-git-send-email-avi@redhat.com>
+Subject: [PATCH 31/47] KVM: s390: Fix memslot initialization for userspace_addr != 0
+Date: Wed, 19 Aug 2009 16:02:27 +0300
+Message-Id: <1250686963-8357-32-git-send-email-avi@redhat.com>
 In-Reply-To: <1250686963-8357-1-git-send-email-avi@redhat.com>
 References: <1250686963-8357-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael S. Tsirkin <mst@redhat.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-switch pit creation to slots_lock. slots_lock is already taken for read
-everywhere, so we only need to take it for write when creating pit.
-This is in preparation to removing in_range and kvm->lock around it.
+Since
+commit 854b5338196b1175706e99d63be43a4f8d8ab607
+Author: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+    KVM: s390: streamline memslot handling
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+s390 uses the values of the memslot instead of doing everything in the arch
+ioctl handler of the KVM_SET_USER_MEMORY_REGION. Unfortunately we missed to
+set the userspace_addr of our memslot due to our s390 ifdef in
+__kvm_set_memory_region.
+Old s390 userspace launchers did not notice, since they started the guest at
+userspace address 0.
+Because of CONFIG_DEFAULT_MMAP_MIN_ADDR we now put the guest at 1M userspace,
+which does not work. This patch makes sure that new.userspace_addr is set
+on s390.
+This fix should go in quickly. Nevertheless, looking at the code we should
+clean up that ifdef in the long term. Any kernel janitors?
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/x86.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ virt/kvm/kvm_main.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 0be75d5..7ce6367 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2188,7 +2188,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 				   sizeof(struct kvm_pit_config)))
- 			goto out;
- 	create_pit:
--		mutex_lock(&kvm->lock);
-+		down_write(&kvm->slots_lock);
- 		r = -EEXIST;
- 		if (kvm->arch.vpit)
- 			goto create_pit_unlock;
-@@ -2197,7 +2197,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 		if (kvm->arch.vpit)
- 			r = 0;
- 	create_pit_unlock:
--		mutex_unlock(&kvm->lock);
-+		up_write(&kvm->slots_lock);
- 		break;
- 	case KVM_IRQ_LINE_STATUS:
- 	case KVM_IRQ_LINE: {
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 04bdedd..1da8072 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -1199,6 +1199,10 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 		if (old.npages)
+ 			kvm_arch_flush_shadow(kvm);
+ 	}
++#else  /* not defined CONFIG_S390 */
++	new.user_alloc = user_alloc;
++	if (user_alloc)
++		new.userspace_addr = mem->userspace_addr;
+ #endif /* not defined CONFIG_S390 */
+ 
+ 	if (!npages)
 -- 
 1.6.3.3
 
