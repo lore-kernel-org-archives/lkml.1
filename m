@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbZHSNK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbZHSNM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727AbZHSNK7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 09:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZHSNK5
+	id S1752781AbZHSNM6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 09:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZHSNM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 09:10:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50119 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752118AbZHSNK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 09:10:56 -0400
-Date: Wed, 19 Aug 2009 15:10:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Shaohua Li <shaohua.li@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86: Rendezvous all the cpu's for MTRR/PAT init
-Message-ID: <20090819131039.GC14215@elte.hu>
-References: <1250641835.2744.56.camel@sbs-t61.sc.intel.com> <20090818180107.29d3f39b.akpm@linux-foundation.org> <1250662857.2615.42.camel@sbs-t61> <20090819075034.GD30325@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090819075034.GD30325@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 19 Aug 2009 09:12:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50548 "EHLO mx2.redhat.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751882AbZHSNCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 09:02:46 -0400
+From: Avi Kivity <avi@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 07/47] KVM: MMU audit: largepage handling
+Date: Wed, 19 Aug 2009 16:02:03 +0300
+Message-Id: <1250686963-8357-8-git-send-email-avi@redhat.com>
+In-Reply-To: <1250686963-8357-1-git-send-email-avi@redhat.com>
+References: <1250686963-8357-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-* Nick Piggin <npiggin@suse.de> wrote:
+Make the audit code aware of largepages.
 
-> On Tue, Aug 18, 2009 at 11:20:57PM -0700, Suresh B wrote:
-> > To make it clean I can move the smp_store_cpu_info() call before
-> > local_irq_disable() in smp_callin(). But that needs more changes (for
-> > xen etc). So thinking more, I think it is safe to do smp_call_function()
-> > with interrupts disabled as the caller is currently not in the
-> > cpu_online_mask.
-> > 
-> > i.e., no one else sends smp_call_function interrupt to this AP who is
-> > doing smp_call_function() with interrupts disabled and as such there
-> > won't be any deadlocks typically associated with calling
-> > smp_call_function() with interrupts disabled. Copied Nick to confirm or
-> > correct my understanding.
-> > 
-> > New patch appended removes this irq enable/disable sequence around
-> > mtrr_ap_init() and add's a cpu_online() check in smp_call_function
-> > warn-on's.
-> 
-> Yes this seems like a fine idea to me. Maybe also add a
-> WARN_ON(cpu_online) in the interrupt-side as well just to
-> make it clear.
-> 
-> If you split the patch out with its own changelog and give
-> a comment for the special case, then you can add an
-> Acked-by: Nick Piggin <npiggin@suse.de>
-> 
-> Although until you get acks from all arch maintainers, the 
-> functionality would have to only be used on a per-arch basis but 
-> that's probably OK as it's a pretty tricky thing for generic code 
-> to be doing :)
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/mmu.c |   15 +++++++--------
+ 1 files changed, 7 insertions(+), 8 deletions(-)
 
-Also, Suresh, please generate patches with diffstat included so 
-that the arch impact can be deducted at a glance.
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 50fe854..780ce3f 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -3058,12 +3058,11 @@ static void __mmu_spte_walk(struct kvm *kvm, struct kvm_mmu_page *sp,
+ 		u64 ent = sp->spt[i];
+ 
+ 		if (is_shadow_present_pte(ent)) {
+-			if (sp->role.level > 1 && !is_large_pte(ent)) {
++			if (!is_last_spte(ent, sp->role.level)) {
+ 				struct kvm_mmu_page *child;
+ 				child = page_header(ent & PT64_BASE_ADDR_MASK);
+ 				__mmu_spte_walk(kvm, child, fn);
+-			}
+-			if (sp->role.level == 1)
++			} else
+ 				fn(kvm, sp, &sp->spt[i]);
+ 		}
+ 	}
+@@ -3108,10 +3107,9 @@ static void audit_mappings_page(struct kvm_vcpu *vcpu, u64 page_pte,
+ 			continue;
+ 
+ 		va = canonicalize(va);
+-		if (level > 1) {
+-			if (is_shadow_present_pte(ent))
+-				audit_mappings_page(vcpu, ent, va, level - 1);
+-		} else {
++		if (is_shadow_present_pte(ent) && !is_last_spte(ent, level))
++			audit_mappings_page(vcpu, ent, va, level - 1);
++		else {
+ 			gpa_t gpa = vcpu->arch.mmu.gva_to_gpa(vcpu, va);
+ 			gfn_t gfn = gpa >> PAGE_SHIFT;
+ 			pfn_t pfn = gfn_to_pfn(vcpu->kvm, gfn);
+@@ -3208,7 +3206,8 @@ void inspect_spte_has_rmap(struct kvm *kvm, struct kvm_mmu_page *sp, u64 *sptep)
+ 			return;
+ 		}
+ 
+-		rmapp = gfn_to_rmap(kvm, rev_sp->gfns[sptep - rev_sp->spt], 0);
++		rmapp = gfn_to_rmap(kvm, rev_sp->gfns[sptep - rev_sp->spt],
++				    is_large_pte(*sptep));
+ 		if (!*rmapp) {
+ 			if (!printk_ratelimit())
+ 				return;
+-- 
+1.6.3.3
 
-	Ingo
