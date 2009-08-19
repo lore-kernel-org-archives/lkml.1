@@ -1,66 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbZHSRlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbZHSRnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752589AbZHSRlg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 13:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZHSRlf
+	id S1752676AbZHSRnb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 13:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbZHSRna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 13:41:35 -0400
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:45526 "EHLO mail.cs.nmsu.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751150AbZHSRlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 13:41:35 -0400
-Message-ID: <5ea7c6a46fa1e051d69a302fdc8961ac.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <20090819170501.1dbd29a8@lxorguk.ukuu.org.uk>
-References: <9f97a27ccc13bd63ce99be04018b6bde.squirrel@intranet.cs.nmsu.edu>
-    <20090818151427.GA6295@kroah.com>
-    <ead4b2f9b7e5b1a415d010c524812e3a.squirrel@intranet.cs.nmsu.edu>
-    <20090819170501.1dbd29a8@lxorguk.ukuu.org.uk>
-Date: Wed, 19 Aug 2009 11:41:28 -0600
-Subject: Re: Purpose of parameter in sysfs binary read
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: "Greg KH" <greg@kroah.com>, "Linux USB" <linux-usb@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.19
+	Wed, 19 Aug 2009 13:43:30 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:25777 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbZHSRna (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 13:43:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fCet9dqw8D3r0C9uTXXiEOyWkFnGaybYP7kN3921zwYZr6/6rI0vKxGkPgAz57oyWT
+         U6IWVi03aXu0Eswl5/uQ39ikvl1KOlYuvphwX1yC/oqKEqydlBpAOMpdP6qwKLw/pc2m
+         XbMpUVyLV86f705U89tL6uzxjbuYMsUqXaK6I=
+Date: Wed, 19 Aug 2009 19:43:26 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+       mbligh@google.com, lizf@cn.fujitsu.com
+Subject: Re: [PATCH] tracing: Create generic syscall TRACE_EVENTs
+Message-ID: <20090819174324.GI4972@nowhere>
+References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250634359-31642-1-git-send-email-jistone@redhat.com> <20090819161651.GC2649@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090819161651.GC2649@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Tue, 18 Aug 2009 09:41:56 -0600
-> "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu> wrote:
->
->> Greg KH wrote:
->> > On Tue, Aug 18, 2009 at 08:55:29AM -0600, Rick L. Vinyard, Jr. wrote:
->> > What are you using the binary sysfs attribute for?  It should ONLY be
->> > used as a pass-through to and from hardware, with no interpretation by
->> > the kernel at all.
->>
->> It's for the Logitech G13's game panel image (a simple binary bitmap of
->> the pixels).
->>
->> It doesn't do any interpretation... just a few checks on the magic
->> number
->> and size.
->
-> If its a bitmap image why not register the device as a framebuffer ?
->
+On Wed, Aug 19, 2009 at 12:16:52PM -0400, Jason Baron wrote:
+> On Tue, Aug 18, 2009 at 03:25:59PM -0700, Josh Stone wrote:
+> > This converts the syscall_enter/exit tracepoints into TRACE_EVENTs, so
+> > you can have generic ftrace events that capture all system calls with
+> > arguments and return values.
+> > 
+> > The existing event_syscall_enter/exit trace_event structs are renamed to
+> > event_sys_enter/exit, so they don't conflict with the names generated
+> > automatically by ftrace.
+> > 
+> > Signed-off-by: Josh Stone <jistone@redhat.com>
+> > Cc: Jason Baron <jbaron@redhat.com>
+> > ---
+> >  arch/s390/kernel/ptrace.c       |    3 ++
+> >  arch/x86/kernel/ptrace.c        |    8 ++---
+> >  include/linux/syscalls.h        |    4 +-
+> >  include/trace/events/syscalls.h |   66 +++++++++++++++++++++++++++++++++++++++
+> >  include/trace/syscall.h         |   17 +---------
+> >  kernel/trace/trace_syscalls.c   |    5 ++-
+> >  6 files changed, 79 insertions(+), 24 deletions(-)
+> >  create mode 100644 include/trace/events/syscalls.h
+> > 
+> > diff --git a/arch/s390/kernel/ptrace.c b/arch/s390/kernel/ptrace.c
+> > index 05f57cd..8730fa7 100644
+> > --- a/arch/s390/kernel/ptrace.c
+> > +++ b/arch/s390/kernel/ptrace.c
+> > @@ -51,6 +51,9 @@
+> >  #include "compat_ptrace.h"
+> >  #endif
+> >  
+> > +#define CREATE_TRACE_POINTS
+> > +#include <trace/events/syscalls.h>
+> > +
+> >  enum s390_regset {
+> >  	REGSET_GENERAL,
+> >  	REGSET_FP,
+> 
+> this will have to be rebased to remove the new s390 DECLARE_TRACE()
+> calls here like x86.
+> 
+> > diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+> > index 692fc14..530ff6f 100644
+> > --- a/arch/x86/kernel/ptrace.c
+> > +++ b/arch/x86/kernel/ptrace.c
+> > @@ -35,13 +35,11 @@
+> >  #include <asm/proto.h>
+> >  #include <asm/ds.h>
+> >  
+> > -#include <trace/syscall.h>
+> > -
+> > -DEFINE_TRACE_WITH_CALLBACK(syscall_enter, syscall_regfunc, syscall_unregfunc);
+> > -DEFINE_TRACE_WITH_CALLBACK(syscall_exit, syscall_regfunc, syscall_unregfunc);
+> > -
+> >  #include "tls.h"
+> >  
+> > +#define CREATE_TRACE_POINTS
+> > +#include <trace/events/syscalls.h>
+> > +
+> >  enum x86_regset {
+> >  	REGSET_GENERAL,
+> >  	REGSET_FP,
+> > diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+> > index 87d06c1..19b49fd 100644
+> > --- a/include/linux/syscalls.h
+> > +++ b/include/linux/syscalls.h
+> > @@ -187,7 +187,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *event_call) \
+> >  	  event_enter_##sname = {					\
+> >  		.name                   = "sys_enter"#sname,		\
+> >  		.system                 = "syscalls",			\
+> > -		.event                  = &event_syscall_enter,		\
+> > +		.event                  = &event_sys_enter,		\
+> >  		.raw_init		= init_enter_##sname,		\
+> >  		.show_format		= ftrace_format_syscall,	\
+> >  		.regfunc		= reg_event_syscall_enter,	\
+> > @@ -223,7 +223,7 @@ static void prof_sysexit_disable_##sname(struct ftrace_event_call *event_call) \
+> >  	  event_exit_##sname = {					\
+> >  		.name                   = "sys_exit"#sname,		\
+> >  		.system                 = "syscalls",			\
+> > -		.event                  = &event_syscall_exit,		\
+> > +		.event                  = &event_sys_exit,		\
+> >  		.raw_init		= init_exit_##sname,		\
+> >  		.regfunc		= reg_event_syscall_exit,	\
+> >  		.unregfunc		= unreg_event_syscall_exit,	\
+> > diff --git a/include/trace/events/syscalls.h b/include/trace/events/syscalls.h
+> > new file mode 100644
+> > index 0000000..75ccc61
+> > --- /dev/null
+> > +++ b/include/trace/events/syscalls.h
+> > @@ -0,0 +1,66 @@
+> > +#undef TRACE_SYSTEM
+> > +#define TRACE_SYSTEM syscalls
+> > +
+> > +#if !defined(_TRACE_EVENTS_SYSCALL_H) || defined(TRACE_HEADER_MULTI_READ)
+> > +#define _TRACE_EVENTS_SYSCALL_H
+> > +
+> > +#include <linux/tracepoint.h>
+> > +
+> > +#include <asm/ptrace.h>
+> > +#include <asm/syscall.h>
+> > +
+> > +extern void syscall_regfunc(void);
+> > +extern void syscall_unregfunc(void);
+> > +
+> > +
+> > +TRACE_EVENT_WITH_CALLBACK(syscall_enter,
+> > +
+> 
+> do we want to call this something like, 'syscall_enter_generic'? to make
+> it more clear this is the high level syscall tracepoint. similar for
+> exit.
 
-Would that preclude it also being registered as a HID? The primary purpose
-of the device is to function as a keypad input.
 
-But, in addition to sending keystroke output you can send a usb control
-message to change the backlight color and an interrupt message to load a
-bitmap as an image.
-
-The bitmap itself is simple, but requires a specific format. Byte 0 must
-be 0x03 followed by 31 bytes of null. The low bit of byte 32 is x,y (0,0)
-second high bit is (0,1)... with low bit of byte 33 being (1,0)...
-
-
+Yeah, that would be indeed less confusing.
 
