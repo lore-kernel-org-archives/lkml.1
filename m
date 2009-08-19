@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751725AbZHSKjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751719AbZHSKnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751725AbZHSKjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 06:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZHSKjl
+	id S1751719AbZHSKnf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 06:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZHSKne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 06:39:41 -0400
-Received: from mail.serverraum.org ([78.47.150.89]:52965 "EHLO
-	mail.serverraum.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbZHSKjl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 06:39:41 -0400
-X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Aug 2009 06:39:41 EDT
-Message-ID: <9e8b01b1556687e0b78ca63dfb5ca8dc.squirrel@ssl.serverraum.org>
-Date: Wed, 19 Aug 2009 12:29:42 +0200 (CEST)
-Subject: dropped packets with bonding and 8021q
-From: "Michael Walle" <michael@walle.cc>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Wed, 19 Aug 2009 06:43:34 -0400
+Received: from waste.org ([173.11.57.241]:34606 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751555AbZHSKnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 06:43:32 -0400
+Subject: Re: [PATCH] netpoll: WARN_ONCE for start_xmit returns with
+ interrupts enabled
+From: Matt Mackall <mpm@selenic.com>
+To: DDD <Dongdong.deng@windriver.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1250678607.17891.26.camel@dengdd-desktop>
+References: <1250678607.17891.26.camel@dengdd-desktop>
+Content-Type: text/plain
+Date: Wed, 19 Aug 2009 05:43:16 -0500
+Message-Id: <1250678596.3937.182.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-08-19 at 18:43 +0800, DDD wrote:
+> The NETPOLL API requires that interrupts remain disabled in
+> netpoll_send_skb().
+> 
+> Add a WARN_ONCE when ndo_start_xmit returns with interrupts enabled
+> in netpoll_send_skb().
+> 
+> Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
+> ---
+>  net/core/netpoll.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+> index df30feb..d38103f 100644
+> --- a/net/core/netpoll.c
+> +++ b/net/core/netpoll.c
+> @@ -319,6 +319,12 @@ static void netpoll_send_skb(struct netpoll *np, struct sk_buff *skb)
+>  
+>  			udelay(USEC_PER_POLL);
+>  		}
+> +
+> +		WARN_ONCE(!irqs_disabled(),
+> +			KERN_WARNING "netpoll_send_skb(): [net driver %s]"
+> +			"ndo_start_xmit() shouldn't return with interrupts"
+> +			"enabled!", dev->name);
 
-Hi,
+Hmm, perhaps:
 
-i have some strange bonding and vlan configuration. The bonding interface
-is in active-standby mode and i want to send and receive raw ethernet
-frames on _both_ enslaved interfaces. Additionally the frames are tagged
-with a vlan id. So one config could be:
+"netpoll_send_skb(): %s enabled interrupts in poll (%pF)\n",
+dev->name, ops->ndo_start_xmit
 
-# modprobe bonding mode=1
-# modprobe 8021q
-# ifenslave bond0 eth1
-# ifenslave bond0 eth2
-# vconfig add eth1 10
-# vconfig add eth2 20
-# vconfig add bond0 1000
+That'll give us a real function name and maybe even a module name.
 
-# [activate bonding active slave etc..]
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-I use raw/dgram sockets (AF_PACKET) with eth1.10 and eth2.20 (or dump the
-frames with tcpdump).
-
-As long as i don't use the bonding module everything works as expected.
-But if the physical interfaces are enslaved, frames received on the
-standby device will be dropped.
-
-The network driver is e1000. So the hardware acceleration for tagged VLAN
-frames gets used and the frame gets through __vlan_hwaccel_rx() in the
-receiving path. And there it seems to get dropped by
-skb_bond_should_drop().
-
-On the "normal" receive path there was a patch by Joe Eykholt that allows
-to receive frames on the physical interface even if it is enslaved and not
-active (git commit 0d7a3681232f545).
-
-Shouldn't __vlan_hwaccel_rx() (in net/8021q/vlan_core.c) be patched in the
-same way to allow reception on inactive enslaved interfaces?
-
-Thanks,
-  Michael
-
-PS. could you please cc me, as i'm not subscribed to the ml.
 
