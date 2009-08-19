@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZHSW24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZHSWeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367AbZHSW24 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 18:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbZHSW2z
+	id S1753380AbZHSWeL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 18:34:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZHSWeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 18:28:55 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40682 "HELO
+	Wed, 19 Aug 2009 18:34:10 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42835 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753312AbZHSW2z (ORCPT
+	with SMTP id S1753344AbZHSWeJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 18:28:55 -0400
-Date: Wed, 19 Aug 2009 18:28:56 -0400 (EDT)
+	Wed, 19 Aug 2009 18:34:09 -0400
+Date: Wed, 19 Aug 2009 18:34:11 -0400 (EDT)
 From: Alan Stern <stern@rowland.harvard.edu>
 X-X-Sender: stern@iolanthe.rowland.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
+cc: linux-pm <linux-pm@lists.linux-foundation.org>,
        linux-acpi <linux-acpi@vger.kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [RFC][PATCH 1/7] PM: Update kerneldoc comments in
- drivers/base/power/main.c
-In-Reply-To: <200908192357.31358.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908191822520.26174-100000@iolanthe.rowland.org>
+       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
+Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
+In-Reply-To: <200908192317.41253.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908191829510.26174-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,80 +30,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
 
-> On Monday 17 August 2009, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM: Update kerneldoc comments in drivers/base/power/main.c
+> On Wednesday 19 August 2009, Alan Stern wrote:
+> > On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
 > > 
-> > The kerneldoc comments in drivers/base/power/main.c are generally
-> > outdated and some of them don't describe the functions very
-> > accurately.  Update them and standardize the format to use spaces
-> > instead of tabs.
+> > > There's a problem that for safety reasons I maintain the ordering of dpm_list
+> > > and the callbacks are scheduled for async execution in the same order in
+> > > which they would have been executed synchronously.  If were to change this,
+> > > we'd have to be _very_ careful.
 > > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > Why?  The order in which jobs are scheduled for async execution doesn't 
+> > bear any particular relation to the order in which they get run.
 > 
-> Any objections to this patch from anyone?  Greg, Alan, Randy?
+> Yes, it does, if all of the async threads are busy and we add more async jobs
+> to the queue.  We must ensure that none of the jobs being executed will wait
+> for any jobs in the queue.
 
-Just some very minor changes.
+That's part of the reason for the dependencies: to make sure that where
+it matters, things don't run in the wrong order.
 
-> >  /**
-> > - *	pm_op - execute the PM operation appropiate for given PM event
-> > - *	@dev:	Device.
-> > - *	@ops:	PM operations to choose from.
-> > - *	@state:	PM transition of the system being carried out.
-> > + * pm_op - Execute the PM operation appropiate for given PM event.
-> > + * @dev: Device to handle.
-> > + * @ops: PM operations to choose from.
-> > + * @state: PM transition of the system being carried out.
-> >   */
+> Also, if any devices are handled synchronously, they must not wait for any
+> "async" devices that haven't been scheduled yet.
 
-Here and in several places below, "appropriate" is missing an "r".
+I'm not sure what you mean.  If a device is handled synchronously, it 
+must wait for all the devices preceding it on the list, regardless of 
+whether those devices are handled asynchronously.
 
-> >  /**
-> > - *	pm_noirq_op - execute the PM operation appropiate for given PM event
-> > - *	@dev:	Device.
-> > - *	@ops:	PM operations to choose from.
-> > - *	@state: PM transition of the system being carried out.
-> > + * pm_noirq_op - Execute the PM operation appropiate for given PM event.
-> > + * @dev: Device to handle.
-> > + * @ops: PM operations to choose from.
-> > + * @state: PM transition of the system being carried out.
-> >   *
-> > - *	The operation is executed with interrupts disabled by the only remaining
-> > - *	functional CPU in the system.
-> > + * The driver of @dev will not receive interrupts while this fuction is being
-> > + * executed.
-> >   */
+> With a master thread that would do all the waiting that wouldn't be a problem
+> any more, but I'm not sure how to implement such a thread efficiently.  The
+> problem is that each device may depend on multiple other devices, so even
+> if one callback finishes, there's no guarantee there will be any device with
+> satisfied dependencies, so it looks like the master thread would have to
+> browse dpm_list continuously searching it for devices that are ready for
+> suspending.
+> 
+> Also I don't think we can change the ordering of dpm_list as a result of
+> asynchronous execution.
 
-Here and in several places below, "function" is missing an "n".
-
-> >  /**
-> > - *	dpm_resume - Resume every device.
-> > - *	@state: PM transition of the system being carried out.
-> > + * dpm_resume - Execute "resume" callbacks for non-sysdev devices.
-> > + * @state: PM transition of the system being carried out.
-> >   *
-> > - *	Execute the appropriate "resume" callback for all devices the status of
-> > - *	which indicates that they are inactive.
-> > + * Execute the appropriate "resume" callback for all devices the status of which
-> > + * indicates that they are suspended.
-> >   */
-
-The phrasing is slightly awkward.  "... all devices whose status
-indicates..." would be better.  Below as well.
-
-> >  /**
-> > - *	dpm_resume_end - Restore state of each device in system.
-> > - *	@state: PM transition of the system being carried out.
-> > + * dpm_resume_end - Execute "resume" callbacks and complete system transition.
-> > + * @state: PM transition of the system being carried out.
-> >   *
-> > - *	Resume all the devices, unlock them all, and allow new
-> > - *	devices to be registered once again.
-> > + * Resume all the devices, unlock them all, and complete the PM transition of
-> > + * the system.
-> >   */
-
-The "unlock them all" part is a fossil.  It should be removed.
+Okay, so I'll try to write something.  We'll see how it comes out.
 
 Alan Stern
 
