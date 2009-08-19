@@ -1,112 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbZHSOxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752429AbZHSOzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752484AbZHSOxB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 10:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZHSOxA
+	id S1752429AbZHSOzq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 10:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZHSOzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 10:53:00 -0400
-Received: from www.tglx.de ([62.245.132.106]:52084 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbZHSOxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 10:53:00 -0400
-Date: Wed, 19 Aug 2009 16:51:57 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "x86@kernel.org" <x86@kernel.org>
-Subject: Re: [PATCH v2 3/10] x86: introduce a set of platform feature flags
-In-Reply-To: <43F901BD926A4E43B106BF17856F0755643EBDF5@orsmsx508.amr.corp.intel.com>
-Message-ID: <alpine.LFD.2.00.0908191641120.3361@localhost.localdomain>
-References: <43F901BD926A4E43B106BF17856F0755643EBDF5@orsmsx508.amr.corp.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 19 Aug 2009 10:55:45 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:38179 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbZHSOzo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 10:55:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=gCfTRq3VvHIxvWdU/1ph4he+9HODUoctAfXCMJz/GD+pWk5wSeuv5BhJ34viN/iW/U
+         CDRimx7FNz39mXUfSeLTvM3v3BY40Nl3wLBTjaTLHdFlIAmcZyAbCmCcWAxK0qGxb+l3
+         AeenVk3HyjhvNJfxJQ5LXRI2u2umST/329l04=
+Date: Wed, 19 Aug 2009 16:55:42 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/5] tracing/syscalls: Add filtering support
+Message-ID: <20090819145540.GB4972@nowhere>
+References: <4A8BAF16.8040504@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8BAF16.8040504@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jacob,
-
-On Thu, 16 Jul 2009, Pan, Jacob jun wrote:
-
-> >From 697d29ca621fffa63bc0bac022861f582d1905a6 Mon Sep 17 00:00:00 2001
-> From: Jacob Pan <jacob.jun.pan@intel.com>
-> Date: Thu, 11 Jun 2009 09:37:26 -0700
-> Subject: [PATCH] x86: introduce a set of platform feature flags
+On Wed, Aug 19, 2009 at 03:51:50PM +0800, Li Zefan wrote:
+> This patchset adds filtering support for syscall events
 > 
-> This patch introduces a set of x86 pc platform feature flags. the intention is
-> to clean up setup code based on the availability of patform features.
+> For syscall enter events, we can do filtering on syscall
+> parameters, and for exit events, filter on syscall return
+> value.
+> 
+> For example, we set 'mode == 0666' (0666 == 0x1b6) to
+> sys_enter_open, and set 'ret == 0' to sys_exit_open,
+> and here's the output:
+> 
+>  # echo 'mode == 0666' > events/syscalls/sys_enter_open
+>  # echo 'ret == 0' > events/syscalls/sys_exit_open
+>  # echo 1 > events/syscalls/sys_enter_open
+>  # echo 1 > events/syscalls/sys_exit_open
+>  # cat trace
+>  ...
+>    modprobe-3084 [001] 117.463140: sys_open(filename: 917d3e8, flags: 0, mode: 1b6) 
+>    modprobe-3084 [001] 117.463176: sys_open -> 0x0
+>        less-3086 [001] 117.510455: sys_open(filename: 9c6bdb8, flags: 8000, mode: 1b6) 
+>    sendmail-2574 [001] 122.145840: sys_open(filename: b807a365, flags: 0, mode: 1b6) 
+>  ...
 
-Hmm, if it would be used to cleanup the setup code, fine. But as I can
-see in the later patches it just adds lots of conditionals based on
-that feature flags.
- 
-> +#ifndef _ASM_X86_PLATFORM_FEATURE_H
-> +#define _ASM_X86_PLATFORM_FEATURE_H
-> +
-> +#ifndef __ASSEMBLY__
-> +#include <linux/bitops.h>
-> +#endif
-> +#include <asm/required-features.h>
 
-Why does this header require asm/required-features.h ?
 
-> diff --git a/arch/x86/kernel/mkx86pcflags.pl b/arch/x86/kernel/mkx86pcflags.pl
-> new file mode 100644
-> index 0000000..19c13aa
-> --- /dev/null
-> +++ b/arch/x86/kernel/mkx86pcflags.pl
-> @@ -0,0 +1,32 @@
-> +#!/usr/bin/perl
-> +#
-> +# Generate the x86_platform_available_feature[] array from arch/x86/include/asm/platform_feature.h
+Nice! Thanks!
 
-  What's the purpose of this ? Creating an array of strings ?
 
-> +static ssize_t
-> +sysfs_show_available_platform_feature(struct sys_device *dev,
-> +				struct sysdev_attribute *attr, char *buf)
-> +{
-> +	ssize_t count = 0;
-> +	int i;
-> +
-> +	for (i = 0; i < 32*N_PLATFORM_CAPINTS; i++) {
-> +		if (x86_platform_available_feature[i] != NULL) {
-> +			count += snprintf(buf + count,
-> +					max((ssize_t)PAGE_SIZE - count,
-> +						(ssize_t)0), "%s ",
-> +				x86_platform_available_feature[i]);
-> +		}
-> +	}
+> 
+> [PATCH 1/5] tracing/syscalls: Fix fields format for enter events
+> [PATCH 2/5] tracing/syscalls: Add fields format for exit events
+> [PATCH 3/5] tracing/events: Add ftrace_event_call param to define_fields()
+> [PATCH 4/5] tracing/events: Add trace_define_common_fields()
+> [PATCH 5/5] tracing/syscalls: Add filtering support
+> ---
+>  include/linux/ftrace_event.h  |   15 ++----
+>  include/linux/syscalls.h      |   19 +++++--
+>  include/trace/ftrace.h        |   11 ++---
+>  include/trace/syscall.h       |   13 ++++-
+>  kernel/trace/trace_events.c   |   29 +++++++++-
+>  kernel/trace/trace_export.c   |   13 ++---
+>  kernel/trace/trace_syscalls.c |  120 +++++++++++++++++++++++++++++++----------
+>  7 files changed, 156 insertions(+), 64 deletions(-)
 
-Is this really worth an extra sysfs machinery ?  IMO it's sufficient
-to printk the hex value of the set feature bits once during boot.
-
-> +/*
-> + * Initialize a set of default feature flags based on subarch IDs
-> + * Currently, only MRST platform has non-X86 PC standard feature set.
-> + */
-> +void platform_feature_init_default(void)
-> +{
-> +	int subarch_id = boot_params.hdr.hardware_subarch;
-> +
-> +	if ((subarch_id >= 0) && (subarch_id < N_X86_SUBARCHS)) {
-> +		if (subarch_id == X86_SUBARCH_MRST) {
-> +			setup_mrst_default_feature();
-> +			return;
-> +		}
-> +	} else {
-> +		printk(KERN_INFO "Use default X86 platform feature set\n");
-> +	}
-> +	/* platforms such as Moorestown and paravirt should be filtered out */
-> +	if (platform_has(X86_PLATFORM_FEATURE_BIOS))
-> +		x86_quirks->reserve_ebda_region = reserve_ebda_region;
-
-I don't like that at all. We do not want tons of places where we init
-parts of the setup depending on different platforms. platform setup
-has to be done in a platform file and there we override quirks or
-platform functions. Not on some random place.
-
-Thanks,
-
-	tglx
