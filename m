@@ -1,178 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbZHSFkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751246AbZHSFsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751386AbZHSFkh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 01:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZHSFkf
+	id S1751246AbZHSFsM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 01:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZHSFsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 01:40:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53154 "EHLO mx2.redhat.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750753AbZHSFkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 01:40:33 -0400
-Message-ID: <4A8B9051.3020505@redhat.com>
-Date: Wed, 19 Aug 2009 08:40:33 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 19 Aug 2009 01:48:11 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:12309 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbZHSFsK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 01:48:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fYE2DbFPtvAQPpJJcKljiawenoXPWQcoKxX12oIs9jaiLzbd6eFc8p4z4Zap7nYD5a
+         S9F2NnlqFxyzPcsBWrL18myWu5EBPd/GJDt5q+ju5zVa2FwCcYOeIDsBbDHrUCz6QU3L
+         mJRA5IHk0WXGuL+12+4pNIEE6norf880HGVs4=
 MIME-Version: 1.0
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
- model for vbus_driver objects
-References: <4A89BAC5.9040400@gmail.com> <20090818084606.GA13878@redhat.com> <20090818155329.GD31060@ovro.caltech.edu> <4A8ADC09.3030205@redhat.com> <20090818172752.GC17631@ovro.caltech.edu> <4A8AE918.5000109@redhat.com> <20090818182735.GD17631@ovro.caltech.edu> <4A8AF880.6080704@redhat.com> <20090818205919.GA1168@ovro.caltech.edu> <4A8B1C7F.4060008@redhat.com> <20090819003812.GA11168@ovro.caltech.edu>
-In-Reply-To: <20090819003812.GA11168@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com>
+References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org>
+	 <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com>
+Date: Wed, 19 Aug 2009 17:48:11 +1200
+Message-ID: <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com>
+Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
+From: Alexey Korolev <akorolex@gmail.com>
+To: Eric Munson <linux-mm@mgebm.net>
+Cc: Alexey Korolev <akorolev@infradead.org>, Mel Gorman <mel@csn.ul.ie>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/19/2009 03:38 AM, Ira W. Snyder wrote:
-> On Wed, Aug 19, 2009 at 12:26:23AM +0300, Avi Kivity wrote:
->    
->> On 08/18/2009 11:59 PM, Ira W. Snyder wrote:
->>      
->>> On a non shared-memory system (where the guest's RAM is not just a chunk
->>> of userspace RAM in the host system), virtio's management model seems to
->>> fall apart. Feature negotiation doesn't work as one would expect.
->>>
->>>        
->> In your case, virtio-net on the main board accesses PCI config space
->> registers to perform the feature negotiation; software on your PCI cards
->> needs to trap these config space accesses and respond to them according
->> to virtio ABI.
->>
->>      
-> Is this "real PCI" (physical hardware) or "fake PCI" (software PCI
-> emulation) that you are describing?
+Hi,
 >
->    
-
-Real PCI.
-
-> The host (x86, PCI master) must use "real PCI" to actually configure the
-> boards, enable bus mastering, etc. Just like any other PCI device, such
-> as a network card.
+> It sounds like this patch set working towards the same goal as my
+> MAP_HUGETLB set.  The only difference I see is you allocate huge page
+> at a time and (if I am understanding the patch) fault the page in
+> immediately, where MAP_HUGETLB only faults pages as needed.  Does the
+> MAP_HUGETLB patch set provide the functionality that you need, and if
+> not, what can be done to provide what you need?
 >
-> On the guests (ppc, PCI agents) I cannot add/change PCI functions (the
-> last .[0-9] in the PCI address) nor can I change PCI BAR's once the
-> board has started. I'm pretty sure that would violate the PCI spec,
-> since the PCI master would need to re-scan the bus, and re-assign
-> addresses, which is a task for the BIOS.
->    
-
-Yes.  Can the boards respond to PCI config space cycles coming from the 
-host, or is the config space implemented in silicon and immutable?  
-(reading on, I see the answer is no).  virtio-pci uses the PCI config 
-space to configure the hardware.
-
->> (There's no real guest on your setup, right?  just a kernel running on
->> and x86 system and other kernels running on the PCI cards?)
->>
->>      
-> Yes, the x86 (PCI master) runs Linux (booted via PXELinux). The ppc's
-> (PCI agents) also run Linux (booted via U-Boot). They are independent
-> Linux systems, with a physical PCI interconnect.
+> Eric
 >
-> The x86 has CONFIG_PCI=y, however the ppc's have CONFIG_PCI=n. Linux's
-> PCI stack does bad things as a PCI agent. It always assumes it is a PCI
-> master.
->
-> It is possible for me to enable CONFIG_PCI=y on the ppc's by removing
-> the PCI bus from their list of devices provided by OpenFirmware. They
-> can not access PCI via normal methods. PCI drivers cannot work on the
-> ppc's, because Linux assumes it is a PCI master.
->
-> To the best of my knowledge, I cannot trap configuration space accesses
-> on the PCI agents. I haven't needed that for anything I've done thus
-> far.
->
->    
+Thanks a lot for willing to help. I'll be much appreciate if you have
+an interesting idea how HTLB mapping for drivers can be done.
 
-Well, if you can't do that, you can't use virtio-pci on the host.  
-You'll need another virtio transport (equivalent to "fake pci" you 
-mentioned above).
+It is better to describe use case in order to make it clear what needs
+to be done.
+Driver provides mapping of device DMA buffers to user level
+applications. User level applications process the data.
+Device is using a master DMA to send data to the user buffer, buffer
+size can be >1GB and performance is very important. (So huge pages
+mapping really makes sense.)
 
->>> This does appear to be solved by vbus, though I haven't written a
->>> vbus-over-PCI implementation, so I cannot be completely sure.
->>>
->>>        
->> Even if virtio-pci doesn't work out for some reason (though it should),
->> you can write your own virtio transport and implement its config space
->> however you like.
->>
->>      
-> This is what I did with virtio-over-PCI. The way virtio-net negotiates
-> features makes this work non-intuitively.
->    
+In addition we have to mention that:
+1. It is hard for user to tell how much huge pages needs to be
+reserved by the driver.
+2. Devices add constrains on memory regions. For example it needs to
+be contiguous with in the physical address space. It is necessary to
+have ability to specify special gfp flags.
+3 The HW needs to access physical memory before the user level
+software can access it. (Hugetlbfs picks up pages on page fault from
+pool).
+It means memory allocation needs to be driven by device driver.
 
-I think you tried to take two virtio-nets and make them talk together?  
-That won't work.  You need the code from qemu to talk to virtio-net 
-config space, and vhost-net to pump the rings.
+Original idea was: create hugetlbfs file which has common mapping with
+device file. Allocate memory. Populate page cache of hugetlbfs file
+with allocated pages.
+When fault occurs, page will be taken from page cache and then
+remapped to user space by hugetlbfs.
 
->>> I'm not at all clear on how to get feature negotiation to work on a
->>> system like mine. From my study of lguest and kvm (see below) it looks
->>> like userspace will need to be involved, via a miscdevice.
->>>
->>>        
->> I don't see why.  Is the kernel on the PCI cards in full control of all
->> accesses?
->>
->>      
-> I'm not sure what you mean by this. Could you be more specific? This is
-> a normal, unmodified vanilla Linux kernel running on the PCI agents.
->    
-
-I meant, does board software implement the config space accesses issued 
-from the host, and it seems the answer is no.
+Another possible approach is described here:
+http://marc.info/?l=linux-mm&m=125065257431410&w=2
+But currently not sure  will it work or not.
 
 
-> In my virtio-over-PCI patch, I hooked two virtio-net's together. I wrote
-> an algorithm to pair the tx/rx queues together. Since virtio-net
-> pre-fills its rx queues with buffers, I was able to use the DMA engine
-> to copy from the tx queue into the pre-allocated memory in the rx queue.
->
->    
-
-Please find a name other than virtio-over-PCI since it conflicts with 
-virtio-pci.  You're tunnelling virtio config cycles (which are usually 
-done on pci config cycles) on a new protocol which is itself tunnelled 
-over PCI shared memory.
-
->>>
->>>        
->> Yeah.  You'll need to add byteswaps.
->>
->>      
-> I wonder if Rusty would accept a new feature:
-> VIRTIO_F_NET_LITTLE_ENDIAN, which would allow the virtio-net driver to
-> use LE for all of it's multi-byte fields.
->
-> I don't think the transport should have to care about the endianness.
->    
-
-Given this is not mainstream use, it would have to have zero impact when 
-configured out.
-
-> True. It's slowpath setup, so I don't care how fast it is. For reasons
-> outside my control, the x86 (PCI master) is running a RHEL5 system. This
-> means glibc-2.5, which doesn't have eventfd support, AFAIK. I could try
-> and push for an upgrade. This obviously makes cat/echo really nice, it
-> doesn't depend on glibc, only the kernel version.
->
-> I don't give much weight to the above, because I can use the eventfd
-> syscalls directly, without glibc support. It is just more painful.
->    
-
-The x86 side only needs to run virtio-net, which is present in RHEL 
-5.3.  You'd only need to run virtio-tunnel or however it's called.  All 
-the eventfd magic takes place on the PCI agents.
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Thanks,
+Alexey
