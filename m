@@ -1,140 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZHSX7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbZHTAIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbZHSX7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 19:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZHSX7U
+	id S1753574AbZHTAIo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 20:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZHTAIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 19:59:20 -0400
-Received: from smtp108.prem.mail.sp1.yahoo.com ([98.136.44.63]:35824 "HELO
-	smtp108.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753414AbZHSX7T (ORCPT
+	Wed, 19 Aug 2009 20:08:43 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:44809 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752243AbZHTAIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 19:59:19 -0400
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: K7WZVJUVM1lxLC_bIdcw942m5Mx5FRQqhGoSujt9DcSHzz0AwpxSKu.E_G4ovesk2WSgOr2uvdeeyeRzXYUz.mYQPC2CGN2u9QzUw9jaIN2ueTO9tvB4TE81zEM4jqyPBGP3THYcPONfzHq1UVDk75azIBLhurXVetc.HZYFmejrq84YFkAKho0TiHGgThR5pTU3NgfzP3DvaXboI13huoHSt5D1sWJYUMKDPAwaVndWUl6PVktKX0XLw.K51Z_5TpAjgwj_KrDP2hXu3AgZmg1hnlqkg9hq4UMU
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4A8C91D4.3070308@schaufler-ca.com>
-Date: Wed, 19 Aug 2009 16:59:16 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Stephen Smalley <sds@tycho.nsa.gov>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
-       gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH] Security/sysfs: v2 - Enable security xattrs to be set
- on sysfs files, directories, and symlinks.
-References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>	 <4A84EF1D.8060408@schaufler-ca.com> <m1my62xde6.fsf@fess.ebiederm.org>	 <4A861291.1030404@schaufler-ca.com> <m1tz09j00q.fsf@fess.ebiederm.org>	 <4A864008.50907@schaufler-ca.com> <m1my61sjie.fsf@fess.ebiederm.org>	 <4A8A2616.8020809@schaufler-ca.com>	 <1250597660.3629.204.camel@moss-pluto.epoch.ncsc.mil>	 <4A8AB6B0.8010800@schaufler-ca.com>	 <1250605386.3629.236.camel@moss-pluto.epoch.ncsc.mil>	 <4A8B81A0.6070206@schaufler-ca.com> <1250683089.3629.268.camel@moss-pluto.epoch.ncsc.mil>
-In-Reply-To: <1250683089.3629.268.camel@moss-pluto.epoch.ncsc.mil>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 19 Aug 2009 20:08:42 -0400
+X-Greylist: delayed 1202 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Aug 2009 20:08:40 EDT
+Subject: Re: [Alacrityvm-devel] configfs/sysfs
+From: Alex Tsariounov <alext@novell.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       alacrityvm-devel@lists.sourceforge.net,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090819221654.GA29503@mail.oracle.com>
+References: <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu>
+	 <4A89B08A.4010103@gmail.com> <4A8A674E.8070200@redhat.com>
+	 <4A8ABEC9.6090006@gmail.com> <4A8AD678.7050609@redhat.com>
+	 <4A8B9B79.9050004@gmail.com> <4A8BA5AE.3030308@redhat.com>
+	 <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
+	 <4A8C5CBB.10605@redhat.com>  <20090819221654.GA29503@mail.oracle.com>
+Content-Type: text/plain
+Date: Wed, 19 Aug 2009 17:48:17 -0600
+Message-Id: <1250725697.6047.27.camel@zuul.thistledown>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Smalley wrote:
-> On Tue, 2009-08-18 at 21:37 -0700, Casey Schaufler wrote:
->   
->> Stephen Smalley wrote:
->>     
->>> On Tue, 2009-08-18 at 07:12 -0700, Casey Schaufler wrote:
->>>   
->>>       
->>>> Stephen Smalley wrote:
->>>>     
->>>>         
->>>>> On Mon, 2009-08-17 at 20:55 -0700, Casey Schaufler wrote:
->>>>>   
->>>>>       
->>>>>           
->>>>>> From: Casey Schaufler <casey@schaufler-ca.com>
->>>>>>
->>>>>> Another approach to limited xattr support in sysfs.
->>>>>>
->>>>>> I tried to listen to the objections to a linked list representation
->>>>>> and I think that I understand that there isn't really any interest
->>>>>> in supporting xattrs for real, only for those maintained by LSMs.
->>>>>> I also looked carefully into the claims that memory usage is
->>>>>> critical and that the code I had before was duplicating effort.
->>>>>>
->>>>>> This version lets the surrounding code do as much of the work as
->>>>>> possible. Unlike the initial proposal for sysfs xattrs, it does not
->>>>>> introduce any new LSM hooks, it uses hooks that already exist. It
->>>>>> does not support any attributes on its own, it only provides for
->>>>>> the attribute advertised by security_inode_listsecurity(). It could
->>>>>> easily be used by other filesystems to provide the same LSM xattr
->>>>>> support. It could also be extended to do the list based support for
->>>>>> arbitrary xattrs without too much effort.
->>>>>>
->>>>>> Probably the oddest bit is that the inode_getsecurity hooks need to
->>>>>> check to see if they are getting called before the inode is instantiated
->>>>>> and return -ENODATA in that event. It would be possible to do a
->>>>>> filesystem specific check instead, but this way provides for generally
->>>>>> correct behavior at small cost.
->>>>>>
->>>>>> This has been tested with Smack, but not SELinux. I think that
->>>>>> SELinux will work correctly, but it could be that a labeling
->>>>>> behavior that is different than the "usual" instantiation labeling
->>>>>> is actually desired. That would be an easy change.
->>>>>>
->>>>>> As always, let me know if I missed something obvious or if there's a
->>>>>> fatal flaw in the scheme.
->>>>>>     
->>>>>>         
->>>>>>             
->>>>> The point of the David's patch was to provide a way to save the security
->>>>> xattr in the backing data structure for sysfs entries when an attribute
->>>>> value is set from userspace so that the value can be preserved if the
->>>>> inode is evicted from memory and later re-instantiated.  AFAICS, your
->>>>> patch completely misses the problem.  How about we just go back to
->>>>> David's patch?
->>>>>   
->>>>>       
->>>>>           
->>>> Oh no, that would use too much memory!
->>>>
->>>> Either you care about the value the user set, in which case you
->>>> want to save the value the user set, or you don't. If you do, you
->>>> have to save that value, not an LSM's interpretation of that value.
->>>> No secids. No new hooks.
->>>>     
->>>>         
->>> As the security module is the only component of the kernel that
->>> uses/interprets that value, it isn't unreasonable for the security
->>> module's interpretation of that value to be considered canonical.  In
->>> fact, that is already the case - the hooks within vfs_getxattr() enable
->>> the security module to override/replace the actual security xattr value
->>> returned to userspace.
->>>
->>> In the case of Smack, Smack could just provide a pointer to its own
->>> internal copy of the string, and that could be stored in the wrapped
->>> iattr.  In the case of SELinux, we could provide a secid that could be
->>> stored in the wrapped iattr.  The hook interface could just handle it as
->>> a blob if you prefer.  But either way we don't need extra storage aside
->>> from a pointer-size field in the wrapped iattr.
->>>   
->>>       
->> So how often is the SELinux label going to get explicitly set in /sys ?
->> I'm grappling with the value of going hog-wild in optimizing this. If
->> it is something that's quite rare I can see the concern with expanding
->> the d_entry. If it is common, the storage associated with storing the
->> xattr could be an issue. If it is uncommon but not rare there's another
->> story again.
->>
->> I'm looking at addressing the issues. Thank you.
->>     
->
-> I'd expect most sysfs nodes to be left in the default label, although we
-> don't really know as this would be the first time that people have the
-> option of finer-grained control to sysfs.
->
->   
+On Wed, 2009-08-19 at 15:16 -0700, Joel Becker wrote:
+> On Wed, Aug 19, 2009 at 11:12:43PM +0300, Avi Kivity wrote:
+> > On 08/19/2009 09:23 PM, Nicholas A. Bellinger wrote:
+> > >Anyways, I was wondering if you might be interesting in sharing your
+> > >concerns wrt to configfs (conigfs maintainer CC'ed), at some point..?
+> > 
+> > My concerns aren't specifically with configfs, but with all the text
+> > based pseudo filesystems that the kernel exposes.
+> 
+> 	Phew!  It's not just me :-)
 
-So I still don't like the way it exposes LSM internal data to the
-file system code, but given how long it's taking for me to create
-a better solution I don't think that I can in all fairness say NAK
-to David Quigley's sysfs patch any longer. I withdraw my objection,
-while maintaining my reservations.
+The points on *fs vs. ioctl are interesting.  I think both have their
+benefits and both have the downfalls, for example efficiency vs. ease of
+(human) use. I suppose it comes down to whether you're in the fast path
+or not for the most part.  However, just because and interface is not as
+efficient as it can be does not necessarily mean that it's not a good
+one.
+
+As as an example, many moons ago, I worked on implementing some serial
+comms between an embedded speed controller and its command console.
+Being young and efficiency starved ;) I disregarded our other
+controllers which implemented these serial comms with ASCII strings, and
+used binary blobs instead.  I indeed got some respectable performance
+out of doing this, even to the effect of creating a "real time" status
+monitor that updated multiple times a second via the hand-held terminal.
+
+However, I totally missed the point of intentionally doing things
+"inefficiently."  For example, our serial debugging setup consisted of
+two VT100 terminals wired up with a custom serial cable that went
+between two communicating units.  Each term would show what each end was
+saying.  Kinda crude, but effective.  Of course with my new and improved
+controller that "spoke the binary language of moisture evaporators,"
+well, all one saw was garbage.  :)
+
+Additionally, someone debugging the controllers could just use a term to
+talk to it if it used simple ASCII commands and take terminals, hosts
+and other software out of the picture, but for my controller, well, you
+could only use the custom programmed hand-held term.
+
+I ended up supporting both ASCII and binary communications on the
+controller for these (and other) reasons.  However, in the end, I
+ditched the binary comms since they really didn't add the efficiency in
+the fast path where it should be added.  (Well, I also ran out of eprom
+space... :)
+
+In any case, having a humanly understandable communications protocol (or
+ABI) can be extremely useful, and just because it's not efficient
+doesn't automatically mean that it's a bad thing, especially if it's in
+the slow path.  It does have it's down sides as mentioned in this
+thread, so we really need both types.  Because of that, the fuse layer
+on top of a binary ABI is an interesting idea.
+
+Alex
 
