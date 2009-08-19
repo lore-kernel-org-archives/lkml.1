@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbZHSClf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751816AbZHSCni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751889AbZHSClf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Aug 2009 22:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZHSCle
+	id S1751816AbZHSCni (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Aug 2009 22:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZHSCnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Aug 2009 22:41:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50685 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751587AbZHSCle (ORCPT
+	Tue, 18 Aug 2009 22:43:37 -0400
+Received: from mail-px0-f196.google.com ([209.85.216.196]:52855 "EHLO
+	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751034AbZHSCng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Aug 2009 22:41:34 -0400
-Date: Tue, 18 Aug 2009 19:40:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Kumar Gala <galak@kernel.crashing.org>
-cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, linuxppc-dev@ozlabs.org,
-       peterz@infradead.org
-Subject: Re: [PATCH] spinlock: __raw_spin_is_locked() should return true for
- UP
-In-Reply-To: <BB2762BC-C760-4D4C-BDCF-76EFD3E1B18D@kernel.crashing.org>
-Message-ID: <alpine.LFD.2.01.0908181937400.3158@localhost.localdomain>
-References: <1250635343-32546-1-git-send-email-galak@kernel.crashing.org> <alpine.LFD.2.01.0908181618420.3158@localhost.localdomain> <alpine.DEB.2.00.0908181931180.28398@gandalf.stny.rr.com> <alpine.LFD.2.01.0908181640120.3158@localhost.localdomain>
- <alpine.DEB.2.00.0908182003430.18648@gandalf.stny.rr.com> <BB2762BC-C760-4D4C-BDCF-76EFD3E1B18D@kernel.crashing.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 18 Aug 2009 22:43:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=lyED2pl8QPJBqPsKEE1qLqZWDWGCN0lh+mHDKBkCp5YzaVbkjr55E1o2ft6taTXYQM
+         ew0HnrbE6MRpxv38+wvxGM5iQmNH6f9yd3THOPeQLuy00/1tKImtmojRnz0BPmG8cOYC
+         hKNoLgQtP3mN8yhnwaMYeW7timFltQtnynVnM=
+Message-ID: <4A8B64DE.6000506@gmail.com>
+Date: Wed, 19 Aug 2009 10:35:10 +0800
+From: Eric Miao <eric.y.miao@gmail.com>
+Reply-To: eric.y.miao@gmail.com
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <greg@kroah.com>
+CC: Eric Miao <eric.y.miao@gmail.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Aric D. Blumer" <aric@sdgsystems.com>,
+       Mike Rapoport <mike@compulab.co.il>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: linux-next: usb/pxa trees build failure
+References: <20090818135852.0b3b648d.sfr@canb.auug.org.au> <20090818114242.GA28534@kroah.com> <4A8AB525.7050404@gmail.com> <20090818145800.GB6074@kroah.com>
+In-Reply-To: <20090818145800.GB6074@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 18 Aug 2009, Kumar Gala wrote:
+Greg KH wrote:
+> On Tue, Aug 18, 2009 at 10:05:25PM +0800, Eric Miao wrote:
+>> Greg KH wrote:
+>>> On Tue, Aug 18, 2009 at 01:58:52PM +1000, Stephen Rothwell wrote:
+>>>> Hi Eric, Greg,
+>>>>
+>>>> The next-20090817 (and a few before) build (arm trizeps4_defconfig)
+>>>> failed like this:
+>>>>
+>>>> drivers/usb/host/ohci-pxa27x.c:507: error: 'pdev' undeclared (first use in this function)
+>>>>
+>>>> Caused by the interaction of commit
+>>>> 6458baec17e19d38b9d4eb1f96c213f91609c0e3 ("USB: ohci-pxa27x: Reconfigure
+>>>> power settings on resume") from the usb tree with commit
+>>>> b8fb7d4317bcea1b48c9560d23dff81121870ece ("[ARM] pxa: update
+>>>> ohci-pxa27x.c to use 'struct dev_pm_ops'"). from the pxa tree.
+>>>>
+>>>> Greg/Aric, maybe that usb tree patch needs to go through the pxa tree?
+>>>> (and maybe "USB: ohci-pxa27x: Allow NOCP and OCPM to be cleared" as well?)
+>>>>
+>>>> [this also broke the following configs: magician_defconfig,
+>>>> em_x270_defconfig and cm_x2xx_defconfig.]
+>>> Ick, not good.  Aric, should I drop this patch from my tree?
+>>>
+>> I think so, might be better to go through the pxa tree so that I can give
+>> another review. (the fiber across the pacific seems to be broken again, so
+>> I have to look into this tomorrow, still fetching -next, sigh).
 > 
-> I agree its a little too easy to abuse spin_is_locked.  However we should be
-> consistent between spin_is_locked on UP between with and without
-> CONFIG_DEBUG_SPINLOCK enabled.
+> Ok, let me know if you want me to drop these patches from my tree.
+> 
 
-No we shouldn't.
+OK, so the problem is 'pdev' is no longer part of the dev_pm_ops, ('dev' is used
+instead), and the 'inf' pointer can just be referenced from 'dev->platform_data',
+so the fix is actually trivial, but it does have dependency issue.
 
-With CONFIG_DEBUG_SPINLOCK, you have an actual lock variable for debugging 
-purposes, so spin_is_locked() can clearly return a _valid_ answer, and 
-should do so.
+Greg,
 
-Without DEBUG_SPINLOCK, there isn't any answer to return.
-
-So there's no way we can or should be consistent. In one case an answer 
-exists, in another one the answer is meaningless and doesn't exist.
-
-> How much of this do we want to try and address in .31?
-
-Absolutely nothing.
-
-> The PPC test really should be using assert_spin_locked and I'll send a patch
-> to Ben for that.
-
-Yes, that's the correct fix.
-
-		Linus
+It looks to me would be better if this goes the pxa tree, and I'll send out the
+updated patch of 6458baec later.
