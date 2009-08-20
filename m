@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZHTNuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZHTNu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbZHTNuu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbZHTNut
+	id S1754769AbZHTNu7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 09:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbZHTNu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:50:49 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:42796 "EHLO comal.ext.ti.com"
+	Thu, 20 Aug 2009 09:50:56 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:42804 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754726AbZHTNuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:50:44 -0400
+	id S1754746AbZHTNuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 09:50:52 -0400
 From: Anuj Aggarwal <anuj.aggarwal@ti.com>
 To: broonie@sirena.org.uk, lrg@slimlogic.co.uk, linux-omap@vger.kernel.org,
        linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, tony@atomide.com,
        linux-i2c@vger.kernel.org
 Cc: Anuj Aggarwal <anuj.aggarwal@ti.com>
-Subject: [PATCHv2 1/3] Regulator: Add TPS65023 regulator driver
-Date: Thu, 20 Aug 2009 19:20:17 +0530
-Message-Id: <1250776217-7513-1-git-send-email-anuj.aggarwal@ti.com>
+Subject: [PATCHv2 2/3] Regulator: Add TPS6507x regulator driver
+Date: Thu, 20 Aug 2009 19:20:30 +0530
+Message-Id: <1250776230-18245-1-git-send-email-anuj.aggarwal@ti.com>
 X-Mailer: git-send-email 1.6.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding support for TI TPS65023 regulator driver
+Adding support for TI TPS6507x regulator driver
 ---
- drivers/regulator/tps65023-regulator.c |  631 ++++++++++++++++++++++++++++++++
- 1 files changed, 631 insertions(+), 0 deletions(-)
- create mode 100644 drivers/regulator/tps65023-regulator.c
+ drivers/regulator/tps6507x-regulator.c |  713 ++++++++++++++++++++++++++++++++
+ 1 files changed, 713 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/tps6507x-regulator.c
 
-diff --git a/drivers/regulator/tps65023-regulator.c b/drivers/regulator/tps65023-regulator.c
+diff --git a/drivers/regulator/tps6507x-regulator.c b/drivers/regulator/tps6507x-regulator.c
 new file mode 100644
-index 0000000..1e54f46
+index 0000000..6d7a815
 --- /dev/null
-+++ b/drivers/regulator/tps65023-regulator.c
-@@ -0,0 +1,631 @@
++++ b/drivers/regulator/tps6507x-regulator.c
+@@ -0,0 +1,713 @@
 +/*
-+ * tps65023-regulator.c
++ * tps6507x-regulator.c
 + *
-+ * Supports TPS65023 Regulator
++ * Regulator driver for TPS65073 PMIC
 + *
 + * Copyright (C) 2009 Texas Instrument Incorporated - http://www.ti.com/
 + *
@@ -62,124 +62,166 @@ index 0000000..1e54f46
 +#include <linux/delay.h>
 +
 +/* Register definitions */
-+#define	TPS65023_REG_VERSION		0
-+#define	TPS65023_REG_PGOODZ		1
-+#define	TPS65023_REG_MASK		2
-+#define	TPS65023_REG_REG_CTRL		3
-+#define	TPS65023_REG_CON_CTRL		4
-+#define	TPS65023_REG_CON_CTRL2		5
-+#define	TPS65023_REG_DEF_CORE		6
-+#define	TPS65023_REG_DEFSLEW		7
-+#define	TPS65023_REG_LDO_CTRL		8
++#define	TPS6507X_REG_PPATH1				0X01
++#define	TPS6507X_REG_INT				0X02
++#define	TPS6507X_REG_CHGCONFIG0				0X03
++#define	TPS6507X_REG_CHGCONFIG1				0X04
++#define	TPS6507X_REG_CHGCONFIG2				0X05
++#define	TPS6507X_REG_CHGCONFIG3				0X06
++#define	TPS6507X_REG_REG_ADCONFIG			0X07
++#define	TPS6507X_REG_TSCMODE				0X08
++#define	TPS6507X_REG_ADRESULT_1				0X09
++#define	TPS6507X_REG_ADRESULT_2				0X0A
++#define	TPS6507X_REG_PGOOD				0X0B
++#define	TPS6507X_REG_PGOODMASK				0X0C
++#define	TPS6507X_REG_CON_CTRL1				0X0D
++#define	TPS6507X_REG_CON_CTRL2				0X0E
++#define	TPS6507X_REG_CON_CTRL3				0X0F
++#define	TPS6507X_REG_DEFDCDC1				0X10
++#define	TPS6507X_REG_DEFDCDC2_LOW			0X11
++#define	TPS6507X_REG_DEFDCDC2_HIGH			0X12
++#define	TPS6507X_REG_DEFDCDC3_LOW			0X13
++#define	TPS6507X_REG_DEFDCDC3_HIGH			0X14
++#define	TPS6507X_REG_DEFSLEW				0X15
++#define	TPS6507X_REG_LDO_CTRL1				0X16
++#define	TPS6507X_REG_DEFLDO2				0X17
++#define	TPS6507X_REG_WLED_CTRL1				0X18
++#define	TPS6507X_REG_WLED_CTRL2				0X19
 +
-+/* PGOODZ bitfields */
-+#define	TPS65023_PGOODZ_PWRFAILZ	BIT(7)
-+#define	TPS65023_PGOODZ_LOWBATTZ	BIT(6)
-+#define	TPS65023_PGOODZ_VDCDC1		BIT(5)
-+#define	TPS65023_PGOODZ_VDCDC2		BIT(4)
-+#define	TPS65023_PGOODZ_VDCDC3		BIT(3)
-+#define	TPS65023_PGOODZ_LDO2		BIT(2)
-+#define	TPS65023_PGOODZ_LDO1		BIT(1)
++/* CON_CTRL1 bitfields */
++#define	TPS6507X_CON_CTRL1_DCDC1_ENABLE		BIT(4)
++#define	TPS6507X_CON_CTRL1_DCDC2_ENABLE		BIT(3)
++#define	TPS6507X_CON_CTRL1_DCDC3_ENABLE		BIT(2)
++#define	TPS6507X_CON_CTRL1_LDO1_ENABLE		BIT(1)
++#define	TPS6507X_CON_CTRL1_LDO2_ENABLE		BIT(0)
 +
-+/* MASK bitfields */
-+#define	TPS65023_MASK_PWRFAILZ		BIT(7)
-+#define	TPS65023_MASK_LOWBATTZ		BIT(6)
-+#define	TPS65023_MASK_VDCDC1		BIT(5)
-+#define	TPS65023_MASK_VDCDC2		BIT(4)
-+#define	TPS65023_MASK_VDCDC3		BIT(3)
-+#define	TPS65023_MASK_LDO2		BIT(2)
-+#define	TPS65023_MASK_LDO1		BIT(1)
++/* DEFDCDC1 bitfields */
++#define TPS6507X_DEFDCDC1_DCDC1_EXT_ADJ_EN	BIT(7)
++#define TPS6507X_DEFDCDC1_DCDC1_MASK		0X3F
 +
-+/* REG_CTRL bitfields */
-+#define TPS65023_REG_CTRL_VDCDC1_EN	BIT(5)
-+#define TPS65023_REG_CTRL_VDCDC2_EN	BIT(4)
-+#define TPS65023_REG_CTRL_VDCDC3_EN	BIT(3)
-+#define TPS65023_REG_CTRL_LDO2_EN	BIT(2)
-+#define TPS65023_REG_CTRL_LDO1_EN	BIT(1)
++/* DEFDCDC2_LOW bitfields */
++#define TPS6507X_DEFDCDC2_LOW_DCDC2_MASK	0X3F
 +
-+/* LDO_CTRL bitfields */
-+#define TPS65023_LDO_CTRL_LDOx_SHIFT(ldo_id)	((ldo_id)*4)
-+#define TPS65023_LDO_CTRL_LDOx_MASK(ldo_id)	(0xF0 >> ((ldo_id)*4))
++/* DEFDCDC2_HIGH bitfields */
++#define TPS6507X_DEFDCDC2_HIGH_DCDC2_MASK	0X3F
++
++/* DEFDCDC3_LOW bitfields */
++#define TPS6507X_DEFDCDC3_LOW_DCDC3_MASK	0X3F
++
++/* DEFDCDC3_HIGH bitfields */
++#define TPS6507X_DEFDCDC3_HIGH_DCDC3_MASK	0X3F
++
++/* TPS6507X_REG_LDO_CTRL1 bitfields */
++#define TPS6507X_REG_LDO_CTRL1_LDO1_MASK	0X0F
++
++/* TPS6507X_REG_DEFLDO2 bitfields */
++#define TPS6507X_REG_DEFLDO2_LDO2_MASK		0X3F
++
++/* VDCDC MASK */
++#define TPS6507X_DEFDCDCX_DCDC_MASK		0X3F
++
++/* DCDC's */
++#define TPS6507X_DCDC_1				0
++#define TPS6507X_DCDC_2				1
++#define TPS6507X_DCDC_3				2
++/* LDOs */
++#define TPS6507X_LDO_1				3
++#define TPS6507X_LDO_2				4
++
++#define TPS6507X_MAX_REG_ID			TPS6507X_LDO_2
 +
 +/* Number of step-down converters available */
-+#define TPS65023_NUM_DCDC		3
++#define TPS6507X_NUM_DCDC			3
 +/* Number of LDO voltage regulators  available */
-+#define TPS65023_NUM_LDO		2
++#define TPS6507X_NUM_LDO			2
 +/* Number of total regulators available */
-+#define TPS65023_NUM_REGULATOR	(TPS65023_NUM_DCDC + TPS65023_NUM_LDO)
++#define TPS6507X_NUM_REGULATOR		(TPS6507X_NUM_DCDC + TPS6507X_NUM_LDO)
 +
-+/* DCDCs */
-+#define TPS65023_DCDC_1			0
-+#define TPS65023_DCDC_2			1
-+#define TPS65023_DCDC_3			2
-+/* LDOs */
-+#define TPS65023_LDO_1			3
-+#define TPS65023_LDO_2			4
-+
-+#define TPS65023_MAX_REG_ID		TPS65023_LDO_2
-+
-+/* Supported voltage values for regulators */
-+static const u16 VDCDC1_VSEL_table[] = {
-+	800, 825, 850, 875,
-+	900, 925, 950, 975,
-+	1000, 1025, 1050, 1075,
-+	1100, 1125, 1150, 1175,
-+	1200, 1225, 1250, 1275,
-+	1300, 1325, 1350, 1375,
-+	1400, 1425, 1450, 1475,
-+	1500, 1525, 1550, 1600,
++/* Supported voltage values for regulators (in milliVolts) */
++static const u16 VDCDCx_VSEL_table[] = {
++	725, 750, 775, 800,
++	825, 850, 875, 900,
++	925, 950, 975, 1000,
++	1025, 1050, 1075, 1100,
++	1125, 1150, 1175, 1200,
++	1225, 1250, 1275, 1300,
++	1325, 1350, 1375, 1400,
++	1425, 1450, 1475, 1500,
++	1550, 1600, 1650, 1700,
++	1750, 1800, 1850, 1900,
++	1950, 2000, 2050, 2100,
++	2150, 2200, 2250, 2300,
++	2350, 2400, 2450, 2500,
++	2550, 2600, 2650, 2700,
++	2750, 2800, 2850, 2900,
++	3000, 3100, 3200, 3300,
 +};
 +
 +static const u16 LDO1_VSEL_table[] = {
-+	1000, 1100, 1300, 1800,
-+	2200, 2600, 2800, 3150,
++	1000, 1100, 1200, 1250,
++	1300, 1350, 1400, 1500,
++	1600, 1800, 2500, 2750,
++	2800, 3000, 3100, 3300,
 +};
 +
 +static const u16 LDO2_VSEL_table[] = {
-+	1050, 1200, 1300, 1800,
-+	2500, 2800, 3000, 3300,
++	725, 750, 775, 800,
++	825, 850, 875, 900,
++	925, 950, 975, 1000,
++	1025, 1050, 1075, 1100,
++	1125, 1150, 1175, 1200,
++	1225, 1250, 1275, 1300,
++	1325, 1350, 1375, 1400,
++	1425, 1450, 1475, 1500,
++	1550, 1600, 1650, 1700,
++	1750, 1800, 1850, 1900,
++	1950, 2000, 2050, 2100,
++	2150, 2200, 2250, 2300,
++	2350, 2400, 2450, 2500,
++	2550, 2600, 2650, 2700,
++	2750, 2800, 2850, 2900,
++	3000, 3100, 3200, 3300,
 +};
 +
-+static unsigned int num_voltages[] = {ARRAY_SIZE(VDCDC1_VSEL_table),
-+				0, 0, ARRAY_SIZE(LDO1_VSEL_table),
++static unsigned int num_voltages[] = {ARRAY_SIZE(VDCDCx_VSEL_table),
++				ARRAY_SIZE(VDCDCx_VSEL_table),
++				ARRAY_SIZE(VDCDCx_VSEL_table),
++				ARRAY_SIZE(LDO1_VSEL_table),
 +				ARRAY_SIZE(LDO2_VSEL_table)};
 +
-+/* Regulator specific details */
 +struct tps_info {
 +	const char *name;
 +	unsigned min_uV;
 +	unsigned max_uV;
-+	bool fixed;
 +	u8 table_len;
 +	const u16 *table;
 +};
 +
-+/* PMIC details */
 +struct tps_pmic {
-+	struct regulator_desc desc[TPS65023_NUM_REGULATOR];
++	struct regulator_desc desc[TPS6507X_NUM_REGULATOR];
 +	struct i2c_client *client;
-+	struct regulator_dev *rdev[TPS65023_NUM_REGULATOR];
-+	const struct tps_info *info[TPS65023_NUM_REGULATOR];
++	struct regulator_dev *rdev[TPS6507X_NUM_REGULATOR];
++	struct tps_info *info[TPS6507X_NUM_REGULATOR];
 +	struct mutex io_lock;
 +};
 +
-+static inline int tps_65023_read(struct tps_pmic *tps, u8 reg)
++static inline int tps_6507x_read(struct tps_pmic *tps, u8 reg)
 +{
 +	return i2c_smbus_read_byte_data(tps->client, reg);
 +}
 +
-+static inline int tps_65023_write(struct tps_pmic *tps, u8 reg, u8 val)
++static inline int tps_6507x_write(struct tps_pmic *tps, u8 reg, u8 val)
 +{
 +	return i2c_smbus_write_byte_data(tps->client, reg, val);
 +}
 +
-+static int tps_65023_set_bits(struct tps_pmic *tps, u8 reg, u8 mask)
++static int tps_6507x_set_bits(struct tps_pmic *tps, u8 reg, u8 mask)
 +{
 +	int err, data;
 +
 +	mutex_lock(&tps->io_lock);
 +
-+	data = tps_65023_read(tps, reg);
++	data = tps_6507x_read(tps, reg);
 +	if (data < 0) {
 +		dev_err(&tps->client->dev, "Read from reg 0x%x failed\n", reg);
 +		err = data;
@@ -187,7 +229,7 @@ index 0000000..1e54f46
 +	}
 +
 +	data |= mask;
-+	err = tps_65023_write(tps, reg, data);
++	err = tps_6507x_write(tps, reg, data);
 +	if (err)
 +		dev_err(&tps->client->dev, "Write for reg 0x%x failed\n", reg);
 +
@@ -196,13 +238,13 @@ index 0000000..1e54f46
 +	return err;
 +}
 +
-+static int tps_65023_clear_bits(struct tps_pmic *tps, u8 reg, u8 mask)
++static int tps_6507x_clear_bits(struct tps_pmic *tps, u8 reg, u8 mask)
 +{
 +	int err, data;
 +
 +	mutex_lock(&tps->io_lock);
 +
-+	data = tps_65023_read(tps, reg);
++	data = tps_6507x_read(tps, reg);
 +	if (data < 0) {
 +		dev_err(&tps->client->dev, "Read from reg 0x%x failed\n", reg);
 +		err = data;
@@ -210,24 +252,22 @@ index 0000000..1e54f46
 +	}
 +
 +	data &= ~mask;
-+
-+	err = tps_65023_write(tps, reg, data);
++	err = tps_6507x_write(tps, reg, data);
 +	if (err)
 +		dev_err(&tps->client->dev, "Write for reg 0x%x failed\n", reg);
 +
 +out:
 +	mutex_unlock(&tps->io_lock);
 +	return err;
-+
 +}
 +
-+static int tps_65023_reg_read(struct tps_pmic *tps, u8 reg)
++static int tps_6507x_reg_read(struct tps_pmic *tps, u8 reg)
 +{
 +	int data;
 +
 +	mutex_lock(&tps->io_lock);
 +
-+	data = tps_65023_read(tps, reg);
++	data = tps_6507x_read(tps, reg);
 +	if (data < 0)
 +		dev_err(&tps->client->dev, "Read from reg 0x%x failed\n", reg);
 +
@@ -235,13 +275,13 @@ index 0000000..1e54f46
 +	return data;
 +}
 +
-+static int tps_65023_reg_write(struct tps_pmic *tps, u8 reg, u8 val)
++static int tps_6507x_reg_write(struct tps_pmic *tps, u8 reg, u8 val)
 +{
 +	int err;
 +
 +	mutex_lock(&tps->io_lock);
 +
-+	err = tps_65023_write(tps, reg, val);
++	err = tps_6507x_write(tps, reg, val);
 +	if (err < 0)
 +		dev_err(&tps->client->dev, "Write for reg 0x%x failed\n", reg);
 +
@@ -249,17 +289,17 @@ index 0000000..1e54f46
 +	return err;
 +}
 +
-+static int tps65023_dcdc_is_enabled(struct regulator_dev *dev)
++static int tps6507x_dcdc_is_enabled(struct regulator_dev *dev)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int data, dcdc = rdev_get_id(dev);
 +	u8 shift;
 +
-+	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++	if (dcdc < TPS6507X_DCDC_1 || dcdc > TPS6507X_DCDC_3)
 +		return -EINVAL;
 +
-+	shift = TPS65023_NUM_REGULATOR - dcdc;
-+	data = tps_65023_reg_read(tps, TPS65023_REG_REG_CTRL);
++	shift = TPS6507X_MAX_REG_ID - dcdc;
++	data = tps_6507x_reg_read(tps, TPS6507X_REG_CON_CTRL1);
 +
 +	if (data < 0)
 +		return data;
@@ -267,17 +307,17 @@ index 0000000..1e54f46
 +		return (data & 1<<shift) ? 1 : 0;
 +}
 +
-+static int tps65023_ldo_is_enabled(struct regulator_dev *dev)
++static int tps6507x_ldo_is_enabled(struct regulator_dev *dev)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int data, ldo = rdev_get_id(dev);
 +	u8 shift;
 +
-+	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++	if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
 +		return -EINVAL;
 +
-+	shift = (ldo == TPS65023_LDO_1 ? 1 : 2);
-+	data = tps_65023_reg_read(tps, TPS65023_REG_REG_CTRL);
++	shift = TPS6507X_MAX_REG_ID - ldo;
++	data = tps_6507x_reg_read(tps, TPS6507X_REG_CON_CTRL1);
 +
 +	if (data < 0)
 +		return data;
@@ -285,91 +325,112 @@ index 0000000..1e54f46
 +		return (data & 1<<shift) ? 1 : 0;
 +}
 +
-+static int tps65023_dcdc_enable(struct regulator_dev *dev)
++static int tps6507x_dcdc_enable(struct regulator_dev *dev)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int dcdc = rdev_get_id(dev);
 +	u8 shift;
 +
-+	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++	if (dcdc < TPS6507X_DCDC_1 || dcdc > TPS6507X_DCDC_3)
 +		return -EINVAL;
 +
-+	shift = TPS65023_NUM_REGULATOR - dcdc;
-+	return tps_65023_set_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
++	shift = TPS6507X_MAX_REG_ID - dcdc;
++	return tps_6507x_set_bits(tps, TPS6507X_REG_CON_CTRL1, 1 << shift);
 +}
 +
-+static int tps65023_dcdc_disable(struct regulator_dev *dev)
++static int tps6507x_dcdc_disable(struct regulator_dev *dev)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int dcdc = rdev_get_id(dev);
 +	u8 shift;
 +
-+	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++	if (dcdc < TPS6507X_DCDC_1 || dcdc > TPS6507X_DCDC_3)
 +		return -EINVAL;
 +
-+	shift = TPS65023_NUM_REGULATOR - dcdc;
-+	return tps_65023_clear_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
++	shift = TPS6507X_MAX_REG_ID - dcdc;
++	return tps_6507x_clear_bits(tps, TPS6507X_REG_CON_CTRL1, 1 << shift);
 +}
 +
-+static int tps65023_ldo_enable(struct regulator_dev *dev)
++static int tps6507x_ldo_enable(struct regulator_dev *dev)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int ldo = rdev_get_id(dev);
 +	u8 shift;
 +
-+	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++	if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
 +		return -EINVAL;
 +
-+	shift = (ldo == TPS65023_LDO_1 ? 1 : 2);
-+	return tps_65023_set_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
++	shift = TPS6507X_MAX_REG_ID - ldo;
++	return tps_6507x_set_bits(tps, TPS6507X_REG_CON_CTRL1, 1 << shift);
 +}
 +
-+static int tps65023_ldo_disable(struct regulator_dev *dev)
++static int tps6507x_ldo_disable(struct regulator_dev *dev)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int ldo = rdev_get_id(dev);
 +	u8 shift;
 +
-+	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++	if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
 +		return -EINVAL;
 +
-+	shift = (ldo == TPS65023_LDO_1 ? 1 : 2);
-+	return tps_65023_clear_bits(tps, TPS65023_REG_REG_CTRL, 1 << shift);
++	shift = TPS6507X_MAX_REG_ID - ldo;
++	return tps_6507x_clear_bits(tps, TPS6507X_REG_CON_CTRL1, 1 << shift);
 +}
 +
-+static int tps65023_dcdc_get_voltage(struct regulator_dev *dev)
++static int tps6507x_dcdc_get_voltage(struct regulator_dev *dev)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int data, dcdc = rdev_get_id(dev);
++	u8 reg;
 +
-+	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++	switch (dcdc) {
++	case TPS6507X_DCDC_1:
++		reg = TPS6507X_REG_DEFDCDC1;
++		break;
++	case TPS6507X_DCDC_2:
++		reg = TPS6507X_REG_DEFDCDC2_LOW;
++		break;
++	case TPS6507X_DCDC_3:
++		reg = TPS6507X_REG_DEFDCDC3_LOW;
++		break;
++	default:
 +		return -EINVAL;
++	}
 +
-+	if (dcdc == TPS65023_DCDC_1) {
-+		data = tps_65023_reg_read(tps, TPS65023_REG_DEF_CORE);
-+		if (data < 0)
-+			return data;
-+		data &= (tps->info[dcdc]->table_len - 1);
-+		return tps->info[dcdc]->table[data] * 1000;
-+	} else
-+		return tps->info[dcdc]->min_uV;
++	data = tps_6507x_reg_read(tps, reg);
++	if (data < 0)
++		return data;
++
++	data &= TPS6507X_DEFDCDCX_DCDC_MASK;
++	return tps->info[dcdc]->table[data] * 1000;
 +}
 +
-+static int tps65023_dcdc_set_voltage(struct regulator_dev *dev,
++static int tps6507x_dcdc_set_voltage(struct regulator_dev *dev,
 +				int min_uV, int max_uV)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
-+	int dcdc = rdev_get_id(dev);
-+	int vsel;
++	int data, vsel, dcdc = rdev_get_id(dev);
++	u8 reg;
 +
-+	if (dcdc != TPS65023_DCDC_1)
++	switch (dcdc) {
++	case TPS6507X_DCDC_1:
++		reg = TPS6507X_REG_DEFDCDC1;
++		break;
++	case TPS6507X_DCDC_2:
++		reg = TPS6507X_REG_DEFDCDC2_LOW;
++		break;
++	case TPS6507X_DCDC_3:
++		reg = TPS6507X_REG_DEFDCDC3_LOW;
++		break;
++	default:
 +		return -EINVAL;
++	}
 +
 +	if (min_uV < tps->info[dcdc]->min_uV
-+			|| min_uV > tps->info[dcdc]->max_uV)
++		|| min_uV > tps->info[dcdc]->max_uV)
 +		return -EINVAL;
 +	if (max_uV < tps->info[dcdc]->min_uV
-+			|| max_uV > tps->info[dcdc]->max_uV)
++		|| max_uV > tps->info[dcdc]->max_uV)
 +		return -EINVAL;
 +
 +	for (vsel = 0; vsel < tps->info[dcdc]->table_len; vsel++) {
@@ -384,35 +445,57 @@ index 0000000..1e54f46
 +	/* write to the register in case we found a match */
 +	if (vsel == tps->info[dcdc]->table_len)
 +		return -EINVAL;
-+	else
-+		return tps_65023_reg_write(tps, TPS65023_REG_DEF_CORE, vsel);
-+}
 +
-+static int tps65023_ldo_get_voltage(struct regulator_dev *dev)
-+{
-+	struct tps_pmic *tps = rdev_get_drvdata(dev);
-+	int data, ldo = rdev_get_id(dev);
-+
-+	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
-+		return -EINVAL;
-+
-+	data = tps_65023_reg_read(tps, TPS65023_REG_LDO_CTRL);
++	data = tps_6507x_reg_read(tps, reg);
 +	if (data < 0)
 +		return data;
 +
-+	data >>= (TPS65023_LDO_CTRL_LDOx_SHIFT(ldo - TPS65023_LDO_1));
-+	data &= (tps->info[ldo]->table_len - 1);
++	data &= ~TPS6507X_DEFDCDCX_DCDC_MASK;
++	data |= vsel;
++
++	return tps_6507x_reg_write(tps, reg, data);
++}
++
++static int tps6507x_ldo_get_voltage(struct regulator_dev *dev)
++{
++	struct tps_pmic *tps = rdev_get_drvdata(dev);
++	int data, ldo = rdev_get_id(dev);
++	u8 reg, mask;
++
++	if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
++		return -EINVAL;
++	else {
++		reg = (ldo == TPS6507X_LDO_1 ?
++			TPS6507X_REG_LDO_CTRL1 : TPS6507X_REG_DEFLDO2);
++		mask = (ldo == TPS6507X_LDO_1 ?
++			TPS6507X_REG_LDO_CTRL1_LDO1_MASK :
++				TPS6507X_REG_DEFLDO2_LDO2_MASK);
++	}
++
++	data = tps_6507x_reg_read(tps, reg);
++	if (data < 0)
++		return data;
++
++	data &= mask;
 +	return tps->info[ldo]->table[data] * 1000;
 +}
 +
-+static int tps65023_ldo_set_voltage(struct regulator_dev *dev,
++static int tps6507x_ldo_set_voltage(struct regulator_dev *dev,
 +				int min_uV, int max_uV)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int data, vsel, ldo = rdev_get_id(dev);
++	u8 reg, mask;
 +
-+	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++	if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
 +		return -EINVAL;
++	else {
++		reg = (ldo == TPS6507X_LDO_1 ?
++			TPS6507X_REG_LDO_CTRL1 : TPS6507X_REG_DEFLDO2);
++		mask = (ldo == TPS6507X_LDO_1 ?
++			TPS6507X_REG_LDO_CTRL1_LDO1_MASK :
++				TPS6507X_REG_DEFLDO2_LDO2_MASK);
++	}
 +
 +	if (min_uV < tps->info[ldo]->min_uV || min_uV > tps->info[ldo]->max_uV)
 +		return -EINVAL;
@@ -431,40 +514,38 @@ index 0000000..1e54f46
 +	if (vsel == tps->info[ldo]->table_len)
 +		return -EINVAL;
 +
-+	data = tps_65023_reg_read(tps, TPS65023_REG_LDO_CTRL);
++	data = tps_6507x_reg_read(tps, reg);
 +	if (data < 0)
 +		return data;
 +
-+	data &= TPS65023_LDO_CTRL_LDOx_MASK(ldo - TPS65023_LDO_1);
-+	data |= (vsel << (TPS65023_LDO_CTRL_LDOx_SHIFT(ldo - TPS65023_LDO_1)));
-+	return tps_65023_reg_write(tps, TPS65023_REG_LDO_CTRL, data);
++	data &= ~mask;
++	data |= vsel;
++
++	return tps_6507x_reg_write(tps, reg, data);
 +}
 +
-+static int tps65023_dcdc_list_voltage(struct regulator_dev *dev,
++static int tps6507x_dcdc_list_voltage(struct regulator_dev *dev,
 +					unsigned selector)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int dcdc = rdev_get_id(dev);
 +
-+	if (dcdc < TPS65023_DCDC_1 || dcdc > TPS65023_DCDC_3)
++	if (dcdc < TPS6507X_DCDC_1 || dcdc > TPS6507X_DCDC_3)
 +		return -EINVAL;
 +
-+	if (dcdc == TPS65023_DCDC_1) {
-+		if (selector >= tps->info[dcdc]->table_len)
-+			return -EINVAL;
-+		else
-+			return tps->info[dcdc]->table[selector] * 1000;
-+	} else
-+		return tps->info[dcdc]->min_uV;
++	if (selector >= tps->info[dcdc]->table_len)
++		return -EINVAL;
++	else
++		return tps->info[dcdc]->table[selector] * 1000;
 +}
 +
-+static int tps65023_ldo_list_voltage(struct regulator_dev *dev,
++static int tps6507x_ldo_list_voltage(struct regulator_dev *dev,
 +					unsigned selector)
 +{
 +	struct tps_pmic *tps = rdev_get_drvdata(dev);
 +	int ldo = rdev_get_id(dev);
 +
-+	if (ldo < TPS65023_LDO_1 || ldo > TPS65023_LDO_2)
++	if (ldo < TPS6507X_LDO_1 || ldo > TPS6507X_LDO_2)
 +		return -EINVAL;
 +
 +	if (selector >= tps->info[ldo]->table_len)
@@ -474,27 +555,27 @@ index 0000000..1e54f46
 +}
 +
 +/* Operations permitted on VDCDCx */
-+static struct regulator_ops tps65023_dcdc_ops = {
-+	.is_enabled = tps65023_dcdc_is_enabled,
-+	.enable = tps65023_dcdc_enable,
-+	.disable = tps65023_dcdc_disable,
-+	.get_voltage = tps65023_dcdc_get_voltage,
-+	.set_voltage = tps65023_dcdc_set_voltage,
-+	.list_voltage = tps65023_dcdc_list_voltage,
++static struct regulator_ops tps6507x_dcdc_ops = {
++	.is_enabled = tps6507x_dcdc_is_enabled,
++	.enable = tps6507x_dcdc_enable,
++	.disable = tps6507x_dcdc_disable,
++	.get_voltage = tps6507x_dcdc_get_voltage,
++	.set_voltage = tps6507x_dcdc_set_voltage,
++	.list_voltage = tps6507x_dcdc_list_voltage,
 +};
 +
 +/* Operations permitted on LDOx */
-+static struct regulator_ops tps65023_ldo_ops = {
-+	.is_enabled = tps65023_ldo_is_enabled,
-+	.enable = tps65023_ldo_enable,
-+	.disable = tps65023_ldo_disable,
-+	.get_voltage = tps65023_ldo_get_voltage,
-+	.set_voltage = tps65023_ldo_set_voltage,
-+	.list_voltage = tps65023_ldo_list_voltage,
++static struct regulator_ops tps6507x_ldo_ops = {
++	.is_enabled = tps6507x_ldo_is_enabled,
++	.enable = tps6507x_ldo_enable,
++	.disable = tps6507x_ldo_disable,
++	.get_voltage = tps6507x_ldo_get_voltage,
++	.set_voltage = tps6507x_ldo_set_voltage,
++	.list_voltage = tps6507x_ldo_list_voltage,
 +};
 +
 +static
-+int tps_65023_probe(struct i2c_client *client, const struct i2c_device_id *id)
++int tps_6507x_probe(struct i2c_client *client, const struct i2c_device_id *id)
 +{
 +	static int desc_id;
 +	const struct tps_info *info = (void *)id->driver_data;
@@ -503,7 +584,8 @@ index 0000000..1e54f46
 +	struct tps_pmic *tps;
 +	int i;
 +
-+	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
++	if (!i2c_check_functionality(client->adapter,
++				I2C_FUNC_SMBUS_BYTE_DATA))
 +		return -EIO;
 +
 +	/**
@@ -524,21 +606,19 @@ index 0000000..1e54f46
 +	/* common for all regulators */
 +	tps->client = client;
 +
-+	for (i = 0; i < TPS65023_NUM_REGULATOR; i++, info++, init_data++) {
-+		/* Store regulator specific information */
++	for (i = 0; i < TPS6507X_NUM_REGULATOR; i++, info++, init_data++) {
++		/* Register the regulators */
 +		tps->info[i] = info;
-+
 +		tps->desc[i].name = info->name;
 +		tps->desc[i].id = desc_id++;
 +		tps->desc[i].n_voltages = num_voltages[i];
-+		tps->desc[i].ops = (i > TPS65023_DCDC_3 ?
-+					&tps65023_ldo_ops : &tps65023_dcdc_ops);
++		tps->desc[i].ops = (i > TPS6507X_DCDC_3 ?
++				&tps6507x_ldo_ops : &tps6507x_dcdc_ops);
 +		tps->desc[i].type = REGULATOR_VOLTAGE;
 +		tps->desc[i].owner = THIS_MODULE;
 +
-+		/* Register the regulators */
-+		rdev = regulator_register(&tps->desc[i], &client->dev,
-+								init_data, tps);
++		rdev = regulator_register(&tps->desc[i],
++					&client->dev, init_data, tps);
 +		if (IS_ERR(rdev)) {
 +			dev_err(&client->dev, "failed to register %s\n",
 +				id->name);
@@ -551,6 +631,7 @@ index 0000000..1e54f46
 +
 +			/* clear the client data in i2c */
 +			i2c_set_clientdata(client, NULL);
++
 +			kfree(tps);
 +			return PTR_ERR(rdev);
 +		}
@@ -565,17 +646,17 @@ index 0000000..1e54f46
 +}
 +
 +/**
-+ * tps_65023_remove - TPS65023 driver i2c remove handler
++ * tps_6507x_remove - TPS6507x driver i2c remove handler
 + * @client: i2c driver client device structure
 + *
 + * Unregister TPS driver as an i2c client device driver
 + */
-+static int __devexit tps_65023_remove(struct i2c_client *client)
++static int __devexit tps_6507x_remove(struct i2c_client *client)
 +{
 +	struct tps_pmic *tps = i2c_get_clientdata(client);
 +	int i;
 +
-+	for (i = 0; i < TPS65023_NUM_REGULATOR; i++)
++	for (i = 0; i < TPS6507X_NUM_REGULATOR; i++)
 +		regulator_unregister(tps->rdev[i]);
 +
 +	tps->client = NULL;
@@ -587,83 +668,84 @@ index 0000000..1e54f46
 +	return 0;
 +}
 +
-+static const struct tps_info tps65023_regs[] = {
++static const struct tps_info tps6507x_regs[] = {
 +	{
 +		.name = "VDCDC1",
-+		.min_uV =  800000,
-+		.max_uV = 1600000,
-+		.table_len = ARRAY_SIZE(VDCDC1_VSEL_table),
-+		.table = VDCDC1_VSEL_table,
++		.min_uV = 725000,
++		.max_uV = 3300000,
++		.table_len = ARRAY_SIZE(VDCDCx_VSEL_table),
++		.table = VDCDCx_VSEL_table,
 +	},
 +	{
 +		.name = "VDCDC2",
-+		.min_uV =  3300000,
++		.min_uV = 725000,
 +		.max_uV = 3300000,
-+		.fixed = 1,
++		.table_len = ARRAY_SIZE(VDCDCx_VSEL_table),
++		.table = VDCDCx_VSEL_table,
 +	},
 +	{
 +		.name = "VDCDC3",
-+		.min_uV =  1800000,
-+		.max_uV = 1800000,
-+		.fixed = 1,
++		.min_uV = 725000,
++		.max_uV = 3300000,
++		.table_len = ARRAY_SIZE(VDCDCx_VSEL_table),
++		.table = VDCDCx_VSEL_table,
 +	},
 +	{
 +		.name = "LDO1",
 +		.min_uV = 1000000,
-+		.max_uV = 3150000,
++		.max_uV = 3300000,
 +		.table_len = ARRAY_SIZE(LDO1_VSEL_table),
 +		.table = LDO1_VSEL_table,
 +	},
 +	{
 +		.name = "LDO2",
-+		.min_uV = 1050000,
++		.min_uV = 725000,
 +		.max_uV = 3300000,
 +		.table_len = ARRAY_SIZE(LDO2_VSEL_table),
 +		.table = LDO2_VSEL_table,
 +	},
 +};
 +
-+static const struct i2c_device_id tps_65023_id = {
-+	.name = "tps65023",
-+	.driver_data = (unsigned long) &tps65023_regs[0],
++static const struct i2c_device_id tps_6507x_id = {
++	.name = "tps6507x",
++	.driver_data = (unsigned long) &tps6507x_regs[0],
 +};
++MODULE_DEVICE_TABLE(i2c, tps_6507x_id);
 +
-+MODULE_DEVICE_TABLE(i2c, tps_65023_id);
-+
-+static struct i2c_driver tps_65023_i2c_driver = {
++static struct i2c_driver tps_6507x_i2c_driver = {
 +	.driver = {
-+		.name = "tps65023",
++		.name = "tps6507x",
 +		.owner = THIS_MODULE,
 +	},
-+	.probe = tps_65023_probe,
-+	.remove = __devexit_p(tps_65023_remove),
-+	.id_table = &tps_65023_id,
++	.probe = tps_6507x_probe,
++	.remove = __devexit_p(tps_6507x_remove),
++	.id_table = &tps_6507x_id,
 +};
 +
 +/**
-+ * tps_65023_init
++ * tps_6507x_init
 + *
 + * Module init function
 + */
-+static int __init tps_65023_init(void)
++static int __init tps_6507x_init(void)
 +{
-+	return i2c_add_driver(&tps_65023_i2c_driver);
++	return i2c_add_driver(&tps_6507x_i2c_driver);
 +}
-+subsys_initcall(tps_65023_init);
++subsys_initcall(tps_6507x_init);
 +
 +/**
-+ * tps_65023_cleanup
++ * tps_6507x_cleanup
 + *
 + * Module exit function
 + */
-+static void __exit tps_65023_cleanup(void)
++static void __exit tps_6507x_cleanup(void)
 +{
-+	i2c_del_driver(&tps_65023_i2c_driver);
++	i2c_del_driver(&tps_6507x_i2c_driver);
 +}
-+module_exit(tps_65023_cleanup);
++module_exit(tps_6507x_cleanup);
 +
 +MODULE_AUTHOR("Texas Instruments");
-+MODULE_DESCRIPTION("TPS65023 voltage regulator driver");
++MODULE_DESCRIPTION("TPS6507x voltage regulator driver");
 +MODULE_LICENSE("GPLv2");
 -- 
 1.6.2.4
