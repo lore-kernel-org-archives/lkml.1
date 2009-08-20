@@ -1,39 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbZHTBGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751974AbZHTBJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbZHTBGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 21:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZHTBGw
+	id S1751974AbZHTBJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 21:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbZHTBJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 21:06:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:3637 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751509AbZHTBGw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 21:06:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=BiUf08tnbet2XE5l0yLoeLsMOe5A+ZN9CQurTX/CUHZ1Xzn0Vm1nba0Hct3YDLI7QQ
-         l+B878vHAWlmSkCTWo9VrxirQB4ywwkFPIpuyNCe37hKo1rpMq0vBXDVlmjyCpzxVYMK
-         aroS0cWMvS42fFo/pJrXhuChE5CjaRralneNg=
-Date: Thu, 20 Aug 2009 13:06:48 +1200
-From: Kelly Bowa <kelly.bowa@gmail.com>
-To: Ingo Molnar <mingo@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Atom processor inclusion
-Message-ID: <20090820130648.6e7236f7@titus>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 19 Aug 2009 21:09:27 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64000 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751551AbZHTBJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 21:09:27 -0400
+Message-ID: <4A8CA1EF.6000305@cn.fujitsu.com>
+Date: Thu, 20 Aug 2009 09:07:59 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH 15/16] tracing: Add fields format definition for	syscall
+ events
+References: <1250016545-6601-1-git-send-email-fweisbec@gmail.com> <1250016545-6601-16-git-send-email-fweisbec@gmail.com> <4A8C3290.3070900@redhat.com> <20090819173734.GG4972@nowhere>
+In-Reply-To: <20090819173734.GG4972@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+> Yeah, I have yet to fix this, that because syscalls that have no parameters
+> raise a small bug in the return value of trace_seq_printf() while printing
+> their format, returning 0 as if the buffer was full and lost some bits.
+> 
+> However, It's possible that the last patches from Li fix this, since he did
+> a total/better refactoring of the format definition for syscall events.
+> 
+> I'll check this,
 
-Any ideas if the Atom CPU patch mentioned here
-http://groups.google.ca/group/fa.linux.kernel/browse_thread/thread/26d61febdf354055/a0b4c902e41b5fbf?hl=en&ie=UTF-8&q=config_mcore2+atom
-has been submitted/considered for mainline inclusion. AFAIK GCC 4.5
-*should* contain the architecture specific code.
+I was not aware of this bug, and the bug is still there, but it's
+easy to fix and I've fixed it. Will send out the patch soon.
+
