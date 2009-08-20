@@ -1,108 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZHTQGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZHTQGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbZHTQGl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 12:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZHTQGk
+	id S1754767AbZHTQGs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 12:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZHTQGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 12:06:40 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49035 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbZHTQGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 12:06:39 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.01.0908200816090.3158@localhost.localdomain>
-References: <alpine.LFD.2.01.0908200816090.3158@localhost.localdomain> <20090820104956.29972.92662.stgit@warthog.procyon.org.uk> <20090820105001.29972.33221.stgit@warthog.procyon.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Use the cut_here() function in AFS, CacheFiles, FS-Cache and RxRPC
-Date: Thu, 20 Aug 2009 17:06:31 +0100
-Message-ID: <6149.1250784391@redhat.com>
+	Thu, 20 Aug 2009 12:06:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58790 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754617AbZHTQGp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 12:06:45 -0400
+Message-ID: <4A8D7321.3090104@zytor.com>
+Date: Thu, 20 Aug 2009 09:00:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [GIT PULL] Fix Xen boot with CONFIG_CC_STACKPROTECTOR
+References: <4A8C98DD.2020709@goop.org> <20090820100644.GC29093@elte.hu>
+In-Reply-To: <20090820100644.GC29093@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On 08/20/2009 03:06 AM, Ingo Molnar wrote:
+> 
+> Pulled into tip:x86/urgent, thanks a lot Jeremy!
+> 
+> Btw., is there any way to turn off stackprotector on a 
+> per function basis, a GCC attribute perhaps? That would 
+> be preferable to turning it off for all of common.o.
+> 
 
-> instead. And yes, in the long run, I really think we should just extend 
-> the current BUG() reporting to have that kind of semantics, but I think 
-> your "cut_here()" thing is a horrible hack.
+Jeremy asked me that, I researched it, and there isn't one -- the only
+option is to segregate functions into separate files.
 
-What about situations where I want to print quite a lot of information, say
-several lines' worth?
+	-hpa
 
-For instance, if you look at cachefiles_mark_object_active() in
-fs/cachefiles/namei.c, you'll see something like (which extended by one of my
-patches):
-
-wait_for_old_object:
-	if (xobject->fscache.state < FSCACHE_OBJECT_DYING) {
-		unsigned keylen;
-		u8 *keybuf;
-
-		printk(KERN_ERR "\n");
-		printk(KERN_ERR "CacheFiles: Error:"
-		       " Unexpected object collision\n");
-		printk(KERN_ERR "xobject: OBJ%x\n",
-		       xobject->fscache.debug_id);
-		printk(KERN_ERR "xobjstate=%s\n",
-		       fscache_object_states[xobject->fscache.state]);
-		printk(KERN_ERR "xobjflags=%lx\n", xobject->fscache.flags);
-		printk(KERN_ERR "xobjevent=%lx [%lx]\n",
-		       xobject->fscache.events, xobject->fscache.event_mask);
-		printk(KERN_ERR "xops=%u inp=%u exc=%u\n",
-		       xobject->fscache.n_ops, xobject->fscache.n_in_progress,
-		       xobject->fscache.n_exclusive);
-		printk(KERN_ERR "xcookie=%p [pr=%p nd=%p fl=%lx]\n",
-		       xobject->fscache.cookie,
-		       xobject->fscache.cookie->parent,
-		       xobject->fscache.cookie->netfs_data,
-		       xobject->fscache.cookie->flags);
-		printk(KERN_ERR "xparent=%p\n",
-		       xobject->fscache.parent);
-		printk(KERN_ERR "object: OBJ%x\n",
-		       object->fscache.debug_id);
-		printk(KERN_ERR "cookie=%p [pr=%p nd=%p fl=%lx]\n",
-		       object->fscache.cookie,
-		       object->fscache.cookie->parent,
-		       object->fscache.cookie->netfs_data,
-		       object->fscache.cookie->flags);
-		printk(KERN_ERR "parent=%p\n",
-		       object->fscache.parent);
-
-		keybuf = kmalloc(512, GFP_NOIO);
-		if (keybuf) {
-			struct fscache_cookie *cookie;
-			unsigned loop;
-
-			cookie = object->fscache.cookie;
-			keylen = cookie->def->get_key(cookie->netfs_data,
-						      keybuf, 512);
-			printk(KERN_ERR "okey=[%u] '", keylen);
-			for (loop = 0; loop < keylen; loop++)
-				printk("%02x", keybuf[loop]);
-			printk("'\n");
-
-			cookie = xobject->fscache.cookie;
-			keylen = cookie->def->get_key(cookie->netfs_data,
-						      keybuf, 512);
-			printk(KERN_ERR "xkey=[%u] '", keylen);
-			for (loop = 0; loop < keylen; loop++)
-				printk("%02x", keybuf[loop]);
-			printk("'\n");
-
-			kfree(keybuf);
-		}
-
-		BUG();
-
-With the cut_here() approach, I could put a cut_here() just inside the if-body,
-but doing it with your approach and putting the whole lot in one format string
-would also be pretty horrible, and risks overrunning the printk buffer.
-
-David
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
