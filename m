@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbZHTWV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbZHTWWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932093AbZHTWV1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 18:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbZHTWV0
+	id S932129AbZHTWWD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 18:22:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932104AbZHTWWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 18:21:26 -0400
-Received: from static-76-164-182-224.apid.com ([76.164.182.224]:41960 "EHLO
-	waltsputer.localdomain" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754221AbZHTWVZ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 18:21:25 -0400
-Date: Thu, 20 Aug 2009 17:21:23 -0500 (CDT)
-From: Walt Holman <walt@holmansrus.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Message-ID: <322550336.131250806883202.JavaMail.root@mail.holmansrus.com>
-In-Reply-To: <m3skfmk39q.fsf@intrepid.localdomain>
-Subject: Re: Strange network timeouts w/ 2.6.30.5
+	Thu, 20 Aug 2009 18:22:01 -0400
+Received: from ndmsnpf01.ndc.nasa.gov ([198.117.0.121]:47277 "EHLO
+	ndmsnpf01.ndc.nasa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752522AbZHTWWA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 18:22:00 -0400
+X-Greylist: delayed 1200 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 18:22:00 EDT
+Message-ID: <4A8DC7D9.10005@nasa.gov>
+Date: Thu, 20 Aug 2009 15:02:01 -0700
+From: Jeff Becker <Jeffrey.C.Becker@nasa.gov>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Originating-IP: [192.168.0.1]
-X-Mailer: Zimbra 6.0.0_RC1_1684.UBUNTU8_64 (ZimbraWebClient - [unknown] (Linux)/6.0.0_RC1_1684.UBUNTU8_64)
+To: Roland Dreier <rdreier@cisco.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "general@lists.openfabrics.org" <general@lists.openfabrics.org>
+Subject: Re: [ofa-general] Opinions on moving Linux InfiniBand/RDMA mailing
+ list	to vger?
+References: <adavdkiw3gx.fsf@cisco.com>
+In-Reply-To: <adavdkiw3gx.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Aug 2009 22:02:02.0115 (UTC) FILETIME=[D8BDB530:01CA21E1]
+X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.7400:2.4.4,1.2.40,4.0.166 definitions=2009-08-20_11:2009-08-11,2009-08-20,2009-08-20 signatures=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roland Dreier wrote:
+> Lately, I've had a few emails that I thought would have been of interest
+> to both lkml and also to general@lists.openfabrics.org.  I've held back
+> on cross-posting them because I know that general@ is subscribers-only,
+> and the bounce messages are quite annoying to replies coming from lkml.
+>
+> The general@ list is subscribers-only because the openfabrics.org
+> sysadmin team is already overworked without trying to keep an open list
+> spam free.  (I say that with no intention to criticize the
+> openfabrics.org admins -- they do a terrific job of keeping things
+> running with the limited resources available; it's more a testament to
+> how impressive the vger mailing list admins are)
+>
+> I've also noticed one or two messages about the possibility of moving
+> another moderated list to vger.  Certainly I prefer open lists that
+> don't require subscriptions to post.
+>
+> So with that background, what would people think about creating an open
+> vger list (say, linux-rdma@vger.kernel.org) to carry the discussion
+> currently on general@lists.openfabrics.org?  (The transition plan would
+> probably be to keep the general@ list for a month or two, with frequent
+> announcements of the new list, until archives etc. have caught up with
+> the switch)
+>   
 
------ "Krzysztof Halasa" <khc@pm.waw.pl> wrote:
++1
 
-> Walt Holman <walt@holmansrus.com> writes:
-> 
-> > dmesg is attached. This box does have >2GB Ram (6GB total).  The
-> dmesg
-> > will show e100 init'd 3 times since the first is the stock
-> modprobe,
-> > 2nd was forced with use_io and the 3rd modprobe was after reverting
-> > the patch.
-> 
-> You most probably can't test without swiotlb (RAM has to be limited
-> to
-> 2 GB or so), can you? That would (dis)prove my theory. Alternatively
-> (or
-> better), a test on IOMMU-equipped system would do.
+-jeff
 
-Would something like passing a mem=xx cmdline on x86_64 be sufficient to test this?
+> Thanks,
+>   Roland
+> _______________________________________________
+> general mailing list
+> general@lists.openfabrics.org
+> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+>
+> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
+>   
 
--Walt
-
-
-
-> 
-> Since swiotlb is x86-only thing (though other 64-bit archs may have
-> something similar), I think the correct work around is to enable the
-> "for_device" handoff on !X86.
-> 
-> Something like maybe:
-> 
-> Signed-off-by: Krzysztof Hałasa <khc@pm.waw.pl>
-> 
-> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-> index 014dfb6..b610088 100644
-> --- a/drivers/net/e100.c
-> +++ b/drivers/net/e100.c
-> @@ -1762,9 +1762,12 @@ static int e100_rx_indicate(struct nic *nic,
-> struct rx *rx,
->  
->  			if (ioread8(&nic->csr->scb.status) & rus_no_res)
->  				nic->ru_running = RU_SUSPENDED;
-> +#ifndef CONFIG_X86
-> +		/* FIXME interferes with swiotlb. */
->  		pci_dma_sync_single_for_device(nic->pdev, rx->dma_addr,
->  					       sizeof(struct rfd),
->  					       PCI_DMA_BIDIRECTIONAL);
-> +#endif
->  		return -ENODATA;
->  	}
->  
-> -- 
-> Krzysztof Halasa
