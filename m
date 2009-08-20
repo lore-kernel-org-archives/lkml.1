@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZHTPSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbZHTPTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbZHTPSQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 11:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZHTPSO
+	id S1754845AbZHTPTJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 11:19:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbZHTPTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 11:18:14 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:48886 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753114AbZHTPSK (ORCPT
+	Thu, 20 Aug 2009 11:19:06 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:41488 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751594AbZHTPTC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 11:18:10 -0400
+	Thu, 20 Aug 2009 11:19:02 -0400
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
-Subject: [cciss: PATCH 06/17] Rearrange logical drive sysfs code to make the
-	"changing a disk" path work.
+Subject: [cciss: PATCH 16/17] Add a "raid_level" attribute to each logical
+	drive in /sys
 To: linux-kernel@vger.kernel.org
 Cc: linux-scsi@vger.kernel.org, akpm@linux-foundation.org, axboe@kernel.dk,
        andrew.patterson@hp.com, mikem@c18-ss-1-lb.cnet.com,
        scameron@beardog.cce.hp.com
-Date: Thu, 20 Aug 2009 10:18:13 -0500
-Message-ID: <20090820151813.22833.6732.stgit@beardog.cce.hp.com>
+Date: Thu, 20 Aug 2009 10:19:04 -0500
+Message-ID: <20090820151904.22833.91381.stgit@beardog.cce.hp.com>
 In-Reply-To: <20090820151648.22833.14168.stgit@beardog.cce.hp.com>
 References: <20090820151648.22833.14168.stgit@beardog.cce.hp.com>
 User-Agent: StGIT/0.14.3
@@ -29,69 +29,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rearrange logical drive sysfs code to make the "changing a disk" path work.
+Add raid_level attribute to each logical drive at
+/sys/devices/<dev>/ccissX/cXdY/raid_level for controller X,
+logical drive Y
+
 
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
 
- drivers/block/cciss.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ .../ABI/testing/sysfs-bus-pci-devices-cciss        |    7 ++++++
+ drivers/block/cciss.c                              |   24 ++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 0 deletions(-)
 
+diff --git a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+index 5a6c8d3..8d02602 100644
+--- a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
++++ b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+@@ -45,3 +45,10 @@ Kernel Version: 2.6.31
+ Contact:	iss_storagedev@hp.com
+ Description:	Displays the 8-byte LUN ID used to address logical
+ 		drive Y of controller X.
++
++Where:		/sys/bus/pci/devices/<dev>/ccissX/cXdY/raid_level
++Date:		August 2009
++Kernel Version: 2.6.31
++Contact:	iss_storagedev@hp.com
++Description:	Displays the RAID level of logical drive Y of
++		controller X.
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 4f9ef49..557b958 100644
+index 373ef43..2ad089e 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -1915,9 +1915,10 @@ static int cciss_add_gendisk(ctlr_info_t *h, __u32 lunid, int controller_node)
- 		}
- 	}
- 	h->drv[drv_index].LunID = lunid;
--	if (cciss_create_ld_sysfs_entry(h, drv_index))
--		goto err_free_disk;
--
-+	if (h->drv[drv_index].dev == NULL) {
-+		if (cciss_create_ld_sysfs_entry(h, drv_index))
-+			goto err_free_disk;
+@@ -603,6 +603,29 @@ static ssize_t cciss_show_lunid(struct device *dev,
+ }
+ DEVICE_ATTR(lunid, S_IRUGO, cciss_show_lunid, NULL);
+ 
++static ssize_t cciss_show_raid_level(struct device *dev,
++				     struct device_attribute *attr, char *buf)
++{
++	drive_info_struct *drv = dev_get_drvdata(dev);
++	struct ctlr_info *h = to_hba(drv->dev->parent);
++	int raid;
++	unsigned long flags;
++
++	spin_lock_irqsave(CCISS_LOCK(h->ctlr), flags);
++	if (h->busy_configuring) {
++		spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
++		return -EBUSY;
 +	}
- 	/* Don't need to mark this busy because nobody */
- 	/* else knows about this disk yet to contend */
- 	/* for access to it. */
-@@ -2144,8 +2145,10 @@ static int deregister_disk(ctlr_info_t *h, int drv_index,
- 	 */
- 	if (h->gendisk[0] != disk) {
- 		struct request_queue *q = disk->queue;
--		if (disk->flags & GENHD_FL_UP)
-+		if (disk->flags & GENHD_FL_UP) {
-+			cciss_destroy_ld_sysfs_entry(h, drv_index);
- 			del_gendisk(disk);
-+		}
- 		if (q) {
- 			blk_cleanup_queue(q);
- 			/* Set drv->queue to NULL so that we do not try
-@@ -2189,7 +2192,6 @@ static int deregister_disk(ctlr_info_t *h, int drv_index,
- 				 * indicate that this element of the drive
- 				 * array is free.
- 				 */
--	cciss_destroy_ld_sysfs_entry(h, drv_index);
++	raid = drv->raid_level;
++	spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
++	if (raid < 0 || raid > 5)
++		raid = RAID_UNKNOWN;
++
++	return snprintf(buf, strlen(raid_label[raid]) + 7, "RAID %s\n",
++			raid_label[raid]);
++}
++DEVICE_ATTR(raid_level, S_IRUGO, cciss_show_raid_level, NULL);
++
+ static struct attribute *cciss_host_attrs[] = {
+ 	&dev_attr_rescan.attr,
+ 	NULL
+@@ -629,6 +652,7 @@ static struct attribute *cciss_dev_attrs[] = {
+ 	&dev_attr_vendor.attr,
+ 	&dev_attr_rev.attr,
+ 	&dev_attr_lunid.attr,
++	&dev_attr_raid_level.attr,
+ 	NULL
+ };
  
- 	if (clear_all) {
- 		/* check to see if it was the last disk */
-@@ -4307,15 +4309,13 @@ static void __devexit cciss_remove_one(struct pci_dev *pdev)
- 		if (disk) {
- 			struct request_queue *q = disk->queue;
- 
--			if (disk->flags & GENHD_FL_UP)
-+			if (disk->flags & GENHD_FL_UP) {
-+				cciss_destroy_ld_sysfs_entry(hba[i], j);
- 				del_gendisk(disk);
-+			}
- 			if (q)
- 				blk_cleanup_queue(q);
- 		}
--		if (hba[i]->drv[j].dev != NULL &&
--			(j == 0 || hba[i]->drv[j].raid_level != -1))
--				cciss_destroy_ld_sysfs_entry(hba[i], j);
--
- 	}
- 
- #ifdef CONFIG_CISS_SCSI_TAPE
 
