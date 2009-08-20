@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbZHTWVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbZHTWV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117AbZHTWVK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 18:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZHTWVJ
+	id S932093AbZHTWV1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 18:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbZHTWV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 18:21:09 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:34130 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138AbZHTWVI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 18:21:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YMwOFkwzDjPv/jUlFpYWMJc+taKwdwQuAcm5F7xAwxjZQgiA8qioIn5EuJSHjxwwgz
-         6ZlSiX1BI/gWU2aYKJ6Y/xAi/iso5QqZDTgNh1sbv6+3MqFki7MuzGBRMKZJH0RItSf4
-         9cgbcWVfq5+GWOGzng96XBqI2XwB6/pBrCegU=
-Date: Fri, 21 Aug 2009 00:19:58 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: perf: Problem compiling /tools/perf/Documentation in 2.6.31-rc6
-Message-ID: <20090820221958.GA28182@Pilar.aei.mpg.de>
-References: <4A8D9D56.5080107@gmail.com>
+	Thu, 20 Aug 2009 18:21:26 -0400
+Received: from static-76-164-182-224.apid.com ([76.164.182.224]:41960 "EHLO
+	waltsputer.localdomain" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754221AbZHTWVZ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 18:21:25 -0400
+Date: Thu, 20 Aug 2009 17:21:23 -0500 (CDT)
+From: Walt Holman <walt@holmansrus.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Message-ID: <322550336.131250806883202.JavaMail.root@mail.holmansrus.com>
+In-Reply-To: <m3skfmk39q.fsf@intrepid.localdomain>
+Subject: Re: Strange network timeouts w/ 2.6.30.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8D9D56.5080107@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Originating-IP: [192.168.0.1]
+X-Mailer: Zimbra 6.0.0_RC1_1684.UBUNTU8_64 (ZimbraWebClient - [unknown] (Linux)/6.0.0_RC1_1684.UBUNTU8_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 20.Aug'09 at 15:00:38 -0400, Gregory Haskins wrote:
-> Hi Ingo,
+
+----- "Krzysztof Halasa" <khc@pm.waw.pl> wrote:
+
+> Walt Holman <walt@holmansrus.com> writes:
 > 
-> I'm seeing this in 2.6.31-rc6:
+> > dmesg is attached. This box does have >2GB Ram (6GB total).  The
+> dmesg
+> > will show e100 init'd 3 times since the first is the stock
+> modprobe,
+> > 2nd was forced with use_io and the 3rd modprobe was after reverting
+> > the patch.
 > 
-> ghaskins@dev:~/sandbox/git/fabric/linux-2.6/tools/perf/Documentation> make
->     SUBDIR ../
-> make[1]: `PERF-VERSION-FILE' is up to date.
->     ASCIIDOC perf-examples.html
-> ERROR: perf-examples.txt: line 1: manpage document title is mandatory
-> FAILED: perf-examples.txt: line 8: illegal style name: From an e-mail by
-> Ingo Molnar
-> make: *** [perf-examples.html] Error 1
+> You most probably can't test without swiotlb (RAM has to be limited
+> to
+> 2 GB or so), can you? That would (dis)prove my theory. Alternatively
+> (or
+> better), a test on IOMMU-equipped system would do.
+
+Would something like passing a mem=xx cmdline on x86_64 be sufficient to test this?
+
+-Walt
+
+
+
 > 
-> It could very well be pilot error.  Any ideas?
-
-That is my fault. I am sorry everybody.
-
-But Ingo already posted a pull request with the fix here,
-
-http://lkml.org/lkml/2009/8/10/306
-
-
+> Since swiotlb is x86-only thing (though other 64-bit archs may have
+> something similar), I think the correct work around is to enable the
+> "for_device" handoff on !X86.
+> 
+> Something like maybe:
+> 
+> Signed-off-by: Krzysztof Hałasa <khc@pm.waw.pl>
+> 
+> diff --git a/drivers/net/e100.c b/drivers/net/e100.c
+> index 014dfb6..b610088 100644
+> --- a/drivers/net/e100.c
+> +++ b/drivers/net/e100.c
+> @@ -1762,9 +1762,12 @@ static int e100_rx_indicate(struct nic *nic,
+> struct rx *rx,
+>  
+>  			if (ioread8(&nic->csr->scb.status) & rus_no_res)
+>  				nic->ru_running = RU_SUSPENDED;
+> +#ifndef CONFIG_X86
+> +		/* FIXME interferes with swiotlb. */
+>  		pci_dma_sync_single_for_device(nic->pdev, rx->dma_addr,
+>  					       sizeof(struct rfd),
+>  					       PCI_DMA_BIDIRECTIONAL);
+> +#endif
+>  		return -ENODATA;
+>  	}
+>  
+> -- 
+> Krzysztof Halasa
