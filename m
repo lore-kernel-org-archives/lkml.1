@@ -1,136 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbZHTDRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbZHTDSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753269AbZHTDRa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 23:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZHTDR3
+	id S1753353AbZHTDSk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 23:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZHTDSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 23:17:29 -0400
-Received: from mga14.intel.com ([143.182.124.37]:38523 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbZHTDR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 23:17:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,412,1246863600"; 
-   d="scan'208";a="177995846"
-Date: Thu, 20 Aug 2009 11:17:23 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>
-Subject: [RFC][PATCH] mm: remove unnecessary loop inside
-	shrink_inactive_list()
-Message-ID: <20090820031723.GA25673@localhost>
-References: <20090820024929.GA19793@localhost> <20090820025209.GA24387@localhost>
+	Wed, 19 Aug 2009 23:18:40 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56329 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751484AbZHTDSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 23:18:39 -0400
+Message-ID: <4A8CC03A.4010807@cn.fujitsu.com>
+Date: Thu, 20 Aug 2009 11:17:14 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090820025209.GA24387@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Paul Menage <menage@google.com>
+CC: akpm@linux-foundation.org, bblum@andrew.cmu.edu,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 1/8] Revert commit 8827c288feb7810185aa7c2e37537202fc709869
+References: <20090818235059.22531.42618.stgit@menage.mtv.corp.google.com>	 <20090818235812.22531.76212.stgit@menage.mtv.corp.google.com>	 <4A8CB62F.8030504@cn.fujitsu.com>	 <6599ad830908191941x6ee47d58x295c29f80f8c624c@mail.gmail.com>	 <4A8CBEDC.6010709@cn.fujitsu.com> <6599ad830908192013p328a2256o8c807a160e25a9a3@mail.gmail.com>
+In-Reply-To: <6599ad830908192013p328a2256o8c807a160e25a9a3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-shrink_inactive_list() won't be called to scan too much pages
-(unless in hibernation code which is fine) or too few pages (ie.
-batching is taken care of by the callers).  So we can just remove the
-big loop and isolate the exact number of pages requested.
+Paul Menage wrote:
+> On Wed, Aug 19, 2009 at 8:11 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+>> As you said, the 2 patches differ just in using different var/func
+>> names, so rebasing shouldn't be hard but maybe a bit boring.
+>>
+> 
+> Yes - it's a fair amount of work for no real gain.
+> 
 
-Just a RFC, and a scratch patch to show the basic idea.
-Please kindly NAK quick if you don't like it ;)
+Ok, I won't insist on how it should be done.
 
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/vmscan.c |   32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
-
---- linux.orig/mm/vmscan.c	2009-08-20 10:16:18.000000000 +0800
-+++ linux/mm/vmscan.c	2009-08-20 10:24:34.000000000 +0800
-@@ -1032,16 +1032,22 @@ int isolate_lru_page(struct page *page)
-  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
-  * of reclaimed pages
-  */
--static unsigned long shrink_inactive_list(unsigned long max_scan,
-+static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
- 			struct zone *zone, struct scan_control *sc,
- 			int priority, int file)
- {
- 	LIST_HEAD(page_list);
- 	struct pagevec pvec;
--	unsigned long nr_scanned = 0;
--	unsigned long nr_reclaimed = 0;
-+	unsigned long nr_reclaimed;
- 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
--	int lumpy_reclaim = 0;
-+	int lumpy_reclaim;
-+	struct page *page;
-+	unsigned long nr_taken;
-+	unsigned long nr_scan;
-+	unsigned long nr_freed;
-+	unsigned long nr_active;
-+	unsigned int count[NR_LRU_LISTS] = { 0, };
-+	int mode;
- 
- 	/*
- 	 * If we need a large contiguous chunk of memory, or have
-@@ -1054,21 +1060,17 @@ static unsigned long shrink_inactive_lis
- 		lumpy_reclaim = 1;
- 	else if (sc->order && priority < DEF_PRIORITY - 2)
- 		lumpy_reclaim = 1;
-+	else
-+		lumpy_reclaim = 0;
-+
-+	mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
- 
- 	pagevec_init(&pvec, 1);
- 
- 	lru_add_drain();
- 	spin_lock_irq(&zone->lru_lock);
--	do {
--		struct page *page;
--		unsigned long nr_taken;
--		unsigned long nr_scan;
--		unsigned long nr_freed;
--		unsigned long nr_active;
--		unsigned int count[NR_LRU_LISTS] = { 0, };
--		int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
- 
--		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
-+		nr_taken = sc->isolate_pages(nr_to_scan,
- 			     &page_list, &nr_scan, sc->order, mode,
- 				zone, sc->mem_cgroup, 0, file);
- 		nr_active = clear_active_flags(&page_list, count);
-@@ -1093,7 +1095,6 @@ static unsigned long shrink_inactive_lis
- 
- 		spin_unlock_irq(&zone->lru_lock);
- 
--		nr_scanned += nr_scan;
- 		nr_freed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
- 
- 		/*
-@@ -1117,7 +1118,7 @@ static unsigned long shrink_inactive_lis
- 							PAGEOUT_IO_SYNC);
- 		}
- 
--		nr_reclaimed += nr_freed;
-+		nr_reclaimed = nr_freed;
- 		local_irq_disable();
- 		if (current_is_kswapd()) {
- 			__count_zone_vm_events(PGSCAN_KSWAPD, zone, nr_scan);
-@@ -1158,7 +1159,6 @@ static unsigned long shrink_inactive_lis
- 				spin_lock_irq(&zone->lru_lock);
- 			}
- 		}
--  	} while (nr_scanned < max_scan);
- 	spin_unlock(&zone->lru_lock);
- done:
- 	local_irq_enable();
