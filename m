@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZHTCvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbZHTCwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZHTCvu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 22:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZHTCvt
+	id S1753881AbZHTCwN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 22:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZHTCwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 22:51:49 -0400
-Received: from vms173007pub.verizon.net ([206.46.173.7]:49691 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbZHTCvs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 22:51:48 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #13899] Oops from tar, 2.6.31-rc5, 32 bit on quad core phenom.
-Date: Wed, 19 Aug 2009 22:51:39 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc6; KDE/4.2.4; i686; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
- <ADSuNT6McuD.A.-IB.NOIjKB@chimera>
-In-reply-to: <ADSuNT6McuD.A.-IB.NOIjKB@chimera>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=utf-8
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200908192251.39372.gene.heskett@verizon.net>
+	Wed, 19 Aug 2009 22:52:13 -0400
+Received: from mga03.intel.com ([143.182.124.21]:50097 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753438AbZHTCwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 22:52:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,412,1246863600"; 
+   d="scan'208";a="177989937"
+Date: Thu, 20 Aug 2009 10:52:09 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>
+Subject: [PATCH] mm: make nr_scan_try_batch() more safe on races
+Message-ID: <20090820025209.GA24387@localhost>
+References: <20090820024929.GA19793@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090820024929.GA19793@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 19 August 2009, Rafael J. Wysocki wrote:
->This message has been generated automatically as a part of a report
->of recent regressions.
->
->The following bug entry is on the current list of known regressions
->from 2.6.30.  Please verify if it still should be listed and let me know
->(either way).
->
->
->Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13899
->Subject		: Oops from tar, 2.6.31-rc5, 32 bit on quad core phenom.
->Submitter	: Gene Heskett <gene.heskett@verizon.net>
->Date		: 2009-08-01 13:04 (19 days old)
->References	: http://marc.info/?l=linux-kernel&m=124913190304149&w=4
+nr_scan_try_batch() can be called concurrently on the same zone
+and the non-atomic calculations can go wrong. This is not a big
+problem as long as the errors are small and won't impact the
+balanced zone aging noticeably.
 
-I have not seen this since I rebooted to 31-rc6 3.5 days ago.  So apparently 
-something that went into rc6 that was not in rc5, has fixed it.  I have had 
-one kmail crash, but IIRC that was after yum had updated something.  I 
-believe this particular tar related  item has been attended to.  Close it 
-out.
+@nr_to_scan could be much larger values than @swap_cluster_max.
+So don't store such large values to *nr_saved_scan directly,
+which helps reducing possible errors on races.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/vmscan.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-If *I* had a hammer, there'd be no more folk singers.
-
+--- linux.orig/mm/vmscan.c	2009-08-20 10:46:30.000000000 +0800
++++ linux/mm/vmscan.c	2009-08-20 10:49:36.000000000 +0800
+@@ -1496,15 +1496,14 @@ static unsigned long nr_scan_try_batch(u
+ 				       unsigned long *nr_saved_scan,
+ 				       unsigned long swap_cluster_max)
+ {
+-	unsigned long nr;
+-
+-	*nr_saved_scan += nr_to_scan;
+-	nr = *nr_saved_scan;
++	unsigned long nr = *nr_saved_scan + nr_to_scan;
+ 
+ 	if (nr >= swap_cluster_max)
+ 		*nr_saved_scan = 0;
+-	else
++	else {
++		*nr_saved_scan = nr;
+ 		nr = 0;
++	}
+ 
+ 	return nr;
+ }
