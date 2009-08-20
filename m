@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbZHTLP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbZHTLUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbZHTLP6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 07:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbZHTLP6
+	id S1754014AbZHTLUQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 07:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbZHTLUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 07:15:58 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55730 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753906AbZHTLP5 (ORCPT
+	Thu, 20 Aug 2009 07:20:15 -0400
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:60544 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753846AbZHTLUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 07:15:57 -0400
-Subject: Re: [PATCH] intel-iommu: Work around yet another BIOS bug
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, Faidon Liambotis <paravoid@debian.org>,
-       Matt Domsch <Matt_Domsch@dell.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       bero@arklinux.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090820024453.dd9909a2.akpm@linux-foundation.org>
-References: <bug-14003-10286@http.bugzilla.kernel.org/>
-	 <20090819142634.0fc550d1.akpm@linux-foundation.org>
-	 <1250754748.8974.17.camel@macbook.infradead.org>
-	 <1250755318.8974.26.camel@macbook.infradead.org>
-	 <20090820024453.dd9909a2.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 20 Aug 2009 12:14:37 +0100
-Message-Id: <1250766877.11523.1.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 20 Aug 2009 07:20:14 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX190+EFXBhhCV0M/9GJA+g9i
+Date: Thu, 20 Aug 2009 13:20:05 +0300
+From: Tony Lindgren <tony@atomide.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-omap@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Syed Rafiuddin <rafiuddin.syed@ti.com>,
+       Russell King <rmk@arm.linux.org.uk>, Kalle Valo <kalle.valo@iki.fi>
+Subject: Re: linux-next: manual merge of the omap tree with the arm tree
+Message-ID: <20090820102004.GD12309@atomide.com>
+References: <20090819150433.4c12c612.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090819150433.4c12c612.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-20 at 02:44 -0700, Andrew Morton wrote:
-> Printing a u64 with %ll will (still) generate a warning on four
-> architectures.
+* Stephen Rothwell <sfr@canb.auug.org.au> [090819 08:04]:
+> Hi all,
+> 
+> Today's linux-next merge of the omap tree got a conflict in
+> arch/arm/mach-omap2/board-4430sdp.c between commit
+> 085b54d99b8ee999e7905b8f16e201e0da8ba369 ("ARM: OMAP4: Add UART4
+> support") from the arm tree and commit
+> 4c29fa3e47342666e12e46f35f40dd90b12cd1a4 ("OMAP: remove OMAP_TAG_UART")
+> from the omap tree.
+> 
+> Just context changes (I think).  I fixed it up (see below) and can carry
+> the fix as necessary.
 
-Still that many? I thought we'd fixed them all already.
+Thanks yeh the fix looks right. I'll take a look if I can squeeze something
+like that into my queue so the merge conflict disappears.
 
-Certainly we fixed IA64, which is the last one I cared about in the
-context of this particular code.
+Regards,
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Tony
 
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+> diff --cc arch/arm/mach-omap2/board-4430sdp.c
+> index 1b22307,646079f..0000000
+> --- a/arch/arm/mach-omap2/board-4430sdp.c
+> +++ b/arch/arm/mach-omap2/board-4430sdp.c
+> @@@ -38,8 -38,8 +38,8 @@@ static struct platform_device *sdp4430_
+>   	&sdp4430_lcd_device,
+>   };
+>   
+> - static struct omap_uart_config sdp4430_uart_config __initdata = {
+> + static struct omap_uart_platform_data sdp4430_uart_config __initdata = {
+>  -	.enabled_uarts	= (1 << 0) | (1 << 1) | (1 << 2),
+>  +	.enabled_uarts	= (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3),
+>   };
+>   
+>   static struct omap_lcd_config sdp4430_lcd_config __initdata = {
