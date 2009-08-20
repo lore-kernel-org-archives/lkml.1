@@ -1,176 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbZHTNEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZHTNEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252AbZHTNEF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZHTNEE
+	id S1754451AbZHTNEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 09:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZHTNEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:04:04 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:39106 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753966AbZHTNEB convert rfc822-to-8bit (ORCPT
+	Thu, 20 Aug 2009 09:04:47 -0400
+Received: from mail-px0-f196.google.com ([209.85.216.196]:36574 "EHLO
+	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754177AbZHTNEq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:04:01 -0400
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-To: Tony Lindgren <tony@atomide.com>, Stephen Rothwell <sfr@canb.auug.org.au>
-CC: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Syed, Rafiuddin" <rafiuddin.syed@ti.com>,
-       Russell King <rmk@arm.linux.org.uk>, Kalle Valo <kalle.valo@iki.fi>
-Date: Thu, 20 Aug 2009 18:33:28 +0530
-Subject: RE: linux-next: manual merge of the omap tree with the arm tree
-Thread-Topic: linux-next: manual merge of the omap tree with the arm tree
-Thread-Index: AcohiFzi9dSVtprDTqGlY31ypQuYKQAAfjmg
-Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02BA29B949@dbde02.ent.ti.com>
-References: <20090819150433.4c12c612.sfr@canb.auug.org.au>
- <20090820102004.GD12309@atomide.com>
-In-Reply-To: <20090820102004.GD12309@atomide.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 20 Aug 2009 09:04:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=UFPpfFMMVwl9GXfqQrLm3wRiV11GAfZxXs3cSXQVAgOIZ9qvJanx0/avWwre1AB3hs
+         R3GVP4cc6a3QoENZl+OY1GXmiwAVl6LEzQyxmQvnWGV1jcURoRfAFSFKx5RY679S+m2t
+         vaPg4qRa7jFx/pm1PB2TeYV8crS+RMtxJnj1U=
+Message-ID: <4A8D49F5.9090806@gmail.com>
+Date: Thu, 20 Aug 2009 22:04:53 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, benh@kernel.crashing.org, bzolnier@gmail.com,
+       alan@lxorguk.ukuu.org.uk, Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH 0/6] Lazy workqueues
+References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com> <20090820122212.GC6069@nowhere> <20090820124133.GL12579@kernel.dk>
+In-Reply-To: <20090820124133.GL12579@kernel.dk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Today's linux-next merge of the omap tree got a conflict in
-> > arch/arm/mach-omap2/board-4430sdp.c between commit
-> > 085b54d99b8ee999e7905b8f16e201e0da8ba369 ("ARM: OMAP4: Add UART4
-> > support") from the arm tree and commit
-> > 4c29fa3e47342666e12e46f35f40dd90b12cd1a4 ("OMAP: remove OMAP_TAG_UART")
-> > from the omap tree.
-> >
-> > Just context changes (I think).  I fixed it up (see below) and can carry
-> > the fix as necessary.
+Jens Axboe wrote:
+> On Thu, Aug 20 2009, Frederic Weisbecker wrote:
+>> A idea to solve this:
+>>
+>> We could have one thread per struct work_struct.  Similarly to this
+>> patchset, this thread waits for queuing requests, but only for this
+>> work struct.  If the target cpu has no thread for this work, then
+>> create one, like you do, etc...
+>>
+>> Then the idea is to have one workqueue per struct work_struct, which
+>> handles per cpu task creation, etc... And this workqueue only handles
+>> the given work.
+>>
+>> That may solve the deadlocks scenario that are often reported and lead
+>> to dedicated workqueue creation.
+>>
+>> That also makes disappearing the work execution serialization between
+>> different worklets. We just keep the serialization between same work,
+>> which seems a pretty natural thing and is less haphazard than multiple
+>> works of different natures randomly serialized between them.
+>>
+>> Note the effect would not only be a reducing of deadlocks but also
+>> probably an increasing of throughput because works of different
+>> natures won't need anymore to wait for the previous one completion.
+>>
+>> Also a reducing of latency (a high prio work that waits for a lower
+>> prio work).
+>>
+>> There are good chances that we won't need any more per driver/subsys
+>> workqueue creation after that, because everything would be per
+>> worklet.  We could use a single schedule_work() for all of them and
+>> not bother choosing a specific workqueue or the central events/%d
+>>
+>> Hmm?
 > 
-> Thanks yeh the fix looks right. I'll take a look if I can squeeze
-> something
-> like that into my queue so the merge conflict disappears.
+> I pretty much agree with you, my initial plan for a thread pool would be
+> very similar. I'll gradually work towards that goal.
 
-There is another issue with the same merge I noticed which not seems to be correct.
-http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commit;h=a11128de5baf523cf73176170659902fe1335527
+Several issues that come to my mind with the above approach are...
 
-< Code snippet >
+* There will still be cases where you need fixed dedicated thread.
+  Execution resources for anything which might be used during IO needs
+  to be preallocated (at least some of it) to guarantee forward
+  progress.
 
-102 static struct plat_serial8250_port serial_platform_data2[] = {
-103         {
-104                 .membase        = OMAP2_IO_ADDRESS(OMAP_UART3_BASE),
-105                 .mapbase        = OMAP_UART3_BASE,
-106                 .irq            = 74,
-107                 .flags          = UPF_BOOT_AUTOCONF,
-108                 .iotype         = UPIO_MEM,
-109                 .regshift       = 2,
-110                 .uartclk        = OMAP24XX_BASE_BAUD * 16,
-111         }, {
-112 #ifdef CONFIG_ARCH_OMAP4
-113                 .membase        = IO_ADDRESS(OMAP_UART4_BASE),
-114                 .mapbase        = OMAP_UART4_BASE,
-115                 .irq            = 70,
-116                 .flags          = UPF_BOOT_AUTOCONF,
-117                 .iotype         = UPIO_MEM,
-118                 .regshift       = 2,
-119                 .uartclk        = OMAP24XX_BASE_BAUD * 16,
-120         }, {
-121 #endif
-122                 .flags          = 0
-123         }
-124 };
+* Depending on how popular works are used (and I think their usage
+  will grow with improvements like this), we might end up with many
+  idling threads again and please note that thread creation /
+  destruction is quite costly compared to what works usually do.
 
-This patch (ARM: OMAP4: Add UART4) was generated when there was single structure holding all three UARTs and fourth UART was added accordingly. And now it's been merged with serial.c which has UART's structures separated already.
-Below patch fixes the same but don't know what is the way to get merged in such cases. 
+* Having different threads executing different works all the time
+  might improve latency but if works are used frequently enough it's
+  likely to lower throughput because short works which can be handled
+  in batch by a single thread now needs to be handled by different
+  threads.  Scheduling overhead can be significant compared to what
+  those works actually do and it will also cost much more cache
+  footprint-wise.
 
-Tony,
-Could you please review it?
+Thanks.
 
->From c8be9f1b5d4fe1dce06b6f33be33fe57f376ea7f Mon Sep 17 00:00:00 2001
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Date: Thu, 20 Aug 2009 18:33:43 +0530
-Subject: [PATCH] OMAP4: UART4 : Reworked patch to fix merge conflicts.
-
-This patch adds UART4 support on OMAP4430 development platform.
-The serial omap-patches has split the UART platform
-data into separate structure hence needs rework.
-
-Without this patch omap_serial_init() would produce kernel crash
-on OMAP4430 platform while looping for the 4 th UART platform
-data.
-
-Signed-off-by: Syed Rafiuddin <rafiuddin.syed@ti.com>
-Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
----
- arch/arm/mach-omap2/board-4430sdp.c |    2 +-
- arch/arm/mach-omap2/serial.c        |   27 ++++++++++++++++++++++++++-
- 2 files changed, 27 insertions(+), 2 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
-index b0c7402..1b22307 100644
---- a/arch/arm/mach-omap2/board-4430sdp.c
-+++ b/arch/arm/mach-omap2/board-4430sdp.c
-@@ -39,7 +39,7 @@ static struct platform_device *sdp4430_devices[] __initdata = {
- };
- 
- static struct omap_uart_config sdp4430_uart_config __initdata = {
--	.enabled_uarts	= (1 << 0) | (1 << 1) | (1 << 2),
-+	.enabled_uarts	= (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3),
- };
- 
- static struct omap_lcd_config sdp4430_lcd_config __initdata = {
-diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
-index a7421a5..b96cac4 100644
---- a/arch/arm/mach-omap2/serial.c
-+++ b/arch/arm/mach-omap2/serial.c
-@@ -112,7 +112,21 @@ static struct plat_serial8250_port serial_platform_data2[] = {
- 		.flags		= 0
- 	}
- };
--
-+#ifdef CONFIG_ARCH_OMAP4
-+static struct plat_serial8250_port serial_platform_data3[] = {
-+	{
-+		.membase	= IO_ADDRESS(OMAP_UART4_BASE),
-+		.mapbase	= OMAP_UART3_BASE,
-+		.irq		= 70,
-+		.flags		= UPF_BOOT_AUTOCONF,
-+		.iotype		= UPIO_MEM,
-+		.regshift	= 2,
-+		.uartclk	= OMAP24XX_BASE_BAUD * 16,
-+	}, {
-+		.flags		= 0
-+	}
-+};
-+#endif
- static inline unsigned int serial_read_reg(struct plat_serial8250_port *up,
- 					   int offset)
- {
-@@ -550,6 +564,17 @@ static struct omap_uart_state omap_uart[OMAP_MAX_NR_PORTS] = {
- 			},
- 		},
- 	},
-+#ifdef CONFIG_ARCH_OMAP4
-+	{
-+		.pdev = {
-+			.name			= "serial8250",
-+			.id			= PLAT8250_DEV_PLATFORM2,
-+			.dev			= {
-+				.platform_data	= serial_platform_data2,
-+			},
-+		},
-+	},
-+#endif
- };
- 
- void __init omap_serial_init(void)
 -- 
-1.5.4.7
-
-
-Regrads
-Santosh
-
-
-
-
+tejun
