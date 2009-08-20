@@ -1,112 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZHTUwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZHTUw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754930AbZHTUwD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 16:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZHTUwC
+	id S1755294AbZHTUw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 16:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZHTUw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 16:52:02 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:56287 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754281AbZHTUwA (ORCPT
+	Thu, 20 Aug 2009 16:52:58 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:62088 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbZHTUw4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 16:52:00 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; CHARSET=US-ASCII; format=flowed
-Date: Thu, 20 Aug 2009 13:51:50 -0700
-From: Matheos Worku <Matheos.Worku@Sun.COM>
-Subject: Re: [PATCH] char/vme_scc: adding __init macro to vme_scc.c
-In-reply-to: <200908202242.31778.PeterHuewe@gmx.de>
-To: Peter Huewe <PeterHuewe@gmx.de>
-Cc: Jiri Kosina <trivial@kernel.org>, Alan Cox <alan@redhat.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Message-id: <4A8DB766.9020701@sun.com>
-References: <200908202242.31778.PeterHuewe@gmx.de>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Thu, 20 Aug 2009 16:52:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=PsBXlKQDGKzEc8Vp/lRsYSy7jq5yFG8dvUAGezDhi41kquS0nTzpapQO8hZcwNN2lI
+         TehqioMm8qc1VHRk220synDK3Q2kIiAit1tXqCK6sCFdJquf1tMILexUL2q14TOB0mrN
+         4UoagOCsAD3Yfmzj5q6WYemf+sN534+2GHicY=
+Subject: Re: 2.6.31-rc6-git5: Reported regressions from 2.6.30
+From: John Dykstra <john.dykstra1@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+In-Reply-To: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
+References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
+Content-Type: text/plain
+Date: Thu, 20 Aug 2009 20:52:51 +0000
+Message-Id: <1250801571.7176.10.camel@Maple>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Huewe wrote:
-> From: Peter Huewe <peterhuewe@gmx.de>
->
-> Trivial patch which adds the __init macro to the module_init 
-> function and all of its helper functions of char/vme_scc.c
->
-> Alan or Geert, please have a look at the small patch and either pull it through 
-> your tree, or please ack' it so Jiri can pull it through the trivial tree.
->
-> linux version 2.6.31-rc6 - linus git tree, Do 20. Aug 22:26:06 CEST 2009
->
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-> ---
-> diff --git a/drivers/char/vme_scc.c b/drivers/char/vme_scc.c
-> index 994e1a5..8b24729 100644
-> --- a/drivers/char/vme_scc.c
-> +++ b/drivers/char/vme_scc.c
-> @@ -136,7 +136,7 @@ static const struct tty_port_operations scc_port_ops = {
->   * vme_scc_init() and support functions
->   *---------------------------------------------------------------------------*/
->  
-> -static int scc_init_drivers(void)
-> +static int __init scc_init_drivers(void)
->  {
->  	int error;
->  
-> @@ -172,7 +172,7 @@ static int scc_init_drivers(void)
->  /* ports[] array is indexed by line no (i.e. [0] for ttyS0, [1] for ttyS1).
->   */
->  
-> -static void scc_init_portstructs(void)
-> +static void __init scc_init_portstructs(void)
->  {
->  	struct scc_port *port;
->  	int i;
-> @@ -195,7 +195,7 @@ static void scc_init_portstructs(void)
->  
->  
->  #ifdef CONFIG_MVME147_SCC
-> -static int mvme147_scc_init(void)
-> +static int __init mvme147_scc_init(void)
->  {
->  	struct scc_port *port;
->  	int error;
-> @@ -298,7 +298,7 @@ fail:
->  
->  
->  #ifdef CONFIG_MVME162_SCC
-> -static int mvme162_scc_init(void)
-> +static int __init mvme162_scc_init(void)
->  {
->  	struct scc_port *port;
->  	int error;
-> @@ -404,7 +404,7 @@ fail:
->  
->  
->  #ifdef CONFIG_BVME6000_SCC
-> -static int bvme6000_scc_init(void)
-> +static int __init bvme6000_scc_init(void)
->  {
->  	struct scc_port *port;
->  	int error;
-> @@ -503,7 +503,7 @@ fail_free_b_rx:
->  #endif
->  
->  
-> -static int vme_scc_init(void)
-> +static int __init vme_scc_init(void)
->  {
->  	int res = -ENODEV;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
-Then there are issnvram.txt iss.conf etc ... I guess we need to change 
-these as well.
-How about error messages? I assume they would have ISS  in them.
-Regards
-Matheos
- 
+On Wed, 2009-08-19 at 22:20 +0200, Rafael J. Wysocki wrote:
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14002
+> Subject         : WARNING: at net/ipv4/af_inet.c:154
+> inet_sock_destruct+0x164/0x1c0()
+> Submitter       : Ralf Hildebrandt <ralf.hildebrandt@charite.de>
+> Date            : 2009-08-18 12:37 (2 days old)
+
+That looks similar to the WARNING discussed in [1].
+
+There was no resolution to that thread.  However, [2] points out
+possible other occurrences of the problem in 2.6.27, 28 and 29.
+
+--  John
+
+[1]  http://www.spinics.net/lists/netdev/msg103267.html
+[2]  http://www.spinics.net/lists/netdev/msg104120.html
+
+
