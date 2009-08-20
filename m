@@ -1,76 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753048AbZHTIZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbZHTId5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753048AbZHTIZk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 04:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbZHTIZj
+	id S1752918AbZHTId5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 04:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbZHTId5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 04:25:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59263 "EHLO smtps.tip.net.au"
+	Thu, 20 Aug 2009 04:33:57 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:45761 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751753AbZHTIZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 04:25:38 -0400
-Date: Thu, 20 Aug 2009 18:25:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org
-Subject: Re: [PATCH V3 linux-next] treewide: remove unnecessary semicolons
-Message-Id: <20090820182530.43967787.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LNX.2.00.0908191105570.25797@wotan.suse.de>
-References: <1248472866.3498.79.camel@Joe-Laptop.home>
-	<alpine.LNX.2.00.0908131155510.25797@wotan.suse.de>
-	<1250158868.28285.26.camel@Joe-Laptop.home>
-	<alpine.LNX.2.00.0908181359450.25797@wotan.suse.de>
-	<1250619515.25478.19.camel@Joe-Laptop.home>
-	<alpine.LNX.2.00.0908191105570.25797@wotan.suse.de>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__20_Aug_2009_18_25_30_+1000_uO4uPXxsOFlBMCub"
+	id S1752139AbZHTIdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 04:33:55 -0400
+Date: Thu, 20 Aug 2009 11:31:55 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
+Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090820083155.GB5448@redhat.com>
+References: <cover.1250187913.git.mst@redhat.com> <200908191546.44193.arnd@arndb.de> <20090819142038.GA3862@redhat.com> <200908191727.07681.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908191727.07681.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__20_Aug_2009_18_25_30_+1000_uO4uPXxsOFlBMCub
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Aug 19, 2009 at 05:27:07PM +0200, Arnd Bergmann wrote:
+> On Wednesday 19 August 2009, Michael S. Tsirkin wrote:
+> > On Wed, Aug 19, 2009 at 03:46:44PM +0200, Arnd Bergmann wrote:
+> > > On Wednesday 19 August 2009, Michael S. Tsirkin wrote:
+> > >
+> > > Leaving that aside for now, you could replace VHOST_NET_SET_SOCKET,
+> > > VHOST_SET_OWNER, VHOST_RESET_OWNER
+> > 
+> > SET/RESET OWNER is still needed: otherwise if you share a descriptor
+> > with another process, it can corrupt your memory.
+> 
+> How? The point of using user threads is that you only ever access the
+> address space of the thread that called the ioctl.
 
-Hi Jiri, Joe,
+Think about this example with processes A and B sharing an fd:
+A does SET_USED_ADDRESS
+B does SET_USED_ADDRESS
+A does VHOST_NET_SPLICE
+See how stuff gets written into a random place in memory of A?
 
-On Wed, 19 Aug 2009 11:06:26 +0200 (CEST) Jiri Kosina <jkosina@suse.cz> wro=
-te:
->
-> On Tue, 18 Aug 2009, Joe Perches wrote:
->=20
-> > > > > > Previous discussion at: http://lkml.org/lkml/2009/6/28/288
-> > > > > > Signed-off-by: Joe Perches <joe@perches.com>
-> > > > I could do that or you could "git apply --exclude=3Ddrivers/staging=
-/"
-> > > > Which do you prefer?
-> > > It doesn't apply any more, could you please refresh, resend, and I wi=
-ll=20
-> > > apply it right away?
-> > I used git apply --reject --exclude=3Ddrivers/staging
->=20
-> OK, applied, let's see how many conflicts we get.
+> > > and your kernel thread with a new
+> > > VHOST_NET_SPLICE blocking ioctl that does all the transfers in the
+> > > context of the calling thread.
+> > 
+> > For one, you'd want a thread per virtqueue.
+> 
+> Don't understand why. The thread can be blocked on all four ends
+> of the device and wake up whenever there is some work do to in
+> any direction. If we have data to be transferred in both ways,
+> we save one thread switch. It probably won't hurt much to have one
+> thread per direction, but I don't see the point.
+> > Second, an incoming traffic might arrive on another CPU, we want
+> > to keep it local.  I guess you would also want ioctls to wake up
+> > the threads spuriously ...
+> 
+> Outbound traffic should just stay on whatever CPU was sending it
+> from the guest. For inbound traffic, we should only wake up
+> the thread on the CPU that got the data to start with.
 
-Suprisingly: none  :-)  (well at least for today)
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Exactly. Since we have RX and TX virtqueues, this would mean thread per
+direction or virtqueue, same thing. OTOH if RX and TX happen to run on the
+same CPU, thread switch would be just a waste of time: but userspace
+does not know it, only guest and kernel know.
 
---Signature=_Thu__20_Aug_2009_18_25_30_+1000_uO4uPXxsOFlBMCub
-Content-Type: application/pgp-signature
+> Why would I wake up the threads spuriously? Do you mean for
+> stopping the transmission or something else? I guess a pthread_kill
+> would be enough for shutting it down.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+If you kill and restart them you lost priority etc parameters, but maybe.
 
-iEYEARECAAYFAkqNCHoACgkQjjKRsyhoI8w1OwCfQV5UzuhNCVevXsh/mVmjue4O
-rWEAnAjCSwNJo2rqg9ZgLkHDPGplPIPs
-=wBTK
------END PGP SIGNATURE-----
+> > > This would improve the driver on various fronts:
+> > > 
+> > > - no need for playing tricks with use_mm/unuse_mm
+> > > - possibly fewer global TLB flushes from switch_mm, which
+> > >   may improve performance.
+> > 
+> > Why would there be less flushes?
+> 
+> I just read up on task->active_mm handling. There probably wouldn't
+> be any. I got that wrong.
+> 
+> > > - based on that, the ability to use any kind of file
+> > >   descriptor that can do writev/readv or sendmsg/recvmsg
+> > >   without the nastiness you mentioned.
+> > 
+> > Yes, it's an interesting approach. As I said, need to tread very
+> > carefully though, I don't think all issues are figured out. For example:
+> > what happens if we pass our own fd here? Will refcount on file ever get
+> > to 0 on exit?  There may be others ...
+> 
+> right.
+> 
+> > > The disadvantage of course is that you need to add a user
+> > > thread for each guest device to make up for the workqueue
+> > > that you save.
+> > 
+> > More importantly, you lose control of CPU locality.  Simply put, a
+> > natural threading model in virtualization is one thread per guest vcpu.
+> > Asking applications to add multiple helper threads just so they can
+> > block forever is wrong, IMO, as userspace has no idea which CPU
+> > they should be on, what priority to use, etc.
+> 
+> But the kernel also doesn't know this, you get the same problem in
+> another way. If you have multiple guests running at different priorities,
+> the kernel will use those priorities to do the more important transfers
+> first, while with a global workqueue every guest gets the same priority.
 
---Signature=_Thu__20_Aug_2009_18_25_30_+1000_uO4uPXxsOFlBMCub--
+We could create more threads if this becomes a problem. I just think it
+should be transparent to userspace. Possibly it's useful to look at the
+packet header as well to decide on priority: this is something userspace
+can't do.
+
+> You say that the natural model is to have one thread per guest
+> CPU,
+
+Sorry I was not clear. I think userspace should create thread per guest.
+We can create as many as we need for networking but I think this should
+be behind the scenes, so userspace shouldn't bother with host CPUs, it
+will just get it wrong. Think of CPU hotplug, interrupts migrating
+between CPUs, etc ...
+
+> but you have a thread per host CPU instead. If the numbers
+> are different, you probably lose either way.
+
+The trick I used is to keep as much as possible local
+TX done on the CPU that runs the guest,
+RX done on the CPU that runs the NIC interrupt.
+a smart SMP guest sees which cpu gets interrupts
+from NIC and schedules RX there, and it shouldn't matter
+if the numbers of CPUs are different.
+
+> It gets worse if you try to apply NUMA policies.
+
+I believe the best we could do is avoid switching CPUs
+until we know the actual destination.
+
+> > > > > to
+> > > > > avoid some of the implications of kernel threads like the missing
+> > > > > ability to handle transfer errors in user space.
+> > > > 
+> > > > Are you talking about TCP here?
+> > > > Transfer errors are typically asynchronous - possibly eventfd
+> > > > as I expose for vhost net is sufficient there.
+> > > 
+> > > I mean errors in general if we allow random file descriptors to be used.
+> > > E.g. tun_chr_aio_read could return EBADFD, EINVAL, EFAULT, ERESTARTSYS,
+> > > EIO, EAGAIN and possibly others. We can handle some in kernel, others
+> > > should never happen with vhost_net, but if something unexpected happens
+> > > it would be nice to just bail out to user space.
+> > 
+> > And note that there might be more than one error.  I guess, that's
+> > another problem with trying to layer on top of vfs.
+> 
+> Why is that different from any other system call?
+
+With other system calls nothing happens while you process the error.
+Here, the guest (other queues) and the network keep running (unless
+there is a thread per queue, maybe we can block a queue, but we both
+agreed above we don't want that).
+
+> We just return when
+> we hit the first error condition.
+> 
+> 	Arnd <><
+
+If you assume losing the code for the second error condition is OK, why
+is the first one so important?  That's why I used a counter (eventfd)
+per virtqueue, on error userspace can scan the ring and poll the socket
+and discover what's wrong, and counter ensures we can detect that error
+happened while we were not looking.
+
+-- 
+MST
