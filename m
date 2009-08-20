@@ -1,97 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbZHTJ6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZHTKAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753781AbZHTJ6h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 05:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbZHTJ6g
+	id S1753807AbZHTKAm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 06:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZHTKAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 05:58:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42646 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753216AbZHTJ6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 05:58:36 -0400
-Date: Thu, 20 Aug 2009 11:58:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [circular locking bug] Re: [patch 00/15] clocksource /
-	timekeeping rework V4 (resend V3 + bug fix)
-Message-ID: <20090820095821.GA29093@elte.hu>
-References: <1250300765.8269.29.camel@localhost.localdomain> <alpine.LFD.2.00.0908151057500.1283@localhost.localdomain> <20090815095221.GA15831@elte.hu> <alpine.LFD.2.00.0908151207000.1283@localhost.localdomain> <20090817094042.03fe5d38@skybase> <alpine.LFD.2.00.0908171038420.2782@localhost.localdomain> <20090817092807.GA10460@elte.hu> <20090818170942.3ab80c91@skybase> <20090819202554.GA19482@elte.hu> <20090820112820.47d833c1@skybase>
+	Thu, 20 Aug 2009 06:00:41 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:34242 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753155AbZHTKAk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 06:00:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=Qyk7prGMxnIeMZMpD+zTjmUUvUPOMFLsGNwg8sMTkSHMxdoR+XOq7r/h2YffghkbRL
+         TALRAT/5rRYjfO/imf8g5dlOwg+aUkPJRBJW+FGlnhzxHyH8Ne7wEIi+3JJ0GgzHxDZJ
+         yZh4a0cZ/95YWZIexbJ3/ZmAIcxeLfKLTRglQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090820112820.47d833c1@skybase>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Reply-To: eranian@gmail.com
+In-Reply-To: <20090818114533.GA32289@redhat.com>
+References: <20090730202804.GA13675@redhat.com>
+	 <20090731141122.a1939712.akpm@linux-foundation.org>
+	 <7c86c4470908030553v5a0a4448p94ab612700d68066@mail.gmail.com>
+	 <20090809054601.GA26152@shareable.org>
+	 <7c86c4470908100522q44dc1228i315b29d69fc98da3@mail.gmail.com>
+	 <20090810170338.GA14223@redhat.com>
+	 <7c86c4470908101401k49f42788o25eb1efaa631f065@mail.gmail.com>
+	 <20090817171605.GB15907@redhat.com>
+	 <7c86c4470908171526j60add584qfc635ba91cd4df46@mail.gmail.com>
+	 <20090818114533.GA32289@redhat.com>
+Date: Thu, 20 Aug 2009 12:00:40 +0200
+Message-ID: <7c86c4470908200300y2f4a22f3re09ea49ccf0d81d5@mail.gmail.com>
+Subject: Re: F_SETOWN_TID: F_SETOWN was thread-specific for a while
+From: stephane eranian <eranian@googlemail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oleg,
 
-* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+On Tue, Aug 18, 2009 at 1:45 PM, Oleg Nesterov<oleg@redhat.com> wrote:
+> On 08/18, stephane eranian wrote:
+>> > In any case. We should not look at SA_SIGINFO at all. If sys_sigaction() was
+>> > called without SA_SIGINFO, then it doesn'matter if we send SEND_SIG_PRIV or
+>> > siginfo_t with the correct si_fd/etc.
+>> >
+>> What's the official role of SA_SIGINFO? Pass a siginfo struct?
+>>
+>> Does POSIX describe the rules governing the content of si_fd?
+>> Or is si_fd a Linux-ony extension in which case it goes with F_SETSIG.
+>
+> Not sure I understand your concern...
+>
+> OK. You suggest to pass siginfo_t with .si_fd/etc when we detect SA_SIGINFO.
+>
+The reason I refer to SA_SIGINFO is simply because of the excerpt from the
+sigaction man page:
 
-> On Wed, 19 Aug 2009 22:25:54 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > ok, with all the latest patches i re-added these bits to 
-> > -tip, and it triggered this lockdep assert on a testbox:
-> 
-> Another one :-(
-> 
-> > stack backtrace:
-> > Pid: 1, comm: swapper Not tainted 2.6.31-rc6-tip-01234-gcc9be0e-dirty #1054
-> > Call Trace:
-> >  [<c106f430>] print_usage_bug+0x130/0x180
-> >  [<c106f5eb>] mark_lock_irq+0x16b/0x260
-> >  [<c106f240>] ? check_usage_forwards+0x0/0xc0
-> >  [<c106f7fe>] mark_lock+0x11e/0x3a0
-> >  [<c106fbff>] mark_irqflags+0x17f/0x190
-> >  [<c107177a>] __lock_acquire+0x29a/0x520
-> >  [<c1071a6a>] lock_acquire+0x6a/0xc0
-> >  [<c10664d7>] ? clocksource_unregister+0x17/0x50
-> >  [<c175719b>] __mutex_lock_common+0x3b/0x340
-> >  [<c10664d7>] ? clocksource_unregister+0x17/0x50
-> >  [<c1757551>] mutex_lock_nested+0x31/0x40
-> >  [<c10664d7>] ? clocksource_unregister+0x17/0x50
-> >  [<c10664d7>] clocksource_unregister+0x17/0x50
-> >  [<c1008b3a>] pit_disable_clocksource+0x2a/0x40
-> >  [<c1008bb9>] init_pit_timer+0x29/0xb0
-> >  [<c106825a>] clockevents_set_mode+0x1a/0x50
-> >  [<c1069a96>] tick_switch_to_oneshot+0x96/0xc0
-> >  [<c1069ad2>] tick_init_highres+0x12/0x20
-> >  [<c105e32d>] hrtimer_switch_to_hres+0x4d/0x100
-> >  [<c105ebbd>] hrtimer_run_pending+0x4d/0x50
-> >  [<c104bb85>] run_timer_softirq+0x25/0x230
-> 
-> Ok, the cause is that the i8253 pit clocksource code 
-> tries to unregister a clocksource from a timer 
-> interrupt. Bad idea with the new code. Why does the pit 
-> clocksource have to >unregister< the clock if the 
-> set_mode callback is called with 
-> CLOCK_EVT_MODE_SHUTODWN, CLOCK_EVT_MODE_UNUSED, or 
-> CLOCK_EVT_MODE_ONESHOT? Very strange, I would argue 
-> that the clocksource should never unregister in the 
-> set_mode callback, the timekeeping code should not use 
-> the clocksource if it is unsuitable for e.g. the one 
-> shot mode.
+       If  SA_SIGINFO  is specified in sa_flags, then sa_sigaction (instead of
+       sa_handler) specifies the signal-handling function  for  signum.   This
+       function receives the signal number as its first argument, a pointer to
+       a siginfo_t as its second argument and a pointer to a ucontext_t  (cast
+       to void *) as its third argument.
 
-i think this 'execute timer management functions right 
-from the deep bowels of time events' concept is 
-fundamentally flawed and one big layering violation. It 
-caused numerous problems (lockups, etc.) in the past.
+In other words, I use this to emphasize the fact that to get a siginfo
+struct, you need to pass SA_SIGINFO and use sa_sigaction instead of
+sa_handler. That's all I am saying.
 
-There should be a time management kernel thread instead 
-(or workqueue), which does a proper state machine of all 
-these properties - without having to call this stuff from 
-within a timer handler.
 
-	Ingo
+> But, in that case we can _always_ pass siginfo_t, regardless of SA_SIGINFO.
+> If the task has a signal handler and sigaction() was called without
+> SA_SIGINFO, then the handler must not look into *info (the second arg of
+> sigaction->sa_sigaction). And in fact, __setup_rt_frame() doesn't even
+> copy the info to the user-space:
+>
+>        if (ka->sa.sa_flags & SA_SIGINFO) {
+>                if (copy_siginfo_to_user(&frame->info, info))
+>                        return -EFAULT;
+>        }
+>
+> OK? Or I missed something?
+>
+No, I think we are in agreement. To get meaningful siginfo use SA_SIGINFO.
+
+> Or. Suppose that some app does:
+>
+>       void io_handler(int sig, siginfo_t *info, void *u)
+>       {
+>               if ((info->si_code & __SI_MASK) != SI_POLL) {
+>                      // RT signal failed! sig MUST be == SIGIO
+>                       recover();
+>               } else {
+>                      do_something(info->si_fd);
+>               }
+>       }
+>
+>       int main(void)
+>       {
+>               sigaction(SIGRTMIN, { SA_SIGINFO, io_handler });
+>               sigaction(SIGIO,    { SA_SIGINFO, io_handler });
+>               ...
+>       }
+>
+I don't think you can check si_code without first checking which
+signal it is in si_signo. The values for si_code overlap between
+the different struct in siginfo->_sifields.
+
+>> It would seem natural that in the siginfo passed to the handler of SIGIO, the
+>> file descriptor be passed by default. That is all I am trying to say here.
+>
+> Completely agreed! I was always puzzled by send_sigio_to_task(). I was never
+> able to understand why it looks so strange.
+>
+> So, I think it should be
+>
+>        static void send_sigio_to_task(struct task_struct *p,
+>                                       struct fown_struct *fown,
+>                                       int fd,
+>                                       int reason)
+>        {
+>                siginfo_t si;
+>                /*
+>                 * F_SETSIG can change ->signum lockless in parallel, make
+>                 * sure we read it once and use the same value throughout.
+>                 */
+>                int signum = ACCESS_ONCE(fown->signum) ?: SIGIO;
+>
+>                if (!sigio_perm(p, fown, signum))
+>                        return;
+>
+>                si.si_signo = signum;
+>                si.si_errno = 0;
+>                si.si_code  = reason;
+>                si.si_fd    = fd;
+>                /* Make sure we are called with one of the POLL_*
+>                   reasons, otherwise we could leak kernel stack into
+>                   userspace.  */
+>                BUG_ON((reason & __SI_MASK) != __SI_POLL);
+>                if (reason - POLL_IN >= NSIGPOLL)
+>                        si.si_band  = ~0L;
+>                else
+>                        si.si_band = band_table[reason - POLL_IN];
+>
+>                /* Failure to queue an rt signal must be reported as SIGIO */
+>                if (!group_send_sig_info(signum, &si, p))
+>                        group_send_sig_info(SIGIO, SEND_SIG_PRIV, p);
+>        }
+>
+> (except it should be on top of fcntl-add-f_etown_ex.patch).
+> This way, at least we don't break the "detect RT signal failed" above.
+>
+> What do you think?
+>
+> But let me repeat: I just can't convince myself we have a good reason
+> to change the strange, but carefully documented behaviour.
+>
+I agree with you. Given the existing documentation in the man page
+of fcntl() and the various code examples. I think it is possible for
+developers to figure out how to get the si_fd in the handler. This
+problem is not specific to perf_counters nor perfmon. Any SIGIO-based
+program may be interested in getting si_fd, therefore I am assuming the
+solution is well understood at this point.
