@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbZHTQKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZHTQLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbZHTQKk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 12:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZHTQKj
+	id S1754791AbZHTQLr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 12:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZHTQLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 12:10:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58949 "EHLO
+	Thu, 20 Aug 2009 12:11:47 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58956 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbZHTQKj (ORCPT
+	with ESMTP id S1754268AbZHTQLq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 12:10:39 -0400
-Date: Thu, 20 Aug 2009 18:10:38 +0200
+	Thu, 20 Aug 2009 12:11:46 -0400
+Date: Thu, 20 Aug 2009 18:11:47 +0200
 From: Andi Kleen <andi@firstfloor.org>
-To: "Wang, Shane" <shane.wang@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>
-Subject: Re: [RFC v6][PATCH 2/4] intel_txt: Intel(R) TXT reboot/halt
-	shutdown support
-Message-ID: <20090820161038.GA29994@basil.fritz.box>
-References: <4A4ACA66.2000706@intel.com> <20090817154055.GA12985@elte.hu> <20090817155348.GA2254@elte.hu> <037F493892196B458CD3E193E8EBAD4F01EC3AB3B2@pdsmsx502.ccr.corp.intel.com>
+To: Joe Perches <joe@perches.com>
+Cc: Stefani Seibold <stefani@seibold.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>
+Subject: Re: [PATCH 4/7] kfifo: rename kfifo_put... into kfifo_in... and
+	kfifo_get... into kfifo_out...
+Message-ID: <20090820161147.GB29994@basil.fritz.box>
+References: <1250714990.13476.3.camel@wall-e> <1250715606.13476.15.camel@wall-e> <1250715819.3407.88.camel@Joe-Laptop.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <037F493892196B458CD3E193E8EBAD4F01EC3AB3B2@pdsmsx502.ccr.corp.intel.com>
+In-Reply-To: <1250715819.3407.88.camel@Joe-Laptop.home>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 05:33:50PM +0800, Wang, Shane wrote:
-> Hi Ingo & hpa,
+On Wed, Aug 19, 2009 at 02:03:39PM -0700, Joe Perches wrote:
+> On Wed, 2009-08-19 at 23:00 +0200, Stefani Seibold wrote:
+> > rename kfifo_put... into kfifo_in... to prevent miss use of old non in kernel-tree drivers
+> > ditto for kfifo_get... -> kfifo_out...
 > 
-> I have made some change on the previous tboot patch to fix the build errors.
-> Please comment.
+> I would have thought
+> 	kfifo_put -> kfifo_out
+> 	kfifo_get -> kfifo_in
+> but maybe that's just me.
 
-The standard way to do this would be to define a linux/tboot.h
-that does the ifdef and in the else path define dummy inlines
-for these functions.
+I don't think it's fruitful to criticize other people's variable
+names. The rule in Linux is normally: if you write the code
+you get to name it the way you want.
 
 -Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
