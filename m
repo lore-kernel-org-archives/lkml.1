@@ -1,43 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZHTMI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbZHTMJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbZHTMI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 08:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbZHTMI6
+	id S1754075AbZHTMJR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 08:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZHTMJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 08:08:58 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58981 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752044AbZHTMI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 08:08:57 -0400
-Date: Thu, 20 Aug 2009 14:08:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, benh@kernel.crashing.org,
-       htejun@gmail.com, bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 0/6] Lazy workqueues
-Message-ID: <20090820120858.GJ12579@kernel.dk>
-References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com> <1250769861.8282.182.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250769861.8282.182.camel@twins>
+	Thu, 20 Aug 2009 08:09:16 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59761 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753602AbZHTMJP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 08:09:15 -0400
+Subject: Re: nfs: LOCKDEP warning with 2.6.31-rc6
+From: Peter Zijlstra <peterz@infradead.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <s5hiqgipz4x.wl%tiwai@suse.de>
+References: <s5hiqgipz4x.wl%tiwai@suse.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 20 Aug 2009 14:09:19 +0200
+Message-Id: <1250770159.8282.185.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20 2009, Peter Zijlstra wrote:
-> On Thu, 2009-08-20 at 12:19 +0200, Jens Axboe wrote:
-> > (sorry for the resend, but apparently the directory had some patches
-> >  in it already. plus, stupid git send-email doesn't default to
-> >  no chain replies, really annoying)
+On Thu, 2009-08-20 at 12:18 +0200, Takashi Iwai wrote:
+> Hi,
 > 
-> Newer versions should, I made a stink about this some time ago.
+> my machine got a lockdep warning regarding NFS client on 2.6.31-rc6.
+> Here is the log:
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.31-rc6-test #12
+> -------------------------------------------------------
+> soffice.bin/31490 is trying to acquire lock:
+>  (&sb->s_type->i_mutex_key#13){+.+.+.}, at: [<f85ea8bb>] nfs_revalidate_mapping+0x72/0xbe [nfs]
+> 
+> but task is already holding lock:
+>  (&mm->mmap_sem){++++++}, at: [<c0106c5b>] sys_mmap2+0x6d/0xb4
+> 
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (&mm->mmap_sem){++++++}:
+>        [<c0161b06>] __lock_acquire+0x100e/0x130d
+>        [<c0161ebc>] lock_acquire+0xb7/0xeb
+>        [<c01a2a15>] might_fault+0x69/0x9a
+>        [<c026d399>] copy_to_user+0x3c/0x127
+>        [<c01d4427>] filldir64+0xc3/0x108
+>        [<f85e6270>] nfs_do_filldir+0x383/0x4ad [nfs]
+>        [<f85e6b4e>] nfs_readdir+0x7b4/0x830 [nfs]
+>        [<c01d469e>] vfs_readdir+0x76/0xb3
+>        [<c01d474e>] sys_getdents64+0x73/0xc3
+>        [<c0102df3>] sysenter_do_call+0x12/0x38
+>        [<ffffffff>] 0xffffffff
+> 
+> -> #0 (&sb->s_type->i_mutex_key#13){+.+.+.}:
+>        [<c0161856>] __lock_acquire+0xd5e/0x130d
+>        [<c0161ebc>] lock_acquire+0xb7/0xeb
+>        [<c03af059>] mutex_lock_nested+0x43/0x272
+>        [<f85ea8bb>] nfs_revalidate_mapping+0x72/0xbe [nfs]
+>        [<f85e8128>] nfs_file_mmap+0x5e/0x77 [nfs]
+>        [<c01ab5f7>] mmap_region+0x263/0x40f
+>        [<c01aba07>] do_mmap_pgoff+0x264/0x2c7
+>        [<c0106c6f>] sys_mmap2+0x81/0xb4
+>        [<c0102df3>] sysenter_do_call+0x12/0x38
+>        [<ffffffff>] 0xffffffff
+> 
+> other info that might help us debug this:
+> 
+> 1 lock held by soffice.bin/31490:
+>  #0:  (&mm->mmap_sem){++++++}, at: [<c0106c5b>] sys_mmap2+0x6d/0xb4
+> 
+> stack backtrace:
+> Pid: 31490, comm: soffice.bin Not tainted 2.6.31-rc6-test #12
+> Call Trace:
+>  [<c03ad742>] ? printk+0x1d/0x33
+>  [<c01606d1>] print_circular_bug_tail+0xaf/0xcb
+>  [<c0161856>] __lock_acquire+0xd5e/0x130d
+>  [<f85ea8bb>] ? nfs_revalidate_mapping+0x72/0xbe [nfs]
+>  [<c0161ebc>] lock_acquire+0xb7/0xeb
+>  [<f85ea8bb>] ? nfs_revalidate_mapping+0x72/0xbe [nfs]
+>  [<f85ea8bb>] ? nfs_revalidate_mapping+0x72/0xbe [nfs]
+>  [<c03af059>] mutex_lock_nested+0x43/0x272
+>  [<f85ea8bb>] ? nfs_revalidate_mapping+0x72/0xbe [nfs]
+>  [<f8609339>] ? nfs_have_delegation+0x68/0x82 [nfs]
+>  [<f85ea8bb>] nfs_revalidate_mapping+0x72/0xbe [nfs]
+>  [<f85e8128>] nfs_file_mmap+0x5e/0x77 [nfs]
+>  [<c01ab5f7>] mmap_region+0x263/0x40f
+>  [<c01aba07>] do_mmap_pgoff+0x264/0x2c7
+>  [<c0106c6f>] sys_mmap2+0x81/0xb4
+>  [<c0102df3>] sysenter_do_call+0x12/0x38
+> 
+> =======================================================
+> 
+> Indeed this looks like a circular lock dependency since copy_*_user()
+> invokes mm->mmap_sem mutex lock internally.  (I hit a similar bug in
+> the ALSA core ago, thus I know it :)
+> 
+> The inode lock in vfs_readdir is killable, so it's not critical,
+> though...
 
-git version 1.6.4.173.g3f189
+Right, I did a number of patches to split up ->mmap() a while ago (ok, a
+long while ago).
 
-That's pretty new... But perhaps I should complain too, it's been
-annoying me forever.
+  http://www.mail-archive.com/linux-arch@vger.kernel.org/msg04493.html
 
--- 
-Jens Axboe
-
+Unless someone sees another way out, we should reconsider these, as this
+warning seems to pop up more frequently.
