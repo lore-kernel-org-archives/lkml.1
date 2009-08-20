@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbZHTVUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbZHTVUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755444AbZHTVUZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 17:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZHTVUY
+	id S1755468AbZHTVUf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 17:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbZHTVUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 17:20:24 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:31648 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752204AbZHTVUY (ORCPT
+	Thu, 20 Aug 2009 17:20:34 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:60104 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755438AbZHTVUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 17:20:24 -0400
-Date: Thu, 20 Aug 2009 15:20:24 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
-Message-ID: <20090820212024.GG13061@ldl.fc.hp.com>
-References: <20090814163618.GQ7185@ldl.fc.hp.com> <1250276831.3077.17.camel@sbs-t61.sc.intel.com> <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com> <20090819210251.GD13061@ldl.fc.hp.com> <1250794594.2754.10.camel@sbs-t61.sc.intel.com> <20090820205425.GF13061@ldl.fc.hp.com> <20090820210342.GC29994@basil.fritz.box>
+	Thu, 20 Aug 2009 17:20:33 -0400
+Date: Thu, 20 Aug 2009 17:20:35 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+In-Reply-To: <20090820212549.7b4d93c9@neptune.home>
+Message-ID: <Pine.LNX.4.44L0.0908201716190.2422-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090820210342.GC29994@basil.fritz.box>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen <andi@firstfloor.org>:
-> > I am leaning towards sysfs, and prefer:
-> > 
-> >  	/sys/devices/system/cpu/$cpu/chassis_id
-> > 
-> > How does that sound?
-> 
-> I would prefer to simply use the existing physical id for this
-> like in your original patch.  We already have a bewildering zoo
-> of different CPU IDs, no need to increase the confusion even
-> more.
+On Thu, 20 Aug 2009, Bruno [UTF-8] Prémont wrote:
 
-This was my initial instinct as well, and was why I was trying to
-find out the original intent of "physical id". It seemed
-unambiguous to me, but I was trying to figure out what history
-(if any) there was around its semantics.
+> No, that one does not really help (well it avoids dereferencing a bad
+> pointer (NULL for pl2302 or invalid for ftdi) with serial_do_free() after
+> destroy_serial() but is does underflow module refcount (refcount ends
+> up at 2^32-1) and lets the kernel stall/panic a short time later without
+> any useful information at that moment (only very first line of trace
+> ever appears) [ftdi for the panic/freeze].
 
-Since "physical id" is basically a made-up field (i.e., isn't
-represented directly in cpuid instruction), it does seem like the
-appropriate place for any quirky platforms to hook into if
-necessary.
+More information, please.  Does the problem occur with the pl2303 or 
+only with the ftdi?  Which module's refcount underflows?  What else can 
+you provide?
 
-> Incidentially mcelog already knows how to use physical ID for this,
-> would need to be changed for a new sysfs interface
+I don't see the same sort of thing with my pl2303 device, but maybe
+I'm using a different version of minicom.
 
-There is probably a lot of userspace stuff that looks at physical
-id that would need to be taught about a new interface.
-
-It turns out I need to rework my patch anyway because I need to
-think about the case where a user disables some cores in the
-BIOS, in which case my (fragile) table selection scheme falls
-apart.
-
-But I would like to get some agreement/guidance about how we
-end up presenting the information to the user.
-
-Thanks.
-
-/ac
+Alan Stern
 
