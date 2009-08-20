@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZHTFxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbZHTF54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbZHTFxA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 01:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZHTFw7
+	id S1753266AbZHTF54 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 01:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbZHTF5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 01:52:59 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:46089 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbZHTFw6 (ORCPT
+	Thu, 20 Aug 2009 01:57:55 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35185 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751711AbZHTF5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 01:52:58 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [tip:sched/core] sched: cpuacct: Use bigger percpu counter
- batch values for stats counters
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: balbir@linux.vnet.ibm.com
-Cc: Anton Blanchard <anton@samba.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
-       balajirrao@gmail.com, dhaval@linux.vnet.ibm.com, tglx@linutronix.de,
-       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org
-In-Reply-To: <20090820052605.GC26265@balbir.in.ibm.com>
-References: <20090512102412.GG6351@balbir.in.ibm.com>
-	 <20090512102939.GB11714@elte.hu>
-	 <20090512193656.D647.A69D9226@jp.fujitsu.com>
-	 <20090716081010.GB3134@in.ibm.com> <20090716083948.GA2950@kryten>
-	 <20090820051038.GF21100@kryten>  <20090820052605.GC26265@balbir.in.ibm.com>
+	Thu, 20 Aug 2009 01:57:54 -0400
+Subject: Re: linux-next: manual merge of the usb tree with the tip tree
+From: Peter Zijlstra <peterz@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Jason Wessel <jason.wessel@windriver.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Robin Getz <rgetz@blackfin.uclinux.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20090820024839.GA4121@kroah.com>
+References: <20090819175901.59f1af9e.sfr@canb.auug.org.au>
+	 <20090819233818.GD2875@kroah.com> <4A8CB6CF.3010109@windriver.com>
+	 <20090820024839.GA4121@kroah.com>
 Content-Type: text/plain
-Date: Thu, 20 Aug 2009 07:52:59 +0200
-Message-Id: <1250747579.8282.110.camel@twins>
+Content-Transfer-Encoding: 7bit
+Date: Thu, 20 Aug 2009 07:57:37 +0200
+Message-Id: <1250747857.8282.114.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-20 at 10:56 +0530, Balbir Singh wrote:
-
-> Looks good overall, why not keep the batch size conditional on
-> CONFIG_VIRT_CPU_ACCOUNTING? I'd still like to stick with
-> percpu_counter_read() on the read side because My concern is that a
-> bad user space application can read cpuacct.stat and bring the kernel
-> to its knees.
-
-Agreed, the first hunk is dangerous, on the second hunk, I'm not sure
-about the INT_MAX thing, that's a 4s gap per cpu, that might be a tad
-much.
-
-> > > Signed-off-by: Anton Blanchard <anton@samba.org>
-> > > ---
-> > > 
-> > > Index: linux.trees.git/kernel/sched.c
-> > > ===================================================================
-> > > --- linux.trees.git.orig/kernel/sched.c	2009-07-16 10:11:02.000000000 +1000
-> > > +++ linux.trees.git/kernel/sched.c	2009-07-16 10:16:41.000000000 +1000
-> > > @@ -10551,7 +10551,7 @@
-> > >  	int i;
-> > >  
-> > >  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
-> > > -		s64 val = percpu_counter_read(&ca->cpustat[i]);
-> > > +		s64 val = percpu_counter_sum(&ca->cpustat[i]);
-> > >  		val = cputime64_to_clock_t(val);
-> > >  		cb->fill(cb, cpuacct_stat_desc[i], val);
-> > >  	}
-> > > @@ -10621,7 +10621,7 @@
-> > >  	ca = task_ca(tsk);
-> > >  
-> > >  	do {
-> > > -		percpu_counter_add(&ca->cpustat[idx], val);
-> > > +		__percpu_counter_add(&ca->cpustat[idx], val, INT_MAX);
-> > >  		ca = ca->parent;
-> > >  	} while (ca);
-> > >  	rcu_read_unlock();
+On Wed, 2009-08-19 at 19:48 -0700, Greg KH wrote:
+> On Wed, Aug 19, 2009 at 09:37:03PM -0500, Jason Wessel wrote:
+> > Greg KH wrote:
+> > > On Wed, Aug 19, 2009 at 05:59:01PM +1000, Stephen Rothwell wrote:
+> > >   
+> > >> Hi Greg,
+> > >>
+> > >> Today's linux-next merge of the usb tree got a conflict in
+> > >> kernel/printk.c between commit 4d09161196c9a836eacea4b36e2f217bc34894cf
+> > >> ("printk: Enable the use of more than one CON_BOOT (early console)") from
+> > >> the tip tree and commit e289e7dc72eb6bfce70e2722d97a00f5e02893e8 ("USB:
+> > >> printk: early_printk,console: Allow more than one early console") from
+> > >> the usb tree.
+> > >>
+> > >> I assume that these are trying to do (more or less) the same thing.  I
+> > >> have dropped the one from the usb tree for today.  Please sort this out -
+> > >> at least remove the usb tree one until you have done so, thanks.
+> > >>     
+> > >
+> > > Jason, any thoughts?  I'm going to drop your printk stuff from my tree
+> > > now, care to sort it out and resend your whole series?
+> > >
+> > >   
+> > 
+> > I will investigate, re-test and send a new series to Greg KH later in
+> > the week.  The preliminary result shows the problem is a result of a
+> > clash with two different patches in the tip tree.   My patch set and the
+> > two patches it collides with context wise fix different things.
+> > 
+> > In order to resolve this it appears that the series will need to get
+> > split into something for the tip tree and something for the USB tree, or
+> > we wait for the next pull of the tip branch into the Linus's tree.
 > 
+> Hm, I'd prefer to get this in before that :)
+> 
+> Let me know what you find.  If there are conflicts, we can work it out.
 
+Maybe Robin can help out, since he authored one of the conflicting
+patches? 
