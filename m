@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbZHTNi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZHTNim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754389AbZHTNi1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZHTNi1
+	id S1754542AbZHTNim (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 09:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZHTNil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:38:27 -0400
-Received: from sg2ehsobe005.messaging.microsoft.com ([207.46.51.79]:56382 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753345AbZHTNi0 (ORCPT
+	Thu, 20 Aug 2009 09:38:41 -0400
+Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:48997 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751513AbZHTNik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:38:26 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i6bh203h43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KOOGIU-02-8BH-02
+	Thu, 20 Aug 2009 09:38:40 -0400
+X-SpamScore: -3
+X-BigFish: VPS-3(zz14c3Lzz1202hzzz32i6bh203h62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KOOGK3-02-8C8-02
 X-M-MSG: 
-Date: Thu, 20 Aug 2009 15:37:42 +0200
+Date: Thu, 20 Aug 2009 15:38:28 +0200
 From: Andreas Herrmann <andreas.herrmann3@amd.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
 CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 6/15] sched: Add support for MN domain in build_sched_groups
-Message-ID: <20090820133742.GU29327@alberich.amd.com>
+Subject: [PATCH 7/15] sched: Activate build of MN domains
+Message-ID: <20090820133828.GV29327@alberich.amd.com>
 References: <20090820131243.GO29327@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
 In-Reply-To: <20090820131243.GO29327@alberich.amd.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Aug 2009 13:37:43.0340 (UTC) FILETIME=[651B0EC0:01CA219B]
+X-OriginalArrivalTime: 20 Aug 2009 13:38:28.0544 (UTC) FILETIME=[800CA400:01CA219B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+I.e. call __build_mn_sched_domain, build corresponding groups
+and calculate power.
+
+Note: still missing are changes in various places
+to actually detect domain hierarchy and fixup some stuff.
+
 Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- kernel/sched.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ kernel/sched.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 7b8b2ab..cc16629 100644
+index cc16629..6cfc840 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -8805,6 +8805,16 @@ static void build_sched_groups(struct s_data *d, enum sched_domain_level l,
- 						d->send_covered, d->tmpmask);
- 		break;
+@@ -8862,6 +8862,7 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+ 
+ 		sd = __build_numa_sched_domains(&d, cpu_map, attr, i);
+ 		sd = __build_cpu_sched_domain(&d, cpu_map, attr, sd, i);
++		sd = __build_mn_sched_domain(&d, cpu_map, attr, sd, i);
+ 		sd = __build_mc_sched_domain(&d, cpu_map, attr, sd, i);
+ 		sd = __build_smt_sched_domain(&d, cpu_map, attr, sd, i);
+ 	}
+@@ -8869,6 +8870,7 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+ 	for_each_cpu(i, cpu_map) {
+ 		build_sched_groups(&d, SD_LV_SIBLING, cpu_map, i);
+ 		build_sched_groups(&d, SD_LV_MC, cpu_map, i);
++		build_sched_groups(&d, SD_LV_MN, cpu_map, i);
+ 	}
+ 
+ 	/* Set up physical groups */
+@@ -8898,6 +8900,12 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+ 		init_sched_groups_power(i, sd);
+ 	}
  #endif
 +#ifdef CONFIG_SCHED_MN
-+	case SD_LV_MN: /* set up multi-node groups */
-+		cpumask_and(d->this_cpu_node_map, cpu_map,
-+			    topology_cpu_node_cpumask(cpu));
-+		if (cpu == cpumask_first(d->this_cpu_node_map))
-+			init_sched_build_groups(d->this_cpu_node_map, cpu_map,
-+						&cpu_to_cpu_node_group,
-+						d->send_covered, d->tmpmask);
-+		break;
++	for_each_cpu(i, cpu_map) {
++		sd = &per_cpu(cpu_node_domains, i).sd;
++		init_sched_groups_power(i, sd);
++	}
 +#endif
- 	case SD_LV_CPU: /* set up physical groups */
- 		cpumask_and(d->nodemask, cpumask_of_node(cpu), cpu_map);
- 		if (!cpumask_empty(d->nodemask))
+ 
+ 	for_each_cpu(i, cpu_map) {
+ 		sd = &per_cpu(phys_domains, i).sd;
 -- 
 1.6.0.4
 
