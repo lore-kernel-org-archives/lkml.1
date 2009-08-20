@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZHTFug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZHTFxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbZHTFug (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 01:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZHTFug
+	id S1753141AbZHTFxA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 01:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZHTFw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 01:50:36 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:36719 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752727AbZHTFuf (ORCPT
+	Thu, 20 Aug 2009 01:52:59 -0400
+Received: from viefep18-int.chello.at ([62.179.121.38]:46089 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751711AbZHTFw6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 01:50:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=vTqVoo7fI3XlqzeQNESS2mfsKhgFY9SICKs8wV7Rj9suidj8ReOrKMookfxWU5UUBj
-         89xvkBR6a96TbdpsM4+S/FMDvs0A5wVX48a8j9AuEExKmPZq9XA/vLhaSuHTQOUecgck
-         nN17PGqnQtkhGDKz1WUxV4Ggd4Pw17+hEEj9s=
-Message-ID: <4A8CE450.2030703@gmail.com>
-Date: Wed, 19 Aug 2009 22:51:12 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
-MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>  <20090818160911.GA21243@goodmis.org> <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com> <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com> <4A8B4607.6090303@gmail.com> <4A8B5113.20102@cn.fujitsu.com>
-In-Reply-To: <4A8B5113.20102@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 20 Aug 2009 01:52:58 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [tip:sched/core] sched: cpuacct: Use bigger percpu counter
+ batch values for stats counters
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: balbir@linux.vnet.ibm.com
+Cc: Anton Blanchard <anton@samba.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
+       balajirrao@gmail.com, dhaval@linux.vnet.ibm.com, tglx@linutronix.de,
+       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org
+In-Reply-To: <20090820052605.GC26265@balbir.in.ibm.com>
+References: <20090512102412.GG6351@balbir.in.ibm.com>
+	 <20090512102939.GB11714@elte.hu>
+	 <20090512193656.D647.A69D9226@jp.fujitsu.com>
+	 <20090716081010.GB3134@in.ibm.com> <20090716083948.GA2950@kryten>
+	 <20090820051038.GF21100@kryten>  <20090820052605.GC26265@balbir.in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 20 Aug 2009 07:52:59 +0200
+Message-Id: <1250747579.8282.110.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
->>> BTW, how did you get the dmesg? Is it from a clean boot?
->>>
->>> Since it works fine in -rc5 but breaks in -rc6, could you do a git bisect
->>> on it? It shouldn't take too long.
->>>
->>> Thanks,
->>>
->>> -- Steve
->>>
->>>
->>>        
->> well grub2 sure works o.k.
->> the new gfxload is pretty good.
->> problem is the screen just says
->> [Linux-bzImage etc.....]
->> and that's it. (was hoping to make the
->> font smaller to reveal the bug).
->>
->> at this point the only choice I have is to undo
->> commits until I hit the right one.
->>
->>      
->
-> You still can do bisect manually. or use quilt?
->
->
->    
-after going schizo with reverting patches,
-I've come down to thinking that this freeze might
-  have to do with the tracer merge that happened
-a few days ago. (been avoiding that one) I'll have
-to revert (If I can) the whole thing to see if this
-machine boot's with rc6.
-As for perf I reverted everything
-up to rc5, and the machine still sticks telling me that
-might not be the issue.
+On Thu, 2009-08-20 at 10:56 +0530, Balbir Singh wrote:
 
-Justin P. Mattock
+> Looks good overall, why not keep the batch size conditional on
+> CONFIG_VIRT_CPU_ACCOUNTING? I'd still like to stick with
+> percpu_counter_read() on the read side because My concern is that a
+> bad user space application can read cpuacct.stat and bring the kernel
+> to its knees.
 
+Agreed, the first hunk is dangerous, on the second hunk, I'm not sure
+about the INT_MAX thing, that's a 4s gap per cpu, that might be a tad
+much.
+
+> > > Signed-off-by: Anton Blanchard <anton@samba.org>
+> > > ---
+> > > 
+> > > Index: linux.trees.git/kernel/sched.c
+> > > ===================================================================
+> > > --- linux.trees.git.orig/kernel/sched.c	2009-07-16 10:11:02.000000000 +1000
+> > > +++ linux.trees.git/kernel/sched.c	2009-07-16 10:16:41.000000000 +1000
+> > > @@ -10551,7 +10551,7 @@
+> > >  	int i;
+> > >  
+> > >  	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
+> > > -		s64 val = percpu_counter_read(&ca->cpustat[i]);
+> > > +		s64 val = percpu_counter_sum(&ca->cpustat[i]);
+> > >  		val = cputime64_to_clock_t(val);
+> > >  		cb->fill(cb, cpuacct_stat_desc[i], val);
+> > >  	}
+> > > @@ -10621,7 +10621,7 @@
+> > >  	ca = task_ca(tsk);
+> > >  
+> > >  	do {
+> > > -		percpu_counter_add(&ca->cpustat[idx], val);
+> > > +		__percpu_counter_add(&ca->cpustat[idx], val, INT_MAX);
+> > >  		ca = ca->parent;
+> > >  	} while (ca);
+> > >  	rcu_read_unlock();
+> 
 
