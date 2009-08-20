@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZHTKHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbZHTKJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbZHTKHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 06:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZHTKHS
+	id S1753329AbZHTKJd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 06:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbZHTKJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 06:07:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48666 "EHLO mx2.mail.elte.hu"
+	Thu, 20 Aug 2009 06:09:32 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:19080 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753022AbZHTKHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 06:07:17 -0400
-Date: Thu, 20 Aug 2009 12:06:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [GIT PULL] Fix Xen boot with CONFIG_CC_STACKPROTECTOR
-Message-ID: <20090820100644.GC29093@elte.hu>
-References: <4A8C98DD.2020709@goop.org>
+	id S1753090AbZHTKJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 06:09:31 -0400
+Message-ID: <4A8D20BB.7020008@redhat.com>
+Date: Thu, 20 Aug 2009 13:08:59 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8C98DD.2020709@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Stefan Hajnoczi <stefanha@gmail.com>
+CC: Hollis Blanchard <hollisb@us.ibm.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>,
+       "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [Alacrityvm-devel] [PATCH v3 3/6] vbus: add a "vbus-proxy" bus
+ 	model for vbus_driver objects
+References: <20090818172752.GC17631@ovro.caltech.edu>	 <20090818205919.GA1168@ovro.caltech.edu> <4A8B1C7F.4060008@redhat.com>	 <20090819003812.GA11168@ovro.caltech.edu>	 <4A8B9051.3020505@redhat.com>	 <20090819152811.GA22294@ovro.caltech.edu>	 <4A8C1C22.3010101@redhat.com>	 <20090819162902.GB22294@ovro.caltech.edu>	 <4A8C2A87.5060305@redhat.com>	 <1250715920.4237.26.camel@slab.beaverton.ibm.com> <fbd9d3990908200257ge4e13ceh32f28601bc0f762f@mail.gmail.com>
+In-Reply-To: <fbd9d3990908200257ge4e13ceh32f28601bc0f762f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/20/2009 12:57 PM, Stefan Hajnoczi wrote:
+> Cross-platform virtio works when endianness is known in advance.  For
+> a hypervisor and a guest:
+> 1. virtio-pci I/O registers use PCI endianness
+> 2. vring uses guest endianness (hypervisor must byteswap)
+> 3. guest memory buffers use guest endianness (hypervisor must byteswap)
+>
+> I know of no existing way when endianness is not known in advance.
+> Perhaps a transport bit could be added to mark the endianness of the
+> guest/driver side.  This can be negotiated because virtio-pci has a
+> known endianness.  After negotiation, the host knows whether or not
+> byteswapping is necessary for structures in guest memory.
+>
+>    
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Some processors are capable of switching their gender at runtime, so you 
+cannot tell the guest endianness in advance.
 
-> Hi Ingo,
-> 
-> Here's a couple of little changes which prevents an early boot crash
-> under Xen, due to the stackprotector preamble using segment registers
-> before they're set up.  I only need to disable stackprotector for a
-> handful of functions, but unfortunately it looks like it can only be
-> disabled on a per-file basis.
-> 
-> Thanks,
->     J
-> 
-> The following changes since commit 64f1607ffbbc772685733ea63e6f7f4183df1b16:
->   Linus Torvalds (1):
->         Linux 2.6.31-rc6
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git bugfix
-> 
-> Jeremy Fitzhardinge (2):
->       x86: make sure load_percpu_segment has no stackprotector
->       xen: rearrange things to fix stackprotector
-> 
->  arch/x86/kernel/cpu/Makefile |    4 ++++
->  arch/x86/xen/Makefile        |    4 ++++
->  arch/x86/xen/enlighten.c     |   22 ++++++++++------------
->  3 files changed, 18 insertions(+), 12 deletions(-)
+-- 
+error compiling committee.c: too many arguments to function
 
-Pulled into tip:x86/urgent, thanks a lot Jeremy!
-
-Btw., is there any way to turn off stackprotector on a 
-per function basis, a GCC attribute perhaps? That would 
-be preferable to turning it off for all of common.o.
-
-	Ingo
