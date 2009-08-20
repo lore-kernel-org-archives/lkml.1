@@ -1,367 +1,806 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbZHTKR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZHTKSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966AbZHTKR5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 06:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbZHTKR4
+	id S1753979AbZHTKSB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 06:18:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbZHTKR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 06:17:56 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60138 "EHLO kernel.dk"
+	Thu, 20 Aug 2009 06:17:59 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60118 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753880AbZHTKRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753513AbZHTKRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 20 Aug 2009 06:17:52 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
        bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 2/6] workqueue: add support for lazy workqueues
-Date: Thu, 20 Aug 2009 12:17:39 +0200
-Message-Id: <1250763466-24282-5-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 1/4] direct-io: unify argument passing by adding a dio_args structure
+Date: Thu, 20 Aug 2009 12:17:36 +0200
+Message-Id: <1250763466-24282-2-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.4.173.g3f189
-In-Reply-To: <1250763466-24282-4-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1250763466-24282-1-git-send-email-jens.axboe@oracle.com>
 References: <1250763466-24282-1-git-send-email-jens.axboe@oracle.com>
- <1250763466-24282-2-git-send-email-jens.axboe@oracle.com>
- <1250763466-24282-3-git-send-email-jens.axboe@oracle.com>
- <1250763466-24282-4-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lazy workqueues are like normal workqueues, except they don't
-start a thread per CPU by default. Instead threads are started
-when they are needed, and exit when they have been idle for
-some time.
+The O_DIRECT IO path is a mess of arguments. Clean that up by passing
+those arguments in a dedicated dio_args structure.
+
+This is in preparation for changing the internal implementation to be
+page based instead of using iovecs.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- include/linux/workqueue.h |    5 ++
- kernel/workqueue.c        |  152 ++++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 147 insertions(+), 10 deletions(-)
+ fs/block_dev.c              |    7 ++--
+ fs/btrfs/inode.c            |    4 +--
+ fs/direct-io.c              |   70 +++++++++++++++++++++++++++----------------
+ fs/ext2/inode.c             |    8 ++---
+ fs/ext3/inode.c             |   15 ++++-----
+ fs/ext4/inode.c             |   15 ++++-----
+ fs/fat/inode.c              |   12 +++----
+ fs/gfs2/aops.c              |   11 ++----
+ fs/hfs/inode.c              |    7 ++--
+ fs/hfsplus/inode.c          |    8 ++--
+ fs/jfs/inode.c              |    7 ++--
+ fs/nfs/direct.c             |    9 ++----
+ fs/nilfs2/inode.c           |    9 ++---
+ fs/ocfs2/aops.c             |   11 ++-----
+ fs/reiserfs/inode.c         |    7 +---
+ fs/xfs/linux-2.6/xfs_aops.c |   19 ++++--------
+ include/linux/fs.h          |   59 +++++++++++++++++++++---------------
+ include/linux/nfs_fs.h      |    3 +-
+ mm/filemap.c                |    8 +++--
+ 19 files changed, 141 insertions(+), 148 deletions(-)
 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index f14e20e..b2dd267 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -32,6 +32,7 @@ struct work_struct {
- #ifdef CONFIG_LOCKDEP
- 	struct lockdep_map lockdep_map;
- #endif
-+	unsigned int cpu;
- };
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index 94dfda2..2e494fa 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -166,14 +166,13 @@ blkdev_get_blocks(struct inode *inode, sector_t iblock,
+ }
  
- #define WORK_DATA_INIT()	ATOMIC_LONG_INIT(0)
-@@ -172,6 +173,7 @@ enum {
- 	WQ_F_SINGLETHREAD	= 1,
- 	WQ_F_FREEZABLE		= 2,
- 	WQ_F_RT			= 4,
-+	WQ_F_LAZY		= 8,
- };
+ static ssize_t
+-blkdev_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov,
+-			loff_t offset, unsigned long nr_segs)
++blkdev_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_mapping->host;
  
- #ifdef CONFIG_LOCKDEP
-@@ -198,6 +200,7 @@ enum {
- 	__create_workqueue((name), WQ_F_SINGLETHREAD | WQ_F_FREEZABLE)
- #define create_singlethread_workqueue(name)	\
- 	__create_workqueue((name), WQ_F_SINGLETHREAD)
-+#define create_lazy_workqueue(name)	__create_workqueue((name), WQ_F_LAZY)
+-	return blockdev_direct_IO_no_locking(rw, iocb, inode, I_BDEV(inode),
+-				iov, offset, nr_segs, blkdev_get_blocks, NULL);
++	return blockdev_direct_IO_no_locking(iocb, inode, I_BDEV(inode),
++				args, blkdev_get_blocks, NULL);
+ }
  
- extern void destroy_workqueue(struct workqueue_struct *wq);
+ int __sync_blockdev(struct block_device *bdev, int wait)
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 272b9b2..094e3a7 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -4308,9 +4308,7 @@ out:
+ 	return em;
+ }
  
-@@ -211,6 +214,8 @@ extern int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- 
- extern void flush_workqueue(struct workqueue_struct *wq);
- extern void flush_scheduled_work(void);
-+extern void workqueue_set_lazy_timeout(struct workqueue_struct *wq,
-+			unsigned long timeout);
- 
- extern int schedule_work(struct work_struct *work);
- extern int schedule_work_on(int cpu, struct work_struct *work);
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 02ba7c9..d9ccebc 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -61,11 +61,17 @@ struct workqueue_struct {
- 	struct list_head list;
- 	const char *name;
- 	unsigned int flags;	/* WQ_F_* flags */
-+	unsigned long lazy_timeout;
-+	unsigned int core_cpu;
- #ifdef CONFIG_LOCKDEP
- 	struct lockdep_map lockdep_map;
- #endif
- };
- 
-+/* Default lazy workqueue timeout */
-+#define WQ_DEF_LAZY_TIMEOUT	(60 * HZ)
-+
-+
- /* Serializes the accesses to the list of workqueues. */
- static DEFINE_SPINLOCK(workqueue_lock);
- static LIST_HEAD(workqueues);
-@@ -81,6 +87,8 @@ static const struct cpumask *cpu_singlethread_map __read_mostly;
+-static ssize_t btrfs_direct_IO(int rw, struct kiocb *iocb,
+-			const struct iovec *iov, loff_t offset,
+-			unsigned long nr_segs)
++static ssize_t btrfs_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	return -EINVAL;
+ }
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 8b10b87..181848c 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -929,14 +929,14 @@ out:
+  * Releases both i_mutex and i_alloc_sem
   */
- static cpumask_var_t cpu_populated_map __read_mostly;
- 
-+static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu);
-+
- /* If it's single threaded, it isn't in the list of workqueues. */
- static inline bool is_wq_single_threaded(struct workqueue_struct *wq)
+ static ssize_t
+-direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode, 
+-	const struct iovec *iov, loff_t offset, unsigned long nr_segs, 
+-	unsigned blkbits, get_block_t get_block, dio_iodone_t end_io,
+-	struct dio *dio)
++direct_io_worker(struct kiocb *iocb, struct inode *inode, 
++	struct dio_args *args, unsigned blkbits, get_block_t get_block,
++	dio_iodone_t end_io, struct dio *dio)
  {
-@@ -141,11 +149,29 @@ static void insert_work(struct cpu_workqueue_struct *cwq,
- static void __queue_work(struct cpu_workqueue_struct *cwq,
- 			 struct work_struct *work)
- {
-+	struct workqueue_struct *wq = cwq->wq;
+-	unsigned long user_addr; 
++	const struct iovec *iov = args->iov;
++	unsigned long user_addr;
  	unsigned long flags;
+-	int seg;
++	int seg, rw = args->rw;
+ 	ssize_t ret = 0;
+ 	ssize_t ret2;
+ 	size_t bytes;
+@@ -945,7 +945,7 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
+ 	dio->rw = rw;
+ 	dio->blkbits = blkbits;
+ 	dio->blkfactor = inode->i_blkbits - blkbits;
+-	dio->block_in_file = offset >> blkbits;
++	dio->block_in_file = args->offset >> blkbits;
  
--	spin_lock_irqsave(&cwq->lock, flags);
--	insert_work(cwq, work, &cwq->worklist);
--	spin_unlock_irqrestore(&cwq->lock, flags);
-+	/*
-+	 * This is a lazy workqueue and this particular CPU thread has
-+	 * exited. We can't create it from here, so add this work on our
-+	 * static thread. It will create this thread and move the work there.
-+	 */
-+	if ((wq->flags & WQ_F_LAZY) && !cwq->thread) {
-+		struct cpu_workqueue_struct *__cwq;
-+
-+		local_irq_save(flags);
-+		__cwq = wq_per_cpu(wq, wq->core_cpu);
-+		work->cpu = smp_processor_id();
-+		spin_lock(&__cwq->lock);
-+		insert_work(__cwq, work, &__cwq->worklist);
-+		spin_unlock_irqrestore(&__cwq->lock, flags);
-+	} else {
-+		spin_lock_irqsave(&cwq->lock, flags);
-+		work->cpu = smp_processor_id();
-+		insert_work(cwq, work, &cwq->worklist);
-+		spin_unlock_irqrestore(&cwq->lock, flags);
-+	}
- }
+ 	dio->get_block = get_block;
+ 	dio->end_io = end_io;
+@@ -965,14 +965,14 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
+ 	if (unlikely(dio->blkfactor))
+ 		dio->pages_in_io = 2;
  
- /**
-@@ -259,13 +285,16 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- }
- EXPORT_SYMBOL_GPL(queue_delayed_work_on);
- 
--static void run_workqueue(struct cpu_workqueue_struct *cwq)
-+static int run_workqueue(struct cpu_workqueue_struct *cwq)
- {
-+	int did_work = 0;
-+
- 	spin_lock_irq(&cwq->lock);
- 	while (!list_empty(&cwq->worklist)) {
- 		struct work_struct *work = list_entry(cwq->worklist.next,
- 						struct work_struct, entry);
- 		work_func_t f = work->func;
-+		int cpu;
- #ifdef CONFIG_LOCKDEP
- 		/*
- 		 * It is permissible to free the struct work_struct
-@@ -280,7 +309,34 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
- 		trace_workqueue_execution(cwq->thread, work);
- 		cwq->current_work = work;
- 		list_del_init(cwq->worklist.next);
-+		cpu = smp_processor_id();
- 		spin_unlock_irq(&cwq->lock);
-+		did_work = 1;
-+
-+		/*
-+		 * If work->cpu isn't us, then we need to create the target
-+		 * workqueue thread (if someone didn't already do that) and
-+		 * move the work over there.
-+		 */
-+		if ((cwq->wq->flags & WQ_F_LAZY) && work->cpu != cpu) {
-+			struct cpu_workqueue_struct *__cwq;
-+			struct task_struct *p;
-+			int err;
-+
-+			__cwq = wq_per_cpu(cwq->wq, work->cpu);
-+			p = __cwq->thread;
-+			if (!p)
-+				err = create_workqueue_thread(__cwq, work->cpu);
-+			p = __cwq->thread;
-+			if (p) {
-+				if (work->cpu >= 0)
-+					kthread_bind(p, work->cpu);
-+				insert_work(__cwq, work, &__cwq->worklist);
-+				wake_up_process(p);
-+				goto out;
-+			}
-+		}
-+
- 
- 		BUG_ON(get_wq_data(work) != cwq);
- 		work_clear_pending(work);
-@@ -305,24 +361,45 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
- 		cwq->current_work = NULL;
- 	}
- 	spin_unlock_irq(&cwq->lock);
-+out:
-+	return did_work;
- }
- 
- static int worker_thread(void *__cwq)
- {
- 	struct cpu_workqueue_struct *cwq = __cwq;
-+	struct workqueue_struct *wq = cwq->wq;
-+	unsigned long last_active = jiffies;
- 	DEFINE_WAIT(wait);
-+	int may_exit;
- 
--	if (cwq->wq->flags & WQ_F_FREEZABLE)
-+	if (wq->flags & WQ_F_FREEZABLE)
- 		set_freezable();
- 
- 	set_user_nice(current, -5);
- 
-+	/*
-+	 * Allow exit if this isn't our core thread
-+	 */
-+	if ((wq->flags & WQ_F_LAZY) && smp_processor_id() != wq->core_cpu)
-+		may_exit = 1;
-+	else
-+		may_exit = 0;
-+
- 	for (;;) {
-+		int did_work;
-+
- 		prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
- 		if (!freezing(current) &&
- 		    !kthread_should_stop() &&
--		    list_empty(&cwq->worklist))
--			schedule();
-+		    list_empty(&cwq->worklist)) {
-+			unsigned long timeout = wq->lazy_timeout;
-+
-+			if (timeout && may_exit)
-+				schedule_timeout(timeout);
-+			else
-+				schedule();
-+		}
- 		finish_wait(&cwq->more_work, &wait);
- 
- 		try_to_freeze();
-@@ -330,7 +407,19 @@ static int worker_thread(void *__cwq)
- 		if (kthread_should_stop())
- 			break;
- 
--		run_workqueue(cwq);
-+		did_work = run_workqueue(cwq);
-+
-+		/*
-+		 * If we did no work for the defined timeout period and we are
-+		 * allowed to exit, do so.
-+		 */
-+		if (did_work)
-+			last_active = jiffies;
-+		else if (time_after(jiffies, last_active + wq->lazy_timeout) &&
-+			 may_exit) {
-+			cwq->thread = NULL;
-+			break;
-+		}
+-	for (seg = 0; seg < nr_segs; seg++) {
+-		user_addr = (unsigned long)iov[seg].iov_base;
++	for (seg = 0; seg < args->nr_segs; seg++) {
++		user_addr = (unsigned long) iov[seg].iov_base;
+ 		dio->pages_in_io +=
+ 			((user_addr+iov[seg].iov_len +PAGE_SIZE-1)/PAGE_SIZE
+ 				- user_addr/PAGE_SIZE);
  	}
  
- 	return 0;
-@@ -814,7 +903,10 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 		cwq = init_cpu_workqueue(wq, singlethread_cpu);
- 		err = create_workqueue_thread(cwq, singlethread_cpu);
- 		start_workqueue_thread(cwq, -1);
-+		wq->core_cpu = singlethread_cpu;
- 	} else {
-+		int created = 0;
+-	for (seg = 0; seg < nr_segs; seg++) {
++	for (seg = 0; seg < args->nr_segs; seg++) {
+ 		user_addr = (unsigned long)iov[seg].iov_base;
+ 		dio->size += bytes = iov[seg].iov_len;
+ 
+@@ -1076,7 +1076,7 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
+ 	spin_unlock_irqrestore(&dio->bio_lock, flags);
+ 
+ 	if (ret2 == 0) {
+-		ret = dio_complete(dio, offset, ret);
++		ret = dio_complete(dio, args->offset, ret);
+ 		kfree(dio);
+ 	} else
+ 		BUG_ON(ret != -EIOCBQUEUED);
+@@ -1106,10 +1106,9 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
+  * Additional i_alloc_sem locking requirements described inline below.
+  */
+ ssize_t
+-__blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+-	struct block_device *bdev, const struct iovec *iov, loff_t offset, 
+-	unsigned long nr_segs, get_block_t get_block, dio_iodone_t end_io,
+-	int dio_lock_type)
++__blockdev_direct_IO(struct kiocb *iocb, struct inode *inode,
++	struct block_device *bdev, struct dio_args *args, get_block_t get_block,
++	dio_iodone_t end_io, int dio_lock_type)
+ {
+ 	int seg;
+ 	size_t size;
+@@ -1118,10 +1117,11 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+ 	unsigned bdev_blkbits = 0;
+ 	unsigned blocksize_mask = (1 << blkbits) - 1;
+ 	ssize_t retval = -EINVAL;
+-	loff_t end = offset;
++	loff_t end = args->offset;
+ 	struct dio *dio;
+ 	int release_i_mutex = 0;
+ 	int acquire_i_mutex = 0;
++	int rw = args->rw;
+ 
+ 	if (rw & WRITE)
+ 		rw = WRITE_ODIRECT;
+@@ -1129,18 +1129,18 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+ 	if (bdev)
+ 		bdev_blkbits = blksize_bits(bdev_logical_block_size(bdev));
+ 
+-	if (offset & blocksize_mask) {
++	if (args->offset & blocksize_mask) {
+ 		if (bdev)
+ 			 blkbits = bdev_blkbits;
+ 		blocksize_mask = (1 << blkbits) - 1;
+-		if (offset & blocksize_mask)
++		if (args->offset & blocksize_mask)
+ 			goto out;
+ 	}
+ 
+ 	/* Check the memory alignment.  Blocks cannot straddle pages */
+-	for (seg = 0; seg < nr_segs; seg++) {
+-		addr = (unsigned long)iov[seg].iov_base;
+-		size = iov[seg].iov_len;
++	for (seg = 0; seg < args->nr_segs; seg++) {
++		addr = (unsigned long) args->iov[seg].iov_base;
++		size = args->iov[seg].iov_len;
+ 		end += size;
+ 		if ((addr & blocksize_mask) || (size & blocksize_mask))  {
+ 			if (bdev)
+@@ -1168,7 +1168,7 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+ 	dio->lock_type = dio_lock_type;
+ 	if (dio_lock_type != DIO_NO_LOCKING) {
+ 		/* watch out for a 0 len io from a tricksy fs */
+-		if (rw == READ && end > offset) {
++		if (rw == READ && end > args->offset) {
+ 			struct address_space *mapping;
+ 
+ 			mapping = iocb->ki_filp->f_mapping;
+@@ -1177,8 +1177,8 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+ 				release_i_mutex = 1;
+ 			}
+ 
+-			retval = filemap_write_and_wait_range(mapping, offset,
+-							      end - 1);
++			retval = filemap_write_and_wait_range(mapping,
++							args->offset, end - 1);
+ 			if (retval) {
+ 				kfree(dio);
+ 				goto out;
+@@ -1204,8 +1204,8 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+ 	dio->is_async = !is_sync_kiocb(iocb) && !((rw & WRITE) &&
+ 		(end > i_size_read(inode)));
+ 
+-	retval = direct_io_worker(rw, iocb, inode, iov, offset,
+-				nr_segs, blkbits, get_block, end_io, dio);
++	retval = direct_io_worker(iocb, inode, args, blkbits, get_block, end_io,
++					dio);
+ 
+ 	/*
+ 	 * In case of error extending write may have instantiated a few
+@@ -1231,3 +1231,21 @@ out:
+ 	return retval;
+ }
+ EXPORT_SYMBOL(__blockdev_direct_IO);
 +
- 		cpu_maps_update_begin();
- 		/*
- 		 * We must place this wq on list even if the code below fails.
-@@ -833,10 +925,16 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 		 */
- 		for_each_possible_cpu(cpu) {
- 			cwq = init_cpu_workqueue(wq, cpu);
--			if (err || !cpu_online(cpu))
-+			if (err || !cpu_online(cpu) ||
-+			    (created && (wq->flags & WQ_F_LAZY)))
- 				continue;
- 			err = create_workqueue_thread(cwq, cpu);
- 			start_workqueue_thread(cwq, cpu);
-+			if (!err) {
-+				if (!created)
-+					wq->core_cpu = cpu;
-+				created++;
-+			}
++ssize_t generic_file_direct_IO(int rw, struct address_space *mapping,
++			       struct kiocb *iocb, const struct iovec *iov,
++			       loff_t offset, unsigned long nr_segs)
++{
++	struct dio_args args = {
++		.rw		= rw,
++		.iov		= iov,
++		.length		= iov_length(iov, nr_segs),
++		.offset		= offset,
++		.nr_segs	= nr_segs,
++	};
++
++	if (mapping->a_ops->direct_IO)
++		return mapping->a_ops->direct_IO(iocb, &args);
++
++	return -EINVAL;
++}
+diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
+index e271303..e813df7 100644
+--- a/fs/ext2/inode.c
++++ b/fs/ext2/inode.c
+@@ -790,15 +790,13 @@ static sector_t ext2_bmap(struct address_space *mapping, sector_t block)
+ 	return generic_block_bmap(mapping,block,ext2_get_block);
+ }
+ 
+-static ssize_t
+-ext2_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov,
+-			loff_t offset, unsigned long nr_segs)
++static ssize_t ext2_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_mapping->host;
+ 
+-	return blockdev_direct_IO(rw, iocb, inode, inode->i_sb->s_bdev, iov,
+-				offset, nr_segs, ext2_get_block, NULL);
++	return blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, args,
++					ext2_get_block, NULL);
+ }
+ 
+ static int
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index b49908a..11dc0d1 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -1713,9 +1713,7 @@ static int ext3_releasepage(struct page *page, gfp_t wait)
+  * crashes then stale disk data _may_ be exposed inside the file. But current
+  * VFS code falls back into buffered path in that case so we are safe.
+  */
+-static ssize_t ext3_direct_IO(int rw, struct kiocb *iocb,
+-			const struct iovec *iov, loff_t offset,
+-			unsigned long nr_segs)
++static ssize_t ext3_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_mapping->host;
+@@ -1723,10 +1721,10 @@ static ssize_t ext3_direct_IO(int rw, struct kiocb *iocb,
+ 	handle_t *handle;
+ 	ssize_t ret;
+ 	int orphan = 0;
+-	size_t count = iov_length(iov, nr_segs);
++	size_t count = args->length;
+ 
+-	if (rw == WRITE) {
+-		loff_t final_size = offset + count;
++	if (args->rw == WRITE) {
++		loff_t final_size = args->offset + count;
+ 
+ 		if (final_size > inode->i_size) {
+ 			/* Credits for sb + inode write */
+@@ -1746,8 +1744,7 @@ static ssize_t ext3_direct_IO(int rw, struct kiocb *iocb,
  		}
- 		cpu_maps_update_done();
  	}
-@@ -844,7 +942,9 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
- 	if (err) {
- 		destroy_workqueue(wq);
- 		wq = NULL;
--	}
-+	} else if (wq->flags & WQ_F_LAZY)
-+		workqueue_set_lazy_timeout(wq, WQ_DEF_LAZY_TIMEOUT);
-+
- 	return wq;
- }
- EXPORT_SYMBOL_GPL(__create_workqueue_key);
-@@ -877,6 +977,13 @@ static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq)
- 	cwq->thread = NULL;
- }
  
-+static bool hotplug_should_start_thread(struct workqueue_struct *wq, int cpu)
-+{
-+	if ((wq->flags & WQ_F_LAZY) && cpu != wq->core_cpu)
-+		return 0;
-+	return 1;
-+}
-+
- /**
-  * destroy_workqueue - safely terminate a workqueue
-  * @wq: target workqueue
-@@ -923,6 +1030,8 @@ undo:
+-	ret = blockdev_direct_IO(rw, iocb, inode, inode->i_sb->s_bdev, iov,
+-				 offset, nr_segs,
++	ret = blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, args,
+ 				 ext3_get_block, NULL);
  
- 		switch (action) {
- 		case CPU_UP_PREPARE:
-+			if (!hotplug_should_start_thread(wq, cpu))
-+				break;
- 			if (!create_workqueue_thread(cwq, cpu))
- 				break;
- 			printk(KERN_ERR "workqueue [%s] for %i failed\n",
-@@ -932,6 +1041,8 @@ undo:
- 			goto undo;
- 
- 		case CPU_ONLINE:
-+			if (!hotplug_should_start_thread(wq, cpu))
-+				break;
- 			start_workqueue_thread(cwq, cpu);
- 			break;
- 
-@@ -999,6 +1110,27 @@ long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
- EXPORT_SYMBOL_GPL(work_on_cpu);
- #endif /* CONFIG_SMP */
- 
-+/**
-+ * workqueue_set_lazy_timeout - set lazy exit timeout
-+ * @wq: the associated workqueue_struct
-+ * @timeout: timeout in jiffies
-+ *
-+ * This will set the timeout for a lazy workqueue. If no work has been
-+ * processed for @timeout jiffies, then the workqueue is allowed to exit.
-+ * It will be dynamically created again when work is queued to it.
-+ *
-+ * Note that this only works for workqueues created with
-+ * create_lazy_workqueue().
-+ */
-+void workqueue_set_lazy_timeout(struct workqueue_struct *wq,
-+				unsigned long timeout)
-+{
-+	if (WARN_ON(!(wq->flags & WQ_F_LAZY)))
-+		return;
-+
-+	wq->lazy_timeout = timeout;
-+}
-+
- void __init init_workqueues(void)
+ 	if (orphan) {
+@@ -1765,7 +1762,7 @@ static ssize_t ext3_direct_IO(int rw, struct kiocb *iocb,
+ 		if (inode->i_nlink)
+ 			ext3_orphan_del(handle, inode);
+ 		if (ret > 0) {
+-			loff_t end = offset + ret;
++			loff_t end = args->offset + ret;
+ 			if (end > inode->i_size) {
+ 				ei->i_disksize = end;
+ 				i_size_write(inode, end);
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index f9c642b..164fdb3 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -3267,9 +3267,7 @@ static int ext4_releasepage(struct page *page, gfp_t wait)
+  * crashes then stale disk data _may_ be exposed inside the file. But current
+  * VFS code falls back into buffered path in that case so we are safe.
+  */
+-static ssize_t ext4_direct_IO(int rw, struct kiocb *iocb,
+-			      const struct iovec *iov, loff_t offset,
+-			      unsigned long nr_segs)
++static ssize_t ext4_direct_IO(struct kiocb *iocb, struct dio_args *args)
  {
- 	alloc_cpumask_var(&cpu_populated_map, GFP_KERNEL);
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_mapping->host;
+@@ -3277,10 +3275,10 @@ static ssize_t ext4_direct_IO(int rw, struct kiocb *iocb,
+ 	handle_t *handle;
+ 	ssize_t ret;
+ 	int orphan = 0;
+-	size_t count = iov_length(iov, nr_segs);
++	size_t count = args->length;
+ 
+-	if (rw == WRITE) {
+-		loff_t final_size = offset + count;
++	if (args->rw == WRITE) {
++		loff_t final_size = args->offset + count;
+ 
+ 		if (final_size > inode->i_size) {
+ 			/* Credits for sb + inode write */
+@@ -3300,8 +3298,7 @@ static ssize_t ext4_direct_IO(int rw, struct kiocb *iocb,
+ 		}
+ 	}
+ 
+-	ret = blockdev_direct_IO(rw, iocb, inode, inode->i_sb->s_bdev, iov,
+-				 offset, nr_segs,
++	ret = blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, args,
+ 				 ext4_get_block, NULL);
+ 
+ 	if (orphan) {
+@@ -3319,7 +3316,7 @@ static ssize_t ext4_direct_IO(int rw, struct kiocb *iocb,
+ 		if (inode->i_nlink)
+ 			ext4_orphan_del(handle, inode);
+ 		if (ret > 0) {
+-			loff_t end = offset + ret;
++			loff_t end = args->offset + ret;
+ 			if (end > inode->i_size) {
+ 				ei->i_disksize = end;
+ 				i_size_write(inode, end);
+diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+index 8970d8c..9d41851 100644
+--- a/fs/fat/inode.c
++++ b/fs/fat/inode.c
+@@ -167,14 +167,12 @@ static int fat_write_end(struct file *file, struct address_space *mapping,
+ 	return err;
+ }
+ 
+-static ssize_t fat_direct_IO(int rw, struct kiocb *iocb,
+-			     const struct iovec *iov,
+-			     loff_t offset, unsigned long nr_segs)
++static ssize_t fat_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_mapping->host;
+ 
+-	if (rw == WRITE) {
++	if (args->rw == WRITE) {
+ 		/*
+ 		 * FIXME: blockdev_direct_IO() doesn't use ->write_begin(),
+ 		 * so we need to update the ->mmu_private to block boundary.
+@@ -184,7 +182,7 @@ static ssize_t fat_direct_IO(int rw, struct kiocb *iocb,
+ 		 *
+ 		 * Return 0, and fallback to normal buffered write.
+ 		 */
+-		loff_t size = offset + iov_length(iov, nr_segs);
++		loff_t size = args->offset + args->length;
+ 		if (MSDOS_I(inode)->mmu_private < size)
+ 			return 0;
+ 	}
+@@ -193,8 +191,8 @@ static ssize_t fat_direct_IO(int rw, struct kiocb *iocb,
+ 	 * FAT need to use the DIO_LOCKING for avoiding the race
+ 	 * condition of fat_get_block() and ->truncate().
+ 	 */
+-	return blockdev_direct_IO(rw, iocb, inode, inode->i_sb->s_bdev, iov,
+-				  offset, nr_segs, fat_get_block, NULL);
++	return blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, args,
++				  fat_get_block, NULL);
+ }
+ 
+ static sector_t _fat_bmap(struct address_space *mapping, sector_t block)
+diff --git a/fs/gfs2/aops.c b/fs/gfs2/aops.c
+index 7ebae9a..a9422a2 100644
+--- a/fs/gfs2/aops.c
++++ b/fs/gfs2/aops.c
+@@ -1021,9 +1021,7 @@ static int gfs2_ok_for_dio(struct gfs2_inode *ip, int rw, loff_t offset)
+ 
+ 
+ 
+-static ssize_t gfs2_direct_IO(int rw, struct kiocb *iocb,
+-			      const struct iovec *iov, loff_t offset,
+-			      unsigned long nr_segs)
++static ssize_t gfs2_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_mapping->host;
+@@ -1043,13 +1041,12 @@ static ssize_t gfs2_direct_IO(int rw, struct kiocb *iocb,
+ 	rv = gfs2_glock_nq(&gh);
+ 	if (rv)
+ 		return rv;
+-	rv = gfs2_ok_for_dio(ip, rw, offset);
++	rv = gfs2_ok_for_dio(ip, args->rw, args->offset);
+ 	if (rv != 1)
+ 		goto out; /* dio not valid, fall back to buffered i/o */
+ 
+-	rv = blockdev_direct_IO_no_locking(rw, iocb, inode, inode->i_sb->s_bdev,
+-					   iov, offset, nr_segs,
+-					   gfs2_get_block_direct, NULL);
++	rv = blockdev_direct_IO_no_locking(iocb, inode, inode->i_sb->s_bdev,
++					   args, gfs2_get_block_direct, NULL);
+ out:
+ 	gfs2_glock_dq_m(1, &gh);
+ 	gfs2_holder_uninit(&gh);
+diff --git a/fs/hfs/inode.c b/fs/hfs/inode.c
+index a1cbff2..2998914 100644
+--- a/fs/hfs/inode.c
++++ b/fs/hfs/inode.c
+@@ -107,14 +107,13 @@ static int hfs_releasepage(struct page *page, gfp_t mask)
+ 	return res ? try_to_free_buffers(page) : 0;
+ }
+ 
+-static ssize_t hfs_direct_IO(int rw, struct kiocb *iocb,
+-		const struct iovec *iov, loff_t offset, unsigned long nr_segs)
++static ssize_t hfs_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_path.dentry->d_inode->i_mapping->host;
+ 
+-	return blockdev_direct_IO(rw, iocb, inode, inode->i_sb->s_bdev, iov,
+-				  offset, nr_segs, hfs_get_block, NULL);
++	return blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, args,
++				  hfs_get_block, NULL);
+ }
+ 
+ static int hfs_writepages(struct address_space *mapping,
+diff --git a/fs/hfsplus/inode.c b/fs/hfsplus/inode.c
+index 1bcf597..dd7102b 100644
+--- a/fs/hfsplus/inode.c
++++ b/fs/hfsplus/inode.c
+@@ -100,14 +100,14 @@ static int hfsplus_releasepage(struct page *page, gfp_t mask)
+ 	return res ? try_to_free_buffers(page) : 0;
+ }
+ 
+-static ssize_t hfsplus_direct_IO(int rw, struct kiocb *iocb,
+-		const struct iovec *iov, loff_t offset, unsigned long nr_segs)
++static ssize_t hfsplus_direct_IO(struct kiocb *iocb,
++				 struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_path.dentry->d_inode->i_mapping->host;
+ 
+-	return blockdev_direct_IO(rw, iocb, inode, inode->i_sb->s_bdev, iov,
+-				  offset, nr_segs, hfsplus_get_block, NULL);
++	return blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, args,
++				  hfsplus_get_block, NULL);
+ }
+ 
+ static int hfsplus_writepages(struct address_space *mapping,
+diff --git a/fs/jfs/inode.c b/fs/jfs/inode.c
+index b2ae190..e1420de 100644
+--- a/fs/jfs/inode.c
++++ b/fs/jfs/inode.c
+@@ -306,14 +306,13 @@ static sector_t jfs_bmap(struct address_space *mapping, sector_t block)
+ 	return generic_block_bmap(mapping, block, jfs_get_block);
+ }
+ 
+-static ssize_t jfs_direct_IO(int rw, struct kiocb *iocb,
+-	const struct iovec *iov, loff_t offset, unsigned long nr_segs)
++static ssize_t jfs_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_mapping->host;
+ 
+-	return blockdev_direct_IO(rw, iocb, inode, inode->i_sb->s_bdev, iov,
+-				offset, nr_segs, jfs_get_block, NULL);
++	return blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, args,
++					jfs_get_block, NULL);
+ }
+ 
+ const struct address_space_operations jfs_aops = {
+diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
+index e4e089a..45d931b 100644
+--- a/fs/nfs/direct.c
++++ b/fs/nfs/direct.c
+@@ -103,21 +103,18 @@ static inline int put_dreq(struct nfs_direct_req *dreq)
+ /**
+  * nfs_direct_IO - NFS address space operation for direct I/O
+  * @rw: direction (read or write)
+- * @iocb: target I/O control block
+- * @iov: array of vectors that define I/O buffer
+- * @pos: offset in file to begin the operation
+- * @nr_segs: size of iovec array
++ * @args: IO arguments
+  *
+  * The presence of this routine in the address space ops vector means
+  * the NFS client supports direct I/O.  However, we shunt off direct
+  * read and write requests before the VFS gets them, so this method
+  * should never be called.
+  */
+-ssize_t nfs_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov, loff_t pos, unsigned long nr_segs)
++ssize_t nfs_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	dprintk("NFS: nfs_direct_IO (%s) off/no(%Ld/%lu) EINVAL\n",
+ 			iocb->ki_filp->f_path.dentry->d_name.name,
+-			(long long) pos, nr_segs);
++			(long long) args->offset, args->nr_segs);
+ 
+ 	return -EINVAL;
+ }
+diff --git a/fs/nilfs2/inode.c b/fs/nilfs2/inode.c
+index fe9d8f2..840c307 100644
+--- a/fs/nilfs2/inode.c
++++ b/fs/nilfs2/inode.c
+@@ -222,19 +222,18 @@ static int nilfs_write_end(struct file *file, struct address_space *mapping,
+ }
+ 
+ static ssize_t
+-nilfs_direct_IO(int rw, struct kiocb *iocb, const struct iovec *iov,
+-		loff_t offset, unsigned long nr_segs)
++nilfs_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_mapping->host;
+ 	ssize_t size;
+ 
+-	if (rw == WRITE)
++	if (args->rw == WRITE)
+ 		return 0;
+ 
+ 	/* Needs synchronization with the cleaner */
+-	size = blockdev_direct_IO(rw, iocb, inode, inode->i_sb->s_bdev, iov,
+-				  offset, nr_segs, nilfs_get_block, NULL);
++	size = blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, args,
++				  nilfs_get_block, NULL);
+ 	return size;
+ }
+ 
+diff --git a/fs/ocfs2/aops.c b/fs/ocfs2/aops.c
+index b401654..56e61ba 100644
+--- a/fs/ocfs2/aops.c
++++ b/fs/ocfs2/aops.c
+@@ -668,11 +668,7 @@ static int ocfs2_releasepage(struct page *page, gfp_t wait)
+ 	return jbd2_journal_try_to_free_buffers(journal, page, wait);
+ }
+ 
+-static ssize_t ocfs2_direct_IO(int rw,
+-			       struct kiocb *iocb,
+-			       const struct iovec *iov,
+-			       loff_t offset,
+-			       unsigned long nr_segs)
++static ssize_t ocfs2_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_path.dentry->d_inode->i_mapping->host;
+@@ -687,9 +683,8 @@ static ssize_t ocfs2_direct_IO(int rw,
+ 	if (OCFS2_I(inode)->ip_dyn_features & OCFS2_INLINE_DATA_FL)
+ 		return 0;
+ 
+-	ret = blockdev_direct_IO_no_locking(rw, iocb, inode,
+-					    inode->i_sb->s_bdev, iov, offset,
+-					    nr_segs, 
++	ret = blockdev_direct_IO_no_locking(iocb, inode,
++					    inode->i_sb->s_bdev, args,
+ 					    ocfs2_direct_IO_get_blocks,
+ 					    ocfs2_dio_end_io);
+ 
+diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
+index a14d6cd..201e6ca 100644
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -3025,15 +3025,12 @@ static int reiserfs_releasepage(struct page *page, gfp_t unused_gfp_flags)
+ 
+ /* We thank Mingming Cao for helping us understand in great detail what
+    to do in this section of the code. */
+-static ssize_t reiserfs_direct_IO(int rw, struct kiocb *iocb,
+-				  const struct iovec *iov, loff_t offset,
+-				  unsigned long nr_segs)
++static ssize_t reiserfs_direct_IO(struct kiocb *iocb, struct dio_args *args)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct inode *inode = file->f_mapping->host;
+ 
+-	return blockdev_direct_IO(rw, iocb, inode, inode->i_sb->s_bdev, iov,
+-				  offset, nr_segs,
++	return blockdev_direct_IO(iocb, inode, inode->i_sb->s_bdev, args,
+ 				  reiserfs_get_blocks_direct_io, NULL);
+ }
+ 
+diff --git a/fs/xfs/linux-2.6/xfs_aops.c b/fs/xfs/linux-2.6/xfs_aops.c
+index aecf251..0faf1fe 100644
+--- a/fs/xfs/linux-2.6/xfs_aops.c
++++ b/fs/xfs/linux-2.6/xfs_aops.c
+@@ -1532,11 +1532,8 @@ xfs_end_io_direct(
+ 
+ STATIC ssize_t
+ xfs_vm_direct_IO(
+-	int			rw,
+ 	struct kiocb		*iocb,
+-	const struct iovec	*iov,
+-	loff_t			offset,
+-	unsigned long		nr_segs)
++	struct dio_args		*args)
+ {
+ 	struct file	*file = iocb->ki_filp;
+ 	struct inode	*inode = file->f_mapping->host;
+@@ -1545,18 +1542,14 @@ xfs_vm_direct_IO(
+ 
+ 	bdev = xfs_find_bdev_for_inode(XFS_I(inode));
+ 
+-	if (rw == WRITE) {
++	if (args->rw == WRITE) {
+ 		iocb->private = xfs_alloc_ioend(inode, IOMAP_UNWRITTEN);
+-		ret = blockdev_direct_IO_own_locking(rw, iocb, inode,
+-			bdev, iov, offset, nr_segs,
+-			xfs_get_blocks_direct,
+-			xfs_end_io_direct);
++		ret = blockdev_direct_IO_own_locking(iocb, inode, bdev, args,
++				xfs_get_blocks_direct, xfs_end_io_direct);
+ 	} else {
+ 		iocb->private = xfs_alloc_ioend(inode, IOMAP_READ);
+-		ret = blockdev_direct_IO_no_locking(rw, iocb, inode,
+-			bdev, iov, offset, nr_segs,
+-			xfs_get_blocks_direct,
+-			xfs_end_io_direct);
++		ret = blockdev_direct_IO_no_locking(iocb, inode,
++			bdev, args, xfs_get_blocks_direct, xfs_end_io_direct);
+ 	}
+ 
+ 	if (unlikely(ret != -EIOCBQUEUED && iocb->private))
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 67888a9..5971116 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -560,6 +560,7 @@ typedef struct {
+ typedef int (*read_actor_t)(read_descriptor_t *, struct page *,
+ 		unsigned long, unsigned long);
+ 
++struct dio_args;
+ struct address_space_operations {
+ 	int (*writepage)(struct page *page, struct writeback_control *wbc);
+ 	int (*readpage)(struct file *, struct page *);
+@@ -585,8 +586,7 @@ struct address_space_operations {
+ 	sector_t (*bmap)(struct address_space *, sector_t);
+ 	void (*invalidatepage) (struct page *, unsigned long);
+ 	int (*releasepage) (struct page *, gfp_t);
+-	ssize_t (*direct_IO)(int, struct kiocb *, const struct iovec *iov,
+-			loff_t offset, unsigned long nr_segs);
++	ssize_t (*direct_IO)(struct kiocb *, struct dio_args *);
+ 	int (*get_xip_mem)(struct address_space *, pgoff_t, int,
+ 						void **, unsigned long *);
+ 	/* migrate the contents of a page to the specified target */
+@@ -2241,10 +2241,24 @@ static inline int xip_truncate_page(struct address_space *mapping, loff_t from)
+ #endif
+ 
+ #ifdef CONFIG_BLOCK
+-ssize_t __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
+-	struct block_device *bdev, const struct iovec *iov, loff_t offset,
+-	unsigned long nr_segs, get_block_t get_block, dio_iodone_t end_io,
+-	int lock_type);
++
++/*
++ * Arguments passwed to aops->direct_IO()
++ */
++struct dio_args {
++	int rw;
++	const struct iovec *iov;
++	unsigned long length;
++	loff_t offset;
++	unsigned long nr_segs;
++};
++
++ssize_t __blockdev_direct_IO(struct kiocb *iocb, struct inode *inode,
++	struct block_device *bdev, struct dio_args *args, get_block_t get_block,
++	dio_iodone_t end_io, int lock_type);
++
++ssize_t generic_file_direct_IO(int, struct address_space *, struct kiocb *,
++				const struct iovec *, loff_t, unsigned long);
+ 
+ enum {
+ 	DIO_LOCKING = 1, /* need locking between buffered and direct access */
+@@ -2252,31 +2266,28 @@ enum {
+ 	DIO_OWN_LOCKING, /* filesystem locks buffered and direct internally */
+ };
+ 
+-static inline ssize_t blockdev_direct_IO(int rw, struct kiocb *iocb,
+-	struct inode *inode, struct block_device *bdev, const struct iovec *iov,
+-	loff_t offset, unsigned long nr_segs, get_block_t get_block,
+-	dio_iodone_t end_io)
++static inline ssize_t blockdev_direct_IO(struct kiocb *iocb,
++	struct inode *inode, struct block_device *bdev, struct dio_args *args,
++	get_block_t get_block, dio_iodone_t end_io)
+ {
+-	return __blockdev_direct_IO(rw, iocb, inode, bdev, iov, offset,
+-				nr_segs, get_block, end_io, DIO_LOCKING);
++	return __blockdev_direct_IO(iocb, inode, bdev, args,
++					get_block, end_io, DIO_LOCKING);
+ }
+ 
+-static inline ssize_t blockdev_direct_IO_no_locking(int rw, struct kiocb *iocb,
+-	struct inode *inode, struct block_device *bdev, const struct iovec *iov,
+-	loff_t offset, unsigned long nr_segs, get_block_t get_block,
+-	dio_iodone_t end_io)
++static inline ssize_t blockdev_direct_IO_no_locking(struct kiocb *iocb,
++	struct inode *inode, struct block_device *bdev, struct dio_args *args,
++	get_block_t get_block, dio_iodone_t end_io)
+ {
+-	return __blockdev_direct_IO(rw, iocb, inode, bdev, iov, offset,
+-				nr_segs, get_block, end_io, DIO_NO_LOCKING);
++	return __blockdev_direct_IO(iocb, inode, bdev, args,
++					get_block, end_io, DIO_NO_LOCKING);
+ }
+ 
+-static inline ssize_t blockdev_direct_IO_own_locking(int rw, struct kiocb *iocb,
+-	struct inode *inode, struct block_device *bdev, const struct iovec *iov,
+-	loff_t offset, unsigned long nr_segs, get_block_t get_block,
+-	dio_iodone_t end_io)
++static inline ssize_t blockdev_direct_IO_own_locking(struct kiocb *iocb,
++	struct inode *inode, struct block_device *bdev, struct dio_args *args,
++	get_block_t get_block, dio_iodone_t end_io)
+ {
+-	return __blockdev_direct_IO(rw, iocb, inode, bdev, iov, offset,
+-				nr_segs, get_block, end_io, DIO_OWN_LOCKING);
++	return __blockdev_direct_IO(iocb, inode, bdev, args,
++					get_block, end_io, DIO_OWN_LOCKING);
+ }
+ #endif
+ 
+diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
+index f6b9024..97a2383 100644
+--- a/include/linux/nfs_fs.h
++++ b/include/linux/nfs_fs.h
+@@ -408,8 +408,7 @@ extern int nfs3_removexattr (struct dentry *, const char *name);
+ /*
+  * linux/fs/nfs/direct.c
+  */
+-extern ssize_t nfs_direct_IO(int, struct kiocb *, const struct iovec *, loff_t,
+-			unsigned long);
++extern ssize_t nfs_direct_IO(struct kiocb *, struct dio_args *);
+ extern ssize_t nfs_file_direct_read(struct kiocb *iocb,
+ 			const struct iovec *iov, unsigned long nr_segs,
+ 			loff_t pos);
+diff --git a/mm/filemap.c b/mm/filemap.c
+index ccea3b6..cf85298 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1345,8 +1345,9 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
+ 			retval = filemap_write_and_wait_range(mapping, pos,
+ 					pos + iov_length(iov, nr_segs) - 1);
+ 			if (!retval) {
+-				retval = mapping->a_ops->direct_IO(READ, iocb,
+-							iov, pos, nr_segs);
++				retval = generic_file_direct_IO(READ, mapping,
++								iocb, iov,
++								pos, nr_segs);
+ 			}
+ 			if (retval > 0)
+ 				*ppos = pos + retval;
+@@ -2144,7 +2145,8 @@ generic_file_direct_write(struct kiocb *iocb, const struct iovec *iov,
+ 		}
+ 	}
+ 
+-	written = mapping->a_ops->direct_IO(WRITE, iocb, iov, pos, *nr_segs);
++	written = generic_file_direct_IO(WRITE, mapping, iocb, iov, pos,
++						*nr_segs);
+ 
+ 	/*
+ 	 * Finally, try again to invalidate clean pages which might have been
 -- 
-1.6.4.173.g3f189
+1.6.4.53.g3f55e
 
