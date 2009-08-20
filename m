@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZHTHXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbZHTHZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbZHTHXM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 03:23:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZHTHXL
+	id S1753926AbZHTHZy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 03:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZHTHZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 03:23:11 -0400
-Received: from mx10.brocade.com ([208.185.105.18]:35080 "EHLO mx10.brocade.com"
+	Thu, 20 Aug 2009 03:25:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:57519 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753822AbZHTHXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 03:23:10 -0400
-X-IronPort-AV: E=Sophos;i="4.43,413,1246863600"; 
-   d="scan'208";a="213451318"
-Date: Thu, 20 Aug 2009 00:22:42 -0700
-From: Jing Huang <huangj@brocade.com>
-Message-Id: <200908200722.n7K7Mgrw008357@swe57.brocade.com>
-To: James.Bottomley@HansenPartnership.com
-Subject: [PATCH 13/14] bfa: Brocade BFA FC SCSI driver (make)
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       rvadivel@brocade.com, vravindr@brocade.com
+	id S1753707AbZHTHZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 03:25:53 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 2/2] vhost_net: a kernel-level virtio server
+Date: Thu, 20 Aug 2009 16:55:48 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
+Cc: Arnd Bergmann <arnd@arndb.de>, "Michael S. Tsirkin" <mst@redhat.com>,
+       netdev@vger.kernel.org, "Ira W. Snyder" <iws@ovro.caltech.edu>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+References: <cover.1249930169.git.mst@redhat.com> <20090813144129.GB5080@redhat.com> <200908131653.47029.arnd@arndb.de>
+In-Reply-To: <200908131653.47029.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908201655.48779.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jing Huang <huangj@brocade.com>
+On Fri, 14 Aug 2009 12:23:46 am Arnd Bergmann wrote:
+> On Thursday 13 August 2009, Michael S. Tsirkin wrote:
+> > The best way to do this IMO would be to add zero copy support to raw
+> > sockets, vhost will then get it basically for free.
+> 
+> Yes, that would be nice. I wonder if that could lead to security
+> problems on TX though. I guess It will only bring significant performance
+> improvements if we leave the data writable in the user space or guest
+> during the operation. If the user finds the right timing, it could
+> modify the frame headers after they have been checked using netfilter,
+> or while the frames are being consumed in the kernel (e.g. an NFS
+> server running in a guest).
 
-This patch contains Makefile and Kconfig file for scsi and bfa.
+For this reason, we always linearize parts of packets we're filtering.
+ie. copy.
 
-Signed-off-by: Jing Huang <huangj@brocade.com>
----
- Kconfig      |   10 ++++++++++
- Makefile     |    1 +
- bfa/Makefile |   15 +++++++++++++++
- 3 files changed, 26 insertions(+)
-
-diff -urpN orig/drivers/scsi/bfa/Makefile patch/drivers/scsi/bfa/Makefile
---- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/Makefile	2009-08-19 17:47:59.000000000 -0700
-@@ -0,0 +1,15 @@
-+obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
-+
-+bfa-y := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o bfad_fwimg.o
-+
-+bfa-y += bfa_core.o bfa_ioc.o bfa_iocfc.o bfa_aen.o bfa_fcxp.o bfa_lps.o
-+bfa-y += bfa_hw_cb.o bfa_hw_ct.o bfa_intr.o bfa_timer.o bfa_rport.o 
-+bfa-y += bfa_fcport.o bfa_port.o bfa_uf.o bfa_sgpg.o bfa_module.o bfa_ioim.o
-+bfa-y += bfa_itnim.o bfa_fcpim.o bfa_tskim.o bfa_log.o bfa_log_module.o
-+bfa-y += bfa_csdebug.o bfa_sm.o plog.o
-+
-+bfa-y += fcbuild.o fabric.o fcpim.o vfapi.o fcptm.o bfa_fcs.o bfa_fcs_port.o 
-+bfa-y += bfa_fcs_uf.o bfa_fcs_lport.o fab.o fdmi.o ms.o ns.o scn.o loop.o
-+bfa-y += lport_api.o n2n.o rport.o rport_api.o rport_ftrs.o vport.o
-+
-+ccflags-y := -I$(obj) -I$(obj)/include -I$(obj)/include/cna
-diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
---- orig/drivers/scsi/Kconfig	2009-08-19 17:47:59.000000000 -0700
-+++ patch/drivers/scsi/Kconfig	2009-08-19 17:47:52.000000000 -0700
-@@ -1821,6 +1821,16 @@ config SCSI_SRP
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called libsrp.
- 
-+config SCSI_BFA_FC
-+	tristate "Brocade BFA Fibre Channel Support"
-+	depends on PCI && SCSI
-+	select SCSI_FC_ATTRS
-+	help
-+	  This bfa driver supports all Brocade PCIe FC/FCOE host adapters.
-+
-+	  To compile this driver as a module, choose M here. The module will
-+	  be called bfa.
-+
- endif # SCSI_LOWLEVEL
- 
- source "drivers/scsi/pcmcia/Kconfig"
-diff -urpN orig/drivers/scsi/Makefile patch/drivers/scsi/Makefile
---- orig/drivers/scsi/Makefile	2009-08-19 17:47:59.000000000 -0700
-+++ patch/drivers/scsi/Makefile	2009-08-19 17:47:52.000000000 -0700
-@@ -86,6 +86,7 @@ obj-$(CONFIG_SCSI_QLOGIC_1280)	+= qla128
- obj-$(CONFIG_SCSI_QLA_FC)	+= qla2xxx/
- obj-$(CONFIG_SCSI_QLA_ISCSI)	+= qla4xxx/
- obj-$(CONFIG_SCSI_LPFC)		+= lpfc/
-+obj-$(CONFIG_SCSI_BFA_FC)	+= bfa/
- obj-$(CONFIG_SCSI_PAS16)	+= pas16.o
- obj-$(CONFIG_SCSI_T128)		+= t128.o
- obj-$(CONFIG_SCSI_DMX3191D)	+= dmx3191d.o
+Cheers,
+Rusty.
