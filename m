@@ -1,105 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZHTCWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZHTC3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbZHTCWd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 22:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZHTCWc
+	id S1752834AbZHTC3a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 22:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbZHTC33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 22:22:32 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:49499 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752621AbZHTCWc (ORCPT
+	Wed, 19 Aug 2009 22:29:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:25288 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbZHTC32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 22:22:32 -0400
-Message-ID: <4A8CB358.4090001@oracle.com>
-Date: Wed, 19 Aug 2009 19:22:16 -0700
-From: "tina.yang" <tina.yang@oracle.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 19 Aug 2009 22:29:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=BBwrgwMU0Ltc9YdNiKQii3ljQ5sXnLs3qEKK4zRaupnEdI28alvtkWQhh3qr7hPgFE
+         J5OENTuedcRuEr+TREwNOFm84axag1ZNQbH6XK2S4e4s6KopCL9pDGJBZgT7X82G6ZX5
+         f36TSzhI37eE0k5/tDtWpSvgr6deNlEd2yedo=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysrq: add debug message to reboot event
-References: <4A89AC97.6030109@oracle.com>	<alpine.LNX.2.00.0908181339310.25797@wotan.suse.de> <20090819135827.168621d8.akpm@linux-foundation.org>
-In-Reply-To: <20090819135827.168621d8.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090819164029.GZ19938@edu.joroinen.fi>
+References: <20090819140848.GW19938@edu.joroinen.fi> <200908192247543597389@usish.com> 
+	<20090819164029.GZ19938@edu.joroinen.fi>
+From: Drew <drew.kay@gmail.com>
+Date: Wed, 19 Aug 2009 19:29:07 -0700
+Message-ID: <c268e4660908191929u3f11c733oc68a0d50a3e5aca8@mail.gmail.com>
+Subject: Re: Re: Performance issues with Areca 1680 SAS Controllers
+To: =?UTF-8?B?UGFzaSBLw6Rya2vDpGluZW4=?= <pasik@iki.fi>
+Cc: Wang Jinpu <jack_wang@usish.com>, Nick Cheng <nick.cheng@areca.com.tw>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Fuckner <michael@fuckner.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Erich Chen <erich@areca.com.tw>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt015.oracle.com [141.146.116.24]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4A8CB359.014A:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add debug message to detect keyboard vs non-keyboard triggered sysrq-b events.
-This is to assist postmortem debugging on complicated computing setup with
-large number of applications involved where reboot event had occurred, but 
-unclear of its origin.
-
-Signed-off-by: Tina Yang <Tina.Yang@oracle.com>
-Signed-off-by: Zach Brown <Zach.Brown@oracle.com>
-
----
-
---- linux-2.6.18.i686/drivers/char/sysrq.c.orig	2009-08-13 10:55:57.526459000 -0700
-+++ linux-2.6.18.i686/drivers/char/sysrq.c	2009-08-13 10:58:10.798739000 -0700
-@@ -112,18 +112,23 @@ static struct sysrq_key_op sysrq_crashdu
- 	.enable_mask	= SYSRQ_ENABLE_DUMP,
- };
- 
--static void sysrq_handle_reboot(int key, struct pt_regs *pt_regs,
-+static void sysrq_handle_reboot(int check_mask, int key, struct pt_regs *pt_regs,
- 				struct tty_struct *tty)
- {
-+	if (check_mask)
-+		printk("<keyboard-invoked>\n");
-+	else
-+		printk("<non-keyboard-invoked: PID %d COMMAND %s>\n",
-+			current->pid, current->comm);
- 	lockdep_off();
- 	local_irq_enable();
- 	emergency_restart();
- }
- static struct sysrq_key_op sysrq_reboot_op = {
--	.handler	= sysrq_handle_reboot,
--	.help_msg	= "reBoot",
--	.action_msg	= "Resetting",
--	.enable_mask	= SYSRQ_ENABLE_BOOT,
-+	.handler_with_mask	= sysrq_handle_reboot,
-+	.help_msg		= "reBoot",
-+	.action_msg		= "Resetting",
-+	.enable_mask		= SYSRQ_ENABLE_BOOT,
- };
- 
- static void sysrq_handle_sync(int key, struct pt_regs *pt_regs,
-@@ -411,7 +416,10 @@ void __handle_sysrq(int key, struct pt_r
- 			}
- 			printk("%s\n", op_p->action_msg);
- 			console_loglevel = orig_log_level;
--			op_p->handler(key, pt_regs, tty);
-+			if (op_p->handler_with_mask)
-+				op_p->handler_with_mask(check_mask, key, pt_regs, tty);
-+			else
-+				op_p->handler(key, pt_regs, tty);
- 		} else {
- 			printk("This sysrq operation is disabled.\n");
- 		}
---- linux-2.6.18.i686/include/linux/sysrq.h.orig	2009-08-13 10:58:29.779925000 -0700
-+++ linux-2.6.18.i686/include/linux/sysrq.h	2009-08-13 11:05:30.723865000 -0700
-@@ -28,6 +28,7 @@ struct tty_struct;
- 
- struct sysrq_key_op {
- 	void (*handler)(int, struct pt_regs *, struct tty_struct *);
-+	void (*handler_with_mask)(int check_mask, int, struct pt_regs *, struct tty_struct *);
- 	char *help_msg;
- 	char *action_msg;
- 	int enable_mask;
-
-
-Andrew Morton wrote:
+> The problem is while Areca is doing the flushing _all_ IOs are really slow,
+> including the other raid-10 array for the OS, which uses totally separate physical disks.
 >
-> The changelog had no description of why the change should be applied
-> and I was unable to understand the motivation from reading the patch,
-> so I skipped it.
+> Opening another shell in screen takes at least 30 seconds, starting "top"
+> takes forever etc..
 >
-> Also the patch was wordwrapped and had all its tabs replaced by spaces.
->   
+> While Areca is flushing the caches (and all the IOs are slow), "iostat 1"
+> doesn't show any "leftover" IOs from the benchmark. So the benchmark was
+> really using direct IO, bypassing kernel caches.
+>
+> I tried with different io-schedulers (cfq,deadline,noop) but they didn't
+> have big effect.. which makes sense, since the OS/kernel is not doing any
+> big IO when the 'stalling' happens.
+>
+> Is there some way to make Areca NOT use all cpu-power for cache flushing?
 
+Is top showing 100% cpu usage?
+
+It wouldn't surprise me if the Areca's internal bus / processor is
+getting swamped. With the RAID60 chewing through two PQ calculations
+over 14 disks I'd expect the performance of other arrays on the
+controller would take a hit
+
+I've seen similar symptoms when moving massive amounts of data between
+disks on my servers. IO maxes out the bus, system responsiveness goes
+down as evidenced by slowly loading apps, and top still shows minimal
+CPU usage.
+
+
+-- 
+Drew
+
+"Nothing in life is to be feared. It is only to be understood."
+--Marie Curie
