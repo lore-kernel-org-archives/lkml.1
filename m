@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbZHTMQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZHTMQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbZHTMQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 08:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZHTMQS
+	id S1754232AbZHTMQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 08:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZHTMQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 08:16:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59586 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754036AbZHTMQS (ORCPT
+	Thu, 20 Aug 2009 08:16:24 -0400
+Received: from mailrelay003.isp.belgacom.be ([195.238.6.53]:24322 "EHLO
+	mailrelay003.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753648AbZHTMQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 08:16:18 -0400
-Subject: Re: [PATCH 0/6] Lazy workqueues
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, benh@kernel.crashing.org,
-       htejun@gmail.com, bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk,
-       Junio C Hamano <junio@pobox.com>
-In-Reply-To: <20090820120858.GJ12579@kernel.dk>
-References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
-	 <1250769861.8282.182.camel@twins>  <20090820120858.GJ12579@kernel.dk>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 20 Aug 2009 14:16:11 +0200
-Message-Id: <1250770571.8282.186.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 20 Aug 2009 08:16:22 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAMzZjEpR9dF4/2dsb2JhbADVfwmEEQWBTg
+Date: Thu, 20 Aug 2009 14:16:21 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Wan ZongShun <mcuos.com@gmail.com>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add watchdog driver for w90p910
+Message-ID: <20090820121621.GB29382@infomag.iguana.be>
+References: <4A69CE00.10401@gmail.com> <20090804201032.GB30892@infomag.iguana.be> <e68bb3470908050437ma86dddem7621bb7d0da82607@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e68bb3470908050437ma86dddem7621bb7d0da82607@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-20 at 14:08 +0200, Jens Axboe wrote:
-> On Thu, Aug 20 2009, Peter Zijlstra wrote:
-> > On Thu, 2009-08-20 at 12:19 +0200, Jens Axboe wrote:
-> > > (sorry for the resend, but apparently the directory had some patches
-> > >  in it already. plus, stupid git send-email doesn't default to
-> > >  no chain replies, really annoying)
-> > 
-> > Newer versions should, I made a stink about this some time ago.
+Hi Wan,
+
+> Here is the w90p910 datasheet link, now the ic was renames nuc910.
+> Maybe you can give me a good idea,
+> hmm, regarding the timer as your mentioned (at91sam9_wdt.c), I am
+> studying it and will resubmit a updated patch to you. thanks a lot for
+> your help !
 > 
-> git version 1.6.4.173.g3f189
-> 
-> That's pretty new... But perhaps I should complain too, it's been
-> annoying me forever.
+> http://www.nuvoton-usa.com/hq/enu/ProductAndSales/ProductLines/ConsumerElectronicsIC/ARMMicrocontroller/ARMMicrocontroller/NUC910A.htm
 
-http://marc.info/?l=git&m=123457137328461&w=2
+This is the hardware reference manual. Is there one that describes the registers?
 
-Apparently it didn't happen, nor did I ever see a reply to that posting.
+Thanks in advance,
+Wim.
 
-Junio, what happened here?
