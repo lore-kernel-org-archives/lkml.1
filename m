@@ -1,77 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbZHTUnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZHTUwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932153AbZHTUnF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 16:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbZHTUnE
+	id S1754930AbZHTUwD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 16:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZHTUwC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 16:43:04 -0400
-Received: from mail.windriver.com ([147.11.1.11]:51409 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932119AbZHTUnA (ORCPT
+	Thu, 20 Aug 2009 16:52:02 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:56287 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754281AbZHTUwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 16:43:00 -0400
-From: Jason Wessel <jason.wessel@windriver.com>
-To: gregkh@suse.de
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Alan Stern <stern@rowland.harvard.edu>, dbrownell@users.sourceforge.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 11/11] ehci-dbgp,ehci: Allow dbpg to work with suspend/resume
-Date: Thu, 20 Aug 2009 15:39:58 -0500
-Message-Id: <1250800798-31559-12-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.3.1.9.g95405b
-In-Reply-To: <1250800798-31559-11-git-send-email-jason.wessel@windriver.com>
-References: <1250800798-31559-1-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-2-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-3-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-4-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-5-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-6-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-7-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-8-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-9-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-10-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-11-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 20 Aug 2009 20:41:28.0055 (UTC) FILETIME=[976AB070:01CA21D6]
+	Thu, 20 Aug 2009 16:52:00 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII; format=flowed
+Date: Thu, 20 Aug 2009 13:51:50 -0700
+From: Matheos Worku <Matheos.Worku@Sun.COM>
+Subject: Re: [PATCH] char/vme_scc: adding __init macro to vme_scc.c
+In-reply-to: <200908202242.31778.PeterHuewe@gmx.de>
+To: Peter Huewe <PeterHuewe@gmx.de>
+Cc: Jiri Kosina <trivial@kernel.org>, Alan Cox <alan@redhat.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Message-id: <4A8DB766.9020701@sun.com>
+References: <200908202242.31778.PeterHuewe@gmx.de>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order for the dbgp driver to survive suspend/resume, on every ehci
-resume operation the debug controller must get re-initialized.
-
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Cc: Greg KH <gregkh@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: dbrownell@users.sourceforge.net
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
----
- drivers/usb/host/ehci-hub.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/usb/host/ehci-hub.c b/drivers/usb/host/ehci-hub.c
-index 452380e..84b972a 100644
---- a/drivers/usb/host/ehci-hub.c
-+++ b/drivers/usb/host/ehci-hub.c
-@@ -204,6 +204,13 @@ static int ehci_bus_resume (struct usb_hcd *hcd)
- 		return -ESHUTDOWN;
- 	}
+Peter Huewe wrote:
+> From: Peter Huewe <peterhuewe@gmx.de>
+>
+> Trivial patch which adds the __init macro to the module_init 
+> function and all of its helper functions of char/vme_scc.c
+>
+> Alan or Geert, please have a look at the small patch and either pull it through 
+> your tree, or please ack' it so Jiri can pull it through the trivial tree.
+>
+> linux version 2.6.31-rc6 - linus git tree, Do 20. Aug 22:26:06 CEST 2009
+>
+> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+> ---
+> diff --git a/drivers/char/vme_scc.c b/drivers/char/vme_scc.c
+> index 994e1a5..8b24729 100644
+> --- a/drivers/char/vme_scc.c
+> +++ b/drivers/char/vme_scc.c
+> @@ -136,7 +136,7 @@ static const struct tty_port_operations scc_port_ops = {
+>   * vme_scc_init() and support functions
+>   *---------------------------------------------------------------------------*/
+>  
+> -static int scc_init_drivers(void)
+> +static int __init scc_init_drivers(void)
+>  {
+>  	int error;
+>  
+> @@ -172,7 +172,7 @@ static int scc_init_drivers(void)
+>  /* ports[] array is indexed by line no (i.e. [0] for ttyS0, [1] for ttyS1).
+>   */
+>  
+> -static void scc_init_portstructs(void)
+> +static void __init scc_init_portstructs(void)
+>  {
+>  	struct scc_port *port;
+>  	int i;
+> @@ -195,7 +195,7 @@ static void scc_init_portstructs(void)
+>  
+>  
+>  #ifdef CONFIG_MVME147_SCC
+> -static int mvme147_scc_init(void)
+> +static int __init mvme147_scc_init(void)
+>  {
+>  	struct scc_port *port;
+>  	int error;
+> @@ -298,7 +298,7 @@ fail:
+>  
+>  
+>  #ifdef CONFIG_MVME162_SCC
+> -static int mvme162_scc_init(void)
+> +static int __init mvme162_scc_init(void)
+>  {
+>  	struct scc_port *port;
+>  	int error;
+> @@ -404,7 +404,7 @@ fail:
+>  
+>  
+>  #ifdef CONFIG_BVME6000_SCC
+> -static int bvme6000_scc_init(void)
+> +static int __init bvme6000_scc_init(void)
+>  {
+>  	struct scc_port *port;
+>  	int error;
+> @@ -503,7 +503,7 @@ fail_free_b_rx:
+>  #endif
+>  
+>  
+> -static int vme_scc_init(void)
+> +static int __init vme_scc_init(void)
+>  {
+>  	int res = -ENODEV;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
+Then there are issnvram.txt iss.conf etc ... I guess we need to change 
+these as well.
+How about error messages? I assume they would have ISS  in them.
+Regards
+Matheos
  
-+	if (unlikely(ehci->debug)) {
-+		if (ehci->debug && !dbgp_reset_prep())
-+			ehci->debug = NULL;
-+		else
-+			dbgp_external_startup();
-+	}
-+
- 	/* Ideally and we've got a real resume here, and no port's power
- 	 * was lost.  (For PCI, that means Vaux was maintained.)  But we
- 	 * could instead be restoring a swsusp snapshot -- so that BIOS was
--- 
-1.6.3.1.9.g95405b
-
