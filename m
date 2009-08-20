@@ -1,311 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbZHTRaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbZHTRef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755111AbZHTRaQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 13:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbZHTRaQ
+	id S1754997AbZHTRef (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 13:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbZHTRef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 13:30:16 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:52900 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755033AbZHTRaM (ORCPT
+	Thu, 20 Aug 2009 13:34:35 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:48462 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754664AbZHTRee (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 13:30:12 -0400
-Date: Thu, 20 Aug 2009 13:26:11 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: pull request: wireless-next-2.6 2009-08-20
-Message-ID: <20090820172611.GE2657@tuxdriver.com>
+	Thu, 20 Aug 2009 13:34:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=lDn3CQf4lthxVs/mE6rAABA78/MikKkthy8RDe8/1ZbPTiJ5153BAsYZOCEWP8+5/R
+         gVgUUaWFjc2PLyOzsDZEF3Z+VP7F/gMne20C795rIEICg+6Qi5gQKyFbQ6L1ymQHeY1v
+         6jf01NAD6UI0bUjeI1z5mdPkj6vOmBDDDaR68=
+Date: Thu, 20 Aug 2009 21:34:28 +0400
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH -tip] x86: smp_scan_config - use signed long as scan area
+	size
+Message-ID: <20090820173427.GA8517@lenovo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+Unsigned value potentially could be overlapped
+if length parameter is that: length % 16 != 0.
 
-The relentless march of wireless patches for 2.6.32 continues...  In
-this batch, further implementation of the LP-PHY support for b43 along
-with the usual batches of driver updates and the like -- iwlwifi, ath9k,
-rt2x00, mwl8k, and others.
+This is not a problem at moment since all values
+we pass now are 16 divisible (0x400 and 0x10000).
 
-Please let me know if there are problems!
+Though there is no need unsigned value anyway.
+Max range pointed out by MP specification is
+in kilobytes so plain "signed long" is enough.
 
-Thanks,
+This allow us to be on a safe side.
 
-John
-
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
 ---
 
-Individual patches are available here:
+(I doubt if we ever will need to scan 1G of physical
+ memory with 16 byte step at booting procedure 'xcept
+ memtest case)
 
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-next-2.6/
+Please review. Not sure if the patch is that worth
+but anyway :)
 
----
+ arch/x86/kernel/mpparse.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The following changes since commit 1758c0947605211ef953cc91d6bbdf847a21b822:
-  Oliver Hartkopp (1):
-        can: Use WARN_ONCE() instead of BUG_ON() for sanity check in receive path
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-next-2.6.git master
-
-Andrey Yurovsky (1):
-      libertas: don't use dynamic-sized array
-
-Benoit PAPILLAULT (1):
-      rt2x00: Add support for retry rates
-
-Bob Copeland (2):
-      wl1251: correct definitions for 0th bit defines
-      wl1251: halt the embedded CPU before loading firmware
-
-Christian Lamparter (2):
-      p54: disable PS by default
-      ar9170: refactor configure_filter
-
-Daniel C Halperin (7):
-      iwlwifi: remove unused HT configuration entry tx_chan_width
-      iwlwifi: include HT configuration when adding stations through rs_rate_init
-      iwlwifi: refactor packet reception code
-      iwlwifi: configure HT40 channels in iwl_mac_config
-      iwlwifi: check short GI support per-station rather than globally
-      iwlwifi: use station HT capabilities and BSS operating mode for Green-field
-      iwlwifi: fix erroneous use of iwl_rx_packet.len as a length
-
-Daniel Walker (1):
-      mac80211: New stat counters for multicast and unicast forwarded frames
-
-David Kilroy (2):
-      cfg80211: fix leaks of wdev->conn->ie
-      orinoco: remove spare whitespace
-
-Gábor Stefanik (21):
-      b43: Update dummy transmission to match V4 specs
-      b43: LP-PHY: Initialize TX power control
-      b43: LP-PHY: Implement channel switching for rev2+/B2063 radio
-      b43: LP-PHY: Implement channel switching for rev0/1/B2062 radio
-      ssb: Fix typo in the rev8 SPROM extraction routine
-      b43: Add LP-PHY firmware loading support
-      b43: Make LP-PHY testable
-      b43: LP-PHY: Don't adjust gain table for rev2+ when setting channel
-      b43: LP-PHY: Update TX gain override for a spec typo fix
-      b43: LP-PHY: Fix another TX power control abuse
-      b43: Handle B43_PHYTYPE_LP in RX path
-      b43: LP-PHY: Update baseband init for recent spec changes
-      b43: LP-PHY: Fix a spec error in the B2062 channel switch routine
-      b43: LP-PHY: Update code for spec fixes, and fix a few typos
-      b43: LP-PHY: Fix a bug in the B2062 channel tune path
-      b43: LP-PHY: Update B2062 radio init with recent spec changes
-      b43: LP-PHY: Remove BROKEN from B43_PHY_LP
-      b43: LP-PHY: Fix reading old mode in the set TX power control routine
-      b43: LP-PHY: Fix setting TX power control mode during RC calibration
-      b43: LP-PHY: Two small spec updates
-      b43: LP-PHY: Implement spec updates and remove resolved FIXMEs
-
-Ivo van Doorn (8):
-      rt2x00: Fix RFKILL polling
-      rt2x00: Fix for rt2800usb for SHARED_KEY_TABLE initializations
-      rt2x00: Add new RF chip defines
-      rt2x00: Set SKBDESC_L2_PADDED in RX path
-      rt2x00: wireless CLI ID and packet ID must not be 0
-      rt2x00: Fix MCS register intialization
-      rt2x00: configure_filter() callback is allowed to sleep
-      rt2x00: bss_info_changed() callback is allowed to sleep
-
-Javier Cardona (1):
-      mac80211: Decouple fail_avg stats used by mesh from rate control algorithm.
-
-Johannes Berg (8):
-      iwlwifi: remove unused members of iwl_ht_info
-      iwlwifi: disable PS by default
-      cfg80211: fix deadlock
-      cfg80211: report userspace SME connected event properly
-      mac80211: allow configure_filter callback to sleep
-      mac80211: remove deprecated API
-      cfg80211: fix dangling scan request checking
-      mac80211: fix register_hw error path
-
-John W. Linville (2):
-      rc80211_pid_algo.c: remove unused variable declaration
-      wl1271: remove print_mac usage
-
-Jussi Kivilinna (1):
-      cfg80211: export cfg80211_wext_siwfreq
-
-Lennert Buytenhek (29):
-      mwl8k: remove various unused struct members and defines
-      mwl8k: s/IEEE80211_ADDR_LEN/ETH_ALEN/g
-      mwl8k: sort firmware command list by opcode, and trim unused commands
-      mwl8k: various coding style cleanups
-      mwl8k: remove MWL8K_RADIO_* defines
-      mwl8k: remove MWL8K_RADIO_*_PREAMBLE defines
-      mwl8k: remove MWL8K_WMM_* defines
-      mwl8k: remove MWL8K_*_SLOTTIME defines
-      mwl8k: fix mwl8k_configure_filter() parameter lifetime issue
-      mwl8k: ->add_interface() is not called for monitor interfaces
-      mwl8k: dma header manipulations can't fail
-      mwl8k: don't touch 'command done' interrupt during firmware load
-      mwl8k: don't hardcode the number of transmit queues
-      mwl8k: no need to hold ->tx_lock while setting the hardware interrupt mask
-      mwl8k: implement idle mode
-      mwl8k: mwl8k_txq_xmit() rework
-      mwl8k: mwl8k_queue_work() cleanup
-      mwl8k: fix firmware command serialisation
-      mwl8k: get rid of mwl8k_start() workqueue use
-      mwl8k: get rid of mwl8k_stop() workqueue use
-      mwl8k: get rid of mwl8k_config() workqueue use
-      mwl8k: get rid of mwl8k_bss_info_changed() workqueue use
-      mwl8k: get rid of mwl8k_set_rts_threshold() workqueue use
-      mwl8k: get rid of mwl8k_conf_tx() workqueue use
-      mwl8k: get rid of mwl8k_get_stats() workqueue use
-      mwl8k: get rid of mwl8k_configure_filter() workqueue use
-      mwl8k: remove mwl8k_queue_work()
-      mwl8k: update copyright and version number
-      MAINTAINERS: add information for mwl8k wireless driver
-
-Luis R. Rodriguez (1):
-      ath: move regulatory info into shared common structure
-
-Reinette Chatre (2):
-      iwlwifi: prevent read outside array bounds
-      ipw2x00: fix sparse warnings
-
-Sujith (1):
-      ath9k: Fix TX poll cancelling
-
-Vasanthakumar Thiagarajan (2):
-      ath9k: Fix bug in retrieving average beacon rssi
-      ath9k: Nuke struct ath9k_node_stats
-
-Vivek Natarajan (5):
-      ath9k: Add open loop power control support for AR9287.
-      ath9k: Set AR_WA for AR9287 as it improves consistency in throughput.
-      ath9k: Enable LEDs for AR9287 chipsets.
-      ath9k: Fix ref power interpolation logic for AR9287 chipsets.
-      ath9k: Updates for AR9287_12 version of chipset.
-
-Wey-Yi Guy (2):
-      iwlwifi: traverse linklist to find the valid OTP block
-      iwlwifi: add thermal throttling support to 5150
-
-Zhu Yi (2):
-      iwlwifi: cleanup HT40 extension channels setup
-      cfg80211: allow cfg80211_connect_result with bssid == NULL
-
-gregor kowski (1):
-      b43: add hardware tkip
-
- MAINTAINERS                                  |    6 +
- drivers/net/wireless/adm8211.c               |   42 +-
- drivers/net/wireless/at76c50x-usb.c          |   12 +-
- drivers/net/wireless/ath/ar9170/ar9170.h     |   16 +-
- drivers/net/wireless/ath/ar9170/mac.c        |   22 +-
- drivers/net/wireless/ath/ar9170/main.c       |  112 +--
- drivers/net/wireless/ath/ath.h               |   18 +
- drivers/net/wireless/ath/ath5k/ath5k.h       |    3 -
- drivers/net/wireless/ath/ath5k/base.c        |   78 +-
- drivers/net/wireless/ath/ath5k/base.h        |   13 +
- drivers/net/wireless/ath/ath5k/phy.c         |    3 +-
- drivers/net/wireless/ath/ath9k/ani.c         |    6 +-
- drivers/net/wireless/ath/ath9k/ani.h         |   20 +-
- drivers/net/wireless/ath/ath9k/ath9k.h       |   14 +-
- drivers/net/wireless/ath/ath9k/calib.c       |   44 +-
- drivers/net/wireless/ath/ath9k/eeprom_4k.c   |    8 +-
- drivers/net/wireless/ath/ath9k/eeprom_9287.c |   28 +-
- drivers/net/wireless/ath/ath9k/eeprom_def.c  |   14 +-
- drivers/net/wireless/ath/ath9k/hw.c          |   81 +-
- drivers/net/wireless/ath/ath9k/hw.h          |    2 +-
- drivers/net/wireless/ath/ath9k/main.c        |   52 +-
- drivers/net/wireless/ath/ath9k/pci.c         |    6 +-
- drivers/net/wireless/ath/ath9k/phy.h         |    7 +
- drivers/net/wireless/ath/ath9k/recv.c        |    2 +-
- drivers/net/wireless/ath/ath9k/reg.h         |    9 +-
- drivers/net/wireless/ath/regd.h              |   20 +-
- drivers/net/wireless/b43/Kconfig             |   14 +-
- drivers/net/wireless/b43/dma.c               |    2 +-
- drivers/net/wireless/b43/lo.c                |    2 +-
- drivers/net/wireless/b43/main.c              |  205 +++-
- drivers/net/wireless/b43/main.h              |    2 +-
- drivers/net/wireless/b43/phy_g.c             |    6 +-
- drivers/net/wireless/b43/phy_lp.c            | 1042 ++++++++++++++++--
- drivers/net/wireless/b43/phy_lp.h            |   25 +-
- drivers/net/wireless/b43/pio.c               |    4 +-
- drivers/net/wireless/b43/tables_lpphy.c      |   12 +-
- drivers/net/wireless/b43/wa.c                |    4 +-
- drivers/net/wireless/b43/xmit.c              |   29 +-
- drivers/net/wireless/b43/xmit.h              |    3 +-
- drivers/net/wireless/b43legacy/main.c        |    4 +-
- drivers/net/wireless/ipw2x00/ipw2100.c       |   14 +-
- drivers/net/wireless/ipw2x00/ipw2200.c       |   73 +-
- drivers/net/wireless/iwlwifi/iwl-1000.c      |    5 +-
- drivers/net/wireless/iwlwifi/iwl-3945.c      |   11 +-
- drivers/net/wireless/iwlwifi/iwl-4965.c      |    3 +-
- drivers/net/wireless/iwlwifi/iwl-5000.c      |    9 +-
- drivers/net/wireless/iwlwifi/iwl-6000.c      |   25 +-
- drivers/net/wireless/iwlwifi/iwl-agn-rs.c    |  116 +--
- drivers/net/wireless/iwlwifi/iwl-commands.h  |    3 +-
- drivers/net/wireless/iwlwifi/iwl-core.c      |   74 +-
- drivers/net/wireless/iwlwifi/iwl-core.h      |    8 +-
- drivers/net/wireless/iwlwifi/iwl-dev.h       |   20 +-
- drivers/net/wireless/iwlwifi/iwl-eeprom.c    |  222 +++-
- drivers/net/wireless/iwlwifi/iwl-eeprom.h    |   10 +-
- drivers/net/wireless/iwlwifi/iwl-rx.c        |  207 ++---
- drivers/net/wireless/iwlwifi/iwl-tx.c        |    5 +
- drivers/net/wireless/iwlwifi/iwl3945-base.c  |    2 +
- drivers/net/wireless/libertas/assoc.c        |    8 +-
- drivers/net/wireless/libertas_tf/main.c      |   37 +-
- drivers/net/wireless/mac80211_hwsim.c        |    4 +-
- drivers/net/wireless/mwl8k.c                 | 1530 ++++++++------------------
- drivers/net/wireless/orinoco/wext.c          |    2 +-
- drivers/net/wireless/p54/main.c              |    8 +-
- drivers/net/wireless/rt2x00/rt2500usb.c      |    1 -
- drivers/net/wireless/rt2x00/rt2800usb.c      |   19 +-
- drivers/net/wireless/rt2x00/rt2800usb.h      |   10 +-
- drivers/net/wireless/rt2x00/rt2x00.h         |    6 +-
- drivers/net/wireless/rt2x00/rt2x00dev.c      |   40 +-
- drivers/net/wireless/rt2x00/rt2x00mac.c      |   25 +-
- drivers/net/wireless/rt2x00/rt2x00queue.h    |    2 +
- drivers/net/wireless/rt2x00/rt73usb.c        |    1 -
- drivers/net/wireless/rtl818x/rtl8180_dev.c   |   11 +-
- drivers/net/wireless/rtl818x/rtl8187_dev.c   |   11 +-
- drivers/net/wireless/wl12xx/wl1251_boot.c    |    3 +
- drivers/net/wireless/wl12xx/wl1251_main.c    |    4 +-
- drivers/net/wireless/wl12xx/wl1251_reg.h     |    4 +-
- drivers/net/wireless/wl12xx/wl1271_main.c    |    9 +-
- drivers/net/wireless/zd1211rw/zd_mac.c       |   44 +-
- drivers/ssb/pci.c                            |    2 +-
- include/net/cfg80211.h                       |    2 +
- include/net/mac80211.h                       |   36 +-
- net/mac80211/debugfs_netdev.c                |    6 +
- net/mac80211/driver-ops.h                    |   24 +-
- net/mac80211/driver-trace.h                  |   36 +-
- net/mac80211/ieee80211_i.h                   |    9 +-
- net/mac80211/iface.c                         |   15 +-
- net/mac80211/main.c                          |   32 +-
- net/mac80211/mesh.h                          |    2 +
- net/mac80211/mesh_hwmp.c                     |   21 +
- net/mac80211/rc80211_minstrel.c              |   16 +-
- net/mac80211/rc80211_pid_algo.c              |   16 +-
- net/mac80211/rx.c                            |    8 +-
- net/mac80211/scan.c                          |   16 +-
- net/mac80211/util.c                          |    2 -
- net/wireless/core.c                          |   98 ++-
- net/wireless/core.h                          |    2 +
- net/wireless/mlme.c                          |    9 +
- net/wireless/sme.c                           |   29 +-
- net/wireless/wext-compat.c                   |    1 +
- 99 files changed, 2790 insertions(+), 2170 deletions(-)
-
-Omnibus patch is available here:
-
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-next-2.6-2009-08-20.patch.bz2
-
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Index: linux-2.6.git/arch/x86/kernel/mpparse.c
+=====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/mpparse.c
++++ linux-2.6.git/arch/x86/kernel/mpparse.c
+@@ -705,7 +705,7 @@ static void __init smp_reserve_bootmem(s
+ #endif
+ }
+ 
+-static int __init smp_scan_config(unsigned long base, unsigned long length,
++static int __init smp_scan_config(unsigned long base, long length,
+ 				  unsigned reserve)
+ {
+ 	unsigned int *bp = phys_to_virt(base);
