@@ -1,247 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZHTCUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZHTCWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbZHTCUN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 22:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbZHTCUN
+	id S1753490AbZHTCWd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 22:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZHTCWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 22:20:13 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:48685 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382AbZHTCUL (ORCPT
+	Wed, 19 Aug 2009 22:22:32 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:49499 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752621AbZHTCWc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 22:20:11 -0400
-Subject: [PATCH] Introduce CLOCK_REALTIME_COARSE
-From: john stultz <johnstul@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@tglx.de>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>, nikolag@ca.ibm.com,
-       Darren Hart <dvhltc@us.ibm.com>, arjan@infradead.org,
-       jonathan@jonmasters.org
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 19:13:34 -0700
-Message-Id: <1250734414.6897.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Wed, 19 Aug 2009 22:22:32 -0400
+Message-ID: <4A8CB358.4090001@oracle.com>
+Date: Wed, 19 Aug 2009 19:22:16 -0700
+From: "tina.yang" <tina.yang@oracle.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysrq: add debug message to reboot event
+References: <4A89AC97.6030109@oracle.com>	<alpine.LNX.2.00.0908181339310.25797@wotan.suse.de> <20090819135827.168621d8.akpm@linux-foundation.org>
+In-Reply-To: <20090819135827.168621d8.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt015.oracle.com [141.146.116.24]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4A8CB359.014A:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After talking with some application writers who want very fast, but not
-fine-grained timestamps, I decided to try to implement a new clock_ids
-to clock_gettime(): CLOCK_REALTIME_COARSE and CLOCK_MONOTONIC_COARSE
-which returns the time at the last tick. This is very fast as we don't
-have to access any hardware (which can be very painful if you're using
-something like the acpi_pm clocksource), and we can even use the vdso
-clock_gettime() method to avoid the syscall. The only trade off is you
-only get low-res tick grained time resolution.
+Add debug message to detect keyboard vs non-keyboard triggered sysrq-b events.
+This is to assist postmortem debugging on complicated computing setup with
+large number of applications involved where reboot event had occurred, but 
+unclear of its origin.
 
-This isn't a new idea, I know Ingo has a patch in the -rt tree that made
-the vsyscall gettimeofday() return coarse grained time when the
-vsyscall64 sysctrl was set to 2. However this affects all applications
-on a system.
+Signed-off-by: Tina Yang <Tina.Yang@oracle.com>
+Signed-off-by: Zach Brown <Zach.Brown@oracle.com>
 
-With this method, applications can choose the proper speed/granularity
-trade-off for themselves.
+---
 
-thanks
--john
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/arch/x86/include/asm/vgtod.h b/arch/x86/include/asm/vgtod.h
-index dc27a69..3d61e20 100644
---- a/arch/x86/include/asm/vgtod.h
-+++ b/arch/x86/include/asm/vgtod.h
-@@ -21,6 +21,7 @@ struct vsyscall_gtod_data {
- 		u32	shift;
- 	} clock;
- 	struct timespec wall_to_monotonic;
-+	struct timespec wall_time_coarse;
+--- linux-2.6.18.i686/drivers/char/sysrq.c.orig	2009-08-13 10:55:57.526459000 -0700
++++ linux-2.6.18.i686/drivers/char/sysrq.c	2009-08-13 10:58:10.798739000 -0700
+@@ -112,18 +112,23 @@ static struct sysrq_key_op sysrq_crashdu
+ 	.enable_mask	= SYSRQ_ENABLE_DUMP,
  };
- extern struct vsyscall_gtod_data __vsyscall_gtod_data
- __section_vsyscall_gtod_data;
-diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
-index 25ee06a..cf53a78 100644
---- a/arch/x86/kernel/vsyscall_64.c
-+++ b/arch/x86/kernel/vsyscall_64.c
-@@ -87,6 +87,7 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
- 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
- 	vsyscall_gtod_data.wall_to_monotonic = wall_to_monotonic;
-+	vsyscall_gtod_data.wall_time_coarse = __current_kernel_time();
- 	write_sequnlock_irqrestore(&vsyscall_gtod_data.lock, flags);
- }
  
-diff --git a/arch/x86/vdso/vclock_gettime.c b/arch/x86/vdso/vclock_gettime.c
-index 6a40b78..ee55754 100644
---- a/arch/x86/vdso/vclock_gettime.c
-+++ b/arch/x86/vdso/vclock_gettime.c
-@@ -86,14 +86,47 @@ notrace static noinline int do_monotonic(struct timespec *ts)
- 	return 0;
- }
- 
-+notrace static noinline int do_realtime_coarse(struct timespec *ts)
-+{
-+	unsigned long seq;
-+	do {
-+		seq = read_seqbegin(&gtod->lock);
-+		ts->tv_sec = gtod->wall_time_coarse.tv_sec;
-+		ts->tv_nsec = gtod->wall_time_coarse.tv_nsec;
-+	} while (unlikely(read_seqretry(&gtod->lock, seq)));
-+	return 0;
-+}
-+
-+notrace static noinline int do_monotonic_coarse(struct timespec *ts)
-+{
-+	unsigned long seq, ns, secs;
-+	do {
-+		seq = read_seqbegin(&gtod->lock);
-+		secs = gtod->wall_time_coarse.tv_sec;
-+		ns = gtod->wall_time_coarse.tv_nsec;
-+		secs += gtod->wall_to_monotonic.tv_sec;
-+		ns += gtod->wall_to_monotonic.tv_nsec;
-+	} while (unlikely(read_seqretry(&gtod->lock, seq)));
-+	vset_normalized_timespec(ts, secs, ns);
-+	return 0;
-+}
-+
- notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
+-static void sysrq_handle_reboot(int key, struct pt_regs *pt_regs,
++static void sysrq_handle_reboot(int check_mask, int key, struct pt_regs *pt_regs,
+ 				struct tty_struct *tty)
  {
--	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
-+	if (likely(gtod->sysctl_enabled))
- 		switch (clock) {
- 		case CLOCK_REALTIME:
--			return do_realtime(ts);
-+			if (likely(gtod->clock.vread))
-+				return do_realtime(ts);
-+			break;
- 		case CLOCK_MONOTONIC:
--			return do_monotonic(ts);
-+			if (likely(gtod->clock.vread))
-+				return do_monotonic(ts);
-+			break;
-+		case CLOCK_REALTIME_COARSE:
-+			return do_realtime_coarse(ts);
-+		case CLOCK_MONOTONIC_COARSE:
-+			return do_monotonic_coarse(ts);
++	if (check_mask)
++		printk("<keyboard-invoked>\n");
++	else
++		printk("<non-keyboard-invoked: PID %d COMMAND %s>\n",
++			current->pid, current->comm);
+ 	lockdep_off();
+ 	local_irq_enable();
+ 	emergency_restart();
+ }
+ static struct sysrq_key_op sysrq_reboot_op = {
+-	.handler	= sysrq_handle_reboot,
+-	.help_msg	= "reBoot",
+-	.action_msg	= "Resetting",
+-	.enable_mask	= SYSRQ_ENABLE_BOOT,
++	.handler_with_mask	= sysrq_handle_reboot,
++	.help_msg		= "reBoot",
++	.action_msg		= "Resetting",
++	.enable_mask		= SYSRQ_ENABLE_BOOT,
+ };
+ 
+ static void sysrq_handle_sync(int key, struct pt_regs *pt_regs,
+@@ -411,7 +416,10 @@ void __handle_sysrq(int key, struct pt_r
+ 			}
+ 			printk("%s\n", op_p->action_msg);
+ 			console_loglevel = orig_log_level;
+-			op_p->handler(key, pt_regs, tty);
++			if (op_p->handler_with_mask)
++				op_p->handler_with_mask(check_mask, key, pt_regs, tty);
++			else
++				op_p->handler(key, pt_regs, tty);
+ 		} else {
+ 			printk("This sysrq operation is disabled.\n");
  		}
- 	return vdso_fallback_gettime(clock, ts);
- }
-diff --git a/include/linux/time.h b/include/linux/time.h
-index ea16c1a..ce13067 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -109,6 +109,8 @@ extern int timekeeping_suspended;
+--- linux-2.6.18.i686/include/linux/sysrq.h.orig	2009-08-13 10:58:29.779925000 -0700
++++ linux-2.6.18.i686/include/linux/sysrq.h	2009-08-13 11:05:30.723865000 -0700
+@@ -28,6 +28,7 @@ struct tty_struct;
  
- unsigned long get_seconds(void);
- struct timespec current_kernel_time(void);
-+struct timespec __current_kernel_time(void); /* does not hold xtime_lock */
-+struct timespec get_monotonic_coarse(void);
- 
- #define CURRENT_TIME		(current_kernel_time())
- #define CURRENT_TIME_SEC	((struct timespec) { get_seconds(), 0 })
-@@ -241,6 +243,8 @@ struct itimerval {
- #define CLOCK_PROCESS_CPUTIME_ID	2
- #define CLOCK_THREAD_CPUTIME_ID		3
- #define CLOCK_MONOTONIC_RAW		4
-+#define CLOCK_REALTIME_COARSE		5
-+#define CLOCK_MONOTONIC_COARSE		6
- 
- /*
-  * The IDs of various hardware clocks:
-diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
-index d089d05..4954407 100644
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -242,6 +242,25 @@ static int posix_get_monotonic_raw(clockid_t which_clock, struct timespec *tp)
- 	return 0;
- }
- 
-+
-+static int posix_get_realtime_coarse(clockid_t which_clock, struct timespec *tp)
-+{
-+	*tp = current_kernel_time();
-+	return 0;
-+}
-+
-+static int posix_get_monotonic_coarse(clockid_t which_clock,
-+						struct timespec *tp)
-+{
-+	*tp = get_monotonic_coarse();
-+	return 0;
-+}
-+
-+int posix_get_coarse_res(const clockid_t which_clock, struct timespec *tp)
-+{
-+	*tp = ktime_to_timespec(KTIME_LOW_RES);
-+	return 0;
-+}
- /*
-  * Initialize everything, well, just everything in Posix clocks/timers ;)
-  */
-@@ -262,10 +281,26 @@ static __init int init_posix_timers(void)
- 		.timer_create = no_timer_create,
- 		.nsleep = no_nsleep,
- 	};
-+	struct k_clock clock_realtime_coarse = {
-+		.clock_getres = posix_get_coarse_res,
-+		.clock_get = posix_get_realtime_coarse,
-+		.clock_set = do_posix_clock_nosettime,
-+		.timer_create = no_timer_create,
-+		.nsleep = no_nsleep,
-+	};
-+	struct k_clock clock_monotonic_coarse = {
-+		.clock_getres = posix_get_coarse_res,
-+		.clock_get = posix_get_monotonic_coarse,
-+		.clock_set = do_posix_clock_nosettime,
-+		.timer_create = no_timer_create,
-+		.nsleep = no_nsleep,
-+	};
- 
- 	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
- 	register_posix_clock(CLOCK_MONOTONIC, &clock_monotonic);
- 	register_posix_clock(CLOCK_MONOTONIC_RAW, &clock_monotonic_raw);
-+	register_posix_clock(CLOCK_REALTIME_COARSE, &clock_realtime_coarse);
-+	register_posix_clock(CLOCK_MONOTONIC_COARSE, &clock_monotonic_coarse);
- 
- 	posix_timers_cache = kmem_cache_create("posix_timers_cache",
- 					sizeof (struct k_itimer), 0, SLAB_PANIC,
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index e8c77d9..d4735d7 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -603,6 +603,10 @@ unsigned long get_seconds(void)
- }
- EXPORT_SYMBOL(get_seconds);
- 
-+struct timespec __current_kernel_time(void)
-+{
-+	return xtime_cache;
-+}
- 
- struct timespec current_kernel_time(void)
- {
-@@ -618,3 +622,20 @@ struct timespec current_kernel_time(void)
- 	return now;
- }
- EXPORT_SYMBOL(current_kernel_time);
-+
-+struct timespec get_monotonic_coarse(void)
-+{
-+	struct timespec now, mono;
-+	unsigned long seq;
-+
-+	do {
-+		seq = read_seqbegin(&xtime_lock);
-+
-+		now = xtime_cache;
-+		mono = wall_to_monotonic;
-+	} while (read_seqretry(&xtime_lock, seq));
-+
-+	set_normalized_timespec(&now, now.tv_sec + mono.tv_sec,
-+				now.tv_nsec + mono.tv_nsec);
-+	return now;
-+}
+ struct sysrq_key_op {
+ 	void (*handler)(int, struct pt_regs *, struct tty_struct *);
++	void (*handler_with_mask)(int check_mask, int, struct pt_regs *, struct tty_struct *);
+ 	char *help_msg;
+ 	char *action_msg;
+ 	int enable_mask;
 
+
+Andrew Morton wrote:
+>
+> The changelog had no description of why the change should be applied
+> and I was unable to understand the motivation from reading the patch,
+> so I skipped it.
+>
+> Also the patch was wordwrapped and had all its tabs replaced by spaces.
+>   
 
