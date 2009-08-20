@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZHTBQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994AbZHTBRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbZHTBQX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 21:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZHTBQW
+	id S1752994AbZHTBRM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 21:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZHTBRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 21:16:22 -0400
-Received: from mga01.intel.com ([192.55.52.88]:60085 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbZHTBQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 21:16:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,411,1246863600"; 
-   d="scan'208";a="485457343"
-Subject: Re: [Bugme-new] [Bug 14003] New: Infinite loop on bootup while
- handling DMAR
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "bugzilla-daemon@bugzilla.kernel.org" 
-	<bugzilla-daemon@bugzilla.kernel.org>,
-       "bugme-daemon@bugzilla.kernel.org" <bugme-daemon@bugzilla.kernel.org>,
-       "bero@arklinux.org" <bero@arklinux.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20090819142634.0fc550d1.akpm@linux-foundation.org>
-References: <bug-14003-10286@http.bugzilla.kernel.org/>
-	 <20090819142634.0fc550d1.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Wed, 19 Aug 2009 18:15:28 -0700
-Message-Id: <1250730929.2742.4.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 21:17:11 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46536 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbZHTBRK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 21:17:10 -0400
+Date: Wed, 19 Aug 2009 21:17:08 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org, mchehab@infradead.org
+Subject: [PATCH] dma-debug: fix check_unmap null pointer dereference
+Message-ID: <20090820011708.GP25206@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 14:26 -0700, Andrew Morton wrote:
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
-> 
-> On Tue, 18 Aug 2009 14:54:22 GMT bugzilla-daemon@bugzilla.kernel.org wrote:
-> 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=14003
-> > 
-> >            Summary: Infinite loop on bootup while handling DMAR
-> 
-> That's a box-killing post-2.6.30 regression.
-> 
-> > 
-> > Booting 64bit 2.6.31-rc6 on a hp xw4600 results in an infinite loop of
-> > 
-> > DMAR:[DMA READ] Request device [ff:1f.7] fault addr fffffffffffff000
-> > DMAR:[fault reason 255] Unknown
+From: Kyle McMartin <kyle@redhat.com>
 
-I think David has a fix queued up for this already. Please check
-http://git.infradead.org/iommu-2.6.git/commit/0815565a
+While it's debatable whether or not a NULL device argument to the
+DMA API functions is valid... since it certainly isn't valid on devices
+with an IOMMU... dma-debug really shouldn't be dereferencing null
+pointers either.
 
-thanks,
-suresh
+Guard against that in err_printk and the driver_filter functions. A
+Fedora rawhide user was seeing this in one of the dvb drivers resulting
+in an oops on boot.
 
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
+---
+A patch has been sent for testing to the driver, but I feel the
+dma debugging support should be fixed as well. (There's still a pile of
+legacy garbage in the kernel passing null pointers to
+dma_{alloc,free}_*. :(
+
+regards, Kyle
+
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 65b0d99..58a9f9f 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -156,9 +156,13 @@ static bool driver_filter(struct device *dev)
+ 		return true;
+ 
+ 	/* driver filter on and initialized */
+-	if (current_driver && dev->driver == current_driver)
++	if (current_driver && dev && dev->driver == current_driver)
+ 		return true;
+ 
++	/* driver filter on, but we can't filter on a NULL device... */
++	if (!dev)
++		return false;
++
+ 	if (current_driver || !current_driver_name[0])
+ 		return false;
+ 
+@@ -183,17 +187,17 @@ static bool driver_filter(struct device *dev)
+ 	return ret;
+ }
+ 
+-#define err_printk(dev, entry, format, arg...) do {		\
+-		error_count += 1;				\
+-		if (driver_filter(dev) &&			\
+-		    (show_all_errors || show_num_errors > 0)) {	\
+-			WARN(1, "%s %s: " format,		\
+-			     dev_driver_string(dev),		\
+-			     dev_name(dev) , ## arg);		\
+-			dump_entry_trace(entry);		\
+-		}						\
+-		if (!show_all_errors && show_num_errors > 0)	\
+-			show_num_errors -= 1;			\
++#define err_printk(dev, entry, format, arg...) do {			\
++		error_count += 1;					\
++		if (driver_filter(dev) &&				\
++		    (show_all_errors || show_num_errors > 0)) {		\
++			WARN(1, "%s %s: " format,			\
++			     dev ? dev_driver_string(dev) : "NULL",	\
++			     dev ? dev_name(dev) : "NULL", ## arg);	\
++			dump_entry_trace(entry);			\
++		}							\
++		if (!show_all_errors && show_num_errors > 0)		\
++			show_num_errors -= 1;				\
+ 	} while (0);
+ 
+ /*
