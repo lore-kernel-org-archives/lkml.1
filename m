@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZHTQOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZHTQYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbZHTQOg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 12:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZHTQOg
+	id S1754835AbZHTQYe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 12:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbZHTQYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 12:14:36 -0400
-Received: from www.tglx.de ([62.245.132.106]:49018 "EHLO www.tglx.de"
+	Thu, 20 Aug 2009 12:24:34 -0400
+Received: from claw.goop.org ([74.207.240.146]:43787 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754715AbZHTQOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 12:14:35 -0400
-Date: Thu, 20 Aug 2009 18:14:07 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [circular locking bug] Re: [patch 00/15] clocksource / timekeeping
- rework V4 (resend V3 + bug fix)
-In-Reply-To: <20090820123547.1ef5a5e0@skybase>
-Message-ID: <alpine.LFD.2.00.0908201809190.3361@localhost.localdomain>
-References: <1250300765.8269.29.camel@localhost.localdomain> <alpine.LFD.2.00.0908151057500.1283@localhost.localdomain> <20090815095221.GA15831@elte.hu> <alpine.LFD.2.00.0908151207000.1283@localhost.localdomain> <20090817094042.03fe5d38@skybase>
- <alpine.LFD.2.00.0908171038420.2782@localhost.localdomain> <20090817092807.GA10460@elte.hu> <20090818170942.3ab80c91@skybase> <20090819202554.GA19482@elte.hu> <20090820112820.47d833c1@skybase> <20090820095821.GA29093@elte.hu>
- <20090820123547.1ef5a5e0@skybase>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751026AbZHTQYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 12:24:33 -0400
+Message-ID: <4A8D78C1.5070708@goop.org>
+Date: Thu, 20 Aug 2009 09:24:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [GIT PULL] Fix Xen boot with CONFIG_CC_STACKPROTECTOR
+References: <4A8C98DD.2020709@goop.org> <20090820100644.GC29093@elte.hu>
+In-Reply-To: <20090820100644.GC29093@elte.hu>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009, Martin Schwidefsky wrote:
-> On Thu, 20 Aug 2009 11:58:21 +0200
-> > There should be a time management kernel thread instead 
-> > (or workqueue), which does a proper state machine of all 
-> > these properties - without having to call this stuff from 
-> > within a timer handler.
-> 
-> We could use that time managment kernel thread for the watchdog
-> downgrade as well. Dunno if it is worth to create another kernel thread
-> that just sits there doing nothing for 99.9% of the time.
-> 
-> As for the fix: my brains starts to hurt looking at the pit clocksource
-> code. Why does it set CLOCK_EVT_FEAT_ONESHOT but then unregisters the
-> clocksource when the mode is set to CLOCK_EVT_MODE_ONESHOT?? That does
-> not make any sense to me. I would have expected that the pit does not
-> set CLOCK_EVT_MODE_ONESHOT. The timekeeping code wouldn't try use the
-> clock for one-shot if the bit is not set. And to unregister the clock
-> only because the mode is set to shutdown or unused doesn't seem to be
-> necessary either. My fix would be to remove the CLOCK_EVT_MODE_ONESHOT
-> bit from the features mask and to remove the clocksource_unregister
-> from the set_mode callback.
+On 08/20/09 03:06, Ingo Molnar wrote:
+>> I only need to disable stackprotector for a
+>> handful of functions, but unfortunately it looks like it can only be
+>> disabled on a per-file basis.
+> Pulled into tip:x86/urgent, thanks a lot Jeremy!
+>
+> Btw., is there any way to turn off stackprotector on a 
+> per function basis, a GCC attribute perhaps? That would 
+> be preferable to turning it off for all of common.o.
 
-No. On UP machines we can run in oneshot mode with the PIT. 
 
-The disable PIT clocksource hack was done in commit
-1a0c009ac53de4a7664a1239936f0bc258133156. Yes, in hindsight we should
-have done 3f68535adad8dd89499505a65fb25d0e02d118cc in the first place.
+Yeah, its awkward.  But it looks like this patch is not sufficient, so
+drop it for now.  I'll send a replacement shortly (though it doesn't
+hurt to keep it; I can just generate a delta if that's better).
 
-So now the simple and correct fix is to remove the unregister call.
-
-Thanks,
-
-	tglx
+    J
