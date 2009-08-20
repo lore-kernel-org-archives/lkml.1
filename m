@@ -1,188 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbZHTQ4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZHTRAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965AbZHTQ4J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 12:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbZHTQ4I
+	id S1754978AbZHTRAz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 13:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbZHTRAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 12:56:08 -0400
-Received: from cinke.fazekas.hu ([195.199.244.225]:45106 "EHLO
-	cinke.fazekas.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754703AbZHTQ4H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 12:56:07 -0400
-Date: Thu, 20 Aug 2009 18:56:03 +0200 (CEST)
-From: Marton Balint <cus@fazekas.hu>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, Andreas Mohr <andi@lisas.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CPU scheduler weirdness?
-In-Reply-To: <20090820105645.GA23635@elte.hu>
-Message-ID: <alpine.LNX.2.00.0908201814270.12548@cinke.fazekas.hu>
-References: <20090813084257.GA761@rhlx01.hs-esslingen.de> <alpine.LNX.2.00.0908131720050.8321@cinke.fazekas.hu> <20090813155812.GA15714@rhlx01.hs-esslingen.de> <alpine.LNX.2.00.0908171758340.2764@cinke.fazekas.hu> <1250665455.7583.326.camel@twins>
- <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu> <1250683834.7583.360.camel@twins> <alpine.LNX.2.00.0908191428300.20409@cinke.fazekas.hu> <1250707331.7154.1.camel@laptop> <alpine.LNX.2.00.0908192125180.4364@cinke.fazekas.hu>
- <20090820105645.GA23635@elte.hu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Thu, 20 Aug 2009 13:00:55 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:35784 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754791AbZHTRAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 13:00:53 -0400
+Message-ID: <4A8D8119.9000604@redhat.com>
+Date: Thu, 20 Aug 2009 13:00:09 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-943463948-146071587-1250787363=:24170"
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+CC: Mark Lord <liml@rtr.ca>, Ric Wheeler <rwheeler@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, xfs@oss.sgi.com,
+       linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH, RFC] xfs: batched discard support
+References: <20090816004705.GA7347@infradead.org> <4A8D5442.1000302@redhat.com> <4A8D5FDB.7080505@rtr.ca> <200908201743.50167.eike-kernel@sf-tec.de>
+In-Reply-To: <200908201743.50167.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----943463948-146071587-1250787363=:24170
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-
-
-
-On Thu, 20 Aug 2009, Ingo Molnar wrote:
-
->
-> * Marton Balint <cus@fazekas.hu> wrote:
->
->>
->> On Wed, 19 Aug 2009, Peter Zijlstra wrote:
->>
->>> On Wed, 2009-08-19 at 14:34 +0200, Marton Balint wrote:
->>>>
->>>> On Wed, 19 Aug 2009, Peter Zijlstra wrote:
->>>>
->>>>> On Wed, 2009-08-19 at 14:01 +0200, Marton Balint wrote:
->>>>>> On Wed, 19 Aug 2009, Peter Zijlstra wrote:
->>>>>>> On Tue, 2009-08-18 at 21:49 +0200, Marton Balint wrote:
->>>>>>>
->>>>>>>> In the meantime, I was able to create a tiny C program which always
->>>>>>>> succesfully reproduces the bug. It's basically an endless loop which does
->>>>>>>> not stop while the process is running on the last CPU core. The program
->>>>>>>> creates multiple instances of itself, to be able to keep all of the CPU
->>>>>>>> cores busy. After 1 second, the processes running on other than the last
->>>>>>>> CPU core die, the processes running on the last CPU core remain stuck
->>>>>>>> there...
->>>>>>>>
->>>>>>>> I tested it on my dual core system, if someone could test it on a quad
->>>>>>>> core and report back that would probably be useful.
->>>>>>>>
->>>>>>>> Usage: ./schedtest <number of CPU cores>
->>>>>>>>
->>>>>>>> And don't forget to kill the stuck processes after using the program! :)
->>>>>>>
->>>>>>> So what's the bug? Sure one task will stay on the cpu, and because there
->>>>>>> is no contention it doesn't get migrated, and therefore won't quit,
->>>>>>> how's that a problem?
->>>>>>
->>>>>> Problem is that more than one processes remain on that CPU core, and none
->>>>>> of them get migrated to other (idle) cores. I tested it with my E8400
->>>>>> processor and 2.6.31-rc5-git3 kernel.
->>>>>
->>>>> Only one remains here.. on a c2q running 2.6.31-rc6-tip
->>>>>
->>>>> Do you have a .config handy?
->>>>>
->>>>
->>>> Yes it's in my original post:
->>>>
->>>> http://marc.info/?l=linux-kernel&m=125012584709800&w=2
+On 08/20/2009 11:43 AM, Rolf Eike Beer wrote:
+> Mark Lord wrote:
+>    
+>> Ric Wheeler wrote:
+>>      
+>>> Note that returning consistent data is critical for devices that are
+>>> used in a RAID group since you will need each RAID block that is used to
+>>> compute the parity to continue to return the same data until you
+>>> overwrite it with new data :-)
 >>>
->>> Right you are,.. so I build a kernel with the cgroup scheduler in and
->>> tested it on a dual-core opteron machine, but I can't seem to reproduce
->>> this.
->>>
->>> Are you using cgroups in any way, or do you simply have it enabled in
->>> your config?
+>>> If we have a device that does not support this (or is misconfigured not
+>>> to do this), we should not use those devices in an MD group&  do discard
+>>> against it...
+>>>        
+>> ..
 >>
->> No, it's just enabled. Actually the kernel is from the
->> openSUSE build service:
+>> Well, that's a bit drastic.  But the RAID software should at least
+>> not issue TRIM commands in ignorance of such.
 >>
->> http://download.opensuse.org/repositories/Kernel:/HEAD/openSUSE_11.1/x86_64/
->>
->> But the problem is present for both the kernel-default
->> kernel and the kernel-vanilla kernel which does not
->> contain any suse-specific patches.
->>
->> This evening I had a bit more time to test, and I've
->> made a surprising discovery: I can only reproduce the
->> bug if the kernel module of my TV tuner card is loaded.
->> I have a Leadtek Winfast 2000 XP Expert TV card, it
->> uses the cx8800 kernel module. It seems that the
->> problem is somehow related to the infrared sensor of
->> the TV card, because I recompiled the module with the
->> 'case CX88_BOARD_WINFAST2000XP_EXPERT:' line removed
->> from cx88-input.c and I couldn't reproduce the bug with
->> the new kernel module.
+>> Would it still be okay to do the TRIMs when the entire parity stripe
+>> (across all members) is being discarded?  (As opposed to just partial
+>> data there being dropped)
+>>      
+> I think there might be a related usecase that could benefit from
+> TRIM/UNMAP/whatever support in file systems even if the physical devices do
+> not support that. I have a RAID5 at work with LVM over it. This week I deleted
+> an old logical volume of some 200GB that has been moved to a different volume
+> group, tomorrow I will start to replace all the disks in the raid with bigger
+> ones. So if the LVM told the raid "hey, this space is totally garbage from now
+> on" the raid would not have to do any calculation when it has to rebuild that
+> but could simply write fixed patterns to all disks (e.g. 0 to first data, 0 to
+> second data and 0 as "0 xor 0" to parity). With the knowledge that some of the
+> underlying devices would support "write all to zero" this operation could be
+> speed up even more, with "write all fixed pattern" every unused chunk would go
+> down to a single write operation (per disk) on rebuild regardless which parity
+> algorithm is used.
+>    
+
+In the SCSI world, RAID array vendors use "WRITE_SAME" to do this. For 
+the SCSI discard, the write same command has a discard bit set if I 
+remember correctly so you basically get what you are describing above.
+
+ric
+
+> And even if things are in use the RAID can benefit from such things. If we
+> just define that every unmapped space will always be 0 when read and I write
+> to a raid volume and the other part of the checksum calculation is unmapped
+> checksumming becomes easy as we already know half of the values before: 0. So
+> we can save the reads from the second data stripe and most of the calculation.
+> "dd if=/dev/md0" on an unmapped space is more or less the same as "dd
+> if=/dev/zero" than.
 >
-> Extremely weird. Are timers somehow busted?
+> I only fear that these things are too obviously as I would be the first to
+> have this idea ;)
+>
+> Greetings,
+>
+> Eike
+>    
 
-How can I check that?
-
-In the meantime, I updated my original C program and also created a kernel 
-module (schedtest_mod.c) which causes the same scheduling problems as the 
-kernel module of my TV card. The kernel module is a skeleton of the 
-infrared sensor polling code in cx88-input.c. It uses 
-schedule_delayed_work, this seems to cause the problem. The C program 
-(schedtest.c) is also updated, it now detects the number of CPU cores, 
-from now, what you can set as a command line parameter is the CPU core 
-number, on which the schedtest processes will not quit. (previously this 
-was always the last core).
-
-So to reproduce the bug on a dual core system, compile and insert the 
-kernel module (schedtest_mod.c). Then check dmesg, it should contain on 
-which CPU core is the delayed_work running. You should use the CPU core id 
-of the _other_ CPU core as a command line parameter to the updated 
-schedtest program.
-
-And by the way, thank you guys for the help so far, hopefully we'll get to 
-the bottom of this :)
-
-Regards,
-   Marton
----943463948-146071587-1250787363=:24170
-Content-Type: TEXT/x-c++src; name=schedtest_mod.c
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.LNX.2.00.0908201856030.24170@cinke.fazekas.hu>
-Content-Description: 
-Content-Disposition: attachment; filename=schedtest_mod.c
-
-I2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KI2luY2x1ZGUgPGxpbnV4L2lu
-aXQuaD4NCiNpbmNsdWRlIDxsaW51eC93b3JrcXVldWUuaD4NCiNpbmNsdWRl
-IDxhc20vc21wLmg+DQoNCnN0YXRpYyBpbnQgaTsNCnN0YXRpYyBzdHJ1Y3Qg
-ZGVsYXllZF93b3JrIGRfd29yazsNCg0Kc3RhdGljIHZvaWQgc2NoZWR0ZXN0
-X3dvcmsoc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrKQ0Kew0KCXNjaGVkdWxl
-X2RlbGF5ZWRfd29yaygmZF93b3JrLCBtc2Vjc190b19qaWZmaWVzKDEpKTsN
-CglpZiAoaSsrICUgNTAwID09IDApIHsNCgkJcHJpbnRrKEtFUk5fREVCVUcg
-InNjaGVkdGVzdDogSSBhbSBvbiBDUFUgJWQuXG4iLCBnZXRfY3B1KCkpOw0K
-CQlwdXRfY3B1KCk7DQoJfQ0KfQ0KDQpzdGF0aWMgaW50IF9faW5pdCBzY2hl
-ZHRlc3RfaW5pdF9tb2R1bGUodm9pZCkNCnsNCglJTklUX0RFTEFZRURfV09S
-SygmZF93b3JrLCBzY2hlZHRlc3Rfd29yayk7DQoJc2NoZWR1bGVfZGVsYXll
-ZF93b3JrKCZkX3dvcmssIDApOw0KCXJldHVybiAwOw0KfQ0KDQpzdGF0aWMg
-dm9pZCBfX2V4aXQgc2NoZWR0ZXN0X2NsZWFudXBfbW9kdWxlKHZvaWQpDQp7
-DQoJY2FuY2VsX2RlbGF5ZWRfd29ya19zeW5jKCZkX3dvcmspOw0KfQ0KDQpt
-b2R1bGVfaW5pdChzY2hlZHRlc3RfaW5pdF9tb2R1bGUpOw0KbW9kdWxlX2V4
-aXQoc2NoZWR0ZXN0X2NsZWFudXBfbW9kdWxlKTsNCg0KTU9EVUxFX0xJQ0VO
-U0UoIkdQTCIpOw0K
-
----943463948-146071587-1250787363=:24170
-Content-Type: TEXT/x-c++src; name=schedtest.c
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.LNX.2.00.0908201856031.24170@cinke.fazekas.hu>
-Content-Description: 
-Content-Disposition: attachment; filename=schedtest.c
-
-I2RlZmluZSBfR05VX1NPVVJDRQ0KI2luY2x1ZGUgPHV0bXB4Lmg+DQojaW5j
-bHVkZSA8c3lzL3RpbWUuaD4NCiNpbmNsdWRlIDx1bmlzdGQuaD4NCg0KLyog
-VXNhZ2U6IC4vc2NoZWR0ZXN0IDxjcHUgY29yZSB0byB0ZXN0PiAqLw0KDQpp
-bnQgbWlsaXNlY29uZHMoKSB7DQogIHN0cnVjdCB0aW1ldmFsIHR2Ow0KICBn
-ZXR0aW1lb2ZkYXkoJnR2LCAwKTsNCiAgcmV0dXJuIHR2LnR2X3VzZWMvMTAw
-MDsNCn0NCg0KaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKmFyZ3ZbXSkgew0K
-ICBpbnQgbGl2ZXMgPSAxMDAwLCB0aW1lLCBsYXN0dGltZSwgY2hpbGRzLCBj
-b3JlcywgY29yZV90b190ZXN0Ow0KICBjb3JlcyA9IHN5c2NvbmYoX1NDX05Q
-Uk9DRVNTT1JTX09OTE4pOw0KICBjaGlsZHMgPSBjb3JlcyAqIDI7DQogIGlm
-IChhcmdjID4gMSkNCiAgICBjb3JlX3RvX3Rlc3QgPSBhdG9pKGFyZ3ZbMV0p
-Ow0KICBlbHNlDQogICAgY29yZV90b190ZXN0ID0gY29yZXMtMTsNCiAgd2hp
-bGUgKGNoaWxkcy0tICYmICFmb3JrKCkpOw0KICB3aGlsZSAobGl2ZXMpIHsN
-CiAgICB0aW1lID0gbWlsaXNlY29uZHMoKTsNCiAgICBpZiAobGFzdHRpbWUg
-IT0gdGltZSAmJiBzY2hlZF9nZXRjcHUoKSAhPSBjb3JlX3RvX3Rlc3QpDQog
-ICAgICAgbGl2ZXMtLTsNCiAgICBsYXN0dGltZSA9IHRpbWU7DQogIH0NCiAg
-cmV0dXJuIDA7DQp9DQo=
-
----943463948-146071587-1250787363=:24170--
