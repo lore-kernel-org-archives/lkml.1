@@ -1,90 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZHTK2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbZHTKbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbZHTK2M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 06:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbZHTK2L
+	id S1753602AbZHTKbw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 06:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZHTKbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 06:28:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40008 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754002AbZHTK2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 06:28:10 -0400
-Date: Thu, 20 Aug 2009 12:28:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: eranian@gmail.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4][RFC] perf_counter: Allow sharing of output channels
-Message-ID: <20090820102800.GD29093@elte.hu>
-References: <20090819091823.916851355@chello.nl> <20090819092023.980284148@chello.nl> <19083.61914.571806.395197@cargo.ozlabs.ibm.com> <1250686586.8282.12.camel@twins> <7c86c4470908200313l112a8ff6q836d618d7ce6fcc8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7c86c4470908200313l112a8ff6q836d618d7ce6fcc8@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 20 Aug 2009 06:31:52 -0400
+Received: from mail.windriver.com ([147.11.1.11]:53561 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753191AbZHTKbv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 06:31:51 -0400
+Subject: Re: [PATCH] netpoll: WARN_ONCE for start_xmit returns with
+	interrupts enabled
+From: DDD <Dongdong.deng@windriver.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+In-Reply-To: <1250678596.3937.182.camel@calx>
+References: <1250678607.17891.26.camel@dengdd-desktop>
+	 <1250678596.3937.182.camel@calx>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 20 Aug 2009 18:44:00 +0800
+Message-Id: <1250765040.17891.91.camel@dengdd-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-OriginalArrivalTime: 20 Aug 2009 10:31:28.0301 (UTC) FILETIME=[60436DD0:01CA2181]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* stephane eranian <eranian@googlemail.com> wrote:
-
-> On Wed, Aug 19, 2009 at 2:56 PM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
-> > On Wed, 2009-08-19 at 22:36 +1000, Paul Mackerras wrote:
-> >> Peter Zijlstra writes:
-> >>
-> >> > Provide the ability to configure a counter to send 
-> >> > its output to another (already existing) counter's 
-> >> > output stream.
-> >>
-> >> What sort of thing might this be useful for?
-> >
-> > Some people complained that its tedious to mmap() for 
-> > every counter and would like to share the mmap() 
-> > output buffer between counters.
-> >
+On Wed, 2009-08-19 at 05:43 -0500, Matt Mackall wrote: 
+> On Wed, 2009-08-19 at 18:43 +0800, DDD wrote:
+> > The NETPOLL API requires that interrupts remain disabled in
+> > netpoll_send_skb().
+> > 
+> > Add a WARN_ONCE when ndo_start_xmit returns with interrupts enabled
+> > in netpoll_send_skb().
+> > 
+> > Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
+> > ---
+> >  net/core/netpoll.c |    6 ++++++
+> >  1 files changed, 6 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+> > index df30feb..d38103f 100644
+> > --- a/net/core/netpoll.c
+> > +++ b/net/core/netpoll.c
+> > @@ -319,6 +319,12 @@ static void netpoll_send_skb(struct netpoll *np, struct sk_buff *skb)
+> >  
+> >  			udelay(USEC_PER_POLL);
+> >  		}
+> > +
+> > +		WARN_ONCE(!irqs_disabled(),
+> > +			KERN_WARNING "netpoll_send_skb(): [net driver %s]"
+> > +			"ndo_start_xmit() shouldn't return with interrupts"
+> > +			"enabled!", dev->name);
 > 
-> > This saves on address space and mlock budget and I 
-> > guess fd management logic.
->
-> Interesting to see, you seem to have changed your mind 
-> on this. I recall pointing this out in my early 
-> comments.
-
-Btw., did we strongly oppose the notion? The mmap output 
-buffers were always multi-event in essence - just by 
-virtue of the automatic events such as task creation, 
-mmap, etc.
-
-> But anyway, here are some more comments:
+> Hmm, perhaps:
 > 
->    - how does this work with the remapped counts?
->      Probably only see the count for the target, i.e., 
->      output, event
+> "netpoll_send_skb(): %s enabled interrupts in poll (%pF)\n",
+> dev->name, ops->ndo_start_xmit
+> 
+> That'll give us a real function name and maybe even a module name.
 
-if you want to recover the momentary index for RDPC you 
-need to mmap the counter(s) you are interested in, to get 
-to the header->index value.
+Thanks, I will modify it as your suggestions.
 
-So you can create these counters with 1 pages only (one 
-is the header) - and then remap the output to the primary 
-counter's output buffer.
+When I test the WRAN_ONCE, I find that some net drivers still have this problem,
+such as using local_irq_disable/local_irq_enable in ndo_start_xmit() or other cases.
 
->    - if samples from multiple events end up in the same 
->      buffer, how do I tell them apart, i.e., how do I 
->      know sample X came from event A, sample X from 
->      event B? This may be useful to detect patterns.
 
-Via PERF_SAMPLE_ID. That saves the counter ID into the 
-event so it can be demultiplexed later on.
+I will do an new patch and hope it could fix this problem completely in all the net drivers that support NETPOLL.
 
-	Ingo
+
+I check the drivers that support NETPOLL one by one again(almost 100 drivers),
+and following drivers's fix will be included by my patch:
+
+1: ixp2000/ixpdev.c : 66 local_irq_disable
+
+2: fec_mpc52xx.c : 319 spin_unlock_irq
+
+3: macb.c:602 : 638 spin_unlock_irq
+
+4: mlx4/en_netdev.c : 448 
+mlx4_en_xmit() -> mlx4_en_xmit_poll() -> spin_trylock_irq
+
+5: smc91x.c 
+It seems that there is a lots work to let smc91x work well with netpoll.
+
+
+Thanks,
+Dongdong
+
+> 
