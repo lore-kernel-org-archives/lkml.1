@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZHTOm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZHTOon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbZHTOm7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 10:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbZHTOm4
+	id S1754738AbZHTOon (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 10:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZHTOom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 10:42:56 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:19958 "EHLO mx1.redhat.com"
+	Thu, 20 Aug 2009 10:44:42 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9326 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754730AbZHTOmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 10:42:53 -0400
-Message-ID: <4A8D60C1.6000809@redhat.com>
-Date: Thu, 20 Aug 2009 10:42:09 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1751949AbZHTOol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 10:44:41 -0400
+Date: Thu, 20 Aug 2009 17:42:56 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
+Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
+Message-ID: <20090820144256.GB8338@redhat.com>
+References: <cover.1250187913.git.mst@redhat.com> <200908201510.54482.arnd@arndb.de> <20090820133817.GA7834@redhat.com> <200908201631.37285.arnd@arndb.de>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, xfs@oss.sgi.com,
-       linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH, RFC] xfs: batched discard support
-References: <20090816004705.GA7347@infradead.org> <20090819203916.GA25296@elte.hu> <4A8CA956.2060406@rtr.ca> <4A8D5442.1000302@redhat.com> <4A8D5FDB.7080505@rtr.ca>
-In-Reply-To: <4A8D5FDB.7080505@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908201631.37285.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/20/2009 10:38 AM, Mark Lord wrote:
-> Ric Wheeler wrote:
->>
->> Note that returning consistent data is critical for devices that are
->> used in a RAID group since you will need each RAID block that is used
->> to compute the parity to continue to return the same data until you
->> overwrite it with new data :-)
->>
->> If we have a device that does not support this (or is misconfigured
->> not to do this), we should not use those devices in an MD group & do
->> discard against it...
-> ..
->
-> Well, that's a bit drastic. But the RAID software should at least
-> not issue TRIM commands in ignorance of such.
+On Thu, Aug 20, 2009 at 04:31:36PM +0200, Arnd Bergmann wrote:
+> On Thursday 20 August 2009, Michael S. Tsirkin wrote:
+> > On Thu, Aug 20, 2009 at 03:10:54PM +0200, Arnd Bergmann wrote:
+> > > On Thursday 20 August 2009, Michael S. Tsirkin wrote:
+> >
+> > It doesn't matter that I don't want this: allowing 1 process corrupt
+> > another's memory is a security issue.  Once you get an fd, you want to
+> > be able to use it without worrying that a bug in another process will
+> > crash yours.
+> 
+> Ok, got it. Yes, that would be inacceptable.
+> 
+> > > > If you assume losing the code for the second error condition is OK, why
+> > > > is the first one so important?  That's why I used a counter (eventfd)
+> > > > per virtqueue, on error userspace can scan the ring and poll the socket
+> > > > and discover what's wrong, and counter ensures we can detect that error
+> > > > happened while we were not looking.
+> > > 
+> > > I guess we were talking about different kinds of errors here, and I'm
+> > > still not sure which one you are talking about.
+> > > 
+> > Non fatal errors. E.g. translation errors probably should be
+> > non-fatal. I can also imagine working around guest bugs in
+> > userspace.
+> 
+> Ah, so I guess the confusion was that I was worried about
+> errors coming from the socket file descriptor, while you
+> were thinking of errors from the guest side, which I did not
+> expect to happen.
+> 
+> The errors from the socket (or chardev, as that was the
+> start of the argument) should still fit into the categories
+> that I mentioned, either they can be handled by the host
+> kernel, or they are fatal.
 
-If the storage can return different data in a sequence of READ requests of the 
-same sector (with no writes), there is nothing RAID could do. It would see total 
-garbage...
+Hmm, are you sure? Imagine a device going away while socket is bound to
+it.  You get -ENXIO. It's not fatal in a sense that you can bind the
+socket to another device and go on, right?
 
-> Would it still be okay to do the TRIMs when the entire parity stripe
-> (across all members) is being discarded? (As opposed to just partial
-> data there being dropped)
+> I'll read up in your code to see how you handle asynchronous
+> non-fatal errors from the guest. Intuitively, I'd still
+> assume that returning the first error should be enough
+> because it will typically mean that you cannot continue
+> without fixing it up first, and you might get the next
+> error immediately after that.
+> 
+> 	Arnd <><
 
-This should be safe if the MD bitmaps would prevent us from trying to 
-READ/regenerate parity for that stripe...
+Yes, but need to be careful not to lose that next error, and these
+errors only block one queue. I handle this by reporting them on an
+eventfd, per vq, which userspace can poll. 
 
-ric
-
+-- 
+MST
