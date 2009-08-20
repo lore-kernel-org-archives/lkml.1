@@ -1,41 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZHTFaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbZHTFeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZHTFaO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 01:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZHTFaN
+	id S1752862AbZHTFeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 01:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZHTFeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 01:30:13 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37614 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751470AbZHTFaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 01:30:12 -0400
-Date: Thu, 20 Aug 2009 06:30:15 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Hellstrom <thellstrom@vmware.com>
-Subject: Re: linux-next: manual merge of the drm tree with Linus' tree
-In-Reply-To: <20090820152743.a5f1088b.sfr@canb.auug.org.au>
-Message-ID: <alpine.DEB.2.00.0908200629470.16909@skynet.skynet.ie>
-References: <20090820152743.a5f1088b.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 20 Aug 2009 01:34:21 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:17972 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZHTFeV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 01:34:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:mime-version:content-type
+         :content-disposition:user-agent:message-id;
+        b=Nil+NqsqU/qBJmVHLV0FUpFyQh3IvcoUupVtJqZEv6r7pk+Om1U3zQtqguUzKf8mQ6
+         tA7aZrVo6MVU93XUI4mieZA7WVM4+IRadzJmpHu7t0zYccaGzKuB9eGrXgXWsVXfwsQb
+         yDvpF5Y/NhdctRtzlXWMi+0Dk4oYpWqPDujN0=
+Date: Wed, 19 Aug 2009 22:34:16 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.31-rc5
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090820060542.8B7A5526EA5@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
-> Hi Dave,
-> 
-> Today's linux-next merge of the drm tree got a conflict in
-> drivers/gpu/drm/radeon/radeon_ttm.c between commit
-> ad49f501867cba87e1e45e5ebae0b12435d68bf1 ("drm/ttm/radeon: add dma32
-> support") from Linus' tree and commit
-> a987fcaa805fcb24ba885c2e29fd4fdb6816f08f ("ttm: Make parts of a struct
-> ttm_bo_device global") from the drm tree.
+Please pull from:
 
-I merged Linus tree soon after and pushed it out so it should be okay now.
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-Dave.
+to receive updates for the input subsystem. The joydev change fixes userspace
+ABI breakage caused by recent KEY_MAX change.
+
+Changelog:
+---------
+
+Jiri Kosina (1):
+      Input: iforce - support new revision of ACT LABS Force RS
+
+Stephen Kitt (1):
+      Input: joydev - decouple axis and button map ioctls from input constants
+
+
+Diffstat:
+--------
+
+ drivers/input/joydev.c                      |   68 ++++++++++++++++-----------
+ drivers/input/joystick/iforce/iforce-main.c |    1 +
+ drivers/input/joystick/iforce/iforce-usb.c  |    1 +
+ 3 files changed, 43 insertions(+), 27 deletions(-)
+
+-- 
+Dmitry
+
