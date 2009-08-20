@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZHTIwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbZHTI6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbZHTIwq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 04:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZHTIwq
+	id S1753016AbZHTI6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 04:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbZHTI6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 04:52:46 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:63317 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbZHTIwo (ORCPT
+	Thu, 20 Aug 2009 04:58:19 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:53389 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbZHTI6S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 04:52:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qxGjAHFscJzBhhIfgAY035x0g2rNeo/WnYe+NwHmHrugXRelhc4PTj8lu6mhYZfinH
-         JyDsYbNVyv3DFavB2/QKQyQBxMLZUajxqoIKa47t95c0BUDQjQ7QP4PID2YIosYKsSkw
-         KZvNLqcRSs4wJNtUCRmg/uHZILaKNcNyqRa4s=
+	Thu, 20 Aug 2009 04:58:18 -0400
+Date: Thu, 20 Aug 2009 10:57:24 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Dirk Behme <dirk.behme@googlemail.com>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
+Subject: Re: New fast(?)-boot results on ARM
+Message-ID: <20090820085724.GG23444@pengutronix.de>
+References: <20090814170228.GM13320@pengutronix.de> <20090818140605.GB9943@pengutronix.de> <4A8AC95E.2040907@googlemail.com> <20090819072100.GA23444@pengutronix.de> <4A8C263D.9000009@googlemail.com>
 MIME-Version: 1.0
-In-Reply-To: <4A8C48BA.1000009@dell.com>
-References: <1250706969-10382-1-git-send-email-Mario_Limonciello@Dell.com>
-	 <1250707376.8073.4.camel@johannes.local> <4A8C48BA.1000009@dell.com>
-Date: Thu, 20 Aug 2009 09:52:44 +0100
-Message-ID: <9b2b86520908200152m28daa816ib8c54a423e63ca1a@mail.gmail.com>
-Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Mario Limonciello <mario_limonciello@dell.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>, cezary.jackiewicz@gmail.com,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8C263D.9000009@googlemail.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 09:08:57 up 14 days, 18:28, 17 users,  load average: 8.73, 7.43,
+	3.40
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/19/09, Mario Limonciello <mario_limonciello@dell.com> wrote:
-> Johannes:
+On Wed, Aug 19, 2009 at 06:20:13PM +0200, Dirk Behme wrote:
+>>
+>> Yes, correct. The copying itself is between 'copy' and 'done' so it
+>> takes about 0.4s.
+>>
+>>> What's the size of the uncompressed kernel copied here?
+>>
+>> The image is about 2.8MB, but I copied the whole partition of 3MB
+>> because with raw images you can't detect the image size.
 >
-> Johannes Berg wrote:
->> On Wed, 2009-08-19 at 13:36 -0500, Mario Limonciello wrote:
->>
->>
->>
->>
->> Isn't that missing sysfs_remove_group()?
->>
->> johannes
->>
-> The third patch in the (updated) series is dropping the sysfs bits, so
-> sysfs_remove_group is removed there.
+> With 3MB copied in ~0.4s you get ~8MB/s. This really depends on your HW, 
+> but I would think with standard NOR flashes you should be able to do at 
+> least two (three?) times better. Have you already checked the memory (NOR 
+> flash) timings configured in your SoC?
 
-That's not ideal.  Each patch should stand on its own; it's bad form
-to introduce a bug in one patch and fix it in the next one.  Even
-something obscure like omitting to free the sysfs group when
-setup_rfkill() fails.
+It's NAND flash, so there's not much timing to optimize. What's
+interesting about this is that the kernel NAND driver is much slower
+than the one in U-Boot. Looking at it it turned out that the kernel
+driver uses interrupts to wait for the controller to get ready.
+Switching this to polling nearly doubles the NAND performance. UBI
+mounts much faster now and this cuts off another few seconds from the
+boot process :)
 
-I would suggest merging these two patches into one. That would avoid
-adding sysfs_remove_group() in this patch, just to remove it in the
-next one.  It also avoids the question in this patch, of what happens
-to the rfkill interface if you write to the sysfs file.
+Sascha
 
-Alan
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
