@@ -1,87 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbZHTLEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbZHTLP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005AbZHTLEX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 07:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZHTLEW
+	id S1753983AbZHTLP6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 07:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbZHTLP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 07:04:22 -0400
-Received: from mail.inf.tu-dresden.de ([141.76.2.1]:34928 "EHLO
-	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753948AbZHTLEW (ORCPT
+	Thu, 20 Aug 2009 07:15:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55730 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753906AbZHTLP5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 07:04:22 -0400
-X-Greylist: delayed 1462 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 07:04:21 EDT
-Message-ID: <4A8D27F4.3050204@inf.tu-dresden.de>
-Date: Thu, 20 Aug 2009 12:39:48 +0200
-From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: Richard Purdie <rpurdie@rpsys.net>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Add support for new Apple machines.
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
+	Thu, 20 Aug 2009 07:15:57 -0400
+Subject: Re: [PATCH] intel-iommu: Work around yet another BIOS bug
+From: David Woodhouse <dwmw2@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, Faidon Liambotis <paravoid@debian.org>,
+       Matt Domsch <Matt_Domsch@dell.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       bero@arklinux.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090820024453.dd9909a2.akpm@linux-foundation.org>
+References: <bug-14003-10286@http.bugzilla.kernel.org/>
+	 <20090819142634.0fc550d1.akpm@linux-foundation.org>
+	 <1250754748.8974.17.camel@macbook.infradead.org>
+	 <1250755318.8974.26.camel@macbook.infradead.org>
+	 <20090820024453.dd9909a2.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 20 Aug 2009 12:14:37 +0100
+Message-Id: <1250766877.11523.1.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for the new Apple models MacBook 5,1,
-MacBook Pro 5,1, MacBook Pro 5,2, MacBook Pro 5,5. It's just a
-device table update.
+On Thu, 2009-08-20 at 02:44 -0700, Andrew Morton wrote:
+> Printing a u64 with %ll will (still) generate a warning on four
+> architectures.
 
-This patch is against Linus Torvald's tree.
+Still that many? I thought we'd fixed them all already.
 
-Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
----
- drivers/video/backlight/mbp_nvidia_bl.c |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/backlight/mbp_nvidia_bl.c b/drivers/video/backlight/mbp_nvidia_bl.c
-index 3bb4c0a..5f8c27f 100644
---- a/drivers/video/backlight/mbp_nvidia_bl.c
-+++ b/drivers/video/backlight/mbp_nvidia_bl.c
-@@ -175,6 +175,15 @@ static const struct dmi_system_id __initdata mbp_device_table[] = {
- 	},
- 	{
- 		.callback	= mbp_dmi_match,
-+		.ident		= "MacBook 5,2",
-+		.matches	= {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook5,2"),
-+		},
-+		.driver_data	= (void *)&nvidia_chipset_data,
-+	},
-+	{
-+		.callback	= mbp_dmi_match,
- 		.ident		= "MacBookAir 2,1",
- 		.matches	= {
- 			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-@@ -191,6 +200,24 @@ static const struct dmi_system_id __initdata mbp_device_table[] = {
- 		},
- 		.driver_data	= (void *)&nvidia_chipset_data,
- 	},
-+	{
-+		.callback	= mbp_dmi_match,
-+		.ident		= "MacBookPro 5,2",
-+		.matches	= {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro5,2"),
-+		},
-+		.driver_data	= (void *)&nvidia_chipset_data,
-+	},
-+	{
-+		.callback	= mbp_dmi_match,
-+		.ident		= "MacBookPro 5,5",
-+		.matches	= {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro5,5"),
-+		},
-+		.driver_data	= (void *)&nvidia_chipset_data,
-+	},
- 	{ }
- };
+Certainly we fixed IA64, which is the last one I cared about in the
+context of this particular code.
 
 -- 
-1.6.0.4
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
