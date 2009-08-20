@@ -1,102 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbZHTUnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbZHTUmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932136AbZHTUnd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 16:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbZHTUna
+	id S1754918AbZHTUmv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 16:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbZHTUmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 16:43:30 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38348 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932117AbZHTUmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 16:42:35 -0400
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX18bWAEjlp4bbFYpHnepASotEuInakmQof816ywNG1
-	zb4muDgT96IXsv
-From: Peter Huewe <PeterHuewe@gmx.de>
-To: Jiri Kosina <trivial@kernel.org>
-Subject: [PATCH] char/vme_scc: adding __init macro to vme_scc.c
-Date: Thu, 20 Aug 2009 22:42:31 +0200
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908202242.31778.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+	Thu, 20 Aug 2009 16:42:50 -0400
+Received: from mail.windriver.com ([147.11.1.11]:51335 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932134AbZHTUmj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 16:42:39 -0400
+From: Jason Wessel <jason.wessel@windriver.com>
+To: gregkh@suse.de
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Sarah Sharp <sarah.a.sharp@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH 10/11] ehci-dbgp,documentation: Documentation updates for ehci-dbgp
+Date: Thu, 20 Aug 2009 15:39:57 -0500
+Message-Id: <1250800798-31559-11-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.3.1.9.g95405b
+In-Reply-To: <1250800798-31559-10-git-send-email-jason.wessel@windriver.com>
+References: <1250800798-31559-1-git-send-email-jason.wessel@windriver.com>
+ <1250800798-31559-2-git-send-email-jason.wessel@windriver.com>
+ <1250800798-31559-3-git-send-email-jason.wessel@windriver.com>
+ <1250800798-31559-4-git-send-email-jason.wessel@windriver.com>
+ <1250800798-31559-5-git-send-email-jason.wessel@windriver.com>
+ <1250800798-31559-6-git-send-email-jason.wessel@windriver.com>
+ <1250800798-31559-7-git-send-email-jason.wessel@windriver.com>
+ <1250800798-31559-8-git-send-email-jason.wessel@windriver.com>
+ <1250800798-31559-9-git-send-email-jason.wessel@windriver.com>
+ <1250800798-31559-10-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 20 Aug 2009 20:41:18.0368 (UTC) FILETIME=[91A49200:01CA21D6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Huewe <peterhuewe@gmx.de>
+Add missing information about requirements of using the EHCI usb debug
+controller as well as to mention you can use a debug controller other
+than the first one in the system.
 
-Trivial patch which adds the __init macro to the module_init 
-function and all of its helper functions of char/vme_scc.c
-
-Alan or Geert, please have a look at the small patch and either pull it through 
-your tree, or please ack' it so Jiri can pull it through the trivial tree.
-
-linux version 2.6.31-rc6 - linus git tree, Do 20. Aug 22:26:06 CEST 2009
-
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Sarah Sharp <sarah.a.sharp@intel.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 ---
-diff --git a/drivers/char/vme_scc.c b/drivers/char/vme_scc.c
-index 994e1a5..8b24729 100644
---- a/drivers/char/vme_scc.c
-+++ b/drivers/char/vme_scc.c
-@@ -136,7 +136,7 @@ static const struct tty_port_operations scc_port_ops = {
-  * vme_scc_init() and support functions
-  *---------------------------------------------------------------------------*/
+ Documentation/kernel-parameters.txt |    2 +-
+ Documentation/x86/earlyprintk.txt   |   39 +++++++++++++++++++++++++++++++++-
+ 2 files changed, 38 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 7936b80..34332ec 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -670,7 +670,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	earlyprintk=	[X86,SH,BLACKFIN]
+ 			earlyprintk=vga
+ 			earlyprintk=serial[,ttySn[,baudrate]]
+-			earlyprintk=dbgp
++			earlyprintk=dbgp[debugController#]
  
--static int scc_init_drivers(void)
-+static int __init scc_init_drivers(void)
- {
- 	int error;
+ 			Append ",keep" to not disable it when the real console
+ 			takes over.
+diff --git a/Documentation/x86/earlyprintk.txt b/Documentation/x86/earlyprintk.txt
+index 607b1a0..f19802c 100644
+--- a/Documentation/x86/earlyprintk.txt
++++ b/Documentation/x86/earlyprintk.txt
+@@ -7,7 +7,7 @@ and two USB cables, connected like this:
  
-@@ -172,7 +172,7 @@ static int scc_init_drivers(void)
- /* ports[] array is indexed by line no (i.e. [0] for ttyS0, [1] for ttyS1).
-  */
+   [host/target] <-------> [USB debug key] <-------> [client/console]
  
--static void scc_init_portstructs(void)
-+static void __init scc_init_portstructs(void)
- {
- 	struct scc_port *port;
- 	int i;
-@@ -195,7 +195,7 @@ static void scc_init_portstructs(void)
+-1. There are three specific hardware requirements:
++1. There are a number of specific hardware requirements:
  
+  a.) Host/target system needs to have USB debug port capability.
  
- #ifdef CONFIG_MVME147_SCC
--static int mvme147_scc_init(void)
-+static int __init mvme147_scc_init(void)
- {
- 	struct scc_port *port;
- 	int error;
-@@ -298,7 +298,7 @@ fail:
+@@ -42,7 +42,35 @@ and two USB cables, connected like this:
+      This is a small blue plastic connector with two USB connections,
+      it draws power from its USB connections.
  
+- c.) Thirdly, you need a second client/console system with a regular USB port.
++ c.) You need a second client/console system with a high speed USB 2.0
++     port.
++
++ d.) The Netchip device must be plugged directly into the physical
++     debug port on the "host/target" system.  You cannot use a USB hub in
++     between the physical debug port and the "host/target" system.
++
++     The EHCI debug controller is bound to a specific physical USB
++     port and the Netchip device will only work as an early printk
++     device in this port.  The EHCI host controllers are electrically
++     wired such that the EHCI debug controller is hooked up to the
++     first physical and there is no way to change this via software.
++     You can find the physical port through experimentation by trying
++     each physical port on the system and rebooting.  Or you can try
++     and use lsusb or look at the kernel info messages emitted by the
++     usb stack when you plug a usb device into various ports on the
++     "host/target" system.
++
++     Some hardware vendors do not expose the usb debug port with a
++     physical connector and if you find such a device send a complaint
++     to the hardware vendor, because there is no reason not to wire
++     this port into one of the physically accessible ports.
++
++ e.) It is also important to note, that many versions of the Netchip
++     device require the "client/console" system to be plugged into the
++     right and side of the device (with the product logo facing up and
++     readable left to right).  The reason being is that the 5 volt
++     power supply is taken from only one side of the device and it
++     must be the side that does not get rebooted.
  
- #ifdef CONFIG_MVME162_SCC
--static int mvme162_scc_init(void)
-+static int __init mvme162_scc_init(void)
- {
- 	struct scc_port *port;
- 	int error;
-@@ -404,7 +404,7 @@ fail:
+ 2. Software requirements:
  
+@@ -56,6 +84,13 @@ and two USB cables, connected like this:
+     (If you are using Grub, append it to the 'kernel' line in
+      /etc/grub.conf)
  
- #ifdef CONFIG_BVME6000_SCC
--static int bvme6000_scc_init(void)
-+static int __init bvme6000_scc_init(void)
- {
- 	struct scc_port *port;
- 	int error;
-@@ -503,7 +503,7 @@ fail_free_b_rx:
- #endif
- 
- 
--static int vme_scc_init(void)
-+static int __init vme_scc_init(void)
- {
- 	int res = -ENODEV;
++    On systems with more than one EHCI debug controller you must
++    specify the correct EHCI debug controller number.  The ordering
++    comes from the PCI bus enumeration of the EHCI controllers.  The
++    default with no number argument is "0" the first EHCI debug
++    controller.  To use the second EHCI debug controller, you would
++    use the command line: "earlyprintk=dbgp1"
++
+     NOTE: normally earlyprintk console gets turned off once the
+     regular console is alive - use "earlyprintk=dbgp,keep" to keep
+     this channel open beyond early bootup. This can be useful for
+-- 
+1.6.3.1.9.g95405b
+
