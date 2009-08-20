@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbZHTF1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZHTF1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbZHTF1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 01:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZHTF1Q
+	id S1753280AbZHTF1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 01:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbZHTF1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 01:27:16 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:54537 "EHLO smtps.tip.net.au"
+	Thu, 20 Aug 2009 01:27:24 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54547 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752193AbZHTF1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 01:27:15 -0400
-Date: Thu, 20 Aug 2009 15:27:12 +1000
+	id S1753143AbZHTF1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 01:27:23 -0400
+Date: Thu, 20 Aug 2009 15:07:40 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Dave Airlie <airlied@linux.ie>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       Roel Kluin <roel.kluin@gmail.com>
-Subject: linux-next: manual merge of the drm tree with the  tree
-Message-Id: <20090820152712.2eac152e.sfr@canb.auug.org.au>
+       Zhao Yakui <yakui.zhao@intel.com>
+Subject: linux-next: manual merge of the drm tree with Linus' tree
+Message-Id: <20090820150740.e810a35f.sfr@canb.auug.org.au>
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,131 +26,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Dave,
 
-Today's linux-next merge of the drm tree got conflicts in
-drivers/gpu/drm/ttm/ttm_bo.c between commits
-ad49f501867cba87e1e45e5ebae0b12435d68bf1 ("drm/ttm/radeon: add dma32
-support") and c96e7c7a3a79931446ecf9494a8415e4d164ebd8 ("drm/ttm: Read
-buffer overflow") from Linus' tree and commit
-a987fcaa805fcb24ba885c2e29fd4fdb6816f08f ("ttm: Make parts of a struct
-ttm_bo_device global") from the drm tree.
+Today's linux-next merge of the drm tree got a conflict in
+drivers/gpu/drm/drm_edid.c between commit
+ebb177d2afb8532a8a316489aed545ed0c170802 ("drm/edid: fixup detailed
+timings like the X server.") from Linus' tree and commit
+5c61259e6c7290082108e93815f7f72f27da14f4 ("drm/mode: get the modeline for
+standard timing in EDID by using CVT/GTF") from the drm tree.
 
 I fixed it up (see below) and can carry the fix as necessary.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --cc drivers/gpu/drm/ttm/ttm_bo.c
-index c2b0d71,0d0b1b7..0000000
---- a/drivers/gpu/drm/ttm/ttm_bo.c
-+++ b/drivers/gpu/drm/ttm/ttm_bo.c
-@@@ -43,7 -43,41 +43,40 @@@
-  #define TTM_BO_HASH_ORDER 13
+diff --cc drivers/gpu/drm/drm_edid.c
+index 7f2728b,bbcb2e2..0000000
+--- a/drivers/gpu/drm/drm_edid.c
++++ b/drivers/gpu/drm/drm_edid.c
+@@@ -502,40 -547,12 +547,41 @@@ static int add_detailed_info(struct drm
+  		struct detailed_non_pixel *data = &timing->data.other_data;
+  		struct drm_display_mode *newmode;
   
-  static int ttm_bo_setup_vm(struct ttm_buffer_object *bo);
- -static void ttm_bo_unmap_virtual(struct ttm_buffer_object *bo);
-  static int ttm_bo_swapout(struct ttm_mem_shrink *shrink);
-+ static void ttm_bo_global_kobj_release(struct kobject *kobj);
-+ 
-+ static struct attribute ttm_bo_count = {
-+ 	.name = "bo_count",
-+ 	.mode = S_IRUGO
-+ };
-+ 
-+ static ssize_t ttm_bo_global_show(struct kobject *kobj,
-+ 				  struct attribute *attr,
-+ 				  char *buffer)
-+ {
-+ 	struct ttm_bo_global *glob =
-+ 		container_of(kobj, struct ttm_bo_global, kobj);
-+ 
-+ 	return snprintf(buffer, PAGE_SIZE, "%lu\n",
-+ 			(unsigned long) atomic_read(&glob->bo_count));
-+ }
-+ 
-+ static struct attribute *ttm_bo_global_attrs[] = {
-+ 	&ttm_bo_count,
-+ 	NULL
-+ };
-+ 
-+ static struct sysfs_ops ttm_bo_global_ops = {
-+ 	.show = &ttm_bo_global_show
-+ };
-+ 
-+ static struct kobj_type ttm_bo_glob_kobj_type  = {
-+ 	.release = &ttm_bo_global_kobj_release,
-+ 	.sysfs_ops = &ttm_bo_global_ops,
-+ 	.default_attrs = ttm_bo_global_attrs
-+ };
-+ 
-  
-  static inline uint32_t ttm_bo_type_flags(unsigned type)
-  {
-@@@ -1182,7 -1193,8 +1225,8 @@@ static int ttm_bo_force_list_clean(stru
-  
-  int ttm_bo_clean_mm(struct ttm_bo_device *bdev, unsigned mem_type)
-  {
-+ 	struct ttm_bo_global *glob = bdev->glob;
- -	struct ttm_mem_type_manager *man = &bdev->man[mem_type];
- +	struct ttm_mem_type_manager *man;
-  	int ret = -EINVAL;
-  
-  	if (mem_type >= TTM_NUM_MEM_TYPES) {
-@@@ -1329,17 -1414,10 +1447,11 @@@ int ttm_bo_device_release(struct ttm_bo
-  }
-  EXPORT_SYMBOL(ttm_bo_device_release);
-  
-- /*
--  * This function is intended to be called on drm driver load.
--  * If you decide to call it from firstopen, you must protect the call
--  * from a potentially racing ttm_bo_driver_finish in lastclose.
--  * (This may happen on X server restart).
--  */
-- 
-  int ttm_bo_device_init(struct ttm_bo_device *bdev,
-- 		       struct ttm_mem_global *mem_glob,
-- 		       struct ttm_bo_driver *driver, uint64_t file_page_offset,
-+ 		       struct ttm_bo_global *glob,
-+ 		       struct ttm_bo_driver *driver,
- -		       uint64_t file_page_offset)
-++		       uint64_t file_page_offset,
- +		       bool need_dma32)
-  {
-  	int ret = -EINVAL;
-  
-@@@ -1374,30 -1444,17 +1478,18 @@@
-  	INIT_DELAYED_WORK(&bdev->wq, ttm_bo_delayed_workqueue);
-  	bdev->nice_mode = true;
-  	INIT_LIST_HEAD(&bdev->ddestroy);
-- 	INIT_LIST_HEAD(&bdev->swap_lru);
-  	bdev->dev_mapping = NULL;
- +	bdev->need_dma32 = need_dma32;
-- 	ttm_mem_init_shrink(&bdev->shrink, ttm_bo_swapout);
-- 	ret = ttm_mem_register_shrink(mem_glob, &bdev->shrink);
-- 	if (unlikely(ret != 0)) {
-- 		printk(KERN_ERR TTM_PFX
-- 		       "Could not register buffer object swapout.\n");
-- 		goto out_err2;
-- 	}
-+ 	bdev->glob = glob;
-  
-- 	bdev->ttm_bo_extra_size =
-- 		ttm_round_pot(sizeof(struct ttm_tt)) +
-- 		ttm_round_pot(sizeof(struct ttm_backend));
-- 
-- 	bdev->ttm_bo_size = bdev->ttm_bo_extra_size +
-- 		ttm_round_pot(sizeof(struct ttm_buffer_object));
-+ 	mutex_lock(&glob->device_list_mutex);
-+ 	list_add_tail(&bdev->device_list, &glob->device_list);
-+ 	mutex_unlock(&glob->device_list_mutex);
-  
-  	return 0;
-- out_err2:
-+ out_no_addr_mm:
-  	ttm_bo_clean_mm(bdev, 0);
-- out_err1:
-- 	__free_page(bdev->dummy_read_page);
-- out_err0:
-+ out_no_sys:
-  	return ret;
-  }
-  EXPORT_SYMBOL(ttm_bo_device_init);
+ -		/* EDID up to and including 1.2 may put monitor info here */
+ -		if (edid->version == 1 && edid->revision < 3)
+ -			continue;
+ -
+ -		/* Detailed mode timing */
+ -		if (timing->pixel_clock) {
+ +		/* X server check is version 1.1 or higher */
+ +		if (edid->version == 1 && edid->revision >= 1 &&
+ +		    !timing->pixel_clock) {
+ +			/* Other timing or info */
+ +			switch (data->type) {
+ +			case EDID_DETAIL_MONITOR_SERIAL:
+ +				break;
+ +			case EDID_DETAIL_MONITOR_STRING:
+ +				break;
+ +			case EDID_DETAIL_MONITOR_RANGE:
+ +				/* Get monitor range data */
+ +				break;
+ +			case EDID_DETAIL_MONITOR_NAME:
+ +				break;
+ +			case EDID_DETAIL_MONITOR_CPDATA:
+ +				break;
+ +			case EDID_DETAIL_STD_MODES:
+ +				/* Five modes per detailed section */
+ +				for (j = 0; j < 5; i++) {
+ +					struct std_timing *std;
+ +					struct drm_display_mode *newmode;
+ +
+ +					std = &data->data.timings[j];
+- 					newmode = drm_mode_std(dev, std);
+++					newmode = drm_mode_std(dev, std,
+++							timing_level);
+ +					if (newmode) {
+ +						drm_mode_probed_add(connector, newmode);
+ +						modes++;
+ +					}
+ +				}
+ +				break;
+ +			default:
+ +				break;
+ +			}
+ +		} else {
+  			newmode = drm_mode_detailed(dev, edid, timing, quirks);
+  			if (!newmode)
+  				continue;
