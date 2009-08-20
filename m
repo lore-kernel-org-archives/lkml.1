@@ -1,211 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZHTUOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbZHTUVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334AbZHTUOk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 16:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755290AbZHTUOj
+	id S1755325AbZHTUVH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 16:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbZHTUVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 16:14:39 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:41669 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbZHTUOi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 16:14:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=YZwFYNhBsdbOqgUXsgFODAbSRvYVipWrVdiAo1HvaEUAv/UlWTQXQyu3WvueXvUDBW
-         widaA5Dl7bkzl6DXE5VT1ixACfcOM8XlGuChvFZw85bkhZskSy6o3yc+RiMDJTQwFiQg
-         82n5K9ZwJrhBp7mPloLSWzbCG5YrgNZ/AnMGk=
-Date: Thu, 20 Aug 2009 22:14:34 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       =?utf-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
-       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH -tip v14 01/12] x86: instruction decoder API
-Message-ID: <20090820201432.GB6078@nowhere>
-References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203413.31965.49709.stgit@localhost.localdomain> <20090819234227.GJ4972@nowhere> <20090820002113.GK4972@nowhere> <4A8D65CC.8030205@redhat.com> <20090820152549.GD6389@nowhere> <4A8D76C5.9060008@redhat.com> <20090820180737.GA6229@nowhere> <4A8D9D85.50809@redhat.com>
+	Thu, 20 Aug 2009 16:21:06 -0400
+Received: from bar.sig21.net ([80.81.252.164]:47671 "EHLO bar.sig21.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751822AbZHTUVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 16:21:05 -0400
+Date: Thu, 20 Aug 2009 22:22:26 +0200
+From: Johannes Stezenbach <js@sig21.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [Bug #13946] x86 MCE malfunction on Thinkpad T42p
+Message-ID: <20090820202226.GA4444@sig21.net>
+References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
+ <ADSuNT6McuD.A.Rj.9NIjKB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A8D9D85.50809@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <ADSuNT6McuD.A.Rj.9NIjKB@chimera>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Spam-21-Score: -3.6 (---)
+X-Spam-21-Report: No, score=-3.6 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.801,BAYES_00=-2.599 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 03:01:25PM -0400, Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
->> On Thu, Aug 20, 2009 at 12:16:05PM -0400, Masami Hiramatsu wrote:
->>> Frederic Weisbecker wrote:
->>>> On Thu, Aug 20, 2009 at 11:03:40AM -0400, Masami Hiramatsu wrote:
->>>>> Frederic Weisbecker wrote:
->>>>>> On Thu, Aug 20, 2009 at 01:42:31AM +0200, Frederic Weisbecker wrote:
->>>>>>> On Thu, Aug 13, 2009 at 04:34:13PM -0400, Masami Hiramatsu wrote:
->>>>>>>> Add x86 instruction decoder to arch-specific libraries. This decoder
->>>>>>>> can decode x86 instructions used in kernel into prefix, opcode, modrm,
->>>>>>>> sib, displacement and immediates. This can also show the length of
->>>>>>>> instructions.
->>>>>>>>
->>>>>>>> This version introduces instruction attributes for decoding instructions.
->>>>>>>> The instruction attribute tables are generated from the opcode map file
->>>>>>>> (x86-opcode-map.txt) by the generator script(gen-insn-attr-x86.awk).
->>>>>>>>
->>>>>>>> Currently, the opcode maps are based on opcode maps in Intel(R) 64 and
->>>>>>>> IA-32 Architectures Software Developers Manual Vol.2: Appendix.A,
->>>>>>>> and consist of below two types of opcode tables.
->>>>>>>>
->>>>>>>> 1-byte/2-bytes/3-bytes opcodes, which has 256 elements, are
->>>>>>>> written as below;
->>>>>>>>
->>>>>>>>     Table: table-name
->>>>>>>>     Referrer: escaped-name
->>>>>>>>     opcode: mnemonic|GrpXXX [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
->>>>>>>>      (or)
->>>>>>>>     opcode: escape # escaped-name
->>>>>>>>     EndTable
->>>>>>>>
->>>>>>>> Group opcodes, which has 8 elements, are written as below;
->>>>>>>>
->>>>>>>>     GrpTable: GrpXXX
->>>>>>>>     reg:  mnemonic [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
->>>>>>>>     EndTable
->>>>>>>>
->>>>>>>> These opcode maps include a few SSE and FP opcodes (for setup), because
->>>>>>>> those opcodes are used in the kernel.
->>>>>>>>
->>>>>>>
->>>>>>>
->>>>>>> I'm getting the following build error on an old K7 box:
->>>>>>>
->>>>>>> arch/x86/lib/inat.c: In function ‘inat_get_opcode_attribute’:
->>>>>>> arch/x86/lib/inat.c:29: erreur: ‘inat_primary_table’ undeclared (first use in this function)
->>>>>>> arch/x86/lib/inat.c:29: erreur: (Each undeclared identifier is reported only once
->>>>>>> arch/x86/lib/inat.c:29: erreur: for each function it appears in.)
->>>>>>>
->>>>>>>
->>>>>>> I've attached my config. I haven't such problem on a dual x86-64 box.
->>>>>>
->>>>>>
->>>>>> Actually I have the same problem in x86-64
->>>>>> The content of my arch/x86/lib/inat-tables.c:
->>>>>>
->>>>>> /* x86 opcode map generated from x86-opcode-map.txt */
->>>>>> /* Do not change this code. */
->>>>>> /* Table: one byte opcode */
->>>>>> /* Escape opcode map array */
->>>>>> const insn_attr_t const *inat_escape_tables[INAT_ESC_MAX + 1][INAT_LPREFIX_MAX + 1] = {
->>>>>> };
->>>>>>
->>>>>> /* Group opcode map array */
->>>>>> const insn_attr_t const *inat_group_tables[INAT_GRP_MAX + 1][INAT_LPREFIX_MAX + 1] = {
->>>>>> };
->>>>>>
->>>>>>
->>>>>> I guess there is a problem with the generation of this file.
->>>>>
->>>>> Aah, you may use mawk on Ubuntu 9.04, right?
->>>>> If so, unfortunately, mawk is still under development.
->>>>>
->>>>> http://invisible-island.net/mawk/CHANGES
->>>>
->>>>
->>>>
->>>> Aargh...
->>>>
->>>>
->>>>>> 20090727
->>>>>> 	add check/fix to prevent gsub from recurring to modify on a substring
->>>>>> 	of the current line when the regular expression is anchored to the
->>>>>> 	beginning of the line; fixes gawk's anchgsub testcase.
->>>>>>
->>>>>> 	add check for implicit concatenation mistaken for exponent; fixes
->>>>>> 	gawk's hex testcase.
->>>>>>
->>>>>> 	add character-classes to built-in regular expressions.
->>>>>           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->>>>> Look, this means we can't use char-class expressions like
->>>>> [:lower:] until this version...
->>>>>
->>>>> And I've found another bug in mawk-1.3.3-20090728(the latest one).
->>>>> it almost works, but;
->>>>>
->>>>> $ mawk 'BEGIN {printf("0x%x\n", 0)}'
->>>>> 0x1
->>>>
->>>>
->>>> Ouch, indeed.
->>>>
->>>>
->>>>
->>>>> $ gawk 'BEGIN {printf("0x%x\n", 0)}'
->>>>> 0x0
->>>>>
->>>>> This bug skips an array element index 0x0 in inat-tables.c :(
->>>>>
->>>>> So, I recommend you to install gawk instead mawk until that
->>>>> supports all posix-awk features, since I don't think it is
->>>>> good idea to avoid all those bugs which depends on
->>>>> implementation (not specification).
->>>>>
->>>>>
->>>>> Thank you,
->>>>
->>>>
->>>>
->>>> Yeah, indeed. May be add a warning (or build error) in case the user uses
->>>> mawk?
->>>
->>> Hmm, it is possible that mawk will fix those bugs and catch up soon,
->>> so, I think checking mawk is not a good idea.
->>> (and since there will be other awk implementations, it's not fair.)
->>>
->>> I think what all I can do now is reporting bugs to
->>> mawk and ubuntu people.:-)
->>
->>
->>
->> Yeah, but without your tip I couldn't be able to find the origin
->> before some time.
->> And the kernel couldn't build anyway.
->>
->> At least we should do something with this version of mawk.
->
-> Hm, indeed.
-> Maybe, we can run additional sanity check script before using
-> awk, like this;
->
-> ---
-> res=`echo a | $AWK '/[[:lower:]]+/{print "OK"}'`
-> [ "$res" != "OK" ] && exit 1
->
-> res=`$AWK 'BEGIN {printf("%x", 0)}'`
-> [ "$res" != "0" ] && exit 1
->
-> exit 0
-> ---
->
-> Thanks,
->
+On Wed, Aug 19, 2009 at 10:26:57PM +0200, Rafael J. Wysocki wrote:
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13946
+> Subject		: x86 MCE malfunction on Thinkpad T42p
+> Submitter	: Johannes Stezenbach <js@sig21.net>
+> Date		: 2009-08-07 17:09 (13 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124966500232399&w=4
+> Handled-By	: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Patch		: http://patchwork.kernel.org/patch/37908/
+
+This is fixed in v2.6.31-rc6-223-g6c30c53 by
+commit c7f6fa44115d401e89db730f357629d39f8e4ba6
+"x86, mce: don't log boot MCEs on Pentium M (model == 13) CPUs".
 
 
-Yeah, that looks good.
-
-Thanks.
-
+Thanks
+Johannes
