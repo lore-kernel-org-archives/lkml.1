@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbZHTLEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbZHTLEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbZHTLEM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 07:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZHTLEM
+	id S1754005AbZHTLEX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 07:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZHTLEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 07:04:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54650 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbZHTLEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 07:04:11 -0400
-Date: Thu, 20 Aug 2009 11:03:38 GMT
-From: tip-bot for Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, h-shimamoto@ct.jp.nec.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, h-shimamoto@ct.jp.nec.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A8A277D.4090304@ct.jp.nec.com>
-References: <4A8A277D.4090304@ct.jp.nec.com>
-Subject: [tip:sched/core] sched: Use for_each_class macro in move_one_task()
-Message-ID: <tip-cde7e5ca4e329a157108769d1f752d191cbb71c6@git.kernel.org>
-Git-Commit-ID: cde7e5ca4e329a157108769d1f752d191cbb71c6
-X-Mailer: tip-git-log-daemon
+	Thu, 20 Aug 2009 07:04:22 -0400
+Received: from mail.inf.tu-dresden.de ([141.76.2.1]:34928 "EHLO
+	mail.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753948AbZHTLEW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 07:04:22 -0400
+X-Greylist: delayed 1462 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 07:04:21 EDT
+Message-ID: <4A8D27F4.3050204@inf.tu-dresden.de>
+Date: Thu, 20 Aug 2009 12:39:48 +0200
+From: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Aug 2009 11:03:39 +0000 (UTC)
+To: Richard Purdie <rpurdie@rpsys.net>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Add support for new Apple machines.
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cde7e5ca4e329a157108769d1f752d191cbb71c6
-Gitweb:     http://git.kernel.org/tip/cde7e5ca4e329a157108769d1f752d191cbb71c6
-Author:     Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-AuthorDate: Tue, 18 Aug 2009 13:01:01 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 20 Aug 2009 13:00:30 +0200
+This patch adds support for the new Apple models MacBook 5,1,
+MacBook Pro 5,1, MacBook Pro 5,2, MacBook Pro 5,5. It's just a
+device table update.
 
-sched: Use for_each_class macro in move_one_task()
+This patch is against Linus Torvald's tree.
 
-Replace for loop with the macro for_each_class to cleanup.
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-LKML-Reference: <4A8A277D.4090304@ct.jp.nec.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Mario Schwalbe <schwalbe@inf.tu-dresden.de>
 ---
- kernel/sched.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/video/backlight/mbp_nvidia_bl.c |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 7f83be3..1b529ef 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3461,9 +3461,10 @@ static int move_one_task(struct rq *this_rq, int this_cpu, struct rq *busiest,
- {
- 	const struct sched_class *class;
- 
--	for (class = sched_class_highest; class; class = class->next)
-+	for_each_class(class) {
- 		if (class->move_one_task(this_rq, this_cpu, busiest, sd, idle))
- 			return 1;
-+	}
- 
- 	return 0;
- }
+diff --git a/drivers/video/backlight/mbp_nvidia_bl.c b/drivers/video/backlight/mbp_nvidia_bl.c
+index 3bb4c0a..5f8c27f 100644
+--- a/drivers/video/backlight/mbp_nvidia_bl.c
++++ b/drivers/video/backlight/mbp_nvidia_bl.c
+@@ -175,6 +175,15 @@ static const struct dmi_system_id __initdata mbp_device_table[] = {
+ 	},
+ 	{
+ 		.callback	= mbp_dmi_match,
++		.ident		= "MacBook 5,2",
++		.matches	= {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook5,2"),
++		},
++		.driver_data	= (void *)&nvidia_chipset_data,
++	},
++	{
++		.callback	= mbp_dmi_match,
+ 		.ident		= "MacBookAir 2,1",
+ 		.matches	= {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
+@@ -191,6 +200,24 @@ static const struct dmi_system_id __initdata mbp_device_table[] = {
+ 		},
+ 		.driver_data	= (void *)&nvidia_chipset_data,
+ 	},
++	{
++		.callback	= mbp_dmi_match,
++		.ident		= "MacBookPro 5,2",
++		.matches	= {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro5,2"),
++		},
++		.driver_data	= (void *)&nvidia_chipset_data,
++	},
++	{
++		.callback	= mbp_dmi_match,
++		.ident		= "MacBookPro 5,5",
++		.matches	= {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro5,5"),
++		},
++		.driver_data	= (void *)&nvidia_chipset_data,
++	},
+ 	{ }
+ };
+
+-- 
+1.6.0.4
+
