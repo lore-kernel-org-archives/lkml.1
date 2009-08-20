@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbZHTFSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbZHTF0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752750AbZHTFSf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 01:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZHTFSf
+	id S1752901AbZHTF0Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 01:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZHTF0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 01:18:35 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46644 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbZHTFSe (ORCPT
+	Thu, 20 Aug 2009 01:26:15 -0400
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:37142 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752671AbZHTF0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 01:18:34 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 20 Aug 2009 14:16:38 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 20 Aug 2009 01:26:15 -0400
+Date: Thu, 20 Aug 2009 10:56:05 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Anton Blanchard <anton@samba.org>
 Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com, balajirrao@gmail.com,
-       dhaval@linux.vnet.ibm.com, tglx@linutronix.de,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       schwidefsky@de.ibm.com, balajirrao@gmail.com, dhaval@linux.vnet.ibm.com,
+       tglx@linutronix.de, kamezawa.hiroyu@jp.fujitsu.com,
        akpm@linux-foundation.org
 Subject: Re: [tip:sched/core] sched: cpuacct: Use bigger percpu counter
- batch values for stats counters
-Message-Id: <20090820141638.bcd298c0.kamezawa.hiroyu@jp.fujitsu.com>
+	batch values for stats counters
+Message-ID: <20090820052605.GC26265@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090512102412.GG6351@balbir.in.ibm.com> <20090512102939.GB11714@elte.hu> <20090512193656.D647.A69D9226@jp.fujitsu.com> <20090716081010.GB3134@in.ibm.com> <20090716083948.GA2950@kryten> <20090820051038.GF21100@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 In-Reply-To: <20090820051038.GF21100@kryten>
-References: <20090512102412.GG6351@balbir.in.ibm.com>
-	<20090512102939.GB11714@elte.hu>
-	<20090512193656.D647.A69D9226@jp.fujitsu.com>
-	<20090716081010.GB3134@in.ibm.com>
-	<20090716083948.GA2950@kryten>
-	<20090820051038.GF21100@kryten>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 15:10:38 +1000
-Anton Blanchard <anton@samba.org> wrote:
+* Anton Blanchard <anton@samba.org> [2009-08-20 15:10:38]:
 
 > 
 > Hi,
@@ -54,17 +47,6 @@ Anton Blanchard <anton@samba.org> wrote:
 > Any chance we can get a fix in for 2.6.31? Don't make me find an even bigger
 > box so I can break the 200x mark :)
 > 
-I like the patch itself, I think it does a correct fix.
-
-Hmm, but, IIRC, there was a discssion "what happens at reading
-this counter once per 1ms ?" or some.
-
-What overhead at read on big system ? Can you show it ?
-
-Thanks,
--Kame
-
-
 > Anton
 > 
 > > --
@@ -83,6 +65,13 @@ Thanks,
 > > CONFIG_CGROUP_CPUACCT shows an improvement in aggregate context switch rate of
 > > 397k/sec to 3.9M/sec, a 10x improvement.
 > > 
+
+Looks good overall, why not keep the batch size conditional on
+CONFIG_VIRT_CPU_ACCOUNTING? I'd still like to stick with
+percpu_counter_read() on the read side because My concern is that a
+bad user space application can read cpuacct.stat and bring the kernel
+to its knees.
+
 > > Signed-off-by: Anton Blanchard <anton@samba.org>
 > > ---
 > > 
@@ -108,5 +97,6 @@ Thanks,
 > >  		ca = ca->parent;
 > >  	} while (ca);
 > >  	rcu_read_unlock();
-> 
 
+-- 
+	Balbir
