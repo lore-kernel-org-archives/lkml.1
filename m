@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbZHTCho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbZHTCil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753153AbZHTCho (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 22:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZHTChn
+	id S1753281AbZHTCil (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 22:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZHTCik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 22:37:43 -0400
-Received: from kirsty.vergenet.net ([202.4.237.240]:35317 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbZHTChn (ORCPT
+	Wed, 19 Aug 2009 22:38:40 -0400
+Received: from mail.windriver.com ([147.11.1.11]:50379 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbZHTCik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 22:37:43 -0400
-Date: Thu, 20 Aug 2009 12:37:41 +1000
-From: Simon Horman <horms@verge.net.au>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: agk@redhat.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: Re: [PATCH] dm-ioband-v1.12.3: I/O bandwidth controller
-Message-ID: <20090820023740.GA12528@verge.net.au>
-References: <20090731.130333.104034609.ryov@valinux.co.jp>
- <20090807.103640.104065157.ryov@valinux.co.jp>
+	Wed, 19 Aug 2009 22:38:40 -0400
+Message-ID: <4A8CB6CF.3010109@windriver.com>
+Date: Wed, 19 Aug 2009 21:37:03 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090807.103640.104065157.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Greg KH <greg@kroah.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Robin Getz <rgetz@blackfin.uclinux.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: linux-next: manual merge of the usb tree with the tip tree
+References: <20090819175901.59f1af9e.sfr@canb.auug.org.au> <20090819233818.GD2875@kroah.com>
+In-Reply-To: <20090819233818.GD2875@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Aug 2009 02:37:00.0495 (UTC) FILETIME=[1820F5F0:01CA213F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 07, 2009 at 10:36:40AM +0900, Ryo Tsuruta wrote:
-> Hi Alasdair,
-> 
-> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
-> > Hi Alasdair,
-> > 
-> > This is dm-ioband v1.12.3 release that is a minor update to avoid
-> > sparse warnings other than related to the event tracing. (I used
-> > sparse-2009-07-29.)
-> > 
-> > This patch can be applied to the current dm-devel tree and 2.6.31-rc4,
-> > so could you please replace dm-add-ioband.patch in your tree with this?
-> > And I would appreciate it if you would let me know your thoughts about
-> > merging dm-ioband to upstream.
-> 
-> The dm-ioband patch in the dm-devel tree is still older. Could you
-> please update it with the new patch? And could you please let me know
-> your thoughts about dm-ioband?
+Greg KH wrote:
+> On Wed, Aug 19, 2009 at 05:59:01PM +1000, Stephen Rothwell wrote:
+>   
+>> Hi Greg,
+>>
+>> Today's linux-next merge of the usb tree got a conflict in
+>> kernel/printk.c between commit 4d09161196c9a836eacea4b36e2f217bc34894cf
+>> ("printk: Enable the use of more than one CON_BOOT (early console)") from
+>> the tip tree and commit e289e7dc72eb6bfce70e2722d97a00f5e02893e8 ("USB:
+>> printk: early_printk,console: Allow more than one early console") from
+>> the usb tree.
+>>
+>> I assume that these are trying to do (more or less) the same thing.  I
+>> have dropped the one from the usb tree for today.  Please sort this out -
+>> at least remove the usb tree one until you have done so, thanks.
+>>     
+>
+> Jason, any thoughts?  I'm going to drop your printk stuff from my tree
+> now, care to sort it out and resend your whole series?
+>
+>   
 
-Hi Alasdiar,
+I will investigate, re-test and send a new series to Greg KH later in
+the week.  The preliminary result shows the problem is a result of a
+clash with two different patches in the tip tree.   My patch set and the
+two patches it collides with context wise fix different things.
 
-I'm wondering if you see any problems with merging dm-ioband at this time.
-I'm eager to address any such concerns.
+In order to resolve this it appears that the series will need to get
+split into something for the tip tree and something for the USB tree, or
+we wait for the next pull of the tip branch into the Linus's tree.
 
+Thanks,
+Jason.
