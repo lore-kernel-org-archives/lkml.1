@@ -1,125 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbZHTKft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZHTKgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbZHTKft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 06:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZHTKft
+	id S1753861AbZHTKgQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 06:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbZHTKgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 06:35:49 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:44231 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753453AbZHTKfs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 06:35:48 -0400
+	Thu, 20 Aug 2009 06:36:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55760 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753485AbZHTKgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 06:36:14 -0400
 Date: Thu, 20 Aug 2009 12:35:47 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [circular locking bug] Re: [patch 00/15] clocksource /
- timekeeping rework V4 (resend V3 + bug fix)
-Message-ID: <20090820123547.1ef5a5e0@skybase>
-In-Reply-To: <20090820095821.GA29093@elte.hu>
-References: <1250300765.8269.29.camel@localhost.localdomain>
-	<alpine.LFD.2.00.0908151057500.1283@localhost.localdomain>
-	<20090815095221.GA15831@elte.hu>
-	<alpine.LFD.2.00.0908151207000.1283@localhost.localdomain>
-	<20090817094042.03fe5d38@skybase>
-	<alpine.LFD.2.00.0908171038420.2782@localhost.localdomain>
-	<20090817092807.GA10460@elte.hu>
-	<20090818170942.3ab80c91@skybase>
-	<20090819202554.GA19482@elte.hu>
-	<20090820112820.47d833c1@skybase>
-	<20090820095821.GA29093@elte.hu>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Ingo Molnar <mingo@elte.hu>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: Greg KH <greg@kroah.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Robin Getz <rgetz@blackfin.uclinux.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: linux-next: manual merge of the usb tree with the tip tree
+Message-ID: <20090820103547.GE29093@elte.hu>
+References: <20090819175901.59f1af9e.sfr@canb.auug.org.au> <20090819233818.GD2875@kroah.com> <4A8CB6CF.3010109@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8CB6CF.3010109@windriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 11:58:21 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
 
+* Jason Wessel <jason.wessel@windriver.com> wrote:
+
+> Greg KH wrote:
+> > On Wed, Aug 19, 2009 at 05:59:01PM +1000, Stephen Rothwell wrote:
+> >   
+> >> Hi Greg,
+> >>
+> >> Today's linux-next merge of the usb tree got a conflict in
+> >> kernel/printk.c between commit 4d09161196c9a836eacea4b36e2f217bc34894cf
+> >> ("printk: Enable the use of more than one CON_BOOT (early console)") from
+> >> the tip tree and commit e289e7dc72eb6bfce70e2722d97a00f5e02893e8 ("USB:
+> >> printk: early_printk,console: Allow more than one early console") from
+> >> the usb tree.
+> >>
+> >> I assume that these are trying to do (more or less) the same thing.  I
+> >> have dropped the one from the usb tree for today.  Please sort this out -
+> >> at least remove the usb tree one until you have done so, thanks.
+> >>     
+> >
+> > Jason, any thoughts?  I'm going to drop your printk stuff from my tree
+> > now, care to sort it out and resend your whole series?
+> >
+> >   
 > 
-> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> I will investigate, re-test and send a new series to 
+> Greg KH later in the week.  The preliminary result 
+> shows the problem is a result of a clash with two 
+> different patches in the tip tree.  My patch set and 
+> the two patches it collides with context wise fix 
+> different things.
 > 
-> > On Wed, 19 Aug 2009 22:25:54 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > ok, with all the latest patches i re-added these bits to 
-> > > -tip, and it triggered this lockdep assert on a testbox:
-> > 
-> > Another one :-(
-> > 
-> > > stack backtrace:
-> > > Pid: 1, comm: swapper Not tainted 2.6.31-rc6-tip-01234-gcc9be0e-dirty #1054
-> > > Call Trace:
-> > >  [<c106f430>] print_usage_bug+0x130/0x180
-> > >  [<c106f5eb>] mark_lock_irq+0x16b/0x260
-> > >  [<c106f240>] ? check_usage_forwards+0x0/0xc0
-> > >  [<c106f7fe>] mark_lock+0x11e/0x3a0
-> > >  [<c106fbff>] mark_irqflags+0x17f/0x190
-> > >  [<c107177a>] __lock_acquire+0x29a/0x520
-> > >  [<c1071a6a>] lock_acquire+0x6a/0xc0
-> > >  [<c10664d7>] ? clocksource_unregister+0x17/0x50
-> > >  [<c175719b>] __mutex_lock_common+0x3b/0x340
-> > >  [<c10664d7>] ? clocksource_unregister+0x17/0x50
-> > >  [<c1757551>] mutex_lock_nested+0x31/0x40
-> > >  [<c10664d7>] ? clocksource_unregister+0x17/0x50
-> > >  [<c10664d7>] clocksource_unregister+0x17/0x50
-> > >  [<c1008b3a>] pit_disable_clocksource+0x2a/0x40
-> > >  [<c1008bb9>] init_pit_timer+0x29/0xb0
-> > >  [<c106825a>] clockevents_set_mode+0x1a/0x50
-> > >  [<c1069a96>] tick_switch_to_oneshot+0x96/0xc0
-> > >  [<c1069ad2>] tick_init_highres+0x12/0x20
-> > >  [<c105e32d>] hrtimer_switch_to_hres+0x4d/0x100
-> > >  [<c105ebbd>] hrtimer_run_pending+0x4d/0x50
-> > >  [<c104bb85>] run_timer_softirq+0x25/0x230
-> > 
-> > Ok, the cause is that the i8253 pit clocksource code 
-> > tries to unregister a clocksource from a timer 
-> > interrupt. Bad idea with the new code. Why does the pit 
-> > clocksource have to >unregister< the clock if the 
-> > set_mode callback is called with 
-> > CLOCK_EVT_MODE_SHUTODWN, CLOCK_EVT_MODE_UNUSED, or 
-> > CLOCK_EVT_MODE_ONESHOT? Very strange, I would argue 
-> > that the clocksource should never unregister in the 
-> > set_mode callback, the timekeeping code should not use 
-> > the clocksource if it is unsuitable for e.g. the one 
-> > shot mode.
-> 
-> i think this 'execute timer management functions right 
-> from the deep bowels of time events' concept is 
-> fundamentally flawed and one big layering violation. It 
-> caused numerous problems (lockups, etc.) in the past.
-> 
-> There should be a time management kernel thread instead 
-> (or workqueue), which does a proper state machine of all 
-> these properties - without having to call this stuff from 
-> within a timer handler.
+> In order to resolve this it appears that the series 
+> will need to get split into something for the tip tree 
+> and something for the USB tree, or we wait for the next 
+> pull of the tip branch into the Linus's tree.
 
-We could use that time managment kernel thread for the watchdog
-downgrade as well. Dunno if it is worth to create another kernel thread
-that just sits there doing nothing for 99.9% of the time.
+The printk bits are neatly separated out in the -tip 
+tree, in a standalone tree, tip:core/printk:
 
-As for the fix: my brains starts to hurt looking at the pit clocksource
-code. Why does it set CLOCK_EVT_FEAT_ONESHOT but then unregisters the
-clocksource when the mode is set to CLOCK_EVT_MODE_ONESHOT?? That does
-not make any sense to me. I would have expected that the pit does not
-set CLOCK_EVT_MODE_ONESHOT. The timekeeping code wouldn't try use the
-clock for one-shot if the bit is not set. And to unregister the clock
-only because the mode is set to shutdown or unused doesn't seem to be
-necessary either. My fix would be to remove the CLOCK_EVT_MODE_ONESHOT
-bit from the features mask and to remove the clocksource_unregister
-from the set_mode callback.
+ earth4:~/tip> gll linus..core/printk
+ 42c2c8c: printk: Fix "printk: Enable the use of more than one CON_BOOT (early console)"
+ 1aaad49: printk: Restore previous console_loglevel when re-enabling logging
+ 8259cf4: printk: Ensure that "console enabled" messages are printed on the console
+ 4d09161: printk: Enable the use of more than one CON_BOOT (early console)
 
--- 
-blue skies,
-   Martin.
+So we can base on that and extend it with your bits, and 
+Greg could pull this into the USB tree as well he he 
+wants to (this tree is focused to this single topic and 
+is non-rebasing).
 
-"Reality continues to ruin my life." - Calvin.
+The git coordinates are:
 
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/printk
+
+Please Cc: new printk/console bits to Linus and Andrew as 
+well.
+
+Thanks,
+
+	Ingo
