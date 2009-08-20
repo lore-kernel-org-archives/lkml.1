@@ -1,145 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbZHTMqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754385AbZHTMrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754366AbZHTMqw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 08:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754340AbZHTMqv
+	id S1754385AbZHTMrm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 08:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZHTMrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 08:46:51 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:60894 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754295AbZHTMqu (ORCPT
+	Thu, 20 Aug 2009 08:47:41 -0400
+Received: from mail-px0-f196.google.com ([209.85.216.196]:49423 "EHLO
+	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754349AbZHTMrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 08:46:50 -0400
-From: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-To: linux-kernel@vger.kernel.org
-Cc: gregkh@suse.de, w@1wt.eu, davinci-linux-open-source@linux.davincidsp.com,
-       Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-Subject: [PATCH] staging/panel/panel.c: Add support for TI CLCD interface
-Date: Thu, 20 Aug 2009 18:13:18 -0400
-Message-Id: <1250806398-30620-1-git-send-email-sudhakar.raj@ti.com>
-X-Mailer: git-send-email 1.5.6
+	Thu, 20 Aug 2009 08:47:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=U3TjyNWzQzkHRn2BjSXT7a7kt+Lu9eBp9MdIqYjGWyH3jlxII9nvsxg9ukDAm+DF+X
+         aVPrpTiPuszAtP38wcQoOwglZe0kSKBZMqX1QDM2bMAkSB3CfV2O6B2ohbLyppz5dE7p
+         C88gf7D7VuPOzOwyEzBuJ7/D6YGZ/VGbYGHkY=
+Message-ID: <4A8D45DF.8010307@gmail.com>
+Date: Thu, 20 Aug 2009 21:47:27 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, Mark Lord <liml@rtr.ca>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] libata: use single threaded work queue
+References: <20090819112554.GY12579@kernel.dk> <4A8BE932.5090300@garzik.org>	 <20090819120458.GZ12579@kernel.dk> <4A8BECC2.2060607@rtr.ca>	 <20090819122320.GA12579@kernel.dk> <1250720545.4810.37.camel@pasglop>
+In-Reply-To: <1250720545.4810.37.camel@pasglop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On TI DA850/OMAP-L138 EVM, HD44780 (24x2) LCD panel is being
-used[1], but it is interfaced through the SoC specific LCD
-interface and not through parallel port. A parallel port
-driver has been developed which interfaces to the panel driver
-through the SoC specific LCD interface.
+Benjamin Herrenschmidt wrote:
+> On Wed, 2009-08-19 at 14:23 +0200, Jens Axboe wrote:
+>> Well, that's the same thread pool suggestion that Jeff came up with.
+>> And
+>> I agree, that's a nicer long term solution (it's also how the per-bdi
+>> flushing replacement works). The problem with that appears to be that
+>> any suggested patchset for thread pools spiral into certain "but what
+>> color should it be?!" death.
+>>
+>> I'll try and work up a simple create_threadpool() implementation, we
+>> can
+>> literally cut away hundreds of threads with that.
+> 
+> Don't we have one already ? Dave Howells slow_work or such ?
 
-Basically, both the serial and parallel interfaces supported
-by the panel driver do not suit the specific interface SoC is
-supporting so, a new interface type has been introduced.
+Yes, it addresses different aspect of the concurrency problem.  Might
+be more suitable for ATA workqueues but definitely more costly to
+convert to.  Argh...
 
-Ideally the panel driver should be de-coupled from parallel
-and serial port related items but this patch is something
-that can be merged in the meantime.
-
-[1]Specification of the character LCD interface on TI DA850/OMAP-L138:
-http://www.ti.com/litv/pdf/sprufm0a.
-
-Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
----
- drivers/staging/panel/panel.c |   50 +++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 48 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/staging/panel/panel.c b/drivers/staging/panel/panel.c
-index c2747bc..dd7d3fd 100644
---- a/drivers/staging/panel/panel.c
-+++ b/drivers/staging/panel/panel.c
-@@ -243,6 +243,7 @@ static unsigned char lcd_bits[LCD_PORTS][LCD_BITS][BIT_STATES];
-  */
- #define LCD_PROTO_PARALLEL      0
- #define LCD_PROTO_SERIAL        1
-+#define LCD_PROTO_TI_DA8XX_LCD	2
- 
- /*
-  * LCD character sets
-@@ -440,7 +441,8 @@ MODULE_PARM_DESC(lcd_type,
- 
- static int lcd_proto = -1;
- module_param(lcd_proto, int, 0000);
--MODULE_PARM_DESC(lcd_proto, "LCD communication: 0=parallel (//), 1=serial");
-+MODULE_PARM_DESC(lcd_proto, "LCD communication: 0=parallel (//), 1=serial,"
-+		"2=TI LCD Interface");
- 
- static int lcd_charset = -1;
- module_param(lcd_charset, int, 0000);
-@@ -797,6 +799,26 @@ static void lcd_write_data_p8(int data)
- 	spin_unlock(&pprt_lock);
- }
- 
-+/* send a command to the TI LCD panel */
-+static void lcd_write_cmd_tilcd(int cmd)
-+{
-+	spin_lock(&pprt_lock);
-+	/* present the data to the control port */
-+	w_ctr(pprt, cmd);
-+	udelay(60);
-+	spin_unlock(&pprt_lock);
-+}
-+
-+/* send data to the TI LCD panel */
-+static void lcd_write_data_tilcd(int data)
-+{
-+	spin_lock(&pprt_lock);
-+	/* present the data to the data port */
-+	w_dtr(pprt, data);
-+	udelay(60);
-+	spin_unlock(&pprt_lock);
-+}
-+
- static void lcd_gotoxy(void)
- {
- 	lcd_write_cmd(0x80	/* set DDRAM address */
-@@ -870,6 +892,26 @@ static void lcd_clear_fast_p8(void)
- 	lcd_gotoxy();
- }
- 
-+/* fills the display with spaces and resets X/Y */
-+static void lcd_clear_fast_tilcd(void)
-+{
-+	int pos;
-+	lcd_addr_x = lcd_addr_y = 0;
-+	lcd_gotoxy();
-+
-+	spin_lock(&pprt_lock);
-+	for (pos = 0; pos < lcd_height * lcd_hwidth; pos++) {
-+		/* present the data to the data port */
-+		w_dtr(pprt, ' ');
-+		udelay(60);
-+	}
-+
-+	spin_unlock(&pprt_lock);
-+
-+	lcd_addr_x = lcd_addr_y = 0;
-+	lcd_gotoxy();
-+}
-+
- /* clears the display and resets X/Y */
- static void lcd_clear_display(void)
- {
-@@ -1396,7 +1438,7 @@ void lcd_init(void)
- 		if (lcd_da_pin == PIN_NOT_SET)
- 			lcd_da_pin = DEFAULT_LCD_PIN_SDA;
- 
--	} else {		/* PARALLEL */
-+	} else if (lcd_proto == LCD_PROTO_PARALLEL) {	/* PARALLEL */
- 		lcd_write_cmd = lcd_write_cmd_p8;
- 		lcd_write_data = lcd_write_data_p8;
- 		lcd_clear_fast = lcd_clear_fast_p8;
-@@ -1407,6 +1449,10 @@ void lcd_init(void)
- 			lcd_rs_pin = DEFAULT_LCD_PIN_RS;
- 		if (lcd_rw_pin == PIN_NOT_SET)
- 			lcd_rw_pin = DEFAULT_LCD_PIN_RW;
-+	} else {
-+		lcd_write_cmd = lcd_write_cmd_tilcd;
-+		lcd_write_data = lcd_write_data_tilcd;
-+		lcd_clear_fast = lcd_clear_fast_tilcd;
- 	}
- 
- 	if (lcd_bl_pin == PIN_NOT_SET)
 -- 
-1.5.6
-
+tejun
