@@ -1,39 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967AbZHTTDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbZHTTIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751967AbZHTTDf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 15:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbZHTTDe
+	id S1752327AbZHTTIc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 15:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZHTTIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 15:03:34 -0400
-Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:3545 "EHLO
-	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436AbZHTTDd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 15:03:33 -0400
-X-Greylist: delayed 463 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 15:03:33 EDT
-Subject: Re: kernel segv with 2.6.31-rc6 ?
-To: deller@gmx.de (Helge Deller)
-Date: Thu, 20 Aug 2009 14:55:49 -0400 (EDT)
-From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
-Cc: rusty@rustcorp.com.au, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dave.anglin@nrc.ca, deller@gmx.de,
-       roland@redhat.com, James.Bottomley@HansenPartnership.com
-In-Reply-To: <20090820122537.29410@gmx.net> from "Helge Deller" at Aug 20, 2009 02:25:37 pm
-X-Mailer: ELM [version 2.4 PL25]
+	Thu, 20 Aug 2009 15:08:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:57078 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751129AbZHTTIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 15:08:31 -0400
+Date: Thu, 20 Aug 2009 21:08:17 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [circular locking bug] Re: [patch 00/15] clocksource / timekeeping
+ rework V4 (resend V3 + bug fix)
+In-Reply-To: <20090820185344.1c0e48f8@skybase>
+Message-ID: <alpine.LFD.2.00.0908202106560.3361@localhost.localdomain>
+References: <1250300765.8269.29.camel@localhost.localdomain> <alpine.LFD.2.00.0908151057500.1283@localhost.localdomain> <20090815095221.GA15831@elte.hu> <alpine.LFD.2.00.0908151207000.1283@localhost.localdomain> <20090817094042.03fe5d38@skybase>
+ <alpine.LFD.2.00.0908171038420.2782@localhost.localdomain> <20090817092807.GA10460@elte.hu> <20090818170942.3ab80c91@skybase> <20090819202554.GA19482@elte.hu> <20090820112820.47d833c1@skybase> <20090820095821.GA29093@elte.hu> <20090820123547.1ef5a5e0@skybase>
+ <alpine.LFD.2.00.0908201809190.3361@localhost.localdomain> <20090820185344.1c0e48f8@skybase>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090820185550.979544E7A@hiauly1.hia.nrc.ca>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The reason seems to be, that something in the newer gcc compilers changed to generate multiple sections all named ".text" for the PCREL17 relocations.
-> Older compilers named those sections ".text.1", ".text.2", ".text.3" and so forth.
+On Thu, 20 Aug 2009, Martin Schwidefsky wrote:
+> On Thu, 20 Aug 2009 18:14:07 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Thu, 20 Aug 2009, Martin Schwidefsky wrote:
+> > > On Thu, 20 Aug 2009 11:58:21 +0200
+> > > > There should be a time management kernel thread instead 
+> > > > (or workqueue), which does a proper state machine of all 
+> > > > these properties - without having to call this stuff from 
+> > > > within a timer handler.
+> > > 
+> > > We could use that time managment kernel thread for the watchdog
+> > > downgrade as well. Dunno if it is worth to create another kernel thread
+> > > that just sits there doing nothing for 99.9% of the time.
+> > > 
+> > > As for the fix: my brains starts to hurt looking at the pit clocksource
+> > > code. Why does it set CLOCK_EVT_FEAT_ONESHOT but then unregisters the
+> > > clocksource when the mode is set to CLOCK_EVT_MODE_ONESHOT?? That does
+> > > not make any sense to me. I would have expected that the pit does not
+> > > set CLOCK_EVT_MODE_ONESHOT. The timekeeping code wouldn't try use the
+> > > clock for one-shot if the bit is not set. And to unregister the clock
+> > > only because the mode is set to shutdown or unused doesn't seem to be
+> > > necessary either. My fix would be to remove the CLOCK_EVT_MODE_ONESHOT
+> > > bit from the features mask and to remove the clocksource_unregister
+> > > from the set_mode callback.
+> > 
+> > No. On UP machines we can run in oneshot mode with the PIT. 
+> > 
+> > The disable PIT clocksource hack was done in commit
+> > 1a0c009ac53de4a7664a1239936f0bc258133156. Yes, in hindsight we should
+> > have done 3f68535adad8dd89499505a65fb25d0e02d118cc in the first place.
+> > 
+> > So now the simple and correct fix is to remove the unregister call.
+> 
+> Sorry if I don't see the obvious but how can that work? If the pit as
+> clocksource is switched to CLOCK_EVT_MODE_ONESHOT it simply vanishes.
+> How is it possible that a UP machine runs with the PIT in oneshot mode?
 
-GCC has never generated ".text.1", etc, on parisc linux as far as I know.
+If PIT switches to oneshot then there is PM timer the active
+clocksource and the sanity check in the sysfs interface now prevents
+that we switch back to PIT
+ 
+Thanks,
 
-Dave
--- 
-J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
-National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
+	tglx
