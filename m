@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753048AbZHTIwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZHTIwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753048AbZHTIwD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 04:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZHTIwC
+	id S1753141AbZHTIwq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 04:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZHTIwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 04:52:02 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:54486 "EHLO
+	Thu, 20 Aug 2009 04:52:46 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:63317 "EHLO
 	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752139AbZHTIwA convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751991AbZHTIwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 04:52:00 -0400
+	Thu, 20 Aug 2009 04:52:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
+        d=googlemail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=gGgDCvbXdUfngjui1ibcT5usHK80Yb1Tbm//pNEtNi2ygDqvCm5S0cU58QAsVpJN0Y
-         zpDYI64HI66LXW4RcmsY2+6wsv9iuw6ixQZiMweu5NRSANHHo6zzwqNshYrGiOMPjQJ1
-         S8HjFzJS3aafKisBz0cL9wO/kQtYVCql8rk9A=
+        b=qxGjAHFscJzBhhIfgAY035x0g2rNeo/WnYe+NwHmHrugXRelhc4PTj8lu6mhYZfinH
+         JyDsYbNVyv3DFavB2/QKQyQBxMLZUajxqoIKa47t95c0BUDQjQ7QP4PID2YIosYKsSkw
+         KZvNLqcRSs4wJNtUCRmg/uHZILaKNcNyqRa4s=
 MIME-Version: 1.0
-In-Reply-To: <ADSuNT6McuD.A.fc.7NIjKB@chimera>
-References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
-	 <ADSuNT6McuD.A.fc.7NIjKB@chimera>
-Date: Thu, 20 Aug 2009 10:51:48 +0200
-Message-ID: <25e057c00908200151i472fa3cem6da814e7115e1ea7@mail.gmail.com>
-Subject: Re: [Bug #13947] Libertas: Association request to the driver failed
-From: roel kluin <roel.kluin@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Daniel Mack <daniel@caiaq.de>,
-       "John W. Linville" <linville@tuxdriver.com>
+In-Reply-To: <4A8C48BA.1000009@dell.com>
+References: <1250706969-10382-1-git-send-email-Mario_Limonciello@Dell.com>
+	 <1250707376.8073.4.camel@johannes.local> <4A8C48BA.1000009@dell.com>
+Date: Thu, 20 Aug 2009 09:52:44 +0100
+Message-ID: <9b2b86520908200152m28daa816ib8c54a423e63ca1a@mail.gmail.com>
+Subject: Re: [PATCH 2/3] Add rfkill support to compal-laptop
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Mario Limonciello <mario_limonciello@dell.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>, cezary.jackiewicz@gmail.com,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-wireless@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13947
-> Subject         : Libertas: Association request to the driver failed
-> Submitter       : Daniel Mack <daniel@caiaq.de>
-> Date            : 2009-08-07 19:11 (13 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=57921c312e8cef72ba35a4cfe870b376da0b1b87
-> References      : http://marc.info/?l=linux-kernel&m=124967234311481&w=4
-> Handled-By      : Roel Kluin <roel.kluin@gmail.com>
+On 8/19/09, Mario Limonciello <mario_limonciello@dell.com> wrote:
+> Johannes:
+>
+> Johannes Berg wrote:
+>> On Wed, 2009-08-19 at 13:36 -0500, Mario Limonciello wrote:
+>>
+>>
+>>
+>>
+>> Isn't that missing sysfs_remove_group()?
+>>
+>> johannes
+>>
+> The third patch in the (updated) series is dropping the sysfs bits, so
+> sysfs_remove_group is removed there.
 
-I think this should be fixed with patch of Dan Williams found here:
+That's not ideal.  Each patch should stand on its own; it's bad form
+to introduce a bug in one patch and fix it in the next one.  Even
+something obscure like omitting to free the sysfs group when
+setup_rfkill() fails.
 
-http://lkml.org/lkml/2009/8/12/299
+I would suggest merging these two patches into one. That would avoid
+adding sysfs_remove_group() in this patch, just to remove it in the
+next one.  It also avoids the question in this patch, of what happens
+to the rfkill interface if you write to the sysfs file.
 
-Roel
+Alan
