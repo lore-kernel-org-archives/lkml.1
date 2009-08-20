@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZHTKuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbZHTKuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbZHTKuJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 06:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZHTKuI
+	id S1753909AbZHTKuO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 06:50:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbZHTKuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 06:50:08 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37528 "EHLO mx1.redhat.com"
+	Thu, 20 Aug 2009 06:50:09 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1670 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753215AbZHTKuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 06:50:06 -0400
+	id S1753317AbZHTKuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 06:50:07 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] Allow the 'cut here' oops line to be displayed before
-	calling BUG()
+Subject: [PATCH 2/2] Use the cut_here() function in AFS, CacheFiles,
+	FS-Cache and RxRPC
 To: torvalds@osdl.org, akpm@linux-foundation.org
 Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Thu, 20 Aug 2009 11:49:56 +0100
-Message-ID: <20090820104956.29972.92662.stgit@warthog.procyon.org.uk>
+Date: Thu, 20 Aug 2009 11:50:02 +0100
+Message-ID: <20090820105001.29972.33221.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090820104956.29972.92662.stgit@warthog.procyon.org.uk>
+References: <20090820104956.29972.92662.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -28,126 +30,206 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow the 'cut here' oops line to be displayed before calling BUG() as useful
-information is often displayed before BUG() is called.  Also use this to limit
-recursive oopsing.
+Use the cut_here() function in AFS, CacheFiles, FS-Cache and RxRPC to put
+pertinent extra information between the "cut here" line and the BUG report.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/bug.h   |    8 ++++++++
- include/linux/sched.h |    9 +++++++++
- lib/bug.c             |   31 +++++++++++++++++++++++++++++--
- 3 files changed, 46 insertions(+), 2 deletions(-)
+ fs/afs/internal.h        |   11 ++++++-----
+ fs/cachefiles/internal.h |    9 +++++----
+ fs/fscache/internal.h    |    9 +++++----
+ net/rxrpc/ar-internal.h  |    4 ++++
+ 4 files changed, 20 insertions(+), 13 deletions(-)
 
 
-diff --git a/include/linux/bug.h b/include/linux/bug.h
-index d276b55..290309f 100644
---- a/include/linux/bug.h
-+++ b/include/linux/bug.h
-@@ -26,6 +26,8 @@ enum bug_trap_type report_bug(unsigned long bug_addr, struct pt_regs *regs);
- /* These are defined by the architecture */
- int is_valid_bugaddr(unsigned long addr);
+diff --git a/fs/afs/internal.h b/fs/afs/internal.h
+index 106be66..59049b0 100644
+--- a/fs/afs/internal.h
++++ b/fs/afs/internal.h
+@@ -18,6 +18,7 @@
+ #include <linux/key.h>
+ #include <linux/workqueue.h>
+ #include <linux/sched.h>
++#include <linux/bug.h>
  
-+extern bool cut_here(void);
-+
- #else	/* !CONFIG_GENERIC_BUG */
+ #include "afs.h"
+ #include "afs_vl.h"
+@@ -803,7 +804,7 @@ do {							\
+ #define ASSERT(X)						\
+ do {								\
+ 	if (unlikely(!(X))) {					\
+-		printk(KERN_ERR "\n");				\
++		cut_here();					\
+ 		printk(KERN_ERR "AFS: Assertion failed\n");	\
+ 		BUG();						\
+ 	}							\
+@@ -812,7 +813,7 @@ do {								\
+ #define ASSERTCMP(X, OP, Y)						\
+ do {									\
+ 	if (unlikely(!((X) OP (Y)))) {					\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "AFS: Assertion failed\n");		\
+ 		printk(KERN_ERR "%lu " #OP " %lu is false\n",		\
+ 		       (unsigned long)(X), (unsigned long)(Y));		\
+@@ -825,7 +826,7 @@ do {									\
+ #define ASSERTRANGE(L, OP1, N, OP2, H)					\
+ do {									\
+ 	if (unlikely(!((L) OP1 (N)) || !((N) OP2 (H)))) {		\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "AFS: Assertion failed\n");		\
+ 		printk(KERN_ERR "%lu "#OP1" %lu "#OP2" %lu is false\n",	\
+ 		       (unsigned long)(L), (unsigned long)(N),		\
+@@ -840,7 +841,7 @@ do {									\
+ #define ASSERTIF(C, X)						\
+ do {								\
+ 	if (unlikely((C) && !(X))) {				\
+-		printk(KERN_ERR "\n");				\
++		cut_here();					\
+ 		printk(KERN_ERR "AFS: Assertion failed\n");	\
+ 		BUG();						\
+ 	}							\
+@@ -849,7 +850,7 @@ do {								\
+ #define ASSERTIFCMP(C, X, OP, Y)					\
+ do {									\
+ 	if (unlikely((C) && !((X) OP (Y)))) {				\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "AFS: Assertion failed\n");		\
+ 		printk(KERN_ERR "%lu " #OP " %lu is false\n",		\
+ 		       (unsigned long)(X), (unsigned long)(Y));		\
+diff --git a/fs/cachefiles/internal.h b/fs/cachefiles/internal.h
+index f7c255f..96007a7 100644
+--- a/fs/cachefiles/internal.h
++++ b/fs/cachefiles/internal.h
+@@ -14,6 +14,7 @@
+ #include <linux/wait.h>
+ #include <linux/workqueue.h>
+ #include <linux/security.h>
++#include <linux/bug.h>
  
- static inline enum bug_trap_type report_bug(unsigned long bug_addr,
-@@ -34,5 +36,11 @@ static inline enum bug_trap_type report_bug(unsigned long bug_addr,
- 	return BUG_TRAP_TYPE_BUG;
- }
+ struct cachefiles_cache;
+ struct cachefiles_object;
+@@ -313,7 +314,7 @@ do {							\
+ #define ASSERT(X)							\
+ do {									\
+ 	if (unlikely(!(X))) {						\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "CacheFiles: Assertion failed\n");	\
+ 		BUG();							\
+ 	}								\
+@@ -322,7 +323,7 @@ do {									\
+ #define ASSERTCMP(X, OP, Y)						\
+ do {									\
+ 	if (unlikely(!((X) OP (Y)))) {					\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "CacheFiles: Assertion failed\n");	\
+ 		printk(KERN_ERR "%lx " #OP " %lx is false\n",		\
+ 		       (unsigned long)(X), (unsigned long)(Y));		\
+@@ -333,7 +334,7 @@ do {									\
+ #define ASSERTIF(C, X)							\
+ do {									\
+ 	if (unlikely((C) && !(X))) {					\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "CacheFiles: Assertion failed\n");	\
+ 		BUG();							\
+ 	}								\
+@@ -342,7 +343,7 @@ do {									\
+ #define ASSERTIFCMP(C, X, OP, Y)					\
+ do {									\
+ 	if (unlikely((C) && !((X) OP (Y)))) {				\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "CacheFiles: Assertion failed\n");	\
+ 		printk(KERN_ERR "%lx " #OP " %lx is false\n",		\
+ 		       (unsigned long)(X), (unsigned long)(Y));		\
+diff --git a/fs/fscache/internal.h b/fs/fscache/internal.h
+index 1c34130..c969199 100644
+--- a/fs/fscache/internal.h
++++ b/fs/fscache/internal.h
+@@ -23,6 +23,7 @@
  
-+static inline bool cut_here(void)
-+{
-+	return true;
-+}
-+
- #endif	/* CONFIG_GENERIC_BUG */
-+
- #endif	/* _LINUX_BUG_H */
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 0f1ea4a..f4b9782 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1199,6 +1199,9 @@ struct task_struct {
- 	 */
- 	unsigned char fpu_counter;
- 	s8 oomkilladj; /* OOM kill score adjustment (bit shift). */
-+
-+	unsigned char oopsing;		/* oopsing state */
-+
- #ifdef CONFIG_BLK_DEV_IO_TRACE
- 	unsigned int btrace_seq;
- #endif
-@@ -1700,6 +1703,12 @@ extern cputime_t task_gtime(struct task_struct *p);
- #define PF_FREEZER_NOSIG 0x80000000	/* Freezer won't send signals to it */
+ #include <linux/fscache-cache.h>
+ #include <linux/sched.h>
++#include <linux/bug.h>
  
- /*
-+ * current->oopsing flags
-+ */
-+#define OOPS_CUT_HERE	0x01		/* set if the "cut here" message is displayed */
-+#define OOPS_REPORTED	0x02		/* recursion limiter */
-+
-+/*
-  * Only the _current_ task can read/write to tsk->flags, but other
-  * tasks can access tsk->flags in readonly mode for example
-  * with tsk_used_math (like during threaded core dumping).
-diff --git a/lib/bug.c b/lib/bug.c
-index 300e41a..2d0ed45 100644
---- a/lib/bug.c
-+++ b/lib/bug.c
-@@ -125,6 +125,31 @@ const struct bug_entry *find_bug(unsigned long bugaddr)
- 	return module_find_bug(bugaddr);
- }
- 
-+/**
-+ * cut_here - Begin BUG() output
-+ *
-+ * Begin the outputting of a BUG() report with a 'cut here' line.  This ensures
-+ * we produce at most one 'cut here' line per process.  This allows us to
-+ * extend a BUG() report with extra information in front of it.
-+ *
-+ * We return true if the caller is free to go ahead and report their oops.
-+ *
-+ * We return false if we've detected a recursive oops - in which case the
-+ * caller should take care, and possibly not do anything other than call BUG(),
-+ * lest they cause further recursion.  This is particularly true of things that
-+ * might go wrong in the exit path.
-+ */
-+bool cut_here(void)
-+{
-+	if (!(current->oopsing & OOPS_CUT_HERE)) {
-+		current->oopsing |= OOPS_CUT_HERE;
-+		printk(KERN_EMERG "------------[ cut here ]------------\n");
-+	}
-+
-+	return !(current->oopsing & OOPS_REPORTED);
-+}
-+EXPORT_SYMBOL(cut_here);
-+
- enum bug_trap_type report_bug(unsigned long bugaddr, struct pt_regs *regs)
- {
- 	const struct bug_entry *bug;
-@@ -134,9 +159,9 @@ enum bug_trap_type report_bug(unsigned long bugaddr, struct pt_regs *regs)
- 	if (!is_valid_bugaddr(bugaddr))
- 		return BUG_TRAP_TYPE_NONE;
- 
--	bug = find_bug(bugaddr);
-+	cut_here();
- 
--	printk(KERN_EMERG "------------[ cut here ]------------\n");
-+	bug = find_bug(bugaddr);
- 
- 	file = NULL;
- 	line = 0;
-@@ -169,6 +194,8 @@ enum bug_trap_type report_bug(unsigned long bugaddr, struct pt_regs *regs)
- 		return BUG_TRAP_TYPE_WARN;
- 	}
- 
-+	current->oopsing |= OOPS_REPORTED;
-+
- 	if (file)
- 		printk(KERN_CRIT "kernel BUG at %s:%u!\n",
- 		       file, line);
+ #define FSCACHE_MIN_THREADS	4
+ #define FSCACHE_MAX_THREADS	32
+@@ -333,7 +334,7 @@ do {						\
+ #define ASSERT(X)							\
+ do {									\
+ 	if (unlikely(!(X))) {						\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
+ 		BUG();							\
+ 	}								\
+@@ -342,7 +343,7 @@ do {									\
+ #define ASSERTCMP(X, OP, Y)						\
+ do {									\
+ 	if (unlikely(!((X) OP (Y)))) {					\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
+ 		printk(KERN_ERR "%lx " #OP " %lx is false\n",		\
+ 		       (unsigned long)(X), (unsigned long)(Y));		\
+@@ -353,7 +354,7 @@ do {									\
+ #define ASSERTIF(C, X)							\
+ do {									\
+ 	if (unlikely((C) && !(X))) {					\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
+ 		BUG();							\
+ 	}								\
+@@ -362,7 +363,7 @@ do {									\
+ #define ASSERTIFCMP(C, X, OP, Y)					\
+ do {									\
+ 	if (unlikely((C) && !((X) OP (Y)))) {				\
+-		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "FS-Cache: Assertion failed\n");	\
+ 		printk(KERN_ERR "%lx " #OP " %lx is false\n",		\
+ 		       (unsigned long)(X), (unsigned long)(Y));		\
+diff --git a/net/rxrpc/ar-internal.h b/net/rxrpc/ar-internal.h
+index 3e7318c..de6a21b 100644
+--- a/net/rxrpc/ar-internal.h
++++ b/net/rxrpc/ar-internal.h
+@@ -687,6 +687,7 @@ do {							\
+ do {								\
+ 	if (unlikely(!(X))) {					\
+ 		printk(KERN_ERR "\n");				\
++		cut_here();					\
+ 		printk(KERN_ERR "RxRPC: Assertion failed\n");	\
+ 		BUG();						\
+ 	}							\
+@@ -696,6 +697,7 @@ do {								\
+ do {									\
+ 	if (unlikely(!((X) OP (Y)))) {					\
+ 		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "RxRPC: Assertion failed\n");		\
+ 		printk(KERN_ERR "%lu " #OP " %lu is false\n",		\
+ 		       (unsigned long)(X), (unsigned long)(Y));		\
+@@ -709,6 +711,7 @@ do {									\
+ do {								\
+ 	if (unlikely((C) && !(X))) {				\
+ 		printk(KERN_ERR "\n");				\
++		cut_here();					\
+ 		printk(KERN_ERR "RxRPC: Assertion failed\n");	\
+ 		BUG();						\
+ 	}							\
+@@ -718,6 +721,7 @@ do {								\
+ do {									\
+ 	if (unlikely((C) && !((X) OP (Y)))) {				\
+ 		printk(KERN_ERR "\n");					\
++		cut_here();						\
+ 		printk(KERN_ERR "RxRPC: Assertion failed\n");		\
+ 		printk(KERN_ERR "%lu " #OP " %lu is false\n",		\
+ 		       (unsigned long)(X), (unsigned long)(Y));		\
 
