@@ -1,122 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbZHTPuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZHTPzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405AbZHTPuh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 11:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZHTPug
+	id S1754313AbZHTPzz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 11:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZHTPzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 11:50:36 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:56125 "EHLO mail.sf-mail.de"
+	Thu, 20 Aug 2009 11:55:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38535 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbZHTPuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 11:50:35 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Mark Lord <liml@rtr.ca>
-Subject: Re: [PATCH, RFC] xfs: batched discard support
-Date: Thu, 20 Aug 2009 17:43:41 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-git; KDE/4.3.0; i686; ; )
-Cc: Ric Wheeler <rwheeler@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, xfs@oss.sgi.com,
-       linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-References: <20090816004705.GA7347@infradead.org> <4A8D5442.1000302@redhat.com> <4A8D5FDB.7080505@rtr.ca>
-In-Reply-To: <4A8D5FDB.7080505@rtr.ca>
+	id S1751373AbZHTPzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 11:55:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
+Date: Thu, 20 Aug 2009 17:56:36 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
+References: <Pine.LNX.4.44L0.0908191829510.26174-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908191829510.26174-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1495252.XOLBvpv6Aq";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908201743.50167.eike-kernel@sf-tec.de>
+Message-Id: <200908201756.36801.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1495252.XOLBvpv6Aq
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Thursday 20 August 2009, Alan Stern wrote:
+> On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+> 
+> > On Wednesday 19 August 2009, Alan Stern wrote:
+> > > On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > > There's a problem that for safety reasons I maintain the ordering of dpm_list
+> > > > and the callbacks are scheduled for async execution in the same order in
+> > > > which they would have been executed synchronously.  If were to change this,
+> > > > we'd have to be _very_ careful.
+> > > 
+> > > Why?  The order in which jobs are scheduled for async execution doesn't 
+> > > bear any particular relation to the order in which they get run.
+> > 
+> > Yes, it does, if all of the async threads are busy and we add more async jobs
+> > to the queue.  We must ensure that none of the jobs being executed will wait
+> > for any jobs in the queue.
+> 
+> That's part of the reason for the dependencies: to make sure that where
+> it matters, things don't run in the wrong order.
+> 
+> > Also, if any devices are handled synchronously, they must not wait for any
+> > "async" devices that haven't been scheduled yet.
+> 
+> I'm not sure what you mean.  If a device is handled synchronously, it 
+> must wait for all the devices preceding it on the list, regardless of 
+> whether those devices are handled asynchronously.
 
-Mark Lord wrote:
-> Ric Wheeler wrote:
-> > Note that returning consistent data is critical for devices that are
-> > used in a RAID group since you will need each RAID block that is used to
-> > compute the parity to continue to return the same data until you
-> > overwrite it with new data :-)
-> >
-> > If we have a device that does not support this (or is misconfigured not
-> > to do this), we should not use those devices in an MD group & do discard
-> > against it...
->
-> ..
->
-> Well, that's a bit drastic.  But the RAID software should at least
-> not issue TRIM commands in ignorance of such.
->
-> Would it still be okay to do the TRIMs when the entire parity stripe
-> (across all members) is being discarded?  (As opposed to just partial
-> data there being dropped)
+Not really, IMO.  Namely, setting async_suspend for a device is a declaration
+that all of its dependencies are known, whether they are on "async" or on
+"sync" devices.  Hence, "sync" devices don't need to wait for the "async"
+devices they don't depend on in a known way, because otherwise it would be
+invalid to set async_suspend for those "async" devices.
 
-I think there might be a related usecase that could benefit from=20
-TRIM/UNMAP/whatever support in file systems even if the physical devices do=
-=20
-not support that. I have a RAID5 at work with LVM over it. This week I dele=
-ted=20
-an old logical volume of some 200GB that has been moved to a different volu=
-me=20
-group, tomorrow I will start to replace all the disks in the raid with bigg=
-er=20
-ones. So if the LVM told the raid "hey, this space is totally garbage from =
-now=20
-on" the raid would not have to do any calculation when it has to rebuild th=
-at=20
-but could simply write fixed patterns to all disks (e.g. 0 to first data, 0=
- to=20
-second data and 0 as "0 xor 0" to parity). With the knowledge that some of =
-the=20
-underlying devices would support "write all to zero" this operation could b=
-e=20
-speed up even more, with "write all fixed pattern" every unused chunk would=
- go=20
-down to a single write operation (per disk) on rebuild regardless which par=
-ity=20
-algorithm is used.
+Nevertheless, "sync" devices have to wait for all of the other "sync" devices
+that are "in front" of them in dpm_list, because dependencies between different
+"sync" devices need not be known (the direct dependencies betwee them are
+known, but there may be other unknown dependencies satisfied only because the
+the ordering of dpm_list is preserved).
 
-And even if things are in use the RAID can benefit from such things. If we=
-=20
-just define that every unmapped space will always be 0 when read and I writ=
-e=20
-to a raid volume and the other part of the checksum calculation is unmapped=
-=20
-checksumming becomes easy as we already know half of the values before: 0. =
-So=20
-we can save the reads from the second data stripe and most of the calculati=
-on.
-"dd if=3D/dev/md0" on an unmapped space is more or less the same as "dd=20
-if=3D/dev/zero" than.
+Obviously "sync" devices have to wait for the "async" devices they depend on
+in a known way.  In turn, "async" devices have to wait for all of the devices
+they depend on in a known way, "sync" as well as "async".
 
-I only fear that these things are too obviously as I would be the first to=
-=20
-have this idea ;)
-
-Greetings,
-
-Eike
-
---nextPart1495252.XOLBvpv6Aq
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEABECAAYFAkqNbzYACgkQXKSJPmm5/E5LNQCdFqJ/6Rb+l/1Jdd8GNwG86+MF
-g8sAmwXujLHOGE0WsLOAchKRWCzuayAG
-=PtAF
------END PGP SIGNATURE-----
-
---nextPart1495252.XOLBvpv6Aq--
+Thanks,
+Rafael
