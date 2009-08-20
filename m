@@ -1,126 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752564AbZHTIPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752942AbZHTITK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752564AbZHTIPA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 04:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZHTIO7
+	id S1752942AbZHTITK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 04:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbZHTITJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 04:14:59 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51568 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751076AbZHTIO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 04:14:58 -0400
-Message-ID: <4A8D05AF.20103@cn.fujitsu.com>
-Date: Thu, 20 Aug 2009 16:13:35 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 20 Aug 2009 04:19:09 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:61586 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752385AbZHTITI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 04:19:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mlqkbiBGTBFP/2LoYO6DfxVOlCrSdxYF/+/wk4EmGioojcyQlRtpAXge40xJwGpp15
+         5ToCydygY832+T4XsKD904Q/SPJngbv44SN5vamEZHMk9SGxOkRE1ylJsO1zhKPjZJbW
+         A7FQK2xKF1tSddWGVFWMz0bsrBM6ElD40rbS0=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jason Baron <jbaron@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing/syscalls: Fix the output of syscalls with no arguments
-References: <4A8CAE0C.9040107@cn.fujitsu.com>
-In-Reply-To: <4A8CAE0C.9040107@cn.fujitsu.com>
+In-Reply-To: <m17hwyhq49.fsf@fess.ebiederm.org>
+References: <m163cjhwa4.fsf@fess.ebiederm.org>
+	 <m1skfnggrb.fsf@fess.ebiederm.org>
+	 <a8e1da0908200054t456265b4ta698ba204b5aedc8@mail.gmail.com>
+	 <m17hwyhq49.fsf@fess.ebiederm.org>
+Date: Thu, 20 Aug 2009 16:19:08 +0800
+Message-ID: <a8e1da0908200119u83c965bgf08996b0aa4aca52@mail.gmail.com>
+Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer 
+	dereference at 0000000000000008
+From: Dave Young <hidave.darkstar@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before:
+On Thu, Aug 20, 2009 at 4:00 PM, Eric W. Biederman<ebiederm@xmission.com> wrote:
+> Dave Young <hidave.darkstar@gmail.com> writes:
+>
+>> On Thu, Aug 20, 2009 at 2:07 PM, Eric W. Biederman<ebiederm@xmission.com> wrote:
+>>>
+>>> ebiederm@xmission.com (Eric W. Biederman) writes:
+>>>
+>>>> I'm not certain who I should route this too, but I just had 2.6.31-rc6
+>>>> fall over on me.  I don't know how reproducible this will be but
+>>>> I have a full crash dump if someone is interested in looking into this.
+>>>
+>>> Looks like I was wrong.  This is appears trivial to reproduce,
+>>> I have just reproduced it two more times in a row.  I think
+>>> the problem is pty related.
+>>>
+>>> I was looking into a change in behavior on 2.6.31-rc6 where
+>>> data was being lost, and it appears one variant of my test program
+>>> kills the kernel.
+>>>
+>>> The following program run as an unprivileged user causes a kernel
+>>> panic in about a minute:
+>>>
+>>> aka
+>>>
+>>> while :; do ./KernelTtyTest ; done
+>>
+>> The test app failed for me:
+>>
+>> read failed: Input/output error
+>> lastbytes: '\r\nprocess_cmd read failed: Interrupted system
+>> call\r\necho _2_\r\n'
+>> Aborted
+>
+>
+> Oh.  It definitely fails.  I just found that when it failed
+> about 600 times in a row it took my kernel with it.  I was
+> developing it to understand tty interactions, and when I realized
+> that the version I had was killing my kernel I sent it out
+> as it was a nice self contained test case.
 
-  # echo 1 > events/syscalls/sys_enter_sync/enable
-  # cat events/syscalls/sys_enter_sync/format
-  ...
-        field:int nr;   offset:12;      size:4;
+Confirm: I can reproduce on i386 machine.
 
-  print fmt: "# sync
-  # cat trace
-  ...
-            sync-8950  [000]  2366.087670: sys_sync(
+>
+> Eric
+>
 
-After:
 
-  # echo 1 > events/syscalls/sys_enter_sync/enable
-  # cat events/syscalls/sys_enter_sync/format
-  ...
-        field:int nr;   offset:12;      size:4;
 
-  print fmt: ""
-  # sync
-  # cat trace
-            sync-2134  [001]   136.780735: sys_sync()
-
-Reported-by: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
-
-sorry for the repost, but I forgot to CC LKML.
-
----
- kernel/trace/trace_syscalls.c |   25 ++++++++++++++++---------
- 1 files changed, 16 insertions(+), 9 deletions(-)
-
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index 28e4dae..46c1b97 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -46,15 +46,22 @@ print_syscall_enter(struct trace_iterator *iter, int flags)
- 				return TRACE_TYPE_PARTIAL_LINE;
- 		}
- 		/* parameter values */
--		ret = trace_seq_printf(s, "%s: %lx%s ", entry->args[i],
-+		ret = trace_seq_printf(s, "%s: %lx%s", entry->args[i],
- 				       trace->args[i],
--				       i == entry->nb_args - 1 ? ")" : ",");
-+				       i == entry->nb_args - 1 ? "" : ", ");
- 		if (!ret)
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
- 
-+	ret = trace_seq_putc(s, ')');
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
- end:
--	trace_seq_printf(s, "\n");
-+	ret =  trace_seq_putc(s, '\n');
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
- 	return TRACE_TYPE_HANDLED;
- }
- 
-@@ -129,24 +136,24 @@ int syscall_enter_format(struct ftrace_event_call *call, struct trace_seq *s)
- 		offset += sizeof(unsigned long);
- 	}
- 
--	trace_seq_printf(s, "\nprint fmt: \"");
-+	trace_seq_puts(s, "\nprint fmt: \"");
- 	for (i = 0; i < entry->nb_args; i++) {
- 		ret = trace_seq_printf(s, "%s: 0x%%0%zulx%s", entry->args[i],
- 				        sizeof(unsigned long),
--					i == entry->nb_args - 1 ? "\", " : ", ");
-+					i == entry->nb_args - 1 ? "" : ", ");
- 		if (!ret)
- 			return 0;
- 	}
-+	trace_seq_putc(s, '"');
- 
- 	for (i = 0; i < entry->nb_args; i++) {
--		ret = trace_seq_printf(s, "((unsigned long)(REC->%s))%s",
--				        entry->args[i],
--					i == entry->nb_args - 1 ? "\n" : ", ");
-+		ret = trace_seq_printf(s, ", ((unsigned long)(REC->%s))",
-+				       entry->args[i]);
- 		if (!ret)
- 			return 0;
- 	}
- 
--	return ret;
-+	return trace_seq_putc(s, '\n');
- }
- 
- int syscall_exit_format(struct ftrace_event_call *call, struct trace_seq *s)
--- 1.6.3 
+-- 
+Regards
+dave
