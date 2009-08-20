@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbZHTCil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbZHTCi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281AbZHTCil (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 22:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZHTCik
+	id S1753342AbZHTCi5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 22:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZHTCi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 22:38:40 -0400
-Received: from mail.windriver.com ([147.11.1.11]:50379 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752131AbZHTCik (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 22:38:40 -0400
-Message-ID: <4A8CB6CF.3010109@windriver.com>
-Date: Wed, 19 Aug 2009 21:37:03 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Wed, 19 Aug 2009 22:38:57 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53041 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752663AbZHTCi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 22:38:56 -0400
+Message-ID: <4A8CB6F0.1020308@cn.fujitsu.com>
+Date: Thu, 20 Aug 2009 10:37:36 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Robin Getz <rgetz@blackfin.uclinux.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: linux-next: manual merge of the usb tree with the tip tree
-References: <20090819175901.59f1af9e.sfr@canb.auug.org.au> <20090819233818.GD2875@kroah.com>
-In-Reply-To: <20090819233818.GD2875@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Paul Menage <menage@google.com>
+CC: akpm@linux-foundation.org, bblum@andrew.cmu.edu,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 4/8] Use vmalloc for large cgroups pidlist allocations
+References: <20090818235059.22531.42618.stgit@menage.mtv.corp.google.com> <20090818235827.22531.60306.stgit@menage.mtv.corp.google.com>
+In-Reply-To: <20090818235827.22531.60306.stgit@menage.mtv.corp.google.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Aug 2009 02:37:00.0495 (UTC) FILETIME=[1820F5F0:01CA213F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Aug 19, 2009 at 05:59:01PM +1000, Stephen Rothwell wrote:
->   
->> Hi Greg,
->>
->> Today's linux-next merge of the usb tree got a conflict in
->> kernel/printk.c between commit 4d09161196c9a836eacea4b36e2f217bc34894cf
->> ("printk: Enable the use of more than one CON_BOOT (early console)") from
->> the tip tree and commit e289e7dc72eb6bfce70e2722d97a00f5e02893e8 ("USB:
->> printk: early_printk,console: Allow more than one early console") from
->> the usb tree.
->>
->> I assume that these are trying to do (more or less) the same thing.  I
->> have dropped the one from the usb tree for today.  Please sort this out -
->> at least remove the usb tree one until you have done so, thanks.
->>     
->
-> Jason, any thoughts?  I'm going to drop your printk stuff from my tree
-> now, care to sort it out and resend your whole series?
->
->   
+Paul Menage wrote:
+> From: Ben Blum <bblum@google.com>
+> 
+> 
+> Use vmalloc for large cgroups pidlist allocations
+> 
+> Separates all pidlist allocation requests to a separate function that judges
+> based on the requested size whether or not the array needs to be vmalloced or
+> can be gotten via kmalloc, and similar for kfree/vfree.
+> 
+> Signed-off-by: Ben Blum <bblum@google.com>
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
 
-I will investigate, re-test and send a new series to Greg KH later in
-the week.  The preliminary result shows the problem is a result of a
-clash with two different patches in the tip tree.   My patch set and the
-two patches it collides with context wise fix different things.
+Acked-by: Li Zefan <lizf@cn.fujitsu.com>
 
-In order to resolve this it appears that the series will need to get
-split into something for the tip tree and something for the USB tree, or
-we wait for the next pull of the tip branch into the Linus's tree.
+> ---
+> 
+>  kernel/cgroup.c |   47 ++++++++++++++++++++++++++++++++++++++++++-----
+>  1 files changed, 42 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index d207871..7e2b285 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -50,6 +50,7 @@
+>  #include <linux/smp_lock.h>
+>  #include <linux/pid_namespace.h>
+>  #include <linux/idr.h>
+> +#include <linux/vmalloc.h> /* TODO: replace with more sophisticated array */
+>  
+>  #include <asm/atomic.h>
+>  
+> @@ -2351,6 +2352,42 @@ int cgroup_scan_tasks(struct cgroup_scanner *scan)
+>   */
+>  
+>  /*
+> + * The following two functions "fix" the issue where there are more pids
+> + * than kmalloc will give memory for; in such cases, we use vmalloc/vfree.
+> + * TODO: replace with a kernel-wide solution to this problem
+> + */
 
-Thanks,
-Jason.
+I come to realize the "procs" file will make it much harder to convert
+vmalloc/kmalloc with a different solution..
