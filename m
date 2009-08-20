@@ -1,123 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZHTOMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbZHTOZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbZHTOMm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 10:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZHTOMl
+	id S1754487AbZHTOZF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 10:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZHTOZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 10:12:41 -0400
-Received: from fogou.chygwyn.com ([195.171.2.24]:54851 "EHLO fogou.chygwyn.com"
+	Thu, 20 Aug 2009 10:25:04 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:11827 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754205AbZHTOMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 10:12:40 -0400
-X-Greylist: delayed 4396 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 10:12:40 EDT
-Subject: Re: [PATCH 0/6] Lazy workqueues
-From: Steven Whitehouse <steve@chygwyn.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
-       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <20090820122212.GC6069@nowhere>
-References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
-	 <20090820122212.GC6069@nowhere>
+	id S1751296AbZHTOZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 10:25:02 -0400
+Subject: Re: kernel bug 2.6.31-rc6 (2)
+From: Eric Paris <eparis@redhat.com>
+To: christoph.thielecke@gmx.de
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200908200748.52348.christoph.thielecke@gmx.de>
+References: <200908191448.50304.christoph.thielecke@gmx.de>
+	 <1250720787.4198.2.camel@dhcp231-106.rdu.redhat.com>
+	 <200908200748.52348.christoph.thielecke@gmx.de>
 Content-Type: text/plain
-Organization: ChyGwyn Limited (Registered in England and Wales, No.
- 03887683) Registered Office: Digital Technium, Singleton Park, Swansea. SA2
- 8PP
-Date: Thu, 20 Aug 2009 13:59:10 +0100
-Message-Id: <1250773150.3298.266.camel@localhost.localdomain>
+Date: Thu, 20 Aug 2009 10:24:58 -0400
+Message-Id: <1250778298.2168.2.camel@dhcp231-106.rdu.redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, 2009-08-20 at 14:22 +0200, Frederic Weisbecker wrote:
-> On Thu, Aug 20, 2009 at 12:19:58PM +0200, Jens Axboe wrote:
-> > (sorry for the resend, but apparently the directory had some patches
-> >  in it already. plus, stupid git send-email doesn't default to
-> >  no chain replies, really annoying)
-> > 
-> > Hi,
-> > 
-> > After yesterdays rant on having too many kernel threads and checking
-> > how many I actually have running on this system (531!), I decided to 
-> > try and do something about it.
-> > 
-> > My goal was to retain the workqueue interface instead of coming up with
-> > a new scheme that required conversion (or converting to slow_work which,
-> > btw, is an awful name :-). I also wanted to retain the affinity
-> > guarantees of workqueues as much as possible.
-> > 
-> > So this is a first step in that direction, it's probably full of races
-> > and holes, but should get the idea across. It adds a
-> > create_lazy_workqueue() helper, similar to the other variants that we
-> > currently have. A lazy workqueue works like a normal workqueue, except
-> > that it only (by default) starts a core thread instead of threads for
-> > all online CPUs. When work is queued on a lazy workqueue for a CPU
-> > that doesn't have a thread running, it will be placed on the core CPUs
-> > list and that will then create and move the work to the right target.
-> > Should task creation fail, the queued work will be executed on the
-> > core CPU instead. Once a lazy workqueue thread has been idle for a
-> > certain amount of time, it will again exit.
-> > 
-> > The patch boots here and I exercised the rpciod workqueue and
-> > verified that it gets created, runs on the right CPU, and exits a while
-> > later. So core functionality should be there, even if it has holes.
-> > 
-> > With this patchset, I am now down to 280 kernel threads on one of my test
-> > boxes. Still too many, but it's a start and a net reduction of 251
-> > threads here, or 47%!
-> > 
-> > The code can also be pulled from:
-> > 
-> >   git://git.kernel.dk/linux-2.6-block.git workqueue
-> > 
-> > -- 
-> > Jens Axboe
+On Thu, 2009-08-20 at 07:48 +0200, Christoph Thielecke wrote:
+> Hello Eric,
 > 
+
 > 
-> That looks like a nice idea that may indeed solve the problem of thread
-> proliferation with per cpu workqueue.
-> 
-> Now I think there is another problem that taint the workqueues from the
-> beginning which is the deadlocks induced by one work that waits another
-> one in the same workqueue. And since the workqueues are executing the jobs
-> by serializing, the effect is deadlocks.
-> 
-In GFS2 we've also got an additional issue. We cannot create threads at
-the point of use (or let pending work block on thread creation) because
-it implies a GFP_KERNEL memory allocation which could call back into the
-fs. This is a particular issue with journal recovery (which uses
-slow_work now, older versions used a private thread) and the code which
-deals with inodes which have been unlinked remotely.
+> The patch does not apply clean:
 
-In addition to that the glock workqueue which we are using would be much
-better turned into a tasklet, or similar. The reason why we cannot do
-this is that submission of block I/O is only possible from process
-context. At some stage it might be possible to partially solve the
-problem by separating the parts of the state machine which submit I/O
-from those which don't, but I'm not convinced that effort it worth it.
+That's because I gave you a bad patch (it was against linux-next not
+against Linus, sorry   :()
 
-There is also the issue of ordering of I/O requests. The glocks are (for
-those which submit I/O) in a 1:1 relationship with inodes or resource
-groups and thus indexed by disk block number. I have considered in the
-past, creating a workqueue with an elevator based work submission
-interface. This would greatly improve the I/O patterns created by
-multiple submissions of glock work items. In particular it would make a
-big difference when the glock shrinker marks dirty glocks for removal
-from the glock cache (under memory pressure) or when processing large
-numbers of remote callbacks.
+-Eric
 
-I've not yet come to any conclusion as to whether the "elevator
-workqueue" is a good idea or not, any suggestions of a better solution
-are very welcome,
+---
 
-Steve.
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index dc32ed8..d8f73c2 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -431,80 +431,29 @@ static void inotify_free_mark(struct fsnotify_mark_entry *entry)
+ 	kmem_cache_free(inotify_inode_mark_cachep, ientry);
+ }
+ 
+-static int inotify_update_watch(struct fsnotify_group *group, struct inode *inode, u32 arg)
++static int inotify_update_existing_watch(struct fsnotify_group *group,
++					 struct inode *inode,
++					 u32 arg)
+ {
+-	struct fsnotify_mark_entry *entry = NULL;
++	struct fsnotify_mark_entry *entry;
+ 	struct inotify_inode_mark_entry *ientry;
+-	struct inotify_inode_mark_entry *tmp_ientry;
+-	int ret = 0;
+-	int add = (arg & IN_MASK_ADD);
+-	__u32 mask;
+ 	__u32 old_mask, new_mask;
++	__u32 mask;
++	int add = (arg & IN_MASK_ADD);
++	int ret;
+ 
+ 	/* don't allow invalid bits: we don't want flags set */
+ 	mask = inotify_arg_to_mask(arg);
+ 	if (unlikely(!mask))
+ 		return -EINVAL;
+ 
+-	tmp_ientry = kmem_cache_alloc(inotify_inode_mark_cachep, GFP_KERNEL);
+-	if (unlikely(!tmp_ientry))
+-		return -ENOMEM;
+-	/* we set the mask at the end after attaching it */
+-	fsnotify_init_mark(&tmp_ientry->fsn_entry, inotify_free_mark);
+-	tmp_ientry->wd = -1;
+-
+-find_entry:
+ 	spin_lock(&inode->i_lock);
+ 	entry = fsnotify_find_mark_entry(group, inode);
+ 	spin_unlock(&inode->i_lock);
+-	if (entry) {
+-		ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
+-	} else {
+-		ret = -ENOSPC;
+-		if (atomic_read(&group->inotify_data.user->inotify_watches) >= inotify_max_user_watches)
+-			goto out_err;
+-retry:
+-		ret = -ENOMEM;
+-		if (unlikely(!idr_pre_get(&group->inotify_data.idr, GFP_KERNEL)))
+-			goto out_err;
+-
+-		spin_lock(&group->inotify_data.idr_lock);
+-		ret = idr_get_new_above(&group->inotify_data.idr, &tmp_ientry->fsn_entry,
+-					group->inotify_data.last_wd,
+-					&tmp_ientry->wd);
+-		spin_unlock(&group->inotify_data.idr_lock);
+-		if (ret) {
+-			if (ret == -EAGAIN)
+-				goto retry;
+-			goto out_err;
+-		}
++	if (!entry)
++		return -ENOENT;
+ 
+-		ret = fsnotify_add_mark(&tmp_ientry->fsn_entry, group, inode);
+-		if (ret) {
+-			inotify_remove_from_idr(group, tmp_ientry);
+-			if (ret == -EEXIST)
+-				goto find_entry;
+-			goto out_err;
+-		}
+-
+-		/* tmp_ientry has been added to the inode, so we are all set up.
+-		 * now we just need to make sure tmp_ientry doesn't get freed and
+-		 * we need to set up entry and ientry so the generic code can
+-		 * do its thing. */
+-		ientry = tmp_ientry;
+-		entry = &ientry->fsn_entry;
+-		tmp_ientry = NULL;
+-
+-		atomic_inc(&group->inotify_data.user->inotify_watches);
+-
+-		/* update the idr hint */
+-		group->inotify_data.last_wd = ientry->wd;
+-
+-		/* we put the mark on the idr, take a reference */
+-		fsnotify_get_mark(entry);
+-	}
+-
+-	ret = ientry->wd;
++	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
+ 
+ 	spin_lock(&entry->lock);
+ 
+@@ -536,18 +485,103 @@ retry:
+ 			fsnotify_recalc_group_mask(group);
+ 	}
+ 
+-	/* this either matches fsnotify_find_mark_entry, or init_mark_entry
+-	 * depending on which path we took... */
++	/* return the wd */
++	ret = ientry->wd;
++
++	/* match the get from fsnotify_find_mark_entry() */
+ 	fsnotify_put_mark(entry);
+ 
++	return ret;
++}
++
++static int inotify_new_watch(struct fsnotify_group *group,
++			     struct inode *inode,
++			     u32 arg)
++{
++	struct inotify_inode_mark_entry *tmp_ientry;
++	__u32 mask;
++	int ret;
++
++	/* don't allow invalid bits: we don't want flags set */
++	mask = inotify_arg_to_mask(arg);
++	if (unlikely(!mask))
++		return -EINVAL;
++
++	tmp_ientry = kmem_cache_alloc(inotify_inode_mark_cachep, GFP_KERNEL);
++	if (unlikely(!tmp_ientry))
++		return -ENOMEM;
++
++	fsnotify_init_mark(&tmp_ientry->fsn_entry, inotify_free_mark);
++	tmp_ientry->fsn_entry.mask = mask;
++	tmp_ientry->wd = -1;
++
++	ret = -ENOSPC;
++	if (atomic_read(&group->inotify_data.user->inotify_watches) >= inotify_max_user_watches)
++		goto out_err;
++retry:
++	ret = -ENOMEM;
++	if (unlikely(!idr_pre_get(&group->inotify_data.idr, GFP_KERNEL)))
++		goto out_err;
++
++	spin_lock(&group->inotify_data.idr_lock);
++	ret = idr_get_new_above(&group->inotify_data.idr, &tmp_ientry->fsn_entry,
++				group->inotify_data.last_wd,
++				&tmp_ientry->wd);
++	spin_unlock(&group->inotify_data.idr_lock);
++	if (ret) {
++		/* idr was out of memory allocate and try again */
++		if (ret == -EAGAIN)
++			goto retry;
++		goto out_err;
++	}
++
++	/* we are on the idr, now get on the inode */
++	ret = fsnotify_add_mark(&tmp_ientry->fsn_entry, group, inode);
++	if (ret) {
++		/* we failed to get on the inode, get off the idr */
++		inotify_remove_from_idr(group, tmp_ientry);
++		goto out_err;
++	}
++
++	/* we put the mark on the idr, take a reference */
++	fsnotify_get_mark(&tmp_ientry->fsn_entry);
++
++	/* update the idr hint, who cares about races, it's just a hint */
++	group->inotify_data.last_wd = tmp_ientry->wd;
++
++	/* increment the number of watches the user has */
++	atomic_inc(&group->inotify_data.user->inotify_watches);
++
++	/* return the watch descriptor for this new entry */
++	ret = tmp_ientry->wd;
++
++	/* match the ref from fsnotify_init_markentry() */
++	fsnotify_put_mark(&tmp_ientry->fsn_entry);
++
+ out_err:
+-	/* could be an error, could be that we found an existing mark */
+-	if (tmp_ientry) {
+-		/* on the idr but didn't make it on the inode */
+-		if (tmp_ientry->wd != -1)
+-			inotify_remove_from_idr(group, tmp_ientry);
++	if (ret < 0)
+ 		kmem_cache_free(inotify_inode_mark_cachep, tmp_ientry);
+-	}
++
++	return ret;
++}
++
++static int inotify_update_watch(struct fsnotify_group *group, struct inode *inode, u32 arg)
++{
++	int ret = 0;
++
++retry:
++	/* try to update and existing watch with the new arg */
++	ret = inotify_update_existing_watch(group, inode, arg);
++	/* no mark present, try to add a new one */
++	if (ret == -ENOENT)
++		ret = inotify_new_watch(group, inode, arg);
++	/*
++	 * inotify_new_watch could race with another thread which did an
++	 * inotify_new_watch between the update_existing and the add watch
++	 * here, go back and try to update an existing mark again.
++	 */
++	if (ret == -EEXIST)
++		goto retry;
+ 
+ 	return ret;
+ }
 
 
