@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZHTV2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZHTVbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbZHTV2l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 17:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755406AbZHTV2k
+	id S1755480AbZHTVbj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 17:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbZHTVbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 17:28:40 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39491 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754930AbZHTV2k convert rfc822-to-8bit (ORCPT
+	Thu, 20 Aug 2009 17:31:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40015 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755402AbZHTVbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 17:28:40 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bruno =?utf-8?q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Subject: Re: [Bug #13942] Troubles with AoE and uninitialized object
-Date: Thu, 20 Aug 2009 23:29:33 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera> <ADSuNT6McuD.A.1t.BOIjKB@chimera> <20090820212959.0ece42e3@neptune.home>
-In-Reply-To: <20090820212959.0ece42e3@neptune.home>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200908202329.33695.rjw@sisk.pl>
+	Thu, 20 Aug 2009 17:31:37 -0400
+Date: Thu, 20 Aug 2009 14:30:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       peterz@infradead.org, torvalds@linux-foundation.org, tytso@mit.edu,
+       arjan@infradead.org, greg@kroah.com, mcgrof@gmail.com,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org, sam@ravnborg.org,
+       corbet@lwn.net, sourcejedi.lkml@googlemail.com, andi@firstfloor.org
+Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
+Message-Id: <20090820143025.7134930f.akpm@linux-foundation.org>
+In-Reply-To: <20090819025634.987354707@goodmis.org>
+References: <20090819025634.987354707@goodmis.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 August 2009, Bruno Prémont wrote:
-> On Wed, 19 August 2009 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.30.  Please verify if it still should be listed and let me
-> > know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13942
-> > Subject		: Troubles with AoE and uninitialized object
-> > Submitter	: Bruno Prémont <bonbons@linux-vserver.org>
-> > Date		: 2009-08-04 10:12 (16 days old)
-> > References	:
-> > http://marc.info/?l=linux-kernel&m=124938117104811&w=4
-> > 
+On Tue, 18 Aug 2009 22:56:34 -0400
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Here's my rebase of the prior push of streamline-config.pl.
+
+ow, you made me look at perl code.
+
+> The following patches are in:
 > 
-> This one is still valid for 2.6.31-rc6 though I have not yet taken
-> the time to attempt bisecting it. I will probably bisect over the
-> week-end.
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: kconfig
 
-Thanks for the update.
-
-Rafael
+Sam's been quiet lately.  I suggest that you add this to linux-next
+now so people get a chance to poke at it.
