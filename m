@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbZHTPSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZHTPT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754268AbZHTPSY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 11:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZHTPSV
+	id S1754864AbZHTPT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 11:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZHTPSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 11:18:21 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:14901 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753283AbZHTPSQ (ORCPT
+	Thu, 20 Aug 2009 11:18:43 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:27607 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752079AbZHTPSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 11:18:16 -0400
+	Thu, 20 Aug 2009 11:18:42 -0400
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
-Subject: [cciss: PATCH 07/17] Handle failure of blk_init_queue gracefully in
-	cciss_add_disk.
+Subject: [cciss: PATCH 12/17] Fix excessive gendisk freeing bug on driver
+	unload.
 To: linux-kernel@vger.kernel.org
 Cc: linux-scsi@vger.kernel.org, akpm@linux-foundation.org, axboe@kernel.dk,
        andrew.patterson@hp.com, mikem@c18-ss-1-lb.cnet.com,
        scameron@beardog.cce.hp.com
-Date: Thu, 20 Aug 2009 10:18:18 -0500
-Message-ID: <20090820151818.22833.40801.stgit@beardog.cce.hp.com>
+Date: Thu, 20 Aug 2009 10:18:44 -0500
+Message-ID: <20090820151844.22833.66257.stgit@beardog.cce.hp.com>
 In-Reply-To: <20090820151648.22833.14168.stgit@beardog.cce.hp.com>
 References: <20090820151648.22833.14168.stgit@beardog.cce.hp.com>
 User-Agent: StGIT/0.14.3
@@ -29,33 +29,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle failure of blk_init_queue gracefully in cciss_add_disk.
+Fix bug that free_hba was calling put_disk for all gendisk[]
+pointers -- all 1024 of them -- regardless of whether the were
+used or not (NULL).  This bug could cause rmmod to oops if logical
+drives had been deleted during the driver's lifetime.
 
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
 
- drivers/block/cciss.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/block/cciss.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 557b958..60fe3c6 100644
+index 14d4cd6..a4cb041 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -1689,6 +1689,8 @@ static int cciss_add_disk(ctlr_info_t *h, struct gendisk *disk,
- 				int drv_index)
- {
- 	disk->queue = blk_init_queue(do_cciss_request, &h->lock);
-+	if (!disk->queue)
-+		goto init_queue_failure;
- 	sprintf(disk->disk_name, "cciss/c%dd%d", h->ctlr, drv_index);
- 	disk->major = h->major;
- 	disk->first_minor = drv_index << NWD_SHIFT;
-@@ -1729,6 +1731,7 @@ static int cciss_add_disk(ctlr_info_t *h, struct gendisk *disk,
- cleanup_queue:
- 	blk_cleanup_queue(disk->queue);
- 	disk->queue = NULL;
-+init_queue_failure:
+@@ -3892,15 +3892,16 @@ Enomem:
  	return -1;
  }
  
+-static void free_hba(int i)
++static void free_hba(int n)
+ {
+-	ctlr_info_t *p = hba[i];
+-	int n;
++	ctlr_info_t *h = hba[n];
++	int i;
+ 
+-	hba[i] = NULL;
+-	for (n = 0; n < CISS_MAX_LUN; n++)
+-		put_disk(p->gendisk[n]);
+-	kfree(p);
++	hba[n] = NULL;
++	for (i = 0; i < h->highest_lun + 1; i++)
++		if (h->gendisk[i] != NULL)
++			put_disk(h->gendisk[i]);
++	kfree(h);
+ }
+ 
+ /* Send a message CDB to the firmware. */
 
