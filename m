@@ -1,87 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZHTXSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbZHTXYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbZHTXSJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 19:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZHTXSI
+	id S1755528AbZHTXYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 19:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbZHTXYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 19:18:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56249 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755396AbZHTXSH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 19:18:07 -0400
-Date: Thu, 20 Aug 2009 16:13:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: kamezawa.hiroyu@jp.fujitsu.com, prarit@redhat.com, andi.kleen@intel.com,
-       m-kosaki@ceres.dti.ne.jp, dmiyakawa@google.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: Scalability fixes -- 2.6.31 candidate?
-Message-Id: <20090820161325.562b255e.akpm@linux-foundation.org>
-In-Reply-To: <20090820190941.GA29572@balbir.in.ibm.com>
-References: <20090820190941.GA29572@balbir.in.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 20 Aug 2009 19:24:19 -0400
+Received: from mx1-old.redhat.com ([66.187.233.31]:38073 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755517AbZHTXYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 19:24:18 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
+X-Fcc: ~/Mail/linus
+Cc: James.Bottomley@HansenPartnership.com (James Bottomley), deller@gmx.de,
+       rusty@rustcorp.com.au, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dave.anglin@nrc.ca
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+In-Reply-To: John David Anglin's message of  Thursday, 20 August 2009 19:01:13 -0400 <20090820230114.36D3E4E7A@hiauly1.hia.nrc.ca>
+References: <1250805049.4302.121.camel@mulgrave.site>
+	<20090820230114.36D3E4E7A@hiauly1.hia.nrc.ca>
+X-Windows: the art of incompetence.
+Message-Id: <20090820232357.934474730F@magilla.sf.frob.com>
+Date: Thu, 20 Aug 2009 16:23:57 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Aug 2009 00:39:42 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> At some time, GCC may start a new .text section at the beginning of
+> each function.  We do this on hpux but not linux.  This will cause
+> multiple .text sections to be present in an object and allow finer grained
+> stub placement.
 
-> Hi, Andrew,
-> 
-> I've been wondering if the scalability fixes for root overhead in
-> memory cgroup is a candidate for 2.6.31?
+arch/parisc/Makefile:
 
-These?
-
-memcg-improve-resource-counter-scalability.patch
-memcg-improve-resource-counter-scalability-checkpatch-fixes.patch
-memcg-improve-resource-counter-scalability-v5.patch
-
-
-> They don't change
-> functionality but help immensely using existing accounting features.
-> 
-> Opening up the email for more debate and discussion and thoughts.
-> 
-
-They don't apply terribly well to mainline:
-
-patching file mm/memcontrol.c
-Hunk #1 FAILED at 70.
-Hunk #2 FAILED at 479.
-Hunk #3 FAILED at 1295.
-Hunk #4 FAILED at 1359.
-Hunk #5 FAILED at 1432.
-Hunk #6 FAILED at 1514.
-Hunk #7 FAILED at 1534.
-Hunk #8 FAILED at 1605.
-Hunk #9 FAILED at 1798.
-Hunk #10 FAILED at 1826.
-Hunk #11 FAILED at 1883.
-Hunk #12 FAILED at 1981.
-Hunk #13 succeeded at 2091 (offset -405 lines).
-12 out of 13 hunks FAILED -- saving rejects to file mm/memcontrol.c.rej
-Failed to apply memcg-improve-resource-counter-scalability
-
-so maybe you're referring to these:
-
-memcg-remove-the-overhead-associated-with-the-root-cgroup.patch
-memcg-remove-the-overhead-associated-with-the-root-cgroup-fix.patch
-memcg-remove-the-overhead-associated-with-the-root-cgroup-fix-2.patch
-
-as well.
-
-But then memcg-improve-resource-counter-scalability.patch still doesn't
-apply.  Maybe memcg-improve-resource-counter-scalability.patch depends
-on memory-controller-soft-limit-*.patch too.  I stopped looking.
-
-It's a lot of material and a lot of churn.  I'd be more inclined to
-proceed with a 2.6.32 merge and then perhaps you can see if you can
-come up with a minimal patchset for -stable, see if the -stable
-maintainers can be talked into merging it.
-
+	# Without this, "ld -r" results in .text sections that are too big
+	# (> 0x40000) for branches to reach stubs.
+	ifndef CONFIG_FUNCTION_TRACER
+	  cflags-y	+= -ffunction-sections
+	endif
