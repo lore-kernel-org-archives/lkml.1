@@ -1,76 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbZHTR0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbZHTR1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090AbZHTR0o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 13:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbZHTR0n
+	id S1755089AbZHTR1a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 13:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbZHTR13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 13:26:43 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:51593 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755075AbZHTR0m (ORCPT
+	Thu, 20 Aug 2009 13:27:29 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:37358 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbZHTR12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 13:26:42 -0400
-Date: Thu, 20 Aug 2009 20:25:55 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       kvm@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@redhat.com>,
-       Patrick Mullaney <pmullaney@novell.com>
-Subject: Re: [PATCH v3 3/6] vbus: add a "vbus-proxy" bus model for
-	vbus_driver objects
-Message-ID: <20090820172555.GF6749@il.ibm.com>
-References: <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu> <4A89B08A.4010103@gmail.com> <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com> <4A8AD678.7050609@redhat.com> <4A8B9B79.9050004@gmail.com> <4A8BA5AE.3030308@redhat.com> <4A8C43D3.7030002@gmail.com> <4A8C627C.70001@redhat.com>
+	Thu, 20 Aug 2009 13:27:28 -0400
+Date: Thu, 20 Aug 2009 22:57:19 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Patch 0/1] HW-BKPT: Allow per-cpu kernel-space Hardware
+	Breakpoint requests
+Message-ID: <20090820172719.GA16499@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090817124641.GA13354@in.ibm.com> <20090819161119.GA3633@in.ibm.com> <20090819173259.GF4972@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A8C627C.70001@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090819173259.GF4972@nowhere>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 11:37:16PM +0300, Avi Kivity wrote:
+On Wed, Aug 19, 2009 at 07:33:00PM +0200, Frederic Weisbecker wrote:
+> On Wed, Aug 19, 2009 at 09:41:19PM +0530, K.Prasad wrote:
+> > On Mon, Aug 17, 2009 at 06:16:41PM +0530, K.Prasad wrote:
+> > > Hi All,
+> > > 	Please find a patch that enables kernel-space breakpoints to be
+> > > requested for a subset of the available CPUs in the system. This allows
+> > > per-CPU breakpoints and comes with the associated benefit of reduced
+> > > overhead during (un)registration.
+> > > 
+> > > This enhancement allows exploitation of hardware breakpoint registers by
+> > > 'perf' which produces a CPU-wise information.
+> > > 
+[edited]
+> > 
+> > Hi Frederic,
+> > 	Do you find these patches, that provide the ability to restrict
+> > kernel-space breakpoints to any given subset of CPUs, to bring the
+> > requisite features for exploitation of hw-bkpt by 'perf tools'?
+> > 
+> > Also of interest would be the reduced overhead associated with
+> > (un)register_kernel_hw_breakpoint() operations (no IPI in case of
+> > single-CPU breakpoint request).
+> > 
+> > Thanks,
+> > K.Prasad
+> > 
+> 
+> 
+> Nice.
+> Yeah I just reviewed the patch and it looks good.
+> 
+> Now I guess we should meet two others requirements for a pmu
+> through this high level Api:
+> 
+> - only update the hardware registers when needed: while switching
+>   to another thread of a same group, the hardware register switching
+>   is wasteful.
+>   BTW, I wonder if we need a flag while creating a user bp that tells whether
+>   the bp is inherited through fork/clone calls.
+> 
 
-> On 08/19/2009 09:26 PM, Gregory Haskins wrote:
+So this means avoiding a re-write of addresses into debug registers when
+they don't change. It is indeed desirable and would help if the same
+breakpoint is used across, say, many/all threads of a process.
 
->>>> This is for things like the setup of queue-pairs, and the
->>>> transport of door-bells, and ib-verbs.  I am not on the team
->>>> doing that work, so I am not an expert in this area.  What I do
->>>> know is having a flexible and low-latency signal-path was deemed
->>>> a key requirement.
->>>>
->>>>        
->>> That's not a full bypass, then.  AFAIK kernel bypass has userspace
->>> talking directly to the device.
->>>      
->> Like I said, I am not an expert on the details here.  I only work
->> on the vbus plumbing.  FWIW, the work is derivative from the
->> "Xen-IB" project
->>
->> http://www.openib.org/archives/nov2006sc/xen-ib-presentation.pdf
->>
->> There were issues with getting Xen-IB to map well into the Xen
->> model.  Vbus was specifically designed to address some of those
->> short-comings.
->
-> Well I'm not an Infiniband expert.  But from what I understand VMM
-> bypass means avoiding the call to the VMM entirely by exposing
-> hardware registers directly to the guest.
+However I'd believe that the time taken for this is miniscule compared
+to the overhead involved during context switch. Perhaps consider this
+requirement a later time?
 
-The original IB VMM bypass work predates SR-IOV (i.e., does not assume
-that the adapter has multiple hardware register windows for multiple
-devices). The way it worked was to split all device operations into
-`privileged' and `non-privileged'. Privileged operations such as
-mapping and pinning memory went through the hypervisor. Non-privileged
-operations such reading or writing previously mapped memory went
-directly to the adpater. Now-days with SR-IOV devices, VMM bypass
-usually means bypassing the hypervisor completely.
+> - having a callback that quickly swap two breakpoints in order to support
+>   the hardware register multiplexing. I guess the pmu object would just need
+>   to call it when the multiplexing is decided.
+> 
+> 
 
-Cheers,
-Muli
--- 
-Muli Ben-Yehuda | muli@il.ibm.com | +972-4-8281080
-Manager, Virtualization and Systems Architecture
-Master Inventor, IBM Haifa Research Laboratory
+Are you suggesting something like a modify_kernel_hw_breakpoint() that
+can quickly change a breakpoint address/characteristics?
+
+That's quite doable...it requires a quick validation through
+arch_validate_hwbkpt_settings() and the requisite IPIs (depending on
+what the new cpumask is).
+
+I will send a patch to that effect soon.
+
+> Providing those would let us build a pmu struct on top of this high level API,
+> hopefully.
+> 
+> All that would be a benefit in both sides. It avoids us building a low level PMU
+> that reinvent the wheel, ie: the hardware breakpoints API handles a lot of things
+> both in arch and core sides (debug register setting tricks with dr7 and co,
+> cpu hotplug, kexec, etc...).
+> In the bp API it brings more power (register switching only if needed, per cpu
+> support, clone inheritance support, etc...)
+> 
+> And in the end we have a pmu (which unifies the control of this profiling
+> unit through a well established and known object for perfcounter) controlled by
+> a high level API that could also benefit to other debugging subsystems.
+> 
+> What do you think?
+> It would be also nice to have Peter's and Ingo opinion about it, to be sure
+> we are not going in the wrong direction.
+> 
+
+Indeed, it will be nice to know from Ingo and Peter that we are heading
+right.
+
+Thanks,
+K.Prasad
+
