@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbZHTTNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZHTTPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090AbZHTTNW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 15:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbZHTTNV
+	id S1755195AbZHTTPD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 15:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZHTTPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 15:13:21 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:54197 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639AbZHTTNU (ORCPT
+	Thu, 20 Aug 2009 15:15:03 -0400
+Received: from mga06.intel.com ([134.134.136.21]:34100 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751842AbZHTTPC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 15:13:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=Oc3QW/MzBBfgmlh3Q1iMaf3KlxHtn6TuTALk4kzfo8wr1ZCHKAGZXZfTB5jiMqU7Vb
-         17NzTOFiRoWde3KXslC6IkIPsJlirwGPZ6OjAqGcLIghuDDFgVY7F1WXy6IcLS5ger7t
-         0armM2a7okDlrJKJnuWYrQXh3VoBa6Za0atY4=
-Date: Thu, 20 Aug 2009 23:08:04 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, q-funk@iki.fi,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [Bug #13941] x86 Geode issue
-Message-ID: <20090820190804.GA7271@lenovo>
-References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera> <ADSuNT6McuD.A.R0.COIjKB@chimera> <11fae7c70908200033k7c28561eh28e1195ce4a692f8@mail.gmail.com> <200908201704.06553.rjw@sisk.pl> <20090820183635.GB8517@lenovo>
+	Thu, 20 Aug 2009 15:15:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,415,1246863600"; 
+   d="scan'208";a="441216504"
+Message-ID: <4A8DA0B6.3020109@linux.intel.com>
+Date: Thu, 20 Aug 2009 12:15:02 -0700
+From: "H. Peter Anvin" <hpa@linux.intel.com>
+Organization: Intel Open Source Technology Center
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090820183635.GB8517@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Takashi Iwai <tiwai@suse.de>
+CC: Hannes Reinecke <hare@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       stable@kernel.org
+Subject: Re: [REGRESSION] _end symbol missing from Symbol.map
+References: <4A83B680.5000508@suse.de>	<20090819093704.f1620baa.akpm@linux-foundation.org>	<4A8CE63E.9050702@suse.de> <s5hfxbmpx7h.wl%tiwai@suse.de>
+In-Reply-To: <s5hfxbmpx7h.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Thu, Aug 20, 2009 at 10:36:35PM +0400]
-...
-| | > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13941
-| | > > Subject         : x86 Geode issue
-| | > > Submitter       : Martin-Éric Racine <q-funk@iki.fi>
-| | > > Date            : 2009-08-03 12:58 (17 days old)
-| | > > References      : http://marc.info/?l=linux-kernel&m=124930434732481&w=4
-| | 
-| | Rafael
-| | 
-| 
-| Hi,
-| 
-| may I post a thought?
-| 
-| It seems strange to me that alloc_inode may set 
-| 
-| #ifdef CONFIG_FS_POSIX_ACL
-| 	inode->i_acl = inode->i_default_acl = ACL_NOT_CACHED;
-| #endif
-| 
-| [where ACL_NOT_CACHED is #define ACL_NOT_CACHED ((void *)(-1))]
-| 
-| meanwhile say jffs2_init_acl_post use ACL_NOT_CACHED
-| as a valid value and trying to parse it.
-| 
-| But perhaps, I miss something.
-| 
-| 	-- Cyrill
+On 08/20/2009 03:59 AM, Takashi Iwai wrote:
+> 
+> So, judging from the commit log, simply reverting it seems to have
+> some drawback...?
+> 
 
-Sorry, this is unrelated and wrong. Drop this message.
+Yes.  I'm starting to think we should have a list of "known relative
+symbols" in relocs.c just as we have a list of "known absolute symbols"
+already.
 
-	-- Cyrill
+	-hpa
