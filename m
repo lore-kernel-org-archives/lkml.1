@@ -1,349 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbZHTNNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZHTNNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754275AbZHTNNF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZHTNNE
+	id S1754412AbZHTNNf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 09:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbZHTNNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:13:04 -0400
-Received: from sg2ehsobe004.messaging.microsoft.com ([207.46.51.78]:10378 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754222AbZHTNNC convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:13:02 -0400
-X-SpamScore: 14
-X-BigFish: VPS14(zz14c3Lzz1202hzz3198u327alz32i6bh203h62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KOOFD8-01-06H-02
-X-M-MSG: 
-Date: Thu, 20 Aug 2009 15:12:43 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 0/15] sched: Fix scheduling for multi-node processors
-Message-ID: <20090820131243.GO29327@alberich.amd.com>
+	Thu, 20 Aug 2009 09:13:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:64139 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754290AbZHTNNd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 09:13:33 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
+Date: Thu, 20 Aug 2009 15:10:54 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
+References: <cover.1250187913.git.mst@redhat.com> <200908191727.07681.arnd@arndb.de> <20090820083155.GB5448@redhat.com>
+In-Reply-To: <20090820083155.GB5448@redhat.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Aug 2009 13:12:44.0391 (UTC) FILETIME=[E7A99770:01CA2197]
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908201510.54482.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX197lILuDQUOa9/LRUY4aJAlSTlgYRGboQz+M96
+ BD0zzZNZwTtwZRZOqnPjaSRmTL12/UZpYhVoFUho9Fe+HFKdKo
+ tpYXJiXW2YHatcwKuh1yA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thursday 20 August 2009, Michael S. Tsirkin wrote:
+> On Wed, Aug 19, 2009 at 05:27:07PM +0200, Arnd Bergmann wrote:
+> > On Wednesday 19 August 2009, Michael S. Tsirkin wrote:
+> > > On Wed, Aug 19, 2009 at 03:46:44PM +0200, Arnd Bergmann wrote:
+> > > > On Wednesday 19 August 2009, Michael S. Tsirkin wrote:
+> > > >
+> > > > Leaving that aside for now, you could replace VHOST_NET_SET_SOCKET,
+> > > > VHOST_SET_OWNER, VHOST_RESET_OWNER
+> > > 
+> > > SET/RESET OWNER is still needed: otherwise if you share a descriptor
+> > > with another process, it can corrupt your memory.
+> > 
+> > How? The point of using user threads is that you only ever access the
+> > address space of the thread that called the ioctl.
+> 
+> Think about this example with processes A and B sharing an fd:
+> A does SET_USED_ADDRESS
+> B does SET_USED_ADDRESS
+> A does VHOST_NET_SPLICE
+> See how stuff gets written into a random place in memory of A?
 
-Subsequent patches adapt scheduling code to support multi-node processors.
+Yes, I didn't think of that. It doesn't seem like a big problem
+though, because it's a clear misuse of the API (I guess your
+current code returns an error for one of the SET_USED_ADDRESS
+ioctls), so I would see it as a classic garbage-in garbage-out
+case.
 
-In short, the required changes need to fulfill two requirements:
+It may even work in the case that the sharing of the fd resulted
+from a fork, where the address contains the same buffer in both
+processes. I can't think of a reason why you would want to use
+it like that though.
 
-(1) The set of CPUs in a NUMA node does not necessarily span CPUs of entire
-    sockets anymore. (Current code assumes that.)
+> > Why would I wake up the threads spuriously? Do you mean for
+> > stopping the transmission or something else? I guess a pthread_kill
+> > would be enough for shutting it down.
+> 
+> If you kill and restart them you lost priority etc parameters, but maybe.
 
-(2) The additional hierarchy in the CPU topology (i.e. internal node) might
-    be useful when doing load balancing when power saving matters.
+If you want to restart it, just send a nonfatal signal (SIGUSR1,
+SIGRTMIN, ...) instead of a SIGKILL.
 
-Patches 1-7 (add basic) support fo a new scheduling domain (called MN for multi-node)
-Patch 8 adds a knob to control power_savings balancing for MN domain
-Patches 9, 10 add the snippets to do the power_savings balancing for MN domain
-Patch 11 adds a way to pass unlimited __cpu_power information to upper domain levels
-Patch 12 allows NODE domain to be parent of MC domain (and thus child of MN domain)
-Patch 13 detects whether NODE domain is parent of MC instead of CPU domain
-Patch 14 fixes perf policy scheduling when NODE domain is parent of MC domain
-Patch 15 fixes cpu_coregroup_mask to use mask of core_siblings instead of node_siblings
-         (I admit that this change should better be added to my topology patches.)
+> > > More importantly, you lose control of CPU locality.  Simply put, a
+> > > natural threading model in virtualization is one thread per guest vcpu.
+> > > Asking applications to add multiple helper threads just so they can
+> > > block forever is wrong, IMO, as userspace has no idea which CPU
+> > > they should be on, what priority to use, etc.
+> > 
+> > But the kernel also doesn't know this, you get the same problem in
+> > another way. If you have multiple guests running at different priorities,
+> > the kernel will use those priorities to do the more important transfers
+> > first, while with a global workqueue every guest gets the same priority.
+> 
+> We could create more threads if this becomes a problem. I just think it
+> should be transparent to userspace. Possibly it's useful to look at the
+> packet header as well to decide on priority: this is something userspace
+> can't do.
 
-To apply the patches you need to use tip/master as of today
-(containing the sched cleanup patches) plus the 8 topology patches
-that I have sent recently. (See
-http://marc.info/?l=linux-kernel&m=124964980507887)
+Being transparent to user space would be nice, I agree. Letting user space
+choose would also be nice, e.g. if you want to distribute eight available
+hardware queue pairs to three guests in a non-obvious way. The
+implementation depends to some degree on how we want to do multiqueue
+RX/TX in virtio-net in the long run. For best cache locality and NUMA
+behaviour, we might want to have one virtqueue per guest CPU and control
+them independently from the host.
 
-Full power saving scheduling options on multi-node processors are only
-available with CONFIG_SCHED_MN=y. See example and example output
-below.
+Priorities of the packets are dealt with in the packet scheduler for
+external interfaces, I guess that is sufficient. I'm not sure if we
+need to honor the same priorities for guest-to-guest communication,
+my feeling is that we don't need to.
 
+> > You say that the natural model is to have one thread per guest
+> > CPU,
+> 
+> Sorry I was not clear. I think userspace should create thread per guest.
+> We can create as many as we need for networking but I think this should
+> be behind the scenes, so userspace shouldn't bother with host CPUs, it
+> will just get it wrong. Think of CPU hotplug, interrupts migrating
+> between CPUs, etc ...
 
-Regards,
+Yes, I hope we can avoid letting qemu know about host CPUs.
+I'm not sure we can avoid it completely, because something needs
+to set physical IRQ affinity and such for the virtual devices
+if you want to get the best locality.
 
-Andreas
+> > but you have a thread per host CPU instead. If the numbers
+> > are different, you probably lose either way.
+> 
+> The trick I used is to keep as much as possible local
+> TX done on the CPU that runs the guest,
+> RX done on the CPU that runs the NIC interrupt.
+> a smart SMP guest sees which cpu gets interrupts
+> from NIC and schedules RX there, and it shouldn't matter
+> if the numbers of CPUs are different.
 
-PS: I send this as RFC. It seems to be pretty stable, though. But I
-    want to do some more testing before I'd ask to apply this to
-    tip-tree and I also want to check the performance impact of the
-    new sched domain level.
+yes, that sounds good.
 
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
---------------------------------------------------------------------------------
-Examples:
-=========
-(1) To demonstrate power_savings balancing I provide top output when system
-    is partially loaded.
+> > It gets worse if you try to apply NUMA policies.
+> 
+> I believe the best we could do is avoid switching CPUs
+> until we know the actual destination.
 
- (Note: sched_mc_power_savings=sched_mn_power_savings=0)
+My point is that the RX data in the guest address space
+should be on the same NUMA node that gets the interrupt.
 
- # for i in `seq 1 6`; do nbench& done
+> > > And note that there might be more than one error.  I guess, that's
+> > > another problem with trying to layer on top of vfs.
+> > 
+> > Why is that different from any other system call?
+> 
+> With other system calls nothing happens while you process the error.
+> Here, the guest (other queues) and the network keep running (unless
+> there is a thread per queue, maybe we can block a queue, but we both
+> agreed above we don't want that).
 
- top - 15:41:08 up 7 min,  3 users,  load average: 2.49, 0.64, 0.21
- Tasks: 267 total,   7 running, 260 sleeping,   0 stopped,   0 zombie
- Cpu0  : 49.7%us,  0.0%sy,  0.0%ni, 50.3%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu1  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu2  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu3  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu4  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu5  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu6  : 50.2%us,  0.0%sy,  0.0%ni, 49.8%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu7  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu8  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu9  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu10 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu11 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu12 : 48.8%us,  0.0%sy,  0.0%ni, 51.2%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu13 :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu14 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu15 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu16 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu17 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu18 : 50.8%us,  0.0%sy,  0.0%ni, 49.2%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu19 :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu20 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu21 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu22 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu23 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+Well, I would expect error conditions to be fatal for the connections
+normally, so blocking the queue is totally fine here IMHO. The ioctl
+would never return while a guest is running and connected to a
+working NIC.
 
- # echo 1  >> /sys/devices/system/cpu/sched_mn_power_savings
+> > We just return when
+> > we hit the first error condition.
+> 
+> If you assume losing the code for the second error condition is OK, why
+> is the first one so important?  That's why I used a counter (eventfd)
+> per virtqueue, on error userspace can scan the ring and poll the socket
+> and discover what's wrong, and counter ensures we can detect that error
+> happened while we were not looking.
 
- top - 15:42:27 up 8 min,  3 users,  load average: 3.91, 1.49, 0.54
- Tasks: 267 total,   7 running, 260 sleeping,   0 stopped,   0 zombie
- Cpu0  :  0.0%us,  0.3%sy,  0.0%ni, 99.7%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu1  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu2  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu3  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu4  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu5  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu6  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu7  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu8  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu9  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu10 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu11 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu12 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu13 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu14 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu15 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu16 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu17 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu18 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu19 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu20 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu21 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu22 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu23 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+I guess we were talking about different kinds of errors here, and I'm
+still not sure which one you are talking about.
 
- # echo 2  >> /sys/devices/system/cpu/sched_mc_power_savings 
-
- top - 15:43:09 up 9 min,  3 users,  load average: 4.93, 2.06, 0.77
- Tasks: 267 total,   7 running, 260 sleeping,   0 stopped,   0 zombie
- Cpu0  : 99.0%us,  0.0%sy,  0.0%ni,  1.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu1  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu2  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu3  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu4  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu5  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu6  :  0.7%us,  0.0%sy,  0.0%ni, 99.3%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu7  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu8  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu9  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu10 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu11 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu12 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu13 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu14 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu15 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu16 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu17 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu18 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu19 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu20 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu21 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu22 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu23 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
-
- # echo 0  >> /sys/devices/system/cpu/sched_mc_power_savings 
- # echo 0  >> /sys/devices/system/cpu/sched_mn_power_savings 
-
- top - 15:44:22 up 10 min,  3 users,  load average: 5.38, 2.86, 1.15
- Tasks: 267 total,   7 running, 260 sleeping,   0 stopped,   0 zombie
- Cpu0  : 49.2%us,  0.3%sy,  0.0%ni, 50.5%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu1  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu2  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu3  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu4  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu5  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu6  : 50.8%us,  0.0%sy,  0.0%ni, 49.2%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu7  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu8  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu9  :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu10 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu11 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu12 : 49.2%us,  0.0%sy,  0.0%ni, 50.8%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu13 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu14 :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu15 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu16 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu17 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu18 : 50.7%us,  0.0%sy,  0.0%ni, 49.3%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu19 :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu20 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu21 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu22 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
- Cpu23 :  0.0%us,  0.0%sy,  0.0%ni,100.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
-
---------------------------------------------------------------------------------
-(2) To illustrate the new domain hierarchy I give examples for sched
-    domains and groups of CPU 23 of my test system:
-
-CONFIG_SCHED_MN=n
-sched_mc_power_savings=0
-
- CPU23 attaching sched-domain:
-  domain 0: span 18-23 level MC
-   groups: 23 18 19 20 21 22
-   domain 1: span 18-23 level NODE
-    groups: 18-23 (__cpu_power = 6144)
-    domain 2: span 0-23 level CPU
-     groups: 18-23 0-5 6-11 12-17
-
-CONFIG_SCHED_MN=n
-sched_mc_power_savings=2
-
- CPU23 attaching sched-domain:
-  domain 0: span 18-23 level MC
-   groups: 23 18 19 20 21 22
-   domain 1: span 18-23 level NODE
-    groups: 18-23 (__cpu_power = 6144)
-    domain 2: span 0-23 level CPU
-     groups: 18-23 (__cpu_power = 6144) 0-5 (__cpu_power = 6144) 6-11 (__cpu_power = 6144) 12-17 (__cpu_power = 6144)
-
-CONFIG_SCHED_MN=y, CONFIG_NUMA=y
-sched_mc_power_savings=0, sched_mn_power_savings=0
-
- CPU23 attaching sched-domain:
-  domain 0: span 18-23 level MC
-   groups: 23 18 19 20 21 22
-   domain 1: span 18-23 level NODE
-    groups: 18-23 (__cpu_power = 6144)
-    domain 2: span 12-23 level MN
-     groups: 18-23 12-17
-     domain 3: span 0-23 level CPU
-      groups: 12-23 0-11
-
-CONFIG_SCHED_MN=y, CONFIG_NUMA=y
-sched_mc_power_savings=0, sched_mn_power_savings=1
-
- CPU23 attaching sched-domain:
-  domain 0: span 18-23 level MC
-   groups: 23 18 19 20 21 22
-   domain 1: span 18-23 level NODE
-    groups: 18-23 (__cpu_power = 6144)
-    domain 2: span 12-23 level MN
-     groups: 18-23 12-17
-     domain 3: span 0-23 level CPU
-      groups: 12-23 (__cpu_power = 12288) 0-11 (__cpu_power = 12288)
-
-CONFIG_SCHED_MN=y, CONFIG_NUMA=y
-sched_mc_power_savings=2, sched_mn_power_savings=0
-
- CPU23 attaching sched-domain:
-  domain 0: span 18-23 level MC
-   groups: 23 18 19 20 21 22
-   domain 1: span 18-23 level NODE
-    groups: 18-23 (__cpu_power = 6144)
-    domain 2: span 12-23 level MN
-     groups: 18-23 (__cpu_power = 6144) 12-17 (__cpu_power = 6144)
-     domain 3: span 0-23 level CPU
-      groups: 12-23 (__cpu_power = 12288) 0-11 (__cpu_power = 12288)
-
-CONFIG_SCHED_MN=y, CONFIG_NUMA=y, CONFIG_ACPI_NUMA=n
-(and CONFIG_SCHED_MN=y, CONFIG_NUMA=n)
-sched_mc_power_savings=0, sched_mn_power_savings=0
-
- CPU23 attaching sched-domain:
-  domain 0: span 18-23 level MC
-   groups: 23 18 19 20 21 22
-   domain 1: span 12-23 level MN
-    groups: 18-23 12-17
-    domain 2: span 0-23 level CPU
-     groups: 12-23 0-11
-
-CONFIG_SCHED_MN=y, CONFIG_NUMA=y, CONFIG_ACPI_NUMA=n
-(and CONFIG_SCHED_MN=y, CONFIG_NUMA=n)
-sched_mc_power_savings=0, sched_mn_power_savings=1
-
- CPU23 attaching sched-domain:
-  domain 0: span 18-23 level MC
-   groups: 23 18 19 20 21 22
-   domain 1: span 12-23 level MN
-    groups: 18-23 12-17
-    domain 2: span 0-23 level CPU
-     groups: 12-23 (__cpu_power = 12288) 0-11 (__cpu_power = 12288)
-
-CONFIG_SCHED_MN=y, CONFIG_NUMA=y, CONFIG_ACPI_NUMA=n
-(and CONFIG_SCHED_MN=y, CONFIG_NUMA=n)
-sched_mc_power_savings=2, sched_mn_power_savings=0
-
- CPU23 attaching sched-domain:
-  domain 0: span 18-23 level MC
-   groups: 23 18 19 20 21 22
-   domain 1: span 12-23 level MN
-    groups: 18-23 (__cpu_power = 6144) 12-17 (__cpu_power = 6144)
-    domain 2: span 0-23 level CPU
-     groups: 12-23 (__cpu_power = 12288) 0-11 (__cpu_power = 12288)
-
---------------------------------------------------------------------------------
-(3) Further information -- just for completeness.
-
-With NUMA support and SRAT detection the kernel uses following NUMA
-information:
-
-  # numactl --hardware
- available: 4 nodes (0-3)
- node 0 cpus: 0 1 2 3 4 5
- node 0 size: 2047 MB
- node 0 free: 1761 MB
- node 1 cpus: 6 7 8 9 10 11
- node 1 size: 2046 MB
- node 1 free: 1990 MB
- node 2 cpus: 18 19 20 21 22 23
- node 2 size: 2048 MB
- node 2 free: 2004 MB
- node 3 cpus: 12 13 14 15 16 17
- node 3 size: 2048 MB
- node 3 free: 2002 MB
- node distances:
- node   0   1   2   3 
-   0:  10  16  16  16 
-   1:  16  10  16  16 
-   2:  16  16  10  16 
-   3:  16  16  16  10 
-
-Without ACPI SRAT support (e.g. CONFIG_ACPI_NUMA=n) the NUMA
-information is:
-
- # numactl  --hardware
- available: 1 nodes (0-0)
- node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
- node 0 size: 8189 MB
- node 0 free: 7900 MB
- node distances:
- node   0 
-   0:  10
-
---------------------------------------------------------------------------------
-FINI
-
+	Arnd <><
 
