@@ -1,82 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZHTObu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZHTOcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbZHTObu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 10:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZHTObs
+	id S1754693AbZHTOcO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 10:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZHTOcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 10:31:48 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:53502 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754272AbZHTObr (ORCPT
+	Thu, 20 Aug 2009 10:32:13 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:49124 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754536AbZHTOcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 10:31:47 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
-Date: Thu, 20 Aug 2009 16:31:36 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
-References: <cover.1250187913.git.mst@redhat.com> <200908201510.54482.arnd@arndb.de> <20090820133817.GA7834@redhat.com>
-In-Reply-To: <20090820133817.GA7834@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 20 Aug 2009 10:32:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=htswGBx04JTXZY/bvoxIOCt4AvhsjjUYltPLKKC2jg0vhgdlBXUOfipY7a7w39B+sL
+         8luLMMmLDBBh34oaZNOEsQvV27pkrjNb0eHM4u6kPJ24RkwwJJicfAxa/ZNaSbkwvVge
+         n6L74wOh5PKEB3X2z51F/Eql8pXXhEONAJ71E=
+Date: Thu, 20 Aug 2009 16:32:09 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Laurent Riffard <laurent.riffard@free.fr>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
+Subject: Re: linux-next: reiserfs lockout with xattr ?
+Message-ID: <20090820143207.GB6389@nowhere>
+References: <4A79CA90.8080101@free.fr> <20090808002726.GI4999@nowhere> <4A7E9C63.4090400@free.fr> <20090809233302.GD6089@nowhere> <4A807E3A.8050703@free.fr>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908201631.37285.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18LkPWfEQG+mxqtEEs3Agdux0tJoxucVeUuaWQ
- WJfdMyshafsS54A7/yndnzyeIMRJQZkRN7+ujkEdcyiwYxO2/8
- UO/rBvrsxi8JMhq0+1NBQ==
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A807E3A.8050703@free.fr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 August 2009, Michael S. Tsirkin wrote:
-> On Thu, Aug 20, 2009 at 03:10:54PM +0200, Arnd Bergmann wrote:
-> > On Thursday 20 August 2009, Michael S. Tsirkin wrote:
->
-> It doesn't matter that I don't want this: allowing 1 process corrupt
-> another's memory is a security issue.  Once you get an fd, you want to
-> be able to use it without worrying that a bug in another process will
-> crash yours.
-
-Ok, got it. Yes, that would be inacceptable.
-
-> > > If you assume losing the code for the second error condition is OK, why
-> > > is the first one so important?  That's why I used a counter (eventfd)
-> > > per virtqueue, on error userspace can scan the ring and poll the socket
-> > > and discover what's wrong, and counter ensures we can detect that error
-> > > happened while we were not looking.
+On Mon, Aug 10, 2009 at 10:08:26PM +0200, Laurent Riffard wrote:
+> Le 10/08/2009 01:33, Frederic Weisbecker a écrit :
 > > 
-> > I guess we were talking about different kinds of errors here, and I'm
-> > still not sure which one you are talking about.
+> > Thanks a lot for this report. Reiserfs xattrs are definetly paths I
+> > haven't tested deeply.
 > > 
-> Non fatal errors. E.g. translation errors probably should be
-> non-fatal. I can also imagine working around guest bugs in
-> userspace.
+> > I'm trying to reproduce these issues and will let you know once I get
+> > a fix.
+> > 
+> > (Btw, if you're still running this tree, you should update with the
+> > latest patch I just pushed, it's a very important fix).
+> > 
+> > Thanks,
+> > 
+> > Frederic.
+> 
+> I tried with your lastest patch (git head is at "kill-the-bkl/reiserfs: 
+> fix early readdir offset increment"), and the lockout still happens.
+> 
+> ~~
+> laurent
 
-Ah, so I guess the confusion was that I was worried about
-errors coming from the socket file descriptor, while you
-were thinking of errors from the guest side, which I did not
-expect to happen.
 
-The errors from the socket (or chardev, as that was the
-start of the argument) should still fit into the categories
-that I mentioned, either they can be handled by the host
-kernel, or they are fatal.
+Ok, it looks like the last two patches in my tree have introduced a locking
+inversion dependency between the reiserfs write lock and mm->mmap_sem.
 
-I'll read up in your code to see how you handle asynchronous
-non-fatal errors from the guest. Intuitively, I'd still
-assume that returning the first error should be enough
-because it will typically mean that you cannot continue
-without fixing it up first, and you might get the next
-error immediately after that.
+In filldir, we take the reiserfs lock and we might take mm->mmap_sem if
+we fault while copying the dir entry to the user.
 
-	Arnd <><
+In mmap, the mm->mmap_sem is taken before the call to the fs mmap callback
+and there we take the reiserfs lock.
+
+Locking inversion: AB - BA
+
+What is really sad here is that I have no choice: I can't take the reiserfs lock
+while filling a dir entry to the user.
+This part, introduced in the last two patches of the tree optimized a lot
+the throughput, and now I have to revert them :-(
+
