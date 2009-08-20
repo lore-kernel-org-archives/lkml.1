@@ -1,64 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbZHTL3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZHTLbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbZHTL3c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 07:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZHTL3b
+	id S1754039AbZHTLbc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 07:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbZHTLbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 07:29:31 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:43168 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753709AbZHTL3b (ORCPT
+	Thu, 20 Aug 2009 07:31:31 -0400
+Received: from sr-smtp.usish.com ([210.5.144.203]:53660 "EHLO
+	sr-smtp.usish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753197AbZHTLba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 07:29:31 -0400
-Message-ID: <4A8D3343.5030502@csr.com>
-Date: Thu, 20 Aug 2009 12:28:03 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Thu, 20 Aug 2009 07:31:30 -0400
+From: "jack wang" <jack_wang@usish.com>
+To: "'Jens Axboe'" <jens.axboe@oracle.com>, "'Jeff Garzik'" <jeff@garzik.org>
+Cc: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>, <Eric.Moore@lsi.com>
+References: <1249588685-4662-1-git-send-email-jens.axboe@oracle.com> <1249588685-4662-2-git-send-email-jens.axboe@oracle.com> <20090806223257.0c33cf15@lxorguk.ukuu.org.uk> <20090807063745.GQ12579@kernel.dk> <4A7BE80A.6080808@garzik.org> <20090807085004.GV12579@kernel.dk> <20090807110517.GW12579@kernel.dk> <20090807113146.GX12579@kernel.dk> <20090819190804.GP12579@kernel.dk>
+Subject: Re: [PATCH 1/3] block: add blk-iopoll, a NAPI like approach forblock  devices
+Date: Thu, 20 Aug 2009 19:30:49 +0800
+Message-ID: <B021CBAD133A4E45A4BF6E6BDFDCA28F@usish.com.cn>
 MIME-Version: 1.0
-To: stefani@seibold.net
-CC: Joe Perches <joe@perches.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH 4/7] kfifo: rename kfifo_put... into kfifo_in... and kfifo_get...
- into kfifo_out...
-References: <1250714990.13476.3.camel@wall-e> <1250715606.13476.15.camel@wall-e> <1250715819.3407.88.camel@Joe-Laptop.home> <4A8D1E2E.1010006@csr.com> <20090820120310.19332j54j4mf7rry@mail.your-server.de>
-In-Reply-To: <20090820120310.19332j54j4mf7rry@mail.your-server.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Aug 2009 11:28:03.0767 (UTC) FILETIME=[481E6C70:01CA2189]
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: AcohAIIaZtmiGS0NSUy5pAkF8hjbbQAiLQ4A
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+In-Reply-To: <20090819190804.GP12579@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-stefani@seibold.net wrote:
-> Zitat von David Vrabel <david.vrabel@csr.com>:
+On Fri, Aug 07 2009, Jens Axboe wrote:
+> On Fri, Aug 07 2009, Jens Axboe wrote:
+> > On Fri, Aug 07 2009, Jens Axboe wrote:
+> > > > I'm not NAK'ing...  just inserting some relevant NAPI field
+experience,  
+> > > > and hoping for some numbers that better measure the costs/benefits.
+> > > 
+> > > Appreciate you looking over this, and I'll certainly be posting some
+> > > more numbers on this. It'll largely depend on both storage,
+controller,
+> > > and worload.
+> > 
+> > Here's a quick set of numbers, beating with random reads on a drive.
+> > Average of three runs for each, stddev is very low so confidence in the
+> > numbers should be high.
+> > 
+> > With iopoll=0 (disabled), stock:
+> > 
+> > blocksize       IOPS    ints/sec        usr     sys
+> > ------------------------------------------------------
+> > 4k              48401   ~30500          3.36%   27.26%
+> > 
+> > clat (usec): min=1052, max=21615, avg=10541.48, stdev=243.48
+> > clat (usec): min=1066, max=22040, avg=10543.69, stdev=242.05
+> > clat (usec): min=1057, max=23237, avg=10529.04, stdev=239.30
+> > 
+> > 
+> > With iopoll=1
+> > 
+> > blocksize       IOPS    ints/sec        usr     sys
+> > ------------------------------------------------------
+> > 4k              48452   ~29000          3.37%   26.47%
+> > 
+> > 
+> > clat (usec): min=1178, max=21662, avg=10542.72, stdev=247.87
+> > clat (usec): min=1074, max=21783, avg=10534.14, stdev=240.54
+> > clat (usec): min=1102, max=22123, avg=10509.42, stdev=225.73
 > 
->> Joe Perches wrote:
->>> On Wed, 2009-08-19 at 23:00 +0200, Stefani Seibold wrote:
->>>> rename kfifo_put... into kfifo_in... to prevent miss use of old  
->>>> non in kernel-tree drivers
->>>> ditto for kfifo_get... -> kfifo_out...
->>> I would have thought
->>> 	kfifo_put -> kfifo_out
->>> 	kfifo_get -> kfifo_in
->>> but maybe that's just me.
->> Use push and pull instead?  In and out (whichever way) isn't obvious enough.
->>
->> David
->>
+> Lets raise the bar a bit, this time using 8k reads on the faster box.
 > 
-> As i wrote before: FIFO means first in/first out not first  
-> pushed/first pulled nor first put/first get
-> It it logical.
+> iopoll=0
+> 
+> blocksize       IOPS    ints/sec        usr     sys
+> ------------------------------------------------------
+> 8k              64050   ~76000          4.12%   45.01%
+> 
+> clat (usec): min=1326, max=18994, avg=7967.54, stdev=214.12
+> clat (usec): min=1325, max=25404, avg=7968.06, stdev=239.87
+> clat (usec): min=1273, max=21414, avg=7963.43, stdev=231.27
+> 
+> 
+> iopoll=1
+> 
+> blocksize       IOPS    ints/sec        usr     sys
+> ------------------------------------------------------
+> 8k              64162   ~55000          4.07%   42.32%
+> 
+> clat (usec): min=1380, max=19681, avg=7960.31, stdev=197.41
+> clat (usec): min=1370, max=37508, avg=7954.61, stdev=210.35
+> clat (usec): min=1332, max=23383, avg=7947.99, stdev=209.60
+> 
+> Again, purely a synthetic IO benchmark, but the sys reduction is
+> interesting.
 
-In and out aren't verbs.
+Upping the ante a bit more, this time on a really fast box. Just to show
+that iopoll works well even on just about the fastest CPU you can throw
+at it.
 
-David
+iopoll=0
+
+blocksize       IOPS    ints/sec        usr     sys
+------------------------------------------------------
+8k              64823   ~67000          4.75%   13.41%
+
+clat (usec): min=1430, max=15770, avg=7880.60, stdev=118.95
+clat (usec): min=1249, max=17810, avg=7887.34, stdev=120.39
+clat (usec): min=1729, max=15473, avg=7888.13, stdev=118.70
+
+
+iopoll=1
+
+blocksize       IOPS    ints/sec        usr     sys
+------------------------------------------------------
+8k              64825   ~65000         4.37%   11.39%
+
+clat (usec): min=1530, max=15195, avg=7910.01, stdev=111.43
+clat (usec): min=1495, max=16180, avg=7885.11, stdev=115.56
+clat (usec): min=1446, max=19733, avg=7890.46, stdev=139.05
+
 -- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+Jens Axboe
 
 
-'member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom'
+Hi Jens
+Could you tell me what tool do you use to get the IO benchmark?  
+Thanks
+Jack Wang
+--
+To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
