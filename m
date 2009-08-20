@@ -1,89 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbZHTO64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZHTPBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbZHTO64 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 10:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754693AbZHTO64
+	id S1754760AbZHTPBb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 11:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZHTPBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 10:58:56 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:44239 "EHLO elrond.infotech.no"
+	Thu, 20 Aug 2009 11:01:31 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40317 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754676AbZHTO6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 10:58:54 -0400
-Message-ID: <4A8D64A5.9060003@interlog.com>
-Date: Thu, 20 Aug 2009 10:58:45 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1754287AbZHTPB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 11:01:29 -0400
+Message-ID: <4A8D65CC.8030205@redhat.com>
+Date: Thu, 20 Aug 2009 11:03:40 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Ric Wheeler <rwheeler@redhat.com>
-CC: Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
        Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, xfs@oss.sgi.com,
-       linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH, RFC] xfs: batched discard support
-References: <20090816004705.GA7347@infradead.org> <20090819203916.GA25296@elte.hu> <4A8CA956.2060406@rtr.ca> <4A8D5442.1000302@redhat.com>
-In-Reply-To: <4A8D5442.1000302@redhat.com>
+       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?UTF-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
+       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH -tip v14 01/12] x86: instruction decoder API
+References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203413.31965.49709.stgit@localhost.localdomain> <20090819234227.GJ4972@nowhere> <20090820002113.GK4972@nowhere>
+In-Reply-To: <20090820002113.GK4972@nowhere>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ric Wheeler wrote:
-> On 08/19/2009 09:39 PM, Mark Lord wrote:
->> [resending, after fixing the Cc: list; somebody trimmed it earlier]
+Frederic Weisbecker wrote:
+> On Thu, Aug 20, 2009 at 01:42:31AM +0200, Frederic Weisbecker wrote:
+>> On Thu, Aug 13, 2009 at 04:34:13PM -0400, Masami Hiramatsu wrote:
+>>> Add x86 instruction decoder to arch-specific libraries. This decoder
+>>> can decode x86 instructions used in kernel into prefix, opcode, modrm,
+>>> sib, displacement and immediates. This can also show the length of
+>>> instructions.
+>>>
+>>> This version introduces instruction attributes for decoding instructions.
+>>> The instruction attribute tables are generated from the opcode map file
+>>> (x86-opcode-map.txt) by the generator script(gen-insn-attr-x86.awk).
+>>>
+>>> Currently, the opcode maps are based on opcode maps in Intel(R) 64 and
+>>> IA-32 Architectures Software Developers Manual Vol.2: Appendix.A,
+>>> and consist of below two types of opcode tables.
+>>>
+>>> 1-byte/2-bytes/3-bytes opcodes, which has 256 elements, are
+>>> written as below;
+>>>
+>>>   Table: table-name
+>>>   Referrer: escaped-name
+>>>   opcode: mnemonic|GrpXXX [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
+>>>    (or)
+>>>   opcode: escape # escaped-name
+>>>   EndTable
+>>>
+>>> Group opcodes, which has 8 elements, are written as below;
+>>>
+>>>   GrpTable: GrpXXX
+>>>   reg:  mnemonic [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
+>>>   EndTable
+>>>
+>>> These opcode maps include a few SSE and FP opcodes (for setup), because
+>>> those opcodes are used in the kernel.
+>>>
 >>
->> Jamie Lokier wrote:
->> ..
->>> I don't remember - does TRIM guarantee the blocks read zeros afterwards?
->> ..
 >>
->> No, it doesn't.
+>> I'm getting the following build error on an old K7 box:
 >>
->> A drive can optionally support "deterministic TRIM", whereby it will 
->> return
->> consistent data for any given trimmed sector afterwards, but that 
->> doesn't mean zeros.
+>> arch/x86/lib/inat.c: In function ‘inat_get_opcode_attribute’:
+>> arch/x86/lib/inat.c:29: erreur: ‘inat_primary_table’ undeclared (first use in this function)
+>> arch/x86/lib/inat.c:29: erreur: (Each undeclared identifier is reported only once
+>> arch/x86/lib/inat.c:29: erreur: for each function it appears in.)
 >>
->> -ml
-> 
-> Note that returning consistent data is critical for devices that are 
-> used in a RAID group since you will need each RAID block that is used to 
-> compute the parity to continue to return the same data until you 
-> overwrite it with new data :-)
-> 
-> If we have a device that does not support this (or is misconfigured not 
-> to do this), we should not use those devices in an MD group & do discard 
-> against it...
+>>
+>> I've attached my config. I haven't such problem on a dual x86-64 box.
+>
+>
+> Actually I have the same problem in x86-64
+> The content of my arch/x86/lib/inat-tables.c:
+>
+> /* x86 opcode map generated from x86-opcode-map.txt */
+> /* Do not change this code. */
+> /* Table: one byte opcode */
+> /* Escape opcode map array */
+> const insn_attr_t const *inat_escape_tables[INAT_ESC_MAX + 1][INAT_LPREFIX_MAX + 1] = {
+> };
+>
+> /* Group opcode map array */
+> const insn_attr_t const *inat_group_tables[INAT_GRP_MAX + 1][INAT_LPREFIX_MAX + 1] = {
+> };
+>
+>
+> I guess there is a problem with the generation of this file.
 
-A closer reading of d2015r2-ATAATAPI_Command_Set_-_2_ACS-2.pdf
-section 7.10.3.2 (latest ACS-2 draft from www.t13.org) shows
-that there are 3 possible variants for data read from a logical
-block that has been trimmed (or "unmapped"):
-    a) indeterminate
-    b) determinate
-    c) determinate, return all zeroes
+Aah, you may use mawk on Ubuntu 9.04, right?
+If so, unfortunately, mawk is still under development.
 
-In the case of b) the same data is returned for each
-subsequent read. And that data must not be something
-that has previously be written to some other LBA!
+http://invisible-island.net/mawk/CHANGES
 
-In the case of SCSI (sbc3r19.pdf) case b) is not
-supported (very sensibly IMO).
+> 20090727
+> 	add check/fix to prevent gsub from recurring to modify on a substring
+> 	of the current line when the regular expression is anchored to the
+> 	beginning of the line; fixes gawk's anchgsub testcase.
+>
+> 	add check for implicit concatenation mistaken for exponent; fixes
+> 	gawk's hex testcase.
+>
+> 	add character-classes to built-in regular expressions.
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Look, this means we can't use char-class expressions like
+[:lower:] until this version...
+
+And I've found another bug in mawk-1.3.3-20090728(the latest one).
+it almost works, but;
+
+$ mawk 'BEGIN {printf("0x%x\n", 0)}'
+0x1
+$ gawk 'BEGIN {printf("0x%x\n", 0)}'
+0x0
+
+This bug skips an array element index 0x0 in inat-tables.c :(
+
+So, I recommend you to install gawk instead mawk until that
+supports all posix-awk features, since I don't think it is
+good idea to avoid all those bugs which depends on
+implementation (not specification).
 
 
-Another difference I noticed between SCSI and ATA
-drafts is with the SECURITY ERASE UNIT command which
-is somewhat similar to the SCSI FORMAT UNIT command
-(which includes a security erase option). The ATA
-draft says that all blocks are determinate ("mapped"
-in the SCSI state model) after a SECURITY ERASE UNIT.
-The SCSI draft says that all logical blocks may be
-unmapped after FORMAT UNIT.
+Thank you,
 
-Doug Gilbert
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
