@@ -1,74 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752071AbZHTSvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752008AbZHTS52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752071AbZHTSvc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 14:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZHTSvb
+	id S1752008AbZHTS52 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 14:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZHTS51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 14:51:31 -0400
-Received: from outbound-mail-25.bluehost.com ([69.89.21.20]:60367 "HELO
-	outbound-mail-25.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751862AbZHTSvb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 14:51:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=VUXmDrrCIx2WwEfBdRoLNsJY2MvDfhdJM6xK8GR57UW2i1zsXhDPdL9zH3Urcfx+HbuggGIdloeahMP8mBHl8DL/3n8TKPQV/OrpNyflH6dhKqSo1zkZNrdN1zJ4uzNR;
-Date: Thu, 20 Aug 2009 11:51:30 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Cijoml Cijomlovic Cijomlov" <cijoml@volny.cz>
-Subject: Re: [Bug #13634] [drm:drm_wait_vblank] *ERROR* failed to acquire
- vblank counter, -22
-Message-ID: <20090820115130.6f824b8a@jbarnes-g45>
-In-Reply-To: <200908202019.23819.rjw@sisk.pl>
-References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
-	<Era7U-todKF.A.wmC.ZmIjKB@chimera>
-	<20090820110532.24d5b2ea@jbarnes-g45>
-	<200908202019.23819.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+	Thu, 20 Aug 2009 14:57:27 -0400
+Received: from mga09.intel.com ([134.134.136.24]:24068 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751705AbZHTS50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 14:57:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,415,1246863600"; 
+   d="scan'208";a="543281620"
+Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090819210251.GD13061@ldl.fc.hp.com>
+References: <20090814163618.GQ7185@ldl.fc.hp.com>
+	 <1250276831.3077.17.camel@sbs-t61.sc.intel.com>
+	 <20090814192730.GA6431@ldl.fc.hp.com>
+	 <1250279799.3077.41.camel@sbs-t61.sc.intel.com>
+	 <20090819210251.GD13061@ldl.fc.hp.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 20 Aug 2009 11:56:33 -0700
+Message-Id: <1250794594.2754.10.camel@sbs-t61.sc.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 20:19:23 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Thursday 20 August 2009, Jesse Barnes wrote:
-> > On Wed, 19 Aug 2009 22:40:45 +0200 (CEST)
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > This message has been generated automatically as a part of a
-> > > report of regressions introduced between 2.6.29 and 2.6.30.
-> > > 
-> > > The following bug entry is on the current list of known
-> > > regressions introduced between 2.6.29 and 2.6.30.  Please verify
-> > > if it still should be listed and let me know (either way).
-> > > 
-> > > 
-> > > Bug-Entry	:
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=13634
-> > > Subject		: [drm:drm_wait_vblank] *ERROR* failed to
-> > > acquire vblank counter, -22 Submitter	: Cijoml Cijomlovic
-> > > Cijomlov <cijoml@volny.cz> Date		: 2009-06-27 07:02
-> > > (54 days old)
-> > 
-> > Patches to fix this have been queued.
+On Wed, 2009-08-19 at 14:02 -0700, Alex Chiang wrote:
+> I understand your point about keeping the output of /proc/cpuinfo
+> close to what the cpuid instruction says.
 > 
-> Thanks for the update.
+> But in regard to the particular field that we're talking about
+> here -- 'physical id' -- that doesn't seem to be represented from
+> cpuid anyway. We're stuffing an APIC ID into that field, even
+> when we already have other APIC ID output.
+
+For the current generation platforms, APIC ID's are typically from
+cpuid, except for large SGI UV platforms etc.
+
+> > For example, we shouldn't assume that original phys proc id's calculated
+> > from cpuid etc need not be contiguous and start from 0 etc. This is
+> > platform dependent and may vary from one version to another version of
+> > processor etc.
 > 
-> Can you please give me a pointer to the patch?
+> Sorry, I'm having a hard time parsing this sentence. Do you mean
+> to say:
+> 
+> 	we shouldn't assume that phys_proc_id calculated from
+> 	cpuid are contiguous and start from 0
+> 
+> ?
 
-commit 8d3457ec3198a569dd14dc9e3ae8b6163bcaa0b5
-Author: Paul Rolland <rol@as2917.net>
-Date:   Sun Aug 9 12:24:01 2009 +1000
+yes.
 
-Already in Linus's tree actually.
+> 
+> I agree with you (although I thought that they should be 0-based)
+> but this quirk addresses a specific platform, where I can assume
+> certain things about the BIOS, etc.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+What happens if for some reason, newer bios/newer cpu generations on
+this platform start having holes in the physical id space? We can't rule
+out these kind of changes and we don't want to go behind distros
+requesting fixes.
+
+> I agree with you in general, but again, this is a specific
+> platform quirk where I have a good idea of what is a supported
+> configuration.
+
+I am just nervous about future bios changes etc.
+
+> > Easiest route will be to add a new entry in /proc/cpuinfo
+> 
+> Well, if you remain unconvinced that fixing up 'physical id' is
+> the proper thing to do, here are some alternate proposals:
+> 
+> 	/proc/cpuinfo/chassis id
+> 	/sys/devices/system/cpu/$cpu/chassis id
+> 	/sys/devices/system/cpu/$cpu/topology/chassis id
+> 
+
+I really like this alternate proposal. This is simple and straight
+forward to everyone.
+
+thanks,
+suresh
+
