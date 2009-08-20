@@ -1,265 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZHTLuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbZHTLvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbZHTLuB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 07:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbZHTLuA
+	id S1754106AbZHTLvZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 07:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZHTLvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 07:50:00 -0400
-Received: from mga03.intel.com ([143.182.124.21]:52970 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754044AbZHTLt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 07:49:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,414,1246863600"; 
-   d="scan'208";a="178126188"
-Date: Thu, 20 Aug 2009 19:49:33 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [PATCH -v2] mm: do batched scans for mem_cgroup
-Message-ID: <20090820114933.GB7359@localhost>
-References: <20090820024929.GA19793@localhost> <20090820121347.8a886e4b.kamezawa.hiroyu@jp.fujitsu.com> <20090820040533.GA27540@localhost> <28c262360908200401t41c03ad3n114b24e03b61de08@mail.gmail.com>
+	Thu, 20 Aug 2009 07:51:24 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47292 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753991AbZHTLvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 07:51:23 -0400
+Cc: linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
+       rusty@rustcorp.com.au
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Thu, 20 Aug 2009 13:51:22 +0200
+From: "Helge Deller" <deller@gmx.de>
+In-Reply-To: <1250640565.15079.3.camel@mulgrave.site>
+Message-ID: <20090820115122.123520@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+References: <4A89CC4D.5040801@gmx.de>	 <1250549376.7858.96.camel@mulgrave.site>
+	 <200908181248.52572.rusty@rustcorp.com.au>	
+ <20090818050637.4C3E74730F@magilla.sf.frob.com>
+ <1250640565.15079.3.camel@mulgrave.site>
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+To: James Bottomley <James.Bottomley@HansenPartnership.com>, roland@redhat.com
+X-Authenticated: #1045983
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX19XcWZ0YdtXxZxIHsiMjbz+G+ER0dA6mNhEyjKl/s
+ F5RVU53ww4pQwr+XrumWPzKIbiXyb9O2F3zg== 
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262360908200401t41c03ad3n114b24e03b61de08@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-GMX-UID: 3FzlB3tRbHIhea3NNjQ0QZkiJihyatAC
+X-FuHaFi: 0.52
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 07:01:21PM +0800, Minchan Kim wrote:
-> Hi, Wu.
+> On Mon, 2009-08-17 at 22:06 -0700, Roland McGrath wrote:
+> > > I'd be happy to fail to load it.  There might be sysfs issues with it
+> too.
+> > 
+> > That sounds reasonable to me.  And I'd be happy to at least look a
+> little
+> > and maybe give some advice to anybody who finds themself building such a
+> > (free) module, doesn't know why or how it got that way, and wants to
+> ask.
 > 
-> On Thu, Aug 20, 2009 at 1:05 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > On Thu, Aug 20, 2009 at 11:13:47AM +0800, KAMEZAWA Hiroyuki wrote:
-> >> On Thu, 20 Aug 2009 10:49:29 +0800
-> >> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >>
-> >> > For mem_cgroup, shrink_zone() may call shrink_list() with nr_to_scan=1,
-> >> > in which case shrink_list() _still_ calls isolate_pages() with the much
-> >> > larger SWAP_CLUSTER_MAX.  It effectively scales up the inactive list
-> >> > scan rate by up to 32 times.
-> >> >
-> >> > For example, with 16k inactive pages and DEF_PRIORITY=12, (16k >> 12)=4.
-> >> > So when shrink_zone() expects to scan 4 pages in the active/inactive
-> >> > list, it will be scanned SWAP_CLUSTER_MAX=32 pages in effect.
-> >> >
-> >> > The accesses to nr_saved_scan are not lock protected and so not 100%
-> >> > accurate, however we can tolerate small errors and the resulted small
-> >> > imbalanced scan rates between zones.
-> >> >
-> >> > This batching won't blur up the cgroup limits, since it is driven by
-> >> > "pages reclaimed" rather than "pages scanned". When shrink_zone()
-> >> > decides to cancel (and save) one smallish scan, it may well be called
-> >> > again to accumulate up nr_saved_scan.
-> >> >
-> >> > It could possibly be a problem for some tiny mem_cgroup (which may be
-> >> > _full_ scanned too much times in order to accumulate up nr_saved_scan).
-> >> >
-> >> > CC: Rik van Riel <riel@redhat.com>
-> >> > CC: Minchan Kim <minchan.kim@gmail.com>
-> >> > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> >> > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> >> > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> >> > ---
-> >>
-> >> Hmm, how about this ?
-> >> ==
-> >> Now, nr_saved_scan is tied to zone's LRU.
-> >> But, considering how vmscan works, it should be tied to reclaim_stat.
-> >>
-> >> By this, memcg can make use of nr_saved_scan information seamlessly.
-> >
-> > Good idea, full patch updated with your signed-off-by :)
-> >
-> > Thanks,
-> > Fengguang
-> > ---
-> > mm: do batched scans for mem_cgroup
-> >
-> > For mem_cgroup, shrink_zone() may call shrink_list() with nr_to_scan=1,
-> > in which case shrink_list() _still_ calls isolate_pages() with the much
-> > larger SWAP_CLUSTER_MAX.  It effectively scales up the inactive list
-> > scan rate by up to 32 times.
+> Actually, for parisc, its not reasonable.  It's expected that our
+> modules have multiple text sections (we have to use -ffunction-sections
+> to generate them in order that the PCREL17 jump stubs can be
+> interleaved).
 > 
-> Yes. It can scan 32 times pages in only inactive list, not active list.
-
-Yes and no ;)
-
-inactive anon list over scanned => inactive_anon_is_low() == TRUE
-                                => shrink_active_list()
-                                => active anon list over scanned
-
-So the end result may be
-
-- anon inactive  => over scanned
-- anon active    => over scanned (maybe not as much)
-- file inactive  => over scanned
-- file active    => under scanned (relatively)
-
-> > For example, with 16k inactive pages and DEF_PRIORITY=12, (16k >> 12)=4.
-> > So when shrink_zone() expects to scan 4 pages in the active/inactive
-> > list, it will be scanned SWAP_CLUSTER_MAX=32 pages in effect.
+> The problem looks to be that some linker error gave the one of the named
+> function text sections a duplicate name.  Helge, can you post he objdump
+> info that shows which section had a duplicate name?
 > 
-> Active list scan would be scanned in 4,  inactive list  is 32.
+> Even with the duplicate name, though, the module should be perfectly
+> loadable.
 
-Exactly.
 
-> >
-> > The accesses to nr_saved_scan are not lock protected and so not 100%
-> > accurate, however we can tolerate small errors and the resulted small
-> > imbalanced scan rates between zones.
-> 
-> Yes.
-> 
-> > This batching won't blur up the cgroup limits, since it is driven by
-> > "pages reclaimed" rather than "pages scanned". When shrink_zone()
-> > decides to cancel (and save) one smallish scan, it may well be called
-> > again to accumulate up nr_saved_scan.
-> 
-> You mean nr_scan_try_batch logic ?
-> But that logic works for just global reclaim?
-> Now am I missing something?
-> 
-> Could you elaborate more? :)
+It's the ac97_bus kernel module:
+-rw-r--r-- 1 root root 3.0K 2009-08-19 12:25 ac97_bus.ko 
 
-Sorry for the confusion. The above paragraph originates from Balbir's
-concern:
 
-        This might be a concern (although not a big ATM), since we can't
-        afford to miss limits by much. If a cgroup is near its limit and we
-        drop scanning it. We'll have to work out what this means for the end
-        user. May be more fundamental look through is required at the priority
-        based logic of exposing how much to scan, I don't know.
+"objdump -x ac97_bus.ko" shows two .text sections:
 
-Thanks,
-Fengguang
+ac97_bus.ko:     file format elf32-hppa-linux
+ac97_bus.ko                                  
+architecture: hppa1.1, flags 0x00000011:     
+HAS_RELOC, HAS_SYMS                          
+start address 0x00000000                     
 
-> > It could possibly be a problem for some tiny mem_cgroup (which may be
-> > _full_ scanned too much times in order to accumulate up nr_saved_scan).
-> >
-> > CC: Rik van Riel <riel@redhat.com>
-> > CC: Minchan Kim <minchan.kim@gmail.com>
-> > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  include/linux/mmzone.h |    6 +++++-
-> >  mm/page_alloc.c        |    2 +-
-> >  mm/vmscan.c            |   20 +++++++++++---------
-> >  3 files changed, 17 insertions(+), 11 deletions(-)
-> >
-> > --- linux.orig/include/linux/mmzone.h   2009-07-30 10:45:15.000000000 +0800
-> > +++ linux/include/linux/mmzone.h        2009-08-20 11:51:08.000000000 +0800
-> > @@ -269,6 +269,11 @@ struct zone_reclaim_stat {
-> >         */
-> >        unsigned long           recent_rotated[2];
-> >        unsigned long           recent_scanned[2];
-> > +
-> > +       /*
-> > +        * accumulated for batching
-> > +        */
-> > +       unsigned long           nr_saved_scan[NR_LRU_LISTS];
-> >  };
-> >
-> >  struct zone {
-> > @@ -323,7 +328,6 @@ struct zone {
-> >        spinlock_t              lru_lock;
-> >        struct zone_lru {
-> >                struct list_head list;
-> > -               unsigned long nr_saved_scan;    /* accumulated for batching */
-> >        } lru[NR_LRU_LISTS];
-> >
-> >        struct zone_reclaim_stat reclaim_stat;
-> > --- linux.orig/mm/vmscan.c      2009-08-20 11:48:46.000000000 +0800
-> > +++ linux/mm/vmscan.c   2009-08-20 12:00:55.000000000 +0800
-> > @@ -1521,6 +1521,7 @@ static void shrink_zone(int priority, st
-> >        enum lru_list l;
-> >        unsigned long nr_reclaimed = sc->nr_reclaimed;
-> >        unsigned long swap_cluster_max = sc->swap_cluster_max;
-> > +       struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-> >        int noswap = 0;
-> >
-> >        /* If we have no swap space, do not bother scanning anon pages. */
-> > @@ -1540,12 +1541,9 @@ static void shrink_zone(int priority, st
-> >                        scan >>= priority;
-> >                        scan = (scan * percent[file]) / 100;
-> >                }
-> > -               if (scanning_global_lru(sc))
-> > -                       nr[l] = nr_scan_try_batch(scan,
-> > -                                                 &zone->lru[l].nr_saved_scan,
-> > -                                                 swap_cluster_max);
-> > -               else
-> > -                       nr[l] = scan;
-> > +               nr[l] = nr_scan_try_batch(scan,
-> > +                                         &reclaim_stat->nr_saved_scan[l],
-> > +                                         swap_cluster_max);
-> >        }
-> >
-> >        while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
-> > @@ -2128,6 +2126,7 @@ static void shrink_all_zones(unsigned lo
-> >  {
-> >        struct zone *zone;
-> >        unsigned long nr_reclaimed = 0;
-> > +       struct zone_reclaim_stat *reclaim_stat;
-> >
-> >        for_each_populated_zone(zone) {
-> >                enum lru_list l;
-> > @@ -2144,11 +2143,14 @@ static void shrink_all_zones(unsigned lo
-> >                                                l == LRU_ACTIVE_FILE))
-> >                                continue;
-> >
-> > -                       zone->lru[l].nr_saved_scan += (lru_pages >> prio) + 1;
-> > -                       if (zone->lru[l].nr_saved_scan >= nr_pages || pass > 3) {
-> > +                       reclaim_stat = get_reclaim_stat(zone, sc);
-> > +                       reclaim_stat->nr_saved_scan[l] +=
-> > +                                               (lru_pages >> prio) + 1;
-> > +                       if (reclaim_stat->nr_saved_scan[l]
-> > +                                               >= nr_pages || pass > 3) {
-> >                                unsigned long nr_to_scan;
-> >
-> > -                               zone->lru[l].nr_saved_scan = 0;
-> > +                               reclaim_stat->nr_saved_scan[l] = 0;
-> >                                nr_to_scan = min(nr_pages, lru_pages);
-> >                                nr_reclaimed += shrink_list(l, nr_to_scan, zone,
-> >                                                                sc, prio);
-> > --- linux.orig/mm/page_alloc.c  2009-08-20 11:57:54.000000000 +0800
-> > +++ linux/mm/page_alloc.c       2009-08-20 11:58:39.000000000 +0800
-> > @@ -3716,7 +3716,7 @@ static void __paginginit free_area_init_
-> >                zone_pcp_init(zone);
-> >                for_each_lru(l) {
-> >                        INIT_LIST_HEAD(&zone->lru[l].list);
-> > -                       zone->lru[l].nr_saved_scan = 0;
-> > +                       zone->reclaim_stat.nr_saved_scan[l] = 0;
-> >                }
-> >                zone->reclaim_stat.recent_rotated[0] = 0;
-> >                zone->reclaim_stat.recent_rotated[1] = 0;
-> >
-> > --
-> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> > the body to majordomo@kvack.org.  For more info on Linux MM,
-> > see: http://www.linux-mm.org/ .
-> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> >
-> 
-> 
-> 
-> -- 
-> Kind regards,
-> Minchan Kim
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .note.gnu.build-id 00000024  00000000  00000000  00000034  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA            
+  1 .text         00000000  00000000  00000000  00000058  2**0     
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE            
+  2 .text.ac97_bus_match 0000001c  00000000  00000000  00000058  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE              
+  3 .exit.text    00000030  00000000  00000000  00000074  2**2       
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE       
+  4 .init.text    00000030  00000000  00000000  000000a4  2**2       
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE       
+  5 .text         00000000  00000000  00000000  000000d4  2**0       
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE              
+  6 .rodata.str1.4 00000008  00000000  00000000  000000d4  2**2      
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA              
+  7 .modinfo      00000040  00000000  00000000  000000dc  2**2       
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA              
+  8 __ksymtab     00000008  00000000  00000000  0000011c  2**2       
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, DATA       
+  9 __ksymtab_strings 0000000e  00000000  00000000  00000124  2**0   
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA              
+ 10 .PARISC.unwind 00000030  00000000  00000000  00000134  2**2      
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, DATA       
+ 11 .data         00000034  00000000  00000000  00000164  2**2       
+                  CONTENTS, ALLOC, LOAD, RELOC, DATA                 
+ 12 .gnu.linkonce.this_module 00000160  00000000  00000000  00000198  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, DATA, LINK_ONCE_DISCARD   
+ 13 .bss          00000000  00000000  00000000  000002f8  2**0            
+                  ALLOC                                                   
+ 14 .comment      0000003a  00000000  00000000  000002f8  2**0            
+                  CONTENTS, READONLY                                      
+SYMBOL TABLE:                                                             
+00000000 l    d  .note.gnu.build-id     00000000 .note.gnu.build-id       
+00000000 l    d  .text  00000000 .text                                    
+00000000 l    d  .text.ac97_bus_match   00000000 .text.ac97_bus_match     
+00000000 l    d  .exit.text     00000000 .exit.text                       
+00000000 l    d  .init.text     00000000 .init.text                       
+00000000 l    d  .text  00000000 .text                                    
+00000000 l    d  .rodata.str1.4 00000000 .rodata.str1.4                   
+00000000 l    d  .modinfo       00000000 .modinfo                         
+00000000 l    d  __ksymtab      00000000 __ksymtab                        
+00000000 l    d  __ksymtab_strings      00000000 __ksymtab_strings        
+00000000 l    d  .PARISC.unwind 00000000 .PARISC.unwind                   
+00000000 l    d  .data  00000000 .data                                    
+00000000 l    d  .gnu.linkonce.this_module      00000000 .gnu.linkonce.this_module
+00000000 l    d  .bss   00000000 .bss                                             
+00000000 l    d  .comment       00000000 .comment                                 
+00000000 l     F .text.ac97_bus_match   0000001c ac97_bus_match                   
+00000000 l     F .exit.text     00000030 ac97_bus_exit                            
+00000000 l     F .init.text     00000030 ac97_bus_init                            
+00000000 l     O .modinfo       0000000c __mod_license77                          
+00000000 l     O __ksymtab      00000008 __ksymtab_ac97_bus_type                  
+00000000 l     O __ksymtab_strings      0000000e __kstrtab_ac97_bus_type          
+0000000c l     O .modinfo       00000009 __module_depends                         
+00000018 l     O .modinfo       00000026 __mod_vermagic5                          
+00000000 g     O .gnu.linkonce.this_module      00000160 __this_module            
+00000000 g     F .exit.text     00000030 cleanup_module                           
+00000000 g     F .init.text     00000030 init_module                              
+00000000         *UND*  00000000 bus_unregister                                   
+00000000 g     O .data  00000034 ac97_bus_type                                    
+00000000         *UND*  00000000 bus_register                                     
+
+
+RELOCATION RECORDS FOR [.exit.text]:
+OFFSET   TYPE              VALUE
+00000010 R_PARISC_DPREL21L  ac97_bus_type
+00000014 R_PARISC_DPREL14R  ac97_bus_type
+00000018 R_PARISC_PCREL17F  bus_unregister
+
+
+RELOCATION RECORDS FOR [.init.text]:
+OFFSET   TYPE              VALUE
+00000010 R_PARISC_DPREL21L  ac97_bus_type
+00000014 R_PARISC_DPREL14R  ac97_bus_type
+00000018 R_PARISC_PCREL17F  bus_register
+
+
+RELOCATION RECORDS FOR [__ksymtab]:
+OFFSET   TYPE              VALUE
+00000000 R_PARISC_DIR32    ac97_bus_type
+00000004 R_PARISC_DIR32    __ksymtab_strings
+
+
+RELOCATION RECORDS FOR [.PARISC.unwind]:
+OFFSET   TYPE              VALUE
+00000000 R_PARISC_SEGREL32  ac97_bus_match
+00000004 R_PARISC_SEGREL32  .text.ac97_bus_match+0x00000018
+00000010 R_PARISC_SEGREL32  ac97_bus_exit
+00000014 R_PARISC_SEGREL32  .exit.text+0x0000002c
+00000020 R_PARISC_SEGREL32  ac97_bus_init
+00000024 R_PARISC_SEGREL32  .init.text+0x0000002c
+
+
+RELOCATION RECORDS FOR [.data]:
+OFFSET   TYPE              VALUE
+00000000 R_PARISC_DIR32    .rodata.str1.4
+00000010 R_PARISC_PLABEL32  ac97_bus_match
+
+
+RELOCATION RECORDS FOR [.gnu.linkonce.this_module]:
+OFFSET   TYPE              VALUE
+000000d4 R_PARISC_PLABEL32  init_module
+00000150 R_PARISC_PLABEL32  cleanup_module
+
+
+Helge
+-- 
+GRATIS f�r alle GMX-Mitglieder: Die maxdome Movie-FLAT!
+Jetzt freischalten unter http://portal.gmx.net/de/go/maxdome01
