@@ -1,112 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbZHTJOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZHTJR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbZHTJOn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 05:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZHTJOn
+	id S1753411AbZHTJR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 05:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbZHTJR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 05:14:43 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:57127 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752210AbZHTJOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 05:14:42 -0400
-Message-ID: <4A8D144C.5050005@redhat.com>
-Date: Thu, 20 Aug 2009 17:15:56 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	Thu, 20 Aug 2009 05:17:28 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:37166 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753266AbZHTJR1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 05:17:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=f9iEWHwugTpgncVx0ZE6fRqp75qNLIlaKGYtBRDyIpckKeVCTmpjzVv7U+97oT3+bY
+         IZvY8UFvao7gMvLqVbqli/RexcYGIIjNqujeIH2NvX7PIyqePUxIce7PfA8kyZDnjqYS
+         UwCiGwJIIlAlNHlr2X7/k2G+RKnq6AjtmbvDo=
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-mm@kvack.org,
-       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
-References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>	<m1bpmk8l1g.fsf@fess.ebiederm.org>	<4A83893D.50707@redhat.com>	<m1eirg5j9i.fsf@fess.ebiederm.org>	<4A83CD84.8040609@redhat.com>	<m1tz0avy4h.fsf@fess.ebiederm.org>	<4A8927DD.6060209@redhat.com>	<20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>	<4A8A4ABB.70003@redhat.com>	<20090818172552.779d0768.kamezawa.hiroyu@jp.fujitsu.com>	<4A8A83F4.6010408@redhat.com>	<20090819085703.ccf9992a.kamezawa.hiroyu@jp.fujitsu.com>	<4A8B6649.3080103@redhat.com> <20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <1250706980-10424-1-git-send-email-Mario_Limonciello@Dell.com>
+References: <1250706980-10424-1-git-send-email-Mario_Limonciello@Dell.com>
+Date: Thu, 20 Aug 2009 10:17:28 +0100
+Message-ID: <9b2b86520908200217j6a62b19dk6214b827af34418@mail.gmail.com>
+Subject: Re: [PATCH 3/3] Drop platform sysfs attributes from compal-laptop
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Mario Limonciello <Mario_Limonciello@dell.com>
+Cc: cezary.jackiewicz@gmail.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Wed, 19 Aug 2009 10:41:13 +0800
-> Amerigo Wang <amwang@redhat.com> wrote:
+On 8/19/09, Mario Limonciello <Mario_Limonciello@dell.com> wrote:
+>  Now that there is rfkill support, there is no need
+>  to manually grok the files in sysfs
+> Signed-off-by: Mario Limonciello <Mario_Limonciello@Dell.com>
+
+> @@ -464,12 +314,7 @@ static int __init compal_init(void)
 >
->   
->> KAMEZAWA Hiroyuki wrote:
->>     
->>> On Tue, 18 Aug 2009 18:35:32 +0800
->>> Amerigo Wang <amwang@redhat.com> wrote:
->>>
->>>   
->>>       
->>>> KAMEZAWA Hiroyuki wrote:
->>>>     
->>>>         
->>>>> On Tue, 18 Aug 2009 14:31:23 +0800
->>>>> Amerigo Wang <amwang@redhat.com> wrote:
->>>>>   
->>>>>       
->>>>>           
->>>>>>>     It's hidden from the system before mem_init() ?
->>>>>>>   
->>>>>>>       
->>>>>>>           
->>>>>>>               
->>>>>> Not sure, but probably yes. It is reserved in setup_arch() which is 
->>>>>> before mm_init() which calls mem_init().
->>>>>>
->>>>>> Do you have any advice to free that reserved memory after boot? :)
->>>>>>
->>>>>>     
->>>>>>         
->>>>>>             
->>>>> Let's see arch/x86/mm/init.c::free_initmem()
->>>>>
->>>>> Maybe it's all you want.
->>>>>
->>>>> 	- ClearPageReserved()
->>>>> 	- init_page_count()
->>>>> 	- free_page()
->>>>> 	- totalram_pages++
->>>>>   
->>>>>       
->>>>>           
->>>> Just FYI: calling ClearPageReserved() caused an oops: "Unable to handle 
->>>> paging request".
->>>>
->>>> I am trying to figure out why...
->>>>
->>>>     
->>>>         
->>> Hmm...then....memmap is not there.
->>> pfn_valid() check will help you. What arch ? x86-64 ?
->>>   
->>>       
->> Hmm, yes, x86_64, but this code is arch-independent, I mean it should 
->> work or not work on all arch, no?
->>
->> So I am afraid we need to use other API to free it...
->>
->>     
-> The, problem is whether memmap is there or not. That's all.
-> plz see init sequence and check there are memmap.
-> If memory-for-crash is obtained via bootmem,
-> Don't you try to free memory hole ?
->   
+>  	ret = platform_device_add(compal_device);
+>  	if (ret)
+> -		goto fail_platform_device1;
+> -
+> -	ret = sysfs_create_group(&compal_device->dev.kobj,
+> -		&compal_attribute_group);
+> -	if (ret)
+> -		goto fail_platform_device2;
+> +		goto fail_platform_device;
+>
+>  	ret = setup_rfkill();
+>  	if (ret)
+> @@ -481,11 +326,7 @@ static int __init compal_init(void)
+>  	return 0;
+>
+>  fail_rfkill:
+> -fail_platform_device2:
+> -
+> -	platform_device_del(compal_device);
 
-Hi,
+Don't you still need to call platform_device_del() for the fail_rfkill case?
 
-It looks like that mem_map has 'struct page' for the reserved memory, I 
-checked my "early_node_map[] active PFN ranges" output, the reserved 
-memory area for crash kernel is right in one range. Am I missing 
-something here?
-
-I don't know why that oops comes out, maybe because of no PTE for thoese 
-pages?
-
-Thanks.
-
-
+> -
+> -fail_platform_device1:
+> +fail_platform_device:
+>
+>  	platform_device_put(compal_device);
