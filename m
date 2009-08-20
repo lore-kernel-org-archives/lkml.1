@@ -1,67 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZHTXNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZHTXSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbZHTXNX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 19:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZHTXNW
+	id S1755512AbZHTXSJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 19:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZHTXSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 19:13:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49947 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755428AbZHTXNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 19:13:21 -0400
-Date: Thu, 20 Aug 2009 23:13:00 GMT
-From: tip-bot for Jan Beulich <JBeulich@novell.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jbeulich@novell.com, JBeulich@novell.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com, JBeulich@novell.com, tglx@linutronix.de
-In-Reply-To: <4A8D84670200007800010D31@vpn.id2.novell.com>
-References: <4A8D84670200007800010D31@vpn.id2.novell.com>
-Subject: [tip:x86/urgent] x86: add vmlinux.lds to targets in arch/x86/boot/compressed/Makefile
-Message-ID: <tip-fc0ce23506d943b9eaa731a051769d0e0605eb03@git.kernel.org>
-Git-Commit-ID: fc0ce23506d943b9eaa731a051769d0e0605eb03
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 20 Aug 2009 23:13:01 +0000 (UTC)
+	Thu, 20 Aug 2009 19:18:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56249 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755396AbZHTXSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 19:18:07 -0400
+Date: Thu, 20 Aug 2009 16:13:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: balbir@linux.vnet.ibm.com
+Cc: kamezawa.hiroyu@jp.fujitsu.com, prarit@redhat.com, andi.kleen@intel.com,
+       m-kosaki@ceres.dti.ne.jp, dmiyakawa@google.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: Scalability fixes -- 2.6.31 candidate?
+Message-Id: <20090820161325.562b255e.akpm@linux-foundation.org>
+In-Reply-To: <20090820190941.GA29572@balbir.in.ibm.com>
+References: <20090820190941.GA29572@balbir.in.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fc0ce23506d943b9eaa731a051769d0e0605eb03
-Gitweb:     http://git.kernel.org/tip/fc0ce23506d943b9eaa731a051769d0e0605eb03
-Author:     Jan Beulich <JBeulich@novell.com>
-AuthorDate: Thu, 20 Aug 2009 16:14:15 +0100
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 20 Aug 2009 16:08:58 -0700
+On Fri, 21 Aug 2009 00:39:42 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-x86: add vmlinux.lds to targets in arch/x86/boot/compressed/Makefile
+> Hi, Andrew,
+> 
+> I've been wondering if the scalability fixes for root overhead in
+> memory cgroup is a candidate for 2.6.31?
 
-The absence of vmlinux.lds here keeps .vmlinux.lds.cmd from being
-included, which in turn leads to it and all its dependents always
-getting rebuilt independent of whether they are already up-to-date.
+These?
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-LKML-Reference: <4A8D84670200007800010D31@vpn.id2.novell.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+memcg-improve-resource-counter-scalability.patch
+memcg-improve-resource-counter-scalability-checkpatch-fixes.patch
+memcg-improve-resource-counter-scalability-v5.patch
 
 
----
- arch/x86/boot/compressed/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> They don't change
+> functionality but help immensely using existing accounting features.
+> 
+> Opening up the email for more debate and discussion and thoughts.
+> 
 
-diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
-index e2ff504..f8ed065 100644
---- a/arch/x86/boot/compressed/Makefile
-+++ b/arch/x86/boot/compressed/Makefile
-@@ -4,7 +4,7 @@
- # create a compressed vmlinux image from the original vmlinux
- #
- 
--targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
-+targets := vmlinux.lds vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
- 
- KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
- KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
+They don't apply terribly well to mainline:
+
+patching file mm/memcontrol.c
+Hunk #1 FAILED at 70.
+Hunk #2 FAILED at 479.
+Hunk #3 FAILED at 1295.
+Hunk #4 FAILED at 1359.
+Hunk #5 FAILED at 1432.
+Hunk #6 FAILED at 1514.
+Hunk #7 FAILED at 1534.
+Hunk #8 FAILED at 1605.
+Hunk #9 FAILED at 1798.
+Hunk #10 FAILED at 1826.
+Hunk #11 FAILED at 1883.
+Hunk #12 FAILED at 1981.
+Hunk #13 succeeded at 2091 (offset -405 lines).
+12 out of 13 hunks FAILED -- saving rejects to file mm/memcontrol.c.rej
+Failed to apply memcg-improve-resource-counter-scalability
+
+so maybe you're referring to these:
+
+memcg-remove-the-overhead-associated-with-the-root-cgroup.patch
+memcg-remove-the-overhead-associated-with-the-root-cgroup-fix.patch
+memcg-remove-the-overhead-associated-with-the-root-cgroup-fix-2.patch
+
+as well.
+
+But then memcg-improve-resource-counter-scalability.patch still doesn't
+apply.  Maybe memcg-improve-resource-counter-scalability.patch depends
+on memory-controller-soft-limit-*.patch too.  I stopped looking.
+
+It's a lot of material and a lot of churn.  I'd be more inclined to
+proceed with a 2.6.32 merge and then perhaps you can see if you can
+come up with a minimal patchset for -stable, see if the -stable
+maintainers can be talked into merging it.
+
