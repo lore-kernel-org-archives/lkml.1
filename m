@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZHTWHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZHTWK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbZHTWHw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 18:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZHTWHv
+	id S1755017AbZHTWK7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 18:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZHTWK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 18:07:51 -0400
-Received: from mx1-old.redhat.com ([66.187.233.31]:38523 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751684AbZHTWHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 18:07:50 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 20 Aug 2009 18:10:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45436 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754863AbZHTWK6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 18:10:58 -0400
+Date: Thu, 20 Aug 2009 15:10:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "tina.yang" <tina.yang@oracle.com>
+Cc: jkosina@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysrq: add debug message to reboot event
+Message-Id: <20090820151024.a60567c7.akpm@linux-foundation.org>
+In-Reply-To: <4A8CB358.4090001@oracle.com>
+References: <4A89AC97.6030109@oracle.com>
+	<alpine.LNX.2.00.0908181339310.25797@wotan.suse.de>
+	<20090819135827.168621d8.akpm@linux-foundation.org>
+	<4A8CB358.4090001@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-X-Fcc: ~/Mail/linus
-Cc: Helge Deller <deller@gmx.de>, John David Anglin <dave@hiauly1.hia.nrc.ca>,
-       rusty@rustcorp.com.au, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dave.anglin@nrc.ca
-Subject: Re: kernel segv with 2.6.31-rc6 ?
-In-Reply-To: James Bottomley's message of  Thursday, 20 August 2009 15:50:49 -0600 <1250805049.4302.121.camel@mulgrave.site>
-References: <20090820185550.979544E7A@hiauly1.hia.nrc.ca>
-	<4A8DC3ED.4060005@gmx.de>
-	<1250805049.4302.121.camel@mulgrave.site>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20090820220739.F2E554730F@magilla.sf.frob.com>
-Date: Thu, 20 Aug 2009 15:07:39 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Since this is a relinked object, might it be possible that ld rather
-> than gcc is the culprit?
+On Wed, 19 Aug 2009 19:22:16 -0700
+"tina.yang" <tina.yang@oracle.com> wrote:
 
-I don't think ld -r does any of that sort of magic.
+> Add debug message to detect keyboard vs non-keyboard triggered sysrq-b events.
+> This is to assist postmortem debugging on complicated computing setup with
+> large number of applications involved where reboot event had occurred, but 
+> unclear of its origin.
 
-Thanks,
-Roland
+I'm still struggling to understand the motivation for the change. 
+There are a large number of ways in which a machine can be rebooted,
+all the way down to a triple-fault.  So it seems fairly arbitrary to
+add additional information to discriminate between just two of those
+ways.
+
+I assume that somewhere in your setup you have a script which does
+`echo b /proc/sysrq-trigger' and it took ages to work out that this was
+happening and you felt that having this code in place would have
+helped you debug that problem, yes?
+
+If so, I wonder what is the likelihood that someone else will have the
+same problem and will find this change useful.
+
+Perhaps we should do this for all sysrq events rather than just sysrq-b?
+
+
+> --- linux-2.6.18.i686/drivers/char/sysrq.c.orig	2009-08-13 10:55:57.526459000 -0700
+> +++ linux-2.6.18.i686/drivers/char/sysrq.c	2009-08-13 10:58:10.798739000 -0700
+
+2.6.18 is truly ancient and this patch doesn't apply at all to
+current development kernels.
+
