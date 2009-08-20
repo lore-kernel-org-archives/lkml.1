@@ -1,25 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZHTKUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbZHTKTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZHTKUR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 06:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbZHTKUP
+	id S1753909AbZHTKTc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 06:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZHTKTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 06:20:15 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60264 "EHLO kernel.dk"
+	Thu, 20 Aug 2009 06:19:30 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60155 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754002AbZHTKUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 06:20:09 -0400
+	id S1753934AbZHTKRy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 06:17:54 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
        bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk,
        Jens Axboe <jens.axboe@oracle.com>
 Subject: [PATCH 4/6] libata: use lazy workqueues for the pio task
-Date: Thu, 20 Aug 2009 12:20:02 +0200
-Message-Id: <1250763604-24355-5-git-send-email-jens.axboe@oracle.com>
+Date: Thu, 20 Aug 2009 12:17:42 +0200
+Message-Id: <1250763466-24282-8-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.4.173.g3f189
-In-Reply-To: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
-References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1250763466-24282-7-git-send-email-jens.axboe@oracle.com>
+References: <1250763466-24282-1-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-2-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-3-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-4-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-5-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-6-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-7-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
