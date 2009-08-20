@@ -1,97 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbZHTRTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755040AbZHTRTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754888AbZHTRTV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 13:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbZHTRTV
+	id S1755040AbZHTRTz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 13:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbZHTRTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 13:19:21 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:59668 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbZHTRTT (ORCPT
+	Thu, 20 Aug 2009 13:19:55 -0400
+Received: from atreides.gradator.net ([212.85.155.42]:49134 "EHLO
+	atreides.gradator.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754949AbZHTRTx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 13:19:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=n6BbcESG+x8XpOu/POE7M+C2SvVo24/WEwFhAxI1saig5Jp6GDxIWOTIsv2+Pmduyp
-         Y1oulDh0j8QlkHuKcLzizmeKOcsvEZVsD3m0HJUkmTPuauf5E+DUcXwFzAw7FWDc7/9+
-         Zc7h3oAa3Ov5hXMHXw7+Ogt1bHXoHFRHfhdmI=
+	Thu, 20 Aug 2009 13:19:53 -0400
+Date: Thu, 20 Aug 2009 19:19:53 +0200
+From: Sylvain Rochet <gradator@gradator.net>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
+       Sylvain Rochet <gradator@gradator.net>
+Message-ID: <20090820171952.GA15133@gradator.net>
+References: <20090725151751.GA6419@gradator.net> <20090727154253.GB8332@duck.suse.cz> <20090728112715.GA8442@gradator.net> <20090728135226.GA21682@duck.suse.cz> <20090728164142.GA13662@gradator.net> <20090803222901.GB23162@duck.suse.cz> <20090804111505.GA6433@gradator.net> <20090804225619.GB11097@duck.suse.cz> <20090806131555.GA23359@gradator.net> <20090812223453.GC10729@duck.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <4A8D60C1.6000809@redhat.com>
-References: <20090816004705.GA7347@infradead.org>
-	 <20090819203916.GA25296@elte.hu> <4A8CA956.2060406@rtr.ca>
-	 <4A8D5442.1000302@redhat.com> <4A8D5FDB.7080505@rtr.ca>
-	 <4A8D60C1.6000809@redhat.com>
-Date: Thu, 20 Aug 2009 13:19:20 -0400
-Message-ID: <87f94c370908201019i406e74a0s59c67f56ec2c9c16@mail.gmail.com>
-Subject: Re: [PATCH, RFC] xfs: batched discard support
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Mark Lord <liml@rtr.ca>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, xfs@oss.sgi.com,
-       linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       Neil Brown <neilb@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="IJpNTDwzlM2Ie8A6"
+Content-Disposition: inline
+In-Reply-To: <20090812223453.GC10729@duck.suse.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: gradator@atreides.gradator.net
+Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
+X-SA-Exim-Scanned: Yes (on atreides.gradator.net)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 10:42 AM, Ric Wheeler<rwheeler@redhat.com> wrote:
-> On 08/20/2009 10:38 AM, Mark Lord wrote:
->>
->> Ric Wheeler wrote:
->>>
->>> Note that returning consistent data is critical for devices that are
->>> used in a RAID group since you will need each RAID block that is used
->>> to compute the parity to continue to return the same data until you
->>> overwrite it with new data :-)
->>>
->>> If we have a device that does not support this (or is misconfigured
->>> not to do this), we should not use those devices in an MD group & do
->>> discard against it...
->>
->> ..
->>
->> Well, that's a bit drastic. But the RAID software should at least
->> not issue TRIM commands in ignorance of such.
->
-> If the storage can return different data in a sequence of READ requests of
-> the same sector (with no writes), there is nothing RAID could do. It would
-> see total garbage...
->
->> Would it still be okay to do the TRIMs when the entire parity stripe
->> (across all members) is being discarded? (As opposed to just partial
->> data there being dropped)
->
-> This should be safe if the MD bitmaps would prevent us from trying to
-> READ/regenerate parity for that stripe...
->
-> ric
 
-The harder thing for mdraid is putting a stripe back in service.  If
-even a single sector is written to a "discarded" stripe, the entire
-stripe has to be written with determinate data that has the right
-parity.
+--IJpNTDwzlM2Ie8A6
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-ie. Only full stripes can be discarded and only full-stripes can be
-put back in service.
+Hi!,
 
-Greg
--- 
-Greg Freemyer
-Head of EDD Tape Extraction and Processing team
-Litigation Triage Solutions Specialist
-http://www.linkedin.com/in/gregfreemyer
-Preservation and Forensic processing of Exchange Repositories White Paper -
-<http://www.norcrossgroup.com/forms/whitepapers/tng_whitepaper_fpe.html>
+On Thu, Aug 13, 2009 at 12:34:53AM +0200, Jan Kara wrote:
+>   Hello,
+>=20
+> On Thu 06-08-09 15:15:56, Sylvain Rochet wrote:
+> > > I have one idea what could cause your filesystem corruption, although=
+=20
+> > > it's a wild guess... Please try attached oneliner.
+> >=20
+> > Running since yesterday.
+>=20
+> Any news after a week of running? How often did the corruption happen
+> previously?
 
-The Norcross Group
-The Intersection of Evidence & Technology
-http://www.norcrossgroup.com
+Sorry for the late answer, I was lurking at HAR ;-)
+
+So, everything is fine, but the problem happened only one time on this=20
+server, so we cannot conclude anything after a few weeks. However,=20
+I now have physical access back, so we will switch back to the former=20
+server where the problem happened quite frequently, then we will see!
+
+By the way, syslogd is happy, eating about 350 MiB of kernel logs a day ;)
+
+Sylvain
+
+--IJpNTDwzlM2Ie8A6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFKjYW4DFub3qtEsS8RArIwAJ0bvebcBG9Yh4bqUGU/+jXb/zZojACeIfPM
+y+UiPvD92jzujLIGcU+qsw8=
+=FrVB
+-----END PGP SIGNATURE-----
+
+--IJpNTDwzlM2Ie8A6--
