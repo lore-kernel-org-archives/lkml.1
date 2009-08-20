@@ -1,4856 +1,2323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbZHTHUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbZHTHVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbZHTHUX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 03:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbZHTHUV
+	id S1753890AbZHTHVQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 03:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZHTHVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 03:20:21 -0400
-Received: from mx30.brocade.com ([144.49.194.4]:23205 "EHLO mx30.brocade.com"
+	Thu, 20 Aug 2009 03:21:16 -0400
+Received: from mga14.intel.com ([143.182.124.37]:23307 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753810AbZHTHUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 03:20:09 -0400
+	id S1753835AbZHTHVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 03:21:12 -0400
+X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.43,413,1246863600"; 
-   d="scan'208";a="89434921"
-Date: Thu, 20 Aug 2009 00:20:07 -0700
-From: Jing Huang <huangj@brocade.com>
-Message-Id: <200908200720.n7K7K7JU008155@swe57.brocade.com>
-To: James.Bottomley@HansenPartnership.com
-Subject: [PATCH 12/14] bfa: Brocade BFA FC SCSI driver (include part3)
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       rvadivel@brocade.com, vravindr@brocade.com
+   d="scan'208";a="178054549"
+Date: Thu, 20 Aug 2009 15:13:15 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: linux-nfs@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: mount.nfs: access denied by server
+Message-ID: <20090820071315.GA14765@localhost>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="mP3DRpeJDSE+ciuQ"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jing Huang <huangj@brocade.com>
 
-This patch contains common header files for linux driver,
-hardware/firmeare interface, and FC state machines. part-3
+--mP3DRpeJDSE+ciuQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Signed-off-by: Jing Huang <huangj@brocade.com>
----
- fcs/bfa_fcs.h       |   73 ++
- fcs/bfa_fcs_fcpim.h |  131 ++++
- fcs/bfa_fcs_fdmi.h  |   63 +
- fcs/bfa_fcs_lport.h |  226 +++++++
- fcs/bfa_fcs_rport.h |  104 +++
- fcs/bfa_fcs_vport.h |   63 +
- log/bfa_log_fcs.h   |   28 
- log/bfa_log_hal.h   |   30 
- log/bfa_log_linux.h |   44 +
- log/bfa_log_wdrv.h  |   36 +
- protocol/ct.h       |  492 +++++++++++++++
- protocol/fc.h       | 1105 ++++++++++++++++++++++++++++++++++
- protocol/fc_sp.h    |  224 +++++++
- protocol/fcp.h      |  186 +++++
- protocol/fdmi.h     |  163 +++++
- protocol/pcifw.h    |   75 ++
- protocol/scsi.h     | 1648 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- protocol/types.h    |   42 +
- 18 files changed, 4733 insertions(+)
+Hi,
 
-diff -urpN orig/drivers/scsi/bfa/include/fcs/bfa_fcs_fcpim.h patch/drivers/scsi/bfa/include/fcs/bfa_fcs_fcpim.h
---- orig/drivers/scsi/bfa/include/fcs/bfa_fcs_fcpim.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/fcs/bfa_fcs_fcpim.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,131 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/**
-+ *  bfa_fcs_fcpim.h BFA FCS FCP Initiator Mode interfaces/defines.
-+ */
-+
-+#ifndef __BFA_FCS_FCPIM_H__
-+#define __BFA_FCS_FCPIM_H__
-+
-+#include <defs/bfa_defs_status.h>
-+#include <defs/bfa_defs_itnim.h>
-+#include <fcs/bfa_fcs.h>
-+#include <fcs/bfa_fcs_rport.h>
-+#include <fcs/bfa_fcs_lport.h>
-+#include <bfa_fcpim.h>
-+
-+/*
-+ * forward declarations
-+ */
-+struct bfad_itnim_s;
-+
-+struct bfa_fcs_itnim_s {
-+	bfa_sm_t		sm;		/*  state machine */
-+	struct bfa_fcs_rport_s 	*rport;		/*  parent remote rport  */
-+	struct bfad_itnim_s   	*itnim_drv;	/*  driver peer instance */
-+	struct bfa_fcs_s      	*fcs;		/*  fcs instance         */
-+	struct bfa_timer_s 	timer;		/*  timer functions      */
-+	struct bfa_itnim_s 	*bfa_itnim;	/*  BFA itnim struct     */
-+	bfa_boolean_t	 	seq_rec;	/*  seq recovery support */
-+	bfa_boolean_t	 	rec_support;	/*  REC supported        */
-+	bfa_boolean_t	 	conf_comp;	/*  FCP_CONF     support */
-+	bfa_boolean_t	 	task_retry_id;	/*  task retry id supp   */
-+	struct bfa_fcxp_wqe_s 	fcxp_wqe;	/*  wait qelem for fcxp  */
-+	struct bfa_fcxp_s *fcxp;		/*  FCXP in use          */
-+	struct bfa_itnim_stats_s 	stats;	/*  itn statistics       */
-+};
-+
-+
-+static inline struct bfad_port_s *
-+bfa_fcs_itnim_get_drvport(struct bfa_fcs_itnim_s *itnim)
-+{
-+	return itnim->rport->port->bfad_port;
-+}
-+
-+
-+static inline struct bfa_fcs_port_s *
-+bfa_fcs_itnim_get_port(struct bfa_fcs_itnim_s *itnim)
-+{
-+	return itnim->rport->port;
-+}
-+
-+
-+static inline wwn_t
-+bfa_fcs_itnim_get_nwwn(struct bfa_fcs_itnim_s *itnim)
-+{
-+	return itnim->rport->nwwn;
-+}
-+
-+
-+static inline wwn_t
-+bfa_fcs_itnim_get_pwwn(struct bfa_fcs_itnim_s *itnim)
-+{
-+	return itnim->rport->pwwn;
-+}
-+
-+
-+static inline u32
-+bfa_fcs_itnim_get_fcid(struct bfa_fcs_itnim_s *itnim)
-+{
-+	return itnim->rport->pid;
-+}
-+
-+
-+static inline   u32
-+bfa_fcs_itnim_get_maxfrsize(struct bfa_fcs_itnim_s *itnim)
-+{
-+	return itnim->rport->maxfrsize;
-+}
-+
-+
-+static inline   enum fc_cos
-+bfa_fcs_itnim_get_cos(struct bfa_fcs_itnim_s *itnim)
-+{
-+	return itnim->rport->fc_cos;
-+}
-+
-+
-+static inline struct bfad_itnim_s *
-+bfa_fcs_itnim_get_drvitn(struct bfa_fcs_itnim_s *itnim)
-+{
-+	return itnim->itnim_drv;
-+}
-+
-+
-+static inline struct bfa_itnim_s *
-+bfa_fcs_itnim_get_halitn(struct bfa_fcs_itnim_s *itnim)
-+{
-+	return itnim->bfa_itnim;
-+}
-+
-+/**
-+ * bfa fcs FCP Initiator mode API functions
-+ */
-+void bfa_fcs_itnim_get_attr(struct bfa_fcs_itnim_s *itnim,
-+			struct bfa_itnim_attr_s *attr);
-+void bfa_fcs_itnim_get_stats(struct bfa_fcs_itnim_s *itnim,
-+			struct bfa_itnim_stats_s *stats);
-+struct bfa_fcs_itnim_s *bfa_fcs_itnim_lookup(struct bfa_fcs_port_s *port,
-+			wwn_t rpwwn);
-+bfa_status_t bfa_fcs_itnim_attr_get(struct bfa_fcs_port_s *port, wwn_t rpwwn,
-+			struct bfa_itnim_attr_s *attr);
-+bfa_status_t bfa_fcs_itnim_stats_get(struct bfa_fcs_port_s *port, wwn_t rpwwn,
-+			struct bfa_itnim_stats_s *stats);
-+bfa_status_t bfa_fcs_itnim_stats_clear(struct bfa_fcs_port_s *port,
-+			wwn_t rpwwn);
-+#endif /* __BFA_FCS_FCPIM_H__ */
-diff -urpN orig/drivers/scsi/bfa/include/fcs/bfa_fcs_fdmi.h patch/drivers/scsi/bfa/include/fcs/bfa_fcs_fdmi.h
---- orig/drivers/scsi/bfa/include/fcs/bfa_fcs_fdmi.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/fcs/bfa_fcs_fdmi.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,63 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/**
-+ *  bfa_fcs_fdmi.h BFA fcs fdmi module public interface
-+ */
-+
-+#ifndef __BFA_FCS_FDMI_H__
-+#define __BFA_FCS_FDMI_H__
-+#include <bfa_os_inc.h>
-+#include <protocol/fdmi.h>
-+
-+#define	BFA_FCS_FDMI_SUPORTED_SPEEDS  (FDMI_TRANS_SPEED_1G  | \
-+					FDMI_TRANS_SPEED_2G | \
-+					FDMI_TRANS_SPEED_4G | \
-+					FDMI_TRANS_SPEED_8G)
-+
-+/*
-+* HBA Attribute Block : BFA internal representation. Note : Some variable
-+* sizes have been trimmed to suit BFA For Ex : Model will be "Brocade". Based
-+ * on this the size has been reduced to 16 bytes from the standard's 64 bytes.
-+ */
-+struct bfa_fcs_fdmi_hba_attr_s {
-+	wwn_t           node_name;
-+	u8         manufacturer[64];
-+	u8         serial_num[64];
-+	u8         model[16];
-+	u8         model_desc[256];
-+	u8         hw_version[8];
-+	u8         driver_version[8];
-+	u8         option_rom_ver[BFA_VERSION_LEN];
-+	u8         fw_version[8];
-+	u8         os_name[256];
-+	u32        max_ct_pyld;
-+};
-+
-+/*
-+ * Port Attribute Block
-+ */
-+struct bfa_fcs_fdmi_port_attr_s {
-+	u8         supp_fc4_types[32];	/* supported FC4 types */
-+	u32        supp_speed;	/* supported speed */
-+	u32        curr_speed;	/* current Speed */
-+	u32        max_frm_size;	/* max frame size */
-+	u8         os_device_name[256];	/* OS device Name */
-+	u8         host_name[256];	/* host name */
-+};
-+
-+#endif /* __BFA_FCS_FDMI_H__ */
-diff -urpN orig/drivers/scsi/bfa/include/fcs/bfa_fcs.h patch/drivers/scsi/bfa/include/fcs/bfa_fcs.h
---- orig/drivers/scsi/bfa/include/fcs/bfa_fcs.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/fcs/bfa_fcs.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,73 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#ifndef __BFA_FCS_H__
-+#define __BFA_FCS_H__
-+
-+#include <cs/bfa_debug.h>
-+#include <defs/bfa_defs_status.h>
-+#include <defs/bfa_defs_version.h>
-+#include <bfa.h>
-+#include <fcs/bfa_fcs_fabric.h>
-+
-+#define BFA_FCS_OS_STR_LEN  		64
-+
-+struct bfa_fcs_stats_s {
-+	struct {
-+		u32        untagged; /*  untagged receive frames */
-+		u32        tagged;	/*  tagged receive frames */
-+		u32        vfid_unknown;	/*  VF id is unknown */
-+	} uf;
-+};
-+
-+struct bfa_fcs_driver_info_s {
-+	u8  version[BFA_VERSION_LEN];		/*  Driver Version */
-+	u8  host_machine_name[BFA_FCS_OS_STR_LEN];
-+	u8  host_os_name[BFA_FCS_OS_STR_LEN]; /*  OS name and version */
-+	u8  host_os_patch[BFA_FCS_OS_STR_LEN];/*  patch or service pack */
-+	u8  os_device_name[BFA_FCS_OS_STR_LEN]; /*  Driver Device Name */
-+};
-+
-+struct bfa_fcs_s {
-+	struct bfa_s      *bfa;	/*  corresponding BFA bfa instance */
-+	struct bfad_s         *bfad; /*  corresponding BDA driver instance */
-+	struct bfa_log_mod_s  *logm;	/*  driver logging module instance */
-+	struct bfa_trc_mod_s  *trcmod;	/*  tracing module */
-+	struct bfa_aen_s      *aen;	/*  aen component */
-+	bfa_boolean_t   vf_enabled;	/*  VF mode is enabled */
-+	bfa_boolean_t min_cfg;		/* min cfg enabled/disabled */
-+	u16        port_vfid;	/*  port default VF ID */
-+	struct bfa_fcs_driver_info_s driver_info;
-+	struct bfa_fcs_fabric_s fabric; /*  base fabric state machine */
-+	struct bfa_fcs_stats_s	stats;	/*  FCS statistics */
-+	struct bfa_wc_s       	wc;	/*  waiting counter */
-+};
-+
-+/*
-+ * bfa fcs API functions
-+ */
-+void bfa_fcs_init(struct bfa_fcs_s *fcs, struct bfa_s *bfa, struct bfad_s *bfad,
-+			bfa_boolean_t min_cfg);
-+void bfa_fcs_driver_info_init(struct bfa_fcs_s *fcs,
-+			struct bfa_fcs_driver_info_s *driver_info);
-+void bfa_fcs_exit(struct bfa_fcs_s *fcs);
-+void bfa_fcs_trc_init(struct bfa_fcs_s *fcs, struct bfa_trc_mod_s *trcmod);
-+void bfa_fcs_log_init(struct bfa_fcs_s *fcs, struct bfa_log_mod_s *logmod);
-+void bfa_fcs_aen_init(struct bfa_fcs_s *fcs, struct bfa_aen_s *aen);
-+void 	  	bfa_fcs_start(struct bfa_fcs_s *fcs);
-+
-+#endif /* __BFA_FCS_H__ */
-diff -urpN orig/drivers/scsi/bfa/include/fcs/bfa_fcs_lport.h patch/drivers/scsi/bfa/include/fcs/bfa_fcs_lport.h
---- orig/drivers/scsi/bfa/include/fcs/bfa_fcs_lport.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/fcs/bfa_fcs_lport.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,226 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/**
-+ *  bfa_fcs_port.h BFA fcs port module public interface
-+ */
-+
-+#ifndef __BFA_FCS_PORT_H__
-+#define __BFA_FCS_PORT_H__
-+
-+#include <defs/bfa_defs_status.h>
-+#include <defs/bfa_defs_port.h>
-+#include <defs/bfa_defs_pport.h>
-+#include <defs/bfa_defs_rport.h>
-+#include <cs/bfa_q.h>
-+#include <bfa_svc.h>
-+#include <cs/bfa_wc.h>
-+
-+struct bfa_fcs_s;
-+struct bfa_fcs_fabric_s;
-+
-+/*
-+* @todo : need to move to a global config file.
-+ * Maximum Vports supported per physical port or vf.
-+ */
-+#define BFA_FCS_MAX_VPORTS_SUPP_CB  255
-+#define BFA_FCS_MAX_VPORTS_SUPP_CT  191
-+
-+/*
-+* @todo : need to move to a global config file.
-+ * Maximum Rports supported per port (physical/logical).
-+ */
-+#define BFA_FCS_MAX_RPORTS_SUPP  256	/* @todo : tentative value */
-+
-+
-+struct bfa_fcs_port_ns_s {
-+	bfa_sm_t        sm;		/*  state machine */
-+	struct bfa_timer_s timer;
-+	struct bfa_fcs_port_s *port;	/*  parent port */
-+	struct bfa_fcxp_s *fcxp;
-+	struct bfa_fcxp_wqe_s fcxp_wqe;
-+};
-+
-+
-+struct bfa_fcs_port_scn_s {
-+	bfa_sm_t        sm;		/*  state machine */
-+	struct bfa_timer_s timer;
-+	struct bfa_fcs_port_s *port;	/*  parent port */
-+	struct bfa_fcxp_s *fcxp;
-+	struct bfa_fcxp_wqe_s fcxp_wqe;
-+};
-+
-+
-+struct bfa_fcs_port_fdmi_s {
-+	bfa_sm_t        sm;		/*  state machine */
-+	struct bfa_timer_s timer;
-+	struct bfa_fcs_port_ms_s *ms;	/*  parent ms */
-+	struct bfa_fcxp_s *fcxp;
-+	struct bfa_fcxp_wqe_s fcxp_wqe;
-+	u8         retry_cnt;	/*  retry count */
-+	u8	 	   rsvd[3];
-+};
-+
-+
-+struct bfa_fcs_port_ms_s {
-+	bfa_sm_t        sm;		/*  state machine */
-+	struct bfa_timer_s timer;
-+	struct bfa_fcs_port_s *port;	/*  parent port */
-+	struct bfa_fcxp_s *fcxp;
-+	struct bfa_fcxp_wqe_s fcxp_wqe;
-+	struct bfa_fcs_port_fdmi_s fdmi;	/*  FDMI component of MS */
-+	u8         retry_cnt;	/*  retry count */
-+	u8	 	   rsvd[3];
-+};
-+
-+
-+struct bfa_fcs_port_fab_s {
-+	struct bfa_fcs_port_ns_s ns;	/*  NS component of port */
-+	struct bfa_fcs_port_scn_s scn;	/*  scn component of port */
-+	struct bfa_fcs_port_ms_s ms;	/*  MS component of port */
-+};
-+
-+
-+
-+#define 	MAX_ALPA_COUNT 		127
-+
-+struct bfa_fcs_port_loop_s {
-+	u8         num_alpa;	/*  Num of ALPA entries in the map */
-+	u8         alpa_pos_map[MAX_ALPA_COUNT];	/*  ALPA Positional
-+							 *Map */
-+	struct bfa_fcs_port_s *port;	/*  parent port */
-+};
-+
-+
-+
-+struct bfa_fcs_port_n2n_s {
-+	u32        rsvd;
-+	u16        reply_oxid;	/*  ox_id from the req flogi to be
-+					 *used in flogi acc */
-+	wwn_t           rem_port_wwn;	/*  Attached port's wwn */
-+};
-+
-+
-+union bfa_fcs_port_topo_u {
-+	struct bfa_fcs_port_fab_s pfab;
-+	struct bfa_fcs_port_loop_s ploop;
-+	struct bfa_fcs_port_n2n_s pn2n;
-+};
-+
-+
-+struct bfa_fcs_port_s {
-+	struct list_head         qe;	/*  used by port/vport */
-+	bfa_sm_t               sm;	/*  state machine */
-+	struct bfa_fcs_fabric_s *fabric;	/*  parent fabric */
-+	struct bfa_port_cfg_s  port_cfg;	/*  port configuration */
-+	struct bfa_timer_s link_timer;	/*  timer for link offline */
-+	u32        pid : 24;	/*  FC address */
-+	u8         lp_tag;		/*  lport tag */
-+	u16        num_rports;	/*  Num of r-ports */
-+	struct list_head rport_q;	/*  queue of discovered r-ports */
-+	struct bfa_fcs_s *fcs;	/*  FCS instance */
-+	union bfa_fcs_port_topo_u port_topo;	/*  fabric/loop/n2n details */
-+	struct bfad_port_s *bfad_port;	/*  driver peer instance */
-+	struct bfa_fcs_vport_s *vport;	/*  NULL for base ports */
-+	struct bfa_fcxp_s *fcxp;
-+	struct bfa_fcxp_wqe_s fcxp_wqe;
-+	struct bfa_port_stats_s stats;
-+	struct bfa_wc_s        wc;	/*  waiting counter for events */
-+};
-+
-+#define bfa_fcs_lport_t struct bfa_fcs_port_s
-+
-+/**
-+ * Symbolic Name related defines
-+ *  Total bytes 255.
-+ *  Physical Port's symbolic name 128 bytes.
-+ *  For Vports, Vport's symbolic name is appended to the Physical port's
-+ *  Symbolic Name.
-+ *
-+ *  Physical Port's symbolic name Format : (Total 128 bytes)
-+ *  Adapter Model number/name : 12 bytes
-+ *  Driver Version     : 10 bytes
-+ *  Host Machine Name  : 30 bytes
-+ * 	Host OS Info	   : 48 bytes
-+ * 	Host OS PATCH Info : 16 bytes
-+ *  ( remaining 12 bytes reserved to be used for separator)
-+ */
-+#define BFA_FCS_PORT_SYMBNAME_SEPARATOR 		" | "
-+
-+#define BFA_FCS_PORT_SYMBNAME_MODEL_SZ			12
-+#define BFA_FCS_PORT_SYMBNAME_VERSION_SZ 		10
-+#define BFA_FCS_PORT_SYMBNAME_MACHINENAME_SZ 	30
-+#define BFA_FCS_PORT_SYMBNAME_OSINFO_SZ			48
-+#define BFA_FCS_PORT_SYMBNAME_OSPATCH_SZ		16
-+
-+/**
-+ * Get FC port ID for a logical port.
-+ */
-+#define bfa_fcs_port_get_fcid(_lport)	((_lport)->pid)
-+#define bfa_fcs_port_get_pwwn(_lport)	((_lport)->port_cfg.pwwn)
-+#define bfa_fcs_port_get_nwwn(_lport)	((_lport)->port_cfg.nwwn)
-+#define bfa_fcs_port_get_psym_name(_lport)	((_lport)->port_cfg.sym_name)
-+#define bfa_fcs_port_is_initiator(_lport)	\
-+			((_lport)->port_cfg.roles & BFA_PORT_ROLE_FCP_IM)
-+#define bfa_fcs_port_is_target(_lport)	\
-+			((_lport)->port_cfg.roles & BFA_PORT_ROLE_FCP_TM)
-+#define bfa_fcs_port_get_nrports(_lport)	\
-+			((_lport) ? (_lport)->num_rports : 0)
-+
-+static inline struct bfad_port_s *
-+bfa_fcs_port_get_drvport(struct bfa_fcs_port_s *port)
-+{
-+	return port->bfad_port;
-+}
-+
-+
-+#define bfa_fcs_port_get_opertype(_lport)	(_lport)->fabric->oper_type
-+
-+
-+#define bfa_fcs_port_get_fabric_name(_lport)	(_lport)->fabric->fabric_name
-+
-+
-+#define bfa_fcs_port_get_fabric_ipaddr(_lport)	(_lport)->fabric->fabric_ip_addr
-+
-+/**
-+ * bfa fcs port public functions
-+ */
-+void bfa_fcs_cfg_base_port(struct bfa_fcs_s *fcs,
-+			struct bfa_port_cfg_s *port_cfg);
-+struct bfa_fcs_port_s *bfa_fcs_get_base_port(struct bfa_fcs_s *fcs);
-+void bfa_fcs_port_get_rports(struct bfa_fcs_port_s *port,
-+			wwn_t rport_wwns[], int *nrports);
-+
-+wwn_t bfa_fcs_port_get_rport(struct bfa_fcs_port_s *port, wwn_t wwn,
-+			int index, int nrports, bfa_boolean_t bwwn);
-+
-+struct bfa_fcs_port_s *bfa_fcs_lookup_port(struct bfa_fcs_s *fcs,
-+			u16 vf_id, wwn_t lpwwn);
-+
-+void bfa_fcs_port_get_info(struct bfa_fcs_port_s *port,
-+			struct bfa_port_info_s *port_info);
-+void bfa_fcs_port_get_attr(struct bfa_fcs_port_s *port,
-+			struct bfa_port_attr_s *port_attr);
-+void bfa_fcs_port_get_stats(struct bfa_fcs_port_s *fcs_port,
-+			struct bfa_port_stats_s *port_stats);
-+void bfa_fcs_port_clear_stats(struct bfa_fcs_port_s *fcs_port);
-+enum bfa_pport_speed bfa_fcs_port_get_rport_max_speed(
-+			struct bfa_fcs_port_s *port);
-+void bfa_fcs_port_enable_ipfc_roles(struct bfa_fcs_port_s *fcs_port);
-+void bfa_fcs_port_disable_ipfc_roles(struct bfa_fcs_port_s *fcs_port);
-+
-+#endif /* __BFA_FCS_PORT_H__ */
-diff -urpN orig/drivers/scsi/bfa/include/fcs/bfa_fcs_rport.h patch/drivers/scsi/bfa/include/fcs/bfa_fcs_rport.h
---- orig/drivers/scsi/bfa/include/fcs/bfa_fcs_rport.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/fcs/bfa_fcs_rport.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,104 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#ifndef __BFA_FCS_RPORT_H__
-+#define __BFA_FCS_RPORT_H__
-+
-+#include <defs/bfa_defs_status.h>
-+#include <cs/bfa_q.h>
-+#include <fcs/bfa_fcs.h>
-+#include <defs/bfa_defs_rport.h>
-+
-+#define BFA_FCS_RPORT_DEF_DEL_TIMEOUT 	90 	/* in secs */
-+/*
-+ * forward declarations
-+ */
-+struct bfad_rport_s;
-+
-+struct bfa_fcs_itnim_s;
-+struct bfa_fcs_tin_s;
-+struct bfa_fcs_iprp_s;
-+
-+/* Rport Features (RPF) */
-+struct bfa_fcs_rpf_s {
-+	bfa_sm_t               sm;	/*  state machine */
-+	struct bfa_fcs_rport_s *rport;	/*  parent rport */
-+	struct bfa_timer_s 	timer;	/*  general purpose timer */
-+	struct bfa_fcxp_s 	*fcxp;	/*  FCXP needed for discarding */
-+	struct bfa_fcxp_wqe_s 	fcxp_wqe;	/*  fcxp wait queue element */
-+	int             	rpsc_retries;	/*  max RPSC retry attempts */
-+	enum bfa_pport_speed 	rpsc_speed;	/* Current Speed from RPSC.
-+						 * O if RPSC fails */
-+	enum bfa_pport_speed	assigned_speed;	/* Speed assigned by the user.
-+						 * will be used if RPSC is not
-+						 * supported by the rport */
-+};
-+
-+struct bfa_fcs_rport_s {
-+	struct list_head         qe;	/*  used by port/vport */
-+	struct bfa_fcs_port_s *port;	/*  parent FCS port */
-+	struct bfa_fcs_s      *fcs;	/*  fcs instance */
-+	struct bfad_rport_s   *rp_drv;	/*  driver peer instance */
-+	u32        pid;	/*  port ID of rport */
-+	u16        maxfrsize;	/*  maximum frame size */
-+	u16        reply_oxid;	/*  OX_ID of inbound requests */
-+	enum fc_cos        fc_cos;	/*  FC classes of service supp */
-+	bfa_boolean_t   cisc;	/*  CISC capable device */
-+	wwn_t           pwwn;	/*  port wwn of rport */
-+	wwn_t           nwwn;	/*  node wwn of rport */
-+	struct bfa_rport_symname_s psym_name; /*  port symbolic name  */
-+	bfa_sm_t        sm;		/*  state machine */
-+	struct bfa_timer_s timer;	/*  general purpose timer */
-+	struct bfa_fcs_itnim_s *itnim;	/*  ITN initiator mode role */
-+	struct bfa_fcs_tin_s *tin;	/*  ITN initiator mode role */
-+	struct bfa_fcs_iprp_s *iprp;	/*  IP/FC role */
-+	struct bfa_rport_s *bfa_rport;	/*  BFA Rport */
-+	struct bfa_fcxp_s *fcxp;	/*  FCXP needed for discarding */
-+	int             plogi_retries;	/*  max plogi retry attempts */
-+	int             ns_retries;	/*  max NS query retry attempts */
-+	struct bfa_fcxp_wqe_s 	fcxp_wqe; /*  fcxp wait queue element */
-+	struct bfa_rport_stats_s stats;	/*  rport stats */
-+	enum bfa_rport_function	scsi_function;  /*  Initiator/Target */
-+	struct bfa_fcs_rpf_s rpf; 	/* Rport features module */
-+};
-+
-+static inline struct bfa_rport_s *
-+bfa_fcs_rport_get_halrport(struct bfa_fcs_rport_s *rport)
-+{
-+	return rport->bfa_rport;
-+}
-+
-+/**
-+ * bfa fcs rport API functions
-+ */
-+bfa_status_t bfa_fcs_rport_add(struct bfa_fcs_port_s *port, wwn_t *pwwn,
-+			struct bfa_fcs_rport_s *rport,
-+			struct bfad_rport_s *rport_drv);
-+bfa_status_t bfa_fcs_rport_remove(struct bfa_fcs_rport_s *rport);
-+void bfa_fcs_rport_get_attr(struct bfa_fcs_rport_s *rport,
-+			struct bfa_rport_attr_s *attr);
-+void bfa_fcs_rport_get_stats(struct bfa_fcs_rport_s *rport,
-+			struct bfa_rport_stats_s *stats);
-+void bfa_fcs_rport_clear_stats(struct bfa_fcs_rport_s *rport);
-+struct bfa_fcs_rport_s *bfa_fcs_rport_lookup(struct bfa_fcs_port_s *port,
-+			wwn_t rpwwn);
-+struct bfa_fcs_rport_s *bfa_fcs_rport_lookup_by_nwwn(
-+			struct bfa_fcs_port_s *port, wwn_t rnwwn);
-+void bfa_fcs_rport_set_del_timeout(u8 rport_tmo);
-+void bfa_fcs_rport_set_speed(struct bfa_fcs_rport_s *rport,
-+			enum bfa_pport_speed speed);
-+#endif /* __BFA_FCS_RPORT_H__ */
-diff -urpN orig/drivers/scsi/bfa/include/fcs/bfa_fcs_vport.h patch/drivers/scsi/bfa/include/fcs/bfa_fcs_vport.h
---- orig/drivers/scsi/bfa/include/fcs/bfa_fcs_vport.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/fcs/bfa_fcs_vport.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,63 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/**
-+ *  bfa_fcs_vport.h BFA fcs vport module public interface
-+ */
-+
-+#ifndef __BFA_FCS_VPORT_H__
-+#define __BFA_FCS_VPORT_H__
-+
-+#include <defs/bfa_defs_status.h>
-+#include <defs/bfa_defs_port.h>
-+#include <defs/bfa_defs_vport.h>
-+#include <fcs/bfa_fcs.h>
-+#include <fcb/bfa_fcb_vport.h>
-+
-+struct bfa_fcs_vport_s {
-+	struct list_head		qe;		/*  queue elem	 */
-+	bfa_sm_t		sm;		/*  state machine	*/
-+	bfa_fcs_lport_t		lport;		/*  logical port	*/
-+	struct bfa_timer_s	timer;		/*  general purpose timer */
-+	struct bfad_vport_s	*vport_drv;	/*  Driver private	*/
-+	struct bfa_vport_stats_s vport_stats;	/*  vport statistics	*/
-+	struct bfa_lps_s	*lps;		/*  Lport login service */
-+	int			fdisc_retries;
-+};
-+
-+#define bfa_fcs_vport_get_port(vport) \
-+			((struct bfa_fcs_port_s  *)(&vport->port))
-+
-+/**
-+ * bfa fcs vport public functions
-+ */
-+bfa_status_t bfa_fcs_vport_create(struct bfa_fcs_vport_s *vport,
-+			struct bfa_fcs_s *fcs, u16 vf_id,
-+			struct bfa_port_cfg_s *port_cfg,
-+			struct bfad_vport_s *vport_drv);
-+bfa_status_t bfa_fcs_vport_delete(struct bfa_fcs_vport_s *vport);
-+bfa_status_t bfa_fcs_vport_start(struct bfa_fcs_vport_s *vport);
-+bfa_status_t bfa_fcs_vport_stop(struct bfa_fcs_vport_s *vport);
-+void bfa_fcs_vport_get_attr(struct bfa_fcs_vport_s *vport,
-+			struct bfa_vport_attr_s *vport_attr);
-+void bfa_fcs_vport_get_stats(struct bfa_fcs_vport_s *vport,
-+			struct bfa_vport_stats_s *vport_stats);
-+void bfa_fcs_vport_clr_stats(struct bfa_fcs_vport_s *vport);
-+struct bfa_fcs_vport_s *bfa_fcs_vport_lookup(struct bfa_fcs_s *fcs,
-+			u16 vf_id, wwn_t vpwwn);
-+
-+#endif /* __BFA_FCS_VPORT_H__ */
-diff -urpN orig/drivers/scsi/bfa/include/log/bfa_log_fcs.h patch/drivers/scsi/bfa/include/log/bfa_log_fcs.h
---- orig/drivers/scsi/bfa/include/log/bfa_log_fcs.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/log/bfa_log_fcs.h	2009-08-19 17:47:58.000000000 -0700
-@@ -0,0 +1,28 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/*
-+ * messages define for FCS Module
-+ */
-+#ifndef	__BFA_LOG_FCS_H__
-+#define	__BFA_LOG_FCS_H__
-+#include  <cs/bfa_log.h>
-+#define BFA_LOG_FCS_FABRIC_NOSWITCH 	\
-+	(((u32) BFA_LOG_FCS_ID << BFA_LOG_MODID_OFFSET) | 1)
-+#define BFA_LOG_FCS_FABRIC_ISOLATED 	\
-+	(((u32) BFA_LOG_FCS_ID << BFA_LOG_MODID_OFFSET) | 2)
-+#endif
-diff -urpN orig/drivers/scsi/bfa/include/log/bfa_log_hal.h patch/drivers/scsi/bfa/include/log/bfa_log_hal.h
---- orig/drivers/scsi/bfa/include/log/bfa_log_hal.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/log/bfa_log_hal.h	2009-08-19 17:47:58.000000000 -0700
-@@ -0,0 +1,30 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/* messages define for HAL Module */
-+#ifndef	__BFA_LOG_HAL_H__
-+#define	__BFA_LOG_HAL_H__
-+#include  <cs/bfa_log.h>
-+#define BFA_LOG_HAL_ASSERT \
-+	(((u32) BFA_LOG_HAL_ID << BFA_LOG_MODID_OFFSET) | 1)
-+#define BFA_LOG_HAL_HEARTBEAT_FAILURE \
-+	(((u32) BFA_LOG_HAL_ID << BFA_LOG_MODID_OFFSET) | 2)
-+#define BFA_LOG_HAL_FCPIM_PARM_INVALID \
-+	(((u32) BFA_LOG_HAL_ID << BFA_LOG_MODID_OFFSET) | 3)
-+#define BFA_LOG_HAL_SM_ASSERT \
-+	(((u32) BFA_LOG_HAL_ID << BFA_LOG_MODID_OFFSET) | 4)
-+#endif
-diff -urpN orig/drivers/scsi/bfa/include/log/bfa_log_linux.h patch/drivers/scsi/bfa/include/log/bfa_log_linux.h
---- orig/drivers/scsi/bfa/include/log/bfa_log_linux.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/log/bfa_log_linux.h	2009-08-19 17:47:58.000000000 -0700
-@@ -0,0 +1,44 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/* messages define for LINUX Module */
-+#ifndef	__BFA_LOG_LINUX_H__
-+#define	__BFA_LOG_LINUX_H__
-+#include  <cs/bfa_log.h>
-+#define BFA_LOG_LINUX_DEVICE_CLAIMED \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 1)
-+#define BFA_LOG_LINUX_HASH_INIT_FAILED \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 2)
-+#define BFA_LOG_LINUX_SYSFS_FAILED \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 3)
-+#define BFA_LOG_LINUX_MEM_ALLOC_FAILED \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 4)
-+#define BFA_LOG_LINUX_DRIVER_REGISTRATION_FAILED \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 5)
-+#define BFA_LOG_LINUX_ITNIM_FREE \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 6)
-+#define BFA_LOG_LINUX_ITNIM_ONLINE \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 7)
-+#define BFA_LOG_LINUX_ITNIM_OFFLINE \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 8)
-+#define BFA_LOG_LINUX_SCSI_HOST_FREE \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 9)
-+#define BFA_LOG_LINUX_SCSI_ABORT \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 10)
-+#define BFA_LOG_LINUX_SCSI_ABORT_COMP \
-+		(((u32) BFA_LOG_LINUX_ID << BFA_LOG_MODID_OFFSET) | 11)
-+#endif
-diff -urpN orig/drivers/scsi/bfa/include/log/bfa_log_wdrv.h patch/drivers/scsi/bfa/include/log/bfa_log_wdrv.h
---- orig/drivers/scsi/bfa/include/log/bfa_log_wdrv.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/log/bfa_log_wdrv.h	2009-08-19 17:47:58.000000000 -0700
-@@ -0,0 +1,36 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/*
-+ * messages define for WDRV Module
-+ */
-+#ifndef	__BFA_LOG_WDRV_H__
-+#define	__BFA_LOG_WDRV_H__
-+#include  <cs/bfa_log.h>
-+#define BFA_LOG_WDRV_IOC_INIT_ERROR 	\
-+	(((u32) BFA_LOG_WDRV_ID << BFA_LOG_MODID_OFFSET) | 1)
-+#define BFA_LOG_WDRV_IOC_INTERNAL_ERROR \
-+	(((u32) BFA_LOG_WDRV_ID << BFA_LOG_MODID_OFFSET) | 2)
-+#define BFA_LOG_WDRV_IOC_START_ERROR 	\
-+	(((u32) BFA_LOG_WDRV_ID << BFA_LOG_MODID_OFFSET) | 3)
-+#define BFA_LOG_WDRV_IOC_STOP_ERROR 	\
-+	(((u32) BFA_LOG_WDRV_ID << BFA_LOG_MODID_OFFSET) | 4)
-+#define BFA_LOG_WDRV_INSUFFICIENT_RESOURCES \
-+	(((u32) BFA_LOG_WDRV_ID << BFA_LOG_MODID_OFFSET) | 5)
-+#define BFA_LOG_WDRV_BASE_ADDRESS_MAP_ERROR \
-+	(((u32) BFA_LOG_WDRV_ID << BFA_LOG_MODID_OFFSET) | 6)
-+#endif
-diff -urpN orig/drivers/scsi/bfa/include/protocol/ct.h patch/drivers/scsi/bfa/include/protocol/ct.h
---- orig/drivers/scsi/bfa/include/protocol/ct.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/protocol/ct.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,492 @@
-+/*
-+ * Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#ifndef __CT_H__
-+#define __CT_H__
-+
-+#include <protocol/types.h>
-+
-+#pragma pack(1)
-+
-+struct ct_hdr_s{
-+	u32	rev_id:8;	/* Revision of the CT */
-+	u32	in_id:24;	/* Initiator Id */
-+	u32	gs_type:8;	/* Generic service Type */
-+	u32	gs_sub_type:8;	/* Generic service sub type */
-+	u32	options:8;	/* options */
-+	u32	rsvrd:8;	/* reserved */
-+	u32	cmd_rsp_code:16;/* ct command/response code */
-+	u32	max_res_size:16;/* maximum/residual size */
-+	u32	frag_id:8;	/* fragment ID */
-+	u32	reason_code:8;	/* reason code */
-+	u32	exp_code:8;	/* explanation code */
-+	u32	vendor_unq:8;	/* vendor unique */
-+};
-+
-+/*
-+ * defines for the Revision
-+ */
-+enum {
-+	CT_GS3_REVISION = 0x01,
-+};
-+
-+/*
-+ * defines for gs_type
-+ */
-+enum {
-+	CT_GSTYPE_KEYSERVICE	= 0xF7,
-+	CT_GSTYPE_ALIASSERVICE	= 0xF8,
-+	CT_GSTYPE_MGMTSERVICE	= 0xFA,
-+	CT_GSTYPE_TIMESERVICE	= 0xFB,
-+	CT_GSTYPE_DIRSERVICE	= 0xFC,
-+};
-+
-+/*
-+ * defines for gs_sub_type for gs type directory service
-+ */
-+enum {
-+	CT_GSSUBTYPE_NAMESERVER = 0x02,
-+};
-+
-+/*
-+ * defines for gs_sub_type for gs type management service
-+ */
-+enum {
-+	CT_GSSUBTYPE_CFGSERVER	= 0x01,
-+	CT_GSSUBTYPE_UNZONED_NS = 0x02,
-+	CT_GSSUBTYPE_ZONESERVER = 0x03,
-+	CT_GSSUBTYPE_LOCKSERVER = 0x04,
-+	CT_GSSUBTYPE_HBA_MGMTSERVER = 0x10,	/* for FDMI */
-+};
-+
-+/*
-+ * defines for CT response code field
-+ */
-+enum {
-+	CT_RSP_REJECT = 0x8001,
-+	CT_RSP_ACCEPT = 0x8002,
-+};
-+
-+/*
-+ * defintions for CT reason code
-+ */
-+enum {
-+	CT_RSN_INV_CMD		= 0x01,
-+	CT_RSN_INV_VER		= 0x02,
-+	CT_RSN_LOGIC_ERR	= 0x03,
-+	CT_RSN_INV_SIZE		= 0x04,
-+	CT_RSN_LOGICAL_BUSY	= 0x05,
-+	CT_RSN_PROTO_ERR	= 0x07,
-+	CT_RSN_UNABLE_TO_PERF	= 0x09,
-+	CT_RSN_NOT_SUPP			= 0x0B,
-+	CT_RSN_SERVER_NOT_AVBL  = 0x0D,
-+	CT_RSN_SESSION_COULD_NOT_BE_ESTBD = 0x0E,
-+	CT_RSN_VENDOR_SPECIFIC  = 0xFF,
-+
-+};
-+
-+/*
-+ * definitions for explanations code for Name server
-+ */
-+enum {
-+	CT_NS_EXP_NOADDITIONAL	= 0x00,
-+	CT_NS_EXP_ID_NOT_REG	= 0x01,
-+	CT_NS_EXP_PN_NOT_REG	= 0x02,
-+	CT_NS_EXP_NN_NOT_REG	= 0x03,
-+	CT_NS_EXP_CS_NOT_REG	= 0x04,
-+	CT_NS_EXP_IPN_NOT_REG	= 0x05,
-+	CT_NS_EXP_IPA_NOT_REG	= 0x06,
-+	CT_NS_EXP_FT_NOT_REG	= 0x07,
-+	CT_NS_EXP_SPN_NOT_REG	= 0x08,
-+	CT_NS_EXP_SNN_NOT_REG	= 0x09,
-+	CT_NS_EXP_PT_NOT_REG	= 0x0A,
-+	CT_NS_EXP_IPP_NOT_REG	= 0x0B,
-+	CT_NS_EXP_FPN_NOT_REG	= 0x0C,
-+	CT_NS_EXP_HA_NOT_REG	= 0x0D,
-+	CT_NS_EXP_FD_NOT_REG	= 0x0E,
-+	CT_NS_EXP_FF_NOT_REG	= 0x0F,
-+	CT_NS_EXP_ACCESSDENIED	= 0x10,
-+	CT_NS_EXP_UNACCEPTABLE_ID = 0x11,
-+	CT_NS_EXP_DATABASEEMPTY			= 0x12,
-+	CT_NS_EXP_NOT_REG_IN_SCOPE 		= 0x13,
-+	CT_NS_EXP_DOM_ID_NOT_PRESENT 	= 0x14,
-+	CT_NS_EXP_PORT_NUM_NOT_PRESENT  = 0x15,
-+	CT_NS_EXP_NO_DEVICE_ATTACHED 	= 0x16
-+};
-+
-+/*
-+ * defintions for the explanation code for all servers
-+ */
-+enum {
-+	CT_EXP_AUTH_EXCEPTION			= 0xF1,
-+	CT_EXP_DB_FULL					= 0xF2,
-+	CT_EXP_DB_EMPTY					= 0xF3,
-+	CT_EXP_PROCESSING_REQ			= 0xF4,
-+	CT_EXP_UNABLE_TO_VERIFY_CONN	= 0xF5,
-+	CT_EXP_DEVICES_NOT_IN_CMN_ZONE  = 0xF6
-+};
-+
-+/*
-+ * Command codes for Name server
-+ */
-+enum {
-+	GS_GID_PN	= 0x0121,	/* Get Id on port name */
-+	GS_GPN_ID	= 0x0112,	/* Get port name on ID */
-+	GS_GNN_ID	= 0x0113,	/* Get node name on ID */
-+	GS_GID_FT	= 0x0171,	/* Get Id on FC4 type */
-+	GS_GSPN_ID	= 0x0118,	/* Get symbolic PN on ID */
-+	GS_RFT_ID	= 0x0217,	/* Register fc4type on ID */
-+	GS_RSPN_ID	= 0x0218,	/* Register symbolic PN on ID */
-+	GS_RPN_ID	= 0x0212,	/* Register port name */
-+	GS_RNN_ID	= 0x0213,	/* Register node name */
-+	GS_RCS_ID	= 0x0214,	/* Register class of service */
-+	GS_RPT_ID	= 0x021A,	/* Register port type */
-+	GS_GA_NXT	= 0x0100,	/* Get all next */
-+	GS_RFF_ID	= 0x021F,	/* Register FC4 Feature		*/
-+};
-+
-+struct fcgs_id_req_s{
-+	u32	rsvd:8;
-+	u32	dap:24;	/* port identifier */
-+};
-+#define fcgs_gpnid_req_t struct fcgs_id_req_s
-+#define fcgs_gnnid_req_t struct fcgs_id_req_s
-+#define fcgs_gspnid_req_t struct fcgs_id_req_s
-+
-+struct fcgs_gidpn_req_s{
-+	wwn_t	port_name;	/* port wwn */
-+};
-+
-+struct fcgs_gidpn_resp_s{
-+	u32	rsvd:8;
-+	u32	dap:24;	/* port identifier */
-+};
-+
-+/**
-+ * RFT_ID
-+ */
-+struct fcgs_rftid_req_s {
-+	u32	rsvd:8;
-+	u32	dap:24;		/* port identifier */
-+	u32	fc4_type[8];	/* fc4 types */
-+};
-+
-+/**
-+ * RFF_ID : Register FC4 features.
-+ */
-+
-+#define FC_GS_FCP_FC4_FEATURE_INITIATOR  0x02
-+#define FC_GS_FCP_FC4_FEATURE_TARGET	 0x01
-+
-+struct fcgs_rffid_req_s{
-+    u32    rsvd          :8;
-+    u32    dap        	  :24;		/* port identifier	*/
-+    u32    rsvd1         :16;
-+    u32    fc4ftr_bits   :8;		/* fc4 feature bits	*/
-+    u32    fc4_type      :8;		/* corresponding FC4 Type */
-+};
-+
-+/**
-+ * GID_FT Request
-+ */
-+struct fcgs_gidft_req_s{
-+	u8	reserved;
-+	u8	domain_id;	/* domain, 0 - all fabric */
-+	u8	area_id;	/* area, 0 - whole domain */
-+	u8	fc4_type;	/* FC_TYPE_FCP for SCSI devices */
-+};				/* GID_FT Request */
-+
-+/**
-+ * GID_FT Response
-+ */
-+struct fcgs_gidft_resp_s {
-+	u8		last:1;	/* last port identifier flag */
-+	u8		reserved:7;
-+	u32	pid:24;	/* port identifier */
-+};				/* GID_FT Response */
-+
-+/**
-+ * RSPN_ID
-+ */
-+struct fcgs_rspnid_req_s{
-+	u32	rsvd:8;
-+	u32	dap:24;		/* port identifier */
-+	u8		spn_len;	/* symbolic port name length */
-+	u8		spn[256];	/* symbolic port name */
-+};
-+
-+/**
-+ * RPN_ID
-+ */
-+struct fcgs_rpnid_req_s{
-+	u32	rsvd:8;
-+	u32	port_id:24;
-+	wwn_t		port_name;
-+};
-+
-+/**
-+ * RNN_ID
-+ */
-+struct fcgs_rnnid_req_s{
-+	u32	rsvd:8;
-+	u32	port_id:24;
-+	wwn_t		node_name;
-+};
-+
-+/**
-+ * RCS_ID
-+ */
-+struct fcgs_rcsid_req_s{
-+	u32	rsvd:8;
-+	u32	port_id:24;
-+	u32	cos;
-+};
-+
-+/**
-+ * RPT_ID
-+ */
-+struct fcgs_rptid_req_s{
-+	u32	rsvd:8;
-+	u32	port_id:24;
-+	u32	port_type:8;
-+	u32	rsvd1:24;
-+};
-+
-+/**
-+ * GA_NXT Request
-+ */
-+struct fcgs_ganxt_req_s{
-+	u32	rsvd:8;
-+	u32	port_id:24;
-+};
-+
-+/**
-+ * GA_NXT Response
-+ */
-+struct fcgs_ganxt_rsp_s{
-+	u32	port_type:8;	/* Port Type */
-+	u32	port_id:24;	/* Port Identifier */
-+	wwn_t		port_name;	/* Port Name */
-+	u8		spn_len;	/* Length of Symbolic Port Name */
-+	char		spn[255];	/* Symbolic Port Name */
-+	wwn_t		node_name;	/* Node Name */
-+	u8		snn_len;	/* Length of Symbolic Node Name */
-+	char		snn[255];	/* Symbolic Node Name */
-+	u8		ipa[8];		/* Initial Process Associator */
-+	u8		ip[16];		/* IP Address */
-+	u32	cos;		/* Class of Service */
-+	u32	fc4types[8];	/* FC-4 TYPEs */
-+	wwn_t		fabric_port_name;
-+					/* Fabric Port Name */
-+	u32	rsvd:8;		/* Reserved */
-+	u32	hard_addr:24;	/* Hard Address */
-+};
-+
-+/*
-+ * Fabric Config Server
-+ */
-+
-+/*
-+ * Command codes for Fabric Configuration Server
-+ */
-+enum {
-+	GS_FC_GFN_CMD	= 0x0114,	/* GS FC Get Fabric Name  */
-+	GS_FC_GMAL_CMD	= 0x0116,	/* GS FC GMAL  */
-+	GS_FC_TRACE_CMD	= 0x0400,	/* GS FC Trace Route */
-+	GS_FC_PING_CMD	= 0x0401,	/* GS FC Ping */
-+};
-+
-+/*
-+ * Source or Destination Port Tags.
-+ */
-+enum {
-+	GS_FTRACE_TAG_NPORT_ID		= 1,
-+	GS_FTRACE_TAG_NPORT_NAME	= 2,
-+};
-+
-+/*
-+* Port Value : Could be a Port id or wwn
-+ */
-+union fcgs_port_val_u{
-+	u32	nport_id;
-+	wwn_t		nport_wwn;
-+};
-+
-+#define GS_FTRACE_MAX_HOP_COUNT	20
-+#define GS_FTRACE_REVISION	1
-+
-+/*
-+ * Ftrace Related Structures.
-+ */
-+
-+/*
-+ * STR (Switch Trace) Reject Reason Codes. From FC-SW.
-+ */
-+enum {
-+	GS_FTRACE_STR_CMD_COMPLETED_SUCC	= 0,
-+	GS_FTRACE_STR_CMD_NOT_SUPP_IN_NEXT_SWITCH,
-+	GS_FTRACE_STR_NO_RESP_FROM_NEXT_SWITCH,
-+	GS_FTRACE_STR_MAX_HOP_CNT_REACHED,
-+	GS_FTRACE_STR_SRC_PORT_NOT_FOUND,
-+	GS_FTRACE_STR_DST_PORT_NOT_FOUND,
-+	GS_FTRACE_STR_DEVICES_NOT_IN_COMMON_ZONE,
-+	GS_FTRACE_STR_NO_ROUTE_BW_PORTS,
-+	GS_FTRACE_STR_NO_ADDL_EXPLN,
-+	GS_FTRACE_STR_FABRIC_BUSY,
-+	GS_FTRACE_STR_FABRIC_BUILD_IN_PROGRESS,
-+	GS_FTRACE_STR_VENDOR_SPECIFIC_ERR_START = 0xf0,
-+	GS_FTRACE_STR_VENDOR_SPECIFIC_ERR_END = 0xff,
-+};
-+
-+/*
-+ * Ftrace Request
-+ */
-+struct fcgs_ftrace_req_s{
-+	u32	revision;
-+	u16	src_port_tag;	/* Source Port tag */
-+	u16	src_port_len;	/* Source Port len */
-+	union fcgs_port_val_u src_port_val;	/* Source Port value */
-+	u16	dst_port_tag;	/* Destination Port tag */
-+	u16	dst_port_len;	/* Destination Port len */
-+	union fcgs_port_val_u dst_port_val;	/* Destination Port value */
-+	u32	token;
-+	u8		vendor_id[8];	/* T10 Vendor Identifier */
-+	u8		vendor_info[8];	/* Vendor specific Info */
-+	u32	max_hop_cnt;	/* Max Hop Count */
-+};
-+
-+/*
-+ * Path info structure
-+ */
-+struct fcgs_ftrace_path_info_s{
-+	wwn_t		switch_name;		/* Switch WWN */
-+	u32	domain_id;
-+	wwn_t		ingress_port_name;	/* Ingress ports wwn */
-+	u32	ingress_phys_port_num;	/* Ingress ports physical port
-+						 * number
-+						 */
-+	wwn_t		egress_port_name;	/* Ingress ports wwn */
-+	u32	egress_phys_port_num;	/* Ingress ports physical port
-+						 * number
-+						 */
-+};
-+
-+/*
-+ * Ftrace Acc Response
-+ */
-+struct fcgs_ftrace_resp_s{
-+	u32	revision;
-+	u32	token;
-+	u8		vendor_id[8];		/* T10 Vendor Identifier */
-+	u8		vendor_info[8];		/* Vendor specific Info */
-+	u32	str_rej_reason_code;	/* STR Reject Reason Code */
-+	u32	num_path_info_entries;	/* No. of path info entries */
-+	/*
-+	 * path info entry/entries.
-+	 */
-+	struct fcgs_ftrace_path_info_s path_info[1];
-+
-+};
-+
-+/*
-+* Fabric Config Server : FCPing
-+ */
-+
-+/*
-+ * FC Ping Request
-+ */
-+struct fcgs_fcping_req_s{
-+	u32	revision;
-+	u16	port_tag;
-+	u16	port_len;	/* Port len */
-+	union fcgs_port_val_u port_val;	/* Port value */
-+	u32	token;
-+};
-+
-+/*
-+ * FC Ping Response
-+ */
-+struct fcgs_fcping_resp_s{
-+	u32	token;
-+};
-+
-+/*
-+ * Command codes for zone server query.
-+ */
-+enum {
-+	ZS_GZME = 0x0124,	/* Get zone member extended */
-+};
-+
-+/*
-+ * ZS GZME request
-+ */
-+#define ZS_GZME_ZNAMELEN	32
-+struct zs_gzme_req_s{
-+	u8	znamelen;
-+	u8	rsvd[3];
-+	u8	zname[ZS_GZME_ZNAMELEN];
-+};
-+
-+enum zs_mbr_type{
-+	ZS_MBR_TYPE_PWWN	= 1,
-+	ZS_MBR_TYPE_DOMPORT	= 2,
-+	ZS_MBR_TYPE_PORTID	= 3,
-+	ZS_MBR_TYPE_NWWN	= 4,
-+};
-+
-+struct zs_mbr_wwn_s{
-+	u8	mbr_type;
-+	u8	rsvd[3];
-+	wwn_t	wwn;
-+};
-+
-+struct zs_query_resp_s{
-+	u32	nmbrs;	/*  number of zone members */
-+	struct zs_mbr_wwn_s	mbr[1];
-+};
-+
-+/*
-+ * GMAL Command ( Get ( interconnect Element) Management Address List)
-+ * To retrieve the IP Address of a Switch.
-+ */
-+
-+#define CT_GMAL_RESP_PREFIX_TELNET	 "telnet://"
-+#define CT_GMAL_RESP_PREFIX_HTTP	 "http://"
-+
-+/*  GMAL/GFN request */
-+struct fcgs_req_s {
-+	wwn_t    wwn; 	/* PWWN/NWWN */
-+};
-+
-+#define fcgs_gmal_req_t struct fcgs_req_s
-+#define fcgs_gfn_req_t struct fcgs_req_s
-+
-+/* Accept Response to GMAL */
-+struct fcgs_gmal_resp_s {
-+	u32 		ms_len;   /* Num of entries */
-+	u8     	ms_ma[256];
-+};
-+
-+struct fc_gmal_entry_s {
-+	u8  len;
-+	u8  prefix[7]; /* like "http://" */
-+	u8  ip_addr[248];
-+};
-+
-+#pragma pack()
-+
-+#endif
-diff -urpN orig/drivers/scsi/bfa/include/protocol/fc.h patch/drivers/scsi/bfa/include/protocol/fc.h
---- orig/drivers/scsi/bfa/include/protocol/fc.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/protocol/fc.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,1105 @@
-+/*
-+ * Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#ifndef __FC_H__
-+#define __FC_H__
-+
-+#include <protocol/types.h>
-+
-+#pragma pack(1)
-+
-+/*
-+ * Fibre Channel Header Structure (FCHS) definition
-+ */
-+struct fchs_s {
-+#ifdef __BIGENDIAN
-+	u32        routing:4;	/* routing bits */
-+	u32        cat_info:4;	/* category info */
-+#else
-+	u32        cat_info:4;	/* category info */
-+	u32        routing:4;	/* routing bits */
-+#endif
-+	u32        d_id:24;	/* destination identifier */
-+
-+	u32        cs_ctl:8;	/* class specific control */
-+	u32        s_id:24;	/* source identifier */
-+
-+	u32        type:8;		/* data structure type */
-+	u32        f_ctl:24;	/* initial frame control */
-+
-+	u8         seq_id;		/* sequence identifier */
-+	u8         df_ctl;		/* data field control */
-+	u16        seq_cnt;	/* sequence count */
-+
-+	u16        ox_id;		/* originator exchange ID */
-+	u16        rx_id;		/* responder exchange ID */
-+
-+	u32        ro;		/* relative offset */
-+};
-+/*
-+ * Fibre Channel BB_E Header Structure
-+ */
-+struct fcbbehs_s {
-+	u16	ver_rsvd;
-+	u32	rsvd[2];
-+	u32	rsvd__sof;
-+};
-+
-+#define FC_SEQ_ID_MAX		256
-+
-+/*
-+ * routing bit definitions
-+ */
-+enum {
-+	FC_RTG_FC4_DEV_DATA	= 0x0,	/* FC-4 Device Data */
-+	FC_RTG_EXT_LINK		= 0x2,	/* Extended Link Data */
-+	FC_RTG_FC4_LINK_DATA	= 0x3,	/* FC-4 Link Data */
-+	FC_RTG_VIDEO_DATA	= 0x4,	/* Video Data */
-+	FC_RTG_EXT_HDR		= 0x5,	/* VFT, IFR or Encapsuled */
-+	FC_RTG_BASIC_LINK	= 0x8,	/* Basic Link data */
-+	FC_RTG_LINK_CTRL	= 0xC,	/* Link Control */
-+};
-+
-+/*
-+ * information category for extended link data and FC-4 Link Data
-+ */
-+enum {
-+	FC_CAT_LD_REQUEST	= 0x2,	/* Request */
-+	FC_CAT_LD_REPLY		= 0x3,	/* Reply */
-+	FC_CAT_LD_DIAG		= 0xF,	/* for DIAG use only */
-+};
-+
-+/*
-+ * information category for extended headers (VFT, IFR or encapsulation)
-+ */
-+enum {
-+	FC_CAT_VFT_HDR = 0x0,	/* Virtual fabric tagging header */
-+	FC_CAT_IFR_HDR = 0x1,	/* Inter-Fabric routing header */
-+	FC_CAT_ENC_HDR = 0x2,	/* Encapsulation header */
-+};
-+
-+/*
-+ * information category for FC-4 device data
-+ */
-+enum {
-+	FC_CAT_UNCATEG_INFO	= 0x0,	/* Uncategorized information */
-+	FC_CAT_SOLICIT_DATA	= 0x1,	/* Solicited Data */
-+	FC_CAT_UNSOLICIT_CTRL	= 0x2,	/* Unsolicited Control */
-+	FC_CAT_SOLICIT_CTRL	= 0x3,	/* Solicited Control */
-+	FC_CAT_UNSOLICIT_DATA	= 0x4,	/* Unsolicited Data */
-+	FC_CAT_DATA_DESC	= 0x5,	/* Data Descriptor */
-+	FC_CAT_UNSOLICIT_CMD	= 0x6,	/* Unsolicited Command */
-+	FC_CAT_CMD_STATUS	= 0x7,	/* Command Status */
-+};
-+
-+/*
-+ * information category for Link Control
-+ */
-+enum {
-+	FC_CAT_ACK_1		= 0x00,
-+	FC_CAT_ACK_0_N		= 0x01,
-+	FC_CAT_P_RJT		= 0x02,
-+	FC_CAT_F_RJT		= 0x03,
-+	FC_CAT_P_BSY		= 0x04,
-+	FC_CAT_F_BSY_DATA	= 0x05,
-+	FC_CAT_F_BSY_LINK_CTL	= 0x06,
-+	FC_CAT_F_LCR		= 0x07,
-+	FC_CAT_NTY		= 0x08,
-+	FC_CAT_END		= 0x09,
-+};
-+
-+/*
-+ * Type Field Definitions. FC-PH Section 18.5 pg. 165
-+ */
-+enum {
-+	FC_TYPE_BLS		= 0x0,	/* Basic Link Service */
-+	FC_TYPE_ELS		= 0x1,	/* Extended Link Service */
-+	FC_TYPE_IP		= 0x5,	/* IP */
-+	FC_TYPE_FCP		= 0x8,	/* SCSI-FCP */
-+	FC_TYPE_GPP		= 0x9,	/* SCSI_GPP */
-+	FC_TYPE_SERVICES	= 0x20,	/* Fibre Channel Services */
-+	FC_TYPE_FC_FSS		= 0x22,	/* Fabric Switch Services */
-+	FC_TYPE_FC_AL		= 0x23,	/* FC-AL */
-+	FC_TYPE_FC_SNMP		= 0x24,	/* FC-SNMP */
-+	FC_TYPE_MAX		= 256,	/* 256 FC-4 types */
-+};
-+
-+struct fc_fc4types_s{
-+	u8         bits[FC_TYPE_MAX / 8];
-+};
-+
-+/*
-+ * Frame Control Definitions. FC-PH Table-45. pg. 168
-+ */
-+enum {
-+	FCTL_EC_ORIG = 0x000000,	/* exchange originator */
-+	FCTL_EC_RESP = 0x800000,	/* exchange responder */
-+	FCTL_SEQ_INI = 0x000000,	/* sequence initiator */
-+	FCTL_SEQ_REC = 0x400000,	/* sequence recipient */
-+	FCTL_FS_EXCH = 0x200000,	/* first sequence of xchg */
-+	FCTL_LS_EXCH = 0x100000,	/* last sequence of xchg */
-+	FCTL_END_SEQ = 0x080000,	/* last frame of sequence */
-+	FCTL_SI_XFER = 0x010000,	/* seq initiative transfer */
-+	FCTL_RO_PRESENT = 0x000008,	/* relative offset present */
-+	FCTL_FILLBYTE_MASK = 0x000003	/* , fill byte mask */
-+};
-+
-+/*
-+ * Fabric Well Known Addresses
-+ */
-+enum {
-+	FC_MIN_WELL_KNOWN_ADDR		= 0xFFFFF0,
-+	FC_DOMAIN_CONTROLLER_MASK 	= 0xFFFC00,
-+	FC_ALIAS_SERVER			= 0xFFFFF8,
-+	FC_MGMT_SERVER			= 0xFFFFFA,
-+	FC_TIME_SERVER			= 0xFFFFFB,
-+	FC_NAME_SERVER			= 0xFFFFFC,
-+	FC_FABRIC_CONTROLLER		= 0xFFFFFD,
-+	FC_FABRIC_PORT			= 0xFFFFFE,
-+	FC_BROADCAST_SERVER		= 0xFFFFFF
-+};
-+
-+/*
-+ * domain/area/port defines
-+ */
-+#define FC_DOMAIN_MASK  0xFF0000
-+#define FC_DOMAIN_SHIFT 16
-+#define FC_AREA_MASK    0x00FF00
-+#define FC_AREA_SHIFT   8
-+#define FC_PORT_MASK    0x0000FF
-+#define FC_PORT_SHIFT   0
-+
-+#define FC_GET_DOMAIN(p)	(((p) & FC_DOMAIN_MASK) >> FC_DOMAIN_SHIFT)
-+#define FC_GET_AREA(p)		(((p) & FC_AREA_MASK) >> FC_AREA_SHIFT)
-+#define FC_GET_PORT(p)		(((p) & FC_PORT_MASK) >> FC_PORT_SHIFT)
-+
-+#define FC_DOMAIN_CTRLR(p)	(FC_DOMAIN_CONTROLLER_MASK | (FC_GET_DOMAIN(p)))
-+
-+enum {
-+	FC_RXID_ANY = 0xFFFFU,
-+};
-+
-+/*
-+ * generic ELS command
-+ */
-+struct fc_els_cmd_s{
-+	u32        els_code:8;	/* ELS Command Code */
-+	u32        reserved:24;
-+};
-+
-+/*
-+ * ELS Command Codes. FC-PH Table-75. pg. 223
-+ */
-+enum {
-+	FC_ELS_LS_RJT = 0x1,	/* Link Service Reject. */
-+	FC_ELS_ACC = 0x02,	/* Accept */
-+	FC_ELS_PLOGI = 0x03,	/* N_Port Login. */
-+	FC_ELS_FLOGI = 0x04,	/* F_Port Login. */
-+	FC_ELS_LOGO = 0x05,	/* Logout. */
-+	FC_ELS_ABTX = 0x06,	/* Abort Exchange */
-+	FC_ELS_RES = 0x08,	/* Read Exchange status */
-+	FC_ELS_RSS = 0x09,	/* Read sequence status block */
-+	FC_ELS_RSI = 0x0A,	/* Request Sequence Initiative */
-+	FC_ELS_ESTC = 0x0C,	/* Estimate Credit. */
-+	FC_ELS_RTV = 0x0E,	/* Read Timeout Value. */
-+	FC_ELS_RLS = 0x0F,	/* Read Link Status. */
-+	FC_ELS_ECHO = 0x10,	/* Echo */
-+	FC_ELS_TEST = 0x11,	/* Test */
-+	FC_ELS_RRQ = 0x12,	/* Reinstate Recovery Qualifier. */
-+	FC_ELS_REC = 0x13,	/* Add this for TAPE support in FCR */
-+	FC_ELS_PRLI = 0x20,	/* Process Login */
-+	FC_ELS_PRLO = 0x21,	/* Process Logout. */
-+	FC_ELS_SCN = 0x22,	/* State Change Notification. */
-+	FC_ELS_TPRLO = 0x24,	/* Third Party Process Logout. */
-+	FC_ELS_PDISC = 0x50,	/* Discover N_Port Parameters. */
-+	FC_ELS_FDISC = 0x51,	/* Discover F_Port Parameters. */
-+	FC_ELS_ADISC = 0x52,	/* Discover Address. */
-+	FC_ELS_FAN = 0x60,	/* Fabric Address Notification */
-+	FC_ELS_RSCN = 0x61,	/* Reg State Change Notification */
-+	FC_ELS_SCR = 0x62,	/* State Change Registration. */
-+	FC_ELS_RTIN = 0x77,	/* Mangement server request */
-+	FC_ELS_RNID = 0x78,	/* Mangement server request */
-+	FC_ELS_RLIR = 0x79,	/* Registered Link Incident Record */
-+
-+	FC_ELS_RPSC = 0x7D,	/* Report Port Speed Capabilities */
-+	FC_ELS_QSA = 0x7E,	/* Query Security Attributes. Ref FC-SP */
-+	FC_ELS_E2E_LBEACON = 0x81,
-+				/* End-to-End Link Beacon */
-+	FC_ELS_AUTH = 0x90,	/* Authentication. Ref FC-SP */
-+	FC_ELS_RFCN = 0x97,	/* Request Fabric Change Notification. Ref
-+				 *FC-SP */
-+
-+};
-+
-+/*
-+ *  Version numbers for FC-PH standards,
-+ *  used in login to indicate what port
-+ *  supports. See FC-PH-X table 158.
-+ */
-+enum {
-+	FC_PH_VER_4_3 = 0x09,
-+	FC_PH_VER_PH_3 = 0x20,
-+};
-+
-+/*
-+ * PDU size defines
-+ */
-+enum {
-+	FC_MIN_PDUSZ = 512,
-+	FC_MAX_PDUSZ = 2112,
-+};
-+
-+/*
-+ * N_Port PLOGI Common Service Parameters.
-+ * FC-PH-x. Figure-76. pg. 308.
-+ */
-+struct fc_plogi_csp_s{
-+	u8         verhi;	/* FC-PH high version */
-+	u8         verlo;	/* FC-PH low version */
-+	u16        bbcred;	/* BB_Credit */
-+
-+#ifdef __BIGENDIAN
-+	u8         ciro:1,		/* continuously increasing RO */
-+			rro:1,		/* random relative offset */
-+			npiv_supp:1,	/* NPIV supported */
-+			port_type:1,	/* N_Port/F_port */
-+			altbbcred:1,	/* alternate BB_Credit */
-+			resolution:1,	/* ms/ns ED_TOV resolution */
-+			vvl_info:1,	/* VVL Info included */
-+			reserved1:1;
-+
-+	u8         hg_supp:1,
-+			query_dbc:1,
-+			security:1,
-+			sync_cap:1,
-+			r_t_tov:1,
-+			dh_dup_supp:1,
-+			cisc:1,		/* continuously increasing seq count */
-+			payload:1;
-+#else
-+	u8         reserved2:2,
-+			resolution:1,	/* ms/ns ED_TOV resolution */
-+			altbbcred:1,	/* alternate BB_Credit */
-+			port_type:1,	/* N_Port/F_port */
-+			npiv_supp:1,	/* NPIV supported */
-+			rro:1,		/* random relative offset */
-+			ciro:1;		/* continuously increasing RO */
-+
-+	u8         payload:1,
-+			cisc:1,		/* continuously increasing seq count */
-+			dh_dup_supp:1,
-+			r_t_tov:1,
-+			sync_cap:1,
-+			security:1,
-+			query_dbc:1,
-+			hg_supp:1;
-+#endif
-+
-+	u16        rxsz;		/* recieve data_field size */
-+
-+	u16        conseq;
-+	u16        ro_bitmap;
-+
-+	u32        e_d_tov;
-+};
-+
-+/*
-+ * N_Port PLOGI Class Specific Parameters.
-+ * FC-PH-x. Figure 78. pg. 318.
-+ */
-+struct fc_plogi_clp_s{
-+#ifdef __BIGENDIAN
-+	u32        class_valid:1;
-+	u32        intermix:1;	/* class intermix supported if set =1.
-+					 * valid only for class1. Reserved for
-+					 * class2 & class3
-+					 */
-+	u32        reserved1:2;
-+	u32        sequential:1;
-+	u32        reserved2:3;
-+#else
-+	u32        reserved2:3;
-+	u32        sequential:1;
-+	u32        reserved1:2;
-+	u32        intermix:1;	/* class intermix supported if set =1.
-+					 * valid only for class1. Reserved for
-+					 * class2 & class3
-+					 */
-+	u32        class_valid:1;
-+#endif
-+
-+	u32        reserved3:24;
-+
-+	u32        reserved4:16;
-+	u32        rxsz:16;	/* Receive data_field size */
-+
-+	u32        reserved5:8;
-+	u32        conseq:8;
-+	u32        e2e_credit:16;	/* end to end credit */
-+
-+	u32        reserved7:8;
-+	u32        ospx:8;
-+	u32        reserved8:16;
-+};
-+
-+#define FLOGI_VVL_BRCD    0x42524344 /* ASCII value for each character in
-+				      * string "BRCD" */
-+
-+/*
-+ * PLOGI els command and reply payload
-+ */
-+struct fc_logi_s{
-+	struct fc_els_cmd_s els_cmd;	/* ELS command code */
-+	struct fc_plogi_csp_s  csp;		/* common service params */
-+	wwn_t           port_name;
-+	wwn_t           node_name;
-+	struct fc_plogi_clp_s  class1;		/* class 1 service parameters */
-+	struct fc_plogi_clp_s  class2;		/* class 2 service parameters */
-+	struct fc_plogi_clp_s  class3;		/* class 3 service parameters */
-+	struct fc_plogi_clp_s  class4;		/* class 4 service parameters */
-+	u8         vvl[16];	/* vendor version level */
-+};
-+
-+/*
-+ * LOGO els command payload
-+ */
-+struct fc_logo_s{
-+	struct fc_els_cmd_s    els_cmd;	/* ELS command code */
-+	u32        res1:8;
-+	u32        nport_id:24;	/* N_Port identifier of source */
-+	wwn_t           orig_port_name;	/* Port name of the LOGO originator */
-+};
-+
-+/*
-+ * ADISC els command payload
-+ */
-+struct fc_adisc_s {
-+	struct fc_els_cmd_s    els_cmd;	/* ELS command code */
-+	u32        res1:8;
-+	u32        orig_HA:24;	/* originator hard address */
-+	wwn_t           orig_port_name;	/* originator port name */
-+	wwn_t           orig_node_name;	/* originator node name */
-+	u32        res2:8;
-+	u32        nport_id:24;	/* originator NPortID */
-+};
-+
-+/*
-+ * Exchange status block
-+ */
-+struct fc_exch_status_blk_s{
-+	u32        oxid:16;
-+	u32        rxid:16;
-+	u32        res1:8;
-+	u32        orig_np:24;	/* originator NPortID */
-+	u32        res2:8;
-+	u32        resp_np:24;	/* responder NPortID */
-+	u32        es_bits;
-+	u32        res3;
-+	/*
-+	 * un modified section of the fields
-+	 */
-+};
-+
-+/*
-+ * RES els command payload
-+ */
-+struct fc_res_s {
-+	struct fc_els_cmd_s    els_cmd;	/* ELS command code */
-+	u32        res1:8;
-+	u32        nport_id:24;	/* N_Port identifier of source */
-+	u32        oxid:16;
-+	u32        rxid:16;
-+	u8         assoc_hdr[32];
-+};
-+
-+/*
-+ * RES els accept payload
-+ */
-+struct fc_res_acc_s{
-+	struct fc_els_cmd_s els_cmd;	/* ELS command code */
-+	struct fc_exch_status_blk_s fc_exch_blk; /* Exchange status block */
-+};
-+
-+/*
-+ * REC els command payload
-+ */
-+struct fc_rec_s {
-+	struct fc_els_cmd_s    els_cmd;	/* ELS command code */
-+	u32        res1:8;
-+	u32        nport_id:24;	/* N_Port identifier of source */
-+	u32        oxid:16;
-+	u32        rxid:16;
-+};
-+
-+#define FC_REC_ESB_OWN_RSP	0x80000000	/* responder owns */
-+#define FC_REC_ESB_SI		0x40000000	/* SI is owned 	*/
-+#define FC_REC_ESB_COMP		0x20000000	/* exchange is complete	*/
-+#define FC_REC_ESB_ENDCOND_ABN	0x10000000	/* abnormal ending 	*/
-+#define FC_REC_ESB_RQACT	0x04000000	/* recovery qual active	*/
-+#define FC_REC_ESB_ERRP_MSK	0x03000000
-+#define FC_REC_ESB_OXID_INV	0x00800000	/* invalid OXID		*/
-+#define FC_REC_ESB_RXID_INV	0x00400000	/* invalid RXID		*/
-+#define FC_REC_ESB_PRIO_INUSE	0x00200000
-+
-+/*
-+ * REC els accept payload
-+ */
-+struct fc_rec_acc_s {
-+	struct fc_els_cmd_s    els_cmd;	/* ELS command code */
-+	u32        oxid:16;
-+	u32        rxid:16;
-+	u32        res1:8;
-+	u32        orig_id:24;	/* N_Port id of exchange originator */
-+	u32        res2:8;
-+	u32        resp_id:24;	/* N_Port id of exchange responder */
-+	u32        count;		/* data transfer count */
-+	u32        e_stat;		/* exchange status */
-+};
-+
-+/*
-+ * RSI els payload
-+ */
-+struct fc_rsi_s {
-+	struct fc_els_cmd_s    els_cmd;
-+	u32        res1:8;
-+	u32        orig_sid:24;
-+	u32        oxid:16;
-+	u32        rxid:16;
-+};
-+
-+/*
-+ * structure for PRLI paramater pages, both request & response
-+ * see FC-PH-X table 113 & 115 for explanation also FCP table 8
-+ */
-+struct fc_prli_params_s{
-+	u32        reserved: 16;
-+#ifdef __BIGENDIAN
-+	u32        reserved1: 5;
-+	u32        rec_support : 1;
-+	u32        task_retry_id : 1;
-+	u32        retry : 1;
-+
-+	u32        confirm : 1;
-+	u32        doverlay:1;
-+	u32        initiator:1;
-+	u32        target:1;
-+	u32        cdmix:1;
-+	u32        drmix:1;
-+	u32        rxrdisab:1;
-+	u32        wxrdisab:1;
-+#else
-+	u32        retry : 1;
-+	u32        task_retry_id : 1;
-+	u32        rec_support : 1;
-+	u32        reserved1: 5;
-+
-+	u32        wxrdisab:1;
-+	u32        rxrdisab:1;
-+	u32        drmix:1;
-+	u32        cdmix:1;
-+	u32        target:1;
-+	u32        initiator:1;
-+	u32        doverlay:1;
-+	u32        confirm : 1;
-+#endif
-+};
-+
-+/*
-+ * valid values for rspcode in PRLI ACC payload
-+ */
-+enum {
-+	FC_PRLI_ACC_XQTD = 0x1,		/* request executed */
-+	FC_PRLI_ACC_PREDEF_IMG = 0x5,	/* predefined image - no prli needed */
-+};
-+
-+struct fc_prli_params_page_s{
-+	u32        type:8;
-+	u32        codext:8;
-+#ifdef __BIGENDIAN
-+	u32        origprocasv:1;
-+	u32        rsppav:1;
-+	u32        imagepair:1;
-+	u32        reserved1:1;
-+	u32        rspcode:4;
-+#else
-+	u32        rspcode:4;
-+	u32        reserved1:1;
-+	u32        imagepair:1;
-+	u32        rsppav:1;
-+	u32        origprocasv:1;
-+#endif
-+	u32        reserved2:8;
-+
-+	u32        origprocas;
-+	u32        rspprocas;
-+	struct fc_prli_params_s  servparams;
-+};
-+
-+/*
-+ * PRLI request and accept payload, FC-PH-X tables 112 & 114
-+ */
-+struct fc_prli_s{
-+	u32        command:8;
-+	u32        pglen:8;
-+	u32        pagebytes:16;
-+	struct fc_prli_params_page_s parampage;
-+};
-+
-+/*
-+ * PRLO logout params page
-+ */
-+struct fc_prlo_params_page_s{
-+	u32        type:8;
-+	u32        type_ext:8;
-+#ifdef __BIGENDIAN
-+	u32        opa_valid:1;	/* originator process associator
-+					 * valid
-+					 */
-+	u32        rpa_valid:1;	/* responder process associator valid */
-+	u32        res1:14;
-+#else
-+	u32        res1:14;
-+	u32        rpa_valid:1;	/* responder process associator valid */
-+	u32        opa_valid:1;	/* originator process associator
-+					 * valid
-+					 */
-+#endif
-+	u32        orig_process_assc;
-+	u32        resp_process_assc;
-+
-+	u32        res2;
-+};
-+
-+/*
-+ * PRLO els command payload
-+ */
-+struct fc_prlo_s{
-+	u32        	command:8;
-+	u32        	page_len:8;
-+	u32        	payload_len:16;
-+	struct fc_prlo_params_page_s 	prlo_params[1];
-+};
-+
-+/*
-+ * PRLO Logout response parameter page
-+ */
-+struct fc_prlo_acc_params_page_s{
-+	u32        type:8;
-+	u32        type_ext:8;
-+
-+#ifdef __BIGENDIAN
-+	u32        opa_valid:1;	/* originator process associator
-+					 * valid
-+					 */
-+	u32        rpa_valid:1;	/* responder process associator valid */
-+	u32        res1:14;
-+#else
-+	u32        res1:14;
-+	u32        rpa_valid:1;	/* responder process associator valid */
-+	u32        opa_valid:1;	/* originator process associator
-+					 * valid
-+					 */
-+#endif
-+	u32        orig_process_assc;
-+	u32        resp_process_assc;
-+
-+	u32        fc4type_csp;
-+};
-+
-+/*
-+ * PRLO els command ACC payload
-+ */
-+struct fc_prlo_acc_s{
-+	u32        command:8;
-+	u32        page_len:8;
-+	u32        payload_len:16;
-+	struct fc_prlo_acc_params_page_s prlo_acc_params[1];
-+};
-+
-+/*
-+ * SCR els command payload
-+ */
-+enum {
-+	FC_SCR_REG_FUNC_FABRIC_DETECTED = 0x01,
-+	FC_SCR_REG_FUNC_N_PORT_DETECTED = 0x02,
-+	FC_SCR_REG_FUNC_FULL = 0x03,
-+	FC_SCR_REG_FUNC_CLEAR_REG = 0xFF,
-+};
-+
-+/* SCR VU registrations */
-+enum {
-+	FC_VU_SCR_REG_FUNC_FABRIC_NAME_CHANGE = 0x01
-+};
-+
-+struct fc_scr_s{
-+	u32 command:8;
-+	u32 res:24;
-+	u32 vu_reg_func:8; /* Vendor Unique Registrations */
-+	u32 res1:16;
-+	u32 reg_func:8;
-+};
-+
-+/*
-+ * Information category for Basic link data
-+ */
-+enum {
-+	FC_CAT_NOP	= 0x0,
-+	FC_CAT_ABTS	= 0x1,
-+	FC_CAT_RMC	= 0x2,
-+	FC_CAT_BA_ACC	= 0x4,
-+	FC_CAT_BA_RJT	= 0x5,
-+	FC_CAT_PRMT	= 0x6,
-+};
-+
-+/*
-+ * LS_RJT els reply payload
-+ */
-+struct fc_ls_rjt_s {
-+	struct fc_els_cmd_s    els_cmd;		/* ELS command code */
-+	u32        res1:8;
-+	u32        reason_code:8;		/* Reason code for reject */
-+	u32        reason_code_expl:8;	/* Reason code explanation */
-+	u32        vendor_unique:8;	/* Vendor specific */
-+};
-+
-+/*
-+ * LS_RJT reason codes
-+ */
-+enum {
-+	FC_LS_RJT_RSN_INV_CMD_CODE	= 0x01,
-+	FC_LS_RJT_RSN_LOGICAL_ERROR	= 0x03,
-+	FC_LS_RJT_RSN_LOGICAL_BUSY	= 0x05,
-+	FC_LS_RJT_RSN_PROTOCOL_ERROR	= 0x07,
-+	FC_LS_RJT_RSN_UNABLE_TO_PERF_CMD = 0x09,
-+	FC_LS_RJT_RSN_CMD_NOT_SUPP	= 0x0B,
-+};
-+
-+/*
-+ * LS_RJT reason code explanation
-+ */
-+enum {
-+	FC_LS_RJT_EXP_NO_ADDL_INFO		= 0x00,
-+	FC_LS_RJT_EXP_SPARMS_ERR_OPTIONS	= 0x01,
-+	FC_LS_RJT_EXP_SPARMS_ERR_INI_CTL	= 0x03,
-+	FC_LS_RJT_EXP_SPARMS_ERR_REC_CTL	= 0x05,
-+	FC_LS_RJT_EXP_SPARMS_ERR_RXSZ		= 0x07,
-+	FC_LS_RJT_EXP_SPARMS_ERR_CONSEQ		= 0x09,
-+	FC_LS_RJT_EXP_SPARMS_ERR_CREDIT		= 0x0B,
-+	FC_LS_RJT_EXP_INV_PORT_NAME		= 0x0D,
-+	FC_LS_RJT_EXP_INV_NODE_FABRIC_NAME	= 0x0E,
-+	FC_LS_RJT_EXP_INV_CSP			= 0x0F,
-+	FC_LS_RJT_EXP_INV_ASSOC_HDR		= 0x11,
-+	FC_LS_RJT_EXP_ASSOC_HDR_REQD		= 0x13,
-+	FC_LS_RJT_EXP_INV_ORIG_S_ID		= 0x15,
-+	FC_LS_RJT_EXP_INV_OXID_RXID_COMB	= 0x17,
-+	FC_LS_RJT_EXP_CMD_ALREADY_IN_PROG	= 0x19,
-+	FC_LS_RJT_EXP_LOGIN_REQUIRED		= 0x1E,
-+	FC_LS_RJT_EXP_INVALID_NPORT_ID		= 0x1F,
-+	FC_LS_RJT_EXP_INSUFF_RES		= 0x29,
-+	FC_LS_RJT_EXP_CMD_NOT_SUPP		= 0x2C,
-+	FC_LS_RJT_EXP_INV_PAYLOAD_LEN		= 0x2D,
-+};
-+
-+/*
-+ * RRQ els command payload
-+ */
-+struct fc_rrq_s{
-+	struct fc_els_cmd_s    els_cmd;	/* ELS command code */
-+	u32        res1:8;
-+	u32        s_id:24;	/* exchange originator S_ID */
-+
-+	u32        ox_id:16;	/* originator exchange ID */
-+	u32        rx_id:16;	/* responder exchange ID */
-+
-+	u32        res2[8];	/* optional association header */
-+};
-+
-+/*
-+ * ABTS BA_ACC reply payload
-+ */
-+struct fc_ba_acc_s{
-+	u32        seq_id_valid:8;	/* set to 0x00 for Abort Exchange */
-+	u32        seq_id:8;	/* invalid for Abort Exchange */
-+	u32        res2:16;
-+	u32        ox_id:16;	/* OX_ID from ABTS frame */
-+	u32        rx_id:16;	/* RX_ID from ABTS frame */
-+	u32        low_seq_cnt:16;	/* set to 0x0000 for Abort Exchange */
-+	u32        high_seq_cnt:16;/* set to 0xFFFF for Abort Exchange */
-+};
-+
-+/*
-+ * ABTS BA_RJT reject payload
-+ */
-+struct fc_ba_rjt_s{
-+	u32        res1:8;		/* Reserved */
-+	u32        reason_code:8;	/* reason code for reject */
-+	u32        reason_expl:8;	/* reason code explanation */
-+	u32        vendor_unique:8;/* vendor unique reason code,set to 0 */
-+};
-+
-+/*
-+ * TPRLO logout parameter page
-+ */
-+struct fc_tprlo_params_page_s{
-+	u32        type:8;
-+	u32        type_ext:8;
-+
-+#ifdef __BIGENDIAN
-+	u32        opa_valid:1;
-+	u32        rpa_valid:1;
-+	u32        tpo_nport_valid:1;
-+	u32        global_process_logout:1;
-+	u32        res1:12;
-+#else
-+	u32        res1:12;
-+	u32        global_process_logout:1;
-+	u32        tpo_nport_valid:1;
-+	u32        rpa_valid:1;
-+	u32        opa_valid:1;
-+#endif
-+
-+	u32        orig_process_assc;
-+	u32        resp_process_assc;
-+
-+	u32        res2:8;
-+	u32        tpo_nport_id;
-+};
-+
-+/*
-+ * TPRLO ELS command payload
-+ */
-+struct fc_tprlo_s{
-+	u32        command:8;
-+	u32        page_len:8;
-+	u32        payload_len:16;
-+
-+	struct fc_tprlo_params_page_s tprlo_params[1];
-+};
-+
-+enum fc_tprlo_type{
-+	FC_GLOBAL_LOGO = 1,
-+	FC_TPR_LOGO
-+};
-+
-+/*
-+ * TPRLO els command ACC payload
-+ */
-+struct fc_tprlo_acc_s{
-+	u32	command:8;
-+	u32	page_len:8;
-+	u32	payload_len:16;
-+	struct fc_prlo_acc_params_page_s tprlo_acc_params[1];
-+};
-+
-+/*
-+ * RSCN els command req payload
-+ */
-+#define FC_RSCN_PGLEN	0x4
-+
-+enum fc_rscn_format{
-+	FC_RSCN_FORMAT_PORTID	= 0x0,
-+	FC_RSCN_FORMAT_AREA	= 0x1,
-+	FC_RSCN_FORMAT_DOMAIN	= 0x2,
-+	FC_RSCN_FORMAT_FABRIC	= 0x3,
-+};
-+
-+struct fc_rscn_event_s{
-+	u32        format:2;
-+	u32        qualifier:4;
-+	u32        resvd:2;
-+	u32        portid:24;
-+};
-+
-+struct fc_rscn_pl_s{
-+	u8         command;
-+	u8         pagelen;
-+	u16        payldlen;
-+	struct fc_rscn_event_s event[1];
-+};
-+
-+/*
-+ * ECHO els command req payload
-+ */
-+struct fc_echo_s {
-+	struct fc_els_cmd_s    els_cmd;
-+};
-+
-+/*
-+ * RNID els command
-+ */
-+
-+#define RNID_NODEID_DATA_FORMAT_COMMON    		 0x00
-+#define RNID_NODEID_DATA_FORMAT_FCP3        		 0x08
-+#define RNID_NODEID_DATA_FORMAT_DISCOVERY     		0xDF
-+
-+#define RNID_ASSOCIATED_TYPE_UNKNOWN                    0x00000001
-+#define RNID_ASSOCIATED_TYPE_OTHER                      0x00000002
-+#define RNID_ASSOCIATED_TYPE_HUB                        0x00000003
-+#define RNID_ASSOCIATED_TYPE_SWITCH                     0x00000004
-+#define RNID_ASSOCIATED_TYPE_GATEWAY                    0x00000005
-+#define RNID_ASSOCIATED_TYPE_STORAGE_DEVICE             0x00000009
-+#define RNID_ASSOCIATED_TYPE_HOST                       0x0000000A
-+#define RNID_ASSOCIATED_TYPE_STORAGE_SUBSYSTEM          0x0000000B
-+#define RNID_ASSOCIATED_TYPE_STORAGE_ACCESS_DEVICE      0x0000000E
-+#define RNID_ASSOCIATED_TYPE_NAS_SERVER                 0x00000011
-+#define RNID_ASSOCIATED_TYPE_BRIDGE                     0x00000002
-+#define RNID_ASSOCIATED_TYPE_VIRTUALIZATION_DEVICE      0x00000003
-+#define RNID_ASSOCIATED_TYPE_MULTI_FUNCTION_DEVICE      0x000000FF
-+
-+/*
-+ * RNID els command payload
-+ */
-+struct fc_rnid_cmd_s{
-+	struct fc_els_cmd_s    els_cmd;
-+	u32        node_id_data_format:8;
-+	u32        reserved:24;
-+};
-+
-+/*
-+ * RNID els response payload
-+ */
-+
-+struct fc_rnid_common_id_data_s{
-+	wwn_t           port_name;
-+	wwn_t           node_name;
-+};
-+
-+struct fc_rnid_general_topology_data_s{
-+	u32        vendor_unique[4];
-+	u32        asso_type;
-+	u32        phy_port_num;
-+	u32        num_attached_nodes;
-+	u32        node_mgmt:8;
-+	u32        ip_version:8;
-+	u32        udp_tcp_port_num:16;
-+	u32        ip_address[4];
-+	u32        reserved:16;
-+	u32        vendor_specific:16;
-+};
-+
-+struct fc_rnid_acc_s{
-+	struct fc_els_cmd_s    els_cmd;
-+	u32        node_id_data_format:8;
-+	u32        common_id_data_length:8;
-+	u32        reserved:8;
-+	u32        specific_id_data_length:8;
-+	struct fc_rnid_common_id_data_s common_id_data;
-+	struct fc_rnid_general_topology_data_s gen_topology_data;
-+};
-+
-+#define RNID_ASSOCIATED_TYPE_UNKNOWN                    0x00000001
-+#define RNID_ASSOCIATED_TYPE_OTHER                      0x00000002
-+#define RNID_ASSOCIATED_TYPE_HUB                        0x00000003
-+#define RNID_ASSOCIATED_TYPE_SWITCH                     0x00000004
-+#define RNID_ASSOCIATED_TYPE_GATEWAY                    0x00000005
-+#define RNID_ASSOCIATED_TYPE_STORAGE_DEVICE             0x00000009
-+#define RNID_ASSOCIATED_TYPE_HOST                       0x0000000A
-+#define RNID_ASSOCIATED_TYPE_STORAGE_SUBSYSTEM          0x0000000B
-+#define RNID_ASSOCIATED_TYPE_STORAGE_ACCESS_DEVICE      0x0000000E
-+#define RNID_ASSOCIATED_TYPE_NAS_SERVER                 0x00000011
-+#define RNID_ASSOCIATED_TYPE_BRIDGE                     0x00000002
-+#define RNID_ASSOCIATED_TYPE_VIRTUALIZATION_DEVICE      0x00000003
-+#define RNID_ASSOCIATED_TYPE_MULTI_FUNCTION_DEVICE      0x000000FF
-+
-+enum fc_rpsc_speed_cap{
-+	RPSC_SPEED_CAP_1G = 0x8000,
-+	RPSC_SPEED_CAP_2G = 0x4000,
-+	RPSC_SPEED_CAP_4G = 0x2000,
-+	RPSC_SPEED_CAP_10G = 0x1000,
-+	RPSC_SPEED_CAP_8G = 0x0800,
-+	RPSC_SPEED_CAP_16G = 0x0400,
-+
-+	RPSC_SPEED_CAP_UNKNOWN = 0x0001,
-+};
-+
-+enum fc_rpsc_op_speed_s{
-+	RPSC_OP_SPEED_1G = 0x8000,
-+	RPSC_OP_SPEED_2G = 0x4000,
-+	RPSC_OP_SPEED_4G = 0x2000,
-+	RPSC_OP_SPEED_10G = 0x1000,
-+	RPSC_OP_SPEED_8G = 0x0800,
-+	RPSC_OP_SPEED_16G = 0x0400,
-+
-+	RPSC_OP_SPEED_NOT_EST = 0x0001,	/*! speed not established */
-+};
-+
-+struct fc_rpsc_speed_info_s{
-+	u16        port_speed_cap;	/*! see fc_rpsc_speed_cap_t */
-+	u16        port_op_speed;	/*! see fc_rpsc_op_speed_t */
-+};
-+
-+enum link_e2e_beacon_subcmd{
-+	LINK_E2E_BEACON_ON = 1,
-+	LINK_E2E_BEACON_OFF = 2
-+};
-+
-+enum beacon_type{
-+	BEACON_TYPE_NORMAL	= 1,	/*! Normal Beaconing. Green */
-+	BEACON_TYPE_WARN	= 2,	/*! Warning Beaconing. Yellow/Amber */
-+	BEACON_TYPE_CRITICAL	= 3	/*! Critical Beaconing. Red */
-+};
-+
-+struct link_e2e_beacon_param_s {
-+	u8         beacon_type;	/* Beacon Type. See beacon_type_t */
-+	u8         beacon_frequency;
-+					/* Beacon frequency. Number of blinks
-+					 * per 10 seconds
-+					 */
-+	u16        beacon_duration;/* Beacon duration (in Seconds). The
-+					 * command operation should be
-+					 * terminated at the end of this
-+					 * timeout value.
-+					 *
-+					 * Ignored if diag_sub_cmd is
-+					 * LINK_E2E_BEACON_OFF.
-+					 *
-+					 * If 0, beaconing will continue till a
-+					 * BEACON OFF request is received
-+					 */
-+};
-+
-+/*
-+ * Link E2E beacon request/good response format. For LS_RJTs use fc_ls_rjt_t
-+ */
-+struct link_e2e_beacon_req_s{
-+	u32        ls_code;	/*! FC_ELS_E2E_LBEACON in requests *
-+					 *or FC_ELS_ACC in good replies */
-+	u32        ls_sub_cmd;	/*! See link_e2e_beacon_subcmd_t */
-+	struct link_e2e_beacon_param_s beacon_parm;
-+};
-+
-+/**
-+ * If RPSC request is sent to the Domain Controller, the request is for
-+ * all the ports within that domain (TODO - I don't think FOS implements
-+ * this...).
-+ */
-+struct fc_rpsc_cmd_s{
-+	struct fc_els_cmd_s    els_cmd;
-+};
-+
-+/*
-+ * RPSC Acc
-+ */
-+struct fc_rpsc_acc_s{
-+	u32        command:8;
-+	u32        rsvd:8;
-+	u32        num_entries:16;
-+
-+	struct fc_rpsc_speed_info_s speed_info[1];
-+};
-+
-+/**
-+ * If RPSC2 request is sent to the Domain Controller,
-+ */
-+#define FC_BRCD_TOKEN    0x42524344
-+
-+struct fc_rpsc2_cmd_s{
-+	struct fc_els_cmd_s    els_cmd;
-+	u32       	token;
-+	u16     	resvd;
-+	u16     	num_pids;       /* Number of pids in the request */
-+	struct  {
-+		u32	rsvd1:8;
-+		u32	pid:24;	/* port identifier */
-+	} pid_list[1];
-+};
-+
-+enum fc_rpsc2_port_type{
-+	RPSC2_PORT_TYPE_UNKNOWN = 0,
-+	RPSC2_PORT_TYPE_NPORT   = 1,
-+	RPSC2_PORT_TYPE_NLPORT  = 2,
-+	RPSC2_PORT_TYPE_NPIV_PORT  = 0x5f,
-+	RPSC2_PORT_TYPE_NPORT_TRUNK  = 0x6f,
-+};
-+
-+/*
-+ * RPSC2 portInfo entry structure
-+ */
-+struct fc_rpsc2_port_info_s{
-+    u32    pid;        /* PID */
-+    u16    resvd1;
-+    u16    index;      /* port number / index */
-+    u8     resvd2;
-+    u8    	type;        /* port type N/NL/... */
-+    u16    speed;      /* port Operating Speed */
-+};
-+
-+/*
-+ * RPSC2 Accept payload
-+ */
-+struct fc_rpsc2_acc_s{
-+	u8        els_cmd;
-+	u8        resvd;
-+	u16       num_pids;  /* Number of pids in the request */
-+	struct fc_rpsc2_port_info_s  port_info[1];    /* port information */
-+};
-+
-+/**
-+ * bit fields so that multiple classes can be specified
-+ */
-+enum fc_cos{
-+	FC_CLASS_2	= 0x04,
-+	FC_CLASS_3	= 0x08,
-+	FC_CLASS_2_3	= 0x0C,
-+};
-+
-+/*
-+ * symbolic name
-+ */
-+struct fc_symname_s{
-+	u8         symname[FC_SYMNAME_MAX];
-+};
-+
-+struct fc_alpabm_s{
-+	u8         alpa_bm[FC_ALPA_MAX / 8];
-+};
-+
-+/*
-+ * protocol default timeout values
-+ */
-+#define FC_ED_TOV		2
-+#define FC_REC_TOV		(FC_ED_TOV + 1)
-+#define FC_RA_TOV		10
-+#define FC_ELS_TOV		(2 * FC_RA_TOV)
-+
-+/*
-+ * virtual fabric related defines
-+ */
-+#define FC_VF_ID_NULL    0	/*  must not be used as VF_ID */
-+#define FC_VF_ID_MIN     1
-+#define FC_VF_ID_MAX     0xEFF
-+#define FC_VF_ID_CTL     0xFEF	/*  control VF_ID */
-+
-+/**
-+ * Virtual Fabric Tagging header format
-+ * @caution This is defined only in BIG ENDIAN format.
-+ */
-+struct fc_vft_s{
-+	u32        r_ctl:8;
-+	u32        ver:2;
-+	u32        type:4;
-+	u32        res_a:2;
-+	u32        priority:3;
-+	u32        vf_id:12;
-+	u32        res_b:1;
-+	u32        hopct:8;
-+	u32        res_c:24;
-+};
-+
-+#pragma pack()
-+
-+#endif
-diff -urpN orig/drivers/scsi/bfa/include/protocol/fcp.h patch/drivers/scsi/bfa/include/protocol/fcp.h
---- orig/drivers/scsi/bfa/include/protocol/fcp.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/protocol/fcp.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,186 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#ifndef __FCPPROTO_H__
-+#define __FCPPROTO_H__
-+
-+#include <protocol/scsi.h>
-+
-+#pragma pack(1)
-+
-+enum {
-+	FCP_RJT		= 0x01000000,	/* SRR reject */
-+	FCP_SRR_ACCEPT	= 0x02000000,	/* SRR accept */
-+	FCP_SRR		= 0x14000000,	/* Sequence Retransmission Request */
-+};
-+
-+/*
-+ * SRR FC-4 LS payload
-+ */
-+struct fc_srr_s{
-+	u32	ls_cmd;
-+	u32        ox_id:16;	/* ox-id */
-+	u32        rx_id:16;	/* rx-id */
-+	u32        ro;		/* relative offset */
-+	u32        r_ctl:8;		/* R_CTL for I.U. */
-+	u32        res:24;
-+};
-+
-+
-+/*
-+ * FCP_CMND definitions
-+ */
-+#define FCP_CMND_CDB_LEN    16
-+#define FCP_CMND_LUN_LEN    8
-+
-+struct fcp_cmnd_s{
-+	lun_t           lun;		/* 64-bit LU number */
-+	u8         crn;		/* command reference number */
-+#ifdef __BIGENDIAN
-+	u8         resvd:1,
-+			priority:4,	/* FCP-3: SAM-3 priority */
-+			taskattr:3;	/* scsi task attribute */
-+#else
-+	u8         taskattr:3,	/* scsi task attribute */
-+			priority:4,	/* FCP-3: SAM-3 priority */
-+			resvd:1;
-+#endif
-+	u8         tm_flags;	/* task management flags */
-+#ifdef __BIGENDIAN
-+	u8         addl_cdb_len:6,	/* additional CDB length words */
-+			iodir:2;	/* read/write FCP_DATA IUs */
-+#else
-+	u8         iodir:2,	/* read/write FCP_DATA IUs */
-+			addl_cdb_len:6;	/* additional CDB length */
-+#endif
-+	struct scsi_cdb_s      cdb;
-+
-+	/*
-+	 * !!! additional cdb bytes follows here!!!
-+	 */
-+	u32        fcp_dl;	/* bytes to be transferred */
-+};
-+
-+#define fcp_cmnd_cdb_len(_cmnd) ((_cmnd)->addl_cdb_len * 4 + FCP_CMND_CDB_LEN)
-+#define fcp_cmnd_fcpdl(_cmnd)	((&(_cmnd)->fcp_dl)[(_cmnd)->addl_cdb_len])
-+
-+/*
-+ * fcp_cmnd_t.iodir field values
-+ */
-+enum fcp_iodir{
-+	FCP_IODIR_NONE	= 0,
-+	FCP_IODIR_WRITE = 1,
-+	FCP_IODIR_READ	= 2,
-+	FCP_IODIR_RW	= 3,
-+};
-+
-+/*
-+ * Task attribute field
-+ */
-+enum {
-+	FCP_TASK_ATTR_SIMPLE	= 0,
-+	FCP_TASK_ATTR_HOQ	= 1,
-+	FCP_TASK_ATTR_ORDERED	= 2,
-+	FCP_TASK_ATTR_ACA	= 4,
-+	FCP_TASK_ATTR_UNTAGGED	= 5,	/* obsolete in FCP-3 */
-+};
-+
-+/*
-+ * Task management flags field - only one bit shall be set
-+ */
-+#ifndef BIT
-+#define BIT(_x)	(1 << (_x))
-+#endif
-+enum fcp_tm_cmnd{
-+	FCP_TM_ABORT_TASK_SET	= BIT(1),
-+	FCP_TM_CLEAR_TASK_SET	= BIT(2),
-+	FCP_TM_LUN_RESET	= BIT(4),
-+	FCP_TM_TARGET_RESET	= BIT(5),	/* obsolete in FCP-3 */
-+	FCP_TM_CLEAR_ACA	= BIT(6),
-+};
-+
-+/*
-+ * FCP_XFER_RDY IU defines
-+ */
-+struct fcp_xfer_rdy_s{
-+	u32        data_ro;
-+	u32        burst_len;
-+	u32        reserved;
-+};
-+
-+/*
-+ * FCP_RSP residue flags
-+ */
-+enum fcp_residue{
-+	FCP_NO_RESIDUE = 0,	/* no residue */
-+	FCP_RESID_OVER = 1,	/* more data left that was not sent */
-+	FCP_RESID_UNDER = 2,	/* less data than requested */
-+};
-+
-+enum {
-+	FCP_RSPINFO_GOOD = 0,
-+	FCP_RSPINFO_DATALEN_MISMATCH = 1,
-+	FCP_RSPINFO_CMND_INVALID = 2,
-+	FCP_RSPINFO_ROLEN_MISMATCH = 3,
-+	FCP_RSPINFO_TM_NOT_SUPP = 4,
-+	FCP_RSPINFO_TM_FAILED = 5,
-+};
-+
-+struct fcp_rspinfo_s{
-+	u32        res0:24;
-+	u32        rsp_code:8;	/* response code (as above) */
-+	u32        res1;
-+};
-+
-+struct fcp_resp_s{
-+	u32        reserved[2];	/* 2 words reserved */
-+	u16        reserved2;
-+#ifdef __BIGENDIAN
-+	u8         reserved3:3;
-+	u8         fcp_conf_req:1;	/* FCP_CONF is requested */
-+	u8         resid_flags:2;	/* underflow/overflow */
-+	u8         sns_len_valid:1;/* sense len is valid */
-+	u8         rsp_len_valid:1;/* response len is valid */
-+#else
-+	u8         rsp_len_valid:1;/* response len is valid */
-+	u8         sns_len_valid:1;/* sense len is valid */
-+	u8         resid_flags:2;	/* underflow/overflow */
-+	u8         fcp_conf_req:1;	/* FCP_CONF is requested */
-+	u8         reserved3:3;
-+#endif
-+	u8         scsi_status;	/* one byte SCSI status */
-+	u32        residue;	/* residual data bytes */
-+	u32        sns_len;	/* length od sense info */
-+	u32        rsp_len;	/* length of response info */
-+};
-+
-+#define fcp_snslen(__fcprsp)	((__fcprsp)->sns_len_valid ? 		\
-+					(__fcprsp)->sns_len : 0)
-+#define fcp_rsplen(__fcprsp)	((__fcprsp)->rsp_len_valid ? 		\
-+					(__fcprsp)->rsp_len : 0)
-+#define fcp_rspinfo(__fcprsp)	((struct fcp_rspinfo_s *)((__fcprsp) + 1))
-+#define fcp_snsinfo(__fcprsp)	(((u8 *)fcp_rspinfo(__fcprsp)) + 	\
-+						fcp_rsplen(__fcprsp))
-+
-+struct fcp_cmnd_fr_s{
-+	struct fchs_s          fchs;
-+	struct fcp_cmnd_s      fcp;
-+};
-+
-+#pragma pack()
-+
-+#endif
-diff -urpN orig/drivers/scsi/bfa/include/protocol/fc_sp.h patch/drivers/scsi/bfa/include/protocol/fc_sp.h
---- orig/drivers/scsi/bfa/include/protocol/fc_sp.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/protocol/fc_sp.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,224 @@
-+/*
-+ * Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#ifndef __FC_SP_H__
-+#define __FC_SP_H__
-+
-+#include <protocol/types.h>
-+
-+#pragma pack(1)
-+
-+enum auth_els_flags{
-+	FC_AUTH_ELS_MORE_FRAGS_FLAG 	= 0x80,	/*! bit-7. More Fragments
-+						 * Follow
-+						 */
-+	FC_AUTH_ELS_CONCAT_FLAG 	= 0x40,	/*! bit-6. Concatenation Flag */
-+	FC_AUTH_ELS_SEQ_NUM_FLAG 	= 0x01 	/*! bit-0. Sequence Number */
-+};
-+
-+enum auth_msg_codes{
-+	FC_AUTH_MC_AUTH_RJT		= 0x0A,	/*! Auth Reject */
-+	FC_AUTH_MC_AUTH_NEG 		= 0x0B, /*! Auth Negotiate */
-+	FC_AUTH_MC_AUTH_DONE 		= 0x0C, /*! Auth Done */
-+
-+	FC_AUTH_MC_DHCHAP_CHAL 		= 0x10, /*! DHCHAP Challenge */
-+	FC_AUTH_MC_DHCHAP_REPLY 	= 0x11, /*! DHCHAP Reply */
-+	FC_AUTH_MC_DHCHAP_SUCC 		= 0x12, /*! DHCHAP Success */
-+
-+	FC_AUTH_MC_FCAP_REQ 		= 0x13, /*! FCAP Request */
-+	FC_AUTH_MC_FCAP_ACK 		= 0x14, /*! FCAP Acknowledge */
-+	FC_AUTH_MC_FCAP_CONF 		= 0x15, /*! FCAP Confirm */
-+
-+	FC_AUTH_MC_FCPAP_INIT 		= 0x16, /*! FCPAP Init */
-+	FC_AUTH_MC_FCPAP_ACC 		= 0x17, /*! FCPAP Accept */
-+	FC_AUTH_MC_FCPAP_COMP 		= 0x18, /*! FCPAP Complete */
-+
-+	FC_AUTH_MC_IKE_SA_INIT 		= 0x22, /*! IKE SA INIT */
-+	FC_AUTH_MC_IKE_SA_AUTH 		= 0x23, /*! IKE SA Auth */
-+	FC_AUTH_MC_IKE_CREATE_CHILD_SA	= 0x24, /*! IKE Create Child SA */
-+	FC_AUTH_MC_IKE_INFO 		= 0x25, /*! IKE informational */
-+};
-+
-+enum auth_proto_version{
-+	FC_AUTH_PROTO_VER_1 	= 1,	/*! Protocol Version 1 */
-+};
-+
-+enum {
-+	FC_AUTH_ELS_COMMAND_CODE = 0x90,/*! Authentication ELS Command code  */
-+	FC_AUTH_PROTO_PARAM_LEN_SZ = 4,	/*! Size of Proto Parameter Len Field */
-+	FC_AUTH_PROTO_PARAM_VAL_SZ = 4,	/*! Size of Proto Parameter Val Field */
-+	FC_MAX_AUTH_SECRET_LEN     = 256,
-+					/*! Maximum secret string length */
-+	FC_AUTH_NUM_USABLE_PROTO_LEN_SZ = 4,
-+					/*! Size of usable protocols field */
-+	FC_AUTH_RESP_VALUE_LEN_SZ	= 4,
-+					/*! Size of response value length */
-+	FC_MAX_CHAP_KEY_LEN	= 256,	/*! Maximum md5 digest length */
-+	FC_MAX_AUTH_RETRIES     = 3,	/*! Maximum number of retries */
-+	FC_MD5_DIGEST_LEN       = 16,	/*! MD5 digest length */
-+	FC_SHA1_DIGEST_LEN      = 20,	/*! SHA1 digest length */
-+	FC_MAX_DHG_SUPPORTED    = 1,	/*! Maximum DH Groups supported */
-+	FC_MAX_ALG_SUPPORTED    = 1,	/*! Maximum algorithms supported */
-+	FC_MAX_PROTO_SUPPORTED  = 1,	/*! Maximum protocols supported */
-+	FC_START_TXN_ID         = 2,	/*! Starting transaction ID */
-+};
-+
-+enum auth_proto_id{
-+	FC_AUTH_PROTO_DHCHAP		= 0x00000001,
-+	FC_AUTH_PROTO_FCAP 		= 0x00000002,
-+	FC_AUTH_PROTO_FCPAP 		= 0x00000003,
-+	FC_AUTH_PROTO_IKEv2 		= 0x00000004,
-+	FC_AUTH_PROTO_IKEv2_AUTH 	= 0x00000005,
-+};
-+
-+struct auth_name_s{
-+	u16	name_tag;	/*! Name Tag = 1 for Authentication */
-+	u16	name_len;	/*! Name Length = 8 for Authentication
-+					 */
-+	wwn_t		name;  		/*! Name. TODO - is this PWWN */
-+};
-+
-+
-+enum auth_hash_func{
-+	FC_AUTH_HASH_FUNC_MD5 		= 0x00000005,
-+	FC_AUTH_HASH_FUNC_SHA_1 	= 0x00000006,
-+};
-+
-+enum auth_dh_gid{
-+	FC_AUTH_DH_GID_0_DHG_NULL	= 0x00000000,
-+	FC_AUTH_DH_GID_1_DHG_1024	= 0x00000001,
-+	FC_AUTH_DH_GID_2_DHG_1280	= 0x00000002,
-+	FC_AUTH_DH_GID_3_DHG_1536	= 0x00000003,
-+	FC_AUTH_DH_GID_4_DHG_2048	= 0x00000004,
-+	FC_AUTH_DH_GID_6_DHG_3072	= 0x00000006,
-+	FC_AUTH_DH_GID_7_DHG_4096	= 0x00000007,
-+	FC_AUTH_DH_GID_8_DHG_6144	= 0x00000008,
-+	FC_AUTH_DH_GID_9_DHG_8192	= 0x00000009,
-+};
-+
-+struct auth_els_msg_s {
-+	u8		auth_els_code;	/*  Authentication ELS Code (0x90) */
-+	u8 	auth_els_flag; 	/*  Authentication ELS Flags */
-+	u8 	auth_msg_code; 	/*  Authentication Message Code */
-+	u8 	proto_version; 	/*  Protocol Version */
-+	u32	msg_len; 	/*  Message Length */
-+	u32	trans_id; 	/*  Transaction Identifier (T_ID) */
-+
-+	/* Msg payload follows... */
-+};
-+
-+
-+enum auth_neg_param_tags {
-+	FC_AUTH_NEG_DHCHAP_HASHLIST 	= 0x0001,
-+	FC_AUTH_NEG_DHCHAP_DHG_ID_LIST 	= 0x0002,
-+};
-+
-+
-+struct dhchap_param_format_s {
-+	u16	tag;		/*! Parameter Tag. See
-+					 * auth_neg_param_tags_t
-+					 */
-+	u16	word_cnt;
-+
-+	/* followed by variable length parameter value... */
-+};
-+
-+struct auth_proto_params_s {
-+	u32	proto_param_len;
-+	u32	proto_id;
-+
-+	/*
-+	 * Followed by variable length Protocol specific parameters. DH-CHAP
-+	 * uses dhchap_param_format_t
-+	 */
-+};
-+
-+struct auth_neg_msg_s {
-+	struct auth_name_s	auth_ini_name;
-+	u32		usable_auth_protos;
-+	struct auth_proto_params_s proto_params[1]; /*! (1..usable_auth_proto)
-+						     * protocol params
-+						     */
-+};
-+
-+struct auth_dh_val_s {
-+	u32 dh_val_len;
-+	u32 dh_val[1];
-+};
-+
-+struct auth_dhchap_chal_msg_s {
-+	struct auth_els_msg_s	hdr;
-+	struct auth_name_s auth_responder_name;	/* TODO VRK - is auth_name_t
-+						 * type OK?
-+						 */
-+	u32 	hash_id;
-+	u32 	dh_grp_id;
-+	u32 	chal_val_len;
-+	char		chal_val[1];
-+
-+	/* ...followed by variable Challenge length/value and DH length/value */
-+};
-+
-+
-+enum auth_rjt_codes {
-+	FC_AUTH_RJT_CODE_AUTH_FAILURE 	= 0x01,
-+	FC_AUTH_RJT_CODE_LOGICAL_ERR	= 0x02,
-+};
-+
-+enum auth_rjt_code_exps {
-+	FC_AUTH_CEXP_AUTH_MECH_NOT_USABLE	= 0x01,
-+	FC_AUTH_CEXP_DH_GROUP_NOT_USABLE 	= 0x02,
-+	FC_AUTH_CEXP_HASH_FUNC_NOT_USABLE 	= 0x03,
-+	FC_AUTH_CEXP_AUTH_XACT_STARTED		= 0x04,
-+	FC_AUTH_CEXP_AUTH_FAILED 		= 0x05,
-+	FC_AUTH_CEXP_INCORRECT_PLD 		= 0x06,
-+	FC_AUTH_CEXP_INCORRECT_PROTO_MSG 	= 0x07,
-+	FC_AUTH_CEXP_RESTART_AUTH_PROTO 	= 0x08,
-+	FC_AUTH_CEXP_AUTH_CONCAT_NOT_SUPP 	= 0x09,
-+	FC_AUTH_CEXP_PROTO_VER_NOT_SUPP 	= 0x0A,
-+};
-+
-+enum auth_status {
-+	FC_AUTH_STATE_INPROGRESS = 0, 	/*! authentication in progress 	*/
-+	FC_AUTH_STATE_FAILED	= 1, 	/*! authentication failed */
-+	FC_AUTH_STATE_SUCCESS	= 2 	/*! authentication successful	*/
-+};
-+
-+struct auth_rjt_msg_s {
-+	struct auth_els_msg_s	hdr;
-+	u8		reason_code;
-+	u8		reason_code_exp;
-+	u8		rsvd[2];
-+};
-+
-+
-+struct auth_dhchap_neg_msg_s {
-+	struct auth_els_msg_s hdr;
-+	struct auth_neg_msg_s nego;
-+};
-+
-+struct auth_dhchap_reply_msg_s {
-+	struct auth_els_msg_s	hdr;
-+
-+	/*
-+	 * followed by response value length & Value + DH Value Length & Value
-+	 */
-+};
-+
-+#pragma pack()
-+
-+#endif /* __FC_SP_H__ */
-diff -urpN orig/drivers/scsi/bfa/include/protocol/fdmi.h patch/drivers/scsi/bfa/include/protocol/fdmi.h
---- orig/drivers/scsi/bfa/include/protocol/fdmi.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/protocol/fdmi.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,163 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#ifndef __FDMI_H__
-+#define __FDMI_H__
-+
-+#include <protocol/types.h>
-+#include <protocol/fc.h>
-+#include <protocol/ct.h>
-+
-+#pragma pack(1)
-+
-+/*
-+ * FDMI Command Codes
-+ */
-+#define	FDMI_GRHL		0x0100
-+#define	FDMI_GHAT		0x0101
-+#define	FDMI_GRPL		0x0102
-+#define	FDMI_GPAT		0x0110
-+#define	FDMI_RHBA		0x0200
-+#define	FDMI_RHAT		0x0201
-+#define	FDMI_RPRT		0x0210
-+#define	FDMI_RPA		0x0211
-+#define	FDMI_DHBA		0x0300
-+#define	FDMI_DPRT		0x0310
-+
-+/*
-+ * FDMI reason codes
-+ */
-+#define	FDMI_NO_ADDITIONAL_EXP		0x00
-+#define	FDMI_HBA_ALREADY_REG		0x10
-+#define	FDMI_HBA_ATTRIB_NOT_REG		0x11
-+#define	FDMI_HBA_ATTRIB_MULTIPLE	0x12
-+#define	FDMI_HBA_ATTRIB_LENGTH_INVALID	0x13
-+#define	FDMI_HBA_ATTRIB_NOT_PRESENT	0x14
-+#define	FDMI_PORT_ORIG_NOT_IN_LIST	0x15
-+#define	FDMI_PORT_HBA_NOT_IN_LIST	0x16
-+#define	FDMI_PORT_ATTRIB_NOT_REG	0x20
-+#define	FDMI_PORT_NOT_REG		0x21
-+#define	FDMI_PORT_ATTRIB_MULTIPLE	0x22
-+#define	FDMI_PORT_ATTRIB_LENGTH_INVALID	0x23
-+#define	FDMI_PORT_ALREADY_REGISTEREED	0x24
-+
-+/*
-+ * FDMI Transmission Speed Mask values
-+ */
-+#define	FDMI_TRANS_SPEED_1G		0x00000001
-+#define	FDMI_TRANS_SPEED_2G		0x00000002
-+#define	FDMI_TRANS_SPEED_10G		0x00000004
-+#define	FDMI_TRANS_SPEED_4G		0x00000008
-+#define	FDMI_TRANS_SPEED_8G		0x00000010
-+#define	FDMI_TRANS_SPEED_16G		0x00000020
-+#define	FDMI_TRANS_SPEED_UNKNOWN	0x00008000
-+
-+/*
-+ * FDMI HBA attribute types
-+ */
-+enum fdmi_hba_attribute_type {
-+	FDMI_HBA_ATTRIB_NODENAME = 1,	/* 0x0001 */
-+	FDMI_HBA_ATTRIB_MANUFACTURER,	/* 0x0002 */
-+	FDMI_HBA_ATTRIB_SERIALNUM,	/* 0x0003 */
-+	FDMI_HBA_ATTRIB_MODEL,		/* 0x0004 */
-+	FDMI_HBA_ATTRIB_MODEL_DESC,	/* 0x0005 */
-+	FDMI_HBA_ATTRIB_HW_VERSION,	/* 0x0006 */
-+	FDMI_HBA_ATTRIB_DRIVER_VERSION,	/* 0x0007 */
-+	FDMI_HBA_ATTRIB_ROM_VERSION,	/* 0x0008 */
-+	FDMI_HBA_ATTRIB_FW_VERSION,	/* 0x0009 */
-+	FDMI_HBA_ATTRIB_OS_NAME,	/* 0x000A */
-+	FDMI_HBA_ATTRIB_MAX_CT,		/* 0x000B */
-+
-+	FDMI_HBA_ATTRIB_MAX_TYPE
-+};
-+
-+/*
-+ * FDMI Port attribute types
-+ */
-+enum fdmi_port_attribute_type {
-+	FDMI_PORT_ATTRIB_FC4_TYPES = 1,	/* 0x0001 */
-+	FDMI_PORT_ATTRIB_SUPP_SPEED,	/* 0x0002 */
-+	FDMI_PORT_ATTRIB_PORT_SPEED,	/* 0x0003 */
-+	FDMI_PORT_ATTRIB_FRAME_SIZE,	/* 0x0004 */
-+	FDMI_PORT_ATTRIB_DEV_NAME,	/* 0x0005 */
-+	FDMI_PORT_ATTRIB_HOST_NAME,	/* 0x0006 */
-+
-+	FDMI_PORT_ATTR_MAX_TYPE
-+};
-+
-+/*
-+ * FDMI attribute
-+ */
-+struct fdmi_attr_s {
-+	u16        type;
-+	u16        len;
-+	u8         value[1];
-+};
-+
-+/*
-+ * HBA Attribute Block
-+ */
-+struct fdmi_hba_attr_s {
-+	u32        attr_count;	/* # of attributes */
-+	struct fdmi_attr_s     hba_attr;	/* n attributes */
-+};
-+
-+/*
-+ * Registered Port List
-+ */
-+struct fdmi_port_list_s {
-+	u32        num_ports;	/* number Of Port Entries */
-+	wwn_t           port_entry;	/* one or more */
-+};
-+
-+/*
-+ * Port Attribute Block
-+ */
-+struct fdmi_port_attr_s {
-+	u32        attr_count;	/* # of attributes */
-+	struct fdmi_attr_s     port_attr;	/* n attributes */
-+};
-+
-+/*
-+ * FDMI Register HBA Attributes
-+ */
-+struct fdmi_rhba_s {
-+	wwn_t           hba_id;		/* HBA Identifier */
-+	struct fdmi_port_list_s port_list;	/* Registered Port List */
-+	struct fdmi_hba_attr_s hba_attr_blk;	/* HBA attribute block */
-+};
-+
-+/*
-+ * FDMI Register Port
-+ */
-+struct fdmi_rprt_s {
-+	wwn_t           hba_id;		/* HBA Identifier */
-+	wwn_t           port_name;	/* Port wwn */
-+	struct fdmi_port_attr_s port_attr_blk;	/* Port Attr Block */
-+};
-+
-+/*
-+ * FDMI Register Port Attributes
-+ */
-+struct fdmi_rpa_s {
-+	wwn_t           port_name;	/* port wwn */
-+	struct fdmi_port_attr_s port_attr_blk;	/* Port Attr Block */
-+};
-+
-+#pragma pack()
-+
-+#endif
-diff -urpN orig/drivers/scsi/bfa/include/protocol/pcifw.h patch/drivers/scsi/bfa/include/protocol/pcifw.h
---- orig/drivers/scsi/bfa/include/protocol/pcifw.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/protocol/pcifw.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,75 @@
-+/*
-+ * Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/**
-+ *  pcifw.h PCI FW related headers
-+ */
-+
-+#ifndef __PCIFW_H__
-+#define __PCIFW_H__
-+
-+#pragma pack(1)
-+
-+struct pnp_hdr_s{
-+  u32	signature;	/* "$PnP" */
-+  u8	rev;		/* Struct revision */
-+  u8 	len;		/* Header structure len in multiples
-+				 * of 16 bytes */
-+  u16  off;		/* Offset to next header 00 if none */
-+  u8	rsvd;		/* Reserved byte */
-+  u8	cksum;		/* 8-bit checksum for this header */
-+  u32	pnp_dev_id;	/* PnP Device Id */
-+  u16  mfstr;		/* Pointer to manufacturer string */
-+  u16	prstr;		/* Pointer to product string */
-+  u8	devtype[3];	/* Device Type Code */
-+  u8	devind;		/* Device Indicator */
-+  u16	bcventr;	/* Bootstrap entry vector */
-+  u16	rsvd2;		/* Reserved */
-+  u16  sriv;		/* Static resource information vector */
-+};
-+
-+struct pci_3_0_ds_s{
-+ u32	sig;   		/* Signature "PCIR" */
-+ u16	vendid;		/* Vendor ID */
-+ u16	devid;		/* Device ID */
-+ u16	devlistoff;	/* Device List Offset */
-+ u16	len;		/* PCI Data Structure Length */
-+ u8	rev;		/* PCI Data Structure Revision */
-+ u8	clcode[3];	/* Class Code */
-+ u16	imglen;		/* Code image length in multiples of
-+				 * 512 bytes */
-+ u16	coderev;	/* Revision level of code/data */
-+ u8	codetype;	/* Code type 0x00 - BIOS */
-+ u8	indr;		/* Last image indicator */
-+ u16	mrtimglen;	/* Max Run Time Image Length */
-+ u16	cuoff;		/* Config Utility Code Header Offset */
-+ u16	dmtfclp;	/* DMTF CLP entry point offset */
-+};
-+
-+struct pci_optrom_hdr_s{
-+ u16	sig;		/* Signature 0x55AA */
-+ u8	len;		/* Option ROM length in units of 512 bytes */
-+ u8	inivec[3];	/* Initialization vector */
-+ u8	rsvd[16];	/* Reserved field */
-+ u16	verptr;		/* Pointer to version string - private */
-+ u16	pcids;		/* Pointer to PCI data structure */
-+ u16	pnphdr;		/* Pointer to PnP expansion header */
-+};
-+
-+#pragma pack()
-+
-+#endif
-diff -urpN orig/drivers/scsi/bfa/include/protocol/scsi.h patch/drivers/scsi/bfa/include/protocol/scsi.h
---- orig/drivers/scsi/bfa/include/protocol/scsi.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/protocol/scsi.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,1648 @@
-+/*
-+ * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+#ifndef __SCSI_H__
-+#define __SCSI_H__
-+
-+#include <protocol/types.h>
-+
-+#pragma pack(1)
-+
-+/*
-+ * generic SCSI cdb definition
-+ */
-+#define SCSI_MAX_CDBLEN     16
-+struct scsi_cdb_s{
-+	u8         scsi_cdb[SCSI_MAX_CDBLEN];
-+};
-+
-+/*
-+ * scsi lun serial number definition
-+ */
-+#define SCSI_LUN_SN_LEN     32
-+struct scsi_lun_sn_s{
-+	u8         lun_sn[SCSI_LUN_SN_LEN];
-+};
-+
-+/*
-+ * SCSI Direct Access Commands
-+ */
-+enum {
-+	SCSI_OP_TEST_UNIT_READY		= 0x00,
-+	SCSI_OP_REQUEST_SENSE		= 0x03,
-+	SCSI_OP_FORMAT_UNIT		= 0x04,
-+	SCSI_OP_READ6			= 0x08,
-+	SCSI_OP_WRITE6			= 0x0A,
-+	SCSI_OP_WRITE_FILEMARKS		= 0x10,
-+	SCSI_OP_INQUIRY			= 0x12,
-+	SCSI_OP_MODE_SELECT6		= 0x15,
-+	SCSI_OP_RESERVE6		= 0x16,
-+	SCSI_OP_RELEASE6		= 0x17,
-+	SCSI_OP_MODE_SENSE6		= 0x1A,
-+	SCSI_OP_START_STOP_UNIT		= 0x1B,
-+	SCSI_OP_SEND_DIAGNOSTIC		= 0x1D,
-+	SCSI_OP_READ_CAPACITY		= 0x25,
-+	SCSI_OP_READ10			= 0x28,
-+	SCSI_OP_WRITE10			= 0x2A,
-+	SCSI_OP_VERIFY10		= 0x2F,
-+	SCSI_OP_READ_DEFECT_DATA	= 0x37,
-+	SCSI_OP_LOG_SELECT		= 0x4C,
-+	SCSI_OP_LOG_SENSE		= 0x4D,
-+	SCSI_OP_MODE_SELECT10		= 0x55,
-+	SCSI_OP_RESERVE10		= 0x56,
-+	SCSI_OP_RELEASE10		= 0x57,
-+	SCSI_OP_MODE_SENSE10		= 0x5A,
-+	SCSI_OP_PER_RESERVE_IN		= 0x5E,
-+	SCSI_OP_PER_RESERVE_OUR		= 0x5E,
-+	SCSI_OP_READ16			= 0x88,
-+	SCSI_OP_WRITE16			= 0x8A,
-+	SCSI_OP_VERIFY16		= 0x8F,
-+	SCSI_OP_READ_CAPACITY16		= 0x9E,
-+	SCSI_OP_REPORT_LUNS		= 0xA0,
-+	SCSI_OP_READ12			= 0xA8,
-+	SCSI_OP_WRITE12			= 0xAA,
-+	SCSI_OP_UNDEF			= 0xFF,
-+};
-+
-+/*
-+ * SCSI START_STOP_UNIT command
-+ */
-+struct scsi_start_stop_unit_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         lun:3;
-+	u8         reserved1:4;
-+	u8         immed:1;
-+#else
-+	u8         immed:1;
-+	u8         reserved1:4;
-+	u8         lun:3;
-+#endif
-+	u8         reserved2;
-+	u8         reserved3;
-+#ifdef __BIGENDIAN
-+	u8         power_conditions:4;
-+	u8         reserved4:2;
-+	u8         loEj:1;
-+	u8         start:1;
-+#else
-+	u8         start:1;
-+	u8         loEj:1;
-+	u8         reserved4:2;
-+	u8         power_conditions:4;
-+#endif
-+	u8         control;
-+};
-+
-+/*
-+ * SCSI SEND_DIAGNOSTIC command
-+ */
-+struct scsi_send_diagnostic_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         self_test_code:3;
-+	u8         pf:1;
-+	u8         reserved1:1;
-+	u8         self_test:1;
-+	u8         dev_offl:1;
-+	u8         unit_offl:1;
-+#else
-+	u8         unit_offl:1;
-+	u8         dev_offl:1;
-+	u8         self_test:1;
-+	u8         reserved1:1;
-+	u8         pf:1;
-+	u8         self_test_code:3;
-+#endif
-+	u8         reserved2;
-+
-+	u8         param_list_length[2];	/* MSB first */
-+	u8         control;
-+
-+};
-+
-+/*
-+ * SCSI READ10/WRITE10 commands
-+ */
-+struct scsi_rw10_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         lun:3;
-+	u8         dpo:1;	/* Disable Page Out */
-+	u8         fua:1;	/* Force Unit Access */
-+	u8         reserved1:2;
-+	u8         rel_adr:1;	/* relative address */
-+#else
-+	u8         rel_adr:1;
-+	u8         reserved1:2;
-+	u8         fua:1;
-+	u8         dpo:1;
-+	u8         lun:3;
-+#endif
-+	u8         lba0;	/* logical block address - MSB */
-+	u8         lba1;
-+	u8         lba2;
-+	u8         lba3;	/* LSB */
-+	u8         reserved3;
-+	u8         xfer_length0;	/* transfer length in blocks - MSB */
-+	u8         xfer_length1;	/* LSB */
-+	u8         control;
-+};
-+
-+#define SCSI_CDB10_GET_LBA(cdb)                     \
-+    (((cdb)->lba0 << 24) | ((cdb)->lba1 << 16) |    \
-+     ((cdb)->lba2 << 8) | (cdb)->lba3)
-+
-+#define SCSI_CDB10_SET_LBA(cdb, lba) {      \
-+    (cdb)->lba0 = lba >> 24;            \
-+    (cdb)->lba1 = (lba >> 16) & 0xFF;   \
-+    (cdb)->lba2 = (lba >> 8) & 0xFF;    \
-+    (cdb)->lba3 = lba & 0xFF;           \
-+}
-+
-+#define SCSI_CDB10_GET_TL(cdb)  \
-+    ((cdb)->xfer_length0 << 8 | (cdb)->xfer_length1)
-+#define SCSI_CDB10_SET_TL(cdb, tl) {      \
-+    (cdb)->xfer_length0 = tl >> 8;       \
-+    (cdb)->xfer_length1 = tl & 0xFF;     \
-+}
-+
-+/*
-+ * SCSI READ6/WRITE6 commands
-+ */
-+struct scsi_rw6_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         lun:3;
-+	u8         lba0:5;		/* MSb */
-+#else
-+	u8         lba0:5;		/* MSb */
-+	u8         lun:3;
-+#endif
-+	u8         lba1;
-+	u8         lba2;		/* LSB */
-+	u8         xfer_length;
-+	u8         control;
-+};
-+
-+#define SCSI_TAPE_CDB6_GET_TL(cdb)              \
-+    (((cdb)->tl0 << 16) | ((cdb)->tl1 << 8) | (cdb)->tl2)
-+
-+#define SCSI_TAPE_CDB6_SET_TL(cdb, tl) {      \
-+    (cdb)->tl0 = tl >> 16;            \
-+    (cdb)->tl1 = (tl >> 8) & 0xFF;    \
-+    (cdb)->tl2 = tl & 0xFF;           \
-+}
-+
-+/*
-+ * SCSI sequential (TAPE) wrtie command
-+ */
-+struct scsi_tape_wr_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         rsvd:7;
-+	u8         fixed:1;	/* MSb */
-+#else
-+	u8         fixed:1;	/* MSb */
-+	u8         rsvd:7;
-+#endif
-+	u8         tl0;		/* Msb */
-+	u8         tl1;
-+	u8         tl2;		/* Lsb */
-+
-+	u8         control;
-+};
-+
-+#define SCSI_CDB6_GET_LBA(cdb)              \
-+    (((cdb)->lba0 << 16) | ((cdb)->lba1 << 8) | (cdb)->lba2)
-+
-+#define SCSI_CDB6_SET_LBA(cdb, lba) {      \
-+    (cdb)->lba0 = lba >> 16;            \
-+    (cdb)->lba1 = (lba >> 8) & 0xFF;    \
-+    (cdb)->lba2 = lba & 0xFF;           \
-+}
-+
-+#define SCSI_CDB6_GET_TL(cdb) ((cdb)->xfer_length)
-+#define SCSI_CDB6_SET_TL(cdb, tl) {      \
-+    (cdb)->xfer_length = tl;         \
-+}
-+
-+/*
-+ * SCSI sense data format
-+ */
-+struct scsi_sense_s{
-+#ifdef __BIGENDIAN
-+	u8         valid:1;
-+	u8         rsp_code:7;
-+#else
-+	u8         rsp_code:7;
-+	u8         valid:1;
-+#endif
-+	u8         seg_num;
-+#ifdef __BIGENDIAN
-+	u8         file_mark:1;
-+	u8         eom:1;		/* end of media */
-+	u8         ili:1;		/* incorrect length indicator */
-+	u8         reserved:1;
-+	u8         sense_key:4;
-+#else
-+	u8         sense_key:4;
-+	u8         reserved:1;
-+	u8         ili:1;		/* incorrect length indicator */
-+	u8         eom:1;		/* end of media */
-+	u8         file_mark:1;
-+#endif
-+	u8         information[4];	/* device-type or command specific info
-+					 */
-+	u8         add_sense_length;
-+					/* additional sense length */
-+	u8         command_info[4];/* command specific information
-+						 */
-+	u8         asc;		/* additional sense code */
-+	u8         ascq;		/* additional sense code qualifier */
-+	u8         fru_code;	/* field replaceable unit code */
-+#ifdef __BIGENDIAN
-+	u8         sksv:1;		/* sense key specific valid */
-+	u8         c_d:1;		/* command/data bit */
-+	u8         res1:2;
-+	u8         bpv:1;		/* bit pointer valid */
-+	u8         bpointer:3;	/* bit pointer */
-+#else
-+	u8         bpointer:3;	/* bit pointer */
-+	u8         bpv:1;		/* bit pointer valid */
-+	u8         res1:2;
-+	u8         c_d:1;		/* command/data bit */
-+	u8         sksv:1;		/* sense key specific valid */
-+#endif
-+	u8         fpointer[2];	/* field pointer */
-+};
-+
-+#define SCSI_SENSE_CUR_ERR          0x70
-+#define SCSI_SENSE_DEF_ERR          0x71
-+
-+/*
-+ * SCSI sense key values
-+ */
-+#define SCSI_SK_NO_SENSE        0x0
-+#define SCSI_SK_REC_ERR         0x1	/* recovered error */
-+#define SCSI_SK_NOT_READY       0x2
-+#define SCSI_SK_MED_ERR         0x3	/* medium error */
-+#define SCSI_SK_HW_ERR          0x4	/* hardware error */
-+#define SCSI_SK_ILLEGAL_REQ     0x5
-+#define SCSI_SK_UNIT_ATT        0x6	/* unit attention */
-+#define SCSI_SK_DATA_PROTECT    0x7
-+#define SCSI_SK_BLANK_CHECK     0x8
-+#define SCSI_SK_VENDOR_SPEC     0x9
-+#define SCSI_SK_COPY_ABORTED    0xA
-+#define SCSI_SK_ABORTED_CMND    0xB
-+#define SCSI_SK_VOL_OVERFLOW    0xD
-+#define SCSI_SK_MISCOMPARE      0xE
-+
-+/*
-+ * SCSI additional sense codes
-+ */
-+#define SCSI_ASC_NO_ADD_SENSE           0x00
-+#define SCSI_ASC_LUN_NOT_READY          0x04
-+#define SCSI_ASC_LUN_COMMUNICATION      0x08
-+#define SCSI_ASC_WRITE_ERROR            0x0C
-+#define SCSI_ASC_INVALID_CMND_CODE      0x20
-+#define SCSI_ASC_BAD_LBA                0x21
-+#define SCSI_ASC_INVALID_FIELD_IN_CDB   0x24
-+#define SCSI_ASC_LUN_NOT_SUPPORTED      0x25
-+#define SCSI_ASC_LUN_WRITE_PROTECT      0x27
-+#define SCSI_ASC_POWERON_BDR            0x29	/* power on reset, bus reset,
-+						 * bus device reset
-+						 */
-+#define SCSI_ASC_PARAMS_CHANGED         0x2A
-+#define SCSI_ASC_CMND_CLEARED_BY_A_I    0x2F
-+#define SCSI_ASC_SAVING_PARAM_NOTSUPP   0x39
-+#define SCSI_ASC_TOCC                   0x3F	/* target operating condtions
-+						 * changed
-+						 */
-+#define SCSI_ASC_PARITY_ERROR           0x47
-+#define SCSI_ASC_CMND_PHASE_ERROR       0x4A
-+#define SCSI_ASC_DATA_PHASE_ERROR       0x4B
-+#define SCSI_ASC_VENDOR_SPEC            0x7F
-+
-+/*
-+ * SCSI additional sense code qualifiers
-+ */
-+#define SCSI_ASCQ_CAUSE_NOT_REPORT      0x00
-+#define SCSI_ASCQ_BECOMING_READY        0x01
-+#define SCSI_ASCQ_INIT_CMD_REQ          0x02
-+#define SCSI_ASCQ_FORMAT_IN_PROGRESS    0x04
-+#define SCSI_ASCQ_OPERATION_IN_PROGRESS 0x07
-+#define SCSI_ASCQ_SELF_TEST_IN_PROGRESS 0x09
-+#define SCSI_ASCQ_WR_UNEXP_UNSOL_DATA   0x0C
-+#define SCSI_ASCQ_WR_NOTENG_UNSOL_DATA  0x0D
-+
-+#define SCSI_ASCQ_LBA_OUT_OF_RANGE      0x00
-+#define SCSI_ASCQ_INVALID_ELEMENT_ADDR  0x01
-+
-+#define SCSI_ASCQ_LUN_WRITE_PROTECTED       0x00
-+#define SCSI_ASCQ_LUN_HW_WRITE_PROTECTED    0x01
-+#define SCSI_ASCQ_LUN_SW_WRITE_PROTECTED    0x02
-+
-+#define SCSI_ASCQ_POR   0x01	/* power on reset */
-+#define SCSI_ASCQ_SBR   0x02	/* scsi bus reset */
-+#define SCSI_ASCQ_BDR   0x03	/* bus device reset */
-+#define SCSI_ASCQ_DIR   0x04	/* device internal reset */
-+
-+#define SCSI_ASCQ_MODE_PARAMS_CHANGED       0x01
-+#define SCSI_ASCQ_LOG_PARAMS_CHANGED        0x02
-+#define SCSI_ASCQ_RESERVATIONS_PREEMPTED    0x03
-+#define SCSI_ASCQ_RESERVATIONS_RELEASED     0x04
-+#define SCSI_ASCQ_REGISTRATIONS_PREEMPTED   0x05
-+
-+#define SCSI_ASCQ_MICROCODE_CHANGED 0x01
-+#define SCSI_ASCQ_CHANGED_OPER_COND 0x02
-+#define SCSI_ASCQ_INQ_CHANGED       0x03	/* inquiry data changed */
-+#define SCSI_ASCQ_DI_CHANGED        0x05	/* device id changed */
-+#define SCSI_ASCQ_RL_DATA_CHANGED   0x0E	/* report luns data changed */
-+
-+#define SCSI_ASCQ_DP_CRC_ERR            0x01	/* data phase crc error */
-+#define SCSI_ASCQ_DP_SCSI_PARITY_ERR    0x02	/* data phase scsi parity error
-+						 */
-+#define SCSI_ASCQ_IU_CRC_ERR            0x03	/* information unit crc error */
-+#define SCSI_ASCQ_PROTO_SERV_CRC_ERR    0x05
-+
-+#define SCSI_ASCQ_LUN_TIME_OUT          0x01
-+
-+/* ------------------------------------------------------------
-+ * SCSI INQUIRY
-+ * ------------------------------------------------------------*/
-+
-+struct scsi_inquiry_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         lun:3;
-+	u8         reserved1:3;
-+	u8         cmd_dt:1;
-+	u8         evpd:1;
-+#else
-+	u8         evpd:1;
-+	u8         cmd_dt:1;
-+	u8         reserved1:3;
-+	u8         lun:3;
-+#endif
-+	u8         page_code;
-+	u8         reserved2;
-+	u8         alloc_length;
-+	u8         control;
-+};
-+
-+struct scsi_inquiry_vendor_s{
-+	u8         vendor_id[8];
-+};
-+
-+struct scsi_inquiry_prodid_s{
-+	u8         product_id[16];
-+};
-+
-+struct scsi_inquiry_prodrev_s{
-+	u8         product_rev[4];
-+};
-+
-+struct scsi_inquiry_data_s{
-+#ifdef __BIGENDIAN
-+	u8         peripheral_qual:3;	/* peripheral qualifier */
-+	u8         device_type:5;		/* peripheral device type */
-+
-+	u8         rmb:1;			/* removable medium bit */
-+	u8         device_type_mod:7;	/* device type modifier */
-+
-+	u8         version;
-+
-+	u8         aenc:1;		/* async event notification capability
-+					 */
-+	u8         trm_iop:1;	/* terminate I/O process */
-+	u8         norm_aca:1;	/* normal ACA supported */
-+	u8         hi_support:1;	/* SCSI-3: supports REPORT LUNS */
-+	u8         rsp_data_format:4;
-+
-+	u8         additional_len;
-+	u8         sccs:1;
-+	u8         reserved1:7;
-+
-+	u8         reserved2:1;
-+	u8         enc_serv:1;	/* enclosure service component */
-+	u8         reserved3:1;
-+	u8         multi_port:1;	/* multi-port device */
-+	u8         m_chngr:1;	/* device in medium transport element */
-+	u8         ack_req_q:1;	/* SIP specific bit */
-+	u8         addr32:1;	/* SIP specific bit */
-+	u8         addr16:1;	/* SIP specific bit */
-+
-+	u8         rel_adr:1;	/* relative address */
-+	u8         w_bus32:1;
-+	u8         w_bus16:1;
-+	u8         synchronous:1;
-+	u8         linked_commands:1;
-+	u8         trans_dis:1;
-+	u8         cmd_queue:1;	/* command queueing supported */
-+	u8         soft_reset:1;	/* soft reset alternative (VS) */
-+#else
-+	u8         device_type:5;	/* peripheral device type */
-+	u8         peripheral_qual:3;
-+					/* peripheral qualifier */
-+
-+	u8         device_type_mod:7;
-+					/* device type modifier */
-+	u8         rmb:1;		/* removable medium bit */
-+
-+	u8         version;
-+
-+	u8         rsp_data_format:4;
-+	u8         hi_support:1;	/* SCSI-3: supports REPORT LUNS */
-+	u8         norm_aca:1;	/* normal ACA supported */
-+	u8         terminate_iop:1;/* terminate I/O process */
-+	u8         aenc:1;		/* async event notification capability
-+					 */
-+
-+	u8         additional_len;
-+	u8         reserved1:7;
-+	u8         sccs:1;
-+
-+	u8         addr16:1;	/* SIP specific bit */
-+	u8         addr32:1;	/* SIP specific bit */
-+	u8         ack_req_q:1;	/* SIP specific bit */
-+	u8         m_chngr:1;	/* device in medium transport element */
-+	u8         multi_port:1;	/* multi-port device */
-+	u8         reserved3:1;	/* TBD - Vendor Specific */
-+	u8         enc_serv:1;	/* enclosure service component */
-+	u8         reserved2:1;
-+
-+	u8         soft_seset:1;	/* soft reset alternative (VS) */
-+	u8         cmd_queue:1;	/* command queueing supported */
-+	u8         trans_dis:1;
-+	u8         linked_commands:1;
-+	u8         synchronous:1;
-+	u8         w_bus16:1;
-+	u8         w_bus32:1;
-+	u8         rel_adr:1;	/* relative address */
-+#endif
-+	struct scsi_inquiry_vendor_s vendor_id;
-+	struct scsi_inquiry_prodid_s product_id;
-+	struct scsi_inquiry_prodrev_s product_rev;
-+	u8         vendor_specific[20];
-+	u8         reserved4[40];
-+};
-+
-+/*
-+ * inquiry.peripheral_qual field values
-+ */
-+#define SCSI_DEVQUAL_DEFAULT        0
-+#define SCSI_DEVQUAL_NOT_CONNECTED  1
-+#define SCSI_DEVQUAL_NOT_SUPPORTED  3
-+
-+/*
-+ * inquiry.device_type field values
-+ */
-+#define SCSI_DEVICE_DIRECT_ACCESS       0x00
-+#define SCSI_DEVICE_SEQ_ACCESS          0x01
-+#define SCSI_DEVICE_ARRAY_CONTROLLER    0x0C
-+#define SCSI_DEVICE_UNKNOWN             0x1F
-+
-+/*
-+ * inquiry.version
-+ */
-+#define SCSI_VERSION_ANSI_X3131     2	/* ANSI X3.131 SCSI-2 */
-+#define SCSI_VERSION_SPC            3	/* SPC (SCSI-3), ANSI X3.301:1997 */
-+#define SCSI_VERSION_SPC_2          4	/* SPC-2 */
-+
-+/*
-+ * response data format
-+ */
-+#define SCSI_RSP_DATA_FORMAT        2	/* SCSI-2 & SPC */
-+
-+/*
-+ * SCSI inquiry page codes
-+ */
-+#define SCSI_INQ_PAGE_VPD_PAGES     0x00	/* supported vpd pages */
-+#define SCSI_INQ_PAGE_USN_PAGE      0x80	/* unit serial number page */
-+#define SCSI_INQ_PAGE_DEV_IDENT     0x83	/* device indentification page
-+						 */
-+#define SCSI_INQ_PAGES_MAX          3
-+
-+/*
-+ * supported vital product data pages
-+ */
-+struct scsi_inq_page_vpd_pages_s{
-+#ifdef __BIGENDIAN
-+	u8         peripheral_qual:3;
-+	u8         device_type:5;
-+#else
-+	u8         device_type:5;
-+	u8         peripheral_qual:3;
-+#endif
-+	u8         page_code;
-+	u8         reserved;
-+	u8         page_length;
-+	u8         pages[SCSI_INQ_PAGES_MAX];
-+};
-+
-+/*
-+ * Unit serial number page
-+ */
-+#define SCSI_INQ_USN_LEN 32
-+
-+struct scsi_inq_usn_s{
-+	char            usn[SCSI_INQ_USN_LEN];
-+};
-+
-+struct scsi_inq_page_usn_s{
-+#ifdef __BIGENDIAN
-+	u8         peripheral_qual:3;
-+	u8         device_type:5;
-+#else
-+	u8         device_type:5;
-+	u8         peripheral_qual:3;
-+#endif
-+	u8         page_code;
-+	u8         reserved1;
-+	u8         page_length;
-+	struct scsi_inq_usn_s  usn;
-+};
-+
-+enum {
-+	SCSI_INQ_DIP_CODE_BINARY = 1,	/* identifier has binary value */
-+	SCSI_INQ_DIP_CODE_ASCII = 2,	/* identifier has ascii value */
-+};
-+
-+enum {
-+	SCSI_INQ_DIP_ASSOC_LUN = 0,	/* id is associated with device */
-+	SCSI_INQ_DIP_ASSOC_PORT = 1,	/* id is associated with port that
-+					 * received the request
-+					 */
-+};
-+
-+enum {
-+	SCSI_INQ_ID_TYPE_VENDOR = 1,
-+	SCSI_INQ_ID_TYPE_IEEE = 2,
-+	SCSI_INQ_ID_TYPE_FC_FS = 3,
-+	SCSI_INQ_ID_TYPE_OTHER = 4,
-+};
-+
-+struct scsi_inq_dip_desc_s{
-+#ifdef __BIGENDIAN
-+	u8         res0:4;
-+	u8         code_set:4;
-+	u8         res1:2;
-+	u8         association:2;
-+	u8         id_type:4;
-+#else
-+	u8         code_set:4;
-+	u8         res0:4;
-+	u8         id_type:4;
-+	u8         association:2;
-+	u8         res1:2;
-+#endif
-+	u8         res2;
-+	u8         id_len;
-+	struct scsi_lun_sn_s   id;
-+};
-+
-+/*
-+ * Device indentification page
-+ */
-+struct scsi_inq_page_dev_ident_s{
-+#ifdef __BIGENDIAN
-+	u8         peripheral_qual:3;
-+	u8         device_type:5;
-+#else
-+	u8         device_type:5;
-+	u8         peripheral_qual:3;
-+#endif
-+	u8         page_code;
-+	u8         reserved1;
-+	u8         page_length;
-+	struct scsi_inq_dip_desc_s desc;
-+};
-+
-+/* ------------------------------------------------------------
-+ * READ CAPACITY
-+ * ------------------------------------------------------------
-+ */
-+
-+struct scsi_read_capacity_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         lun:3;
-+	u8         reserved1:4;
-+	u8         rel_adr:1;
-+#else
-+	u8         rel_adr:1;
-+	u8         reserved1:4;
-+	u8         lun:3;
-+#endif
-+	u8         lba0;	/* MSB */
-+	u8         lba1;
-+	u8         lba2;
-+	u8         lba3;	/* LSB */
-+	u8         reserved2;
-+	u8         reserved3;
-+#ifdef __BIGENDIAN
-+	u8         reserved4:7;
-+	u8         pmi:1;	/* partial medium indicator */
-+#else
-+	u8         pmi:1;	/* partial medium indicator */
-+	u8         reserved4:7;
-+#endif
-+	u8         control;
-+};
-+
-+struct scsi_read_capacity_data_s{
-+	u32        max_lba;	/* maximum LBA available */
-+	u32        block_length;	/* in bytes */
-+};
-+
-+struct scsi_read_capacity16_data_s{
-+	u64        lba;	/* maximum LBA available */
-+	u32        block_length;	/* in bytes */
-+#ifdef __BIGENDIAN
-+	u8         reserved1:4,
-+			p_type:3,
-+			prot_en:1;
-+	u8		reserved2:4,
-+			lb_pbe:4;	/* logical blocks per physical block
-+					 * exponent */
-+	u16	reserved3:2,
-+			lba_align:14;	/* lowest aligned logical block
-+					 * address */
-+#else
-+	u16	lba_align:14,	/* lowest aligned logical block
-+					 * address */
-+			reserved3:2;
-+	u8		lb_pbe:4,	/* logical blocks per physical block
-+					 * exponent */
-+			reserved2:4;
-+	u8		prot_en:1,
-+			p_type:3,
-+			reserved1:4;
-+#endif
-+	u64	reserved4;
-+	u64	reserved5;
-+};
-+
-+/* ------------------------------------------------------------
-+ * REPORT LUNS command
-+ * ------------------------------------------------------------
-+ */
-+
-+struct scsi_report_luns_s{
-+	u8         opcode;		/* A0h - REPORT LUNS opCode */
-+	u8         reserved1[5];
-+	u8         alloc_length[4];/* allocation length MSB first */
-+	u8         reserved2;
-+	u8         control;
-+};
-+
-+#define SCSI_REPORT_LUN_ALLOC_LENGTH(rl)                		\
-+    ((rl->alloc_length[0] << 24) | (rl->alloc_length[1] << 16) | 	\
-+     (rl->alloc_length[2] << 8) | (rl->alloc_length[3]))
-+
-+#define SCSI_REPORT_LUNS_SET_ALLOCLEN(rl, alloc_len) {      \
-+    (rl)->alloc_length[0] = (alloc_len) >> 24;      			\
-+    (rl)->alloc_length[1] = ((alloc_len) >> 16) & 0xFF; 		\
-+    (rl)->alloc_length[2] = ((alloc_len) >> 8) & 0xFF;  		\
-+    (rl)->alloc_length[3] = (alloc_len) & 0xFF;     			\
-+}
-+
-+struct scsi_report_luns_data_s{
-+	u32        lun_list_length;	/* length of LUN list length */
-+	u32        reserved;
-+	lun_t           lun[1];			/* first LUN in lun list */
-+};
-+
-+/* -------------------------------------------------------------
-+ * SCSI mode  parameters
-+ * -----------------------------------------------------------
-+ */
-+enum {
-+	SCSI_DA_MEDIUM_DEF = 0,	/* direct access default medium type */
-+	SCSI_DA_MEDIUM_SS = 1,	/* direct access single sided */
-+	SCSI_DA_MEDIUM_DS = 2,	/* direct access double sided */
-+};
-+
-+/*
-+ * SCSI Mode Select(6) cdb
-+ */
-+struct scsi_mode_select6_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         reserved1:3;
-+	u8         pf:1;		/* page format */
-+	u8         reserved2:3;
-+	u8         sp:1;		/* save pages if set to 1 */
-+#else
-+	u8         sp:1;	/* save pages if set to 1 */
-+	u8         reserved2:3;
-+	u8         pf:1;	/* page format */
-+	u8         reserved1:3;
-+#endif
-+	u8         reserved3[2];
-+	u8         alloc_len;
-+	u8         control;
-+};
-+
-+/*
-+ * SCSI Mode Select(10) cdb
-+ */
-+struct scsi_mode_select10_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         reserved1:3;
-+	u8         pf:1;	/* page format */
-+	u8         reserved2:3;
-+	u8         sp:1;	/* save pages if set to 1 */
-+#else
-+	u8         sp:1;	/* save pages if set to 1 */
-+	u8         reserved2:3;
-+	u8         pf:1;	/* page format */
-+	u8         reserved1:3;
-+#endif
-+	u8         reserved3[5];
-+	u8         alloc_len_msb;
-+	u8         alloc_len_lsb;
-+	u8         control;
-+};
-+
-+/*
-+ * SCSI Mode Sense(6) cdb
-+ */
-+struct scsi_mode_sense6_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         reserved1:4;
-+	u8         dbd:1;	/* disable block discriptors if set to 1 */
-+	u8         reserved2:3;
-+
-+	u8         pc:2;	/* page control */
-+	u8         page_code:6;
-+#else
-+	u8         reserved2:3;
-+	u8         dbd:1;	/* disable block descriptors if set to 1 */
-+	u8         reserved1:4;
-+
-+	u8         page_code:6;
-+	u8         pc:2;	/* page control */
-+#endif
-+	u8         reserved3;
-+	u8         alloc_len;
-+	u8         control;
-+};
-+
-+/*
-+ * SCSI Mode Sense(10) cdb
-+ */
-+struct scsi_mode_sense10_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         reserved1:3;
-+	u8         LLBAA:1;	/* long LBA accepted if set to 1 */
-+	u8         dbd:1;		/* disable block descriptors if set
-+					 * to 1
-+					 */
-+	u8         reserved2:3;
-+
-+	u8         pc:2;		/* page control */
-+	u8         page_code:6;
-+#else
-+	u8         reserved2:3;
-+	u8         dbd:1;		/* disable block descriptors if set to
-+					 * 1
-+					 */
-+	u8         LLBAA:1;	/* long LBA accepted if set to 1 */
-+	u8         reserved1:3;
-+
-+	u8         page_code:6;
-+	u8         pc:2;		/* page control */
-+#endif
-+	u8         reserved3[4];
-+	u8         alloc_len_msb;
-+	u8         alloc_len_lsb;
-+	u8         control;
-+};
-+
-+#define SCSI_CDB10_GET_AL(cdb)  					\
-+    ((cdb)->alloc_len_msb << 8 | (cdb)->alloc_len_lsb)
-+
-+#define SCSI_CDB10_SET_AL(cdb, al) {      \
-+    (cdb)->alloc_len_msb = al >> 8;       				\
-+    (cdb)->alloc_len_lsb = al & 0xFF;     				\
-+}
-+
-+#define SCSI_CDB6_GET_AL(cdb) ((cdb)->alloc_len)
-+
-+#define SCSI_CDB6_SET_AL(cdb, al) {      \
-+    (cdb)->alloc_len = al;         					\
-+}
-+
-+/*
-+ * page control field values
-+ */
-+#define SCSI_PC_CURRENT_VALUES       0x0
-+#define SCSI_PC_CHANGEABLE_VALUES    0x1
-+#define SCSI_PC_DEFAULT_VALUES       0x2
-+#define SCSI_PC_SAVED_VALUES         0x3
-+
-+/*
-+ * SCSI mode page codes
-+ */
-+#define SCSI_MP_VENDOR_SPEC     0x00
-+#define SCSI_MP_DISC_RECN       0x02	/* disconnect-reconnect page */
-+#define SCSI_MP_FORMAT_DEVICE   0x03
-+#define SCSI_MP_RDG             0x04	/* rigid disk geometry page */
-+#define SCSI_MP_FDP             0x05	/* flexible disk page */
-+#define SCSI_MP_CACHING         0x08	/* caching page */
-+#define SCSI_MP_CONTROL         0x0A	/* control mode page */
-+#define SCSI_MP_MED_TYPES_SUP   0x0B	/* medium types supported page */
-+#define SCSI_MP_INFO_EXCP_CNTL  0x1C	/* informational exception control */
-+#define SCSI_MP_ALL             0x3F	/* return all pages - mode sense only */
-+
-+/*
-+ * mode parameter header
-+ */
-+struct scsi_mode_param_header6_s{
-+	u8         mode_datalen;
-+	u8         medium_type;
-+
-+	/*
-+	 * device specific parameters expanded for direct access devices
-+	 */
-+#ifdef __BIGENDIAN
-+	u32        wp:1;		/* write protected */
-+	u32        reserved1:2;
-+	u32        dpofua:1;	/* disable page out + force unit access
-+					 */
-+	u32        reserved2:4;
-+#else
-+	u32        reserved2:4;
-+	u32        dpofua:1;	/* disable page out + force unit access
-+					 */
-+	u32        reserved1:2;
-+	u32        wp:1;		/* write protected */
-+#endif
-+
-+	u8         block_desclen;
-+};
-+
-+struct scsi_mode_param_header10_s{
-+	u32        mode_datalen:16;
-+	u32        medium_type:8;
-+
-+	/*
-+	 * device specific parameters expanded for direct access devices
-+	 */
-+#ifdef __BIGENDIAN
-+	u32        wp:1;		/* write protected */
-+	u32        reserved1:2;
-+	u32        dpofua:1;	/* disable page out + force unit access
-+					 */
-+	u32        reserved2:4;
-+#else
-+	u32        reserved2:4;
-+	u32        dpofua:1;	/* disable page out + force unit access
-+					 */
-+	u32        reserved1:2;
-+	u32        wp:1;		/* write protected */
-+#endif
-+
-+#ifdef __BIGENDIAN
-+	u32        reserved3:7;
-+	u32        longlba:1;
-+#else
-+	u32        longlba:1;
-+	u32        reserved3:7;
-+#endif
-+	u32        reserved4:8;
-+	u32        block_desclen:16;
-+};
-+
-+/*
-+ * mode parameter block descriptor
-+ */
-+struct scsi_mode_param_desc_s{
-+	u32        nblks;
-+	u32        density_code:8;
-+	u32        block_length:24;
-+};
-+
-+/*
-+ * Disconnect-reconnect mode page format
-+ */
-+struct scsi_mp_disc_recn_s{
-+#ifdef __BIGENDIAN
-+	u8         ps:1;
-+	u8         reserved1:1;
-+	u8         page_code:6;
-+#else
-+	u8         page_code:6;
-+	u8         reserved1:1;
-+	u8         ps:1;
-+#endif
-+	u8         page_len;
-+	u8         buf_full_ratio;
-+	u8         buf_empty_ratio;
-+
-+	u8         bil_msb;	/* bus inactivity limit -MSB */
-+	u8         bil_lsb;	/* bus inactivity limit -LSB */
-+
-+	u8         dtl_msb;	/* disconnect time limit - MSB */
-+	u8         dtl_lsb;	/* disconnect time limit - LSB */
-+
-+	u8         ctl_msb;	/* connect time limit - MSB */
-+	u8         ctl_lsb;	/* connect time limit - LSB */
-+
-+	u8         max_burst_len_msb;
-+	u8         max_burst_len_lsb;
-+#ifdef __BIGENDIAN
-+	u8         emdp:1;	/* enable modify data pointers */
-+	u8         fa:3;	/* fair arbitration */
-+	u8         dimm:1;	/* disconnect immediate */
-+	u8         dtdc:3;	/* data transfer disconnect control */
-+#else
-+	u8         dtdc:3;	/* data transfer disconnect control */
-+	u8         dimm:1;	/* disconnect immediate */
-+	u8         fa:3;	/* fair arbitration */
-+	u8         emdp:1;	/* enable modify data pointers */
-+#endif
-+
-+	u8         reserved3;
-+
-+	u8         first_burst_len_msb;
-+	u8         first_burst_len_lsb;
-+};
-+
-+/*
-+ * SCSI format device mode page
-+ */
-+struct scsi_mp_format_device_s{
-+#ifdef __BIGENDIAN
-+	u32        ps:1;
-+	u32        reserved1:1;
-+	u32        page_code:6;
-+#else
-+	u32        page_code:6;
-+	u32        reserved1:1;
-+	u32        ps:1;
-+#endif
-+	u32        page_len:8;
-+	u32        tracks_per_zone:16;
-+
-+	u32        a_sec_per_zone:16;
-+	u32        a_tracks_per_zone:16;
-+
-+	u32        a_tracks_per_lun:16;	/* alternate tracks/lun-MSB */
-+	u32        sec_per_track:16;	/* sectors/track-MSB */
-+
-+	u32        bytes_per_sector:16;
-+	u32        interleave:16;
-+
-+	u32        tsf:16;			/* track skew factor-MSB */
-+	u32        csf:16;			/* cylinder skew factor-MSB */
-+
-+#ifdef __BIGENDIAN
-+	u32        ssec:1;	/* soft sector formatting */
-+	u32        hsec:1;	/* hard sector formatting */
-+	u32        rmb:1;	/* removable media */
-+	u32        surf:1;	/* surface */
-+	u32        reserved2:4;
-+#else
-+	u32        reserved2:4;
-+	u32        surf:1;	/* surface */
-+	u32        rmb:1;	/* removable media */
-+	u32        hsec:1;	/* hard sector formatting */
-+	u32        ssec:1;	/* soft sector formatting */
-+#endif
-+	u32        reserved3:24;
-+};
-+
-+/*
-+ * SCSI rigid disk device geometry page
-+ */
-+struct scsi_mp_rigid_device_geometry_s{
-+#ifdef __BIGENDIAN
-+	u32        ps:1;
-+	u32        reserved1:1;
-+	u32        page_code:6;
-+#else
-+	u32        page_code:6;
-+	u32        reserved1:1;
-+	u32        ps:1;
-+#endif
-+	u32        page_len:8;
-+	u32        num_cylinders0:8;
-+	u32        num_cylinders1:8;
-+
-+	u32        num_cylinders2:8;
-+	u32        num_heads:8;
-+	u32        scwp0:8;
-+	u32        scwp1:8;
-+
-+	u32        scwp2:8;
-+	u32        scrwc0:8;
-+	u32        scrwc1:8;
-+	u32        scrwc2:8;
-+
-+	u32        dsr:16;
-+	u32        lscyl0:8;
-+	u32        lscyl1:8;
-+
-+	u32        lscyl2:8;
-+#ifdef __BIGENDIAN
-+	u32        reserved2:6;
-+	u32        rpl:2;	/* rotational position locking */
-+#else
-+	u32        rpl:2;	/* rotational position locking */
-+	u32        reserved2:6;
-+#endif
-+	u32        rot_off:8;
-+	u32        reserved3:8;
-+
-+	u32        med_rot_rate:16;
-+	u32        reserved4:16;
-+};
-+
-+/*
-+ * SCSI caching mode page
-+ */
-+struct scsi_mp_caching_s{
-+#ifdef __BIGENDIAN
-+	u8         ps:1;
-+	u8         res1:1;
-+	u8         page_code:6;
-+#else
-+	u8         page_code:6;
-+	u8         res1:1;
-+	u8         ps:1;
-+#endif
-+	u8         page_len;
-+#ifdef __BIGENDIAN
-+	u8         ic:1;	/* initiator control */
-+	u8         abpf:1;	/* abort pre-fetch */
-+	u8         cap:1;	/* caching analysis permitted */
-+	u8         disc:1;	/* discontinuity */
-+	u8         size:1;	/* size enable */
-+	u8         wce:1;	/* write cache enable */
-+	u8         mf:1;	/* multiplication factor */
-+	u8         rcd:1;	/* read cache disable */
-+
-+	u8         drrp:4;	/* demand read retention priority */
-+	u8         wrp:4;	/* write retention priority */
-+#else
-+	u8         rcd:1;	/* read cache disable */
-+	u8         mf:1;	/* multiplication factor */
-+	u8         wce:1;	/* write cache enable */
-+	u8         size:1;	/* size enable */
-+	u8         disc:1;	/* discontinuity */
-+	u8         cap:1;	/* caching analysis permitted */
-+	u8         abpf:1;	/* abort pre-fetch */
-+	u8         ic:1;	/* initiator control */
-+
-+	u8         wrp:4;	/* write retention priority */
-+	u8         drrp:4;	/* demand read retention priority */
-+#endif
-+	u8         dptl[2];/* disable pre-fetch transfer length */
-+	u8         min_prefetch[2];
-+	u8         max_prefetch[2];
-+	u8         max_prefetch_limit[2];
-+#ifdef __BIGENDIAN
-+	u8         fsw:1;	/* force sequential write */
-+	u8         lbcss:1;/* logical block cache segment size */
-+	u8         dra:1;	/* disable read ahead */
-+	u8         vs:2;	/* vendor specific */
-+	u8         res2:3;
-+#else
-+	u8         res2:3;
-+	u8         vs:2;	/* vendor specific */
-+	u8         dra:1;	/* disable read ahead */
-+	u8         lbcss:1;/* logical block cache segment size */
-+	u8         fsw:1;	/* force sequential write */
-+#endif
-+	u8         num_cache_segs;
-+
-+	u8         cache_seg_size[2];
-+	u8         res3;
-+	u8         non_cache_seg_size[3];
-+};
-+
-+/*
-+ * SCSI control mode page
-+ */
-+struct scsi_mp_control_page_s{
-+#ifdef __BIGENDIAN
-+u8         ps:1;
-+u8         reserved1:1;
-+u8         page_code:6;
-+#else
-+u8         page_code:6;
-+u8         reserved1:1;
-+u8         ps:1;
-+#endif
-+	u8         page_len;
-+#ifdef __BIGENDIAN
-+	u8         tst:3;		/* task set type */
-+	u8         reserved3:3;
-+	u8         gltsd:1;	/* global logging target save disable */
-+	u8         rlec:1;		/* report log exception condition */
-+
-+	u8         qalgo_mod:4;	/* queue alogorithm modifier */
-+	u8         reserved4:1;
-+	u8         qerr:2;		/* queue error management */
-+	u8         dque:1;		/* disable queuing */
-+
-+	u8         reserved5:1;
-+	u8         rac:1;		/* report a check */
-+	u8         reserved6:2;
-+	u8         swp:1;		/* software write protect */
-+	u8         raerp:1;	/* ready AER permission */
-+	u8         uaaerp:1;	/* unit attenstion AER permission */
-+	u8         eaerp:1;	/* error AER permission */
-+
-+	u8         reserved7:5;
-+	u8         autoload_mod:3;
-+#else
-+	u8         rlec:1;		/* report log exception condition */
-+	u8         gltsd:1;	/* global logging target save disable */
-+	u8         reserved3:3;
-+	u8         tst:3;		/* task set type */
-+
-+	u8         dque:1;		/* disable queuing */
-+	u8         qerr:2;		/* queue error management */
-+	u8         reserved4:1;
-+	u8         qalgo_mod:4;	/* queue alogorithm modifier */
-+
-+	u8         eaerp:1;	/* error AER permission */
-+	u8         uaaerp:1;	/* unit attenstion AER permission */
-+	u8         raerp:1;	/* ready AER permission */
-+	u8         swp:1;		/* software write protect */
-+	u8         reserved6:2;
-+	u8         rac:1;		/* report a check */
-+	u8         reserved5:1;
-+
-+	u8         autoload_mod:3;
-+	u8         reserved7:5;
-+#endif
-+	u8         rahp_msb;	/* ready AER holdoff period - MSB */
-+	u8         rahp_lsb;	/* ready AER holdoff period - LSB */
-+
-+	u8         busy_timeout_period_msb;
-+	u8         busy_timeout_period_lsb;
-+
-+	u8         ext_selftest_compl_time_msb;
-+	u8         ext_selftest_compl_time_lsb;
-+};
-+
-+/*
-+ * SCSI medium types supported mode page
-+ */
-+struct scsi_mp_medium_types_sup_s{
-+#ifdef __BIGENDIAN
-+	u8         ps:1;
-+	u8         reserved1:1;
-+	u8         page_code:6;
-+#else
-+	u8         page_code:6;
-+	u8         reserved1:1;
-+	u8         ps:1;
-+#endif
-+	u8         page_len;
-+
-+	u8         reserved3[2];
-+	u8         med_type1_sup;	/* medium type one supported */
-+	u8         med_type2_sup;	/* medium type two supported */
-+	u8         med_type3_sup;	/* medium type three supported */
-+	u8         med_type4_sup;	/* medium type four supported */
-+};
-+
-+/*
-+ * SCSI informational exception control mode page
-+ */
-+struct scsi_mp_info_excpt_cntl_s{
-+#ifdef __BIGENDIAN
-+	u8         ps:1;
-+	u8         reserved1:1;
-+	u8         page_code:6;
-+#else
-+	u8         page_code:6;
-+	u8         reserved1:1;
-+	u8         ps:1;
-+#endif
-+	u8         page_len;
-+#ifdef __BIGENDIAN
-+	u8         perf:1;		/* performance */
-+	u8         reserved3:1;
-+	u8         ebf:1;		/* enable background fucntion */
-+	u8         ewasc:1;	/* enable warning */
-+	u8         dexcpt:1;	/* disable exception control */
-+	u8         test:1;		/* enable test device failure
-+					 * notification
-+					 */
-+	u8         reserved4:1;
-+	u8         log_error:1;
-+
-+	u8         reserved5:4;
-+	u8         mrie:4;		/* method of reporting info
-+					 * exceptions
-+					 */
-+#else
-+	u8         log_error:1;
-+	u8         reserved4:1;
-+	u8         test:1;		/* enable test device failure
-+					 * notification
-+					 */
-+	u8         dexcpt:1;	/* disable exception control */
-+	u8         ewasc:1;	/* enable warning */
-+	u8         ebf:1;		/* enable background fucntion */
-+	u8         reserved3:1;
-+	u8         perf:1;		/* performance */
-+
-+	u8         mrie:4;		/* method of reporting info
-+					 * exceptions
-+					 */
-+	u8         reserved5:4;
-+#endif
-+	u8         interval_timer_msb;
-+	u8         interval_timer_lsb;
-+
-+	u8         report_count_msb;
-+	u8         report_count_lsb;
-+};
-+
-+/*
-+ * Methods of reporting informational exceptions
-+ */
-+#define SCSI_MP_IEC_NO_REPORT       0x0	/* no reporting of exceptions */
-+#define SCSI_MP_IEC_AER             0x1	/* async event reporting */
-+#define SCSI_MP_IEC_UNIT_ATTN       0x2	/* generate unit attenstion */
-+#define SCSI_MO_IEC_COND_REC_ERR    0x3	/* conditionally generate recovered
-+					 * error
-+					 */
-+#define SCSI_MP_IEC_UNCOND_REC_ERR  0x4	/* unconditionally generate recovered
-+					 * error
-+					 */
-+#define SCSI_MP_IEC_NO_SENSE        0x5	/* generate no sense */
-+#define SCSI_MP_IEC_ON_REQUEST      0x6	/* only report exceptions on request */
-+
-+/*
-+ * SCSI flexible disk page
-+ */
-+struct scsi_mp_flexible_disk_s{
-+#ifdef __BIGENDIAN
-+	u8         ps:1;
-+	u8         reserved1:1;
-+	u8         page_code:6;
-+#else
-+	u8         page_code:6;
-+	u8         reserved1:1;
-+	u8         ps:1;
-+#endif
-+	u8         page_len;
-+
-+	u8         transfer_rate_msb;
-+	u8         transfer_rate_lsb;
-+
-+	u8         num_heads;
-+	u8         num_sectors;
-+
-+	u8         bytes_per_sector_msb;
-+	u8         bytes_per_sector_lsb;
-+
-+	u8         num_cylinders_msb;
-+	u8         num_cylinders_lsb;
-+
-+	u8         sc_wpc_msb;	/* starting cylinder-write
-+					 * precompensation msb
-+					 */
-+	u8         sc_wpc_lsb;	/* starting cylinder-write
-+					 * precompensation lsb
-+					 */
-+	u8         sc_rwc_msb;	/* starting cylinder-reduced write
-+					 * current msb
-+					 */
-+	u8         sc_rwc_lsb;	/* starting cylinder-reduced write
-+					 * current lsb
-+					 */
-+
-+	u8         dev_step_rate_msb;
-+	u8         dev_step_rate_lsb;
-+
-+	u8         dev_step_pulse_width;
-+
-+	u8         head_sd_msb;	/* head settle delay msb */
-+	u8         head_sd_lsb;	/* head settle delay lsb */
-+
-+	u8         motor_on_delay;
-+	u8         motor_off_delay;
-+#ifdef __BIGENDIAN
-+	u8         trdy:1;		/* true ready bit */
-+	u8         ssn:1;		/* start sector number bit */
-+	u8         mo:1;		/* motor on bit */
-+	u8         reserved3:5;
-+
-+	u8         reserved4:4;
-+	u8         spc:4;		/* step pulse per cylinder */
-+#else
-+	u8         reserved3:5;
-+	u8         mo:1;		/* motor on bit */
-+	u8         ssn:1;		/* start sector number bit */
-+	u8         trdy:1;		/* true ready bit */
-+
-+	u8         spc:4;		/* step pulse per cylinder */
-+	u8         reserved4:4;
-+#endif
-+	u8         write_comp;
-+	u8         head_load_delay;
-+	u8         head_unload_delay;
-+#ifdef __BIGENDIAN
-+	u8         pin34:4;	/* pin34 usage */
-+	u8         pin2:4;		/* pin2 usage */
-+
-+	u8         pin4:4;		/* pin4 usage */
-+	u8         pin1:4;		/* pin1 usage */
-+#else
-+	u8         pin2:4;		/* pin2 usage */
-+	u8         pin34:4;	/* pin34 usage */
-+
-+	u8         pin1:4;		/* pin1 usage */
-+	u8         pin4:4;		/* pin4 usage */
-+#endif
-+	u8         med_rot_rate_msb;
-+	u8         med_rot_rate_lsb;
-+
-+	u8         reserved5[2];
-+};
-+
-+struct scsi_mode_page_format_data6_s{
-+	struct scsi_mode_param_header6_s mph;	/* mode page header */
-+	struct scsi_mode_param_desc_s desc;	/* block descriptor */
-+	struct scsi_mp_format_device_s format;	/* format device data */
-+};
-+
-+struct scsi_mode_page_format_data10_s{
-+	struct scsi_mode_param_header10_s mph;	/* mode page header */
-+	struct scsi_mode_param_desc_s desc;	/* block descriptor */
-+	struct scsi_mp_format_device_s format;	/* format device data */
-+};
-+
-+struct scsi_mode_page_rdg_data6_s{
-+	struct scsi_mode_param_header6_s mph;	/* mode page header */
-+	struct scsi_mode_param_desc_s desc;	/* block descriptor */
-+	struct scsi_mp_rigid_device_geometry_s rdg;
-+					/* rigid geometry data */
-+};
-+
-+struct scsi_mode_page_rdg_data10_s{
-+	struct scsi_mode_param_header10_s mph;	/* mode page header */
-+	struct scsi_mode_param_desc_s desc;	/* block descriptor */
-+	struct scsi_mp_rigid_device_geometry_s rdg;
-+					/* rigid geometry data */
-+};
-+
-+struct scsi_mode_page_cache6_s{
-+	struct scsi_mode_param_header6_s mph;	/* mode page header */
-+	struct scsi_mode_param_desc_s desc;	/* block descriptor */
-+	struct scsi_mp_caching_s cache;	/* cache page data */
-+};
-+
-+struct scsi_mode_page_cache10_s{
-+	struct scsi_mode_param_header10_s mph;	/* mode page header */
-+	struct scsi_mode_param_desc_s desc;	/* block descriptor */
-+	struct scsi_mp_caching_s cache;	/* cache page data */
-+};
-+
-+/* --------------------------------------------------------------
-+ * Format Unit command
-+ * ------------------------------------------------------------
-+ */
-+
-+/*
-+ * Format Unit CDB
-+ */
-+struct scsi_format_unit_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         res1:3;
-+	u8         fmtdata:1;	/* if set, data out phase has format
-+					 * data
-+					 */
-+	u8         cmplst:1;	/* if set, defect list is complete */
-+	u8         def_list:3;	/* format of defect descriptor is
-+					 * fmtdata =1
-+					 */
-+#else
-+	u8         def_list:3;	/* format of defect descriptor is
-+					 * fmtdata = 1
-+					 */
-+	u8         cmplst:1;	/* if set, defect list is complete */
-+	u8         fmtdata:1;	/* if set, data out phase has format
-+					 * data
-+					 */
-+	u8         res1:3;
-+#endif
-+	u8         interleave_msb;
-+	u8         interleave_lsb;
-+	u8         vendor_spec;
-+	u8         control;
-+};
-+
-+/*
-+ * h
-+ */
-+struct scsi_reserve6_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         reserved:3;
-+	u8         obsolete:4;
-+	u8         extent:1;
-+#else
-+	u8         extent:1;
-+	u8         obsolete:4;
-+	u8         reserved:3;
-+#endif
-+	u8         reservation_id;
-+	u16        param_list_len;
-+	u8         control;
-+};
-+
-+/*
-+ * h
-+ */
-+struct scsi_release6_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         reserved1:3;
-+	u8         obsolete:4;
-+	u8         extent:1;
-+#else
-+	u8         extent:1;
-+	u8         obsolete:4;
-+	u8         reserved1:3;
-+#endif
-+	u8         reservation_id;
-+	u16        reserved2;
-+	u8         control;
-+};
-+
-+/*
-+ * h
-+ */
-+struct scsi_reserve10_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         reserved1:3;
-+	u8         third_party:1;
-+	u8         reserved2:2;
-+	u8         long_id:1;
-+	u8         extent:1;
-+#else
-+	u8         extent:1;
-+	u8         long_id:1;
-+	u8         reserved2:2;
-+	u8         third_party:1;
-+	u8         reserved1:3;
-+#endif
-+	u8         reservation_id;
-+	u8         third_pty_dev_id;
-+	u8         reserved3;
-+	u8         reserved4;
-+	u8         reserved5;
-+	u16        param_list_len;
-+	u8         control;
-+};
-+
-+struct scsi_release10_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         reserved1:3;
-+	u8         third_party:1;
-+	u8         reserved2:2;
-+	u8         long_id:1;
-+	u8         extent:1;
-+#else
-+	u8         extent:1;
-+	u8         long_id:1;
-+	u8         reserved2:2;
-+	u8         third_party:1;
-+	u8         reserved1:3;
-+#endif
-+	u8         reservation_id;
-+	u8         third_pty_dev_id;
-+	u8         reserved3;
-+	u8         reserved4;
-+	u8         reserved5;
-+	u16        param_list_len;
-+	u8         control;
-+};
-+
-+struct scsi_verify10_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         lun:3;
-+	u8         dpo:1;
-+	u8         reserved:2;
-+	u8         bytchk:1;
-+	u8         reladdr:1;
-+#else
-+	u8         reladdr:1;
-+	u8         bytchk:1;
-+	u8         reserved:2;
-+	u8         dpo:1;
-+	u8         lun:3;
-+#endif
-+	u8         lba0;
-+	u8         lba1;
-+	u8         lba2;
-+	u8         lba3;
-+	u8         reserved1;
-+	u8         verification_len0;
-+	u8         verification_len1;
-+	u8         control_byte;
-+};
-+
-+struct scsi_request_sense_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         lun:3;
-+	u8         reserved:5;
-+#else
-+	u8         reserved:5;
-+	u8         lun:3;
-+#endif
-+	u8         reserved0;
-+	u8         reserved1;
-+	u8         alloc_len;
-+	u8         control_byte;
-+};
-+
-+/* ------------------------------------------------------------
-+ * SCSI status byte values
-+ * ------------------------------------------------------------
-+ */
-+#define SCSI_STATUS_GOOD                   0x00
-+#define SCSI_STATUS_CHECK_CONDITION        0x02
-+#define SCSI_STATUS_CONDITION_MET          0x04
-+#define SCSI_STATUS_BUSY                   0x08
-+#define SCSI_STATUS_INTERMEDIATE           0x10
-+#define SCSI_STATUS_ICM                    0x14	/* intermediate condition met */
-+#define SCSI_STATUS_RESERVATION_CONFLICT   0x18
-+#define SCSI_STATUS_COMMAND_TERMINATED     0x22
-+#define SCSI_STATUS_QUEUE_FULL             0x28
-+#define SCSI_STATUS_ACA_ACTIVE             0x30
-+
-+#define SCSI_MAX_ALLOC_LEN		0xFF	/* maximum allocarion length
-+						 * in CDBs
-+						 */
-+
-+#define SCSI_OP_WRITE_VERIFY10      0x2E
-+#define SCSI_OP_WRITE_VERIFY12      0xAE
-+#define SCSI_OP_UNDEF               0xFF
-+
-+/*
-+ * SCSI WRITE-VERIFY(10) command
-+ */
-+struct scsi_write_verify10_s{
-+	u8         opcode;
-+#ifdef __BIGENDIAN
-+	u8         reserved1:3;
-+	u8         dpo:1;		/* Disable Page Out */
-+	u8         reserved2:1;
-+	u8         ebp:1;		/* erse by-pass */
-+	u8         bytchk:1;	/* byte check */
-+	u8         rel_adr:1;	/* relative address */
-+#else
-+	u8         rel_adr:1;	/* relative address */
-+	u8         bytchk:1;	/* byte check */
-+	u8         ebp:1;		/* erse by-pass */
-+	u8         reserved2:1;
-+	u8         dpo:1;		/* Disable Page Out */
-+	u8         reserved1:3;
-+#endif
-+	u8         lba0;		/* logical block address - MSB */
-+	u8         lba1;
-+	u8         lba2;
-+	u8         lba3;		/* LSB */
-+	u8         reserved3;
-+	u8         xfer_length0;	/* transfer length in blocks - MSB */
-+	u8         xfer_length1;	/* LSB */
-+	u8         control;
-+};
-+
-+#pragma pack()
-+
-+#endif /* __SCSI_H__ */
-diff -urpN orig/drivers/scsi/bfa/include/protocol/types.h patch/drivers/scsi/bfa/include/protocol/types.h
---- orig/drivers/scsi/bfa/include/protocol/types.h	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/include/protocol/types.h	2009-08-19 17:47:57.000000000 -0700
-@@ -0,0 +1,42 @@
-+/*
-+ * Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
-+ * All rights reserved
-+ * www.brocade.com
-+ *
-+ * Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License (GPL) Version 2 as
-+ * published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ */
-+
-+/**
-+ *  types.h Protocol defined base types
-+ */
-+
-+#ifndef __TYPES_H__
-+#define __TYPES_H__
-+
-+#include <bfa_os_inc.h>
-+
-+#define wwn_t u64
-+#define lun_t u64
-+
-+#define WWN_NULL	(0)
-+#define FC_SYMNAME_MAX	256	/*  max name server symbolic name size */
-+#define FC_ALPA_MAX	128
-+
-+#pragma pack(1)
-+
-+#define MAC_ADDRLEN	(6)
-+struct mac_s { u8 mac[MAC_ADDRLEN]; };
-+#define mac_t struct mac_s
-+
-+#pragma pack()
-+
-+#endif
+After upgrading NFS client kernel to latest linux-next, NFS mount
+failed:
+
+        # mount -t nfs pxe:/cc /cc
+        mount.nfs: access denied by server while mounting pxe:/cc
+
+        # uname -a
+        Linux hp 2.6.31-rc6-next-20090818 #61 SMP Thu Aug 20 14:46:10 CST 2009 x86_64 GNU/Linux 
+
+However server log says OK:
+
+        Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated mount request from 192.168.11.6:973 for /cc (/cc)
+        Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated unmount request from 192.168.11.6:974 for /cc (/cc)
+
+However-2: nfsroot can be mounted at boot time. Server kernel has always been 2.6.30.
+
+Any ideas?
+
+Thanks,
+Fengguang
+
+--mP3DRpeJDSE+ciuQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=".config"
+
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.31-rc6
+# Thu Aug 20 14:06:35 2009
+#
+CONFIG_64BIT=y
+# CONFIG_X86_32 is not set
+CONFIG_X86_64=y
+CONFIG_X86=y
+CONFIG_OUTPUT_FORMAT="elf64-x86-64"
+CONFIG_ARCH_DEFCONFIG="arch/x86/configs/x86_64_defconfig"
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_FAST_CMPXCHG_LOCAL=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_BUG_RELATIVE_POINTERS=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_RWSEM_GENERIC_SPINLOCK=y
+# CONFIG_RWSEM_XCHGADD_ALGORITHM is not set
+CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_GENERIC_TIME_VSYSCALL=y
+CONFIG_ARCH_HAS_CPU_RELAX=y
+CONFIG_ARCH_HAS_DEFAULT_IDLE=y
+CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
+CONFIG_HAVE_SETUP_PER_CPU_AREA=y
+CONFIG_NEED_PER_CPU_EMBED_FIRST_CHUNK=y
+CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK=y
+CONFIG_HAVE_CPUMASK_OF_CPU_MAP=y
+CONFIG_ARCH_HIBERNATION_POSSIBLE=y
+CONFIG_ARCH_SUSPEND_POSSIBLE=y
+CONFIG_ZONE_DMA32=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_AUDIT_ARCH=y
+CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
+CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_GENERIC_PENDING_IRQ=y
+CONFIG_USE_GENERIC_SMP_HELPERS=y
+CONFIG_X86_64_SMP=y
+CONFIG_X86_HT=y
+CONFIG_X86_TRAMPOLINE=y
+# CONFIG_KTIME_SCALAR is not set
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_CONSTRUCTORS=y
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+# CONFIG_LOCALVERSION_AUTO is not set
+CONFIG_HAVE_KERNEL_GZIP=y
+CONFIG_HAVE_KERNEL_BZIP2=y
+CONFIG_HAVE_KERNEL_LZMA=y
+CONFIG_KERNEL_GZIP=y
+# CONFIG_KERNEL_BZIP2 is not set
+# CONFIG_KERNEL_LZMA is not set
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_POSIX_MQUEUE_SYSCTL=y
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_BSD_PROCESS_ACCT_V3=y
+CONFIG_TASKSTATS=y
+CONFIG_TASK_DELAY_ACCT=y
+CONFIG_TASK_XACCT=y
+CONFIG_TASK_IO_ACCOUNTING=y
+CONFIG_AUDIT=y
+CONFIG_AUDITSYSCALL=y
+CONFIG_AUDIT_WATCH=y
+CONFIG_AUDIT_TREE=y
+
+#
+# RCU Subsystem
+#
+CONFIG_TREE_RCU=y
+# CONFIG_PREEMPT_RCU is not set
+CONFIG_RCU_TRACE=y
+CONFIG_RCU_FANOUT=64
+# CONFIG_RCU_FANOUT_EXACT is not set
+CONFIG_TREE_RCU_TRACE=y
+# CONFIG_PREEMPT_RCU_TRACE is not set
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=18
+CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+# CONFIG_GROUP_SCHED is not set
+CONFIG_CGROUPS=y
+CONFIG_CGROUP_DEBUG=y
+CONFIG_CGROUP_NS=y
+CONFIG_CGROUP_FREEZER=y
+CONFIG_CGROUP_DEVICE=y
+CONFIG_CPUSETS=y
+CONFIG_PROC_PID_CPUSET=y
+CONFIG_CGROUP_CPUACCT=y
+CONFIG_RESOURCE_COUNTERS=y
+CONFIG_CGROUP_MEM_RES_CTLR=y
+CONFIG_CGROUP_MEM_RES_CTLR_SWAP=y
+CONFIG_MM_OWNER=y
+# CONFIG_SYSFS_DEPRECATED_V2 is not set
+CONFIG_RELAY=y
+# CONFIG_NAMESPACES is not set
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_RD_GZIP=y
+# CONFIG_RD_BZIP2 is not set
+# CONFIG_RD_LZMA is not set
+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+CONFIG_SYSCTL=y
+CONFIG_ANON_INODES=y
+CONFIG_EMBEDDED=y
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_PCSPKR_PLATFORM=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_AIO=y
+CONFIG_HAVE_PERF_COUNTERS=y
+
+#
+# Performance Counters
+#
+# CONFIG_PERF_COUNTERS is not set
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_PCI_QUIRKS=y
+# CONFIG_STRIP_ASM_SYMS is not set
+CONFIG_COMPAT_BRK=y
+# CONFIG_SLAB_ALLOCATOR is not set
+# CONFIG_SLUB_ALLOCATOR is not set
+CONFIG_SLQB_ALLOCATOR=y
+CONFIG_SLQB=y
+# CONFIG_SLOB is not set
+CONFIG_PROFILING=y
+CONFIG_TRACEPOINTS=y
+CONFIG_MARKERS=y
+CONFIG_OPROFILE=y
+# CONFIG_OPROFILE_IBS is not set
+# CONFIG_OPROFILE_EVENT_MULTIPLEX is not set
+CONFIG_HAVE_OPROFILE=y
+CONFIG_KPROBES=y
+CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
+CONFIG_KRETPROBES=y
+CONFIG_HAVE_IOREMAP_PROT=y
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+CONFIG_HAVE_DMA_ATTRS=y
+CONFIG_HAVE_DMA_API_DEBUG=y
+
+#
+# GCOV-based kernel profiling
+#
+# CONFIG_GCOV_KERNEL is not set
+# CONFIG_SLOW_WORK is not set
+# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+# CONFIG_MODULE_FORCE_LOAD is not set
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+# CONFIG_MODVERSIONS is not set
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+# CONFIG_BLK_DEV_BSG is not set
+CONFIG_BLK_DEV_INTEGRITY=y
+CONFIG_BLOCK_COMPAT=y
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+# CONFIG_IOSCHED_AS is not set
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+CONFIG_DEFAULT_CFQ=y
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED="cfq"
+CONFIG_FREEZER=y
+
+#
+# Processor type and features
+#
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_SMP=y
+CONFIG_SPARSE_IRQ=y
+CONFIG_NUMA_IRQ_DESC=y
+CONFIG_X86_MPPARSE=y
+CONFIG_X86_EXTENDED_PLATFORM=y
+# CONFIG_X86_VSMP is not set
+CONFIG_SCHED_OMIT_FRAME_POINTER=y
+CONFIG_PARAVIRT_GUEST=y
+# CONFIG_XEN is not set
+CONFIG_KVM_CLOCK=y
+CONFIG_KVM_GUEST=y
+CONFIG_PARAVIRT=y
+# CONFIG_PARAVIRT_SPINLOCKS is not set
+CONFIG_PARAVIRT_CLOCK=y
+# CONFIG_PARAVIRT_DEBUG is not set
+CONFIG_MEMTEST=y
+# CONFIG_M386 is not set
+# CONFIG_M486 is not set
+# CONFIG_M586 is not set
+# CONFIG_M586TSC is not set
+# CONFIG_M586MMX is not set
+# CONFIG_M686 is not set
+# CONFIG_MPENTIUMII is not set
+# CONFIG_MPENTIUMIII is not set
+# CONFIG_MPENTIUMM is not set
+# CONFIG_MPENTIUM4 is not set
+# CONFIG_MK6 is not set
+# CONFIG_MK7 is not set
+# CONFIG_MK8 is not set
+# CONFIG_MCRUSOE is not set
+# CONFIG_MEFFICEON is not set
+# CONFIG_MWINCHIPC6 is not set
+# CONFIG_MWINCHIP3D is not set
+# CONFIG_MGEODEGX1 is not set
+# CONFIG_MGEODE_LX is not set
+# CONFIG_MCYRIXIII is not set
+# CONFIG_MVIAC3_2 is not set
+# CONFIG_MVIAC7 is not set
+# CONFIG_MPSC is not set
+CONFIG_MCORE2=y
+# CONFIG_GENERIC_CPU is not set
+CONFIG_X86_CPU=y
+CONFIG_X86_L1_CACHE_BYTES=64
+CONFIG_X86_INTERNODE_CACHE_BYTES=64
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_L1_CACHE_SHIFT=6
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_INTEL_USERCOPY=y
+CONFIG_X86_USE_PPRO_CHECKSUM=y
+CONFIG_X86_P6_NOP=y
+CONFIG_X86_TSC=y
+CONFIG_X86_CMPXCHG64=y
+CONFIG_X86_CMOV=y
+CONFIG_X86_MINIMUM_CPU_FAMILY=64
+CONFIG_X86_DEBUGCTLMSR=y
+CONFIG_PROCESSOR_SELECT=y
+CONFIG_CPU_SUP_INTEL=y
+# CONFIG_CPU_SUP_AMD is not set
+CONFIG_CPU_SUP_CENTAUR=y
+# CONFIG_X86_DS is not set
+CONFIG_HPET_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+CONFIG_DMI=y
+CONFIG_GART_IOMMU=y
+# CONFIG_CALGARY_IOMMU is not set
+# CONFIG_AMD_IOMMU is not set
+CONFIG_SWIOTLB=y
+CONFIG_IOMMU_HELPER=y
+# CONFIG_IOMMU_API is not set
+# CONFIG_MAXSMP is not set
+CONFIG_NR_CPUS=8
+CONFIG_SCHED_SMT=y
+CONFIG_SCHED_MC=y
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_PREEMPT_VOLUNTARY=y
+# CONFIG_PREEMPT is not set
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+# CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS is not set
+CONFIG_X86_MCE=y
+CONFIG_X86_NEW_MCE=y
+CONFIG_X86_MCE_INTEL=y
+# CONFIG_X86_MCE_AMD is not set
+CONFIG_X86_MCE_THRESHOLD=y
+# CONFIG_X86_MCE_INJECT is not set
+CONFIG_X86_THERMAL_VECTOR=y
+# CONFIG_I8K is not set
+CONFIG_MICROCODE=y
+CONFIG_MICROCODE_INTEL=y
+# CONFIG_MICROCODE_AMD is not set
+CONFIG_MICROCODE_OLD_INTERFACE=y
+CONFIG_X86_MSR=y
+CONFIG_X86_CPUID=y
+# CONFIG_X86_CPU_DEBUG is not set
+CONFIG_ARCH_PHYS_ADDR_T_64BIT=y
+# CONFIG_DIRECT_GBPAGES is not set
+CONFIG_NUMA=y
+# CONFIG_K8_NUMA is not set
+CONFIG_X86_64_ACPI_NUMA=y
+CONFIG_NODES_SPAN_OTHER_NODES=y
+# CONFIG_NUMA_EMU is not set
+CONFIG_NODES_SHIFT=6
+CONFIG_ARCH_SPARSEMEM_DEFAULT=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_ILLEGAL_POINTER_VALUE=0xdead000000000000
+CONFIG_SELECT_MEMORY_MODEL=y
+# CONFIG_FLATMEM_MANUAL is not set
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+CONFIG_SPARSEMEM_MANUAL=y
+CONFIG_SPARSEMEM=y
+CONFIG_NEED_MULTIPLE_NODES=y
+CONFIG_HAVE_MEMORY_PRESENT=y
+CONFIG_SPARSEMEM_EXTREME=y
+CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+CONFIG_SPARSEMEM_VMEMMAP=y
+
+#
+# Memory hotplug is currently incompatible with Software Suspend
+#
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+# CONFIG_MIGRATION is not set
+CONFIG_PHYS_ADDR_T_64BIT=y
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_HAVE_MLOCK=y
+CONFIG_HAVE_MLOCKED_PAGE_BIT=y
+CONFIG_MMU_NOTIFIER=y
+CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
+CONFIG_MEMORY_FAILURE=y
+CONFIG_HWPOISON_INJECT=y
+CONFIG_X86_CHECK_BIOS_CORRUPTION=y
+CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK=y
+CONFIG_X86_RESERVE_LOW_64K=y
+CONFIG_MTRR=y
+# CONFIG_MTRR_SANITIZER is not set
+# CONFIG_X86_PAT is not set
+# CONFIG_EFI is not set
+CONFIG_SECCOMP=y
+# CONFIG_CC_STACKPROTECTOR is not set
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+CONFIG_SCHED_HRTICK=y
+CONFIG_KEXEC=y
+CONFIG_CRASH_DUMP=y
+# CONFIG_KEXEC_JUMP is not set
+CONFIG_PHYSICAL_START=0x1000000
+# CONFIG_RELOCATABLE is not set
+CONFIG_PHYSICAL_ALIGN=0x1000000
+CONFIG_HOTPLUG_CPU=y
+CONFIG_COMPAT_VDSO=y
+# CONFIG_CMDLINE_BOOL is not set
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
+
+#
+# Power management and ACPI options
+#
+CONFIG_ARCH_HIBERNATION_HEADER=y
+CONFIG_PM=y
+CONFIG_PM_DEBUG=y
+# CONFIG_PM_VERBOSE is not set
+CONFIG_CAN_PM_TRACE=y
+CONFIG_PM_TRACE=y
+CONFIG_PM_TRACE_RTC=y
+CONFIG_PM_SLEEP_SMP=y
+CONFIG_PM_SLEEP=y
+CONFIG_SUSPEND=y
+# CONFIG_PM_TEST_SUSPEND is not set
+CONFIG_SUSPEND_FREEZER=y
+CONFIG_HIBERNATION_NVS=y
+CONFIG_HIBERNATION=y
+CONFIG_PM_STD_PARTITION=""
+CONFIG_ACPI=y
+CONFIG_ACPI_SLEEP=y
+CONFIG_ACPI_PROCFS=y
+CONFIG_ACPI_PROCFS_POWER=y
+CONFIG_ACPI_SYSFS_POWER=y
+CONFIG_ACPI_PROC_EVENT=y
+CONFIG_ACPI_AC=y
+CONFIG_ACPI_BATTERY=y
+CONFIG_ACPI_BUTTON=y
+CONFIG_ACPI_VIDEO=m
+CONFIG_ACPI_FAN=y
+CONFIG_ACPI_DOCK=y
+CONFIG_ACPI_PROCESSOR=y
+CONFIG_ACPI_HOTPLUG_CPU=y
+# CONFIG_ACPI_PROCESSOR_AGGREGATOR is not set
+CONFIG_ACPI_THERMAL=y
+CONFIG_ACPI_NUMA=y
+CONFIG_ACPI_CUSTOM_DSDT_FILE=""
+# CONFIG_ACPI_CUSTOM_DSDT is not set
+CONFIG_ACPI_BLACKLIST_YEAR=0
+CONFIG_ACPI_DEBUG=y
+CONFIG_ACPI_DEBUG_FUNC_TRACE=y
+CONFIG_ACPI_PCI_SLOT=y
+CONFIG_X86_PM_TIMER=y
+CONFIG_ACPI_CONTAINER=y
+CONFIG_ACPI_SBS=y
+# CONFIG_SFI is not set
+
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+# CONFIG_CPU_FREQ_DEBUG is not set
+CONFIG_CPU_FREQ_STAT=y
+CONFIG_CPU_FREQ_STAT_DETAILS=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
+# CONFIG_CPU_FREQ_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+# CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set
+
+#
+# CPUFreq processor drivers
+#
+CONFIG_X86_ACPI_CPUFREQ=y
+# CONFIG_X86_POWERNOW_K8 is not set
+CONFIG_X86_SPEEDSTEP_CENTRINO=y
+# CONFIG_X86_P4_CLOCKMOD is not set
+
+#
+# shared options
+#
+# CONFIG_X86_SPEEDSTEP_LIB is not set
+CONFIG_CPU_IDLE=y
+CONFIG_CPU_IDLE_GOV_LADDER=y
+CONFIG_CPU_IDLE_GOV_MENU=y
+
+#
+# Memory power savings
+#
+# CONFIG_I7300_IDLE is not set
+
+#
+# Bus options (PCI etc.)
+#
+CONFIG_PCI=y
+CONFIG_PCI_DIRECT=y
+CONFIG_PCI_MMCONFIG=y
+CONFIG_PCI_DOMAINS=y
+# CONFIG_DMAR is not set
+# CONFIG_INTR_REMAP is not set
+CONFIG_PCIEPORTBUS=y
+# CONFIG_HOTPLUG_PCI_PCIE is not set
+CONFIG_PCIEAER=y
+# CONFIG_PCIE_ECRC is not set
+# CONFIG_PCIEAER_INJECT is not set
+# CONFIG_PCIEASPM is not set
+CONFIG_ARCH_SUPPORTS_MSI=y
+CONFIG_PCI_MSI=y
+# CONFIG_PCI_LEGACY is not set
+# CONFIG_PCI_DEBUG is not set
+# CONFIG_PCI_STUB is not set
+CONFIG_HT_IRQ=y
+# CONFIG_PCI_IOV is not set
+CONFIG_ISA_DMA_API=y
+CONFIG_K8_NB=y
+# CONFIG_PCCARD is not set
+CONFIG_HOTPLUG_PCI=y
+# CONFIG_HOTPLUG_PCI_FAKE is not set
+# CONFIG_HOTPLUG_PCI_ACPI is not set
+# CONFIG_HOTPLUG_PCI_CPCI is not set
+# CONFIG_HOTPLUG_PCI_SHPC is not set
+
+#
+# Executable file formats / Emulations
+#
+CONFIG_BINFMT_ELF=y
+CONFIG_COMPAT_BINFMT_ELF=y
+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+# CONFIG_HAVE_AOUT is not set
+# CONFIG_BINFMT_MISC is not set
+CONFIG_IA32_EMULATION=y
+# CONFIG_IA32_AOUT is not set
+CONFIG_COMPAT=y
+CONFIG_COMPAT_FOR_U64_ALIGNMENT=y
+CONFIG_SYSVIPC_COMPAT=y
+CONFIG_NET=y
+CONFIG_COMPAT_NETLINK_MESSAGES=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=y
+# CONFIG_XFRM_SUB_POLICY is not set
+# CONFIG_XFRM_MIGRATE is not set
+# CONFIG_XFRM_STATISTICS is not set
+CONFIG_XFRM_IPCOMP=y
+CONFIG_NET_KEY=y
+# CONFIG_NET_KEY_MIGRATE is not set
+CONFIG_INET=y
+# CONFIG_IP_MULTICAST is not set
+# CONFIG_IP_ADVANCED_ROUTER is not set
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+# CONFIG_IP_PNP_BOOTP is not set
+# CONFIG_IP_PNP_RARP is not set
+# CONFIG_NET_IPIP is not set
+# CONFIG_NET_IPGRE is not set
+# CONFIG_ARPD is not set
+# CONFIG_SYN_COOKIES is not set
+CONFIG_INET_AH=y
+CONFIG_INET_ESP=y
+CONFIG_INET_IPCOMP=y
+CONFIG_INET_XFRM_TUNNEL=y
+CONFIG_INET_TUNNEL=y
+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
+# CONFIG_INET_XFRM_MODE_BEET is not set
+CONFIG_INET_LRO=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+# CONFIG_TCP_CONG_ADVANCED is not set
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+# CONFIG_TCP_MD5SIG is not set
+CONFIG_IPV6=y
+# CONFIG_IPV6_PRIVACY is not set
+# CONFIG_IPV6_ROUTER_PREF is not set
+# CONFIG_IPV6_OPTIMISTIC_DAD is not set
+# CONFIG_INET6_AH is not set
+# CONFIG_INET6_ESP is not set
+# CONFIG_INET6_IPCOMP is not set
+# CONFIG_IPV6_MIP6 is not set
+# CONFIG_INET6_XFRM_TUNNEL is not set
+# CONFIG_INET6_TUNNEL is not set
+CONFIG_INET6_XFRM_MODE_TRANSPORT=y
+CONFIG_INET6_XFRM_MODE_TUNNEL=y
+CONFIG_INET6_XFRM_MODE_BEET=y
+# CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION is not set
+CONFIG_IPV6_SIT=y
+CONFIG_IPV6_NDISC_NODETYPE=y
+# CONFIG_IPV6_TUNNEL is not set
+# CONFIG_IPV6_MULTIPLE_TABLES is not set
+# CONFIG_IPV6_MROUTE is not set
+# CONFIG_NETWORK_SECMARK is not set
+# CONFIG_NETFILTER is not set
+# CONFIG_IP_DCCP is not set
+# CONFIG_IP_SCTP is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_NET_DSA is not set
+# CONFIG_VLAN_8021Q is not set
+# CONFIG_DECNET is not set
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+# CONFIG_PHONET is not set
+# CONFIG_IEEE802154 is not set
+# CONFIG_NET_SCHED is not set
+# CONFIG_DCB is not set
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+# CONFIG_NET_TCPPROBE is not set
+# CONFIG_NET_DROP_MONITOR is not set
+# CONFIG_HAMRADIO is not set
+# CONFIG_CAN is not set
+# CONFIG_IRDA is not set
+# CONFIG_BT is not set
+# CONFIG_AF_RXRPC is not set
+CONFIG_WIRELESS=y
+CONFIG_CFG80211=y
+# CONFIG_NL80211_TESTMODE is not set
+# CONFIG_CFG80211_REG_DEBUG is not set
+CONFIG_CFG80211_DEFAULT_PS=y
+CONFIG_CFG80211_DEFAULT_PS_VALUE=1
+# CONFIG_CFG80211_DEBUGFS is not set
+# CONFIG_WIRELESS_OLD_REGULATORY is not set
+CONFIG_WIRELESS_EXT=y
+CONFIG_WIRELESS_EXT_SYSFS=y
+CONFIG_LIB80211=m
+# CONFIG_LIB80211_DEBUG is not set
+CONFIG_MAC80211=y
+
+#
+# Rate control algorithm selection
+#
+CONFIG_MAC80211_RC_PID=y
+CONFIG_MAC80211_RC_MINSTREL=y
+CONFIG_MAC80211_RC_DEFAULT_PID=y
+# CONFIG_MAC80211_RC_DEFAULT_MINSTREL is not set
+CONFIG_MAC80211_RC_DEFAULT="pid"
+# CONFIG_MAC80211_MESH is not set
+CONFIG_MAC80211_LEDS=y
+CONFIG_MAC80211_DEBUGFS=y
+CONFIG_MAC80211_DEBUG_MENU=y
+CONFIG_MAC80211_DEBUG_PACKET_ALIGNMENT=y
+CONFIG_MAC80211_NOINLINE=y
+CONFIG_MAC80211_VERBOSE_DEBUG=y
+CONFIG_MAC80211_HT_DEBUG=y
+CONFIG_MAC80211_TKIP_DEBUG=y
+CONFIG_MAC80211_IBSS_DEBUG=y
+CONFIG_MAC80211_VERBOSE_PS_DEBUG=y
+CONFIG_MAC80211_DEBUG_COUNTERS=y
+# CONFIG_MAC80211_DRIVER_API_TRACER is not set
+CONFIG_WIMAX=m
+CONFIG_WIMAX_DEBUG_LEVEL=8
+CONFIG_RFKILL=y
+CONFIG_RFKILL_LEDS=y
+CONFIG_RFKILL_INPUT=y
+# CONFIG_NET_9P is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_DEVTMPFS=y
+CONFIG_DEVTMPFS_MOUNT=y
+# CONFIG_STANDALONE is not set
+# CONFIG_PREVENT_FIRMWARE_BUILD is not set
+CONFIG_FW_LOADER=y
+# CONFIG_FIRMWARE_IN_KERNEL is not set
+CONFIG_EXTRA_FIRMWARE=""
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+# CONFIG_CONNECTOR is not set
+# CONFIG_MTD is not set
+# CONFIG_PARPORT is not set
+CONFIG_PNP=y
+CONFIG_PNP_DEBUG_MESSAGES=y
+
+#
+# Protocols
+#
+CONFIG_PNPACPI=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_FD=y
+# CONFIG_BLK_CPQ_DA is not set
+# CONFIG_BLK_CPQ_CISS_DA is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_UMEM is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_CRYPTOLOOP=y
+
+#
+# DRBD disabled because PROC_FS, INET or CONNECTOR not selected
+#
+# CONFIG_BLK_DEV_NBD is not set
+# CONFIG_BLK_DEV_SX8 is not set
+# CONFIG_BLK_DEV_UB is not set
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=65536
+# CONFIG_BLK_DEV_XIP is not set
+CONFIG_CDROM_PKTCDVD=y
+CONFIG_CDROM_PKTCDVD_BUFFERS=128
+# CONFIG_CDROM_PKTCDVD_WCACHE is not set
+# CONFIG_ATA_OVER_ETH is not set
+CONFIG_VIRTIO_BLK=y
+# CONFIG_BLK_DEV_HD is not set
+CONFIG_MISC_DEVICES=y
+# CONFIG_IBM_ASM is not set
+CONFIG_HWLAT_DETECTOR=m
+# CONFIG_PHANTOM is not set
+# CONFIG_SGI_IOC4 is not set
+# CONFIG_TIFM_CORE is not set
+# CONFIG_ICS932S401 is not set
+# CONFIG_ENCLOSURE_SERVICES is not set
+# CONFIG_HP_ILO is not set
+# CONFIG_ISL29003 is not set
+# CONFIG_C2PORT is not set
+
+#
+# EEPROM support
+#
+# CONFIG_EEPROM_AT24 is not set
+# CONFIG_EEPROM_LEGACY is not set
+# CONFIG_EEPROM_MAX6875 is not set
+# CONFIG_EEPROM_93CX6 is not set
+# CONFIG_CB710_CORE is not set
+CONFIG_HAVE_IDE=y
+# CONFIG_IDE is not set
+
+#
+# SCSI device support
+#
+# CONFIG_RAID_ATTRS is not set
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+# CONFIG_SCSI_TGT is not set
+# CONFIG_SCSI_NETLINK is not set
+CONFIG_SCSI_PROC_FS=y
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=y
+# CONFIG_CHR_DEV_ST is not set
+# CONFIG_CHR_DEV_OSST is not set
+# CONFIG_BLK_DEV_SR is not set
+# CONFIG_CHR_DEV_SG is not set
+# CONFIG_CHR_DEV_SCH is not set
+# CONFIG_SCSI_MULTI_LUN is not set
+CONFIG_SCSI_CONSTANTS=y
+# CONFIG_SCSI_LOGGING is not set
+CONFIG_SCSI_SCAN_ASYNC=y
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=y
+# CONFIG_SCSI_FC_ATTRS is not set
+CONFIG_SCSI_ISCSI_ATTRS=y
+# CONFIG_SCSI_SAS_LIBSAS is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+# CONFIG_SCSI_LOWLEVEL is not set
+# CONFIG_SCSI_DH is not set
+# CONFIG_SCSI_OSD_INITIATOR is not set
+CONFIG_ATA=y
+# CONFIG_ATA_NONSTANDARD is not set
+CONFIG_ATA_VERBOSE_ERROR=y
+CONFIG_ATA_ACPI=y
+CONFIG_SATA_PMP=y
+CONFIG_SATA_AHCI=y
+# CONFIG_SATA_SIL24 is not set
+CONFIG_ATA_SFF=y
+# CONFIG_SATA_SVW is not set
+CONFIG_ATA_PIIX=y
+# CONFIG_SATA_MV is not set
+# CONFIG_SATA_NV is not set
+# CONFIG_PDC_ADMA is not set
+# CONFIG_SATA_QSTOR is not set
+# CONFIG_SATA_PROMISE is not set
+# CONFIG_SATA_SX4 is not set
+# CONFIG_SATA_SIL is not set
+# CONFIG_SATA_SIS is not set
+# CONFIG_SATA_ULI is not set
+# CONFIG_SATA_VIA is not set
+# CONFIG_SATA_VITESSE is not set
+# CONFIG_SATA_INIC162X is not set
+# CONFIG_PATA_ACPI is not set
+# CONFIG_PATA_ALI is not set
+# CONFIG_PATA_AMD is not set
+# CONFIG_PATA_ARTOP is not set
+# CONFIG_PATA_ATIIXP is not set
+# CONFIG_PATA_CMD640_PCI is not set
+# CONFIG_PATA_CMD64X is not set
+# CONFIG_PATA_CS5520 is not set
+# CONFIG_PATA_CS5530 is not set
+# CONFIG_PATA_CYPRESS is not set
+# CONFIG_PATA_EFAR is not set
+CONFIG_ATA_GENERIC=y
+# CONFIG_PATA_HPT366 is not set
+# CONFIG_PATA_HPT37X is not set
+# CONFIG_PATA_HPT3X2N is not set
+# CONFIG_PATA_HPT3X3 is not set
+# CONFIG_PATA_IT821X is not set
+# CONFIG_PATA_IT8213 is not set
+# CONFIG_PATA_JMICRON is not set
+# CONFIG_PATA_TRIFLEX is not set
+# CONFIG_PATA_MARVELL is not set
+# CONFIG_PATA_MPIIX is not set
+# CONFIG_PATA_OLDPIIX is not set
+# CONFIG_PATA_NETCELL is not set
+# CONFIG_PATA_NINJA32 is not set
+# CONFIG_PATA_NS87410 is not set
+# CONFIG_PATA_NS87415 is not set
+# CONFIG_PATA_OPTI is not set
+# CONFIG_PATA_OPTIDMA is not set
+# CONFIG_PATA_PDC_OLD is not set
+# CONFIG_PATA_RADISYS is not set
+# CONFIG_PATA_RDC is not set
+# CONFIG_PATA_RZ1000 is not set
+# CONFIG_PATA_SC1200 is not set
+# CONFIG_PATA_SERVERWORKS is not set
+# CONFIG_PATA_PDC2027X is not set
+# CONFIG_PATA_SIL680 is not set
+# CONFIG_PATA_SIS is not set
+# CONFIG_PATA_VIA is not set
+# CONFIG_PATA_WINBOND is not set
+CONFIG_PATA_PLATFORM=y
+# CONFIG_PATA_SCH is not set
+# CONFIG_MD is not set
+# CONFIG_FUSION is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+
+#
+# You can enable one or both FireWire driver stacks.
+#
+
+#
+# See the help texts for more information.
+#
+# CONFIG_FIREWIRE is not set
+# CONFIG_IEEE1394 is not set
+# CONFIG_I2O is not set
+# CONFIG_MACINTOSH_DRIVERS is not set
+CONFIG_NETDEVICES=y
+CONFIG_DUMMY=y
+# CONFIG_BONDING is not set
+# CONFIG_MACVLAN is not set
+# CONFIG_EQUALIZER is not set
+# CONFIG_TUN is not set
+# CONFIG_VETH is not set
+# CONFIG_NET_SB1000 is not set
+# CONFIG_ARCNET is not set
+CONFIG_PHYLIB=y
+
+#
+# MII PHY device drivers
+#
+CONFIG_MARVELL_PHY=y
+CONFIG_DAVICOM_PHY=y
+CONFIG_QSEMI_PHY=y
+CONFIG_LXT_PHY=y
+CONFIG_CICADA_PHY=y
+CONFIG_VITESSE_PHY=y
+CONFIG_SMSC_PHY=y
+CONFIG_BROADCOM_PHY=y
+CONFIG_ICPLUS_PHY=y
+# CONFIG_REALTEK_PHY is not set
+# CONFIG_NATIONAL_PHY is not set
+# CONFIG_STE10XP is not set
+# CONFIG_LSI_ET1011C_PHY is not set
+# CONFIG_FIXED_PHY is not set
+# CONFIG_MDIO_BITBANG is not set
+# CONFIG_NET_ETHERNET is not set
+CONFIG_MII=y
+CONFIG_NETDEV_1000=y
+# CONFIG_ACENIC is not set
+# CONFIG_DL2K is not set
+CONFIG_E1000=y
+CONFIG_E1000E=y
+# CONFIG_IP1000 is not set
+# CONFIG_IGB is not set
+# CONFIG_IGBVF is not set
+# CONFIG_NS83820 is not set
+# CONFIG_HAMACHI is not set
+# CONFIG_YELLOWFIN is not set
+# CONFIG_R8169 is not set
+# CONFIG_SIS190 is not set
+# CONFIG_SKGE is not set
+# CONFIG_SKY2 is not set
+# CONFIG_VIA_VELOCITY is not set
+CONFIG_TIGON3=y
+# CONFIG_BNX2 is not set
+# CONFIG_CNIC is not set
+# CONFIG_QLA3XXX is not set
+CONFIG_ATL1=y
+# CONFIG_ATL1E is not set
+# CONFIG_ATL1C is not set
+# CONFIG_JME is not set
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+CONFIG_WLAN_80211=y
+# CONFIG_LIBERTAS is not set
+# CONFIG_LIBERTAS_THINFIRM is not set
+# CONFIG_AIRO is not set
+# CONFIG_ATMEL is not set
+# CONFIG_AT76C50X_USB is not set
+# CONFIG_PRISM54 is not set
+# CONFIG_USB_ZD1201 is not set
+# CONFIG_USB_NET_RNDIS_WLAN is not set
+# CONFIG_RTL8180 is not set
+# CONFIG_RTL8187 is not set
+# CONFIG_ADM8211 is not set
+# CONFIG_MAC80211_HWSIM is not set
+# CONFIG_MWL8K is not set
+# CONFIG_P54_COMMON is not set
+# CONFIG_ATH_COMMON is not set
+# CONFIG_IPW2100 is not set
+# CONFIG_IPW2200 is not set
+CONFIG_IWLWIFI=m
+# CONFIG_IWLWIFI_LEDS is not set
+# CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT is not set
+# CONFIG_IWLWIFI_DEBUG is not set
+CONFIG_IWLAGN=m
+CONFIG_IWL4965=y
+# CONFIG_IWL5000 is not set
+# CONFIG_IWL3945 is not set
+# CONFIG_HOSTAP is not set
+# CONFIG_B43 is not set
+# CONFIG_B43LEGACY is not set
+# CONFIG_ZD1211RW is not set
+# CONFIG_RT2X00 is not set
+# CONFIG_HERMES is not set
+# CONFIG_WL12XX is not set
+
+#
+# WiMAX Wireless Broadband devices
+#
+
+#
+# Enable MMC support to see WiMAX SDIO drivers
+#
+# CONFIG_WIMAX_I2400M_USB is not set
+
+#
+# USB Network Adapters
+#
+# CONFIG_USB_CATC is not set
+# CONFIG_USB_KAWETH is not set
+# CONFIG_USB_PEGASUS is not set
+# CONFIG_USB_RTL8150 is not set
+# CONFIG_USB_USBNET is not set
+# CONFIG_USB_HSO is not set
+# CONFIG_WAN is not set
+# CONFIG_FDDI is not set
+# CONFIG_HIPPI is not set
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+# CONFIG_NET_FC is not set
+CONFIG_NETCONSOLE=y
+CONFIG_NETCONSOLE_DYNAMIC=y
+CONFIG_NETPOLL=y
+# CONFIG_NETPOLL_TRAP is not set
+CONFIG_NET_POLL_CONTROLLER=y
+CONFIG_VIRTIO_NET=y
+# CONFIG_ISDN is not set
+# CONFIG_PHONE is not set
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+# CONFIG_INPUT_FF_MEMLESS is not set
+CONFIG_INPUT_POLLDEV=y
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+# CONFIG_INPUT_JOYDEV is not set
+CONFIG_INPUT_EVDEV=y
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+# CONFIG_KEYBOARD_LKKBD is not set
+# CONFIG_KEYBOARD_LM8323 is not set
+CONFIG_KEYBOARD_NEWTON=y
+# CONFIG_KEYBOARD_STOWAWAY is not set
+# CONFIG_KEYBOARD_SUNKBD is not set
+CONFIG_KEYBOARD_XTKBD=y
+CONFIG_INPUT_MOUSE=y
+CONFIG_MOUSE_PS2=y
+CONFIG_MOUSE_PS2_ALPS=y
+CONFIG_MOUSE_PS2_LOGIPS2PP=y
+CONFIG_MOUSE_PS2_SYNAPTICS=y
+CONFIG_MOUSE_PS2_LIFEBOOK=y
+CONFIG_MOUSE_PS2_TRACKPOINT=y
+# CONFIG_MOUSE_PS2_ELANTECH is not set
+# CONFIG_MOUSE_PS2_TOUCHKIT is not set
+# CONFIG_MOUSE_SERIAL is not set
+# CONFIG_MOUSE_APPLETOUCH is not set
+# CONFIG_MOUSE_BCM5974 is not set
+# CONFIG_MOUSE_VSXXXAA is not set
+# CONFIG_MOUSE_SYNAPTICS_I2C is not set
+# CONFIG_INPUT_JOYSTICK is not set
+# CONFIG_INPUT_TABLET is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+CONFIG_INPUT_MISC=y
+# CONFIG_INPUT_PCSPKR is not set
+# CONFIG_INPUT_APANEL is not set
+# CONFIG_INPUT_ATLAS_BTNS is not set
+# CONFIG_INPUT_ATI_REMOTE is not set
+# CONFIG_INPUT_ATI_REMOTE2 is not set
+# CONFIG_INPUT_KEYSPAN_REMOTE is not set
+# CONFIG_INPUT_POWERMATE is not set
+# CONFIG_INPUT_YEALINK is not set
+# CONFIG_INPUT_CM109 is not set
+CONFIG_INPUT_UINPUT=y
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+# CONFIG_SERIO_SERPORT is not set
+# CONFIG_SERIO_CT82C710 is not set
+# CONFIG_SERIO_PCIPS2 is not set
+CONFIG_SERIO_LIBPS2=y
+# CONFIG_SERIO_RAW is not set
+# CONFIG_GAMEPORT is not set
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_CONSOLE_TRANSLATIONS=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_DEVKMEM=y
+# CONFIG_SERIAL_NONSTANDARD is not set
+CONFIG_NOZOMI=y
+
+#
+# Serial drivers
+#
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_FIX_EARLYCON_MEM=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_8250_PNP=y
+CONFIG_SERIAL_8250_NR_UARTS=16
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+CONFIG_SERIAL_8250_EXTENDED=y
+CONFIG_SERIAL_8250_MANY_PORTS=y
+CONFIG_SERIAL_8250_SHARE_IRQ=y
+# CONFIG_SERIAL_8250_DETECT_IRQ is not set
+CONFIG_SERIAL_8250_RSA=y
+
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_CONSOLE_POLL=y
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=y
+# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+CONFIG_HVC_DRIVER=y
+CONFIG_VIRTIO_CONSOLE=y
+# CONFIG_IPMI_HANDLER is not set
+CONFIG_HW_RANDOM=y
+# CONFIG_HW_RANDOM_TIMERIOMEM is not set
+CONFIG_HW_RANDOM_INTEL=y
+# CONFIG_HW_RANDOM_AMD is not set
+CONFIG_HW_RANDOM_VIA=y
+CONFIG_HW_RANDOM_VIRTIO=y
+CONFIG_NVRAM=y
+# CONFIG_R3964 is not set
+# CONFIG_APPLICOM is not set
+# CONFIG_MWAVE is not set
+# CONFIG_PC8736x_GPIO is not set
+# CONFIG_RAW_DRIVER is not set
+CONFIG_HPET=y
+CONFIG_HPET_MMAP=y
+CONFIG_HANGCHECK_TIMER=y
+# CONFIG_TCG_TPM is not set
+# CONFIG_TELCLOCK is not set
+CONFIG_DEVPORT=y
+CONFIG_UMMUNOTIFY=y
+CONFIG_I2C=y
+CONFIG_I2C_BOARDINFO=y
+CONFIG_I2C_COMPAT=y
+# CONFIG_I2C_CHARDEV is not set
+CONFIG_I2C_HELPER_AUTO=y
+CONFIG_I2C_ALGOBIT=m
+
+#
+# I2C Hardware Bus support
+#
+
+#
+# PC SMBus host controller drivers
+#
+# CONFIG_I2C_ALI1535 is not set
+# CONFIG_I2C_ALI1563 is not set
+# CONFIG_I2C_ALI15X3 is not set
+# CONFIG_I2C_AMD756 is not set
+# CONFIG_I2C_AMD8111 is not set
+# CONFIG_I2C_I801 is not set
+# CONFIG_I2C_ISCH is not set
+# CONFIG_I2C_PIIX4 is not set
+# CONFIG_I2C_NFORCE2 is not set
+# CONFIG_I2C_SIS5595 is not set
+# CONFIG_I2C_SIS630 is not set
+# CONFIG_I2C_SIS96X is not set
+# CONFIG_I2C_VIA is not set
+# CONFIG_I2C_VIAPRO is not set
+
+#
+# I2C system bus drivers (mostly embedded / system-on-chip)
+#
+# CONFIG_I2C_OCORES is not set
+# CONFIG_I2C_SIMTEC is not set
+
+#
+# External I2C/SMBus adapter drivers
+#
+# CONFIG_I2C_PARPORT_LIGHT is not set
+# CONFIG_I2C_TAOS_EVM is not set
+# CONFIG_I2C_TINY_USB is not set
+
+#
+# Graphics adapter I2C/DDC channel drivers
+#
+# CONFIG_I2C_VOODOO3 is not set
+
+#
+# Other I2C/SMBus bus drivers
+#
+# CONFIG_I2C_PCA_PLATFORM is not set
+# CONFIG_I2C_STUB is not set
+
+#
+# Miscellaneous I2C Chip support
+#
+# CONFIG_DS1682 is not set
+# CONFIG_SENSORS_PCF8574 is not set
+# CONFIG_PCF8575 is not set
+# CONFIG_SENSORS_PCA9539 is not set
+# CONFIG_SENSORS_TSL2550 is not set
+# CONFIG_I2C_DEBUG_CORE is not set
+# CONFIG_I2C_DEBUG_ALGO is not set
+# CONFIG_I2C_DEBUG_BUS is not set
+# CONFIG_I2C_DEBUG_CHIP is not set
+# CONFIG_SPI is not set
+
+#
+# PPS support
+#
+# CONFIG_PPS is not set
+CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
+# CONFIG_GPIOLIB is not set
+# CONFIG_W1 is not set
+CONFIG_POWER_SUPPLY=y
+# CONFIG_POWER_SUPPLY_DEBUG is not set
+# CONFIG_PDA_POWER is not set
+# CONFIG_BATTERY_DS2760 is not set
+# CONFIG_BATTERY_DS2782 is not set
+# CONFIG_BATTERY_BQ27x00 is not set
+# CONFIG_BATTERY_MAX17040 is not set
+CONFIG_HWMON=y
+# CONFIG_HWMON_VID is not set
+# CONFIG_SENSORS_ABITUGURU is not set
+# CONFIG_SENSORS_ABITUGURU3 is not set
+# CONFIG_SENSORS_AD7414 is not set
+# CONFIG_SENSORS_AD7418 is not set
+# CONFIG_SENSORS_ADM1021 is not set
+# CONFIG_SENSORS_ADM1025 is not set
+# CONFIG_SENSORS_ADM1026 is not set
+# CONFIG_SENSORS_ADM1029 is not set
+# CONFIG_SENSORS_ADM1031 is not set
+# CONFIG_SENSORS_ADM9240 is not set
+# CONFIG_SENSORS_ADT7462 is not set
+# CONFIG_SENSORS_ADT7470 is not set
+# CONFIG_SENSORS_ADT7473 is not set
+# CONFIG_SENSORS_ADT7475 is not set
+# CONFIG_SENSORS_K8TEMP is not set
+# CONFIG_SENSORS_ASB100 is not set
+# CONFIG_SENSORS_ATK0110 is not set
+# CONFIG_SENSORS_ATXP1 is not set
+# CONFIG_SENSORS_DS1621 is not set
+# CONFIG_SENSORS_I5K_AMB is not set
+# CONFIG_SENSORS_F71805F is not set
+# CONFIG_SENSORS_F71882FG is not set
+# CONFIG_SENSORS_F75375S is not set
+# CONFIG_SENSORS_FSCHER is not set
+# CONFIG_SENSORS_FSCPOS is not set
+# CONFIG_SENSORS_FSCHMD is not set
+# CONFIG_SENSORS_G760A is not set
+# CONFIG_SENSORS_GL518SM is not set
+# CONFIG_SENSORS_GL520SM is not set
+# CONFIG_SENSORS_CORETEMP is not set
+# CONFIG_SENSORS_IT87 is not set
+# CONFIG_SENSORS_LM63 is not set
+# CONFIG_SENSORS_LM75 is not set
+# CONFIG_SENSORS_LM77 is not set
+# CONFIG_SENSORS_LM78 is not set
+# CONFIG_SENSORS_LM80 is not set
+# CONFIG_SENSORS_LM83 is not set
+# CONFIG_SENSORS_LM85 is not set
+# CONFIG_SENSORS_LM87 is not set
+# CONFIG_SENSORS_LM90 is not set
+# CONFIG_SENSORS_LM92 is not set
+# CONFIG_SENSORS_LM93 is not set
+# CONFIG_SENSORS_LTC4215 is not set
+# CONFIG_SENSORS_LTC4245 is not set
+# CONFIG_SENSORS_LM95241 is not set
+# CONFIG_SENSORS_MAX1619 is not set
+# CONFIG_SENSORS_MAX6650 is not set
+# CONFIG_SENSORS_PC87360 is not set
+# CONFIG_SENSORS_PC87427 is not set
+# CONFIG_SENSORS_PCF8591 is not set
+# CONFIG_SENSORS_SIS5595 is not set
+# CONFIG_SENSORS_DME1737 is not set
+# CONFIG_SENSORS_SMSC47M1 is not set
+# CONFIG_SENSORS_SMSC47M192 is not set
+# CONFIG_SENSORS_SMSC47B397 is not set
+# CONFIG_SENSORS_ADS7828 is not set
+# CONFIG_SENSORS_THMC50 is not set
+# CONFIG_SENSORS_TMP401 is not set
+# CONFIG_SENSORS_TMP421 is not set
+# CONFIG_SENSORS_VIA686A is not set
+# CONFIG_SENSORS_VT1211 is not set
+# CONFIG_SENSORS_VT8231 is not set
+# CONFIG_SENSORS_W83781D is not set
+# CONFIG_SENSORS_W83791D is not set
+# CONFIG_SENSORS_W83792D is not set
+# CONFIG_SENSORS_W83793 is not set
+# CONFIG_SENSORS_W83L785TS is not set
+# CONFIG_SENSORS_W83L786NG is not set
+# CONFIG_SENSORS_W83627HF is not set
+# CONFIG_SENSORS_W83627EHF is not set
+# CONFIG_SENSORS_HDAPS is not set
+# CONFIG_SENSORS_LIS3LV02D is not set
+# CONFIG_SENSORS_APPLESMC is not set
+# CONFIG_HWMON_DEBUG_CHIP is not set
+CONFIG_THERMAL=y
+# CONFIG_THERMAL_HWMON is not set
+# CONFIG_WATCHDOG is not set
+CONFIG_SSB_POSSIBLE=y
+
+#
+# Sonics Silicon Backplane
+#
+# CONFIG_SSB is not set
+
+#
+# Multifunction device drivers
+#
+# CONFIG_MFD_CORE is not set
+# CONFIG_MFD_SM501 is not set
+# CONFIG_HTC_PASIC3 is not set
+# CONFIG_TWL4030_CORE is not set
+# CONFIG_MFD_TMIO is not set
+# CONFIG_PMIC_DA903X is not set
+# CONFIG_MFD_WM8400 is not set
+# CONFIG_MFD_WM831X is not set
+# CONFIG_MFD_WM8350_I2C is not set
+# CONFIG_MFD_PCF50633 is not set
+# CONFIG_MFD_MC13783 is not set
+# CONFIG_AB3100_CORE is not set
+# CONFIG_REGULATOR is not set
+# CONFIG_MEDIA_SUPPORT is not set
+
+#
+# Graphics support
+#
+CONFIG_AGP=y
+CONFIG_AGP_AMD64=y
+CONFIG_AGP_INTEL=y
+# CONFIG_AGP_SIS is not set
+# CONFIG_AGP_VIA is not set
+CONFIG_VGA_ARB=y
+CONFIG_DRM=m
+# CONFIG_DRM_TDFX is not set
+# CONFIG_DRM_R128 is not set
+# CONFIG_DRM_RADEON is not set
+CONFIG_DRM_I810=m
+# CONFIG_DRM_I830 is not set
+CONFIG_DRM_I915=m
+CONFIG_DRM_I915_KMS=y
+# CONFIG_DRM_MGA is not set
+# CONFIG_DRM_SIS is not set
+# CONFIG_DRM_VIA is not set
+# CONFIG_DRM_SAVAGE is not set
+# CONFIG_VGASTATE is not set
+CONFIG_VIDEO_OUTPUT_CONTROL=y
+CONFIG_FB=m
+# CONFIG_FIRMWARE_EDID is not set
+CONFIG_FB_DDC=m
+# CONFIG_FB_BOOT_VESA_SUPPORT is not set
+CONFIG_FB_CFB_FILLRECT=m
+CONFIG_FB_CFB_COPYAREA=m
+CONFIG_FB_CFB_IMAGEBLIT=m
+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
+# CONFIG_FB_SYS_FILLRECT is not set
+# CONFIG_FB_SYS_COPYAREA is not set
+# CONFIG_FB_SYS_IMAGEBLIT is not set
+# CONFIG_FB_FOREIGN_ENDIAN is not set
+# CONFIG_FB_SYS_FOPS is not set
+# CONFIG_FB_SVGALIB is not set
+# CONFIG_FB_MACMODES is not set
+# CONFIG_FB_BACKLIGHT is not set
+CONFIG_FB_MODE_HELPERS=y
+# CONFIG_FB_TILEBLITTING is not set
+
+#
+# Frame buffer hardware drivers
+#
+# CONFIG_FB_CIRRUS is not set
+# CONFIG_FB_PM2 is not set
+# CONFIG_FB_CYBER2000 is not set
+# CONFIG_FB_ARC is not set
+# CONFIG_FB_VGA16 is not set
+# CONFIG_FB_N411 is not set
+# CONFIG_FB_HGA is not set
+# CONFIG_FB_S1D13XXX is not set
+# CONFIG_FB_NVIDIA is not set
+# CONFIG_FB_RIVA is not set
+# CONFIG_FB_LE80578 is not set
+CONFIG_FB_INTEL=m
+CONFIG_FB_INTEL_DEBUG=y
+CONFIG_FB_INTEL_I2C=y
+# CONFIG_FB_MATROX is not set
+# CONFIG_FB_RADEON is not set
+# CONFIG_FB_ATY128 is not set
+# CONFIG_FB_ATY is not set
+# CONFIG_FB_S3 is not set
+# CONFIG_FB_SAVAGE is not set
+# CONFIG_FB_SIS is not set
+# CONFIG_FB_VIA is not set
+# CONFIG_FB_NEOMAGIC is not set
+# CONFIG_FB_KYRO is not set
+# CONFIG_FB_3DFX is not set
+# CONFIG_FB_VOODOO1 is not set
+# CONFIG_FB_VT8623 is not set
+# CONFIG_FB_TRIDENT is not set
+# CONFIG_FB_ARK is not set
+# CONFIG_FB_PM3 is not set
+# CONFIG_FB_CARMINE is not set
+# CONFIG_FB_GEODE is not set
+# CONFIG_FB_VIRTUAL is not set
+# CONFIG_FB_METRONOME is not set
+# CONFIG_FB_MB862XX is not set
+# CONFIG_FB_BROADSHEET is not set
+CONFIG_BACKLIGHT_LCD_SUPPORT=y
+CONFIG_LCD_CLASS_DEVICE=y
+# CONFIG_LCD_ILI9320 is not set
+# CONFIG_LCD_PLATFORM is not set
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
+CONFIG_BACKLIGHT_GENERIC=y
+# CONFIG_BACKLIGHT_PROGEAR is not set
+# CONFIG_BACKLIGHT_MBP_NVIDIA is not set
+# CONFIG_BACKLIGHT_SAHARA is not set
+
+#
+# Display device support
+#
+CONFIG_DISPLAY_SUPPORT=m
+
+#
+# Display hardware drivers
+#
+
+#
+# Console display driver support
+#
+CONFIG_VGA_CONSOLE=y
+CONFIG_VGACON_SOFT_SCROLLBACK=y
+CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=1024
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE=m
+CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
+# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
+# CONFIG_FONTS is not set
+CONFIG_FONT_8x8=y
+CONFIG_FONT_8x16=y
+# CONFIG_LOGO is not set
+CONFIG_SOUND=m
+# CONFIG_SOUND_OSS_CORE is not set
+CONFIG_SND=m
+CONFIG_SND_TIMER=m
+CONFIG_SND_PCM=m
+CONFIG_SND_HWDEP=m
+CONFIG_SND_JACK=y
+CONFIG_SND_SEQUENCER=m
+CONFIG_SND_SEQ_DUMMY=m
+# CONFIG_SND_MIXER_OSS is not set
+# CONFIG_SND_PCM_OSS is not set
+# CONFIG_SND_SEQUENCER_OSS is not set
+CONFIG_SND_HRTIMER=m
+CONFIG_SND_SEQ_HRTIMER_DEFAULT=y
+# CONFIG_SND_DYNAMIC_MINORS is not set
+# CONFIG_SND_SUPPORT_OLD_API is not set
+CONFIG_SND_VERBOSE_PROCFS=y
+CONFIG_SND_VERBOSE_PRINTK=y
+CONFIG_SND_DEBUG=y
+CONFIG_SND_DEBUG_VERBOSE=y
+CONFIG_SND_PCM_XRUN_DEBUG=y
+CONFIG_SND_VMASTER=y
+CONFIG_SND_DMA_SGBUF=y
+# CONFIG_SND_RAWMIDI_SEQ is not set
+# CONFIG_SND_OPL3_LIB_SEQ is not set
+# CONFIG_SND_OPL4_LIB_SEQ is not set
+# CONFIG_SND_SBAWE_SEQ is not set
+# CONFIG_SND_EMU10K1_SEQ is not set
+CONFIG_SND_DRIVERS=y
+CONFIG_SND_PCSP=m
+# CONFIG_SND_DUMMY is not set
+# CONFIG_SND_VIRMIDI is not set
+# CONFIG_SND_MTPAV is not set
+# CONFIG_SND_SERIAL_U16550 is not set
+# CONFIG_SND_MPU401 is not set
+CONFIG_SND_PCI=y
+# CONFIG_SND_AD1889 is not set
+# CONFIG_SND_ALS300 is not set
+# CONFIG_SND_ALS4000 is not set
+# CONFIG_SND_ALI5451 is not set
+# CONFIG_SND_ATIIXP is not set
+# CONFIG_SND_ATIIXP_MODEM is not set
+# CONFIG_SND_AU8810 is not set
+# CONFIG_SND_AU8820 is not set
+# CONFIG_SND_AU8830 is not set
+# CONFIG_SND_AW2 is not set
+# CONFIG_SND_AZT3328 is not set
+# CONFIG_SND_BT87X is not set
+# CONFIG_SND_CA0106 is not set
+# CONFIG_SND_CMIPCI is not set
+# CONFIG_SND_OXYGEN is not set
+# CONFIG_SND_CS4281 is not set
+# CONFIG_SND_CS46XX is not set
+# CONFIG_SND_CS5530 is not set
+# CONFIG_SND_CTXFI is not set
+# CONFIG_SND_DARLA20 is not set
+# CONFIG_SND_GINA20 is not set
+# CONFIG_SND_LAYLA20 is not set
+# CONFIG_SND_DARLA24 is not set
+# CONFIG_SND_GINA24 is not set
+# CONFIG_SND_LAYLA24 is not set
+# CONFIG_SND_MONA is not set
+# CONFIG_SND_MIA is not set
+# CONFIG_SND_ECHO3G is not set
+# CONFIG_SND_INDIGO is not set
+# CONFIG_SND_INDIGOIO is not set
+# CONFIG_SND_INDIGODJ is not set
+# CONFIG_SND_INDIGOIOX is not set
+# CONFIG_SND_INDIGODJX is not set
+# CONFIG_SND_EMU10K1 is not set
+# CONFIG_SND_EMU10K1X is not set
+# CONFIG_SND_ENS1370 is not set
+# CONFIG_SND_ENS1371 is not set
+# CONFIG_SND_ES1938 is not set
+# CONFIG_SND_ES1968 is not set
+# CONFIG_SND_FM801 is not set
+CONFIG_SND_HDA_INTEL=m
+CONFIG_SND_HDA_HWDEP=y
+CONFIG_SND_HDA_RECONFIG=y
+CONFIG_SND_HDA_INPUT_BEEP=y
+CONFIG_SND_HDA_INPUT_JACK=y
+CONFIG_SND_HDA_PATCH_LOADER=y
+CONFIG_SND_HDA_CODEC_REALTEK=y
+CONFIG_SND_HDA_CODEC_ANALOG=y
+CONFIG_SND_HDA_CODEC_SIGMATEL=y
+CONFIG_SND_HDA_CODEC_VIA=y
+CONFIG_SND_HDA_CODEC_ATIHDMI=y
+CONFIG_SND_HDA_CODEC_NVHDMI=y
+CONFIG_SND_HDA_CODEC_INTELHDMI=y
+CONFIG_SND_HDA_ELD=y
+CONFIG_SND_HDA_CODEC_CIRRUS=y
+CONFIG_SND_HDA_CODEC_CONEXANT=y
+CONFIG_SND_HDA_CODEC_CA0110=y
+CONFIG_SND_HDA_CODEC_CMEDIA=y
+CONFIG_SND_HDA_CODEC_SI3054=y
+CONFIG_SND_HDA_GENERIC=y
+CONFIG_SND_HDA_POWER_SAVE=y
+CONFIG_SND_HDA_POWER_SAVE_DEFAULT=0
+# CONFIG_SND_HDSP is not set
+# CONFIG_SND_HDSPM is not set
+# CONFIG_SND_HIFIER is not set
+# CONFIG_SND_ICE1712 is not set
+# CONFIG_SND_ICE1724 is not set
+# CONFIG_SND_INTEL8X0 is not set
+# CONFIG_SND_INTEL8X0M is not set
+# CONFIG_SND_KORG1212 is not set
+# CONFIG_SND_LX6464ES is not set
+# CONFIG_SND_MAESTRO3 is not set
+# CONFIG_SND_MIXART is not set
+# CONFIG_SND_NM256 is not set
+# CONFIG_SND_PCXHR is not set
+# CONFIG_SND_RIPTIDE is not set
+# CONFIG_SND_RME32 is not set
+# CONFIG_SND_RME96 is not set
+# CONFIG_SND_RME9652 is not set
+# CONFIG_SND_SONICVIBES is not set
+# CONFIG_SND_TRIDENT is not set
+# CONFIG_SND_VIA82XX is not set
+# CONFIG_SND_VIA82XX_MODEM is not set
+# CONFIG_SND_VIRTUOSO is not set
+# CONFIG_SND_VX222 is not set
+# CONFIG_SND_YMFPCI is not set
+# CONFIG_SND_USB is not set
+# CONFIG_SND_SOC is not set
+# CONFIG_SOUND_PRIME is not set
+CONFIG_HID_SUPPORT=y
+CONFIG_HID=y
+# CONFIG_HIDRAW is not set
+
+#
+# USB Input Devices
+#
+CONFIG_USB_HID=y
+# CONFIG_HID_PID is not set
+CONFIG_USB_HIDDEV=y
+
+#
+# Special HID drivers
+#
+# CONFIG_HID_A4TECH is not set
+# CONFIG_HID_APPLE is not set
+# CONFIG_HID_BELKIN is not set
+# CONFIG_HID_CHERRY is not set
+# CONFIG_HID_CHICONY is not set
+# CONFIG_HID_CYPRESS is not set
+# CONFIG_HID_DRAGONRISE is not set
+# CONFIG_HID_EZKEY is not set
+# CONFIG_HID_KYE is not set
+# CONFIG_HID_GYRATION is not set
+# CONFIG_HID_TWINHAN is not set
+# CONFIG_HID_KENSINGTON is not set
+# CONFIG_HID_LOGITECH is not set
+# CONFIG_HID_MICROSOFT is not set
+# CONFIG_HID_MONTEREY is not set
+# CONFIG_HID_NTRIG is not set
+# CONFIG_HID_PANTHERLORD is not set
+# CONFIG_HID_PETALYNX is not set
+# CONFIG_HID_SAMSUNG is not set
+# CONFIG_HID_SONY is not set
+# CONFIG_HID_SUNPLUS is not set
+# CONFIG_HID_GREENASIA is not set
+# CONFIG_HID_SMARTJOYPLUS is not set
+# CONFIG_HID_TOPSEED is not set
+# CONFIG_HID_THRUSTMASTER is not set
+# CONFIG_HID_ZEROPLUS is not set
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+CONFIG_USB_DEBUG=y
+CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
+
+#
+# Miscellaneous USB options
+#
+CONFIG_USB_DEVICEFS=y
+# CONFIG_USB_DEVICE_CLASS is not set
+CONFIG_USB_DYNAMIC_MINORS=y
+CONFIG_USB_SUSPEND=y
+# CONFIG_USB_OTG is not set
+# CONFIG_USB_OTG_WHITELIST is not set
+# CONFIG_USB_OTG_BLACKLIST_HUB is not set
+# CONFIG_USB_MON is not set
+# CONFIG_USB_WUSB is not set
+# CONFIG_USB_WUSB_CBAF is not set
+
+#
+# USB Host Controller Drivers
+#
+# CONFIG_USB_C67X00_HCD is not set
+# CONFIG_USB_XHCI_HCD is not set
+CONFIG_USB_EHCI_HCD=y
+CONFIG_USB_EHCI_ROOT_HUB_TT=y
+# CONFIG_USB_EHCI_TT_NEWSCHED is not set
+# CONFIG_USB_OXU210HP_HCD is not set
+# CONFIG_USB_ISP116X_HCD is not set
+# CONFIG_USB_ISP1760_HCD is not set
+# CONFIG_USB_ISP1362_HCD is not set
+# CONFIG_USB_OHCI_HCD is not set
+CONFIG_USB_UHCI_HCD=y
+# CONFIG_USB_SL811_HCD is not set
+# CONFIG_USB_R8A66597_HCD is not set
+# CONFIG_USB_WHCI_HCD is not set
+# CONFIG_USB_HWA_HCD is not set
+
+#
+# USB Device Class drivers
+#
+# CONFIG_USB_ACM is not set
+# CONFIG_USB_PRINTER is not set
+# CONFIG_USB_WDM is not set
+# CONFIG_USB_TMC is not set
+
+#
+# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
+#
+
+#
+# also be needed; see USB_STORAGE Help for more info
+#
+# CONFIG_USB_STORAGE is not set
+CONFIG_USB_LIBUSUAL=y
+
+#
+# USB Imaging devices
+#
+# CONFIG_USB_MDC800 is not set
+# CONFIG_USB_MICROTEK is not set
+
+#
+# USB port drivers
+#
+# CONFIG_USB_SERIAL is not set
+
+#
+# USB Miscellaneous drivers
+#
+# CONFIG_USB_EMI62 is not set
+# CONFIG_USB_EMI26 is not set
+# CONFIG_USB_ADUTUX is not set
+# CONFIG_USB_SEVSEG is not set
+# CONFIG_USB_RIO500 is not set
+# CONFIG_USB_LEGOTOWER is not set
+# CONFIG_USB_LCD is not set
+# CONFIG_USB_BERRY_CHARGE is not set
+# CONFIG_USB_LED is not set
+# CONFIG_USB_CYPRESS_CY7C63 is not set
+# CONFIG_USB_CYTHERM is not set
+# CONFIG_USB_IDMOUSE is not set
+# CONFIG_USB_FTDI_ELAN is not set
+# CONFIG_USB_APPLEDISPLAY is not set
+# CONFIG_USB_SISUSBVGA is not set
+# CONFIG_USB_LD is not set
+# CONFIG_USB_TRANCEVIBRATOR is not set
+# CONFIG_USB_IOWARRIOR is not set
+# CONFIG_USB_TEST is not set
+# CONFIG_USB_ISIGHTFW is not set
+# CONFIG_USB_VST is not set
+# CONFIG_USB_GADGET is not set
+
+#
+# OTG and related infrastructure
+#
+# CONFIG_NOP_USB_XCEIV is not set
+# CONFIG_UWB is not set
+# CONFIG_MMC is not set
+# CONFIG_MEMSTICK is not set
+CONFIG_NEW_LEDS=y
+CONFIG_LEDS_CLASS=y
+
+#
+# LED drivers
+#
+# CONFIG_LEDS_ALIX2 is not set
+# CONFIG_LEDS_PCA9532 is not set
+# CONFIG_LEDS_LP3944 is not set
+# CONFIG_LEDS_CLEVO_MAIL is not set
+# CONFIG_LEDS_PCA955X is not set
+# CONFIG_LEDS_BD2802 is not set
+
+#
+# LED Triggers
+#
+CONFIG_LEDS_TRIGGERS=y
+# CONFIG_LEDS_TRIGGER_TIMER is not set
+# CONFIG_LEDS_TRIGGER_HEARTBEAT is not set
+# CONFIG_LEDS_TRIGGER_BACKLIGHT is not set
+# CONFIG_LEDS_TRIGGER_DEFAULT_ON is not set
+
+#
+# iptables trigger is under Netfilter config (LED target)
+#
+# CONFIG_ACCESSIBILITY is not set
+# CONFIG_INFINIBAND is not set
+# CONFIG_EDAC is not set
+CONFIG_RTC_LIB=y
+CONFIG_RTC_CLASS=y
+CONFIG_RTC_HCTOSYS=y
+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+# CONFIG_RTC_DEBUG is not set
+
+#
+# RTC interfaces
+#
+CONFIG_RTC_INTF_SYSFS=y
+CONFIG_RTC_INTF_PROC=y
+CONFIG_RTC_INTF_DEV=y
+# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
+# CONFIG_RTC_DRV_TEST is not set
+
+#
+# I2C RTC drivers
+#
+# CONFIG_RTC_DRV_DS1307 is not set
+# CONFIG_RTC_DRV_DS1374 is not set
+# CONFIG_RTC_DRV_DS1672 is not set
+# CONFIG_RTC_DRV_MAX6900 is not set
+# CONFIG_RTC_DRV_RS5C372 is not set
+# CONFIG_RTC_DRV_ISL1208 is not set
+# CONFIG_RTC_DRV_X1205 is not set
+# CONFIG_RTC_DRV_PCF8563 is not set
+# CONFIG_RTC_DRV_PCF8583 is not set
+# CONFIG_RTC_DRV_M41T80 is not set
+# CONFIG_RTC_DRV_S35390A is not set
+# CONFIG_RTC_DRV_FM3130 is not set
+# CONFIG_RTC_DRV_RX8581 is not set
+# CONFIG_RTC_DRV_RX8025 is not set
+
+#
+# SPI RTC drivers
+#
+
+#
+# Platform RTC drivers
+#
+CONFIG_RTC_DRV_CMOS=y
+# CONFIG_RTC_DRV_DS1286 is not set
+# CONFIG_RTC_DRV_DS1511 is not set
+# CONFIG_RTC_DRV_DS1553 is not set
+# CONFIG_RTC_DRV_DS1742 is not set
+# CONFIG_RTC_DRV_STK17TA8 is not set
+# CONFIG_RTC_DRV_M48T86 is not set
+# CONFIG_RTC_DRV_M48T35 is not set
+# CONFIG_RTC_DRV_M48T59 is not set
+# CONFIG_RTC_DRV_MSM6242 is not set
+# CONFIG_RTC_DRV_BQ4802 is not set
+# CONFIG_RTC_DRV_RP5C01 is not set
+# CONFIG_RTC_DRV_V3020 is not set
+
+#
+# on-CPU RTC drivers
+#
+CONFIG_DMADEVICES=y
+
+#
+# DMA Devices
+#
+CONFIG_INTEL_IOATDMA=y
+CONFIG_DMA_ENGINE=y
+
+#
+# DMA Clients
+#
+# CONFIG_NET_DMA is not set
+# CONFIG_ASYNC_TX_DMA is not set
+# CONFIG_DMATEST is not set
+CONFIG_DCA=y
+# CONFIG_AUXDISPLAY is not set
+# CONFIG_UIO is not set
+
+#
+# TI VLYNQ
+#
+# CONFIG_STAGING is not set
+CONFIG_X86_PLATFORM_DEVICES=y
+# CONFIG_ACER_WMI is not set
+# CONFIG_ASUS_LAPTOP is not set
+# CONFIG_FUJITSU_LAPTOP is not set
+# CONFIG_MSI_LAPTOP is not set
+# CONFIG_PANASONIC_LAPTOP is not set
+# CONFIG_COMPAL_LAPTOP is not set
+# CONFIG_SONY_LAPTOP is not set
+# CONFIG_THINKPAD_ACPI is not set
+# CONFIG_INTEL_MENLOW is not set
+CONFIG_EEEPC_LAPTOP=y
+# CONFIG_ACPI_WMI is not set
+# CONFIG_ACPI_ASUS is not set
+# CONFIG_ACPI_TOSHIBA is not set
+# CONFIG_SAMSUNG_BACKLIGHT is not set
+
+#
+# Firmware Drivers
+#
+# CONFIG_EDD is not set
+CONFIG_FIRMWARE_MEMMAP=y
+# CONFIG_DELL_RBU is not set
+# CONFIG_DCDBAS is not set
+CONFIG_DMIID=y
+# CONFIG_ISCSI_IBFT_FIND is not set
+
+#
+# File systems
+#
+# CONFIG_EXT2_FS is not set
+CONFIG_EXT3_FS=y
+# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_EXT3_FS_SECURITY=y
+CONFIG_EXT4_FS=y
+# CONFIG_EXT4DEV_COMPAT is not set
+CONFIG_EXT4_FS_XATTR=y
+# CONFIG_EXT4_FS_POSIX_ACL is not set
+# CONFIG_EXT4_FS_SECURITY is not set
+# CONFIG_EXT4_DEBUG is not set
+CONFIG_JBD=y
+# CONFIG_JBD_DEBUG is not set
+CONFIG_JBD2=y
+# CONFIG_JBD2_DEBUG is not set
+CONFIG_FS_MBCACHE=y
+# CONFIG_REISERFS_FS is not set
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=y
+# CONFIG_XFS_FS is not set
+# CONFIG_GFS2_FS is not set
+# CONFIG_OCFS2_FS is not set
+CONFIG_BTRFS_FS=y
+# CONFIG_BTRFS_FS_POSIX_ACL is not set
+# CONFIG_NILFS2_FS is not set
+CONFIG_FILE_LOCKING=y
+CONFIG_FSNOTIFY=y
+CONFIG_DNOTIFY=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+# CONFIG_QUOTA is not set
+# CONFIG_AUTOFS_FS is not set
+# CONFIG_AUTOFS4_FS is not set
+# CONFIG_FUSE_FS is not set
+
+#
+# Caches
+#
+# CONFIG_FSCACHE is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=y
+# CONFIG_JOLIET is not set
+# CONFIG_ZISOFS is not set
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=m
+# CONFIG_MSDOS_FS is not set
+CONFIG_VFAT_FS=m
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_VMCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+# CONFIG_TMPFS_POSIX_ACL is not set
+CONFIG_HUGETLBFS=y
+CONFIG_HUGETLB_PAGE=y
+CONFIG_CONFIGFS_FS=y
+CONFIG_MISC_FILESYSTEMS=y
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+CONFIG_CRAMFS=y
+# CONFIG_SQUASHFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_OMFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+# CONFIG_ROMFS_FS is not set
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_NFS_V3_ACL=y
+# CONFIG_NFS_V4 is not set
+CONFIG_ROOT_NFS=y
+CONFIG_NFSD=y
+CONFIG_NFSD_V3=y
+# CONFIG_NFSD_V3_ACL is not set
+# CONFIG_NFSD_V4 is not set
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_EXPORTFS=y
+CONFIG_NFS_ACL_SUPPORT=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+# CONFIG_RPCSEC_GSS_KRB5 is not set
+# CONFIG_RPCSEC_GSS_SPKM3 is not set
+# CONFIG_SMB_FS is not set
+# CONFIG_CIFS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+# CONFIG_PARTITION_ADVANCED is not set
+CONFIG_MSDOS_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+# CONFIG_NLS_CODEPAGE_437 is not set
+# CONFIG_NLS_CODEPAGE_737 is not set
+# CONFIG_NLS_CODEPAGE_775 is not set
+# CONFIG_NLS_CODEPAGE_850 is not set
+# CONFIG_NLS_CODEPAGE_852 is not set
+# CONFIG_NLS_CODEPAGE_855 is not set
+# CONFIG_NLS_CODEPAGE_857 is not set
+# CONFIG_NLS_CODEPAGE_860 is not set
+# CONFIG_NLS_CODEPAGE_861 is not set
+# CONFIG_NLS_CODEPAGE_862 is not set
+# CONFIG_NLS_CODEPAGE_863 is not set
+# CONFIG_NLS_CODEPAGE_864 is not set
+# CONFIG_NLS_CODEPAGE_865 is not set
+# CONFIG_NLS_CODEPAGE_866 is not set
+# CONFIG_NLS_CODEPAGE_869 is not set
+CONFIG_NLS_CODEPAGE_936=y
+# CONFIG_NLS_CODEPAGE_950 is not set
+# CONFIG_NLS_CODEPAGE_932 is not set
+# CONFIG_NLS_CODEPAGE_949 is not set
+# CONFIG_NLS_CODEPAGE_874 is not set
+# CONFIG_NLS_ISO8859_8 is not set
+# CONFIG_NLS_CODEPAGE_1250 is not set
+# CONFIG_NLS_CODEPAGE_1251 is not set
+# CONFIG_NLS_ASCII is not set
+CONFIG_NLS_ISO8859_1=y
+# CONFIG_NLS_ISO8859_2 is not set
+# CONFIG_NLS_ISO8859_3 is not set
+# CONFIG_NLS_ISO8859_4 is not set
+# CONFIG_NLS_ISO8859_5 is not set
+# CONFIG_NLS_ISO8859_6 is not set
+# CONFIG_NLS_ISO8859_7 is not set
+# CONFIG_NLS_ISO8859_9 is not set
+# CONFIG_NLS_ISO8859_13 is not set
+# CONFIG_NLS_ISO8859_14 is not set
+# CONFIG_NLS_ISO8859_15 is not set
+# CONFIG_NLS_KOI8_R is not set
+# CONFIG_NLS_KOI8_U is not set
+CONFIG_NLS_UTF8=y
+# CONFIG_DLM is not set
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_PRINTK_TIME=y
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_FRAME_WARN=2048
+CONFIG_MAGIC_SYSRQ=y
+# CONFIG_UNUSED_SYMBOLS is not set
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_SHIRQ=y
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=1
+CONFIG_DETECT_HUNG_TASK=y
+# CONFIG_BOOTPARAM_HUNG_TASK_PANIC is not set
+CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
+CONFIG_SCHED_DEBUG=y
+CONFIG_SCHEDSTATS=y
+CONFIG_TIMER_STATS=y
+CONFIG_DEBUG_OBJECTS=y
+# CONFIG_DEBUG_OBJECTS_SELFTEST is not set
+CONFIG_DEBUG_OBJECTS_FREE=y
+CONFIG_DEBUG_OBJECTS_TIMERS=y
+CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT=1
+CONFIG_SLQB_DEBUG=y
+# CONFIG_SLQB_DEBUG_ON is not set
+CONFIG_SLQB_SYSFS=y
+CONFIG_SLQB_STATS=y
+# CONFIG_DEBUG_KMEMLEAK is not set
+CONFIG_DEBUG_RT_MUTEXES=y
+CONFIG_DEBUG_PI_LIST=y
+CONFIG_RT_MUTEX_TESTER=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_LOCK_ALLOC=y
+CONFIG_PROVE_LOCKING=y
+CONFIG_LOCKDEP=y
+CONFIG_LOCK_STAT=y
+# CONFIG_DEBUG_LOCKDEP is not set
+CONFIG_TRACE_IRQFLAGS=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+CONFIG_STACKTRACE=y
+# CONFIG_DEBUG_KOBJECT is not set
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_INFO=y
+CONFIG_DEBUG_VM=y
+# CONFIG_DEBUG_VIRTUAL is not set
+CONFIG_DEBUG_WRITECOUNT=y
+CONFIG_DEBUG_MEMORY_INIT=y
+CONFIG_DEBUG_LIST=y
+# CONFIG_DEBUG_SG is not set
+# CONFIG_DEBUG_NOTIFIERS is not set
+CONFIG_ARCH_WANT_FRAME_POINTERS=y
+CONFIG_FRAME_POINTER=y
+# CONFIG_BOOT_PRINTK_DELAY is not set
+# CONFIG_RCU_TORTURE_TEST is not set
+# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+# CONFIG_KPROBES_SANITY_TEST is not set
+# CONFIG_BACKTRACE_SELF_TEST is not set
+# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
+# CONFIG_DEBUG_FORCE_WEAK_PER_CPU is not set
+# CONFIG_LKDTM is not set
+CONFIG_FAULT_INJECTION=y
+CONFIG_FAIL_PAGE_ALLOC=y
+CONFIG_FAIL_MAKE_REQUEST=y
+# CONFIG_FAIL_IO_TIMEOUT is not set
+CONFIG_FAULT_INJECTION_DEBUG_FS=y
+CONFIG_LATENCYTOP=y
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+# CONFIG_DEBUG_PAGEALLOC is not set
+CONFIG_USER_STACKTRACE_SUPPORT=y
+CONFIG_NOP_TRACER=y
+CONFIG_HAVE_FTRACE_NMI_ENTER=y
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_FP_TEST=y
+CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_HAVE_FTRACE_SYSCALLS=y
+CONFIG_RING_BUFFER=y
+CONFIG_FTRACE_NMI_ENTER=y
+CONFIG_EVENT_TRACING=y
+CONFIG_CONTEXT_SWITCH_TRACER=y
+CONFIG_TRACING=y
+CONFIG_GENERIC_TRACER=y
+CONFIG_TRACING_SUPPORT=y
+CONFIG_FTRACE=y
+CONFIG_FUNCTION_TRACER=y
+CONFIG_FUNCTION_GRAPH_TRACER=y
+# CONFIG_IRQSOFF_TRACER is not set
+# CONFIG_SYSPROF_TRACER is not set
+# CONFIG_SCHED_TRACER is not set
+CONFIG_FTRACE_SYSCALLS=y
+CONFIG_BOOT_TRACER=y
+# CONFIG_SKB_SOURCES_TRACER is not set
+CONFIG_BRANCH_PROFILE_NONE=y
+# CONFIG_PROFILE_ANNOTATED_BRANCHES is not set
+# CONFIG_PROFILE_ALL_BRANCHES is not set
+CONFIG_POWER_TRACER=y
+# CONFIG_STACK_TRACER is not set
+# CONFIG_KMEMTRACE is not set
+# CONFIG_WORKQUEUE_TRACER is not set
+CONFIG_BLK_DEV_IO_TRACE=y
+CONFIG_DYNAMIC_FTRACE=y
+CONFIG_FUNCTION_PROFILER=y
+CONFIG_FTRACE_MCOUNT_RECORD=y
+# CONFIG_FTRACE_STARTUP_TEST is not set
+# CONFIG_MMIOTRACE is not set
+# CONFIG_RING_BUFFER_BENCHMARK is not set
+# CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set
+# CONFIG_DYNAMIC_DEBUG is not set
+# CONFIG_DMA_API_DEBUG is not set
+# CONFIG_SAMPLES is not set
+CONFIG_HAVE_ARCH_KGDB=y
+CONFIG_KGDB=y
+CONFIG_KGDB_SERIAL_CONSOLE=y
+# CONFIG_KGDB_TESTS is not set
+CONFIG_HAVE_ARCH_KMEMCHECK=y
+# CONFIG_STRICT_DEVMEM is not set
+CONFIG_X86_VERBOSE_BOOTUP=y
+CONFIG_EARLY_PRINTK=y
+# CONFIG_EARLY_PRINTK_DBGP is not set
+CONFIG_DEBUG_STACKOVERFLOW=y
+CONFIG_DEBUG_STACK_USAGE=y
+# CONFIG_DEBUG_PER_CPU_MAPS is not set
+# CONFIG_X86_PTDUMP is not set
+# CONFIG_DEBUG_RODATA is not set
+# CONFIG_DEBUG_NX_TEST is not set
+# CONFIG_IOMMU_DEBUG is not set
+# CONFIG_IOMMU_STRESS is not set
+CONFIG_HAVE_MMIOTRACE_SUPPORT=y
+CONFIG_IO_DELAY_TYPE_0X80=0
+CONFIG_IO_DELAY_TYPE_0XED=1
+CONFIG_IO_DELAY_TYPE_UDELAY=2
+CONFIG_IO_DELAY_TYPE_NONE=3
+CONFIG_IO_DELAY_0X80=y
+# CONFIG_IO_DELAY_0XED is not set
+# CONFIG_IO_DELAY_UDELAY is not set
+# CONFIG_IO_DELAY_NONE is not set
+CONFIG_DEFAULT_IO_DELAY_TYPE=0
+# CONFIG_DEBUG_BOOT_PARAMS is not set
+# CONFIG_CPA_DEBUG is not set
+# CONFIG_OPTIMIZE_INLINING is not set
+
+#
+# Security options
+#
+# CONFIG_KEYS is not set
+# CONFIG_SECURITY is not set
+# CONFIG_SECURITYFS is not set
+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+# CONFIG_IMA is not set
+CONFIG_CRYPTO=y
+
+#
+# Crypto core or helper
+#
+# CONFIG_CRYPTO_FIPS is not set
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_ALGAPI2=y
+CONFIG_CRYPTO_AEAD=y
+CONFIG_CRYPTO_AEAD2=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_BLKCIPHER2=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_HASH2=y
+CONFIG_CRYPTO_RNG2=y
+CONFIG_CRYPTO_PCOMP=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_MANAGER2=y
+# CONFIG_CRYPTO_GF128MUL is not set
+CONFIG_CRYPTO_NULL=y
+CONFIG_CRYPTO_WORKQUEUE=y
+# CONFIG_CRYPTO_CRYPTD is not set
+CONFIG_CRYPTO_AUTHENC=y
+# CONFIG_CRYPTO_TEST is not set
+
+#
+# Authenticated Encryption with Associated Data
+#
+# CONFIG_CRYPTO_CCM is not set
+# CONFIG_CRYPTO_GCM is not set
+# CONFIG_CRYPTO_SEQIV is not set
+
+#
+# Block modes
+#
+CONFIG_CRYPTO_CBC=y
+# CONFIG_CRYPTO_CTR is not set
+# CONFIG_CRYPTO_CTS is not set
+CONFIG_CRYPTO_ECB=y
+# CONFIG_CRYPTO_LRW is not set
+# CONFIG_CRYPTO_PCBC is not set
+# CONFIG_CRYPTO_XTS is not set
+
+#
+# Hash modes
+#
+CONFIG_CRYPTO_HMAC=y
+# CONFIG_CRYPTO_XCBC is not set
+
+#
+# Digest
+#
+CONFIG_CRYPTO_CRC32C=y
+# CONFIG_CRYPTO_CRC32C_INTEL is not set
+# CONFIG_CRYPTO_GHASH is not set
+# CONFIG_CRYPTO_MD4 is not set
+CONFIG_CRYPTO_MD5=y
+# CONFIG_CRYPTO_MICHAEL_MIC is not set
+# CONFIG_CRYPTO_RMD128 is not set
+# CONFIG_CRYPTO_RMD160 is not set
+# CONFIG_CRYPTO_RMD256 is not set
+# CONFIG_CRYPTO_RMD320 is not set
+CONFIG_CRYPTO_SHA1=y
+# CONFIG_CRYPTO_SHA256 is not set
+# CONFIG_CRYPTO_SHA512 is not set
+# CONFIG_CRYPTO_TGR192 is not set
+# CONFIG_CRYPTO_WP512 is not set
+
+#
+# Ciphers
+#
+CONFIG_CRYPTO_AES=y
+# CONFIG_CRYPTO_AES_X86_64 is not set
+# CONFIG_CRYPTO_AES_NI_INTEL is not set
+# CONFIG_CRYPTO_ANUBIS is not set
+CONFIG_CRYPTO_ARC4=y
+# CONFIG_CRYPTO_BLOWFISH is not set
+# CONFIG_CRYPTO_CAMELLIA is not set
+# CONFIG_CRYPTO_CAST5 is not set
+# CONFIG_CRYPTO_CAST6 is not set
+CONFIG_CRYPTO_DES=y
+# CONFIG_CRYPTO_FCRYPT is not set
+# CONFIG_CRYPTO_KHAZAD is not set
+# CONFIG_CRYPTO_SALSA20 is not set
+# CONFIG_CRYPTO_SALSA20_X86_64 is not set
+# CONFIG_CRYPTO_SEED is not set
+# CONFIG_CRYPTO_SERPENT is not set
+# CONFIG_CRYPTO_TEA is not set
+# CONFIG_CRYPTO_TWOFISH is not set
+# CONFIG_CRYPTO_TWOFISH_X86_64 is not set
+
+#
+# Compression
+#
+CONFIG_CRYPTO_DEFLATE=y
+# CONFIG_CRYPTO_ZLIB is not set
+# CONFIG_CRYPTO_LZO is not set
+
+#
+# Random Number Generation
+#
+# CONFIG_CRYPTO_ANSI_CPRNG is not set
+CONFIG_CRYPTO_HW=y
+# CONFIG_CRYPTO_DEV_PADLOCK is not set
+# CONFIG_CRYPTO_DEV_HIFN_795X is not set
+CONFIG_HAVE_KVM=y
+CONFIG_VIRTUALIZATION=y
+# CONFIG_KVM is not set
+CONFIG_VIRTIO=y
+CONFIG_VIRTIO_RING=y
+CONFIG_VIRTIO_PCI=y
+# CONFIG_VIRTIO_BALLOON is not set
+CONFIG_BINARY_PRINTF=y
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+CONFIG_GENERIC_FIND_FIRST_BIT=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_FIND_LAST_BIT=y
+# CONFIG_CRC_CCITT is not set
+CONFIG_CRC16=y
+CONFIG_CRC_T10DIF=y
+# CONFIG_CRC_ITU_T is not set
+CONFIG_CRC32=y
+# CONFIG_CRC7 is not set
+CONFIG_LIBCRC32C=y
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
+CONFIG_DECOMPRESS_GZIP=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+CONFIG_NLATTR=y
+
+--mP3DRpeJDSE+ciuQ--
