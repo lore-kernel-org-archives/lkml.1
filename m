@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZHTPNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750945AbZHTPOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbZHTPNT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 11:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbZHTPNS
+	id S1750945AbZHTPOO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 11:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbZHTPOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 11:13:18 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:64260 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750904AbZHTPNR (ORCPT
+	Thu, 20 Aug 2009 11:14:14 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:23817 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbZHTPON convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 11:13:17 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
-Date: Thu, 20 Aug 2009 17:10:31 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
-References: <cover.1250187913.git.mst@redhat.com> <200908201631.37285.arnd@arndb.de> <20090820144256.GB8338@redhat.com>
-In-Reply-To: <20090820144256.GB8338@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908201710.31723.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19CYz8MTpilGcdPf0zl1+gTV+58hNv2RY0D6Zr
- PKhPnrsmxKi5a94HTdohHHowEHsTK7mGnhYcMlLwOdiK/8H6Eu
- /Lqmi1uC80dHvFZuoZfIg==
+	Thu, 20 Aug 2009 11:14:13 -0400
+Message-Id: <4A8D84670200007800010D31@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Thu, 20 Aug 2009 16:14:15 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: adjust targets specification in
+	 arch/x86/boot/compressed/Makefile
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 August 2009, Michael S. Tsirkin wrote:
-> 
-> > The errors from the socket (or chardev, as that was the
-> > start of the argument) should still fit into the categories
-> > that I mentioned, either they can be handled by the host
-> > kernel, or they are fatal.
-> 
-> Hmm, are you sure? Imagine a device going away while socket is bound to
-> it.  You get -ENXIO. It's not fatal in a sense that you can bind the
-> socket to another device and go on, right?
+The absence of vmlinux.lds here keeps .vmlinux.lds.cmd from being
+included, which in turn leads to it and all its dependents always
+getting rebuilt independent of whether they are already up-to-date.
 
-Right. Not fatal in that sense, but fatal in the sense that I
-can no longer transmit other frames until you recover. I think
-we both meant the same here.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-	Arnd <><
+---
+ arch/x86/boot/compressed/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.31-rc6/arch/x86/boot/compressed/Makefile	2009-08-18 15:31:15.000000000 +0200
++++ 2.6.31-rc6-x86-boot-compressed-targets/arch/x86/boot/compressed/Makefile	2009-08-20 16:56:53.000000000 +0200
+@@ -4,7 +4,7 @@
+ # create a compressed vmlinux image from the original vmlinux
+ #
+ 
+-targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
++targets := vmlinux.lds vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
+ 
+ KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
+ KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
+
+
+
