@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbZHTVOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZHTVOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbZHTVOM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 17:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755377AbZHTVOL
+	id S1755435AbZHTVOf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 17:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZHTVOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 17:14:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51409 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754400AbZHTVOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 17:14:09 -0400
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX19dZo01tMFdDtQhi1OmUBjiB2hiNCw7XeFynTLKDZ
-	qSsZsx1K/mcYLQ
-From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
-To: Jiri Kosina <trivial@kernel.org>
-Subject: [PATCH] char/hvc: adding __init macro to char/hvc_vio.c
-Date: Thu, 20 Aug 2009 23:14:06 +0200
-User-Agent: KMail/1.9.9
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Paul Mackerras <paulus@samba.org>, Nicolas Palix <npalix@diku.dk>,
-       Mike Frysinger <vapier@gentoo.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 20 Aug 2009 17:14:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33420 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754570AbZHTVOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 17:14:34 -0400
+Date: Thu, 20 Aug 2009 14:13:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Menage <menage@google.com>
+Cc: bblum@andrew.cmu.edu, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [PATCH 1/8] Revert commit
+ 8827c288feb7810185aa7c2e37537202fc709869
+Message-Id: <20090820141349.9967b275.akpm@linux-foundation.org>
+In-Reply-To: <20090818235812.22531.76212.stgit@menage.mtv.corp.google.com>
+References: <20090818235059.22531.42618.stgit@menage.mtv.corp.google.com>
+	<20090818235812.22531.76212.stgit@menage.mtv.corp.google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908202314.07443.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Huewe <peterhuewe@gmx.de>
+On Tue, 18 Aug 2009 16:58:12 -0700
+Paul Menage <menage@google.com> wrote:
 
-Trivial patch which adds the __init/__exit macros to the module_init/
-module_exit functions of char/hvc_vio.c
+> Revert commit 8827c288feb7810185aa7c2e37537202fc709869
+> 
+> This is in preparation for some clashing cgroups changes that subsume
+> the original commit's functionaliy.
 
-Please have a look at the small patch and either pull it through
-your tree, or please ack' it so Jiri can pull it through the trivial tree.
 
-linux version 2.6.31-rc6 - linus git tree, Do 20. Aug 22:26:06 CEST 2009
+Please don't refer to commits via their bare hash number.
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
----
-diff --git a/drivers/char/hvc_vio.c b/drivers/char/hvc_vio.c
-index c72b994..10be343 100644
---- a/drivers/char/hvc_vio.c
-+++ b/drivers/char/hvc_vio.c
-@@ -120,7 +120,7 @@ static struct vio_driver hvc_vio_driver = {
- 	}
- };
- 
--static int hvc_vio_init(void)
-+static int __init hvc_vio_init(void)
- {
- 	int rc;
- 
-@@ -134,7 +134,7 @@ static int hvc_vio_init(void)
- }
- module_init(hvc_vio_init); /* after drivers/char/hvc_console.c */
- 
--static void hvc_vio_exit(void)
-+static void __exit hvc_vio_exit(void)
- {
- 	vio_unregister_driver(&hvc_vio_driver);
- }
+This commit actually has a different hash in my tree:
+
+commit 096b7fe012d66ed55e98bc8022405ede0cc80e96
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Wed Jul 29 15:04:04 2009 -0700
+Commit:     Linus Torvalds <torvalds@linux-foundation.org>
+CommitDate: Wed Jul 29 19:10:35 2009 -0700
+
+    cgroups: fix pid namespace bug
+
+
+And it will definitely have a different hash in linux-next, -stable,
+distro trees, etc.
+
+So the conventional way of referring to a commit within a changelog is
+
+
+096b7fe012d66ed55e98bc8022405ede0cc80e96 ("cgroups: fix pid namespace bug")
+
+
