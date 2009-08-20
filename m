@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbZHTKUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbZHTKVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754106AbZHTKUT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 06:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbZHTKUN
+	id S1754136AbZHTKVR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 06:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbZHTKUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 06:20:13 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60273 "EHLO kernel.dk"
+	Thu, 20 Aug 2009 06:20:18 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60257 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754062AbZHTKUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 06:20:10 -0400
+	id S1753317AbZHTKUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 06:20:09 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
        bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 6/6] sunrpc: use lazy workqueues
-Date: Thu, 20 Aug 2009 12:20:04 +0200
-Message-Id: <1250763604-24355-7-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 3/6] crypto: use lazy workqueues
+Date: Thu, 20 Aug 2009 12:20:01 +0200
+Message-Id: <1250763604-24355-4-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.4.173.g3f189
 In-Reply-To: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
 References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
@@ -26,22 +26,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- net/sunrpc/sched.c |    2 +-
+ crypto/crypto_wq.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/sunrpc/sched.c b/net/sunrpc/sched.c
-index 8f459ab..ce99fe2 100644
---- a/net/sunrpc/sched.c
-+++ b/net/sunrpc/sched.c
-@@ -970,7 +970,7 @@ static int rpciod_start(void)
- 	 * Create the rpciod thread and wait for it to start.
- 	 */
- 	dprintk("RPC:       creating workqueue rpciod\n");
--	wq = create_workqueue("rpciod");
-+	wq = create_lazy_workqueue("rpciod");
- 	rpciod_workqueue = wq;
- 	return rpciod_workqueue != NULL;
- }
+diff --git a/crypto/crypto_wq.c b/crypto/crypto_wq.c
+index fdcf624..88cccee 100644
+--- a/crypto/crypto_wq.c
++++ b/crypto/crypto_wq.c
+@@ -20,7 +20,7 @@ EXPORT_SYMBOL_GPL(kcrypto_wq);
+ 
+ static int __init crypto_wq_init(void)
+ {
+-	kcrypto_wq = create_workqueue("crypto");
++	kcrypto_wq = create_lazy_workqueue("crypto");
+ 	if (unlikely(!kcrypto_wq))
+ 		return -ENOMEM;
+ 	return 0;
 -- 
 1.6.4.173.g3f189
 
