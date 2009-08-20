@@ -1,108 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbZHTW1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932110AbZHTWbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755297AbZHTW1W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 18:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbZHTW1V
+	id S932110AbZHTWbR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 18:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZHTWbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 18:27:21 -0400
-Received: from hq-exedge.brocade.com ([66.243.153.82]:34800 "EHLO
-	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752430AbZHTW1U convert rfc822-to-8bit (ORCPT
+	Thu, 20 Aug 2009 18:31:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43321 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754491AbZHTWbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 18:27:20 -0400
-X-Greylist: delayed 304 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 18:27:20 EDT
-From: Jing Huang <huangj@Brocade.COM>
-To: Jing Huang <huangj@Brocade.COM>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Ramkumar Vadivelu <rvadivel@Brocade.COM>,
-       Vinodh Ravindran <vravindr@Brocade.COM>,
-       Ashok Rajagopalan <arajagop@Brocade.COM>
-Date: Thu, 20 Aug 2009 15:22:16 -0700
-Subject: Request to include  Brocade BFA FC SCSI driver into Linux SCSI tree
-Thread-Topic: Request to include  Brocade BFA FC SCSI driver into Linux SCSI
- tree
-Thread-Index: AcohY0dqSPoVAGHqQC2IPqSf6KmXqwAf/ZAQ
-Message-ID: <B0A7AF226B49A14897036E9B3A68CFFECB1A935D74@HQ-EXCH-7.corp.brocade.com>
-References: <200908200654.n7K6shpn005971@swe57.brocade.com>
-In-Reply-To: <200908200654.n7K6shpn005971@swe57.brocade.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Thu, 20 Aug 2009 18:31:15 -0400
+Date: Thu, 20 Aug 2009 15:31:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       FlorianSchandinat@gmx.de
+Subject: Re: [PATCH] fb: do not ignore fb_set_par errors
+Message-Id: <20090820153100.eec12070.akpm@linux-foundation.org>
+In-Reply-To: <1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de>
+References: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>
+	<1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi James,
 
-I resubmitted the bfa driver patches which include fixes for some code review comments provided by Sam Ravnborg on our July 20 submission.
+On Thu, 20 Aug 2009 11:59:56 +0000
+Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
 
-Here, on behalf of Brocade Communication System, Inc, I am requesting you to include the driver into the linux SCSI tree. We will continue to enhance the driver and fix issues reported from linux-scsi community and our internal test group as well.
+> at the moment about half of the framebuffer drivers can return an error
+> code in fb_set_par. Until now it would be silently ignored by fbmem.c
+> and fbcon.c. The following patch fixes fbmem.c to pass it on but I have
+> no idea what the right behaviour in fbcon.c would look like.
+> Any comments?
 
-Thanks and best regards.
+Nobody really maintains this code any more and I don't know to whom
+your question should be addressed.  All I can suggest is that you
+decide what is the best path to take, and propose that we take it!  
 
-Jing Huang
-Brocade Communications Systems
+On Thu, 20 Aug 2009 11:59:57 +0000
+Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
 
-> -----Original Message-----
-> From: linux-scsi-owner@vger.kernel.org [mailto:linux-scsi-
-> owner@vger.kernel.org] On Behalf Of Jing Huang
-> Sent: Wednesday, August 19, 2009 11:55 PM
-> To: James.Bottomley@HansenPartnership.com
-> Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; Ramkumar
-> Vadivelu; Vinodh Ravindran
-> Subject: [PATCH 0/14] bfa: Brocade BFA FC SCSI driver (overview)
+> fb: do not ignore fb_set_par errors
 > 
-> From: Jing Huang <huangj@brocade.com>
+> At the moment about half of the framebuffer drivers can return an error
+> code in fb_set_par. Until now it would be silently ignored by fbmem.c
+> and fbcon.c. This patch fixes fbmem.c to return the error code and
+> restore var on error. But it is not clear in which video mode the device
+> is when fb_set_par fails. It would be good and reasonable if it were in
+> the old state but there is no guarantee that this is true for all
+> existing drivers.
+> Although most errors should be caught by the previous fb_check_var some
+> errors can't as they are dynamic (memory allocations, ...) and can only
+> be detected while performing the operations which is forbidden in
+> fb_check_var.
+> This patch shouldn't have a negative impact on normal operation as all
+> drivers return 0 on success. The impact in case of error depends heavily
+> on the driver and caller but it's expected to be better than before.
 > 
-> Resubmitting the patches after implemented some of the code review
-> comments
-> from Sam Ravnborg. Patches are generated using 2.6.31-rc6 kernel.
-> 
-> [PATCH 1/14]: SCSI LLD driver code, module init/exit, PCI and SCSI host
-> entry
-> points, interrupt handler, and sysfs interface etc.
-> 
-> [PATCH 2/14]: Hardware/FW access code. part-1
-> 
-> [PATCH 3/14]: Hardware/FW access code. part-2
-> 
-> [PATCH 4/14]: Hardware/FW access code. part-3
-> 
-> [PATCH 5/14]: Hardware/FW access code. part-4
-> 
-> [PATCH 6/14]: FC state machines. part-1
-> 
-> [PATCH 7/14]: FC state machines. part-2
-> 
-> [PATCH 8/14]: FC state machines. part-3
-> 
-> [PATCH 9/14]: FC state machines. part-3
-> 
-> [PATCH 10/14]: Common header files shared by linux driver,
-> hardware/FW access code, FC state machines. part-1
-> 
-> [PATCH 11/14]: Common header files shared by linux driver,
-> hardware/FW access code, FC state machines. part-2
-> 
-> [PATCH 12/14]: Common header files shared by linux driver,
-> hardware/FW access code, FC state machines. part-3
-> 
-> [PATCH 13/14]: Updated Kconfig and Makefile for driver/scsi, and Makefile
-> for bfa driver
-> 
-> [PATCH 14/14]: Updated MAINTAINER file.
-> 
-> Signed-off-by: Jing Huang <huangj@brocade.com>
+> Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
 > ---
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  drivers/video/fbmem.c |   12 ++++++++++--
+>  1 files changed, 10 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> index a85c818..85c1595 100644
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -954,6 +954,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+>  			goto done;
+>  
+>  		if ((var->activate & FB_ACTIVATE_MASK) == FB_ACTIVATE_NOW) {
+> +			struct fb_var_screeninfo old_var;
+>  			struct fb_videomode mode;
+>  
+>  			if (info->fbops->fb_get_caps) {
+> @@ -963,10 +964,17 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+>  					goto done;
+>  			}
+>  
+> +			old_var = info->var;
+>  			info->var = *var;
+>  
+> -			if (info->fbops->fb_set_par)
+> -				info->fbops->fb_set_par(info);
+> +			if (info->fbops->fb_set_par) {
+> +				ret = info->fbops->fb_set_par(info);
+> +
+> +				if (ret) {
+> +					info->var = old_var;
+> +					goto done;
+> +				}
+> +			}
+
+Yes, it seems reasonable to me - if we ignore this the machine will
+probably crash later anyway.
+
+A well-behaved driver should leave the hardware in an unchanged state
+if it's going to return an error (IMO).
+
+Do you know of any bug reports which are due to this lack of checking?
+
+If you're concerned about the effects of this change, perhaps you
+should add a nice big printk when we decide to error out, so that it
+makes it easier for bug reporters (and responders!) to work out what
+happened?
+
