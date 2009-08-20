@@ -1,78 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZHTAr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751162AbZHTA5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbZHTAr2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 20:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZHTAr1
+	id S1751162AbZHTA5H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 20:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbZHTA5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 20:47:27 -0400
-Received: from mail1.radix.net ([207.192.128.31]:38674 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752525AbZHTAr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 20:47:27 -0400
-Subject: Re: linux-next: suspend tree build warnings
-From: Andy Walls <awalls@radix.net>
-To: Greg KH <greg@kroah.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-media@vger.kernel.org
-In-Reply-To: <20090819233601.GA2875@kroah.com>
-References: <20090819172419.2cf53008.sfr@canb.auug.org.au>
-	 <200908192338.03910.rjw@sisk.pl>  <20090819233601.GA2875@kroah.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 19 Aug 2009 20:44:16 -0400
-Message-Id: <1250729056.2716.37.camel@morgan.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
+	Wed, 19 Aug 2009 20:57:06 -0400
+Received: from sr-smtp.usish.com ([210.5.144.203]:56384 "EHLO
+	sr-smtp.usish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750837AbZHTA5E convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 20:57:04 -0400
+From: "jack wang" <jack_wang@usish.com>
+To: "=?UTF-8?Q?'Pasi_K=C3=A4rkk=C3=A4inen'?=" <pasik@iki.fi>
+Cc: "'Nick Cheng'" <nick.cheng@areca.com.tw>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Michael Fuckner'" <michael@fuckner.net>,
+       "'linux-kernel'" <linux-kernel@vger.kernel.org>,
+       "'linux-scsi'" <linux-scsi@vger.kernel.org>,
+       "'Erich Chen'" <erich@areca.com.tw>
+References: <20090819140848.GW19938@edu.joroinen.fi> <200908192247543597389@usish.com> <20090819164029.GZ19938@edu.joroinen.fi>
+Subject: =?UTF-8?Q?=E7=AD=94=E5=A4=8D:_Re:_Performance_issues_with_?=
+	=?UTF-8?Q?Areca_1680_SAS_Controllers?=
+Date: Thu, 20 Aug 2009 08:56:51 +0800
+Message-ID: <5487F137A72C4E05BF673B6C96A2D859@usish.com.cn>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <20090819164029.GZ19938@edu.joroinen.fi>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Thread-Index: Acog69Bx2gODawCMRqmthbK6diIr5AARNTzA
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 16:36 -0700, Greg KH wrote:
-> On Wed, Aug 19, 2009 at 11:38:03PM +0200, Rafael J. Wysocki wrote:
-> > On Wednesday 19 August 2009, Stephen Rothwell wrote:
-> > > Hi Rafael,
+> On Thu, Nov 20, 2008 at 03:39:40PM +0800, Nick Cheng wrote:
+> > Hi Michael,
+> > I will get around handling your issue.
+> > Thanks for your kindly patience,
 > > 
-> > Hi,
-> > 
-> > > Today's linux-next build (x86_64 allmodconfig) produced these warnings:
-> > > 
-> > > drivers/media/dvb/frontends/dib7000p.c: In function ‘dib7000p_i2c_enumeration’:
-> > > drivers/media/dvb/frontends/dib7000p.c:1315: warning: the frame size of 2256 bytes is larger than 2048 bytes
-> > > drivers/media/dvb/frontends/dib3000mc.c: In function ‘dib3000mc_i2c_enumeration’:
-> > > drivers/media/dvb/frontends/dib3000mc.c:853: warning: the frame size of 2160 bytes is larger than 2048 bytes
-> > > 
-> > > Introduced by commit 99307958cc9c1b0b2e0dad4bbefdafaf9ac5a681 ("PM:
-> > > Introduce core framework for run-time PM of I/O devices (rev. 17)").
-> > 
-> > Well.
-> > 
-> > This commit increases the size of struct device quite a bit and both of the
-> > drivers above create a "state" object on the stack that contains struct device
-> > among other things.
+> Hello,
+> Was this issue resolved? I'm seeing similar behaviour.. I think it's related
+> to flushing the controller cache?
+> Waiting a while (after the disk leds stop blinking) performance is back to
+> normal.. 
+> -- Pasi
 > 
-> Ick.  struct device should _never_ be on the stack, why would this code
-> want to do such a thing?
+> In my memory ??It's because the write cache is not enable??You can verify
+> it using sdparm 
 
-It appears that the state object is a dummy being used to detect and
-twiddle some identical chips on the i2c bus.  The functions called only
-use the "i2c_adapter" and "cfg" member of the dummy state object, but
-those functions want that state object as an input argument.
+I'm using battery backed write-back write cache on Areca controller, and it's enabled.
+Or did you mean caches in each harddisk?
 
-<obvious>
-The simplest fix is dynamic allocation of the dummy state object with
-kmalloc() and then to free it before exiting the function.
-</obvious>
+[Jack] Yes , I mean the write cache of each HD.
 
-Regards,
-Andy
+More information about my setup:
 
+- Areca 1680 24-port SAS RAID controller
+- Physical disks 1-4 are raid-10 for the OS (boot volume, /dev/sda)
+- Physical disks 5-18 are raid-60 for the data (/dev/sdb)
 
-> thanks,
+I downloaded ltp-base-20090731.tgz from http://ltp.sf.net and compiled it. 
+
+from testcases/kernel/io/disktest/ I run:
+
+# echo 3 > /proc/sys/vm/drop_caches
+# ./disktest -w -K16 -B 4k -T 60 -pr -Ibd -PA /dev/sdb
+
+(sdb is the raid-60 data array).
+
+So the disktest benchmark is running 4 kB random writes using 16 threads and direct-IO
+(bypassing kernel caches) for 60 seconds.
+
+The test completes after 60 seconds, just like it should, but the disk leds will
+keep blinking for many minutes more.. 
+
+So basicly Areca controller is first caching the random write IOs and then flushing
+them from the cache (2 GB) to the disks.. 
+
+The problem is while Areca is doing the flushing _all_ IOs are really slow,
+including the other raid-10 array for the OS, which uses totally separate physical disks. 
+
+Opening another shell in screen takes at least 30 seconds, starting "top"
+takes forever etc.. 
+
+While Areca is flushing the caches (and all the IOs are slow), "iostat 1"
+doesn't show any "leftover" IOs from the benchmark. So the benchmark was
+really using direct IO, bypassing kernel caches.
+
+I tried with different io-schedulers (cfq,deadline,noop) but they didn't
+have big effect.. which makes sense, since the OS/kernel is not doing any
+big IO when the 'stalling' happens.
+
+Is there some way to make Areca NOT use all cpu-power for cache flushing? 
+
+OS is CentOS 5.3 x86_64 with linux-2.6.18-128 kernel.
+
+-- Pasi
+
+> 2009-08-19 
 > 
-> greg k-h
-
+> 
+> 
+> Wang Jinpu 
+> > -----Original Message-----
+> > From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+> > Sent: Thursday, November 20, 2008 9:18 AM
+> > To: Michael Fuckner
+> > Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; Nick Cheng;
+> > Erich Chen
+> > Subject: Re: Performance issues with Areca 1680 SAS Controllers
+> > 
+> > (cc's added)
+> > 
+> > On Wed, 19 Nov 2008 13:16:56 +0100
+> > Michael Fuckner <michael@fuckner.net> wrote:
+> > 
+> > > Hi,
+> > > 
+> > > I am using an Areca 1680-SAS-Controller with 16 SAS-HDD (Seagate 1TB
+> > > ST31000640SS). I set up a Raid6 with all 16 disks and formatted it with
+> > > XFS. The Controller has 512MB RAM and a BBU. The OS is installed to
+> > > another disk attached to the onboard AHCI controller.
+> > > 
+> > > After doing some IO, the areca raidset is slower compared to the rate 
+> > > directly
+> > > after boot.
+> > > 
+> > > 
+> > > [root@storage ~]# dd if=/dev/sdb1 of=/dev/null bs=1M count=50k
+> > iflag=direct
+> > > 51200+0 records in
+> > > 51200+0 records out
+> > > 53687091200 bytes (54 GB) copied, 59.6494 seconds, 900 MB/s
+> > > [root@storage ~]# mount /dev/sdb1 /data
+> > > [root@storage ~]# cd /data/
+> > > [root@storage data]# ./iozone -i 0 -i 1 -s 32g -r 16m -S 6144 -t 8 -+r
+> > > -o  >raid6_sync_t8.log
+> > > [root@storage data]# cd
+> > > [root@storage ~]# umount /data/
+> > > [root@storage ~]# dd if=/dev/sdb1 of=/dev/null bs=1M count=50k
+> > iflag=direct
+> > > 51200+0 records in
+> > > 51200+0 records out
+> > > 53687091200 bytes (54 GB) copied, 76.4036 seconds, 703 MB/s
+> > > 
+> > > I tested different Versions of Linux (Centos 5.2, OpenSUSE 11, Debian
+> > > Lenny) and Vanilla kernels 2.6.22-2.6.27, all show this behaviour.
+> > > 
+> > > Idea why the device slows down after IO- or better: how to keep the high
+> > > rate? Is this reproducible foer Areca SATA Controllers (Type 11XX and
+> > 12XX)
+> > > 
+> > > Regards,
+> > >    Michael!
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> __________ Information from ESET NOD32 Antivirus, version of virus signature database 4347 (20090819) __________
+> The message was checked by ESET NOD32 Antivirus.
+> http://www.eset.com
 
