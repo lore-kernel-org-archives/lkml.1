@@ -1,102 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZHTNEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZHTNIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbZHTNEs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZHTNEr
+	id S1754203AbZHTNIo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 09:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZHTNIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:04:47 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:36574 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754177AbZHTNEq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:04:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=UFPpfFMMVwl9GXfqQrLm3wRiV11GAfZxXs3cSXQVAgOIZ9qvJanx0/avWwre1AB3hs
-         R3GVP4cc6a3QoENZl+OY1GXmiwAVl6LEzQyxmQvnWGV1jcURoRfAFSFKx5RY679S+m2t
-         vaPg4qRa7jFx/pm1PB2TeYV8crS+RMtxJnj1U=
-Message-ID: <4A8D49F5.9090806@gmail.com>
-Date: Thu, 20 Aug 2009 22:04:53 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
+	Thu, 20 Aug 2009 09:08:44 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:54415 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753979AbZHTNIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 09:08:43 -0400
+X-IronPort-AV: E=Sophos;i="4.43,414,1246863600"; 
+   d="scan'208";a="228093407"
+Subject: Re: [PATCH 1/3] direct-io: make O_DIRECT IO path be page based
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 To: Jens Axboe <jens.axboe@oracle.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, benh@kernel.crashing.org, bzolnier@gmail.com,
-       alan@lxorguk.ukuu.org.uk, Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 0/6] Lazy workqueues
-References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com> <20090820122212.GC6069@nowhere> <20090820124133.GL12579@kernel.dk>
-In-Reply-To: <20090820124133.GL12579@kernel.dk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, zach.brown@oracle.com
+In-Reply-To: <20090817121137.GW12579@kernel.dk>
+References: <1250505274-17108-1-git-send-email-jens.axboe@oracle.com>
+	 <1250505274-17108-2-git-send-email-jens.axboe@oracle.com>
+	 <20090817121137.GW12579@kernel.dk>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Thu, 20 Aug 2009 09:08:13 -0400
+Message-Id: <1250773693.5352.24.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 20 Aug 2009 13:08:45.0077 (UTC) FILETIME=[59052C50:01CA2197]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Aug 20 2009, Frederic Weisbecker wrote:
->> A idea to solve this:
->>
->> We could have one thread per struct work_struct.  Similarly to this
->> patchset, this thread waits for queuing requests, but only for this
->> work struct.  If the target cpu has no thread for this work, then
->> create one, like you do, etc...
->>
->> Then the idea is to have one workqueue per struct work_struct, which
->> handles per cpu task creation, etc... And this workqueue only handles
->> the given work.
->>
->> That may solve the deadlocks scenario that are often reported and lead
->> to dedicated workqueue creation.
->>
->> That also makes disappearing the work execution serialization between
->> different worklets. We just keep the serialization between same work,
->> which seems a pretty natural thing and is less haphazard than multiple
->> works of different natures randomly serialized between them.
->>
->> Note the effect would not only be a reducing of deadlocks but also
->> probably an increasing of throughput because works of different
->> natures won't need anymore to wait for the previous one completion.
->>
->> Also a reducing of latency (a high prio work that waits for a lower
->> prio work).
->>
->> There are good chances that we won't need any more per driver/subsys
->> workqueue creation after that, because everything would be per
->> worklet.  We could use a single schedule_work() for all of them and
->> not bother choosing a specific workqueue or the central events/%d
->>
->> Hmm?
+On Mon, 2009-08-17 at 14:11 +0200, Jens Axboe wrote:
+> On Mon, Aug 17 2009, Jens Axboe wrote:
+> > Switch the aops->direct_IO() and below code to use page arrays
+> > instead, so that it doesn't make any assumptions about who the pages
+> > belong to. This works directly for all users but NFS, which just
+> > uses the same helper that the generic mapping read/write functions
+> > also call.
 > 
-> I pretty much agree with you, my initial plan for a thread pool would be
-> very similar. I'll gradually work towards that goal.
+> A quick NFS test reveals a simple problem - it wants to free the
+> pagevec on IO completion, but for O_DIRECT it should not do that anymore
+> since it'll simply inherit the given page map.
+> 
+> There's a flag structure in the nfs_{read,write}_data structure, but I
+> was not able to find out which flags (if any?!) it actually uses. So I
+> just stuck an int in there. Trond?
 
-Several issues that come to my mind with the above approach are...
+Why not just have O_DIRECT reset the pagevec before freeing the
+structure?
 
-* There will still be cases where you need fixed dedicated thread.
-  Execution resources for anything which might be used during IO needs
-  to be preallocated (at least some of it) to guarantee forward
-  progress.
-
-* Depending on how popular works are used (and I think their usage
-  will grow with improvements like this), we might end up with many
-  idling threads again and please note that thread creation /
-  destruction is quite costly compared to what works usually do.
-
-* Having different threads executing different works all the time
-  might improve latency but if works are used frequently enough it's
-  likely to lower throughput because short works which can be handled
-  in batch by a single thread now needs to be handled by different
-  threads.  Scheduling overhead can be significant compared to what
-  those works actually do and it will also cost much more cache
-  footprint-wise.
-
-Thanks.
-
+Cheers
+  Trond
 -- 
-tejun
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
