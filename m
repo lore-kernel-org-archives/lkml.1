@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZHTV7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbZHTWAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbZHTV7z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 17:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbZHTV7z
+	id S1754906AbZHTWAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 18:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbZHTWAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 17:59:55 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:33508 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932082AbZHTV7y (ORCPT
+	Thu, 20 Aug 2009 18:00:14 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:21375 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754814AbZHTWAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 17:59:54 -0400
-Date: Thu, 20 Aug 2009 15:59:54 -0600
-From: Alex Chiang <achiang@hp.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andi Kleen <andi@firstfloor.org>, "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
-Message-ID: <20090820215954.GH13061@ldl.fc.hp.com>
-References: <1250276831.3077.17.camel@sbs-t61.sc.intel.com> <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com> <20090819210251.GD13061@ldl.fc.hp.com> <1250794594.2754.10.camel@sbs-t61.sc.intel.com> <20090820205425.GF13061@ldl.fc.hp.com> <20090820210342.GC29994@basil.fritz.box> <20090820212024.GG13061@ldl.fc.hp.com> <1250803577.2754.30.camel@sbs-t61.sc.intel.com> <4A8DC349.5060508@zytor.com>
+	Thu, 20 Aug 2009 18:00:13 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAD9kjUqrR7O6/2dsb2JhbAC+bogvkQcFhBiENg
+X-IronPort-AV: E=Sophos;i="4.43,416,1246838400"; 
+   d="scan'208";a="371769798"
+From: Roland Dreier <rdreier@cisco.com>
+To: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Opinions on moving Linux InfiniBand/RDMA mailing list to vger?
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 20 Aug 2009 15:00:14 -0700
+Message-ID: <adavdkiw3gx.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8DC349.5060508@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 20 Aug 2009 22:00:14.0755 (UTC) FILETIME=[98BFDF30:01CA21E1]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin <hpa@zytor.com>:
-> On 08/20/2009 02:26 PM, Suresh Siddha wrote:
-> > On Thu, 2009-08-20 at 14:20 -0700, Alex Chiang wrote:
-> >> It turns out I need to rework my patch anyway because I need
-> >> to think about the case where a user disables some cores in
-> >> the BIOS, in which case my (fragile) table selection scheme
-> >> falls apart.
-> > 
-> > These are the sort of reasons why we want topology detection
-> > to be completely based on what cpuid instruction says and
-> > nothing else.
-> 
-> I agree... if this ID is used for topology detection, we
-> shouldn't replace it arbitrarily with information from BIOS
-> just to hope that it matches the motherboard stencil.
+Lately, I've had a few emails that I thought would have been of interest
+to both lkml and also to general@lists.openfabrics.org.  I've held back
+on cross-posting them because I know that general@ is subscribers-only,
+and the bounce messages are quite annoying to replies coming from lkml.
 
-Well, to be fair, in my patch, the phys_proc_ids remained
-consistent for a given physical processor package.
+The general@ list is subscribers-only because the openfabrics.org
+sysadmin team is already overworked without trying to keep an open list
+spam free.  (I say that with no intention to criticize the
+openfabrics.org admins -- they do a terrific job of keeping things
+running with the limited resources available; it's more a testament to
+how impressive the vger mailing list admins are)
 
-That is, if all the cores in a socket initially started with
-phys_proc_id X, they all ended up with phys_proc_id Y.
-Additionally, no other cores in other sockets ended up with Y.
-So in that sense, there was no real change in how we detected CPU
-topology. All the core/thread/sibling ids remained correct and
-unchanged.
+I've also noticed one or two messages about the possibility of moving
+another moderated list to vger.  Certainly I prefer open lists that
+don't require subscriptions to post.
 
-Second, my patch wasn't sticking arbitrary information in from
-BIOS; it was merely rearranging the existing phys_proc_ids.
+So with that background, what would people think about creating an open
+vger list (say, linux-rdma@vger.kernel.org) to carry the discussion
+currently on general@lists.openfabrics.org?  (The transition plan would
+probably be to keep the general@ list for a month or two, with frequent
+announcements of the new list, until archives etc. have caught up with
+the switch)
 
-> *Furthermore*, there is no reason why motherboard stencilAs are
-> purely numeric... consider the rather obvious case of two rows
-> of four CPUs; they may have CPU slots labelled A1, A2, A3, A4,
-> B1, B2, B3, B4.  It might very well be the right thing to
-> support arbitrary strings for platforms we recognize.
-
-But yes, I do agree that this is a good point, and even here at
-HP, we have other platforms with complex physical topologies.
-
-Once you go down this path of thinking though, ACPI starts
-looming, and that has other issues associated with it (in my
-mind, mostly around the cleanliness of implementation as ACPI
-starts poking its fingers everywhere).
-
-> As such I think we should have a socket name field in both
-> /proc/cpuinfo and sysfs.
-
-Well, now we have 2 yeas (hpa and Suresh), 1 nay (Andi), and 1
-"tell me what you'd like" (me ;)
-
-/ac
-
+Thanks,
+  Roland
