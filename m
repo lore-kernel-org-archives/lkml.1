@@ -1,94 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbZHTNeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZHTNfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbZHTNeM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:34:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbZHTNeK
+	id S1754519AbZHTNfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 09:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbZHTNfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:34:10 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:16261
-	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754389AbZHTNeI (ORCPT
+	Thu, 20 Aug 2009 09:35:50 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:47402 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754408AbZHTNft (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:34:08 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i6bh203h43j66h)
-X-Spam-TCS-SCL: 5:0
+	Thu, 20 Aug 2009 09:35:49 -0400
+X-SpamScore: 1
+X-BigFish: VPS1(zzzz1202hzzz32i203h6bh62h)
+X-Spam-TCS-SCL: 1:0
 X-FB-SS: 5,
-X-WSS-ID: 0KOOGCP-01-0ZL-02
+X-WSS-ID: 0KOOGFF-02-89S-02
 X-M-MSG: 
-Date: Thu, 20 Aug 2009 15:34:00 +0200
+Date: Thu, 20 Aug 2009 15:35:39 +0200
 From: Andreas Herrmann <andreas.herrmann3@amd.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
 CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/15] sched, x86: Provide initializer for MN scheduling
-	domain, define MN level
-Message-ID: <20090820133400.GQ29327@alberich.amd.com>
+Subject: [PATCH 4/15] sched: Define per CPU variables and cpu_to_group
+	function for MN domain
+Message-ID: <20090820133539.GS29327@alberich.amd.com>
 References: <20090820131243.GO29327@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
 In-Reply-To: <20090820131243.GO29327@alberich.amd.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Aug 2009 13:34:01.0019 (UTC) FILETIME=[E09790B0:01CA219A]
+X-OriginalArrivalTime: 20 Aug 2009 13:35:40.0054 (UTC) FILETIME=[1B9F1B60:01CA219B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Additionally fixup cpu_to_phys_group() in case of CONFIG_SCHED_MN=y.
+
 Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- arch/x86/include/asm/topology.h |   25 +++++++++++++++++++++++++
- include/linux/sched.h           |    1 +
- 2 files changed, 26 insertions(+), 0 deletions(-)
+ kernel/sched.c |   32 +++++++++++++++++++++++++++-----
+ 1 files changed, 27 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index d53ef91..6d7d133 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -181,6 +181,31 @@ static inline void setup_node_to_cpumask_map(void) { }
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 9990c3a..d85985d 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8255,9 +8255,27 @@ cpu_to_cpu_group(int cpu, const struct cpumask *cpu_map,
+ #ifdef CONFIG_SCHED_MC
+ static DEFINE_PER_CPU(struct static_sched_domain, core_domains);
+ static DEFINE_PER_CPU(struct static_sched_group, sched_group_core);
+-#endif /* CONFIG_SCHED_MC */
  
- #endif
- 
+-#if defined(CONFIG_SCHED_MC) && defined(CONFIG_SCHED_SMT)
++/*
++ * multi-node sched-domains:
++ */
 +#ifdef CONFIG_SCHED_MN
-+/* Common values for multi-node siblings */
-+#ifndef SD_MN_INIT
-+#define SD_MN_INIT (struct sched_domain) {		\
-+	.min_interval		= 1,			\
-+	.max_interval		= 4,			\
-+	.busy_factor		= 64,			\
-+	.imbalance_pct		= 125,			\
-+	.cache_nice_tries	= 1,			\
-+	.busy_idx		= 2,			\
-+	.wake_idx		= 1,			\
-+	.forkexec_idx		= 1,			\
-+	.flags			= SD_LOAD_BALANCE	\
-+				| SD_BALANCE_FORK	\
-+				| SD_BALANCE_EXEC	\
-+				| SD_WAKE_AFFINE	\
-+				| SD_WAKE_BALANCE	\
-+				| sd_balance_for_package_power()\
-+				| sd_power_saving_flags(),\
-+	.last_balance		= jiffies,		\
-+	.balance_interval	= 1,			\
++static DEFINE_PER_CPU(struct static_sched_domain, cpu_node_domains);
++static DEFINE_PER_CPU(struct static_sched_group, sched_group_cpu_node);
++
++static int cpu_to_cpu_node_group(int cpu, const struct cpumask *cpu_map,
++                                 struct sched_group **sg, struct cpumask *mask)
++{
++        int group;
++        cpumask_and(mask, cpu_coregroup_mask(cpu), cpu_map);
++        group = cpumask_first(mask);
++        if (sg)
++                *sg = &per_cpu(sched_group_cpu_node, group).sg;
++        return group;
 +}
-+#endif
 +#endif /* CONFIG_SCHED_MN */
 +
- #include <asm-generic/topology.h>
++#ifdef CONFIG_SCHED_SMT
+ static int
+ cpu_to_core_group(int cpu, const struct cpumask *cpu_map,
+ 		  struct sched_group **sg, struct cpumask *mask)
+@@ -8270,7 +8288,7 @@ cpu_to_core_group(int cpu, const struct cpumask *cpu_map,
+ 		*sg = &per_cpu(sched_group_core, group).sg;
+ 	return group;
+ }
+-#elif defined(CONFIG_SCHED_MC)
++#else
+ static int
+ cpu_to_core_group(int cpu, const struct cpumask *cpu_map,
+ 		  struct sched_group **sg, struct cpumask *unused)
+@@ -8279,7 +8297,8 @@ cpu_to_core_group(int cpu, const struct cpumask *cpu_map,
+ 		*sg = &per_cpu(sched_group_core, cpu).sg;
+ 	return cpu;
+ }
+-#endif
++#endif /* CONFIG_SCHED_SMT */
++#endif /* CONFIG_SCHED_MC */
  
- extern const struct cpumask *cpu_coregroup_mask(int cpu);
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index af1e328..3a1f8db 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -901,6 +901,7 @@ enum sched_domain_level {
- 	SD_LV_NONE = 0,
- 	SD_LV_SIBLING,
- 	SD_LV_MC,
-+	SD_LV_MN,
- 	SD_LV_CPU,
- 	SD_LV_NODE,
- 	SD_LV_ALLNODES,
+ static DEFINE_PER_CPU(struct static_sched_domain, phys_domains);
+ static DEFINE_PER_CPU(struct static_sched_group, sched_group_phys);
+@@ -8289,7 +8308,10 @@ cpu_to_phys_group(int cpu, const struct cpumask *cpu_map,
+ 		  struct sched_group **sg, struct cpumask *mask)
+ {
+ 	int group;
+-#ifdef CONFIG_SCHED_MC
++#ifdef CONFIG_SCHED_MN
++	cpumask_and(mask, topology_cpu_node_cpumask(cpu), cpu_map);
++	group = cpumask_first(mask);
++#elif CONFIG_SCHED_MC
+ 	cpumask_and(mask, cpu_coregroup_mask(cpu), cpu_map);
+ 	group = cpumask_first(mask);
+ #elif defined(CONFIG_SCHED_SMT)
 -- 
 1.6.0.4
 
