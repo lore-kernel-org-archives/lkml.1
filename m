@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZHTVpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbZHTVrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbZHTVpV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 17:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZHTVpU
+	id S1754133AbZHTVrN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 17:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbZHTVrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 17:45:20 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50491 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753336AbZHTVpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 17:45:19 -0400
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX1/WdJwe2jPWpHRKH3XofbXBgd97O2t6fKNLfCe5fi
-	ldNKmGo1FZphEv
-Message-ID: <4A8DC3ED.4060005@gmx.de>
-Date: Thu, 20 Aug 2009 23:45:17 +0200
-From: Helge Deller <deller@gmx.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Thu, 20 Aug 2009 17:47:12 -0400
+Received: from complete.lackof.org ([198.49.126.79]:57868 "EHLO
+	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753315AbZHTVrM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 17:47:12 -0400
+Date: Thu, 20 Aug 2009 15:47:12 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Ray Lee <ray-lk@madrabbit.org>, torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Faidon Liambotis <paravoid@debian.org>,
+       Matt Domsch <Matt_Domsch@dell.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       bero@arklinux.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] intel-iommu: Work around yet another BIOS bug
+Message-ID: <20090820214712.GA26360@lackof.org>
+References: <bug-14003-10286@http.bugzilla.kernel.org/> <20090819142634.0fc550d1.akpm@linux-foundation.org> <1250754748.8974.17.camel@macbook.infradead.org> <1250755318.8974.26.camel@macbook.infradead.org> <2c0942db0908201229o6ba670ebqda4d7cfc72d0ece8@mail.gmail.com> <1250796740.3311.2.camel@macbook.infradead.org>
 MIME-Version: 1.0
-To: John David Anglin <dave@hiauly1.hia.nrc.ca>
-CC: rusty@rustcorp.com.au, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dave.anglin@nrc.ca, roland@redhat.com,
-       James.Bottomley@HansenPartnership.com
-Subject: Re: kernel segv with 2.6.31-rc6 ?
-References: <20090820185550.979544E7A@hiauly1.hia.nrc.ca>
-In-Reply-To: <20090820185550.979544E7A@hiauly1.hia.nrc.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250796740.3311.2.camel@macbook.infradead.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/20/2009 08:55 PM, John David Anglin wrote:
->> The reason seems to be, that something in the newer gcc compilers changed to generate multiple sections all named ".text" for the PCREL17 relocations.
->> Older compilers named those sections ".text.1", ".text.2", ".text.3" and so forth.
->
-> GCC has never generated ".text.1", etc, on parisc linux as far as I know.
+On Thu, Aug 20, 2009 at 08:32:20PM +0100, David Woodhouse wrote:
+> On Thu, 2009-08-20 at 12:29 -0700, Ray Lee wrote:
+> > Think about changing this to a warning that "Your IOMMU appears to be
+> > disabled." All ones is, after all, the traditional hint that the
+> > device is turned off.
+> 
+> Hints are all very well, but the BIOS provided an ACPI table explicitly
+> telling us that there was an active IOMMU at this location.
 
-Hmm, I don't like to disagree with an gcc-expert like you,but
-I did pasted an objdump in my last mail, which shows that gcc did
-generated .text.1, .text.2 and so on:
+Could that be to reserve address space that the "disabled" IOMMU
+might still be responding to?
 
-Sections:
-Idx Name          Size      VMA       LMA       File off  Algn
-   0 .text         00000000  00000000  00000000  00000034  2**0
-                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-...
-   4 .text.1       00000000  00000000  00000000  000000b0  2**0
-                   CONTENTS, ALLOC, LOAD, READONLY, CODE
+Ie the BIOS hides the control registers so the OS won't talk to the
+device but the IOMMU might still attempt to lookup certain address ranges.
 
-Helge
+I'm more inclined to believe it's sloppiness on the part of the BIOS
+writers but thought this might be an alternative explanation.
+
+thanks,
+grant
