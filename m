@@ -1,107 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbZHTNbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZHTNbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754435AbZHTNbI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZHTNbH
+	id S1754463AbZHTNbh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 09:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZHTNbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:31:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:43535 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754099AbZHTNbF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:31:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=IjALwMjwt21LonVOdfqcSPy8l4XFj1K2Fdg/l3nb1CiAhAPqvoHXaO5Ny3oefkNowh
-         jRFG1HCiMVGYoM2CHVbNdS2VaD8s95XmbD/gUYUr83OnDaZKWDdLM629mjyaBRVQJmlP
-         45adZZvqbZpZE1fFZXV4hiRpO/KXwUN2StA1U=
-From: Luis Fernando Planella Gonzalez <lfpg.dev@gmail.com>
-Organization: FreeIT
-To: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org
-Subject: Re: Flooded by do_IRQ: 0.91 No irq handler for vector
-Date: Thu, 20 Aug 2009 10:31:00 -0300
-User-Agent: KMail/1.12.0 (Linux/2.6.28-13-generic; KDE/4.3.0; x86_64; ; )
-References: <d12c1890908101630m2a4d0d68yf6dc1e0e0e4f4314@mail.gmail.com> <d12c1890908191446k5497d9c8t2f355074eb7ca4ff@mail.gmail.com> <m1k50zi4is.fsf@fess.ebiederm.org>
-In-Reply-To: <m1k50zi4is.fsf@fess.ebiederm.org>
+	Thu, 20 Aug 2009 09:31:36 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57004 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754249AbZHTNbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 09:31:35 -0400
+Date: Thu, 20 Aug 2009 15:31:35 +0200
+From: Jan Kara <jack@suse.cz>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Felix Blyakher <felixb@sgi.com>, xfs@oss.sgi.com
+Subject: Re: [PATCH 03/17] vfs: Remove syncing from
+	generic_file_direct_write() and generic_file_buffered_write()
+Message-ID: <20090820133135.GF16486@duck.novell.com>
+References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-4-git-send-email-jack@suse.cz> <20090819161853.GC6150@infradead.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200908201031.00256.lfpg.dev@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090819161853.GC6150@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Answers below...
+On Wed 19-08-09 12:18:53, Christoph Hellwig wrote:
+> On Wed, Aug 19, 2009 at 06:04:30PM +0200, Jan Kara wrote:
+> > generic_file_direct_write() and generic_file_buffered_write() called
+> > generic_osync_inode() if it was called on O_SYNC file or IS_SYNC inode. But
+> > this is superfluous since generic_file_aio_write() does the syncing as well.
+> > Also XFS and OCFS2 which call these functions directly handle syncing
+> > themselves. So let's have a single place where syncing happens:
+> > generic_file_aio_write().
+> 
+> Yeah, this is something that never made any sense to me.
+> 
+> > @@ -2187,20 +2187,7 @@ generic_file_direct_write(struct kiocb *iocb, const struct iovec *iov,
+> >  		}
+> >  		*ppos = end;
+> >  	}
+> > -
+> > -	/*
+> > -	 * Sync the fs metadata but not the minor inode changes and
+> > -	 * of course not the data as we did direct DMA for the IO.
+> > -	 * i_mutex is held, which protects generic_osync_inode() from
+> > -	 * livelocking.  AIO O_DIRECT ops attempt to sync metadata here.
+> > -	 */
+> >  out:
+> > -	if ((written >= 0 || written == -EIOCBQUEUED) &&
+> > -	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+> > -		int err = generic_osync_inode(inode, mapping, OSYNC_METADATA);
+> > -		if (err < 0)
+> > -			written = err;
+> > -	}
+> >  	return written;
+> 
+> Here we check (written >= 0 || written == -EIOCBQUEUED), but
+> generic_file_aio_write only cares about positive return values.  We
+> defintively do have a change here for partial AIO requests.
+  Ah, that's a good point.
 
-Em Quarta-feira 19 Agosto 2009, às 23:48:59, Eric W. Biederman escreveu:
-> Luis Fernando Planella Gonzalez <lfpg.dev@gmail.com> writes:
-> 
-> > I have changed my distro to sidux, so it won't be an easy task to
-> > return to 2.6.24....
-> > Anyway, I do use the 64bit kernel.
-> 
-> > But I've downloaded the 32 bit version (sidux 2009.02 with the
-> > 2.6.30.1 kernel), and the very same error occurs. I've just used the
-> > live cd, and it does happen.
-> 
-> Sure.  I inferred this by how early this message starting showing
-> up.   This code did not get added into the 32bit kernels until
-> recently.
-> 
-> > Something that changed from 2.6.28 to 2.6.30 is that it no longer
-> > happens the 0.99 message. All complaints are about 0.91...
-> 
-> Interesting.
-> 
-> > One more thing: Deleting /usr/sbin/irqbalance changed nothing, which
-> > is no surprise, as I had already tested the noirqbalance kernel
-> > option....
-> 
-> Even after a reboot?
-Yes, even after a reboot.
+> The question is if the previous behaviour made in sense.  If do have an
+> O_SYNC aio+dio request we would have to flush out the metadata after the
+> request has completed and not here.
+  Yes, that would be a correct behavior but I see no good way of doing
+that. Flushing on EIOCBQUEUED mostly works for simple filesystems like
+ext[23] where we don't do anything from end_io callback. The only risk
+is if we crash after the transaction commits but before the direct IO is
+done (we could expose stale data) but I'm not sure that is an issue with
+real HW.
+  Anyway, the question is what we should do about it.  For now, I'd call
+generic_write_sync() even in case EIOCBQUEUED is returned to preserve old
+behavior (EIOCBQUEUED does not seem to be returned from buffered write path
+so we really just preserve the old behavior).
 
+> > @@ -2343,16 +2328,6 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
+> >  	if (likely(status >= 0)) {
+> >  		written += status;
+> >  		*ppos = pos + status;
+> > -
+> > -		/*
+> > -		 * For now, when the user asks for O_SYNC, we'll actually give
+> > -		 * O_DSYNC
+> > -		 */
+> > -		if (unlikely((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+> > -			if (!a_ops->writepage || !is_sync_kiocb(iocb))
+> > -				status = generic_osync_inode(inode, mapping,
+> > -						OSYNC_METADATA|OSYNC_DATA);
+> > -		}
+> >    	}
 > 
-> Are you running any kind of vitalization on your box?
-No.
+> No problem with -EIOCBQUEUED here, but we change from doing
+> generic_osync_inode with OSYNC_DATA which does a full writeout of the
+> data to sync_page_range which only does the range writeout here.  That
+> should be fine (as we only need to sync that range), but should probably
+> be documented in the patch description.
+  Yes, will do.
 
-> 
-> > I'm pasting here something I had previously replied personally to
-> > Robert Hancock, and may be useful:
-> >
-> > Well, as I've installed sidux, it has upgraded the kernel to 2.6.30.5,
-> > but the error is the same.
-> > I've also tried:
-> > * noapic: the message changes to do_IRQ: 0.55 No irq handler for
-> > vector (irq -1), but then the X server fails to start
-> 
-> Interesting... 
-> 
-> > * noacpi: have no effect on the error message.
-> 
-> There is something very strange about your box.  Possibly it is
-> just VIA interrupt controller madness.  VIA has been known
-> to interrupt interrupt related fields in creative ways, and
-> we may be on the edge of another of these.
-Probably. My mother board is an Asus P5VD2-X, which is based on VIA PT890:
-http://br.asus.com/products.aspx?l1=3&l2=11&l3=346&l4=0&model=1362&modelmenu=1 (sorry, link in portuguese)
-
-> 
-> I expect it is going to come down to writing a patch to dump out
-> all of the interrupt routing state on the system and to see what
-> is generating the totally unexpected interrupt and then to work our
-> way backwards from there.
-> 
-> The fact that the vector number is changing indicates that it is
-> a programmable something that is causing the problem.
-> 
-> I'm drawing a blank on which patch to write up.
-> 
-> Eric
-> 
-Thanks again.
-
---
-Luis Fernando Planella Gonzalez
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
