@@ -1,125 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932135AbZHTUmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932136AbZHTUnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932135AbZHTUmj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 16:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932113AbZHTUmi
+	id S932136AbZHTUnd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 16:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbZHTUna
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 16:42:38 -0400
-Received: from mail.windriver.com ([147.11.1.11]:51312 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932111AbZHTUmd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 16:42:33 -0400
-From: Jason Wessel <jason.wessel@windriver.com>
-To: gregkh@suse.de
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 09/11] ehci-dbgp: errata for EHCI debug/host controller synchronization
-Date: Thu, 20 Aug 2009 15:39:56 -0500
-Message-Id: <1250800798-31559-10-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.3.1.9.g95405b
-In-Reply-To: <1250800798-31559-9-git-send-email-jason.wessel@windriver.com>
-References: <1250800798-31559-1-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-2-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-3-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-4-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-5-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-6-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-7-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-8-git-send-email-jason.wessel@windriver.com>
- <1250800798-31559-9-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 20 Aug 2009 20:41:08.0617 (UTC) FILETIME=[8BD4AF90:01CA21D6]
+	Thu, 20 Aug 2009 16:43:30 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38348 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932117AbZHTUmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 16:42:35 -0400
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX18bWAEjlp4bbFYpHnepASotEuInakmQof816ywNG1
+	zb4muDgT96IXsv
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: Jiri Kosina <trivial@kernel.org>
+Subject: [PATCH] char/vme_scc: adding __init macro to vme_scc.c
+Date: Thu, 20 Aug 2009 22:42:31 +0200
+User-Agent: KMail/1.9.9
+Cc: Alan Cox <alan@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908202242.31778.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On some EHCI debug controllers after the host controller driver is
-activated, the debug controller will occasionally fail to submit a
-bulk write URB.  On controllers that exhibit this behavior a dummy
-bulk write must get submitted to resynchronize the device.
+From: Peter Huewe <peterhuewe@gmx.de>
 
-The "dummy bulk write" does not get received by the host attached to
-the other end of the usb debug device.  The usb debug device simply
-acknowledges the "dummy bulk write" and returns to a usable state.
+Trivial patch which adds the __init macro to the module_init 
+function and all of its helper functions of char/vme_scc.c
 
-The behavior, without this patch is that you see missing text from a
-complete kernel boot when using the keep option to the earlyprintk
-kernel argument.
+Alan or Geert, please have a look at the small patch and either pull it through 
+your tree, or please ack' it so Jiri can pull it through the trivial tree.
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Cc: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+linux version 2.6.31-rc6 - linus git tree, Do 20. Aug 22:26:06 CEST 2009
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 ---
- drivers/usb/early/ehci-dbgp.c |   41 +++++++++++++++++++++++++++++------------
- 1 files changed, 29 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
-index f0a41c6..1206a26 100644
---- a/drivers/usb/early/ehci-dbgp.c
-+++ b/drivers/usb/early/ehci-dbgp.c
-@@ -245,16 +245,9 @@ static inline void dbgp_get_data(void *buf, int size)
- 		bytes[i] = (hi >> (8*(i - 4))) & 0xff;
- }
+diff --git a/drivers/char/vme_scc.c b/drivers/char/vme_scc.c
+index 994e1a5..8b24729 100644
+--- a/drivers/char/vme_scc.c
++++ b/drivers/char/vme_scc.c
+@@ -136,7 +136,7 @@ static const struct tty_port_operations scc_port_ops = {
+  * vme_scc_init() and support functions
+  *---------------------------------------------------------------------------*/
  
--static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
--			 const char *bytes, int size)
-+static int dbgp_out(u32 addr, const char *bytes, int size)
+-static int scc_init_drivers(void)
++static int __init scc_init_drivers(void)
  {
--	u32 pids, addr, ctrl;
--	int ret;
--
--	if (size > DBGP_MAX_PACKET)
--		return -1;
--
--	addr = DBGP_EPADDR(devnum, endpoint);
-+	u32 pids, ctrl;
+ 	int error;
  
- 	pids = readl(&ehci_debug->pids);
- 	pids = dbgp_pid_update(pids, USB_PID_OUT);
-@@ -267,10 +260,34 @@ static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
- 	dbgp_set_data(bytes, size);
- 	writel(addr, &ehci_debug->address);
- 	writel(pids, &ehci_debug->pids);
-+	return dbgp_wait_until_done(ctrl);
-+}
+@@ -172,7 +172,7 @@ static int scc_init_drivers(void)
+ /* ports[] array is indexed by line no (i.e. [0] for ttyS0, [1] for ttyS1).
+  */
  
--	ret = dbgp_wait_until_done(ctrl);
--	if (ret < 0)
--		return ret;
-+static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
-+			 const char *bytes, int size)
-+{
-+	int ret;
-+	int loops = 5;
-+	u32 addr;
-+	if (size > DBGP_MAX_PACKET)
-+		return -1;
-+
-+	addr = DBGP_EPADDR(devnum, endpoint);
-+try_again:
-+	if (loops--) {
-+		ret = dbgp_out(addr, bytes, size);
-+		if (ret == -DBGP_ERR_BAD) {
-+			int try_loops = 3;
-+			do {
-+				/* Emit a dummy packet to re-sync communication
-+				 * with the debug device */
-+				if (dbgp_out(addr, "12345678", 8) >= 0) {
-+					udelay(2);
-+					goto try_again;
-+				}
-+			} while (try_loops--);
-+		}
-+	}
+-static void scc_init_portstructs(void)
++static void __init scc_init_portstructs(void)
+ {
+ 	struct scc_port *port;
+ 	int i;
+@@ -195,7 +195,7 @@ static void scc_init_portstructs(void)
  
- 	return ret;
- }
--- 
-1.6.3.1.9.g95405b
-
+ 
+ #ifdef CONFIG_MVME147_SCC
+-static int mvme147_scc_init(void)
++static int __init mvme147_scc_init(void)
+ {
+ 	struct scc_port *port;
+ 	int error;
+@@ -298,7 +298,7 @@ fail:
+ 
+ 
+ #ifdef CONFIG_MVME162_SCC
+-static int mvme162_scc_init(void)
++static int __init mvme162_scc_init(void)
+ {
+ 	struct scc_port *port;
+ 	int error;
+@@ -404,7 +404,7 @@ fail:
+ 
+ 
+ #ifdef CONFIG_BVME6000_SCC
+-static int bvme6000_scc_init(void)
++static int __init bvme6000_scc_init(void)
+ {
+ 	struct scc_port *port;
+ 	int error;
+@@ -503,7 +503,7 @@ fail_free_b_rx:
+ #endif
+ 
+ 
+-static int vme_scc_init(void)
++static int __init vme_scc_init(void)
+ {
+ 	int res = -ENODEV;
