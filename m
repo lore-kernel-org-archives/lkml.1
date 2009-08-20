@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbZHTPJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbZHTPKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754647AbZHTPJk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 11:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbZHTPJj
+	id S1754797AbZHTPKt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 11:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZHTPKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 11:09:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38330 "EHLO ogre.sisk.pl"
+	Thu, 20 Aug 2009 11:10:48 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:12845 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754313AbZHTPJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 11:09:38 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: roel kluin <roel.kluin@gmail.com>
-Subject: Re: [Bug #13947] Libertas: Association request to the driver failed
-Date: Thu, 20 Aug 2009 17:10:32 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Daniel Mack <daniel@caiaq.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Dan Williams <dcbw@redhat.com>
-References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera> <ADSuNT6McuD.A.fc.7NIjKB@chimera> <25e057c00908200151i472fa3cem6da814e7115e1ea7@mail.gmail.com>
-In-Reply-To: <25e057c00908200151i472fa3cem6da814e7115e1ea7@mail.gmail.com>
+	id S1754594AbZHTPKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 11:10:47 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, benh@kernel.crashing.org,
+       htejun@gmail.com, bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk,
+       zach.brown@oracle.com
+Subject: Re: [PATCH 5/6] aio: use lazy workqueues
+References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
+	<1250763604-24355-6-git-send-email-jens.axboe@oracle.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Thu, 20 Aug 2009 11:09:34 -0400
+In-Reply-To: <1250763604-24355-6-git-send-email-jens.axboe@oracle.com> (Jens
+	Axboe's message of "Thu, 20 Aug 2009 12:20:03 +0200")
+Message-ID: <x49k50yjzdd.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908201710.32147.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 August 2009, roel kluin wrote:
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13947
-> > Subject         : Libertas: Association request to the driver failed
-> > Submitter       : Daniel Mack <daniel@caiaq.de>
-> > Date            : 2009-08-07 19:11 (13 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=57921c312e8cef72ba35a4cfe870b376da0b1b87
-> > References      : http://marc.info/?l=linux-kernel&m=124967234311481&w=4
-> > Handled-By      : Roel Kluin <roel.kluin@gmail.com>
-> 
-> I think this should be fixed with patch of Dan Williams found here:
-> 
-> http://lkml.org/lkml/2009/8/12/299
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-Thanks, bug entry updated.
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  fs/aio.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/fs/aio.c b/fs/aio.c
+> index d065b2c..4103b59 100644
+> --- a/fs/aio.c
+> +++ b/fs/aio.c
+> @@ -72,7 +72,7 @@ static int __init aio_setup(void)
+>  	kiocb_cachep = KMEM_CACHE(kiocb, SLAB_HWCACHE_ALIGN|SLAB_PANIC);
+>  	kioctx_cachep = KMEM_CACHE(kioctx,SLAB_HWCACHE_ALIGN|SLAB_PANIC);
+>  
+> -	aio_wq = create_workqueue("aio");
+> +	aio_wq = create_lazy_workqueue("aio");
+>  
+>  	pr_debug("aio_setup: sizeof(struct page) = %d\n", (int)sizeof(struct page));
 
-Rafael
+So far as I can tell, the aio workqueue isn't used for much these days.
+We could probably get away with switching to keventd.  Zach, isn't
+someone working on a patch to get rid of all of the -EIOCBRETRY
+infrastructure?  That patch would probably make things clearer in this
+area.
+
+Cheers,
+Jeff
