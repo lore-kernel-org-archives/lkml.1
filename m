@@ -1,156 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbZHTP6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZHTQGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbZHTP6d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 11:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZHTP6c
+	id S1754524AbZHTQGl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 12:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZHTQGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 11:58:32 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:12129 "EHLO mx1.redhat.com"
+	Thu, 20 Aug 2009 12:06:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:49035 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754611AbZHTP6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 11:58:30 -0400
-Date: Thu, 20 Aug 2009 18:57:09 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: davidel@xmailserver.org, avi@redhat.com, gleb@redhat.com,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] eventfd: EFD_STATE flag
-Message-ID: <20090820155708.GC8764@redhat.com>
-References: <cover.1250783333.git.mst@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1250783333.git.mst@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1751373AbZHTQGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 12:06:39 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <alpine.LFD.2.01.0908200816090.3158@localhost.localdomain>
+References: <alpine.LFD.2.01.0908200816090.3158@localhost.localdomain> <20090820104956.29972.92662.stgit@warthog.procyon.org.uk> <20090820105001.29972.33221.stgit@warthog.procyon.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dhowells@redhat.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Use the cut_here() function in AFS, CacheFiles, FS-Cache and RxRPC
+Date: Thu, 20 Aug 2009 17:06:31 +0100
+Message-ID: <6149.1250784391@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements a new EFD_STATE flag for eventfd.
-This changes eventfd behaviour in the following way:
-- write simply stores the value written, and is always non-blocking
-- read unblocks when the value written changes, and
-  returns the value written
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Motivation: we'd like to use eventfd in qemu to pass interrupts from
-(emulated or assigned) devices to guest. For level interrupts, the
-counter supported currently by eventfd is not a good match: we really
-need to set interrupt to a level, typically 0 or 1, and give the guest
-ability to see the last value written.
+> instead. And yes, in the long run, I really think we should just extend 
+> the current BUG() reporting to have that kind of semantics, but I think 
+> your "cut_here()" thing is a horrible hack.
 
-Acked-by: Avi Kivity <avi@redhat.com>
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
- fs/eventfd.c            |   41 ++++++++++++++++++++++++++++++++++-------
- include/linux/eventfd.h |    3 ++-
- 2 files changed, 36 insertions(+), 8 deletions(-)
+What about situations where I want to print quite a lot of information, say
+several lines' worth?
 
-diff --git a/fs/eventfd.c b/fs/eventfd.c
-index 347a0e0..7b279e3 100644
---- a/fs/eventfd.c
-+++ b/fs/eventfd.c
-@@ -31,37 +31,59 @@ struct eventfd_ctx {
- 	 * issue a wakeup.
- 	 */
- 	__u64 count;
-+	/*
-+	 * When EF_STATE flag is set, eventfd behaves differently:
-+	 * value written gets stored in "count", read will copy
-+	 * "count" to "state".
-+	 */
-+	__u64 state;
- 	unsigned int flags;
- };
- 
- 
- static inline int eventfd_readable(struct eventfd_ctx *ctx)
- {
--	return ctx->count > 0;
-+	if (ctx->flags & EFD_STATE)
-+		return ctx->state != ctx->count;
-+	else
-+		return ctx->count > 0;
- }
- 
- static inline int eventfd_writeable(struct eventfd_ctx *ctx, u64 n)
- {
--	return ULLONG_MAX - n > ctx->count;
-+	if (ctx->flags & EFD_STATE)
-+		return 1;
-+	else
-+		return ULLONG_MAX - n > ctx->count;
- }
- 
- static inline int eventfd_overflow(struct eventfd_ctx *ctx, u64 cnt)
- {
--	return cnt == ULLONG_MAX;
-+	if (ctx->flags & EFD_STATE)
-+		return 0;
-+	else
-+		return cnt == ULLONG_MAX;
- }
- 
- static inline void eventfd_dowrite(struct eventfd_ctx *ctx, u64 ucnt)
- {
--	if (eventfd_writeable(ctx, ucnt))
--		ucnt = ULLONG_MAX - ctx->count;
-+	if (ctx->flags & EFD_STATE)
-+		ctx->count = ucnt;
-+	else {
-+		if (ULLONG_MAX - ctx->count < ucnt)
-+			ucnt = ULLONG_MAX - ctx->count;
- 
--	ctx->count += ucnt;
-+		ctx->count += ucnt;
-+	}
- }
- 
- static inline u64 eventfd_doread(struct eventfd_ctx *ctx)
- {
- 	u64 ucnt = (ctx->flags & EFD_SEMAPHORE) ? 1 : ctx->count;
--	ctx->count -= ucnt;
-+	if (ctx->flags & EFD_STATE)
-+		ctx->state = ucnt;
-+	else
-+		ctx->count -= ucnt;
- 	return ucnt;
- }
- 
-@@ -337,6 +359,10 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
- 
- 	if (flags & ~EFD_FLAGS_SET)
- 		return -EINVAL;
-+	/* State together with semaphore does not make sense. */
-+	if ((flags & EFD_STATE) && (flags & EFD_SEMAPHORE))
-+		return -EINVAL;
-+
- 
- 	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
- 	if (!ctx)
-@@ -344,6 +370,7 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
- 
- 	kref_init(&ctx->kref);
- 	init_waitqueue_head(&ctx->wqh);
-+	ctx->state = count;
- 	ctx->count = count;
- 	ctx->flags = flags;
- 
-diff --git a/include/linux/eventfd.h b/include/linux/eventfd.h
-index 3b85ba6..78ff649 100644
---- a/include/linux/eventfd.h
-+++ b/include/linux/eventfd.h
-@@ -19,11 +19,12 @@
-  * shared O_* flags.
-  */
- #define EFD_SEMAPHORE (1 << 0)
-+#define EFD_STATE (1 << 1)
- #define EFD_CLOEXEC O_CLOEXEC
- #define EFD_NONBLOCK O_NONBLOCK
- 
- #define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
--#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
-+#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE | EFD_STATE)
- 
- #ifdef CONFIG_EVENTFD
- 
--- 
-1.6.2.5
+For instance, if you look at cachefiles_mark_object_active() in
+fs/cachefiles/namei.c, you'll see something like (which extended by one of my
+patches):
+
+wait_for_old_object:
+	if (xobject->fscache.state < FSCACHE_OBJECT_DYING) {
+		unsigned keylen;
+		u8 *keybuf;
+
+		printk(KERN_ERR "\n");
+		printk(KERN_ERR "CacheFiles: Error:"
+		       " Unexpected object collision\n");
+		printk(KERN_ERR "xobject: OBJ%x\n",
+		       xobject->fscache.debug_id);
+		printk(KERN_ERR "xobjstate=%s\n",
+		       fscache_object_states[xobject->fscache.state]);
+		printk(KERN_ERR "xobjflags=%lx\n", xobject->fscache.flags);
+		printk(KERN_ERR "xobjevent=%lx [%lx]\n",
+		       xobject->fscache.events, xobject->fscache.event_mask);
+		printk(KERN_ERR "xops=%u inp=%u exc=%u\n",
+		       xobject->fscache.n_ops, xobject->fscache.n_in_progress,
+		       xobject->fscache.n_exclusive);
+		printk(KERN_ERR "xcookie=%p [pr=%p nd=%p fl=%lx]\n",
+		       xobject->fscache.cookie,
+		       xobject->fscache.cookie->parent,
+		       xobject->fscache.cookie->netfs_data,
+		       xobject->fscache.cookie->flags);
+		printk(KERN_ERR "xparent=%p\n",
+		       xobject->fscache.parent);
+		printk(KERN_ERR "object: OBJ%x\n",
+		       object->fscache.debug_id);
+		printk(KERN_ERR "cookie=%p [pr=%p nd=%p fl=%lx]\n",
+		       object->fscache.cookie,
+		       object->fscache.cookie->parent,
+		       object->fscache.cookie->netfs_data,
+		       object->fscache.cookie->flags);
+		printk(KERN_ERR "parent=%p\n",
+		       object->fscache.parent);
+
+		keybuf = kmalloc(512, GFP_NOIO);
+		if (keybuf) {
+			struct fscache_cookie *cookie;
+			unsigned loop;
+
+			cookie = object->fscache.cookie;
+			keylen = cookie->def->get_key(cookie->netfs_data,
+						      keybuf, 512);
+			printk(KERN_ERR "okey=[%u] '", keylen);
+			for (loop = 0; loop < keylen; loop++)
+				printk("%02x", keybuf[loop]);
+			printk("'\n");
+
+			cookie = xobject->fscache.cookie;
+			keylen = cookie->def->get_key(cookie->netfs_data,
+						      keybuf, 512);
+			printk(KERN_ERR "xkey=[%u] '", keylen);
+			for (loop = 0; loop < keylen; loop++)
+				printk("%02x", keybuf[loop]);
+			printk("'\n");
+
+			kfree(keybuf);
+		}
+
+		BUG();
+
+With the cut_here() approach, I could put a cut_here() just inside the if-body,
+but doing it with your approach and putting the whole lot in one format string
+would also be pretty horrible, and risks overrunning the printk buffer.
+
+David
+
