@@ -1,93 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbZHTAIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbZHTAKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753574AbZHTAIo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 20:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZHTAIn
+	id S1753572AbZHTAKa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 20:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZHTAK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 20:08:43 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:44809 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752243AbZHTAIm (ORCPT
+	Wed, 19 Aug 2009 20:10:29 -0400
+Received: from cinke.fazekas.hu ([195.199.244.225]:42126 "EHLO
+	cinke.fazekas.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752389AbZHTAK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 20:08:42 -0400
-X-Greylist: delayed 1202 seconds by postgrey-1.27 at vger.kernel.org; Wed, 19 Aug 2009 20:08:40 EDT
-Subject: Re: [Alacrityvm-devel] configfs/sysfs
-From: Alex Tsariounov <alext@novell.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       alacrityvm-devel@lists.sourceforge.net,
-       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090819221654.GA29503@mail.oracle.com>
-References: <4A8971A8.2040102@gmail.com> <20090817150844.GA3307@elte.hu>
-	 <4A89B08A.4010103@gmail.com> <4A8A674E.8070200@redhat.com>
-	 <4A8ABEC9.6090006@gmail.com> <4A8AD678.7050609@redhat.com>
-	 <4A8B9B79.9050004@gmail.com> <4A8BA5AE.3030308@redhat.com>
-	 <1250706227.27590.156.camel@haakon2.linux-iscsi.org>
-	 <4A8C5CBB.10605@redhat.com>  <20090819221654.GA29503@mail.oracle.com>
-Content-Type: text/plain
-Date: Wed, 19 Aug 2009 17:48:17 -0600
-Message-Id: <1250725697.6047.27.camel@zuul.thistledown>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 19 Aug 2009 20:10:29 -0400
+Date: Thu, 20 Aug 2009 02:10:25 +0200 (CEST)
+From: Marton Balint <cus@fazekas.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: CPU scheduler weirdness?
+In-Reply-To: <1250707331.7154.1.camel@laptop>
+Message-ID: <alpine.LNX.2.00.0908192125180.4364@cinke.fazekas.hu>
+References: <20090813084257.GA761@rhlx01.hs-esslingen.de>  <alpine.LNX.2.00.0908131720050.8321@cinke.fazekas.hu>  <20090813155812.GA15714@rhlx01.hs-esslingen.de>  <alpine.LNX.2.00.0908171758340.2764@cinke.fazekas.hu>  <1250665455.7583.326.camel@twins> 
+ <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu>  <1250683834.7583.360.camel@twins>  <alpine.LNX.2.00.0908191428300.20409@cinke.fazekas.hu> <1250707331.7154.1.camel@laptop>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 15:16 -0700, Joel Becker wrote:
-> On Wed, Aug 19, 2009 at 11:12:43PM +0300, Avi Kivity wrote:
-> > On 08/19/2009 09:23 PM, Nicholas A. Bellinger wrote:
-> > >Anyways, I was wondering if you might be interesting in sharing your
-> > >concerns wrt to configfs (conigfs maintainer CC'ed), at some point..?
-> > 
-> > My concerns aren't specifically with configfs, but with all the text
-> > based pseudo filesystems that the kernel exposes.
-> 
-> 	Phew!  It's not just me :-)
 
-The points on *fs vs. ioctl are interesting.  I think both have their
-benefits and both have the downfalls, for example efficiency vs. ease of
-(human) use. I suppose it comes down to whether you're in the fast path
-or not for the most part.  However, just because and interface is not as
-efficient as it can be does not necessarily mean that it's not a good
-one.
+On Wed, 19 Aug 2009, Peter Zijlstra wrote:
 
-As as an example, many moons ago, I worked on implementing some serial
-comms between an embedded speed controller and its command console.
-Being young and efficiency starved ;) I disregarded our other
-controllers which implemented these serial comms with ASCII strings, and
-used binary blobs instead.  I indeed got some respectable performance
-out of doing this, even to the effect of creating a "real time" status
-monitor that updated multiple times a second via the hand-held terminal.
+> On Wed, 2009-08-19 at 14:34 +0200, Marton Balint wrote:
+>>
+>> On Wed, 19 Aug 2009, Peter Zijlstra wrote:
+>>
+>>> On Wed, 2009-08-19 at 14:01 +0200, Marton Balint wrote:
+>>>> On Wed, 19 Aug 2009, Peter Zijlstra wrote:
+>>>>> On Tue, 2009-08-18 at 21:49 +0200, Marton Balint wrote:
+>>>>>
+>>>>>> In the meantime, I was able to create a tiny C program which always
+>>>>>> succesfully reproduces the bug. It's basically an endless loop which does
+>>>>>> not stop while the process is running on the last CPU core. The program
+>>>>>> creates multiple instances of itself, to be able to keep all of the CPU
+>>>>>> cores busy. After 1 second, the processes running on other than the last
+>>>>>> CPU core die, the processes running on the last CPU core remain stuck
+>>>>>> there...
+>>>>>>
+>>>>>> I tested it on my dual core system, if someone could test it on a quad
+>>>>>> core and report back that would probably be useful.
+>>>>>>
+>>>>>> Usage: ./schedtest <number of CPU cores>
+>>>>>>
+>>>>>> And don't forget to kill the stuck processes after using the program! :)
+>>>>>
+>>>>> So what's the bug? Sure one task will stay on the cpu, and because there
+>>>>> is no contention it doesn't get migrated, and therefore won't quit,
+>>>>> how's that a problem?
+>>>>
+>>>> Problem is that more than one processes remain on that CPU core, and none
+>>>> of them get migrated to other (idle) cores. I tested it with my E8400
+>>>> processor and 2.6.31-rc5-git3 kernel.
+>>>
+>>> Only one remains here.. on a c2q running 2.6.31-rc6-tip
+>>>
+>>> Do you have a .config handy?
+>>>
+>>
+>> Yes it's in my original post:
+>>
+>> http://marc.info/?l=linux-kernel&m=125012584709800&w=2
+>
+> Right you are,.. so I build a kernel with the cgroup scheduler in and
+> tested it on a dual-core opteron machine, but I can't seem to reproduce
+> this.
+>
+> Are you using cgroups in any way, or do you simply have it enabled in
+> your config?
 
-However, I totally missed the point of intentionally doing things
-"inefficiently."  For example, our serial debugging setup consisted of
-two VT100 terminals wired up with a custom serial cable that went
-between two communicating units.  Each term would show what each end was
-saying.  Kinda crude, but effective.  Of course with my new and improved
-controller that "spoke the binary language of moisture evaporators,"
-well, all one saw was garbage.  :)
+No, it's just enabled. Actually the kernel is from the openSUSE build 
+service:
 
-Additionally, someone debugging the controllers could just use a term to
-talk to it if it used simple ASCII commands and take terminals, hosts
-and other software out of the picture, but for my controller, well, you
-could only use the custom programmed hand-held term.
+http://download.opensuse.org/repositories/Kernel:/HEAD/openSUSE_11.1/x86_64/
 
-I ended up supporting both ASCII and binary communications on the
-controller for these (and other) reasons.  However, in the end, I
-ditched the binary comms since they really didn't add the efficiency in
-the fast path where it should be added.  (Well, I also ran out of eprom
-space... :)
+But the problem is present for both the kernel-default kernel and the 
+kernel-vanilla kernel which does not contain any suse-specific patches.
 
-In any case, having a humanly understandable communications protocol (or
-ABI) can be extremely useful, and just because it's not efficient
-doesn't automatically mean that it's a bad thing, especially if it's in
-the slow path.  It does have it's down sides as mentioned in this
-thread, so we really need both types.  Because of that, the fuse layer
-on top of a binary ABI is an interesting idea.
+This evening I had a bit more time to test, and I've made a surprising 
+discovery: I can only reproduce the bug if the kernel module of my TV 
+tuner card is loaded. I have a Leadtek Winfast 2000 XP Expert TV card, it 
+uses the cx8800 kernel module. It seems that the problem is somehow 
+related to the infrared sensor of the TV card, because I recompiled the 
+module with the 'case CX88_BOARD_WINFAST2000XP_EXPERT:' line removed from 
+cx88-input.c and I couldn't reproduce the bug with the new kernel module.
 
-Alex
-
+Regards,
+   Marton
