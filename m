@@ -1,124 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZHTOyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZHTOzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbZHTOyZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 10:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZHTOyY
+	id S1754752AbZHTOzm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 10:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbZHTOzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 10:54:24 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:17139 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754300AbZHTOyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 10:54:22 -0400
-Message-ID: <4A8D6302.3080301@redhat.com>
-Date: Thu, 20 Aug 2009 16:51:46 +0200
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 20 Aug 2009 10:55:41 -0400
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:55526 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754269AbZHTOzk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 10:55:40 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1/jQP/JvBPHZjaOqgnl1QCW
+Date: Thu, 20 Aug 2009 16:55:30 +0300
+From: Tony Lindgren <tony@atomide.com>
+To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Syed, Rafiuddin" <rafiuddin.syed@ti.com>,
+       Russell King <rmk@arm.linux.org.uk>, Kalle Valo <kalle.valo@iki.fi>
+Subject: Re: linux-next: manual merge of the omap tree with the arm tree
+Message-ID: <20090820135529.GG12309@atomide.com>
+References: <20090819150433.4c12c612.sfr@canb.auug.org.au> <20090820102004.GD12309@atomide.com> <EAF47CD23C76F840A9E7FCE10091EFAB02BA29B949@dbde02.ent.ti.com> <EAF47CD23C76F840A9E7FCE10091EFAB02BA29B961@dbde02.ent.ti.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
-       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 02/24] io-controller: Core of the elevator fair queuing
-References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com> <1250451046-9966-3-git-send-email-vgoyal@redhat.com> <4A8C21DE.1080001@redhat.com> <20090819184142.GD4391@redhat.com>
-In-Reply-To: <20090819184142.GD4391@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB02BA29B961@dbde02.ent.ti.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Wed, Aug 19, 2009 at 06:01:34PM +0200, Jerome Marchand wrote:
->> Hi Vivek,
->>
->> Vivek Goyal wrote:
->>> o This is core of the io scheduler implemented at elevator layer. This is a mix
->>>   of cpu CFS scheduler and CFQ IO scheduler. Some of the bits from CFS have
->>>   to be derived so that we can support hierarchical scheduling. Without
->>>   cgroups or with-in group, we should essentially get same behavior as CFQ.
->>>
->>> o This patch only shows non-hierarchical bits. Hierarhical code comes in later
->>>   patches.
->>>
->>> o This code is the building base of introducing fair queuing logic in common
->>>   elevator layer so that it can be used by all the four IO schedulers.
->>> +static void enqueue_io_entity(struct io_entity *entity)
->>> +{
->>> +	struct io_service_tree *st = entity->st;
->>> +	struct io_sched_data *sd = io_entity_sched_data(entity);
->>> +
->>> +	/* In case task ioprio class changed while entity was off tree */
->>> +	io_entity_update_prio(entity);
->>> +	st->nr_active++;
->>> +	sd->nr_active++;
->>> +	entity->on_st = 1;
->>> +	place_entity(st, entity, 0);
->>> +	__enqueue_io_entity(st, entity);
->>> +}
+* Shilimkar, Santosh <santosh.shilimkar@ti.com> [090820 16:13]:
+> (Resending with a correction)
+> 
+> > -----Original Message-----
+> > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> > owner@vger.kernel.org] On Behalf Of Shilimkar, Santosh
+> > Sent: Thursday, August 20, 2009 6:33 PM
+> > To: Tony Lindgren; Stephen Rothwell
+> > Cc: linux-omap@vger.kernel.org; linux-next@vger.kernel.org; linux-
+> > kernel@vger.kernel.org; Syed, Rafiuddin; Russell King; Kalle Valo
+> > Subject: RE: linux-next: manual merge of the omap tree with the arm tree
+> > 
+> > > > Today's linux-next merge of the omap tree got a conflict in
+> > > > arch/arm/mach-omap2/board-4430sdp.c between commit
+> > > > 085b54d99b8ee999e7905b8f16e201e0da8ba369 ("ARM: OMAP4: Add UART4
+> > > > support") from the arm tree and commit
+> > > > 4c29fa3e47342666e12e46f35f40dd90b12cd1a4 ("OMAP: remove
+> > OMAP_TAG_UART")
+> > > > from the omap tree.
+> > > >
+> > > > Just context changes (I think).  I fixed it up (see below) and can
+> > carry
+> > > > the fix as necessary.
+> > >
+> > > Thanks yeh the fix looks right. I'll take a look if I can squeeze
+> > > something
+> > > like that into my queue so the merge conflict disappears.
+> > 
+> > There is another issue with the same merge I noticed which not seems to be
+> > correct.
+> > http://git.kernel.org/?p=linux/kernel/git/sfr/linux-
+> > next.git;a=commit;h=a11128de5baf523cf73176170659902fe1335527
+> > 
+> > < Code snippet >
+> > 
+> > 102 static struct plat_serial8250_port serial_platform_data2[] = {
+> > 103         {
+> > 104                 .membase        = OMAP2_IO_ADDRESS(OMAP_UART3_BASE),
+> > 105                 .mapbase        = OMAP_UART3_BASE,
+> > 106                 .irq            = 74,
+> > 107                 .flags          = UPF_BOOT_AUTOCONF,
+> > 108                 .iotype         = UPIO_MEM,
+> > 109                 .regshift       = 2,
+> > 110                 .uartclk        = OMAP24XX_BASE_BAUD * 16,
+> > 111         }, {
+> > 112 #ifdef CONFIG_ARCH_OMAP4
+> > 113                 .membase        = IO_ADDRESS(OMAP_UART4_BASE),
+> > 114                 .mapbase        = OMAP_UART4_BASE,
+> > 115                 .irq            = 70,
+> > 116                 .flags          = UPF_BOOT_AUTOCONF,
+> > 117                 .iotype         = UPIO_MEM,
+> > 118                 .regshift       = 2,
+> > 119                 .uartclk        = OMAP24XX_BASE_BAUD * 16,
+> > 120         }, {
+> > 121 #endif
+> > 122                 .flags          = 0
+> > 123         }
+> > 124 };
+> > 
+> > This patch (ARM: OMAP4: Add UART4) was generated when there was single
+> > structure holding all three UARTs and fourth UART was added accordingly.
+> > And now it's been merged with serial.c which has UART's structures
+> > separated already.
+> > Below patch fixes the same but don't know what is the way to get merged in
+> > such cases.
+> > 
+> > Tony,
+> > Could you please review it?
 
-One more thing. io_entity_update_prio(entity) can change entity->st, so we'd
-better set st after io_entity_update_prio() call. I think it fixes a bug I've
-seen when changing elevator and ioprio_class at the same time:
-
-------------[ cut here ]------------
-kernel BUG at block/elevator-fq.c:1921!
-invalid opcode: 0000 [#1] SMP
-last sysfs file: /sys/block/sda/queue/scheduler
-Modules linked in: ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables bridge stp ipv6 autofs4 hidp rfcomm l2cap bluetooth rfkill sunrpc dm_mirror dm_region_hash dm_log dm_multipath scsi_dh dm_mod video output sbs sbshc battery ac netconsole lp snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device sg snd_pcm_oss snd_mixer_oss rtc_cmos sr_mod snd_pcm cdrom rtc_core tg3 snd_timer libphy snd serio_raw dcdbas i2c_i801 soundcore button pcspkr rtc_lib snd_page_alloc i2c_core parport_pc parport ata_piix libatasd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd [last unloaded: microcode]
-
-Pid: 9127, comm: change_elevator Tainted: G   M       (2.6.31-rc6-io-controller-v8 #69) OptiPlex 745
-EIP: 0060:[<c0537867>] EFLAGS: 00010286 CPU: 1
-EIP is at elv_put_iog+0x61/0x83
-EAX: 00000000 EBX: 00000000 ECX: f607c000 EDX: f607c001
-ESI: f725d300 EDI: f3b59ee0 EBP: f60e5ec0 ESP: f60e5ebc
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process change_elevator (pid: 9127, ti=f60e5000 task=f38083f0 task.ti=f60e5000)
-Stack:
- f607c000 f60e5ee8 c05382f5 f70ab480 f6abb368 00000086 f70ab480 00000000
-<0> f725d300 f725d334 f38d3cc0 f60e5ef8 c05248f7 f725d30c f6abb368 f60e5f28
-<0> c0524a67 00000005 00000000 f725d300 706f6f6e c0820000 f60e5f28 c069e51b
-Call Trace:
- [<c05382f5>] ? elv_exit_fq_data+0x18d/0x195
- [<c05248f7>] ? elevator_exit+0x28/0x4e
- [<c0524a67>] ? elv_iosched_store+0x14a/0x1db
- [<c069e51b>] ? mutex_lock_nested+0x2e/0x36
- [<c052d1f8>] ? queue_attr_store+0x50/0x61
- [<c04e9f56>] ? sysfs_write_file+0xb9/0xe4
- [<c04e9e9d>] ? sysfs_write_file+0x0/0xe4
- [<c04a9e57>] ? vfs_write+0x84/0xdf
- [<c04a9f4b>] ? sys_write+0x3b/0x60
- [<c04029b4>] ? sysenter_do_call+0x12/0x32
-Code: 0b eb fe 83 79 48 00 75 18 83 79 4c 00 75 1c 83 79 60 00 75 0c 83 79 64 00 75 10 83 79 78 00 74 04 0f 0b eb fe 83 79 7c 00 74 04 <0f> 0b eb fe 8d 81 ec 00 00 00 ba f6 65 53 c0 e8 e9 41 f3 ff 85
-EIP: [<c0537867>] elv_put_iog+0x61/0x83 SS:ESP 0068:f60e5ebc
----[ end trace f56eaa89c47eb665 ]---
-
-With the following patch, I can't reproduce it anymore.
+Looks OK, except the OMAP_IO_ADDRESS() has been split to OMAP1_IO_ADDRESS()
+and OMAP2_IO_ADDRESS in omap for-next tree.
 
 Regards,
-Jerome
 
-Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
----
- elevator-fq.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
---- block/elevator-fq.c.orig	2009-08-20 16:39:13.000000000 +0200
-+++ block/elevator-fq.c	2009-08-20 14:29:04.000000000 +0200
-@@ -519,11 +519,12 @@ __enqueue_io_entity(struct io_service_tr
- 
- static void enqueue_io_entity(struct io_entity *entity)
- {
--	struct io_service_tree *st = entity->st;
-+	struct io_service_tree *st;
- 	struct io_sched_data *sd = io_entity_sched_data(entity);
- 
- 	/* In case task ioprio class changed while entity was off tree */
- 	io_entity_update_prio(entity);
-+	st = entity->st;
- 	st->nr_active++;
- 	sd->nr_active++;
- 	entity->on_st = 1;
+Tony
+
+
+> 
+> From c8be9f1b5d4fe1dce06b6f33be33fe57f376ea7f Mon Sep 17 00:00:00 2001
+> From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Date: Thu, 20 Aug 2009 18:33:43 +0530
+> Subject: [PATCH] OMAP4: UART4 : Reworked patch to fix merge conflicts.
+> 
+> This patch adds UART4 support on OMAP4430 development platform.
+> The serial omap patches has split the UART platform
+> data into separate structure hence needs rework.
+> 
+> Without this patch omap_serial_init() would produce kernel crash
+> on OMAP4430 platform while looping for the 4 th UART platform
+> data.
+> 
+> Signed-off-by: Syed Rafiuddin <rafiuddin.syed@ti.com>
+> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> ---
+>  arch/arm/mach-omap2/board-4430sdp.c |    2 +-
+>  arch/arm/mach-omap2/serial.c        |   27 ++++++++++++++++++++++++++-
+>  2 files changed, 27 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+> index b0c7402..1b22307 100644
+> --- a/arch/arm/mach-omap2/board-4430sdp.c
+> +++ b/arch/arm/mach-omap2/board-4430sdp.c
+> @@ -39,7 +39,7 @@ static struct platform_device *sdp4430_devices[] __initdata = {
+>  };
+>  
+>  static struct omap_uart_config sdp4430_uart_config __initdata = {
+> -	.enabled_uarts	= (1 << 0) | (1 << 1) | (1 << 2),
+> +	.enabled_uarts	= (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3),
+>  };
+>  
+>  static struct omap_lcd_config sdp4430_lcd_config __initdata = {
+> diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
+> index a7421a5..b96cac4 100644
+> --- a/arch/arm/mach-omap2/serial.c
+> +++ b/arch/arm/mach-omap2/serial.c
+> @@ -112,7 +112,21 @@ static struct plat_serial8250_port serial_platform_data2[] = {
+>  		.flags		= 0
+>  	}
+>  };
+> -
+> +#ifdef CONFIG_ARCH_OMAP4
+> +static struct plat_serial8250_port serial_platform_data3[] = {
+> +	{
+> +		.membase	= IO_ADDRESS(OMAP_UART4_BASE),
+> +		.mapbase	= OMAP_UART4_BASE,
+> +		.irq		= 70,
+> +		.flags		= UPF_BOOT_AUTOCONF,
+> +		.iotype		= UPIO_MEM,
+> +		.regshift	= 2,
+> +		.uartclk	= OMAP24XX_BASE_BAUD * 16,
+> +	}, {
+> +		.flags		= 0
+> +	}
+> +};
+> +#endif
+>  static inline unsigned int serial_read_reg(struct plat_serial8250_port *up,
+>  					   int offset)
+>  {
+> @@ -550,6 +564,17 @@ static struct omap_uart_state omap_uart[OMAP_MAX_NR_PORTS] = {
+>  			},
+>  		},
+>  	},
+> +#ifdef CONFIG_ARCH_OMAP4
+> +	{
+> +		.pdev = {
+> +			.name			= "serial8250",
+> +			.id			= PLAT8250_DEV_PLATFORM2,
+> +			.dev			= {
+> +				.platform_data	= serial_platform_data3,
+> +			},
+> +		},
+> +	},
+> +#endif
+>  };
+>  
+>  void __init omap_serial_init(void)
+> -- 
+> 1.5.4.7
+> 
+> Regards,
+> Santosh
