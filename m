@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZHTW4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZHTXBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465AbZHTW4c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 18:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZHTW4c
+	id S1755477AbZHTXBP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 19:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755428AbZHTXBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 18:56:32 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:59994 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754670AbZHTW4b (ORCPT
+	Thu, 20 Aug 2009 19:01:14 -0400
+Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:3571 "EHLO
+	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755181AbZHTXBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 18:56:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=FHrP+mf0cvaNk/vPRbt1mxS6cOQsulOJ0CV5NWz76hgC8K7X6iF4UjCnWi+SEEyuD
-	KPJ1iS8OdrcFAlZ9AbLJA==
-Date: Thu, 20 Aug 2009 15:56:23 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Jonathan Corbet <corbet@lwn.net>
-cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       bblum@andrew.cmu.edu, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [PATCH 4/8] Use vmalloc for large cgroups pidlist allocations
-In-Reply-To: <20090820163510.27942b62@bike.lwn.net>
-Message-ID: <alpine.DEB.2.00.0908201542440.29906@chino.kir.corp.google.com>
-References: <20090818235059.22531.42618.stgit@menage.mtv.corp.google.com> <20090818235827.22531.60306.stgit@menage.mtv.corp.google.com> <20090820141400.f6d3d5a6.akpm@linux-foundation.org> <20090820163510.27942b62@bike.lwn.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 20 Aug 2009 19:01:13 -0400
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+To: James.Bottomley@HansenPartnership.com (James Bottomley)
+Date: Thu, 20 Aug 2009 19:01:13 -0400 (EDT)
+From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
+Cc: deller@gmx.de, rusty@rustcorp.com.au, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dave.anglin@nrc.ca, roland@redhat.com
+In-Reply-To: <1250805049.4302.121.camel@mulgrave.site> from "James Bottomley" at Aug 20, 2009 03:50:49 pm
+X-Mailer: ELM [version 2.4 PL25]
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090820230114.36D3E4E7A@hiauly1.hia.nrc.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009, Jonathan Corbet wrote:
-
-> On Thu, 20 Aug 2009 14:14:00 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > Hang on.  Isn't this why Dave just wrote and I just rush-merged
-> > lib/flex_array.c?
+> On Thu, 2009-08-20 at 23:45 +0200, Helge Deller wrote:
+> > On 08/20/2009 08:55 PM, John David Anglin wrote:
+> > >> The reason seems to be, that something in the newer gcc compilers changed to generate multiple sections all named ".text" for the PCREL17 relocations.
+> > >> Older compilers named those sections ".text.1", ".text.2", ".text.3" and so forth.
+> > >
+> > > GCC has never generated ".text.1", etc, on parisc linux as far as I know.
 > > 
-> > Was that code evaluated for this application and judged unsuitable?  If so,
-> > for what reason?
+> > Hmm, I don't like to disagree with an gcc-expert like you,but
+> > I did pasted an objdump in my last mail, which shows that gcc did
+> > generated .text.1, .text.2 and so on:
+> > 
+> > Sections:
+> > Idx Name          Size      VMA       LMA       File off  Algn
+> >    0 .text         00000000  00000000  00000000  00000034  2**0
+> >                    CONTENTS, ALLOC, LOAD, READONLY, CODE
+> > ...
+> >    4 .text.1       00000000  00000000  00000000  000000b0  2**0
+> >                    CONTENTS, ALLOC, LOAD, READONLY, CODE
 > 
-> Should it be helpful: I wrote an overview of the flex_array API here:
-> 
-> 	http://lwn.net/Articles/345273/
-> 
-> I could format it up for addition to Documentation/ if people want.
-> 
+> Since this is a relinked object, might it be possible that ld rather
+> than gcc is the culprit?
 
-It's definitely helpful for this use case, flex array can store 261,632 
-pid_t's on 64 bit.
+I think it must be from binutils.  It might be a result of broken
+section merging.  Possibly, we don't merge .text sections when
+doing ld -r so that stub sections could be interleaved.  Alan Modra
+wrote that code and I'm not that familiar with it.
 
-Instead of reallocating new memory when the pidlist becomes smaller, it 
-would then be sufficient to simply shrink the flex array by freeing parts 
-members that are newly unused (which also avoids the oom possibility in 
-pidlist_resize()).
+The GCC definition of TEXT_SECTION_ASM_OP in pa-linux.h has never changed.
+The PA backend in GCC doesn't play any section games on linux targets,
+so it's hard to see how this could happen.  Check the assembler output
+from GCC if you don't believe me.
 
-flex_array_shrink(struct flex_array *) would require element poisoning 
-when an element is cleared, but that's probably not far off anyways 
-because it has additional advantages such as preventing flex_array_get() 
-on an element that has not been put.
+At some time, GCC may start a new .text section at the beginning of
+each function.  We do this on hpux but not linux.  This will cause
+multiple .text sections to be present in an object and allow finer grained
+stub placement.
+
+Dave
+-- 
+J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
+National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
