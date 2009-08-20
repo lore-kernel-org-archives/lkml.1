@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbZHTV4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZHTV5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233AbZHTV4T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 17:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZHTV4S
+	id S1754327AbZHTV5o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 17:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbZHTV5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 17:56:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35163 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbZHTV4R (ORCPT
+	Thu, 20 Aug 2009 17:57:43 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57556 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751851AbZHTV5m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 17:56:17 -0400
-Subject: Re: [PATCH] intel-iommu: Work around yet another BIOS bug
-From: David Woodhouse <dwmw2@infradead.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: Ray Lee <ray-lk@madrabbit.org>, torvalds@linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Faidon Liambotis <paravoid@debian.org>,
-       Matt Domsch <Matt_Domsch@dell.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       bero@arklinux.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090820214712.GA26360@lackof.org>
-References: <bug-14003-10286@http.bugzilla.kernel.org/>
-	 <20090819142634.0fc550d1.akpm@linux-foundation.org>
-	 <1250754748.8974.17.camel@macbook.infradead.org>
-	 <1250755318.8974.26.camel@macbook.infradead.org>
-	 <2c0942db0908201229o6ba670ebqda4d7cfc72d0ece8@mail.gmail.com>
-	 <1250796740.3311.2.camel@macbook.infradead.org>
-	 <20090820214712.GA26360@lackof.org>
-Content-Type: text/plain
-Date: Thu, 20 Aug 2009 22:54:58 +0100
-Message-Id: <1250805298.3311.62.camel@macbook.infradead.org>
+	Thu, 20 Aug 2009 17:57:42 -0400
+Date: Thu, 20 Aug 2009 22:58:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bruno =?ISO-8859-14?B?UHLpbW9udA==?= <bonbons@linux-vserver.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+Message-ID: <20090820225819.14c70306@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090820212549.7b4d93c9@neptune.home>
+References: <20090819225034.470c52e8@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.0908191834180.26174-100000@iolanthe.rowland.org>
+	<20090820212549.7b4d93c9@neptune.home>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-20 at 15:47 -0600, Grant Grundler wrote:
-> 
-> Could that be to reserve address space that the "disabled" IOMMU
-> might still be responding to?
-> 
-> Ie the BIOS hides the control registers so the OS won't talk to the
-> device but the IOMMU might still attempt to lookup certain address
-> ranges.
-> 
-> I'm more inclined to believe it's sloppiness on the part of the BIOS
-> writers but thought this might be an alternative explanation.
+> > +	/* For reasons that have been lost in antiquity, the TTY
+> > layer calls
+> > +	 * our close method even if the open call fails.  Hence we
+> > must not
+> > +	 * drop the reference obtained by usb_serial_get_by_index().
 
-Nah, this is just the normal story: "We smoked too much crack and fried
-our brains, and we don't do any QA on the crap we write because that
-would leave fewer hours in the day for us to service our crack habit".
+Not lost in antiquity:
 
-We _really_ need open source firmware.
+The logic is this
 
-Or at _least_ firmware written by competent engineers -- but I think
-we've all fairly much given up on that happening by now?
 
--- 
-dwmw2
+	open
+	do some opening work
+	block on carrier
+						HANGUP
+	open returns error
+
+	cleanup still required
+
+So the tty layer always went that way so that the awkward cases around an
+opening failing with a hangup just go away. For the normal drivers which
+basically do
+
+open:
+	tty layer open work
+		open hardware and set ASYNCB_INITIALIZED
+	block for carrier
+
+close:
+	if (!hung_up) {
+		if initialized
+			shutdown()
+	}
+
+the USB layer works really hard to be completely different (in part
+because the old code simply didn't implement open semantics properly or
+hangup correctly - hence things like mgetty fail on them).
+
+The later patches I was working on were trying to get USB serial to the
+point where the model was that drv->open/drv->close were the hardware
+init/shutdown and did indeed get called in nice matching open/close pairs
+and not re-entered or called unserialized.
+
+Nice spot on the ASYNC v ASYNCB bug Alan btw
+
+Alan (the other one)
 
