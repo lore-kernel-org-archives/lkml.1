@@ -1,152 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZHTPBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZHTPDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbZHTPBb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 11:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZHTPBb
+	id S1754767AbZHTPDY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 11:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbZHTPDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 11:01:31 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:40317 "EHLO mx1.redhat.com"
+	Thu, 20 Aug 2009 11:03:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38297 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754287AbZHTPB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 11:01:29 -0400
-Message-ID: <4A8D65CC.8030205@redhat.com>
-Date: Thu, 20 Aug 2009 11:03:40 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1754433AbZHTPDW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 11:03:22 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: q-funk@iki.fi
+Subject: Re: [Bug #13941] x86 Geode issue
+Date: Thu, 20 Aug 2009 17:04:06 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera> <ADSuNT6McuD.A.R0.COIjKB@chimera> <11fae7c70908200033k7c28561eh28e1195ce4a692f8@mail.gmail.com>
+In-Reply-To: <11fae7c70908200033k7c28561eh28e1195ce4a692f8@mail.gmail.com>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       =?UTF-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
-       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH -tip v14 01/12] x86: instruction decoder API
-References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203413.31965.49709.stgit@localhost.localdomain> <20090819234227.GJ4972@nowhere> <20090820002113.GK4972@nowhere>
-In-Reply-To: <20090820002113.GK4972@nowhere>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200908201704.06553.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Thu, Aug 20, 2009 at 01:42:31AM +0200, Frederic Weisbecker wrote:
->> On Thu, Aug 13, 2009 at 04:34:13PM -0400, Masami Hiramatsu wrote:
->>> Add x86 instruction decoder to arch-specific libraries. This decoder
->>> can decode x86 instructions used in kernel into prefix, opcode, modrm,
->>> sib, displacement and immediates. This can also show the length of
->>> instructions.
->>>
->>> This version introduces instruction attributes for decoding instructions.
->>> The instruction attribute tables are generated from the opcode map file
->>> (x86-opcode-map.txt) by the generator script(gen-insn-attr-x86.awk).
->>>
->>> Currently, the opcode maps are based on opcode maps in Intel(R) 64 and
->>> IA-32 Architectures Software Developers Manual Vol.2: Appendix.A,
->>> and consist of below two types of opcode tables.
->>>
->>> 1-byte/2-bytes/3-bytes opcodes, which has 256 elements, are
->>> written as below;
->>>
->>>   Table: table-name
->>>   Referrer: escaped-name
->>>   opcode: mnemonic|GrpXXX [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
->>>    (or)
->>>   opcode: escape # escaped-name
->>>   EndTable
->>>
->>> Group opcodes, which has 8 elements, are written as below;
->>>
->>>   GrpTable: GrpXXX
->>>   reg:  mnemonic [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
->>>   EndTable
->>>
->>> These opcode maps include a few SSE and FP opcodes (for setup), because
->>> those opcodes are used in the kernel.
->>>
->>
->>
->> I'm getting the following build error on an old K7 box:
->>
->> arch/x86/lib/inat.c: In function ‘inat_get_opcode_attribute’:
->> arch/x86/lib/inat.c:29: erreur: ‘inat_primary_table’ undeclared (first use in this function)
->> arch/x86/lib/inat.c:29: erreur: (Each undeclared identifier is reported only once
->> arch/x86/lib/inat.c:29: erreur: for each function it appears in.)
->>
->>
->> I've attached my config. I haven't such problem on a dual x86-64 box.
->
->
-> Actually I have the same problem in x86-64
-> The content of my arch/x86/lib/inat-tables.c:
->
-> /* x86 opcode map generated from x86-opcode-map.txt */
-> /* Do not change this code. */
-> /* Table: one byte opcode */
-> /* Escape opcode map array */
-> const insn_attr_t const *inat_escape_tables[INAT_ESC_MAX + 1][INAT_LPREFIX_MAX + 1] = {
-> };
->
-> /* Group opcode map array */
-> const insn_attr_t const *inat_group_tables[INAT_GRP_MAX + 1][INAT_LPREFIX_MAX + 1] = {
-> };
->
->
-> I guess there is a problem with the generation of this file.
+On Thursday 20 August 2009, Martin-Éric Racine wrote:
+> Yes, it's still valid.
 
-Aah, you may use mawk on Ubuntu 9.04, right?
-If so, unfortunately, mawk is still under development.
+Thanks for the update.
 
-http://invisible-island.net/mawk/CHANGES
+> Screenshots of the crash have been provided. Is anything else missing
+> for the LKML to be able to debug and fix this?
 
-> 20090727
-> 	add check/fix to prevent gsub from recurring to modify on a substring
-> 	of the current line when the regular expression is anchored to the
-> 	beginning of the line; fixes gawk's anchgsub testcase.
->
-> 	add check for implicit concatenation mistaken for exponent; fixes
-> 	gawk's hex testcase.
->
-> 	add character-classes to built-in regular expressions.
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Look, this means we can't use char-class expressions like
-[:lower:] until this version...
+An idea of what can be wrong?
 
-And I've found another bug in mawk-1.3.3-20090728(the latest one).
-it almost works, but;
+> On Wed, Aug 19, 2009 at 11:26 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13941
+> > Subject         : x86 Geode issue
+> > Submitter       : Martin-Éric Racine <q-funk@iki.fi>
+> > Date            : 2009-08-03 12:58 (17 days old)
+> > References      : http://marc.info/?l=linux-kernel&m=124930434732481&w=4
 
-$ mawk 'BEGIN {printf("0x%x\n", 0)}'
-0x1
-$ gawk 'BEGIN {printf("0x%x\n", 0)}'
-0x0
-
-This bug skips an array element index 0x0 in inat-tables.c :(
-
-So, I recommend you to install gawk instead mawk until that
-supports all posix-awk features, since I don't think it is
-good idea to avoid all those bugs which depends on
-implementation (not specification).
-
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Rafael
