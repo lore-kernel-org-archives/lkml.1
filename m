@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbZHTWOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbZHTWPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbZHTWOx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 18:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbZHTWOx
+	id S1755238AbZHTWPa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 18:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbZHTWP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 18:14:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57993 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751642AbZHTWOw (ORCPT
+	Thu, 20 Aug 2009 18:15:29 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56877 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753463AbZHTWP2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 18:14:52 -0400
-Date: Thu, 20 Aug 2009 15:13:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       peterz@infradead.org, torvalds@linux-foundation.org, tytso@mit.edu,
-       arjan@infradead.org, greg@kroah.com, mcgrof@gmail.com,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org, sam@ravnborg.org,
-       corbet@lwn.net, sourcejedi.lkml@googlemail.com, andi@firstfloor.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
-Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
-Message-Id: <20090820151326.b43038ce.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0908201741370.16405@gandalf.stny.rr.com>
-References: <20090819025634.987354707@goodmis.org>
-	<20090820143025.7134930f.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.0908201741370.16405@gandalf.stny.rr.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Aug 2009 18:15:28 -0400
+Date: Thu, 20 Aug 2009 18:15:28 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: perf: Problem compiling /tools/perf/Documentation in 2.6.31-rc6
+Message-ID: <20090820221528.GS25206@bombadil.infradead.org>
+References: <4A8D9D56.5080107@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8D9D56.5080107@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 17:43:38 -0400 (EDT)
-Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> > 
-> > > The following patches are in:
-> > > 
-> > >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> > > 
-> > >     branch: kconfig
-> > 
-> > Sam's been quiet lately.  I suggest that you add this to linux-next
-> > now so people get a chance to poke at it.
+On Thu, Aug 20, 2009 at 03:00:38PM -0400, Gregory Haskins wrote:
+> Hi Ingo,
 > 
-> I have no means of pushing into next. Would someone like to do a pull for 
-> me?
+> I'm seeing this in 2.6.31-rc6:
+> 
+> ghaskins@dev:~/sandbox/git/fabric/linux-2.6/tools/perf/Documentation> make
+>     SUBDIR ../
+> make[1]: `PERF-VERSION-FILE' is up to date.
+>     ASCIIDOC perf-examples.html
+> ERROR: perf-examples.txt: line 1: manpage document title is mandatory
+> FAILED: perf-examples.txt: line 8: illegal style name: From an e-mail by
+> Ingo Molnar
+> make: *** [perf-examples.html] Error 1
+> 
+> It could very well be pilot error.  Any ideas?
+> 
 
-If suitably bribed, Stephen will add you tree directly to the linux-nxt
-lineup.
+This was fixed in a recent commit to tip, probably upstream by now.
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commitdiff;h=2932cffc89e9a1476b28a59896fa4f81e0d4f131
 
+regards, Kyle
