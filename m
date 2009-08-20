@@ -1,72 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbZHTWWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbZHTW1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932129AbZHTWWD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 18:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932104AbZHTWWB
+	id S1755297AbZHTW1W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 18:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbZHTW1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 18:22:01 -0400
-Received: from ndmsnpf01.ndc.nasa.gov ([198.117.0.121]:47277 "EHLO
-	ndmsnpf01.ndc.nasa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752522AbZHTWWA (ORCPT
+	Thu, 20 Aug 2009 18:27:21 -0400
+Received: from hq-exedge.brocade.com ([66.243.153.82]:34800 "EHLO
+	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752430AbZHTW1U convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 18:22:00 -0400
-X-Greylist: delayed 1200 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 18:22:00 EDT
-Message-ID: <4A8DC7D9.10005@nasa.gov>
-Date: Thu, 20 Aug 2009 15:02:01 -0700
-From: Jeff Becker <Jeffrey.C.Becker@nasa.gov>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
+	Thu, 20 Aug 2009 18:27:20 -0400
+X-Greylist: delayed 304 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 18:27:20 EDT
+From: Jing Huang <huangj@Brocade.COM>
+To: Jing Huang <huangj@Brocade.COM>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "general@lists.openfabrics.org" <general@lists.openfabrics.org>
-Subject: Re: [ofa-general] Opinions on moving Linux InfiniBand/RDMA mailing
- list	to vger?
-References: <adavdkiw3gx.fsf@cisco.com>
-In-Reply-To: <adavdkiw3gx.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Aug 2009 22:02:02.0115 (UTC) FILETIME=[D8BDB530:01CA21E1]
-X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.7400:2.4.4,1.2.40,4.0.166 definitions=2009-08-20_11:2009-08-11,2009-08-20,2009-08-20 signatures=0
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Ramkumar Vadivelu <rvadivel@Brocade.COM>,
+       Vinodh Ravindran <vravindr@Brocade.COM>,
+       Ashok Rajagopalan <arajagop@Brocade.COM>
+Date: Thu, 20 Aug 2009 15:22:16 -0700
+Subject: Request to include  Brocade BFA FC SCSI driver into Linux SCSI tree
+Thread-Topic: Request to include  Brocade BFA FC SCSI driver into Linux SCSI
+ tree
+Thread-Index: AcohY0dqSPoVAGHqQC2IPqSf6KmXqwAf/ZAQ
+Message-ID: <B0A7AF226B49A14897036E9B3A68CFFECB1A935D74@HQ-EXCH-7.corp.brocade.com>
+References: <200908200654.n7K6shpn005971@swe57.brocade.com>
+In-Reply-To: <200908200654.n7K6shpn005971@swe57.brocade.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> Lately, I've had a few emails that I thought would have been of interest
-> to both lkml and also to general@lists.openfabrics.org.  I've held back
-> on cross-posting them because I know that general@ is subscribers-only,
-> and the bounce messages are quite annoying to replies coming from lkml.
->
-> The general@ list is subscribers-only because the openfabrics.org
-> sysadmin team is already overworked without trying to keep an open list
-> spam free.  (I say that with no intention to criticize the
-> openfabrics.org admins -- they do a terrific job of keeping things
-> running with the limited resources available; it's more a testament to
-> how impressive the vger mailing list admins are)
->
-> I've also noticed one or two messages about the possibility of moving
-> another moderated list to vger.  Certainly I prefer open lists that
-> don't require subscriptions to post.
->
-> So with that background, what would people think about creating an open
-> vger list (say, linux-rdma@vger.kernel.org) to carry the discussion
-> currently on general@lists.openfabrics.org?  (The transition plan would
-> probably be to keep the general@ list for a month or two, with frequent
-> announcements of the new list, until archives etc. have caught up with
-> the switch)
->   
+Hi James,
 
-+1
+I resubmitted the bfa driver patches which include fixes for some code review comments provided by Sam Ravnborg on our July 20 submission.
 
--jeff
+Here, on behalf of Brocade Communication System, Inc, I am requesting you to include the driver into the linux SCSI tree. We will continue to enhance the driver and fix issues reported from linux-scsi community and our internal test group as well.
 
-> Thanks,
->   Roland
-> _______________________________________________
-> general mailing list
-> general@lists.openfabrics.org
-> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
->
-> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
->   
+Thanks and best regards.
 
+Jing Huang
+Brocade Communications Systems
+
+> -----Original Message-----
+> From: linux-scsi-owner@vger.kernel.org [mailto:linux-scsi-
+> owner@vger.kernel.org] On Behalf Of Jing Huang
+> Sent: Wednesday, August 19, 2009 11:55 PM
+> To: James.Bottomley@HansenPartnership.com
+> Cc: linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; Ramkumar
+> Vadivelu; Vinodh Ravindran
+> Subject: [PATCH 0/14] bfa: Brocade BFA FC SCSI driver (overview)
+> 
+> From: Jing Huang <huangj@brocade.com>
+> 
+> Resubmitting the patches after implemented some of the code review
+> comments
+> from Sam Ravnborg. Patches are generated using 2.6.31-rc6 kernel.
+> 
+> [PATCH 1/14]: SCSI LLD driver code, module init/exit, PCI and SCSI host
+> entry
+> points, interrupt handler, and sysfs interface etc.
+> 
+> [PATCH 2/14]: Hardware/FW access code. part-1
+> 
+> [PATCH 3/14]: Hardware/FW access code. part-2
+> 
+> [PATCH 4/14]: Hardware/FW access code. part-3
+> 
+> [PATCH 5/14]: Hardware/FW access code. part-4
+> 
+> [PATCH 6/14]: FC state machines. part-1
+> 
+> [PATCH 7/14]: FC state machines. part-2
+> 
+> [PATCH 8/14]: FC state machines. part-3
+> 
+> [PATCH 9/14]: FC state machines. part-3
+> 
+> [PATCH 10/14]: Common header files shared by linux driver,
+> hardware/FW access code, FC state machines. part-1
+> 
+> [PATCH 11/14]: Common header files shared by linux driver,
+> hardware/FW access code, FC state machines. part-2
+> 
+> [PATCH 12/14]: Common header files shared by linux driver,
+> hardware/FW access code, FC state machines. part-3
+> 
+> [PATCH 13/14]: Updated Kconfig and Makefile for driver/scsi, and Makefile
+> for bfa driver
+> 
+> [PATCH 14/14]: Updated MAINTAINER file.
+> 
+> Signed-off-by: Jing Huang <huangj@brocade.com>
+> ---
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
