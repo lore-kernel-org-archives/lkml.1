@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbZHTTeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbZHTTel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755316AbZHTTeH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 15:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbZHTTeG
+	id S1755325AbZHTTel (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 15:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142AbZHTTek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 15:34:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36872 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbZHTTeE (ORCPT
+	Thu, 20 Aug 2009 15:34:40 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35544 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752117AbZHTTek (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 15:34:04 -0400
-Subject: Re: [PATCH] intel-iommu: Work around yet another BIOS bug
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
-       Faidon Liambotis <paravoid@debian.org>,
-       Matt Domsch <Matt_Domsch@dell.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       bero@arklinux.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <2c0942db0908201229o6ba670ebqda4d7cfc72d0ece8@mail.gmail.com>
-References: <bug-14003-10286@http.bugzilla.kernel.org/>
-	 <20090819142634.0fc550d1.akpm@linux-foundation.org>
-	 <1250754748.8974.17.camel@macbook.infradead.org>
-	 <1250755318.8974.26.camel@macbook.infradead.org>
-	 <2c0942db0908201229o6ba670ebqda4d7cfc72d0ece8@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 20 Aug 2009 20:32:20 +0100
-Message-Id: <1250796740.3311.2.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 20 Aug 2009 15:34:40 -0400
+Date: Thu, 20 Aug 2009 15:34:40 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] TTY: fix typos
+In-Reply-To: <20090820192915.GB15574@kroah.com>
+Message-ID: <Pine.LNX.4.44L0.0908201533540.2670-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-20 at 12:29 -0700, Ray Lee wrote:
-> Think about changing this to a warning that "Your IOMMU appears to be
-> disabled." All ones is, after all, the traditional hint that the
-> device is turned off.
+On Thu, 20 Aug 2009, Greg KH wrote:
 
-Hints are all very well, but the BIOS provided an ACPI table explicitly
-telling us that there was an active IOMMU at this location.
+> On Thu, Aug 20, 2009 at 03:23:47PM -0400, Alan Stern wrote:
+> > This patch (as1282) fixes some obvious typos in the TTY core.
+> > 
+> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> > CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> 
+> Ick, this looks like it needs to go in for .31, right?
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+No, these are typos in the new code queued for .32.  2.6.31 looks all 
+right.
+
+Alan Stern
 
