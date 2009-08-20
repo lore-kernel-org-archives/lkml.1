@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750945AbZHTPOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750815AbZHTPOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750945AbZHTPOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 11:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbZHTPOO
+	id S1750815AbZHTPOc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 11:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbZHTPOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 11:14:14 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:23817 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbZHTPON convert rfc822-to-8bit (ORCPT
+	Thu, 20 Aug 2009 11:14:32 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:57114 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750815AbZHTPOb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 11:14:13 -0400
-Message-Id: <4A8D84670200007800010D31@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Thu, 20 Aug 2009 16:14:15 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: adjust targets specification in
-	 arch/x86/boot/compressed/Makefile
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 20 Aug 2009 11:14:31 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Netdev <netdev@vger.kernel.org>
+Subject: e1000e: why does pci_enable_pcie_error_reporting() fail on my hp2510p?
+Date: Thu, 20 Aug 2009 17:14:29 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200908201714.30638.elendil@planet.nl>
+X-OriginalArrivalTime: 20 Aug 2009 15:14:31.0173 (UTC) FILETIME=[EAD80B50:01CA21A8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The absence of vmlinux.lds here keeps .vmlinux.lds.cmd from being
-included, which in turn leads to it and all its dependents always
-getting rebuilt independent of whether they are already up-to-date.
+With the current kernel I suddenly get the following error displayed
+during boot:
+  e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
+  e1000e: Copyright (c) 1999-2008 Intel Corporation.
+  e1000e 0000:00:19.0: PCI INT A -> GSI 22 (level, low) -> IRQ 22
+! e1000e 0000:00:19.0: pci_enable_pcie_error_reporting failed 0xfffffffb
+  e1000e 0000:00:19.0: setting latency timer to 64
+  e1000e 0000:00:19.0: irq 26 for MSI/MSI-X
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+This looks to be the consequence of:
+commit 68eac4602b9104cdaa6c18b3edd914cececa6a1e
+Author: Xiaotian Feng <dfeng@redhat.com>
+Date:   Fri Aug 14 14:35:52 2009 +0000
+    e1000e: fix use of pci_enable_pcie_error_reporting
 
----
- arch/x86/boot/compressed/Makefile |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Looking at the change it seems logical that this error, that I previously
+only saw during resumes from suppend to RAM, now also shows up during
+system boot. So I don't think it can be qualified as a regression, but it
+is certainly rather annoying.
 
---- linux-2.6.31-rc6/arch/x86/boot/compressed/Makefile	2009-08-18 15:31:15.000000000 +0200
-+++ 2.6.31-rc6-x86-boot-compressed-targets/arch/x86/boot/compressed/Makefile	2009-08-20 16:56:53.000000000 +0200
-@@ -4,7 +4,7 @@
- # create a compressed vmlinux image from the original vmlinux
- #
- 
--targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
-+targets := vmlinux.lds vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
- 
- KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
- KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
+Questions:
+- is it possible that the error occurs due to a kernel bug, or is this
+  certain to be due to broken hardware?
+- as the error is non-fatal, should it maybe be changed from dev_err
+  to dev_info, so that at least it does not show up during a boot
+  with 'quiet'?
+- if broken hardware is common, should the kernel complain at all,
+  or at least maybe show a slightly "friendlier" message?
 
+System: hp2510p (ICH8, Core2 Duo) running x86_64, Debian stable ("Lenny")
 
+00:19.0 Ethernet controller [0200]: Intel Corporation 82566MM
+        Gigabit Network Connection [8086:1049] (rev 03)
+    Subsystem: Hewlett-Packard Company Device 30c9
+    Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+    Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+    Latency: 0
+    Interrupt: pin A routed to IRQ 26
+    Region 0: Memory at e0620000 (32-bit, non-prefetchable) [size=128K]
+    Region 1: Memory at e0640000 (32-bit, non-prefetchable) [size=4K]
+    Region 2: I/O ports at 2060 [size=32]
+    Capabilities: [c8] Power Management version 2
+            Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+            Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+    Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+            Address: 00000000fee0300c  Data: 41b1
+    Kernel driver in use: e1000e
+    Kernel modules: e1000e
 
+I can provide full dmesg and kernel config if desired.
+
+Cheers,
+FJP
