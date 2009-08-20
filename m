@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbZHTF54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbZHTF71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbZHTF54 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 01:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbZHTF5z
+	id S1753334AbZHTF71 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 01:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZHTF70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 01:57:55 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35185 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbZHTF5y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 01:57:54 -0400
-Subject: Re: linux-next: manual merge of the usb tree with the tip tree
-From: Peter Zijlstra <peterz@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: Jason Wessel <jason.wessel@windriver.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Robin Getz <rgetz@blackfin.uclinux.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20090820024839.GA4121@kroah.com>
-References: <20090819175901.59f1af9e.sfr@canb.auug.org.au>
-	 <20090819233818.GD2875@kroah.com> <4A8CB6CF.3010109@windriver.com>
-	 <20090820024839.GA4121@kroah.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 20 Aug 2009 07:57:37 +0200
-Message-Id: <1250747857.8282.114.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 20 Aug 2009 01:59:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42452 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752814AbZHTF70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 01:59:26 -0400
+Message-ID: <4A8CE63E.9050702@suse.de>
+Date: Thu, 20 Aug 2009 07:59:26 +0200
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, stable@kernel.org
+Subject: Re: [REGRESSION] _end symbol missing from Symbol.map
+References: <4A83B680.5000508@suse.de> <20090819093704.f1620baa.akpm@linux-foundation.org>
+In-Reply-To: <20090819093704.f1620baa.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-19 at 19:48 -0700, Greg KH wrote:
-> On Wed, Aug 19, 2009 at 09:37:03PM -0500, Jason Wessel wrote:
-> > Greg KH wrote:
-> > > On Wed, Aug 19, 2009 at 05:59:01PM +1000, Stephen Rothwell wrote:
-> > >   
-> > >> Hi Greg,
-> > >>
-> > >> Today's linux-next merge of the usb tree got a conflict in
-> > >> kernel/printk.c between commit 4d09161196c9a836eacea4b36e2f217bc34894cf
-> > >> ("printk: Enable the use of more than one CON_BOOT (early console)") from
-> > >> the tip tree and commit e289e7dc72eb6bfce70e2722d97a00f5e02893e8 ("USB:
-> > >> printk: early_printk,console: Allow more than one early console") from
-> > >> the usb tree.
-> > >>
-> > >> I assume that these are trying to do (more or less) the same thing.  I
-> > >> have dropped the one from the usb tree for today.  Please sort this out -
-> > >> at least remove the usb tree one until you have done so, thanks.
-> > >>     
-> > >
-> > > Jason, any thoughts?  I'm going to drop your printk stuff from my tree
-> > > now, care to sort it out and resend your whole series?
-> > >
-> > >   
-> > 
-> > I will investigate, re-test and send a new series to Greg KH later in
-> > the week.  The preliminary result shows the problem is a result of a
-> > clash with two different patches in the tip tree.   My patch set and the
-> > two patches it collides with context wise fix different things.
-> > 
-> > In order to resolve this it appears that the series will need to get
-> > split into something for the tip tree and something for the USB tree, or
-> > we wait for the next pull of the tip branch into the Linus's tree.
+Andrew Morton wrote:
+> On Thu, 13 Aug 2009 08:45:20 +0200 Hannes Reinecke <hare@suse.de> wrote:
 > 
-> Hm, I'd prefer to get this in before that :)
+>> Hi all,
+>>
+>> with 2.6.31 'crash' on x86_64 falls flat on its face as the '_end' symbol
+>> is missing from the System.map file.
+>>
+>> The culprit is commit 091e52c3551d3031343df24b573b770b4c6c72b6,
+>> which moved the '_end' symbol into it's own section.
+>> Apparently this causes kallsyms to not reference it properly.
+>>
+>> So either we'd need to revert part of the patch to not
+>> include _end in it's own section:
+>>
+>> diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+>> index 59f31d2..1422df5 100644
+>> --- a/arch/x86/kernel/vmlinux.lds.S
+>> +++ b/arch/x86/kernel/vmlinux.lds.S
+>> @@ -376,9 +376,7 @@ SECTIONS
+>>                 __brk_limit = .;
+>>         }
+>>  
+>> -       .end : AT(ADDR(.end) - LOAD_OFFSET) {
+>> -               _end = .;
+>> -       }
+>> +       _end = .;
+>>  
+>>         /* Sections to be discarded */
+>>         /DISCARD/ : {
+>>
+>> or someone has to fixup kallsyms. But this is far beyond my comfort zone.
+>>
 > 
-> Let me know what you find.  If there are conflicts, we can work it out.
+> So System.map is part of the kernel API too?  Sigh.
+> 
+> Your email client replaces tabs with spaces.
+> 
+I know.
 
-Maybe Robin can help out, since he authored one of the conflicting
-patches? 
+> The patch didn't have a signed-off-by:
+> 
+I know, too.
+However, this is clearly a band-aid, and as such I reported
+it more as an RFC.
+One (Sam?) should really fix up kallsyms to extract the _end symbol.
+Hence I didn't warrant it with a Signed-off line.
+
+> I queued it up, and tagged it for -stable backporting.  Unless we come
+> up with something better.
+> 
+I was sort of hoping Sam would speak up and present some better approach ...
+
+> We might not get this into 2.6.31, in which case this fix or its
+> replacement will need backporting to 2.6.30.x and 2.6.31.x (IMO).
+> 
+Thanks for the feedback.
+
+Cheers,
+
+Hannes
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
