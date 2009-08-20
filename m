@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZHTBi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZHTBic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbZHTBi0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 21:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbZHTBi0
+	id S1753792AbZHTBic (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 21:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZHTBi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 21:38:26 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:59015 "EHLO elrond.infotech.no"
+	Wed, 19 Aug 2009 21:38:29 -0400
+Received: from rtr.ca ([76.10.145.34]:49781 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbZHTBiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 21:38:25 -0400
-Message-ID: <4A8CA90D.6040001@interlog.com>
-Date: Wed, 19 Aug 2009 21:38:21 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
+	id S1751779AbZHTBi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 21:38:27 -0400
+Message-ID: <4A8CA913.7020902@rtr.ca>
+Date: Wed, 19 Aug 2009 21:38:27 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
 User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
 To: Jamie Lokier <jamie@shareable.org>
-CC: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>,
        Linus Torvalds <torvalds@linux-foundation.org>, xfs@oss.sgi.com,
        linux-fsdevel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, liml@rtr.ca, jens.axboe@oracle.com
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Subject: Re: [PATCH, RFC] xfs: batched discard support
 References: <20090816004705.GA7347@infradead.org> <20090819203916.GA25296@elte.hu> <20090820010552.GA22107@infradead.org> <20090820011004.GC14005@shareable.org>
 In-Reply-To: <20090820011004.GC14005@shareable.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Jamie Lokier wrote:
-> Christoph Hellwig wrote:
->>> So i'm torn about the 'syscall versus ioctl' issue, i'd 
->>> like to avoid making interface design mistakes and i'd 
->>> like to solicit some opinions about this. I've attached 
->>> the perfcounters ioctl patch below.
->> Only add a syscall if it has _one_ clear defined purpose,
->> which has kernel-wide meaning.
-> 
-> One clear defined purpose which comes to mind is a "trim" or "punch"
-> system call, for making holes in files as well as trimming block
-> devices.  Several other OSes have that capability on files.
-> 
+..
 > I don't remember - does TRIM guarantee the blocks read zeros afterwards?
-> 
-> It would be tidy if it does, as it could have the same meaning with files.
+..
 
-Both ATA and SCSI leave it up to the device to decide
-whether reads after a trim on a logical block are
-determinate (i.e. zeroes are returned) or indeterminate.
+No, it doesn't.
 
-In the case of ATA the IDENTIFY DEVICE data word 69 bit
-14 gives the indication. In the case of SCSI the
-READ CAPACITY(16) command response TPRZ bit gives the
-indication. In both case a value of one indicates
-determinate.
+A drive can optionally support "deterministic TRIM", whereby it will return
+consistent data for any given trimmed sector afterwards, but that doesn't mean zeros.
 
-Doug Gilbert
-
-
+-ml
