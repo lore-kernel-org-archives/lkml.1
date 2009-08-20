@@ -1,70 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZHTBbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZHTBeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753522AbZHTBbz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 19 Aug 2009 21:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZHTBby
+	id S1753599AbZHTBeW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 19 Aug 2009 21:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZHTBeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 19 Aug 2009 21:31:54 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:48109 "EHLO e8.ny.us.ibm.com"
+	Wed, 19 Aug 2009 21:34:22 -0400
+Received: from mga14.intel.com ([143.182.124.37]:48840 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbZHTBby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 19 Aug 2009 21:31:54 -0400
-Date: Wed, 19 Aug 2009 18:31:53 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mathieu.desnoyers@polymtl.ca, mingo@elte.hu, josht@linux.vnet.ibm.com,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, rostedt@goodmis.org, hugh.dickins@tiscali.co.uk,
-       benh@kernel.crashing.org
-Subject: [PATCH -tip/core/rcu] Fix rcu_migrate_callback() to allow for
-	multiple waiters
-Message-ID: <20090820013153.GA19944@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	id S1753037AbZHTBeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 19 Aug 2009 21:34:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,411,1246863600"; 
+   d="scan'208";a="177972499"
+Date: Thu, 20 Aug 2009 09:34:18 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [RFC] memcg: move definitions to .h and inline some functions
+Message-ID: <20090820013418.GA12766@localhost>
+References: <4A856467.6050102@redhat.com> <20090815054524.GB11387@localhost> <20090818224230.A648.A69D9226@jp.fujitsu.com> <20090819134036.GA7267@localhost> <f4131456fc4b1dd4f5b8d060e0cbef80.squirrel@webmail-b.css.fujitsu.com> <20090819142705.GN22626@balbir.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090819142705.GN22626@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current interaction between rcu_barrier() and CPU hotplug can result
-in multiple tasks waiting on rcu_migrate_wq: there can be one CPU-hotplug
-notifier, and, because rcu_barrier() invokes wait_migrated_callbacks()
-outside of rcu_barrier_mutex, an arbitrarily large number of tasks
-executing in _rcu_barrier().  This situation could result in hangs,
-because rcu_migrate_callback() would wake up but one task.
+On Wed, Aug 19, 2009 at 10:27:05PM +0800, Balbir Singh wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-19 23:18:01]:
+> 
+> > Wu Fengguang ?$B$5$s$O=q$-$^$7$?!'
+> > > On Tue, Aug 18, 2009 at 11:57:52PM +0800, KOSAKI Motohiro wrote:
+> > >>
+> > >> > > This one of the reasons why we unconditionally deactivate
+> > >> > > the active anon pages, and do background scanning of the
+> > >> > > active anon list when reclaiming page cache pages.
+> > >> > >
+> > >> > > We want to always move some pages to the inactive anon
+> > >> > > list, so it does not get too small.
+> > >> >
+> > >> > Right, the current code tries to pull inactive list out of
+> > >> > smallish-size state as long as there are vmscan activities.
+> > >> >
+> > >> > However there is a possible (and tricky) hole: mem cgroups
+> > >> > don't do batched vmscan. shrink_zone() may call shrink_list()
+> > >> > with nr_to_scan=1, in which case shrink_list() _still_ calls
+> > >> > isolate_pages() with the much larger SWAP_CLUSTER_MAX.
+> > >> >
+> > >> > It effectively scales up the inactive list scan rate by 10 times when
+> > >> > it is still small, and may thus prevent it from growing up for ever.
+> > >> >
+> > >> > In that case, LRU becomes FIFO.
+> > >> >
+> > >> > Jeff, can you confirm if the mem cgroup's inactive list is small?
+> > >> > If so, this patch should help.
+> > >>
+> > >> This patch does right thing.
+> > >> However, I would explain why I and memcg folks didn't do that in past
+> > >> days.
+> > >>
+> > >> Strangely, some memcg struct declaration is hide in *.c. Thus we can't
+> > >> make inline function and we hesitated to introduce many function calling
+> > >> overhead.
+> > >>
+> > >> So, Can we move some memcg structure declaration to *.h and make
+> > >> mem_cgroup_get_saved_scan() inlined function?
+> > >
+> > > OK here it is. I have to move big chunks to make it compile, and it
+> > > does reduced a dozen lines of code :)
+> > >
+> > > Is this big copy&paste acceptable? (memcg developers CCed).
+> > >
+> > > Thanks,
+> > > Fengguang
+> > 
+> > I don't like this. plz add hooks to necessary places, at this stage.
+> > This will be too big for inlined function, anyway.
+> > plz move this after you find overhead is too big.
 
-This patch addresses this problem by awakening all sleepers.
+It shall not be a performance regression, since the text size is slightly
+smaller with the patch:
 
-Located-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+            text      data        bss        dec      hex      filename
+before      8732148   2771858   11048432   22552438   1581f76  vmlinux
+after       8731972   2771858   11048432   22552262   1581ec6  vmlinux    
 
- rcupdate.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+> Me too.. I want to abstract the implementation within memcontrol.c to
+> be honest (I am concerned that someone might include memcontrol.h and
+> access its structure members, which scares me). Hiding it within
+> memcontrol.c provides the right level of abstraction.
 
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index bd5d5c8..6c59e1b 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -211,10 +211,17 @@ void rcu_barrier_sched(void)
- }
- EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+Yeah quite reasonable.
  
-+/*
-+ * Wake up anyone waiting on migration of RCU callbacks from a CPU
-+ * going offline.  There can be only one CPU-hotplug notifier waiting,
-+ * but there can be any number of rcu_barrier() invocations waiting,
-+ * due to the fact that rcu_barrier() does its wait outside of the
-+ * rcu_barrier_mutex.
-+ */
- static void rcu_migrate_callback(struct rcu_head *notused)
- {
- 	if (atomic_dec_and_test(&rcu_migrate_type_count))
--		wake_up(&rcu_migrate_wq);
-+		wake_up_all(&rcu_migrate_wq);
- }
- 
- extern int rcu_cpu_notify(struct notifier_block *self,
+> Could you please explain your motivation for this change? I got cc'ed
+> on to a few emails, is this for the patch that export nr_save_scanned
+> approach?
+
+Yes, KOSAKI proposed to inline the mem_cgroup_get_saved_scan() function
+introduced in that patch, which requires moving the structs into .h
+
+I'll submit the original (un-inlined) patch.
+
+Thanks,
+Fengguang
