@@ -1,52 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbZHTKSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbZHTKSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbZHTKSq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 06:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZHTKSo
+	id S1754044AbZHTKSs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 06:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZHTKSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 06:18:44 -0400
-Received: from queue01.mail.zen.net.uk ([212.23.3.234]:57515 "EHLO
-	fizeau.zen.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753880AbZHTKR4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 06:17:56 -0400
-X-Greylist: delayed 1168 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 06:17:56 EDT
-Message-ID: <4A8D1E2E.1010006@csr.com>
-Date: Thu, 20 Aug 2009 10:58:06 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Stefani Seibold <stefani@seibold.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>
-References: <1250714990.13476.3.camel@wall-e>	 <1250715606.13476.15.camel@wall-e> <1250715819.3407.88.camel@Joe-Laptop.home>
-In-Reply-To: <1250715819.3407.88.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 82.70.146.43
-X-SA-Exim-Mail-From: david.vrabel@csr.com
-Subject: Re: [PATCH 4/7] kfifo: rename kfifo_put... into kfifo_in... and kfifo_get...
- into kfifo_out...
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:20:07 +0000)
-X-SA-Exim-Scanned: Yes (on localhost)
-X-Originating-Smarthost01-IP: [82.70.146.41]
+	Thu, 20 Aug 2009 06:18:46 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60177 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753939AbZHTKRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 06:17:55 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
+       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 4/4] direct-io: get rid of irq flag saving where it isn't needed
+Date: Thu, 20 Aug 2009 12:17:45 +0200
+Message-Id: <1250763466-24282-11-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.6.4.173.g3f189
+In-Reply-To: <1250763466-24282-10-git-send-email-jens.axboe@oracle.com>
+References: <1250763466-24282-1-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-2-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-3-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-4-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-5-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-6-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-7-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-8-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-9-git-send-email-jens.axboe@oracle.com>
+ <1250763466-24282-10-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Wed, 2009-08-19 at 23:00 +0200, Stefani Seibold wrote:
->> rename kfifo_put... into kfifo_in... to prevent miss use of old non in kernel-tree drivers
->> ditto for kfifo_get... -> kfifo_out...
-> 
-> I would have thought
-> 	kfifo_put -> kfifo_out
-> 	kfifo_get -> kfifo_in
-> but maybe that's just me.
+We use the flags saving variant of the spin lock functions everywhere
+in fs/direct-io.c, even in places where we otherwise block. Get rid
+of that except for the end_io path, which may indeed be called with
+irqs disabled.
 
-Use push and pull instead?  In and out (whichever way) isn't obvious enough.
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ fs/direct-io.c |   24 ++++++++++--------------
+ 1 files changed, 10 insertions(+), 14 deletions(-)
 
-David
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 0e923f2..2f73593 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -259,13 +259,12 @@ dio_bio_alloc(struct dio *dio, struct block_device *bdev,
+ static void dio_bio_submit(struct dio *dio)
+ {
+ 	struct bio *bio = dio->bio;
+-	unsigned long flags;
+ 
+ 	bio->bi_private = dio;
+ 
+-	spin_lock_irqsave(&dio->bio_lock, flags);
++	spin_lock_irq(&dio->bio_lock);
+ 	dio->refcount++;
+-	spin_unlock_irqrestore(&dio->bio_lock, flags);
++	spin_unlock_irq(&dio->bio_lock);
+ 
+ 	if (dio->is_async && dio->rw == READ)
+ 		bio_set_pages_dirty(bio);
+@@ -295,10 +294,9 @@ static void dio_cleanup(struct dio *dio)
+  */
+ static struct bio *dio_await_one(struct dio *dio)
+ {
+-	unsigned long flags;
+ 	struct bio *bio = NULL;
+ 
+-	spin_lock_irqsave(&dio->bio_lock, flags);
++	spin_lock_irq(&dio->bio_lock);
+ 
+ 	/*
+ 	 * Wait as long as the list is empty and there are bios in flight.  bio
+@@ -309,17 +307,17 @@ static struct bio *dio_await_one(struct dio *dio)
+ 	while (dio->refcount > 1 && dio->bio_list == NULL) {
+ 		__set_current_state(TASK_UNINTERRUPTIBLE);
+ 		dio->waiter = current;
+-		spin_unlock_irqrestore(&dio->bio_lock, flags);
++		spin_unlock_irq(&dio->bio_lock);
+ 		io_schedule();
+ 		/* wake up sets us TASK_RUNNING */
+-		spin_lock_irqsave(&dio->bio_lock, flags);
++		spin_lock_irq(&dio->bio_lock);
+ 		dio->waiter = NULL;
+ 	}
+ 	if (dio->bio_list) {
+ 		bio = dio->bio_list;
+ 		dio->bio_list = bio->bi_private;
+ 	}
+-	spin_unlock_irqrestore(&dio->bio_lock, flags);
++	spin_unlock_irq(&dio->bio_lock);
+ 	return bio;
+ }
+ 
+@@ -388,14 +386,13 @@ static int dio_bio_reap(struct dio *dio)
+ 
+ 	if (dio->reap_counter++ >= 64) {
+ 		while (dio->bio_list) {
+-			unsigned long flags;
+ 			struct bio *bio;
+ 			int ret2;
+ 
+-			spin_lock_irqsave(&dio->bio_lock, flags);
++			spin_lock_irq(&dio->bio_lock);
+ 			bio = dio->bio_list;
+ 			dio->bio_list = bio->bi_private;
+-			spin_unlock_irqrestore(&dio->bio_lock, flags);
++			spin_unlock_irq(&dio->bio_lock);
+ 			ret2 = dio_bio_complete(dio, bio);
+ 			if (ret == 0)
+ 				ret = ret2;
+@@ -870,7 +867,6 @@ direct_io_worker(struct kiocb *iocb, struct inode *inode,
+ 	struct dio_args *args, unsigned blkbits, get_block_t get_block,
+ 	dio_iodone_t end_io, struct dio *dio)
+ {
+-	unsigned long flags;
+ 	int rw = args->rw;
+ 	ssize_t ret = 0;
+ 	ssize_t ret2;
+@@ -984,9 +980,9 @@ direct_io_worker(struct kiocb *iocb, struct inode *inode,
+ 	 * completion paths can drop their ref and use the remaining count to
+ 	 * decide to wake the submission path atomically.
+ 	 */
+-	spin_lock_irqsave(&dio->bio_lock, flags);
++	spin_lock_irq(&dio->bio_lock);
+ 	ret2 = --dio->refcount;
+-	spin_unlock_irqrestore(&dio->bio_lock, flags);
++	spin_unlock_irq(&dio->bio_lock);
+ 
+ 	if (ret2 == 0) {
+ 		ret = dio_complete(dio, args->offset, ret);
+-- 
+1.6.4.53.g3f55e
+
