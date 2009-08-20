@@ -1,84 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZHTOon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZHTOqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbZHTOon (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 10:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZHTOom
+	id S1754755AbZHTOqQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 10:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZHTOqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 10:44:42 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:9326 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751949AbZHTOol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 10:44:41 -0400
-Date: Thu, 20 Aug 2009 17:42:56 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
-Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
-Message-ID: <20090820144256.GB8338@redhat.com>
-References: <cover.1250187913.git.mst@redhat.com> <200908201510.54482.arnd@arndb.de> <20090820133817.GA7834@redhat.com> <200908201631.37285.arnd@arndb.de>
+	Thu, 20 Aug 2009 10:46:15 -0400
+Received: from mail-ew0-f207.google.com ([209.85.219.207]:47968 "EHLO
+	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752146AbZHTOqO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 10:46:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=phQFsey7qB10ffodWvznPl/COj3BcRqeAwcr11aAPsuy3IuHpjQEqp3x5f//HderCS
+         yHTk3ZeNWXkVypGScBsGkQRBQiVOEQhXY/k9o1TFe6Bi0w2YgYGEC9dgKrx4n6k7fpvn
+         M4S1oNuP6YukFyDP+J9cEv0T1q3oELE1wZoIg=
+Date: Thu, 20 Aug 2009 16:46:10 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       =?utf-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
+       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH -tip v14 01/12] x86: instruction decoder API
+Message-ID: <20090820144608.GC6389@nowhere>
+References: <20090813203403.31965.20973.stgit@localhost.localdomain> <20090813203413.31965.49709.stgit@localhost.localdomain> <20090819234227.GJ4972@nowhere> <4A8D60BD.8010100@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200908201631.37285.arnd@arndb.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A8D60BD.8010100@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 04:31:36PM +0200, Arnd Bergmann wrote:
-> On Thursday 20 August 2009, Michael S. Tsirkin wrote:
-> > On Thu, Aug 20, 2009 at 03:10:54PM +0200, Arnd Bergmann wrote:
-> > > On Thursday 20 August 2009, Michael S. Tsirkin wrote:
-> >
-> > It doesn't matter that I don't want this: allowing 1 process corrupt
-> > another's memory is a security issue.  Once you get an fd, you want to
-> > be able to use it without worrying that a bug in another process will
-> > crash yours.
-> 
-> Ok, got it. Yes, that would be inacceptable.
-> 
-> > > > If you assume losing the code for the second error condition is OK, why
-> > > > is the first one so important?  That's why I used a counter (eventfd)
-> > > > per virtqueue, on error userspace can scan the ring and poll the socket
-> > > > and discover what's wrong, and counter ensures we can detect that error
-> > > > happened while we were not looking.
-> > > 
-> > > I guess we were talking about different kinds of errors here, and I'm
-> > > still not sure which one you are talking about.
-> > > 
-> > Non fatal errors. E.g. translation errors probably should be
-> > non-fatal. I can also imagine working around guest bugs in
-> > userspace.
-> 
-> Ah, so I guess the confusion was that I was worried about
-> errors coming from the socket file descriptor, while you
-> were thinking of errors from the guest side, which I did not
-> expect to happen.
-> 
-> The errors from the socket (or chardev, as that was the
-> start of the argument) should still fit into the categories
-> that I mentioned, either they can be handled by the host
-> kernel, or they are fatal.
+On Thu, Aug 20, 2009 at 10:42:05AM -0400, Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+>> On Thu, Aug 13, 2009 at 04:34:13PM -0400, Masami Hiramatsu wrote:
+>>> Add x86 instruction decoder to arch-specific libraries. This decoder
+>>> can decode x86 instructions used in kernel into prefix, opcode, modrm,
+>>> sib, displacement and immediates. This can also show the length of
+>>> instructions.
+>>>
+>>> This version introduces instruction attributes for decoding instructions.
+>>> The instruction attribute tables are generated from the opcode map file
+>>> (x86-opcode-map.txt) by the generator script(gen-insn-attr-x86.awk).
+>>>
+>>> Currently, the opcode maps are based on opcode maps in Intel(R) 64 and
+>>> IA-32 Architectures Software Developers Manual Vol.2: Appendix.A,
+>>> and consist of below two types of opcode tables.
+>>>
+>>> 1-byte/2-bytes/3-bytes opcodes, which has 256 elements, are
+>>> written as below;
+>>>
+>>>   Table: table-name
+>>>   Referrer: escaped-name
+>>>   opcode: mnemonic|GrpXXX [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
+>>>    (or)
+>>>   opcode: escape # escaped-name
+>>>   EndTable
+>>>
+>>> Group opcodes, which has 8 elements, are written as below;
+>>>
+>>>   GrpTable: GrpXXX
+>>>   reg:  mnemonic [operand1[,operand2...]] [(extra1)[,(extra2)...] [| 2nd-mnemonic ...]
+>>>   EndTable
+>>>
+>>> These opcode maps include a few SSE and FP opcodes (for setup), because
+>>> those opcodes are used in the kernel.
+>>>
+>>
+>>
+>> I'm getting the following build error on an old K7 box:
+>>
+>> arch/x86/lib/inat.c: In function ‘inat_get_opcode_attribute’:
+>> arch/x86/lib/inat.c:29: erreur: ‘inat_primary_table’ undeclared (first use in this function)
+>> arch/x86/lib/inat.c:29: erreur: (Each undeclared identifier is reported only once
+>> arch/x86/lib/inat.c:29: erreur: for each function it appears in.)
+>
+> Thanks for reporting!
+> Hmm, it seems that inat-tables.c is not correctly generated.
+> Could you tell me which awk you used and send the inat-tables.c?
+>
+> Thank you,
+>
 
-Hmm, are you sure? Imagine a device going away while socket is bound to
-it.  You get -ENXIO. It's not fatal in a sense that you can bind the
-socket to another device and go on, right?
 
-> I'll read up in your code to see how you handle asynchronous
-> non-fatal errors from the guest. Intuitively, I'd still
-> assume that returning the first error should be enough
-> because it will typically mean that you cannot continue
-> without fixing it up first, and you might get the next
-> error immediately after that.
-> 
-> 	Arnd <><
+Sure:
 
-Yes, but need to be careful not to lose that next error, and these
-errors only block one queue. I handle this by reporting them on an
-eventfd, per vq, which userspace can poll. 
+$ awk -Wv
+mawk 1.3.3 Nov 1996, Copyright (C) Michael D. Brennan
 
--- 
-MST
+compiled limits:
+max NF             32767
+sprintf buffer      2040
+
+And I've sent you the content of inat_tables.c in the other answer :)
+
