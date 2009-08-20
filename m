@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbZHTVDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbZHTVJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbZHTVDp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 17:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZHTVDo
+	id S1754906AbZHTVJH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 17:09:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbZHTVJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 17:03:44 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40285 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbZHTVDo (ORCPT
+	Thu, 20 Aug 2009 17:09:07 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:39465 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752250AbZHTVJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 17:03:44 -0400
-Date: Thu, 20 Aug 2009 23:03:42 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alex Chiang <achiang@hp.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
-Message-ID: <20090820210342.GC29994@basil.fritz.box>
-References: <20090814163618.GQ7185@ldl.fc.hp.com> <1250276831.3077.17.camel@sbs-t61.sc.intel.com> <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com> <20090819210251.GD13061@ldl.fc.hp.com> <1250794594.2754.10.camel@sbs-t61.sc.intel.com> <20090820205425.GF13061@ldl.fc.hp.com>
+	Thu, 20 Aug 2009 17:09:06 -0400
+Message-ID: <4A8DBB17.5020301@caviumnetworks.com>
+Date: Thu, 20 Aug 2009 14:07:35 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090820205425.GF13061@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: ralf@linux-mips.org, mpm@selenic.com, herbert@gondor.apana.org.au
+CC: linux-mips@linux-mips.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] New hardware RNG for Octeon SOCs (v2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Aug 2009 21:07:35.0521 (UTC) FILETIME=[3DB30510:01CA21DA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I am leaning towards sysfs, and prefer:
-> 
->  	/sys/devices/system/cpu/$cpu/chassis_id
-> 
-> How does that sound?
+Based on feedback from AKPM, I have a new revision of the Octeon
+hardware RNG driver.
 
-I would prefer to simply use the existing physical id for this like
-in your original patch.  We already have a bewildering zoo of different
-CPU IDs, no need to increase the confusion even more.
+The changes from v1 are minor, just eliminating some bogus casting by
+accessing the driver state by embedding struct hwrng in the driver
+data, which is now accessed with the container_of() trick.
 
-Incidentially mcelog already knows how to use physical ID for this,
-would need to be changed for a new sysfs interface
+The first patch adds some port definitions and the octeon_rng platform
+device.  The second is the driver.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Since Octeon is a mips port, we might want to merge both patches via
+Ralf's linux-mips.org tree.
+
+David Daney (2):
+   MIPS: Octeon:  Add hardware RNG platform device.
+   hw_random: Add hardware RNG for Octeon SOCs.
+
+  arch/mips/cavium-octeon/setup.c              |   43 ++++++++
+  arch/mips/include/asm/octeon/cvmx-rnm-defs.h |   88 +++++++++++++++
+  drivers/char/hw_random/Kconfig               |   13 +++
+  drivers/char/hw_random/Makefile              |    1 +
+  drivers/char/hw_random/octeon-rng.c          |  147 
+++++++++++++++++++++++++++
+  5 files changed, 292 insertions(+), 0 deletions(-)
+  create mode 100644 arch/mips/include/asm/octeon/cvmx-rnm-defs.h
+  create mode 100644 drivers/char/hw_random/octeon-rng.c
+
