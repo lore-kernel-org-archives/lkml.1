@@ -1,173 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZHTNNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbZHTNNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbZHTNNf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbZHTNNe
+	id S1754480AbZHTNNo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 09:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbZHTNNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:13:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:64139 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754290AbZHTNNd (ORCPT
+	Thu, 20 Aug 2009 09:13:42 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:39817 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754456AbZHTNNj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:13:33 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCHv3 2/2] vhost_net: a kernel-level virtio server
-Date: Thu, 20 Aug 2009 15:10:54 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
-Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Or Gerlitz <ogerlitz@voltaire.com>
-References: <cover.1250187913.git.mst@redhat.com> <200908191727.07681.arnd@arndb.de> <20090820083155.GB5448@redhat.com>
-In-Reply-To: <20090820083155.GB5448@redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 20 Aug 2009 09:13:39 -0400
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
+       Tony Lindgren <tony@atomide.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+CC: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Syed, Rafiuddin" <rafiuddin.syed@ti.com>,
+       Russell King <rmk@arm.linux.org.uk>, Kalle Valo <kalle.valo@iki.fi>
+Date: Thu, 20 Aug 2009 18:43:15 +0530
+Subject: RE: linux-next: manual merge of the omap tree with the arm tree
+Thread-Topic: linux-next: manual merge of the omap tree with the arm tree
+Thread-Index: AcohiFzi9dSVtprDTqGlY31ypQuYKQAAfjmgAANIebA=
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02BA29B961@dbde02.ent.ti.com>
+References: <20090819150433.4c12c612.sfr@canb.auug.org.au>
+ <20090820102004.GD12309@atomide.com>
+ <EAF47CD23C76F840A9E7FCE10091EFAB02BA29B949@dbde02.ent.ti.com>
+In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB02BA29B949@dbde02.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908201510.54482.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX197lILuDQUOa9/LRUY4aJAlSTlgYRGboQz+M96
- BD0zzZNZwTtwZRZOqnPjaSRmTL12/UZpYhVoFUho9Fe+HFKdKo
- tpYXJiXW2YHatcwKuh1yA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 20 August 2009, Michael S. Tsirkin wrote:
-> On Wed, Aug 19, 2009 at 05:27:07PM +0200, Arnd Bergmann wrote:
-> > On Wednesday 19 August 2009, Michael S. Tsirkin wrote:
-> > > On Wed, Aug 19, 2009 at 03:46:44PM +0200, Arnd Bergmann wrote:
-> > > > On Wednesday 19 August 2009, Michael S. Tsirkin wrote:
-> > > >
-> > > > Leaving that aside for now, you could replace VHOST_NET_SET_SOCKET,
-> > > > VHOST_SET_OWNER, VHOST_RESET_OWNER
-> > > 
-> > > SET/RESET OWNER is still needed: otherwise if you share a descriptor
-> > > with another process, it can corrupt your memory.
-> > 
-> > How? The point of using user threads is that you only ever access the
-> > address space of the thread that called the ioctl.
+(Resending with a correction)
+
+> -----Original Message-----
+> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> owner@vger.kernel.org] On Behalf Of Shilimkar, Santosh
+> Sent: Thursday, August 20, 2009 6:33 PM
+> To: Tony Lindgren; Stephen Rothwell
+> Cc: linux-omap@vger.kernel.org; linux-next@vger.kernel.org; linux-
+> kernel@vger.kernel.org; Syed, Rafiuddin; Russell King; Kalle Valo
+> Subject: RE: linux-next: manual merge of the omap tree with the arm tree
 > 
-> Think about this example with processes A and B sharing an fd:
-> A does SET_USED_ADDRESS
-> B does SET_USED_ADDRESS
-> A does VHOST_NET_SPLICE
-> See how stuff gets written into a random place in memory of A?
-
-Yes, I didn't think of that. It doesn't seem like a big problem
-though, because it's a clear misuse of the API (I guess your
-current code returns an error for one of the SET_USED_ADDRESS
-ioctls), so I would see it as a classic garbage-in garbage-out
-case.
-
-It may even work in the case that the sharing of the fd resulted
-from a fork, where the address contains the same buffer in both
-processes. I can't think of a reason why you would want to use
-it like that though.
-
-> > Why would I wake up the threads spuriously? Do you mean for
-> > stopping the transmission or something else? I guess a pthread_kill
-> > would be enough for shutting it down.
+> > > Today's linux-next merge of the omap tree got a conflict in
+> > > arch/arm/mach-omap2/board-4430sdp.c between commit
+> > > 085b54d99b8ee999e7905b8f16e201e0da8ba369 ("ARM: OMAP4: Add UART4
+> > > support") from the arm tree and commit
+> > > 4c29fa3e47342666e12e46f35f40dd90b12cd1a4 ("OMAP: remove
+> OMAP_TAG_UART")
+> > > from the omap tree.
+> > >
+> > > Just context changes (I think).  I fixed it up (see below) and can
+> carry
+> > > the fix as necessary.
+> >
+> > Thanks yeh the fix looks right. I'll take a look if I can squeeze
+> > something
+> > like that into my queue so the merge conflict disappears.
 > 
-> If you kill and restart them you lost priority etc parameters, but maybe.
-
-If you want to restart it, just send a nonfatal signal (SIGUSR1,
-SIGRTMIN, ...) instead of a SIGKILL.
-
-> > > More importantly, you lose control of CPU locality.  Simply put, a
-> > > natural threading model in virtualization is one thread per guest vcpu.
-> > > Asking applications to add multiple helper threads just so they can
-> > > block forever is wrong, IMO, as userspace has no idea which CPU
-> > > they should be on, what priority to use, etc.
-> > 
-> > But the kernel also doesn't know this, you get the same problem in
-> > another way. If you have multiple guests running at different priorities,
-> > the kernel will use those priorities to do the more important transfers
-> > first, while with a global workqueue every guest gets the same priority.
+> There is another issue with the same merge I noticed which not seems to be
+> correct.
+> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-
+> next.git;a=commit;h=a11128de5baf523cf73176170659902fe1335527
 > 
-> We could create more threads if this becomes a problem. I just think it
-> should be transparent to userspace. Possibly it's useful to look at the
-> packet header as well to decide on priority: this is something userspace
-> can't do.
-
-Being transparent to user space would be nice, I agree. Letting user space
-choose would also be nice, e.g. if you want to distribute eight available
-hardware queue pairs to three guests in a non-obvious way. The
-implementation depends to some degree on how we want to do multiqueue
-RX/TX in virtio-net in the long run. For best cache locality and NUMA
-behaviour, we might want to have one virtqueue per guest CPU and control
-them independently from the host.
-
-Priorities of the packets are dealt with in the packet scheduler for
-external interfaces, I guess that is sufficient. I'm not sure if we
-need to honor the same priorities for guest-to-guest communication,
-my feeling is that we don't need to.
-
-> > You say that the natural model is to have one thread per guest
-> > CPU,
+> < Code snippet >
 > 
-> Sorry I was not clear. I think userspace should create thread per guest.
-> We can create as many as we need for networking but I think this should
-> be behind the scenes, so userspace shouldn't bother with host CPUs, it
-> will just get it wrong. Think of CPU hotplug, interrupts migrating
-> between CPUs, etc ...
-
-Yes, I hope we can avoid letting qemu know about host CPUs.
-I'm not sure we can avoid it completely, because something needs
-to set physical IRQ affinity and such for the virtual devices
-if you want to get the best locality.
-
-> > but you have a thread per host CPU instead. If the numbers
-> > are different, you probably lose either way.
+> 102 static struct plat_serial8250_port serial_platform_data2[] = {
+> 103         {
+> 104                 .membase        = OMAP2_IO_ADDRESS(OMAP_UART3_BASE),
+> 105                 .mapbase        = OMAP_UART3_BASE,
+> 106                 .irq            = 74,
+> 107                 .flags          = UPF_BOOT_AUTOCONF,
+> 108                 .iotype         = UPIO_MEM,
+> 109                 .regshift       = 2,
+> 110                 .uartclk        = OMAP24XX_BASE_BAUD * 16,
+> 111         }, {
+> 112 #ifdef CONFIG_ARCH_OMAP4
+> 113                 .membase        = IO_ADDRESS(OMAP_UART4_BASE),
+> 114                 .mapbase        = OMAP_UART4_BASE,
+> 115                 .irq            = 70,
+> 116                 .flags          = UPF_BOOT_AUTOCONF,
+> 117                 .iotype         = UPIO_MEM,
+> 118                 .regshift       = 2,
+> 119                 .uartclk        = OMAP24XX_BASE_BAUD * 16,
+> 120         }, {
+> 121 #endif
+> 122                 .flags          = 0
+> 123         }
+> 124 };
 > 
-> The trick I used is to keep as much as possible local
-> TX done on the CPU that runs the guest,
-> RX done on the CPU that runs the NIC interrupt.
-> a smart SMP guest sees which cpu gets interrupts
-> from NIC and schedules RX there, and it shouldn't matter
-> if the numbers of CPUs are different.
-
-yes, that sounds good.
-
-> > It gets worse if you try to apply NUMA policies.
+> This patch (ARM: OMAP4: Add UART4) was generated when there was single
+> structure holding all three UARTs and fourth UART was added accordingly.
+> And now it's been merged with serial.c which has UART's structures
+> separated already.
+> Below patch fixes the same but don't know what is the way to get merged in
+> such cases.
 > 
-> I believe the best we could do is avoid switching CPUs
-> until we know the actual destination.
+> Tony,
+> Could you please review it?
 
-My point is that the RX data in the guest address space
-should be on the same NUMA node that gets the interrupt.
+>From c8be9f1b5d4fe1dce06b6f33be33fe57f376ea7f Mon Sep 17 00:00:00 2001
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Date: Thu, 20 Aug 2009 18:33:43 +0530
+Subject: [PATCH] OMAP4: UART4 : Reworked patch to fix merge conflicts.
 
-> > > And note that there might be more than one error.  I guess, that's
-> > > another problem with trying to layer on top of vfs.
-> > 
-> > Why is that different from any other system call?
-> 
-> With other system calls nothing happens while you process the error.
-> Here, the guest (other queues) and the network keep running (unless
-> there is a thread per queue, maybe we can block a queue, but we both
-> agreed above we don't want that).
+This patch adds UART4 support on OMAP4430 development platform.
+The serial omap patches has split the UART platform
+data into separate structure hence needs rework.
 
-Well, I would expect error conditions to be fatal for the connections
-normally, so blocking the queue is totally fine here IMHO. The ioctl
-would never return while a guest is running and connected to a
-working NIC.
+Without this patch omap_serial_init() would produce kernel crash
+on OMAP4430 platform while looping for the 4 th UART platform
+data.
 
-> > We just return when
-> > we hit the first error condition.
-> 
-> If you assume losing the code for the second error condition is OK, why
-> is the first one so important?  That's why I used a counter (eventfd)
-> per virtqueue, on error userspace can scan the ring and poll the socket
-> and discover what's wrong, and counter ensures we can detect that error
-> happened while we were not looking.
+Signed-off-by: Syed Rafiuddin <rafiuddin.syed@ti.com>
+Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+---
+ arch/arm/mach-omap2/board-4430sdp.c |    2 +-
+ arch/arm/mach-omap2/serial.c        |   27 ++++++++++++++++++++++++++-
+ 2 files changed, 27 insertions(+), 2 deletions(-)
 
-I guess we were talking about different kinds of errors here, and I'm
-still not sure which one you are talking about.
+diff --git a/arch/arm/mach-omap2/board-4430sdp.c b/arch/arm/mach-omap2/board-4430sdp.c
+index b0c7402..1b22307 100644
+--- a/arch/arm/mach-omap2/board-4430sdp.c
++++ b/arch/arm/mach-omap2/board-4430sdp.c
+@@ -39,7 +39,7 @@ static struct platform_device *sdp4430_devices[] __initdata = {
+ };
+ 
+ static struct omap_uart_config sdp4430_uart_config __initdata = {
+-	.enabled_uarts	= (1 << 0) | (1 << 1) | (1 << 2),
++	.enabled_uarts	= (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3),
+ };
+ 
+ static struct omap_lcd_config sdp4430_lcd_config __initdata = {
+diff --git a/arch/arm/mach-omap2/serial.c b/arch/arm/mach-omap2/serial.c
+index a7421a5..b96cac4 100644
+--- a/arch/arm/mach-omap2/serial.c
++++ b/arch/arm/mach-omap2/serial.c
+@@ -112,7 +112,21 @@ static struct plat_serial8250_port serial_platform_data2[] = {
+ 		.flags		= 0
+ 	}
+ };
+-
++#ifdef CONFIG_ARCH_OMAP4
++static struct plat_serial8250_port serial_platform_data3[] = {
++	{
++		.membase	= IO_ADDRESS(OMAP_UART4_BASE),
++		.mapbase	= OMAP_UART4_BASE,
++		.irq		= 70,
++		.flags		= UPF_BOOT_AUTOCONF,
++		.iotype		= UPIO_MEM,
++		.regshift	= 2,
++		.uartclk	= OMAP24XX_BASE_BAUD * 16,
++	}, {
++		.flags		= 0
++	}
++};
++#endif
+ static inline unsigned int serial_read_reg(struct plat_serial8250_port *up,
+ 					   int offset)
+ {
+@@ -550,6 +564,17 @@ static struct omap_uart_state omap_uart[OMAP_MAX_NR_PORTS] = {
+ 			},
+ 		},
+ 	},
++#ifdef CONFIG_ARCH_OMAP4
++	{
++		.pdev = {
++			.name			= "serial8250",
++			.id			= PLAT8250_DEV_PLATFORM2,
++			.dev			= {
++				.platform_data	= serial_platform_data3,
++			},
++		},
++	},
++#endif
+ };
+ 
+ void __init omap_serial_init(void)
+-- 
+1.5.4.7
 
-	Arnd <><
-
+Regards,
+Santosh
