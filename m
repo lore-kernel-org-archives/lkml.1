@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbZHTN6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZHTOAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754316AbZHTN6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbZHTN6S
+	id S1754495AbZHTOAV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 10:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbZHTOAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:58:18 -0400
-Received: from tservice.ru ([195.178.208.66]:53763 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754174AbZHTN6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:58:18 -0400
-Date: Thu, 20 Aug 2009 17:58:18 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
-       ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: Re: [PATCH 02/17] vfs: Export __generic_file_aio_write() and add some comments
-Message-ID: <20090820135818.GA29564@ioremap.net>
-References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-3-git-send-email-jack@suse.cz> <20090819202208.GA14113@ioremap.net> <20090820123137.GE16486@duck.novell.com> <20090820133028.GA28420@ioremap.net> <20090820135245.GG16486@duck.novell.com>
+	Thu, 20 Aug 2009 10:00:20 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49099 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754206AbZHTOAT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 10:00:19 -0400
+Date: Thu, 20 Aug 2009 10:00:19 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [RFC][PATCH 1/7] PM: Update kerneldoc comments in
+ drivers/base/power/main.c
+In-Reply-To: <200908200114.51290.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908200959410.3048-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090820135245.GG16486@duck.novell.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 03:52:45PM +0200, Jan Kara (jack@suse.cz) wrote:
->   Well, there were two patches. Both were similarly simple but there could
+On Thu, 20 Aug 2009, Rafael J. Wysocki wrote:
 
-As of sync behaviour - pohmelfs will follow the usual VFS behaviour, so
-if you managed to break this, we still will follow the mainstream :)
+> On Thursday 20 August 2009, Alan Stern wrote:
+> > On Wed, 19 Aug 2009, Rafael J. Wysocki wrote:
+> > 
+> > > On Monday 17 August 2009, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > Subject: PM: Update kerneldoc comments in drivers/base/power/main.c
+> > > > 
+> > > > The kerneldoc comments in drivers/base/power/main.c are generally
+> > > > outdated and some of them don't describe the functions very
+> > > > accurately.  Update them and standardize the format to use spaces
+> > > > instead of tabs.
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Any objections to this patch from anyone?  Greg, Alan, Randy?
+> > 
+> > Just some very minor changes.
+> 
+> Thanks for spotting the mistakes.
+> Updated patch is appended.
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM: Update kerneldoc comments in drivers/base/power/main.c
+> 
+> The kerneldoc comments in drivers/base/power/main.c are generally
+> outdated and some of them don't describe the functions very
+> accurately.  Update them and standardize the format to use spaces
+> instead of tabs.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-> be some subtleties I've missed :). So can I add your Acked-by also to those
-> two pohmelfs patches?
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
 
-Sure.
-
--- 
-	Evgeniy Polyakov
