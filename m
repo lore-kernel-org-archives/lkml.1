@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967AbZHTSvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752071AbZHTSvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751967AbZHTSvF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 14:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZHTSvE
+	id S1752071AbZHTSvc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 14:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZHTSvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 14:51:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43604 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751735AbZHTSvD (ORCPT
+	Thu, 20 Aug 2009 14:51:31 -0400
+Received: from outbound-mail-25.bluehost.com ([69.89.21.20]:60367 "HELO
+	outbound-mail-25.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751862AbZHTSvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 14:51:03 -0400
-Date: Thu, 20 Aug 2009 11:48:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: torvalds@linux-foundation.org, Faidon Liambotis <paravoid@debian.org>,
-       Matt Domsch <Matt_Domsch@dell.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       bero@arklinux.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] intel-iommu: Work around yet another BIOS bug
-Message-Id: <20090820114847.9dc35d82.akpm@linux-foundation.org>
-In-Reply-To: <1250766877.11523.1.camel@macbook.infradead.org>
-References: <bug-14003-10286@http.bugzilla.kernel.org/>
-	<20090819142634.0fc550d1.akpm@linux-foundation.org>
-	<1250754748.8974.17.camel@macbook.infradead.org>
-	<1250755318.8974.26.camel@macbook.infradead.org>
-	<20090820024453.dd9909a2.akpm@linux-foundation.org>
-	<1250766877.11523.1.camel@macbook.infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 20 Aug 2009 14:51:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=VUXmDrrCIx2WwEfBdRoLNsJY2MvDfhdJM6xK8GR57UW2i1zsXhDPdL9zH3Urcfx+HbuggGIdloeahMP8mBHl8DL/3n8TKPQV/OrpNyflH6dhKqSo1zkZNrdN1zJ4uzNR;
+Date: Thu, 20 Aug 2009 11:51:30 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Cijoml Cijomlovic Cijomlov" <cijoml@volny.cz>
+Subject: Re: [Bug #13634] [drm:drm_wait_vblank] *ERROR* failed to acquire
+ vblank counter, -22
+Message-ID: <20090820115130.6f824b8a@jbarnes-g45>
+In-Reply-To: <200908202019.23819.rjw@sisk.pl>
+References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
+	<Era7U-todKF.A.wmC.ZmIjKB@chimera>
+	<20090820110532.24d5b2ea@jbarnes-g45>
+	<200908202019.23819.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 12:14:37 +0100 David Woodhouse <dwmw2@infradead.org> wrote:
+On Thu, 20 Aug 2009 20:19:23 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> On Thu, 2009-08-20 at 02:44 -0700, Andrew Morton wrote:
-> > Printing a u64 with %ll will (still) generate a warning on four
-> > architectures.
+> On Thursday 20 August 2009, Jesse Barnes wrote:
+> > On Wed, 19 Aug 2009 22:40:45 +0200 (CEST)
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > This message has been generated automatically as a part of a
+> > > report of regressions introduced between 2.6.29 and 2.6.30.
+> > > 
+> > > The following bug entry is on the current list of known
+> > > regressions introduced between 2.6.29 and 2.6.30.  Please verify
+> > > if it still should be listed and let me know (either way).
+> > > 
+> > > 
+> > > Bug-Entry	:
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=13634
+> > > Subject		: [drm:drm_wait_vblank] *ERROR* failed to
+> > > acquire vblank counter, -22 Submitter	: Cijoml Cijomlovic
+> > > Cijomlov <cijoml@volny.cz> Date		: 2009-06-27 07:02
+> > > (54 days old)
+> > 
+> > Patches to fix this have been queued.
 > 
-> Still that many? I thought we'd fixed them all already.
+> Thanks for the update.
+> 
+> Can you please give me a pointer to the patch?
 
-You're right, they all seem to be fixed.  Nobody tells me nuttin.  Whee.
+commit 8d3457ec3198a569dd14dc9e3ae8b6163bcaa0b5
+Author: Paul Rolland <rol@as2917.net>
+Date:   Sun Aug 9 12:24:01 2009 +1000
 
+Already in Linus's tree actually.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
