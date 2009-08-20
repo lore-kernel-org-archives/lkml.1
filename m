@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZHTNim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbZHTNjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbZHTNim (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 09:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZHTNil
+	id S1754558AbZHTNjO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 09:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbZHTNjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 09:38:41 -0400
-Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:48997 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751513AbZHTNik (ORCPT
+	Thu, 20 Aug 2009 09:39:13 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:12383
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754169AbZHTNjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 09:38:40 -0400
-X-SpamScore: -3
-X-BigFish: VPS-3(zz14c3Lzz1202hzzz32i6bh203h62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KOOGK3-02-8C8-02
+	Thu, 20 Aug 2009 09:39:12 -0400
+X-SpamScore: 1
+X-BigFish: VPS1(zzzz1202hzzz32i6bh203h65h)
+X-Spam-TCS-SCL: 4:0
+X-FB-SS: 5,
+X-WSS-ID: 0KOOGE9-02-88W-02
 X-M-MSG: 
-Date: Thu, 20 Aug 2009 15:38:28 +0200
+Date: Thu, 20 Aug 2009 15:34:56 +0200
 From: Andreas Herrmann <andreas.herrmann3@amd.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
 CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 7/15] sched: Activate build of MN domains
-Message-ID: <20090820133828.GV29327@alberich.amd.com>
+Subject: [PATCH 3/15] sched: Add cpumask to be used when building MN domain
+Message-ID: <20090820133456.GR29327@alberich.amd.com>
 References: <20090820131243.GO29327@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
 In-Reply-To: <20090820131243.GO29327@alberich.amd.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Aug 2009 13:38:28.0544 (UTC) FILETIME=[800CA400:01CA219B]
+X-OriginalArrivalTime: 20 Aug 2009 13:34:56.0865 (UTC) FILETIME=[01E0FD10:01CA219B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I.e. call __build_mn_sched_domain, build corresponding groups
-and calculate power.
-
-Note: still missing are changes in various places
-to actually detect domain hierarchy and fixup some stuff.
-
 Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- kernel/sched.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ kernel/sched.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index cc16629..6cfc840 100644
+index c780eed..9990c3a 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -8862,6 +8862,7 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
- 
- 		sd = __build_numa_sched_domains(&d, cpu_map, attr, i);
- 		sd = __build_cpu_sched_domain(&d, cpu_map, attr, sd, i);
-+		sd = __build_mn_sched_domain(&d, cpu_map, attr, sd, i);
- 		sd = __build_mc_sched_domain(&d, cpu_map, attr, sd, i);
- 		sd = __build_smt_sched_domain(&d, cpu_map, attr, sd, i);
- 	}
-@@ -8869,6 +8870,7 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
- 	for_each_cpu(i, cpu_map) {
- 		build_sched_groups(&d, SD_LV_SIBLING, cpu_map, i);
- 		build_sched_groups(&d, SD_LV_MC, cpu_map, i);
-+		build_sched_groups(&d, SD_LV_MN, cpu_map, i);
- 	}
- 
- 	/* Set up physical groups */
-@@ -8898,6 +8900,12 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
- 		init_sched_groups_power(i, sd);
- 	}
- #endif
-+#ifdef CONFIG_SCHED_MN
-+	for_each_cpu(i, cpu_map) {
-+		sd = &per_cpu(cpu_node_domains, i).sd;
-+		init_sched_groups_power(i, sd);
-+	}
-+#endif
- 
- 	for_each_cpu(i, cpu_map) {
- 		sd = &per_cpu(phys_domains, i).sd;
+@@ -8207,6 +8207,7 @@ struct s_data {
+ 	cpumask_var_t		nodemask;
+ 	cpumask_var_t		this_sibling_map;
+ 	cpumask_var_t		this_core_map;
++	cpumask_var_t		this_cpu_node_map;
+ 	cpumask_var_t		send_covered;
+ 	cpumask_var_t		tmpmask;
+ 	struct sched_group	**sched_group_nodes;
+@@ -8218,6 +8219,7 @@ enum s_alloc {
+ 	sa_rootdomain,
+ 	sa_tmpmask,
+ 	sa_send_covered,
++	sa_this_cpu_node_map,
+ 	sa_this_core_map,
+ 	sa_this_sibling_map,
+ 	sa_nodemask,
+@@ -8594,6 +8596,8 @@ static void __free_domain_allocs(struct s_data *d, enum s_alloc what,
+ 		free_cpumask_var(d->tmpmask); /* fall through */
+ 	case sa_send_covered:
+ 		free_cpumask_var(d->send_covered); /* fall through */
++	case sa_this_cpu_node_map:
++		free_cpumask_var(d->this_cpu_node_map); /* fall through */
+ 	case sa_this_core_map:
+ 		free_cpumask_var(d->this_core_map); /* fall through */
+ 	case sa_this_sibling_map:
+@@ -8640,8 +8644,10 @@ static enum s_alloc __visit_domain_allocation_hell(struct s_data *d,
+ 		return sa_nodemask;
+ 	if (!alloc_cpumask_var(&d->this_core_map, GFP_KERNEL))
+ 		return sa_this_sibling_map;
+-	if (!alloc_cpumask_var(&d->send_covered, GFP_KERNEL))
++	if (!alloc_cpumask_var(&d->this_cpu_node_map, GFP_KERNEL))
+ 		return sa_this_core_map;
++	if (!alloc_cpumask_var(&d->send_covered, GFP_KERNEL))
++		return sa_this_cpu_node_map;
+ 	if (!alloc_cpumask_var(&d->tmpmask, GFP_KERNEL))
+ 		return sa_send_covered;
+ 	d->rd = alloc_rootdomain();
 -- 
 1.6.0.4
 
