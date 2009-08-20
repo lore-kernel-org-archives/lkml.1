@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZHTWFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZHTWHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZHTWFe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 18:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZHTWFd
+	id S1754694AbZHTWHw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 18:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZHTWHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 18:05:33 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51115 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbZHTWFd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 18:05:33 -0400
-Message-ID: <4A8DC857.7060002@zytor.com>
-Date: Thu, 20 Aug 2009 15:04:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 20 Aug 2009 18:07:51 -0400
+Received: from mx1-old.redhat.com ([66.187.233.31]:38523 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751684AbZHTWHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 18:07:50 -0400
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andi Kleen <andi@firstfloor.org>, "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
-References: <1250276831.3077.17.camel@sbs-t61.sc.intel.com> <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com> <20090819210251.GD13061@ldl.fc.hp.com> <1250794594.2754.10.camel@sbs-t61.sc.intel.com> <20090820205425.GF13061@ldl.fc.hp.com> <20090820210342.GC29994@basil.fritz.box> <20090820212024.GG13061@ldl.fc.hp.com> <1250803577.2754.30.camel@sbs-t61.sc.intel.com> <4A8DC349.5060508@zytor.com> <20090820215954.GH13061@ldl.fc.hp.com>
-In-Reply-To: <20090820215954.GH13061@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+X-Fcc: ~/Mail/linus
+Cc: Helge Deller <deller@gmx.de>, John David Anglin <dave@hiauly1.hia.nrc.ca>,
+       rusty@rustcorp.com.au, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dave.anglin@nrc.ca
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+In-Reply-To: James Bottomley's message of  Thursday, 20 August 2009 15:50:49 -0600 <1250805049.4302.121.camel@mulgrave.site>
+References: <20090820185550.979544E7A@hiauly1.hia.nrc.ca>
+	<4A8DC3ED.4060005@gmx.de>
+	<1250805049.4302.121.camel@mulgrave.site>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090820220739.F2E554730F@magilla.sf.frob.com>
+Date: Thu, 20 Aug 2009 15:07:39 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/20/2009 02:59 PM, Alex Chiang wrote:
-> 
-> Once you go down this path of thinking though, ACPI starts
-> looming, and that has other issues associated with it (in my
-> mind, mostly around the cleanliness of implementation as ACPI
-> starts poking its fingers everywhere).
-> 
+> Since this is a relinked object, might it be possible that ld rather
+> than gcc is the culprit?
 
-Seems more like DMI than ACPI to me, but this kind of stuff is already
-creeping into everything no matter what.
+I don't think ld -r does any of that sort of magic.
 
-*However* the whole point of this is to not muck with data structures
-that the kernel actually cares about in any way, and have a separate
-field which is only for human consumption.
-
-	-hpa
+Thanks,
+Roland
