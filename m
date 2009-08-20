@@ -1,133 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbZHTMyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbZHTMzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbZHTMyx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 08:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbZHTMyw
+	id S1754436AbZHTMzR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 08:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbZHTMzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 08:54:52 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:35028 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754056AbZHTMyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 08:54:51 -0400
-X-IronPort-AV: E=Sophos;i="4.43,414,1246863600"; 
-   d="scan'208";a="228087371"
-Subject: Re: nfs: LOCKDEP warning with 2.6.31-rc6
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1250770159.8282.185.camel@twins>
-References: <s5hiqgipz4x.wl%tiwai@suse.de> <1250770159.8282.185.camel@twins>
-Content-Type: text/plain
+	Thu, 20 Aug 2009 08:55:16 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:41722 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754394AbZHTMzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 08:55:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=JnpBC68REdW7ec5qm9E3PiQXHVKApKJXBaaBpeSFLzJ9brHUxXRtXc5fVA72U7v0IJ
+         CJNQhfi0vOySpl6XwAptCXhBRV2eyrRtUR0tNA2SHYONlOzaGZTSaB7bH2Zr0jESVV6i
+         tJrg7HzHbpOsLM1XRF5r/Fg09e1s2BbnUIX9o=
+Message-ID: <4A8D47B8.6070001@gmail.com>
+Date: Thu, 20 Aug 2009 21:55:20 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, jeff@garzik.org, benh@kernel.crashing.org,
+       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 0/6] Lazy workqueues
+References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Thu, 20 Aug 2009 08:54:51 -0400
-Message-Id: <1250772891.5352.21.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-X-OriginalArrivalTime: 20 Aug 2009 12:54:53.0023 (UTC) FILETIME=[6913CEF0:01CA2195]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-20 at 14:09 +0200, Peter Zijlstra wrote:
-> On Thu, 2009-08-20 at 12:18 +0200, Takashi Iwai wrote:
-> > Hi,
-> > 
-> > my machine got a lockdep warning regarding NFS client on 2.6.31-rc6.
-> > Here is the log:
-> > 
-> > =======================================================
-> > [ INFO: possible circular locking dependency detected ]
-> > 2.6.31-rc6-test #12
-> > -------------------------------------------------------
-> > soffice.bin/31490 is trying to acquire lock:
-> >  (&sb->s_type->i_mutex_key#13){+.+.+.}, at: [<f85ea8bb>] nfs_revalidate_mapping+0x72/0xbe [nfs]
-> > 
-> > but task is already holding lock:
-> >  (&mm->mmap_sem){++++++}, at: [<c0106c5b>] sys_mmap2+0x6d/0xb4
-> > 
-> > which lock already depends on the new lock.
-> > 
-> > 
-> > the existing dependency chain (in reverse order) is:
-> > 
-> > -> #1 (&mm->mmap_sem){++++++}:
-> >        [<c0161b06>] __lock_acquire+0x100e/0x130d
-> >        [<c0161ebc>] lock_acquire+0xb7/0xeb
-> >        [<c01a2a15>] might_fault+0x69/0x9a
-> >        [<c026d399>] copy_to_user+0x3c/0x127
-> >        [<c01d4427>] filldir64+0xc3/0x108
-> >        [<f85e6270>] nfs_do_filldir+0x383/0x4ad [nfs]
-> >        [<f85e6b4e>] nfs_readdir+0x7b4/0x830 [nfs]
-> >        [<c01d469e>] vfs_readdir+0x76/0xb3
-> >        [<c01d474e>] sys_getdents64+0x73/0xc3
-> >        [<c0102df3>] sysenter_do_call+0x12/0x38
-> >        [<ffffffff>] 0xffffffff
-> > 
-> > -> #0 (&sb->s_type->i_mutex_key#13){+.+.+.}:
-> >        [<c0161856>] __lock_acquire+0xd5e/0x130d
-> >        [<c0161ebc>] lock_acquire+0xb7/0xeb
-> >        [<c03af059>] mutex_lock_nested+0x43/0x272
-> >        [<f85ea8bb>] nfs_revalidate_mapping+0x72/0xbe [nfs]
-> >        [<f85e8128>] nfs_file_mmap+0x5e/0x77 [nfs]
-> >        [<c01ab5f7>] mmap_region+0x263/0x40f
-> >        [<c01aba07>] do_mmap_pgoff+0x264/0x2c7
-> >        [<c0106c6f>] sys_mmap2+0x81/0xb4
-> >        [<c0102df3>] sysenter_do_call+0x12/0x38
-> >        [<ffffffff>] 0xffffffff
-> > 
-> > other info that might help us debug this:
-> > 
-> > 1 lock held by soffice.bin/31490:
-> >  #0:  (&mm->mmap_sem){++++++}, at: [<c0106c5b>] sys_mmap2+0x6d/0xb4
-> > 
-> > stack backtrace:
-> > Pid: 31490, comm: soffice.bin Not tainted 2.6.31-rc6-test #12
-> > Call Trace:
-> >  [<c03ad742>] ? printk+0x1d/0x33
-> >  [<c01606d1>] print_circular_bug_tail+0xaf/0xcb
-> >  [<c0161856>] __lock_acquire+0xd5e/0x130d
-> >  [<f85ea8bb>] ? nfs_revalidate_mapping+0x72/0xbe [nfs]
-> >  [<c0161ebc>] lock_acquire+0xb7/0xeb
-> >  [<f85ea8bb>] ? nfs_revalidate_mapping+0x72/0xbe [nfs]
-> >  [<f85ea8bb>] ? nfs_revalidate_mapping+0x72/0xbe [nfs]
-> >  [<c03af059>] mutex_lock_nested+0x43/0x272
-> >  [<f85ea8bb>] ? nfs_revalidate_mapping+0x72/0xbe [nfs]
-> >  [<f8609339>] ? nfs_have_delegation+0x68/0x82 [nfs]
-> >  [<f85ea8bb>] nfs_revalidate_mapping+0x72/0xbe [nfs]
-> >  [<f85e8128>] nfs_file_mmap+0x5e/0x77 [nfs]
-> >  [<c01ab5f7>] mmap_region+0x263/0x40f
-> >  [<c01aba07>] do_mmap_pgoff+0x264/0x2c7
-> >  [<c0106c6f>] sys_mmap2+0x81/0xb4
-> >  [<c0102df3>] sysenter_do_call+0x12/0x38
-> > 
-> > =======================================================
-> > 
-> > Indeed this looks like a circular lock dependency since copy_*_user()
-> > invokes mm->mmap_sem mutex lock internally.  (I hit a similar bug in
-> > the ALSA core ago, thus I know it :)
-> > 
-> > The inode lock in vfs_readdir is killable, so it's not critical,
-> > though...
-> 
-> Right, I did a number of patches to split up ->mmap() a while ago (ok, a
-> long while ago).
-> 
->   http://www.mail-archive.com/linux-arch@vger.kernel.org/msg04493.html
-> 
-> Unless someone sees another way out, we should reconsider these, as this
-> warning seems to pop up more frequently.
+Hello, Jens.
 
-I'd be fine with that...
+Jens Axboe wrote:
+> After yesterdays rant on having too many kernel threads and checking
+> how many I actually have running on this system (531!), I decided to 
+> try and do something about it.
 
-Cheers
-  Trond
+Heh... that's a lot.  How many cpus do you have there?  Care to share
+the output of "ps -ef"?
+
+> My goal was to retain the workqueue interface instead of coming up with
+> a new scheme that required conversion (or converting to slow_work which,
+> btw, is an awful name :-). I also wanted to retain the affinity
+> guarantees of workqueues as much as possible.
+> 
+> So this is a first step in that direction, it's probably full of races
+> and holes, but should get the idea across. It adds a
+> create_lazy_workqueue() helper, similar to the other variants that we
+> currently have. A lazy workqueue works like a normal workqueue, except
+> that it only (by default) starts a core thread instead of threads for
+> all online CPUs. When work is queued on a lazy workqueue for a CPU
+> that doesn't have a thread running, it will be placed on the core CPUs
+> list and that will then create and move the work to the right target.
+> Should task creation fail, the queued work will be executed on the
+> core CPU instead. Once a lazy workqueue thread has been idle for a
+> certain amount of time, it will again exit.
+
+Yeap, the approach seems simple and nice and resolves the problem of
+too many idle workers.
+
+> The patch boots here and I exercised the rpciod workqueue and
+> verified that it gets created, runs on the right CPU, and exits a while
+> later. So core functionality should be there, even if it has holes.
+> 
+> With this patchset, I am now down to 280 kernel threads on one of my test
+> boxes. Still too many, but it's a start and a net reduction of 251
+> threads here, or 47%!
+
+I'm trying to find out whether the perfect concurrency idea I talked
+about on the other thread can be implemented in reasonable manner.
+Would you mind holding for a few days before investing too much effort
+into expanding this one to handle multiple workers?
+
+Thanks.
 
 -- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+tejun
