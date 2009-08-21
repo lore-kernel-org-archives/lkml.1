@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbZHUSEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbZHUSGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932847AbZHUSEy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 14:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932730AbZHUSEx
+	id S932859AbZHUSGt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 14:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbZHUSGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 14:04:53 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:20496 "EHLO mx1.redhat.com"
+	Fri, 21 Aug 2009 14:06:48 -0400
+Received: from thunk.org ([69.25.196.29]:59035 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932691AbZHUSEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 14:04:53 -0400
-Subject: Re: kmemcheck in linux-next causes NULL pointer dereference at 
- task_rq_lock
-From: Eric Paris <eparis@redhat.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi, mingo@elte.hu
-In-Reply-To: <19f34abd0908211020l6888d68w5c14cbadbca5c6c4@mail.gmail.com>
-References: <1249925740.2501.9.camel@dhcp231-106.rdu.redhat.com>
-	 <19f34abd0908101156x2bc92b22ud1748abb153800fb@mail.gmail.com>
-	 <1249933887.2501.62.camel@dhcp231-106.rdu.redhat.com>
-	 <19f34abd0908211020l6888d68w5c14cbadbca5c6c4@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 21 Aug 2009 14:04:35 -0400
-Message-Id: <1250877875.2168.56.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1754622AbZHUSGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 14:06:48 -0400
+Date: Fri, 21 Aug 2009 14:06:34 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Bill Gatliff <bgat@billgatliff.com>, Paul Walmsley <paul@pwsan.com>,
+       Russell King <linux@arm.linux.org.uk>, vince@kyllikki.org,
+       linux-kernel@vger.kernel.org, linux-arm@vger.kernel.org,
+       torvalds@linux-foundation.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] ARM: Mailing lists have moved
+Message-ID: <20090821180634.GI9529@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Bill Gatliff <bgat@billgatliff.com>, Paul Walmsley <paul@pwsan.com>,
+	Russell King <linux@arm.linux.org.uk>, vince@kyllikki.org,
+	linux-kernel@vger.kernel.org, linux-arm@vger.kernel.org,
+	torvalds@linux-foundation.org, linux-arm-kernel@lists.infradead.org
+References: <1250855566.3311.100.camel@macbook.infradead.org> <alpine.DEB.2.00.0908210925400.24646@utopia.booyaka.com> <1250868957.3311.110.camel@macbook.infradead.org> <4A8EBFFD.5000307@billgatliff.com> <1250870971.3311.173.camel@macbook.infradead.org> <4A8EC75D.6010203@billgatliff.com> <1250872415.3311.206.camel@macbook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250872415.3311.206.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 19:20 +0200, Vegard Nossum wrote:
-> 2009/8/10 Eric Paris <eparis@redhat.com>:
-> > On Mon, 2009-08-10 at 20:56 +0200, Vegard Nossum wrote:
-> >> 2009/8/10 Eric Paris <eparis@redhat.com>:
-> >> > I'm using 2.6.31-rc5-next-20090810 on a vmware server.  Originally I saw
-> >> > messages about setting to one cpu, so I booted with maxcpu=1.  I get
-> >> > this same panic with and without maxpu.  Booting with kmemcheck=0 boots
-> >> > just fine.
-> >> >
-> >> > I have not tested kmemcheck in linus' tree but will start looking for a
-> >> > working version now.  Any suggestions or things I should try?
-> >>
-> >> Hi, thanks for the report, and for trying it out.
-> >>
-> >> Does it crash with "kmemcheck=0 maxcpus=1" (it should be maxcpus, not
-> >> maxcpu). This should be a simple way of determining whether it was
-> >> kmemcheck or the existing maxcpus code, which we use, that broke.
-> >
-> > I boots fine with kmemcheck=0
-> >
-> > I did get the command line right.  maxcpus=1 kmemcheck=1 was the panic I
-> > showed in the last message.
-> >
-> >> If you can send config (off-list, probably), I will try to reproduce
-> >> and investigate more tomorrow.
-> >
-> > Will send it now.
+On Fri, Aug 21, 2009 at 05:33:35PM +0100, David Woodhouse wrote:
+> On Fri, 2009-08-21 at 11:12 -0500, Bill Gatliff wrote:
+> > Ok.  So help me understand what is the vger list for?  :)
 > 
-> Thanks. I've tried your config with next-20090810, next-20090820, and
-> current mainline, and wasn't able to reproduce it anywhere :-/
+> The Judean People's Front.
 > 
-> Does it still occur for you with the most recent linux-next or current mainline?
-> 
-> In any case, I think the kmemcheck SMP-handling code has to be fixed.
-> It seems that we currently allow CPU hotplug while kmemcheck is
-> enabled, which could lead to, erm, interesting crashes. Maybe we could
-> do something like what mmiotrace does.
+> Or, more seriously, it's for those who want to discuss ARM Linux without
+> involving Russell in any way. That _also_ hasn't changed.
 
-I just tried it again with 0821.  The machine doesn't boot with
-kmemcheck=1 but it doesn't look like it's directly kmemcheck's fault.  I
-poked others about their problems.  I'm going to be giving it a shot on
-a different box.
+The other advantage of the vger lists is they are hosted in a place
+where the EU's insane Data Protection Act (or maybe it's an insane
+interpretation of the Data Protection Act --- I haven't seen any other
+EU based list be subscriber-only based on some claim that the Data
+Protection Act required it) doesn't apply.
 
--Eric
-
-
+							- Ted
