@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932399AbZHUOuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbZHUOy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932399AbZHUOuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 10:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932387AbZHUOuU
+	id S932394AbZHUOy2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 10:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932364AbZHUOy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 10:50:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53522 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932384AbZHUOuP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 10:50:15 -0400
-Date: Fri, 21 Aug 2009 10:50:15 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Greg KH <greg@kroah.com>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
-In-Reply-To: <20090821143525.GH11098@elte.hu>
-Message-ID: <alpine.DEB.2.00.0908211047160.16405@gandalf.stny.rr.com>
-References: <20090819025634.987354707@goodmis.org> <20090821143525.GH11098@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 21 Aug 2009 10:54:27 -0400
+Received: from thunk.org ([69.25.196.29]:49286 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932264AbZHUOy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 10:54:27 -0400
+Date: Fri, 21 Aug 2009 10:54:16 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: David Miller <davem@davemloft.net>
+Cc: linux@arm.linux.org.uk, pavel@ucw.cz,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Mailing List Etiquette
+Message-ID: <20090821145415.GE9529@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	David Miller <davem@davemloft.net>, linux@arm.linux.org.uk,
+	pavel@ucw.cz, linux-arm-kernel@lists.arm.linux.org.uk,
+	linux-kernel@vger.kernel.org
+References: <20090821081849.GA14431@n2100.arm.linux.org.uk> <20090821083028.GH8431@elf.ucw.cz> <20090821083953.GA14800@n2100.arm.linux.org.uk> <20090821.015528.193723401.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090821.015528.193723401.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 21 Aug 2009, Ingo Molnar wrote:
+On Fri, Aug 21, 2009 at 01:55:28AM -0700, David Miller wrote:
+> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+> Date: Fri, 21 Aug 2009 09:39:53 +0100
 > 
-> btw., the way i tested this in the past (and which i dont have time 
-> to test right now) is that i took a plain Fedora box with a regular 
-> rpm kernel booted up and typed:
+> > To me that shows you have an extremely selfish attitude.
 > 
-> 	make localyesconfig
+> Ok Mr. "My Way Or the Highway"
 > 
-> and built it and then 1) checked the size of the .config (it should 
-> be much smaller than allyesconfig) and 2) tried to boot the 
-> resulting bzImage.
+> A lot of us are tired of your crap, and like Alan Cox I can't take you
+> seriously at all.
 
-Did you check the size without the # comments?
+Seconded.  At this point, I would suggest the right answer is to make
+sure the arm lists on vger have adequate archives (there are plenty of
+list archiving services to choose from, including gmane; I'd suggest
+using at least two for redundancy), and then forward to Linus a patch
+which changes the mailing list pointers to vger.
 
-> 
-> It either didnt boot in the past, or had a very large .config. It 
-> would be nice if you could check whether it does on a box of yours. 
-> (maybe you already did that!)
+It's clear that Russell is to stressed out to do a good job, and the
+vger lists are very well run without having the spam problems that
+Russell seems to be struggling to solve w/o using sledgehammer-to-kill-a-
+gnat style solutions.
 
-I went back to your old config and I could not reproduce it. But I'll try 
-again with a new kernel rpm, and do the following:
+					- Ted
 
-# rpm -Uvh <some new kernel>
-# reboot    # to that new kernel
-$ git clone <latest-linus.git> linus.git
-$ cd linus.git
-$ make localyesconfig
-
-and see what happens. Is this a good test for you?
-
-Thanks,
-
--- Steve
-
+					 (who is a bystander but who is 
+					 appalled by rmk's behaviour)
