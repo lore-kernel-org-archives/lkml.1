@@ -1,163 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZHULJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbZHULLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755527AbZHULJS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 07:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZHULJR
+	id S1755536AbZHULLU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbZHULLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 07:09:17 -0400
-Received: from mail-gx0-f205.google.com ([209.85.217.205]:37321 "EHLO
-	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752757AbZHULJQ convert rfc822-to-8bit (ORCPT
+	Fri, 21 Aug 2009 07:11:20 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:56690 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbZHULLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 07:09:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=tbnAqz5eRTf7bbnUlG9Kl0DfGXNeL8QN3PW4F8/6jH5Xh0HCmmA1ArOl8+mL8LWCj3
-         7fnXLFGN4EAdAY+7I41J9RF4iwOaQUoeVa6dE8/ZKMMGh3BfmNVDz8pKEoUhdkWlCppb
-         h30v2SRmvy/Bm9v7LZsNBL5JFg+qpp7CDUg/U=
+	Fri, 21 Aug 2009 07:11:19 -0400
+Date: Fri, 21 Aug 2009 16:41:13 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       akpm <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -next] block: blk-iopoll sysctl iff CONFIG_BLOCK
+Message-ID: <20090821111113.GA5105@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20090807183118.e71b4db2.sfr@canb.auug.org.au> <20090807111659.3d8da27f.randy.dunlap@oracle.com> <20090807192144.GZ12579@kernel.dk>
 MIME-Version: 1.0
-In-Reply-To: <20090820031723.GA25673@localhost>
-References: <20090820024929.GA19793@localhost>
-	 <20090820025209.GA24387@localhost> <20090820031723.GA25673@localhost>
-Date: Fri, 21 Aug 2009 20:09:17 +0900
-X-Google-Sender-Auth: 7f82bfa02b4c30a1
-Message-ID: <2f11576a0908210409p3f1551a4i194887abbad94e9b@mail.gmail.com>
-Subject: Re: [RFC][PATCH] mm: remove unnecessary loop inside 
-	shrink_inactive_list()
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090807192144.GZ12579@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/20 Wu Fengguang <fengguang.wu@intel.com>:
-> shrink_inactive_list() won't be called to scan too much pages
-> (unless in hibernation code which is fine) or too few pages (ie.
-> batching is taken care of by the callers).  So we can just remove the
-> big loop and isolate the exact number of pages requested.
->
-> Just a RFC, and a scratch patch to show the basic idea.
-> Please kindly NAK quick if you don't like it ;)
+* Jens Axboe <jens.axboe@oracle.com> [2009-08-07 21:21:44]:
 
-Hm, I think this patch taks only cleanups. right?
-if so, I don't find any objection reason.
+> On Fri, Aug 07 2009, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > New block-iopoll sysctl should be surrounded by CONFIG_BLOCK to
+> > prevent build error:
+> > 
+> > kernel/built-in.o:(.data+0x2990): undefined reference to `blk_iopoll_enabled'
+> 
+> Thanks, I'll just kill off this sysctl, it should be driver controller
+> anyway. Was just easier for testing :-)
 
+Hi Jens,
 
+This build failure is still seen with next-20090820 kernel, removing
+the sysctl helps. Attaching the patch based on your recommendation.
+Please drop the patch if you already have in queue.
 
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+ kernel/sysctl.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  mm/vmscan.c |   32 ++++++++++++++++----------------
->  1 file changed, 16 insertions(+), 16 deletions(-)
->
-> --- linux.orig/mm/vmscan.c      2009-08-20 10:16:18.000000000 +0800
-> +++ linux/mm/vmscan.c   2009-08-20 10:24:34.000000000 +0800
-> @@ -1032,16 +1032,22 @@ int isolate_lru_page(struct page *page)
->  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
->  * of reclaimed pages
->  */
-> -static unsigned long shrink_inactive_list(unsigned long max_scan,
-> +static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
->                        struct zone *zone, struct scan_control *sc,
->                        int priority, int file)
->  {
->        LIST_HEAD(page_list);
->        struct pagevec pvec;
-> -       unsigned long nr_scanned = 0;
-> -       unsigned long nr_reclaimed = 0;
-> +       unsigned long nr_reclaimed;
->        struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-> -       int lumpy_reclaim = 0;
-> +       int lumpy_reclaim;
-> +       struct page *page;
-> +       unsigned long nr_taken;
-> +       unsigned long nr_scan;
-> +       unsigned long nr_freed;
-> +       unsigned long nr_active;
-> +       unsigned int count[NR_LRU_LISTS] = { 0, };
-> +       int mode;
->
->        /*
->         * If we need a large contiguous chunk of memory, or have
-> @@ -1054,21 +1060,17 @@ static unsigned long shrink_inactive_lis
->                lumpy_reclaim = 1;
->        else if (sc->order && priority < DEF_PRIORITY - 2)
->                lumpy_reclaim = 1;
-> +       else
-> +               lumpy_reclaim = 0;
-> +
-> +       mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
->
->        pagevec_init(&pvec, 1);
->
->        lru_add_drain();
->        spin_lock_irq(&zone->lru_lock);
-> -       do {
-> -               struct page *page;
-> -               unsigned long nr_taken;
-> -               unsigned long nr_scan;
-> -               unsigned long nr_freed;
-> -               unsigned long nr_active;
-> -               unsigned int count[NR_LRU_LISTS] = { 0, };
-> -               int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
->
-> -               nr_taken = sc->isolate_pages(sc->swap_cluster_max,
-> +               nr_taken = sc->isolate_pages(nr_to_scan,
->                             &page_list, &nr_scan, sc->order, mode,
->                                zone, sc->mem_cgroup, 0, file);
->                nr_active = clear_active_flags(&page_list, count);
-> @@ -1093,7 +1095,6 @@ static unsigned long shrink_inactive_lis
->
->                spin_unlock_irq(&zone->lru_lock);
->
-> -               nr_scanned += nr_scan;
->                nr_freed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
->
->                /*
-> @@ -1117,7 +1118,7 @@ static unsigned long shrink_inactive_lis
->                                                        PAGEOUT_IO_SYNC);
->                }
->
-> -               nr_reclaimed += nr_freed;
-> +               nr_reclaimed = nr_freed;
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 40f2d2c..6e67ec2 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -991,14 +991,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ #endif
+-	{
+-		.ctl_name	= CTL_UNNUMBERED,
+-		.procname	= "blk_iopoll",
+-		.data		= &blk_iopoll_enabled,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec,
+-	},
+ /*
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
+		
 
-maybe, nr_freed can be removed perfectly. it have the same meaning as
-nr_reclaimed.
-
-
-
->                local_irq_disable();
->                if (current_is_kswapd()) {
->                        __count_zone_vm_events(PGSCAN_KSWAPD, zone, nr_scan);
-> @@ -1158,7 +1159,6 @@ static unsigned long shrink_inactive_lis
->                                spin_lock_irq(&zone->lru_lock);
->                        }
->                }
-> -       } while (nr_scanned < max_scan);
->        spin_unlock(&zone->lru_lock);
->  done:
->        local_irq_enable();
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+			Kamalesh
