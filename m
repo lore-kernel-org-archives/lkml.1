@@ -1,74 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932425AbZHUPIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbZHUPJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932425AbZHUPIU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932364AbZHUPIU
+	id S932240AbZHUPJn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 11:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbZHUPJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:08:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49017 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932303AbZHUPIT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:08:19 -0400
-Date: Fri, 21 Aug 2009 11:08:18 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, peterz@infradead.org, torvalds@linux-foundation.org,
-       tytso@mit.edu, arjan@infradead.org, greg@kroah.com, mcgrof@gmail.com,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org, sam@ravnborg.org,
-       corbet@lwn.net, sourcejedi.lkml@googlemail.com, andi@firstfloor.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
-Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
-In-Reply-To: <20090821135249.GB30346@elte.hu>
-Message-ID: <alpine.DEB.2.00.0908211106560.16405@gandalf.stny.rr.com>
-References: <20090819025634.987354707@goodmis.org> <20090820143025.7134930f.akpm@linux-foundation.org> <alpine.DEB.2.00.0908201741370.16405@gandalf.stny.rr.com> <20090820151326.b43038ce.akpm@linux-foundation.org> <20090821135249.GB30346@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 21 Aug 2009 11:09:43 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40894 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753991AbZHUPJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 11:09:42 -0400
+Message-ID: <4A8EB8A9.9000900@redhat.com>
+Date: Fri, 21 Aug 2009 11:09:29 -0400
+From: William Cohen <wcohen@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add minimal support for software performance counters
+ for ia64
+References: <4A8C2290.3040707@redhat.com> <1250698351.8282.106.camel@twins> <4A8C4CAA.5070101@redhat.com> <1250708819.7154.5.camel@laptop> <4A8DBDDB.5080402@redhat.com> <20090821142514.GE11098@elte.hu>
+In-Reply-To: <20090821142514.GE11098@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------060407090002040105020900"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------060407090002040105020900
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Fri, 21 Aug 2009, Ingo Molnar wrote:
-
+Ingo Molnar wrote:
+> * William Cohen <wcohen@redhat.com> wrote:
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
+>> Peter Zijlstra wrote:
+>>> On Wed, 2009-08-19 at 15:04 -0400, William Cohen wrote:
+>>>> Peter Zijlstra wrote:
+>>>>> On Wed, 2009-08-19 at 12:04 -0400, William Cohen wrote:
+>>>>>> +#ifdef __ia64__
+>>>>>> +#include "../../arch/ia64/include/asm/unistd.h"
+>>>>>> +#define rmb()          asm volatile("" ::: "memory")
+>>>>>> +#define cpu_relax()    asm volatile("" ::: "memory");
+>>>>>> +#endif
+>>>>> Surely the itanic has a real memory barrier? The kernel seems to use
+>>>>> something along the lines of mf.
+>>>>>
+>>>>> Also, cpu_relax() seems to end up being asm volatile("hint @pause" :::
+>>>>> "memory"), although we don't seem to have an actual user of cpu_relax()
+>>>>> in perf atm.
+>>>>>
+>>>>>
+>>>>>
+>>>> Peter, thanks for the comment. I took a look at the rmb() and cpu_relax() code
+>>>> in the kernel and revised the patch with the appropriate defines
+>>> Looks good now, thanks!
+>>>
+>> When looking through the patch today I realized the new 
+>> perf_counter.h was placed in include/asm-ia64. It should be placed 
+>> in arch/ia64/include/asm/perf_counter.h.
 > 
-> > On Thu, 20 Aug 2009 17:43:38 -0400 (EDT)
-> > Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > > 
-> > > > > The following patches are in:
-> > > > > 
-> > > > >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> > > > > 
-> > > > >     branch: kconfig
-> > > > 
-> > > > Sam's been quiet lately.  I suggest that you add this to linux-next
-> > > > now so people get a chance to poke at it.
-> > > 
-> > > I have no means of pushing into next. Would someone like to do a pull for 
-> > > me?
-> > 
-> > If suitably bribed, Stephen will add you tree directly to the 
-> > linux-nxt lineup.
+> mind sending out a v2 patch with all review feedback folded in, for 
+> IA64 maintainers to ack if they like it?
 > 
-> Yep, we always needed another kconfig maintainer (Sam's being mostly 
-> busy with kbuild), and it's nice to see that Steve volunteered for 
-> that job now! ;-)
+> Thanks,
+> 
+> 	Ingo
 
-Sure why not?
+Hi Ingo,
 
-I've created a new repo:
+The following is the revised patch with the corrected macros and the include
+file in the correct place.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-kconfig.git
+Signed-off-by: William Cohen <wcohen@redhat.com>
 
-and the same changes are in the branch: for-next
+-Will
 
-I still need to do the testing.
+--------------060407090002040105020900
+Content-Type: text/plain;
+ name="perf_ia64c.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="perf_ia64c.patch"
 
--- Steve
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 170042b..8471526 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -29,6 +29,7 @@ config IA64
+ 	select HAVE_KVM
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_DMA_API_DEBUG
++	select HAVE_PERF_COUNTERS
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
+diff --git a/arch/ia64/include/asm/unistd.h b/arch/ia64/include/asm/unistd.h
+index 5a5347f..f69d1c9 100644
+--- a/arch/ia64/include/asm/unistd.h
++++ b/arch/ia64/include/asm/unistd.h
+@@ -311,11 +311,12 @@
+ #define __NR_preadv			1319
+ #define __NR_pwritev			1320
+ #define __NR_rt_tgsigqueueinfo		1321
++#define __NR_perf_counter_open		1322
+ 
+ #ifdef __KERNEL__
+ 
+ 
+-#define NR_syscalls			298 /* length of syscall table */
++#define NR_syscalls			299 /* length of syscall table */
+ 
+ /*
+  * The following defines stop scripts/checksyscalls.sh from complaining about
+diff --git a/arch/ia64/kernel/entry.S b/arch/ia64/kernel/entry.S
+index d0e7d37..4cf88b0 100644
+--- a/arch/ia64/kernel/entry.S
++++ b/arch/ia64/kernel/entry.S
+@@ -1806,6 +1806,7 @@ sys_call_table:
+ 	data8 sys_preadv
+ 	data8 sys_pwritev			// 1320
+ 	data8 sys_rt_tgsigqueueinfo
++	data8 sys_perf_counter_open
+ 
+ 	.org sys_call_table + 8*NR_syscalls	// guard against failures to increase NR_syscalls
+ #endif /* __IA64_ASM_PARAVIRTUALIZED_NATIVE */
+diff --git a/arch/ia64/include/asm/perf_counter.h b/arch/ia64/include/asm/perf_counter.h
+new file mode 100644
+index 0000000..cab4352
+--- /dev/null
++++ b/arch/ia64/include/asm/perf_counter.h
+@@ -0,0 +1,9 @@
++#ifndef __ASM_IA64_PERF_COUNTER_H
++#define __ASM_IA64_PERF_COUNTER_H
++
++/* IA64 only supports software counters through this interface. */
++static inline void set_perf_counter_pending(void) {}
++
++#define PERF_COUNTER_INDEX_OFFSET	0
++
++#endif /* __ASM_IA64_PERF_COUNTER_H */
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index c481a51..69db3de 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -159,8 +159,10 @@ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+ 
+ # If we're on a 64-bit kernel, use -m64
+ ifndef NO_64BIT
+-	ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
+-	  M64 := -m64
++	ifeq ($(patsubst %ia64,%,$(uname_M)),$(uname_M))
++	  ifneq ($(patsubst %64,%,$(uname_M)),$(uname_M))
++	    M64 := -m64
++	  endif
+ 	endif
+ endif
+ 
+@@ -169,9 +171,9 @@ endif
+ #
+ # Include saner warnings here, which can catch bugs:
+ #
+-EXTRA_WARNINGS = -Wcast-align -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
++EXTRA_WARNINGS = -Wformat -Wformat-security -Wformat-y2k -Wshadow -Winit-self -Wpacked -Wredundant-decls -Wstack-protector -Wstrict-aliasing=3 -Wswitch-default -Wswitch-enum -Wno-system-headers -Wundef -Wvolatile-register-var -Wwrite-strings -Wbad-function-cast -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wold-style-definition -Wstrict-prototypes -Wdeclaration-after-statement
+ 
+-CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
++CFLAGS = $(M64) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 -fno-strict-aliasing $(EXTRA_WARNINGS)
+ LDFLAGS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index e5148e2..c849337 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -41,6 +41,12 @@
+ #define cpu_relax()	asm volatile("" ::: "memory");
+ #endif
+ 
++#ifdef __ia64__
++#include "../../arch/ia64/include/asm/unistd.h"
++#define rmb()		asm volatile("mf" ::: "memory")
++#define cpu_relax()	asm volatile("hint @pause" ::: "memory")
++#endif
++
+ #include <time.h>
+ #include <unistd.h>
+ #include <sys/types.h>
 
+--------------060407090002040105020900--
