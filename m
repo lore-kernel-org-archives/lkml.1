@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932628AbZHURA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932562AbZHURAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932628AbZHURA4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932570AbZHURAM
+	id S932562AbZHURAG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932548AbZHURAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:00:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49115 "EHLO mx2.suse.de"
+	Fri, 21 Aug 2009 13:00:04 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51056 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932533AbZHURAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932506AbZHURAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Aug 2009 13:00:02 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       linux-ext4@vger.kernel.org
-Subject: [PATCH 09/17] ext3: Remove syncing logic from ext3_file_write
-Date: Fri, 21 Aug 2009 18:59:53 +0200
-Message-Id: <1250874001-15483-9-git-send-email-jack@suse.cz>
+       ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
+Subject: [PATCH 05/17] ocfs2: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
+Date: Fri, 21 Aug 2009 18:59:49 +0200
+Message-Id: <1250874001-15483-5-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1250874001-15483-1-git-send-email-jack@suse.cz>
 References: <1250874001-15483-1-git-send-email-jack@suse.cz>
@@ -23,92 +23,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Syncing is now properly done by generic_file_aio_write() so no special logic is
-needed in ext3.
+Use the new helper. We have to submit data pages ourselves in case of O_SYNC
+write because __generic_file_aio_write does not do it for us. OCFS2 developpers
+might think about moving the sync out of i_mutex which seems to be easily
+possible but that's out of scope of this patch.
 
-CC: linux-ext4@vger.kernel.org
+CC: ocfs2-devel@oss.oracle.com
+CC: Joel Becker <joel.becker@oracle.com>
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/ext3/file.c |   61 +-------------------------------------------------------
- 1 files changed, 1 insertions(+), 60 deletions(-)
+ fs/ocfs2/file.c |   22 ++++++++++++----------
+ 1 files changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/fs/ext3/file.c b/fs/ext3/file.c
-index 5b49704..51fee5f 100644
---- a/fs/ext3/file.c
-+++ b/fs/ext3/file.c
-@@ -51,71 +51,12 @@ static int ext3_release_file (struct inode * inode, struct file * filp)
- 	return 0;
- }
+diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
+index 62442e4..1c71f0a 100644
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -1870,8 +1870,7 @@ relock:
+ 			goto out_dio;
+ 		}
+ 	} else {
+-		written = generic_file_aio_write_nolock(iocb, iov, nr_segs,
+-							*ppos);
++		written = __generic_file_aio_write(iocb, iov, nr_segs, ppos);
+ 	}
  
--static ssize_t
--ext3_file_write(struct kiocb *iocb, const struct iovec *iov,
--		unsigned long nr_segs, loff_t pos)
--{
--	struct file *file = iocb->ki_filp;
--	struct inode *inode = file->f_path.dentry->d_inode;
--	ssize_t ret;
--	int err;
--
--	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
--
--	/*
--	 * Skip flushing if there was an error, or if nothing was written.
--	 */
--	if (ret <= 0)
--		return ret;
--
--	/*
--	 * If the inode is IS_SYNC, or is O_SYNC and we are doing data
--	 * journalling then we need to make sure that we force the transaction
--	 * to disk to keep all metadata uptodate synchronously.
--	 */
--	if (file->f_flags & O_SYNC) {
+ out_dio:
+@@ -1879,18 +1878,21 @@ out_dio:
+ 	BUG_ON(ret == -EIOCBQUEUED && !(file->f_flags & O_DIRECT));
+ 
+ 	if ((file->f_flags & O_SYNC && !direct_io) || IS_SYNC(inode)) {
 -		/*
--		 * If we are non-data-journaled, then the dirty data has
--		 * already been flushed to backing store by generic_osync_inode,
--		 * and the inode has been flushed too if there have been any
--		 * modifications other than mere timestamp updates.
--		 *
--		 * Open question --- do we care about flushing timestamps too
--		 * if the inode is IS_SYNC?
+-		 * The generic write paths have handled getting data
+-		 * to disk, but since we don't make use of the dirty
+-		 * inode list, a manual journal commit is necessary
+-		 * here.
 -		 */
--		if (!ext3_should_journal_data(inode))
--			return ret;
--
--		goto force_commit;
--	}
--
--	/*
--	 * So we know that there has been no forced data flush.  If the inode
--	 * is marked IS_SYNC, we need to force one ourselves.
--	 */
--	if (!IS_SYNC(inode))
--		return ret;
--
--	/*
--	 * Open question #2 --- should we force data to disk here too?  If we
--	 * don't, the only impact is that data=writeback filesystems won't
--	 * flush data to disk automatically on IS_SYNC, only metadata (but
--	 * historically, that is what ext2 has done.)
--	 */
--
--force_commit:
--	err = ext3_force_commit(inode->i_sb);
--	if (err)
--		return err;
--	return ret;
--}
--
- const struct file_operations ext3_file_operations = {
- 	.llseek		= generic_file_llseek,
- 	.read		= do_sync_read,
- 	.write		= do_sync_write,
- 	.aio_read	= generic_file_aio_read,
--	.aio_write	= ext3_file_write,
-+	.aio_write	= generic_file_aio_write,
- 	.unlocked_ioctl	= ext3_ioctl,
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl	= ext3_compat_ioctl,
+-		if (old_size != i_size_read(inode) ||
+-		    old_clusters != OCFS2_I(inode)->ip_clusters) {
++		ret = filemap_fdatawrite_range(file->f_mapping, pos,
++					       pos + count - 1);
++		if (ret < 0)
++			written = ret;
++
++		if (!ret && (old_size != i_size_read(inode) ||
++		    old_clusters != OCFS2_I(inode)->ip_clusters)) {
+ 			ret = jbd2_journal_force_commit(osb->journal->j_journal);
+ 			if (ret < 0)
+ 				written = ret;
+ 		}
++
++		if (!ret)
++			ret = filemap_fdatawait_range(file->f_mapping, pos,
++						      pos + count - 1);
+ 	}
+ 
+ 	/* 
 -- 
 1.6.0.2
 
