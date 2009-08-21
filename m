@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932647AbZHURBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbZHURFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932647AbZHURBs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932554AbZHURAF
+	id S932570AbZHURFU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932397AbZHURFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:00:05 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51060 "EHLO mx1.suse.de"
+	Fri, 21 Aug 2009 13:05:19 -0400
+Received: from mail.perches.com ([173.55.12.10]:1073 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932526AbZHURAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:00:02 -0400
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [PATCH 04/17] pohmelfs: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
-Date: Fri, 21 Aug 2009 18:59:48 +0200
-Message-Id: <1250874001-15483-4-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1250874001-15483-1-git-send-email-jack@suse.cz>
-References: <1250874001-15483-1-git-send-email-jack@suse.cz>
+	id S932068AbZHURFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 13:05:19 -0400
+Subject: Re: [PATCH] ARM: Mailing lists have moved
+From: Joe Perches <joe@perches.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Bill Gatliff <bgat@billgatliff.com>, Paul Walmsley <paul@pwsan.com>,
+       Russell King <linux@arm.linux.org.uk>, vince@kyllikki.org,
+       linux-kernel@vger.kernel.org, linux-arm@vger.kernel.org,
+       torvalds@linux-foundation.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1250872415.3311.206.camel@macbook.infradead.org>
+References: <1250855566.3311.100.camel@macbook.infradead.org>
+	 <alpine.DEB.2.00.0908210925400.24646@utopia.booyaka.com>
+	 <1250868957.3311.110.camel@macbook.infradead.org>
+	 <4A8EBFFD.5000307@billgatliff.com>
+	 <1250870971.3311.173.camel@macbook.infradead.org>
+	 <4A8EC75D.6010203@billgatliff.com>
+	 <1250872415.3311.206.camel@macbook.infradead.org>
+Content-Type: text/plain
+Date: Fri, 21 Aug 2009 10:05:18 -0700
+Message-Id: <1250874318.29546.85.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use new helper __generic_file_aio_write(). Since the fs takes care of syncing
-by itself afterwards, there are no more changes needed.
+On Fri, 2009-08-21 at 17:33 +0100, David Woodhouse wrote:
+> On Fri, 2009-08-21 at 11:12 -0500, Bill Gatliff wrote:
+> > So help me understand what is the vger list for?  :)
+> it's for those who want to discuss ARM Linux without
+> involving Russell in any way. That _also_ hasn't changed.
 
-CC: Evgeniy Polyakov <zbr@ioremap.net>
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- drivers/staging/pohmelfs/inode.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I don't have a preference for that, but I do have
+a preference for lists without arbitrary latencies
+for manual moderation.
 
-diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
-index 7b60579..17801a5 100644
---- a/drivers/staging/pohmelfs/inode.c
-+++ b/drivers/staging/pohmelfs/inode.c
-@@ -921,7 +921,7 @@ ssize_t pohmelfs_write(struct file *file, const char __user *buf,
- 	if (ret)
- 		goto err_out_unlock;
- 
--	ret = generic_file_aio_write_nolock(&kiocb, &iov, 1, pos);
-+	ret = __generic_file_aio_write(&kiocb, &iov, 1, &kiocb.ki_pos);
- 	*ppos = kiocb.ki_pos;
- 
- 	mutex_unlock(&inode->i_mutex);
--- 
-1.6.0.2
 
