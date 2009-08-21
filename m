@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbZHUDoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbZHUD4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754558AbZHUDoh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 23:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZHUDog
+	id S1754785AbZHUD4Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 23:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbZHUD4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 23:44:36 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:22214 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbZHUDof (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 23:44:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=o0ah6M0sFkBHXaXFROch5l3Me3rsOqNy1DVgez7AZSJ/oO2YCfVAx5MiBH9mKsNm5I
-         HnWPK03N49HjXGi5qul+GYGYvHWTGq6hvJEGVPOCrOEVrFYdK/mshlZbSYXJ67hU/g1H
-         HOjN925A9z9en/KcBQ9PVkVRVQGPiBAoL9WEA=
-Date: Thu, 20 Aug 2009 20:44:30 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Linux Input <linux-input@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] i8042 - bypass AUX IRQ delivery test on laptops
-References: <20090814071438.6C860526EC9@mailhub.coreip.homeip.net> <alpine.LRH.2.00.0908181516240.2744@twin.jikos.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0908181516240.2744@twin.jikos.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090821041601.DF597526EA5@mailhub.coreip.homeip.net>
+	Thu, 20 Aug 2009 23:56:23 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40620 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754646AbZHUD4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 23:56:23 -0400
+Date: Fri, 21 Aug 2009 13:56:17 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Subject: Re: linux-next: noot failure for next-20090820
+Message-Id: <20090821135617.8b255a5a.sfr@canb.auug.org.au>
+In-Reply-To: <20090821024454.GA8786@fieldses.org>
+References: <20090821094226.286faa67.sfr@canb.auug.org.au>
+	<1250821846.6514.23.camel@heimdal.trondhjem.org>
+	<20090821024454.GA8786@fieldses.org>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__21_Aug_2009_13_56_17_+1000_TXjY0E_7zM=w3BX_"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 03:16:29PM +0200, Jiri Kosina wrote:
-> On Thu, 13 Aug 2009, Dmitry Torokhov wrote:
-> 
-> > @@ -641,7 +643,7 @@ static int __devinit i8042_check_aux(void)
-> >   * used it for a PCI card or somethig else.
-> >   */
-> >  
-> > -	if (i8042_noloop || aux_loop_broken) {
-> > +	if (i8042_noloop || i8042_bypass_aux_irq_test || aux_loop_broken) {
-> 
-> I guess some entries could then be nuked from i8042_dmi_noloop_table[]?
-> 
+--Signature=_Fri__21_Aug_2009_13_56_17_+1000_TXjY0E_7zM=w3BX_
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I will have to try and locate the dmidecode outputs in mu inbox - some
-of them might not have the proper chassis type set up.
+Hi Trond,
 
--- 
-Dmitry
+On Thu, 20 Aug 2009 22:44:54 -0400 "J. Bruce Fields" <bfields@fieldses.org>=
+ wrote:
+>
+> > Could both you and Bruce check if the following patch fixes the problem?
+>=20
+> Yep, that boots for me, thanks.
+
+Works for me as well.  I will add it at the end of linux-next today and
+hope to see it in your tree tomorrow.
+
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__21_Aug_2009_13_56_17_+1000_TXjY0E_7zM=w3BX_
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqOGuEACgkQjjKRsyhoI8z9QQCggljGTLwlUXVQgQAssCT2SagA
+z0EAn2VjOXwf01T60c7RVKwy9KKRHIeV
+=vcjD
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__21_Aug_2009_13_56_17_+1000_TXjY0E_7zM=w3BX_--
