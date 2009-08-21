@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932642AbZHURB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932647AbZHURBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932642AbZHURB0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932548AbZHURAH
+	id S932647AbZHURBs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932554AbZHURAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:00:07 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49100 "EHLO mx2.suse.de"
+	Fri, 21 Aug 2009 13:00:05 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51060 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932397AbZHURAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932526AbZHURAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Aug 2009 13:00:02 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>
-Subject: [PATCH 01/17] vfs: Introduce filemap_fdatawait_range
-Date: Fri, 21 Aug 2009 18:59:45 +0200
-Message-Id: <1250874001-15483-1-git-send-email-jack@suse.cz>
+Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       Evgeniy Polyakov <zbr@ioremap.net>
+Subject: [PATCH 04/17] pohmelfs: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
+Date: Fri, 21 Aug 2009 18:59:48 +0200
+Message-Id: <1250874001-15483-4-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1250874001-15483-1-git-send-email-jack@suse.cz>
+References: <1250874001-15483-1-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This simple helper saves some filesystems conversion from byte offset
-to page numbers and also makes the fdata* interface more complete.
+Use new helper __generic_file_aio_write(). Since the fs takes care of syncing
+by itself afterwards, there are no more changes needed.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+CC: Evgeniy Polyakov <zbr@ioremap.net>
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- include/linux/fs.h |    2 ++
- mm/filemap.c       |   20 ++++++++++++++++++++
- 2 files changed, 22 insertions(+), 0 deletions(-)
+ drivers/staging/pohmelfs/inode.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 67888a9..cb365ad 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -2076,6 +2076,8 @@ extern int write_inode_now(struct inode *, int);
- extern int filemap_fdatawrite(struct address_space *);
- extern int filemap_flush(struct address_space *);
- extern int filemap_fdatawait(struct address_space *);
-+extern int filemap_fdatawait_range(struct address_space *, loff_t lstart,
-+				   loff_t lend);
- extern int filemap_write_and_wait(struct address_space *mapping);
- extern int filemap_write_and_wait_range(struct address_space *mapping,
- 				        loff_t lstart, loff_t lend);
-diff --git a/mm/filemap.c b/mm/filemap.c
-index ccea3b6..65b2e50 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -307,6 +307,26 @@ int wait_on_page_writeback_range(struct address_space *mapping,
- }
+diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+index 7b60579..17801a5 100644
+--- a/drivers/staging/pohmelfs/inode.c
++++ b/drivers/staging/pohmelfs/inode.c
+@@ -921,7 +921,7 @@ ssize_t pohmelfs_write(struct file *file, const char __user *buf,
+ 	if (ret)
+ 		goto err_out_unlock;
  
- /**
-+ * filemap_fdatawait_range - wait for all under-writeback pages to complete in a given range
-+ * @mapping: address space structure to wait for
-+ * @start:	offset in bytes where the range starts
-+ * @end:	offset in bytes where the range ends (inclusive)
-+ *
-+ * Walk the list of under-writeback pages of the given address space
-+ * in the given range and wait for all of them.
-+ *
-+ * This is just a simple wrapper so that callers don't have to convert offsets
-+ * to page indexes themselves
-+ */
-+int filemap_fdatawait_range(struct address_space *mapping, loff_t start,
-+			    loff_t end)
-+{
-+	return wait_on_page_writeback_range(mapping, start >> PAGE_CACHE_SHIFT,
-+					    end >> PAGE_CACHE_SHIFT);
-+}
-+EXPORT_SYMBOL(filemap_fdatawait_range);
-+
-+/**
-  * sync_page_range - write and wait on all pages in the passed range
-  * @inode:	target inode
-  * @mapping:	target address_space
+-	ret = generic_file_aio_write_nolock(&kiocb, &iov, 1, pos);
++	ret = __generic_file_aio_write(&kiocb, &iov, 1, &kiocb.ki_pos);
+ 	*ppos = kiocb.ki_pos;
+ 
+ 	mutex_unlock(&inode->i_mutex);
 -- 
 1.6.0.2
 
