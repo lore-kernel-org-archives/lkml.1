@@ -1,94 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZHULID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZHULIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbZHULID (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 07:08:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbZHULIC
+	id S1755532AbZHULIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbZHULIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 07:08:02 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45008 "EHLO hera.kernel.org"
+	Fri, 21 Aug 2009 07:08:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45013 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754840AbZHULIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 07:08:00 -0400
-Date: Fri, 21 Aug 2009 11:07:04 GMT
-From: tip-bot for Casey Dahlin <cdahlin@redhat.com>
+	id S1755520AbZHULIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 07:08:13 -0400
+Date: Fri, 21 Aug 2009 11:07:17 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       cdahlin@redhat.com, fujita.tomonori@lab.ntt.co.jp,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       beckyb@kernel.crashing.org, mingo@elte.hu
+       torvalds@linux-foundation.org, catalin.marinas@arm.com,
+       a.p.zijlstra@chello.nl, jens.axboe@oracle.com, fweisbec@gmail.com,
+       stable@kernel.org, srostedt@redhat.com, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cdahlin@redhat.com,
-       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de,
-       beckyb@kernel.crashing.org, mingo@elte.hu
-In-Reply-To: <200908202327.n7KNRuqK001504@imap1.linux-foundation.org>
-References: <200908202327.n7KNRuqK001504@imap1.linux-foundation.org>
-Subject: [tip:core/iommu] lib/swiotlb.c: Fix strange panic message selection logic when swiotlb fills up
-Message-ID: <tip-c7084b35eb1a4d3353a501508baf9d3d82822c93@git.kernel.org>
-Git-Commit-ID: c7084b35eb1a4d3353a501508baf9d3d82822c93
+       a.p.zijlstra@chello.nl, catalin.marinas@arm.com,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       fweisbec@gmail.com, stable@kernel.org, srostedt@redhat.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:tracing/urgent] tracing: Fix too large stack usage in do_one_initcall()
+Message-ID: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
+Git-Commit-ID: 4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Aug 2009 11:07:17 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Aug 2009 11:07:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c7084b35eb1a4d3353a501508baf9d3d82822c93
-Gitweb:     http://git.kernel.org/tip/c7084b35eb1a4d3353a501508baf9d3d82822c93
-Author:     Casey Dahlin <cdahlin@redhat.com>
-AuthorDate: Thu, 20 Aug 2009 16:27:56 -0700
+Commit-ID:  4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
+Gitweb:     http://git.kernel.org/tip/4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Fri, 21 Aug 2009 12:53:36 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 21 Aug 2009 10:36:03 +0200
+CommitDate: Fri, 21 Aug 2009 13:03:22 +0200
 
-lib/swiotlb.c: Fix strange panic message selection logic when swiotlb fills up
+tracing: Fix too large stack usage in do_one_initcall()
 
-swiotlb_full() in lib/swiotlb.c throws one of two panic messages
-based on whether the direction of transfer is from the device
-or to the device. The logic around this is somewhat weird in
-the case of bidirectional transfers. It appears to want to
-throw both in succession, but since its a panic only the first
-makes it.
+One of my testboxes triggered this nasty stack overflow crash
+during SCSI probing:
 
-This patch adds a third, separate error for DMA_BIDIRECTIONAL
-to make things a bit clearer.
+[    5.874004] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    5.875004] device: 'sda': device_add
+[    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
+[    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
+[    5.878004] *pde = 00000000
+[    5.878004] Thread overran stack, or stack corrupted
+[    5.878004] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+[    5.878004] last sysfs file:
+[    5.878004]
+[    5.878004] Pid: 1, comm: swapper Not tainted (2.6.31-rc6-tip-01272-g9919e28-dirty #5685)
+[    5.878004] EIP: 0060:[<b1008321>] EFLAGS: 00010083 CPU: 0
+[    5.878004] EIP is at print_context_stack+0x81/0x110
+[    5.878004] EAX: cf8a3000 EBX: cf8a3fe4 ECX: 00000049 EDX: 00000000
+[    5.878004] ESI: b1cfce84 EDI: 00000000 EBP: cf8a3018 ESP: cf8a2ff4
+[    5.878004]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[    5.878004] Process swapper (pid: 1, ti=cf8a2000 task=cf8a8000 task.ti=cf8a3000)
+[    5.878004] Stack:
+[    5.878004]  b1004867 fffff000 cf8a3ffc
+[    5.878004] Call Trace:
+[    5.878004]  [<b1004867>] ? kernel_thread_helper+0x7/0x10
+[    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
+[    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
+[    5.878004] *pde = 00000000
+[    5.878004] Thread overran stack, or stack corrupted
+[    5.878004] Oops: 0000 [#2] PREEMPT SMP DEBUG_PAGEALLOC
 
-Signed-off-by: Casey Dahlin <cdahlin@redhat.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Becky Bruce <beckyb@kernel.crashing.org>
-[ further fixed the error message ]
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <200908202327.n7KNRuqK001504@imap1.linux-foundation.org>
+The oops did not reveal any more details about the real stack
+that we have and the system got into an infinite loop of
+recursive pagefaults.
+
+So i booted with CONFIG_STACK_TRACER=y and the 'stacktrace' boot
+parameter. The box did not crash (timings/conditions probably
+changed a tiny bit to trigger the catastrophic crash), but the
+/debug/tracing/stack_trace file was rather revealing:
+
+        Depth    Size   Location    (72 entries)
+        -----    ----   --------
+  0)     3704      52   __change_page_attr+0xb8/0x290
+  1)     3652      24   __change_page_attr_set_clr+0x43/0x90
+  2)     3628      60   kernel_map_pages+0x108/0x120
+  3)     3568      40   prep_new_page+0x7d/0x130
+  4)     3528      84   get_page_from_freelist+0x106/0x420
+  5)     3444     116   __alloc_pages_nodemask+0xd7/0x550
+  6)     3328      36   allocate_slab+0xb1/0x100
+  7)     3292      36   new_slab+0x1c/0x160
+  8)     3256      36   __slab_alloc+0x133/0x2b0
+  9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
+ 10)     3216     108   create_object+0x28/0x250
+ 11)     3108      40   kmemleak_alloc+0x81/0xc0
+ 12)     3068      24   kmem_cache_alloc+0x162/0x1d0
+ 13)     3044      52   scsi_pool_alloc_command+0x29/0x70
+ 14)     2992      20   scsi_host_alloc_command+0x22/0x70
+ 15)     2972      24   __scsi_get_command+0x1b/0x90
+ 16)     2948      28   scsi_get_command+0x35/0x90
+ 17)     2920      24   scsi_setup_blk_pc_cmnd+0xd4/0x100
+ 18)     2896     128   sd_prep_fn+0x332/0xa70
+ 19)     2768      36   blk_peek_request+0xe7/0x1d0
+ 20)     2732      56   scsi_request_fn+0x54/0x520
+ 21)     2676      12   __generic_unplug_device+0x2b/0x40
+ 22)     2664      24   blk_execute_rq_nowait+0x59/0x80
+ 23)     2640     172   blk_execute_rq+0x6b/0xb0
+ 24)     2468      32   scsi_execute+0xe0/0x140
+ 25)     2436      64   scsi_execute_req+0x152/0x160
+ 26)     2372      60   scsi_vpd_inquiry+0x6c/0x90
+ 27)     2312      44   scsi_get_vpd_page+0x112/0x160
+ 28)     2268      52   sd_revalidate_disk+0x1df/0x320
+ 29)     2216      92   rescan_partitions+0x98/0x330
+ 30)     2124      52   __blkdev_get+0x309/0x350
+ 31)     2072       8   blkdev_get+0xf/0x20
+ 32)     2064      44   register_disk+0xff/0x120
+ 33)     2020      36   add_disk+0x6e/0xb0
+ 34)     1984      44   sd_probe_async+0xfb/0x1d0
+ 35)     1940      44   __async_schedule+0xf4/0x1b0
+ 36)     1896       8   async_schedule+0x12/0x20
+ 37)     1888      60   sd_probe+0x305/0x360
+ 38)     1828      44   really_probe+0x63/0x170
+ 39)     1784      36   driver_probe_device+0x5d/0x60
+ 40)     1748      16   __device_attach+0x49/0x50
+ 41)     1732      32   bus_for_each_drv+0x5b/0x80
+ 42)     1700      24   device_attach+0x6b/0x70
+ 43)     1676      16   bus_attach_device+0x47/0x60
+ 44)     1660      76   device_add+0x33d/0x400
+ 45)     1584      52   scsi_sysfs_add_sdev+0x6a/0x2c0
+ 46)     1532     108   scsi_add_lun+0x44b/0x460
+ 47)     1424     116   scsi_probe_and_add_lun+0x182/0x4e0
+ 48)     1308      36   __scsi_add_device+0xd9/0xe0
+ 49)     1272      44   ata_scsi_scan_host+0x10b/0x190
+ 50)     1228      24   async_port_probe+0x96/0xd0
+ 51)     1204      44   __async_schedule+0xf4/0x1b0
+ 52)     1160       8   async_schedule+0x12/0x20
+ 53)     1152      48   ata_host_register+0x171/0x1d0
+ 54)     1104      60   ata_pci_sff_activate_host+0xf3/0x230
+ 55)     1044      44   ata_pci_sff_init_one+0xea/0x100
+ 56)     1000      48   amd_init_one+0xb2/0x190
+ 57)      952       8   local_pci_probe+0x13/0x20
+ 58)      944      32   pci_device_probe+0x68/0x90
+ 59)      912      44   really_probe+0x63/0x170
+ 60)      868      36   driver_probe_device+0x5d/0x60
+ 61)      832      20   __driver_attach+0x89/0xa0
+ 62)      812      32   bus_for_each_dev+0x5b/0x80
+ 63)      780      12   driver_attach+0x1e/0x20
+ 64)      768      72   bus_add_driver+0x14b/0x2d0
+ 65)      696      36   driver_register+0x6e/0x150
+ 66)      660      20   __pci_register_driver+0x53/0xc0
+ 67)      640       8   amd_init+0x14/0x16
+ 68)      632     572   do_one_initcall+0x2b/0x1d0
+ 69)       60      12   do_basic_setup+0x56/0x6a
+ 70)       48      20   kernel_init+0x84/0xce
+ 71)       28      28   kernel_thread_helper+0x7/0x10
+
+There's a lot of fat functions on that stack trace, but
+the largest of all is do_one_initcall(). This is due to
+the boot trace entry variables being on the stack.
+
+Fixing this is relatively easy, initcalls are fundamentally
+serialized, so we can move the local variables to file scope.
+
+Note that this large stack footprint was present for a
+couple of months already - what pushed my system over
+the edge was the addition of kmemleak to the call-chain:
+
+  6)     3328      36   allocate_slab+0xb1/0x100
+  7)     3292      36   new_slab+0x1c/0x160
+  8)     3256      36   __slab_alloc+0x133/0x2b0
+  9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
+ 10)     3216     108   create_object+0x28/0x250
+ 11)     3108      40   kmemleak_alloc+0x81/0xc0
+ 12)     3068      24   kmem_cache_alloc+0x162/0x1d0
+ 13)     3044      52   scsi_pool_alloc_command+0x29/0x70
+
+This pushes the total to ~3800 bytes, only a tiny bit
+more was needed to corrupt the on-kernel-stack thread_info.
+
+The fix reduces the stack footprint from 572 bytes
+to 28 bytes.
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: <stable@kernel.org>
+LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- lib/swiotlb.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+ init/main.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 9e2fe3e..ac25cd2 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -581,12 +581,15 @@ swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
- 	printk(KERN_ERR "DMA: Out of SW-IOMMU space for %zu bytes at "
- 	       "device %s\n", size, dev ? dev_name(dev) : "?");
+diff --git a/init/main.c b/init/main.c
+index 2c5ade7..98e679e 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -733,13 +733,14 @@ static void __init do_ctors(void)
+ int initcall_debug;
+ core_param(initcall_debug, initcall_debug, bool, 0644);
  
--	if (size > io_tlb_overflow && do_panic) {
--		if (dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL)
--			panic("DMA: Memory would be corrupted\n");
--		if (dir == DMA_TO_DEVICE || dir == DMA_BIDIRECTIONAL)
--			panic("DMA: Random memory would be DMAed\n");
--	}
-+	if (size <= io_tlb_overflow || !do_panic)
-+		return;
++static char msgbuf[64];
++static struct boot_trace_call call;
++static struct boot_trace_ret ret;
 +
-+	if (dir == DMA_BIDIRECTIONAL)
-+		panic("DMA: Random memory could be DMA accessed\n");
-+	if (dir == DMA_FROM_DEVICE)
-+		panic("DMA: Random memory could be DMA written\n");
-+	if (dir == DMA_TO_DEVICE)
-+		panic("DMA: Random memory could be DMA read\n");
- }
+ int do_one_initcall(initcall_t fn)
+ {
+ 	int count = preempt_count();
+ 	ktime_t calltime, delta, rettime;
+-	char msgbuf[64];
+-	struct boot_trace_call call;
+-	struct boot_trace_ret ret;
  
- /*
+ 	if (initcall_debug) {
+ 		call.caller = task_pid_nr(current);
