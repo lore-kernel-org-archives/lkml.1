@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbZHVLpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755786AbZHVLrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbZHVLpq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 07:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbZHVLpp
+	id S1755786AbZHVLrB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 07:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbZHVLrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 07:45:45 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39811 "EHLO
+	Sat, 22 Aug 2009 07:47:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39865 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755484AbZHVLpo (ORCPT
+	with ESMTP id S1755734AbZHVLq7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 07:45:44 -0400
-Date: Fri, 21 Aug 2009 16:01:26 +0200
+	Sat, 22 Aug 2009 07:46:59 -0400
+Date: Fri, 21 Aug 2009 16:02:41 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Felipe Balbi <me@felipebalbi.com>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org
-Subject: Re: Smart Battery System Design (was: Re: Question about
-	userspace-consumer)
-Message-ID: <20090821140126.GA1328@ucw.cz>
-References: <20090811094020.GA6762@rakim.wolfsonmicro.main> <1249986616.5807.28.camel@odin> <20090811204914.GB13969@gandalf> <20090811223645.GA4691@sirena.org.uk> <20090814163201.GB1626@ucw.cz> <20090815164324.GA4252@sirena.org.uk> <20090815223434.GB27637@elf.ucw.cz> <20090816091858.GB12567@sirena.org.uk> <20090822092845.GE11448@elf.ucw.cz> <20090822101641.GC4344@sirena.org.uk>
+To: Theodore Tso <tytso@mit.edu>, David Wagner <daw-news@cs.berkeley.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Security: information leaks in /proc enable keystroke recovery
+Message-ID: <20090821140241.GB1337@ucw.cz>
+References: <200908152221.n7FMLRuw005799@taverner.cs.berkeley.edu> <20090816003326.GC7554@mit.edu> <h67kou$ahr$1@taverner.cs.berkeley.edu> <20090816013346.GA17958@mit.edu> <h6a8da$40j$1@taverner.cs.berkeley.edu> <20090817022215.GI17958@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090822101641.GC4344@sirena.org.uk>
+In-Reply-To: <20090817022215.GI17958@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-08-22 11:16:42, Mark Brown wrote:
-> On Sat, Aug 22, 2009 at 11:28:45AM +0200, Pavel Machek wrote:
+Hi!
+
+> > (b) Keep /proc/$pid/wchan.  We suspect that it's possible this might
+> > be usable for keystroke recovery, but we're not sure, and we do know
+> > that blocking this entirely might annoy administrators, so rather than
+> > blocking access entirely, apply a more lenient policy.  If the user
+> > is not the owner of the process and is not root, allow up to about 10
+> > accesses to /proc/$pid/wchan per, say, 10 minutes; if a user makes more
+> > than 10 accesses per 10-minute period, insert random delays on the order
+> > of a few hundred milliseconds into every access to /proc/$pid/wchan.
+> > 
+> > Notes: It is critical to do this by user, rather than by process;
+> > otherwise a malicious user can fork a bazillion processes, each of which
+> > reads /proc/$pid/wchan a constant number of times.  The "few hundred
+> > milliseconds" comes from the fact that, for touch typists, typing two
+> > keys with alternating hands typically takes something like 0-150ms,
 > 
-> > At least zaurus sl-3000c is designed like a notebook -- inactive in
-> > s2ram. It is quite old design.
+> I was going to suggest instead of doing it by user or by process,
+> doing it globally; that is, *any* non-root process tries to access a
+> particular task's wchan /proc file more than X accesses per Y minutes,
+> we start inserting random delays.  Note that the "top" program by
+> default will refresh the screen once every 3 seconds, so allowing at
+> least 20 accesses per minute would be necessary to prevent "top" from
+> getting hit by a pretty massive slowdown.
 > 
-> > Charging while suspended is preffered, because it allows faster
-> > charge. The machine eats non-trivial power while active, charger is
-> > only 1A, and there's not enough current left for a charge with machine
-> > active.
+> That should be fine, I think; even if someone were to query wchan once
+> a second, it doesn't seem likely that would be enough to be able to
+> carry out a keystroke timing attack.
+
+It will still be complex accounting :-(. Is really wchan so useful?
+
+> In addition, if you know that the user is entering a password at that
+> point in time, simply looking to see whether the process is in state
+> 'R' or 'S' might be enough to know when the keystrokes are being
+> entered.  I might be willing to put that in the category, "We suspect
+> that it's possible this might be usable for keystroke recovery, but
+> we're not sure" --- but it would be a pretty strong suspicion.  As far
+> as whether you could use WCHAN for keystroke recovery, I'd call that a
+> near-certainty.
 > 
-> Like you say this is a very old design but even there I'm fairly
-> surprised it's causing issues when charging from a wall supply.  If
-> you're charging from USB then there is obviously a constraint on the
-> power draw but normally a modern system has sufficiently low power draw
-> when idle that it's not actually a big deal - runtime power management
-> facilities have improved greatly.
+> There are other timing channels I'd be wary of as well; for example,
+> simply using stat on the pseudo-tty will record the last access time
+> to a very high degree of accuracy:
 
-Well... all the hardware I have here (zaurus, openmoko, htc dream) has
-issues with power consumption while charging... so I do not think
-runtime pm is solved problem.
+/proc/interrupts ? various interfaces powertop uses?
 
-> There's also the fact that if you're completely reliant on the CPU to
-> control the charger you have to be very sure that the system will come
-> back from suspend reliably due to the risk of hardware damage.  The
-> hardware should have safety features to prevent serious problems but
-> it's a consideration.
+I did not have chance to read the paper yet, but... does not ssh have
+bad problem in that case?
 
-While crashes during suspend/resume are common on pcs, embedded
-systens do better. And crashes during runtime happen, too.
-
-First, I can't imagine system where you can damage the battery by just
-crashing sw. 4.2 per cell voltage limit is just too easy to do in
-hw. Maybe if you crash the sw then bring the machine outside while its
-stil on charger and theres 110F outside...
-
-And yes it should have safety features, and if they are not there its
-broken hw.
 								Pavel
+
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
