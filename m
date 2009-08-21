@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932539AbZHUQ4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbZHUQ4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932539AbZHUQ4A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 12:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932505AbZHUQ4A
+	id S932545AbZHUQ4t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 12:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932505AbZHUQ4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 12:56:00 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63908 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932399AbZHUQz7 (ORCPT
+	Fri, 21 Aug 2009 12:56:48 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:31699 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932477AbZHUQ4r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 12:55:59 -0400
-Date: Fri, 21 Aug 2009 12:55:58 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Greg KH <greg@kroah.com>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
-In-Reply-To: <20090821162822.GA20898@elte.hu>
-Message-ID: <alpine.DEB.2.00.0908211253080.30182@gandalf.stny.rr.com>
-References: <20090819025634.987354707@goodmis.org> <20090821143525.GH11098@elte.hu> <alpine.DEB.2.00.0908211047160.16405@gandalf.stny.rr.com> <20090821145406.GA3659@elte.hu> <alpine.DEB.2.00.0908211200160.30182@gandalf.stny.rr.com>
- <alpine.DEB.2.00.0908211204490.30182@gandalf.stny.rr.com> <20090821162822.GA20898@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Aug 2009 12:56:47 -0400
+Date: Fri, 21 Aug 2009 09:57:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Cc: akpm <akpm@linux-foundation.org>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [PATCH -mmotm] nfs/cache_lib: fix sunrpc struct build error
+Message-Id: <20090821095756.390c102e.randy.dunlap@oracle.com>
+In-Reply-To: <200908210222.n7L2Musb015815@imap1.linux-foundation.org>
+References: <200908210222.n7L2Musb015815@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt008.oracle.com [141.146.116.17]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4A8ED1A8.0257:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-On Fri, 21 Aug 2009, Ingo Molnar wrote:
+Add header file for struct delayed_work:
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > 
-> > On Fri, 21 Aug 2009, Steven Rostedt wrote:
-> > > 
-> > > OK, I found the bug. There's a dependency missing.
-> > > 
-> > > $ make localyesconfig
-> > >   HOSTCC  scripts/basic/fixdep
-> > >   HOSTCC  scripts/basic/docproc
-> > >   HOSTCC  scripts/basic/hash
-> > > using config: '/boot/config-2.6.27.25-78.2.56.fc9.x86_64'
-> > > /bin/sh: line 8: scripts/kconfig/conf: No such file or directory
-> > > make[1]: *** [localyesconfig] Error 127
-> > > make: *** [localyesconfig] Error 2
-> > > 
-> > > Thus the script failed to run. But the sed command that converts the '=m' 
-> > > to '=y' still ran. This gives us a distro config with all modules 
-> > > converted to built in!
-> > 
-> > Funny that localmodconfig does not have this bug.
-> 
-> ... add to that i dont use modules much so i probably hit that 
-> localyesconfig bug ;-)
-> 
-> btw: mind adding localrandconfig too? It would be a perfect tool to 
-> randomize all configs except a 'must have' core set of options.
-> 
-> ( Or is this already possible via some existing kconfig feature? I
->   remember having seen something related, did that ever get
->   upstream? A quick grep in scripts/ shows nothing but i might have
->   missed it.)
+In file included from fs/nfs/cache_lib.c:14:
+include/linux/sunrpc/rpc_pipe_fs.h:35: error: field 'queue_timeout' has incomplete type
 
-OK, I'll add that to my todo list. Note, it the local config is only as 
-good as the starting .config. That is, it never touches =y settings, 
-because it only uses loaded modules as a base. Thus if something is set to 
-=y it will always be set to =y.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/linux/sunrpc/rpc_pipe_fs.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-What would you have in mind. Just randomly enabling modules? If we enable 
-a "y" config then the next local*config will still keep that set.
+--- mmotm-2009-0820-1918.orig/include/linux/sunrpc/rpc_pipe_fs.h
++++ mmotm-2009-0820-1918/include/linux/sunrpc/rpc_pipe_fs.h
+@@ -3,6 +3,8 @@
+ 
+ #ifdef __KERNEL__
+ 
++#include <linux/workqueue.h>
++
+ struct rpc_pipe_msg {
+ 	struct list_head list;
+ 	void *data;
 
--- Steve
 
+
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
