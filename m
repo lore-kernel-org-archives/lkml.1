@@ -1,202 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933116AbZHUVrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932975AbZHUVsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933116AbZHUVrj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 17:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932251AbZHUVrh
+	id S932975AbZHUVsH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932243AbZHUVsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 17:47:37 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:41794 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933039AbZHUVrd (ORCPT
+	Fri, 21 Aug 2009 17:48:04 -0400
+Received: from jessica.hrz.tu-chemnitz.de ([134.109.132.47]:35861 "EHLO
+	jessica.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933002AbZHUVr7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 17:47:33 -0400
-Message-ID: <4A8F15F5.3020901@hp.com>
-Date: Fri, 21 Aug 2009 17:47:33 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Chunbo Luo <chunbo.luo@windriver.com>
-CC: davem@davemloft.net, netdev@vger.kernel.org, linux-sctp@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sctp: fix the check for path failure detection
-References: <1250838275-7444-1-git-send-email-chunbo.luo@windriver.com>
-In-Reply-To: <1250838275-7444-1-git-send-email-chunbo.luo@windriver.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Aug 2009 17:47:59 -0400
+X-Greylist: delayed 2460 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Aug 2009 17:47:59 EDT
+From: Tobias Doerffel <tobias.doerffel@gmail.com>
+To: linux-kernel@vger.kernel.org, hpa@zytor.com
+Cc: Tobias Doerffel <tobias.doerffel@gmail.com>
+Subject: [PATCH] x86: add specific support for Intel Atom architecture
+Date: Fri, 21 Aug 2009 23:06:23 +0200
+Message-Id: <1250888783-9897-1-git-send-email-tobias.doerffel@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <4A8F0539.2000207@zytor.com>
+References: <4A8F0539.2000207@zytor.com>
+X-Spam-Score: -1.4 (-)
+X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
+	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
+	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
+	weitergeleitet
+	--- Ende der SpamAssassin Textanalyse
+X-Scan-Signature: 6bd8260dc2e41ed16fce2659cff4e067
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chunbo Luo wrote:
-> The transport is marked DOWN immediately after sending the max+1 HB,
-> which is equal to not sending the max+1 HB at all. We should wait
-> a next period and make sure the last HB is not acknowledged.
-> 
+Add another option when selecting CPU family so the kernel can be
+optimized for Intel Atom CPUs. If GCC supports tuning options for
+Intel Atom they will be used.
 
-I don't think this code does what you want either...
+Signed-off-by: Tobias Doerffel <tobias.doerffel@gmail.com>
+---
+ arch/x86/Kconfig.cpu          |   17 +++++++++++++----
+ arch/x86/Makefile             |    2 ++
+ arch/x86/Makefile_32.cpu      |    2 ++
+ arch/x86/include/asm/module.h |    2 ++
+ 4 files changed, 19 insertions(+), 4 deletions(-)
 
-Let's say path_max_rxt = 2.  What we'll get is:
-	timeout:
-		err++ (1)
-		if (err > 2) false
-		send HB
-		reset timer
-	timeout:
-		err++ (2)
-		if (err > 2) false
-		send HB
-		reset timer
-	timeout:
-		err++ (3)
-		if (err > 2)
-			set transport DOWN
-		send HB
-		reset timer.
-
-We only had 2 unacknowledged HB when we should have had 3.
-
-All you need to do is move the error error under a check that
-makes sure that HB has been sent (similar to how the rto doubling
-is done).  Then you original patch would work where we change ">="
-to simply ">".  The error count will be max+1 when transport is marked DOWN.
-
--vlad
-
-> Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
-> ---
->  include/net/sctp/command.h |    1 +
->  net/sctp/sm_sideeffect.c   |   39 ++++++++++++++++++++++++++++-----------
->  net/sctp/sm_statefuns.c    |   16 ++++++++++++++--
->  3 files changed, 43 insertions(+), 13 deletions(-)
-> 
-> diff --git a/include/net/sctp/command.h b/include/net/sctp/command.h
-> index 3b96680..256effd 100644
-> --- a/include/net/sctp/command.h
-> +++ b/include/net/sctp/command.h
-> @@ -77,6 +77,7 @@ typedef enum {
->  	SCTP_CMD_HB_TIMERS_START,    /* Start the heartbeat timers. */
->  	SCTP_CMD_HB_TIMER_UPDATE,    /* Update a heartbeat timers.  */
->  	SCTP_CMD_HB_TIMERS_STOP,     /* Stop the heartbeat timers.  */
-> +	SCTP_CMD_PATH_FAILURE_DETECTION,/* Path failure detection. */
->  	SCTP_CMD_TRANSPORT_HB_SENT,  /* Reset the status of a transport. */
->  	SCTP_CMD_TRANSPORT_IDLE,     /* Do manipulations on idle transport */
->  	SCTP_CMD_TRANSPORT_ON,       /* Mark the transport as active. */
-> diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
-> index 86426aa..db299c6 100644
-> --- a/net/sctp/sm_sideeffect.c
-> +++ b/net/sctp/sm_sideeffect.c
-> @@ -432,7 +432,25 @@ sctp_timer_event_t *sctp_timer_events[SCTP_NUM_TIMEOUT_TYPES] = {
->   * mark the destination transport address as inactive, and a
->   * notification SHOULD be sent to the upper layer.
->   *
-> + * transport error counter is incremented in sctp_do_8_2_transport_strike
->   */
-> +static void sctp_cmd_path_failure_detection(struct sctp_association *asoc,
-> +					   struct sctp_transport *transport)
-> +{
-> +	if (transport->error_count > transport->pathmaxrxt) {
-> +		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
-> +					 " transport IP: port:%d failed.\n",
-> +					 asoc,
-> +					 (&transport->ipaddr),
-> +					 ntohs(transport->ipaddr.v4.sin_port));
-> +		sctp_assoc_control_transport(asoc, transport,
-> +					     SCTP_TRANSPORT_DOWN,
-> +					     SCTP_FAILED_THRESHOLD);
-> +	}
-> +}
-> +
-> +
-> + /*  Mark a strike against a transport */
->  static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
->  					 struct sctp_transport *transport,
->  					 int is_hb)
-> @@ -446,17 +464,11 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
->  	if (transport->state != SCTP_UNCONFIRMED)
->  		asoc->overall_error_count++;
->  
-> -	if (transport->state != SCTP_INACTIVE &&
-> -	    (transport->error_count++ >= transport->pathmaxrxt)) {
-> -		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
-> -					 " transport IP: port:%d failed.\n",
-> -					 asoc,
-> -					 (&transport->ipaddr),
-> -					 ntohs(transport->ipaddr.v4.sin_port));
-> -		sctp_assoc_control_transport(asoc, transport,
-> -					     SCTP_TRANSPORT_DOWN,
-> -					     SCTP_FAILED_THRESHOLD);
-> -	}
-> +	/* The check for transport's error counter exceeding the threshold
-> +	 * is done in the state function.
-> +	 */
-> +	if (transport->state != SCTP_INACTIVE)
-> +		transport->error_count++;
->  
->  	/* E2) For the destination address for which the timer
->  	 * expires, set RTO <- RTO * 2 ("back off the timer").  The
-> @@ -1464,6 +1476,11 @@ static int sctp_cmd_interpreter(sctp_event_t event_type,
->  						    0);
->  			break;
->  
-> +		case SCTP_CMD_PATH_FAILURE_DETECTION:
-> +			t = cmd->obj.transport;
-> +			sctp_cmd_path_failure_detection(asoc, t);
-> +			break;
-> +
->  		case SCTP_CMD_TRANSPORT_IDLE:
->  			t = cmd->obj.transport;
->  			sctp_transport_lower_cwnd(t, SCTP_LOWER_CWND_INACTIVE);
-> diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
-> index 7288192..f4c05fd 100644
-> --- a/net/sctp/sm_statefuns.c
-> +++ b/net/sctp/sm_statefuns.c
-> @@ -981,6 +981,9 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
->  	 */
->  
->  	if (transport->param_flags & SPP_HB_ENABLE) {
-> +		/* Do the path failure detection before send beat */
-> +		sctp_add_cmd_sf(commands, SCTP_CMD_PATH_FAILURE_DETECTION,
-> +				SCTP_TRANSPORT(transport));
->  		if (SCTP_DISPOSITION_NOMEM ==
->  				sctp_sf_heartbeat(ep, asoc, type, arg,
->  						  commands))
-> @@ -5229,6 +5232,8 @@ sctp_disposition_t sctp_sf_do_6_3_3_rtx(const struct sctp_endpoint *ep,
->  	 */
->  
->  	/* Do some failure management (Section 8.2). */
-> +	sctp_add_cmd_sf(commands, SCTP_CMD_PATH_FAILURE_DETECTION,
-> +			SCTP_TRANSPORT(transport));
->  	sctp_add_cmd_sf(commands, SCTP_CMD_STRIKE, SCTP_TRANSPORT(transport));
->  
->  	/* NB: Rules E4 and F1 are implicit in R1.  */
-> @@ -5436,9 +5441,13 @@ sctp_disposition_t sctp_sf_t2_timer_expire(const struct sctp_endpoint *ep,
->  	 * If we remove the transport an SHUTDOWN was last sent to, don't
->  	 * do failure management.
->  	 */
-> -	if (asoc->shutdown_last_sent_to)
-> +	if (asoc->shutdown_last_sent_to) {
-> +		sctp_add_cmd_sf(commands, SCTP_CMD_PATH_FAILURE_DETECTION,
-> +				SCTP_TRANSPORT(asoc->shutdown_last_sent_to));
-> +
->  		sctp_add_cmd_sf(commands, SCTP_CMD_STRIKE,
->  				SCTP_TRANSPORT(asoc->shutdown_last_sent_to));
-> +	}
->  
->  	/* Set the transport for the SHUTDOWN/ACK chunk and the timeout for
->  	 * the T2-shutdown timer.
-> @@ -5475,9 +5484,12 @@ sctp_disposition_t sctp_sf_t4_timer_expire(
->  	 * detection on the appropriate destination address as defined in
->  	 * RFC2960 [5] section 8.1 and 8.2.
->  	 */
-> -	if (transport)
-> +	if (transport) {
-> +		sctp_add_cmd_sf(commands, SCTP_CMD_PATH_FAILURE_DETECTION,
-> +				SCTP_TRANSPORT(transport));
->  		sctp_add_cmd_sf(commands, SCTP_CMD_STRIKE,
->  				SCTP_TRANSPORT(transport));
-> +	}
->  
->  	/* Reconfig T4 timer and transport. */
->  	sctp_add_cmd_sf(commands, SCTP_CMD_SETUP_T4, SCTP_CHUNK(chunk));
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 8130334..8dba407 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -262,6 +262,15 @@ config MCORE2
+ 	  family in /proc/cpuinfo. Newer ones have 6 and older ones 15
+ 	  (not a typo)
+ 
++config MATOM
++	bool "Intel Atom"
++	---help---
++
++	  Select this for the Intel Atom platform. Intel Atom CPUs have an
++	  in-order pipelining architecture and thus can benefit from
++	  accordingly optimized code. Use a recent GCC with specific Atom
++	  support in order to fully benefit from selecting this option.
++
+ config GENERIC_CPU
+ 	bool "Generic-x86-64"
+ 	depends on X86_64
+@@ -310,7 +319,7 @@ config X86_L1_CACHE_SHIFT
+ 	default "7" if MPENTIUM4 || MPSC
+ 	default "4" if X86_ELAN || M486 || M386 || MGEODEGX1
+ 	default "5" if MWINCHIP3D || MWINCHIPC6 || MCRUSOE || MEFFICEON || MCYRIXIII || MK6 || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || M586 || MVIAC3_2 || MGEODE_LX
+-	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MVIAC7 || X86_GENERIC || GENERIC_CPU
++	default "6" if MK7 || MK8 || MPENTIUMM || MCORE2 || MATOM || MVIAC7 || X86_GENERIC || GENERIC_CPU
+ 
+ config X86_XADD
+ 	def_bool y
+@@ -359,7 +368,7 @@ config X86_INTEL_USERCOPY
+ 
+ config X86_USE_PPRO_CHECKSUM
+ 	def_bool y
+-	depends on MWINCHIP3D || MWINCHIPC6 || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MK8 || MVIAC3_2 || MEFFICEON || MGEODE_LX || MCORE2
++	depends on MWINCHIP3D || MWINCHIPC6 || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MK8 || MVIAC3_2 || MEFFICEON || MGEODE_LX || MCORE2 || MATOM
+ 
+ config X86_USE_3DNOW
+ 	def_bool y
+@@ -387,7 +396,7 @@ config X86_P6_NOP
+ 
+ config X86_TSC
+ 	def_bool y
+-	depends on ((MWINCHIP3D || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2) && !X86_NUMAQ) || X86_64
++	depends on ((MWINCHIP3D || MCRUSOE || MEFFICEON || MCYRIXIII || MK7 || MK6 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || M586MMX || M586TSC || MK8 || MVIAC3_2 || MVIAC7 || MGEODEGX1 || MGEODE_LX || MCORE2 || MATOM) && !X86_NUMAQ) || X86_64
+ 
+ config X86_CMPXCHG64
+ 	def_bool y
+@@ -397,7 +406,7 @@ config X86_CMPXCHG64
+ # generates cmov.
+ config X86_CMOV
+ 	def_bool y
+-	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE || MEFFICEON || X86_64)
++	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE || MEFFICEON || X86_64 || MATOM)
+ 
+ config X86_MINIMUM_CPU_FAMILY
+ 	int
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 1b68659..8a4c24c 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -55,6 +55,8 @@ else
+ 
+         cflags-$(CONFIG_MCORE2) += \
+                 $(call cc-option,-march=core2,$(call cc-option,-mtune=generic))
++	cflags-$(CONFIG_MATOM) += $(call cc-option,-march=atom) \
++		$(call cc-option,-mtune=atom,$(call cc-option,-mtune=generic))
+         cflags-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=generic)
+         KBUILD_CFLAGS += $(cflags-y)
+ 
+diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
+index 80177ec..30e9a26 100644
+--- a/arch/x86/Makefile_32.cpu
++++ b/arch/x86/Makefile_32.cpu
+@@ -33,6 +33,8 @@ cflags-$(CONFIG_MCYRIXIII)	+= $(call cc-option,-march=c3,-march=i486) $(align)-f
+ cflags-$(CONFIG_MVIAC3_2)	+= $(call cc-option,-march=c3-2,-march=i686)
+ cflags-$(CONFIG_MVIAC7)		+= -march=i686
+ cflags-$(CONFIG_MCORE2)		+= -march=i686 $(call tune,core2)
++cflags-$(CONFIG_MATOM)		+= $(call cc-option,-march=atom,$(call cc-option,-march=core2,-march=i686)) \
++	$(call cc-option,-mtune=atom,$(call cc-option,-mtune=generic))
+ 
+ # AMD Elan support
+ cflags-$(CONFIG_X86_ELAN)	+= -march=i486
+diff --git a/arch/x86/include/asm/module.h b/arch/x86/include/asm/module.h
+index 47d6274..e959c4a 100644
+--- a/arch/x86/include/asm/module.h
++++ b/arch/x86/include/asm/module.h
+@@ -28,6 +28,8 @@ struct mod_arch_specific {};
+ #define MODULE_PROC_FAMILY "586MMX "
+ #elif defined CONFIG_MCORE2
+ #define MODULE_PROC_FAMILY "CORE2 "
++#elif defined CONFIG_MATOM
++#define MODULE_PROC_FAMILY "ATOM "
+ #elif defined CONFIG_M686
+ #define MODULE_PROC_FAMILY "686 "
+ #elif defined CONFIG_MPENTIUMII
+-- 
+1.6.3.3
 
