@@ -1,138 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932490AbZHUQmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932494AbZHUQoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932490AbZHUQmG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 12:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbZHUQmE
+	id S932494AbZHUQoE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 12:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932321AbZHUQoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 12:42:04 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:52656 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932444AbZHUQmC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 12:42:02 -0400
-From: Andy Whitcroft <apw@canonical.com>
-To: "Ed L. Cashin" <ecashin@coraid.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Cc: Andy Whitcroft <apw@canonical.com>
-Subject: [PATCH 1/1] aoe: ensure we initialise the request_queue correctly
-Date: Fri, 21 Aug 2009 17:41:44 +0100
-Message-Id: <1250872904-10993-2-git-send-email-apw@canonical.com>
-X-Mailer: git-send-email 1.6.3.rc3.199.g24398
-In-Reply-To: <1250872904-10993-1-git-send-email-apw@canonical.com>
-References: <1250872904-10993-1-git-send-email-apw@canonical.com>
+	Fri, 21 Aug 2009 12:44:03 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43093 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932313AbZHUQoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 12:44:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Subject: Re: [Bug #13620] acpi_enforce_resources broken - conflicting i2c module loaded on some EeePCs
+Date: Fri, 21 Aug 2009 18:44:49 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
+References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera> <Era7U-todKF.A.wsC.gmIjKB@chimera> <9b2b86520908210235l7961410ag74200291c7f8e3a5@mail.gmail.com>
+In-Reply-To: <9b2b86520908210235l7961410ag74200291c7f8e3a5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908211844.49475.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BugLink: http://bugs.launchpad.net/bugs/410198
+On Friday 21 August 2009, Alan Jenkins wrote:
+> On 8/19/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.29 and 2.6.30.
+> >
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13620
+> > Subject		: acpi_enforce_resources broken - conflicting i2c module loaded on
+> > some EeePCs
+> > Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> > Date		: 2009-06-25 08:31 (56 days old)
+> > References	:
+> > <http://lists.alioth.debian.org/pipermail/debian-eeepc-devel/2009-June/002316.html>
+> > Handled-By	: Lin Ming <ming.m.lin@intel.com>
+> > Patch		: http://patchwork.kernel.org/patch/33626/
+> 
+> This must have been fixed in -rc6, because someone just complained
+> about it working again :-).
+> <http://article.gmane.org/gmane.linux.acpi.devel/40999/>
+> 
+> I confirmed this on my own EeePC; i2c-i801 is now correctly denied
+> access to the IO resources claimed by ACPI.  Please remove this
+> regression from your list.
 
-When using the aoe driver we see an oops triggered by use of an
-incorrectly initialised request_queue object:
+Thanks, closed.
 
-  [ 2645.959090] kobject '<NULL>' (ffff880059ca22c0): tried to add
-		an uninitialized object, something is seriously wrong.
-  [ 2645.959104] Pid: 6, comm: events/0 Not tainted 2.6.31-5-generic #24-Ubuntu
-  [ 2645.959107] Call Trace:
-  [ 2645.959139] [<ffffffff8126ca2f>] kobject_add+0x5f/0x70
-  [ 2645.959151] [<ffffffff8125b4ab>] blk_register_queue+0x8b/0xf0
-  [ 2645.959155] [<ffffffff8126043f>] add_disk+0x8f/0x160
-  [ 2645.959161] [<ffffffffa01673c4>] aoeblk_gdalloc+0x164/0x1c0 [aoe]
-
-It seems this driver mearly embeds a request_queue object in its main
-control structure and does not attempt to initialise it.  Pull this out
-and use blk_init_queue/blk_cleanup_queue to handle initialisation and
-teardown of this object.
-
-Signed-off-by: Andy Whitcroft <apw@canonical.com>
----
- drivers/block/aoe/aoe.h    |    2 +-
- drivers/block/aoe/aoeblk.c |    6 +++---
- drivers/block/aoe/aoedev.c |   11 ++++++++++-
- 3 files changed, 14 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/block/aoe/aoe.h b/drivers/block/aoe/aoe.h
-index 5e41e6d..db195ab 100644
---- a/drivers/block/aoe/aoe.h
-+++ b/drivers/block/aoe/aoe.h
-@@ -155,7 +155,7 @@ struct aoedev {
- 	u16 fw_ver;		/* version of blade's firmware */
- 	struct work_struct work;/* disk create work struct */
- 	struct gendisk *gd;
--	struct request_queue blkq;
-+	struct request_queue *blkq;
- 	struct hd_geometry geo; 
- 	sector_t ssize;
- 	struct timer_list timer;
-diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
-index 2307a27..83e0dfd 100644
---- a/drivers/block/aoe/aoeblk.c
-+++ b/drivers/block/aoe/aoeblk.c
-@@ -264,8 +264,8 @@ aoeblk_gdalloc(void *vp)
- 		goto err_disk;
- 	}
- 
--	blk_queue_make_request(&d->blkq, aoeblk_make_request);
--	if (bdi_init(&d->blkq.backing_dev_info))
-+	blk_queue_make_request(d->blkq, aoeblk_make_request);
-+	if (bdi_init(&d->blkq->backing_dev_info))
- 		goto err_mempool;
- 	spin_lock_irqsave(&d->lock, flags);
- 	gd->major = AOE_MAJOR;
-@@ -276,7 +276,7 @@ aoeblk_gdalloc(void *vp)
- 	snprintf(gd->disk_name, sizeof gd->disk_name, "etherd/e%ld.%d",
- 		d->aoemajor, d->aoeminor);
- 
--	gd->queue = &d->blkq;
-+	gd->queue = d->blkq;
- 	d->gd = gd;
- 	d->flags &= ~DEVFL_GDALLOC;
- 	d->flags |= DEVFL_UP;
-diff --git a/drivers/block/aoe/aoedev.c b/drivers/block/aoe/aoedev.c
-index eeea477..0add442 100644
---- a/drivers/block/aoe/aoedev.c
-+++ b/drivers/block/aoe/aoedev.c
-@@ -113,6 +113,7 @@ aoedev_freedev(struct aoedev *d)
- 	if (d->bufpool)
- 		mempool_destroy(d->bufpool);
- 	skbpoolfree(d);
-+	blk_cleanup_queue(d->blkq);
- 	kfree(d);
- }
- 
-@@ -202,6 +203,7 @@ aoedev_by_sysminor_m(ulong sysminor)
- {
- 	struct aoedev *d;
- 	ulong flags;
-+	struct request_queue *rq;
- 
- 	spin_lock_irqsave(&devlist_lock, flags);
- 
-@@ -210,9 +212,13 @@ aoedev_by_sysminor_m(ulong sysminor)
- 			break;
- 	if (d)
- 		goto out;
-+	rq = blk_init_queue(NULL, NULL);
-+	if (!rq)
-+		goto out;
- 	d = kcalloc(1, sizeof *d, GFP_ATOMIC);
- 	if (!d)
--		goto out;
-+		goto out_rq;
-+	d->blkq = rq;
- 	INIT_WORK(&d->work, aoecmd_sleepwork);
- 	spin_lock_init(&d->lock);
- 	skb_queue_head_init(&d->sendq);
-@@ -234,6 +240,9 @@ aoedev_by_sysminor_m(ulong sysminor)
-  out:
- 	spin_unlock_irqrestore(&devlist_lock, flags);
- 	return d;
-+ out_rq:
-+	blk_cleanup_queue(rq);
-+	goto out;
- }
- 
- static void
--- 
-1.6.3.rc3.199.g24398
-
+Rafael
