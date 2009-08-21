@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932393AbZHUPcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbZHUPdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932393AbZHUPcf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932305AbZHUPcf
+	id S1755655AbZHUPdJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 11:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbZHUPdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:32:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37470 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932220AbZHUPce (ORCPT
+	Fri, 21 Aug 2009 11:33:08 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:54367 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754062AbZHUPdH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:32:34 -0400
-Date: Fri, 21 Aug 2009 11:32:35 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Kara <jack@suse.cz>
-Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>, Felix Blyakher <felixb@sgi.com>,
-       xfs@oss.sgi.com, Anton Altaparmakov <aia21@cantab.net>,
-       linux-ntfs-dev@lists.sourceforge.net,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-ext4@vger.kernel.org, tytso@mit.edu
-Subject: Re: [PATCH 07/17] vfs: Introduce new helpers for syncing after
-	writing to O_SYNC file or IS_SYNC inode
-Message-ID: <20090821153235.GA5874@infradead.org>
-References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-8-git-send-email-jack@suse.cz> <20090819162638.GE6150@infradead.org> <20090820121531.GC16486@duck.novell.com> <20090820162729.GA24659@infradead.org> <20090821152339.GD3007@duck.novell.com>
+	Fri, 21 Aug 2009 11:33:07 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] ARM: Mailing lists have moved
+Date: Fri, 21 Aug 2009 17:31:24 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.3.0; x86_64; ; )
+Cc: linux-arm-kernel@lists.infradead.org,
+       Russell King <linux@arm.linux.org.uk>, erikm@nl.linux.org,
+       vince@kyllikki.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+References: <1250855566.3311.100.camel@macbook.infradead.org> <200908211513.48424.arnd@arndb.de> <1250868037.3311.106.camel@macbook.infradead.org>
+In-Reply-To: <1250868037.3311.106.camel@macbook.infradead.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090821152339.GD3007@duck.novell.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908211731.24538.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/Smd44zgxs+LpeUJlHZylRg4VHg8gN5sEZvSw
+ nEJDRSQ1R9VPYD07Hj9dnR84w5vgacB+mOBYjsD9fV27t2gL0m
+ sICV8eQwfN4m/R7AE4fhg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 05:23:39PM +0200, Jan Kara wrote:
->   Hmm, I can imagine it would buy us something in two cases (but looking at
-> the code, neither is implemented in such a way that it would really help
-> us in any way):
-> 1) when an inode and it's data are stored in one block (e.g. OCFS2 or UDF) do
->    this.
+On Friday 21 August 2009, David Woodhouse wrote:
+> >  Otherwise we're risking a similar mess to what happened when the
+> > powerpc-dev and powerpc mailing lists were merged.
+> 
+> Hm?
 
->   In the first case we would wait for block with data to be written only to
-> submit it again because inode was still dirty.
+I meand powerpc-dev and powerpc-embedded. The -embedded list had
+gathered hundreds of subscribers over the years that were subscribed
+only in 'digest' or 'no mail' mode and were totally overwhelmed
+with the traffic on powerpc-dev. Contrary to what you expect to be
+the minimum level of intelligence required to subscribe to development
+mailing list, a huge number of them subsequently flooded the list
+with messages saying 'please unsubscribe me please' or the like.
+Needless to say, there was a clear instruction on the bottom of each
+mail telling you how to unsubscribe.
 
-But we would not actually store in the pagecache or at least never
-writeback it via the pacache in that case, but always just write it as
-part of the inode.
-
+	Arnd <><
