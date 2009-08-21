@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932609AbZHURAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbZHURAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932609AbZHURAQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932505AbZHURAO
+	id S932591AbZHURAM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbZHURAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:00:14 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51066 "EHLO mx1.suse.de"
+	Fri, 21 Aug 2009 13:00:11 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51063 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932535AbZHURAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:00:03 -0400
+	id S932534AbZHURAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 13:00:02 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       linux-ext4@vger.kernel.org, tytso@mit.edu
-Subject: [PATCH 10/17] ext4: Remove syncing logic from ext4_file_write
-Date: Fri, 21 Aug 2009 18:59:54 +0200
-Message-Id: <1250874001-15483-10-git-send-email-jack@suse.cz>
+Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>
+Subject: [PATCH 06/17] vfs: Rename generic_file_aio_write_nolock
+Date: Fri, 21 Aug 2009 18:59:50 +0200
+Message-Id: <1250874001-15483-6-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1250874001-15483-1-git-send-email-jack@suse.cz>
 References: <1250874001-15483-1-git-send-email-jack@suse.cz>
@@ -23,87 +22,95 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The syncing is now properly handled by generic_file_aio_write() so
-no special ext4 code is needed.
+generic_file_aio_write_nolock() is now used only by block devices and raw
+character device. Filesystems should use __generic_file_aio_write() in case
+generic_file_aio_write() doesn't suit them. So rename the function to
+device_aio_write().
 
-CC: linux-ext4@vger.kernel.org
-CC: tytso@mit.edu
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/ext4/file.c |   53 ++---------------------------------------------------
- 1 files changed, 2 insertions(+), 51 deletions(-)
+ drivers/char/raw.c |    2 +-
+ fs/block_dev.c     |    2 +-
+ include/linux/fs.h |    4 ++--
+ mm/filemap.c       |    9 ++++-----
+ 4 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/fs/ext4/file.c b/fs/ext4/file.c
-index 3f1873f..aafe432 100644
---- a/fs/ext4/file.c
-+++ b/fs/ext4/file.c
-@@ -58,10 +58,7 @@ static ssize_t
- ext4_file_write(struct kiocb *iocb, const struct iovec *iov,
- 		unsigned long nr_segs, loff_t pos)
- {
--	struct file *file = iocb->ki_filp;
--	struct inode *inode = file->f_path.dentry->d_inode;
--	ssize_t ret;
--	int err;
-+	struct inode *inode = iocb->ki_filp->f_path.dentry->d_inode;
- 
- 	/*
- 	 * If we have encountered a bitmap-format file, the size limit
-@@ -81,53 +78,7 @@ ext4_file_write(struct kiocb *iocb, const struct iovec *iov,
- 		}
- 	}
- 
--	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
--	/*
--	 * Skip flushing if there was an error, or if nothing was written.
--	 */
--	if (ret <= 0)
--		return ret;
--
--	/*
--	 * If the inode is IS_SYNC, or is O_SYNC and we are doing data
--	 * journalling then we need to make sure that we force the transaction
--	 * to disk to keep all metadata uptodate synchronously.
--	 */
--	if (file->f_flags & O_SYNC) {
--		/*
--		 * If we are non-data-journaled, then the dirty data has
--		 * already been flushed to backing store by generic_osync_inode,
--		 * and the inode has been flushed too if there have been any
--		 * modifications other than mere timestamp updates.
--		 *
--		 * Open question --- do we care about flushing timestamps too
--		 * if the inode is IS_SYNC?
--		 */
--		if (!ext4_should_journal_data(inode))
--			return ret;
--
--		goto force_commit;
--	}
--
--	/*
--	 * So we know that there has been no forced data flush.  If the inode
--	 * is marked IS_SYNC, we need to force one ourselves.
--	 */
--	if (!IS_SYNC(inode))
--		return ret;
--
--	/*
--	 * Open question #2 --- should we force data to disk here too?  If we
--	 * don't, the only impact is that data=writeback filesystems won't
--	 * flush data to disk automatically on IS_SYNC, only metadata (but
--	 * historically, that is what ext2 has done.)
--	 */
--
--force_commit:
--	err = ext4_force_commit(inode->i_sb);
--	if (err)
--		return err;
--	return ret;
-+	return generic_file_aio_write(iocb, iov, nr_segs, pos);
+diff --git a/drivers/char/raw.c b/drivers/char/raw.c
+index 05f9d18..c43c7a7 100644
+--- a/drivers/char/raw.c
++++ b/drivers/char/raw.c
+@@ -246,7 +246,7 @@ static const struct file_operations raw_fops = {
+ 	.read	=	do_sync_read,
+ 	.aio_read = 	generic_file_aio_read,
+ 	.write	=	do_sync_write,
+-	.aio_write = 	generic_file_aio_write_nolock,
++	.aio_write =	device_aio_write,
+ 	.open	=	raw_open,
+ 	.release=	raw_release,
+ 	.ioctl	=	raw_ioctl,
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index 94dfda2..67fc1c9 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -1436,7 +1436,7 @@ const struct file_operations def_blk_fops = {
+ 	.read		= do_sync_read,
+ 	.write		= do_sync_write,
+   	.aio_read	= generic_file_aio_read,
+-  	.aio_write	= generic_file_aio_write_nolock,
++	.aio_write	= device_aio_write,
+ 	.mmap		= generic_file_mmap,
+ 	.fsync		= block_fsync,
+ 	.unlocked_ioctl	= block_ioctl,
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 1edd159..29fc8da 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2198,8 +2198,8 @@ extern ssize_t generic_file_aio_read(struct kiocb *, const struct iovec *, unsig
+ extern ssize_t __generic_file_aio_write(struct kiocb *, const struct iovec *, unsigned long,
+ 		loff_t *);
+ extern ssize_t generic_file_aio_write(struct kiocb *, const struct iovec *, unsigned long, loff_t);
+-extern ssize_t generic_file_aio_write_nolock(struct kiocb *, const struct iovec *,
+-		unsigned long, loff_t);
++extern ssize_t device_aio_write(struct kiocb *iocb, const struct iovec *iov,
++				unsigned long nr_segs, loff_t pos);
+ extern ssize_t generic_file_direct_write(struct kiocb *, const struct iovec *,
+ 		unsigned long *, loff_t, loff_t *, size_t, size_t);
+ extern ssize_t generic_file_buffered_write(struct kiocb *, const struct iovec *,
+diff --git a/mm/filemap.c b/mm/filemap.c
+index b523e42..ef9f635 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2462,9 +2462,8 @@ out:
  }
+ EXPORT_SYMBOL(__generic_file_aio_write);
  
- static struct vm_operations_struct ext4_file_vm_ops = {
+-
+ /**
+- * generic_file_aio_write_nolock - write data, usually to a device
++ * device_aio_write - write data
+  * @iocb:	IO state structure
+  * @iov:	vector with data to write
+  * @nr_segs:	number of segments in the vector
+@@ -2477,8 +2476,8 @@ EXPORT_SYMBOL(__generic_file_aio_write);
+  * do a write but already holds i_mutex, use __generic_file_aio_write()
+  * directly and then sync the file like generic_file_aio_write().
+  */
+-ssize_t generic_file_aio_write_nolock(struct kiocb *iocb,
+-		const struct iovec *iov, unsigned long nr_segs, loff_t pos)
++ssize_t device_aio_write(struct kiocb *iocb, const struct iovec *iov,
++			 unsigned long nr_segs, loff_t pos)
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct address_space *mapping = file->f_mapping;
+@@ -2499,7 +2498,7 @@ ssize_t generic_file_aio_write_nolock(struct kiocb *iocb,
+ 	}
+ 	return ret;
+ }
+-EXPORT_SYMBOL(generic_file_aio_write_nolock);
++EXPORT_SYMBOL(device_aio_write);
+ 
+ /**
+  * generic_file_aio_write - write data to a file
 -- 
 1.6.0.2
 
