@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbZHUJeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZHUJff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbZHUJeR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 05:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbZHUJeQ
+	id S1755312AbZHUJff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 05:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbZHUJfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 05:34:16 -0400
-Received: from ppp-153-131.adsl.restena.lu ([158.64.153.131]:45155 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755282AbZHUJeP convert rfc822-to-8bit (ORCPT
+	Fri, 21 Aug 2009 05:35:34 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:61175 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755174AbZHUJfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 05:34:15 -0400
-X-Greylist: delayed 470 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Aug 2009 05:34:15 EDT
-Date: Fri, 21 Aug 2009 11:25:54 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
- in use
-Message-ID: <20090821112554.18a297fa@pluto.restena.lu>
-In-Reply-To: <Pine.LNX.4.44L0.0908201716190.2422-100000@iolanthe.rowland.org>
-References: <20090820212549.7b4d93c9@neptune.home>
-	<Pine.LNX.4.44L0.0908201716190.2422-100000@iolanthe.rowland.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 21 Aug 2009 05:35:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Gmp77kaqAKLhIBdrQaHXXtjWahTZzR6Xyhxkt7Wz01ZF+ssZvHOKuKHKBpNg8lgGH5
+         Xx6ZvBXOmtxT2gBINY8pfg2fbv2vlNgYLy7C6ja+1bG8lTJIlo4bkCguGTlL8ykUecJm
+         XPgWoVZyvDt7tvMiGEj/Rw09vatQw8egfX9Ao=
+MIME-Version: 1.0
+In-Reply-To: <Era7U-todKF.A.wsC.gmIjKB@chimera>
+References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
+	 <Era7U-todKF.A.wsC.gmIjKB@chimera>
+Date: Fri, 21 Aug 2009 10:35:33 +0100
+Message-ID: <9b2b86520908210235l7961410ag74200291c7f8e3a5@mail.gmail.com>
+Subject: Re: [Bug #13620] acpi_enforce_resources broken - conflicting i2c 
+	module loaded on some EeePCs
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 17:20:35 Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Thu, 20 Aug 2009, Bruno [UTF-8] Prémont wrote:
-> 
-> > No, that one does not really help (well it avoids dereferencing a
-> > bad pointer (NULL for pl2302 or invalid for ftdi) with
-> > serial_do_free() after destroy_serial() but is does underflow
-> > module refcount (refcount ends up at 2^32-1) and lets the kernel
-> > stall/panic a short time later without any useful information at
-> > that moment (only very first line of trace ever appears) [ftdi for
-> > the panic/freeze].
-> 
-> More information, please.  Does the problem occur with the pl2303 or 
-> only with the ftdi?  Which module's refcount underflows?  What else
-> can you provide?
+On 8/19/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13620
+> Subject		: acpi_enforce_resources broken - conflicting i2c module loaded on
+> some EeePCs
+> Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> Date		: 2009-06-25 08:31 (56 days old)
+> References	:
+> <http://lists.alioth.debian.org/pipermail/debian-eeepc-devel/2009-June/002316.html>
+> Handled-By	: Lin Ming <ming.m.lin@intel.com>
+> Patch		: http://patchwork.kernel.org/patch/33626/
 
-The module refcount was for both. It's the pl2302/ftdi-sio module's
-refcount.
+This must have been fixed in -rc6, because someone just complained
+about it working again :-).
+<http://article.gmane.org/gmane.linux.acpi.devel/40999/>
 
-I don't remember for sure about the panic if it also affects
-pl2302 or not.
-At least one of the panics was when running dmesg after exiting minicom.
+I confirmed this on my own EeePC; i2c-i801 is now correctly denied
+access to the IO resources claimed by ACPI.  Please remove this
+regression from your list.
 
-I will redo the tests this evening when I get home and report back with
-more details.
-
-> I don't see the same sort of thing with my pl2303 device, but maybe
-> I'm using a different version of minicom.
-> 
-> Alan Stern
-
-Bruno
+Thanks
+Alan
