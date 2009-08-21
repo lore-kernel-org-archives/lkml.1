@@ -1,48 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbZHUTha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbZHUThe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755713AbZHUTha (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 15:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZHUTha
+	id S1755767AbZHUThe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 15:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbZHUThd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 15:37:30 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:38171 "EHLO mx1.redhat.com"
+	Fri, 21 Aug 2009 15:37:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41980 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755441AbZHUTh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 15:37:29 -0400
-Message-ID: <4A8EF765.9050201@redhat.com>
-Date: Fri, 21 Aug 2009 12:37:09 -0700
-From: Josh Stone <jistone@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1755458AbZHUThb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 15:37:31 -0400
+Date: Fri, 21 Aug 2009 19:36:34 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, eranian@googlemail.com, cjashfor@us.ibm.com,
+       a.p.zijlstra@chello.nl, perfmon2-devel@lists.sourceforge.net,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, eranian@googlemail.com,
+       a.p.zijlstra@chello.nl, cjashfor@us.ibm.com,
+       perfmon2-devel@lists.sourceforge.net, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1250867976.7538.73.camel@twins>
+References: <1250867976.7538.73.camel@twins>
+Subject: [tip:perfcounters/urgent] perf_counter: Fix typo in read() output generation
+Message-ID: <tip-4464fcaa9cbfc9c551956b48af203e2f775ca892@git.kernel.org>
+Git-Commit-ID: 4464fcaa9cbfc9c551956b48af203e2f775ca892
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com
-Subject: Re: [PATCH v2 2/2] tracing: Create generic syscall TRACE_EVENTs
-References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250795373-32363-2-git-send-email-jistone@redhat.com> <20090821175737.GB2684@redhat.com>
-In-Reply-To: <20090821175737.GB2684@redhat.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Aug 2009 19:36:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/21/2009 10:57 AM, Jason Baron wrote:
->> +TRACE_EVENT_WITH_CALLBACK(sys_enter,
-> 
-> don't we want to change this to something like 'sys_enter_generic'?
-> otherwise, looks good.
+Commit-ID:  4464fcaa9cbfc9c551956b48af203e2f775ca892
+Gitweb:     http://git.kernel.org/tip/4464fcaa9cbfc9c551956b48af203e2f775ca892
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Fri, 21 Aug 2009 17:19:36 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 21 Aug 2009 18:00:35 +0200
 
-Since all of the specific events are named "sys_enter_foo", I thought
-that it would be clear that an unadorned "sys_enter" was the more
-generic syscall event.  Calling it "sys_enter_generic" seems to me by
-convention to mean a system call named "generic".
+perf_counter: Fix typo in read() output generation
 
-I don't want to bikeshed this though -- if you still think
-"sys_enter_generic" is better, then I'll change it.
+When you iterate a list, using the iterator is useful.
 
-Thanks,
+Before:
 
-Josh
+   ID: 5
+   ID: 5
+   ID: 5
+   ID: 5
+   EVNT: 0x40088b scale: nan ID: 5 CNT: 1006252 ID: 6 CNT: 1011090 ID: 7 CNT: 1011196 ID: 8 CNT: 1011095
+   EVNT: 0x40088c scale: 1.000000 ID: 5 CNT: 2003065 ID: 6 CNT: 2011671 ID: 7 CNT: 2012620 ID: 8 CNT: 2013479
+   EVNT: 0x40088c scale: 1.000000 ID: 5 CNT: 3002390 ID: 6 CNT: 3015996 ID: 7 CNT: 3018019 ID: 8 CNT: 3020006
+   EVNT: 0x40088b scale: 1.000000 ID: 5 CNT: 4002406 ID: 6 CNT: 4021120 ID: 7 CNT: 4024241 ID: 8 CNT: 4027059
+
+After:
+
+   ID: 1
+   ID: 2
+   ID: 3
+   ID: 4
+   EVNT: 0x400889 scale: nan ID: 1 CNT: 1005270 ID: 2 CNT: 1009833 ID: 3 CNT: 1010065 ID: 4 CNT: 1010088
+   EVNT: 0x400898 scale: nan ID: 1 CNT: 2001531 ID: 2 CNT: 2022309 ID: 3 CNT: 2022470 ID: 4 CNT: 2022627
+   EVNT: 0x400888 scale: 0.489467 ID: 1 CNT: 3001261 ID: 2 CNT: 3027088 ID: 3 CNT: 3027941 ID: 4 CNT: 3028762
+
+Reported-by: stephane eranian <eranian@googlemail.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey J Ashford <cjashfor@us.ibm.com>
+Cc: perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+LKML-Reference: <1250867976.7538.73.camel@twins>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/perf_counter.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 36f65e2..f274e19 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1791,7 +1791,7 @@ static int perf_counter_read_group(struct perf_counter *counter,
+ 	size += err;
+ 
+ 	list_for_each_entry(sub, &leader->sibling_list, list_entry) {
+-		err = perf_counter_read_entry(counter, read_format,
++		err = perf_counter_read_entry(sub, read_format,
+ 				buf + size);
+ 		if (err < 0)
+ 			return err;
