@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbZHUA6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbZHUB1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753111AbZHUA6Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 20:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbZHUA6P
+	id S1752594AbZHUB1D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 21:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbZHUB1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 20:58:15 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63998 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbZHUA6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 20:58:15 -0400
-Message-ID: <4A8DF0F7.6070100@cn.fujitsu.com>
-Date: Fri, 21 Aug 2009 08:57:27 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 20 Aug 2009 21:27:02 -0400
+Received: from mga14.intel.com ([143.182.124.37]:22668 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751485AbZHUB1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 21:27:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,247,1249282800"; 
+   d="scan'208";a="178438772"
+Date: Fri, 21 Aug 2009 09:27:00 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: mount.nfs: access denied by server
+Message-ID: <20090821012700.GA9937@localhost>
+References: <20090820071315.GA14765@localhost> <1250773349.5352.23.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com
-Subject: Re: [PATCH] IO-Controller: clear ioq wait flag if a request goes
- into that ioq
-References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com> <1250451046-9966-12-git-send-email-vgoyal@redhat.com> <4A8CAAE2.1030804@cn.fujitsu.com> <20090820134221.GC10615@redhat.com>
-In-Reply-To: <20090820134221.GC10615@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250773349.5352.23.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Thu, Aug 20, 2009 at 09:46:10AM +0800, Gui Jianfeng wrote:
->> Vivek Goyal wrote:
->> ...
->>>  		/*
->>>  		 * Remember that we saw a request from this process, but
->>> @@ -1940,7 +2013,7 @@ void elv_ioq_request_add(struct request_queue *q, struct request *rq)
->>>  		 * has other work pending, don't risk delaying until the
->>>  		 * idle timer unplug to continue working.
->>>  		 */
->>> -		if (elv_ioq_wait_request(ioq)) {
->>> +		if (group_wait || elv_ioq_wait_request(ioq)) {
->> Hi Vivek,
->>
->> I guess we need to clear ioq_wait_request flags if there are requests to 
->> go in this ioq. Otherwise, once waitting request on ioq, it will go into
->> this path every time when a request is enqueued.
->>
->> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+On Thu, Aug 20, 2009 at 09:02:29PM +0800, Trond Myklebust wrote:
+> On Thu, 2009-08-20 at 15:13 +0800, Wu Fengguang wrote:
+> > Hi,
+> > 
+> > After upgrading NFS client kernel to latest linux-next, NFS mount
+> > failed:
+> > 
+> >         # mount -t nfs pxe:/cc /cc
+> >         mount.nfs: access denied by server while mounting pxe:/cc
+> > 
+> >         # uname -a
+> >         Linux hp 2.6.31-rc6-next-20090818 #61 SMP Thu Aug 20 14:46:10 CST 2009 x86_64 GNU/Linux 
+> > 
+> > However server log says OK:
+> > 
+> >         Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated mount request from 192.168.11.6:973 for /cc (/cc)
+> >         Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated unmount request from 192.168.11.6:974 for /cc (/cc)
+> > 
+> > However-2: nfsroot can be mounted at boot time. Server kernel has always been 2.6.30.
+> > 
+> > Any ideas?
+> > 
+> > Thanks,
+> > Fengguang
 > 
-> Hi Gui,
+> Can you try again after enabling mount debugging on the NFS client?
 > 
-> It does sound like that we need to clear ioq wait_request flag here. In
-> fact upstream CFQ code is also not clearing this flag. Looking at the
-> code, can't think why it should not be cleared here.
-> 
-> Can you please also generate a patch for CFQ and post to lkml.
-> 
+> echo 512 > /proc/sys/sunrpc/nfs_debug
 
-Sure, will do.
+I used 1024 and found the mount failed here in nfs_walk_authlist():
 
--- 
-Regards
-Gui Jianfeng
+        dfprintk(MOUNT, "NFS: server does not support requested auth flavor\ n");
+        nfs_umount(request);
 
+Thanks,
+Fengguang
