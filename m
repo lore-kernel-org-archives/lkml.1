@@ -1,82 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZHUCHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZHUCIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbZHUCHP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 22:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZHUCHO
+	id S1754708AbZHUCIm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 22:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZHUCIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 22:07:14 -0400
-Received: from mail.deathmatch.net ([72.66.92.28]:2294 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754468AbZHUCHN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 22:07:13 -0400
-Date: Thu, 20 Aug 2009 22:06:33 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: 2.6.32-rc6 BUG at mm/slab.c:2869!
-Message-ID: <20090821020633.GA25571@hash.localnet>
-References: <20090820015624.GE524@hash.localnet> <84144f020908192208x453ebbd4gecf52eb47903653d@mail.gmail.com> <20090820111937.GF524@hash.localnet> <19f34abd0908200502n6ff53e71ld5bc18aa581d5625@mail.gmail.com>
+	Thu, 20 Aug 2009 22:08:42 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:61750 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751222AbZHUCIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 22:08:41 -0400
+Message-ID: <4A8E01AE.5070900@redhat.com>
+Date: Fri, 21 Aug 2009 10:08:46 +0800
+From: Danny Feng <dfeng@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0908200502n6ff53e71ld5bc18aa581d5625@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Frans Pop <elendil@planet.nl>
+CC: Netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: Re: e1000e: why does pci_enable_pcie_error_reporting() fail on my
+ hp2510p?
+References: <200908201714.30638.elendil@planet.nl>
+In-Reply-To: <200908201714.30638.elendil@planet.nl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 02:02:49PM +0200, Vegard Nossum wrote:
-> > I'll try that and kmemcheck next.
-> 
-> Hm, I'm afraid kmemcheck gives some known false positives related to
-> bitfields in ext4 code, so in the case that something turned up, it
-> might be hard to distinguish it from those false positives.
+On 08/20/2009 11:14 PM, Frans Pop wrote:
+> With the current kernel I suddenly get the following error displayed
+> during boot:
+>    e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
+>    e1000e: Copyright (c) 1999-2008 Intel Corporation.
+>    e1000e 0000:00:19.0: PCI INT A ->  GSI 22 (level, low) ->  IRQ 22
+> ! e1000e 0000:00:19.0: pci_enable_pcie_error_reporting failed 0xfffffffb
+>    e1000e 0000:00:19.0: setting latency timer to 64
+>    e1000e 0000:00:19.0: irq 26 for MSI/MSI-X
+>
+> This looks to be the consequence of:
+> commit 68eac4602b9104cdaa6c18b3edd914cececa6a1e
+> Author: Xiaotian Feng<dfeng@redhat.com>
+> Date:   Fri Aug 14 14:35:52 2009 +0000
+>      e1000e: fix use of pci_enable_pcie_error_reporting
+>
+> Looking at the change it seems logical that this error, that I previously
+> only saw during resumes from suppend to RAM, now also shows up during
+> system boot. So I don't think it can be qualified as a regression, but it
+> is certainly rather annoying.
+>
+> Questions:
+> - is it possible that the error occurs due to a kernel bug, or is this
+>    certain to be due to broken hardware?
+I think this messages comes from hardware does not support pcie aer.
+In fact the messages is not fatal and can be ignored. Some drivers
+is silence with pci_enable_pcie_error_reporting ....
 
-Well I didn't get anything from ext4 so far.  I did hit one with
-fsnotify:
-
-WARNING: kmemcheck: Caught 32-bit read from freed memory (f34a443c)
-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee008a06f700011000
- a a a a a a a a a a a a a a a a a a a a a a a a f f f f f f f f
-                                                         ^
-
-Pid: 2745, comm: fsck.ext4 Not tainted (2.6.31-rc6 #2) MacBook1,1
-EIP: 0060:[<c10f3656>] EFLAGS: 00010217 CPU: 0
-EIP is at inotify_handle_event+0x76/0xc0
-EAX: f34a443c EBX: f34a4438 ECX: 00000000 EDX: f6732000
-ESI: f6559764 EDI: 00000000 EBP: f6733f0c ESP: c1527450
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-CR0: 8005003b CR2: f6c046d4 CR3: 367fb000 CR4: 000026d0
-DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-DR6: ffff4ff0 DR7: 00000400
- [<c10f0d78>] fsnotify+0xa8/0x130
- [<c10c5e11>] __fput+0xb1/0x1e0
- [<c10c5f55>] fput+0x15/0x20
- [<c10c2ca7>] filp_close+0x47/0x80
- [<c10c2d54>] sys_close+0x74/0xc0
- [<c1002ec8>] sysenter_do_call+0x12/0x36
- [<ffffffff>] 0xffffffff
-
-I think that is list_empty() here where %eax is list_head
-and event_list->next is the read location... which definitely
-doesn't look like a pointer, if I'm reading it correctly.
-
-inotify_fsnotify.o:
-
-        /* did event_priv get attached? */
-        if (list_empty(&fsn_event_priv->event_list))
- 143:   8d 43 04                lea    0x4(%ebx),%eax
-
-        event_priv = kmem_cache_alloc(event_priv_cachep, GFP_KERNEL);
-        if (unlikely(!event_priv))
-                return -ENOMEM;
-
-        fsn_event_priv = &event_priv->fsnotify_event_priv_data;
- 146:   39 43 04                cmp    %eax,0x4(%ebx)     <=== read here
- 149:   74 1d                   je     168 <inotify_handle_event+0x98>
-
--- 
-Bob Copeland %% www.bobcopeland.com
+My patch is just to fix the logic of pcie aer usage ...
+> - as the error is non-fatal, should it maybe be changed from dev_err
+>    to dev_info, so that at least it does not show up during a boot
+>    with 'quiet'?
+I agree with this.... Maybe some of other drivers needs this too 
+(igb,ixgbe)...
+> - if broken hardware is common, should the kernel complain at all,
+>    or at least maybe show a slightly "friendlier" message?
+>
+> System: hp2510p (ICH8, Core2 Duo) running x86_64, Debian stable ("Lenny")
+>
+> 00:19.0 Ethernet controller [0200]: Intel Corporation 82566MM
+>          Gigabit Network Connection [8086:1049] (rev 03)
+>      Subsystem: Hewlett-Packard Company Device 30c9
+>      Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+>      Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast>TAbort-<TAbort-<MAbort->SERR-<PERR- INTx-
+>      Latency: 0
+>      Interrupt: pin A routed to IRQ 26
+>      Region 0: Memory at e0620000 (32-bit, non-prefetchable) [size=128K]
+>      Region 1: Memory at e0640000 (32-bit, non-prefetchable) [size=4K]
+>      Region 2: I/O ports at 2060 [size=32]
+>      Capabilities: [c8] Power Management version 2
+>              Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+>              Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+>      Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+>              Address: 00000000fee0300c  Data: 41b1
+>      Kernel driver in use: e1000e
+>      Kernel modules: e1000e
+>
+> I can provide full dmesg and kernel config if desired.
+>
+> Cheers,
+> FJP
+>
 
