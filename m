@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZHUJ5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZHUKaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbZHUJ5A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 05:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZHUJ47
+	id S1755392AbZHUKaJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 06:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZHUKaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 05:56:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51055 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754269AbZHUJ47 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 05:56:59 -0400
-Subject: [PATCH -rt] timer: delay waking softirqs from the jiffy tick
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 21 Aug 2009 11:56:45 +0200
-Message-Id: <1250848605.7538.16.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 21 Aug 2009 06:30:08 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:24399 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754521AbZHUKaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 06:30:07 -0400
+Date: Fri, 21 Aug 2009 12:26:11 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, bblum@google.com, ebiederm@xmission.com,
+       lizf@cn.fujitsu.com, matthltc@us.ibm.com, menage@google.com
+Subject: Re: +
+	cgroups-add-functionality-to-read-write-lock-clone_thread-forking-pe
+	r-threadgroup.patch added to -mm tree
+Message-ID: <20090821102611.GA2611@redhat.com>
+References: <200908202114.n7KLEN5H026646@imap1.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908202114.n7KLEN5H026646@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 08/20, Andrew Morton wrote:
+>
+> Subject: cgroups: add functionality to read/write lock CLONE_THREAD fork()ing per-threadgroup
+> From: Ben Blum <bblum@google.com>
+>
+> Add an rwsem that lives in a threadgroup's sighand_struct (next to the
+> sighand's atomic count, to piggyback on its cacheline), and two functions
+> in kernel/cgroup.c (for now) for easily+safely obtaining and releasing it.
 
-most people were complaining about broken balancing with the recent -rt
-series.
+Sorry. Currently I have no time to read these patched. Absolutely :/
 
-A look at /proc/sched_debug yielded:
+But the very first change I noticed outside of cgroups.[ch] looks very wrong,
 
-cpu#0, 2393.874 MHz
-  .nr_running                    : 0
-  .load                          : 0
-  .cpu_load[0]                   : 177522
-  .cpu_load[1]                   : 177522
-  .cpu_load[2]                   : 177522
-  .cpu_load[3]                   : 177522
-  .cpu_load[4]                   : 177522
-cpu#1, 2393.874 MHz
-  .nr_running                    : 4
-  .load                          : 4096
-  .cpu_load[0]                   : 181618
-  .cpu_load[1]                   : 180850
-  .cpu_load[2]                   : 180274
-  .cpu_load[3]                   : 179938
-  .cpu_load[4]                   : 179758
+> +struct sighand_struct *threadgroup_fork_lock(struct task_struct *tsk)
+> +{
+> +	struct sighand_struct *sighand;
+> +	struct task_struct *p;
+> +
+> +	/* tasklist lock protects sighand_struct's disappearance in exit(). */
+> +	read_lock(&tasklist_lock);
+> +	if (likely(tsk->sighand)) {
+> +		/* simple case - check the thread we were given first */
+> +		sighand = tsk->sighand;
+> +	} else {
+> +		sighand = NULL;
+> +		/*
+> +		 * tsk is exiting; try to find another thread in the group
+> +		 * whose sighand pointer is still alive.
+> +		 */
+> +		rcu_read_lock();
+> +		list_for_each_entry_rcu(p, &tsk->thread_group, thread_group) {
 
+If ->sighand == NULL we can't use list_for_each_entry_rcu(->thread_group),
+and rcu_read_lock() can't help.
 
-Which indicated the cpu_load computation was hosed, the 177522 value
-indicates that there is one RT task runnable. Initially I thought the
-old problem of calculating the cpu_load from a softirq had re-surfaced,
-however looking at the code shows its being done from scheduler_tick().
+The task was removed from ->thread_group, its ->next points to nowhere.
 
-[ we really should fix this RT/cfs interaction some day... ]
+list_for_rcu(head) can _only_ work if we can trust head->next: it should
+point either to "head" (list_empty), or to the valid entry.
 
-A few trace_printk()s later:
+Please correct me if I missed something.
 
-    sirq-timer/1-19    [001]   174.289744:     19: 50:S ==> [001]     0:140:R <idle>                            
-          <idle>-0     [001]   174.290724: enqueue_task_rt: adding task: 19/sirq-timer/1 with load: 177522      
-          <idle>-0     [001]   174.290725:      0:140:R   + [001]    19: 50:S sirq-timer/1                      
-          <idle>-0     [001]   174.290730: scheduler_tick: current load: 177522                                 
-          <idle>-0     [001]   174.290732: scheduler_tick: current: 0/swapper                                   
-          <idle>-0     [001]   174.290736:      0:140:R ==> [001]    19: 50:R sirq-timer/1                      
-    sirq-timer/1-19    [001]   174.290741: dequeue_task_rt: removing task: 19/sirq-timer/1 with load: 177522    
-    sirq-timer/1-19    [001]   174.290743:     19: 50:S ==> [001]     0:140:R <idle>  
+Otherwise, please send the changes which touch the process-management
+code separately. And please do not forget to CC people who work with
+this code ;)
 
-We see that we always raise the timer softirq before doing the load
-calculation. Avoid this by re-ordering the scheduler_tick() call in
-update_process_times() to occur before we deal with timers.
-
-This lowers the load back to sanity and restores regular load-balancing
-behaviour.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/timer.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/timer.c b/kernel/timer.c
-index 8137cce..96ac1b4 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -1221,10 +1221,10 @@ void update_process_times(int user_tick)
- 
- 	/* Note: this timer irq context must be accounted for as well. */
- 	account_process_tick(p, user_tick);
-+	scheduler_tick();
- 	run_local_timers();
- 	if (rcu_pending(cpu))
- 		rcu_check_callbacks(cpu, user_tick);
--	scheduler_tick();
- 	run_posix_cpu_timers(p);
- }
- 
+Oleg.
 
