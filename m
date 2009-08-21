@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbZHUNfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbZHUNgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbZHUNfd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 09:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932161AbZHUNfc
+	id S932231AbZHUNgM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 09:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbZHUNgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 09:35:32 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:56224 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755050AbZHUNfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 09:35:32 -0400
-Message-ID: <4A8EA29D.2070407@sgi.com>
-Date: Fri, 21 Aug 2009 15:35:25 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 21 Aug 2009 09:36:12 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:40606 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932127AbZHUNgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 09:36:11 -0400
+Date: Fri, 21 Aug 2009 15:36:12 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] CFQ: clear wait_request flag if needed
+Message-ID: <20090821133612.GL12579@kernel.dk>
+References: <4A8DFDF1.5030904@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Latest Linus tree oopses on Nehalem box
-References: <4A8E7CBE.3020209@sgi.com> <20090821114645.GD24647@elte.hu> <4A8E9B63.4090400@sgi.com> <20090821132658.GD10263@elte.hu>
-In-Reply-To: <20090821132658.GD10263@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8DFDF1.5030904@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/21/2009 03:26 PM, Ingo Molnar wrote:
-> I'd say it's timing related and still unfixed - crashes that deep in
-> the scheduler we'd sure know about, had we fixed such in any recent
-> kernels. Do you still have the last 10 lines of the bootup leading
-> up to the crash?
+On Fri, Aug 21 2009, Gui Jianfeng wrote:
+> Hi Jens,
+> 
+> IMHO wait_request flag should be cleared if a request goes in
+> and idle timer needs to shut down. Otherwise, it will walk into
+> that path every time when a request is enqueued.
 
-Hi Ingo,
+That looks correct, deletion of the timer should always be paired with
+the clearing of that flag. Applied, thanks!
 
-Sorry no I don't have that part anymore :-( Should have saved it.
+> 
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> ---
+>  block/cfq-iosched.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index fd7080e..67f1910 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -2093,6 +2093,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>  			if (blk_rq_bytes(rq) > PAGE_CACHE_SIZE ||
+>  			    cfqd->busy_queues > 1) {
+>  				del_timer(&cfqd->idle_slice_timer);
+> +				cfq_clear_cfqq_wait_request(cfqq);
+>  			__blk_run_queue(cfqd->queue);
+>  			}
+>  			cfq_mark_cfqq_must_dispatch(cfqq);
+> -- 
+> 1.5.4.rc3
+> 
 
-Cheers,
-Jes
+-- 
+Jens Axboe
 
