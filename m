@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751573AbZHUAwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751880AbZHUAy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751573AbZHUAwO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 20:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbZHUAwN
+	id S1751880AbZHUAy2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 20:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbZHUAy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 20:52:13 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:59541 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbZHUAwM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 20:52:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lKeDufTaEz9HwTIWDnGrEOteW1nR9de8x2vVqbmqO3PjAVh4oMMXeFu+6VuJ8nw+Wm
-         NUJgkePbBaMAIr+9Cqf38PfE2RGNxqLX7dPh5XTvwrg361ahlVGOOyIK0v8kDKjvehVG
-         EsET+QlWQOgRyN0mn1DxeV0I50V4LqrpTJ/mY=
+	Thu, 20 Aug 2009 20:54:28 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60200 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751144AbZHUAy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 20:54:27 -0400
+Message-ID: <4A8DEFED.5090408@cn.fujitsu.com>
+Date: Fri, 21 Aug 2009 08:53:01 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <s5hpraqobuf.wl%tiwai@suse.de>
-References: <s5hpraqobuf.wl%tiwai@suse.de>
-Date: Fri, 21 Aug 2009 10:52:13 +1000
-Message-ID: <21d7e9970908201752y352f194byf10bd786dd2d383b@mail.gmail.com>
-Subject: Re: [PATCH] drm/kms/radeon: Add kconfig to specify the default 
-	modesetting
-From: Dave Airlie <airlied@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: David Airlie <airlied@linux.ie>, gregkh@suse.de,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: David Rientjes <rientjes@google.com>
+CC: Jonathan Corbet <corbet@lwn.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, bblum@andrew.cmu.edu,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [PATCH 4/8] Use vmalloc for large cgroups pidlist allocations
+References: <20090818235059.22531.42618.stgit@menage.mtv.corp.google.com> <20090818235827.22531.60306.stgit@menage.mtv.corp.google.com> <20090820141400.f6d3d5a6.akpm@linux-foundation.org> <20090820163510.27942b62@bike.lwn.net> <alpine.DEB.2.00.0908201542440.29906@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0908201542440.29906@chino.kir.corp.google.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 11:26 PM, Takashi Iwai<tiwai@suse.de> wrote:
-> This patch adds a Kconfig item to specify the default radeon modeset
-> value.  Also fixed the description of CONFIG_DRM_RADEON_KMS.
->
-> Since KMS gives problems on some Radeon devices, it's safer to disable
-> it as default on distro kernels.  But distros would love to include the
-> feature itself instead of disabling KMS completely.
->
-> Reference: Novell bnc#527910
->        https://bugzilla.novell.com/show_bug.cgi?id=527910
+David Rientjes wrote:
+> On Thu, 20 Aug 2009, Jonathan Corbet wrote:
+> 
+>> On Thu, 20 Aug 2009 14:14:00 -0700
+>> Andrew Morton <akpm@linux-foundation.org> wrote:
+>>
+>>> Hang on.  Isn't this why Dave just wrote and I just rush-merged
+>>> lib/flex_array.c?
+>>>
+>>> Was that code evaluated for this application and judged unsuitable?  If so,
+>>> for what reason?
+>> Should it be helpful: I wrote an overview of the flex_array API here:
+>>
+>> 	http://lwn.net/Articles/345273/
+>>
+>> I could format it up for addition to Documentation/ if people want.
+>>
+> 
+> It's definitely helpful for this use case, flex array can store 261,632 
+> pid_t's on 64 bit.
+> 
 
-I'm sort of torn on this, when radeon KMS moves out of staging it will
-be disabled by
-default using the current option. It will build everything always and
-disable/enable like this patch
-does. I'm not willing to do that yet esp now in -rcX time as it might
-break builds
-on some other arches.
+flex_array surely can be used here, or implement Paul's proposal:
+	http://lkml.org/lkml/2009/7/15/226
 
-So if a distro isn't shipping a compatible userspace, I'd rather they
-didn't ship
-the kernel support built at all until we move it from staging.
+Note both solutions will probably make the output pid list unsorted.
+Or maybe we can implement flex_array_sort().
 
-AFAIK you guys don't use -ati on a lot of cards kms is useful so I'm
-not sure when you'll
-ever have a compatible userspace.
-
-Dave.
