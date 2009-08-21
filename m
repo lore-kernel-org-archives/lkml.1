@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZHUTl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbZHUTlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbZHUTl0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 15:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbZHUTl0
+	id S932227AbZHUTlc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 15:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbZHUTlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 15:41:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16775 "EHLO mx1.redhat.com"
+	Fri, 21 Aug 2009 15:41:32 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40142 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755695AbZHUTlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 15:41:25 -0400
+	id S1755821AbZHUTla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 15:41:30 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH tracing/kprobes 1/4] x86: Fix x86 instruction decoder selftest
-	to check only .text
+Subject: [PATCH tracing/kprobes 2/4] x86: Check awk features before generating
+	inat-tables.c
 To: Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
@@ -32,8 +32,8 @@ Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
        Vegard Nossum <vegard.nossum@gmail.com>
-Date: Fri, 21 Aug 2009 15:43:07 -0400
-Message-ID: <20090821194307.12478.76938.stgit@localhost.localdomain>
+Date: Fri, 21 Aug 2009 15:43:16 -0400
+Message-ID: <20090821194316.12478.57394.stgit@localhost.localdomain>
 In-Reply-To: <20090821000108.GC6078@nowhere>
 References: <20090821000108.GC6078@nowhere>
 User-Agent: StGIT/0.14.3
@@ -44,8 +44,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix x86 instruction decoder selftest to check only .text because other
-sections (e.g. .notes) will have random bytes which don't need to be checked.
+Check some awk features which old mawk doesn't support.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Jim Keniston <jkenisto@us.ibm.com>
@@ -70,21 +69,48 @@ Cc: Tom Zanussi <tzanussi@gmail.com>
 Cc: Vegard Nossum <vegard.nossum@gmail.com>
 ---
 
- arch/x86/tools/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/tools/gen-insn-attr-x86.awk |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/tools/Makefile b/arch/x86/tools/Makefile
-index 3dd626b..95e9cc4 100644
---- a/arch/x86/tools/Makefile
-+++ b/arch/x86/tools/Makefile
-@@ -1,6 +1,6 @@
- PHONY += posttest
- quiet_cmd_posttest = TEST    $@
--      cmd_posttest = $(OBJDUMP) -d $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len
-+      cmd_posttest = $(OBJDUMP) -d -j .text $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len
+diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
+index 93b62c9..19ba096 100644
+--- a/arch/x86/tools/gen-insn-attr-x86.awk
++++ b/arch/x86/tools/gen-insn-attr-x86.awk
+@@ -4,7 +4,25 @@
+ #
+ # Usage: awk -f gen-insn-attr-x86.awk x86-opcode-map.txt > inat-tables.c
  
- posttest: $(obj)/test_get_len vmlinux
- 	$(call cmd,posttest)
++# Awk implementation sanity check
++function check_awk_implement() {
++	if (!match("abc", "[[:lower:]]+"))
++		return "Your awk doesn't support charactor-class."
++	if (sprintf("%x", 0) != "0")
++		return "Your awk has a printf-format problem."
++	return ""
++}
++
+ BEGIN {
++	# Implementation error checking
++	awkchecked = check_awk_implement()
++	if (awkchecked != "") {
++		print "Error: " awkchecked > "/dev/stderr"
++		print "Please try to use gawk." > "/dev/stderr"
++		exit 1
++	}
++
++	# Setup generating tables
+ 	print "/* x86 opcode map generated from x86-opcode-map.txt */"
+ 	print "/* Do not change this code. */"
+ 	ggid = 1
+@@ -293,6 +311,8 @@ function convert_operands(opnd,       i,imm,mod)
+ }
+ 
+ END {
++	if (awkchecked != "")
++		exit 1
+ 	# print escape opcode map's array
+ 	print "/* Escape opcode map array */"
+ 	print "const insn_attr_t const *inat_escape_tables[INAT_ESC_MAX + 1]" \
 
 
 -- 
