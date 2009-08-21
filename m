@@ -1,163 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbZHUBja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZHUBmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbZHUBja (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 21:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZHUBj3
+	id S1754321AbZHUBmI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 21:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZHUBmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 21:39:29 -0400
-Received: from mga14.intel.com ([143.182.124.37]:48839 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751495AbZHUBj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 21:39:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,247,1249282800"; 
-   d="scan'208";a="178442021"
-Date: Fri, 21 Aug 2009 09:39:26 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [PATCH -v2] mm: do batched scans for mem_cgroup
-Message-ID: <20090821013926.GA30823@localhost>
-References: <20090820024929.GA19793@localhost> <20090820121347.8a886e4b.kamezawa.hiroyu@jp.fujitsu.com> <20090820040533.GA27540@localhost> <20090820051656.GB26265@balbir.in.ibm.com>
+	Thu, 20 Aug 2009 21:42:07 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48559 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbZHUBmG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 21:42:06 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4A8DFB3F.40309@jp.fujitsu.com>
+Date: Fri, 21 Aug 2009 10:41:19 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090820051656.GB26265@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Huang Ying <ying.huang@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -v6 for 2.6.32] x86: MCE: Re-implement MCE log ring buffer
+ as per-CPU ring buffer
+References: <1250736679.5337.540.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1250736679.5337.540.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 01:16:56PM +0800, Balbir Singh wrote:
-> * Wu Fengguang <fengguang.wu@intel.com> [2009-08-20 12:05:33]:
+Huang Ying wrote:
+> Re-implement MCE log ring buffer as per-CPU ring buffer for better
+> scalability.
 > 
-> > On Thu, Aug 20, 2009 at 11:13:47AM +0800, KAMEZAWA Hiroyuki wrote:
-> > > On Thu, 20 Aug 2009 10:49:29 +0800
-> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > 
-> > > > For mem_cgroup, shrink_zone() may call shrink_list() with nr_to_scan=1,
-> > > > in which case shrink_list() _still_ calls isolate_pages() with the much
-> > > > larger SWAP_CLUSTER_MAX.  It effectively scales up the inactive list
-> > > > scan rate by up to 32 times.
-> > > > 
-> > > > For example, with 16k inactive pages and DEF_PRIORITY=12, (16k >> 12)=4.
-> > > > So when shrink_zone() expects to scan 4 pages in the active/inactive
-> > > > list, it will be scanned SWAP_CLUSTER_MAX=32 pages in effect.
-> > > > 
-> > > > The accesses to nr_saved_scan are not lock protected and so not 100%
-> > > > accurate, however we can tolerate small errors and the resulted small
-> > > > imbalanced scan rates between zones.
-> > > > 
-> > > > This batching won't blur up the cgroup limits, since it is driven by
-> > > > "pages reclaimed" rather than "pages scanned". When shrink_zone()
-> > > > decides to cancel (and save) one smallish scan, it may well be called
-> > > > again to accumulate up nr_saved_scan.
-> > > > 
-> > > > It could possibly be a problem for some tiny mem_cgroup (which may be
-> > > > _full_ scanned too much times in order to accumulate up nr_saved_scan).
-> > > > 
-> > > > CC: Rik van Riel <riel@redhat.com>
-> > > > CC: Minchan Kim <minchan.kim@gmail.com>
-> > > > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > > > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > > ---
-> > > 
-> > > Hmm, how about this ? 
-> > > ==
-> > > Now, nr_saved_scan is tied to zone's LRU.
-> > > But, considering how vmscan works, it should be tied to reclaim_stat.
-> > > 
-> > > By this, memcg can make use of nr_saved_scan information seamlessly.
-> > 
-> > Good idea, full patch updated with your signed-off-by :)
-> > 
-> > Thanks,
-> > Fengguang
-> > ---
-> > mm: do batched scans for mem_cgroup
-> > 
-> > For mem_cgroup, shrink_zone() may call shrink_list() with nr_to_scan=1,
-> > in which case shrink_list() _still_ calls isolate_pages() with the much
-> > larger SWAP_CLUSTER_MAX.  It effectively scales up the inactive list
-> > scan rate by up to 32 times.
-> > 
-> > For example, with 16k inactive pages and DEF_PRIORITY=12, (16k >> 12)=4.
-> > So when shrink_zone() expects to scan 4 pages in the active/inactive
-> > list, it will be scanned SWAP_CLUSTER_MAX=32 pages in effect.
-> > 
-> > The accesses to nr_saved_scan are not lock protected and so not 100%
-> > accurate, however we can tolerate small errors and the resulted small
-> > imbalanced scan rates between zones.
-> > 
-> > This batching won't blur up the cgroup limits, since it is driven by
-> > "pages reclaimed" rather than "pages scanned". When shrink_zone()
-> > decides to cancel (and save) one smallish scan, it may well be called
-> > again to accumulate up nr_saved_scan.
-> > 
-> > It could possibly be a problem for some tiny mem_cgroup (which may be
-> > _full_ scanned too much times in order to accumulate up nr_saved_scan).
-> >
+(snip)
+> ChangeLog:
 > 
-> Looks good to me, how did you test it?
+> v6:
+> 
+> - Rebased on latest x86-tip.git/x86/mce + x86/tip
 
-I observed the shrink_inactive_list() calls with this patch:
+Does this mean your patch is based on a local branch you merged?
+Why not on tip/x86/mce alone as usual?
+What branch are you requesting this patch to be applied to?
 
-        @@ -1043,6 +1043,13 @@ static unsigned long shrink_inactive_lis
-                struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-                int lumpy_reclaim = 0;
+Thanks,
+H.Seto
 
-        +       if (!scanning_global_lru(sc))
-        +               printk("shrink inactive %s count=%lu scan=%lu\n",
-        +                      file ? "file" : "anon",
-        +                      mem_cgroup_zone_nr_pages(sc->mem_cgroup, zone,
-        +                                               LRU_INACTIVE_ANON + 2 * !!file),
-        +                      max_scan);
-
-and these commands:
-
-        mkdir /cgroup/0
-        echo 100M > /cgroup/0/memory.limit_in_bytes
-        echo $$ > /cgroup/0/tasks
-        cp /tmp/10G /dev/null
-
-before patch:
-
-        [ 3682.646008] shrink inactive file count=25535 scan=6
-        [ 3682.661548] shrink inactive file count=25535 scan=6
-        [ 3682.666933] shrink inactive file count=25535 scan=6
-        [ 3682.682865] shrink inactive file count=25535 scan=6
-        [ 3682.688572] shrink inactive file count=25535 scan=6
-        [ 3682.703908] shrink inactive file count=25535 scan=6
-        [ 3682.709431] shrink inactive file count=25535 scan=6
-
-after patch:
-
-        [  223.146544] shrink inactive file count=25531 scan=32
-        [  223.152060] shrink inactive file count=25507 scan=10
-        [  223.167503] shrink inactive file count=25531 scan=32
-        [  223.173426] shrink inactive file count=25507 scan=10
-        [  223.188764] shrink inactive file count=25531 scan=32
-        [  223.194270] shrink inactive file count=25507 scan=10
-        [  223.209885] shrink inactive file count=25531 scan=32
-        [  223.215388] shrink inactive file count=25507 scan=10
-
-Before patch, the inactive list is over scanned by 30/6=5 times;
-After patch, it is over scanned by 64/42=1.5 times. It's much better,
-and can be further improved if necessary.
-
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
-Thanks!
