@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932374AbZHUPAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbZHUPCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932374AbZHUPAv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932280AbZHUPAu
+	id S932396AbZHUPCQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 11:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbZHUPCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:00:50 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:60184 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932229AbZHUPAu (ORCPT
+	Fri, 21 Aug 2009 11:02:15 -0400
+Received: from exprod7og109.obsmtp.com ([64.18.2.171]:56254 "HELO
+	exprod7og109.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932296AbZHUPCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:00:50 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAAVUjkpMRdTz/2dsb2JhbACBU9UChBgF
-Date: Fri, 21 Aug 2009 11:00:29 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, hugh.dickins@tiscali.co.uk,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH -tip/core/rcu 1/6] Cleanups and fixes for RCU in face
-	of heavy CPU-hotplug stress
-Message-ID: <20090821150029.GC29542@Krystal>
-References: <20090815165153.GA8886@linux.vnet.ibm.com> <1250533487.2709.14.camel@josh-work.beaverton.ibm.com> <20090817192036.GJ6760@linux.vnet.ibm.com> <20090818152643.GA5549@elte.hu> <20090820140335.GA31773@Krystal> <20090821141721.GA11098@elte.hu> <alpine.DEB.2.00.0908211022090.16405@gandalf.stny.rr.com> <20090821144416.GA16810@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 21 Aug 2009 11:02:14 -0400
+X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Aug 2009 11:02:14 EDT
+MIME-Version: 1.0
+In-Reply-To: <1250865591.29546.71.camel@Joe-Laptop.home>
+References: <20090819060004.GA23859@n2100.arm.linux.org.uk>
+	 <20090821072607.GA26983@atrey.karlin.mff.cuni.cz>
+	 <20090821081849.GA14431@n2100.arm.linux.org.uk>
+	 <1250847911.29546.57.camel@Joe-Laptop.home>
+	 <19086.35579.876696.379347@pilspetsen.it.uu.se>
+	 <1250865591.29546.71.camel@Joe-Laptop.home>
+Date: Fri, 21 Aug 2009 09:54:56 -0500
+Message-ID: <56776e3e0908210754n6b119b7fo5645151f9d3069ce@mail.gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: ARM lists moved to vger.kernel.org
+From: Martin Bogomolni <martin@smooth-stone.com>
+To: Joe Perches <joe@perches.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090821144416.GA16810@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:59:26 up 3 days,  1:48,  2 users,  load average: 0.51, 0.30,
-	0.22
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > On Fri, 21 Aug 2009, Ingo Molnar wrote:
-> > 
-> > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > > 
-> > > > I would not trust this architecture for synchronization tests. 
-> > > > There has been reports of a hardware bug affecting the cmpxchg 
-> > > > instruction in the field. The load fence normally implied by 
-> > > > the semantic seems to be missing. AFAIK, AMD never 
-> > > > acknowledged the problem.
-> > > 
-> > > If cmpxchg was broken i'd be having far worse problems and very 
-> > > widely so.
-> > 
-> > I believe Mathieu is suggesting that the hardware bug is not that 
-> > the compare and exchange does not work in cmpxchg, but that it 
-> > does not provide an explicit memory barrier. Such a bug is very 
-> > hard to trigger, since it requires a race that allows a memory 
-> > write/read to cross the cmpxchg, and then have this be in such a 
-> > place that it will cause harm.
-> 
-> We can argue all sorts of exotic hardware bugs really, proof is 
-> still needed.
-> 
-> [...]
-> > > That's not a proof of course (it's near impossible to prove the 
-> > > lack of a bug), but it's sure a strong indicator and you'll need 
-> > > to provide far more proof of misbehavior before i discount a 
-> > > bona fide regression on this box.
-> > 
-> > But with the above said, I totally agree with your point. More 
-> > proof must be given before we can discount that another bug 
-> > exists.
-> 
-> Yeah. Especially given that this code was changed recently ;-)
-> 
+This confusion, between shutting down the list, and over which list
+should take precedence could not have come at a worse time.  I have a
+number of Cortex-A9 related patches in the pipeline to add a new
+board, platform, and power management features.
 
-Yep, I think we should continue looking for the problem cause, but
-stress-testing the hardware with the program I just sent cannot hurt. :)
-
-Mathieu
-
-> 	Ingo
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Is the @infradead, linux-kernel@vger.kernel.org, or
+linux-arm@vger.kernel.org the proper place to post patches?
