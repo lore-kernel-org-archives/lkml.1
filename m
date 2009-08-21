@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933009AbZHUVfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932926AbZHUVh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933009AbZHUVfV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 17:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbZHUVfR
+	id S932926AbZHUVh5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932326AbZHUVbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 17:35:17 -0400
-Received: from www.tglx.de ([62.245.132.106]:51921 "EHLO www.tglx.de"
+	Fri, 21 Aug 2009 17:31:14 -0400
+Received: from www.tglx.de ([62.245.132.106]:51446 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932955AbZHUVdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 17:33:20 -0400
-Message-Id: <20090821205603.012122905@linutronix.de>
+	id S1755459AbZHUVbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 17:31:11 -0400
+Message-Id: <20090821205601.878468441@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Fri, 21 Aug 2009 21:31:45 -0000
+Date: Fri, 21 Aug 2009 21:29:38 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,70 +21,94 @@ Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
        Alok N Kataria <akataria@vmware.com>,
        Pan Jacob jun <jacob.jun.pan@intel.com>
-Subject: [RFC patch 25/32] x86: Remove mca bus ifdef from timer interrupt
+Subject: [RFC patch 02/32] x86: Add probe_roms to platform_setup
 References: <20090821205008.518392436@linutronix.de>
-Content-Disposition: inline; filename=x86-time-remove-mca-bus-ifdef.patch
+Content-Disposition: inline;
+	filename=x86-add-probe-roms-to-platform-setup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MCA_bus is constant 0 when CONFIG_MCA=n. So the compiler removes that
-code w/o needing an extra #ifdef
+probe_roms is only used on 32bit. Add it to the platform_setup code
+and remove the #ifdefs.
+
+Default initializer is platform_setup_noop() which is overridden in
+the 32bit boot code.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/kernel/time_32.c |   18 +++---------------
- arch/x86/kernel/time_64.c |    9 +++------
- 2 files changed, 6 insertions(+), 21 deletions(-)
+ arch/x86/include/asm/platform.h  |   10 ++++++++++
+ arch/x86/kernel/head32.c         |    3 +++
+ arch/x86/kernel/platform_setup.c |    4 ++++
+ arch/x86/kernel/setup.c          |    4 +---
+ 4 files changed, 18 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/time_32.c
+Index: linux-2.6/arch/x86/include/asm/platform.h
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/time_32.c
-+++ linux-2.6/arch/x86/kernel/time_32.c
-@@ -77,21 +77,9 @@ static irqreturn_t timer_interrupt(int i
+--- linux-2.6.orig/arch/x86/include/asm/platform.h
++++ linux-2.6/arch/x86/include/asm/platform.h
+@@ -9,10 +9,20 @@ struct platform_setup_quirks {
+ };
  
- 	global_clock_event->event_handler(global_clock_event);
+ /**
++ * struct platform_setup_resources - platform specific resource related ops
++ * @probe_roms:			probe BIOS roms
++ *
++ */
++struct platform_setup_resources {
++	void (*probe_roms)(void);
++};
++
++/**
+  * struct platform_setup_ops - functions for platform specific setup
+  *
+  */
+ struct platform_setup_ops {
++	struct platform_setup_resources resources;
+ 	struct platform_setup_quirks quirks;
+ };
  
--#ifdef CONFIG_MCA
--	if (MCA_bus) {
--		/* The PS/2 uses level-triggered interrupts.  You can't
--		turn them off, nor would you want to (any attempt to
--		enable edge-triggered interrupts usually gets intercepted by a
--		special hardware circuit).  Hence we have to acknowledge
--		the timer interrupt.  Through some incredibly stupid
--		design idea, the reset for IRQ 0 is done by setting the
--		high bit of the PPI port B (0x61).  Note that some PS/2s,
--		notably the 55SX, work fine if this is removed.  */
--
--		u8 irq_v = inb_p(0x61);		/* read the current state */
--		outb_p(irq_v | 0x80, 0x61);	/* reset the IRQ */
--	}
--#endif
-+	/* MCA bus quirk: Acknowledge irq0 by setting bit 7 in port 0x61 */
-+	if (MCA_bus)
-+		outb_p(inb_p(0x61)| 0x80, 0x61);
- 
- 	return IRQ_HANDLED;
- }
-Index: linux-2.6/arch/x86/kernel/time_64.c
+Index: linux-2.6/arch/x86/kernel/head32.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/time_64.c
-+++ linux-2.6/arch/x86/kernel/time_64.c
-@@ -66,12 +66,9 @@ static irqreturn_t timer_interrupt(int i
+--- linux-2.6.orig/arch/x86/kernel/head32.c
++++ linux-2.6/arch/x86/kernel/head32.c
+@@ -29,6 +29,9 @@ void __init i386_start_kernel(void)
+ 		reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
+ 	}
+ #endif
++	/* Initilize 32bit specific setup functions */
++	platform_setup.resources.probe_roms = probe_roms;
++
+ 	reserve_ebda_region();
  
- 	global_clock_event->event_handler(global_clock_event);
+ 	/*
+Index: linux-2.6/arch/x86/kernel/platform_setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/platform_setup.c
++++ linux-2.6/arch/x86/kernel/platform_setup.c
+@@ -14,4 +14,8 @@ void __cpuinit platform_setup_noop(void)
+  * for standard PC hardware.
+  */
+ struct __initdata platform_setup_ops platform_setup = {
++
++	.resources = {
++		.probe_roms = platform_setup_noop,
++	},
+ };
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -835,9 +835,7 @@ void __init setup_arch(char **cmdline_p)
+ 	 */
+ 	init_hypervisor(&boot_cpu_data);
  
--#ifdef CONFIG_MCA
--	if (MCA_bus) {
--		u8 irq_v = inb_p(0x61);       /* read the current state */
--		outb_p(irq_v|0x80, 0x61);     /* reset the IRQ */
--	}
+-#ifdef CONFIG_X86_32
+-	probe_roms();
 -#endif
-+	/* MCA bus quirk: Acknowledge irq0 by setting bit 7 in port 0x61 */
-+	if (MCA_bus)
-+		outb_p(inb_p(0x61)| 0x80, 0x61);
++	platform_setup.resources.probe_roms();
  
- 	return IRQ_HANDLED;
- }
+ 	/* after parse_early_param, so could debug it */
+ 	insert_resource(&iomem_resource, &code_resource);
 
 
