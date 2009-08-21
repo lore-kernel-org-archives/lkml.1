@@ -1,142 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbZHUCpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZHUCpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbZHUCpA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 22:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbZHUCo7
+	id S1754599AbZHUCpZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 22:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZHUCpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 22:44:59 -0400
-Received: from fieldses.org ([174.143.236.118]:46780 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933AbZHUCo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 22:44:58 -0400
-Date: Thu, 20 Aug 2009 22:44:54 -0400
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-Subject: Re: linux-next: noot failure for next-20090820
-Message-ID: <20090821024454.GA8786@fieldses.org>
-References: <20090821094226.286faa67.sfr@canb.auug.org.au> <1250821846.6514.23.camel@heimdal.trondhjem.org>
+	Thu, 20 Aug 2009 22:45:22 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:17919 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbZHUCpU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 22:45:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hpdZ0MY96dGOgS6UEd/ZzfdJBiFYUprJfBoB9RV2132o8JKs0QdB3nYAhOHDO9LmyN
+         y9fMzC7CUzl6v6UkvLawIGz7ZbwRuHYiTFdY0NxajHbMy1RnjE9qQYcvy26DVLUMseuo
+         ZVtsNgXdtoxQhZu62rQ+cgti5G+dQpywzy7qQ=
+Date: Fri, 21 Aug 2009 10:47:36 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, Amerigo Wang <amwang@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, linux-mm@kvack.org,
+       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
+Message-ID: <20090821024736.GB4447@cr0.nay.redhat.com>
+References: <4A8A4ABB.70003@redhat.com> <20090818172552.779d0768.kamezawa.hiroyu@jp.fujitsu.com> <4A8A83F4.6010408@redhat.com> <20090819085703.ccf9992a.kamezawa.hiroyu@jp.fujitsu.com> <4A8B6649.3080103@redhat.com> <20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com> <4A8D144C.5050005@redhat.com> <20090821093452.ead96b2d.kamezawa.hiroyu@jp.fujitsu.com> <20090821015927.GA4447@cr0.nay.redhat.com> <20090821110309.2d5ffb62.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250821846.6514.23.camel@heimdal.trondhjem.org>
+In-Reply-To: <20090821110309.2d5ffb62.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 10:30:46PM -0400, Trond Myklebust wrote:
-> On Fri, 2009-08-21 at 09:42 +1000, Stephen Rothwell wrote:
-> > Hi Trond,
-> > 
-> > Booting next-20090820 on three different PowerPC machines get the
-> > following OOPS:
-> > 
-> > calling  .init_nfs_fs+0x0/0x184 @ 1
-> > Unable to handle kernel paging request for data at address 0x00000000
-> > Faulting instruction address: 0xc00000000013be00
-> > Oops: Kernel access of bad area, sig: 11 [#1]
-> > SMP NR_CPUS=128 NUMA pSeries
-> > Modules linked in:
-> > NIP: c00000000013be00 LR: c00000000013bd00 CTR: c00000000056f098
-> > REGS: c00000007d2db5c0 TRAP: 0300   Not tainted  (2.6.31-rc6-autokern1)
-> > MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 48000028  XER: 00000005
-> > DAR: 0000000000000000, DSISR: 0000000040000000
-> > TASK = c0000000410ca000[1] 'swapper' THREAD: c00000007d2d8000 CPU: 1
-> > GPR00: c00000000013bd00 c00000007d2db840 c000000000b84e98 0000000000000001 
-> > GPR04: c000000000a831e8 c0000000410ca948 0000000000000002 c0000000410ca948 
-> > GPR08: 0000000000000025 0000000000000000 ef7bdef7bdef7bdf 0000000009ac4000 
-> > GPR12: 0000000088000084 c000000000bd4400 0000000000000000 0000000003000000 
-> > GPR16: c000000000720608 c00000000071ed80 0000000000000000 00000000003e7800 
-> > GPR20: 000000000382de28 c00000000082de28 000000000382e098 c00000000082e098 
-> > GPR24: 0000000000000000 c000000000b25c58 c000000000b25c40 c000000000ac9d18 
-> > GPR28: c000000000b7ba40 fffffffffffffe10 c000000000ae5e70 0000000000000000 
-> > NIP [c00000000013be00] .sget+0x14c/0x418
-> > LR [c00000000013bd00] .sget+0x4c/0x418
-> > Call Trace:
-> > [c00000007d2db840] [c00000000013bd00] .sget+0x4c/0x418 (unreliable)
-> > [c00000007d2db8f0] [c00000000013cca8] .get_sb_single+0x4c/0x114
-> > [c00000007d2db9a0] [c00000000056f0b8] .rpc_get_sb+0x20/0x38
-> > [c00000007d2dba20] [c00000000013c54c] .vfs_kern_mount+0x80/0xf8
-> > [c00000007d2dbac0] [c00000000015d434] .simple_pin_fs+0x74/0x130
-> > [c00000007d2dbb60] [c000000000570734] .rpc_get_mount+0x2c/0x54
-> > [c00000007d2dbbe0] [c00000000023ffec] .nfs_cache_register+0x28/0xc0
-> > [c00000007d2dbd10] [c00000000023fa78] .nfs_dns_resolver_init+0x1c/0x34
-> > [c00000007d2dbd90] [c000000000813fac] .init_nfs_fs+0x1c/0x184
-> > [c00000007d2dbe10] [c0000000000094bc] .do_one_initcall+0x90/0x1b0
-> > [c00000007d2dbf00] [c0000000007f3c98] .kernel_init+0x1f4/0x270
-> > [c00000007d2dbf90] [c0000000000268f0] .kernel_thread+0x54/0x70
-> > Instruction dump:
-> > 48445fad 60000000 387d0070 4bf4f7a9 60000000 7fa3eb78 4bfff911 48442e89 
-> > 60000000 4bffff04 e93d01f0 3ba9fe10 <e81d01f0> 2fa00000 419e0008 7c00022c 
-> > ---[ end trace 561bb236c800851f ]---
-> > Kernel panic - not syncing: Attempted to kill init!
-> > Call Trace:
-> > [c00000007d2db220] [c000000000010228] .show_stack+0x70/0x184 (unreliable)
-> > [c00000007d2db2d0] [c000000000067c40] .panic+0x80/0x1b4
-> > [c00000007d2db370] [c00000000006c3cc] .do_exit+0x84/0x6fc
-> > [c00000007d2db430] [c000000000024950] .die+0x24c/0x27c
-> > [c00000007d2db4d0] [c0000000000328e0] .bad_page_fault+0xb8/0xd4
-> > [c00000007d2db550] [c0000000000051dc] handle_page_fault+0x3c/0x74
-> > --- Exception: 300 at .sget+0x14c/0x418
-> >     LR = .sget+0x4c/0x418
-> > [c00000007d2db8f0] [c00000000013cca8] .get_sb_single+0x4c/0x114
-> > [c00000007d2db9a0] [c00000000056f0b8] .rpc_get_sb+0x20/0x38
-> > [c00000007d2dba20] [c00000000013c54c] .vfs_kern_mount+0x80/0xf8
-> > [c00000007d2dbac0] [c00000000015d434] .simple_pin_fs+0x74/0x130
-> > [c00000007d2dbb60] [c000000000570734] .rpc_get_mount+0x2c/0x54
-> > [c00000007d2dbbe0] [c00000000023ffec] .nfs_cache_register+0x28/0xc0
-> > [c00000007d2dbd10] [c00000000023fa78] .nfs_dns_resolver_init+0x1c/0x34
-> > [c00000007d2dbd90] [c000000000813fac] .init_nfs_fs+0x1c/0x184
-> > [c00000007d2dbe10] [c0000000000094bc] .do_one_initcall+0x90/0x1b0
-> > [c00000007d2dbf00] [c0000000007f3c98] .kernel_init+0x1f4/0x270
-> > [c00000007d2dbf90] [c0000000000268f0] .kernel_thread+0x54/0x70
-> > Rebooting in 180 seconds..-- 0:conmux-control -- time-stamp -- Aug/20/09 19:25:14 --
-> > 
-> > It may not be NFS changes ... there were just a few changes in the nfs
-> > tree between next-20090819 and next-20090820.
-> > 
-> Hi Stephen,
-> 
-> Yes, that sounds like the bug that Bruce hit earlier today. I strongly
-> suspect that it is due to the fact that you both compiled NFS+sunrpc
-> into the main kernel, and that the NFS init routine is being called
-> before the sunrpc init routine.
-> 
-> Could both you and Bruce check if the following patch fixes the problem?
+On Fri, Aug 21, 2009 at 11:03:09AM +0900, KAMEZAWA Hiroyuki wrote:
+>On Fri, 21 Aug 2009 09:59:27 +0800
+>Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
+>
+>> On Fri, Aug 21, 2009 at 09:34:52AM +0900, KAMEZAWA Hiroyuki wrote:
+>> >On Thu, 20 Aug 2009 17:15:56 +0800
+>> >Amerigo Wang <amwang@redhat.com> wrote:
+>> >    
+>> >> > The, problem is whether memmap is there or not. That's all.
+>> >> > plz see init sequence and check there are memmap.
+>> >> > If memory-for-crash is obtained via bootmem,
+>> >> > Don't you try to free memory hole ?
+>> >> >   
+>> >> 
+>> >> Hi,
+>> >> 
+>> >> It looks like that mem_map has 'struct page' for the reserved memory, I 
+>> >> checked my "early_node_map[] active PFN ranges" output, the reserved 
+>> >> memory area for crash kernel is right in one range. Am I missing 
+>> >> something here?
+>> >> 
+>> >> I don't know why that oops comes out, maybe because of no PTE for thoese 
+>> >> pages?
+>> >> 
+>> >Hmm ? Could you show me the code you use ?
+>> 
+>> (Sorry that I reply to you with my gmail, my work email can't send out
+>> this message, probably because one of the destinations is broken...
+>> I am the same person, don't be confused. :-)
+>> 
+>> Sure. Below is it:
+>> 
+>> +    for (addr = end + 1; addr < crashk_res.end; addr += PAGE_SIZE) {
+>> +        printk(KERN_DEBUG "PFN is valid? %d\n", pfn_valid(addr>>PAGE_SHIFT));
+>> +        ClearPageReserved(virt_to_page(addr));
+>> +        init_page_count(virt_to_page(addr));
+>> +        free_page(addr);
+>> +        totalram_pages++;
+>> +    }
+>> 
+>> 
+>> pfn_valid() returns 1, and oops happens at ClearPageReserved().
+>> ('addr' is right between crashk_res.start and crashk_res.end)
+>
+>Confused, 
+>  if    pfn_valid(addr >> PAGE_SHIFT) == true 
+>
+>you should do
+>	ClearPageReserved(pfn_to_page(addr >> PAGE_SHIFT));
+>
+>because addr is physical address, not virtual.
+>I guess crashk_res.end is physical address....
 
-Yep, that boots for me, thanks.
+Excellent! You are right!
 
---b.
+In fact, when I read the kexec code at the first time, I thought
+'crashk_res' should hold physical address too, but after reading
+more code I dropped that idea, so I am wrong. :-/
 
-> 
-> Cheers
->   Trond
-> ----------------------------------------------------------------
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> SUNRPC: Ensure that sunrpc gets initialised before nfs, lockd, etc...
-> 
-> We can oops if rpc_pipefs isn't properly initialised before we start to set
-> up objects that depend upon it.
-> 
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
-> 
->  net/sunrpc/sunrpc_syms.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/net/sunrpc/sunrpc_syms.c b/net/sunrpc/sunrpc_syms.c
-> index adaa819..8cce921 100644
-> --- a/net/sunrpc/sunrpc_syms.c
-> +++ b/net/sunrpc/sunrpc_syms.c
-> @@ -69,5 +69,5 @@ cleanup_sunrpc(void)
->  	rcu_barrier(); /* Wait for completion of call_rcu()'s */
->  }
->  MODULE_LICENSE("GPL");
-> -module_init(init_sunrpc);
-> +fs_initcall(init_sunrpc); /* Ensure we're initialised before nfs */
->  module_exit(cleanup_sunrpc);
-> 
-> 
+I will resend the whole patchset soon. It works now!
+
+Thanks for your nice help, Hiroyuki!
+
