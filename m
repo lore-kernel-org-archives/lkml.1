@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbZHUPfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbZHUPgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbZHUPfb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZHUPfb
+	id S932431AbZHUPgG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 11:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932358AbZHUPgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:35:31 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:4863 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754229AbZHUPfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:35:30 -0400
-Subject: Re: [Bug #13947] Libertas: Association request to the driver failed
-From: Dan Williams <dcbw@redhat.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: roel kluin <roel.kluin@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Daniel Mack <daniel@caiaq.de>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <200908201710.32147.rjw@sisk.pl>
-References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
-	 <ADSuNT6McuD.A.fc.7NIjKB@chimera>
-	 <25e057c00908200151i472fa3cem6da814e7115e1ea7@mail.gmail.com>
-	 <200908201710.32147.rjw@sisk.pl>
+	Fri, 21 Aug 2009 11:36:05 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35014 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932129AbZHUPgE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 11:36:04 -0400
+Subject: Re: [PATCH] ARM: Mailing lists have moved
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: Russell King <linux@arm.linux.org.uk>, erikm@nl.linux.org,
+       vince@kyllikki.org, linux-kernel@vger.kernel.org,
+       linux-arm@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <alpine.DEB.2.00.0908210925400.24646@utopia.booyaka.com>
+References: <1250855566.3311.100.camel@macbook.infradead.org>
+	 <alpine.DEB.2.00.0908210925400.24646@utopia.booyaka.com>
 Content-Type: text/plain
-Date: Fri, 21 Aug 2009 10:35:34 -0500
-Message-Id: <1250868934.2505.46.camel@localhost.localdomain>
+Date: Fri, 21 Aug 2009 16:35:57 +0100
+Message-Id: <1250868957.3311.110.camel@macbook.infradead.org>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-20 at 17:10 +0200, Rafael J. Wysocki wrote:
-> On Thursday 20 August 2009, roel kluin wrote:
-> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13947
-> > > Subject         : Libertas: Association request to the driver failed
-> > > Submitter       : Daniel Mack <daniel@caiaq.de>
-> > > Date            : 2009-08-07 19:11 (13 days old)
-> > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=57921c312e8cef72ba35a4cfe870b376da0b1b87
-> > > References      : http://marc.info/?l=linux-kernel&m=124967234311481&w=4
-> > > Handled-By      : Roel Kluin <roel.kluin@gmail.com>
-> > 
-> > I think this should be fixed with patch of Dan Williams found here:
-> > 
-> > http://lkml.org/lkml/2009/8/12/299
+On Fri, 2009-08-21 at 09:27 -0600, Paul Walmsley wrote:
 > 
-> Thanks, bug entry updated.
+> 
+> > Russell no longer wants to maintain the mailing lists, so with his
+> > blessing I have set up replacements at lists.infradead.org.
+> 
+> Can you help us understand why the existing linux-arm@vger.kernel.org
+> list is not used for this?
 
-Rebased tested and posted to linux-wireless officially:
+Russell didn't want to do that, so I offered an alternative solution
+preserving the three separate lists (l-a, l-a-kernel, l-a-toolchain).
 
-Subject: [PATCH] libertas: clean up and clarify get_common_rates
-Date:    Fri, 21 Aug 2009 09:35:20 -0500
-
-Dan
-
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
