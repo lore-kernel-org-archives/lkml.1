@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbZHUUJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbZHUUJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755633AbZHUUJW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 16:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbZHUUJV
+	id S932451AbZHUUJd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 16:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932299AbZHUUJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 16:09:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60250 "EHLO mx2.mail.elte.hu"
+	Fri, 21 Aug 2009 16:09:32 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:7826 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753599AbZHUUJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 16:09:20 -0400
-Date: Fri, 21 Aug 2009 22:09:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: tglx@linutronix.de, hpa@zytor.com, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: properly annotate alternatives.c
-Message-ID: <20090821200908.GF5356@elte.hu>
-References: <4A8BC8A00200007800010823@vpn.id2.novell.com>
+	id S932292AbZHUUJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 16:09:32 -0400
+Date: Fri, 21 Aug 2009 16:08:19 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Josh Stone <jistone@redhat.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
+       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com
+Subject: Re: [PATCH v2 2/2] tracing: Create generic syscall TRACE_EVENTs
+Message-ID: <20090821200819.GB7099@redhat.com>
+References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250795373-32363-2-git-send-email-jistone@redhat.com> <20090821175737.GB2684@redhat.com> <4A8EF765.9050201@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A8BC8A00200007800010823@vpn.id2.novell.com>
+In-Reply-To: <4A8EF765.9050201@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jan Beulich <JBeulich@novell.com> wrote:
-
-> Some of the NOPs tables aren't used on 64-bits, quite some code and
-> data is needed post-init for module loading only, and a couple of
-> functions aren't used outside that file (i.e. can be static, and don't
-> need to be exported).
+On Fri, Aug 21, 2009 at 12:37:09PM -0700, Josh Stone wrote:
+> On 08/21/2009 10:57 AM, Jason Baron wrote:
+> >> +TRACE_EVENT_WITH_CALLBACK(sys_enter,
+> > 
+> > don't we want to change this to something like 'sys_enter_generic'?
+> > otherwise, looks good.
 > 
-> The change to __INITDATA/__INITRODATA is needed to avoid an assembler
-> warning.
+> Since all of the specific events are named "sys_enter_foo", I thought
+> that it would be clear that an unadorned "sys_enter" was the more
+> generic syscall event.  Calling it "sys_enter_generic" seems to me by
+> convention to mean a system call named "generic".
 > 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
+> I don't want to bikeshed this though -- if you still think
+> "sys_enter_generic" is better, then I'll change it.
 > 
-> ---
->  arch/x86/include/asm/alternative.h |    7 ----
->  arch/x86/kernel/alternative.c      |   56 +++++++++++++++++++++----------------
->  include/linux/init.h               |   12 ++++++-
->  3 files changed, 42 insertions(+), 33 deletions(-)
 
-looks like a nice improvement. Sam, what do you think?
+no I don't feel strongly about it...whatever the consensus is...
 
-	Ingo
+thanks,
+
+-Jason
