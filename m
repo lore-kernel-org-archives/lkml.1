@@ -1,215 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZHULQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZHULRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbZHULQP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 07:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZHULQO
+	id S1755310AbZHULRv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZHULRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 07:16:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33799 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752594AbZHULQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 07:16:13 -0400
-Date: Fri, 21 Aug 2009 13:14:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>, Kyle McMartin <kyle@mcmartin.ca>,
-       Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, catalin.marinas@arm.com,
-       a.p.zijlstra@chello.nl, jens.axboe@oracle.com, fweisbec@gmail.com,
-       stable@kernel.org, srostedt@redhat.com, tglx@linutronix.de
-Subject: Re: [tip:tracing/urgent] tracing: Fix too large stack usage in
-	do_one_initcall()
-Message-ID: <20090821111450.GA32037@elte.hu>
-References: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
+	Fri, 21 Aug 2009 07:17:50 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:57565 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754259AbZHULRt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 07:17:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=e1zshZa7T9aX+Bdfhsj6x4cXJy0b5wzj91EDS9KPE37Z9rF/GF7AbOjqgfnRW0kbkI
+         kOOh7rG6kbOpcm08uXBETk025xBui4OkYbgZd8JyG3X2xdGvi+6KLx3y/LXtkzNm1Stx
+         lfLvA8C4fbLbHhE68wBLHAiYgJX8Gh/Ly2EKM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <28c262360908190628i3f323714kf011f9b0fd4cd15@mail.gmail.com>
+References: <20090816051502.GB13740@localhost>
+	 <20090816112910.GA3208@localhost>
+	 <20090818234310.A64B.A69D9226@jp.fujitsu.com>
+	 <20090819120117.GB7306@localhost>
+	 <2f11576a0908190505h6da96280xf67c962aa3f5ba07@mail.gmail.com>
+	 <20090819121017.GA8226@localhost>
+	 <28c262360908190525i6e56ead0mb8dcb01c3d1a69f1@mail.gmail.com>
+	 <2f11576a0908190619t9951959o3841091e51324c8@mail.gmail.com>
+	 <28c262360908190628i3f323714kf011f9b0fd4cd15@mail.gmail.com>
+Date: Fri, 21 Aug 2009 20:17:51 +0900
+X-Google-Sender-Auth: 7f63847d34ebab1a
+Message-ID: <2f11576a0908210417y340f7017r20d87d81c6243184@mail.gmail.com>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
+       Jeff Dike <jdike@addtoit.com>, Avi Kivity <avi@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> Hmm, I think
+>>
+>> 1. Anyway, we need turn on PG_mlock.
+>
+> I add my patch again to explain.
+>
+> diff --git a/mm/rmap.c b/mm/rmap.c
+> index ed63894..283266c 100644
+> --- a/mm/rmap.c
+> +++ b/mm/rmap.c
+> @@ -358,6 +358,7 @@ static int page_referenced_one(struct page *page,
+>         */
+>        if (vma->vm_flags & VM_LOCKED) {
+>                *mapcount = 1;  /* break early from loop */
+> +               *vm_flags |= VM_LOCKED;
+>                goto out_unmap;
+>        }
+>
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index d224b28..d156e1d 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -632,7 +632,8 @@ static unsigned long shrink_page_list(struct
+> list_head *page_list,
+>                                                sc->mem_cgroup, &vm_flags);
+>                /* In active use or really unfreeable?  Activate it. */
+>                if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
+> -                                       referenced && page_mapping_inuse(page))
+> +                                       referenced && page_mapping_inuse(page)
+> +                                       && !(vm_flags & VM_LOCKED))
+>                        goto activate_locked;
+>
+> By this check, the page can be reached at try_to_unmap after
+> page_referenced in shrink_page_list. At that time PG_mlocked will be
+> set.
 
-* tip-bot for Ingo Molnar <mingo@elte.hu> wrote:
+You are right.
+Please add my Reviewed-by sign to your patch.
 
-> Commit-ID:  4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
-> Gitweb:     http://git.kernel.org/tip/4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
-> Author:     Ingo Molnar <mingo@elte.hu>
-> AuthorDate: Fri, 21 Aug 2009 12:53:36 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Fri, 21 Aug 2009 13:03:22 +0200
-> 
-> tracing: Fix too large stack usage in do_one_initcall()
-> 
-> One of my testboxes triggered this nasty stack overflow crash
-> during SCSI probing:
-> 
-> [    5.874004] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> [    5.875004] device: 'sda': device_add
-> [    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
-> [    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
-> [    5.878004] *pde = 00000000
-> [    5.878004] Thread overran stack, or stack corrupted
-> [    5.878004] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-> [    5.878004] last sysfs file:
-> [    5.878004]
-> [    5.878004] Pid: 1, comm: swapper Not tainted (2.6.31-rc6-tip-01272-g9919e28-dirty #5685)
-> [    5.878004] EIP: 0060:[<b1008321>] EFLAGS: 00010083 CPU: 0
-> [    5.878004] EIP is at print_context_stack+0x81/0x110
-> [    5.878004] EAX: cf8a3000 EBX: cf8a3fe4 ECX: 00000049 EDX: 00000000
-> [    5.878004] ESI: b1cfce84 EDI: 00000000 EBP: cf8a3018 ESP: cf8a2ff4
-> [    5.878004]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [    5.878004] Process swapper (pid: 1, ti=cf8a2000 task=cf8a8000 task.ti=cf8a3000)
-> [    5.878004] Stack:
-> [    5.878004]  b1004867 fffff000 cf8a3ffc
-> [    5.878004] Call Trace:
-> [    5.878004]  [<b1004867>] ? kernel_thread_helper+0x7/0x10
-> [    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
-> [    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
-> [    5.878004] *pde = 00000000
-> [    5.878004] Thread overran stack, or stack corrupted
-> [    5.878004] Oops: 0000 [#2] PREEMPT SMP DEBUG_PAGEALLOC
-> 
-> The oops did not reveal any more details about the real stack
-> that we have and the system got into an infinite loop of
-> recursive pagefaults.
-> 
-> So i booted with CONFIG_STACK_TRACER=y and the 'stacktrace' boot
-> parameter. The box did not crash (timings/conditions probably
-> changed a tiny bit to trigger the catastrophic crash), but the
-> /debug/tracing/stack_trace file was rather revealing:
-> 
->         Depth    Size   Location    (72 entries)
->         -----    ----   --------
->   0)     3704      52   __change_page_attr+0xb8/0x290
->   1)     3652      24   __change_page_attr_set_clr+0x43/0x90
->   2)     3628      60   kernel_map_pages+0x108/0x120
->   3)     3568      40   prep_new_page+0x7d/0x130
->   4)     3528      84   get_page_from_freelist+0x106/0x420
->   5)     3444     116   __alloc_pages_nodemask+0xd7/0x550
->   6)     3328      36   allocate_slab+0xb1/0x100
->   7)     3292      36   new_slab+0x1c/0x160
->   8)     3256      36   __slab_alloc+0x133/0x2b0
->   9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
->  10)     3216     108   create_object+0x28/0x250
->  11)     3108      40   kmemleak_alloc+0x81/0xc0
->  12)     3068      24   kmem_cache_alloc+0x162/0x1d0
->  13)     3044      52   scsi_pool_alloc_command+0x29/0x70
->  14)     2992      20   scsi_host_alloc_command+0x22/0x70
->  15)     2972      24   __scsi_get_command+0x1b/0x90
->  16)     2948      28   scsi_get_command+0x35/0x90
->  17)     2920      24   scsi_setup_blk_pc_cmnd+0xd4/0x100
->  18)     2896     128   sd_prep_fn+0x332/0xa70
->  19)     2768      36   blk_peek_request+0xe7/0x1d0
->  20)     2732      56   scsi_request_fn+0x54/0x520
->  21)     2676      12   __generic_unplug_device+0x2b/0x40
->  22)     2664      24   blk_execute_rq_nowait+0x59/0x80
->  23)     2640     172   blk_execute_rq+0x6b/0xb0
->  24)     2468      32   scsi_execute+0xe0/0x140
->  25)     2436      64   scsi_execute_req+0x152/0x160
->  26)     2372      60   scsi_vpd_inquiry+0x6c/0x90
->  27)     2312      44   scsi_get_vpd_page+0x112/0x160
->  28)     2268      52   sd_revalidate_disk+0x1df/0x320
->  29)     2216      92   rescan_partitions+0x98/0x330
->  30)     2124      52   __blkdev_get+0x309/0x350
->  31)     2072       8   blkdev_get+0xf/0x20
->  32)     2064      44   register_disk+0xff/0x120
->  33)     2020      36   add_disk+0x6e/0xb0
->  34)     1984      44   sd_probe_async+0xfb/0x1d0
->  35)     1940      44   __async_schedule+0xf4/0x1b0
->  36)     1896       8   async_schedule+0x12/0x20
->  37)     1888      60   sd_probe+0x305/0x360
->  38)     1828      44   really_probe+0x63/0x170
->  39)     1784      36   driver_probe_device+0x5d/0x60
->  40)     1748      16   __device_attach+0x49/0x50
->  41)     1732      32   bus_for_each_drv+0x5b/0x80
->  42)     1700      24   device_attach+0x6b/0x70
->  43)     1676      16   bus_attach_device+0x47/0x60
->  44)     1660      76   device_add+0x33d/0x400
->  45)     1584      52   scsi_sysfs_add_sdev+0x6a/0x2c0
->  46)     1532     108   scsi_add_lun+0x44b/0x460
->  47)     1424     116   scsi_probe_and_add_lun+0x182/0x4e0
->  48)     1308      36   __scsi_add_device+0xd9/0xe0
->  49)     1272      44   ata_scsi_scan_host+0x10b/0x190
->  50)     1228      24   async_port_probe+0x96/0xd0
->  51)     1204      44   __async_schedule+0xf4/0x1b0
->  52)     1160       8   async_schedule+0x12/0x20
->  53)     1152      48   ata_host_register+0x171/0x1d0
->  54)     1104      60   ata_pci_sff_activate_host+0xf3/0x230
->  55)     1044      44   ata_pci_sff_init_one+0xea/0x100
->  56)     1000      48   amd_init_one+0xb2/0x190
->  57)      952       8   local_pci_probe+0x13/0x20
->  58)      944      32   pci_device_probe+0x68/0x90
->  59)      912      44   really_probe+0x63/0x170
->  60)      868      36   driver_probe_device+0x5d/0x60
->  61)      832      20   __driver_attach+0x89/0xa0
->  62)      812      32   bus_for_each_dev+0x5b/0x80
->  63)      780      12   driver_attach+0x1e/0x20
->  64)      768      72   bus_add_driver+0x14b/0x2d0
->  65)      696      36   driver_register+0x6e/0x150
->  66)      660      20   __pci_register_driver+0x53/0xc0
->  67)      640       8   amd_init+0x14/0x16
->  68)      632     572   do_one_initcall+0x2b/0x1d0
->  69)       60      12   do_basic_setup+0x56/0x6a
->  70)       48      20   kernel_init+0x84/0xce
->  71)       28      28   kernel_thread_helper+0x7/0x10
-> 
-> There's a lot of fat functions on that stack trace, but
-> the largest of all is do_one_initcall(). This is due to
-> the boot trace entry variables being on the stack.
-> 
-> Fixing this is relatively easy, initcalls are fundamentally
-> serialized, so we can move the local variables to file scope.
-> 
-> Note that this large stack footprint was present for a
-> couple of months already - what pushed my system over
-> the edge was the addition of kmemleak to the call-chain:
-> 
->   6)     3328      36   allocate_slab+0xb1/0x100
->   7)     3292      36   new_slab+0x1c/0x160
->   8)     3256      36   __slab_alloc+0x133/0x2b0
->   9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
->  10)     3216     108   create_object+0x28/0x250
->  11)     3108      40   kmemleak_alloc+0x81/0xc0
->  12)     3068      24   kmem_cache_alloc+0x162/0x1d0
->  13)     3044      52   scsi_pool_alloc_command+0x29/0x70
-> 
-> This pushes the total to ~3800 bytes, only a tiny bit
-> more was needed to corrupt the on-kernel-stack thread_info.
-> 
-> The fix reduces the stack footprint from 572 bytes
-> to 28 bytes.
-
-btw., it will just take two more features like kmemleak to trigger 
-hard to debug stack overflows again on 32-bit. We are right at the 
-edge and this situation is not really fixable in a reliable way 
-anymore.
-
-So i think we should be more drastic and solve the real problem: we 
-should drop 4K stacks and 8K combo-stacks on 32-bit, and go 
-exclusively to 8K split stacks on 32-bit.
-
-I.e. the stack size will be 'unified' too between 64-bit and 32-bit 
-to a certain degree: process stacks will be 8K on both 64-bit and 
-32-bit x86, IRQ stacks will be separate. (on 64-bit we also have the 
-IST stacks for certain exceptions that further isolates things)
-
-This will simplify the 32-bit situation quite a bit and removes a 
-contentious config option and makes the kernel more robust in 
-general. 8K combo stacks are not safe due to irq nesting and 4K 
-isolated stacks are not enough. 8K isolated stacks is the way to go.
-
-Opinions?
-
-	Ingo
+Thanks.
