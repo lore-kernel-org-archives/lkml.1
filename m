@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbZHUVbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933000AbZHUVcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932915AbZHUVbd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 17:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932900AbZHUVbb
+	id S933000AbZHUVcu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932999AbZHUVcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 17:31:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:51513 "EHLO www.tglx.de"
+	Fri, 21 Aug 2009 17:32:48 -0400
+Received: from www.tglx.de ([62.245.132.106]:51822 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932875AbZHUVb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 17:31:29 -0400
-Message-Id: <20090821205602.153260938@linutronix.de>
+	id S932992AbZHUVco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 17:32:44 -0400
+Message-Id: <20090821205602.770249126@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Fri, 21 Aug 2009 21:30:01 -0000
+Date: Fri, 21 Aug 2009 21:31:14 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,198 +21,269 @@ Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
        Alok N Kataria <akataria@vmware.com>,
        Pan Jacob jun <jacob.jun.pan@intel.com>
-Subject: [RFC patch 07/32] x86: Move ioapic_ids_setup to platform_setup
+Subject: [RFC patch 20/32] x86: Move percpu clockevents setup to platform
 References: <20090821205008.518392436@linutronix.de>
-Content-Disposition: inline; filename=x86-move-ioapic-ids-setup-to-quirks.patch
+Content-Disposition: inline;
+	filename=x86-platform-support-for-per-cpu-timer-setup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-32bit and also the numaq code have special requirements on the
-ioapic_id setup. Convert it to a platform_setup function and get rid
-of the quirks and #ifdefs
+paravirt overrides the setup of the default apic timers as per cpu
+timers. Moorestown needs to override that as well.
+
+Move it to platform setup and create a separate
+platform_cpuhotplug_setup struct which holds the function for the
+secondary evtl. hotplugabble CPUs.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/include/asm/io_apic.h   |    3 ++-
- arch/x86/include/asm/platform.h  |   10 +++++++++-
- arch/x86/include/asm/setup.h     |    1 -
- arch/x86/kernel/apic/io_apic.c   |   11 ++++-------
- arch/x86/kernel/apic/numaq_32.c  |    8 +-------
- arch/x86/kernel/head32.c         |    3 +++
- arch/x86/kernel/platform_setup.c |    4 ++++
- 7 files changed, 23 insertions(+), 17 deletions(-)
+ arch/x86/include/asm/apic.h      |    3 ---
+ arch/x86/include/asm/paravirt.h  |   15 ---------------
+ arch/x86/include/asm/platform.h  |   19 +++++++++++++++++++
+ arch/x86/kernel/apic/apic.c      |    3 ++-
+ arch/x86/kernel/kvmclock.c       |    5 ++++-
+ arch/x86/kernel/paravirt.c       |    2 --
+ arch/x86/kernel/platform_setup.c |    9 +++++++++
+ arch/x86/kernel/smpboot.c        |    4 ++--
+ arch/x86/kernel/vmi_32.c         |    5 +++--
+ arch/x86/xen/enlighten.c         |    6 ++++--
+ 10 files changed, 43 insertions(+), 28 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/io_apic.h
+Index: linux-2.6/arch/x86/include/asm/apic.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/io_apic.h
-+++ linux-2.6/arch/x86/include/asm/io_apic.h
-@@ -177,12 +177,13 @@ extern int setup_ioapic_entry(int apic, 
- 			      int polarity, int vector, int pin);
- extern void ioapic_write_entry(int apic, int pin,
- 			       struct IO_APIC_route_entry e);
-+extern void setup_ioapic_ids_from_mpc(void);
- #else  /* !CONFIG_X86_IO_APIC */
- #define io_apic_assign_pci_irqs 0
-+#define setup_ioapic_ids_from_mpc platform_setup_noop
- static const int timer_through_8259 = 0;
- static inline void ioapic_init_mappings(void)	{ }
- static inline void ioapic_insert_resources(void) { }
--
- static inline void probe_nr_irqs_gsi(void)	{ }
+--- linux-2.6.orig/arch/x86/include/asm/apic.h
++++ linux-2.6/arch/x86/include/asm/apic.h
+@@ -70,9 +70,6 @@ static inline void default_inquire_remot
+  */
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/paravirt.h>
+-#else
+-#define setup_boot_clock setup_boot_APIC_clock
+-#define setup_secondary_clock setup_secondary_APIC_clock
  #endif
  
+ #ifdef CONFIG_X86_64
+Index: linux-2.6/arch/x86/include/asm/paravirt.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/paravirt.h
++++ linux-2.6/arch/x86/include/asm/paravirt.h
+@@ -228,9 +228,6 @@ struct pv_irq_ops {
+ 
+ struct pv_apic_ops {
+ #ifdef CONFIG_X86_LOCAL_APIC
+-	void (*setup_boot_clock)(void);
+-	void (*setup_secondary_clock)(void);
+-
+ 	void (*startup_ipi_hook)(int phys_apicid,
+ 				 unsigned long start_eip,
+ 				 unsigned long start_esp);
+@@ -995,18 +992,6 @@ static inline void slow_down_io(void)
+ #endif
+ }
+ 
+-#ifdef CONFIG_X86_LOCAL_APIC
+-static inline void setup_boot_clock(void)
+-{
+-	PVOP_VCALL0(pv_apic_ops.setup_boot_clock);
+-}
+-
+-static inline void setup_secondary_clock(void)
+-{
+-	PVOP_VCALL0(pv_apic_ops.setup_secondary_clock);
+-}
+-#endif
+-
+ #ifdef CONFIG_SMP
+ static inline void startup_ipi_hook(int phys_apicid, unsigned long start_eip,
+ 				    unsigned long start_esp)
 Index: linux-2.6/arch/x86/include/asm/platform.h
 ===================================================================
 --- linux-2.6.orig/arch/x86/include/asm/platform.h
 +++ linux-2.6/arch/x86/include/asm/platform.h
-@@ -4,13 +4,20 @@
- /**
-  * struct platform_setup_quirks - platform specific quirks
-  * @mpc_record:			platform specific mpc record accounting
-- *
-  */
- struct platform_setup_quirks {
- 	void (*mpc_record)(unsigned int mode);
+@@ -85,6 +85,15 @@ struct platform_setup_paging {
  };
  
  /**
-+ * struct platform_setup_mpparse - platform specific mpparse ops
-+ * @setup_ioapic_ids:		platform specific ioapic id override
++ * struct platform_setup_timers - platform specific timer setup
++ * @setup_perpcu_clockev:	set up the per cpu clock event device for the
++ *				boot cpu
 + */
-+struct platform_setup_mpparse {
-+	void (*setup_ioapic_ids)(void);
++struct platform_setup_timers {
++	void (*setup_percpu_clockev)(void);
 +};
 +
 +/**
-  * struct platform_setup_resources - platform specific resource related ops
-  * @probe_roms:			probe BIOS roms
-  * @reserve_resources:		reserve the standard resources for the
-@@ -32,6 +39,7 @@ struct platform_setup_resources {
+  * struct platform_setup_ops - functions for platform specific setup
+  *
   */
- struct platform_setup_ops {
- 	struct platform_setup_resources resources;
-+	struct platform_setup_mpparse mpparse;
+@@ -94,10 +103,20 @@ struct platform_setup_ops {
+ 	struct platform_setup_irqs irqs;
+ 	struct platform_setup_oem oem;
+ 	struct platform_setup_paging paging;
++	struct platform_setup_timers timers;
  	struct platform_setup_quirks quirks;
  };
  
-Index: linux-2.6/arch/x86/include/asm/setup.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/setup.h
-+++ linux-2.6/arch/x86/include/asm/setup.h
-@@ -30,7 +30,6 @@ struct x86_quirks {
- 	void (*mpc_oem_pci_bus)(struct mpc_bus *m);
- 	void (*smp_read_mpc_oem)(struct mpc_oemtable *oemtable,
- 				unsigned short oemsize);
--	int (*setup_ioapic_ids)(void);
- };
- 
- extern void x86_quirk_intr_init(void);
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -2014,7 +2014,7 @@ void disable_IO_APIC(void)
-  * by Matt Domsch <Matt_Domsch@dell.com>  Tue Dec 21 12:25:05 CST 1999
-  */
- 
--static void __init setup_ioapic_ids_from_mpc(void)
-+void __init setup_ioapic_ids_from_mpc(void)
- {
- 	union IO_APIC_reg_00 reg_00;
- 	physid_mask_t phys_id_present_map;
-@@ -2023,9 +2023,8 @@ static void __init setup_ioapic_ids_from
- 	unsigned char old_id;
- 	unsigned long flags;
- 
--	if (x86_quirks->setup_ioapic_ids && x86_quirks->setup_ioapic_ids())
-+	if (acpi_ioapic)
- 		return;
--
- 	/*
- 	 * Don't check I/O APIC IDs for xAPIC systems.  They have
- 	 * no meaning without the serial APIC bus.
-@@ -3061,10 +3060,8 @@ void __init setup_IO_APIC(void)
- 	/*
-          * Set up IO-APIC IRQ routing.
-          */
--#ifdef CONFIG_X86_32
--	if (!acpi_ioapic)
--		setup_ioapic_ids_from_mpc();
--#endif
-+	platform_setup.mpparse.setup_ioapic_ids();
++/**
++ * struct platform_setup_cpuhotplug - platform specific cpu hotplug setups
++ * @setup_percpu_clockev:	set up the per cpu clock event device
++ */
++struct platform_setup_cpuhotplug {
++	void (*setup_percpu_clockev)(void);
++};
 +
- 	sync_Arb_IDs();
- 	setup_IO_APIC_irqs();
- 	init_IO_APIC_traps();
-Index: linux-2.6/arch/x86/kernel/apic/numaq_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/numaq_32.c
-+++ linux-2.6/arch/x86/kernel/apic/numaq_32.c
-@@ -262,12 +262,6 @@ static void __init
- 	}
- }
+ extern struct platform_setup_ops platform_setup;
++extern struct platform_setup_cpuhotplug platform_cpuhotplug_setup;
  
--static int __init numaq_setup_ioapic_ids(void)
--{
--	/* so can skip it */
--	return 1;
--}
--
- static struct x86_quirks numaq_x86_quirks __initdata = {
- 	.arch_pre_time_init		= numaq_pre_time_init,
- 	.arch_time_init			= NULL,
-@@ -280,7 +274,6 @@ static struct x86_quirks numaq_x86_quirk
- 	.mpc_oem_bus_info		= mpc_oem_bus_info,
- 	.mpc_oem_pci_bus		= mpc_oem_pci_bus,
- 	.smp_read_mpc_oem		= smp_read_mpc_oem,
--	.setup_ioapic_ids		= numaq_setup_ioapic_ids,
+ extern void platform_setup_noop(void);
+ extern void platform_setup_uint_noop(unsigned int unused);
+Index: linux-2.6/arch/x86/kernel/apic/apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/apic.c
++++ linux-2.6/arch/x86/kernel/apic/apic.c
+@@ -36,6 +36,7 @@
+ #include <linux/mm.h>
+ 
+ #include <asm/perf_counter.h>
++#include <asm/platform.h>
+ #include <asm/pgalloc.h>
+ #include <asm/atomic.h>
+ #include <asm/mpspec.h>
+@@ -1701,7 +1702,7 @@ int __init APIC_init_uniprocessor(void)
+ 	localise_nmi_watchdog();
+ #endif
+ 
+-	setup_boot_clock();
++	platform_setup.timers.setup_percpu_clockev();
+ #ifdef CONFIG_X86_64
+ 	check_nmi_watchdog();
+ #endif
+Index: linux-2.6/arch/x86/kernel/kvmclock.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/kvmclock.c
++++ linux-2.6/arch/x86/kernel/kvmclock.c
+@@ -22,6 +22,8 @@
+ #include <asm/msr.h>
+ #include <asm/apic.h>
+ #include <linux/percpu.h>
++
++#include <asm/platform.h>
+ #include <asm/reboot.h>
+ 
+ #define KVM_SCALE 22
+@@ -187,7 +189,8 @@ void __init kvmclock_init(void)
+ 		pv_time_ops.sched_clock = kvm_clock_read;
+ 		pv_time_ops.get_tsc_khz = kvm_get_tsc_khz;
+ #ifdef CONFIG_X86_LOCAL_APIC
+-		pv_apic_ops.setup_secondary_clock = kvm_setup_secondary_clock;
++		platform_cpuhotplug_setup.setup_percpu_clockev =
++			kvm_setup_secondary_clock;
+ #endif
+ #ifdef CONFIG_SMP
+ 		smp_ops.smp_prepare_boot_cpu = kvm_smp_prepare_boot_cpu;
+Index: linux-2.6/arch/x86/kernel/paravirt.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/paravirt.c
++++ linux-2.6/arch/x86/kernel/paravirt.c
+@@ -387,8 +387,6 @@ struct pv_cpu_ops pv_cpu_ops = {
+ 
+ struct pv_apic_ops pv_apic_ops = {
+ #ifdef CONFIG_X86_LOCAL_APIC
+-	.setup_boot_clock = setup_boot_APIC_clock,
+-	.setup_secondary_clock = setup_secondary_APIC_clock,
+ 	.startup_ipi_hook = paravirt_nop,
+ #endif
  };
- 
- static __init void early_check_numaq(void)
-@@ -299,6 +292,7 @@ static __init void early_check_numaq(voi
- 	if (found_numaq) {
- 		x86_quirks = &numaq_x86_quirks;
- 		platform_setup.quirks.mpc_record = numaq_mpc_record;
-+		platform_setup.mpparse.setup_ioapic_ids = platform_setup_noop;
- 	}
- }
- 
-Index: linux-2.6/arch/x86/kernel/head32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/head32.c
-+++ linux-2.6/arch/x86/kernel/head32.c
-@@ -13,6 +13,8 @@
- #include <asm/e820.h>
- #include <asm/page.h>
- #include <asm/trampoline.h>
-+#include <asm/apic.h>
-+#include <asm/io_apic.h>
- 
- void __init i386_start_kernel(void)
- {
-@@ -32,6 +34,7 @@ void __init i386_start_kernel(void)
- 	/* Initilize 32bit specific setup functions */
- 	platform_setup.resources.probe_roms = probe_roms;
- 	platform_setup.resources.reserve_resources = i386_reserve_resources;
-+	platform_setup.mpparse.setup_ioapic_ids = setup_ioapic_ids_from_mpc;
- 
- 	platform_setup.resources.reserve_ebda_region();
- 
 Index: linux-2.6/arch/x86/kernel/platform_setup.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/platform_setup.c
 +++ linux-2.6/arch/x86/kernel/platform_setup.c
-@@ -25,6 +25,10 @@ struct __initdata platform_setup_ops pla
- 		.memory_setup = default_machine_specific_memory_setup,
+@@ -8,6 +8,7 @@
+ #include <asm/bios_ebda.h>
+ #include <asm/mpspec.h>
+ #include <asm/setup.h>
++#include <asm/apic.h>
+ #include <asm/e820.h>
+ #include <asm/irq.h>
+ 
+@@ -53,7 +54,15 @@ struct __initdata platform_setup_ops pla
+ 		.pagetable_setup_done = native_pagetable_setup_done,
  	},
  
-+	.mpparse = {
-+		.setup_ioapic_ids = platform_setup_noop,
++	.timers = {
++		.setup_percpu_clockev = setup_boot_APIC_clock,
 +	},
 +
  	.quirks = {
  		.mpc_record = platform_setup_uint_noop,
  	},
+ };
++
++__cpuinitdata struct platform_setup_cpuhotplug platform_cpuhotplug_setup = {
++	.setup_percpu_clockev = setup_secondary_APIC_clock,
++};
+Index: linux-2.6/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6/arch/x86/kernel/smpboot.c
+@@ -323,7 +323,7 @@ notrace static void __cpuinit start_seco
+ 	/* enable local interrupts */
+ 	local_irq_enable();
+ 
+-	setup_secondary_clock();
++	platform_cpuhotplug_setup.setup_percpu_clockev();
+ 
+ 	wmb();
+ 	cpu_idle();
+@@ -1112,7 +1112,7 @@ void __init native_smp_prepare_cpus(unsi
+ 
+ 	printk(KERN_INFO "CPU%d: ", 0);
+ 	print_cpu_info(&cpu_data(0));
+-	setup_boot_clock();
++	platform_setup.timers.setup_percpu_clockev();
+ 
+ 	if (is_uv_system())
+ 		uv_system_init();
+Index: linux-2.6/arch/x86/kernel/vmi_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmi_32.c
++++ linux-2.6/arch/x86/kernel/vmi_32.c
+@@ -821,8 +821,9 @@ static inline int __init activate_vmi(vo
+ 		pv_time_ops.get_wallclock = vmi_get_wallclock;
+ 		pv_time_ops.set_wallclock = vmi_set_wallclock;
+ #ifdef CONFIG_X86_LOCAL_APIC
+-		pv_apic_ops.setup_boot_clock = vmi_time_bsp_init;
+-		pv_apic_ops.setup_secondary_clock = vmi_time_ap_init;
++		platform_setup.timers.setup_percpu_clockev = vmi_time_bsp_init;
++		platform_cpuhotplug_setup.setup_percpu_clockev =
++			vmi_time_ap_init;
+ #endif
+ 		pv_time_ops.sched_clock = vmi_sched_clock;
+ 		pv_time_ops.get_tsc_khz = vmi_tsc_khz;
+Index: linux-2.6/arch/x86/xen/enlighten.c
+===================================================================
+--- linux-2.6.orig/arch/x86/xen/enlighten.c
++++ linux-2.6/arch/x86/xen/enlighten.c
+@@ -912,8 +912,6 @@ static const struct pv_cpu_ops xen_cpu_o
+ 
+ static const struct pv_apic_ops xen_apic_ops __initdata = {
+ #ifdef CONFIG_X86_LOCAL_APIC
+-	.setup_boot_clock = paravirt_nop,
+-	.setup_secondary_clock = paravirt_nop,
+ 	.startup_ipi_hook = paravirt_nop,
+ #endif
+ };
+@@ -984,6 +982,10 @@ asmlinkage void __init xen_start_kernel(
+ 	platform_setup.oem.arch_setup = xen_arch_setup;
+ 	platform_setup.oem.banner = xen_banner;
+ 
++	/* Override the default per cpu clockevents setup functions */
++	platform_setup.timers.setup_percpu_clockev = platform_setup_noop;
++	platform_cpuhotplug_setup.setup_percpu_clockev = platform_setup_noop;
++
+ 	xen_init_mmu_ops();
+ 	xen_init_irq_ops();
+ 
 
 
