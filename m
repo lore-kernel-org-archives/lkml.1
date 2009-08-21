@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932937AbZHUXi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932949AbZHUXoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932937AbZHUXi2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 19:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932723AbZHUXi2
+	id S932949AbZHUXoK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 19:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932723AbZHUXoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 19:38:28 -0400
-Received: from kroah.org ([198.145.64.141]:41830 "EHLO coco.kroah.org"
+	Fri, 21 Aug 2009 19:44:10 -0400
+Received: from www.tglx.de ([62.245.132.106]:60750 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932650AbZHUXi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 19:38:27 -0400
-Date: Fri, 21 Aug 2009 16:33:38 -0700
-From: Greg KH <greg@kroah.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Soeren Sonnenburg <bugreports@nn7.de>,
-       =?iso-8859-1?Q?J=E9r=E9mie?= Huchet <jeremie@lamah.info>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] Samsung laptop driver
-Message-ID: <20090821233338.GA28241@kroah.com>
-References: <20090821225925.GA27625@kroah.com>
- <20090821161952.1b84480c@jbarnes-g45>
+	id S932716AbZHUXoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 19:44:09 -0400
+Date: Sat, 22 Aug 2009 01:42:29 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: LKML <linux-kernel@vger.kernel.org>, x86 team <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Veen <arjan@infradead.org>, Avi Kivity <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Alok N Kataria <akataria@vmware.com>,
+       Pan Jacob jun <jacob.jun.pan@intel.com>
+Subject: Re: [RFC patch 16/32] x86: Replace ARCH_SETUP by a proper platform
+ function
+In-Reply-To: <4A8F1FEA.1060706@goop.org>
+Message-ID: <alpine.LFD.2.00.0908220139390.1769@localhost.localdomain>
+References: <20090821205008.518392436@linutronix.de> <20090821205602.584376844@linutronix.de> <4A8F1FEA.1060706@goop.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090821161952.1b84480c@jbarnes-g45>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 04:19:52PM -0700, Jesse Barnes wrote:
-> On Fri, 21 Aug 2009 15:59:25 -0700
-> Greg KH <greg@kroah.com> wrote:
-> > Jesse, I don't know how this is going to play with your recently added
-> > backlight support for the i915 driver.  As you don't have control over
-> > the LEDs and other stuff that this driver is going to support, I think
-> > we need some way to keep the i915 driver from messing with the
-> > backlight values, don't you think?
+On Fri, 21 Aug 2009, Jeremy Fitzhardinge wrote:
+
+> On 08/21/09 14:30, Thomas Gleixner wrote:
+> > ARCH_SETUP is a horrible hack of paravirt/xen which is way nicer to
+> > read as a platform setup function.
+> >   
 > 
-> Right, it should be fine.  The i915 driver should only take control and
-> provide a backlight when:
->   - no ACPI method is available
->   - no platform method is available (like this one)
->   - backlight is exposed through the GPU or i2c
-> 
-> So I'm a lot happier now that you've figured out the proper platform
-> interface. :)  The test code I sent out earlier didn't work for Mike
-> because his VBIOS (properly it turns out) indicated that there was an
-> external agent in charge of the backlight.
+> Not really correct; its a left-over from the old subarch stuff.  But it
+> was certainly never very pretty.
 
-Great, then all should be good, thanks for letting me know.
+Oops. Sorry, I squeezed the history out of my brain and my
+subconscious mind attributed it to paravirt/xen :)
 
-Now I wonder if Mike's laptop can be controlled through my new driver,
-that would be an interesting test.  I'll ping him about it.
+Will fix the comment.
 
-thanks,
+Thanks,
 
-greg k-h
+	tglx
