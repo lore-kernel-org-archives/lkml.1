@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbZHUTlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932362AbZHUTlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932227AbZHUTlc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 15:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbZHUTlc
+	id S932362AbZHUTlp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 15:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932314AbZHUTln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 15:41:32 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:40142 "EHLO mx1.redhat.com"
+	Fri, 21 Aug 2009 15:41:43 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:33771 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755821AbZHUTla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 15:41:30 -0400
+	id S932289AbZHUTlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 15:41:40 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH tracing/kprobes 2/4] x86: Check awk features before generating
-	inat-tables.c
+Subject: [PATCH tracing/kprobes 3/4] tracing/kprobes: Fix format typo in
+	trace_kprobes
 To: Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
@@ -32,8 +32,8 @@ Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
        Vegard Nossum <vegard.nossum@gmail.com>
-Date: Fri, 21 Aug 2009 15:43:16 -0400
-Message-ID: <20090821194316.12478.57394.stgit@localhost.localdomain>
+Date: Fri, 21 Aug 2009 15:43:43 -0400
+Message-ID: <20090821194343.12478.37618.stgit@localhost.localdomain>
 In-Reply-To: <20090821000108.GC6078@nowhere>
 References: <20090821000108.GC6078@nowhere>
 User-Agent: StGIT/0.14.3
@@ -44,7 +44,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check some awk features which old mawk doesn't support.
+Fix a format typo in kprobe-tracer.
+
+Currently, it shows 'tsize' in format;
+
+$ cat /debug/tracing/events/kprobes/event/format 
+...
+        field: unsigned long ip;        offset:16;tsize:8;
+        field: int nargs;       offset:24;tsize:4;
+...
+
+This should be '\tsize';
+
+$ cat /debug/tracing/events/kprobes/event/format 
+...
+        field: unsigned long ip;        offset:16;	size:8;
+        field: int nargs;       offset:24;	size:4;
+...
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Jim Keniston <jkenisto@us.ibm.com>
@@ -69,48 +85,22 @@ Cc: Tom Zanussi <tzanussi@gmail.com>
 Cc: Vegard Nossum <vegard.nossum@gmail.com>
 ---
 
- arch/x86/tools/gen-insn-attr-x86.awk |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+), 0 deletions(-)
+ kernel/trace/trace_kprobe.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/tools/gen-insn-attr-x86.awk b/arch/x86/tools/gen-insn-attr-x86.awk
-index 93b62c9..19ba096 100644
---- a/arch/x86/tools/gen-insn-attr-x86.awk
-+++ b/arch/x86/tools/gen-insn-attr-x86.awk
-@@ -4,7 +4,25 @@
- #
- # Usage: awk -f gen-insn-attr-x86.awk x86-opcode-map.txt > inat-tables.c
- 
-+# Awk implementation sanity check
-+function check_awk_implement() {
-+	if (!match("abc", "[[:lower:]]+"))
-+		return "Your awk doesn't support charactor-class."
-+	if (sprintf("%x", 0) != "0")
-+		return "Your awk has a printf-format problem."
-+	return ""
-+}
-+
- BEGIN {
-+	# Implementation error checking
-+	awkchecked = check_awk_implement()
-+	if (awkchecked != "") {
-+		print "Error: " awkchecked > "/dev/stderr"
-+		print "Please try to use gawk." > "/dev/stderr"
-+		exit 1
-+	}
-+
-+	# Setup generating tables
- 	print "/* x86 opcode map generated from x86-opcode-map.txt */"
- 	print "/* Do not change this code. */"
- 	ggid = 1
-@@ -293,6 +311,8 @@ function convert_operands(opnd,       i,imm,mod)
- }
- 
- END {
-+	if (awkchecked != "")
-+		exit 1
- 	# print escape opcode map's array
- 	print "/* Escape opcode map array */"
- 	print "const insn_attr_t const *inat_escape_tables[INAT_ESC_MAX + 1]" \
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index 7cd726e..22e91c0 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -1069,7 +1069,7 @@ static int __probe_event_show_format(struct trace_seq *s,
+ #define SHOW_FIELD(type, item, name)					\
+ 	do {								\
+ 		ret = trace_seq_printf(s, "\tfield: " #type " %s;\t"	\
+-				"offset:%u;tsize:%u;\n", name,		\
++				"offset:%u;\tsize:%u;\n", name,		\
+ 				(unsigned int)offsetof(typeof(field), item),\
+ 				(unsigned int)sizeof(type));		\
+ 		if (!ret)						\
 
 
 -- 
