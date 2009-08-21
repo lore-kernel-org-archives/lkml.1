@@ -1,154 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbZHUGz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbZHUG4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbZHUGz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 02:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZHUGzZ
+	id S1754949AbZHUG4A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 02:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZHUGz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 02:55:25 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49837 "EHLO mx1.redhat.com"
+	Fri, 21 Aug 2009 02:55:58 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:33503 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754778AbZHUGzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 02:55:23 -0400
-Date: Fri, 21 Aug 2009 02:54:44 -0400
+	id S932152AbZHUGz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 02:55:56 -0400
+Date: Fri, 21 Aug 2009 02:55:34 -0400
 From: Amerigo Wang <amwang@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
        Neil Horman <nhorman@redhat.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
        Amerigo Wang <amwang@redhat.com>, akpm@linux-foundation.org,
        bernhard.walle@gmx.de, Fenghua Yu <fenghua.yu@intel.com>,
-       kamezawa.hiroyu@jp.fujitsu.com,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Message-Id: <20090821065709.4855.54182.sendpatchset@localhost.localdomain>
+       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
+Message-Id: <20090821065759.4855.24212.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
 References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
-Subject: [Patch 3/8] x86: implement crashkernel=auto
+Subject: [Patch 8/8] doc: update the kdump document
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Implement "crashkernel=auto" for x86 first, other arch will be added in the
-following patches.
-
-The kernel will modify this command line with the actually reserved size,
-in case of breaking any user-space programs.
+Update the document for kdump.
 
 Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>
 
 ---
 
-Index: linux-2.6/kernel/kexec.c
+Index: linux-2.6/Documentation/kdump/kdump.txt
 ===================================================================
---- linux-2.6.orig/kernel/kexec.c
-+++ linux-2.6/kernel/kexec.c
-@@ -37,6 +37,7 @@
- #include <asm/io.h>
- #include <asm/system.h>
- #include <asm/sections.h>
-+#include <asm/setup.h>
+--- linux-2.6.orig/Documentation/kdump/kdump.txt
++++ linux-2.6/Documentation/kdump/kdump.txt
+@@ -147,6 +147,15 @@ System kernel config options
+    analysis tools require a vmlinux with debug symbols in order to read
+    and analyze a dump file.
  
- /* Per cpu memory for storing cpu states in case of system crash. */
- note_buf_t* crash_notes;
-@@ -1297,6 +1298,39 @@ int __init parse_crashkernel(char 		 *cm
++4) Enable "automatically reserve memory for kexec kernel" in
++   "Processor type and features."
++
++   CONFIG_KEXEC_AUTO_RESERVE=y
++
++   This will let you to use "crashkernel=auto", instead of specifying
++   numbers for "crashkernel=". Note, you need to have enough memory.
++   The threshold and reserved memory size are arch-dependent.
++
+ Dump-capture kernel config options (Arch Independent)
+ -----------------------------------------------------
  
- 	ck_cmdline += 12; /* strlen("crashkernel=") */
+@@ -266,6 +275,25 @@ This would mean:
+     2) if the RAM size is between 512M and 2G (exclusive), then reserve 64M
+     3) if the RAM size is larger than 2G, then reserve 128M
  
-+#ifdef CONFIG_KEXEC_AUTO_RESERVE
-+	if (strncmp(ck_cmdline, "auto", 4) == 0) {
-+		unsigned long long size;
-+		int len;
-+		char tmp[32];
++Or you can use:
 +
-+		size = arch_default_crash_size(system_ram);
-+		if (size != 0) {
-+			*crash_size = size;
-+			*crash_base = arch_default_crash_base();
-+			len = scnprintf(tmp, sizeof(tmp), "%luM@%luM",
-+					(unsigned long)(*crash_size)>>20,
-+					(unsigned long)(*crash_base)>>20);
-+			/* 'len' can't be <= 4. */
-+			if (likely((len - 4 + strlen(cmdline))
-+					< COMMAND_LINE_SIZE - 1)) {
-+				memmove(ck_cmdline + len, ck_cmdline + 4,
-+					strlen(cmdline) - (ck_cmdline + 4 - cmdline) + 1);
-+				memcpy(ck_cmdline, tmp, len);
-+			}
-+			return 0;
-+		} else {
-+			/*
-+			 * We can't reserve memory auotmatcally,
-+			 * remove "crashkernel=auto" from cmdline.
-+			 */
-+			ck_cmdline += 4; /* strlen("auto") */
-+			memmove(ck_cmdline - 16, ck_cmdline,
-+				strlen(cmdline) - (ck_cmdline - cmdline) + 1);
-+			return -ENOMEM;
-+		}
-+	}
-+#endif
- 	/*
- 	 * if the commandline contains a ':', then that's the extended
- 	 * syntax -- if not, it must be the classic syntax
-Index: linux-2.6/arch/x86/include/asm/kexec.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/kexec.h
-+++ linux-2.6/arch/x86/include/asm/kexec.h
-@@ -23,6 +23,7 @@
++    crashkernel=auto
++
++if you have enough memory. The threshold is 4G, below which this won't work.
++
++The automatically reserved memory size would be 128M on x86_32, 256M on
++ppc, 1/32 of your physical memory size on x86_64 and ppc64 (but it will not
++exceed 1TB/32 if you have more). IA64 has its own policy, shown below:
++
++	Memory size	Reserved memory
++	===========	===============
++	[4G, 12G)	256M
++	[12G, 128G)	512M
++	[128G, 256G)	768M
++	[256G, 378G)	1024M
++	[378G, 512G)	1536M
++	[512G, 768G)	2048M
++	[768G, )	3072M
  
- #include <asm/page.h>
- #include <asm/ptrace.h>
-+#include <asm-generic/kexec.h>
  
- /*
-  * KEXEC_SOURCE_MEMORY_LIMIT maximum page get_free_page can return.
-Index: linux-2.6/include/asm-generic/kexec.h
-===================================================================
---- /dev/null
-+++ linux-2.6/include/asm-generic/kexec.h
-@@ -0,0 +1,42 @@
-+#ifndef _ASM_GENERIC_KEXEC_H
-+#define _ASM_GENERIC_KEXEC_H
-+
-+#ifdef CONFIG_KEXEC_AUTO_RESERVE
-+
-+#ifndef KEXEC_AUTO_RESERVED_SIZE
-+#define KEXEC_AUTO_RESERVED_SIZE (1ULL<<27) /* 128M */
-+#endif
-+#ifndef KEXEC_AUTO_THRESHOLD
-+#define KEXEC_AUTO_THRESHOLD (1ULL<<32) /* 4G */
-+#endif
-+
-+#ifndef ARCH_HAS_DEFAULT_CRASH_SIZE
-+static inline
-+unsigned long long arch_default_crash_size(unsigned long long total_size)
-+{
-+	if (total_size < KEXEC_AUTO_THRESHOLD)
-+		return 0;
-+	else {
-+#ifdef CONFIG_64BIT
-+		if (total_size > 1ULL<<40) /* 1TB */
-+			return KEXEC_AUTO_RESERVED_SIZE
-+				* (1ULL<<40 / KEXEC_AUTO_THRESHOLD);
-+		return 1ULL<<ilog2(roundup(total_size/32, 1ULL<<21));
-+#else
-+		return KEXEC_AUTO_RESERVED_SIZE;
-+#endif
-+	}
-+}
-+#endif
-+#ifndef ARCH_HAS_DEFAULT_CRASH_BASE
-+static inline
-+unsigned long long arch_default_crash_base(void)
-+{
-+	/* 0 means find the base address automatically. */
-+	return 0;
-+}
-+#endif
-+
-+#endif /* CONFIG_KEXEC_AUTO_RESERVE */
-+
-+#endif
+ Boot into System Kernel
