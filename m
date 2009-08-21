@@ -1,100 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZHUBhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbZHUBja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbZHUBhd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 21:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZHUBhc
+	id S1754215AbZHUBja (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 21:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZHUBj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 21:37:32 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:47157 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbZHUBhc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 21:37:32 -0400
-Date: Thu, 20 Aug 2009 18:36:17 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
-       ocfs2-devel@oss.oracle.com, mfasheh@suse.com
-Subject: Re: [Ocfs2-devel] [PATCH 13/17] ocfs2: Update syncing after
- splicing to match generic version
-Message-ID: <20090821013617.GI10558@mail.oracle.com>
-Mail-Followup-To: Jan Kara <jack@suse.cz>,
-	LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
-	ocfs2-devel@oss.oracle.com, mfasheh@suse.com
-References: <1250697884-22288-1-git-send-email-jack@suse.cz>
- <1250697884-22288-14-git-send-email-jack@suse.cz>
+	Thu, 20 Aug 2009 21:39:29 -0400
+Received: from mga14.intel.com ([143.182.124.37]:48839 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751495AbZHUBj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 21:39:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,247,1249282800"; 
+   d="scan'208";a="178442021"
+Date: Fri, 21 Aug 2009 09:39:26 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [PATCH -v2] mm: do batched scans for mem_cgroup
+Message-ID: <20090821013926.GA30823@localhost>
+References: <20090820024929.GA19793@localhost> <20090820121347.8a886e4b.kamezawa.hiroyu@jp.fujitsu.com> <20090820040533.GA27540@localhost> <20090820051656.GB26265@balbir.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250697884-22288-14-git-send-email-jack@suse.cz>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4A8DFA51.0185:SCFMA4539814,ss=1,fgs=0
+In-Reply-To: <20090820051656.GB26265@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 19, 2009 at 06:04:40PM +0200, Jan Kara wrote:
-> Update ocfs2 specific splicing code to use generic syncing helper.
+On Thu, Aug 20, 2009 at 01:16:56PM +0800, Balbir Singh wrote:
+> * Wu Fengguang <fengguang.wu@intel.com> [2009-08-20 12:05:33]:
 > 
-> CC: Joel Becker <Joel.Becker@oracle.com>
-> CC: ocfs2-devel@oss.oracle.com
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> ---
->  fs/ocfs2/file.c |   27 ++++++---------------------
->  1 files changed, 6 insertions(+), 21 deletions(-)
+> > On Thu, Aug 20, 2009 at 11:13:47AM +0800, KAMEZAWA Hiroyuki wrote:
+> > > On Thu, 20 Aug 2009 10:49:29 +0800
+> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > 
+> > > > For mem_cgroup, shrink_zone() may call shrink_list() with nr_to_scan=1,
+> > > > in which case shrink_list() _still_ calls isolate_pages() with the much
+> > > > larger SWAP_CLUSTER_MAX.  It effectively scales up the inactive list
+> > > > scan rate by up to 32 times.
+> > > > 
+> > > > For example, with 16k inactive pages and DEF_PRIORITY=12, (16k >> 12)=4.
+> > > > So when shrink_zone() expects to scan 4 pages in the active/inactive
+> > > > list, it will be scanned SWAP_CLUSTER_MAX=32 pages in effect.
+> > > > 
+> > > > The accesses to nr_saved_scan are not lock protected and so not 100%
+> > > > accurate, however we can tolerate small errors and the resulted small
+> > > > imbalanced scan rates between zones.
+> > > > 
+> > > > This batching won't blur up the cgroup limits, since it is driven by
+> > > > "pages reclaimed" rather than "pages scanned". When shrink_zone()
+> > > > decides to cancel (and save) one smallish scan, it may well be called
+> > > > again to accumulate up nr_saved_scan.
+> > > > 
+> > > > It could possibly be a problem for some tiny mem_cgroup (which may be
+> > > > _full_ scanned too much times in order to accumulate up nr_saved_scan).
+> > > > 
+> > > > CC: Rik van Riel <riel@redhat.com>
+> > > > CC: Minchan Kim <minchan.kim@gmail.com>
+> > > > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > > > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > > ---
+> > > 
+> > > Hmm, how about this ? 
+> > > ==
+> > > Now, nr_saved_scan is tied to zone's LRU.
+> > > But, considering how vmscan works, it should be tied to reclaim_stat.
+> > > 
+> > > By this, memcg can make use of nr_saved_scan information seamlessly.
+> > 
+> > Good idea, full patch updated with your signed-off-by :)
+> > 
+> > Thanks,
+> > Fengguang
+> > ---
+> > mm: do batched scans for mem_cgroup
+> > 
+> > For mem_cgroup, shrink_zone() may call shrink_list() with nr_to_scan=1,
+> > in which case shrink_list() _still_ calls isolate_pages() with the much
+> > larger SWAP_CLUSTER_MAX.  It effectively scales up the inactive list
+> > scan rate by up to 32 times.
+> > 
+> > For example, with 16k inactive pages and DEF_PRIORITY=12, (16k >> 12)=4.
+> > So when shrink_zone() expects to scan 4 pages in the active/inactive
+> > list, it will be scanned SWAP_CLUSTER_MAX=32 pages in effect.
+> > 
+> > The accesses to nr_saved_scan are not lock protected and so not 100%
+> > accurate, however we can tolerate small errors and the resulted small
+> > imbalanced scan rates between zones.
+> > 
+> > This batching won't blur up the cgroup limits, since it is driven by
+> > "pages reclaimed" rather than "pages scanned". When shrink_zone()
+> > decides to cancel (and save) one smallish scan, it may well be called
+> > again to accumulate up nr_saved_scan.
+> > 
+> > It could possibly be a problem for some tiny mem_cgroup (which may be
+> > _full_ scanned too much times in order to accumulate up nr_saved_scan).
+> >
 > 
-> diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-> index 1c71f0a..bd7fdf8 100644
-> --- a/fs/ocfs2/file.c
-> +++ b/fs/ocfs2/file.c
-> @@ -1990,31 +1990,16 @@ static ssize_t ocfs2_file_splice_write(struct pipe_inode_info *pipe,
->  
->  	if (ret > 0) {
->  		unsigned long nr_pages;
-> +		int err;
->  
-> -		*ppos += ret;
->  		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
->  
-> -		/*
-> -		 * If file or inode is SYNC and we actually wrote some data,
-> -		 * sync it.
-> -		 */
-> -		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
-> -			int err;
-> -
-> -			mutex_lock(&inode->i_mutex);
-> -			err = ocfs2_rw_lock(inode, 1);
-> -			if (err < 0) {
-> -				mlog_errno(err);
-> -			} else {
-> -				err = generic_osync_inode(inode, mapping,
-> -						  OSYNC_METADATA|OSYNC_DATA);
-> -				ocfs2_rw_unlock(inode, 1);
-> -			}
-> -			mutex_unlock(&inode->i_mutex);
-> +		err = generic_write_sync(out, *ppos, ret);
-> +		if (err)
-> +			ret = err;
-> +		else
-> +			*ppos += ret;
+> Looks good to me, how did you test it?
 
-	You've removed the rw_lock around the sync.  Any reason why?
+I observed the shrink_inactive_list() calls with this patch:
 
-Joel
+        @@ -1043,6 +1043,13 @@ static unsigned long shrink_inactive_lis
+                struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+                int lumpy_reclaim = 0;
 
--- 
+        +       if (!scanning_global_lru(sc))
+        +               printk("shrink inactive %s count=%lu scan=%lu\n",
+        +                      file ? "file" : "anon",
+        +                      mem_cgroup_zone_nr_pages(sc->mem_cgroup, zone,
+        +                                               LRU_INACTIVE_ANON + 2 * !!file),
+        +                      max_scan);
 
-"A narcissist is someone better looking than you are."  
-         - Gore Vidal
+and these commands:
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+        mkdir /cgroup/0
+        echo 100M > /cgroup/0/memory.limit_in_bytes
+        echo $$ > /cgroup/0/tasks
+        cp /tmp/10G /dev/null
+
+before patch:
+
+        [ 3682.646008] shrink inactive file count=25535 scan=6
+        [ 3682.661548] shrink inactive file count=25535 scan=6
+        [ 3682.666933] shrink inactive file count=25535 scan=6
+        [ 3682.682865] shrink inactive file count=25535 scan=6
+        [ 3682.688572] shrink inactive file count=25535 scan=6
+        [ 3682.703908] shrink inactive file count=25535 scan=6
+        [ 3682.709431] shrink inactive file count=25535 scan=6
+
+after patch:
+
+        [  223.146544] shrink inactive file count=25531 scan=32
+        [  223.152060] shrink inactive file count=25507 scan=10
+        [  223.167503] shrink inactive file count=25531 scan=32
+        [  223.173426] shrink inactive file count=25507 scan=10
+        [  223.188764] shrink inactive file count=25531 scan=32
+        [  223.194270] shrink inactive file count=25507 scan=10
+        [  223.209885] shrink inactive file count=25531 scan=32
+        [  223.215388] shrink inactive file count=25507 scan=10
+
+Before patch, the inactive list is over scanned by 30/6=5 times;
+After patch, it is over scanned by 64/42=1.5 times. It's much better,
+and can be further improved if necessary.
+
+> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+Thanks!
