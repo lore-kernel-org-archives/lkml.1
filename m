@@ -1,195 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZHUN1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932215AbZHUN2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbZHUN1t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 09:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbZHUN1t
+	id S932215AbZHUN2M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 09:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbZHUN2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 09:27:49 -0400
-Received: from mail.windriver.com ([147.11.1.11]:56769 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754585AbZHUN1s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 09:27:48 -0400
-Subject: [RFC][PATCH] smc91x: let smc91x work well with netpoll
-From: DDD <Dongdong.deng@windriver.com>
-To: Nicolas Pitre <nico@cam.org>, Matt Mackall <mpm@selenic.com>,
-       David Miller <davem@davemloft.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Jason Wessel <jason.wessel@windriver.com>
-In-Reply-To: <1250861616.24178.20.camel@dengdd-desktop>
-References: <1250861616.24178.20.camel@dengdd-desktop>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 21 Aug 2009 21:40:05 +0800
-Message-Id: <1250862005.24178.28.camel@dengdd-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-OriginalArrivalTime: 21 Aug 2009 13:27:29.0456 (UTC) FILETIME=[219D8B00:01CA2263]
+	Fri, 21 Aug 2009 09:28:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52048 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754215AbZHUN2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 09:28:11 -0400
+Date: Fri, 21 Aug 2009 15:26:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jes Sorensen <jes@sgi.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Latest Linus tree oopses on Nehalem box
+Message-ID: <20090821132658.GD10263@elte.hu>
+References: <4A8E7CBE.3020209@sgi.com> <20090821114645.GD24647@elte.hu> <4A8E9B63.4090400@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8E9B63.4090400@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes too much and I didn't have the environment to test, so it is unverified patch.
-That's why I separate it from my previous patch, and send it solely as a RFC patch.
 
+* Jes Sorensen <jes@sgi.com> wrote:
 
-Hi Nicolas, 
-Given that you are the maintainer of "smc91x" driver since 2004. Could you say somethings about this
-patch? Your input on this patch is greatly appreciated. :-)
+> On 08/21/2009 01:46 PM, Ingo Molnar wrote:
+>> Might be useful to see your full crashlog, if you are allowed to
+>> post that, plus your kernel .config would be useful to know too.
+>> Plus would be useful to know whether this is a regression relative
+>> to .30 or a yet unfixed bug triggering on your class of hardware.
+>
+> Hi again,
+>
+> It looks like this is either timing related or a false alarm :(
+>
+> I saved the .config reverted to an older commit, and then tried to 
+> go back, and now the thing will suddenly boot.
+>
+> I'll try to see if I can reproduce it, if I manage, I shall be 
+> happy to post the .config and the full boot log. It's a Supermicro 
+> motherboard of some sort:
+>
+> Supermicro X8DTN+
+> AMIBIOS Core Ver:08.00.15
+>
+> There is nothing special about it, but I know the BIOS is utter junk.
+>
+> Sorry for the noise.
 
+I'd say it's timing related and still unfixed - crashes that deep in 
+the scheduler we'd sure know about, had we fixed such in any recent 
+kernels. Do you still have the last 10 lines of the bootup leading 
+up to the crash?
 
-Thank you very much,
-Dongdong
-
-
-Patch Note:
-@@ -520,21 +522,21
--       local_irq_disable();                                        \
-+       local_irq_save(flags);                                      \
-        __ret = spin_trylock(lock);                                 \
-        if (!__ret)                                                 \
--               local_irq_enable();                                 \
-+               local_irq_restore(flags);                           \
-
-Here, for "__ret = spin_trylock(lock)", I didn't use
-spin_trylock_irqsave() to replace spin_trylock(), because
-the current irq state have got by local_irq_save(flags).
-
-
-
----
- drivers/net/smc91x.c |   40 ++++++++++++++++++++++------------------
- 1 files changed, 22 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
-index 1c70e99..7cabea1 100644
---- a/drivers/net/smc91x.c
-+++ b/drivers/net/smc91x.c
-@@ -196,21 +196,23 @@ static void PRINT_PKT(u_char *buf, int length)
- /* this enables an interrupt in the interrupt mask register */
- #define SMC_ENABLE_INT(lp, x) do {					\
- 	unsigned char mask;						\
--	spin_lock_irq(&lp->lock);					\
-+	unsigned long smc_enable_flags;					\
-+	spin_lock_irqsave(&lp->lock, smc_int_flags);			\
- 	mask = SMC_GET_INT_MASK(lp);					\
- 	mask |= (x);							\
- 	SMC_SET_INT_MASK(lp, mask);					\
--	spin_unlock_irq(&lp->lock);					\
-+	spin_unlock_irqrestore(&lp->lock, smc_int_flags);		\
- } while (0)
- 
- /* this disables an interrupt from the interrupt mask register */
- #define SMC_DISABLE_INT(lp, x) do {					\
- 	unsigned char mask;						\
--	spin_lock_irq(&lp->lock);					\
-+	unsigned long smc_disable_flags;				\
-+	spin_lock_irqsave(&lp->lock, smc_disable_flags);		\
- 	mask = SMC_GET_INT_MASK(lp);					\
- 	mask &= ~(x);							\
- 	SMC_SET_INT_MASK(lp, mask);					\
--	spin_unlock_irq(&lp->lock);					\
-+	spin_unlock_irqrestore(&lp->lock, smc_disable_flags);		\
- } while (0)
- 
- /*
-@@ -520,21 +522,21 @@ static inline void  smc_rcv(struct net_device *dev)
-  * any other concurrent access and C would always interrupt B. But life
-  * isn't that easy in a SMP world...
-  */
--#define smc_special_trylock(lock)					\
-+#define smc_special_trylock(lock, flags)				\
- ({									\
- 	int __ret;							\
--	local_irq_disable();						\
-+	local_irq_save(flags);						\
- 	__ret = spin_trylock(lock);					\
- 	if (!__ret)							\
--		local_irq_enable();					\
-+		local_irq_restore(flags);				\
- 	__ret;								\
- })
--#define smc_special_lock(lock)		spin_lock_irq(lock)
--#define smc_special_unlock(lock)	spin_unlock_irq(lock)
-+#define smc_special_lock(lock, flags)		spin_lock_irq(lock, flags)
-+#define smc_special_unlock(lock, flags) 	spin_unlock_irqrestore(lock, flags)
- #else
--#define smc_special_trylock(lock)	(1)
--#define smc_special_lock(lock)		do { } while (0)
--#define smc_special_unlock(lock)	do { } while (0)
-+#define smc_special_trylock(lock, flags)	(1)
-+#define smc_special_lock(lock, flags)   	do { } while (0)
-+#define smc_special_unlock(lock, flags)	do { } while (0)
- #endif
- 
- /*
-@@ -548,10 +550,11 @@ static void smc_hardware_send_pkt(unsigned long data)
- 	struct sk_buff *skb;
- 	unsigned int packet_no, len;
- 	unsigned char *buf;
-+	unsigned long flags;
- 
- 	DBG(3, "%s: %s\n", dev->name, __func__);
- 
--	if (!smc_special_trylock(&lp->lock)) {
-+	if (!smc_special_trylock(&lp->lock, flags)) {
- 		netif_stop_queue(dev);
- 		tasklet_schedule(&lp->tx_task);
- 		return;
-@@ -559,7 +562,7 @@ static void smc_hardware_send_pkt(unsigned long data)
- 
- 	skb = lp->pending_tx_skb;
- 	if (unlikely(!skb)) {
--		smc_special_unlock(&lp->lock);
-+		smc_special_unlock(&lp->lock, flags);
- 		return;
- 	}
- 	lp->pending_tx_skb = NULL;
-@@ -569,7 +572,7 @@ static void smc_hardware_send_pkt(unsigned long data)
- 		printk("%s: Memory allocation failed.\n", dev->name);
- 		dev->stats.tx_errors++;
- 		dev->stats.tx_fifo_errors++;
--		smc_special_unlock(&lp->lock);
-+		smc_special_unlock(&lp->lock, flags);
- 		goto done;
- 	}
- 
-@@ -608,7 +611,7 @@ static void smc_hardware_send_pkt(unsigned long data)
- 
- 	/* queue the packet for TX */
- 	SMC_SET_MMU_CMD(lp, MC_ENQUEUE);
--	smc_special_unlock(&lp->lock);
-+	smc_special_unlock(&lp->lock, flags);
- 
- 	dev->trans_start = jiffies;
- 	dev->stats.tx_packets++;
-@@ -633,6 +636,7 @@ static int smc_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	struct smc_local *lp = netdev_priv(dev);
- 	void __iomem *ioaddr = lp->base;
- 	unsigned int numPages, poll_count, status;
-+	unsigned long flags;
- 
- 	DBG(3, "%s: %s\n", dev->name, __func__);
- 
-@@ -658,7 +662,7 @@ static int smc_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 		return 0;
- 	}
- 
--	smc_special_lock(&lp->lock);
-+	smc_special_lock(&lp->lock, flags);
- 
- 	/* now, try to allocate the memory */
- 	SMC_SET_MMU_CMD(lp, MC_ALLOC | numPages);
-@@ -676,7 +680,7 @@ static int smc_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 		}
-    	} while (--poll_count);
- 
--	smc_special_unlock(&lp->lock);
-+	smc_special_unlock(&lp->lock, flags);
- 
- 	lp->pending_tx_skb = skb;
-    	if (!poll_count) {
--- 
-1.6.0.4
-
-
+	Ingo
