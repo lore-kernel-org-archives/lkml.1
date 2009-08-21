@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbZHUQbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932376AbZHUQcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbZHUQbj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 12:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932259AbZHUQbj
+	id S932376AbZHUQcz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 12:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932304AbZHUQcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 12:31:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42545 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754292AbZHUQbi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 12:31:38 -0400
-Subject: Re: [PATCH] ARM: Mailing lists have moved
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alexander Clouter <alex@digriz.org.uk>
-Cc: Arnd Bergmann <arnd@arndb.de>, Russell King <linux@arm.linux.org.uk>,
-       torvalds@linux-foundation.org, vince@kyllikki.org,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-In-Reply-To: <20090821135345.GP21725@chipmunk>
-References: <1250855566.3311.100.camel@macbook.infradead.org>
-	 <200908211513.48424.arnd@arndb.de> <20090821134049.GO21725@chipmunk>
-	 <200908211543.31144.arnd@arndb.de>  <20090821135345.GP21725@chipmunk>
-Content-Type: text/plain
-Date: Fri, 21 Aug 2009 17:31:30 +0100
-Message-Id: <1250872290.3311.203.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 21 Aug 2009 12:32:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35276 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932220AbZHUQcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 12:32:53 -0400
+Date: Fri, 21 Aug 2009 18:32:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, peterz@infradead.org, torvalds@linux-foundation.org,
+       tytso@mit.edu, arjan@infradead.org, greg@kroah.com, mcgrof@gmail.com,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org, sam@ravnborg.org,
+       corbet@lwn.net, sourcejedi.lkml@googlemail.com, andi@firstfloor.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
+Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
+Message-ID: <20090821163220.GB20898@elte.hu>
+References: <20090819025634.987354707@goodmis.org> <20090820143025.7134930f.akpm@linux-foundation.org> <alpine.DEB.2.00.0908201741370.16405@gandalf.stny.rr.com> <20090820151326.b43038ce.akpm@linux-foundation.org> <20090821135249.GB30346@elte.hu> <alpine.DEB.2.00.0908211106560.16405@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0908211106560.16405@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 14:53 +0100, Alexander Clouter wrote:
-> Fair enough, just thought we were contining the norm from before? 
 
-It's fairly much as before -- although we may reconsider some of the
-controversial policies since my interpretation of the Data Protection
-Act differs from Russell's in some respects.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
->  I hope that does not mean we get the amount of spam we see on the MTD
-> mailing list?
+> 
+> On Fri, 21 Aug 2009, Ingo Molnar wrote:
+> 
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Thu, 20 Aug 2009 17:43:38 -0400 (EDT)
+> > > Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > 
+> > > > > 
+> > > > > > The following patches are in:
+> > > > > > 
+> > > > > >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> > > > > > 
+> > > > > >     branch: kconfig
+> > > > > 
+> > > > > Sam's been quiet lately.  I suggest that you add this to linux-next
+> > > > > now so people get a chance to poke at it.
+> > > > 
+> > > > I have no means of pushing into next. Would someone like to do a pull for 
+> > > > me?
+> > > 
+> > > If suitably bribed, Stephen will add you tree directly to the 
+> > > linux-nxt lineup.
+> > 
+> > Yep, we always needed another kconfig maintainer (Sam's being mostly 
+> > busy with kbuild), and it's nice to see that Steve volunteered for 
+> > that job now! ;-)
+> 
+> Sure why not?
+> 
+> I've created a new repo:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-kconfig.git
+> 
+> and the same changes are in the branch: for-next
 
-I don't think there'll be much change from before. I think the front end
-filtering is fairly much the same; the main difference between the lists
-is the moderators. The moderators of the ARM lists are very active and
-happy to filter things by hand -- like setting it to 'hold' messages
-from non-subscribers, then approving them manually, which catches a lot.
-I've been a bit lazy with the MTD list because I wanted to do as much as
-possible automatically (although Artem does a wonderful job in his spare
-time).
+Cool!
 
-It's about time I updated some of the things I _do_ do automatically,
-though; I've been neglecting that for a while too. You're the first
-person to complain to me; I'll take a look and see what I can do.
+I'm wondering, what do you think about Vegard's 'warn about complex 
+selects' feature for kconfig which he submitted some time ago:
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+  http://lkml.org/lkml/2008/5/4/13
 
+That's a really sore kconfig spot we have. It's not a bug, but it 
+sure bites people again and again, and it would be nice to have some 
+built-in mechanism that gently nudges us away from complex selects. 
+(many of which are inadvertent or become complex after the fact)
+
+	Ingo
