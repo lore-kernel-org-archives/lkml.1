@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbZHUQiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbZHUQl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469AbZHUQiT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 12:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932429AbZHUQiS
+	id S932435AbZHUQl6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 12:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbZHUQl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 12:38:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41680 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932430AbZHUQiQ (ORCPT
+	Fri, 21 Aug 2009 12:41:58 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:52613 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755287AbZHUQl5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 12:38:16 -0400
-Subject: Re: [RFC patch] need check TSC wrap unconditionally
-From: Peter Zijlstra <peterz@infradead.org>
-To: Luming Yu <luming.yu@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <3877989d0908132115n6d8c7caej4bc4c87ae7701cac@mail.gmail.com>
-References: <3877989d0908132115n6d8c7caej4bc4c87ae7701cac@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 21 Aug 2009 18:37:58 +0200
-Message-Id: <1250872678.7538.80.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 21 Aug 2009 12:41:57 -0400
+From: Andy Whitcroft <apw@canonical.com>
+To: "Ed L. Cashin" <ecashin@coraid.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
+Cc: Andy Whitcroft <apw@canonical.com>
+Subject: [PATCH 0/1] aoe: ensure we initialise the request_queue correctly
+Date: Fri, 21 Aug 2009 17:41:43 +0100
+Message-Id: <1250872904-10993-1-git-send-email-apw@canonical.com>
+X-Mailer: git-send-email 1.6.3.rc3.199.g24398
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-14 at 12:15 +0800, Luming Yu wrote:
-> Hi there,
+We have been seeing oopses in very recent kernels when using the AOE driver.
+When attempting to mount remote devices we get a warning from the kobject
+layer:
 
-Hi, thanks for CC'ing the right folks.
+  [ 2645.959090] kobject '<NULL>' (ffff880059ca22c0): tried to add
+	an uninitialized object, something is seriously wrong.
 
-> we disabled tsc wrap check on any platform that has NOSTOP_TSC cpu. But this
-> will cause some real problem.For example, 1.CPU does has constant and
-> non_stop tsc, which means different CPU ticks at same rate in same domain,but
-> have been given different initial TSC value.Then at any given time,
-> CPUsare unsynchronized.
-> 2. if those CPUs are sit in different domain..(multi-chassis cluster system?)
-> 
-> Please review. If make sense, please apply.
+Looking at the driver it seems to have always had an embedded request_queue
+and it is this that is throwing the error.  It appears the intent is
+tha these would be allocated and released using helpers, and the lack of
+these leaves the object uninitialised and throws the error.  It is unclear
+how this could ever have worked.  Anyhow the following email contains a
+patch to allocate and release this request_queue via the standard helpers.
+This has bene shown to fix the issue in testing.
 
-Right, so because your machine is funny, everybody with a good machine
-should suffer?
+Comments.
 
-If the TSCs run at identical frequency (one time domain) but at
-different offsets, you can fix that by using cyc2ns_offset.
+-apw
 
-When the machine has unsynchonized frequencies (multiple time domains),
-detect that during cpu enumeration and use that to disable the
-optimization.
+Andy Whitcroft (1):
+  aoe: ensure we initialise the request_queue correctly
 
-> Signed-off-by: Yu Luming <luming.yu@intel.com>
+ drivers/block/aoe/aoe.h    |    2 +-
+ drivers/block/aoe/aoeblk.c |    6 +++---
+ drivers/block/aoe/aoedev.c |   11 ++++++++++-
+ 3 files changed, 14 insertions(+), 5 deletions(-)
 
->  arch/x86/kernel/tsc_sync.c |    7 +------
->  1 file changed, 1 insertion(+), 6 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/tsc_sync.c b/arch/x86/kernel/tsc_sync.c
-> index 027b5b4..312ba84 100644
-> --- a/arch/x86/kernel/tsc_sync.c
-> +++ b/arch/x86/kernel/tsc_sync.c
-> @@ -113,11 +113,6 @@ void __cpuinit check_tsc_sync_source(int cpu)
->         if (unsynchronized_tsc())
->                 return;
-> 
-> -       if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE)) {
-> -               pr_info("Skipping synchronization checks as TSC is
-> reliable.\n");
-> -               return;
-> -       }
-> -
->         pr_info("checking TSC synchronization [CPU#%d -> CPU#%d]:",
->                 smp_processor_id(), cpu);
-> 
-> @@ -171,7 +166,7 @@ void __cpuinit check_tsc_sync_target(void)
->  {
->         int cpus = 2;
-> 
-> -       if (unsynchronized_tsc() || boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
-> +       if (unsynchronized_tsc())
->                 return;
-> 
->         /*
