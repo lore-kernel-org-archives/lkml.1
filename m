@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbZHUScg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZHUSdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742AbZHUScg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 14:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbZHUScf
+	id S1755555AbZHUSdQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 14:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbZHUSdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 14:32:35 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:21118 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753048AbZHUScf (ORCPT
+	Fri, 21 Aug 2009 14:33:15 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:38293 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753335AbZHUSdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 14:32:35 -0400
-Message-ID: <4A8EE7EC.70909@oracle.com>
-Date: Fri, 21 Aug 2009 11:31:08 -0700
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Jeff Moyer <jmoyer@redhat.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
-       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 5/6] aio: use lazy workqueues
-References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>	<1250763604-24355-6-git-send-email-jens.axboe@oracle.com> <x49k50yjzdd.fsf@segfault.boston.devel.redhat.com>
-In-Reply-To: <x49k50yjzdd.fsf@segfault.boston.devel.redhat.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt004.oracle.com [141.146.116.13]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4A8EE7F1.005C:SCFSTAT5015188,ss=1,fgs=0
+	Fri, 21 Aug 2009 14:33:15 -0400
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       James Morris <jmorris@namei.org>, Roland Kletzing <devzero@web.de>,
+       "<David Safford" <safford@watson.ibm.com>, stable@kernel.org,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: [PATCH 1/2] kernel_read: redefine offset type
+Date: Fri, 21 Aug 2009 14:32:48 -0400
+Message-Id: <df9691ba169503565c2e3b71c593f9c43a6b3eb2.1250871856.git.zohar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+vfs_read() offset is defined as loff_t, but kernel_read()
+offset is only defined as unsigned long. Redefine
+kernel_read() offset as loff_t.
 
-> So far as I can tell, the aio workqueue isn't used for much these days.
-> We could probably get away with switching to keventd.
+Cc: stable@kernel.org
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+---
+ fs/exec.c          |    4 ++--
+ include/linux/fs.h |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-It's only used by drivers/usb/gadget to implement O_DIRECT reads by
-DMAing into kmalloc()ed memory and then performing the copy_to_user() in
-the retry thread's task context after it has assumed the submitting
-task's mm.
+diff --git a/fs/exec.c b/fs/exec.c
+index 4a8849e..fb4f3cd 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -678,8 +678,8 @@ exit:
+ }
+ EXPORT_SYMBOL(open_exec);
+ 
+-int kernel_read(struct file *file, unsigned long offset,
+-	char *addr, unsigned long count)
++int kernel_read(struct file *file, loff_t offset,
++		char *addr, unsigned long count)
+ {
+ 	mm_segment_t old_fs;
+ 	loff_t pos = offset;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 67888a9..73e9b64 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2123,7 +2123,7 @@ extern struct file *do_filp_open(int dfd, const char *pathname,
+ 		int open_flag, int mode, int acc_mode);
+ extern int may_open(struct path *, int, int);
+ 
+-extern int kernel_read(struct file *, unsigned long, char *, unsigned long);
++extern int kernel_read(struct file *, loff_t, char *, unsigned long);
+ extern struct file * open_exec(const char *);
+  
+ /* fs/dcache.c -- generic fs support functions */
+-- 
+1.6.0.6
 
-> Zach, isn't
-> someone working on a patch to get rid of all of the -EIOCBRETRY
-> infrastructure?  That patch would probably make things clearer in this
-> area.
-
-Yeah, a startling amount of fs/aio.c vanishes if we get rid of
-EIOCBRETRY.  I'm puttering away at it, but I'll be on holiday next week
-so it'll be a while before anything emerges.
-
-- z
