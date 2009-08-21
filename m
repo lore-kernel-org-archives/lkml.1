@@ -1,534 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932913AbZHUXA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbZHUXNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932913AbZHUXA7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 19:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932736AbZHUXA7
+	id S932619AbZHUXNc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 19:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932499AbZHUXNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 19:00:59 -0400
-Received: from kroah.org ([198.145.64.141]:47405 "EHLO coco.kroah.org"
+	Fri, 21 Aug 2009 19:13:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43280 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932390AbZHUXA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 19:00:58 -0400
-Date: Fri, 21 Aug 2009 15:59:25 -0700
-From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Soeren Sonnenburg <bugreports@nn7.de>,
-       =?iso-8859-1?Q?J=E9r=E9mie?= Huchet <jeremie@lamah.info>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] Samsung laptop driver
-Message-ID: <20090821225925.GA27625@kroah.com>
+	id S932413AbZHUXNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 19:13:30 -0400
+Date: Fri, 21 Aug 2009 23:13:02 GMT
+From: tip-bot for Jan Beulich <JBeulich@novell.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       sam@ravnborg.org, jbeulich@novell.com, JBeulich@novell.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jbeulich@novell.com, sam@ravnborg.org, JBeulich@novell.com,
+       tglx@linutronix.de
+In-Reply-To: <4A8BC8A00200007800010823@vpn.id2.novell.com>
+References: <4A8BC8A00200007800010823@vpn.id2.novell.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/asm] x86: properly annotate alternatives.c
+Message-ID: <tip-8b5a10fc6fd02289ea03480f93382b1a99006142@git.kernel.org>
+Git-Commit-ID: 8b5a10fc6fd02289ea03480f93382b1a99006142
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Aug 2009 23:13:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, it turns out that for the Samsung laptops, we aren't supposed to
-be poking into the raw PCI config space to control the backlight,
-there's a SMI way to do it instead (Matthew, you were right.)
+Commit-ID:  8b5a10fc6fd02289ea03480f93382b1a99006142
+Gitweb:     http://git.kernel.org/tip/8b5a10fc6fd02289ea03480f93382b1a99006142
+Author:     Jan Beulich <JBeulich@novell.com>
+AuthorDate: Wed, 19 Aug 2009 08:40:48 +0100
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Fri, 21 Aug 2009 15:30:12 -0700
 
-So here's an updated version of the driver, with lots of debugging still
-left in it, that controls the backlight on a N130 through the "proper"
-way.
+x86: properly annotate alternatives.c
 
-It's bigger than the last driver, as I've added lots of documenation
-about this new interface.  I'm also working on adding wireless LED
-support, as well as maybe CPU temperature monitoring to the driver, as
-that can be controlled through this interface.
+Some of the NOPs tables aren't used on 64-bits, quite some code and
+data is needed post-init for module loading only, and a couple of
+functions aren't used outside that file (i.e. can be static, and don't
+need to be exported).
 
-Soeren and Jérémie, I took out support for both of your laptops, as I
-didn't know if it supported this type of interface.  Could you load the
-driver with the "force=1" parameter:
-	modprobe samsung-laptop force=1
-and tell me what the kernel log shows for your laptop?  If it works,
-I'll add the DMI values back to the driver.
+The change to __INITDATA/__INITRODATA is needed to avoid an assembler
+warning.
 
-Jesse, I don't know how this is going to play with your recently added
-backlight support for the i915 driver.  As you don't have control over
-the LEDs and other stuff that this driver is going to support, I think
-we need some way to keep the i915 driver from messing with the backlight
-values, don't you think?
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+LKML-Reference: <4A8BC8A00200007800010823@vpn.id2.novell.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
-thanks,
-
-greg k-h
-
---------------
-
-
-From: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Samsung laptop driver
-
-This driver implements backlight controls for Samsung laptops that
-currently do not have ACPI support for this control.
-
-It has been tested on the N130 laptop and properly works there.
-
-Many thanks to Dmitry Torokhov <dmitry.torokhov@gmail.com> for cleanups
-and other suggestions on how to make the driver simpler.
-
-Cc: Soeren Sonnenburg <bugreports@nn7.de>
-Cc: Jérémie Huchet <jeremie@lamah.info>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/Kconfig          |   12 
- drivers/platform/x86/Makefile         |    1 
- drivers/platform/x86/samsung-laptop.c |  420 ++++++++++++++++++++++++++++++++++
- 3 files changed, 433 insertions(+)
+ arch/x86/include/asm/alternative.h |    7 ----
+ arch/x86/kernel/alternative.c      |   56 ++++++++++++++++++++---------------
+ include/linux/init.h               |   12 ++++++-
+ 3 files changed, 42 insertions(+), 33 deletions(-)
 
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -425,4 +425,16 @@ config ACPI_TOSHIBA
+diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
+index 1a37bcd..c240efc 100644
+--- a/arch/x86/include/asm/alternative.h
++++ b/arch/x86/include/asm/alternative.h
+@@ -73,8 +73,6 @@ static inline void alternatives_smp_module_del(struct module *mod) {}
+ static inline void alternatives_smp_switch(int smp) {}
+ #endif	/* CONFIG_SMP */
  
- 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
- 	  series), say Y.
-+
-+config SAMSUNG_LAPTOP
-+	tristate "Samsung Laptop driver"
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	depends on DMI
-+	---help---
-+	  This driver adds support to control the backlight on a number of
-+	  Samsung laptops, like the N130, and control for some of the LEDs
-+
-+	  It will only be loaded on laptops that properly need it, so it is
-+	  safe to say Y here.
-+
- endif # X86_PLATFORM_DEVICES
---- a/drivers/platform/x86/Makefile
-+++ b/drivers/platform/x86/Makefile
-@@ -20,3 +20,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menl
- obj-$(CONFIG_ACPI_WMI)		+= wmi.o
- obj-$(CONFIG_ACPI_ASUS)		+= asus_acpi.o
- obj-$(CONFIG_ACPI_TOSHIBA)	+= toshiba_acpi.o
-+obj-$(CONFIG_SAMSUNG_LAPTOP)	+= samsung-laptop.o
---- /dev/null
-+++ b/drivers/platform/x86/samsung-laptop.c
-@@ -0,0 +1,420 @@
-+/*
-+ * Samsung N130 and NC120 Laptop driver
-+ *
-+ * Copyright (C) 2009 Greg Kroah-Hartman (gregkh@suse.de)
-+ * Copyright (C) 2009 Novell Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/backlight.h>
-+#include <linux/fb.h>
-+#include <linux/dmi.h>
-+#include <linux/platform_device.h>
-+
-+/*
-+ * This driver is needed because a number of Samsung laptops do not hook
-+ * their control settings through ACPI.  So we have to poke around in the
-+ * BIOS to do things like brightness values, and "special" key controls.
-+ */
-+
-+
-+/*
-+ * We have 0 - 8 as valid brightness levels.  The specs say that level 0 should
-+ * be reserved by the BIOS (which really doesn't make much sense), we tell
-+ * userspace that the value is 0 - 7 and then just tell the hardware 1 - 8
-+ */
-+#define MAX_BRIGHT	0x07
-+
-+/* get model returns 4 characters that describe the model of the laptop */
-+#define SABI_GET_MODEL			0x04
-+
-+/* Brightness is 0 - 8, as described above.  Value 0 is for the BIOS to use */
-+#define SABI_GET_BRIGHTNESS		0x10
-+#define SABI_SET_BRIGHTNESS		0x11
-+
-+/* 0 is off, 1 is on, and 2 is a second user-defined key? */
-+#define SABI_GET_WIRELESS_BUTTON	0x12
-+#define SABI_SET_WIRELESS_BUTTON	0x13
-+
-+/* Temperature is returned in degress Celsius from what I can guess. */
-+#define SABI_GET_CPU_TEMP		0x29
-+
-+/* 0 is off, 1 is on.  Doesn't seem to work on a N130 for some reason */
-+#define SABI_GET_BACKLIGHT		0x2d
-+#define SABI_SET_BACKLIGHT		0x2e
-+
-+/*
-+ * This is different
-+ * There is 3 different modes here:
-+ *   0 - off
-+ *   1 - on
-+ *   2 - max performance mode
-+ * off is "normal" mode.
-+ * on means that whatever the bios setting for etiquette mode, is enabled.  It
-+ * seems that the BIOS can set either "auto" mode, or "slow" mode.  If "slow"
-+ * mode is set, the fan turns off, and the cpu is throttled down to not cause
-+ * the fan to turn on if at all possible.
-+ * max performance means that the processor can be overclocked and run faster
-+ * then is physically possible.  Ok, maybe not physically possible, but it is
-+ * overclocked.  Funny that the system has a setting for this...
-+ */
-+#define SABI_GET_ETIQUETTE_MODE		0x31
-+#define SABI_SET_ETIQUETTE_MODE		0x32
-+
-+/*
-+ * I imagine that on some laptops there is a bluetooth switch, but I don't know
-+ * what that looks like, or where it is in the BIOS address space
-+ */
-+
-+
-+/*
-+ * SABI HEADER in low memory (f0000)
-+ * We need to poke through memory to find a signature in order to find the
-+ * exact location of this structure.
-+ */
-+struct sabi_header {
-+	u16 portNo;
-+	u8 ifaceFunc;
-+	u8 enMem;
-+	u8 reMem;
-+	u16 dataOffset;
-+	u16 dataSegment;
-+	u8 BIOSifver;
-+	u8 LauncherString;
-+} __attribute__((packed));
-+
-+/*
-+ * The SABI interface that we use to write and read values from the system.
-+ * It is found by looking at the dataOffset and dataSegment values in the sabi
-+ * header structure
-+ */
-+struct sabi_interface {
-+	u16 mainfunc;
-+	u16 subfunc;
-+	u8 complete;
-+	u8 retval[20];
-+} __attribute__((packed));
-+
-+/* Structure to get data back to the calling function */
-+struct sabi_retval {
-+	u8 retval[20];
-+};
-+
-+static struct sabi_header __iomem *sabi;
-+static struct sabi_interface __iomem *sabi_iface;
-+static void __iomem *f0000_segment;
-+static struct backlight_device *backlight_device;
-+static struct mutex sabi_mutex;
-+static struct platform_device *sdev;
-+
-+static int force;
-+module_param(force, bool, 0);
-+MODULE_PARM_DESC(force, "Disable the DMI check and forces the driver to be loaded");
-+
-+static int debug;
-+module_param(debug, bool, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(debug, "Debug enabled or not");
-+
-+static int sabi_get_command(u8 command, struct sabi_retval *sretval)
-+{
-+	int retval = 0;
-+
-+	mutex_lock(&sabi_mutex);
-+
-+	/* enable memory to be able to write to it */
-+	outb(readb(&sabi->enMem), readw(&sabi->portNo));
-+
-+	/* write out the command */
-+	writew(0x5843, &sabi_iface->mainfunc);
-+	writew(command, &sabi_iface->subfunc);
-+	writeb(0, &sabi_iface->complete);
-+	outb(readb(&sabi->ifaceFunc), readw(&sabi->portNo));
-+
-+	/* sleep for a bit to let the command complete */
-+	msleep(100);
-+
-+	/* write protect memory to make it safe */
-+	outb(readb(&sabi->reMem), readw(&sabi->portNo));
-+
-+	/* see if the command actually succeeded */
-+	if (readb(&sabi_iface->complete) == 0xaa &&
-+	    readb(&sabi_iface->retval[0]) != 0xff) {
-+		/*
-+		 * It did!
-+		 * Save off the data into a structure so the caller use it.
-+		 * Right now we only care about the first 4 bytes,
-+		 * I suppose there are commands that need more, but I don't
-+		 * know about them.
-+		 */
-+		sretval->retval[0] = readb(&sabi_iface->retval[0]);
-+		sretval->retval[1] = readb(&sabi_iface->retval[1]);
-+		sretval->retval[2] = readb(&sabi_iface->retval[2]);
-+		sretval->retval[3] = readb(&sabi_iface->retval[3]);
-+		goto exit;
-+	}
-+
-+	/* Something bad happened, so report it and error out */
-+	printk(KERN_WARNING "SABI command 0x%02x failed with completion flag 0x%02x and output 0x%02x\n",
-+		command, readb(&sabi_iface->complete),
-+		readb(&sabi_iface->retval[0]));
-+	retval = -EINVAL;
-+exit:
-+	mutex_unlock(&sabi_mutex);
-+	return retval;
-+
-+}
-+
-+static int sabi_set_command(u8 command, u8 data)
-+{
-+	int retval = 0;
-+
-+	mutex_lock(&sabi_mutex);
-+
-+	/* enable memory to be able to write to it */
-+	outb(readb(&sabi->enMem), readw(&sabi->portNo));
-+
-+	/* write out the command */
-+	writew(0x5843, &sabi_iface->mainfunc);
-+	writew(command, &sabi_iface->subfunc);
-+	writeb(0, &sabi_iface->complete);
-+	writeb(data, &sabi_iface->retval[0]);
-+	outb(readb(&sabi->ifaceFunc), readw(&sabi->portNo));
-+
-+	/* sleep for a bit to let the command complete */
-+	msleep(100);
-+
-+	/* write protect memory to make it safe */
-+	outb(readb(&sabi->reMem), readw(&sabi->portNo));
-+
-+	/* see if the command actually succeeded */
-+	if (readb(&sabi_iface->complete) == 0xaa &&
-+	    readb(&sabi_iface->retval[0]) != 0xff) {
-+		/* it did! */
-+		goto exit;
-+	}
-+
-+	/* Something bad happened, so report it and error out */
-+	printk(KERN_WARNING "SABI command 0x%02x failed with completion flag 0x%02x and output 0x%02x\n",
-+		command, readb(&sabi_iface->complete),
-+		readb(&sabi_iface->retval[0]));
-+	retval = -EINVAL;
-+exit:
-+	mutex_unlock(&sabi_mutex);
-+	return retval;
-+}
-+
-+static u8 read_brightness(void)
-+{
-+	struct sabi_retval sretval;
-+	int user_brightness = 0;
-+	int retval;
-+
-+	retval = sabi_get_command(SABI_GET_BACKLIGHT, &sretval);
-+	if (!retval)
-+		user_brightness = sretval.retval[0];
-+		if (user_brightness != 0)
-+			--user_brightness;
-+	return user_brightness;
-+}
-+
-+static void set_brightness(u8 user_brightness)
-+{
-+	sabi_set_command(SABI_SET_BRIGHTNESS, user_brightness + 1);
-+}
-+
-+static int get_brightness(struct backlight_device *bd)
-+{
-+	return bd->props.brightness;
-+}
-+
-+static int update_status(struct backlight_device *bd)
-+{
-+	set_brightness(bd->props.brightness);
-+	return 0;
-+}
-+
-+static struct backlight_ops backlight_ops = {
-+	.get_brightness	= get_brightness,
-+	.update_status	= update_status,
-+};
-+
-+static int __init dmi_check_cb(const struct dmi_system_id *id)
-+{
-+	printk(KERN_INFO KBUILD_MODNAME ": found laptop model '%s'\n",
-+		id->ident);
-+	return 0;
-+}
-+
-+static struct dmi_system_id __initdata samsung_dmi_table[] = {
-+	{
-+		.ident = "N120",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "N120"),
-+			DMI_MATCH(DMI_BOARD_NAME, "N120"),
-+		},
-+		.callback = dmi_check_cb,
-+	},
-+	{
-+		.ident = "N130",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "N130"),
-+			DMI_MATCH(DMI_BOARD_NAME, "N130"),
-+		},
-+		.callback = dmi_check_cb,
-+	},
-+	{ },
-+};
-+
-+
-+static int __init samsung_init(void)
-+{
-+	struct sabi_retval sretval;
-+	const char *testStr = "SwSmi@";
-+	void __iomem *memcheck;
-+	unsigned int ifaceP;
-+	int pStr;
-+	int loca;
-+	int retval;
-+
-+	mutex_init(&sabi_mutex);
-+
-+	if (!force && !dmi_check_system(samsung_dmi_table))
-+		return -ENODEV;
-+
-+	f0000_segment = ioremap(0xf0000, 0xffff);
-+	if (!f0000_segment) {
-+		printk(KERN_ERR "Can't map the segment at 0xf0000\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Try to find the signature "SwSmi@" in memory to find the header */
-+	pStr = 0;
-+	memcheck = f0000_segment;
-+	for (loca = 0; loca < 0xffff; loca++) {
-+		char temp = readb(memcheck + loca);
-+
-+		if (temp == testStr[pStr]) {
-+			if (pStr == 5)
-+				break;
-+			++pStr;
-+		} else {
-+			pStr = 0;
-+		}
-+	}
-+	if (loca == 0xffff) {
-+		printk(KERN_INFO "This computer does not support SABI\n");
-+		goto error_no_signature;
-+		}
-+
-+	/* point to the SMI port Number */
-+	loca += 1;
-+	sabi = (struct sabi_header __iomem *)(loca + memcheck);
-+	if (!sabi) {
-+		printk(KERN_ERR "Can't remap %p\n", loca + memcheck);
-+		goto exit;
-+	}
-+
-+	printk(KERN_INFO "This computer supports SABI==%x\n", loca + 0xf0000 - 6);
-+	printk(KERN_INFO "SABI header:\n");
-+	printk(KERN_INFO " SMI Port Number = 0x%04x\n", readw(&sabi->portNo));
-+	printk(KERN_INFO " SMI Interface Function = 0x%02x\n", readb(&sabi->ifaceFunc));
-+	printk(KERN_INFO " SMI enable memory buffer = 0x%02x\n", readb(&sabi->enMem));
-+	printk(KERN_INFO " SMI restore memory buffer = 0x%02x\n", readb(&sabi->reMem));
-+	printk(KERN_INFO " SABI data offset = 0x%04x\n", readw(&sabi->dataOffset));
-+	printk(KERN_INFO " SABI data segment = 0x%04x\n", readw(&sabi->dataSegment));
-+	printk(KERN_INFO " BIOS interface version = 0x%02x\n", readb(&sabi->BIOSifver));
-+	printk(KERN_INFO " KBD Launcher string = 0x%02x\n", readb(&sabi->LauncherString));
-+
-+	/* Get a pointer to the SABI Interface */
-+	ifaceP = (readw(&sabi->dataSegment) & 0x0ffff) << 4;
-+	ifaceP += readw(&sabi->dataOffset) & 0x0ffff;
-+	sabi_iface = (struct sabi_interface __iomem *)ioremap(ifaceP, 16);
-+	if (!sabi_iface) {
-+		printk(KERN_ERR "Can't remap %x\n", ifaceP);
-+		goto exit;
-+	}
-+	printk(KERN_INFO "SABI Interface = %p\n", sabi_iface);
-+
-+	retval = sabi_get_command(SABI_GET_MODEL, &sretval);
-+	if (!retval) {
-+		printk(KERN_INFO "Model Name %c%c%c%c\n",
-+			sretval.retval[0],
-+			sretval.retval[1],
-+			sretval.retval[2],
-+			sretval.retval[3]);
-+	}
-+
-+	retval = sabi_get_command(SABI_GET_BACKLIGHT, &sretval);
-+	if (!retval)
-+		printk("backlight = 0x%02x\n", sretval.retval[0]);
-+
-+	retval = sabi_get_command(SABI_GET_WIRELESS_BUTTON, &sretval);
-+	if (!retval)
-+		printk("wireless button = 0x%02x\n", sretval.retval[0]);
-+
-+	retval = sabi_get_command(SABI_GET_BRIGHTNESS, &sretval);
-+	if (!retval)
-+		printk("brightness = 0x%02x\n", sretval.retval[0]);
-+
-+	retval = sabi_get_command(SABI_GET_ETIQUETTE_MODE, &sretval);
-+	if (!retval)
-+		printk("etiquette mode = 0x%02x\n", sretval.retval[0]);
-+	retval = sabi_get_command(SABI_GET_CPU_TEMP, &sretval);
-+	if (!retval)
-+		printk("cpu temp = 0x%02x\n", sretval.retval[0]);
-+
-+	/* knock up a platform device to hang stuff off of */
-+	sdev = platform_device_register_simple("samsung", -1, NULL, 0);
-+	if (IS_ERR(sdev))
-+		goto error_no_platform;
-+
-+	/* create a backlight device to talk to this one */
-+	backlight_device = backlight_device_register("samsung", &sdev->dev,
-+						     NULL, &backlight_ops);
-+	if (IS_ERR(backlight_device))
-+		goto error_no_backlight;
-+
-+	backlight_device->props.max_brightness = MAX_BRIGHT;
-+	backlight_device->props.brightness = read_brightness();
-+	backlight_device->props.power = FB_BLANK_UNBLANK;
-+	backlight_update_status(backlight_device);
-+
-+exit:
-+	return 0;
-+
-+error_no_backlight:
-+	platform_device_unregister(sdev);
-+
-+error_no_platform:
-+	iounmap(sabi_iface);
-+
-+error_no_signature:
-+	iounmap(f0000_segment);
-+	return -EINVAL;
-+}
-+
-+static void __exit samsung_exit(void)
-+{
-+	backlight_device_unregister(backlight_device);
-+	iounmap(sabi_iface);
-+	iounmap(f0000_segment);
-+	platform_device_unregister(sdev);
-+}
-+
-+module_init(samsung_init);
-+module_exit(samsung_exit);
-+
-+MODULE_AUTHOR("Greg Kroah-Hartman <gregkh@suse.de>");
-+MODULE_DESCRIPTION("Samsung Backlight driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN120:*:rnN120:*");
-+MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN130:*:rnN130:*");
+-const unsigned char *const *find_nop_table(void);
+-
+ /* alternative assembly primitive: */
+ #define ALTERNATIVE(oldinstr, newinstr, feature)			\
+ 									\
+@@ -144,8 +142,6 @@ static inline void apply_paravirt(struct paravirt_patch_site *start,
+ #define __parainstructions_end	NULL
+ #endif
+ 
+-extern void add_nops(void *insns, unsigned int len);
+-
+ /*
+  * Clear and restore the kernel write-protection flag on the local CPU.
+  * Allows the kernel to edit read-only pages.
+@@ -161,10 +157,7 @@ extern void add_nops(void *insns, unsigned int len);
+  * Intel's errata.
+  * On the local CPU you need to be protected again NMI or MCE handlers seeing an
+  * inconsistent instruction while you patch.
+- * The _early version expects the memory to already be RW.
+  */
+-
+ extern void *text_poke(void *addr, const void *opcode, size_t len);
+-extern void *text_poke_early(void *addr, const void *opcode, size_t len);
+ 
+ #endif /* _ASM_X86_ALTERNATIVE_H */
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index f576587..4869351 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -2,6 +2,7 @@
+ #include <linux/sched.h>
+ #include <linux/mutex.h>
+ #include <linux/list.h>
++#include <linux/stringify.h>
+ #include <linux/kprobes.h>
+ #include <linux/mm.h>
+ #include <linux/vmalloc.h>
+@@ -32,7 +33,7 @@ __setup("smp-alt-boot", bootonly);
+ #define smp_alt_once 1
+ #endif
+ 
+-static int debug_alternative;
++static int __initdata_or_module debug_alternative;
+ 
+ static int __init debug_alt(char *str)
+ {
+@@ -51,7 +52,7 @@ static int __init setup_noreplace_smp(char *str)
+ __setup("noreplace-smp", setup_noreplace_smp);
+ 
+ #ifdef CONFIG_PARAVIRT
+-static int noreplace_paravirt = 0;
++static int __initdata_or_module noreplace_paravirt = 0;
+ 
+ static int __init setup_noreplace_paravirt(char *str)
+ {
+@@ -64,16 +65,17 @@ __setup("noreplace-paravirt", setup_noreplace_paravirt);
+ #define DPRINTK(fmt, args...) if (debug_alternative) \
+ 	printk(KERN_DEBUG fmt, args)
+ 
+-#ifdef GENERIC_NOP1
++#if defined(GENERIC_NOP1) && !defined(CONFIG_X86_64)
+ /* Use inline assembly to define this because the nops are defined
+    as inline assembly strings in the include files and we cannot
+    get them easily into strings. */
+-asm("\t.section .rodata, \"a\"\nintelnops: "
++asm("\t" __stringify(__INITRODATA_OR_MODULE) "\nintelnops: "
+ 	GENERIC_NOP1 GENERIC_NOP2 GENERIC_NOP3 GENERIC_NOP4 GENERIC_NOP5 GENERIC_NOP6
+ 	GENERIC_NOP7 GENERIC_NOP8
+     "\t.previous");
+ extern const unsigned char intelnops[];
+-static const unsigned char *const intel_nops[ASM_NOP_MAX+1] = {
++static const unsigned char *const __initconst_or_module
++intel_nops[ASM_NOP_MAX+1] = {
+ 	NULL,
+ 	intelnops,
+ 	intelnops + 1,
+@@ -87,12 +89,13 @@ static const unsigned char *const intel_nops[ASM_NOP_MAX+1] = {
+ #endif
+ 
+ #ifdef K8_NOP1
+-asm("\t.section .rodata, \"a\"\nk8nops: "
++asm("\t" __stringify(__INITRODATA_OR_MODULE) "\nk8nops: "
+ 	K8_NOP1 K8_NOP2 K8_NOP3 K8_NOP4 K8_NOP5 K8_NOP6
+ 	K8_NOP7 K8_NOP8
+     "\t.previous");
+ extern const unsigned char k8nops[];
+-static const unsigned char *const k8_nops[ASM_NOP_MAX+1] = {
++static const unsigned char *const __initconst_or_module
++k8_nops[ASM_NOP_MAX+1] = {
+ 	NULL,
+ 	k8nops,
+ 	k8nops + 1,
+@@ -105,13 +108,14 @@ static const unsigned char *const k8_nops[ASM_NOP_MAX+1] = {
+ };
+ #endif
+ 
+-#ifdef K7_NOP1
+-asm("\t.section .rodata, \"a\"\nk7nops: "
++#if defined(K7_NOP1) && !defined(CONFIG_X86_64)
++asm("\t" __stringify(__INITRODATA_OR_MODULE) "\nk7nops: "
+ 	K7_NOP1 K7_NOP2 K7_NOP3 K7_NOP4 K7_NOP5 K7_NOP6
+ 	K7_NOP7 K7_NOP8
+     "\t.previous");
+ extern const unsigned char k7nops[];
+-static const unsigned char *const k7_nops[ASM_NOP_MAX+1] = {
++static const unsigned char *const __initconst_or_module
++k7_nops[ASM_NOP_MAX+1] = {
+ 	NULL,
+ 	k7nops,
+ 	k7nops + 1,
+@@ -125,12 +129,13 @@ static const unsigned char *const k7_nops[ASM_NOP_MAX+1] = {
+ #endif
+ 
+ #ifdef P6_NOP1
+-asm("\t.section .rodata, \"a\"\np6nops: "
++asm("\t" __stringify(__INITRODATA_OR_MODULE) "\np6nops: "
+ 	P6_NOP1 P6_NOP2 P6_NOP3 P6_NOP4 P6_NOP5 P6_NOP6
+ 	P6_NOP7 P6_NOP8
+     "\t.previous");
+ extern const unsigned char p6nops[];
+-static const unsigned char *const p6_nops[ASM_NOP_MAX+1] = {
++static const unsigned char *const __initconst_or_module
++p6_nops[ASM_NOP_MAX+1] = {
+ 	NULL,
+ 	p6nops,
+ 	p6nops + 1,
+@@ -146,7 +151,7 @@ static const unsigned char *const p6_nops[ASM_NOP_MAX+1] = {
+ #ifdef CONFIG_X86_64
+ 
+ extern char __vsyscall_0;
+-const unsigned char *const *find_nop_table(void)
++static const unsigned char *const *__init_or_module find_nop_table(void)
+ {
+ 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
+ 	    boot_cpu_has(X86_FEATURE_NOPL))
+@@ -157,7 +162,7 @@ const unsigned char *const *find_nop_table(void)
+ 
+ #else /* CONFIG_X86_64 */
+ 
+-const unsigned char *const *find_nop_table(void)
++static const unsigned char *const *__init_or_module find_nop_table(void)
+ {
+ 	if (boot_cpu_has(X86_FEATURE_K8))
+ 		return k8_nops;
+@@ -172,7 +177,7 @@ const unsigned char *const *find_nop_table(void)
+ #endif /* CONFIG_X86_64 */
+ 
+ /* Use this to add nops to a buffer, then text_poke the whole buffer. */
+-void add_nops(void *insns, unsigned int len)
++static void __init_or_module add_nops(void *insns, unsigned int len)
+ {
+ 	const unsigned char *const *noptable = find_nop_table();
+ 
+@@ -185,10 +190,10 @@ void add_nops(void *insns, unsigned int len)
+ 		len -= noplen;
+ 	}
+ }
+-EXPORT_SYMBOL_GPL(add_nops);
+ 
+ extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
+ extern u8 *__smp_locks[], *__smp_locks_end[];
++static void *text_poke_early(void *addr, const void *opcode, size_t len);
+ 
+ /* Replace instructions with better alternatives for this CPU type.
+    This runs before SMP is initialized to avoid SMP problems with
+@@ -196,7 +201,8 @@ extern u8 *__smp_locks[], *__smp_locks_end[];
+    APs have less capabilities than the boot processor are not handled.
+    Tough. Make sure you disable such features by hand. */
+ 
+-void apply_alternatives(struct alt_instr *start, struct alt_instr *end)
++void __init_or_module apply_alternatives(struct alt_instr *start,
++					 struct alt_instr *end)
+ {
+ 	struct alt_instr *a;
+ 	char insnbuf[MAX_PATCH_LEN];
+@@ -279,9 +285,10 @@ static LIST_HEAD(smp_alt_modules);
+ static DEFINE_MUTEX(smp_alt);
+ static int smp_mode = 1;	/* protected by smp_alt */
+ 
+-void alternatives_smp_module_add(struct module *mod, char *name,
+-				 void *locks, void *locks_end,
+-				 void *text,  void *text_end)
++void __init_or_module alternatives_smp_module_add(struct module *mod,
++						  char *name,
++						  void *locks, void *locks_end,
++						  void *text,  void *text_end)
+ {
+ 	struct smp_alt_module *smp;
+ 
+@@ -317,7 +324,7 @@ void alternatives_smp_module_add(struct module *mod, char *name,
+ 	mutex_unlock(&smp_alt);
+ }
+ 
+-void alternatives_smp_module_del(struct module *mod)
++void __init_or_module alternatives_smp_module_del(struct module *mod)
+ {
+ 	struct smp_alt_module *item;
+ 
+@@ -386,8 +393,8 @@ void alternatives_smp_switch(int smp)
+ #endif
+ 
+ #ifdef CONFIG_PARAVIRT
+-void apply_paravirt(struct paravirt_patch_site *start,
+-		    struct paravirt_patch_site *end)
++void __init_or_module apply_paravirt(struct paravirt_patch_site *start,
++				     struct paravirt_patch_site *end)
+ {
+ 	struct paravirt_patch_site *p;
+ 	char insnbuf[MAX_PATCH_LEN];
+@@ -485,7 +492,8 @@ void __init alternative_instructions(void)
+  * instructions. And on the local CPU you need to be protected again NMI or MCE
+  * handlers seeing an inconsistent instruction while you patch.
+  */
+-void *text_poke_early(void *addr, const void *opcode, size_t len)
++static void *__init_or_module text_poke_early(void *addr, const void *opcode,
++					      size_t len)
+ {
+ 	unsigned long flags;
+ 	local_irq_save(flags);
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 13b633e..400adbb 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -103,8 +103,8 @@
+ #define __INIT		.section	".init.text","ax"
+ #define __FINIT		.previous
+ 
+-#define __INITDATA	.section	".init.data","aw"
+-#define __INITRODATA	.section	".init.rodata","a"
++#define __INITDATA	.section	".init.data","aw",%progbits
++#define __INITRODATA	.section	".init.rodata","a",%progbits
+ #define __FINITDATA	.previous
+ 
+ #define __DEVINIT        .section	".devinit.text", "ax"
+@@ -305,9 +305,17 @@ void __init parse_early_options(char *cmdline);
+ #ifdef CONFIG_MODULES
+ #define __init_or_module
+ #define __initdata_or_module
++#define __initconst_or_module
++#define __INIT_OR_MODULE	.text
++#define __INITDATA_OR_MODULE	.data
++#define __INITRODATA_OR_MODULE	.section ".rodata","a",%progbits
+ #else
+ #define __init_or_module __init
+ #define __initdata_or_module __initdata
++#define __initconst_or_module __initconst
++#define __INIT_OR_MODULE __INIT
++#define __INITDATA_OR_MODULE __INITDATA
++#define __INITRODATA_OR_MODULE __INITRODATA
+ #endif /*CONFIG_MODULES*/
+ 
+ /* Functions marked as __devexit may be discarded at kernel link time, depending
