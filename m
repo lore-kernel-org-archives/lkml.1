@@ -1,141 +1,395 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbZHUCax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbZHUCgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752757AbZHUCax (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 22:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZHUCax
+	id S1752778AbZHUCgM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 22:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZHUCgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 22:30:53 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:37987 "EHLO mail-out1.uio.no"
+	Thu, 20 Aug 2009 22:36:11 -0400
+Received: from mail.perches.com ([173.55.12.10]:1107 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752145AbZHUCav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 22:30:51 -0400
-Subject: Re: linux-next: noot failure for next-20090820
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Dr. J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <20090821094226.286faa67.sfr@canb.auug.org.au>
-References: <20090821094226.286faa67.sfr@canb.auug.org.au>
+	id S1751933AbZHUCgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 22:36:09 -0400
+X-Greylist: delayed 1604 seconds by postgrey-1.27 at vger.kernel.org; Thu, 20 Aug 2009 22:36:09 EDT
+Subject: [PATCH] sn9c20x: Reduce data usage, make functions static
+From: Joe Perches <joe@perches.com>
+To: Brian Johnson <brijohn@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jean-Francois Moine <moinejf@free.fr>, linux-media@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 20 Aug 2009 22:30:46 -0400
-Message-Id: <1250821846.6514.23.camel@heimdal.trondhjem.org>
+Date: Thu, 20 Aug 2009 19:08:58 -0700
+Message-Id: <1250820538.29546.5.camel@Joe-Laptop.home>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 5 msgs/h 1 sum rcpts/h 7 sum msgs/h 1 total rcpts 1137 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: ACB39F5EC327AD493D79974D917AFCA1B4C5A588
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 156 max/h 6 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 09:42 +1000, Stephen Rothwell wrote:
-> Hi Trond,
-> 
-> Booting next-20090820 on three different PowerPC machines get the
-> following OOPS:
-> 
-> calling  .init_nfs_fs+0x0/0x184 @ 1
-> Unable to handle kernel paging request for data at address 0x00000000
-> Faulting instruction address: 0xc00000000013be00
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=128 NUMA pSeries
-> Modules linked in:
-> NIP: c00000000013be00 LR: c00000000013bd00 CTR: c00000000056f098
-> REGS: c00000007d2db5c0 TRAP: 0300   Not tainted  (2.6.31-rc6-autokern1)
-> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 48000028  XER: 00000005
-> DAR: 0000000000000000, DSISR: 0000000040000000
-> TASK = c0000000410ca000[1] 'swapper' THREAD: c00000007d2d8000 CPU: 1
-> GPR00: c00000000013bd00 c00000007d2db840 c000000000b84e98 0000000000000001 
-> GPR04: c000000000a831e8 c0000000410ca948 0000000000000002 c0000000410ca948 
-> GPR08: 0000000000000025 0000000000000000 ef7bdef7bdef7bdf 0000000009ac4000 
-> GPR12: 0000000088000084 c000000000bd4400 0000000000000000 0000000003000000 
-> GPR16: c000000000720608 c00000000071ed80 0000000000000000 00000000003e7800 
-> GPR20: 000000000382de28 c00000000082de28 000000000382e098 c00000000082e098 
-> GPR24: 0000000000000000 c000000000b25c58 c000000000b25c40 c000000000ac9d18 
-> GPR28: c000000000b7ba40 fffffffffffffe10 c000000000ae5e70 0000000000000000 
-> NIP [c00000000013be00] .sget+0x14c/0x418
-> LR [c00000000013bd00] .sget+0x4c/0x418
-> Call Trace:
-> [c00000007d2db840] [c00000000013bd00] .sget+0x4c/0x418 (unreliable)
-> [c00000007d2db8f0] [c00000000013cca8] .get_sb_single+0x4c/0x114
-> [c00000007d2db9a0] [c00000000056f0b8] .rpc_get_sb+0x20/0x38
-> [c00000007d2dba20] [c00000000013c54c] .vfs_kern_mount+0x80/0xf8
-> [c00000007d2dbac0] [c00000000015d434] .simple_pin_fs+0x74/0x130
-> [c00000007d2dbb60] [c000000000570734] .rpc_get_mount+0x2c/0x54
-> [c00000007d2dbbe0] [c00000000023ffec] .nfs_cache_register+0x28/0xc0
-> [c00000007d2dbd10] [c00000000023fa78] .nfs_dns_resolver_init+0x1c/0x34
-> [c00000007d2dbd90] [c000000000813fac] .init_nfs_fs+0x1c/0x184
-> [c00000007d2dbe10] [c0000000000094bc] .do_one_initcall+0x90/0x1b0
-> [c00000007d2dbf00] [c0000000007f3c98] .kernel_init+0x1f4/0x270
-> [c00000007d2dbf90] [c0000000000268f0] .kernel_thread+0x54/0x70
-> Instruction dump:
-> 48445fad 60000000 387d0070 4bf4f7a9 60000000 7fa3eb78 4bfff911 48442e89 
-> 60000000 4bffff04 e93d01f0 3ba9fe10 <e81d01f0> 2fa00000 419e0008 7c00022c 
-> ---[ end trace 561bb236c800851f ]---
-> Kernel panic - not syncing: Attempted to kill init!
-> Call Trace:
-> [c00000007d2db220] [c000000000010228] .show_stack+0x70/0x184 (unreliable)
-> [c00000007d2db2d0] [c000000000067c40] .panic+0x80/0x1b4
-> [c00000007d2db370] [c00000000006c3cc] .do_exit+0x84/0x6fc
-> [c00000007d2db430] [c000000000024950] .die+0x24c/0x27c
-> [c00000007d2db4d0] [c0000000000328e0] .bad_page_fault+0xb8/0xd4
-> [c00000007d2db550] [c0000000000051dc] handle_page_fault+0x3c/0x74
-> --- Exception: 300 at .sget+0x14c/0x418
->     LR = .sget+0x4c/0x418
-> [c00000007d2db8f0] [c00000000013cca8] .get_sb_single+0x4c/0x114
-> [c00000007d2db9a0] [c00000000056f0b8] .rpc_get_sb+0x20/0x38
-> [c00000007d2dba20] [c00000000013c54c] .vfs_kern_mount+0x80/0xf8
-> [c00000007d2dbac0] [c00000000015d434] .simple_pin_fs+0x74/0x130
-> [c00000007d2dbb60] [c000000000570734] .rpc_get_mount+0x2c/0x54
-> [c00000007d2dbbe0] [c00000000023ffec] .nfs_cache_register+0x28/0xc0
-> [c00000007d2dbd10] [c00000000023fa78] .nfs_dns_resolver_init+0x1c/0x34
-> [c00000007d2dbd90] [c000000000813fac] .init_nfs_fs+0x1c/0x184
-> [c00000007d2dbe10] [c0000000000094bc] .do_one_initcall+0x90/0x1b0
-> [c00000007d2dbf00] [c0000000007f3c98] .kernel_init+0x1f4/0x270
-> [c00000007d2dbf90] [c0000000000268f0] .kernel_thread+0x54/0x70
-> Rebooting in 180 seconds..-- 0:conmux-control -- time-stamp -- Aug/20/09 19:25:14 --
-> 
-> It may not be NFS changes ... there were just a few changes in the nfs
-> tree between next-20090819 and next-20090820.
-> 
-Hi Stephen,
+Compiled, not tested, no hardware
 
-Yes, that sounds like the bug that Bruce hit earlier today. I strongly
-suspect that it is due to the fact that you both compiled NFS+sunrpc
-into the main kernel, and that the NFS init routine is being called
-before the sunrpc init routine.
+Reduces size of object
 
-Could both you and Bruce check if the following patch fixes the problem?
+Use s16 instead of int where possible.
+Use struct instead of arrays
 
-Cheers
-  Trond
-----------------------------------------------------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-SUNRPC: Ensure that sunrpc gets initialised before nfs, lockd, etc...
+Before:
+$ size drivers/media/video/gspca/sn9c20x.o
+   text	   data	    bss	    dec	    hex	filename
+  29346	   1124	   4128	  34598	   8726	drivers/media/video/gspca/sn9c20x.o
 
-We can oops if rpc_pipefs isn't properly initialised before we start to set
-up objects that depend upon it.
+After:
+$ size drivers/media/video/gspca/sn9c20x.o
+   text	   data	    bss	    dec	    hex	filename
+  25042	   1124	   4112	  30278	   7646	drivers/media/video/gspca/sn9c20x.o
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Joe Perches <joe@perches.com>
 ---
+ drivers/media/video/gspca/sn9c20x.c |  101 +++++++++++++++++++---------------
+ 1 files changed, 56 insertions(+), 45 deletions(-)
 
- net/sunrpc/sunrpc_syms.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/net/sunrpc/sunrpc_syms.c b/net/sunrpc/sunrpc_syms.c
-index adaa819..8cce921 100644
---- a/net/sunrpc/sunrpc_syms.c
-+++ b/net/sunrpc/sunrpc_syms.c
-@@ -69,5 +69,5 @@ cleanup_sunrpc(void)
- 	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+diff --git a/drivers/media/video/gspca/sn9c20x.c b/drivers/media/video/gspca/sn9c20x.c
+index fcfbbd3..8ddf738 100644
+--- a/drivers/media/video/gspca/sn9c20x.c
++++ b/drivers/media/video/gspca/sn9c20x.c
+@@ -403,7 +403,7 @@ static const struct v4l2_pix_format sxga_mode[] = {
+ 		.priv = 3 | MODE_RAW | MODE_SXGA},
+ };
+ 
+-static const int hsv_red_x[] = {
++static const s16 hsv_red_x[] = {
+ 	41,  44,  46,  48,  50,  52,  54,  56,
+ 	58,  60,  62,  64,  66,  68,  70,  72,
+ 	74,  76,  78,  80,  81,  83,  85,  87,
+@@ -451,7 +451,7 @@ static const int hsv_red_x[] = {
+ 	24,  26,  28,  30,  33,  35,  37,  39, 41
+ };
+ 
+-static const int hsv_red_y[] = {
++static const s16 hsv_red_y[] = {
+ 	82,  80,  78,  76,  74,  73,  71,  69,
+ 	67,  65,  63,  61,  58,  56,  54,  52,
+ 	50,  48,  46,  44,  41,  39,  37,  35,
+@@ -499,7 +499,7 @@ static const int hsv_red_y[] = {
+ 	96, 94, 92, 91, 89, 87, 85, 84, 82
+ };
+ 
+-static const int hsv_green_x[] = {
++static const s16 hsv_green_x[] = {
+ 	-124, -124, -125, -125, -125, -125, -125, -125,
+ 	-125, -126, -126, -125, -125, -125, -125, -125,
+ 	-125, -124, -124, -124, -123, -123, -122, -122,
+@@ -547,7 +547,7 @@ static const int hsv_green_x[] = {
+ 	-120, -120, -121, -122, -122, -123, -123, -124, -124
+ };
+ 
+-static const int hsv_green_y[] = {
++static const s16 hsv_green_y[] = {
+ 	-100, -99, -98, -97, -95, -94, -93, -91,
+ 	-90, -89, -87, -86, -84, -83, -81, -80,
+ 	-78, -76, -75, -73, -71, -70, -68, -66,
+@@ -595,7 +595,7 @@ static const int hsv_green_y[] = {
+ 	-109, -108, -107, -106, -105, -104, -103, -102, -100
+ };
+ 
+-static const int hsv_blue_x[] = {
++static const s16 hsv_blue_x[] = {
+ 	112, 113, 114, 114, 115, 116, 117, 117,
+ 	118, 118, 119, 119, 120, 120, 120, 121,
+ 	121, 121, 122, 122, 122, 122, 122, 122,
+@@ -643,7 +643,7 @@ static const int hsv_blue_x[] = {
+ 	104, 105, 106, 107, 108, 109, 110, 111, 112
+ };
+ 
+-static const int hsv_blue_y[] = {
++static const s16 hsv_blue_y[] = {
+ 	-11, -13, -15, -17, -19, -21, -23, -25,
+ 	-27, -29, -31, -33, -35, -37, -39, -41,
+ 	-43, -45, -46, -48, -50, -52, -54, -55,
+@@ -792,7 +792,17 @@ static u8 hv7131r_gain[] = {
+ 	0x78 /* 8x */
+ };
+ 
+-static u8 soi968_init[][2] = {
++struct i2c_reg_u8 {
++	u8 reg;
++	u8 val;
++};
++
++struct i2c_reg_u16 {
++	u8 reg;
++	u16 val;
++};
++
++static struct i2c_reg_u8 soi968_init[] = {
+ 	{0x12, 0x80}, {0x0c, 0x00}, {0x0f, 0x1f},
+ 	{0x11, 0x80}, {0x38, 0x52}, {0x1e, 0x00},
+ 	{0x33, 0x08}, {0x35, 0x8c}, {0x36, 0x0c},
+@@ -806,7 +816,7 @@ static u8 soi968_init[][2] = {
+ 	{0x00, 0x00}, {0x01, 0x80}, {0x02, 0x80},
+ };
+ 
+-static u8 ov7660_init[][2] = {
++static struct i2c_reg_u8 ov7660_init[] = {
+ 	{0x0e, 0x80}, {0x0d, 0x08}, {0x0f, 0xc3},
+ 	{0x04, 0xc3}, {0x10, 0x40}, {0x11, 0x40},
+ 	{0x12, 0x05}, {0x13, 0xba}, {0x14, 0x2a},
+@@ -815,7 +825,7 @@ static u8 ov7660_init[][2] = {
+ 	{0x2e, 0x0b}, {0x01, 0x78}, {0x02, 0x50},
+ };
+ 
+-static u8 ov7670_init[][2] = {
++static struct i2c_reg_u8 ov7670_init[] = {
+ 	{0x12, 0x80}, {0x11, 0x80}, {0x3a, 0x04}, {0x12, 0x01},
+ 	{0x32, 0xb6}, {0x03, 0x0a}, {0x0c, 0x00}, {0x3e, 0x00},
+ 	{0x70, 0x3a}, {0x71, 0x35}, {0x72, 0x11}, {0x73, 0xf0},
+@@ -872,7 +882,7 @@ static u8 ov7670_init[][2] = {
+ 	{0x93, 0x00},
+ };
+ 
+-static u8 ov9650_init[][2] = {
++static struct i2c_reg_u8 ov9650_init[] = {
+ 	{0x12, 0x80}, {0x00, 0x00}, {0x01, 0x78},
+ 	{0x02, 0x78}, {0x03, 0x36}, {0x04, 0x03},
+ 	{0x05, 0x00}, {0x06, 0x00}, {0x08, 0x00},
+@@ -902,7 +912,7 @@ static u8 ov9650_init[][2] = {
+ 	{0xaa, 0x92}, {0xab, 0x0a},
+ };
+ 
+-static u8 ov9655_init[][2] = {
++static struct i2c_reg_u8 ov9655_init[] = {
+ 	{0x12, 0x80}, {0x12, 0x01}, {0x0d, 0x00}, {0x0e, 0x61},
+ 	{0x11, 0x80}, {0x13, 0xba}, {0x14, 0x2e}, {0x16, 0x24},
+ 	{0x1e, 0x04}, {0x1e, 0x04}, {0x1e, 0x04}, {0x27, 0x08},
+@@ -939,7 +949,7 @@ static u8 ov9655_init[][2] = {
+ 	{0x00, 0x03}, {0x00, 0x0a}, {0x00, 0x10}, {0x00, 0x13},
+ };
+ 
+-static u16 mt9v112_init[][2] = {
++static struct i2c_reg_u16 mt9v112_init[] = {
+ 	{0xf0, 0x0000}, {0x0d, 0x0021}, {0x0d, 0x0020},
+ 	{0x34, 0xc019}, {0x0a, 0x0011}, {0x0b, 0x000b},
+ 	{0x20, 0x0703}, {0x35, 0x2022}, {0xf0, 0x0001},
+@@ -958,7 +968,7 @@ static u16 mt9v112_init[][2] = {
+ 	{0x2c, 0x00ae}, {0x2d, 0x00ae}, {0x2e, 0x00ae},
+ };
+ 
+-static u16 mt9v111_init[][2] = {
++static struct i2c_reg_u16 mt9v111_init[] = {
+ 	{0x01, 0x0004}, {0x0d, 0x0001}, {0x0d, 0x0000},
+ 	{0x01, 0x0001}, {0x02, 0x0016}, {0x03, 0x01e1},
+ 	{0x04, 0x0281}, {0x05, 0x0004}, {0x07, 0x3002},
+@@ -985,7 +995,7 @@ static u16 mt9v111_init[][2] = {
+ 	{0x0e, 0x0008},	{0x06, 0x002d},	{0x05, 0x0004},
+ };
+ 
+-static u16 mt9v011_init[][2] = {
++static struct i2c_reg_u16 mt9v011_init[] = {
+ 	{0x07, 0x0002},	{0x0d, 0x0001},	{0x0d, 0x0000},
+ 	{0x01, 0x0008},	{0x02, 0x0016},	{0x03, 0x01e1},
+ 	{0x04, 0x0281},	{0x05, 0x0083},	{0x06, 0x0006},
+@@ -1012,7 +1022,7 @@ static u16 mt9v011_init[][2] = {
+ 	{0x06, 0x0029},	{0x05, 0x0009},
+ };
+ 
+-static u16 mt9m001_init[][2] = {
++static struct i2c_reg_u16 mt9m001_init[] = {
+ 	{0x0d, 0x0001}, {0x0d, 0x0000}, {0x01, 0x000e},
+ 	{0x02, 0x0014}, {0x03, 0x03c1}, {0x04, 0x0501},
+ 	{0x05, 0x0083}, {0x06, 0x0006}, {0x0d, 0x0002},
+@@ -1025,14 +1035,14 @@ static u16 mt9m001_init[][2] = {
+ 	{0x2e, 0x0029}, {0x07, 0x0002},
+ };
+ 
+-static u16 mt9m111_init[][2] = {
++static struct i2c_reg_u16 mt9m111_init[] = {
+ 	{0xf0, 0x0000}, {0x0d, 0x0008}, {0x0d, 0x0009},
+ 	{0x0d, 0x0008}, {0xf0, 0x0001}, {0x3a, 0x4300},
+ 	{0x9b, 0x4300}, {0xa1, 0x0280}, {0xa4, 0x0200},
+ 	{0x06, 0x308e}, {0xf0, 0x0000},
+ };
+ 
+-static u8 hv7131r_init[][2] = {
++static struct i2c_reg_u8 hv7131r_init[] = {
+ 	{0x02, 0x08}, {0x02, 0x00}, {0x01, 0x08},
+ 	{0x02, 0x00}, {0x20, 0x00}, {0x21, 0xd0},
+ 	{0x22, 0x00}, {0x23, 0x09}, {0x01, 0x08},
+@@ -1043,7 +1053,7 @@ static u8 hv7131r_init[][2] = {
+ 	{0x23, 0x09}, {0x01, 0x08},
+ };
+ 
+-int reg_r(struct gspca_dev *gspca_dev, u16 reg, u16 length)
++static int reg_r(struct gspca_dev *gspca_dev, u16 reg, u16 length)
+ {
+ 	struct usb_device *dev = gspca_dev->dev;
+ 	int result;
+@@ -1062,7 +1072,8 @@ int reg_r(struct gspca_dev *gspca_dev, u16 reg, u16 length)
+ 	return 0;
  }
- MODULE_LICENSE("GPL");
--module_init(init_sunrpc);
-+fs_initcall(init_sunrpc); /* Ensure we're initialised before nfs */
- module_exit(cleanup_sunrpc);
+ 
+-int reg_w(struct gspca_dev *gspca_dev, u16 reg, const u8 *buffer, int length)
++static int reg_w(struct gspca_dev *gspca_dev, u16 reg,
++		 const u8 *buffer, int length)
+ {
+ 	struct usb_device *dev = gspca_dev->dev;
+ 	int result;
+@@ -1082,13 +1093,13 @@ int reg_w(struct gspca_dev *gspca_dev, u16 reg, const u8 *buffer, int length)
+ 	return 0;
+ }
+ 
+-int reg_w1(struct gspca_dev *gspca_dev, u16 reg, const u8 value)
++static int reg_w1(struct gspca_dev *gspca_dev, u16 reg, const u8 value)
+ {
+ 	u8 data[1] = {value};
+ 	return reg_w(gspca_dev, reg, data, 1);
+ }
+ 
+-int i2c_w(struct gspca_dev *gspca_dev, const u8 *buffer)
++static int i2c_w(struct gspca_dev *gspca_dev, const u8 *buffer)
+ {
+ 	int i;
+ 	reg_w(gspca_dev, 0x10c0, buffer, 8);
+@@ -1104,7 +1115,7 @@ int i2c_w(struct gspca_dev *gspca_dev, const u8 *buffer)
+ 	return -1;
+ }
+ 
+-int i2c_w1(struct gspca_dev *gspca_dev, u8 reg, u8 val)
++static int i2c_w1(struct gspca_dev *gspca_dev, u8 reg, u8 val)
+ {
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 
+@@ -1126,7 +1137,7 @@ int i2c_w1(struct gspca_dev *gspca_dev, u8 reg, u8 val)
+ 	return i2c_w(gspca_dev, row);
+ }
+ 
+-int i2c_w2(struct gspca_dev *gspca_dev, u8 reg, u16 val)
++static int i2c_w2(struct gspca_dev *gspca_dev, u8 reg, u16 val)
+ {
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 	u8 row[8];
+@@ -1201,8 +1212,8 @@ static int ov9650_init_sensor(struct gspca_dev *gspca_dev)
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(ov9650_init); i++) {
+-		if (i2c_w1(gspca_dev, ov9650_init[i][0],
+-				ov9650_init[i][1]) < 0) {
++		if (i2c_w1(gspca_dev, ov9650_init[i].reg,
++				ov9650_init[i].val) < 0) {
+ 			err("OV9650 sensor initialization failed");
+ 			return -ENODEV;
+ 		}
+@@ -1218,8 +1229,8 @@ static int ov9655_init_sensor(struct gspca_dev *gspca_dev)
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(ov9655_init); i++) {
+-		if (i2c_w1(gspca_dev, ov9655_init[i][0],
+-				ov9655_init[i][1]) < 0) {
++		if (i2c_w1(gspca_dev, ov9655_init[i].reg,
++				ov9655_init[i].val) < 0) {
+ 			err("OV9655 sensor initialization failed");
+ 			return -ENODEV;
+ 		}
+@@ -1237,8 +1248,8 @@ static int soi968_init_sensor(struct gspca_dev *gspca_dev)
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(soi968_init); i++) {
+-		if (i2c_w1(gspca_dev, soi968_init[i][0],
+-				soi968_init[i][1]) < 0) {
++		if (i2c_w1(gspca_dev, soi968_init[i].reg,
++				soi968_init[i].val) < 0) {
+ 			err("SOI968 sensor initialization failed");
+ 			return -ENODEV;
+ 		}
+@@ -1256,8 +1267,8 @@ static int ov7660_init_sensor(struct gspca_dev *gspca_dev)
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(ov7660_init); i++) {
+-		if (i2c_w1(gspca_dev, ov7660_init[i][0],
+-				ov7660_init[i][1]) < 0) {
++		if (i2c_w1(gspca_dev, ov7660_init[i].reg,
++				ov7660_init[i].val) < 0) {
+ 			err("OV7660 sensor initialization failed");
+ 			return -ENODEV;
+ 		}
+@@ -1275,8 +1286,8 @@ static int ov7670_init_sensor(struct gspca_dev *gspca_dev)
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(ov7670_init); i++) {
+-		if (i2c_w1(gspca_dev, ov7670_init[i][0],
+-				ov7670_init[i][1]) < 0) {
++		if (i2c_w1(gspca_dev, ov7670_init[i].reg,
++				ov7670_init[i].val) < 0) {
+ 			err("OV7670 sensor initialization failed");
+ 			return -ENODEV;
+ 		}
+@@ -1299,8 +1310,8 @@ static int mt9v_init_sensor(struct gspca_dev *gspca_dev)
+ 	ret = i2c_r2(gspca_dev, 0xff, &value);
+ 	if ((ret == 0) && (value == 0x8243)) {
+ 		for (i = 0; i < ARRAY_SIZE(mt9v011_init); i++) {
+-			if (i2c_w2(gspca_dev, mt9v011_init[i][0],
+-					mt9v011_init[i][1]) < 0) {
++			if (i2c_w2(gspca_dev, mt9v011_init[i].reg,
++					mt9v011_init[i].val) < 0) {
+ 				err("MT9V011 sensor initialization failed");
+ 				return -ENODEV;
+ 			}
+@@ -1317,8 +1328,8 @@ static int mt9v_init_sensor(struct gspca_dev *gspca_dev)
+ 	ret = i2c_r2(gspca_dev, 0xff, &value);
+ 	if ((ret == 0) && (value == 0x823a)) {
+ 		for (i = 0; i < ARRAY_SIZE(mt9v111_init); i++) {
+-			if (i2c_w2(gspca_dev, mt9v111_init[i][0],
+-					mt9v111_init[i][1]) < 0) {
++			if (i2c_w2(gspca_dev, mt9v111_init[i].reg,
++					mt9v111_init[i].val) < 0) {
+ 				err("MT9V111 sensor initialization failed");
+ 				return -ENODEV;
+ 			}
+@@ -1339,8 +1350,8 @@ static int mt9v_init_sensor(struct gspca_dev *gspca_dev)
+ 	ret = i2c_r2(gspca_dev, 0x00, &value);
+ 	if ((ret == 0) && (value == 0x1229)) {
+ 		for (i = 0; i < ARRAY_SIZE(mt9v112_init); i++) {
+-			if (i2c_w2(gspca_dev, mt9v112_init[i][0],
+-					mt9v112_init[i][1]) < 0) {
++			if (i2c_w2(gspca_dev, mt9v112_init[i].reg,
++					mt9v112_init[i].val) < 0) {
+ 				err("MT9V112 sensor initialization failed");
+ 				return -ENODEV;
+ 			}
+@@ -1360,8 +1371,8 @@ static int mt9m111_init_sensor(struct gspca_dev *gspca_dev)
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 	int i;
+ 	for (i = 0; i < ARRAY_SIZE(mt9m111_init); i++) {
+-		if (i2c_w2(gspca_dev, mt9m111_init[i][0],
+-				mt9m111_init[i][1]) < 0) {
++		if (i2c_w2(gspca_dev, mt9m111_init[i].reg,
++				mt9m111_init[i].val) < 0) {
+ 			err("MT9M111 sensor initialization failed");
+ 			return -ENODEV;
+ 		}
+@@ -1376,8 +1387,8 @@ static int mt9m001_init_sensor(struct gspca_dev *gspca_dev)
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 	int i;
+ 	for (i = 0; i < ARRAY_SIZE(mt9m001_init); i++) {
+-		if (i2c_w2(gspca_dev, mt9m001_init[i][0],
+-				mt9m001_init[i][1]) < 0) {
++		if (i2c_w2(gspca_dev, mt9m001_init[i].reg,
++				mt9m001_init[i].val) < 0) {
+ 			err("MT9M001 sensor initialization failed");
+ 			return -ENODEV;
+ 		}
+@@ -1395,8 +1406,8 @@ static int hv7131r_init_sensor(struct gspca_dev *gspca_dev)
+ 	struct sd *sd = (struct sd *) gspca_dev;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(hv7131r_init); i++) {
+-		if (i2c_w1(gspca_dev, hv7131r_init[i][0],
+-				hv7131r_init[i][1]) < 0) {
++		if (i2c_w1(gspca_dev, hv7131r_init[i].reg,
++				hv7131r_init[i].val) < 0) {
+ 			err("HV7131R Sensor initialization failed");
+ 			return -ENODEV;
+ 		}
+-- 
+1.6.3.1.10.g659a0.dirty
+
 
 
