@@ -1,39 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbZHUMDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZHUMMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbZHUMDG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 08:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZHUMDF
+	id S1754934AbZHUMMK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 08:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZHUMMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 08:03:05 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:33392 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753419AbZHUMDE (ORCPT
+	Fri, 21 Aug 2009 08:12:09 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:62009 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbZHUMMI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 08:03:04 -0400
-Date: Fri, 21 Aug 2009 13:03:04 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Linus Walleij <linus.wallei@stericsson.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org,
-       Linus Walleij <linus.walleij@stericsson.com>
-Subject: Re: [PATCH] Fix some regulator documentation
-Message-ID: <20090821120303.GB26150@rakim.wolfsonmicro.main>
-References: <1250856057-10504-1-git-send-email-linus.wallei@stericsson.com>
+	Fri, 21 Aug 2009 08:12:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MaHUvGE+pRlmc7LTPnLXxcYsFbWY+ipdlH/tBDo+TYkcda6dWh5lS/1SJUf2iOVH0l
+         C3FyYZzWeVoF9UD5qdOT3DWfzCAyYXfEYd34pqIqQWPkRPzM1PZF39zPRz0f7ntwJIwx
+         y38PH0TAdgAHPfN1730ea6/KaoDPm+L+GoHKk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250856057-10504-1-git-send-email-linus.wallei@stericsson.com>
-X-Cookie: You will be surrounded by luxury.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1250848605.7538.16.camel@twins>
+References: <1250848605.7538.16.camel@twins>
+Date: Fri, 21 Aug 2009 14:12:08 +0200
+Message-ID: <520f0cf10908210512n7e426d1es4b5b0e0d953af7c5@mail.gmail.com>
+Subject: Re: [PATCH -rt] timer: delay waking softirqs from the jiffy tick
+From: John Kacur <jkacur@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>, dinogun@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 02:00:57PM +0200, Linus Walleij wrote:
-> From: Linus Walleij <linus.walleij@stericsson.com>
+On Fri, Aug 21, 2009 at 11:56 AM, Peter Zijlstra<peterz@infradead.org> wrote:
+> Hi,
+>
+> most people were complaining about broken balancing with the recent -rt
+> series.
+>
+> A look at /proc/sched_debug yielded:
+>
+> cpu#0, 2393.874 MHz
+>  .nr_running                    : 0
+>  .load                          : 0
+>  .cpu_load[0]                   : 177522
+>  .cpu_load[1]                   : 177522
+>  .cpu_load[2]                   : 177522
+>  .cpu_load[3]                   : 177522
+>  .cpu_load[4]                   : 177522
+> cpu#1, 2393.874 MHz
+>  .nr_running                    : 4
+>  .load                          : 4096
+>  .cpu_load[0]                   : 181618
+>  .cpu_load[1]                   : 180850
+>  .cpu_load[2]                   : 180274
+>  .cpu_load[3]                   : 179938
+>  .cpu_load[4]                   : 179758
+>
+>
+> Which indicated the cpu_load computation was hosed, the 177522 value
+> indicates that there is one RT task runnable. Initially I thought the
+> old problem of calculating the cpu_load from a softirq had re-surfaced,
+> however looking at the code shows its being done from scheduler_tick().
+>
+> [ we really should fix this RT/cfs interaction some day... ]
+>
+> A few trace_printk()s later:
+>
+>    sirq-timer/1-19    [001]   174.289744:     19: 50:S ==> [001]     0:140:R <idle>
+>          <idle>-0     [001]   174.290724: enqueue_task_rt: adding task: 19/sirq-timer/1 with load: 177522
+>          <idle>-0     [001]   174.290725:      0:140:R   + [001]    19: 50:S sirq-timer/1
+>          <idle>-0     [001]   174.290730: scheduler_tick: current load: 177522
+>          <idle>-0     [001]   174.290732: scheduler_tick: current: 0/swapper
+>          <idle>-0     [001]   174.290736:      0:140:R ==> [001]    19: 50:R sirq-timer/1
+>    sirq-timer/1-19    [001]   174.290741: dequeue_task_rt: removing task: 19/sirq-timer/1 with load: 177522
+>    sirq-timer/1-19    [001]   174.290743:     19: 50:S ==> [001]     0:140:R <idle>
+>
+> We see that we always raise the timer softirq before doing the load
+> calculation. Avoid this by re-ordering the scheduler_tick() call in
+> update_process_times() to occur before we deal with timers.
+>
+> This lowers the load back to sanity and restores regular load-balancing
+> behaviour.
+>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  kernel/timer.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/kernel/timer.c b/kernel/timer.c
+> index 8137cce..96ac1b4 100644
+> --- a/kernel/timer.c
+> +++ b/kernel/timer.c
+> @@ -1221,10 +1221,10 @@ void update_process_times(int user_tick)
+>
+>        /* Note: this timer irq context must be accounted for as well. */
+>        account_process_tick(p, user_tick);
+> +       scheduler_tick();
+>        run_local_timers();
+>        if (rcu_pending(cpu))
+>                rcu_check_callbacks(cpu, user_tick);
+> -       scheduler_tick();
+>        run_posix_cpu_timers(p);
+>  }
+>
+>
+> --
 
-> This fixes a spelling error and an API function signature mismatch
-> in the regulator documentation.
+Cool! I applied this to the v2.6.31-rc6-rt5 tree and with the
+following results from /proc/sched_debug
 
-> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+Before applying the patch:
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+cpu#0, 2792.838 MHz
+  .cpu_load[0]                   : 180594
+  .cpu_load[1]                   : 192061
+  .cpu_load[2]                   : 205170
+  .cpu_load[3]                   : 204449
+  .cpu_load[4]                   : 199281
+
+cpu#1, 2792.838 MHz
+  .cpu_load[0]                   : 177522
+  .cpu_load[1]                   : 178378
+  .cpu_load[2]                   : 178932
+  .cpu_load[3]                   : 178808
+
+After applying the patch:
+
+cpu#0, 2792.847 MHz
+  .cpu_load[0]                   : 1024
+  .cpu_load[1]                   : 960
+  .cpu_load[2]                   : 700
+  .cpu_load[3]                   : 430
+  .cpu_load[4]                   : 260
+
+cpu#1, 2792.847 MHz
+  .cpu_load[0]                   : 1024
+  .cpu_load[1]                   : 1280
+  .cpu_load[2]                   : 1393
+  .cpu_load[3]                   : 1390
+  .cpu_load[4]                   : 1871
