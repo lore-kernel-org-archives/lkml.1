@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932380AbZHUPbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932393AbZHUPcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932380AbZHUPbR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932313AbZHUPbR
+	id S932393AbZHUPcf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 11:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932305AbZHUPcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:31:17 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:54887 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932182AbZHUPbQ (ORCPT
+	Fri, 21 Aug 2009 11:32:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37470 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932220AbZHUPce (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:31:16 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-acpi@vger.kernel.org
-Subject: Re: [PATCH,v2] acpi: thermal: display forced passive trip points in proc
-Date: Fri, 21 Aug 2009 17:31:15 +0200
-User-Agent: KMail/1.9.9
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
-References: <200908211617.03574.elendil@planet.nl>
-In-Reply-To: <200908211617.03574.elendil@planet.nl>
+	Fri, 21 Aug 2009 11:32:34 -0400
+Date: Fri, 21 Aug 2009 11:32:35 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Kara <jack@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, ocfs2-devel@oss.oracle.com,
+       Joel Becker <joel.becker@oracle.com>, Felix Blyakher <felixb@sgi.com>,
+       xfs@oss.sgi.com, Anton Altaparmakov <aia21@cantab.net>,
+       linux-ntfs-dev@lists.sourceforge.net,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-ext4@vger.kernel.org, tytso@mit.edu
+Subject: Re: [PATCH 07/17] vfs: Introduce new helpers for syncing after
+	writing to O_SYNC file or IS_SYNC inode
+Message-ID: <20090821153235.GA5874@infradead.org>
+References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-8-git-send-email-jack@suse.cz> <20090819162638.GE6150@infradead.org> <20090820121531.GC16486@duck.novell.com> <20090820162729.GA24659@infradead.org> <20090821152339.GD3007@duck.novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908211731.16812.elendil@planet.nl>
-X-OriginalArrivalTime: 21 Aug 2009 15:31:17.0225 (UTC) FILETIME=[6CE92590:01CA2274]
+In-Reply-To: <20090821152339.GD3007@duck.novell.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Users can force a passive trip point for a thermal zone that does not
-have _PSV defined in ACPI by setting the passive attribute in sysfs.
-It's useful to display such trip points in /proc/acpi/thermal_zone.
+On Fri, Aug 21, 2009 at 05:23:39PM +0200, Jan Kara wrote:
+>   Hmm, I can imagine it would buy us something in two cases (but looking at
+> the code, neither is implemented in such a way that it would really help
+> us in any way):
+> 1) when an inode and it's data are stored in one block (e.g. OCFS2 or UDF) do
+>    this.
 
-.../TZ1/cooling_mode:<setting not supported>
-.../TZ1/polling_frequency:polling frequency:       10 seconds
-.../TZ1/state:state:                   ok
-.../TZ1/temperature:temperature:             53 C
-.../TZ1/trip_points:critical (S5):           110 C
-.../TZ1/trip_points:passive (forced):        95 C
+>   In the first case we would wait for block with data to be written only to
+> submit it again because inode was still dirty.
 
-And if not set (passive is 0):
-.../TZ1/trip_points:passive (forced):<not set>
+But we would not actually store in the pagecache or at least never
+writeback it via the pacache in that case, but always just write it as
+part of the inode.
 
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Cc: Zhang Rui <rui.zhang@intel.com>
----
-
-I noticed I forgot the linefeed and thought of a further improvement.
-
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 564ea14..7ff5789 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -1050,6 +1050,13 @@ static int acpi_thermal_trip_seq_show(struct 
-seq_file *seq, void *offset)
- 				   acpi_device_bid(device));
- 		}
- 		seq_puts(seq, "\n");
-+	} else {
-+		seq_printf(seq, "passive (forced):");
-+		if (tz->thermal_zone->forced_passive)
-+			seq_printf(seq, "        %i C\n",
-+				   tz->thermal_zone->forced_passive / 1000);
-+		else
-+			seq_printf(seq, "<not set>\n");
- 	}
- 
- 	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE; i++) {
