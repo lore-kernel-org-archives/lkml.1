@@ -1,122 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbZHUP5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZHUQCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932394AbZHUP5h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447AbZHUP5g
+	id S1755555AbZHUQCH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 12:02:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbZHUQCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:57:36 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:43718 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754651AbZHUP5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:57:35 -0400
-Date: Fri, 21 Aug 2009 10:57:42 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org, mschmidt@redhat.com, dhowells@redhat.com,
-       jmorris@namei.org, sds@tycho.nsa.gov
-Subject: Re: +
-	bsdacct-switch-credentials-for-writing-to-the-accounting-file.patch
-	added to -mm tree
-Message-ID: <20090821155742.GA16842@us.ibm.com>
-References: <200908202139.n7KLdq6D006632@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908202139.n7KLdq6D006632@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 21 Aug 2009 12:02:06 -0400
+Received: from casper.infradead.org ([85.118.1.10]:57578 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755417AbZHUQCE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 12:02:04 -0400
+Subject: Re: [PATCH] ARM: Mailing lists have moved
+From: David Woodhouse <dwmw2@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arm-kernel@lists.infradead.org,
+       Russell King <linux@arm.linux.org.uk>, vince@kyllikki.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+In-Reply-To: <200908211731.24538.arnd@arndb.de>
+References: <1250855566.3311.100.camel@macbook.infradead.org>
+	 <200908211513.48424.arnd@arndb.de>
+	 <1250868037.3311.106.camel@macbook.infradead.org>
+	 <200908211731.24538.arnd@arndb.de>
+Content-Type: text/plain
+Date: Fri, 21 Aug 2009 17:02:01 +0100
+Message-Id: <1250870521.3311.169.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting akpm@linux-foundation.org (akpm@linux-foundation.org):
-> 
-> The patch titled
->      bsdacct: switch credentials for writing to the accounting file
-> has been added to the -mm tree.  Its filename is
->      bsdacct-switch-credentials-for-writing-to-the-accounting-file.patch
-> 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
-> 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: bsdacct: switch credentials for writing to the accounting file
-> From: Michal Schmidt <mschmidt@redhat.com>
-> 
-> When process accounting is enabled, every exiting process writes a log to
-> the account file.  In addition, every once in a while one of the exiting
-> processes checks whether there's enough free space for the log.
-> 
-> SELinux policy may or may not allow the exiting process to stat the fs. 
-> So unsuspecting processes start generating AVC denials just because
-> someone enabled process accounting.
-> 
-> For these filesystem operations, the exiting process's credentials should
-> be temporarily switched to that of the process which enabled accounting,
-> because it's really that process which wanted to have the accounting
-> information logged.
-> 
-> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
-> Acked-by: David Howells <dhowells@redhat.com>
+On Fri, 2009-08-21 at 17:31 +0200, Arnd Bergmann wrote:
+> Contrary to what you expect to be
+> the minimum level of intelligence required to subscribe to development
+> mailing list, a huge number of them subsequently flooded the list
+> with messages saying 'please unsubscribe me please' or the like.
+> Needless to say, there was a clear instruction on the bottom of each
+> mail telling you how to unsubscribe.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Hm. There's no accounting for the stupidity of the human animal.
 
-> Cc: James Morris <jmorris@namei.org>
-> Cc: Serge Hallyn <serue@us.ibm.com>
-> Cc: Stephen Smalley <sds@tycho.nsa.gov>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  kernel/acct.c |    8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff -puN kernel/acct.c~bsdacct-switch-credentials-for-writing-to-the-accounting-file kernel/acct.c
-> --- a/kernel/acct.c~bsdacct-switch-credentials-for-writing-to-the-accounting-file
-> +++ a/kernel/acct.c
-> @@ -491,13 +491,17 @@ static void do_acct_process(struct bsd_a
->  	u64 run_time;
->  	struct timespec uptime;
->  	struct tty_struct *tty;
-> +	const struct cred *orig_cred;
-> +
-> +	/* Perform file operations on behalf of whoever enabled accounting */
-> +	orig_cred = override_creds(file->f_cred);
-> 
->  	/*
->  	 * First check to see if there is enough free_space to continue
->  	 * the process accounting system.
->  	 */
->  	if (!check_free_space(acct, file))
-> -		return;
-> +		goto out;
-> 
->  	/*
->  	 * Fill the accounting struct with the needed info as recorded
-> @@ -578,6 +582,8 @@ static void do_acct_process(struct bsd_a
->  			       sizeof(acct_t), &file->f_pos);
->  	current->signal->rlim[RLIMIT_FSIZE].rlim_cur = flim;
->  	set_fs(fs);
-> +out:
-> +	revert_creds(orig_cred);
->  }
-> 
->  /**
-> _
-> 
-> Patches currently in -mm which might be from mschmidt@redhat.com are
-> 
-> bsdacct-switch-credentials-for-writing-to-the-accounting-file.patch
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+We considered doing it as a mass _invitation_ (which needs the
+subscriber to click the link to confirm) rather than a mass
+subscription. In general, I think it's better to err on the side of
+inclusion -- so I decided against that because I thought too many people
+wouldn't notice it and would fall off the lists as a result. Perhaps
+that was the wrong decision, but I suspect nothing is gained now by
+going back and changing things, even if I _did_ have the required
+information.
+
+Even with the notification and the first major thread being "ARM Mailing
+lists have moved", you're right that there are probably a few people who
+are _so_ stupid that they can't manage to work it out. I've sent a mail
+with words of one syllable or fewer to each list, which might hopefully
+help -- but I'm sure there'll still be some.
+
+When that happens, we'll unsubscribe them -- and send in the ninjas to
+ensure they don't accidentally breed.
+
+-- 
+dwmw2
+
