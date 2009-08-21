@@ -1,92 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZHUCIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbZHUCJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbZHUCIm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 22:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZHUCIm
+	id S1754763AbZHUCJZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 22:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZHUCJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 22:08:42 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:61750 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222AbZHUCIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 22:08:41 -0400
-Message-ID: <4A8E01AE.5070900@redhat.com>
-Date: Fri, 21 Aug 2009 10:08:46 +0800
-From: Danny Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: Netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: e1000e: why does pci_enable_pcie_error_reporting() fail on my
- hp2510p?
-References: <200908201714.30638.elendil@planet.nl>
-In-Reply-To: <200908201714.30638.elendil@planet.nl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 20 Aug 2009 22:09:25 -0400
+Received: from mga10.intel.com ([192.55.52.92]:48808 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751488AbZHUCJY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 22:09:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,248,1249282800"; 
+   d="scan'208";a="719071737"
+Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer 
+	dereference at 0000000000000008
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Xiaotian Feng <xtfeng@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <7b6bb4a50908200223r2fd66e62sf659561bcf097c46@mail.gmail.com>
+References: <m163cjhwa4.fsf@fess.ebiederm.org>
+	 <m1skfnggrb.fsf@fess.ebiederm.org>
+	 <7b6bb4a50908200010h1c60d007p4fa017fd97c87c19@mail.gmail.com>
+	 <m1ocqbgcsi.fsf@fess.ebiederm.org>
+	 <7b6bb4a50908200223r2fd66e62sf659561bcf097c46@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 21 Aug 2009 10:09:20 +0800
+Message-Id: <1250820560.2560.1004.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/20/2009 11:14 PM, Frans Pop wrote:
-> With the current kernel I suddenly get the following error displayed
-> during boot:
->    e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
->    e1000e: Copyright (c) 1999-2008 Intel Corporation.
->    e1000e 0000:00:19.0: PCI INT A ->  GSI 22 (level, low) ->  IRQ 22
-> ! e1000e 0000:00:19.0: pci_enable_pcie_error_reporting failed 0xfffffffb
->    e1000e 0000:00:19.0: setting latency timer to 64
->    e1000e 0000:00:19.0: irq 26 for MSI/MSI-X
->
-> This looks to be the consequence of:
-> commit 68eac4602b9104cdaa6c18b3edd914cececa6a1e
-> Author: Xiaotian Feng<dfeng@redhat.com>
-> Date:   Fri Aug 14 14:35:52 2009 +0000
->      e1000e: fix use of pci_enable_pcie_error_reporting
->
-> Looking at the change it seems logical that this error, that I previously
-> only saw during resumes from suppend to RAM, now also shows up during
-> system boot. So I don't think it can be qualified as a regression, but it
-> is certainly rather annoying.
->
-> Questions:
-> - is it possible that the error occurs due to a kernel bug, or is this
->    certain to be due to broken hardware?
-I think this messages comes from hardware does not support pcie aer.
-In fact the messages is not fatal and can be ignored. Some drivers
-is silence with pci_enable_pcie_error_reporting ....
+On Thu, 2009-08-20 at 17:23 +0800, Xiaotian Feng wrote:
+> I got following on 2.6.31-rc5 and rc6 .....
+I didn't run into such issues on my 2 stoakley machines and 1 Nehalem machine.
+Perhaps kernel config bypasses this issue. What's the kernel config file you used?
 
-My patch is just to fix the logic of pcie aer usage ...
-> - as the error is non-fatal, should it maybe be changed from dev_err
->    to dev_info, so that at least it does not show up during a boot
->    with 'quiet'?
-I agree with this.... Maybe some of other drivers needs this too 
-(igb,ixgbe)...
-> - if broken hardware is common, should the kernel complain at all,
->    or at least maybe show a slightly "friendlier" message?
->
-> System: hp2510p (ICH8, Core2 Duo) running x86_64, Debian stable ("Lenny")
->
-> 00:19.0 Ethernet controller [0200]: Intel Corporation 82566MM
->          Gigabit Network Connection [8086:1049] (rev 03)
->      Subsystem: Hewlett-Packard Company Device 30c9
->      Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
->      Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast>TAbort-<TAbort-<MAbort->SERR-<PERR- INTx-
->      Latency: 0
->      Interrupt: pin A routed to IRQ 26
->      Region 0: Memory at e0620000 (32-bit, non-prefetchable) [size=128K]
->      Region 1: Memory at e0640000 (32-bit, non-prefetchable) [size=4K]
->      Region 2: I/O ports at 2060 [size=32]
->      Capabilities: [c8] Power Management version 2
->              Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
->              Status: D0 PME-Enable- DSel=0 DScale=1 PME-
->      Capabilities: [d0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
->              Address: 00000000fee0300c  Data: 41b1
->      Kernel driver in use: e1000e
->      Kernel modules: e1000e
->
-> I can provide full dmesg and kernel config if desired.
->
-> Cheers,
-> FJP
->
+> 
+> ------------[ cut here ]------------
+> kernel BUG at kernel/workqueue.c:287!
+> invalid opcode: 0000 [#1] SMP
+> last sysfs file: /sys/devices/pci0000:00/0000:00:19.0/irq
+> CPU 2
+> Modules linked in: fuse sco bridge stp llc bnep l2cap bluetooth sunrpc
+> ip6t_REJECT nf_conntrack_ipv6 ip6table_filter ip6_tables ipv6
+> dm_multipath uinput radeon snd_hda_codec_analog ttm drm snd_hda_intel
+> i2c_algo_bit i2c_i801 snd_hda_codec snd_hwdep snd_pcm wmi dcdbas
+> i2c_core ppdev parport_pc parport snd_timer e1000e snd soundcore
+> snd_page_alloc iTCO_wdt iTCO_vendor_support pcspkr serio_raw
+> ata_generic pata_acpi [last unloaded: speedstep_lib]
+> Pid: 17, comm: events/2 Not tainted 2.6.31-rc5 #51 OptiPlex 760
+> RIP: 0010:[<ffffffff81060941>]  [<ffffffff81060941>] worker_thread+0x1bc/0x31d
+> RSP: 0000:ffff88022ec61de0  EFLAGS: 00010286
+> RAX: ffff88021200d238 RBX: ffff88003598ec00 RCX: 000000000000009f
+> RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffff88022edf22f0
+> RBP: ffff88022ec61eb0 R08: 0000000000000000 R09: ffff88003598ec00
+> R10: 0000000000000000 R11: 0000000000000000 R12: ffff88021200d230
+> R13: ffff88003598ec40 R14: 0000000000000000 R15: ffff88003598ec50
+> FS:  0000000000000000(0000) GS:ffff8800357b8000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 0000000001af7aa8 CR3: 00000001fd0d3000 CR4: 00000000000406e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process events/2 (pid: 17, threadinfo ffff88022ec60000, task ffff88022edf22f0)
+> Stack:
+>  ffffffff81060945 ffffffff81415f34 ffff88022ec61e00 ffff88022ec61e20
+> <0> ffff88022ec61e20 ffffffff810739bb ffff88021200d238 ffff88022edf22f0
+> <0> 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> Call Trace:
+>  [<ffffffff81060945>] ? worker_thread+0x1c0/0x31d
+>  [<ffffffff81415f34>] ? thread_return+0x3e/0xaf
+>  [<ffffffff810739bb>] ? lock_release_holdtime+0x2c/0x11d
+>  [<ffffffff8106549e>] ? autoremove_wake_function+0x0/0x39
+>  [<ffffffff81060785>] ? worker_thread+0x0/0x31d
+>  [<ffffffff8106513c>] kthread+0x8a/0x92
+>  [<ffffffff81012d4a>] child_rip+0xa/0x20
+>  [<ffffffff810126d0>] ? restore_args+0x0/0x30
+>  [<ffffffff810650b2>] ? kthread+0x0/0x92
+>  [<ffffffff81012d40>] ? child_rip+0x0/0x20
+> Code: 08 48 89 31 48 89 52 08 48 89 12 48 89 85 60 ff ff ff e8 66 74
+> 3b 00 48 8b 85 60 ff ff ff 48 8b 50 f8 48 83 e2 fc 48 39 d3 74 04 <0f>
+> 0b eb fe f0 80 60 f8 fe 48 8b bb a8 00 00 00 45 31 c9 31 c9
+> RIP  [<ffffffff81060941>] worker_thread+0x1bc/0x31d
+>  RSP <ffff88022ec61de0>
+> ---[ end trace 4d8a59030f36f167 ]---
+> 
+> 
+> 
+> On Thu, Aug 20, 2009 at 3:33 PM, Eric W. Biederman
+> <ebiederm@xmission.com> wrote:
+> >
+> > Xiaotian Feng <xtfeng@gmail.com> writes:
+> >
+> > > On Thu, Aug 20, 2009 at 2:07 PM, Eric W. Biederman <ebiederm@xmission.com>
+> > > wrote:
+> > >
+> > >
+> > >     ebiederm@xmission.com (Eric W. Biederman) writes:
+> > >
+> > >     > I'm not certain who I should route this too, but I just had 2.6.31-rc6
+> > >     > fall over on me.  I don't know how reproducible this will be but
+> > >     > I have a full crash dump if someone is interested in looking into this.
+> > >
+> > >     Looks like I was wrong.  This is appears trivial to reproduce,
+> > >     I have just reproduced it two more times in a row.  I think
+> > >     the problem is pty related.
+> > >
+> > >     I was looking into a change in behavior on 2.6.31-rc6 where
+> > >     data was being lost, and it appears one variant of my test program
+> > >     kills the kernel.
+> > >
+> > >     The following program run as an unprivileged user causes a kernel
+> > >     panic in about a minute:
+> > >
+> > >     aka
+> > >
+> > >     while :; do ./KernelTtyTest ; done
+> > >
+> > >
+> > > oops.... It panics my x86_64 machine.....
+> >
+> > I guess I forgot to mention that detail.  Thanks for confirming this
+> > bug isn't just me.
+> >
+> > Eric
+
 
