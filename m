@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932359AbZHUQ2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbZHUQbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932359AbZHUQ2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 12:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbZHUQ2x
+	id S1755569AbZHUQbj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 12:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932259AbZHUQbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 12:28:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50689 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932265AbZHUQ2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 12:28:52 -0400
-Date: Fri, 21 Aug 2009 18:28:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Greg KH <greg@kroah.com>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
-Message-ID: <20090821162822.GA20898@elte.hu>
-References: <20090819025634.987354707@goodmis.org> <20090821143525.GH11098@elte.hu> <alpine.DEB.2.00.0908211047160.16405@gandalf.stny.rr.com> <20090821145406.GA3659@elte.hu> <alpine.DEB.2.00.0908211200160.30182@gandalf.stny.rr.com> <alpine.DEB.2.00.0908211204490.30182@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908211204490.30182@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 21 Aug 2009 12:31:39 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42545 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754292AbZHUQbi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 12:31:38 -0400
+Subject: Re: [PATCH] ARM: Mailing lists have moved
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alexander Clouter <alex@digriz.org.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>, Russell King <linux@arm.linux.org.uk>,
+       torvalds@linux-foundation.org, vince@kyllikki.org,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20090821135345.GP21725@chipmunk>
+References: <1250855566.3311.100.camel@macbook.infradead.org>
+	 <200908211513.48424.arnd@arndb.de> <20090821134049.GO21725@chipmunk>
+	 <200908211543.31144.arnd@arndb.de>  <20090821135345.GP21725@chipmunk>
+Content-Type: text/plain
+Date: Fri, 21 Aug 2009 17:31:30 +0100
+Message-Id: <1250872290.3311.203.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-08-21 at 14:53 +0100, Alexander Clouter wrote:
+> Fair enough, just thought we were contining the norm from before? 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+It's fairly much as before -- although we may reconsider some of the
+controversial policies since my interpretation of the Data Protection
+Act differs from Russell's in some respects.
 
-> 
-> On Fri, 21 Aug 2009, Steven Rostedt wrote:
-> > 
-> > OK, I found the bug. There's a dependency missing.
-> > 
-> > $ make localyesconfig
-> >   HOSTCC  scripts/basic/fixdep
-> >   HOSTCC  scripts/basic/docproc
-> >   HOSTCC  scripts/basic/hash
-> > using config: '/boot/config-2.6.27.25-78.2.56.fc9.x86_64'
-> > /bin/sh: line 8: scripts/kconfig/conf: No such file or directory
-> > make[1]: *** [localyesconfig] Error 127
-> > make: *** [localyesconfig] Error 2
-> > 
-> > Thus the script failed to run. But the sed command that converts the '=m' 
-> > to '=y' still ran. This gives us a distro config with all modules 
-> > converted to built in!
-> 
-> Funny that localmodconfig does not have this bug.
+>  I hope that does not mean we get the amount of spam we see on the MTD
+> mailing list?
 
-... add to that i dont use modules much so i probably hit that 
-localyesconfig bug ;-)
+I don't think there'll be much change from before. I think the front end
+filtering is fairly much the same; the main difference between the lists
+is the moderators. The moderators of the ARM lists are very active and
+happy to filter things by hand -- like setting it to 'hold' messages
+from non-subscribers, then approving them manually, which catches a lot.
+I've been a bit lazy with the MTD list because I wanted to do as much as
+possible automatically (although Artem does a wonderful job in his spare
+time).
 
-btw: mind adding localrandconfig too? It would be a perfect tool to 
-randomize all configs except a 'must have' core set of options.
+It's about time I updated some of the things I _do_ do automatically,
+though; I've been neglecting that for a while too. You're the first
+person to complain to me; I'll take a look and see what I can do.
 
-( Or is this already possible via some existing kconfig feature? I
-  remember having seen something related, did that ever get
-  upstream? A quick grep in scripts/ shows nothing but i might have
-  missed it.)
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-	Ingo
