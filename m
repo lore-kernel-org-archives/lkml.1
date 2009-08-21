@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932842AbZHURZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932879AbZHUR1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932842AbZHURZz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932790AbZHURZw
+	id S932879AbZHUR1u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932551AbZHUR1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:25:52 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:44920 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932662AbZHURZu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:25:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=t/9t6wV8WHjB6yQmw817N9T0rGbu7NjxyexOCcyLgGJ6ahq4L89kSX00j2KD6iVCvh
-         VTs5xw6FlIbx/p2+Pc8/S63dQ1D1qE4BvwVxDR7YygMrrxlHEu7H6PZ7pzqDQ8tywzHz
-         4Q9l6wP3FDIHoY264lU9WSOmb+O6ZDYMJeZ9Y=
-Message-ID: <4A8ED89A.7090609@lwfinger.net>
-Date: Fri, 21 Aug 2009 12:25:46 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: "John W. Linville" <linville@tuxdriver.com>
-CC: davem@davemloft.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-08-21
-References: <20090821170324.GC8532@tuxdriver.com>
-In-Reply-To: <20090821170324.GC8532@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Aug 2009 13:27:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50223 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932735AbZHURYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 13:24:10 -0400
+From: Jan Kara <jack@suse.cz>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>
+Subject: [PATCH 15/17] nfs: Remove reference to generic_osync_inode from a comment
+Date: Fri, 21 Aug 2009 19:24:05 +0200
+Message-Id: <1250875447-15622-16-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1250875447-15622-1-git-send-email-jack@suse.cz>
+References: <1250875447-15622-1-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John W. Linville wrote:
-> Dave,
-> 
-> One more straggler for 2.6.31...without this rtl8187b devices simply
-> don't work. :-(
-> 
-> The patch is small and isolated to rtl8187.  I think we should take
-> it for 2.6.31.
+generic_file_direct_write() no longer calls generic_osync_inode() so remove the
+comment.
 
-Note: This patch should fix Bugzilla #13960, which is a regression
-since 2.6.30. The OP has not yet reported back, but it fixed the same
-condition on my computer.
+CC: linux-nfs@vger.kernel.org
+CC: Neil Brown <neilb@suse.de>
+CC: "J. Bruce Fields" <bfields@fieldses.org>
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/nfs/direct.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
+index 489fc01..fd5fcc9 100644
+--- a/fs/nfs/direct.c
++++ b/fs/nfs/direct.c
+@@ -934,9 +934,6 @@ out:
+  * back into its cache.  We let the server do generic write
+  * parameter checking and report problems.
+  *
+- * We also avoid an unnecessary invocation of generic_osync_inode(),
+- * as it is fairly meaningless to sync the metadata of an NFS file.
+- *
+  * We eliminate local atime updates, see direct read above.
+  *
+  * We avoid unnecessary page cache invalidations for normal cached
+-- 
+1.6.0.2
 
