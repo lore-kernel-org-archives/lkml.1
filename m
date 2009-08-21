@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932894AbZHUVb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932949AbZHUVcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932894AbZHUVb1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 17:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932875AbZHUVbZ
+	id S932949AbZHUVcR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbZHUVcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 17:31:25 -0400
-Received: from www.tglx.de ([62.245.132.106]:51495 "EHLO www.tglx.de"
+	Fri, 21 Aug 2009 17:32:12 -0400
+Received: from www.tglx.de ([62.245.132.106]:51641 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932870AbZHUVbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 17:31:24 -0400
-Message-Id: <20090821205602.100726938@linutronix.de>
+	id S932946AbZHUVb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 17:31:58 -0400
+Message-Id: <20090821205602.360168460@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Fri, 21 Aug 2009 21:29:56 -0000
+Date: Fri, 21 Aug 2009 21:30:23 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,161 +21,146 @@ Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
        Alok N Kataria <akataria@vmware.com>,
        Pan Jacob jun <jacob.jun.pan@intel.com>
-Subject: [RFC patch 06/32] x86: Sanitize smp_record and move it to
-	platform_setup
+Subject: [RFC patch 11/32] x86: Move oem_bus_info to platform_setup
 References: <20090821205008.518392436@linutronix.de>
-Content-Disposition: inline; filename=x86-move-and-sanitize-smp-record.patch
+Content-Disposition: inline; filename=x86-move-oem-bus-info-to-platform.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The x86 quirkification introduced an extra ugly hackery with a
-variable pointer in the mpparse code. If the pointer is initialized
-then it is dereferenced and the variable set to 0 or incremented.
-
-Create a platform_setup quirk function and let the affected numaq code
-hold the function. Default init is a setup noop.
-
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/include/asm/platform.h  |    3 +++
- arch/x86/include/asm/setup.h     |    1 -
- arch/x86/kernel/apic/numaq_32.c  |   19 ++++++++++++++++---
- arch/x86/kernel/mpparse.c        |    6 ++----
- arch/x86/kernel/platform_setup.c |    5 +++++
- 5 files changed, 26 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/mpspec.h    |    6 ++++++
+ arch/x86/include/asm/platform.h  |    2 ++
+ arch/x86/include/asm/setup.h     |    3 ---
+ arch/x86/kernel/apic/numaq_32.c  |    2 +-
+ arch/x86/kernel/mpparse.c        |   14 ++++++++------
+ arch/x86/kernel/platform_setup.c |    1 +
+ 6 files changed, 18 insertions(+), 10 deletions(-)
 
+Index: linux-2.6/arch/x86/include/asm/mpspec.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/mpspec.h
++++ linux-2.6/arch/x86/include/asm/mpspec.h
+@@ -64,12 +64,18 @@ extern void early_reserve_e820_mpc_new(v
+ extern int enable_update_mptable;
+ extern int default_mpc_apic_id(struct mpc_cpu *m);
+ extern void default_smp_read_mpc_oem(struct mpc_table *mpc);
++# ifdef CONFIG_X86_IO_APIC
++extern void default_mpc_oem_bus_info(struct mpc_bus *m, char *str);
++# else
++#  define default_mpc_oem_bus_info NULL
++# endif
+ #else
+ static inline void find_smp_config(void) { }
+ static inline void early_reserve_e820_mpc_new(void) { }
+ #define enable_update_mptable 0
+ #define default_mpc_apic_id NULL
+ #define default_smp_read_mpc_oem NULL
++#define default_mpc_oem_bus_info NULL
+ #endif
+ 
+ void __cpuinit generic_processor_info(int apicid, int version);
 Index: linux-2.6/arch/x86/include/asm/platform.h
 ===================================================================
 --- linux-2.6.orig/arch/x86/include/asm/platform.h
 +++ linux-2.6/arch/x86/include/asm/platform.h
-@@ -3,9 +3,11 @@
- 
- /**
-  * struct platform_setup_quirks - platform specific quirks
-+ * @mpc_record:			platform specific mpc record accounting
-  *
+@@ -19,12 +19,14 @@ struct platform_setup_quirks {
+  * @mpc_apic_id:		platform specific mpc apic id assignment
+  * @smp_read_mpc_oem:		platform specific oem mpc table setup
+  * @mpc_oem_pci_bus:		platform specific pci bus setup (default NULL)
++ * @mpc_oem_bus_info:		platform specific mpc bus info
   */
- struct platform_setup_quirks {
-+	void (*mpc_record)(unsigned int mode);
+ struct platform_setup_mpparse {
+ 	void (*setup_ioapic_ids)(void);
+ 	int (*mpc_apic_id)(struct mpc_cpu *m);
+ 	void (*smp_read_mpc_oem)(struct mpc_table *mpc);
+ 	void (*mpc_oem_pci_bus)(struct mpc_bus *m);
++	void (*mpc_oem_bus_info)(struct mpc_bus *m, char *name);
  };
  
  /**
-@@ -36,5 +38,6 @@ struct platform_setup_ops {
- extern struct platform_setup_ops platform_setup;
- 
- extern void platform_setup_noop(void);
-+extern void platform_setup_uint_noop(unsigned int unused);
- 
- #endif
 Index: linux-2.6/arch/x86/include/asm/setup.h
 ===================================================================
 --- linux-2.6.orig/arch/x86/include/asm/setup.h
 +++ linux-2.6/arch/x86/include/asm/setup.h
-@@ -25,7 +25,6 @@ struct x86_quirks {
+@@ -12,7 +12,6 @@
+ /*
+  * Any setup quirks to be performed?
+  */
+-struct mpc_bus;
+ 
+ struct x86_quirks {
+ 	int (*arch_pre_time_init)(void);
+@@ -22,8 +21,6 @@ struct x86_quirks {
+ 	int (*arch_trap_init)(void);
  	int (*mach_get_smp_config)(unsigned int early);
  	int (*mach_find_smp_config)(unsigned int reserve);
+-
+-	void (*mpc_oem_bus_info)(struct mpc_bus *m, char *name);
+ };
  
--	int *mpc_record;
- 	int (*mpc_apic_id)(struct mpc_cpu *m);
- 	void (*mpc_oem_bus_info)(struct mpc_bus *m, char *name);
- 	void (*mpc_oem_pci_bus)(struct mpc_bus *m);
+ extern void x86_quirk_intr_init(void);
 Index: linux-2.6/arch/x86/kernel/apic/numaq_32.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/apic/numaq_32.c
 +++ linux-2.6/arch/x86/kernel/apic/numaq_32.c
-@@ -66,7 +66,6 @@ struct mpc_trans {
- 	unsigned short			trans_reserved;
- };
- 
--/* x86_quirks member */
- static int				mpc_record;
- 
- static struct mpc_trans			*translation_table[MAX_MPC_ENTRY];
-@@ -177,6 +176,19 @@ static void mpc_oem_pci_bus(struct mpc_b
- 	quad_local_to_mp_bus_id[quad][local] = m->busid;
- }
- 
-+/*
-+ * Called from mpparse code.
-+ * mode = 0: prescan
-+ * mode = 1: one mpc entry scanned
-+ */
-+static void numaq_mpc_record(unsigned int mode)
-+{
-+	if (!mode)
-+		mpc_record = 0;
-+	else
-+		mpc_record++;
-+}
-+
- static void __init MP_translation_info(struct mpc_trans *m)
- {
- 	printk(KERN_INFO
-@@ -264,7 +276,6 @@ static struct x86_quirks numaq_x86_quirk
+@@ -270,7 +270,6 @@ static struct x86_quirks numaq_x86_quirk
  	.arch_trap_init			= NULL,
  	.mach_get_smp_config		= NULL,
  	.mach_find_smp_config		= NULL,
--	.mpc_record			= &mpc_record,
- 	.mpc_apic_id			= mpc_apic_id,
- 	.mpc_oem_bus_info		= mpc_oem_bus_info,
- 	.mpc_oem_pci_bus		= mpc_oem_pci_bus,
-@@ -285,8 +296,10 @@ static __init void early_check_numaq(voi
- 	if (smp_found_config)
- 		early_get_smp_config();
+-	.mpc_oem_bus_info		= mpc_oem_bus_info,
+ };
  
--	if (found_numaq)
-+	if (found_numaq) {
- 		x86_quirks = &numaq_x86_quirks;
-+		platform_setup.quirks.mpc_record = numaq_mpc_record;
-+	}
+ static __init void early_check_numaq(void)
+@@ -293,6 +292,7 @@ static __init void early_check_numaq(voi
+ 		platform_setup.mpparse.mpc_apic_id = mpc_apic_id;
+ 		platform_setup.mpparse.smp_read_mpc_oem	= smp_read_mpc_oem;
+ 		platform_setup.mpparse.mpc_oem_pci_bus = mpc_oem_pci_bus;
++		platform_setup.mpparse.mpc_oem_bus_info	= mpc_oem_bus_info;
+ 	}
  }
  
- int __init get_memcfg_numaq(void)
 Index: linux-2.6/arch/x86/kernel/mpparse.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/mpparse.c
 +++ linux-2.6/arch/x86/kernel/mpparse.c
-@@ -320,8 +320,7 @@ static int __init smp_read_mpc(struct mp
- 	/*
- 	 *      Now process the configuration blocks.
- 	 */
--	if (x86_quirks->mpc_record)
--		*x86_quirks->mpc_record = 0;
-+	platform_setup.quirks.mpc_record(0);
+@@ -72,16 +72,18 @@ static void __init MP_processor_info(str
+ }
  
- 	while (count < mpc->length) {
- 		switch (*mpt) {
-@@ -353,8 +352,7 @@ static int __init smp_read_mpc(struct mp
- 			count = mpc->length;
- 			break;
- 		}
--		if (x86_quirks->mpc_record)
--			(*x86_quirks->mpc_record)++;
-+		platform_setup.quirks.mpc_record(1);
- 	}
+ #ifdef CONFIG_X86_IO_APIC
+-static void __init MP_bus_info(struct mpc_bus *m)
++void __init default_mpc_oem_bus_info(struct mpc_bus *m, char *str)
+ {
+-	char str[7];
+ 	memcpy(str, m->bustype, 6);
+ 	str[6] = 0;
++	apic_printk(APIC_VERBOSE, "Bus #%d is %s\n", m->busid, str);
++}
++
++static void __init MP_bus_info(struct mpc_bus *m)
++{
++	char str[7];
  
- #ifdef CONFIG_X86_BIGSMP
+-	if (x86_quirks->mpc_oem_bus_info)
+-		x86_quirks->mpc_oem_bus_info(m, str);
+-	else
+-		apic_printk(APIC_VERBOSE, "Bus #%d is %s\n", m->busid, str);
++	platform_setup.mpparse.mpc_oem_bus_info(m, str);
+ 
+ #if MAX_MP_BUSSES < 256
+ 	if (m->busid >= MAX_MP_BUSSES) {
 Index: linux-2.6/arch/x86/kernel/platform_setup.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/platform_setup.c
 +++ linux-2.6/arch/x86/kernel/platform_setup.c
-@@ -10,6 +10,7 @@
- #include <asm/e820.h>
- 
- void __cpuinit platform_setup_noop(void) { }
-+void __init platform_setup_uint_noop(unsigned int unused) { }
- 
- /*
-  * The platform setup functions are preset with the default functions
-@@ -23,4 +24,8 @@ struct __initdata platform_setup_ops pla
- 		.reserve_ebda_region = reserve_ebda_region,
- 		.memory_setup = default_machine_specific_memory_setup,
+@@ -30,6 +30,7 @@ struct __initdata platform_setup_ops pla
+ 		.setup_ioapic_ids = platform_setup_noop,
+ 		.mpc_apic_id = default_mpc_apic_id,
+ 		.smp_read_mpc_oem = default_smp_read_mpc_oem,
++		.mpc_oem_bus_info = default_mpc_oem_bus_info,
  	},
-+
-+	.quirks = {
-+		.mpc_record = platform_setup_uint_noop,
-+	},
- };
+ 
+ 	.quirks = {
 
 
