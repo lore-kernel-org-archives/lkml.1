@@ -1,90 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZHUDz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbZHUD4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbZHUDz1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 23:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbZHUDz1
+	id S1754837AbZHUD4r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 23:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbZHUD4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 23:55:27 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:43416 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754671AbZHUDz0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 23:55:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=cIqOMC4wg8efUWlNzVWl3UNLT88Jm8PbSMFWIIl2orpt6yEnhwvc6OTQMDZn14hfUG
-         gMyw8M2pkCMyULxBmJe/hTVZlbT4+OQpGoJkBoCmybeAeu970u9ywEclR5VqOZwPvSm2
-         +Wms8PGLSrwMMt5sca3ShXgw2y3oAZf9czWIY=
-MIME-Version: 1.0
-In-Reply-To: <20090820040533.GA27540@localhost>
-References: <20090820024929.GA19793@localhost>
-	 <20090820121347.8a886e4b.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090820040533.GA27540@localhost>
-Date: Fri, 21 Aug 2009 12:55:27 +0900
-Message-ID: <28c262360908202055u2744879cic989e007867d0599@mail.gmail.com>
-Subject: Re: [PATCH -v2] mm: do batched scans for mem_cgroup
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 20 Aug 2009 23:56:46 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40638 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754676AbZHUD4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 23:56:45 -0400
+Date: Fri, 21 Aug 2009 13:56:44 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dave Airlie <airlied@linux.ie>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Michel =?UTF-8?B?RMOkbnplcg==?= <daenzer@vmware.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
+       David Woodhouse <David.Woodhouse@intel.com>
+Subject: linux-next: manual merge of the agp tree with the powerpc tree
+Message-Id: <20090821135644.3f817b82.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 1:05 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> On Thu, Aug 20, 2009 at 11:13:47AM +0800, KAMEZAWA Hiroyuki wrote:
->> On Thu, 20 Aug 2009 10:49:29 +0800
->> Wu Fengguang <fengguang.wu@intel.com> wrote:
->>
->> > For mem_cgroup, shrink_zone() may call shrink_list() with nr_to_scan=1,
->> > in which case shrink_list() _still_ calls isolate_pages() with the much
->> > larger SWAP_CLUSTER_MAX.  It effectively scales up the inactive list
->> > scan rate by up to 32 times.
->> >
->> > For example, with 16k inactive pages and DEF_PRIORITY=12, (16k >> 12)=4.
->> > So when shrink_zone() expects to scan 4 pages in the active/inactive
->> > list, it will be scanned SWAP_CLUSTER_MAX=32 pages in effect.
->> >
->> > The accesses to nr_saved_scan are not lock protected and so not 100%
->> > accurate, however we can tolerate small errors and the resulted small
->> > imbalanced scan rates between zones.
->> >
->> > This batching won't blur up the cgroup limits, since it is driven by
->> > "pages reclaimed" rather than "pages scanned". When shrink_zone()
->> > decides to cancel (and save) one smallish scan, it may well be called
->> > again to accumulate up nr_saved_scan.
->> >
->> > It could possibly be a problem for some tiny mem_cgroup (which may be
->> > _full_ scanned too much times in order to accumulate up nr_saved_scan).
->> >
->> > CC: Rik van Riel <riel@redhat.com>
->> > CC: Minchan Kim <minchan.kim@gmail.com>
->> > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
->> > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+Hi Dave,
 
-It looks better than now :)
+Today's linux-next merge of the agp tree got a conflict in
+drivers/char/agp/uninorth-agp.c between commit uninorth_create_gatt_table
+("agp/uninorth: Simplify cache flushing") from the powerpc tree and
+commit 6a12235c7d2d75c7d94b9afcaaecd422ff845ce0 ("agp: kill phys_to_gart
+() and gart_to_phys()") from the agp tree.
 
-I hope you will rewrite description and add test result in changelog. :)
-Thanks for your great effort.
-
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
 -- 
-Kind regards,
-Minchan Kim
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/char/agp/uninorth-agp.c
+index bba29ab,4317a55..0000000
+--- a/drivers/char/agp/uninorth-agp.c
++++ b/drivers/char/agp/uninorth-agp.c
+@@@ -424,28 -424,14 +424,28 @@@ static int uninorth_create_gatt_table(s
+  	if (table == NULL)
+  		return -ENOMEM;
+  
+ +	pages = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
+ +	if (pages == NULL)
+ +		goto enomem;
+ +
+  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
+  
+ -	for (page = virt_to_page(table); page <= virt_to_page(table_end); page++)
+ +	for (page = virt_to_page(table), i = 0; page <= virt_to_page(table_end);
+ +	     page++, i++) {
+  		SetPageReserved(page);
+ +		pages[i] = page;
+ +	}
+  
+  	bridge->gatt_table_real = (u32 *) table;
+ -	bridge->gatt_table = (u32 *)table;
+ +	/* Need to clear out any dirty data still sitting in caches */
+ +	flush_dcache_range((unsigned long)table,
+ +			   (unsigned long)(table_end + PAGE_SIZE));
+ +	bridge->gatt_table = vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NCG);
+ +
+ +	if (bridge->gatt_table == NULL)
+ +		goto enomem;
+ +
+- 	bridge->gatt_bus_addr = virt_to_gart(table);
++ 	bridge->gatt_bus_addr = virt_to_phys(table);
+  
+  	for (i = 0; i < num_entries; i++)
+  		bridge->gatt_table[i] = 0;
