@@ -1,124 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbZHUTTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbZHUTTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598AbZHUTTD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 15:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZHUTTC
+	id S1755692AbZHUTTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 15:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbZHUTTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 15:19:02 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56139 "EHLO hera.kernel.org"
+	Fri, 21 Aug 2009 15:19:42 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53167 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754688AbZHUTTB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 15:19:01 -0400
-Date: Fri, 21 Aug 2009 19:18:35 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:timers/core] x86: Do not unregister PIT clocksource on PIT oneshot setup/shutdown
-Message-ID: <tip-8cab02dc3c58a12235c6d463ce684dded9696848@git.kernel.org>
-Git-Commit-ID: 8cab02dc3c58a12235c6d463ce684dded9696848
-X-Mailer: tip-git-log-daemon
+	id S1754304AbZHUTTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 15:19:41 -0400
+Date: Fri, 21 Aug 2009 21:17:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-tip-commits@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
+       Kyle McMartin <kyle@mcmartin.ca>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, catalin.marinas@arm.com,
+       a.p.zijlstra@chello.nl, jens.axboe@oracle.com, fweisbec@gmail.com,
+       stable@kernel.org, srostedt@redhat.com, tglx@linutronix.de
+Subject: Re: [tip:tracing/urgent] tracing: Fix too large stack usage in
+	do_one_initcall()
+Message-ID: <20090821191759.GA8607@elte.hu>
+References: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org> <20090821111450.GA32037@elte.hu> <20090821104820.60948082.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Aug 2009 19:18:36 +0000 (UTC)
+In-Reply-To: <20090821104820.60948082.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8cab02dc3c58a12235c6d463ce684dded9696848
-Gitweb:     http://git.kernel.org/tip/8cab02dc3c58a12235c6d463ce684dded9696848
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Thu, 20 Aug 2009 18:19:45 +0200
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Fri, 21 Aug 2009 21:13:37 +0200
 
-x86: Do not unregister PIT clocksource on PIT oneshot setup/shutdown
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-This basically reverts commit 1a0c009ac (x86: unregister PIT
-clocksource when PIT is disabled) because the problem which was tried
-to address with that patch has been solved by commit 3f68535ada
-(clocksource: sanity check sysfs clocksource changes).
+> On Fri, 21 Aug 2009 13:14:50 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > ...
+> >
+> > btw., it will just take two more features like kmemleak to 
+> > trigger hard to debug stack overflows again on 32-bit. We are 
+> > right at the edge and this situation is not really fixable in a 
+> > reliable way anymore.
+> > 
+> > So i think we should be more drastic and solve the real problem: 
+> > we should drop 4K stacks and 8K combo-stacks on 32-bit, and go 
+> > exclusively to 8K split stacks on 32-bit.
+> 
+> We seem to have overrun an 8k stack in
+> http://bugzilla.kernel.org/show_bug.cgi?id=14029
 
-The problem addressed by the original patch is that PIT could be
-selected as clocksource after the system switched the PIT off or set
-the PIT into one shot mode which would result in complete timekeeping
-wreckage.
+Btw., this is inapposite because 8K stacks on 32-bit are 'shared' - 
+i.e. full process, softirq, hardirq and NMI context will nest on 
+each other, into the same 8K stack.
 
-Now with the sysfs sanity check in place PIT cannot be selected again
-when the system is in oneshot mode. The system will not switch to one
-shot mode as long as PIT is installed because PIT is not suitable for
-one shot.
+What i suggested in my mail was to up the 4K stacks option to 8K, 
+and to keep the separate IRQ/softirq stacks. (similar to 64-bit) 
+This is quite different from the 8K shared-stack option on 32-bit.
 
-The shutdown case which happens when the lapic timer is installed is
-covered by the fact that init_pit_clocksource() is called after the
-lapic timer take over and then does not install the PIT clocksource
-at all.
+Plus, i looked at the oops cited above, and it's in the idle thread. 
+The idle thread does not do anything process level and if there's a 
+stack overflow it generally does not trigger in the idle thread 
+(because it has much less stack pressure).
 
-We should have done the sanity checks back then, but ...
+Still, the stack could have overrun in IRQ context - but a more 
+likely scenario would be some other memory corruption crippling the 
+stack-overflow signature at the end of idle task's stack.
 
-This also solves the locking problem which was reported vs. the
-clocksource rework.
+> Do we have a max-stack-depth tracer widget btw?
 
-LKML-Reference: <new-submission>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: john stultz <johnstul@us.ibm.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+we do have an ftrace plugin for it, yes. But it has high cost (it 
+traces all the time to find the maximum), so i'm not sure how 
+realistic it would be to integrate it into the kerneloops daemon for 
+example.
 
+It could certainly be done - a sufficiently enabled kernel has to be 
+built (perhaps a kernel-debug package) and the 
+/debug/tracing/max_stack_trace value can be monitored for 'too much' 
+values.
 
----
- arch/x86/kernel/i8253.c |   19 -------------------
- 1 files changed, 0 insertions(+), 19 deletions(-)
+> > I.e. the stack size will be 'unified' too between 64-bit and 
+> > 32-bit to a certain degree: process stacks will be 8K on both 
+> > 64-bit and 32-bit x86, IRQ stacks will be separate. (on 64-bit 
+> > we also have the IST stacks for certain exceptions that further 
+> > isolates things)
+> > 
+> > This will simplify the 32-bit situation quite a bit and removes 
+> > a contentious config option and makes the kernel more robust in 
+> > general. 8K combo stacks are not safe due to irq nesting and 4K 
+> > isolated stacks are not enough. 8K isolated stacks is the way to 
+> > go.
+> > 
+> > Opinions?
+> 
+> I wouldn't lose any sleep over it.
+> 
+> I bet it would be sufficient to have 4k interrupt stacks though.
+> 
+> My main concern would be maintenance.  Over time we'll chew more 
+> and more stack space and eventually we'll get into trouble again.  
+> What means do we have for holding the line at 8k, and even 
+> improving things?
 
-diff --git a/arch/x86/kernel/i8253.c b/arch/x86/kernel/i8253.c
-index 5cf36c0..23c1679 100644
---- a/arch/x86/kernel/i8253.c
-+++ b/arch/x86/kernel/i8253.c
-@@ -19,12 +19,6 @@
- DEFINE_SPINLOCK(i8253_lock);
- EXPORT_SYMBOL(i8253_lock);
- 
--#ifdef CONFIG_X86_32
--static void pit_disable_clocksource(void);
--#else
--static inline void pit_disable_clocksource(void) { }
--#endif
--
- /*
-  * HPET replaces the PIT, when enabled. So we need to know, which of
-  * the two timers is used
-@@ -57,12 +51,10 @@ static void init_pit_timer(enum clock_event_mode mode,
- 			outb_pit(0, PIT_CH0);
- 			outb_pit(0, PIT_CH0);
- 		}
--		pit_disable_clocksource();
- 		break;
- 
- 	case CLOCK_EVT_MODE_ONESHOT:
- 		/* One shot setup */
--		pit_disable_clocksource();
- 		outb_pit(0x38, PIT_MODE);
- 		break;
- 
-@@ -200,17 +192,6 @@ static struct clocksource pit_cs = {
- 	.shift		= 20,
- };
- 
--static void pit_disable_clocksource(void)
--{
--	/*
--	 * Use mult to check whether it is registered or not
--	 */
--	if (pit_cs.mult) {
--		clocksource_unregister(&pit_cs);
--		pit_cs.mult = 0;
--	}
--}
--
- static int __init init_pit_clocksource(void)
- {
- 	 /*
+We already have the '8K line'. People who see stack overflows 
+_already_ go to the 8K stack kernel. The nasty thing about that is 
+that while it might solve their immediate problem, 8K shared stack 
+is still fragile in 'once in a blue moon' scenarios.
+
+That's why i'm thinking about introducing the similar parameters all 
+across on x86: 8K process stack on both 32-bit and 64-bit, and 8K 
+(or larger) IRQ/softirq stacks.
+
+This will have the added benefit of pushing the 'line of defense' 
+into the 64-bit space - which generally gets much more (and much 
+earlier) stress-testing in server shops - so we could find the 
+nastier bugs before they hit the 32-bit desktop en masse.
+
+	Ingo
