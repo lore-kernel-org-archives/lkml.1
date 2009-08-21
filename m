@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933028AbZHUVdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932924AbZHUVbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933028AbZHUVdv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 17:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932986AbZHUVdu
+	id S932924AbZHUVbp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932917AbZHUVbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 17:33:50 -0400
-Received: from www.tglx.de ([62.245.132.106]:51985 "EHLO www.tglx.de"
+	Fri, 21 Aug 2009 17:31:44 -0400
+Received: from www.tglx.de ([62.245.132.106]:51502 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932828AbZHUVdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 17:33:47 -0400
-Message-Id: <20090821205603.122053372@linutronix.de>
+	id S932857AbZHUVb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 17:31:26 -0400
+Message-Id: <20090821205602.044178379@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Fri, 21 Aug 2009 21:31:55 -0000
+Date: Fri, 21 Aug 2009 21:29:52 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,200 +21,240 @@ Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
        Alok N Kataria <akataria@vmware.com>,
        Pan Jacob jun <jacob.jun.pan@intel.com>
-Subject: [RFC patch 27/32] x86: Move calibrate_cpu to tsc.c
+Subject: [RFC patch 05/32] x86: Move memory_setup to platform
 References: <20090821205008.518392436@linutronix.de>
-Content-Disposition: inline; filename=x86-move-calibrate-cpu-to-tsc.patch
+Content-Disposition: inline; filename=x86-move-memory-setup-to-platform.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the code where it's only user is. Also we need to look whether
-this hardwired hackery might interfere with perfcounters.
+memory_setup is overridden by x86_quirks and by paravirts with weak
+functions and quirks. Unify the whole mess and make it an
+unconditional platform setup function which defaults to the standard
+function and can be overridden by the early platform code.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/include/asm/time.h |    2 -
- arch/x86/kernel/time_32.c   |    1 
- arch/x86/kernel/time_64.c   |   51 ---------------------------------------
- arch/x86/kernel/tsc.c       |   57 ++++++++++++++++++++++++++++++++++++++++++--
- 4 files changed, 55 insertions(+), 56 deletions(-)
+ arch/x86/include/asm/e820.h      |    2 --
+ arch/x86/include/asm/paravirt.h  |    1 -
+ arch/x86/include/asm/platform.h  |    2 ++
+ arch/x86/include/asm/setup.h     |    1 -
+ arch/x86/kernel/apic/numaq_32.c  |    1 -
+ arch/x86/kernel/e820.c           |   19 +------------------
+ arch/x86/kernel/paravirt.c       |    6 ------
+ arch/x86/kernel/platform_setup.c |    2 ++
+ arch/x86/kernel/visws_quirks.c   |    3 ++-
+ arch/x86/lguest/boot.c           |    3 ++-
+ arch/x86/xen/enlighten.c         |    3 ++-
+ 11 files changed, 11 insertions(+), 32 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/time.h
+Index: linux-2.6/arch/x86/include/asm/e820.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/time.h
-+++ linux-2.6/arch/x86/include/asm/time.h
-@@ -57,6 +57,4 @@ extern void time_init(void);
+--- linux-2.6.orig/arch/x86/include/asm/e820.h
++++ linux-2.6/arch/x86/include/asm/e820.h
+@@ -126,8 +126,6 @@ extern void e820_reserve_resources(void)
+ extern void e820_reserve_resources_late(void);
+ extern void setup_memory_map(void);
+ extern char *default_machine_specific_memory_setup(void);
+-extern char *machine_specific_memory_setup(void);
+-extern char *memory_setup(void);
+ #endif /* __KERNEL__ */
+ #endif /* __ASSEMBLY__ */
  
- #endif /* CONFIG_PARAVIRT */
- 
--extern unsigned long __init calibrate_cpu(void);
--
- #endif /* _ASM_X86_TIME_H */
-Index: linux-2.6/arch/x86/kernel/time_32.c
+Index: linux-2.6/arch/x86/include/asm/paravirt.h
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/time_32.c
-+++ linux-2.6/arch/x86/kernel/time_32.c
-@@ -20,7 +20,6 @@
- #include <asm/timer.h>
- #include <asm/hpet.h>
- #include <asm/time.h>
--#include <asm/nmi.h>
+--- linux-2.6.orig/arch/x86/include/asm/paravirt.h
++++ linux-2.6/arch/x86/include/asm/paravirt.h
+@@ -88,7 +88,6 @@ struct pv_init_ops {
  
- #if defined(CONFIG_X86_32) && defined(CONFIG_X86_IO_APIC)
- int timer_ack;
-Index: linux-2.6/arch/x86/kernel/time_64.c
+ 	/* Basic arch-specific setup */
+ 	void (*arch_setup)(void);
+-	char *(*memory_setup)(void);
+ 	void (*post_allocator_init)(void);
+ 
+ 	/* Print a banner to identify the environment */
+Index: linux-2.6/arch/x86/include/asm/platform.h
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/time_64.c
-+++ linux-2.6/arch/x86/kernel/time_64.c
-@@ -20,7 +20,6 @@
- #include <asm/timer.h>
- #include <asm/hpet.h>
- #include <asm/time.h>
--#include <asm/nmi.h>
+--- linux-2.6.orig/arch/x86/include/asm/platform.h
++++ linux-2.6/arch/x86/include/asm/platform.h
+@@ -14,12 +14,14 @@ struct platform_setup_quirks {
+  * @reserve_resources:		reserve the standard resources for the
+  *				platform
+  * @reserve_ebda_region:	reserve the extended bios data area
++ * @memory_setup:		platform specific memory setup
+  *
+  */
+ struct platform_setup_resources {
+ 	void (*probe_roms)(void);
+ 	void (*reserve_resources)(void);
+ 	void (*reserve_ebda_region)(void);
++	char *(*memory_setup)(void);
+ };
  
- #if defined(CONFIG_X86_32) && defined(CONFIG_X86_IO_APIC)
- int timer_ack;
-@@ -83,56 +82,6 @@ static irqreturn_t timer_interrupt(int i
- 	return IRQ_HANDLED;
+ /**
+Index: linux-2.6/arch/x86/include/asm/setup.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/setup.h
++++ linux-2.6/arch/x86/include/asm/setup.h
+@@ -22,7 +22,6 @@ struct x86_quirks {
+ 	int (*arch_pre_intr_init)(void);
+ 	int (*arch_intr_init)(void);
+ 	int (*arch_trap_init)(void);
+-	char * (*arch_memory_setup)(void);
+ 	int (*mach_get_smp_config)(unsigned int early);
+ 	int (*mach_find_smp_config)(unsigned int reserve);
+ 
+Index: linux-2.6/arch/x86/kernel/apic/numaq_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/numaq_32.c
++++ linux-2.6/arch/x86/kernel/apic/numaq_32.c
+@@ -260,7 +260,6 @@ static struct x86_quirks numaq_x86_quirk
+ 	.arch_pre_time_init		= numaq_pre_time_init,
+ 	.arch_time_init			= NULL,
+ 	.arch_pre_intr_init		= NULL,
+-	.arch_memory_setup		= NULL,
+ 	.arch_intr_init			= NULL,
+ 	.arch_trap_init			= NULL,
+ 	.mach_get_smp_config		= NULL,
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1455,28 +1455,11 @@ char *__init default_machine_specific_me
+ 	return who;
  }
  
--/*
-- * calibrate_cpu is used on systems with fixed rate TSCs to determine
-- * processor frequency
-- */
--#define TICK_COUNT 100000000
--unsigned long __init calibrate_cpu(void)
+-char *__init __attribute__((weak)) machine_specific_memory_setup(void)
 -{
--	int tsc_start, tsc_now;
--	int i, no_ctr_free;
--	unsigned long evntsel3 = 0, pmc3 = 0, pmc_now = 0;
--	unsigned long flags;
+-	if (x86_quirks->arch_memory_setup) {
+-		char *who = x86_quirks->arch_memory_setup();
 -
--	for (i = 0; i < 4; i++)
--		if (avail_to_resrv_perfctr_nmi_bit(i))
--			break;
--	no_ctr_free = (i == 4);
--	if (no_ctr_free) {
--		WARN(1, KERN_WARNING "Warning: AMD perfctrs busy ... "
--		     "cpu_khz value may be incorrect.\n");
--		i = 3;
--		rdmsrl(MSR_K7_EVNTSEL3, evntsel3);
--		wrmsrl(MSR_K7_EVNTSEL3, 0);
--		rdmsrl(MSR_K7_PERFCTR3, pmc3);
--	} else {
--		reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i);
--		reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
+-		if (who)
+-			return who;
 -	}
--	local_irq_save(flags);
--	/* start measuring cycles, incrementing from 0 */
--	wrmsrl(MSR_K7_PERFCTR0 + i, 0);
--	wrmsrl(MSR_K7_EVNTSEL0 + i, 1 << 22 | 3 << 16 | 0x76);
--	rdtscl(tsc_start);
--	do {
--		rdmsrl(MSR_K7_PERFCTR0 + i, pmc_now);
--		tsc_now = get_cycles();
--	} while ((tsc_now - tsc_start) < TICK_COUNT);
--
--	local_irq_restore(flags);
--	if (no_ctr_free) {
--		wrmsrl(MSR_K7_EVNTSEL3, 0);
--		wrmsrl(MSR_K7_PERFCTR3, pmc3);
--		wrmsrl(MSR_K7_EVNTSEL3, evntsel3);
--	} else {
--		release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
--		release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
--	}
--
--	return pmc_now * tsc_khz / (tsc_now - tsc_start);
+-	return default_machine_specific_memory_setup();
 -}
 -
- static struct irqaction irq0  = {
- 	.handler = timer_interrupt,
- 	.flags = IRQF_DISABLED | IRQF_NOBALANCING | IRQF_IRQPOLL | IRQF_TIMER,
-Index: linux-2.6/arch/x86/kernel/tsc.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/tsc.c
-+++ linux-2.6/arch/x86/kernel/tsc.c
-@@ -17,6 +17,7 @@
- #include <asm/time.h>
- #include <asm/delay.h>
- #include <asm/hypervisor.h>
-+#include <asm/nmi.h>
+-/* Overridden in paravirt.c if CONFIG_PARAVIRT */
+-char * __init __attribute__((weak)) memory_setup(void)
+-{
+-	return machine_specific_memory_setup();
+-}
+-
+ void __init setup_memory_map(void)
+ {
+ 	char *who;
  
- unsigned int __read_mostly cpu_khz;	/* TSC clocks / usec, not used here */
- EXPORT_SYMBOL(cpu_khz);
-@@ -852,6 +853,60 @@ static void __init init_tsc_clocksource(
- 	clocksource_register(&clocksource_tsc);
+-	who = memory_setup();
++	who = platform_setup.resources.memory_setup();
+ 	memcpy(&e820_saved, &e820, sizeof(struct e820map));
+ 	printk(KERN_INFO "BIOS-provided physical RAM map:\n");
+ 	e820_print_map(who);
+Index: linux-2.6/arch/x86/kernel/paravirt.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/paravirt.c
++++ linux-2.6/arch/x86/kernel/paravirt.c
+@@ -60,11 +60,6 @@ static void __init default_banner(void)
+ 	       pv_info.name);
  }
  
-+#ifdef CONFIG_X86_64
-+/*
-+ * calibrate_cpu is used on systems with fixed rate TSCs to determine
-+ * processor frequency
-+ */
-+#define TICK_COUNT 100000000
-+static unsigned long __init calibrate_cpu(void)
-+{
-+	int tsc_start, tsc_now;
-+	int i, no_ctr_free;
-+	unsigned long evntsel3 = 0, pmc3 = 0, pmc_now = 0;
-+	unsigned long flags;
-+
-+	for (i = 0; i < 4; i++)
-+		if (avail_to_resrv_perfctr_nmi_bit(i))
-+			break;
-+	no_ctr_free = (i == 4);
-+	if (no_ctr_free) {
-+		WARN(1, KERN_WARNING "Warning: AMD perfctrs busy ... "
-+		     "cpu_khz value may be incorrect.\n");
-+		i = 3;
-+		rdmsrl(MSR_K7_EVNTSEL3, evntsel3);
-+		wrmsrl(MSR_K7_EVNTSEL3, 0);
-+		rdmsrl(MSR_K7_PERFCTR3, pmc3);
-+	} else {
-+		reserve_perfctr_nmi(MSR_K7_PERFCTR0 + i);
-+		reserve_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
-+	}
-+	local_irq_save(flags);
-+	/* start measuring cycles, incrementing from 0 */
-+	wrmsrl(MSR_K7_PERFCTR0 + i, 0);
-+	wrmsrl(MSR_K7_EVNTSEL0 + i, 1 << 22 | 3 << 16 | 0x76);
-+	rdtscl(tsc_start);
-+	do {
-+		rdmsrl(MSR_K7_PERFCTR0 + i, pmc_now);
-+		tsc_now = get_cycles();
-+	} while ((tsc_now - tsc_start) < TICK_COUNT);
-+
-+	local_irq_restore(flags);
-+	if (no_ctr_free) {
-+		wrmsrl(MSR_K7_EVNTSEL3, 0);
-+		wrmsrl(MSR_K7_PERFCTR3, pmc3);
-+		wrmsrl(MSR_K7_EVNTSEL3, evntsel3);
-+	} else {
-+		release_perfctr_nmi(MSR_K7_PERFCTR0 + i);
-+		release_evntsel_nmi(MSR_K7_EVNTSEL0 + i);
-+	}
-+
-+	return pmc_now * tsc_khz / (tsc_now - tsc_start);
-+}
-+#else
-+static inline unsigned long calibrate_cpu(void) { return cpu_khz; }
-+#endif
-+
- void __init tsc_init(void)
- {
- 	u64 lpj;
-@@ -870,11 +925,9 @@ void __init tsc_init(void)
- 		return;
- 	}
+-char *memory_setup(void)
+-{
+-	return pv_init_ops.memory_setup();
+-}
+-
+ /* Simple instruction patching code. */
+ #define DEF_NATIVE(ops, name, code)					\
+ 	extern const char start_##ops##_##name[], end_##ops##_##name[];	\
+@@ -322,7 +317,6 @@ struct pv_init_ops pv_init_ops = {
+ 	.patch = native_patch,
+ 	.banner = default_banner,
+ 	.arch_setup = paravirt_nop,
+-	.memory_setup = machine_specific_memory_setup,
+ };
  
--#ifdef CONFIG_X86_64
- 	if (cpu_has(&boot_cpu_data, X86_FEATURE_CONSTANT_TSC) &&
- 			(boot_cpu_data.x86_vendor == X86_VENDOR_AMD))
- 		cpu_khz = calibrate_cpu();
--#endif
+ struct pv_time_ops pv_time_ops = {
+Index: linux-2.6/arch/x86/kernel/platform_setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/platform_setup.c
++++ linux-2.6/arch/x86/kernel/platform_setup.c
+@@ -7,6 +7,7 @@
  
- 	printk("Detected %lu.%03lu MHz processor.\n",
- 			(unsigned long)cpu_khz / 1000,
+ #include <asm/bios_ebda.h>
+ #include <asm/setup.h>
++#include <asm/e820.h>
+ 
+ void __cpuinit platform_setup_noop(void) { }
+ 
+@@ -20,5 +21,6 @@ struct __initdata platform_setup_ops pla
+ 		.probe_roms = platform_setup_noop,
+ 		.reserve_resources = reserve_standard_io_resources,
+ 		.reserve_ebda_region = reserve_ebda_region,
++		.memory_setup = default_machine_specific_memory_setup,
+ 	},
+ };
+Index: linux-2.6/arch/x86/kernel/visws_quirks.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/visws_quirks.c
++++ linux-2.6/arch/x86/kernel/visws_quirks.c
+@@ -239,7 +239,6 @@ static int visws_trap_init(void);
+ static struct x86_quirks visws_x86_quirks __initdata = {
+ 	.arch_time_init		= visws_time_init,
+ 	.arch_pre_intr_init	= visws_pre_intr_init,
+-	.arch_memory_setup	= visws_memory_setup,
+ 	.arch_intr_init		= NULL,
+ 	.arch_trap_init		= visws_trap_init,
+ 	.mach_get_smp_config	= visws_get_smp_config,
+@@ -263,6 +262,8 @@ void __init visws_early_detect(void)
+ 	 */
+ 	x86_quirks = &visws_x86_quirks;
+ 
++	platform_setup.resources.memory_setup = visws_memory_setup;
++
+ 	/*
+ 	 * Install reboot quirks:
+ 	 */
+Index: linux-2.6/arch/x86/lguest/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/lguest/boot.c
++++ linux-2.6/arch/x86/lguest/boot.c
+@@ -1270,7 +1270,6 @@ __init void lguest_init(void)
+ 	pv_irq_ops.safe_halt = lguest_safe_halt;
+ 
+ 	/* Setup operations */
+-	pv_init_ops.memory_setup = lguest_memory_setup;
+ 	pv_init_ops.patch = lguest_patch;
+ 
+ 	/* Intercepts of various CPU instructions */
+@@ -1325,6 +1324,8 @@ __init void lguest_init(void)
+ 	pv_time_ops.time_init = lguest_time_init;
+ 	pv_time_ops.get_tsc_khz = lguest_tsc_khz;
+ 
++	platform_setup.resources.memory_setup = lguest_memory_setup;
++
+ 	/*
+ 	 * Now is a good time to look at the implementations of these functions
+ 	 * before returning to the rest of lguest_init().
+Index: linux-2.6/arch/x86/xen/enlighten.c
+===================================================================
+--- linux-2.6.orig/arch/x86/xen/enlighten.c
++++ linux-2.6/arch/x86/xen/enlighten.c
+@@ -841,7 +841,6 @@ static const struct pv_init_ops xen_init
+ 	.patch = xen_patch,
+ 
+ 	.banner = xen_banner,
+-	.memory_setup = xen_memory_setup,
+ 	.arch_setup = xen_arch_setup,
+ 	.post_allocator_init = xen_post_allocator_init,
+ };
+@@ -986,6 +985,8 @@ asmlinkage void __init xen_start_kernel(
+ 	pv_apic_ops = xen_apic_ops;
+ 	pv_mmu_ops = xen_mmu_ops;
+ 
++	platform_setup.resources.memory_setup = xen_memory_setup;
++
+ 	xen_init_irq_ops();
+ 
+ 	xen_init_cpuid_mask();
 
 
