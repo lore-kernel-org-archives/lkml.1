@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932963AbZHUVcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932997AbZHUVcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932963AbZHUVcT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 17:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbZHUVcR
+	id S932997AbZHUVcn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932990AbZHUVcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 17:32:17 -0400
-Received: from www.tglx.de ([62.245.132.106]:51638 "EHLO www.tglx.de"
+	Fri, 21 Aug 2009 17:32:42 -0400
+Received: from www.tglx.de ([62.245.132.106]:51808 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932947AbZHUVb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 17:31:58 -0400
-Message-Id: <20090821205602.460995680@linutronix.de>
+	id S932966AbZHUVcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 17:32:39 -0400
+Message-Id: <20090821205602.731684676@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Fri, 21 Aug 2009 21:30:34 -0000
+Date: Fri, 21 Aug 2009 21:31:05 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,197 +21,135 @@ Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
        Alok N Kataria <akataria@vmware.com>,
        Pan Jacob jun <jacob.jun.pan@intel.com>
-Subject: [RFC patch 13/32] x86: Move pre_intr_init to platform_setup
+Subject: [RFC patch 19/32] x86: Move xen_post_allocator_init into
+	xen_pagetable_setup_done
 References: <20090821205008.518392436@linutronix.de>
-Content-Disposition: inline; filename=x86-move-pre-intr-init-to-platform.patch
+Content-Disposition: inline;
+	filename=x86-move-post-allocator-init-to-page-table-setup-done.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace the quirk machinery by a platform setup function which
-defaults to the standard implementation. This is also a preparatory
-patch for Moorestown support which needs to replace the default
-init_ISA_irqs as well.
+We really do not need two paravirt/platform setup functions which are
+called in two consecutive source lines. Move the only user of
+post_allocator_init into the already existing pagetable_setup_done
+function.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/include/asm/irq.h       |    2 ++
- arch/x86/include/asm/platform.h  |   10 ++++++++++
- arch/x86/include/asm/setup.h     |    1 -
- arch/x86/kernel/apic/numaq_32.c  |    1 -
- arch/x86/kernel/irqinit.c        |   24 ++----------------------
- arch/x86/kernel/platform_setup.c |    5 +++++
- arch/x86/kernel/visws_quirks.c   |   10 +++-------
- 7 files changed, 22 insertions(+), 31 deletions(-)
+ arch/x86/include/asm/paravirt.h |    9 ---------
+ arch/x86/include/asm/setup.h    |    4 ----
+ arch/x86/kernel/setup.c         |    1 -
+ arch/x86/xen/enlighten.c        |    2 --
+ arch/x86/xen/mmu.c              |    5 ++++-
+ arch/x86/xen/xen-ops.h          |    2 --
+ 6 files changed, 4 insertions(+), 19 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/irq.h
+Index: linux-2.6/arch/x86/include/asm/paravirt.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/irq.h
-+++ linux-2.6/arch/x86/include/asm/irq.h
-@@ -47,4 +47,6 @@ extern unsigned int do_IRQ(struct pt_reg
- extern DECLARE_BITMAP(used_vectors, NR_VECTORS);
- extern int vector_used_by_percpu_irq(unsigned int vector);
+--- linux-2.6.orig/arch/x86/include/asm/paravirt.h
++++ linux-2.6/arch/x86/include/asm/paravirt.h
+@@ -86,9 +86,6 @@ struct pv_init_ops {
+ 	unsigned (*patch)(u8 type, u16 clobber, void *insnbuf,
+ 			  unsigned long addr, unsigned len);
  
-+extern void init_ISA_irqs(void);
-+
- #endif /* _ASM_X86_IRQ_H */
-Index: linux-2.6/arch/x86/include/asm/platform.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/platform.h
-+++ linux-2.6/arch/x86/include/asm/platform.h
-@@ -50,12 +50,22 @@ struct platform_setup_resources {
+-	/* Basic arch-specific setup */
+-	void (*post_allocator_init)(void);
+-
+ 	/* Print a banner to identify the environment */
+ 	void (*banner)(void);
  };
+@@ -1010,12 +1007,6 @@ static inline void setup_secondary_clock
+ }
+ #endif
  
- /**
-+ * struct platform_setup_irqs - platform specific interrupt setup
-+ * @pre_vector_init:		init code to run before interrupt vectors
-+ *				are set up.
-+ */
-+struct platform_setup_irqs {
-+	void (*pre_vector_init)(void);
-+};
-+
-+/**
-  * struct platform_setup_ops - functions for platform specific setup
-  *
-  */
- struct platform_setup_ops {
- 	struct platform_setup_resources resources;
- 	struct platform_setup_mpparse mpparse;
-+	struct platform_setup_irqs irqs;
- 	struct platform_setup_quirks quirks;
- };
- 
+-static inline void paravirt_post_allocator_init(void)
+-{
+-	if (pv_init_ops.post_allocator_init)
+-		(*pv_init_ops.post_allocator_init)();
+-}
+-
+ #ifdef CONFIG_SMP
+ static inline void startup_ipi_hook(int phys_apicid, unsigned long start_eip,
+ 				    unsigned long start_esp)
 Index: linux-2.6/arch/x86/include/asm/setup.h
 ===================================================================
 --- linux-2.6.orig/arch/x86/include/asm/setup.h
 +++ linux-2.6/arch/x86/include/asm/setup.h
-@@ -16,7 +16,6 @@
- struct x86_quirks {
- 	int (*arch_pre_time_init)(void);
- 	int (*arch_time_init)(void);
--	int (*arch_pre_intr_init)(void);
- 	int (*arch_intr_init)(void);
- 	int (*arch_trap_init)(void);
- };
-Index: linux-2.6/arch/x86/kernel/apic/numaq_32.c
+@@ -63,10 +63,6 @@ static inline int is_visws_box(void) { r
+ extern struct x86_quirks *x86_quirks;
+ extern unsigned long saved_video_mode;
+ 
+-#ifndef CONFIG_PARAVIRT
+-#define paravirt_post_allocator_init()	do {} while (0)
+-#endif
+-
+ extern void reserve_standard_io_resources(void);
+ extern void i386_reserve_resources(void);
+ 
+Index: linux-2.6/arch/x86/kernel/setup.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/numaq_32.c
-+++ linux-2.6/arch/x86/kernel/apic/numaq_32.c
-@@ -265,7 +265,6 @@ static void __init smp_read_mpc_oem(stru
- static struct x86_quirks numaq_x86_quirks __initdata = {
- 	.arch_pre_time_init		= numaq_pre_time_init,
- 	.arch_time_init			= NULL,
--	.arch_pre_intr_init		= NULL,
- 	.arch_intr_init			= NULL,
- 	.arch_trap_init			= NULL,
- };
-Index: linux-2.6/arch/x86/kernel/irqinit.c
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -962,7 +962,6 @@ void __init setup_arch(char **cmdline_p)
+ 	platform_setup.paging.pagetable_setup_start(swapper_pg_dir);
+ 	paging_init();
+ 	platform_setup.paging.pagetable_setup_done(swapper_pg_dir);
+-	paravirt_post_allocator_init();
+ 
+ #ifdef CONFIG_X86_64
+ 	map_vsyscall();
+Index: linux-2.6/arch/x86/xen/enlighten.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/irqinit.c
-+++ linux-2.6/arch/x86/kernel/irqinit.c
-@@ -116,7 +116,7 @@ int vector_used_by_percpu_irq(unsigned i
- 	return 0;
+--- linux-2.6.orig/arch/x86/xen/enlighten.c
++++ linux-2.6/arch/x86/xen/enlighten.c
+@@ -839,8 +839,6 @@ static const struct pv_info xen_info __i
+ 
+ static const struct pv_init_ops xen_init_ops __initdata = {
+ 	.patch = xen_patch,
+-
+-	.post_allocator_init = xen_post_allocator_init,
+ };
+ 
+ static const struct pv_time_ops xen_time_ops __initdata = {
+Index: linux-2.6/arch/x86/xen/mmu.c
+===================================================================
+--- linux-2.6.orig/arch/x86/xen/mmu.c
++++ linux-2.6/arch/x86/xen/mmu.c
+@@ -1229,9 +1229,12 @@ static __init void xen_pagetable_setup_s
+ {
  }
  
--static void __init init_ISA_irqs(void)
-+void __init init_ISA_irqs(void)
++static void xen_post_allocator_init(void);
++
+ static __init void xen_pagetable_setup_done(pgd_t *base)
  {
- 	int i;
+ 	xen_setup_shared_info();
++	xen_post_allocator_init();
+ }
  
-@@ -213,32 +213,12 @@ static void __init apic_intr_init(void)
+ static void xen_write_cr2(unsigned long cr2)
+@@ -1841,7 +1844,7 @@ static void xen_set_fixmap(unsigned idx,
  #endif
  }
  
--/**
-- * x86_quirk_pre_intr_init - initialisation prior to setting up interrupt vectors
-- *
-- * Description:
-- *	Perform any necessary interrupt initialisation prior to setting up
-- *	the "ordinary" interrupt call gates.  For legacy reasons, the ISA
-- *	interrupts should be initialised here if the machine emulates a PC
-- *	in any way.
-- **/
--static void __init x86_quirk_pre_intr_init(void)
--{
--#ifdef CONFIG_X86_32
--	if (x86_quirks->arch_pre_intr_init) {
--		if (x86_quirks->arch_pre_intr_init())
--			return;
--	}
--#endif
--	init_ISA_irqs();
--}
--
- void __init native_init_IRQ(void)
+-__init void xen_post_allocator_init(void)
++static __init void xen_post_allocator_init(void)
  {
- 	int i;
- 
- 	/* Execute any quirks before the call gates are initialised: */
--	x86_quirk_pre_intr_init();
-+	platform_setup.irqs.pre_vector_init();
- 
- 	apic_intr_init();
- 
-Index: linux-2.6/arch/x86/kernel/platform_setup.c
+ 	pv_mmu_ops.set_pte = xen_set_pte;
+ 	pv_mmu_ops.set_pmd = xen_set_pmd;
+Index: linux-2.6/arch/x86/xen/xen-ops.h
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/platform_setup.c
-+++ linux-2.6/arch/x86/kernel/platform_setup.c
-@@ -9,6 +9,7 @@
- #include <asm/mpspec.h>
- #include <asm/setup.h>
- #include <asm/e820.h>
-+#include <asm/irq.h>
+--- linux-2.6.orig/arch/x86/xen/xen-ops.h
++++ linux-2.6/arch/x86/xen/xen-ops.h
+@@ -30,8 +30,6 @@ pgd_t *xen_setup_kernel_pagetable(pgd_t 
+ void xen_ident_map_ISA(void);
+ void xen_reserve_top(void);
  
- void __cpuinit platform_setup_noop(void) { }
- void __init platform_setup_uint_noop(unsigned int unused) { }
-@@ -35,6 +36,10 @@ struct __initdata platform_setup_ops pla
- 		.get_smp_config = default_get_smp_config,
- 	},
- 
-+	.irqs = {
-+		.pre_vector_init = init_ISA_irqs,
-+	},
-+
- 	.quirks = {
- 		.mpc_record = platform_setup_uint_noop,
- 	},
-Index: linux-2.6/arch/x86/kernel/visws_quirks.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/visws_quirks.c
-+++ linux-2.6/arch/x86/kernel/visws_quirks.c
-@@ -73,14 +73,10 @@ static int __init visws_time_init(void)
- 	return 0;
- }
- 
--static int __init visws_pre_intr_init(void)
-+/* Replaces the default init_ISA_irqs in the generic setup */
-+static void __init visws_pre_intr_init(void)
- {
- 	init_VISWS_APIC_irqs();
+-void xen_post_allocator_init(void);
 -
--	/*
--	 * We dont want ISA irqs to be set up by the generic code:
--	 */
--	return 1;
- }
- 
- /* Quirk for machine specific memory setup. */
-@@ -232,7 +228,6 @@ static int visws_trap_init(void);
- 
- static struct x86_quirks visws_x86_quirks __initdata = {
- 	.arch_time_init		= visws_time_init,
--	.arch_pre_intr_init	= visws_pre_intr_init,
- 	.arch_intr_init		= NULL,
- 	.arch_trap_init		= visws_trap_init,
- };
-@@ -257,6 +252,7 @@ void __init visws_early_detect(void)
- 	platform_setup.resources.memory_setup = visws_memory_setup;
- 	platform_setup.mpparse.get_smp_config = visws_get_smp_config;
- 	platform_setup.mpparse.find_smp_config = visws_find_smp_config;
-+	platform_setup.irqs.pre_vector_init = visws_pre_intr_init;
- 
- 	/*
- 	 * Install reboot quirks:
+ char * __init xen_memory_setup(void);
+ void __init xen_arch_setup(void);
+ void __init xen_init_IRQ(void);
 
 
