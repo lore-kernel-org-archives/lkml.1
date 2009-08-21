@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbZHTXuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbZHUAAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932153AbZHTXuZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 19:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932122AbZHTXuZ
+	id S1755417AbZHUAAo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 20:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbZHUAAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 19:50:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39116 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932119AbZHTXuY (ORCPT
+	Thu, 20 Aug 2009 20:00:44 -0400
+Received: from newpeace.netnation.com ([204.174.223.7]:40027 "EHLO
+	peace.netnation.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754462AbZHUAAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 19:50:24 -0400
-Date: Thu, 20 Aug 2009 16:47:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: djwong@us.ibm.com, lenb@kernel.org, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org, linux-acpi@vger.kernel.org,
-       rui.zhang@intel.com, pavel@ucw.cz
-Subject: Re: [PATCH 2/2] acpi_power_meter: hwmon driver for ACPI 4.0 power
- meters
-Message-Id: <20090820164741.707b0340.akpm@linux-foundation.org>
-In-Reply-To: <20090818234810.2004.13573.stgit@elm3a70.beaverton.ibm.com>
-References: <20090818234757.2004.88017.stgit@elm3a70.beaverton.ibm.com>
-	<20090818234810.2004.13573.stgit@elm3a70.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Aug 2009 20:00:43 -0400
+Date: Thu, 20 Aug 2009 17:00:35 -0700
+From: Simon Kirby <sim@hostway.ca>
+To: Sylvain Rochet <gradator@gradator.net>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-nfs@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
+Message-ID: <20090821000035.GB13221@hostway.ca>
+References: <20090727154253.GB8332@duck.suse.cz> <20090728112715.GA8442@gradator.net> <20090728135226.GA21682@duck.suse.cz> <20090728164142.GA13662@gradator.net> <20090803222901.GB23162@duck.suse.cz> <20090804111505.GA6433@gradator.net> <20090804225619.GB11097@duck.suse.cz> <20090806131555.GA23359@gradator.net> <20090812223453.GC10729@duck.suse.cz> <20090820171952.GA15133@gradator.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090820171952.GA15133@gradator.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Aug 2009 16:48:10 -0700
-"Darrick J. Wong" <djwong@us.ibm.com> wrote:
+On Thu, Aug 20, 2009 at 07:19:53PM +0200, Sylvain Rochet wrote:
 
-> This driver exposes ACPI 4.0 compliant power meters as hardware monitoring
-> devices.  This second revision of the driver also exports the ACPI string
-> info as sysfs attributes, a list of the devices that the meter measures,
-> and will send ACPI notifications over the ACPI netlink socket.
+> So, everything is fine, but the problem happened only one time on this 
+> server, so we cannot conclude anything after a few weeks. However, 
+> I now have physical access back, so we will switch back to the former 
+> server where the problem happened quite frequently, then we will see!
 
-This is not my favoritest ever patch.
+Not to derail the thread, but you were definitely seeing the same issues
+with stock 2.6.30.4, right?  We had all sorts of corruption happening for
+files served via NFS with 2.6.28 and 2.6.29, but everything was magically
+fixed on 2.6.30 (though we needed a lot of fscking).  I never did track
+down what change fixed it, since it took a while to reproduce.
 
-drivers/acpi/power_meter.c:459: error: 'POWER_AVERAGE' undeclared here (not in a function)
+Hmm.  I just noticed what seems to be a new occurrence of "deleted inode
+referenced" on a box with 2.6.30.  We saw many when we first upgraded to
+2.6.30 due to the corruption caused by 2.6.29, but those all occurred
+within a day or so and were fsck'd.  I would have thought the backup
+sweeps would have tripped over that inode way before now...
 
-and
+Just wondering if you can confirm that the errors you saw with 2.6.30.4
+were not leftover from older kernels.
 
-drivers/acpi/power_meter.c: In function 'read_domain_devices':
-drivers/acpi/power_meter.c:544: error: syntax error before 'PREFIX'
-drivers/acpi/power_meter.c: In function 'read_capabilities':
-drivers/acpi/power_meter.c:759: error: syntax error before 'PREFIX'
-drivers/acpi/power_meter.c:776: error: syntax error before 'PREFIX'
+Cheers,
 
-and once I fixed those,
-
-drivers/acpi/power_meter.c: In function 'register_ro_attrs':
-drivers/acpi/power_meter.c:611: warning: 'res' may be used uninitialized in this function
-drivers/acpi/power_meter.c: In function 'register_rw_attrs':
-drivers/acpi/power_meter.c:639: warning: 'res' may be used uninitialized in this function
-
+Simon-
