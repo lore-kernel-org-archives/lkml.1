@@ -1,63 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbZHUQ4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932609AbZHURAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932545AbZHUQ4t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 12:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932505AbZHUQ4s
+	id S932609AbZHURAQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932505AbZHURAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 12:56:48 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:31699 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932477AbZHUQ4r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 12:56:47 -0400
-Date: Fri, 21 Aug 2009 09:57:56 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Cc: akpm <akpm@linux-foundation.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH -mmotm] nfs/cache_lib: fix sunrpc struct build error
-Message-Id: <20090821095756.390c102e.randy.dunlap@oracle.com>
-In-Reply-To: <200908210222.n7L2Musb015815@imap1.linux-foundation.org>
-References: <200908210222.n7L2Musb015815@imap1.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt008.oracle.com [141.146.116.17]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A8ED1A8.0257:SCFSTAT5015188,ss=1,fgs=0
+	Fri, 21 Aug 2009 13:00:14 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51066 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932535AbZHURAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 13:00:03 -0400
+From: Jan Kara <jack@suse.cz>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       linux-ext4@vger.kernel.org, tytso@mit.edu
+Subject: [PATCH 10/17] ext4: Remove syncing logic from ext4_file_write
+Date: Fri, 21 Aug 2009 18:59:54 +0200
+Message-Id: <1250874001-15483-10-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1250874001-15483-1-git-send-email-jack@suse.cz>
+References: <1250874001-15483-1-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+The syncing is now properly handled by generic_file_aio_write() so
+no special ext4 code is needed.
 
-Add header file for struct delayed_work:
-
-In file included from fs/nfs/cache_lib.c:14:
-include/linux/sunrpc/rpc_pipe_fs.h:35: error: field 'queue_timeout' has incomplete type
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+CC: linux-ext4@vger.kernel.org
+CC: tytso@mit.edu
+Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- include/linux/sunrpc/rpc_pipe_fs.h |    2 ++
- 1 file changed, 2 insertions(+)
+ fs/ext4/file.c |   53 ++---------------------------------------------------
+ 1 files changed, 2 insertions(+), 51 deletions(-)
 
---- mmotm-2009-0820-1918.orig/include/linux/sunrpc/rpc_pipe_fs.h
-+++ mmotm-2009-0820-1918/include/linux/sunrpc/rpc_pipe_fs.h
-@@ -3,6 +3,8 @@
+diff --git a/fs/ext4/file.c b/fs/ext4/file.c
+index 3f1873f..aafe432 100644
+--- a/fs/ext4/file.c
++++ b/fs/ext4/file.c
+@@ -58,10 +58,7 @@ static ssize_t
+ ext4_file_write(struct kiocb *iocb, const struct iovec *iov,
+ 		unsigned long nr_segs, loff_t pos)
+ {
+-	struct file *file = iocb->ki_filp;
+-	struct inode *inode = file->f_path.dentry->d_inode;
+-	ssize_t ret;
+-	int err;
++	struct inode *inode = iocb->ki_filp->f_path.dentry->d_inode;
  
- #ifdef __KERNEL__
+ 	/*
+ 	 * If we have encountered a bitmap-format file, the size limit
+@@ -81,53 +78,7 @@ ext4_file_write(struct kiocb *iocb, const struct iovec *iov,
+ 		}
+ 	}
  
-+#include <linux/workqueue.h>
-+
- struct rpc_pipe_msg {
- 	struct list_head list;
- 	void *data;
+-	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
+-	/*
+-	 * Skip flushing if there was an error, or if nothing was written.
+-	 */
+-	if (ret <= 0)
+-		return ret;
+-
+-	/*
+-	 * If the inode is IS_SYNC, or is O_SYNC and we are doing data
+-	 * journalling then we need to make sure that we force the transaction
+-	 * to disk to keep all metadata uptodate synchronously.
+-	 */
+-	if (file->f_flags & O_SYNC) {
+-		/*
+-		 * If we are non-data-journaled, then the dirty data has
+-		 * already been flushed to backing store by generic_osync_inode,
+-		 * and the inode has been flushed too if there have been any
+-		 * modifications other than mere timestamp updates.
+-		 *
+-		 * Open question --- do we care about flushing timestamps too
+-		 * if the inode is IS_SYNC?
+-		 */
+-		if (!ext4_should_journal_data(inode))
+-			return ret;
+-
+-		goto force_commit;
+-	}
+-
+-	/*
+-	 * So we know that there has been no forced data flush.  If the inode
+-	 * is marked IS_SYNC, we need to force one ourselves.
+-	 */
+-	if (!IS_SYNC(inode))
+-		return ret;
+-
+-	/*
+-	 * Open question #2 --- should we force data to disk here too?  If we
+-	 * don't, the only impact is that data=writeback filesystems won't
+-	 * flush data to disk automatically on IS_SYNC, only metadata (but
+-	 * historically, that is what ext2 has done.)
+-	 */
+-
+-force_commit:
+-	err = ext4_force_commit(inode->i_sb);
+-	if (err)
+-		return err;
+-	return ret;
++	return generic_file_aio_write(iocb, iov, nr_segs, pos);
+ }
+ 
+ static struct vm_operations_struct ext4_file_vm_ops = {
+-- 
+1.6.0.2
 
-
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
