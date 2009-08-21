@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751434AbZHUAcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZHUAgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751434AbZHUAcg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 20:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbZHUAcg
+	id S1754259AbZHUAgy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 20:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZHUAgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 20:32:36 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44344 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbZHUAcf (ORCPT
+	Thu, 20 Aug 2009 20:36:53 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48107 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736AbZHUAgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 20:32:35 -0400
-Date: Fri, 21 Aug 2009 02:32:32 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Alex Chiang <achiang@hp.com>,
-       Andi Kleen <andi@firstfloor.org>, "mingo@redhat.com" <mingo@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
-Message-ID: <20090821003232.GD29994@basil.fritz.box>
-References: <1250276831.3077.17.camel@sbs-t61.sc.intel.com> <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com> <20090819210251.GD13061@ldl.fc.hp.com> <1250794594.2754.10.camel@sbs-t61.sc.intel.com> <20090820205425.GF13061@ldl.fc.hp.com> <20090820210342.GC29994@basil.fritz.box> <20090820212024.GG13061@ldl.fc.hp.com> <1250803577.2754.30.camel@sbs-t61.sc.intel.com> <4A8DC349.5060508@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8DC349.5060508@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 20 Aug 2009 20:36:52 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 21 Aug 2009 09:34:52 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-mm@kvack.org,
+       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
+Message-Id: <20090821093452.ead96b2d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4A8D144C.5050005@redhat.com>
+References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
+	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>
+	<m1bpmk8l1g.fsf@fess.ebiederm.org>
+	<4A83893D.50707@redhat.com>
+	<m1eirg5j9i.fsf@fess.ebiederm.org>
+	<4A83CD84.8040609@redhat.com>
+	<m1tz0avy4h.fsf@fess.ebiederm.org>
+	<4A8927DD.6060209@redhat.com>
+	<20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>
+	<4A8A4ABB.70003@redhat.com>
+	<20090818172552.779d0768.kamezawa.hiroyu@jp.fujitsu.com>
+	<4A8A83F4.6010408@redhat.com>
+	<20090819085703.ccf9992a.kamezawa.hiroyu@jp.fujitsu.com>
+	<4A8B6649.3080103@redhat.com>
+	<20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com>
+	<4A8D144C.5050005@redhat.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I agree... if this ID is used for topology detection, we shouldn't
-> replace it arbitrarily with information from BIOS just to hope that it
-> matches the motherboard stencil.  *Furthermore*, there is no reason why
-> motherboard stencilAs are purely numeric... consider the rather obvious
-> case of two rows of four CPUs; they may have CPU slots labelled A1, A2,
-> A3, A4, B1, B2, B3, B4.  It might very well be the right thing to
-> support arbitrary strings for platforms we recognize.
+On Thu, 20 Aug 2009 17:15:56 +0800
+Amerigo Wang <amwang@redhat.com> wrote:
+    
+> > The, problem is whether memmap is there or not. That's all.
+> > plz see init sequence and check there are memmap.
+> > If memory-for-crash is obtained via bootmem,
+> > Don't you try to free memory hole ?
+> >   
+> 
+> Hi,
+> 
+> It looks like that mem_map has 'struct page' for the reserved memory, I 
+> checked my "early_node_map[] active PFN ranges" output, the reserved 
+> memory area for crash kernel is right in one range. Am I missing 
+> something here?
+> 
+> I don't know why that oops comes out, maybe because of no PTE for thoese 
+> pages?
+> 
+Hmm ? Could you show me the code you use ?
 
-Maintaining a manual mapping to strings in the kernel to such strings 
-would be just crazy. You would need a new entry for basically
-every system.
+Thanks,
+-Kame
 
-The reason to correct SOCKETID is that it it is output on errors.
-If it is numerical and you know it's wrong you can correct it,
-and then you can identify the right CPU. Otherwise you lose.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
