@@ -1,56 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbZHUP5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbZHUP5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755468AbZHUP5F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbZHUP5F
+	id S932394AbZHUP5h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 11:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447AbZHUP5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:57:05 -0400
-Received: from smtpauth.net4india.com ([202.71.129.41]:60719 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754612AbZHUP5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:57:04 -0400
-Message-ID: <4A8EC3BD.3000107@xenontk.org>
-Date: Fri, 21 Aug 2009 21:26:45 +0530
-From: David John <davidjon@xenontk.org>
-Reply-To: davidjon@xenontk.org
-User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.1) Gecko/20090814 Thunderbird/3.0b3
+	Fri, 21 Aug 2009 11:57:36 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:43718 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754651AbZHUP5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 11:57:35 -0400
+Date: Fri, 21 Aug 2009 10:57:42 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mm-commits@vger.kernel.org, mschmidt@redhat.com, dhowells@redhat.com,
+       jmorris@namei.org, sds@tycho.nsa.gov
+Subject: Re: +
+	bsdacct-switch-credentials-for-writing-to-the-accounting-file.patch
+	added to -mm tree
+Message-ID: <20090821155742.GA16842@us.ibm.com>
+References: <200908202139.n7KLdq6D006632@imap1.linux-foundation.org>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Paul Walmsley <paul@pwsan.com>, Russell King <linux@arm.linux.org.uk>,
-       erikm@nl.linux.org, vince@kyllikki.org, linux-kernel@vger.kernel.org,
-       linux-arm@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] ARM: Mailing lists have moved
-References: <1250855566.3311.100.camel@macbook.infradead.org>	 <alpine.DEB.2.00.0908210925400.24646@utopia.booyaka.com> <1250868957.3311.110.camel@macbook.infradead.org>
-In-Reply-To: <1250868957.3311.110.camel@macbook.infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908202139.n7KLdq6D006632@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/21/2009 09:05 PM, David Woodhouse wrote:
-> On Fri, 2009-08-21 at 09:27 -0600, Paul Walmsley wrote:
->>
->>
->>> Russell no longer wants to maintain the mailing lists, so with his
->>> blessing I have set up replacements at lists.infradead.org.
->>
->> Can you help us understand why the existing linux-arm@vger.kernel.org
->> list is not used for this?
+Quoting akpm@linux-foundation.org (akpm@linux-foundation.org):
 > 
-> Russell didn't want to do that, so I offered an alternative solution
-> preserving the three separate lists (l-a, l-a-kernel, l-a-toolchain).
+> The patch titled
+>      bsdacct: switch credentials for writing to the accounting file
+> has been added to the -mm tree.  Its filename is
+>      bsdacct-switch-credentials-for-writing-to-the-accounting-file.patch
 > 
+> Before you just go and hit "reply", please:
+>    a) Consider who else should be cc'ed
+>    b) Prefer to cc a suitable mailing list as well
+>    c) Ideally: find the original patch on the mailing list and do a
+>       reply-to-all to that, adding suitable additional cc's
+> 
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> 
+> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> 
+> ------------------------------------------------------
+> Subject: bsdacct: switch credentials for writing to the accounting file
+> From: Michal Schmidt <mschmidt@redhat.com>
+> 
+> When process accounting is enabled, every exiting process writes a log to
+> the account file.  In addition, every once in a while one of the exiting
+> processes checks whether there's enough free space for the log.
+> 
+> SELinux policy may or may not allow the exiting process to stat the fs. 
+> So unsuspecting processes start generating AVC denials just because
+> someone enabled process accounting.
+> 
+> For these filesystem operations, the exiting process's credentials should
+> be temporarily switched to that of the process which enabled accounting,
+> because it's really that process which wanted to have the accounting
+> information logged.
+> 
+> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
+> Acked-by: David Howells <dhowells@redhat.com>
 
-Would it be too much to ask that linux-arm@vger be used for ARM kernel
-development, with the other two lists at infradead? Maintaining multiple
-kernel development lists was one of the problems mentioned, with people
-unsure as to which list to subscribe to and having to subscribe to both
-lists in case mails were posted to the vger list.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Maintaining a _single_ kernel mailing list would be ideal.
-
-Regards,
-David.
+> Cc: James Morris <jmorris@namei.org>
+> Cc: Serge Hallyn <serue@us.ibm.com>
+> Cc: Stephen Smalley <sds@tycho.nsa.gov>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  kernel/acct.c |    8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff -puN kernel/acct.c~bsdacct-switch-credentials-for-writing-to-the-accounting-file kernel/acct.c
+> --- a/kernel/acct.c~bsdacct-switch-credentials-for-writing-to-the-accounting-file
+> +++ a/kernel/acct.c
+> @@ -491,13 +491,17 @@ static void do_acct_process(struct bsd_a
+>  	u64 run_time;
+>  	struct timespec uptime;
+>  	struct tty_struct *tty;
+> +	const struct cred *orig_cred;
+> +
+> +	/* Perform file operations on behalf of whoever enabled accounting */
+> +	orig_cred = override_creds(file->f_cred);
+> 
+>  	/*
+>  	 * First check to see if there is enough free_space to continue
+>  	 * the process accounting system.
+>  	 */
+>  	if (!check_free_space(acct, file))
+> -		return;
+> +		goto out;
+> 
+>  	/*
+>  	 * Fill the accounting struct with the needed info as recorded
+> @@ -578,6 +582,8 @@ static void do_acct_process(struct bsd_a
+>  			       sizeof(acct_t), &file->f_pos);
+>  	current->signal->rlim[RLIMIT_FSIZE].rlim_cur = flim;
+>  	set_fs(fs);
+> +out:
+> +	revert_creds(orig_cred);
+>  }
+> 
+>  /**
+> _
+> 
+> Patches currently in -mm which might be from mschmidt@redhat.com are
+> 
+> bsdacct-switch-credentials-for-writing-to-the-accounting-file.patch
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
