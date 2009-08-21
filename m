@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZHUQCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbZHUQDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbZHUQCH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 12:02:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbZHUQCG
+	id S1755581AbZHUQDQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 12:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932073AbZHUQDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 12:02:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57578 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755417AbZHUQCE (ORCPT
+	Fri, 21 Aug 2009 12:03:15 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:36289 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755444AbZHUQDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 12:02:04 -0400
+	Fri, 21 Aug 2009 12:03:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=tcHGRYGwWbvMvr6TDgnASP61lT8NE4Vb8C5hI2sJYWxnhmAnnXCfZshy/7gUD8LpiZ
+         xHXjB/LiVxSBzCdpKGg1IJENalL8q+vfIBFtfFTaBYzMWrFfirAMfFtkO3Cds+dj9ySe
+         lM6SNT4/JrGVyj+KHBHpWE+eu/kFXiEXmZoW0=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Bill Gatliff <bgat@billgatliff.com>
 Subject: Re: [PATCH] ARM: Mailing lists have moved
-From: David Woodhouse <dwmw2@infradead.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arm-kernel@lists.infradead.org,
-       Russell King <linux@arm.linux.org.uk>, vince@kyllikki.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-In-Reply-To: <200908211731.24538.arnd@arndb.de>
-References: <1250855566.3311.100.camel@macbook.infradead.org>
-	 <200908211513.48424.arnd@arndb.de>
-	 <1250868037.3311.106.camel@macbook.infradead.org>
-	 <200908211731.24538.arnd@arndb.de>
-Content-Type: text/plain
-Date: Fri, 21 Aug 2009 17:02:01 +0100
-Message-Id: <1250870521.3311.169.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Date: Fri, 21 Aug 2009 18:03:32 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc6-dirty; KDE/4.2.4; i686; ; )
+Cc: David Woodhouse <dwmw2@infradead.org>, Paul Walmsley <paul@pwsan.com>,
+       Russell King <linux@arm.linux.org.uk>, erikm@nl.linux.org,
+       vince@kyllikki.org, linux-kernel@vger.kernel.org,
+       linux-arm@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-arm-kernel@lists.infradead.org
+References: <1250855566.3311.100.camel@macbook.infradead.org> <1250868957.3311.110.camel@macbook.infradead.org> <4A8EBFFD.5000307@billgatliff.com>
+In-Reply-To: <4A8EBFFD.5000307@billgatliff.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200908211803.32672.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 17:31 +0200, Arnd Bergmann wrote:
-> Contrary to what you expect to be
-> the minimum level of intelligence required to subscribe to development
-> mailing list, a huge number of them subsequently flooded the list
-> with messages saying 'please unsubscribe me please' or the like.
-> Needless to say, there was a clear instruction on the bottom of each
-> mail telling you how to unsubscribe.
+On Friday 21 August 2009 17:40:45 Bill Gatliff wrote:
+> David Woodhouse wrote:
+> > On Fri, 2009-08-21 at 09:27 -0600, Paul Walmsley wrote:
+> >   
+> >>     
+> >>> Russell no longer wants to maintain the mailing lists, so with his
+> >>> blessing I have set up replacements at lists.infradead.org.
+> >>>       
+> >> Can you help us understand why the existing linux-arm@vger.kernel.org
+> >> list is not used for this?
+> >>     
+> >
+> > Russell didn't want to do that, so I offered an alternative solution
+> > preserving the three separate lists (l-a, l-a-kernel, l-a-toolchain).
+> >   
+> 
+> Ok, so which of the new lists should former linux-arm-kernel subscribers 
+> be subscribed to?  I'm confused, I've seen mention of four different 
+> lists now: three at infraded, and one at vger.  :)
 
-Hm. There's no accounting for the stupidity of the human animal.
-
-We considered doing it as a mass _invitation_ (which needs the
-subscriber to click the link to confirm) rather than a mass
-subscription. In general, I think it's better to err on the side of
-inclusion -- so I decided against that because I thought too many people
-wouldn't notice it and would fall off the lists as a result. Perhaps
-that was the wrong decision, but I suspect nothing is gained now by
-going back and changing things, even if I _did_ have the required
-information.
-
-Even with the notification and the first major thread being "ARM Mailing
-lists have moved", you're right that there are probably a few people who
-are _so_ stupid that they can't manage to work it out. I've sent a mail
-with words of one syllable or fewer to each list, which might hopefully
-help -- but I'm sure there'll still be some.
-
-When that happens, we'll unsubscribe them -- and send in the ninjas to
-ensure they don't accidentally breed.
-
--- 
-dwmw2
-
+You can always start a new one if you are not sure. :)
