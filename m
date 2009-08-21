@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932853AbZHUR0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbZHUR0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932853AbZHUR0u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932737AbZHURYN
+	id S932800AbZHUR0d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932750AbZHURYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:24:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50207 "EHLO mx2.suse.de"
+	Fri, 21 Aug 2009 13:24:16 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50203 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932635AbZHURYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932633AbZHURYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 21 Aug 2009 13:24:08 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [PATCH 05/17] ocfs2: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
-Date: Fri, 21 Aug 2009 19:23:55 +0200
-Message-Id: <1250875447-15622-6-git-send-email-jack@suse.cz>
+       ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Felix Blyakher <felixb@sgi.com>, xfs@oss.sgi.com
+Subject: [PATCH 03/17] vfs: Remove syncing from generic_file_direct_write() and generic_file_buffered_write()
+Date: Fri, 21 Aug 2009 19:23:53 +0200
+Message-Id: <1250875447-15622-4-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1250875447-15622-1-git-send-email-jack@suse.cz>
 References: <1250875447-15622-1-git-send-email-jack@suse.cz>
@@ -23,62 +24,106 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the new helper. We have to submit data pages ourselves in case of O_SYNC
-write because __generic_file_aio_write does not do it for us. OCFS2 developpers
-might think about moving the sync out of i_mutex which seems to be easily
-possible but that's out of scope of this patch.
+generic_file_direct_write() and generic_file_buffered_write() called
+generic_osync_inode() if it was called on O_SYNC file or IS_SYNC inode. But
+this is superfluous since generic_file_aio_write() does the syncing as well.
+Also XFS and OCFS2 which call these functions directly handle syncing
+themselves. So let's have a single place where syncing happens:
+generic_file_aio_write().
+
+We slightly change the behavior by syncing only the range of file to which the
+write happened for buffered writes but that should be all that is required.
 
 CC: ocfs2-devel@oss.oracle.com
 CC: Joel Becker <joel.becker@oracle.com>
+CC: Felix Blyakher <felixb@sgi.com>
+CC: xfs@oss.sgi.com
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/ocfs2/file.c |   22 ++++++++++++----------
- 1 files changed, 12 insertions(+), 10 deletions(-)
+ mm/filemap.c |   35 ++++++-----------------------------
+ 1 files changed, 6 insertions(+), 29 deletions(-)
 
-diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
-index 62442e4..1c71f0a 100644
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -1870,8 +1870,7 @@ relock:
- 			goto out_dio;
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 554a396..f863e1d 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2187,20 +2187,7 @@ generic_file_direct_write(struct kiocb *iocb, const struct iovec *iov,
  		}
- 	} else {
--		written = generic_file_aio_write_nolock(iocb, iov, nr_segs,
--							*ppos);
-+		written = __generic_file_aio_write(iocb, iov, nr_segs, ppos);
+ 		*ppos = end;
  	}
+-
+-	/*
+-	 * Sync the fs metadata but not the minor inode changes and
+-	 * of course not the data as we did direct DMA for the IO.
+-	 * i_mutex is held, which protects generic_osync_inode() from
+-	 * livelocking.  AIO O_DIRECT ops attempt to sync metadata here.
+-	 */
+ out:
+-	if ((written >= 0 || written == -EIOCBQUEUED) &&
+-	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+-		int err = generic_osync_inode(inode, mapping, OSYNC_METADATA);
+-		if (err < 0)
+-			written = err;
+-	}
+ 	return written;
+ }
+ EXPORT_SYMBOL(generic_file_direct_write);
+@@ -2332,8 +2319,6 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
+ {
+ 	struct file *file = iocb->ki_filp;
+ 	struct address_space *mapping = file->f_mapping;
+-	const struct address_space_operations *a_ops = mapping->a_ops;
+-	struct inode *inode = mapping->host;
+ 	ssize_t status;
+ 	struct iov_iter i;
  
- out_dio:
-@@ -1879,18 +1878,21 @@ out_dio:
- 	BUG_ON(ret == -EIOCBQUEUED && !(file->f_flags & O_DIRECT));
- 
- 	if ((file->f_flags & O_SYNC && !direct_io) || IS_SYNC(inode)) {
+@@ -2343,16 +2328,6 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
+ 	if (likely(status >= 0)) {
+ 		written += status;
+ 		*ppos = pos + status;
+-
 -		/*
--		 * The generic write paths have handled getting data
--		 * to disk, but since we don't make use of the dirty
--		 * inode list, a manual journal commit is necessary
--		 * here.
+-		 * For now, when the user asks for O_SYNC, we'll actually give
+-		 * O_DSYNC
 -		 */
--		if (old_size != i_size_read(inode) ||
--		    old_clusters != OCFS2_I(inode)->ip_clusters) {
-+		ret = filemap_fdatawrite_range(file->f_mapping, pos,
-+					       pos + count - 1);
-+		if (ret < 0)
-+			written = ret;
-+
-+		if (!ret && (old_size != i_size_read(inode) ||
-+		    old_clusters != OCFS2_I(inode)->ip_clusters)) {
- 			ret = jbd2_journal_force_commit(osb->journal->j_journal);
- 			if (ret < 0)
- 				written = ret;
- 		}
-+
-+		if (!ret)
-+			ret = filemap_fdatawait_range(file->f_mapping, pos,
-+						      pos + count - 1);
- 	}
+-		if (unlikely((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+-			if (!a_ops->writepage || !is_sync_kiocb(iocb))
+-				status = generic_osync_inode(inode, mapping,
+-						OSYNC_METADATA|OSYNC_DATA);
+-		}
+   	}
+ 	
+ 	/*
+@@ -2514,11 +2489,12 @@ ssize_t generic_file_aio_write_nolock(struct kiocb *iocb,
  
- 	/* 
+ 	ret = __generic_file_aio_write(iocb, iov, nr_segs, &iocb->ki_pos);
+ 
+-	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
++	if ((ret > 0 || ret == -EIOCBQUEUED) &&
++	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+ 		ssize_t err;
+ 
+ 		err = sync_page_range_nolock(inode, mapping, pos, ret);
+-		if (err < 0)
++		if (err < 0 && ret > 0)
+ 			ret = err;
+ 	}
+ 	return ret;
+@@ -2550,11 +2526,12 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
+ 	ret = __generic_file_aio_write(iocb, iov, nr_segs, &iocb->ki_pos);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
++	if ((ret > 0 || ret == -EIOCBQUEUED) &&
++	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+ 		ssize_t err;
+ 
+ 		err = sync_page_range(inode, mapping, pos, ret);
+-		if (err < 0)
++		if (err < 0 && ret > 0)
+ 			ret = err;
+ 	}
+ 	return ret;
 -- 
 1.6.0.2
 
