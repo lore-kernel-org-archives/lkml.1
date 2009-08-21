@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbZHURko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZHURlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755608AbZHURko (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZHURkn
+	id S1755689AbZHURlt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbZHURls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:40:43 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48017 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbZHURkm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:40:42 -0400
-Message-ID: <4A8EDC02.8000508@zytor.com>
-Date: Fri, 21 Aug 2009 10:40:18 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Fri, 21 Aug 2009 13:41:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34828 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752770AbZHURlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 13:41:47 -0400
+X-Authenticated: #10250065
+X-Provags-ID: V01U2FsdGVkX19HZJJ1NshHYAEt9/9qdfdlfkWhwRMMmPzd04f3EQ
+	lTXbdXVn78g+HV
+Message-ID: <4A8EDC71.10403@gmx.de>
+Date: Fri, 21 Aug 2009 19:42:09 +0200
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-       tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
- CPUID bit
-References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com> <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org> <20090816064132.GA16278@elte.hu> <20090816214934.GB7765@liondog.tnic>
-In-Reply-To: <20090816214934.GB7765@liondog.tnic>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fb: do not ignore fb_set_par errors
+References: <1250769597-14861-1-git-send-email-FlorianSchandinat@gmx.de>	<1250769597-14861-2-git-send-email-FlorianSchandinat@gmx.de> <20090820153100.eec12070.akpm@linux-foundation.org>
+In-Reply-To: <20090820153100.eec12070.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.68
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/16/2009 02:49 PM, Borislav Petkov wrote:
-> On Sun, Aug 16, 2009 at 08:41:32AM +0200, Ingo Molnar wrote:
->> -tip testing found this build bug caused by this patch:
->>
->> arch/x86/kernel/cpu/amd.c: In function ‘init_amd’:
->> arch/x86/kernel/cpu/amd.c:417: error: implicit declaration of function ‘wrmsr_amd_safe’
+Andrew Morton schrieb:
+> On Thu, 20 Aug 2009 11:59:56 +0000
+> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
 > 
-> Oops, forgot paravirt. Here's a fixed version:
+>> at the moment about half of the framebuffer drivers can return an error
+>> code in fb_set_par. Until now it would be silently ignored by fbmem.c
+>> and fbcon.c. The following patch fixes fbmem.c to pass it on but I have
+>> no idea what the right behaviour in fbcon.c would look like.
+>> Any comments?
 > 
+> Nobody really maintains this code any more and I don't know to whom
+> your question should be addressed.  All I can suggest is that you
+> decide what is the best path to take, and propose that we take it!  
 
-One thing that really bothers me about these is that they're horribly
-non-generic.  It wouldn't be so bad -- if we need something more generic
-we can create them -- if it wasn't for that perennial horror called
-paravirt_crap, which of course just ends up incorporating whatever
-internal interfaces we have.
+Okay. I think it's difficult to ensure that we always end up with a 
+working console. I assume that this is a very very rare case and as a 
+start it should be enough to detect those cases and print an error message.
 
-If we're going to modify the paravirt_crap for yet another MSR
-operation, then let's at least make it something like "write_msr_edi"
-and have it take a parameter for the EDI value.  Perhaps we should let
-it set EBX and ESI as well (and the same for the read operation, even
-though it already exists.)
+> Yes, it seems reasonable to me - if we ignore this the machine will
+> probably crash later anyway.
+> 
+> A well-behaved driver should leave the hardware in an unchanged state
+> if it's going to return an error (IMO).
+> 
+> Do you know of any bug reports which are due to this lack of checking?
 
-	-hpa
+No, I just hit the problem by thinking about how dynamic errors can be 
+handled and looking at some drivers and fbmem.c.
+
+> If you're concerned about the effects of this change, perhaps you
+> should add a nice big printk when we decide to error out, so that it
+> makes it easier for bug reporters (and responders!) to work out what
+> happened?
+
+That's a very good idea. Will add this too and resend the patch.
+
+
+Thanks,
+
+Florian Tobias Schandinat
