@@ -1,152 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbZHUI2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932197AbZHUIal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932205AbZHUI2j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 04:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932176AbZHUI2i
+	id S932197AbZHUIal (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 04:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932139AbZHUIal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 04:28:38 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:43872 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932195AbZHUI2g convert rfc822-to-8bit (ORCPT
+	Fri, 21 Aug 2009 04:30:41 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38303 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754727AbZHUIak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 04:28:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bIIqFTYiVVoZ7EXJS/prCx9772l5eOgYihGLegQSftcwcxwoTzyChsh4gpC5RjVom1
-         ic9PPgivaWQJ5rwkc1L9Sxy+7+X8LNCBy7PB7eUqQ+JEJEIaOY12W4O6b8k6Rn1pJL7E
-         5MEPmwQOoR0QVu+Sse5ML9u7ITAbgRa140cYE=
+	Fri, 21 Aug 2009 04:30:40 -0400
+Date: Fri, 21 Aug 2009 10:30:28 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Mailing List Etiquette
+Message-ID: <20090821083028.GH8431@elf.ucw.cz>
+References: <20090819060004.GA23859@n2100.arm.linux.org.uk> <20090821072607.GA26983@atrey.karlin.mff.cuni.cz> <20090821081849.GA14431@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <19f34abd0908202346p57de93bew257b046899d7a1da@mail.gmail.com>
-References: <20090820015624.GE524@hash.localnet>
-	 <84144f020908192208x453ebbd4gecf52eb47903653d@mail.gmail.com>
-	 <20090820111937.GF524@hash.localnet>
-	 <19f34abd0908200502n6ff53e71ld5bc18aa581d5625@mail.gmail.com>
-	 <20090821020633.GA25571@hash.localnet>
-	 <19f34abd0908202346p57de93bew257b046899d7a1da@mail.gmail.com>
-Date: Fri, 21 Aug 2009 10:28:35 +0200
-Message-ID: <19f34abd0908210128od882886kda274d5a8da399f0@mail.gmail.com>
-Subject: Re: 2.6.32-rc6 BUG at mm/slab.c:2869!
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: Eric Paris <eparis@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ext4@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090821081849.GA14431@n2100.arm.linux.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/21 Vegard Nossum <vegard.nossum@gmail.com>:
-> 2009/8/21 Bob Copeland <me@bobcopeland.com>:
->> On Thu, Aug 20, 2009 at 02:02:49PM +0200, Vegard Nossum wrote:
->>> > I'll try that and kmemcheck next.
->>>
->>> Hm, I'm afraid kmemcheck gives some known false positives related to
->>> bitfields in ext4 code, so in the case that something turned up, it
->>> might be hard to distinguish it from those false positives.
->>
->> Well I didn't get anything from ext4 so far.  I did hit one with
->> fsnotify:
->>
->> WARNING: kmemcheck: Caught 32-bit read from freed memory (f34a443c)
->> eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee008a06f700011000
->>  a a a a a a a a a a a a a a a a a a a a a a a a f f f f f f f f
->>                                                         ^
->>
->> Pid: 2745, comm: fsck.ext4 Not tainted (2.6.31-rc6 #2) MacBook1,1
->> EIP: 0060:[<c10f3656>] EFLAGS: 00010217 CPU: 0
->> EIP is at inotify_handle_event+0x76/0xc0
->> EAX: f34a443c EBX: f34a4438 ECX: 00000000 EDX: f6732000
->> ESI: f6559764 EDI: 00000000 EBP: f6733f0c ESP: c1527450
->>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
->> CR0: 8005003b CR2: f6c046d4 CR3: 367fb000 CR4: 000026d0
->> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
->> DR6: ffff4ff0 DR7: 00000400
->>  [<c10f0d78>] fsnotify+0xa8/0x130
->>  [<c10c5e11>] __fput+0xb1/0x1e0
->>  [<c10c5f55>] fput+0x15/0x20
->>  [<c10c2ca7>] filp_close+0x47/0x80
->>  [<c10c2d54>] sys_close+0x74/0xc0
->>  [<c1002ec8>] sysenter_do_call+0x12/0x36
->>  [<ffffffff>] 0xffffffff
->>
->> I think that is list_empty() here where %eax is list_head
->> and event_list->next is the read location... which definitely
->> doesn't look like a pointer, if I'm reading it correctly.
->
-> I think f34a443c is a valid pointer. On my machine, at least:
->
-> [    0.004000]     lowmem  : 0xc0000000 - 0xf73fe000   ( 883 MB)
->
->>
->> inotify_fsnotify.o:
->>
->>        /* did event_priv get attached? */
->>        if (list_empty(&fsn_event_priv->event_list))
->>  143:   8d 43 04                lea    0x4(%ebx),%eax
->>
->>        event_priv = kmem_cache_alloc(event_priv_cachep, GFP_KERNEL);
->>        if (unlikely(!event_priv))
->>                return -ENOMEM;
->>
->>        fsn_event_priv = &event_priv->fsnotify_event_priv_data;
->>  146:   39 43 04                cmp    %eax,0x4(%ebx)     <=== read here
->>  149:   74 1d                   je     168 <inotify_handle_event+0x98>
->
-> I can see somewhat of a race, I think:
->
-> 1. userspace calls inotify_read(), where we wait for something to happen:
->
-> 249         while (1) {
-> 250                 prepare_to_wait(&group->notification_waitq, &wait,
-> TASK_INTERRUPTIBLE);
-> 251
-> 252                 mutex_lock(&group->notification_mutex);
-> 253                 kevent = get_one_event(group, count);
-> 254                 mutex_unlock(&group->notification_mutex);
->
-> 2. an event occurs, and inotify_handle_event() calls
-> fsnotify_add_notify_event():
->
->  64         ret = fsnotify_add_notify_event(group, event, fsn_event_priv);
->  65         /* EEXIST is not an error */
->  66         if (ret == -EEXIST)
->  67                 ret = 0;
->
-> 3. fsnotify_add_notify_event() adds the fsn_event_priv to the event,
-> and adds the event to the group, and finally wakes up anybody who is
-> waiting on &group->notification_waitq:
->
-> 230         fsnotify_get_event(event);
-> 231         list_add_tail(&holder->event_list, list);
-> 232         if (priv)
-> 233                 list_add_tail(&priv->event_list, &event->private_data_list);
-> 234         spin_unlock(&event->lock);
-> 235         mutex_unlock(&group->notification_mutex);
-> 236
-> 237         wake_up(&group->notification_waitq);
->
-> 4. inotify_read() wakes up and frees the event:
->
-> 253                 kevent = get_one_event(group, count);
->
-> 5. inotify_handle_event() now dereferences the event_priv pointer,
-> which was already freed:
->
->  69         /* did event_priv get attached? */
->  70         if (list_empty(&fsn_event_priv->event_list))
->
->
-> I think that's it. Any thoughts? I put Eric Paris on Cc.
+On Fri 2009-08-21 09:18:49, Russell King - ARM Linux wrote:
+> Right, this does it.  I'm off on holiday as of now.
 
-I guess it was fixed by this recently posted patch:
+Cool.
 
-http://osdir.com/ml/linux-kernel/2009-08/msg05185.html
+> Guess what?  I've had enough of this crap.  I'm pulling the plug on
+> these lists.  Everyone, you know the email address to complain to.
+> One community killed by an "open list" zealot.
 
-Was kmemcheck by any chance used to discover this race in the first place? ;-)
+If you are not willing to keep information up to date, don't spam with
+it. It is as simple as that. I'm looking forward to list administrator
+who does not go ballistic every time problem is reported with his
+list, and the one who does not call me names.
+								Pavel
 
+> On Fri, Aug 21, 2009 at 09:26:07AM +0200, Pavel Machek wrote:
+> > 
+> > > This message is sent to this mailing list once a week.
+> > > 
+> > 
+> > Could we maybe reduce the frequency of this spam a little bit?
+> > 
+> > >              1. Subscription requirements. [[24]rmk]
+> > >                 Recently, we have had to impose a restriction on the mailing lists.
+> > >                 You must be subscribed to the mailing list in order to post
+> > >                 messages to that mailing list. This is because of the UK Data
+> > >                 Protection laws. Only subscribe to these lists if you accept the
+> > >                 legal notice displayed on the relevant pages; by subscribing, you
+> > >                 accept the terms laid out in the legal notice. Answers will be
+> > >                 copied to you.
+> > 
+> > WTF? Did not we just have huge flamewar explaining this is untrue?
+> > 
+> > >              6. Email attachments. [[36]rmk]
+> > >                 Please ensure that all attachments are plain text. There is a limit
+> > >                 of around 40KiB on the overall size of the message, so if you want
+> > >                 to send a large attachment, please upload it to a
+> > >              web site
+> > 
+> > I thought limit was recently raised?
+> > 
+> > >              10. Cross-posting between linux-arm* lists and other lists. [[40]rmk]
+> > >                 Please do not do this. Subscribers on other lists may not be
+> > >                 subscribed to the linux-arm lists, so when they try to reply to
+> > >                 such a message, they will receive a bounce. This is deemed by
+> > >                 others to be rude behaviour on the part of the person who
+> > >                 originally cross-posted.
+> > 
+> > Again, in recent flamewar you claimed crossposting is
+> > okay.
+> > 										Pavel
+> > -- 
+> > (english) http://www.livejournal.com/~pavelmachek
+> > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-Vegard
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
