@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932920AbZHUVju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932766AbZHUVmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932920AbZHUVju (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 17:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932806AbZHUVjt
+	id S932766AbZHUVmr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932515AbZHUVmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 17:39:49 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:42871 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932800AbZHUVjs (ORCPT
+	Fri, 21 Aug 2009 17:42:47 -0400
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:54893 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932537AbZHUVmq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 17:39:48 -0400
-Date: Fri, 21 Aug 2009 23:39:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, peterz@infradead.org,
-       torvalds@linux-foundation.org, tytso@mit.edu, arjan@infradead.org,
-       greg@kroah.com, mcgrof@gmail.com, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, corbet@lwn.net,
-       sourcejedi.lkml@googlemail.com, andi@firstfloor.org
-Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
-Message-ID: <20090821213948.GB16210@merkur.ravnborg.org>
-References: <20090819025634.987354707@goodmis.org> <20090820143025.7134930f.akpm@linux-foundation.org>
+	Fri, 21 Aug 2009 17:42:46 -0400
+Message-ID: <4A8F1500.6070208@dell.com>
+Date: Fri, 21 Aug 2009 16:43:28 -0500
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090804)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090820143025.7134930f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+CC: cezary.jackiewicz@gmail.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 3/3] Drop platform sysfs attributes from compal-laptop
+References: <1250706980-10424-1-git-send-email-Mario_Limonciello@Dell.com> <9b2b86520908200217j6a62b19dk6214b827af34418@mail.gmail.com>
+In-Reply-To: <9b2b86520908200217j6a62b19dk6214b827af34418@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig23E672FBD5FAD81401FB38C2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 02:30:25PM -0700, Andrew Morton wrote:
-> On Tue, 18 Aug 2009 22:56:34 -0400
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > Here's my rebase of the prior push of streamline-config.pl.
-> 
-> ow, you made me look at perl code.
-> 
-> > The following patches are in:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> > 
-> >     branch: kconfig
-> 
-> Sam's been quiet lately.  I suggest that you add this to linux-next
-> now so people get a chance to poke at it.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig23E672FBD5FAD81401FB38C2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Busy at day time job so no spare time left for Linux stuff recently.
-Will get back in a few weeks if we get the release out in time.
 
-	Sam
+
+Alan Jenkins wrote:
+> On 8/19/09, Mario Limonciello <Mario_Limonciello@dell.com> wrote:
+>  =20
+>
+>  =20
+>
+> Don't you still need to call platform_device_del() for the fail_rfkill =
+case?
+>
+>  =20
+It was previously only called if the sysfs attribute creation failed.=20
+So if it does need to be called, then there was a bug previously there to=
+o.
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
+
+
+--------------enig23E672FBD5FAD81401FB38C2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkqPFQAACgkQ2CrZjkA73YtFRwCeN2o209XXx8HYBrLQ+W+epQie
+krUAn0CQHxP44wuzc8HrRh+KewDpBi9H
+=qw4t
+-----END PGP SIGNATURE-----
+
+--------------enig23E672FBD5FAD81401FB38C2--
