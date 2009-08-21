@@ -1,130 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZHUMAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZHUL73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbZHUMAE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 08:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbZHUMAC
+	id S1754807AbZHUL73 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbZHUL72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 08:00:02 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50928 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751984AbZHUMAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 08:00:00 -0400
-Date: Fri, 21 Aug 2009 13:58:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-tip-commits@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>, Kyle McMartin <kyle@mcmartin.ca>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       mingo@redhat.com, torvalds@linux-foundation.org,
-       catalin.marinas@arm.com, jens.axboe@oracle.com, fweisbec@gmail.com,
-       stable@kernel.org, srostedt@redhat.com, tglx@linutronix.de
-Subject: Re: [tip:tracing/urgent] tracing: Fix too large stack usage in
-	do_one_initcall()
-Message-ID: <20090821115847.GE24647@elte.hu>
-References: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org> <20090821111450.GA32037@elte.hu> <1250854653.7538.21.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250854653.7538.21.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 21 Aug 2009 07:59:28 -0400
+Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:39227 "EHLO
+	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754396AbZHUL7Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 07:59:25 -0400
+Subject: [RFC PATCH] mm: balance_dirty_pages. reduce calls to
+ global_page_state to reduce cache references
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "chris.mason" <chris.mason@oracle.com>, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain
+Date: Fri, 21 Aug 2009 12:59:21 +0100
+Message-Id: <1250855961.2226.94.camel@castor>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Reducing the number of times balance_dirty_pages calls global_page_state
+reduces the cache references and so improves write performance on a
+variety of workloads.
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+'perf stats' of simple fio write tests shows the reduction in cache
+access.
+Where the test is fio 'write,mmap,600Mb,pre_read' on AMD AthlonX2 with
+3Gb memory (dirty_threshold approx 600 Mb)
+running each test 10 times, taking the average & standard deviation
 
-> On Fri, 2009-08-21 at 13:14 +0200, Ingo Molnar wrote:
-> 
-> > > There's a lot of fat functions on that stack trace, but
-> > > the largest of all is do_one_initcall(). This is due to
-> > > the boot trace entry variables being on the stack.
-> > > 
-> > > Fixing this is relatively easy, initcalls are fundamentally
-> > > serialized, so we can move the local variables to file scope.
-> > > 
-> > > Note that this large stack footprint was present for a
-> > > couple of months already - what pushed my system over
-> > > the edge was the addition of kmemleak to the call-chain:
-> > > 
-> > >   6)     3328      36   allocate_slab+0xb1/0x100
-> > >   7)     3292      36   new_slab+0x1c/0x160
-> > >   8)     3256      36   __slab_alloc+0x133/0x2b0
-> > >   9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
-> > >  10)     3216     108   create_object+0x28/0x250
-> > >  11)     3108      40   kmemleak_alloc+0x81/0xc0
-> > >  12)     3068      24   kmem_cache_alloc+0x162/0x1d0
-> > >  13)     3044      52   scsi_pool_alloc_command+0x29/0x70
-> > > 
-> > > This pushes the total to ~3800 bytes, only a tiny bit
-> > > more was needed to corrupt the on-kernel-stack thread_info.
-> > > 
-> > > The fix reduces the stack footprint from 572 bytes
-> > > to 28 bytes.
-> > 
-> > btw., it will just take two more features like kmemleak to trigger 
-> > hard to debug stack overflows again on 32-bit. We are right at the 
-> > edge and this situation is not really fixable in a reliable way 
-> > anymore.
-> > 
-> > So i think we should be more drastic and solve the real problem: we 
-> > should drop 4K stacks and 8K combo-stacks on 32-bit, and go 
-> > exclusively to 8K split stacks on 32-bit.
-> > 
-> > I.e. the stack size will be 'unified' too between 64-bit and 32-bit 
-> > to a certain degree: process stacks will be 8K on both 64-bit and 
-> > 32-bit x86, IRQ stacks will be separate. (on 64-bit we also have the 
-> > IST stacks for certain exceptions that further isolates things)
-> > 
-> > This will simplify the 32-bit situation quite a bit and removes a 
-> > contentious config option and makes the kernel more robust in 
-> > general. 8K combo stacks are not safe due to irq nesting and 4K 
-> > isolated stacks are not enough. 8K isolated stacks is the way to go.
-> > 
-> > Opinions?
-> 
-> I'm obviously all in favour of merging the i386 and x86_64 stack 
-> code. Esp after having had to look at the i386 stuff recently.
+		average (s.d.) in millions (10^6)
+2.6.31-rc6	661 (9.88)
++patch		604 (4.19)
 
-ok.
+Achieving this reduction is by dropping clip_bdi_dirty_limit as it  
+rereads the counters to apply the dirty_threshold and moving this check
+up into balance_dirty_pages where it has already read the counters.
 
-> Now I don't think that unifying all this requires the sizes to be 
-> the same between them, because x86_64 typically has larger stack 
-> footprint due to it being 64 bit. If we need to bump 32 bit stack 
-> sizes, then we're likely to also need a bump in 64 bit as well at 
-> some point soon.
+Also by rearrange the for loop to only contain one copy of the limit
+tests allows the pdflush test after the loop to use the local copies of
+the counters rather than rereading then.
 
-Well 64-bit is larger, but not twice as large. Here are the factors 
-('+' increases stack footprint, '.' is neutral, '-' decreases it):
+In the common case with no throttling it now calls global_page_state 5
+fewer times and bdi_stat 2 fewer.
 
- + pointers are 2x as large
- + alignment can cause 4 byte holes
- . other data is generally the same size
- - it has less register pressure so fewer stack spills
+I have tried to retain the existing behavior as much as possible, but
+have added NR_WRITEBACK_TEMP to nr_writeback. This counter was used in
+clip_bdi_dirty_limit but not in balance_dirty_pages, grep suggests this
+is only used by FUSE but I haven't done any testing on that. It does
+seem logical to count all the WRITEBACK pages when making the throttling
+decisions so this change should be more correct ;)
 
-So it's far from 2x size.
+I have been running this patch for over a week and have had no problems
+with it and generally see improved disk write performance on a variety
+of tests & workloads, even in the worst cases performance is the same as
+the unpatched kernel. I also tried this on a Intel ATOM 330 twincore
+system and saw similar improvements.
 
-Btw., i've measured this precisely: head to head the same .config 
-triggers the following worst-case stack footprint critical path:
+    
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+----
+ page-writeback.c |  116 ++++++++++++++++++++-----------------------------------
+ 1 file changed, 43 insertions(+), 73 deletions(-)
 
- 32-bit:  0)     3704      52   __change_page_attr+0xb8/0x290
- 64-bit:  0)     5672     112   __change_page_attr+0xc1/0x2f0
+This patch is against 2.6.31-rc6.
 
-So 64-bit has almost precisely +50% stack footprint. (same compiler, 
-etc.)
 
-And since 64-bit has larger hardware and gets stress-tested more 
-these days than 32-bit, i think it's time to flip it around: now the 
-pressure is to keep things within the 64-bit 8K stack, not the other 
-way around.
 
-	Ingo
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 81627eb..6f18e40 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -260,32 +260,6 @@ static void bdi_writeout_fraction(struct backing_dev_info *bdi,
+ 	}
+ }
+ 
+-/*
+- * Clip the earned share of dirty pages to that which is actually available.
+- * This avoids exceeding the total dirty_limit when the floating averages
+- * fluctuate too quickly.
+- */
+-static void clip_bdi_dirty_limit(struct backing_dev_info *bdi,
+-		unsigned long dirty, unsigned long *pbdi_dirty)
+-{
+-	unsigned long avail_dirty;
+-
+-	avail_dirty = global_page_state(NR_FILE_DIRTY) +
+-		 global_page_state(NR_WRITEBACK) +
+-		 global_page_state(NR_UNSTABLE_NFS) +
+-		 global_page_state(NR_WRITEBACK_TEMP);
+-
+-	if (avail_dirty < dirty)
+-		avail_dirty = dirty - avail_dirty;
+-	else
+-		avail_dirty = 0;
+-
+-	avail_dirty += bdi_stat(bdi, BDI_RECLAIMABLE) +
+-		bdi_stat(bdi, BDI_WRITEBACK);
+-
+-	*pbdi_dirty = min(*pbdi_dirty, avail_dirty);
+-}
+-
+ static inline void task_dirties_fraction(struct task_struct *tsk,
+ 		long *numerator, long *denominator)
+ {
+@@ -478,7 +452,6 @@ get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
+ 			bdi_dirty = dirty * bdi->max_ratio / 100;
+ 
+ 		*pbdi_dirty = bdi_dirty;
+-		clip_bdi_dirty_limit(bdi, dirty, pbdi_dirty);
+ 		task_dirty_limit(current, pbdi_dirty);
+ 	}
+ }
+@@ -512,45 +485,12 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 		};
+ 
+ 		get_dirty_limits(&background_thresh, &dirty_thresh,
+-				&bdi_thresh, bdi);
++				 &bdi_thresh, bdi);
+ 
+ 		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+-					global_page_state(NR_UNSTABLE_NFS);
+-		nr_writeback = global_page_state(NR_WRITEBACK);
+-
+-		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+-		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+-
+-		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+-			break;
+-
+-		/*
+-		 * Throttle it only when the background writeback cannot
+-		 * catch-up. This avoids (excessively) small writeouts
+-		 * when the bdi limits are ramping up.
+-		 */
+-		if (nr_reclaimable + nr_writeback <
+-				(background_thresh + dirty_thresh) / 2)
+-			break;
+-
+-		if (!bdi->dirty_exceeded)
+-			bdi->dirty_exceeded = 1;
+-
+-		/* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
+-		 * Unstable writes are a feature of certain networked
+-		 * filesystems (i.e. NFS) in which data may have been
+-		 * written to the server's write cache, but has not yet
+-		 * been flushed to permanent storage.
+-		 * Only move pages to writeback if this bdi is over its
+-		 * threshold otherwise wait until the disk writes catch
+-		 * up.
+-		 */
+-		if (bdi_nr_reclaimable > bdi_thresh) {
+-			writeback_inodes(&wbc);
+-			pages_written += write_chunk - wbc.nr_to_write;
+-			get_dirty_limits(&background_thresh, &dirty_thresh,
+-				       &bdi_thresh, bdi);
+-		}
++			global_page_state(NR_UNSTABLE_NFS);
++		nr_writeback = global_page_state(NR_WRITEBACK) +
++			global_page_state(NR_WRITEBACK_TEMP);
+ 
+ 		/*
+ 		 * In order to avoid the stacked BDI deadlock we need
+@@ -570,16 +510,48 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+ 		}
+ 
+-		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+-			break;
+-		if (pages_written >= write_chunk)
+-			break;		/* We've done our duty */
++		/* always throttle if over threshold */
++		if (nr_reclaimable + nr_writeback < dirty_thresh) {
++
++			if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
++				break;
++
++			/*
++			 * Throttle it only when the background writeback cannot
++			 * catch-up. This avoids (excessively) small writeouts
++			 * when the bdi limits are ramping up.
++			 */
++			if (nr_reclaimable + nr_writeback <
++			    (background_thresh + dirty_thresh) / 2)
++				break;
++
++			/* done enough? */
++			if (pages_written >= write_chunk)
++				break;
++		}
++		if (!bdi->dirty_exceeded)
++			bdi->dirty_exceeded = 1;
+ 
++		/* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
++		 * Unstable writes are a feature of certain networked
++		 * filesystems (i.e. NFS) in which data may have been
++		 * written to the server's write cache, but has not yet
++		 * been flushed to permanent storage.
++		 * Only move pages to writeback if this bdi is over its
++		 * threshold otherwise wait until the disk writes catch
++		 * up.
++		 */
++		if (bdi_nr_reclaimable > bdi_thresh) {
++			writeback_inodes(&wbc);
++			pages_written += write_chunk - wbc.nr_to_write;
++			if (wbc.nr_to_write == 0)
++				continue;
++		}
+ 		congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 	}
+ 
+ 	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+-			bdi->dirty_exceeded)
++	    bdi->dirty_exceeded)
+ 		bdi->dirty_exceeded = 0;
+ 
+ 	if (writeback_in_progress(bdi))
+@@ -593,10 +565,8 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 	 * In normal mode, we start background writeout at the lower
+ 	 * background_thresh, to keep the amount of dirty memory low.
+ 	 */
+-	if ((laptop_mode && pages_written) ||
+-			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
+-					  + global_page_state(NR_UNSTABLE_NFS)
+-					  > background_thresh)))
++	if ((laptop_mode && pages_written) || (!laptop_mode &&
++	     (nr_reclaimable > background_thresh)))
+ 		pdflush_operation(background_writeout, 0);
+ }
+ 
+
+
