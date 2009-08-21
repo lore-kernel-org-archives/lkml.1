@@ -1,367 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932685AbZHURVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932670AbZHURVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932685AbZHURVu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932621AbZHURVq
+	id S932670AbZHURVt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932614AbZHURVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:21:46 -0400
-Received: from gimli.pxnet.com ([195.227.45.7]:50973 "EHLO mail.pxnet.com"
+	Fri, 21 Aug 2009 13:21:47 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:50979 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932614AbZHURVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:21:43 -0400
+	id S932644AbZHURVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 13:21:46 -0400
 From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH RFC 3/6] gigaset: add kerneldoc comments
+Subject: [PATCH RFC 5/6] gigaset: allow building without I4L
 To: i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
 CC: Hansjoerg Lipp <hjlipp@web.de>
-Message-ID: <20090821-patch-03.tilman@imap.cc>
+Message-ID: <20090821-patch-05.tilman@imap.cc>
 In-Reply-To: <20090821-patch-00.tilman@imap.cc>
 References: <20090821-patch-00.tilman@imap.cc>
 Date: Fri, 21 Aug 2009 19:21:34 +0200 (CEST)
-X-Spam-Score: -1.192 () AWL,BAYES_00,RDNS_NONE
+X-Spam-Score: -1.249 () AWL,BAYES_00,RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add kerneldoc comments to some functions in the Gigaset driver.
+Add a dummy LL interface to the Gigaset driver so that it can be
+built and, in a limited way, used without the ISDN4Linux subsystem.
 
-Impact: documentation
+Impact: new configuration alternative
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 ---
- drivers/isdn/gigaset/asyncdata.c |   23 +++++--
- drivers/isdn/gigaset/common.c    |  126 +++++++++++++++++++++++++++++++-------
- drivers/isdn/gigaset/ev-layer.c  |    9 ++-
- drivers/isdn/gigaset/i4l.c       |   17 +++++
- drivers/isdn/gigaset/interface.c |    9 +++
- 5 files changed, 153 insertions(+), 31 deletions(-)
+ drivers/isdn/gigaset/Kconfig   |   13 +++++++-
+ drivers/isdn/gigaset/Makefile  |    4 ++-
+ drivers/isdn/gigaset/dummyll.c |   68 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 83 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/isdn/gigaset/dummyll.c
 
-diff --git a/drivers/isdn/gigaset/asyncdata.c b/drivers/isdn/gigaset/asyncdata.c
-index 234cc5d..30f1951 100644
---- a/drivers/isdn/gigaset/asyncdata.c
-+++ b/drivers/isdn/gigaset/asyncdata.c
-@@ -334,7 +334,14 @@ static inline int iraw_loop(unsigned char c, unsigned char *src, int numbytes,
- 	return startbytes - numbytes;
- }
+diff --git a/drivers/isdn/gigaset/Kconfig b/drivers/isdn/gigaset/Kconfig
+index 18ab865..6fd2dc1 100644
+--- a/drivers/isdn/gigaset/Kconfig
++++ b/drivers/isdn/gigaset/Kconfig
+@@ -1,6 +1,5 @@
+ menuconfig ISDN_DRV_GIGASET
+ 	tristate "Siemens Gigaset support"
+-	depends on ISDN_I4L
+ 	select CRC_CCITT
+ 	select BITREVERSE
+ 	help
+@@ -11,9 +10,21 @@ menuconfig ISDN_DRV_GIGASET
+ 	  If you have one of these devices, say M here and for at least
+ 	  one of the connection specific parts that follow.
+ 	  This will build a module called "gigaset".
++	  Note: If you build the ISDN4Linux subsystem (ISDN_I4L)
++	  as a module, you have to build this driver as a module too,
++	  otherwise the Gigaset device won't show up as an ISDN device.
  
--/* process a block of data received from the device
-+/**
-+ * gigaset_m10x_input() - process a block of data received from the device
-+ * @inbuf:	received data and device descriptor structure.
-+ *
-+ * Called by hardware module {ser,usb}_gigaset with a block of received
-+ * bytes. Separates the bytes received over the serial data channel into
-+ * user data and command replies (locked/unlocked) according to the
-+ * current state of the interface.
-  */
- void gigaset_m10x_input(struct inbuf_t *inbuf)
- {
-@@ -543,12 +550,14 @@ static struct sk_buff *iraw_encode(struct sk_buff *skb, int head, int tail)
- 	return iraw_skb;
- }
+ if ISDN_DRV_GIGASET
  
--/* gigaset_send_skb
-- * called by common.c to queue an skb for sending
-- * and start transmission if necessary
-- * parameters:
-- *	B Channel control structure
-- *	skb
-+/**
-+ * gigaset_send_skb() - queue an skb for sending
-+ * @bcs:	B channel descriptor structure.
-+ * @skb:	data to send.
++config GIGASET_I4L
++	bool
++	depends on ISDN_I4L='y'||(ISDN_I4L='m'&&ISDN_DRV_GIGASET='m')
++	default y
++
++config GIGASET_DUMMYLL
++	bool
++	default !GIGASET_I4L
++
+ config GIGASET_BASE
+ 	tristate "Gigaset base station support"
+ 	depends on USB
+diff --git a/drivers/isdn/gigaset/Makefile b/drivers/isdn/gigaset/Makefile
+index e9d3189..d429202 100644
+--- a/drivers/isdn/gigaset/Makefile
++++ b/drivers/isdn/gigaset/Makefile
+@@ -1,4 +1,6 @@
+-gigaset-y := common.o interface.o proc.o ev-layer.o i4l.o asyncdata.o
++gigaset-y := common.o interface.o proc.o ev-layer.o asyncdata.o
++gigaset-$(CONFIG_GIGASET_I4L) += i4l.o
++gigaset-$(CONFIG_GIGASET_DUMMYLL) += dummyll.o
+ usb_gigaset-y := usb-gigaset.o
+ ser_gigaset-y := ser-gigaset.o
+ bas_gigaset-y := bas-gigaset.o isocdata.o
+diff --git a/drivers/isdn/gigaset/dummyll.c b/drivers/isdn/gigaset/dummyll.c
+new file mode 100644
+index 0000000..5b27c99
+--- /dev/null
++++ b/drivers/isdn/gigaset/dummyll.c
+@@ -0,0 +1,68 @@
++/*
++ * Dummy LL interface for the Gigaset driver
 + *
-+ * Called by common.c to encode and queue an skb for sending, and start
-+ * transmission if necessary.
++ * Copyright (c) 2009 by Tilman Schmidt <tilman@imap.cc>.
 + *
-  * Return value:
-  *	number of bytes accepted for sending
-  *	(skb->len if ok, 0 if out of buffer space)
-diff --git a/drivers/isdn/gigaset/common.c b/drivers/isdn/gigaset/common.c
-index e4141bf..e487ab8 100644
---- a/drivers/isdn/gigaset/common.c
-+++ b/drivers/isdn/gigaset/common.c
-@@ -32,6 +32,17 @@ MODULE_PARM_DESC(debug, "debug level");
- #define VALID_MINOR	0x01
- #define VALID_ID	0x02
- 
-+/**
-+ * gigaset_dbg_buffer() - dump data in ASCII and hex for debugging
-+ * @level:	debugging level.
-+ * @msg:	message prefix.
-+ * @len:	number of bytes to dump.
-+ * @buf:	data to dump.
-+ *
-+ * If the current debugging level includes one of the bits set in @level,
-+ * @len bytes starting at @buf are logged to dmesg at KERN_DEBUG prio,
-+ * prefixed by the text @msg.
++ * =====================================================================
++ *	This program is free software; you can redistribute it and/or
++ *	modify it under the terms of the GNU General Public License as
++ *	published by the Free Software Foundation; either version 2 of
++ *	the License, or (at your option) any later version.
++ * =====================================================================
 + */
- void gigaset_dbg_buffer(enum debuglevel level, const unsigned char *msg,
- 			size_t len, const unsigned char *buf)
- {
-@@ -274,6 +285,20 @@ static void clear_events(struct cardstate *cs)
- 	spin_unlock_irqrestore(&cs->ev_lock, flags);
- }
- 
-+/**
-+ * gigaset_add_event() - add event to device event queue
-+ * @cs:		device descriptor structure.
-+ * @at_state:	connection state structure.
-+ * @type:	event type.
-+ * @ptr:	pointer parameter for event.
-+ * @parameter:	integer parameter for event.
-+ * @arg:	pointer parameter for event.
-+ *
-+ * Allocate an event queue entry from the device's event queue, and set it up
-+ * with the parameters given.
-+ *
-+ * Return value: added event
-+ */
- struct event_t *gigaset_add_event(struct cardstate *cs,
- 				  struct at_state_t *at_state, int type,
- 				  void *ptr, int parameter, void *arg)
-@@ -398,6 +423,15 @@ static void make_invalid(struct cardstate *cs, unsigned mask)
- 	spin_unlock_irqrestore(&drv->lock, flags);
- }
- 
-+/**
-+ * gigaset_freecs() - free all associated ressources of a device
-+ * @cs:		device descriptor structure.
-+ *
-+ * Stops all tasklets and timers, unregisters the device from all
-+ * subsystems it was registered to, deallocates the device structure
-+ * @cs and all structures referenced from it.
-+ * Operations on the device should be stopped before calling this.
-+ */
- void gigaset_freecs(struct cardstate *cs)
- {
- 	int i;
-@@ -506,7 +540,12 @@ static void gigaset_inbuf_init(struct inbuf_t *inbuf, struct bc_state *bcs,
- 	inbuf->inputstate = inputstate;
- }
- 
--/* append received bytes to inbuf */
-+/**
-+ * gigaset_fill_inbuf() - append received data to input buffer
-+ * @inbuf:	buffer structure.
-+ * @src:	received data.
-+ * @numbytes:	number of bytes received.
-+ */
- int gigaset_fill_inbuf(struct inbuf_t *inbuf, const unsigned char *src,
- 		       unsigned numbytes)
- {
-@@ -606,20 +645,22 @@ static struct bc_state *gigaset_initbcs(struct bc_state *bcs,
- 	return NULL;
- }
- 
--/* gigaset_initcs
-+/**
-+ * gigaset_initcs() - initialize device structure
-+ * @drv:	hardware driver the device belongs to
-+ * @channels:	number of B channels supported by device
-+ * @onechannel:	!=0 if B channel data and AT commands share one
-+ *		    communication channel (M10x),
-+ *		==0 if B channels have separate communication channels (base)
-+ * @ignoreframes:	number of frames to ignore after setting up B channel
-+ * @cidmode:	!=0: start in CallID mode
-+ * @modulename:	name of driver module for LL registration
-+ *
-  * Allocate and initialize cardstate structure for Gigaset driver
-  * Calls hardware dependent gigaset_initcshw() function
-  * Calls B channel initialization function gigaset_initbcs() for each B channel
-- * parameters:
-- *	drv		hardware driver the device belongs to
-- *	channels	number of B channels supported by device
-- *	onechannel	!=0: B channel data and AT commands share one
-- *			     communication channel
-- *			==0: B channels have separate communication channels
-- *	ignoreframes	number of frames to ignore after setting up B channel
-- *	cidmode		!=0: start in CallID mode
-- *	modulename	name of driver module (used for I4L registration)
-- * return value:
-+ *
-+ * Return value:
-  *	pointer to cardstate structure
-  */
- struct cardstate *gigaset_initcs(struct gigaset_driver *drv, int channels,
-@@ -837,6 +878,17 @@ static void cleanup_cs(struct cardstate *cs)
- }
- 
- 
-+/**
-+ * gigaset_start() - start device operations
-+ * @cs:		device descriptor structure.
-+ *
-+ * Prepares the device for use by setting up communication parameters,
-+ * scheduling an EV_START event to initiate device initialization, and
-+ * waiting for completion of the initialization.
-+ *
-+ * Return value:
-+ *	1 - success, 0 - error
-+ */
- int gigaset_start(struct cardstate *cs)
- {
- 	unsigned long flags;
-@@ -879,9 +931,15 @@ error:
- }
- EXPORT_SYMBOL_GPL(gigaset_start);
- 
--/* gigaset_shutdown
-- * check if a device is associated to the cardstate structure and stop it
-- * return value: 0 if ok, -1 if no device was associated
-+/**
-+ * gigaset_shutdown() - shut down device operations
-+ * @cs:		device descriptor structure.
-+ *
-+ * Deactivates the device by scheduling an EV_SHUTDOWN event and
-+ * waiting for completion of the shutdown.
-+ *
-+ * Return value:
-+ *	0 - success, -1 - error (no device associated)
-  */
- int gigaset_shutdown(struct cardstate *cs)
- {
-@@ -912,6 +970,13 @@ exit:
- }
- EXPORT_SYMBOL_GPL(gigaset_shutdown);
- 
-+/**
-+ * gigaset_stop() - stop device operations
-+ * @cs:		device descriptor structure.
-+ *
-+ * Stops operations on the device by scheduling an EV_STOP event and
-+ * waiting for completion of the shutdown.
-+ */
- void gigaset_stop(struct cardstate *cs)
- {
- 	mutex_lock(&cs->mutex);
-@@ -1020,6 +1085,14 @@ struct cardstate *gigaset_get_cs_by_tty(struct tty_struct *tty)
- 	return gigaset_get_cs_by_minor(tty->index + tty->driver->minor_start);
- }
- 
-+/**
-+ * gigaset_freedriver() - free all associated ressources of a driver
-+ * @drv:	driver descriptor structure.
-+ *
-+ * Unregisters the driver from the system and deallocates the driver
-+ * structure @drv and all structures referenced from it.
-+ * All devices should be shut down before calling this.
-+ */
- void gigaset_freedriver(struct gigaset_driver *drv)
- {
- 	unsigned long flags;
-@@ -1035,14 +1108,16 @@ void gigaset_freedriver(struct gigaset_driver *drv)
- }
- EXPORT_SYMBOL_GPL(gigaset_freedriver);
- 
--/* gigaset_initdriver
-+/**
-+ * gigaset_initdriver() - initialize driver structure
-+ * @minor:	First minor number
-+ * @minors:	Number of minors this driver can handle
-+ * @procname:	Name of the driver
-+ * @devname:	Name of the device files (prefix without minor number)
-+ *
-  * Allocate and initialize gigaset_driver structure. Initialize interface.
-- * parameters:
-- *	minor		First minor number
-- *	minors		Number of minors this driver can handle
-- *	procname	Name of the driver
-- *	devname		Name of the device files (prefix without minor number)
-- * return value:
-+ *
-+ * Return value:
-  *	Pointer to the gigaset_driver structure on success, NULL on failure.
-  */
- struct gigaset_driver *gigaset_initdriver(unsigned minor, unsigned minors,
-@@ -1095,6 +1170,13 @@ error:
- }
- EXPORT_SYMBOL_GPL(gigaset_initdriver);
- 
-+/**
-+ * gigaset_blockdriver() - block driver
-+ * @drv:	driver descriptor structure.
-+ *
-+ * Prevents the driver from attaching new devices, in preparation for
-+ * deregistration.
-+ */
- void gigaset_blockdriver(struct gigaset_driver *drv)
- {
- 	drv->blocked = 1;
-diff --git a/drivers/isdn/gigaset/ev-layer.c b/drivers/isdn/gigaset/ev-layer.c
-index 31082a6..7258b25 100644
---- a/drivers/isdn/gigaset/ev-layer.c
-+++ b/drivers/isdn/gigaset/ev-layer.c
-@@ -474,8 +474,13 @@ static int cid_of_response(char *s)
- 	//FIXME is ;<digit>+ at end of non-CID response really impossible?
- }
- 
--/* This function will be called via task queue from the callback handler.
-- * We received a modem response and have to handle it..
-+/**
-+ * gigaset_handle_modem_response() - process received modem response
-+ * @cs:		device descriptor structure.
-+ *
-+ * Called by asyncdata/isocdata if a block of data received from the
-+ * device must be processed as a modem command response. The data is
-+ * already in the cs structure.
-  */
- void gigaset_handle_modem_response(struct cardstate *cs)
- {
-diff --git a/drivers/isdn/gigaset/i4l.c b/drivers/isdn/gigaset/i4l.c
-index 7b88130..8c99578 100644
---- a/drivers/isdn/gigaset/i4l.c
-+++ b/drivers/isdn/gigaset/i4l.c
-@@ -79,6 +79,14 @@ static int writebuf_from_LL(int driverID, int channel, int ack,
- 	return cs->ops->send_skb(bcs, skb);
- }
- 
-+/**
-+ * gigaset_skb_sent() - acknowledge sending an skb
-+ * @bcs:	B channel descriptor structure.
-+ * @skb:	sent data.
-+ *
-+ * Called by hardware module {bas,ser,usb}_gigaset when the data in a
-+ * skb has been successfully sent, for signalling completion to the LL.
-+ */
- void gigaset_skb_sent(struct bc_state *bcs, struct sk_buff *skb)
- {
- 	unsigned len;
-@@ -455,6 +463,15 @@ int gigaset_isdn_setup_accept(struct at_state_t *at_state)
- 	return 0;
- }
- 
-+/**
-+ * gigaset_isdn_icall() - signal incoming call
-+ * @at_state:	connection state structure.
-+ *
-+ * Called by main module to notify the LL that an incoming call has been
-+ * received. @at_state contains the parameters of the call.
-+ *
-+ * Return value: call disposition (ICALL_*)
-+ */
- int gigaset_isdn_icall(struct at_state_t *at_state)
- {
- 	struct cardstate *cs = at_state->cs;
-diff --git a/drivers/isdn/gigaset/interface.c b/drivers/isdn/gigaset/interface.c
-index f33ac27..6a8e138 100644
---- a/drivers/isdn/gigaset/interface.c
-+++ b/drivers/isdn/gigaset/interface.c
-@@ -616,6 +616,15 @@ void gigaset_if_free(struct cardstate *cs)
- 	tty_unregister_device(drv->tty, cs->minor_index);
- }
- 
-+/**
-+ * gigaset_if_receive() - pass a received block of data to the tty device
-+ * @cs:		device descriptor structure.
-+ * @buffer:	received data.
-+ * @len:	number of bytes received.
-+ *
-+ * Called by asyncdata/isocdata if a block of data received from the
-+ * device must be sent to userspace through the ttyG* device.
-+ */
- void gigaset_if_receive(struct cardstate *cs,
- 			unsigned char *buffer, size_t len)
- {
++
++#include "gigaset.h"
++
++void gigaset_skb_sent(struct bc_state *bcs, struct sk_buff *skb)
++{
++}
++EXPORT_SYMBOL_GPL(gigaset_skb_sent);
++
++void gigaset_skb_rcvd(struct bc_state *bcs, struct sk_buff *skb)
++{
++}
++EXPORT_SYMBOL_GPL(gigaset_skb_rcvd);
++
++void gigaset_isdn_rcv_err(struct bc_state *bcs)
++{
++}
++EXPORT_SYMBOL_GPL(gigaset_isdn_rcv_err);
++
++int gigaset_isdn_icall(struct at_state_t *at_state)
++{
++	return ICALL_IGNORE;
++}
++
++void gigaset_isdn_connD(struct bc_state *bcs)
++{
++}
++
++void gigaset_isdn_hupD(struct bc_state *bcs)
++{
++}
++
++void gigaset_isdn_connB(struct bc_state *bcs)
++{
++}
++
++void gigaset_isdn_hupB(struct bc_state *bcs)
++{
++}
++
++void gigaset_isdn_start(struct cardstate *cs)
++{
++}
++
++void gigaset_isdn_stop(struct cardstate *cs)
++{
++}
++
++int gigaset_isdn_register(struct cardstate *cs, const char *isdnid)
++{
++	pr_info("no ISDN subsystem interface\n");
++	return 1;
++}
++
++void gigaset_isdn_unregister(struct cardstate *cs)
++{
++}
 -- 
 1.6.2.1.214.ge986c
 
