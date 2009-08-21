@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbZHUUu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932650AbZHUUwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbZHUUu6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 16:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932547AbZHUUu5
+	id S932650AbZHUUwD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 16:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932480AbZHUUwC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 16:50:57 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:29177 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932318AbZHUUu5 convert rfc822-to-8bit (ORCPT
+	Fri, 21 Aug 2009 16:52:02 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51487 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932318AbZHUUwB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 16:50:57 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=E9tDlmJxH8odzj6OQwAy627B0KshC+dRQoSzbVbrcFOy3YGFD5pXTw5NCSCe1DWaD
-	Gx4TrwNwiQqO4shqCIATg==
+	Fri, 21 Aug 2009 16:52:01 -0400
+Date: Fri, 21 Aug 2009 16:52:01 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       Greg KH <greg@kroah.com>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
+In-Reply-To: <20090821203949.GD15439@elte.hu>
+Message-ID: <alpine.DEB.2.00.0908211641130.30182@gandalf.stny.rr.com>
+References: <20090821143525.GH11098@elte.hu> <alpine.DEB.2.00.0908211047160.16405@gandalf.stny.rr.com> <20090821145406.GA3659@elte.hu> <alpine.DEB.2.00.0908211200160.30182@gandalf.stny.rr.com> <alpine.DEB.2.00.0908211204490.30182@gandalf.stny.rr.com>
+ <20090821162822.GA20898@elte.hu> <alpine.DEB.2.00.0908211253080.30182@gandalf.stny.rr.com> <20090821195131.GE5356@elte.hu> <alpine.DEB.2.00.0908211601000.30182@gandalf.stny.rr.com> <alpine.DEB.2.00.0908211631420.30182@gandalf.stny.rr.com>
+ <20090821203949.GD15439@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090821103813.GA27473@darkstar>
-References: <200908210222.n7L2Musb015815@imap1.linux-foundation.org>
-	 <20090821103813.GA27473@darkstar>
-Date: Fri, 21 Aug 2009 13:50:55 -0700
-Message-ID: <6599ad830908211350j7d4a4475kba1860b4368efe3c@mail.gmail.com>
-Subject: Re: mmotm 2009-08-20-19-18 uploaded
-From: Paul Menage <menage@google.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 3:38 AM, Dave Young<hidave.darkstar@gmail.com> wrote:
-> Hi andrew
->
-> cgroup build fail:
->
-> kernel/sched.c:10452: error: expected ';', ',' or ')' before 'bool'
-> kernel/sched.c:10536: error: 'cpu_cgroup_attach' undeclared here (not in a function)
-> make[1]: *** [kernel/sched.o] Error 1
-> make: *** [kernel] Error 2
-> make: *** Waiting for unfinished jobs....
->
-> fixing:
-> --
->
-> --- linux-2.6.orig/kernel/sched.c       2009-08-21 18:08:16.000000000 +0800
-> +++ linux-2.6/kernel/sched.c    2009-08-21 18:20:03.000000000 +0800
-> @@ -10448,7 +10448,7 @@ cpu_cgroup_can_attach(struct cgroup_subs
->
->  static void
->  cpu_cgroup_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
-> -                 struct cgroup *old_cont, struct task_struct *tsk
-> +                 struct cgroup *old_cont, struct task_struct *tsk,
->                  bool threadgroup)
 
-Ah, sorry, it looks as though CONFIG_CGROUP_SCHED got turned off in my
-config (and Ben's, apparently) so this function was never actually
-compiled.
+On Fri, 21 Aug 2009, Ingo Molnar wrote:
+> 
+> ah - indeed, i forgot that it bases its decision off /proc/config, 
+> if available, right?
 
-Paul
+Here's the list in order of seach:
+
+1. local .config file  (in tree root)
+2. /proc/config.gz
+3. /boot/config-`uname -r`
+4. /boot/vmlinuz-`uname -r` (extracts .config if configured in)
+5. vmlinux (local built vmlinux if .config is configured in)
+6. /lib/modules/`uname -r`/kernel/kernel/configs.ko
+7. kernel/configs.ko
+8. kernel/configs.o
+
+I originally had /proc/config.gz but Andi Kleen correctly pointed out that 
+it would be more intuitive if we use the local .config first. This would 
+be something that I myself would expect. If you don't want the local 
+.config used, then simply delete it.
+
+> 
+> Fair enough - forget my suggestion. It's good as-is.
+
+Great!
+
+Thanks,
+
+-- Steve
+
