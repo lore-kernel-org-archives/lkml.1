@@ -1,89 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbZHUAVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751434AbZHUAcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbZHUAVh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 20:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932122AbZHUAVg
+	id S1751434AbZHUAcg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 20:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbZHUAcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 20:21:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32851 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755311AbZHUAVf (ORCPT
+	Thu, 20 Aug 2009 20:32:36 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44344 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbZHUAcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 20:21:35 -0400
-Date: Thu, 20 Aug 2009 17:20:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, benh@kernel.crashing.org,
-       htejun@gmail.com, bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH 2/6] workqueue: add support for lazy workqueues
-Message-Id: <20090820172027.cdc41d1e.akpm@linux-foundation.org>
-In-Reply-To: <1250763466-24282-5-git-send-email-jens.axboe@oracle.com>
-References: <1250763466-24282-1-git-send-email-jens.axboe@oracle.com>
-	<1250763466-24282-2-git-send-email-jens.axboe@oracle.com>
-	<1250763466-24282-3-git-send-email-jens.axboe@oracle.com>
-	<1250763466-24282-4-git-send-email-jens.axboe@oracle.com>
-	<1250763466-24282-5-git-send-email-jens.axboe@oracle.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Aug 2009 20:32:35 -0400
+Date: Fri, 21 Aug 2009 02:32:32 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Alex Chiang <achiang@hp.com>,
+       Andi Kleen <andi@firstfloor.org>, "mingo@redhat.com" <mingo@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
+Message-ID: <20090821003232.GD29994@basil.fritz.box>
+References: <1250276831.3077.17.camel@sbs-t61.sc.intel.com> <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com> <20090819210251.GD13061@ldl.fc.hp.com> <1250794594.2754.10.camel@sbs-t61.sc.intel.com> <20090820205425.GF13061@ldl.fc.hp.com> <20090820210342.GC29994@basil.fritz.box> <20090820212024.GG13061@ldl.fc.hp.com> <1250803577.2754.30.camel@sbs-t61.sc.intel.com> <4A8DC349.5060508@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8DC349.5060508@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 12:17:39 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+> I agree... if this ID is used for topology detection, we shouldn't
+> replace it arbitrarily with information from BIOS just to hope that it
+> matches the motherboard stencil.  *Furthermore*, there is no reason why
+> motherboard stencilAs are purely numeric... consider the rather obvious
+> case of two rows of four CPUs; they may have CPU slots labelled A1, A2,
+> A3, A4, B1, B2, B3, B4.  It might very well be the right thing to
+> support arbitrary strings for platforms we recognize.
 
-> Lazy workqueues are like normal workqueues, except they don't
-> start a thread per CPU by default. Instead threads are started
-> when they are needed, and exit when they have been idle for
-> some time.
-> 
->
-> ...
->
-> @@ -280,7 +309,34 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
->  		trace_workqueue_execution(cwq->thread, work);
->  		cwq->current_work = work;
->  		list_del_init(cwq->worklist.next);
-> +		cpu = smp_processor_id();
->  		spin_unlock_irq(&cwq->lock);
-> +		did_work = 1;
-> +
-> +		/*
-> +		 * If work->cpu isn't us, then we need to create the target
-> +		 * workqueue thread (if someone didn't already do that) and
-> +		 * move the work over there.
-> +		 */
-> +		if ((cwq->wq->flags & WQ_F_LAZY) && work->cpu != cpu) {
-> +			struct cpu_workqueue_struct *__cwq;
-> +			struct task_struct *p;
-> +			int err;
-> +
-> +			__cwq = wq_per_cpu(cwq->wq, work->cpu);
-> +			p = __cwq->thread;
-> +			if (!p)
-> +				err = create_workqueue_thread(__cwq, work->cpu);
-> +			p = __cwq->thread;
-> +			if (p) {
-> +				if (work->cpu >= 0)
+Maintaining a manual mapping to strings in the kernel to such strings 
+would be just crazy. You would need a new entry for basically
+every system.
 
-It's an unsigned int.  This test is always true.
+The reason to correct SOCKETID is that it it is output on errors.
+If it is numerical and you know it's wrong you can correct it,
+and then you can identify the right CPU. Otherwise you lose.
 
-> +					kthread_bind(p, work->cpu);
-
-I wonder what happens if work->cpu isn't online any more.
-
-> +				insert_work(__cwq, work, &__cwq->worklist);
-> +				wake_up_process(p);
-> +				goto out;
-> +			}
-> +		}
-> +
->  
->  		BUG_ON(get_wq_data(work) != cwq);
->  		work_clear_pending(work);
->
-> ...
->
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
