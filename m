@@ -1,75 +1,434 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbZHULwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbZHULxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbZHULwB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 07:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZHULwA
+	id S1755567AbZHULxz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbZHULxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 07:52:00 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51548 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755333AbZHULv7 (ORCPT
+	Fri, 21 Aug 2009 07:53:55 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53236 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753703AbZHULxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 07:51:59 -0400
-Date: Fri, 21 Aug 2009 13:51:00 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS
-	devices
-Message-ID: <20090821115100.GA20681@elf.ucw.cz>
-References: <1249290657.2670.250.camel@rzhang-dt> <20090804132129.GH18974@elf.ucw.cz> <1249434170.2670.386.camel@rzhang-dt> <20090805161931.GA9749@elf.ucw.cz> <1249522879.2670.480.camel@rzhang-dt> <20090806071353.GB21847@elf.ucw.cz> <1249548430.2670.517.camel@rzhang-dt> <20090806095258.GA31370@elf.ucw.cz> <1250497963.5351.33.camel@rzhang-dt>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250497963.5351.33.camel@rzhang-dt>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 21 Aug 2009 07:53:54 -0400
+Subject: [PATCH] ARM: Mailing lists have moved
+From: David Woodhouse <dwmw2@infradead.org>
+To: torvalds@linux-foundation.org
+Cc: Russell King <linux@arm.linux.org.uk>, erikm@nl.linux.org,
+       vince@kyllikki.org, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Date: Fri, 21 Aug 2009 12:52:46 +0100
+Message-Id: <1250855566.3311.100.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Russell no longer wants to maintain the mailing lists, so with his
+blessing I have set up replacements at lists.infradead.org.
 
-> > > Could you please look at the documentation about ALS sysfs class in the
-> > > patch I sent out just now, and comment on that one please? thanks!
-> > 
-> > I did. The interface is too ugly to live.
-> 
-> Hi, Pavel,
-> 
-> I tried to convert the ALS sysfs I/F to two attributes only, i.e.
-> illuminance and adjustment.
-> But I found several potential problems.
-> 1. the illuminance to display adjustment mappings can not be convert to
-> a brightness level smoothly.
-> for example,
-> 	illuminance	adjustment
-> 1	600		70
-> 2	900		100
-> 3	1500		120
-> when the current illuminance is not one of the values listed in the
-> mappings, e.g. 750, the ALS driver don't have enough knowledge to get
-> the proper display adjustment, especially that a proper display
-> adjustment would be easy to select a proper brightness level.
-> We'd better leave this to user space, which is more flexible.
+Erik was helping to moderate the old list, and will continue to moderate
+the new one. Vince has kindly volunteered to do so too.
 
-Well, what interpolation does ACPI specs suggest to do? Maybe it is
-easier to have linear interpolation in the kernel than to have ugly
-20-file interface?
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Signed-off-by: Erik Mouw <mouw@nl.linux.org>
+Signed-off-by: Vincent Sanders <vince@kyllikki.org>
 
-> 2. I don't know if there will be laptops exporting buggy mappings that
-> needs to be overridden some day, but the current sysfs I/F is easy for
-> expanding.
-> what do you think?
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 60299a9..24f6134 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -497,7 +497,7 @@ F:	arch/arm/include/asm/floppy.h
+ 
+ ARM PORT
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/
+@@ -508,51 +508,51 @@ F:	drivers/mmc/host/mmci.*
+ 
+ ARM/ADI ROADRUNNER MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ F:	arch/arm/mach-ixp23xx/
+ F:	arch/arm/mach-ixp23xx/include/mach/
+ 
+ ARM/ADS SPHERE MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/AFEB9260 MACHINE SUPPORT
+ M:	Sergey Lapin <slapin@ossfans.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/AJECO 1ARM MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/ATMEL AT91RM9200 ARM ARCHITECTURE
+ M:	Andrew Victor <linux@maxim.org.za>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://maxim.org.za/at91_26.html
+ S:	Maintained
+ 
+ ARM/CIRRUS LOGIC EP93XX ARM ARCHITECTURE
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/CIRRUS LOGIC EDB9315A MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/CLKDEV SUPPORT
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ F:	arch/arm/common/clkdev.c
+ F:	arch/arm/include/asm/clkdev.h
+ 
+ ARM/COMPULAB CM-X270/EM-X270 and CM-X300 MACHINE SUPPORT
+ M:	Mike Rapoport <mike@compulab.co.il>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/CORGI MACHINE SUPPORT
+@@ -561,14 +561,14 @@ S:	Maintained
+ 
+ ARM/CORTINA SYSTEMS GEMINI ARM ARCHITECTURE
+ M:	Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ T:	git git://gitorious.org/linux-gemini/mainline.git
+ S:	Maintained
+ F:	arch/arm/mach-gemini/
+ 
+ ARM/EBSA110 MACHINE SUPPORT
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/mach-ebsa110/
+@@ -586,13 +586,13 @@ F:	arch/arm/mach-pxa/ezx.c
+ 
+ ARM/FARADAY FA526 PORT
+ M:	Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ F:	arch/arm/mm/*-fa*
+ 
+ ARM/FOOTBRIDGE ARCHITECTURE
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/include/asm/hardware/dec21285.h
+@@ -600,17 +600,17 @@ F:	arch/arm/mach-footbridge/
+ 
+ ARM/FREESCALE IMX / MXC ARM ARCHITECTURE
+ M:	Sascha Hauer <kernel@pengutronix.de>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/GLOMATION GESBC9312SX MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/GUMSTIX MACHINE SUPPORT
+ M:	Steve Sakoman <sakoman@gmail.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/H4700 (HP IPAQ HX4700) MACHINE SUPPORT
+@@ -630,55 +630,55 @@ F:	arch/arm/mach-sa1100/include/mach/jornada720.h
+ ARM/INTEL IOP32X ARM ARCHITECTURE
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+ M:	Dan Williams <dan.j.williams@intel.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Supported
+ 
+ ARM/INTEL IOP33X ARM ARCHITECTURE
+ M:	Dan Williams <dan.j.williams@intel.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Supported
+ 
+ ARM/INTEL IOP13XX ARM ARCHITECTURE
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+ M:	Dan Williams <dan.j.williams@intel.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Supported
+ 
+ ARM/INTEL IQ81342EX MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+ M:	Dan Williams <dan.j.williams@intel.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Supported
+ 
+ ARM/INTEL IXP2000 ARM ARCHITECTURE
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/INTEL IXDP2850 MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/INTEL IXP23XX ARM ARCHITECTURE
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/INTEL XSC3 (MANZANO) ARM CORE
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+ M:	Dan Williams <dan.j.williams@intel.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Supported
+ 
+ ARM/IP FABRICS DOUBLE ESPRESSO MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/LOGICPD PXA270 MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/MAGICIAN MACHINE SUPPORT
+@@ -687,7 +687,7 @@ S:	Maintained
+ 
+ ARM/MIOA701 MACHINE SUPPORT
+ M:	Robert Jarzmik <robert.jarzmik@free.fr>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ F:	arch/arm/mach-pxa/mioa701.c
+ S:	Maintained
+ 
+@@ -728,18 +728,18 @@ S:	Maintained
+ 
+ ARM/PT DIGITAL BOARD PORT
+ M:	Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ 
+ ARM/RADISYS ENP2611 MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/RISCPC ARCHITECTURE
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/common/time-acorn.c
+@@ -758,7 +758,7 @@ S:	Maintained
+ 
+ ARM/SAMSUNG ARM ARCHITECTURES
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/plat-s3c/
+@@ -766,65 +766,65 @@ F:	arch/arm/plat-s3c24xx/
+ 
+ ARM/S3C2410 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c2410/
+ 
+ ARM/S3C2440 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c2440/
+ 
+ ARM/S3C2442 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c2442/
+ 
+ ARM/S3C2443 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c2443/
+ 
+ ARM/S3C6400 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c6400/
+ 
+ ARM/S3C6410 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c6410/
+ 
+ ARM/TECHNOLOGIC SYSTEMS TS7250 MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/THECUS N2100 MACHINE SUPPORT
+ M:	Lennert Buytenhek <kernel@wantstofly.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ 
+ ARM/NUVOTON W90X900 ARM ARCHITECTURE
+ M:	Wan ZongShun <mcuos.com@gmail.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.mcuos.com
+ S:	Maintained
+ 
+ ARM/VFP SUPPORT
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/vfp/
+@@ -923,7 +923,7 @@ F:	include/linux/atm*
+ 
+ ATMEL AT91 MCI DRIVER
+ M:	Nicolas Ferre <nicolas.ferre@atmel.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.atmel.com/products/AT91/
+ W:	http://www.at91.com/
+ S:	Maintained
+@@ -1501,7 +1501,7 @@ F:	drivers/infiniband/hw/cxgb3/
+ 
+ CYBERPRO FB DRIVER
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	drivers/video/cyber2000fb.*
+@@ -2046,7 +2046,7 @@ F:	drivers/i2c/busses/i2c-cpm.c
+ FREESCALE IMX / MXC FRAMEBUFFER DRIVER
+ M:	Sascha Hauer <kernel@pengutronix.de>
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ F:	arch/arm/plat-mxc/include/mach/imxfb.h
+ F:	drivers/video/imxfb.c
+@@ -3398,7 +3398,7 @@ F:	include/linux/meye.h
+ 
+ MOTOROLA IMX MMC/SD HOST CONTROLLER INTERFACE DRIVER
+ M:	Pavel Pisa <ppisa@pikron.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ F:	drivers/mmc/host/imxmmc.*
+ 
+@@ -4106,7 +4106,7 @@ F:	drivers/media/video/pvrusb2/
+ PXA2xx/PXA3xx SUPPORT
+ M:	Eric Miao <eric.y.miao@gmail.com>
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ F:	arch/arm/mach-pxa/
+ F:	drivers/pcmcia/pxa2xx*
+@@ -4119,13 +4119,13 @@ F:	sound/soc/pxa
+ PXA168 SUPPORT
+ M:	Eric Miao <eric.y.miao@gmail.com>
+ M:	Jason Chagas <jason.chagas@marvell.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ycmiao/pxa-linux-2.6.git
+ S:	Maintained
+ 
+ PXA910 SUPPORT
+ M:	Eric Miao <eric.y.miao@gmail.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ycmiao/pxa-linux-2.6.git
+ S:	Maintained
+ 
+@@ -4366,7 +4366,7 @@ F:	net/iucv/
+ 
+ S3C24XX SD/MMC Driver
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Supported
+ F:	drivers/mmc/host/s3cmci.*
+ 
+@@ -4561,7 +4561,7 @@ F:	drivers/misc/sgi-xp/
+ SHARP LH SUPPORT (LH7952X & LH7A40X)
+ M:	Marc Singer <elf@buici.com>
+ W:	http://projects.buici.com/arm
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ F:	Documentation/arm/Sharp-LH/ADC-LH7-Touchscreen
+ F:	arch/arm/mach-lh7a40x/
 
-If you have buggy laptop, fix the laptop. (You can still export the
-raw values... and btw if you have buggy laptop and want to work around
-it, maybe the workaround is easier/better done in kernel?)
-
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
