@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932826AbZHUVYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932834AbZHUV1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932826AbZHUVYS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 17:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932747AbZHUVYS
+	id S932834AbZHUV1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932800AbZHUV1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 17:24:18 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:40121 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932528AbZHUVYR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 17:24:17 -0400
-Message-ID: <4A8F1081.3020803@suse.de>
-Date: Sat, 22 Aug 2009 01:24:17 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Fri, 21 Aug 2009 17:27:33 -0400
+Received: from www.tglx.de ([62.245.132.106]:50261 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932777AbZHUV1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 17:27:32 -0400
+Date: Fri, 21 Aug 2009 23:26:38 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>
+Subject: [ANNOUNCE] 2.6.31-rc6-rt6
+In-Reply-To: <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
+ <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
+ <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
+ <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       len.brown@intel.com
-Subject: Re: BUG: scheduling while atomic in acpi_ps_complete_op
-References: <1250873707.2168.38.camel@dhcp231-106.rdu.redhat.com>	 <4A8EFFB2.4040100@suse.de> <1250886352.2168.83.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1250886352.2168.83.camel@dhcp231-106.rdu.redhat.com>
-Content-Type: multipart/mixed;
- boundary="------------000500000605060908060109"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000500000605060908060109
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Eric Paris пишет:
-> On Sat, 2009-08-22 at 00:12 +0400, Alexey Starikovskiy wrote:
->> Hi,
->> This should be handled by abe1dfab60e1839d115930286cb421f5a5b193f3.
-> 
-> And yet I'm getting it from linux-next today.
-> 
-> So you are apparently failing the in_atomic_preempt_off() test but
-> succeeding in your !irqs_disabled() test.
-> 
-> Something isn't right since I'm hitting it hundreds of times on boot.
-> 
-> -Eric
-> 
-Ok, let's see if replacing irqs_disabled() to 
-in_atomic_preempt_off() helps... 
-
-Regards,
-Alex.
-
---------------000500000605060908060109
-Content-Type: text/x-diff;
- name="x.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x.patch"
-
-diff --git a/include/acpi/platform/aclinux.h b/include/acpi/platform/aclinux.h
-index fcb8e4b..23b262b 100644
---- a/include/acpi/platform/aclinux.h
-+++ b/include/acpi/platform/aclinux.h
-@@ -152,7 +152,7 @@ static inline void *acpi_os_acquire_object(acpi_cache_t * cache)
+We are pleased to announce the next update to our new preempt-rt
+series.
  
- #define ACPI_PREEMPTION_POINT() \
- 	do { \
--		if (!irqs_disabled()) \
-+		if (!in_atomic_preempt_off()) \
- 			cond_resched(); \
- 	} while (0)
+    - update to Linus' latest
  
+    - load accounting/balancing fix (peterz)
 
---------------000500000605060908060109--
+As last time ARM highmem remains as unresolved.
+
+Download locations:
+
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+
+Git release branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31-rc6
+ 
+Git development branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+
+Gitweb:
+    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31-rc6
+ 
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.31-rc6-rt6 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.31-rc6.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rc6-rt6.bz2
+
+Enjoy !
+
+       tglx
