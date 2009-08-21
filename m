@@ -1,135 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbZHUG3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZHUGde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932077AbZHUG3M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 02:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZHUG3L
+	id S1754052AbZHUGde (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 02:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZHUGdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 02:29:11 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:61686 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752442AbZHUG3L (ORCPT
+	Fri, 21 Aug 2009 02:33:33 -0400
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:34850 "EHLO
+	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751440AbZHUGdd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 02:29:11 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Danny Feng <dfeng@redhat.com>
-Subject: [PATCH] Re: e1000e: why does pci_enable_pcie_error_reporting() fail on my hp2510p?
-Date: Fri, 21 Aug 2009 08:29:09 +0200
-User-Agent: KMail/1.9.9
-Cc: Netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       David Miller <davem@davemloft.net>
-References: <200908201714.30638.elendil@planet.nl> <4A8E01AE.5070900@redhat.com>
-In-Reply-To: <4A8E01AE.5070900@redhat.com>
+	Fri, 21 Aug 2009 02:33:33 -0400
+X-SpamScore: 4
+X-BigFish: VPS4(zzzz1202hzz5a6ciz32i203h43j64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KOPRJQ-03-6F4-01
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: <mingo@elte.hu>
+CC: kjwinchester@gmail.com, mikpe@it.uu.se, <linux-kernel@vger.kernel.org>,
+       <x86@kernel.org>
+Subject: [RESEND PATCH 1/2] x86, msr: Add an AMD wrmsr with exception handling
+Date: Fri, 21 Aug 2009 08:33:18 +0200
+Message-ID: <1250836399-3274-1-git-send-email-borislav.petkov@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 21 Aug 2009 06:33:22.0493 (UTC) FILETIME=[47ABDED0:01CA2229]
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908210829.10471.elendil@planet.nl>
-X-OriginalArrivalTime: 21 Aug 2009 06:29:10.0880 (UTC) FILETIME=[B1B2C600:01CA2228]
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 21 August 2009, Danny Feng wrote:
-> On 08/20/2009 11:14 PM, Frans Pop wrote:
-> > e1000e 0000:00:19.0: pci_enable_pcie_error_reporting failed
->
-> I think this messages comes from hardware does not support pcie aer.
-> In fact the messages is not fatal and can be ignored. Some drivers
-> is silence with pci_enable_pcie_error_reporting ....
+Add native_write_msr_amd_safe() - we need this for a workaround.
 
-Right. The only error returned by the function is -EIO, which looks to be
-"not supported". That's really not an issue to shout about in dmesg...
+( While at it, convert native_read_msr_amd_safe to using
+  more robust named inline asm parameters as the rest of the
+  functions. )
 
-> My patch is just to fix the logic of pcie aer usage ...
->
-> > - as the error is non-fatal, should it maybe be changed from dev_err
-> >    to dev_info, so that at least it does not show up during a boot
-> >    with 'quiet'?
->
-> I agree with this.... Maybe some of other drivers needs this too
-> (igb,ixgbe)...
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+Cc: kjwinchester@gmail.com
+Cc: mikpe@it.uu.se
+Cc: brgerst@gmail.com
+---
+ arch/x86/include/asm/msr.h      |   32 ++++++++++++++++++++++++++++----
+ arch/x86/include/asm/paravirt.h |   11 +++++++++--
+ arch/x86/kernel/paravirt.c      |    1 +
+ 3 files changed, 38 insertions(+), 6 deletions(-)
 
-Here's a patch that simply drops the message.
-Note: the two scsi drivers that call the function (arcmsr and qla2xxx)
-also don't check the return code.
-
-Alternatives would be:
-- change the message to something like "device does not support advanced
-  error reporting (AER)" and make it dev_debug
-- suppress the error in case of -EIO, but I'm not sure that makes sense
-  as -EIO is the only error returned and you might not want to ignore other
-  errors
-
-If you'd prefer the alternatives, let me know and I'll modify the patch.
-
-Cheers,
-FJP
-
-
-From: Frans Pop <elendil@planet.nl>
-Subject: net: Don't report an error if devices don't support AER
-
-The only error returned by pci_enable_pcie_error_reporting() is -EIO
-which simply means that Advanced Error Reporting is not supported.
-There is no need to report that, so remove the error check from e1001e,
-igb and ixgbe.
-
-Signed-off-by: Frans Pop <elendil@planet.nl>
-    ---
-
-diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
-index fa92a68..42ac8f1 100644
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -4983,12 +4983,7 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
- 		goto err_pci_reg;
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 48ad9d2..3ea381b 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -76,14 +76,14 @@ static inline unsigned long long native_read_msr_amd_safe(unsigned int msr,
+ {
+ 	DECLARE_ARGS(val, low, high);
  
- 	/* AER (Advanced Error Reporting) hooks */
--	err = pci_enable_pcie_error_reporting(pdev);
--	if (err) {
--		dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
--		        "0x%x\n", err);
--		/* non-fatal, continue */
--	}
-+	pci_enable_pcie_error_reporting(pdev);
+-	asm volatile("2: rdmsr ; xor %0,%0\n"
++	asm volatile("2: rdmsr ; xor %[err],%[err]\n"
+ 		     "1:\n\t"
+ 		     ".section .fixup,\"ax\"\n\t"
+-		     "3:  mov %3,%0 ; jmp 1b\n\t"
++		     "3:  mov %[fault],%[err] ; jmp 1b\n\t"
+ 		     ".previous\n\t"
+ 		     _ASM_EXTABLE(2b, 3b)
+-		     : "=r" (*err), EAX_EDX_RET(val, low, high)
+-		     : "c" (msr), "D" (0x9c5a203a), "i" (-EFAULT));
++		     : [err] "=r" (*err), EAX_EDX_RET(val, low, high)
++		     : "c" (msr), "D" (0x9c5a203a), [fault] "i" (-EFAULT));
+ 	return EAX_EDX_VAL(val, low, high);
+ }
  
- 	pci_set_master(pdev);
- 	/* PCI config space info */
-diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-index adb09d3..8e80859 100644
---- a/drivers/net/igb/igb_main.c
-+++ b/drivers/net/igb/igb_main.c
-@@ -1232,12 +1232,7 @@ static int __devinit igb_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto err_pci_reg;
+@@ -111,6 +111,25 @@ notrace static inline int native_write_msr_safe(unsigned int msr,
+ 	return err;
+ }
  
--	err = pci_enable_pcie_error_reporting(pdev);
--	if (err) {
--		dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
--		        "0x%x\n", err);
--		/* non-fatal, continue */
--	}
-+	pci_enable_pcie_error_reporting(pdev);
++static inline unsigned long long native_write_msr_amd_safe(unsigned int msr,
++							   unsigned low,
++							   unsigned high)
++{
++	int err;
++	asm volatile("2: wrmsr ; xor %[err],%[err]\n"
++		     "1:\n\t"
++		     ".section .fixup,\"ax\"\n\t"
++		     "3:  mov %[fault],%[err] ; jmp 1b\n\t"
++		     ".previous\n\t"
++		     _ASM_EXTABLE(2b, 3b)
++		     : [err] "=a" (err)
++		     : "c" (msr), "0" (low), "d" (high), [fault] "i" (-EFAULT),
++		       "D" (0x9c5a203a)
++		     : "memory");
++	return err;
++
++}
++
+ extern unsigned long long native_read_tsc(void);
  
- 	pci_set_master(pdev);
- 	pci_save_state(pdev);
-diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
-index 77b0381..4e0b523 100644
---- a/drivers/net/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ixgbe/ixgbe_main.c
-@@ -5430,12 +5430,7 @@ static int __devinit ixgbe_probe(struct pci_dev *pdev,
- 		goto err_pci_reg;
- 	}
+ static __always_inline unsigned long long __native_read_tsc(void)
+@@ -164,6 +183,11 @@ static inline int wrmsr_safe(unsigned msr, unsigned low, unsigned high)
+ 	return native_write_msr_safe(msr, low, high);
+ }
  
--	err = pci_enable_pcie_error_reporting(pdev);
--	if (err) {
--		dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
--		                    "0x%x\n", err);
--		/* non-fatal, continue */
--	}
-+	pci_enable_pcie_error_reporting(pdev);
++static inline int wrmsr_amd_safe(unsigned msr, unsigned low, unsigned high)
++{
++	return native_write_msr_amd_safe(msr, low, high);
++}
++
+ /* rdmsr with exception handling */
+ #define rdmsr_safe(msr, p1, p2)					\
+ ({								\
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index 4fb37c8..82143e5 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -169,6 +169,7 @@ struct pv_cpu_ops {
+ 	u64 (*read_msr_amd)(unsigned int msr, int *err);
+ 	u64 (*read_msr)(unsigned int msr, int *err);
+ 	int (*write_msr)(unsigned int msr, unsigned low, unsigned high);
++	u64 (*write_msr_amd)(unsigned int msr, unsigned low, unsigned high);
  
- 	pci_set_master(pdev);
- 	pci_save_state(pdev);
+ 	u64 (*read_tsc)(void);
+ 	u64 (*read_pmc)(int counter);
+@@ -829,6 +830,11 @@ static inline int paravirt_write_msr(unsigned msr, unsigned low, unsigned high)
+ 	return PVOP_CALL3(int, pv_cpu_ops.write_msr, msr, low, high);
+ }
+ 
++static inline int paravirt_write_msr_amd(unsigned msr, unsigned low, unsigned high)
++{
++	return PVOP_CALL3(u64, pv_cpu_ops.write_msr_amd, msr, low, high);
++}
++
+ /* These should all do BUG_ON(_err), but our headers are too tangled. */
+ #define rdmsr(msr, val1, val2)			\
+ do {						\
+@@ -849,8 +855,9 @@ do {						\
+ 	val = paravirt_read_msr(msr, &_err);	\
+ } while (0)
+ 
+-#define wrmsrl(msr, val)	wrmsr(msr, (u32)((u64)(val)), ((u64)(val))>>32)
+-#define wrmsr_safe(msr, a, b)	paravirt_write_msr(msr, a, b)
++#define wrmsrl(msr, val)		wrmsr(msr, (u32)((u64)(val)), ((u64)(val))>>32)
++#define wrmsr_safe(msr, a, b)		paravirt_write_msr(msr, a, b)
++#define wrmsr_amd_safe(msr, a, b)	paravirt_write_msr_amd(msr, a, b)
+ 
+ /* rdmsr with exception handling */
+ #define rdmsr_safe(msr, a, b)			\
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+index 70ec9b9..9996e51 100644
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -364,6 +364,7 @@ struct pv_cpu_ops pv_cpu_ops = {
+ 	.read_msr = native_read_msr_safe,
+ 	.read_msr_amd = native_read_msr_amd_safe,
+ 	.write_msr = native_write_msr_safe,
++	.write_msr_amd = native_write_msr_amd_safe,
+ 	.read_tsc = native_read_tsc,
+ 	.read_pmc = native_read_pmc,
+ 	.read_tscp = native_read_tscp,
+-- 
+1.6.3.3
+
+
