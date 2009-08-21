@@ -1,76 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbZHUR44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbZHUR6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbZHUR44 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755468AbZHUR4z
+	id S932696AbZHUR6y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbZHUR6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:56:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41809 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754934AbZHUR4z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:56:55 -0400
-Date: Fri, 21 Aug 2009 10:48:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-tip-commits@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
-       Kyle McMartin <kyle@mcmartin.ca>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, catalin.marinas@arm.com,
-       a.p.zijlstra@chello.nl, jens.axboe@oracle.com, fweisbec@gmail.com,
-       stable@kernel.org, srostedt@redhat.com, tglx@linutronix.de
-Subject: Re: [tip:tracing/urgent] tracing: Fix too large stack usage in
- do_one_initcall()
-Message-Id: <20090821104820.60948082.akpm@linux-foundation.org>
-In-Reply-To: <20090821111450.GA32037@elte.hu>
-References: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
-	<20090821111450.GA32037@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Aug 2009 13:58:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57463 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752203AbZHUR6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 13:58:53 -0400
+Date: Fri, 21 Aug 2009 13:57:38 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Josh Stone <jistone@redhat.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
+       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com
+Subject: Re: [PATCH v2 2/2] tracing: Create generic syscall TRACE_EVENTs
+Message-ID: <20090821175737.GB2684@redhat.com>
+References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250795373-32363-2-git-send-email-jistone@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250795373-32363-2-git-send-email-jistone@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Aug 2009 13:14:50 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-
+On Thu, Aug 20, 2009 at 12:09:33PM -0700, Josh Stone wrote:
+> This converts the syscall_enter/exit tracepoints into TRACE_EVENTs, so
+> you can have generic ftrace events that capture all system calls with
+> arguments and return values.  These generic events are also renamed to
+> sys_enter/exit, so they're more closely aligned to the specific
+> sys_enter_foo events.
 > 
-> ...
->
-> btw., it will just take two more features like kmemleak to trigger 
-> hard to debug stack overflows again on 32-bit. We are right at the 
-> edge and this situation is not really fixable in a reliable way 
-> anymore.
+> Signed-off-by: Josh Stone <jistone@redhat.com>
+> Cc: Jason Baron <jbaron@redhat.com>
+> ---
+>  arch/s390/kernel/ptrace.c       |    8 ++--
+>  arch/x86/kernel/ptrace.c        |   12 +++----
+>  include/trace/events/syscalls.h |   66 +++++++++++++++++++++++++++++++++++++++
+>  include/trace/syscall.h         |   13 --------
+>  kernel/trace/trace_syscalls.c   |   17 +++++-----
+>  5 files changed, 84 insertions(+), 32 deletions(-)
+>  create mode 100644 include/trace/events/syscalls.h
 > 
-> So i think we should be more drastic and solve the real problem: we 
-> should drop 4K stacks and 8K combo-stacks on 32-bit, and go 
-> exclusively to 8K split stacks on 32-bit.
+> diff --git a/arch/s390/kernel/ptrace.c b/arch/s390/kernel/ptrace.c
+> index 26194b0..8e578a9 100644
+> --- a/arch/s390/kernel/ptrace.c
+> +++ b/arch/s390/kernel/ptrace.c
+> @@ -51,8 +51,8 @@
+>  #include "compat_ptrace.h"
+>  #endif
+>  
+> -DEFINE_TRACE_WITH_CALLBACK(syscall_enter, syscall_regfunc, syscall_unregfunc);
+> -DEFINE_TRACE_WITH_CALLBACK(syscall_exit, syscall_regfunc, syscall_unregfunc);
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/syscalls.h>
+>  
+>  enum s390_regset {
+>  	REGSET_GENERAL,
+> @@ -665,7 +665,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
+>  	}
+>  
+>  	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+> -		trace_syscall_enter(regs, regs->gprs[2]);
+> +		trace_sys_enter(regs, regs->gprs[2]);
+>  
+>  	if (unlikely(current->audit_context))
+>  		audit_syscall_entry(is_compat_task() ?
+> @@ -683,7 +683,7 @@ asmlinkage void do_syscall_trace_exit(struct pt_regs *regs)
+>  				   regs->gprs[2]);
+>  
+>  	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+> -		trace_syscall_exit(regs, regs->gprs[2]);
+> +		trace_sys_exit(regs, regs->gprs[2]);
+>  
+>  	if (test_thread_flag(TIF_SYSCALL_TRACE))
+>  		tracehook_report_syscall_exit(regs, 0);
+> diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+> index 692fc14..dc87a04 100644
+> --- a/arch/x86/kernel/ptrace.c
+> +++ b/arch/x86/kernel/ptrace.c
+> @@ -35,13 +35,11 @@
+>  #include <asm/proto.h>
+>  #include <asm/ds.h>
+>  
+> -#include <trace/syscall.h>
+> -
+> -DEFINE_TRACE_WITH_CALLBACK(syscall_enter, syscall_regfunc, syscall_unregfunc);
+> -DEFINE_TRACE_WITH_CALLBACK(syscall_exit, syscall_regfunc, syscall_unregfunc);
+> -
+>  #include "tls.h"
+>  
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/syscalls.h>
+> +
+>  enum x86_regset {
+>  	REGSET_GENERAL,
+>  	REGSET_FP,
+> @@ -1501,7 +1499,7 @@ asmregparm long syscall_trace_enter(struct pt_regs *regs)
+>  		ret = -1L;
+>  
+>  	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+> -		trace_syscall_enter(regs, regs->orig_ax);
+> +		trace_sys_enter(regs, regs->orig_ax);
+>  
+>  	if (unlikely(current->audit_context)) {
+>  		if (IS_IA32)
+> @@ -1527,7 +1525,7 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
+>  		audit_syscall_exit(AUDITSC_RESULT(regs->ax), regs->ax);
+>  
+>  	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+> -		trace_syscall_exit(regs, regs->ax);
+> +		trace_sys_exit(regs, regs->ax);
+>  
+>  	if (test_thread_flag(TIF_SYSCALL_TRACE))
+>  		tracehook_report_syscall_exit(regs, 0);
+> diff --git a/include/trace/events/syscalls.h b/include/trace/events/syscalls.h
+> new file mode 100644
+> index 0000000..9cd78fc
+> --- /dev/null
+> +++ b/include/trace/events/syscalls.h
+> @@ -0,0 +1,66 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM syscalls
+> +
+> +#if !defined(_TRACE_EVENTS_SYSCALLS_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_EVENTS_SYSCALLS_H
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +#include <asm/ptrace.h>
+> +#include <asm/syscall.h>
+> +
+> +extern void syscall_regfunc(void);
+> +extern void syscall_unregfunc(void);
+> +
+> +
+> +TRACE_EVENT_WITH_CALLBACK(sys_enter,
 
-We seem to have overrun an 8k stack in
-http://bugzilla.kernel.org/show_bug.cgi?id=14029
+don't we want to change this to something like 'sys_enter_generic'?
+otherwise, looks good.
 
-Do we have a max-stack-depth tracer widget btw?
+thanks,
 
-> I.e. the stack size will be 'unified' too between 64-bit and 32-bit 
-> to a certain degree: process stacks will be 8K on both 64-bit and 
-> 32-bit x86, IRQ stacks will be separate. (on 64-bit we also have the 
-> IST stacks for certain exceptions that further isolates things)
-> 
-> This will simplify the 32-bit situation quite a bit and removes a 
-> contentious config option and makes the kernel more robust in 
-> general. 8K combo stacks are not safe due to irq nesting and 4K 
-> isolated stacks are not enough. 8K isolated stacks is the way to go.
-> 
-> Opinions?
-
-I wouldn't lose any sleep over it.
-
-I bet it would be sufficient to have 4k interrupt stacks though.
-
-My main concern would be maintenance.  Over time we'll chew more and
-more stack space and eventually we'll get into trouble again.  What
-means do we have for holding the line at 8k, and even improving things?
-
+-Jason
 
