@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932451AbZHUUJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbZHUUMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932451AbZHUUJd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 16:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932299AbZHUUJc
+	id S932561AbZHUUMX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 16:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932537AbZHUUMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 16:09:32 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:7826 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932292AbZHUUJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 16:09:32 -0400
-Date: Fri, 21 Aug 2009 16:08:19 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Josh Stone <jistone@redhat.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com
-Subject: Re: [PATCH v2 2/2] tracing: Create generic syscall TRACE_EVENTs
-Message-ID: <20090821200819.GB7099@redhat.com>
-References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250795373-32363-2-git-send-email-jistone@redhat.com> <20090821175737.GB2684@redhat.com> <4A8EF765.9050201@redhat.com>
+	Fri, 21 Aug 2009 16:12:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37712 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932123AbZHUUMU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 16:12:20 -0400
+Date: Fri, 21 Aug 2009 16:12:18 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       Greg KH <greg@kroah.com>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
+In-Reply-To: <20090821195131.GE5356@elte.hu>
+Message-ID: <alpine.DEB.2.00.0908211601000.30182@gandalf.stny.rr.com>
+References: <20090819025634.987354707@goodmis.org> <20090821143525.GH11098@elte.hu> <alpine.DEB.2.00.0908211047160.16405@gandalf.stny.rr.com> <20090821145406.GA3659@elte.hu> <alpine.DEB.2.00.0908211200160.30182@gandalf.stny.rr.com>
+ <alpine.DEB.2.00.0908211204490.30182@gandalf.stny.rr.com> <20090821162822.GA20898@elte.hu> <alpine.DEB.2.00.0908211253080.30182@gandalf.stny.rr.com> <20090821195131.GE5356@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8EF765.9050201@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 12:37:09PM -0700, Josh Stone wrote:
-> On 08/21/2009 10:57 AM, Jason Baron wrote:
-> >> +TRACE_EVENT_WITH_CALLBACK(sys_enter,
+
+On Fri, 21 Aug 2009, Ingo Molnar wrote:
+> > OK, I'll add that to my todo list. Note, it the local config is 
+> > only as good as the starting .config. That is, it never touches =y 
+> > settings, because it only uses loaded modules as a base. Thus if 
+> > something is set to =y it will always be set to =y.
 > > 
-> > don't we want to change this to something like 'sys_enter_generic'?
-> > otherwise, looks good.
+> > What would you have in mind. Just randomly enabling modules? If we 
+> > enable a "y" config then the next local*config will still keep 
+> > that set.
 > 
-> Since all of the specific events are named "sys_enter_foo", I thought
-> that it would be clear that an unadorned "sys_enter" was the more
-> generic syscall event.  Calling it "sys_enter_generic" seems to me by
-> convention to mean a system call named "generic".
-> 
-> I don't want to bikeshed this though -- if you still think
-> "sys_enter_generic" is better, then I'll change it.
-> 
+> Why - isnt local*config picking up environmental (currently running 
+> kernel) properties? I.e. it would always set those things that are 
+> needed - and randomize the rest. Have i misunderstood how it works?
 
-no I don't feel strongly about it...whatever the consensus is...
+Yes, this is a simple script. The only thing it does to find out what is 
+configured is run "lsmod". Others have tried (in vain) to be able to look 
+into things like lspci and lsusb to figure out what options to enable, 
+just to end up with something so complex that it doesn't work.
 
-thanks,
+It truly would be great to be able to have something examine the box and 
+be able to enable everything that it finds. But that is not what I set out 
+to do. I only wanted to disable the hundreds of modules that a distro 
+gives us so I can have a streamed line config that will boot my system and 
+build in a decent time.
 
--Jason
+I've been using this script since 2005 and it has worked out great. I even 
+posted it after I first wrote it:
+
+  http://lkml.org/lkml/2005/3/11/39
+
+This seems to be a very useful tool. I don't want to prevent it from going 
+further because we try to make it do too much. Lets get what we have now 
+in, and then we can look at alternatives.
+
+-- Steve
+
