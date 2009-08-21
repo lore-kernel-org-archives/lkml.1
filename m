@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZHUHaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbZHUHgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754934AbZHUHaq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 03:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbZHUHap
+	id S1754778AbZHUHgJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 03:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbZHUHgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 03:30:45 -0400
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:39739 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753377AbZHUHao (ORCPT
+	Fri, 21 Aug 2009 03:36:09 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:54929 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753241AbZHUHgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 03:30:44 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Organization: IBM
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] virtio-blk: set QUEUE_ORDERED_DRAIN by default
-Date: Fri, 21 Aug 2009 09:30:39 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30-release; KDE/4.3.0; i686; ; )
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-References: <20090820205616.GA5503@lst.de>
-In-Reply-To: <20090820205616.GA5503@lst.de>
+	Fri, 21 Aug 2009 03:36:08 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH 1/1] kcore-use-registerd-physmem-information-fix2
+Date: Fri, 21 Aug 2009 09:36:08 +0200
+Message-Id: <1250840168-4614-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 MIME-Version: 1.0
-Message-Id: <200908210930.39861.borntraeger@de.ibm.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 20 August 2009 22:56:16 schrieb Christoph Hellwig:
-> Currently virtio-blk doesn't set any QUEUE_ORDERED_ flag by default, which
-> means it does not allow filesystems to use barriers.  But the typical use
-> case for virtio-blk is to use a backed that uses synchronous I/O, and in
-> that case we can simply set QUEUE_ORDERED_DRAIN to make the block layer
-> drain the request queue around barrier I/O and provide the semantics that
-> the filesystems need.  This is what the SCSI disk driver does for disks
-> that have the write cache disabled.
->
-> With this patch we incorrectly advertise barrier support if someone
-> configure qemu with write back caching.  While this displays wrong
-> information in the guest there is nothing that guest could have done
-> even if we rightfully told it that we do not support any barriers.
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Fix this compilation warning on x86_64:
+fs/proc/kcore.c: In function ‘kclist_add_private’:
+fs/proc/kcore.c:175: warning: comparison between pointer and integer
 
-Make sense to me.
-Reviewed-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ fs/proc/kcore.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-[...]
-> -	/* If barriers are supported, tell block layer that queue is ordered */
-> +	/*
-> +	 * If barriers are supported, tell block layer that queue is ordered.
-> +	 *
-> +	 * If no barriers are supported assume the host uses synchronous
-> +	 * writes and just drain the the queue before and after the barrier.
-> +	 */
->  	if (virtio_has_feature(vdev, VIRTIO_BLK_F_BARRIER))
->  		blk_queue_ordered(vblk->disk->queue, QUEUE_ORDERED_TAG, NULL);
-> +	else
-> +		blk_queue_ordered(vblk->disk->queue, QUEUE_ORDERED_DRAIN, NULL);
-[...]
+diff --git a/fs/proc/kcore.c b/fs/proc/kcore.c
+index aabbc3a..98fcf17 100644
+--- a/fs/proc/kcore.c
++++ b/fs/proc/kcore.c
+@@ -172,7 +172,7 @@ kclist_add_private(unsigned long pfn, unsigned long nr_pages, void *arg)
+ 		ent->size = ULONG_MAX - ent->addr;
+ 
+ 	/* cut when vmalloc() area is higher than direct-map area */
+-	if (VMALLOC_START > __va(0)) {
++	if (VMALLOC_START > (unsigned long)__va(0)) {
+ 		if (ent->addr > VMALLOC_START)
+ 			goto free_out;
+ 		if (VMALLOC_START - ent->addr < ent->size)
+-- 
+1.6.3.3
+
