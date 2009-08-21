@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbZHUO3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932270AbZHUOau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932235AbZHUO3u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 10:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932177AbZHUO3t
+	id S932270AbZHUOau (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 10:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932182AbZHUOau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 10:29:49 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41039 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932087AbZHUO3t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 10:29:49 -0400
-Date: Fri, 21 Aug 2009 10:29:47 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, hugh.dickins@tiscali.co.uk,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH -tip/core/rcu 1/6] Cleanups and fixes for RCU in face of
- heavy CPU-hotplug stress
-In-Reply-To: <20090821141721.GA11098@elte.hu>
-Message-ID: <alpine.DEB.2.00.0908211022090.16405@gandalf.stny.rr.com>
-References: <20090815165153.GA8886@linux.vnet.ibm.com> <1250533487.2709.14.camel@josh-work.beaverton.ibm.com> <20090817192036.GJ6760@linux.vnet.ibm.com> <20090818152643.GA5549@elte.hu> <20090820140335.GA31773@Krystal> <20090821141721.GA11098@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 21 Aug 2009 10:30:50 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44734 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932177AbZHUOat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 10:30:49 -0400
+Date: Fri, 21 Aug 2009 16:30:49 +0200
+From: Jan Kara <jack@suse.cz>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       hch@infradead.org, ocfs2-devel@oss.oracle.com, mfasheh@suse.com
+Subject: Re: [Ocfs2-devel] [PATCH 13/17] ocfs2: Update syncing after
+	splicing to match generic version
+Message-ID: <20090821143049.GC3007@duck.novell.com>
+References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-14-git-send-email-jack@suse.cz> <20090821013617.GI10558@mail.oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090821013617.GI10558@mail.oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 21 Aug 2009, Ingo Molnar wrote:
-
+On Thu 20-08-09 18:36:17, Joel Becker wrote:
+> On Wed, Aug 19, 2009 at 06:04:40PM +0200, Jan Kara wrote:
+> > Update ocfs2 specific splicing code to use generic syncing helper.
+> > 
+> > CC: Joel Becker <Joel.Becker@oracle.com>
+> > CC: ocfs2-devel@oss.oracle.com
+> > Signed-off-by: Jan Kara <jack@suse.cz>
+> > ---
+> >  fs/ocfs2/file.c |   27 ++++++---------------------
+> >  1 files changed, 6 insertions(+), 21 deletions(-)
+> > 
+> > diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
+> > index 1c71f0a..bd7fdf8 100644
+> > --- a/fs/ocfs2/file.c
+> > +++ b/fs/ocfs2/file.c
+> > @@ -1990,31 +1990,16 @@ static ssize_t ocfs2_file_splice_write(struct pipe_inode_info *pipe,
+> >  
+> >  	if (ret > 0) {
+> >  		unsigned long nr_pages;
+> > +		int err;
+> >  
+> > -		*ppos += ret;
+> >  		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+> >  
+> > -		/*
+> > -		 * If file or inode is SYNC and we actually wrote some data,
+> > -		 * sync it.
+> > -		 */
+> > -		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
+> > -			int err;
+> > -
+> > -			mutex_lock(&inode->i_mutex);
+> > -			err = ocfs2_rw_lock(inode, 1);
+> > -			if (err < 0) {
+> > -				mlog_errno(err);
+> > -			} else {
+> > -				err = generic_osync_inode(inode, mapping,
+> > -						  OSYNC_METADATA|OSYNC_DATA);
+> > -				ocfs2_rw_unlock(inode, 1);
+> > -			}
+> > -			mutex_unlock(&inode->i_mutex);
+> > +		err = generic_write_sync(out, *ppos, ret);
+> > +		if (err)
+> > +			ret = err;
+> > +		else
+> > +			*ppos += ret;
 > 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > I would not trust this architecture for synchronization tests. 
-> > There has been reports of a hardware bug affecting the cmpxchg 
-> > instruction in the field. The load fence normally implied by the 
-> > semantic seems to be missing. AFAIK, AMD never acknowledged the 
-> > problem.
-> 
-> If cmpxchg was broken i'd be having far worse problems and very 
-> widely so.
+> 	You've removed the rw_lock around the sync.  Any reason why?
+  Ah, I should have written in the changelog: generic_write_sync() will
+acquire i_mutex so to preserve lock ordering (i_mutex -> rw_lock) we cannot
+hold it while calling generic_write_sync(). Furthermore, I didn't see point
+for holding it while calling generic_write_sync() since we don't hold it
+in fsync() path either.
+  I'll add something like this to the changelog.
 
-I believe Mathieu is suggesting that the hardware bug is not that the 
-compare and exchange does not work in cmpxchg, but that it does not 
-provide an explicit memory barrier. Such a bug is very hard to trigger, 
-since it requires a race that allows a memory write/read to cross the 
-cmpxchg, and then have this be in such a place that it will cause harm.
+									Honza
 
-> 
-> FYI, this was the same box i prototyped/developed -rt on, which uses 
-> cmpxchg for _everything_.
-
-If such a bug exists, then it may not trigger easily, even on -rt.
-
-> 
-> That's not a proof of course (it's near impossible to prove the lack 
-> of a bug), but it's sure a strong indicator and you'll need to 
-> provide far more proof of misbehavior before i discount a bona fide 
-> regression on this box.
-
-But with the above said, I totally agree with your point. More proof must 
-be given before we can discount that another bug exists.
-
--- Steve
-
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
