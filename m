@@ -1,614 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZHUJCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbZHUJGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbZHUJCg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 05:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbZHUJCf
+	id S1755247AbZHUJGN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 05:06:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbZHUJGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 05:02:35 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:64207 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755163AbZHUJCe (ORCPT
+	Fri, 21 Aug 2009 05:06:12 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39826 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754880AbZHUJGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 05:02:34 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-acpi@vger.kernel.org
-Subject: [PATCH 3/3] acpi: thermal/sysfs-api.txt: move to acpi directory
-Date: Fri, 21 Aug 2009 11:02:32 +0200
-User-Agent: KMail/1.9.9
-Cc: Sujith Thomas <sujith.thomas@intel.com>, Zhang Rui <rui.zhang@intel.com>,
-       linux-kernel@vger.kernel.org
-References: <200908211055.20569.elendil@planet.nl>
-In-Reply-To: <200908211055.20569.elendil@planet.nl>
+	Fri, 21 Aug 2009 05:06:11 -0400
+Date: Fri, 21 Aug 2009 11:05:47 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: Mailing List Etiquette
+Message-ID: <20090821090546.GI8431@elf.ucw.cz>
+References: <20090819060004.GA23859@n2100.arm.linux.org.uk> <20090821072607.GA26983@atrey.karlin.mff.cuni.cz> <20090821081849.GA14431@n2100.arm.linux.org.uk> <20090821083028.GH8431@elf.ucw.cz> <20090821083953.GA14800@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908211102.33936.elendil@planet.nl>
-X-OriginalArrivalTime: 21 Aug 2009 09:02:34.0303 (UTC) FILETIME=[1F5DACF0:01CA223E]
+In-Reply-To: <20090821083953.GA14800@n2100.arm.linux.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is a more logical place to look and reduces the clutter in
-the Documentation directory as the thermal directory is now empty
-and can be removed.
+On Fri 2009-08-21 09:39:53, Russell King - ARM Linux wrote:
+> On Fri, Aug 21, 2009 at 10:30:28AM +0200, Pavel Machek wrote:
+> > On Fri 2009-08-21 09:18:49, Russell King - ARM Linux wrote:
+> > > Right, this does it.  I'm off on holiday as of now.
+> > 
+> > Cool.
+> > 
+> > > Guess what?  I've had enough of this crap.  I'm pulling the plug on
+> > > these lists.  Everyone, you know the email address to complain to.
+> > > One community killed by an "open list" zealot.
+> > 
+> > If you are not willing to keep information up to date, don't spam with
+> > it. It is as simple as that. I'm looking forward to list administrator
+> > who does not go ballistic every time problem is reported with his
+> > list, and the one who does not call me names.
+> 
+> Your constant whinging is the reason for the action which has now been
+> taken.  The lists are now off line until future notice, when I can deal
+> with the crap that constantly pours out of your keyboard.
 
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Sujith Thomas <sujith.thomas@intel.com>
+So perhaps following patch is in order?
+									Pavel
 
-diff --git a/Documentation/acpi/thermal-sysfs-api.txt b/Documentation/acpi/thermal-sysfs-api.txt
-new file mode 100644
-index 0000000..52b63c4
---- /dev/null
-+++ b/Documentation/acpi/thermal-sysfs-api.txt
-@@ -0,0 +1,281 @@
-+Generic Thermal Sysfs driver How To
-+===================================
-+
-+Written by Sujith Thomas <sujith.thomas@intel.com>, Zhang Rui <rui.zhang@intel.com>
-+
-+Updated: 21 August 2009
-+
-+Copyright (c)  2008 Intel Corporation
-+
-+
-+0. Introduction
-+
-+The generic thermal sysfs provides a set of interfaces for thermal zone
-+devices (sensors) and thermal cooling devices (fan, processor...) to register
-+with the thermal management solution and to be a part of it.
-+
-+This how-to focuses on enabling new thermal zone and cooling devices to
-+participate in thermal management.
-+This solution is platform independent and any type of thermal zone devices
-+and cooling devices should be able to make use of the infrastructure.
-+
-+The main task of the thermal sysfs driver is to expose thermal zone attributes
-+as well as cooling device attributes to the user space.
-+An intelligent thermal management application can make decisions based on
-+inputs from thermal zone attributes (the current temperature and trip point
-+temperature) and throttle appropriate devices.
-+
-+[0-*]	denotes any positive number starting from 0
-+[1-*]	denotes any positive number starting from 1
-+
-+1. thermal sysfs driver interface functions
-+
-+1.1 thermal zone device interface
-+1.1.1 struct thermal_zone_device *thermal_zone_device_register(char *name,
-+		int trips, void *devdata, struct thermal_zone_device_ops *ops)
-+
-+    This interface function adds a new thermal zone device (sensor) to
-+    /sys/class/thermal folder as thermal_zone[0-*]. It tries to bind all the
-+    thermal cooling devices registered at the same time.
-+
-+    name: the thermal zone name.
-+    trips: the total number of trip points this thermal zone supports.
-+    devdata: device private data
-+    ops: thermal zone device call-backs.
-+	.bind: bind the thermal zone device with a thermal cooling device.
-+	.unbind: unbind the thermal zone device with a thermal cooling device.
-+	.get_temp: get the current temperature of the thermal zone.
-+	.get_mode: get the current mode (user/kernel) of the thermal zone.
-+	    - "kernel" means thermal management is done in kernel.
-+	    - "user" will prevent kernel thermal driver actions upon trip points
-+	      so that user applications can take charge of thermal management.
-+	.set_mode: set the mode (user/kernel) of the thermal zone.
-+	.get_trip_type: get the type of certain trip point.
-+	.get_trip_temp: get the temperature above which the certain trip point
-+			will be fired.
-+
-+1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
-+
-+    This interface function removes the thermal zone device.
-+    It deletes the corresponding entry form /sys/class/thermal folder and
-+    unbind all the thermal cooling devices it uses.
-+
-+1.2 thermal cooling device interface
-+1.2.1 struct thermal_cooling_device *thermal_cooling_device_register(char *name,
-+		void *devdata, struct thermal_cooling_device_ops *)
-+
-+    This interface function adds a new thermal cooling device (fan/processor/...)
-+    to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
-+    to all the thermal zone devices register at the same time.
-+    name: the cooling device name.
-+    devdata: device private data.
-+    ops: thermal cooling devices call-backs.
-+	.get_max_state: get the Maximum throttle state of the cooling device.
-+	.get_cur_state: get the Current throttle state of the cooling device.
-+	.set_cur_state: set the Current throttle state of the cooling device.
-+
-+1.2.2 void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
-+
-+    This interface function remove the thermal cooling device.
-+    It deletes the corresponding entry form /sys/class/thermal folder and
-+    unbind itself from all the thermal zone devices using it.
-+
-+1.3 interface for binding a thermal zone device with a thermal cooling device
-+1.3.1 int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
-+		int trip, struct thermal_cooling_device *cdev);
-+
-+    This interface function bind a thermal cooling device to the certain trip
-+    point of a thermal zone device.
-+    This function is usually called in the thermal zone device .bind callback.
-+    tz: the thermal zone device
-+    cdev: thermal cooling device
-+    trip: indicates which trip point the cooling devices is associated with
-+	  in this thermal zone.
-+
-+1.3.2 int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
-+		int trip, struct thermal_cooling_device *cdev);
-+
-+    This interface function unbind a thermal cooling device from the certain
-+    trip point of a thermal zone device. This function is usually called in
-+    the thermal zone device .unbind callback.
-+    tz: the thermal zone device
-+    cdev: thermal cooling device
-+    trip: indicates which trip point the cooling devices is associated with
-+	  in this thermal zone.
-+
-+2. sysfs attributes structure
-+
-+RO	read only value
-+RW	read/write value
-+
-+Thermal sysfs attributes will be represented under /sys/class/thermal.
-+Hwmon sysfs I/F extension is also available under /sys/class/hwmon
-+if hwmon is compiled in or built as a module.
-+
-+Thermal zone device sys I/F, created once it's registered:
-+/sys/class/thermal/thermal_zone[0-*]:
-+    |---type:			Type of the thermal zone
-+    |---temp:			Current temperature
-+    |---mode:			Working mode of the thermal zone
-+    |---trip_point_[0-*]_temp:	Trip point temperature
-+    |---trip_point_[0-*]_type:	Trip point type
-+
-+Thermal cooling device sys I/F, created once it's registered:
-+/sys/class/thermal/cooling_device[0-*]:
-+    |---type:			Type of the cooling device(processor/fan/...)
-+    |---max_state:		Maximum cooling state of the cooling device
-+    |---cur_state:		Current cooling state of the cooling device
-+
-+
-+Then next two dynamic attributes are created/removed in pairs. They represent
-+the relationship between a thermal zone and its associated cooling device.
-+They are created/removed for each successful execution of
-+thermal_zone_bind_cooling_device/thermal_zone_unbind_cooling_device.
-+
-+/sys/class/thermal/thermal_zone[0-*]:
-+    |---cdev[0-*]:		[0-*]th cooling device in current thermal zone
-+    |---cdev[0-*]_trip_point:	Trip point that cdev[0-*] is associated with
-+
-+Besides the thermal zone device sysfs I/F and cooling device sysfs I/F,
-+the generic thermal driver also creates a hwmon sysfs I/F for each _type_
-+of thermal zone device. E.g. the generic thermal driver registers one hwmon
-+class device and build the associated hwmon sysfs I/F for all the registered
-+ACPI thermal zones.
-+
-+/sys/class/hwmon/hwmon[0-*]:
-+    |---name:			The type of the thermal zone devices
-+    |---temp[1-*]_input:	The current temperature of thermal zone [1-*]
-+    |---temp[1-*]_critical:	The critical trip point of thermal zone [1-*]
-+
-+Please read Documentation/hwmon/sysfs-interface for additional information.
-+
-+***************************
-+* Thermal zone attributes *
-+***************************
-+
-+type
-+	Strings which represent the thermal zone type.
-+	This is given by thermal zone driver as part of registration.
-+	E.g: "acpitz" indicates it's an ACPI thermal device.
-+	In order to keep it consistent with hwmon sys attribute; this should
-+ 	be a short, lowercase string, not containing spaces nor dashes.
-+	RO, Required
-+
-+temp
-+	Current temperature as reported by thermal zone (sensor).
-+	Unit: millidegree Celsius
-+	RO, Required
-+
-+mode
-+	One of the predefined values in [kernel, user].
-+	This file gives information about the algorithm that is currently
-+	managing the thermal zone. It can be either default kernel based
-+	algorithm or user space application.
-+	kernel	= Thermal management in kernel thermal zone driver.
-+	user	= Preventing kernel thermal zone driver actions upon
-+		  trip points so that user application can take full
-+		  charge of the thermal management.
-+	RW, Optional
-+
-+trip_point_[0-*]_temp
-+	The temperature above which trip point will be fired.
-+	Unit: millidegree Celsius
-+	RO, Optional
-+
-+trip_point_[0-*]_type
-+	Strings which indicate the type of the trip point.
-+	E.g. it can be one of critical, hot, passive, active[0-*] for ACPI
-+	thermal zone.
-+	RO, Optional
-+
-+cdev[0-*]
-+	Sysfs link to the thermal cooling device node where the sys I/F
-+	for cooling device throttling control represents.
-+	RO, Optional
-+
-+cdev[0-*]_trip_point
-+	The trip point with which cdev[0-*] is associated in this thermal
-+	zone; -1 means the cooling device is not associated with any trip
-+	point.
-+	RO, Optional
-+
-+passive
-+	Attribute is only present for zones which do not have a passive
-+	cooling policy (_PSV) defined in ACPI. Default is zero and can be
-+	set to a temperature (in millidegrees) to enable a passive trip
-+	point for the zone. Activation is done by polling (default interval:
-+	10 seconds); the polling interval can be set in
-+	/proc/acpi/thermal/TZN/polling_frequency.
-+	Unit: millidegree Celsius
-+	RW, Optional
-+
-+*****************************
-+* Cooling device attributes *
-+*****************************
-+
-+type
-+	String which represents the type of device, e.g:
-+	- for generic ACPI: should be "Fan", "Processor" or "LCD"
-+	- for memory controller device on intel_menlow platform:
-+	  should be "Memory controller".
-+	RO, Required
-+
-+max_state
-+	The maximum permissible cooling state of this cooling device.
-+	RO, Required
-+
-+cur_state
-+	The current cooling state of this cooling device.
-+	The value can any integer numbers between 0 and max_state:
-+	- cur_state == 0 means no cooling
-+	- cur_state == max_state means the maximum cooling.
-+	RW, Required
-+
-+3. A simple implementation
-+
-+ACPI thermal zone may support multiple trip points like critical, hot,
-+passive, active. If an ACPI thermal zone supports critical, passive,
-+active[0] and active[1] at the same time, it may register itself as a
-+thermal_zone_device (thermal_zone1) with 4 trip points in all.
-+It has one processor and one fan, which are both registered as
-+thermal_cooling_device.
-+
-+If the processor is listed in _PSL method, the fan is listed in _AL0
-+method, and the zone hase a _PSV method, the sys I/F structure will be
-+built like this:
-+
-+/sys/class/thermal:
-+
-+|thermal_zone1:
-+    |---type:			acpitz
-+    |---temp:			37000
-+    |---mode:			kernel
-+    |---trip_point_0_temp:	100000
-+    |---trip_point_0_type:	critical
-+    |---trip_point_1_temp:	80000
-+    |---trip_point_1_type:	passive
-+    |---trip_point_2_temp:	70000
-+    |---trip_point_2_type:	active0
-+    |---trip_point_3_temp:	60000
-+    |---trip_point_3_type:	active1
-+    |---cdev0:			--->/sys/class/thermal/cooling_device0
-+    |---cdev0_trip_point:	1	/* cdev0 can be used for passive */
-+    |---cdev1:			--->/sys/class/thermal/cooling_device3
-+    |---cdev1_trip_point:	2	/* cdev1 can be used for active[0]*/
-+
-+|cooling_device0:
-+    |---type:			Processor
-+    |---max_state:		8
-+    |---cur_state:		0
-+
-+|cooling_device3:
-+    |---type:			Fan
-+    |---max_state:		2
-+    |---cur_state:		0
-+
-+/sys/class/hwmon:
-+
-+|hwmon0:
-+    |---name:			acpitz
-+    |---temp1_input:		37000
-+    |---temp1_crit:		100000
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-deleted file mode 100644
-index 52b63c4..0000000
---- a/Documentation/thermal/sysfs-api.txt
-+++ /dev/null
-@@ -1,281 +0,0 @@
--Generic Thermal Sysfs driver How To
--===================================
--
--Written by Sujith Thomas <sujith.thomas@intel.com>, Zhang Rui <rui.zhang@intel.com>
--
--Updated: 21 August 2009
--
--Copyright (c)  2008 Intel Corporation
--
--
--0. Introduction
--
--The generic thermal sysfs provides a set of interfaces for thermal zone
--devices (sensors) and thermal cooling devices (fan, processor...) to register
--with the thermal management solution and to be a part of it.
--
--This how-to focuses on enabling new thermal zone and cooling devices to
--participate in thermal management.
--This solution is platform independent and any type of thermal zone devices
--and cooling devices should be able to make use of the infrastructure.
--
--The main task of the thermal sysfs driver is to expose thermal zone attributes
--as well as cooling device attributes to the user space.
--An intelligent thermal management application can make decisions based on
--inputs from thermal zone attributes (the current temperature and trip point
--temperature) and throttle appropriate devices.
--
--[0-*]	denotes any positive number starting from 0
--[1-*]	denotes any positive number starting from 1
--
--1. thermal sysfs driver interface functions
--
--1.1 thermal zone device interface
--1.1.1 struct thermal_zone_device *thermal_zone_device_register(char *name,
--		int trips, void *devdata, struct thermal_zone_device_ops *ops)
--
--    This interface function adds a new thermal zone device (sensor) to
--    /sys/class/thermal folder as thermal_zone[0-*]. It tries to bind all the
--    thermal cooling devices registered at the same time.
--
--    name: the thermal zone name.
--    trips: the total number of trip points this thermal zone supports.
--    devdata: device private data
--    ops: thermal zone device call-backs.
--	.bind: bind the thermal zone device with a thermal cooling device.
--	.unbind: unbind the thermal zone device with a thermal cooling device.
--	.get_temp: get the current temperature of the thermal zone.
--	.get_mode: get the current mode (user/kernel) of the thermal zone.
--	    - "kernel" means thermal management is done in kernel.
--	    - "user" will prevent kernel thermal driver actions upon trip points
--	      so that user applications can take charge of thermal management.
--	.set_mode: set the mode (user/kernel) of the thermal zone.
--	.get_trip_type: get the type of certain trip point.
--	.get_trip_temp: get the temperature above which the certain trip point
--			will be fired.
--
--1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
--
--    This interface function removes the thermal zone device.
--    It deletes the corresponding entry form /sys/class/thermal folder and
--    unbind all the thermal cooling devices it uses.
--
--1.2 thermal cooling device interface
--1.2.1 struct thermal_cooling_device *thermal_cooling_device_register(char *name,
--		void *devdata, struct thermal_cooling_device_ops *)
--
--    This interface function adds a new thermal cooling device (fan/processor/...)
--    to /sys/class/thermal/ folder as cooling_device[0-*]. It tries to bind itself
--    to all the thermal zone devices register at the same time.
--    name: the cooling device name.
--    devdata: device private data.
--    ops: thermal cooling devices call-backs.
--	.get_max_state: get the Maximum throttle state of the cooling device.
--	.get_cur_state: get the Current throttle state of the cooling device.
--	.set_cur_state: set the Current throttle state of the cooling device.
--
--1.2.2 void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
--
--    This interface function remove the thermal cooling device.
--    It deletes the corresponding entry form /sys/class/thermal folder and
--    unbind itself from all the thermal zone devices using it.
--
--1.3 interface for binding a thermal zone device with a thermal cooling device
--1.3.1 int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
--		int trip, struct thermal_cooling_device *cdev);
--
--    This interface function bind a thermal cooling device to the certain trip
--    point of a thermal zone device.
--    This function is usually called in the thermal zone device .bind callback.
--    tz: the thermal zone device
--    cdev: thermal cooling device
--    trip: indicates which trip point the cooling devices is associated with
--	  in this thermal zone.
--
--1.3.2 int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
--		int trip, struct thermal_cooling_device *cdev);
--
--    This interface function unbind a thermal cooling device from the certain
--    trip point of a thermal zone device. This function is usually called in
--    the thermal zone device .unbind callback.
--    tz: the thermal zone device
--    cdev: thermal cooling device
--    trip: indicates which trip point the cooling devices is associated with
--	  in this thermal zone.
--
--2. sysfs attributes structure
--
--RO	read only value
--RW	read/write value
--
--Thermal sysfs attributes will be represented under /sys/class/thermal.
--Hwmon sysfs I/F extension is also available under /sys/class/hwmon
--if hwmon is compiled in or built as a module.
--
--Thermal zone device sys I/F, created once it's registered:
--/sys/class/thermal/thermal_zone[0-*]:
--    |---type:			Type of the thermal zone
--    |---temp:			Current temperature
--    |---mode:			Working mode of the thermal zone
--    |---trip_point_[0-*]_temp:	Trip point temperature
--    |---trip_point_[0-*]_type:	Trip point type
--
--Thermal cooling device sys I/F, created once it's registered:
--/sys/class/thermal/cooling_device[0-*]:
--    |---type:			Type of the cooling device(processor/fan/...)
--    |---max_state:		Maximum cooling state of the cooling device
--    |---cur_state:		Current cooling state of the cooling device
--
--
--Then next two dynamic attributes are created/removed in pairs. They represent
--the relationship between a thermal zone and its associated cooling device.
--They are created/removed for each successful execution of
--thermal_zone_bind_cooling_device/thermal_zone_unbind_cooling_device.
--
--/sys/class/thermal/thermal_zone[0-*]:
--    |---cdev[0-*]:		[0-*]th cooling device in current thermal zone
--    |---cdev[0-*]_trip_point:	Trip point that cdev[0-*] is associated with
--
--Besides the thermal zone device sysfs I/F and cooling device sysfs I/F,
--the generic thermal driver also creates a hwmon sysfs I/F for each _type_
--of thermal zone device. E.g. the generic thermal driver registers one hwmon
--class device and build the associated hwmon sysfs I/F for all the registered
--ACPI thermal zones.
--
--/sys/class/hwmon/hwmon[0-*]:
--    |---name:			The type of the thermal zone devices
--    |---temp[1-*]_input:	The current temperature of thermal zone [1-*]
--    |---temp[1-*]_critical:	The critical trip point of thermal zone [1-*]
--
--Please read Documentation/hwmon/sysfs-interface for additional information.
--
--***************************
--* Thermal zone attributes *
--***************************
--
--type
--	Strings which represent the thermal zone type.
--	This is given by thermal zone driver as part of registration.
--	E.g: "acpitz" indicates it's an ACPI thermal device.
--	In order to keep it consistent with hwmon sys attribute; this should
-- 	be a short, lowercase string, not containing spaces nor dashes.
--	RO, Required
--
--temp
--	Current temperature as reported by thermal zone (sensor).
--	Unit: millidegree Celsius
--	RO, Required
--
--mode
--	One of the predefined values in [kernel, user].
--	This file gives information about the algorithm that is currently
--	managing the thermal zone. It can be either default kernel based
--	algorithm or user space application.
--	kernel	= Thermal management in kernel thermal zone driver.
--	user	= Preventing kernel thermal zone driver actions upon
--		  trip points so that user application can take full
--		  charge of the thermal management.
--	RW, Optional
--
--trip_point_[0-*]_temp
--	The temperature above which trip point will be fired.
--	Unit: millidegree Celsius
--	RO, Optional
--
--trip_point_[0-*]_type
--	Strings which indicate the type of the trip point.
--	E.g. it can be one of critical, hot, passive, active[0-*] for ACPI
--	thermal zone.
--	RO, Optional
--
--cdev[0-*]
--	Sysfs link to the thermal cooling device node where the sys I/F
--	for cooling device throttling control represents.
--	RO, Optional
--
--cdev[0-*]_trip_point
--	The trip point with which cdev[0-*] is associated in this thermal
--	zone; -1 means the cooling device is not associated with any trip
--	point.
--	RO, Optional
--
--passive
--	Attribute is only present for zones which do not have a passive
--	cooling policy (_PSV) defined in ACPI. Default is zero and can be
--	set to a temperature (in millidegrees) to enable a passive trip
--	point for the zone. Activation is done by polling (default interval:
--	10 seconds); the polling interval can be set in
--	/proc/acpi/thermal/TZN/polling_frequency.
--	Unit: millidegree Celsius
--	RW, Optional
--
--*****************************
--* Cooling device attributes *
--*****************************
--
--type
--	String which represents the type of device, e.g:
--	- for generic ACPI: should be "Fan", "Processor" or "LCD"
--	- for memory controller device on intel_menlow platform:
--	  should be "Memory controller".
--	RO, Required
--
--max_state
--	The maximum permissible cooling state of this cooling device.
--	RO, Required
--
--cur_state
--	The current cooling state of this cooling device.
--	The value can any integer numbers between 0 and max_state:
--	- cur_state == 0 means no cooling
--	- cur_state == max_state means the maximum cooling.
--	RW, Required
--
--3. A simple implementation
--
--ACPI thermal zone may support multiple trip points like critical, hot,
--passive, active. If an ACPI thermal zone supports critical, passive,
--active[0] and active[1] at the same time, it may register itself as a
--thermal_zone_device (thermal_zone1) with 4 trip points in all.
--It has one processor and one fan, which are both registered as
--thermal_cooling_device.
--
--If the processor is listed in _PSL method, the fan is listed in _AL0
--method, and the zone hase a _PSV method, the sys I/F structure will be
--built like this:
--
--/sys/class/thermal:
--
--|thermal_zone1:
--    |---type:			acpitz
--    |---temp:			37000
--    |---mode:			kernel
--    |---trip_point_0_temp:	100000
--    |---trip_point_0_type:	critical
--    |---trip_point_1_temp:	80000
--    |---trip_point_1_type:	passive
--    |---trip_point_2_temp:	70000
--    |---trip_point_2_type:	active0
--    |---trip_point_3_temp:	60000
--    |---trip_point_3_type:	active1
--    |---cdev0:			--->/sys/class/thermal/cooling_device0
--    |---cdev0_trip_point:	1	/* cdev0 can be used for passive */
--    |---cdev1:			--->/sys/class/thermal/cooling_device3
--    |---cdev1_trip_point:	2	/* cdev1 can be used for active[0]*/
--
--|cooling_device0:
--    |---type:			Processor
--    |---max_state:		8
--    |---cur_state:		0
--
--|cooling_device3:
--    |---type:			Fan
--    |---max_state:		2
--    |---cur_state:		0
--
--/sys/class/hwmon:
--
--|hwmon0:
--    |---name:			acpitz
--    |---temp1_input:		37000
--    |---temp1_crit:		100000
+---
+
+Switch ARM mailing lists to the ones that work.
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 66bbc53..d0a05f6 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -497,7 +497,7 @@ F:	arch/arm/include/asm/floppy.h
+ 
+ ARM PORT
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/
+@@ -546,7 +546,7 @@ S:	Maintained
+ 
+ ARM/CLKDEV SUPPORT
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ F:	arch/arm/common/clkdev.c
+ F:	arch/arm/include/asm/clkdev.h
+ 
+@@ -568,7 +568,7 @@ F:	arch/arm/mach-gemini/
+ 
+ ARM/EBSA110 MACHINE SUPPORT
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/mach-ebsa110/
+@@ -592,7 +592,7 @@ F:	arch/arm/mm/*-fa*
+ 
+ ARM/FOOTBRIDGE ARCHITECTURE
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/include/asm/hardware/dec21285.h
+@@ -728,7 +728,7 @@ S:	Maintained
+ 
+ ARM/PT DIGITAL BOARD PORT
+ M:	Stefan Eletzhofer <stefan.eletzhofer@eletztrick.de>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ 
+@@ -739,7 +739,7 @@ S:	Maintained
+ 
+ ARM/RISCPC ARCHITECTURE
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/common/time-acorn.c
+@@ -758,7 +758,7 @@ S:	Maintained
+ 
+ ARM/SAMSUNG ARM ARCHITECTURES
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/plat-s3c/
+@@ -766,42 +766,42 @@ F:	arch/arm/plat-s3c24xx/
+ 
+ ARM/S3C2410 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c2410/
+ 
+ ARM/S3C2440 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c2440/
+ 
+ ARM/S3C2442 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c2442/
+ 
+ ARM/S3C2443 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c2443/
+ 
+ ARM/S3C6400 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c6400/
+ 
+ ARM/S3C6410 ARM ARCHITECTURE
+ M:	Ben Dooks <ben-linux@fluff.org>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.fluff.org/ben/linux/
+ S:	Maintained
+ F:	arch/arm/mach-s3c6410/
+@@ -824,7 +824,7 @@ S:	Maintained
+ 
+ ARM/VFP SUPPORT
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	arch/arm/vfp/
+@@ -1501,7 +1501,7 @@ F:	drivers/infiniband/hw/cxgb3/
+ 
+ CYBERPRO FB DRIVER
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
+ F:	drivers/video/cyber2000fb.*
+@@ -4106,7 +4106,7 @@ F:	drivers/media/video/pvrusb2/
+ PXA2xx/PXA3xx SUPPORT
+ M:	Eric Miao <eric.y.miao@gmail.com>
+ M:	Russell King <linux@arm.linux.org.uk>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ S:	Maintained
+ F:	arch/arm/mach-pxa/
+ F:	drivers/pcmcia/pxa2xx*
+@@ -4119,13 +4119,13 @@ F:	sound/soc/pxa
+ PXA168 SUPPORT
+ M:	Eric Miao <eric.y.miao@gmail.com>
+ M:	Jason Chagas <jason.chagas@marvell.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ycmiao/pxa-linux-2.6.git
+ S:	Maintained
+ 
+ PXA910 SUPPORT
+ M:	Eric Miao <eric.y.miao@gmail.com>
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/ycmiao/pxa-linux-2.6.git
+ S:	Maintained
+ 
+@@ -4561,7 +4561,7 @@ F:	drivers/misc/sgi-xp/
+ SHARP LH SUPPORT (LH7952X & LH7A40X)
+ M:	Marc Singer <elf@buici.com>
+ W:	http://projects.buici.com/arm
+-L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
++L:	linux-arm@vger.kernel.org
+ S:	Maintained
+ F:	Documentation/arm/Sharp-LH/ADC-LH7-Touchscreen
+ F:	arch/arm/mach-lh7a40x/
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
