@@ -1,39 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932787AbZHUWqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932890AbZHUW7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932787AbZHUWqN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 18:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932413AbZHUWqN
+	id S932890AbZHUW7b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 18:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932736AbZHUW7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 18:46:13 -0400
-Received: from claw.goop.org ([74.207.240.146]:39213 "EHLO claw.goop.org"
+	Fri, 21 Aug 2009 18:59:30 -0400
+Received: from smtp.knology.net ([24.214.63.101]:36431 "EHLO smtp.knology.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932318AbZHUWqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 18:46:12 -0400
-Message-ID: <4A8F2392.8000101@goop.org>
-Date: Fri, 21 Aug 2009 15:45:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Michal Schmidt <mschmidt@redhat.com>
-CC: Mark McLoughlin <markmc@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] xenfb: connect to backend before registering fb
-References: <20090821124059.17ab93fa@leela>	<20090821150922.72e12d9a@leela>	<20090821151352.1676de18@leela> <20090821154407.6337421b@leela>
-In-Reply-To: <20090821154407.6337421b@leela>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
+	id S932628AbZHUW73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 18:59:29 -0400
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+From: David Dillow <dave@thedillows.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <m1skfkrik2.fsf@fess.ebiederm.org>
+References: <200903041828.49972.m.bueker@berlin.de>
+	 <1242001754.4093.12.camel@obelisk.thedillows.org>
+	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+	 <1242077392.3716.15.camel@lap75545.ornl.gov>
+	 <4A09DC3E.2080807@googlemail.com>
+	 <1242268709.4979.7.camel@obelisk.thedillows.org>
+	 <4A0C6504.8000704@googlemail.com>
+	 <1242328457.32579.12.camel@lap75545.ornl.gov>
+	 <4A0C7443.1010000@googlemail.com>
+	 <1243042174.3580.23.camel@obelisk.thedillows.org>
+	 <m1skfkrik2.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Fri, 21 Aug 2009 18:59:27 -0400
+Message-Id: <1250895567.23419.1.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/21/09 06:44, Michal Schmidt wrote:
-> As soon as the framebuffer is registered, our methods may be called by the
-> kernel. This leads to a crash as xenfb_refresh() gets called before we have
-> the irq.
->
-> Connect to the backend before registering our framebuffer with the kernel.
->   
+On Fri, 2009-08-21 at 13:57 -0700, Eric W. Biederman wrote:
+> David Dillow <dave@thedillows.org> writes:
+> I have what at first glance looks like a problem caused by this
+> patch.  For the last month since upgrading one of my machines from
+> 2.6.28 to 2.6.30 it has been becomming inaccessible from the
+> network and I have a few:
+> 
+> NETDEV WATCHDOG: eth0 (r8169): transmit timed out
+> 
+> in my logs and a lot soft lockups that always have rtl8169_interrupt
+> as the thing that is running.   I suspect your patch has introduced
+> a near infinite loop in the interrupt handler and is causing these
+> soft lockups.
+> 
+> Any ideas?
 
-Thanks, applied.  Should this be backported to stable?
+I would be surprised, but I suppose it is not out of the realm of
+possibility. Can you send me a full dmesg, please?
 
-    J
