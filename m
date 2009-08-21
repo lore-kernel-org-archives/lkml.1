@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932775AbZHUU6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932728AbZHUVDC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932775AbZHUU6u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 16:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932686AbZHUU6t
+	id S932728AbZHUVDC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:03:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932640AbZHUVDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 16:58:49 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:37704 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932685AbZHUU6s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 16:58:48 -0400
-Date: Fri, 21 Aug 2009 14:00:20 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH -next] tracing/syscalls: fix printk formats
-Message-Id: <20090821140020.c4140ca9.randy.dunlap@oracle.com>
-In-Reply-To: <20090821164140.71968b47.sfr@canb.auug.org.au>
-References: <20090821164140.71968b47.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4A8F0A79.01A5:SCFSTAT5015188,ss=1,fgs=0
+	Fri, 21 Aug 2009 17:03:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48774 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932625AbZHUVDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 17:03:00 -0400
+Date: Fri, 21 Aug 2009 23:02:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       Greg KH <greg@kroah.com>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
+Message-ID: <20090821210215.GA26956@elte.hu>
+References: <20090821145406.GA3659@elte.hu> <alpine.DEB.2.00.0908211200160.30182@gandalf.stny.rr.com> <alpine.DEB.2.00.0908211204490.30182@gandalf.stny.rr.com> <20090821162822.GA20898@elte.hu> <alpine.DEB.2.00.0908211253080.30182@gandalf.stny.rr.com> <20090821195131.GE5356@elte.hu> <alpine.DEB.2.00.0908211601000.30182@gandalf.stny.rr.com> <alpine.DEB.2.00.0908211631420.30182@gandalf.stny.rr.com> <20090821203949.GD15439@elte.hu> <alpine.DEB.2.00.0908211641130.30182@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0908211641130.30182@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix printk format warnings:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-kernel/trace/trace_syscalls.c:113: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
-kernel/trace/trace_syscalls.c:123: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> On Fri, 21 Aug 2009, Ingo Molnar wrote:
+> > 
+> > ah - indeed, i forgot that it bases its decision off /proc/config, 
+> > if available, right?
+> 
+> Here's the list in order of seach:
+> 
+> 1. local .config file  (in tree root)
+> 2. /proc/config.gz
+> 3. /boot/config-`uname -r`
+> 4. /boot/vmlinuz-`uname -r` (extracts .config if configured in)
+> 5. vmlinux (local built vmlinux if .config is configured in)
+> 6. /lib/modules/`uname -r`/kernel/kernel/configs.ko
+> 7. kernel/configs.ko
+> 8. kernel/configs.o
+> 
+> I originally had /proc/config.gz but Andi Kleen correctly pointed 
+> out that it would be more intuitive if we use the local .config 
+> first. This would be something that I myself would expect. If you 
+> don't want the local .config used, then simply delete it.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- kernel/trace/trace_syscalls.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Well, but there's already a mechanism to include configs as a 
+must-have list: KCONFIG_ALLCONFIG=.config.
 
---- linux-next-20090821.orig/kernel/trace/trace_syscalls.c
-+++ linux-next-20090821/kernel/trace/trace_syscalls.c
-@@ -109,7 +109,7 @@ int ftrace_format_syscall(struct ftrace_
- 				        entry->args[i]);
- 		if (!ret)
- 			return 0;
--		ret = trace_seq_printf(s, "\toffset:%d;\tsize:%lu;\n", offset,
-+		ret = trace_seq_printf(s, "\toffset:%d;\tsize:%zu;\n", offset,
- 				       sizeof(unsigned long));
- 		if (!ret)
- 			return 0;
-@@ -118,7 +118,7 @@ int ftrace_format_syscall(struct ftrace_
- 
- 	trace_seq_printf(s, "\nprint fmt: \"");
- 	for (i = 0; i < entry->nb_args; i++) {
--		ret = trace_seq_printf(s, "%s: 0x%%0%lulx%s", entry->args[i],
-+		ret = trace_seq_printf(s, "%s: 0x%%0%zulx%s", entry->args[i],
- 				        sizeof(unsigned long),
- 					i == entry->nb_args - 1 ? "\", " : ", ");
- 		if (!ret)
-
-
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+	Ingo
