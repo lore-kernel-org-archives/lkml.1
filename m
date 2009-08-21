@@ -1,114 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932926AbZHUVh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932862AbZHUVig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932926AbZHUVh5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 17:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932326AbZHUVbO
+	id S932862AbZHUVig (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 17:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932803AbZHUVif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 17:31:14 -0400
-Received: from www.tglx.de ([62.245.132.106]:51446 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755459AbZHUVbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 17:31:11 -0400
-Message-Id: <20090821205601.878468441@linutronix.de>
-User-Agent: quilt/0.47-1
-Date: Fri, 21 Aug 2009 21:29:38 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>, Avi Kivity <avi@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alok N Kataria <akataria@vmware.com>,
-       Pan Jacob jun <jacob.jun.pan@intel.com>
-Subject: [RFC patch 02/32] x86: Add probe_roms to platform_setup
-References: <20090821205008.518392436@linutronix.de>
-Content-Disposition: inline;
-	filename=x86-add-probe-roms-to-platform-setup.patch
+	Fri, 21 Aug 2009 17:38:35 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:42755 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932326AbZHUVie (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 17:38:34 -0400
+Date: Fri, 21 Aug 2009 23:38:33 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Beulich <JBeulich@novell.com>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: properly annotate alternatives.c
+Message-ID: <20090821213833.GA16210@merkur.ravnborg.org>
+References: <4A8BC8A00200007800010823@vpn.id2.novell.com> <20090821200908.GF5356@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090821200908.GF5356@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-probe_roms is only used on 32bit. Add it to the platform_setup code
-and remove the #ifdefs.
+On Fri, Aug 21, 2009 at 10:09:08PM +0200, Ingo Molnar wrote:
+> 
+> * Jan Beulich <JBeulich@novell.com> wrote:
+> 
+> > Some of the NOPs tables aren't used on 64-bits, quite some code and
+> > data is needed post-init for module loading only, and a couple of
+> > functions aren't used outside that file (i.e. can be static, and don't
+> > need to be exported).
+> > 
+> > The change to __INITDATA/__INITRODATA is needed to avoid an assembler
+> > warning.
+> > 
+> > Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> > Cc: Sam Ravnborg <sam@ravnborg.org>
+> > 
+> > ---
+> >  arch/x86/include/asm/alternative.h |    7 ----
+> >  arch/x86/kernel/alternative.c      |   56 +++++++++++++++++++++----------------
+> >  include/linux/init.h               |   12 ++++++-
+> >  3 files changed, 42 insertions(+), 33 deletions(-)
+> 
+> looks like a nice improvement. Sam, what do you think?
+I briefly looked at the __INIT*DATA cahnges.
+I recall that I had something similar only that I used @progbits which
+arm does not support. And I did not want to specialcase arm.
 
-Default initializer is platform_setup_noop() which is overridden in
-the 32bit boot code.
+It is only recently I learned that we can always use %progbits.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- arch/x86/include/asm/platform.h  |   10 ++++++++++
- arch/x86/kernel/head32.c         |    3 +++
- arch/x86/kernel/platform_setup.c |    4 ++++
- arch/x86/kernel/setup.c          |    4 +---
- 4 files changed, 18 insertions(+), 3 deletions(-)
+So it has my:
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-Index: linux-2.6/arch/x86/include/asm/platform.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/platform.h
-+++ linux-2.6/arch/x86/include/asm/platform.h
-@@ -9,10 +9,20 @@ struct platform_setup_quirks {
- };
- 
- /**
-+ * struct platform_setup_resources - platform specific resource related ops
-+ * @probe_roms:			probe BIOS roms
-+ *
-+ */
-+struct platform_setup_resources {
-+	void (*probe_roms)(void);
-+};
-+
-+/**
-  * struct platform_setup_ops - functions for platform specific setup
-  *
-  */
- struct platform_setup_ops {
-+	struct platform_setup_resources resources;
- 	struct platform_setup_quirks quirks;
- };
- 
-Index: linux-2.6/arch/x86/kernel/head32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/head32.c
-+++ linux-2.6/arch/x86/kernel/head32.c
-@@ -29,6 +29,9 @@ void __init i386_start_kernel(void)
- 		reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
- 	}
- #endif
-+	/* Initilize 32bit specific setup functions */
-+	platform_setup.resources.probe_roms = probe_roms;
-+
- 	reserve_ebda_region();
- 
- 	/*
-Index: linux-2.6/arch/x86/kernel/platform_setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/platform_setup.c
-+++ linux-2.6/arch/x86/kernel/platform_setup.c
-@@ -14,4 +14,8 @@ void __cpuinit platform_setup_noop(void)
-  * for standard PC hardware.
-  */
- struct __initdata platform_setup_ops platform_setup = {
-+
-+	.resources = {
-+		.probe_roms = platform_setup_noop,
-+	},
- };
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -835,9 +835,7 @@ void __init setup_arch(char **cmdline_p)
- 	 */
- 	init_hypervisor(&boot_cpu_data);
- 
--#ifdef CONFIG_X86_32
--	probe_roms();
--#endif
-+	platform_setup.resources.probe_roms();
- 
- 	/* after parse_early_param, so could debug it */
- 	insert_resource(&iomem_resource, &code_resource);
-
-
+	Sam
