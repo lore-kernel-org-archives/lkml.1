@@ -1,143 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZHUMMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZHUMQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754934AbZHUMMK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 08:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZHUMMJ
+	id S1755239AbZHUMQb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 08:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZHUMQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 08:12:09 -0400
-Received: from mail-gx0-f205.google.com ([209.85.217.205]:62009 "EHLO
-	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752681AbZHUMMI convert rfc822-to-8bit (ORCPT
+	Fri, 21 Aug 2009 08:16:30 -0400
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:43128 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753990AbZHUMQ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 08:12:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=MaHUvGE+pRlmc7LTPnLXxcYsFbWY+ipdlH/tBDo+TYkcda6dWh5lS/1SJUf2iOVH0l
-         C3FyYZzWeVoF9UD5qdOT3DWfzCAyYXfEYd34pqIqQWPkRPzM1PZF39zPRz0f7ntwJIwx
-         y38PH0TAdgAHPfN1730ea6/KaoDPm+L+GoHKk=
+	Fri, 21 Aug 2009 08:16:29 -0400
+X-IronPort-AV: E=Sophos;i="4.44,250,1249257600"; 
+   d="scan'208";a="6711943"
 MIME-Version: 1.0
-In-Reply-To: <1250848605.7538.16.camel@twins>
-References: <1250848605.7538.16.camel@twins>
-Date: Fri, 21 Aug 2009 14:12:08 +0200
-Message-ID: <520f0cf10908210512n7e426d1es4b5b0e0d953af7c5@mail.gmail.com>
-Subject: Re: [PATCH -rt] timer: delay waking softirqs from the jiffy tick
-From: John Kacur <jkacur@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>, dinogun@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19086.35370.70561.378736@gianluca.uk.xensource.com>
+Date: Fri, 21 Aug 2009 12:51:06 +0100
+From: Gianluca Guida <gianluca.guida@citrix.com>
+To: Miroslav Rezanina <mrezanin@redhat.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Gianluca Guida <Gianluca.Guida@eu.citrix.com>
+Subject: Re: [PATCH][v2.6.29][XEN] Return unused memory to hypervisor
+In-Reply-To: <1378245818.61101250842487688.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+References: <1152394510.61021250842386600.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<1378245818.61101250842487688.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+X-Mailer: VM 8.0.12 under 22.3.1 (i486-pc-linux-gnu)
+X-OriginalArrivalTime: 21 Aug 2009 12:16:30.0564 (UTC) FILETIME=[371E3240:01CA2259]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 11:56 AM, Peter Zijlstra<peterz@infradead.org> wrote:
-> Hi,
->
-> most people were complaining about broken balancing with the recent -rt
-> series.
->
-> A look at /proc/sched_debug yielded:
->
-> cpu#0, 2393.874 MHz
->  .nr_running                    : 0
->  .load                          : 0
->  .cpu_load[0]                   : 177522
->  .cpu_load[1]                   : 177522
->  .cpu_load[2]                   : 177522
->  .cpu_load[3]                   : 177522
->  .cpu_load[4]                   : 177522
-> cpu#1, 2393.874 MHz
->  .nr_running                    : 4
->  .load                          : 4096
->  .cpu_load[0]                   : 181618
->  .cpu_load[1]                   : 180850
->  .cpu_load[2]                   : 180274
->  .cpu_load[3]                   : 179938
->  .cpu_load[4]                   : 179758
->
->
-> Which indicated the cpu_load computation was hosed, the 177522 value
-> indicates that there is one RT task runnable. Initially I thought the
-> old problem of calculating the cpu_load from a softirq had re-surfaced,
-> however looking at the code shows its being done from scheduler_tick().
->
-> [ we really should fix this RT/cfs interaction some day... ]
->
-> A few trace_printk()s later:
->
->    sirq-timer/1-19    [001]   174.289744:     19: 50:S ==> [001]     0:140:R <idle>
->          <idle>-0     [001]   174.290724: enqueue_task_rt: adding task: 19/sirq-timer/1 with load: 177522
->          <idle>-0     [001]   174.290725:      0:140:R   + [001]    19: 50:S sirq-timer/1
->          <idle>-0     [001]   174.290730: scheduler_tick: current load: 177522
->          <idle>-0     [001]   174.290732: scheduler_tick: current: 0/swapper
->          <idle>-0     [001]   174.290736:      0:140:R ==> [001]    19: 50:R sirq-timer/1
->    sirq-timer/1-19    [001]   174.290741: dequeue_task_rt: removing task: 19/sirq-timer/1 with load: 177522
->    sirq-timer/1-19    [001]   174.290743:     19: 50:S ==> [001]     0:140:R <idle>
->
-> We see that we always raise the timer softirq before doing the load
-> calculation. Avoid this by re-ordering the scheduler_tick() call in
-> update_process_times() to occur before we deal with timers.
->
-> This lowers the load back to sanity and restores regular load-balancing
-> behaviour.
->
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/timer.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/kernel/timer.c b/kernel/timer.c
-> index 8137cce..96ac1b4 100644
-> --- a/kernel/timer.c
-> +++ b/kernel/timer.c
-> @@ -1221,10 +1221,10 @@ void update_process_times(int user_tick)
->
->        /* Note: this timer irq context must be accounted for as well. */
->        account_process_tick(p, user_tick);
-> +       scheduler_tick();
->        run_local_timers();
->        if (rcu_pending(cpu))
->                rcu_check_callbacks(cpu, user_tick);
-> -       scheduler_tick();
->        run_posix_cpu_timers(p);
->  }
->
->
-> --
+Miroslav Rezanina writes:
+ > ----- Original Message -----
+ > From: "Jeremy Fitzhardinge" <jeremy@goop.org>
+ > To: "Miroslav Rezanina" <mrezanin@redhat.com>
+ > Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, "Gianluca Guida" <gianluca.guida@citrix.com>
+ > Sent: Thursday, August 20, 2009 6:39:02 PM GMT +01:00 Amsterdam / Berlin / Bern / Rome / Stockholm / Vienna
+ > Subject: Re: [PATCH][v2.6.29][XEN] Return unused memory to hypervisor
+ > 
+ > On 08/20/09 00:47, Miroslav Rezanina wrote:
+ > >> there is handled e820 map in guest. However, this patch informs 
+ > >> hypervisor, that guest uses less memory than was assigned to it. 
+ > >> If hypervisor is not informed, memory is reserved for guest that
+ > >> do not need it. If hypervisor is informed, he decrease memory
+ > >> reservation for guest and unused memory is marked as free 
+ > >> for use by other guests.
+ > >>   
+ > >
+ > > Yes.  But the guest will modify its own e820 map for a number of
+ > > reasons; for example: reducing its own memory, or clearing a space for
+ > > the PCI hole.  In general we want to free any underlying pages which
+ > > don't correspond to E820_RAM regions.
+ > >
+ > >    J
+ > 
+ > I agree. However, I'm not sure if xen supports such a precise handling.
 
-Cool! I applied this to the v2.6.31-rc6-rt5 tree and with the
-following results from /proc/sched_debug
+Xen will just get a list of mfn to remove from the domain. That is
+precise enough. The scenario Jeremy is describing does happen,
+especially in dom0 kernels.
 
-Before applying the patch:
-
-cpu#0, 2792.838 MHz
-  .cpu_load[0]                   : 180594
-  .cpu_load[1]                   : 192061
-  .cpu_load[2]                   : 205170
-  .cpu_load[3]                   : 204449
-  .cpu_load[4]                   : 199281
-
-cpu#1, 2792.838 MHz
-  .cpu_load[0]                   : 177522
-  .cpu_load[1]                   : 178378
-  .cpu_load[2]                   : 178932
-  .cpu_load[3]                   : 178808
-
-After applying the patch:
-
-cpu#0, 2792.847 MHz
-  .cpu_load[0]                   : 1024
-  .cpu_load[1]                   : 960
-  .cpu_load[2]                   : 700
-  .cpu_load[3]                   : 430
-  .cpu_load[4]                   : 260
-
-cpu#1, 2792.847 MHz
-  .cpu_load[0]                   : 1024
-  .cpu_load[1]                   : 1280
-  .cpu_load[2]                   : 1393
-  .cpu_load[3]                   : 1390
-  .cpu_load[4]                   : 1871
+G.
