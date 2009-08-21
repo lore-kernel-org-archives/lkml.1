@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbZHUPsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZHUPvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932326AbZHUPsa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbZHUPs3
+	id S1755102AbZHUPvl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 11:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbZHUPvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:48:29 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47908 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932196AbZHUPs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:48:29 -0400
-Date: Fri, 21 Aug 2009 17:48:29 +0200
-From: Jan Kara <jack@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>, Felix Blyakher <felixb@sgi.com>,
-       xfs@oss.sgi.com, Anton Altaparmakov <aia21@cantab.net>,
-       linux-ntfs-dev@lists.sourceforge.net,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-ext4@vger.kernel.org, tytso@mit.edu
-Subject: Re: [PATCH 07/17] vfs: Introduce new helpers for syncing after
-	writing to O_SYNC file or IS_SYNC inode
-Message-ID: <20090821154829.GE3007@duck.novell.com>
-References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-8-git-send-email-jack@suse.cz> <20090819162638.GE6150@infradead.org> <20090820121531.GC16486@duck.novell.com> <20090820162729.GA24659@infradead.org> <20090821152339.GD3007@duck.novell.com> <20090821153235.GA5874@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090821153235.GA5874@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 21 Aug 2009 11:51:40 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45738 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754425AbZHUPvj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 11:51:39 -0400
+Subject: Re: [PATCH] ARM: Mailing lists have moved
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Bill Gatliff <bgat@billgatliff.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Paul Walmsley <paul@pwsan.com>,
+       Russell King <linux@arm.linux.org.uk>, erikm@nl.linux.org,
+       vince@kyllikki.org, linux-kernel@vger.kernel.org,
+       linux-arm@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <4A8EBFFD.5000307@billgatliff.com>
+References: <1250855566.3311.100.camel@macbook.infradead.org>
+	 <alpine.DEB.2.00.0908210925400.24646@utopia.booyaka.com>
+	 <1250868957.3311.110.camel@macbook.infradead.org>
+	 <4A8EBFFD.5000307@billgatliff.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 21 Aug 2009 16:46:19 +0100
+Message-Id: <1250869579.10642.14.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Aug 2009 15:46:20.0677 (UTC) FILETIME=[8768FB50:01CA2276]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 21-08-09 11:32:35, Christoph Hellwig wrote:
-> On Fri, Aug 21, 2009 at 05:23:39PM +0200, Jan Kara wrote:
-> >   Hmm, I can imagine it would buy us something in two cases (but looking at
-> > the code, neither is implemented in such a way that it would really help
-> > us in any way):
-> > 1) when an inode and it's data are stored in one block (e.g. OCFS2 or UDF) do
-> >    this.
+On Fri, 2009-08-21 at 10:40 -0500, Bill Gatliff wrote:
+> David Woodhouse wrote:
+> > On Fri, 2009-08-21 at 09:27 -0600, Paul Walmsley wrote:
+> >   
+> >>     
+> >>> Russell no longer wants to maintain the mailing lists, so with his
+> >>> blessing I have set up replacements at lists.infradead.org.
+> >>>       
+> >> Can you help us understand why the existing linux-arm@vger.kernel.org
+> >> list is not used for this?
+> >>     
+> >
+> > Russell didn't want to do that, so I offered an alternative solution
+> > preserving the three separate lists (l-a, l-a-kernel, l-a-toolchain).
+> >   
 > 
-> >   In the first case we would wait for block with data to be written only to
-> > submit it again because inode was still dirty.
-> 
-> But we would not actually store in the pagecache or at least never
-> writeback it via the pacache in that case, but always just write it as
-> part of the inode.
-  Yes, probably. Actually, that's what UDF does. It's just that then the
-sequence fdatawrite(), fdatawait() does not really send the data to disk.
-But that probably does not matter.
+> Ok, so which of the new lists should former linux-arm-kernel subscribers 
+> be subscribed to?  I'm confused, I've seen mention of four different 
+> lists now: three at infraded, and one at vger.  :)
 
-									Honza
+It looks like the linux-*@lists.arm.linux.org.uk have been moved to
+linux-*@lists.infradead.org with all the subscriptions transferred as
+well. So for kernel, it should be linux-arm-kernel@lists.infradead.org.
+
+If unsure, cc LKML.
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Catalin
+
