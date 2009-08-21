@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932208AbZHUO2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbZHUO3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932208AbZHUO2i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 10:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZHUO2h
+	id S932235AbZHUO3u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 10:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932177AbZHUO3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 10:28:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38665 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755659AbZHUO2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 10:28:36 -0400
-Date: Fri, 21 Aug 2009 16:28:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Patch 0/1] HW-BKPT: Allow per-cpu kernel-space Hardware
-	Breakpoint requests
-Message-ID: <20090821142811.GF11098@elte.hu>
-References: <20090817124641.GA13354@in.ibm.com> <20090819161119.GA3633@in.ibm.com> <20090819173259.GF4972@nowhere> <20090820172719.GA16499@in.ibm.com>
+	Fri, 21 Aug 2009 10:29:49 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41039 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932087AbZHUO3t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 10:29:49 -0400
+Date: Fri, 21 Aug 2009 10:29:47 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       peterz@infradead.org, hugh.dickins@tiscali.co.uk,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH -tip/core/rcu 1/6] Cleanups and fixes for RCU in face of
+ heavy CPU-hotplug stress
+In-Reply-To: <20090821141721.GA11098@elte.hu>
+Message-ID: <alpine.DEB.2.00.0908211022090.16405@gandalf.stny.rr.com>
+References: <20090815165153.GA8886@linux.vnet.ibm.com> <1250533487.2709.14.camel@josh-work.beaverton.ibm.com> <20090817192036.GJ6760@linux.vnet.ibm.com> <20090818152643.GA5549@elte.hu> <20090820140335.GA31773@Krystal> <20090821141721.GA11098@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090820172719.GA16499@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* K.Prasad <prasad@linux.vnet.ibm.com> wrote:
+On Fri, 21 Aug 2009, Ingo Molnar wrote:
 
-> > Providing those would let us build a pmu struct on top of this 
-> > high level API, hopefully.
-
-Note that there's a PMU struct already in 
-arch/x86/kernel/cpu/perf_counter.c. Could debug-register ops be 
-tacked on to it?
-
-> > All that would be a benefit in both sides. It avoids us building 
-> > a low level PMU that reinvent the wheel, ie: the hardware 
-> > breakpoints API handles a lot of things both in arch and core 
-> > sides (debug register setting tricks with dr7 and co, cpu 
-> > hotplug, kexec, etc...). In the bp API it brings more power 
-> > (register switching only if needed, per cpu support, clone 
-> > inheritance support, etc...)
-> > 
-> > And in the end we have a pmu (which unifies the control of this 
-> > profiling unit through a well established and known object for 
-> > perfcounter) controlled by a high level API that could also 
-> > benefit to other debugging subsystems.
-> > 
-> > What do you think? It would be also nice to have Peter's and 
-> > Ingo opinion about it, to be sure we are not going in the wrong 
-> > direction.
 > 
-> Indeed, it will be nice to know from Ingo and Peter that we are 
-> heading right.
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > I would not trust this architecture for synchronization tests. 
+> > There has been reports of a hardware bug affecting the cmpxchg 
+> > instruction in the field. The load fence normally implied by the 
+> > semantic seems to be missing. AFAIK, AMD never acknowledged the 
+> > problem.
+> 
+> If cmpxchg was broken i'd be having far worse problems and very 
+> widely so.
 
-If you do this proper perfcounters integration then i'm certainly 
-happy.
+I believe Mathieu is suggesting that the hardware bug is not that the 
+compare and exchange does not work in cmpxchg, but that it does not 
+provide an explicit memory barrier. Such a bug is very hard to trigger, 
+since it requires a race that allows a memory write/read to cross the 
+cmpxchg, and then have this be in such a place that it will cause harm.
 
-	Ingo
+> 
+> FYI, this was the same box i prototyped/developed -rt on, which uses 
+> cmpxchg for _everything_.
+
+If such a bug exists, then it may not trigger easily, even on -rt.
+
+> 
+> That's not a proof of course (it's near impossible to prove the lack 
+> of a bug), but it's sure a strong indicator and you'll need to 
+> provide far more proof of misbehavior before i discount a bona fide 
+> regression on this box.
+
+But with the above said, I totally agree with your point. More proof must 
+be given before we can discount that another bug exists.
+
+-- Steve
+
