@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbZHUSez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZHUSlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932433AbZHUSez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 14:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZHUSey
+	id S1755687AbZHUSlR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 14:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbZHUSlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 14:34:54 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41496 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755552AbZHUSex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 14:34:53 -0400
-Subject: Re: [tip:tracing/urgent] tracing: Fix too large stack usage in
- do_one_initcall()
-From: Steven Rostedt <srostedt@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-tip-commits@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Dave Jones <davej@redhat.com>,
-       Kyle McMartin <kyle@mcmartin.ca>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       catalin.marinas@arm.com, a.p.zijlstra@chello.nl, jens.axboe@oracle.com,
-       fweisbec@gmail.com, stable@kernel.org, tglx@linutronix.de
-In-Reply-To: <alpine.LFD.2.01.0908211108000.3158@localhost.localdomain>
-References: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
-	 <20090821111450.GA32037@elte.hu>
-	 <20090821104820.60948082.akpm@linux-foundation.org>
-	 <alpine.LFD.2.01.0908211108000.3158@localhost.localdomain>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Fri, 21 Aug 2009 14:30:39 -0400
-Message-Id: <1250879439.2964.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Aug 2009 14:41:17 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40631 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753841AbZHUSlQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 14:41:16 -0400
+Date: Fri, 21 Aug 2009 20:41:12 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.com>,
+       Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
+       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Helge Deller <deller@gmx.de>, Chris Zankel <chris@zankel.net>,
+       Rik van RIel <riel@redhat.com>, Balbir Singh <balbir@in.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Avi Kivity <avi@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH mmotm] ksm: antidote to MADV_MERGEABLE HWPOISON
+Message-ID: <20090821184112.GB18623@basil.fritz.box>
+References: <Pine.LNX.4.64.0908211912330.14259@sister.anvils>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0908211912330.14259@sister.anvils>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 11:13 -0700, Linus Torvalds wrote:
+On Fri, Aug 21, 2009 at 07:30:15PM +0100, Hugh Dickins wrote:
+> linux-next is now sporting MADV_HWPOISON at 12, which would have a very
+> nasty effect on KSM if you had CONFIG_MEMORY_FAILURE=y with CONFIG_KSM=y.
+> Shift MADV_MERGEABLE and MADV_UNMERGEABLE down two - two to reduce the
+> confusion if old and new userspace and kernel are mismatched.
 > 
-> On Fri, 21 Aug 2009, Andrew Morton wrote:
-> > 
-> > Do we have a max-stack-depth tracer widget btw?
-> 
-> Enable FTRACE and then STACK_TRACER. Then just do
-> 
-> 	cat /sys/kernel/debug/tracing/stack_trace
-> 
-> and you'll get this.
+> Personally I'd prefer the MADV_HWPOISON testing feature to shift; but
+> linux-next comes first in the mmotm lineup, and I can't be sure that
+> madvise KSM already has more users than there are HWPOISON testers:
+> so unless Andi is happy to shift MADV_HWPOISON, mmotm needs this.
 
-Just a nitpick, but you will want to also add "stacktrace" to the kernel
-command line otherwise it is default off. If you forget to do that, you
-can also enable it with /proc/sys/kernel/stack_tracer_enabled.
+Thanks for catching.
 
-But if you forget what to do, the code will remind you:
+Shifting is fine, but I would prefer then if it was to some
+value that is not reused (like 100) so that I can probe for it 
+in the test programs.
 
-[root@mxf ~]# cat /sys/kernel/debug/tracing/stack_trace 
-        Depth    Size   Location    (-1 entries)
-        -----    ----   --------
-#
-#  Stack tracer disabled
-#
-# To enable the stack tracer, either add 'stacktrace' to the
-# kernel command line
-# or 'echo 1 > /proc/sys/kernel/stack_tracer_enabled'
-#
-
-
--- Steve
-
-
+-Andi
