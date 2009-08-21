@@ -1,96 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZHULhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZHULsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbZHULhy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 07:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZHULhx
+	id S1755556AbZHULsA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZHULr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 07:37:53 -0400
-Received: from viefep15-int.chello.at ([62.179.121.35]:52000 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754694AbZHULhw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 07:37:52 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [tip:tracing/urgent] tracing: Fix too large stack usage in
- do_one_initcall()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-tip-commits@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>, Kyle McMartin <kyle@mcmartin.ca>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       mingo@redhat.com, torvalds@linux-foundation.org,
-       catalin.marinas@arm.com, jens.axboe@oracle.com, fweisbec@gmail.com,
-       stable@kernel.org, srostedt@redhat.com, tglx@linutronix.de
-In-Reply-To: <20090821111450.GA32037@elte.hu>
-References: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
-	 <20090821111450.GA32037@elte.hu>
-Content-Type: text/plain
-Date: Fri, 21 Aug 2009 13:37:33 +0200
-Message-Id: <1250854653.7538.21.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Aug 2009 07:47:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54386 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755129AbZHULr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 07:47:59 -0400
+Date: Fri, 21 Aug 2009 13:46:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jes Sorensen <jes@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Latest Linus tree oopses on Nehalem box
+Message-ID: <20090821114645.GD24647@elte.hu>
+References: <4A8E7CBE.3020209@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A8E7CBE.3020209@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 13:14 +0200, Ingo Molnar wrote:
 
-> > There's a lot of fat functions on that stack trace, but
-> > the largest of all is do_one_initcall(). This is due to
-> > the boot trace entry variables being on the stack.
-> > 
-> > Fixing this is relatively easy, initcalls are fundamentally
-> > serialized, so we can move the local variables to file scope.
-> > 
-> > Note that this large stack footprint was present for a
-> > couple of months already - what pushed my system over
-> > the edge was the addition of kmemleak to the call-chain:
-> > 
-> >   6)     3328      36   allocate_slab+0xb1/0x100
-> >   7)     3292      36   new_slab+0x1c/0x160
-> >   8)     3256      36   __slab_alloc+0x133/0x2b0
-> >   9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
-> >  10)     3216     108   create_object+0x28/0x250
-> >  11)     3108      40   kmemleak_alloc+0x81/0xc0
-> >  12)     3068      24   kmem_cache_alloc+0x162/0x1d0
-> >  13)     3044      52   scsi_pool_alloc_command+0x29/0x70
-> > 
-> > This pushes the total to ~3800 bytes, only a tiny bit
-> > more was needed to corrupt the on-kernel-stack thread_info.
-> > 
-> > The fix reduces the stack footprint from 572 bytes
-> > to 28 bytes.
-> 
-> btw., it will just take two more features like kmemleak to trigger 
-> hard to debug stack overflows again on 32-bit. We are right at the 
-> edge and this situation is not really fixable in a reliable way 
-> anymore.
-> 
-> So i think we should be more drastic and solve the real problem: we 
-> should drop 4K stacks and 8K combo-stacks on 32-bit, and go 
-> exclusively to 8K split stacks on 32-bit.
-> 
-> I.e. the stack size will be 'unified' too between 64-bit and 32-bit 
-> to a certain degree: process stacks will be 8K on both 64-bit and 
-> 32-bit x86, IRQ stacks will be separate. (on 64-bit we also have the 
-> IST stacks for certain exceptions that further isolates things)
-> 
-> This will simplify the 32-bit situation quite a bit and removes a 
-> contentious config option and makes the kernel more robust in 
-> general. 8K combo stacks are not safe due to irq nesting and 4K 
-> isolated stacks are not enough. 8K isolated stacks is the way to go.
-> 
-> Opinions?
+* Jes Sorensen <jes@sgi.com> wrote:
 
-I'm obviously all in favour of merging the i386 and x86_64 stack code.
-Esp after having had to look at the i386 stuff recently.
+> Hi,
+>
+> I am seeing this one with the latest Linus' git tree as of this 
+> morning on a Nehalem box. Using the defconfig + megaraid driver.
+>
+> Not sure if this is already fixed, or if someone already knows 
+> whats wrong? Smells like a yet another BIOS bug - yes the BIOS on 
+> this thing is rubbish.
 
-Now I don't think that unifying all this requires the sizes to be the
-same between them, because x86_64 typically has larger stack footprint
-due to it being 64 bit. If we need to bump 32 bit stack sizes, then
-we're likely to also need a bump in 64 bit as well at some point soon.
+my Nehalem (16 logical cpus) boots fine:
 
+ aldebaran:~> uname -a
+ Linux aldebaran 2.6.31-rc6-tip-01272-g9919e28-dirty #1518 SMP Fri 
+ Aug 21 11:13:12 CEST 2009 x86_64 x86_64 x86_64 GNU/Linux
 
+> [    6.664800] RIP: 0010:[<ffffffff810391e7>]  [<ffffffff810391e7>]  
+> find_busiest_group+0x620/0x6fd 
+
+Nothing similar is open at the moment.
+
+There's only one open .31 scheduler regression bug at the moment: a 
+rare division by zero bug that sometimes crashes boxes - the bigger 
+the box the likelier the crash.
+
+Your crash looks to be one of:
+
+ 1) a genuine scheduler bug tickled on your new hardware. Needs to 
+    be bisected/debugged/fixed.
+
+ 2) a BIOS bug passing crappy ACPI tables which cause us to create a
+    buggy sched-domains tree or so. We do treat ACPI data as 
+    external untrusted data and try to use it in sane ways only, but 
+    such bugs have happened in the past and could happen again.
+
+The scheduler has sanity check for the sched-domains arch setup: if 
+you enable CONFIG_SCHED_DEBUG=y then sched_domain_debug() will 
+become noisy in your syslog if there's something wrong (but wont 
+stop the bootup so you have to actively check your syslog).
+
+Might be useful to see your full crashlog, if you are allowed to 
+post that, plus your kernel .config would be useful to know too. 
+Plus would be useful to know whether this is a regression relative 
+to .30 or a yet unfixed bug triggering on your class of hardware.
+
+Thanks,
+
+	Ingo
