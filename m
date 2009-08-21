@@ -1,43 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbZHUGZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbZHUG3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbZHUGZg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 02:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZHUGZf
+	id S932077AbZHUG3M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 02:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZHUG3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 02:25:35 -0400
-Received: from smarthost03.mail.zen.net.uk ([212.23.3.142]:41085 "EHLO
-	smarthost03.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753067AbZHUGZf (ORCPT
+	Fri, 21 Aug 2009 02:29:11 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:61686 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752442AbZHUG3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 02:25:35 -0400
-Date: Fri, 21 Aug 2009 07:25:16 +0100
-From: Grant Wilson <grant.wilson@zen.co.uk>
-To: Eric Paris <eparis@parisplace.org>
-Cc: aviro@redhat.com, lkml <linux-kernel@vger.kernel.org>, eparis@redhat.com
-Subject: Re: 2.6.31-rc6: Oops in fsnotify
-Message-ID: <20090821072516.0ac7bbab@worthy.swandive.local>
-In-Reply-To: <7e0fb38c0908201922r6f9598f9ja95623ea6cf11254@mail.gmail.com>
-References: <20090820164818.6039c185@worthy.swandive.local>
-	<7e0fb38c0908201922r6f9598f9ja95623ea6cf11254@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Aug 2009 02:29:11 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Danny Feng <dfeng@redhat.com>
+Subject: [PATCH] Re: e1000e: why does pci_enable_pcie_error_reporting() fail on my hp2510p?
+Date: Fri, 21 Aug 2009 08:29:09 +0200
+User-Agent: KMail/1.9.9
+Cc: Netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       David Miller <davem@davemloft.net>
+References: <200908201714.30638.elendil@planet.nl> <4A8E01AE.5070900@redhat.com>
+In-Reply-To: <4A8E01AE.5070900@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Originating-Smarthost03-IP: [82.71.45.175]
+Content-Disposition: inline
+Message-Id: <200908210829.10471.elendil@planet.nl>
+X-OriginalArrivalTime: 21 Aug 2009 06:29:10.0880 (UTC) FILETIME=[B1B2C600:01CA2228]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 22:22:34 -0400
-Eric Paris <eparis@parisplace.org> wrote:
+On Friday 21 August 2009, Danny Feng wrote:
+> On 08/20/2009 11:14 PM, Frans Pop wrote:
+> > e1000e 0000:00:19.0: pci_enable_pcie_error_reporting failed
+>
+> I think this messages comes from hardware does not support pcie aer.
+> In fact the messages is not fatal and can be ignored. Some drivers
+> is silence with pci_enable_pcie_error_reporting ....
 
-> I'll take a close look in the morning.  I don't offhand see how this
-> is possible without calling vfs_unlink on a negative dentry (does that
-> even make sense?)
-> 
-> What was the filesystem you are dealing with?  Odd, very, odd (as with
-> all the problems people find in my notify code)
-> 
-The filesystem is ext4 (converted from ext3).
+Right. The only error returned by the function is -EIO, which looks to be
+"not supported". That's really not an issue to shout about in dmesg...
 
-Grant
+> My patch is just to fix the logic of pcie aer usage ...
+>
+> > - as the error is non-fatal, should it maybe be changed from dev_err
+> >    to dev_info, so that at least it does not show up during a boot
+> >    with 'quiet'?
+>
+> I agree with this.... Maybe some of other drivers needs this too
+> (igb,ixgbe)...
+
+Here's a patch that simply drops the message.
+Note: the two scsi drivers that call the function (arcmsr and qla2xxx)
+also don't check the return code.
+
+Alternatives would be:
+- change the message to something like "device does not support advanced
+  error reporting (AER)" and make it dev_debug
+- suppress the error in case of -EIO, but I'm not sure that makes sense
+  as -EIO is the only error returned and you might not want to ignore other
+  errors
+
+If you'd prefer the alternatives, let me know and I'll modify the patch.
+
+Cheers,
+FJP
+
+
+From: Frans Pop <elendil@planet.nl>
+Subject: net: Don't report an error if devices don't support AER
+
+The only error returned by pci_enable_pcie_error_reporting() is -EIO
+which simply means that Advanced Error Reporting is not supported.
+There is no need to report that, so remove the error check from e1001e,
+igb and ixgbe.
+
+Signed-off-by: Frans Pop <elendil@planet.nl>
+    ---
+
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index fa92a68..42ac8f1 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -4983,12 +4983,7 @@ static int __devinit e1000_probe(struct pci_dev *pdev,
+ 		goto err_pci_reg;
+ 
+ 	/* AER (Advanced Error Reporting) hooks */
+-	err = pci_enable_pcie_error_reporting(pdev);
+-	if (err) {
+-		dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
+-		        "0x%x\n", err);
+-		/* non-fatal, continue */
+-	}
++	pci_enable_pcie_error_reporting(pdev);
+ 
+ 	pci_set_master(pdev);
+ 	/* PCI config space info */
+diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
+index adb09d3..8e80859 100644
+--- a/drivers/net/igb/igb_main.c
++++ b/drivers/net/igb/igb_main.c
+@@ -1232,12 +1232,7 @@ static int __devinit igb_probe(struct pci_dev *pdev,
+ 	if (err)
+ 		goto err_pci_reg;
+ 
+-	err = pci_enable_pcie_error_reporting(pdev);
+-	if (err) {
+-		dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
+-		        "0x%x\n", err);
+-		/* non-fatal, continue */
+-	}
++	pci_enable_pcie_error_reporting(pdev);
+ 
+ 	pci_set_master(pdev);
+ 	pci_save_state(pdev);
+diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
+index 77b0381..4e0b523 100644
+--- a/drivers/net/ixgbe/ixgbe_main.c
++++ b/drivers/net/ixgbe/ixgbe_main.c
+@@ -5430,12 +5430,7 @@ static int __devinit ixgbe_probe(struct pci_dev *pdev,
+ 		goto err_pci_reg;
+ 	}
+ 
+-	err = pci_enable_pcie_error_reporting(pdev);
+-	if (err) {
+-		dev_err(&pdev->dev, "pci_enable_pcie_error_reporting failed "
+-		                    "0x%x\n", err);
+-		/* non-fatal, continue */
+-	}
++	pci_enable_pcie_error_reporting(pdev);
+ 
+ 	pci_set_master(pdev);
+ 	pci_save_state(pdev);
