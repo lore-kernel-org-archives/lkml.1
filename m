@@ -1,313 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZHURsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932433AbZHURvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbZHURsU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbZHURsU
+	id S932433AbZHURvG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:51:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZHURvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:48:20 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:33239 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbZHURsS (ORCPT
+	Fri, 21 Aug 2009 13:51:05 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:41090 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752616AbZHURvD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:48:18 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 21 Aug 2009 10:48:19 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: [patch] anonfd - split interface into file creation and install
-Message-ID: <alpine.DEB.2.00.0908211036220.25106@makko.or.mcafeemobile.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Aug 2009 13:51:03 -0400
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       NFS list <linux-nfs@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Message-Id: <8C4C4FD5-733E-4327-8618-8C400FAE72C1@oracle.com>
+From: Chuck Lever <Chuck.Lever@oracle.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+In-Reply-To: <1250822171.6514.29.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: mount.nfs: access denied by server
+Date: Fri, 21 Aug 2009 13:50:52 -0400
+References: <20090820071315.GA14765@localhost> <1250773349.5352.23.camel@heimdal.trondhjem.org> <20090821012700.GA9937@localhost> <1250822171.6514.29.camel@heimdal.trondhjem.org>
+X-Mailer: Apple Mail (2.936)
+X-Source-IP: abhmt014.oracle.com [141.146.116.23]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4A8EDE7E.026A:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch splits the anonfd interface into a bare file pointer 
-creation one, and a file pointer creation plus install one.
-There are cases, like the usage of eventfds inside other kernel 
-interfaces, where the file pointer created by anonfd needs to be used 
-inside the initialization of other structures.
-As it is right now, as soon as anon_inode_getfd() returns, the kenrle can 
-race with userspace closing the newly installed file descriptor.
-This patch, while keeping the old anon_inode_getfd(), introduces a new 
-anon_inode_getfile() (whose services are reused in anon_inode_getfd()) 
-that allows to split the file creation phase and the fd install one.
-Once all the kernel structures are initialized, the code can call the 
-proper fd_install().
-Gregory manifested the need for something like this inside KVM.
+
+On Aug 20, 2009, at 10:36 PM, Trond Myklebust wrote:
+
+> On Fri, 2009-08-21 at 09:27 +0800, Wu Fengguang wrote:
+>> On Thu, Aug 20, 2009 at 09:02:29PM +0800, Trond Myklebust wrote:
+>>> On Thu, 2009-08-20 at 15:13 +0800, Wu Fengguang wrote:
+>>>> Hi,
+>>>>
+>>>> After upgrading NFS client kernel to latest linux-next, NFS mount
+>>>> failed:
+>>>>
+>>>>        # mount -t nfs pxe:/cc /cc
+>>>>        mount.nfs: access denied by server while mounting pxe:/cc
+>>>>
+>>>>        # uname -a
+>>>>        Linux hp 2.6.31-rc6-next-20090818 #61 SMP Thu Aug 20  
+>>>> 14:46:10 CST 2009 x86_64 GNU/Linux
+>>>>
+>>>> However server log says OK:
+>>>>
+>>>>        Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated mount  
+>>>> request from 192.168.11.6:973 for /cc (/cc)
+>>>>        Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated unmount  
+>>>> request from 192.168.11.6:974 for /cc (/cc)
+>>>>
+>>>> However-2: nfsroot can be mounted at boot time. Server kernel has  
+>>>> always been 2.6.30.
+>>>>
+>>>> Any ideas?
+>>>>
+>>>> Thanks,
+>>>> Fengguang
+>>>
+>>> Can you try again after enabling mount debugging on the NFS client?
+>>>
+>>> echo 512 > /proc/sys/sunrpc/nfs_debug
+>>
+>> I used 1024 and found the mount failed here in nfs_walk_authlist():
+>>
+>>        dfprintk(MOUNT, "NFS: server does not support requested auth  
+>> flavor\ n");
+>>        nfs_umount(request);
+>
+> Thanks Fengguang!
+>
+> Chuck, this looks like one of yours. Could it be that you are hitting
+> the same Linux knfsd bug that Tom Haynes saw with a Solaris client?
+> AFAICR, the problem was that existing nfs servers do not set a default
+> auth flavour, and so you just have to try with auth_sys and see if it
+> succeeds...
+
+With 1024 set, the mount client's XDR routines should have listed the  
+server's flavors, if any, in the system log.  Should be something like  
+"NFS: received 0 auth flavors" if the server didn't return any.  Can  
+you confirm that?
+
+I'll try to post a fix later today.
+
+--
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
 
 
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-
-
-- Davide
-
-
----
- fs/anon_inodes.c            |   68 +++++++++++++++++++++++++++++++++-----------
- fs/eventfd.c                |   67 ++++++++++++++++++++++++++++++++++---------
- include/linux/anon_inodes.h |    3 +
- include/linux/eventfd.h     |    6 +++
- 4 files changed, 114 insertions(+), 30 deletions(-)
-
-Index: linux-2.6.mod/fs/anon_inodes.c
-===================================================================
---- linux-2.6.mod.orig/fs/anon_inodes.c	2009-08-20 15:02:38.000000000 -0700
-+++ linux-2.6.mod/fs/anon_inodes.c	2009-08-20 17:01:46.000000000 -0700
-@@ -77,28 +77,24 @@ static const struct address_space_operat
-  *
-  * Creates a new file by hooking it on a single inode. This is useful for files
-  * that do not need to have a full-fledged inode in order to operate correctly.
-- * All the files created with anon_inode_getfd() will share a single inode,
-+ * All the files created with anon_inode_getfile() will share a single inode,
-  * hence saving memory and avoiding code duplication for the file/inode/dentry
-- * setup.  Returns new descriptor or -error.
-+ * setup.  Returns the newly created file* or an error pointer.
-  */
--int anon_inode_getfd(const char *name, const struct file_operations *fops,
--		     void *priv, int flags)
-+struct file *anon_inode_getfile(const char *name,
-+				const struct file_operations *fops,
-+				void *priv, int flags)
- {
- 	struct qstr this;
- 	struct dentry *dentry;
- 	struct file *file;
--	int error, fd;
-+	int error;
- 
- 	if (IS_ERR(anon_inode_inode))
--		return -ENODEV;
-+		return ERR_PTR(-ENODEV);
- 
- 	if (fops->owner && !try_module_get(fops->owner))
--		return -ENOENT;
--
--	error = get_unused_fd_flags(flags);
--	if (error < 0)
--		goto err_module;
--	fd = error;
-+		return ERR_PTR(-ENOENT);
- 
- 	/*
- 	 * Link the inode to a directory entry by creating a unique name
-@@ -110,7 +106,7 @@ int anon_inode_getfd(const char *name, c
- 	this.hash = 0;
- 	dentry = d_alloc(anon_inode_mnt->mnt_sb->s_root, &this);
- 	if (!dentry)
--		goto err_put_unused_fd;
-+		goto err_module;
- 
- 	/*
- 	 * We know the anon_inode inode count is always greater than zero,
-@@ -136,16 +132,54 @@ int anon_inode_getfd(const char *name, c
- 	file->f_version = 0;
- 	file->private_data = priv;
- 
-+	return file;
-+
-+err_dput:
-+	dput(dentry);
-+err_module:
-+	module_put(fops->owner);
-+	return ERR_PTR(error);
-+}
-+EXPORT_SYMBOL_GPL(anon_inode_getfile);
-+
-+/**
-+ * anon_inode_getfd - creates a new file instance by hooking it up to an
-+ *                    anonymous inode, and a dentry that describe the "class"
-+ *                    of the file
-+ *
-+ * @name:    [in]    name of the "class" of the new file
-+ * @fops:    [in]    file operations for the new file
-+ * @priv:    [in]    private data for the new file (will be file's private_data)
-+ * @flags:   [in]    flags
-+ *
-+ * Creates a new file by hooking it on a single inode. This is useful for files
-+ * that do not need to have a full-fledged inode in order to operate correctly.
-+ * All the files created with anon_inode_getfd() will share a single inode,
-+ * hence saving memory and avoiding code duplication for the file/inode/dentry
-+ * setup.  Returns new descriptor or an error code.
-+ */
-+int anon_inode_getfd(const char *name, const struct file_operations *fops,
-+		     void *priv, int flags)
-+{
-+	int error, fd;
-+	struct file *file;
-+
-+	error = get_unused_fd_flags(flags);
-+	if (error < 0)
-+		return error;
-+	fd = error;
-+
-+	file = anon_inode_getfile(name, fops, priv, flags);
-+	if (IS_ERR(file)) {
-+		error = PTR_ERR(file);
-+		goto err_put_unused_fd;
-+	}
- 	fd_install(fd, file);
- 
- 	return fd;
- 
--err_dput:
--	dput(dentry);
- err_put_unused_fd:
- 	put_unused_fd(fd);
--err_module:
--	module_put(fops->owner);
- 	return error;
- }
- EXPORT_SYMBOL_GPL(anon_inode_getfd);
-Index: linux-2.6.mod/fs/eventfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/eventfd.c	2009-08-20 15:02:38.000000000 -0700
-+++ linux-2.6.mod/fs/eventfd.c	2009-08-20 16:00:21.000000000 -0700
-@@ -68,11 +68,16 @@ int eventfd_signal(struct eventfd_ctx *c
- }
- EXPORT_SYMBOL_GPL(eventfd_signal);
- 
-+static void eventfd_free_ctx(struct eventfd_ctx *ctx)
-+{
-+	kfree(ctx);
-+}
-+
- static void eventfd_free(struct kref *kref)
- {
- 	struct eventfd_ctx *ctx = container_of(kref, struct eventfd_ctx, kref);
- 
--	kfree(ctx);
-+	eventfd_free_ctx(ctx);
- }
- 
- /**
-@@ -298,9 +303,23 @@ struct eventfd_ctx *eventfd_ctx_fileget(
- }
- EXPORT_SYMBOL_GPL(eventfd_ctx_fileget);
- 
--SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
-+/**
-+ * eventfd_file_create - Creates an eventfd file pointer.
-+ * @count: Initial eventfd counter value.
-+ * @flags: Flags for the eventfd file.
-+ *
-+ * This function creates an eventfd file pointer, w/out installing it into
-+ * the fd table. This is useful when the eventfd file is used during the
-+ * initialization of data structures that require extra setup after the eventfd
-+ * creation. So the eventfd creation is split into the file pointer creation
-+ * phase, and the file descriptor installation phase.
-+ * In this way races with userspace closing the newly installed file descriptor
-+ * can be avoided.
-+ * Returns an eventfd file pointer, or a proper error pointer.
-+ */
-+struct file *eventfd_file_create(unsigned int count, int flags)
- {
--	int fd;
-+	struct file *file;
- 	struct eventfd_ctx *ctx;
- 
- 	/* Check the EFD_* constants for consistency.  */
-@@ -308,26 +327,48 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, 
- 	BUILD_BUG_ON(EFD_NONBLOCK != O_NONBLOCK);
- 
- 	if (flags & ~EFD_FLAGS_SET)
--		return -EINVAL;
-+		return ERR_PTR(-EINVAL);
- 
- 	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
- 	if (!ctx)
--		return -ENOMEM;
-+		return ERR_PTR(-ENOMEM);
- 
- 	kref_init(&ctx->kref);
- 	init_waitqueue_head(&ctx->wqh);
- 	ctx->count = count;
- 	ctx->flags = flags;
- 
--	/*
--	 * When we call this, the initialization must be complete, since
--	 * anon_inode_getfd() will install the fd.
--	 */
--	fd = anon_inode_getfd("[eventfd]", &eventfd_fops, ctx,
--			      flags & EFD_SHARED_FCNTL_FLAGS);
--	if (fd < 0)
--		kfree(ctx);
-+	file = anon_inode_getfile("[eventfd]", &eventfd_fops, ctx,
-+				  flags & EFD_SHARED_FCNTL_FLAGS);
-+	if (IS_ERR(file))
-+		eventfd_free_ctx(ctx);
-+
-+	return file;
-+}
-+
-+SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
-+{
-+	int fd, error;
-+	struct file *file;
-+
-+	error = get_unused_fd_flags(flags & EFD_SHARED_FCNTL_FLAGS);
-+	if (error < 0)
-+		return error;
-+	fd = error;
-+
-+	file = eventfd_file_create(count, flags);
-+	if (IS_ERR(file)) {
-+		error = PTR_ERR(file);
-+		goto err_put_unused_fd;
-+	}
-+	fd_install(fd, file);
-+
- 	return fd;
-+
-+err_put_unused_fd:
-+	put_unused_fd(fd);
-+
-+	return error;
- }
- 
- SYSCALL_DEFINE1(eventfd, unsigned int, count)
-Index: linux-2.6.mod/include/linux/anon_inodes.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/anon_inodes.h	2009-08-20 15:02:38.000000000 -0700
-+++ linux-2.6.mod/include/linux/anon_inodes.h	2009-08-20 15:05:22.000000000 -0700
-@@ -8,6 +8,9 @@
- #ifndef _LINUX_ANON_INODES_H
- #define _LINUX_ANON_INODES_H
- 
-+struct file *anon_inode_getfile(const char *name,
-+				const struct file_operations *fops,
-+				void *priv, int flags);
- int anon_inode_getfd(const char *name, const struct file_operations *fops,
- 		     void *priv, int flags);
- 
-Index: linux-2.6.mod/include/linux/eventfd.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/eventfd.h	2009-08-20 15:02:38.000000000 -0700
-+++ linux-2.6.mod/include/linux/eventfd.h	2009-08-20 15:06:48.000000000 -0700
-@@ -27,6 +27,7 @@
- 
- #ifdef CONFIG_EVENTFD
- 
-+struct file *eventfd_file_create(unsigned int count, int flags);
- struct eventfd_ctx *eventfd_ctx_get(struct eventfd_ctx *ctx);
- void eventfd_ctx_put(struct eventfd_ctx *ctx);
- struct file *eventfd_fget(int fd);
-@@ -40,6 +41,11 @@ int eventfd_signal(struct eventfd_ctx *c
-  * Ugly ugly ugly error layer to support modules that uses eventfd but
-  * pretend to work in !CONFIG_EVENTFD configurations. Namely, AIO.
-  */
-+static inline struct file *eventfd_file_create(unsigned int count, int flags)
-+{
-+	return ERR_PTR(-ENOSYS);
-+}
-+
- static inline struct eventfd_ctx *eventfd_ctx_fdget(int fd)
- {
- 	return ERR_PTR(-ENOSYS);
