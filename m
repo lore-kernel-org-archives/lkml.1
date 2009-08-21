@@ -1,224 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZHULIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZHULJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532AbZHULIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 07:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbZHULIQ
+	id S1755527AbZHULJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZHULJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 07:08:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45013 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755520AbZHULIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 07:08:13 -0400
-Date: Fri, 21 Aug 2009 11:07:17 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, catalin.marinas@arm.com,
-       a.p.zijlstra@chello.nl, jens.axboe@oracle.com, fweisbec@gmail.com,
-       stable@kernel.org, srostedt@redhat.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, catalin.marinas@arm.com,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       fweisbec@gmail.com, stable@kernel.org, srostedt@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:tracing/urgent] tracing: Fix too large stack usage in do_one_initcall()
-Message-ID: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
-Git-Commit-ID: 4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
-X-Mailer: tip-git-log-daemon
+	Fri, 21 Aug 2009 07:09:17 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:37321 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752757AbZHULJQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 07:09:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=tbnAqz5eRTf7bbnUlG9Kl0DfGXNeL8QN3PW4F8/6jH5Xh0HCmmA1ArOl8+mL8LWCj3
+         7fnXLFGN4EAdAY+7I41J9RF4iwOaQUoeVa6dE8/ZKMMGh3BfmNVDz8pKEoUhdkWlCppb
+         h30v2SRmvy/Bm9v7LZsNBL5JFg+qpp7CDUg/U=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Aug 2009 11:07:19 +0000 (UTC)
+In-Reply-To: <20090820031723.GA25673@localhost>
+References: <20090820024929.GA19793@localhost>
+	 <20090820025209.GA24387@localhost> <20090820031723.GA25673@localhost>
+Date: Fri, 21 Aug 2009 20:09:17 +0900
+X-Google-Sender-Auth: 7f82bfa02b4c30a1
+Message-ID: <2f11576a0908210409p3f1551a4i194887abbad94e9b@mail.gmail.com>
+Subject: Re: [RFC][PATCH] mm: remove unnecessary loop inside 
+	shrink_inactive_list()
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
-Gitweb:     http://git.kernel.org/tip/4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 21 Aug 2009 12:53:36 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 21 Aug 2009 13:03:22 +0200
+2009/8/20 Wu Fengguang <fengguang.wu@intel.com>:
+> shrink_inactive_list() won't be called to scan too much pages
+> (unless in hibernation code which is fine) or too few pages (ie.
+> batching is taken care of by the callers).  So we can just remove the
+> big loop and isolate the exact number of pages requested.
+>
+> Just a RFC, and a scratch patch to show the basic idea.
+> Please kindly NAK quick if you don't like it ;)
 
-tracing: Fix too large stack usage in do_one_initcall()
-
-One of my testboxes triggered this nasty stack overflow crash
-during SCSI probing:
-
-[    5.874004] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-[    5.875004] device: 'sda': device_add
-[    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
-[    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
-[    5.878004] *pde = 00000000
-[    5.878004] Thread overran stack, or stack corrupted
-[    5.878004] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-[    5.878004] last sysfs file:
-[    5.878004]
-[    5.878004] Pid: 1, comm: swapper Not tainted (2.6.31-rc6-tip-01272-g9919e28-dirty #5685)
-[    5.878004] EIP: 0060:[<b1008321>] EFLAGS: 00010083 CPU: 0
-[    5.878004] EIP is at print_context_stack+0x81/0x110
-[    5.878004] EAX: cf8a3000 EBX: cf8a3fe4 ECX: 00000049 EDX: 00000000
-[    5.878004] ESI: b1cfce84 EDI: 00000000 EBP: cf8a3018 ESP: cf8a2ff4
-[    5.878004]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-[    5.878004] Process swapper (pid: 1, ti=cf8a2000 task=cf8a8000 task.ti=cf8a3000)
-[    5.878004] Stack:
-[    5.878004]  b1004867 fffff000 cf8a3ffc
-[    5.878004] Call Trace:
-[    5.878004]  [<b1004867>] ? kernel_thread_helper+0x7/0x10
-[    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
-[    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
-[    5.878004] *pde = 00000000
-[    5.878004] Thread overran stack, or stack corrupted
-[    5.878004] Oops: 0000 [#2] PREEMPT SMP DEBUG_PAGEALLOC
-
-The oops did not reveal any more details about the real stack
-that we have and the system got into an infinite loop of
-recursive pagefaults.
-
-So i booted with CONFIG_STACK_TRACER=y and the 'stacktrace' boot
-parameter. The box did not crash (timings/conditions probably
-changed a tiny bit to trigger the catastrophic crash), but the
-/debug/tracing/stack_trace file was rather revealing:
-
-        Depth    Size   Location    (72 entries)
-        -----    ----   --------
-  0)     3704      52   __change_page_attr+0xb8/0x290
-  1)     3652      24   __change_page_attr_set_clr+0x43/0x90
-  2)     3628      60   kernel_map_pages+0x108/0x120
-  3)     3568      40   prep_new_page+0x7d/0x130
-  4)     3528      84   get_page_from_freelist+0x106/0x420
-  5)     3444     116   __alloc_pages_nodemask+0xd7/0x550
-  6)     3328      36   allocate_slab+0xb1/0x100
-  7)     3292      36   new_slab+0x1c/0x160
-  8)     3256      36   __slab_alloc+0x133/0x2b0
-  9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
- 10)     3216     108   create_object+0x28/0x250
- 11)     3108      40   kmemleak_alloc+0x81/0xc0
- 12)     3068      24   kmem_cache_alloc+0x162/0x1d0
- 13)     3044      52   scsi_pool_alloc_command+0x29/0x70
- 14)     2992      20   scsi_host_alloc_command+0x22/0x70
- 15)     2972      24   __scsi_get_command+0x1b/0x90
- 16)     2948      28   scsi_get_command+0x35/0x90
- 17)     2920      24   scsi_setup_blk_pc_cmnd+0xd4/0x100
- 18)     2896     128   sd_prep_fn+0x332/0xa70
- 19)     2768      36   blk_peek_request+0xe7/0x1d0
- 20)     2732      56   scsi_request_fn+0x54/0x520
- 21)     2676      12   __generic_unplug_device+0x2b/0x40
- 22)     2664      24   blk_execute_rq_nowait+0x59/0x80
- 23)     2640     172   blk_execute_rq+0x6b/0xb0
- 24)     2468      32   scsi_execute+0xe0/0x140
- 25)     2436      64   scsi_execute_req+0x152/0x160
- 26)     2372      60   scsi_vpd_inquiry+0x6c/0x90
- 27)     2312      44   scsi_get_vpd_page+0x112/0x160
- 28)     2268      52   sd_revalidate_disk+0x1df/0x320
- 29)     2216      92   rescan_partitions+0x98/0x330
- 30)     2124      52   __blkdev_get+0x309/0x350
- 31)     2072       8   blkdev_get+0xf/0x20
- 32)     2064      44   register_disk+0xff/0x120
- 33)     2020      36   add_disk+0x6e/0xb0
- 34)     1984      44   sd_probe_async+0xfb/0x1d0
- 35)     1940      44   __async_schedule+0xf4/0x1b0
- 36)     1896       8   async_schedule+0x12/0x20
- 37)     1888      60   sd_probe+0x305/0x360
- 38)     1828      44   really_probe+0x63/0x170
- 39)     1784      36   driver_probe_device+0x5d/0x60
- 40)     1748      16   __device_attach+0x49/0x50
- 41)     1732      32   bus_for_each_drv+0x5b/0x80
- 42)     1700      24   device_attach+0x6b/0x70
- 43)     1676      16   bus_attach_device+0x47/0x60
- 44)     1660      76   device_add+0x33d/0x400
- 45)     1584      52   scsi_sysfs_add_sdev+0x6a/0x2c0
- 46)     1532     108   scsi_add_lun+0x44b/0x460
- 47)     1424     116   scsi_probe_and_add_lun+0x182/0x4e0
- 48)     1308      36   __scsi_add_device+0xd9/0xe0
- 49)     1272      44   ata_scsi_scan_host+0x10b/0x190
- 50)     1228      24   async_port_probe+0x96/0xd0
- 51)     1204      44   __async_schedule+0xf4/0x1b0
- 52)     1160       8   async_schedule+0x12/0x20
- 53)     1152      48   ata_host_register+0x171/0x1d0
- 54)     1104      60   ata_pci_sff_activate_host+0xf3/0x230
- 55)     1044      44   ata_pci_sff_init_one+0xea/0x100
- 56)     1000      48   amd_init_one+0xb2/0x190
- 57)      952       8   local_pci_probe+0x13/0x20
- 58)      944      32   pci_device_probe+0x68/0x90
- 59)      912      44   really_probe+0x63/0x170
- 60)      868      36   driver_probe_device+0x5d/0x60
- 61)      832      20   __driver_attach+0x89/0xa0
- 62)      812      32   bus_for_each_dev+0x5b/0x80
- 63)      780      12   driver_attach+0x1e/0x20
- 64)      768      72   bus_add_driver+0x14b/0x2d0
- 65)      696      36   driver_register+0x6e/0x150
- 66)      660      20   __pci_register_driver+0x53/0xc0
- 67)      640       8   amd_init+0x14/0x16
- 68)      632     572   do_one_initcall+0x2b/0x1d0
- 69)       60      12   do_basic_setup+0x56/0x6a
- 70)       48      20   kernel_init+0x84/0xce
- 71)       28      28   kernel_thread_helper+0x7/0x10
-
-There's a lot of fat functions on that stack trace, but
-the largest of all is do_one_initcall(). This is due to
-the boot trace entry variables being on the stack.
-
-Fixing this is relatively easy, initcalls are fundamentally
-serialized, so we can move the local variables to file scope.
-
-Note that this large stack footprint was present for a
-couple of months already - what pushed my system over
-the edge was the addition of kmemleak to the call-chain:
-
-  6)     3328      36   allocate_slab+0xb1/0x100
-  7)     3292      36   new_slab+0x1c/0x160
-  8)     3256      36   __slab_alloc+0x133/0x2b0
-  9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
- 10)     3216     108   create_object+0x28/0x250
- 11)     3108      40   kmemleak_alloc+0x81/0xc0
- 12)     3068      24   kmem_cache_alloc+0x162/0x1d0
- 13)     3044      52   scsi_pool_alloc_command+0x29/0x70
-
-This pushes the total to ~3800 bytes, only a tiny bit
-more was needed to corrupt the on-kernel-stack thread_info.
-
-The fix reduces the stack footprint from 572 bytes
-to 28 bytes.
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <srostedt@redhat.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: <stable@kernel.org>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Hm, I think this patch taks only cleanups. right?
+if so, I don't find any objection reason.
 
 
----
- init/main.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/init/main.c b/init/main.c
-index 2c5ade7..98e679e 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -733,13 +733,14 @@ static void __init do_ctors(void)
- int initcall_debug;
- core_param(initcall_debug, initcall_debug, bool, 0644);
- 
-+static char msgbuf[64];
-+static struct boot_trace_call call;
-+static struct boot_trace_ret ret;
-+
- int do_one_initcall(initcall_t fn)
- {
- 	int count = preempt_count();
- 	ktime_t calltime, delta, rettime;
--	char msgbuf[64];
--	struct boot_trace_call call;
--	struct boot_trace_ret ret;
- 
- 	if (initcall_debug) {
- 		call.caller = task_pid_nr(current);
+
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  mm/vmscan.c |   32 ++++++++++++++++----------------
+>  1 file changed, 16 insertions(+), 16 deletions(-)
+>
+> --- linux.orig/mm/vmscan.c      2009-08-20 10:16:18.000000000 +0800
+> +++ linux/mm/vmscan.c   2009-08-20 10:24:34.000000000 +0800
+> @@ -1032,16 +1032,22 @@ int isolate_lru_page(struct page *page)
+>  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+>  * of reclaimed pages
+>  */
+> -static unsigned long shrink_inactive_list(unsigned long max_scan,
+> +static unsigned long shrink_inactive_list(unsigned long nr_to_scan,
+>                        struct zone *zone, struct scan_control *sc,
+>                        int priority, int file)
+>  {
+>        LIST_HEAD(page_list);
+>        struct pagevec pvec;
+> -       unsigned long nr_scanned = 0;
+> -       unsigned long nr_reclaimed = 0;
+> +       unsigned long nr_reclaimed;
+>        struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+> -       int lumpy_reclaim = 0;
+> +       int lumpy_reclaim;
+> +       struct page *page;
+> +       unsigned long nr_taken;
+> +       unsigned long nr_scan;
+> +       unsigned long nr_freed;
+> +       unsigned long nr_active;
+> +       unsigned int count[NR_LRU_LISTS] = { 0, };
+> +       int mode;
+>
+>        /*
+>         * If we need a large contiguous chunk of memory, or have
+> @@ -1054,21 +1060,17 @@ static unsigned long shrink_inactive_lis
+>                lumpy_reclaim = 1;
+>        else if (sc->order && priority < DEF_PRIORITY - 2)
+>                lumpy_reclaim = 1;
+> +       else
+> +               lumpy_reclaim = 0;
+> +
+> +       mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
+>
+>        pagevec_init(&pvec, 1);
+>
+>        lru_add_drain();
+>        spin_lock_irq(&zone->lru_lock);
+> -       do {
+> -               struct page *page;
+> -               unsigned long nr_taken;
+> -               unsigned long nr_scan;
+> -               unsigned long nr_freed;
+> -               unsigned long nr_active;
+> -               unsigned int count[NR_LRU_LISTS] = { 0, };
+> -               int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
+>
+> -               nr_taken = sc->isolate_pages(sc->swap_cluster_max,
+> +               nr_taken = sc->isolate_pages(nr_to_scan,
+>                             &page_list, &nr_scan, sc->order, mode,
+>                                zone, sc->mem_cgroup, 0, file);
+>                nr_active = clear_active_flags(&page_list, count);
+> @@ -1093,7 +1095,6 @@ static unsigned long shrink_inactive_lis
+>
+>                spin_unlock_irq(&zone->lru_lock);
+>
+> -               nr_scanned += nr_scan;
+>                nr_freed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
+>
+>                /*
+> @@ -1117,7 +1118,7 @@ static unsigned long shrink_inactive_lis
+>                                                        PAGEOUT_IO_SYNC);
+>                }
+>
+> -               nr_reclaimed += nr_freed;
+> +               nr_reclaimed = nr_freed;
+
+maybe, nr_freed can be removed perfectly. it have the same meaning as
+nr_reclaimed.
+
+
+
+>                local_irq_disable();
+>                if (current_is_kswapd()) {
+>                        __count_zone_vm_events(PGSCAN_KSWAPD, zone, nr_scan);
+> @@ -1158,7 +1159,6 @@ static unsigned long shrink_inactive_lis
+>                                spin_lock_irq(&zone->lru_lock);
+>                        }
+>                }
+> -       } while (nr_scanned < max_scan);
+>        spin_unlock(&zone->lru_lock);
+>  done:
+>        local_irq_enable();
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
