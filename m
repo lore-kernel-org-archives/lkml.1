@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbZHUIOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932180AbZHUIS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932169AbZHUIOv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 04:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932103AbZHUIOu
+	id S932180AbZHUIS5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 04:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932158AbZHUIS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 04:14:50 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:34517 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932100AbZHUIOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 04:14:49 -0400
-Date: Fri, 21 Aug 2009 04:14:47 -0400 (EDT)
-From: Miroslav Rezanina <mrezanin@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       Gianluca Guida <gianluca.guida@citrix.com>
-Message-ID: <1378245818.61101250842487688.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <1152394510.61021250842386600.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-Subject: Re: [PATCH][v2.6.29][XEN] Return unused memory to hypervisor
+	Fri, 21 Aug 2009 04:18:57 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45796 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932142AbZHUIS4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 04:18:56 -0400
+Date: Fri, 21 Aug 2009 09:18:49 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Mailing List Etiquette
+Message-ID: <20090821081849.GA14431@n2100.arm.linux.org.uk>
+References: <20090819060004.GA23859@n2100.arm.linux.org.uk> <20090821072607.GA26983@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.5.5.71]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090821072607.GA26983@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Right, this does it.  I'm off on holiday as of now.
 
------ Original Message -----
-From: "Jeremy Fitzhardinge" <jeremy@goop.org>
-To: "Miroslav Rezanina" <mrezanin@redhat.com>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, "Gianluca Guida" <gianluca.guida@citrix.com>
-Sent: Thursday, August 20, 2009 6:39:02 PM GMT +01:00 Amsterdam / Berlin / Bern / Rome / Stockholm / Vienna
-Subject: Re: [PATCH][v2.6.29][XEN] Return unused memory to hypervisor
+Guess what?  I've had enough of this crap.  I'm pulling the plug on
+these lists.  Everyone, you know the email address to complain to.
+One community killed by an "open list" zealot.
 
-On 08/20/09 00:47, Miroslav Rezanina wrote:
->> there is handled e820 map in guest. However, this patch informs 
->> hypervisor, that guest uses less memory than was assigned to it. 
->> If hypervisor is not informed, memory is reserved for guest that
->> do not need it. If hypervisor is informed, he decrease memory
->> reservation for guest and unused memory is marked as free 
->> for use by other guests.
->>   
->
-> Yes.  But the guest will modify its own e820 map for a number of
-> reasons; for example: reducing its own memory, or clearing a space for
-> the PCI hole.  In general we want to free any underlying pages which
-> don't correspond to E820_RAM regions.
->
->    J
-
-I agree. However, I'm not sure if xen supports such a precise handling.
-  
--- 
-Miroslav Rezanina
-Software Engineer - Virtualization Team - XEN kernel
-
+On Fri, Aug 21, 2009 at 09:26:07AM +0200, Pavel Machek wrote:
+> 
+> > This message is sent to this mailing list once a week.
+> > 
+> 
+> Could we maybe reduce the frequency of this spam a little bit?
+> 
+> >              1. Subscription requirements. [[24]rmk]
+> >                 Recently, we have had to impose a restriction on the mailing lists.
+> >                 You must be subscribed to the mailing list in order to post
+> >                 messages to that mailing list. This is because of the UK Data
+> >                 Protection laws. Only subscribe to these lists if you accept the
+> >                 legal notice displayed on the relevant pages; by subscribing, you
+> >                 accept the terms laid out in the legal notice. Answers will be
+> >                 copied to you.
+> 
+> WTF? Did not we just have huge flamewar explaining this is untrue?
+> 
+> >              6. Email attachments. [[36]rmk]
+> >                 Please ensure that all attachments are plain text. There is a limit
+> >                 of around 40KiB on the overall size of the message, so if you want
+> >                 to send a large attachment, please upload it to a
+> >              web site
+> 
+> I thought limit was recently raised?
+> 
+> >              10. Cross-posting between linux-arm* lists and other lists. [[40]rmk]
+> >                 Please do not do this. Subscribers on other lists may not be
+> >                 subscribed to the linux-arm lists, so when they try to reply to
+> >                 such a message, they will receive a bounce. This is deemed by
+> >                 others to be rude behaviour on the part of the person who
+> >                 originally cross-posted.
+> 
+> Again, in recent flamewar you claimed crossposting is
+> okay.
+> 										Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
