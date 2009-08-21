@@ -1,34 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932467AbZHUQFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932482AbZHUQHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932467AbZHUQFP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 12:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932430AbZHUQFO
+	id S932482AbZHUQHR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 12:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932313AbZHUQHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 12:05:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43119 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932297AbZHUQFN (ORCPT
+	Fri, 21 Aug 2009 12:07:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58422 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932297AbZHUQHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 12:05:13 -0400
-Date: Fri, 21 Aug 2009 12:05:13 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
-       Greg KH <greg@kroah.com>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
-In-Reply-To: <alpine.DEB.2.00.0908211200160.30182@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0908211204490.30182@gandalf.stny.rr.com>
-References: <20090819025634.987354707@goodmis.org> <20090821143525.GH11098@elte.hu> <alpine.DEB.2.00.0908211047160.16405@gandalf.stny.rr.com> <20090821145406.GA3659@elte.hu> <alpine.DEB.2.00.0908211200160.30182@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 21 Aug 2009 12:07:15 -0400
+Date: Fri, 21 Aug 2009 09:05:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       a.p.zijlstra@chello.nl, catalin.marinas@arm.com,
+       Jens Axboe <jens.axboe@oracle.com>, fweisbec@gmail.com,
+       srostedt@redhat.com, tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [tip:tracing/urgent] tracing: Fix too large stack usage in
+ do_one_initcall()
+In-Reply-To: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
+Message-ID: <alpine.LFD.2.01.0908210845540.3158@localhost.localdomain>
+References: <new-submission> <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,24 +32,37 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 21 Aug 2009, Steven Rostedt wrote:
-> 
-> OK, I found the bug. There's a dependency missing.
-> 
-> $ make localyesconfig
->   HOSTCC  scripts/basic/fixdep
->   HOSTCC  scripts/basic/docproc
->   HOSTCC  scripts/basic/hash
-> using config: '/boot/config-2.6.27.25-78.2.56.fc9.x86_64'
-> /bin/sh: line 8: scripts/kconfig/conf: No such file or directory
-> make[1]: *** [localyesconfig] Error 127
-> make: *** [localyesconfig] Error 2
-> 
-> Thus the script failed to run. But the sed command that converts the '=m' 
-> to '=y' still ran. This gives us a distro config with all modules 
-> converted to built in!
+So I obviously agree with fixing do_one_initcall(), but..
 
-Funny that localmodconfig does not have this bug.
+Looking at the other cases, I do note (once more) what a horrible thing 
+SCSI is, and that the callchains are not only way too deep, but the SCSI 
+routines stand out among the cases that have 100+ bytes of stack frame.
 
--- Steve
+We _really_ should fix these:
 
+>   5)     3444     116   __alloc_pages_nodemask+0xd7/0x550   
+>  10)     3216     108   create_object+0x28/0x250
+>  18)     2896     128   sd_prep_fn+0x332/0xa70
+>  23)     2640     172   blk_execute_rq+0x6b/0xb0
+>  46)     1532     108   scsi_add_lun+0x44b/0x460
+>  47)     1424     116   scsi_probe_and_add_lun+0x182/0x4e0
+
+I also note that in this case, we'd have gotten rid of a _lot_ of the 
+callchain if we had actually just executed this thing asynchronously. 
+Because we clearly have that __async_schedule() there in the callchain in 
+two places: before the port probing and the disk probing.
+
+But it looks like we hit the MAX_WORK limit. Which sounds odd, since that 
+is set to 32768, but I guess it can happen. It sounds a bit unlikely. 
+Ingo, do you have something set to disable that?
+
+I do wonder, though. Maybe we should never have that MAX_WORK limit, and 
+instead limit the parallelism by actively trying to yield when there's too 
+much work? That bootup sequence _does_ tend to have deep callchains (with 
+all the crazy device register crud), and maybe we should actively see the 
+async work code as not just a way to speed up boot, but also as a way to 
+avoid deep callchains.
+
+Hmm?  Comments?
+
+			Linus
