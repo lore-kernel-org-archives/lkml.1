@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbZHUB1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZHUBhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752594AbZHUB1D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 21:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbZHUB1C
+	id S1753867AbZHUBhd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 21:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZHUBhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 21:27:02 -0400
-Received: from mga14.intel.com ([143.182.124.37]:22668 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751485AbZHUB1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 21:27:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,247,1249282800"; 
-   d="scan'208";a="178438772"
-Date: Fri, 21 Aug 2009 09:27:00 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: mount.nfs: access denied by server
-Message-ID: <20090821012700.GA9937@localhost>
-References: <20090820071315.GA14765@localhost> <1250773349.5352.23.camel@heimdal.trondhjem.org>
+	Thu, 20 Aug 2009 21:37:32 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:47157 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbZHUBhc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 21:37:32 -0400
+Date: Thu, 20 Aug 2009 18:36:17 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
+       ocfs2-devel@oss.oracle.com, mfasheh@suse.com
+Subject: Re: [Ocfs2-devel] [PATCH 13/17] ocfs2: Update syncing after
+ splicing to match generic version
+Message-ID: <20090821013617.GI10558@mail.oracle.com>
+Mail-Followup-To: Jan Kara <jack@suse.cz>,
+	LKML <linux-kernel@vger.kernel.org>, hch@infradead.org,
+	ocfs2-devel@oss.oracle.com, mfasheh@suse.com
+References: <1250697884-22288-1-git-send-email-jack@suse.cz>
+ <1250697884-22288-14-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250773349.5352.23.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1250697884-22288-14-git-send-email-jack@suse.cz>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4A8DFA51.0185:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 09:02:29PM +0800, Trond Myklebust wrote:
-> On Thu, 2009-08-20 at 15:13 +0800, Wu Fengguang wrote:
-> > Hi,
-> > 
-> > After upgrading NFS client kernel to latest linux-next, NFS mount
-> > failed:
-> > 
-> >         # mount -t nfs pxe:/cc /cc
-> >         mount.nfs: access denied by server while mounting pxe:/cc
-> > 
-> >         # uname -a
-> >         Linux hp 2.6.31-rc6-next-20090818 #61 SMP Thu Aug 20 14:46:10 CST 2009 x86_64 GNU/Linux 
-> > 
-> > However server log says OK:
-> > 
-> >         Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated mount request from 192.168.11.6:973 for /cc (/cc)
-> >         Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated unmount request from 192.168.11.6:974 for /cc (/cc)
-> > 
-> > However-2: nfsroot can be mounted at boot time. Server kernel has always been 2.6.30.
-> > 
-> > Any ideas?
-> > 
-> > Thanks,
-> > Fengguang
+On Wed, Aug 19, 2009 at 06:04:40PM +0200, Jan Kara wrote:
+> Update ocfs2 specific splicing code to use generic syncing helper.
 > 
-> Can you try again after enabling mount debugging on the NFS client?
+> CC: Joel Becker <Joel.Becker@oracle.com>
+> CC: ocfs2-devel@oss.oracle.com
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> ---
+>  fs/ocfs2/file.c |   27 ++++++---------------------
+>  1 files changed, 6 insertions(+), 21 deletions(-)
 > 
-> echo 512 > /proc/sys/sunrpc/nfs_debug
+> diff --git a/fs/ocfs2/file.c b/fs/ocfs2/file.c
+> index 1c71f0a..bd7fdf8 100644
+> --- a/fs/ocfs2/file.c
+> +++ b/fs/ocfs2/file.c
+> @@ -1990,31 +1990,16 @@ static ssize_t ocfs2_file_splice_write(struct pipe_inode_info *pipe,
+>  
+>  	if (ret > 0) {
+>  		unsigned long nr_pages;
+> +		int err;
+>  
+> -		*ppos += ret;
+>  		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
+>  
+> -		/*
+> -		 * If file or inode is SYNC and we actually wrote some data,
+> -		 * sync it.
+> -		 */
+> -		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
+> -			int err;
+> -
+> -			mutex_lock(&inode->i_mutex);
+> -			err = ocfs2_rw_lock(inode, 1);
+> -			if (err < 0) {
+> -				mlog_errno(err);
+> -			} else {
+> -				err = generic_osync_inode(inode, mapping,
+> -						  OSYNC_METADATA|OSYNC_DATA);
+> -				ocfs2_rw_unlock(inode, 1);
+> -			}
+> -			mutex_unlock(&inode->i_mutex);
+> +		err = generic_write_sync(out, *ppos, ret);
+> +		if (err)
+> +			ret = err;
+> +		else
+> +			*ppos += ret;
 
-I used 1024 and found the mount failed here in nfs_walk_authlist():
+	You've removed the rw_lock around the sync.  Any reason why?
 
-        dfprintk(MOUNT, "NFS: server does not support requested auth flavor\ n");
-        nfs_umount(request);
+Joel
 
-Thanks,
-Fengguang
+-- 
+
+"A narcissist is someone better looking than you are."  
+         - Gore Vidal
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
