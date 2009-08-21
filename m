@@ -1,323 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbZHUXNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932741AbZHUXQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbZHUXNc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 19:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932499AbZHUXNc
+	id S932741AbZHUXQL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 19:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932533AbZHUXQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 19:13:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43280 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932413AbZHUXNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 19:13:30 -0400
-Date: Fri, 21 Aug 2009 23:13:02 GMT
-From: tip-bot for Jan Beulich <JBeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       sam@ravnborg.org, jbeulich@novell.com, JBeulich@novell.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com, sam@ravnborg.org, JBeulich@novell.com,
-       tglx@linutronix.de
-In-Reply-To: <4A8BC8A00200007800010823@vpn.id2.novell.com>
-References: <4A8BC8A00200007800010823@vpn.id2.novell.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/asm] x86: properly annotate alternatives.c
-Message-ID: <tip-8b5a10fc6fd02289ea03480f93382b1a99006142@git.kernel.org>
-Git-Commit-ID: 8b5a10fc6fd02289ea03480f93382b1a99006142
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Aug 2009 23:13:03 +0000 (UTC)
+	Fri, 21 Aug 2009 19:16:10 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52246 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932494AbZHUXQK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 19:16:10 -0400
+Date: Sat, 22 Aug 2009 00:16:37 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Bruno =?ISO-8859-14?B?UHLpbW9udA==?= <bonbons@linux-vserver.org>,
+       Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+Message-ID: <20090822001637.72a08078@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.44L0.0908211534140.4029-100000@iolanthe.rowland.org>
+References: <20090821194252.582ef5cd@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.0908211534140.4029-100000@iolanthe.rowland.org>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8b5a10fc6fd02289ea03480f93382b1a99006142
-Gitweb:     http://git.kernel.org/tip/8b5a10fc6fd02289ea03480f93382b1a99006142
-Author:     Jan Beulich <JBeulich@novell.com>
-AuthorDate: Wed, 19 Aug 2009 08:40:48 +0100
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Fri, 21 Aug 2009 15:30:12 -0700
+> What about protecting the use counter?  In tty_port.c it's always
+> protected by port->lock, but not in serial_open().  Is that a mistake?
 
-x86: properly annotate alternatives.c
+Ah good an easy question to begin with
 
-Some of the NOPs tables aren't used on 64-bits, quite some code and
-data is needed post-init for module loading only, and a couple of
-functions aren't used outside that file (i.e. can be static, and don't
-need to be exported).
+Yes it is in error.
 
-The change to __INITDATA/__INITRODATA is needed to avoid an assembler
-warning.
+> How are hangups synchronized with opens?  Do you rely on the BKL? 
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-LKML-Reference: <4A8BC8A00200007800010823@vpn.id2.novell.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+In a sense this is up the driver. hangup can only occur from two paths
+
+1.	User triggered hangup (requires open has completed, user has an
+fd)
+
+2.	Driver calls hangup from its interrupt or other similar event
+handler
+
+The core of both hangup and open are still BKL protected against
+one another (ugly - wants fixing), release_one_dev() liekwise. This is
+probably inadequate as they may well sleep in various spots
+
+> Suppose a hangup occurs, and do_tty_hangup() marks all the existing
+> file references with hung_up_tty_fops.  But before it gets around to
+> calling tty->ops->hangup(), another open occurs.  I can't imagine the
+> BKL will prevent this; do_tty_hangup() is so complex it must sleep
+> somewhere.  Thus it's possible for __tty_open() to call
+> tty->ops->open() before tty->ops->hangup() is called, which means the
+> open will succeed.
+
+I don't think that is any different (logically) to the new open occuring
+just after the hangup. In other words I agree its a race but I am not
+sure it is of itself an actual problem
+
+> The when the driver's hangup routine finally gets around to calling
+> tty_port_hangup(), port->count will be set back to 0.  So now we've got
+> an uncounted open file.
+
+But that would be and I don't immediately see anything preventing it from
+happening. Or if it can't happen there is a good deal of luck rather than
+judgement involved 8)
+
+The hangup path doesn't sleep until it has set TTY_HUPPED and I think
+until the tty_kref_put calls are done. The ops->close/hangup can
+certainly sleep however and would be the first point that hangup sleeps.
+So it is I think safe that way - but not at all a good design at the
+moment.
+
+On the open side tty_reopen can sleep as can tty_init_dev.
+
+block_til_ready ought to be safe as of itself and is coded to avoid the
+problem. It checks tty_hung_up_p under the port lock before adjusting the
+port count. hangup takes the same lock when adjusting the port count.
+
+tty_hung_up_p relies on the filp operations changes and BKL
+
+So I think the tty_port parts work (half through luck) but the serial.c
+bits may well not and without the BKL it would fall apart totally at the
+moment.
+
+> 
+> 
+> > Most drivers tend to look like
+> > 
+> > 	open
+> > 		test ASYNC_INITIALIZED
+> > 			init hardware
+> > 			[either in full or clean up partial]
+> > 			set ASYNC_INITIALIZED)
+> > 		any other alloc/counter magic
+> > 		tty->private_data = my stuff
+> 
+> tty->driver_data, right?
+
+Yes sorry
+
+> 
+> > 		block_til_ready
+> > 	return ok/error
+> > 
+> > 	close
+> > 		if (hung_up)
+> > 			return
+> > 		if (tty->driver_data == NULL)
+> > 			return
+> > 		counts
+> 
+> Is "counts" shorthand for:
+> 
+> 		if (tty_port_close_start(...) == 0)
+> 			return
+
+Usually - but not all drivers use tty_port_close_start yet, some still
+open code all the open/close posix logic or some variant of it
+
+> ?
+> 
+> > 		clean up resources
+> > 		if (last && test_clear INITIALIZED)
+> 
+> How do you check for "last"?  Doesn't the fact that we are here mean 
+> that there are no remaining open references?
+
+It means there are no remaining file references to the handle, but you
+may have multiple file handles referencing the same tty
+
+(eg
+
+	open /dev/ttyS0
+	open /dev/ttyS0
+
+produces two handles to one tty. The tty closes at the hardware level
+when the last file handle reference goes away. This is important because
+of open /dev/tty, and the like)
+
+ie we have a count of users of the file, which on hitting zero calls
+tty_release_dev and eventually the port close method. we have a separate
+count above that of opens to the port which we drop by one for each final
+close of a file handle.
+
+> 
+> > 			deinit-hardware
+> > 	return ok/error
+> > 
+> > 	hangup
+> > 		if (initialized & test_clear INITIALIZED) {
+> 
+> What is "initialized" supposed to be?  Isn't INITIALIZED enough?
+
+It depends on the driver. I believe for anything using the helpers it is
+enough but I may be wrong.
+
+> P.S.: Consider this code in tty_port_block_til_ready():
+> 
+> 	/* if non-blocking mode is set we can pass directly to open unless
+> 	   the port has just hung up or is in another error state */
+> 	if ((filp->f_flags & O_NONBLOCK) ||
+> 			(tty->flags & (1 << TTY_IO_ERROR))) {
+> 		port->flags |= ASYNC_NORMAL_ACTIVE;
+> 		return 0;
+> 	}
+> 
+> The comment doesn't agree with the logic of the test.  Which is wrong?
+
+The code and comment were copied from the original drivers (and occur in
+several places ;))
+
+The intended logic is
+
+	if O_NONBLOCK is set
+		succeed immediately
+	if there is a hangup (or other pending error)
+		succeed immediately
+
+So if this occurs
+
+	open
+		hangup
+
+we don't do
+
+	open
+		hangup
+	block for carrier
+	twiddle thumbs ...
 
 
----
- arch/x86/include/asm/alternative.h |    7 ----
- arch/x86/kernel/alternative.c      |   56 ++++++++++++++++++++---------------
- include/linux/init.h               |   12 ++++++-
- 3 files changed, 42 insertions(+), 33 deletions(-)
+but do
 
-diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
-index 1a37bcd..c240efc 100644
---- a/arch/x86/include/asm/alternative.h
-+++ b/arch/x86/include/asm/alternative.h
-@@ -73,8 +73,6 @@ static inline void alternatives_smp_module_del(struct module *mod) {}
- static inline void alternatives_smp_switch(int smp) {}
- #endif	/* CONFIG_SMP */
+	open
+		hangup
+	ok fd = 4
+	read fd
+		-EIO
+
+(ditto for a hangup from say unplugging the hardware where it would
+ make no sense to wait for the carrier)
+
  
--const unsigned char *const *find_nop_table(void);
--
- /* alternative assembly primitive: */
- #define ALTERNATIVE(oldinstr, newinstr, feature)			\
- 									\
-@@ -144,8 +142,6 @@ static inline void apply_paravirt(struct paravirt_patch_site *start,
- #define __parainstructions_end	NULL
- #endif
- 
--extern void add_nops(void *insns, unsigned int len);
--
- /*
-  * Clear and restore the kernel write-protection flag on the local CPU.
-  * Allows the kernel to edit read-only pages.
-@@ -161,10 +157,7 @@ extern void add_nops(void *insns, unsigned int len);
-  * Intel's errata.
-  * On the local CPU you need to be protected again NMI or MCE handlers seeing an
-  * inconsistent instruction while you patch.
-- * The _early version expects the memory to already be RW.
-  */
--
- extern void *text_poke(void *addr, const void *opcode, size_t len);
--extern void *text_poke_early(void *addr, const void *opcode, size_t len);
- 
- #endif /* _ASM_X86_ALTERNATIVE_H */
-diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index f576587..4869351 100644
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -2,6 +2,7 @@
- #include <linux/sched.h>
- #include <linux/mutex.h>
- #include <linux/list.h>
-+#include <linux/stringify.h>
- #include <linux/kprobes.h>
- #include <linux/mm.h>
- #include <linux/vmalloc.h>
-@@ -32,7 +33,7 @@ __setup("smp-alt-boot", bootonly);
- #define smp_alt_once 1
- #endif
- 
--static int debug_alternative;
-+static int __initdata_or_module debug_alternative;
- 
- static int __init debug_alt(char *str)
- {
-@@ -51,7 +52,7 @@ static int __init setup_noreplace_smp(char *str)
- __setup("noreplace-smp", setup_noreplace_smp);
- 
- #ifdef CONFIG_PARAVIRT
--static int noreplace_paravirt = 0;
-+static int __initdata_or_module noreplace_paravirt = 0;
- 
- static int __init setup_noreplace_paravirt(char *str)
- {
-@@ -64,16 +65,17 @@ __setup("noreplace-paravirt", setup_noreplace_paravirt);
- #define DPRINTK(fmt, args...) if (debug_alternative) \
- 	printk(KERN_DEBUG fmt, args)
- 
--#ifdef GENERIC_NOP1
-+#if defined(GENERIC_NOP1) && !defined(CONFIG_X86_64)
- /* Use inline assembly to define this because the nops are defined
-    as inline assembly strings in the include files and we cannot
-    get them easily into strings. */
--asm("\t.section .rodata, \"a\"\nintelnops: "
-+asm("\t" __stringify(__INITRODATA_OR_MODULE) "\nintelnops: "
- 	GENERIC_NOP1 GENERIC_NOP2 GENERIC_NOP3 GENERIC_NOP4 GENERIC_NOP5 GENERIC_NOP6
- 	GENERIC_NOP7 GENERIC_NOP8
-     "\t.previous");
- extern const unsigned char intelnops[];
--static const unsigned char *const intel_nops[ASM_NOP_MAX+1] = {
-+static const unsigned char *const __initconst_or_module
-+intel_nops[ASM_NOP_MAX+1] = {
- 	NULL,
- 	intelnops,
- 	intelnops + 1,
-@@ -87,12 +89,13 @@ static const unsigned char *const intel_nops[ASM_NOP_MAX+1] = {
- #endif
- 
- #ifdef K8_NOP1
--asm("\t.section .rodata, \"a\"\nk8nops: "
-+asm("\t" __stringify(__INITRODATA_OR_MODULE) "\nk8nops: "
- 	K8_NOP1 K8_NOP2 K8_NOP3 K8_NOP4 K8_NOP5 K8_NOP6
- 	K8_NOP7 K8_NOP8
-     "\t.previous");
- extern const unsigned char k8nops[];
--static const unsigned char *const k8_nops[ASM_NOP_MAX+1] = {
-+static const unsigned char *const __initconst_or_module
-+k8_nops[ASM_NOP_MAX+1] = {
- 	NULL,
- 	k8nops,
- 	k8nops + 1,
-@@ -105,13 +108,14 @@ static const unsigned char *const k8_nops[ASM_NOP_MAX+1] = {
- };
- #endif
- 
--#ifdef K7_NOP1
--asm("\t.section .rodata, \"a\"\nk7nops: "
-+#if defined(K7_NOP1) && !defined(CONFIG_X86_64)
-+asm("\t" __stringify(__INITRODATA_OR_MODULE) "\nk7nops: "
- 	K7_NOP1 K7_NOP2 K7_NOP3 K7_NOP4 K7_NOP5 K7_NOP6
- 	K7_NOP7 K7_NOP8
-     "\t.previous");
- extern const unsigned char k7nops[];
--static const unsigned char *const k7_nops[ASM_NOP_MAX+1] = {
-+static const unsigned char *const __initconst_or_module
-+k7_nops[ASM_NOP_MAX+1] = {
- 	NULL,
- 	k7nops,
- 	k7nops + 1,
-@@ -125,12 +129,13 @@ static const unsigned char *const k7_nops[ASM_NOP_MAX+1] = {
- #endif
- 
- #ifdef P6_NOP1
--asm("\t.section .rodata, \"a\"\np6nops: "
-+asm("\t" __stringify(__INITRODATA_OR_MODULE) "\np6nops: "
- 	P6_NOP1 P6_NOP2 P6_NOP3 P6_NOP4 P6_NOP5 P6_NOP6
- 	P6_NOP7 P6_NOP8
-     "\t.previous");
- extern const unsigned char p6nops[];
--static const unsigned char *const p6_nops[ASM_NOP_MAX+1] = {
-+static const unsigned char *const __initconst_or_module
-+p6_nops[ASM_NOP_MAX+1] = {
- 	NULL,
- 	p6nops,
- 	p6nops + 1,
-@@ -146,7 +151,7 @@ static const unsigned char *const p6_nops[ASM_NOP_MAX+1] = {
- #ifdef CONFIG_X86_64
- 
- extern char __vsyscall_0;
--const unsigned char *const *find_nop_table(void)
-+static const unsigned char *const *__init_or_module find_nop_table(void)
- {
- 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
- 	    boot_cpu_has(X86_FEATURE_NOPL))
-@@ -157,7 +162,7 @@ const unsigned char *const *find_nop_table(void)
- 
- #else /* CONFIG_X86_64 */
- 
--const unsigned char *const *find_nop_table(void)
-+static const unsigned char *const *__init_or_module find_nop_table(void)
- {
- 	if (boot_cpu_has(X86_FEATURE_K8))
- 		return k8_nops;
-@@ -172,7 +177,7 @@ const unsigned char *const *find_nop_table(void)
- #endif /* CONFIG_X86_64 */
- 
- /* Use this to add nops to a buffer, then text_poke the whole buffer. */
--void add_nops(void *insns, unsigned int len)
-+static void __init_or_module add_nops(void *insns, unsigned int len)
- {
- 	const unsigned char *const *noptable = find_nop_table();
- 
-@@ -185,10 +190,10 @@ void add_nops(void *insns, unsigned int len)
- 		len -= noplen;
- 	}
- }
--EXPORT_SYMBOL_GPL(add_nops);
- 
- extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
- extern u8 *__smp_locks[], *__smp_locks_end[];
-+static void *text_poke_early(void *addr, const void *opcode, size_t len);
- 
- /* Replace instructions with better alternatives for this CPU type.
-    This runs before SMP is initialized to avoid SMP problems with
-@@ -196,7 +201,8 @@ extern u8 *__smp_locks[], *__smp_locks_end[];
-    APs have less capabilities than the boot processor are not handled.
-    Tough. Make sure you disable such features by hand. */
- 
--void apply_alternatives(struct alt_instr *start, struct alt_instr *end)
-+void __init_or_module apply_alternatives(struct alt_instr *start,
-+					 struct alt_instr *end)
- {
- 	struct alt_instr *a;
- 	char insnbuf[MAX_PATCH_LEN];
-@@ -279,9 +285,10 @@ static LIST_HEAD(smp_alt_modules);
- static DEFINE_MUTEX(smp_alt);
- static int smp_mode = 1;	/* protected by smp_alt */
- 
--void alternatives_smp_module_add(struct module *mod, char *name,
--				 void *locks, void *locks_end,
--				 void *text,  void *text_end)
-+void __init_or_module alternatives_smp_module_add(struct module *mod,
-+						  char *name,
-+						  void *locks, void *locks_end,
-+						  void *text,  void *text_end)
- {
- 	struct smp_alt_module *smp;
- 
-@@ -317,7 +324,7 @@ void alternatives_smp_module_add(struct module *mod, char *name,
- 	mutex_unlock(&smp_alt);
- }
- 
--void alternatives_smp_module_del(struct module *mod)
-+void __init_or_module alternatives_smp_module_del(struct module *mod)
- {
- 	struct smp_alt_module *item;
- 
-@@ -386,8 +393,8 @@ void alternatives_smp_switch(int smp)
- #endif
- 
- #ifdef CONFIG_PARAVIRT
--void apply_paravirt(struct paravirt_patch_site *start,
--		    struct paravirt_patch_site *end)
-+void __init_or_module apply_paravirt(struct paravirt_patch_site *start,
-+				     struct paravirt_patch_site *end)
- {
- 	struct paravirt_patch_site *p;
- 	char insnbuf[MAX_PATCH_LEN];
-@@ -485,7 +492,8 @@ void __init alternative_instructions(void)
-  * instructions. And on the local CPU you need to be protected again NMI or MCE
-  * handlers seeing an inconsistent instruction while you patch.
-  */
--void *text_poke_early(void *addr, const void *opcode, size_t len)
-+static void *__init_or_module text_poke_early(void *addr, const void *opcode,
-+					      size_t len)
- {
- 	unsigned long flags;
- 	local_irq_save(flags);
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 13b633e..400adbb 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -103,8 +103,8 @@
- #define __INIT		.section	".init.text","ax"
- #define __FINIT		.previous
- 
--#define __INITDATA	.section	".init.data","aw"
--#define __INITRODATA	.section	".init.rodata","a"
-+#define __INITDATA	.section	".init.data","aw",%progbits
-+#define __INITRODATA	.section	".init.rodata","a",%progbits
- #define __FINITDATA	.previous
- 
- #define __DEVINIT        .section	".devinit.text", "ax"
-@@ -305,9 +305,17 @@ void __init parse_early_options(char *cmdline);
- #ifdef CONFIG_MODULES
- #define __init_or_module
- #define __initdata_or_module
-+#define __initconst_or_module
-+#define __INIT_OR_MODULE	.text
-+#define __INITDATA_OR_MODULE	.data
-+#define __INITRODATA_OR_MODULE	.section ".rodata","a",%progbits
- #else
- #define __init_or_module __init
- #define __initdata_or_module __initdata
-+#define __initconst_or_module __initconst
-+#define __INIT_OR_MODULE __INIT
-+#define __INITDATA_OR_MODULE __INITDATA
-+#define __INITRODATA_OR_MODULE __INITRODATA
- #endif /*CONFIG_MODULES*/
- 
- /* Functions marked as __devexit may be discarded at kernel link time, depending
+--
+	"Alan, I'm getting a bit worried about you."
+				-- Linus Torvalds
