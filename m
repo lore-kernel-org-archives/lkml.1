@@ -1,26 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932806AbZHURY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbZHURY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932806AbZHURY1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932781AbZHURYX
+	id S932819AbZHURY3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932808AbZHURY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:24:23 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52091 "EHLO mx1.suse.de"
+	Fri, 21 Aug 2009 13:24:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52107 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932663AbZHURYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:24:09 -0400
+	id S932677AbZHURYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 13:24:10 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       Evgeniy Polyakov <zbr@ioremap.net>, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>, Felix Blyakher <felixb@sgi.com>,
-       xfs@oss.sgi.com, Anton Altaparmakov <aia21@cantab.net>,
-       linux-ntfs-dev@lists.sourceforge.net,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-ext4@vger.kernel.org, tytso@mit.edu
-Subject: [PATCH 07/17] vfs: Introduce new helpers for syncing after writing to O_SYNC file or IS_SYNC inode
-Date: Fri, 21 Aug 2009 19:23:57 +0200
-Message-Id: <1250875447-15622-8-git-send-email-jack@suse.cz>
+Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>
+Subject: [PATCH 17/17] vfs: Remove generic_osync_inode() and sync_page_range{_nolock}()
+Date: Fri, 21 Aug 2009 19:24:07 +0200
+Message-Id: <1250875447-15622-18-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1250875447-15622-1-git-send-email-jack@suse.cz>
 References: <1250875447-15622-1-git-send-email-jack@suse.cz>
@@ -28,278 +22,184 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce new function for generic inode syncing (generic_sync_file) and use
-it from fsync() path. Introduce also new helper for syncing after a sync
-write (generic_write_sync) using the generic function.
+Remove these three functions since nobody uses them anymore.
 
-Use these new helpers for syncing from generic VFS functions. This makes
-O_SYNC writes to block devices acquire i_mutex for syncing. If we really
-care about this, we can make block_fsync() drop the i_mutex and reacquire
-it before it returns.
-
-CC: Evgeniy Polyakov <zbr@ioremap.net>
-CC: ocfs2-devel@oss.oracle.com
-CC: Joel Becker <joel.becker@oracle.com>
-CC: Felix Blyakher <felixb@sgi.com>
-CC: xfs@oss.sgi.com
-CC: Anton Altaparmakov <aia21@cantab.net>
-CC: linux-ntfs-dev@lists.sourceforge.net
-CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-CC: linux-ext4@vger.kernel.org
-CC: tytso@mit.edu
-Acked-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/splice.c        |   22 ++++----------
- fs/sync.c          |   81 +++++++++++++++++++++++++++++++++++++++++++---------
- include/linux/fs.h |    7 ++++
- mm/filemap.c       |   18 ++++--------
- 4 files changed, 86 insertions(+), 42 deletions(-)
+ fs/fs-writeback.c         |   54 --------------------------------------
+ include/linux/fs.h        |    5 ---
+ include/linux/writeback.h |    4 ---
+ mm/filemap.c              |   64 ---------------------------------------------
+ 4 files changed, 0 insertions(+), 127 deletions(-)
 
-diff --git a/fs/splice.c b/fs/splice.c
-index 73766d2..8190237 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -976,25 +976,15 @@ generic_file_splice_write(struct pipe_inode_info *pipe, struct file *out,
- 
- 	if (ret > 0) {
- 		unsigned long nr_pages;
-+		int err;
- 
--		*ppos += ret;
- 		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
- 
--		/*
--		 * If file or inode is SYNC and we actually wrote some data,
--		 * sync it.
--		 */
--		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
--			int err;
--
--			mutex_lock(&inode->i_mutex);
--			err = generic_osync_inode(inode, mapping,
--						  OSYNC_METADATA|OSYNC_DATA);
--			mutex_unlock(&inode->i_mutex);
--
--			if (err)
--				ret = err;
--		}
-+		err = generic_write_sync(out, *ppos, ret);
-+		if (err)
-+			ret = err;
-+		else
-+			*ppos += ret;
- 		balance_dirty_pages_ratelimited_nr(mapping, nr_pages);
- 	}
- 
-diff --git a/fs/sync.c b/fs/sync.c
-index 3422ba6..fc320aa 100644
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -176,23 +176,30 @@ int file_fsync(struct file *filp, struct dentry *dentry, int datasync)
- }
- 
- /**
-- * vfs_fsync - perform a fsync or fdatasync on a file
-+ * generic_sync_file - helper to sync data & metadata to disk
-  * @file:		file to sync
-  * @dentry:		dentry of @file
-- * @data:		only perform a fdatasync operation
-+ * @start:		offset in bytes of the beginning of data range to sync
-+ * @end:		offset in bytes of the end of data range (inclusive)
-+ * @what:		what should be synced
-  *
-- * Write back data and metadata for @file to disk.  If @datasync is
-- * set only metadata needed to access modified file data is written.
-+ * What the function exactly does is controlled by the @what parameter:
-  *
-- * In case this function is called from nfsd @file may be %NULL and
-- * only @dentry is set.  This can only happen when the filesystem
-- * implements the export_operations API.
-+ * If SYNC_SUBMIT_DATA is set, the function submits all pages in the given
-+ * range to disk.
-+ *
-+ * The function always calls ->fsync() callback of the filesystem. If
-+ * SYNC_INODE is not set, we pass down the fact that it is just a datasync.
-+ *
-+ * If SYNC_WAIT_DATA is set, the function waits for writeback to finish
-+ * in the given range.
-  */
--int vfs_fsync(struct file *file, struct dentry *dentry, int datasync)
-+int generic_sync_file(struct file *file, struct dentry *dentry, loff_t start,
-+		      loff_t end, int what)
- {
- 	const struct file_operations *fop;
- 	struct address_space *mapping;
--	int err, ret;
-+	int err, ret = 0;
- 
- 	/*
- 	 * Get mapping and operations from the file in case we have
-@@ -212,23 +219,50 @@ int vfs_fsync(struct file *file, struct dentry *dentry, int datasync)
- 		goto out;
- 	}
- 
--	ret = filemap_fdatawrite(mapping);
-+	if (what & SYNC_SUBMIT_DATA)
-+		ret = filemap_fdatawrite_range(mapping, start, end);
- 
- 	/*
- 	 * We need to protect against concurrent writers, which could cause
- 	 * livelocks in fsync_buffers_list().
- 	 */
- 	mutex_lock(&mapping->host->i_mutex);
--	err = fop->fsync(file, dentry, datasync);
-+	err = fop->fsync(file, dentry, !(what & SYNC_INODE));
- 	if (!ret)
- 		ret = err;
- 	mutex_unlock(&mapping->host->i_mutex);
--	err = filemap_fdatawait(mapping);
--	if (!ret)
--		ret = err;
-+
-+	if (what & SYNC_WAIT_DATA) {
-+		err = filemap_fdatawait_range(mapping, start, end);
-+		if (!ret)
-+			ret = err;
-+	}
- out:
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index c54226b..d8dbef0 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -737,57 +737,3 @@ int sync_inode(struct inode *inode, struct writeback_control *wbc)
  	return ret;
  }
-+EXPORT_SYMBOL(generic_sync_file);
-+
-+/**
-+ * vfs_fsync - perform a fsync or fdatasync on a file
-+ * @file:		file to sync
-+ * @dentry:		dentry of @file
-+ * @datasync:		only perform a fdatasync operation
-+ *
-+ * Write back data and metadata for @file to disk.  If @datasync is
-+ * set only metadata needed to access modified file data is written.
-+ *
-+ * In case this function is called from nfsd @file may be %NULL and
-+ * only @dentry is set.  This can only happen when the filesystem
-+ * implements the export_operations API.
-+ */
-+int vfs_fsync(struct file *file, struct dentry *dentry, int datasync)
-+{
-+	int what = SYNC_SUBMIT_DATA | SYNC_WAIT_DATA;
-+
-+	if (!datasync)
-+		what |= SYNC_INODE;
-+	return generic_sync_file(file, dentry, 0, LLONG_MAX, what);
-+}
- EXPORT_SYMBOL(vfs_fsync);
- 
- static int do_fsync(unsigned int fd, int datasync)
-@@ -254,6 +288,25 @@ SYSCALL_DEFINE1(fdatasync, unsigned int, fd)
- 	return do_fsync(fd, 1);
- }
- 
-+/**
-+ * generic_write_sync - perform syncing after a write if file / inode is sync
-+ * @file:	file to which the write happened
-+ * @pos:	offset where the write started
-+ * @count:	length of the write
-+ *
-+ * This is just a simple wrapper about our general syncing function.
-+ * FIXME: Make it inline?
-+ */
-+int generic_write_sync(struct file *file, loff_t pos, loff_t count)
-+{
-+	if (!(file->f_flags & O_SYNC) && !IS_SYNC(file->f_mapping->host))
-+		return 0;
-+	return generic_sync_file(file, file->f_path.dentry, pos,
-+				 pos + count - 1,
-+				 SYNC_SUBMIT_DATA | SYNC_WAIT_DATA);
-+}
-+EXPORT_SYMBOL(generic_write_sync);
-+
- /*
-  * sys_sync_file_range() permits finely controlled syncing over a segment of
-  * a file in the range offset .. (offset+nbytes-1) inclusive.  If nbytes is
+ EXPORT_SYMBOL(sync_inode);
+-
+-/**
+- * generic_osync_inode - flush all dirty data for a given inode to disk
+- * @inode: inode to write
+- * @mapping: the address_space that should be flushed
+- * @what:  what to write and wait upon
+- *
+- * This can be called by file_write functions for files which have the
+- * O_SYNC flag set, to flush dirty writes to disk.
+- *
+- * @what is a bitmask, specifying which part of the inode's data should be
+- * written and waited upon.
+- *
+- *    OSYNC_DATA:     i_mapping's dirty data
+- *    OSYNC_METADATA: the buffers at i_mapping->private_list
+- *    OSYNC_INODE:    the inode itself
+- */
+-
+-int generic_osync_inode(struct inode *inode, struct address_space *mapping, int what)
+-{
+-	int err = 0;
+-	int need_write_inode_now = 0;
+-	int err2;
+-
+-	if (what & OSYNC_DATA)
+-		err = filemap_fdatawrite(mapping);
+-	if (what & (OSYNC_METADATA|OSYNC_DATA)) {
+-		err2 = sync_mapping_buffers(mapping);
+-		if (!err)
+-			err = err2;
+-	}
+-	if (what & OSYNC_DATA) {
+-		err2 = filemap_fdatawait(mapping);
+-		if (!err)
+-			err = err2;
+-	}
+-
+-	spin_lock(&inode_lock);
+-	if ((inode->i_state & I_DIRTY) &&
+-	    ((what & OSYNC_INODE) || (inode->i_state & I_DIRTY_DATASYNC)))
+-		need_write_inode_now = 1;
+-	spin_unlock(&inode_lock);
+-
+-	if (need_write_inode_now) {
+-		err2 = write_inode_now(inode, 1);
+-		if (!err)
+-			err = err2;
+-	}
+-	else
+-		inode_sync_wait(inode);
+-
+-	return err;
+-}
+-EXPORT_SYMBOL(generic_osync_inode);
 diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 29fc8da..648001c 100644
+index 648001c..57b2866 100644
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -2088,7 +2088,14 @@ extern int __filemap_fdatawrite_range(struct address_space *mapping,
- extern int filemap_fdatawrite_range(struct address_space *mapping,
- 				loff_t start, loff_t end);
+@@ -1458,11 +1458,6 @@ int fiemap_check_flags(struct fiemap_extent_info *fieinfo, u32 fs_flags);
+ #define DT_SOCK		12
+ #define DT_WHT		14
  
-+/* Flags for generic_sync_file */
-+#define SYNC_INODE		1
-+#define SYNC_SUBMIT_DATA	2
-+#define SYNC_WAIT_DATA		4
-+extern int generic_sync_file(struct file *file, struct dentry *dentry,
-+			   loff_t start, loff_t end, int what);
- extern int vfs_fsync(struct file *file, struct dentry *dentry, int datasync);
-+extern int generic_write_sync(struct file *file, loff_t pos, loff_t count);
- extern void sync_supers(void);
- extern void emergency_sync(void);
- extern void emergency_remount(void);
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 3955f7e..70988a1 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -39,11 +39,10 @@
- /*
-  * FIXME: remove all knowledge of the buffer layer from the core VM
-  */
--#include <linux/buffer_head.h> /* for generic_osync_inode */
-+#include <linux/buffer_head.h> /* for try_to_free_buffers */
- 
- #include <asm/mman.h>
- 
+-#define OSYNC_METADATA	(1<<0)
+-#define OSYNC_DATA	(1<<1)
+-#define OSYNC_INODE	(1<<2)
+-int generic_osync_inode(struct inode *, struct address_space *, int);
 -
  /*
-  * Shared mappings implemented 30.11.1994. It's not fully working yet,
-  * though.
-@@ -2480,19 +2479,16 @@ ssize_t device_aio_write(struct kiocb *iocb, const struct iovec *iov,
- 			 unsigned long nr_segs, loff_t pos)
- {
- 	struct file *file = iocb->ki_filp;
--	struct address_space *mapping = file->f_mapping;
--	struct inode *inode = mapping->host;
- 	ssize_t ret;
+  * This is the "filldir" function type, used by readdir() to let
+  * the kernel specify what kind of dirent layout it wants to have.
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index 3224820..1446694 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -157,10 +157,6 @@ int write_cache_pages(struct address_space *mapping,
+ 		      struct writeback_control *wbc, writepage_t writepage,
+ 		      void *data);
+ int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
+-int sync_page_range(struct inode *inode, struct address_space *mapping,
+-			loff_t pos, loff_t count);
+-int sync_page_range_nolock(struct inode *inode, struct address_space *mapping,
+-			   loff_t pos, loff_t count);
+ void set_page_dirty_balance(struct page *page, int page_mkwrite);
+ void writeback_set_ratelimit(void);
  
- 	BUG_ON(iocb->ki_pos != pos);
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 70988a1..854e10e 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -326,70 +326,6 @@ int filemap_fdatawait_range(struct address_space *mapping, loff_t start,
+ EXPORT_SYMBOL(filemap_fdatawait_range);
  
- 	ret = __generic_file_aio_write(iocb, iov, nr_segs, &iocb->ki_pos);
- 
--	if ((ret > 0 || ret == -EIOCBQUEUED) &&
--	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
-+	if (ret > 0 || ret == -EIOCBQUEUED) {
- 		ssize_t err;
- 
--		err = sync_page_range_nolock(inode, mapping, pos, ret);
-+		err = generic_write_sync(file, pos, ret);
- 		if (err < 0 && ret > 0)
- 			ret = err;
- 	}
-@@ -2515,8 +2511,7 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
- 		unsigned long nr_segs, loff_t pos)
- {
- 	struct file *file = iocb->ki_filp;
--	struct address_space *mapping = file->f_mapping;
--	struct inode *inode = mapping->host;
-+	struct inode *inode = file->f_mapping->host;
- 	ssize_t ret;
- 
- 	BUG_ON(iocb->ki_pos != pos);
-@@ -2525,11 +2520,10 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
- 	ret = __generic_file_aio_write(iocb, iov, nr_segs, &iocb->ki_pos);
- 	mutex_unlock(&inode->i_mutex);
- 
--	if ((ret > 0 || ret == -EIOCBQUEUED) &&
--	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
-+	if (ret > 0 || ret == -EIOCBQUEUED) {
- 		ssize_t err;
- 
--		err = sync_page_range(inode, mapping, pos, ret);
-+		err = generic_write_sync(file, pos, ret);
- 		if (err < 0 && ret > 0)
- 			ret = err;
- 	}
+ /**
+- * sync_page_range - write and wait on all pages in the passed range
+- * @inode:	target inode
+- * @mapping:	target address_space
+- * @pos:	beginning offset in pages to write
+- * @count:	number of bytes to write
+- *
+- * Write and wait upon all the pages in the passed range.  This is a "data
+- * integrity" operation.  It waits upon in-flight writeout before starting and
+- * waiting upon new writeout.  If there was an IO error, return it.
+- *
+- * We need to re-take i_mutex during the generic_osync_inode list walk because
+- * it is otherwise livelockable.
+- */
+-int sync_page_range(struct inode *inode, struct address_space *mapping,
+-			loff_t pos, loff_t count)
+-{
+-	pgoff_t start = pos >> PAGE_CACHE_SHIFT;
+-	pgoff_t end = (pos + count - 1) >> PAGE_CACHE_SHIFT;
+-	int ret;
+-
+-	if (!mapping_cap_writeback_dirty(mapping) || !count)
+-		return 0;
+-	ret = filemap_fdatawrite_range(mapping, pos, pos + count - 1);
+-	if (ret == 0) {
+-		mutex_lock(&inode->i_mutex);
+-		ret = generic_osync_inode(inode, mapping, OSYNC_METADATA);
+-		mutex_unlock(&inode->i_mutex);
+-	}
+-	if (ret == 0)
+-		ret = wait_on_page_writeback_range(mapping, start, end);
+-	return ret;
+-}
+-EXPORT_SYMBOL(sync_page_range);
+-
+-/**
+- * sync_page_range_nolock - write & wait on all pages in the passed range without locking
+- * @inode:	target inode
+- * @mapping:	target address_space
+- * @pos:	beginning offset in pages to write
+- * @count:	number of bytes to write
+- *
+- * Note: Holding i_mutex across sync_page_range_nolock() is not a good idea
+- * as it forces O_SYNC writers to different parts of the same file
+- * to be serialised right until io completion.
+- */
+-int sync_page_range_nolock(struct inode *inode, struct address_space *mapping,
+-			   loff_t pos, loff_t count)
+-{
+-	pgoff_t start = pos >> PAGE_CACHE_SHIFT;
+-	pgoff_t end = (pos + count - 1) >> PAGE_CACHE_SHIFT;
+-	int ret;
+-
+-	if (!mapping_cap_writeback_dirty(mapping) || !count)
+-		return 0;
+-	ret = filemap_fdatawrite_range(mapping, pos, pos + count - 1);
+-	if (ret == 0)
+-		ret = generic_osync_inode(inode, mapping, OSYNC_METADATA);
+-	if (ret == 0)
+-		ret = wait_on_page_writeback_range(mapping, start, end);
+-	return ret;
+-}
+-EXPORT_SYMBOL(sync_page_range_nolock);
+-
+-/**
+  * filemap_fdatawait - wait for all under-writeback pages to complete
+  * @mapping: address space structure to wait for
+  *
 -- 
 1.6.0.2
 
