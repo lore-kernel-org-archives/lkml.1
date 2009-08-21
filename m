@@ -1,107 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZHUCFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZHUCHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbZHUCFL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 22:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZHUCFK
+	id S1754719AbZHUCHP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 22:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZHUCHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 22:05:10 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52246 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754154AbZHUCFI (ORCPT
+	Thu, 20 Aug 2009 22:07:14 -0400
+Received: from mail.deathmatch.net ([72.66.92.28]:2294 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754468AbZHUCHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 22:05:08 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 21 Aug 2009 11:03:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Cc: Amerigo Wang <amwang@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, linux-mm@kvack.org,
-       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
-Message-Id: <20090821110309.2d5ffb62.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090821015927.GA4447@cr0.nay.redhat.com>
-References: <4A8927DD.6060209@redhat.com>
-	<20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A8A4ABB.70003@redhat.com>
-	<20090818172552.779d0768.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A8A83F4.6010408@redhat.com>
-	<20090819085703.ccf9992a.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A8B6649.3080103@redhat.com>
-	<20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A8D144C.5050005@redhat.com>
-	<20090821093452.ead96b2d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090821015927.GA4447@cr0.nay.redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Aug 2009 22:07:13 -0400
+Date: Thu, 20 Aug 2009 22:06:33 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+Subject: Re: 2.6.32-rc6 BUG at mm/slab.c:2869!
+Message-ID: <20090821020633.GA25571@hash.localnet>
+References: <20090820015624.GE524@hash.localnet> <84144f020908192208x453ebbd4gecf52eb47903653d@mail.gmail.com> <20090820111937.GF524@hash.localnet> <19f34abd0908200502n6ff53e71ld5bc18aa581d5625@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0908200502n6ff53e71ld5bc18aa581d5625@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Aug 2009 09:59:27 +0800
-Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
-
-> On Fri, Aug 21, 2009 at 09:34:52AM +0900, KAMEZAWA Hiroyuki wrote:
-> >On Thu, 20 Aug 2009 17:15:56 +0800
-> >Amerigo Wang <amwang@redhat.com> wrote:
-> >    
-> >> > The, problem is whether memmap is there or not. That's all.
-> >> > plz see init sequence and check there are memmap.
-> >> > If memory-for-crash is obtained via bootmem,
-> >> > Don't you try to free memory hole ?
-> >> >   
-> >> 
-> >> Hi,
-> >> 
-> >> It looks like that mem_map has 'struct page' for the reserved memory, I 
-> >> checked my "early_node_map[] active PFN ranges" output, the reserved 
-> >> memory area for crash kernel is right in one range. Am I missing 
-> >> something here?
-> >> 
-> >> I don't know why that oops comes out, maybe because of no PTE for thoese 
-> >> pages?
-> >> 
-> >Hmm ? Could you show me the code you use ?
+On Thu, Aug 20, 2009 at 02:02:49PM +0200, Vegard Nossum wrote:
+> > I'll try that and kmemcheck next.
 > 
-> (Sorry that I reply to you with my gmail, my work email can't send out
-> this message, probably because one of the destinations is broken...
-> I am the same person, don't be confused. :-)
-> 
-> Sure. Below is it:
-> 
-> +    for (addr = end + 1; addr < crashk_res.end; addr += PAGE_SIZE) {
-> +        printk(KERN_DEBUG "PFN is valid? %d\n", pfn_valid(addr>>PAGE_SHIFT));
-> +        ClearPageReserved(virt_to_page(addr));
-> +        init_page_count(virt_to_page(addr));
-> +        free_page(addr);
-> +        totalram_pages++;
-> +    }
-> 
-> 
-> pfn_valid() returns 1, and oops happens at ClearPageReserved().
-> ('addr' is right between crashk_res.start and crashk_res.end)
+> Hm, I'm afraid kmemcheck gives some known false positives related to
+> bitfields in ext4 code, so in the case that something turned up, it
+> might be hard to distinguish it from those false positives.
 
-Confused, 
-  if    pfn_valid(addr >> PAGE_SHIFT) == true 
+Well I didn't get anything from ext4 so far.  I did hit one with
+fsnotify:
 
-you should do
-	ClearPageReserved(pfn_to_page(addr >> PAGE_SHIFT));
+WARNING: kmemcheck: Caught 32-bit read from freed memory (f34a443c)
+eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee008a06f700011000
+ a a a a a a a a a a a a a a a a a a a a a a a a f f f f f f f f
+                                                         ^
 
-because addr is physical address, not virtual.
-I guess crashk_res.end is physical address....
+Pid: 2745, comm: fsck.ext4 Not tainted (2.6.31-rc6 #2) MacBook1,1
+EIP: 0060:[<c10f3656>] EFLAGS: 00010217 CPU: 0
+EIP is at inotify_handle_event+0x76/0xc0
+EAX: f34a443c EBX: f34a4438 ECX: 00000000 EDX: f6732000
+ESI: f6559764 EDI: 00000000 EBP: f6733f0c ESP: c1527450
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+CR0: 8005003b CR2: f6c046d4 CR3: 367fb000 CR4: 000026d0
+DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+DR6: ffff4ff0 DR7: 00000400
+ [<c10f0d78>] fsnotify+0xa8/0x130
+ [<c10c5e11>] __fput+0xb1/0x1e0
+ [<c10c5f55>] fput+0x15/0x20
+ [<c10c2ca7>] filp_close+0x47/0x80
+ [<c10c2d54>] sys_close+0x74/0xc0
+ [<c1002ec8>] sysenter_do_call+0x12/0x36
+ [<ffffffff>] 0xffffffff
 
-Thanks,
--Kame
+I think that is list_empty() here where %eax is list_head
+and event_list->next is the read location... which definitely
+doesn't look like a pointer, if I'm reading it correctly.
 
+inotify_fsnotify.o:
 
-> 
-> Thank you!
-> 
+        /* did event_priv get attached? */
+        if (list_empty(&fsn_event_priv->event_list))
+ 143:   8d 43 04                lea    0x4(%ebx),%eax
+
+        event_priv = kmem_cache_alloc(event_priv_cachep, GFP_KERNEL);
+        if (unlikely(!event_priv))
+                return -ENOMEM;
+
+        fsn_event_priv = &event_priv->fsnotify_event_priv_data;
+ 146:   39 43 04                cmp    %eax,0x4(%ebx)     <=== read here
+ 149:   74 1d                   je     168 <inotify_handle_event+0x98>
+
+-- 
+Bob Copeland %% www.bobcopeland.com
 
