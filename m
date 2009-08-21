@@ -1,118 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbZHVLea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbZHVLpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933294AbZHVLea (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 07:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933248AbZHVLea
+	id S1755756AbZHVLpq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 07:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755734AbZHVLpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 07:34:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43676 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933163AbZHVLe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 07:34:29 -0400
-Date: Sat, 22 Aug 2009 11:33:45 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090822050851.GA8414@linux.vnet.ibm.com>
-References: <20090822050851.GA8414@linux.vnet.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Expunge lingering references to CONFIG_CLASSIC_RCU, optimize on !SMP
-Message-ID: <tip-b560d8ad8583803978aaaeba50ef29dc8e97a610@git.kernel.org>
-Git-Commit-ID: b560d8ad8583803978aaaeba50ef29dc8e97a610
-X-Mailer: tip-git-log-daemon
+	Sat, 22 Aug 2009 07:45:45 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39811 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755484AbZHVLpo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 07:45:44 -0400
+Date: Fri, 21 Aug 2009 16:01:26 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Felipe Balbi <me@felipebalbi.com>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org
+Subject: Re: Smart Battery System Design (was: Re: Question about
+	userspace-consumer)
+Message-ID: <20090821140126.GA1328@ucw.cz>
+References: <20090811094020.GA6762@rakim.wolfsonmicro.main> <1249986616.5807.28.camel@odin> <20090811204914.GB13969@gandalf> <20090811223645.GA4691@sirena.org.uk> <20090814163201.GB1626@ucw.cz> <20090815164324.GA4252@sirena.org.uk> <20090815223434.GB27637@elf.ucw.cz> <20090816091858.GB12567@sirena.org.uk> <20090822092845.GE11448@elf.ucw.cz> <20090822101641.GC4344@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 22 Aug 2009 11:33:59 +0000 (UTC)
+In-Reply-To: <20090822101641.GC4344@sirena.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b560d8ad8583803978aaaeba50ef29dc8e97a610
-Gitweb:     http://git.kernel.org/tip/b560d8ad8583803978aaaeba50ef29dc8e97a610
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Fri, 21 Aug 2009 22:08:51 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 22 Aug 2009 13:07:09 +0200
+On Sat 2009-08-22 11:16:42, Mark Brown wrote:
+> On Sat, Aug 22, 2009 at 11:28:45AM +0200, Pavel Machek wrote:
+> 
+> > At least zaurus sl-3000c is designed like a notebook -- inactive in
+> > s2ram. It is quite old design.
+> 
+> > Charging while suspended is preffered, because it allows faster
+> > charge. The machine eats non-trivial power while active, charger is
+> > only 1A, and there's not enough current left for a charge with machine
+> > active.
+> 
+> Like you say this is a very old design but even there I'm fairly
+> surprised it's causing issues when charging from a wall supply.  If
+> you're charging from USB then there is obviously a constraint on the
+> power draw but normally a modern system has sufficiently low power draw
+> when idle that it's not actually a big deal - runtime power management
+> facilities have improved greatly.
 
-rcu: Expunge lingering references to CONFIG_CLASSIC_RCU, optimize on !SMP
+Well... all the hardware I have here (zaurus, openmoko, htc dream) has
+issues with power consumption while charging... so I do not think
+runtime pm is solved problem.
 
-A couple of references to CONFIG_CLASSIC_RCU have survived.
-Although these are harmless, it is past time for them to go.
-The one in hardirq.h is strictly a readability problem.
+> There's also the fact that if you're completely reliant on the CPU to
+> control the charger you have to be very sure that the system will come
+> back from suspend reliably due to the risk of hardware damage.  The
+> hardware should have safety features to prevent serious problems but
+> it's a consideration.
 
-The two in pagemap.h appear to disable a !SMP performance
-optimization (which this patch re-enables).
+While crashes during suspend/resume are common on pcs, embedded
+systens do better. And crashes during runtime happen, too.
 
-This does raise the issue as to whether pagemap.h should really
-be referring to the CPU implementation.  Long term, I intend to
-make the RCU implementation driven by CONFIG_PREEMPT, at which
-point these should change from defined(CONFIG_TREE_RCU) to
-!defined(CONFIG_PREEMPT). In the meantime, is there something
-else that could be done in pagemap.h?
+First, I can't imagine system where you can damage the battery by just
+crashing sw. 4.2 per cell voltage limit is just too easy to do in
+hw. Maybe if you crash the sw then bring the machine outside while its
+stil on charger and theres 110F outside...
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: akpm@linux-foundation.org
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josht@linux.vnet.ibm.com
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-LKML-Reference: <20090822050851.GA8414@linux.vnet.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/hardirq.h |    4 ++--
- include/linux/pagemap.h |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-index 8246c69..330cb31 100644
---- a/include/linux/hardirq.h
-+++ b/include/linux/hardirq.h
-@@ -132,7 +132,7 @@ static inline void account_system_vtime(struct task_struct *tsk)
- }
- #endif
- 
--#if defined(CONFIG_NO_HZ) && !defined(CONFIG_CLASSIC_RCU)
-+#if defined(CONFIG_NO_HZ)
- extern void rcu_irq_enter(void);
- extern void rcu_irq_exit(void);
- extern void rcu_nmi_enter(void);
-@@ -142,7 +142,7 @@ extern void rcu_nmi_exit(void);
- # define rcu_irq_exit() do { } while (0)
- # define rcu_nmi_enter() do { } while (0)
- # define rcu_nmi_exit() do { } while (0)
--#endif /* #if defined(CONFIG_NO_HZ) && !defined(CONFIG_CLASSIC_RCU) */
-+#endif /* #if defined(CONFIG_NO_HZ) */
- 
- /*
-  * It is safe to do non-atomic ops on ->hardirq_context,
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index aec3252..ed5d750 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -132,7 +132,7 @@ static inline int page_cache_get_speculative(struct page *page)
- {
- 	VM_BUG_ON(in_interrupt());
- 
--#if !defined(CONFIG_SMP) && defined(CONFIG_CLASSIC_RCU)
-+#if !defined(CONFIG_SMP) && defined(CONFIG_TREE_RCU)
- # ifdef CONFIG_PREEMPT
- 	VM_BUG_ON(!in_atomic());
- # endif
-@@ -170,7 +170,7 @@ static inline int page_cache_add_speculative(struct page *page, int count)
- {
- 	VM_BUG_ON(in_interrupt());
- 
--#if !defined(CONFIG_SMP) && defined(CONFIG_CLASSIC_RCU)
-+#if !defined(CONFIG_SMP) && defined(CONFIG_TREE_RCU)
- # ifdef CONFIG_PREEMPT
- 	VM_BUG_ON(!in_atomic());
- # endif
+And yes it should have safety features, and if they are not there its
+broken hw.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
