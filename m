@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZHUPvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932336AbZHUPyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbZHUPvl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbZHUPvk
+	id S932336AbZHUPyO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 11:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbZHUPyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:51:40 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45738 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754425AbZHUPvj (ORCPT
+	Fri, 21 Aug 2009 11:54:14 -0400
+Received: from static-76-164-182-57.apid.com ([76.164.182.57]:38666 "EHLO
+	waltsputer.localdomain" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754425AbZHUPyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:51:39 -0400
-Subject: Re: [PATCH] ARM: Mailing lists have moved
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Paul Walmsley <paul@pwsan.com>,
-       Russell King <linux@arm.linux.org.uk>, erikm@nl.linux.org,
-       vince@kyllikki.org, linux-kernel@vger.kernel.org,
-       linux-arm@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <4A8EBFFD.5000307@billgatliff.com>
-References: <1250855566.3311.100.camel@macbook.infradead.org>
-	 <alpine.DEB.2.00.0908210925400.24646@utopia.booyaka.com>
-	 <1250868957.3311.110.camel@macbook.infradead.org>
-	 <4A8EBFFD.5000307@billgatliff.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 21 Aug 2009 16:46:19 +0100
-Message-Id: <1250869579.10642.14.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 21 Aug 2009 11:54:13 -0400
+X-Greylist: delayed 545 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Aug 2009 11:54:13 EDT
+Date: Fri, 21 Aug 2009 10:45:04 -0500 (CDT)
+From: Walt Holman <walt@holmansrus.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Message-ID: <987943678.21250869504786.JavaMail.root@mail.holmansrus.com>
+In-Reply-To: <1489093361.01250869377567.JavaMail.root@mail.holmansrus.com>
+Subject: Re: Strange network timeouts w/ 2.6.30.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 Aug 2009 15:46:20.0677 (UTC) FILETIME=[8768FB50:01CA2276]
+X-Originating-IP: [192.168.0.1]
+X-Mailer: Zimbra 6.0.0_RC1_1684.UBUNTU8_64 (ZimbraWebClient - [unknown] (Linux)/6.0.0_RC1_1684.UBUNTU8_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 10:40 -0500, Bill Gatliff wrote:
-> David Woodhouse wrote:
-> > On Fri, 2009-08-21 at 09:27 -0600, Paul Walmsley wrote:
-> >   
-> >>     
-> >>> Russell no longer wants to maintain the mailing lists, so with his
-> >>> blessing I have set up replacements at lists.infradead.org.
-> >>>       
-> >> Can you help us understand why the existing linux-arm@vger.kernel.org
-> >> list is not used for this?
-> >>     
-> >
-> > Russell didn't want to do that, so I offered an alternative solution
-> > preserving the three separate lists (l-a, l-a-kernel, l-a-toolchain).
-> >   
+
+----- "Krzysztof Halasa" <khc@pm.waw.pl> wrote:
+
+> Walt Holman <walt@holmansrus.com> writes:
 > 
-> Ok, so which of the new lists should former linux-arm-kernel subscribers 
-> be subscribed to?  I'm confused, I've seen mention of four different 
-> lists now: three at infraded, and one at vger.  :)
+> > Would something like passing a mem=xx cmdline on x86_64 be
+> sufficient to test this?
+> 
+> I think so, though I admit I don't remember using this personally
+> since
+> the introduction of e820 RAM mapping support.
+> Dmesg will show if the memory is limited. For the swiotlb to
+> effectively
+> disable no RAM > 0x100000000 may be used.
+> 
+> But this test isn't IMHO terribly important at this point - the
+> driver
+> makes invalid use of the DMA API and it has to change. The test could
+> only explain _how_ exactly does it fail, we already know _why_ it
+> does.
+> -- 
+> Krzysztof Halasa
 
-It looks like the linux-*@lists.arm.linux.org.uk have been moved to
-linux-*@lists.infradead.org with all the subscriptions transferred as
-well. So for kernel, it should be linux-arm-kernel@lists.infradead.org.
+Just got a chance to test this for confirmation.  When limiting the RAM to 2GB, the patched driver appears to work OK.
 
-If unsure, cc LKML.
-
--- 
-Catalin
+-Walt
 
