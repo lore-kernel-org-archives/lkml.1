@@ -1,27 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZHUOZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932208AbZHUO2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755676AbZHUOZZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 10:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbZHUOZY
+	id S932208AbZHUO2i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 10:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZHUO2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 10:25:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48163 "EHLO mx3.mail.elte.hu"
+	Fri, 21 Aug 2009 10:28:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38665 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbZHUOZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 10:25:23 -0400
-Date: Fri, 21 Aug 2009 16:25:14 +0200
+	id S1755659AbZHUO2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 10:28:36 -0400
+Date: Fri, 21 Aug 2009 16:28:11 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: William Cohen <wcohen@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add minimal support for software performance counters
-	for ia64
-Message-ID: <20090821142514.GE11098@elte.hu>
-References: <4A8C2290.3040707@redhat.com> <1250698351.8282.106.camel@twins> <4A8C4CAA.5070101@redhat.com> <1250708819.7154.5.camel@laptop> <4A8DBDDB.5080402@redhat.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Patch 0/1] HW-BKPT: Allow per-cpu kernel-space Hardware
+	Breakpoint requests
+Message-ID: <20090821142811.GF11098@elte.hu>
+References: <20090817124641.GA13354@in.ibm.com> <20090819161119.GA3633@in.ibm.com> <20090819173259.GF4972@nowhere> <20090820172719.GA16499@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A8DBDDB.5080402@redhat.com>
+In-Reply-To: <20090820172719.GA16499@in.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -35,39 +40,36 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* William Cohen <wcohen@redhat.com> wrote:
+* K.Prasad <prasad@linux.vnet.ibm.com> wrote:
 
-> Peter Zijlstra wrote:
-> > On Wed, 2009-08-19 at 15:04 -0400, William Cohen wrote:
-> >> Peter Zijlstra wrote:
-> >>> On Wed, 2009-08-19 at 12:04 -0400, William Cohen wrote:
-> >>>> +#ifdef __ia64__
-> >>>> +#include "../../arch/ia64/include/asm/unistd.h"
-> >>>> +#define rmb()          asm volatile("" ::: "memory")
-> >>>> +#define cpu_relax()    asm volatile("" ::: "memory");
-> >>>> +#endif
-> >>> Surely the itanic has a real memory barrier? The kernel seems to use
-> >>> something along the lines of mf.
-> >>>
-> >>> Also, cpu_relax() seems to end up being asm volatile("hint @pause" :::
-> >>> "memory"), although we don't seem to have an actual user of cpu_relax()
-> >>> in perf atm.
-> >>>
-> >>>
-> >>>
-> >> Peter, thanks for the comment. I took a look at the rmb() and cpu_relax() code
-> >> in the kernel and revised the patch with the appropriate defines
+> > Providing those would let us build a pmu struct on top of this 
+> > high level API, hopefully.
+
+Note that there's a PMU struct already in 
+arch/x86/kernel/cpu/perf_counter.c. Could debug-register ops be 
+tacked on to it?
+
+> > All that would be a benefit in both sides. It avoids us building 
+> > a low level PMU that reinvent the wheel, ie: the hardware 
+> > breakpoints API handles a lot of things both in arch and core 
+> > sides (debug register setting tricks with dr7 and co, cpu 
+> > hotplug, kexec, etc...). In the bp API it brings more power 
+> > (register switching only if needed, per cpu support, clone 
+> > inheritance support, etc...)
 > > 
-> > Looks good now, thanks!
+> > And in the end we have a pmu (which unifies the control of this 
+> > profiling unit through a well established and known object for 
+> > perfcounter) controlled by a high level API that could also 
+> > benefit to other debugging subsystems.
 > > 
+> > What do you think? It would be also nice to have Peter's and 
+> > Ingo opinion about it, to be sure we are not going in the wrong 
+> > direction.
 > 
-> When looking through the patch today I realized the new 
-> perf_counter.h was placed in include/asm-ia64. It should be placed 
-> in arch/ia64/include/asm/perf_counter.h.
+> Indeed, it will be nice to know from Ingo and Peter that we are 
+> heading right.
 
-mind sending out a v2 patch with all review feedback folded in, for 
-IA64 maintainers to ack if they like it?
-
-Thanks,
+If you do this proper perfcounters integration then i'm certainly 
+happy.
 
 	Ingo
