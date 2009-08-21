@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZHUP1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbZHUP31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbZHUP1H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 11:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZHUP1G
+	id S1755623AbZHUP31 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 11:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZHUP31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 11:27:06 -0400
-Received: from waste.org ([173.11.57.241]:55324 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754660AbZHUP1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 11:27:05 -0400
-Subject: Re: [PATCH 2/2] drivers/net: fixed drivers that support netpoll
- use ndo_start_xmit()
-From: Matt Mackall <mpm@selenic.com>
-To: DDD <Dongdong.deng@windriver.com>
-Cc: David Miller <davem@davemloft.net>, Nicolas Pitre <nico@cam.org>,
-       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Jason Wessel <jason.wessel@windriver.com>
-In-Reply-To: <1250861693.24178.22.camel@dengdd-desktop>
-References: <1250861616.24178.20.camel@dengdd-desktop>
-	 <1250861693.24178.22.camel@dengdd-desktop>
-Content-Type: text/plain
-Date: Fri, 21 Aug 2009 10:26:19 -0500
-Message-Id: <1250868379.3937.279.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 21 Aug 2009 11:29:27 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:34231 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752672AbZHUP30 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 11:29:26 -0400
+Date: Fri, 21 Aug 2009 16:28:47 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org,
+       Russell King <linux@arm.linux.org.uk>, erikm@nl.linux.org,
+       vince@kyllikki.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] ARM: Mailing lists have moved
+Message-ID: <20090821152847.GD2850@sirena.org.uk>
+References: <1250855566.3311.100.camel@macbook.infradead.org> <200908211513.48424.arnd@arndb.de> <1250868037.3311.106.camel@macbook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250868037.3311.106.camel@macbook.infradead.org>
+X-Cookie: No Canadian coins.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 21:34 +0800, DDD wrote:
-> The NETPOLL API requires that interrupts remain disabled in
-> netpoll_send_skb(). The use of "A functions set" in the NETPOLL API
-> callbacks causes the interrupts to get enabled and can lead to kernel
-> instability.
-> 
-> The solution is to use "B functions set" to prevent the irqs from
-> getting enabled while in netpoll_send_skb().
-> 
-> A functions set:
-> local_irq_disable()/local_irq_enable()
-> spin_lock_irq()/spin_unlock_irq()
-> spin_trylock_irq()/spin_unlock_irq()
-> 
-> B functions set:
-> local_irq_save()/local_irq_restore()
-> spin_lock_irqsave()/spin_unlock_irqrestore()
-> spin_trylock_irqsave()/spin_unlock_irqrestore()
-> 
-> Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
+On Fri, Aug 21, 2009 at 04:20:37PM +0100, David Woodhouse wrote:
+> On Fri, 2009-08-21 at 15:13 +0200, Arnd Bergmann wrote:
 
-Both of these look good to me, thanks.
+> >  Otherwise we're risking a similar mess to what happened when the
+> > powerpc-dev and powerpc mailing lists were merged.
 
-Acked-by: Matt Mackall <mpm@selenic.com>
+> Hm?
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+Lots of people posting on the list going "What is all this mail?  Make
+it stop!" and so on (not helped by the fact that since two lists were
+merged the overall volume increased).
