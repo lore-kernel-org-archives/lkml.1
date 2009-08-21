@@ -1,67 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZHUJff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932187AbZHUJio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755312AbZHUJff (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 05:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbZHUJfe
+	id S932187AbZHUJio (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 05:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbZHUJin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 05:35:34 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:61175 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755174AbZHUJfd (ORCPT
+	Fri, 21 Aug 2009 05:38:43 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:33778 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755215AbZHUJim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 05:35:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Gmp77kaqAKLhIBdrQaHXXtjWahTZzR6Xyhxkt7Wz01ZF+ssZvHOKuKHKBpNg8lgGH5
-         Xx6ZvBXOmtxT2gBINY8pfg2fbv2vlNgYLy7C6ja+1bG8lTJIlo4bkCguGTlL8ykUecJm
-         XPgWoVZyvDt7tvMiGEj/Rw09vatQw8egfX9Ao=
+	Fri, 21 Aug 2009 05:38:42 -0400
+Date: Fri, 21 Aug 2009 15:05:48 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH -mmotm] memcg: show swap usage in stat file
+Message-ID: <20090821093548.GD29572@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090821152549.038e6953.nishimura@mxp.nes.nec.co.jp>
 MIME-Version: 1.0
-In-Reply-To: <Era7U-todKF.A.wsC.gmIjKB@chimera>
-References: <xDf-7eSwYsC.A.-6B.klIjKB@chimera>
-	 <Era7U-todKF.A.wsC.gmIjKB@chimera>
-Date: Fri, 21 Aug 2009 10:35:33 +0100
-Message-ID: <9b2b86520908210235l7961410ag74200291c7f8e3a5@mail.gmail.com>
-Subject: Re: [Bug #13620] acpi_enforce_resources broken - conflicting i2c 
-	module loaded on some EeePCs
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090821152549.038e6953.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/19/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13620
-> Subject		: acpi_enforce_resources broken - conflicting i2c module loaded on
-> some EeePCs
-> Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> Date		: 2009-06-25 08:31 (56 days old)
-> References	:
-> <http://lists.alioth.debian.org/pipermail/debian-eeepc-devel/2009-June/002316.html>
-> Handled-By	: Lin Ming <ming.m.lin@intel.com>
-> Patch		: http://patchwork.kernel.org/patch/33626/
+* nishimura@mxp.nes.nec.co.jp <nishimura@mxp.nes.nec.co.jp> [2009-08-21 15:25:49]:
 
-This must have been fixed in -rc6, because someone just complained
-about it working again :-).
-<http://article.gmane.org/gmane.linux.acpi.devel/40999/>
+> We now count MEM_CGROUP_STAT_SWAPOUT, so we can show swap usage.
+> It would be useful for users to show swap usage in memory.stat file,
+> because they don't need calculate memsw.usage - res.usage to know swap usage.
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> ---
+>  mm/memcontrol.c |   17 ++++++++++++++---
+>  1 files changed, 14 insertions(+), 3 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 8b06c05..ae80de0 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -2663,6 +2663,7 @@ enum {
+>  	MCS_MAPPED_FILE,
+>  	MCS_PGPGIN,
+>  	MCS_PGPGOUT,
+> +	MCS_SWAP,
+>  	MCS_INACTIVE_ANON,
+>  	MCS_ACTIVE_ANON,
+>  	MCS_INACTIVE_FILE,
+> @@ -2684,6 +2685,7 @@ struct {
+>  	{"mapped_file", "total_mapped_file"},
+>  	{"pgpgin", "total_pgpgin"},
+>  	{"pgpgout", "total_pgpgout"},
+> +	{"swap", "total_swap"},
+>  	{"inactive_anon", "total_inactive_anon"},
+>  	{"active_anon", "total_active_anon"},
+>  	{"inactive_file", "total_inactive_file"},
+> @@ -2708,6 +2710,10 @@ static int mem_cgroup_get_local_stat(struct mem_cgroup *mem, void *data)
+>  	s->stat[MCS_PGPGIN] += val;
+>  	val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_PGPGOUT_COUNT);
+>  	s->stat[MCS_PGPGOUT] += val;
+> +	if (do_swap_account) {
+> +		val = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_SWAPOUT);
+> +		s->stat[MCS_SWAP] += val;
+> +	}
+> 
+>  	/* per zone stat */
+>  	val = mem_cgroup_get_local_zonestat(mem, LRU_INACTIVE_ANON);
+> @@ -2739,8 +2745,11 @@ static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
+>  	memset(&mystat, 0, sizeof(mystat));
+>  	mem_cgroup_get_local_stat(mem_cont, &mystat);
+> 
+> -	for (i = 0; i < NR_MCS_STAT; i++)
+> +	for (i = 0; i < NR_MCS_STAT; i++) {
+> +		if (i == MCS_SWAP && !do_swap_account)
+> +			continue;
 
-I confirmed this on my own EeePC; i2c-i801 is now correctly denied
-access to the IO resources claimed by ACPI.  Please remove this
-regression from your list.
+May be worth encapsulating in a function like memcg_show_swapout
 
-Thanks
-Alan
+>  		cb->fill(cb, memcg_stat_strings[i].local_name, mystat.stat[i]);
+> +	}
+> 
+>  	/* Hierarchical information */
+>  	{
+> @@ -2753,9 +2762,11 @@ static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
+> 
+>  	memset(&mystat, 0, sizeof(mystat));
+>  	mem_cgroup_get_total_stat(mem_cont, &mystat);
+> -	for (i = 0; i < NR_MCS_STAT; i++)
+> +	for (i = 0; i < NR_MCS_STAT; i++) {
+> +		if (i == MCS_SWAP && !do_swap_account)
+> +			continue;
+>  		cb->fill(cb, memcg_stat_strings[i].total_name, mystat.stat[i]);
+> -
+> +	}
+> 
+>  #ifdef CONFIG_DEBUG_VM
+>  	cb->fill(cb, "inactive_ratio", calc_inactive_ratio(mem_cont, NULL));
+
+Overall, looks good
+
+
+Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+ 
+
+-- 
+	Balbir
