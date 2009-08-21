@@ -1,78 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbZHULLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZHULQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbZHULLU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 07:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbZHULLU
+	id S1755480AbZHULQP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZHULQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 07:11:20 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:56690 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbZHULLT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 07:11:19 -0400
-Date: Fri, 21 Aug 2009 16:41:13 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       akpm <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] block: blk-iopoll sysctl iff CONFIG_BLOCK
-Message-ID: <20090821111113.GA5105@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20090807183118.e71b4db2.sfr@canb.auug.org.au> <20090807111659.3d8da27f.randy.dunlap@oracle.com> <20090807192144.GZ12579@kernel.dk>
+	Fri, 21 Aug 2009 07:16:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33799 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752594AbZHULQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 07:16:13 -0400
+Date: Fri, 21 Aug 2009 13:14:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>, Kyle McMartin <kyle@mcmartin.ca>,
+       Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, catalin.marinas@arm.com,
+       a.p.zijlstra@chello.nl, jens.axboe@oracle.com, fweisbec@gmail.com,
+       stable@kernel.org, srostedt@redhat.com, tglx@linutronix.de
+Subject: Re: [tip:tracing/urgent] tracing: Fix too large stack usage in
+	do_one_initcall()
+Message-ID: <20090821111450.GA32037@elte.hu>
+References: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090807192144.GZ12579@kernel.dk>
+In-Reply-To: <tip-4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f@git.kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jens Axboe <jens.axboe@oracle.com> [2009-08-07 21:21:44]:
 
-> On Fri, Aug 07 2009, Randy Dunlap wrote:
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > New block-iopoll sysctl should be surrounded by CONFIG_BLOCK to
-> > prevent build error:
-> > 
-> > kernel/built-in.o:(.data+0x2990): undefined reference to `blk_iopoll_enabled'
+* tip-bot for Ingo Molnar <mingo@elte.hu> wrote:
+
+> Commit-ID:  4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
+> Gitweb:     http://git.kernel.org/tip/4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f
+> Author:     Ingo Molnar <mingo@elte.hu>
+> AuthorDate: Fri, 21 Aug 2009 12:53:36 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Fri, 21 Aug 2009 13:03:22 +0200
 > 
-> Thanks, I'll just kill off this sysctl, it should be driver controller
-> anyway. Was just easier for testing :-)
+> tracing: Fix too large stack usage in do_one_initcall()
+> 
+> One of my testboxes triggered this nasty stack overflow crash
+> during SCSI probing:
+> 
+> [    5.874004] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> [    5.875004] device: 'sda': device_add
+> [    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
+> [    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
+> [    5.878004] *pde = 00000000
+> [    5.878004] Thread overran stack, or stack corrupted
+> [    5.878004] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+> [    5.878004] last sysfs file:
+> [    5.878004]
+> [    5.878004] Pid: 1, comm: swapper Not tainted (2.6.31-rc6-tip-01272-g9919e28-dirty #5685)
+> [    5.878004] EIP: 0060:[<b1008321>] EFLAGS: 00010083 CPU: 0
+> [    5.878004] EIP is at print_context_stack+0x81/0x110
+> [    5.878004] EAX: cf8a3000 EBX: cf8a3fe4 ECX: 00000049 EDX: 00000000
+> [    5.878004] ESI: b1cfce84 EDI: 00000000 EBP: cf8a3018 ESP: cf8a2ff4
+> [    5.878004]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> [    5.878004] Process swapper (pid: 1, ti=cf8a2000 task=cf8a8000 task.ti=cf8a3000)
+> [    5.878004] Stack:
+> [    5.878004]  b1004867 fffff000 cf8a3ffc
+> [    5.878004] Call Trace:
+> [    5.878004]  [<b1004867>] ? kernel_thread_helper+0x7/0x10
+> [    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
+> [    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
+> [    5.878004] *pde = 00000000
+> [    5.878004] Thread overran stack, or stack corrupted
+> [    5.878004] Oops: 0000 [#2] PREEMPT SMP DEBUG_PAGEALLOC
+> 
+> The oops did not reveal any more details about the real stack
+> that we have and the system got into an infinite loop of
+> recursive pagefaults.
+> 
+> So i booted with CONFIG_STACK_TRACER=y and the 'stacktrace' boot
+> parameter. The box did not crash (timings/conditions probably
+> changed a tiny bit to trigger the catastrophic crash), but the
+> /debug/tracing/stack_trace file was rather revealing:
+> 
+>         Depth    Size   Location    (72 entries)
+>         -----    ----   --------
+>   0)     3704      52   __change_page_attr+0xb8/0x290
+>   1)     3652      24   __change_page_attr_set_clr+0x43/0x90
+>   2)     3628      60   kernel_map_pages+0x108/0x120
+>   3)     3568      40   prep_new_page+0x7d/0x130
+>   4)     3528      84   get_page_from_freelist+0x106/0x420
+>   5)     3444     116   __alloc_pages_nodemask+0xd7/0x550
+>   6)     3328      36   allocate_slab+0xb1/0x100
+>   7)     3292      36   new_slab+0x1c/0x160
+>   8)     3256      36   __slab_alloc+0x133/0x2b0
+>   9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
+>  10)     3216     108   create_object+0x28/0x250
+>  11)     3108      40   kmemleak_alloc+0x81/0xc0
+>  12)     3068      24   kmem_cache_alloc+0x162/0x1d0
+>  13)     3044      52   scsi_pool_alloc_command+0x29/0x70
+>  14)     2992      20   scsi_host_alloc_command+0x22/0x70
+>  15)     2972      24   __scsi_get_command+0x1b/0x90
+>  16)     2948      28   scsi_get_command+0x35/0x90
+>  17)     2920      24   scsi_setup_blk_pc_cmnd+0xd4/0x100
+>  18)     2896     128   sd_prep_fn+0x332/0xa70
+>  19)     2768      36   blk_peek_request+0xe7/0x1d0
+>  20)     2732      56   scsi_request_fn+0x54/0x520
+>  21)     2676      12   __generic_unplug_device+0x2b/0x40
+>  22)     2664      24   blk_execute_rq_nowait+0x59/0x80
+>  23)     2640     172   blk_execute_rq+0x6b/0xb0
+>  24)     2468      32   scsi_execute+0xe0/0x140
+>  25)     2436      64   scsi_execute_req+0x152/0x160
+>  26)     2372      60   scsi_vpd_inquiry+0x6c/0x90
+>  27)     2312      44   scsi_get_vpd_page+0x112/0x160
+>  28)     2268      52   sd_revalidate_disk+0x1df/0x320
+>  29)     2216      92   rescan_partitions+0x98/0x330
+>  30)     2124      52   __blkdev_get+0x309/0x350
+>  31)     2072       8   blkdev_get+0xf/0x20
+>  32)     2064      44   register_disk+0xff/0x120
+>  33)     2020      36   add_disk+0x6e/0xb0
+>  34)     1984      44   sd_probe_async+0xfb/0x1d0
+>  35)     1940      44   __async_schedule+0xf4/0x1b0
+>  36)     1896       8   async_schedule+0x12/0x20
+>  37)     1888      60   sd_probe+0x305/0x360
+>  38)     1828      44   really_probe+0x63/0x170
+>  39)     1784      36   driver_probe_device+0x5d/0x60
+>  40)     1748      16   __device_attach+0x49/0x50
+>  41)     1732      32   bus_for_each_drv+0x5b/0x80
+>  42)     1700      24   device_attach+0x6b/0x70
+>  43)     1676      16   bus_attach_device+0x47/0x60
+>  44)     1660      76   device_add+0x33d/0x400
+>  45)     1584      52   scsi_sysfs_add_sdev+0x6a/0x2c0
+>  46)     1532     108   scsi_add_lun+0x44b/0x460
+>  47)     1424     116   scsi_probe_and_add_lun+0x182/0x4e0
+>  48)     1308      36   __scsi_add_device+0xd9/0xe0
+>  49)     1272      44   ata_scsi_scan_host+0x10b/0x190
+>  50)     1228      24   async_port_probe+0x96/0xd0
+>  51)     1204      44   __async_schedule+0xf4/0x1b0
+>  52)     1160       8   async_schedule+0x12/0x20
+>  53)     1152      48   ata_host_register+0x171/0x1d0
+>  54)     1104      60   ata_pci_sff_activate_host+0xf3/0x230
+>  55)     1044      44   ata_pci_sff_init_one+0xea/0x100
+>  56)     1000      48   amd_init_one+0xb2/0x190
+>  57)      952       8   local_pci_probe+0x13/0x20
+>  58)      944      32   pci_device_probe+0x68/0x90
+>  59)      912      44   really_probe+0x63/0x170
+>  60)      868      36   driver_probe_device+0x5d/0x60
+>  61)      832      20   __driver_attach+0x89/0xa0
+>  62)      812      32   bus_for_each_dev+0x5b/0x80
+>  63)      780      12   driver_attach+0x1e/0x20
+>  64)      768      72   bus_add_driver+0x14b/0x2d0
+>  65)      696      36   driver_register+0x6e/0x150
+>  66)      660      20   __pci_register_driver+0x53/0xc0
+>  67)      640       8   amd_init+0x14/0x16
+>  68)      632     572   do_one_initcall+0x2b/0x1d0
+>  69)       60      12   do_basic_setup+0x56/0x6a
+>  70)       48      20   kernel_init+0x84/0xce
+>  71)       28      28   kernel_thread_helper+0x7/0x10
+> 
+> There's a lot of fat functions on that stack trace, but
+> the largest of all is do_one_initcall(). This is due to
+> the boot trace entry variables being on the stack.
+> 
+> Fixing this is relatively easy, initcalls are fundamentally
+> serialized, so we can move the local variables to file scope.
+> 
+> Note that this large stack footprint was present for a
+> couple of months already - what pushed my system over
+> the edge was the addition of kmemleak to the call-chain:
+> 
+>   6)     3328      36   allocate_slab+0xb1/0x100
+>   7)     3292      36   new_slab+0x1c/0x160
+>   8)     3256      36   __slab_alloc+0x133/0x2b0
+>   9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
+>  10)     3216     108   create_object+0x28/0x250
+>  11)     3108      40   kmemleak_alloc+0x81/0xc0
+>  12)     3068      24   kmem_cache_alloc+0x162/0x1d0
+>  13)     3044      52   scsi_pool_alloc_command+0x29/0x70
+> 
+> This pushes the total to ~3800 bytes, only a tiny bit
+> more was needed to corrupt the on-kernel-stack thread_info.
+> 
+> The fix reduces the stack footprint from 572 bytes
+> to 28 bytes.
 
-Hi Jens,
+btw., it will just take two more features like kmemleak to trigger 
+hard to debug stack overflows again on 32-bit. We are right at the 
+edge and this situation is not really fixable in a reliable way 
+anymore.
 
-This build failure is still seen with next-20090820 kernel, removing
-the sysctl helps. Attaching the patch based on your recommendation.
-Please drop the patch if you already have in queue.
+So i think we should be more drastic and solve the real problem: we 
+should drop 4K stacks and 8K combo-stacks on 32-bit, and go 
+exclusively to 8K split stacks on 32-bit.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
- kernel/sysctl.c |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
+I.e. the stack size will be 'unified' too between 64-bit and 32-bit 
+to a certain degree: process stacks will be 8K on both 64-bit and 
+32-bit x86, IRQ stacks will be separate. (on 64-bit we also have the 
+IST stacks for certain exceptions that further isolates things)
 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 40f2d2c..6e67ec2 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -991,14 +991,6 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
- #endif
--	{
--		.ctl_name	= CTL_UNNUMBERED,
--		.procname	= "blk_iopoll",
--		.data		= &blk_iopoll_enabled,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
--	},
- /*
-  * NOTE: do not add new entries to this table unless you have read
-  * Documentation/sysctl/ctl_unnumbered.txt
-		
+This will simplify the 32-bit situation quite a bit and removes a 
+contentious config option and makes the kernel more robust in 
+general. 8K combo stacks are not safe due to irq nesting and 4K 
+isolated stacks are not enough. 8K isolated stacks is the way to go.
 
-			Kamalesh
+Opinions?
+
+	Ingo
