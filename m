@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbZHURUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932596AbZHURV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932601AbZHURUV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932486AbZHURUU
+	id S932596AbZHURV2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932471AbZHURV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:20:20 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:55322 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932463AbZHURUT convert rfc822-to-8bit (ORCPT
+	Fri, 21 Aug 2009 13:21:27 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:35583 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932259AbZHURV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:20:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Bw/5voQhb79tzMMEqQwWkQRKh2VC6t8bc0Iy/3E5XDTJ1V8lctHAvdftW6zyVY4D78
-         7O1ZhgZemNruCNHCMNIXgUcKdsdY46/JxERq4Q1qS2rLDxwOVHBHIRCQTIVs1V3I13wj
-         +0+qv0h/jqm5a+UCZeXpR+9pS1NOR8IDiWbSM=
+	Fri, 21 Aug 2009 13:21:26 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 21 Aug 2009 10:21:20 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Paolo Bonzini <bonzini@gnu.org>
+cc: Avi Kivity <avi@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+       gleb@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+In-Reply-To: <4A8D8E35.7060606@gnu.org>
+Message-ID: <alpine.DEB.2.00.0908211013520.25106@makko.or.mcafeemobile.com>
+References: <20090820155655.GA8764@redhat.com> <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <alpine.DEB.2.00.0908201042100.14844@makko.or.mcafeemobile.com> <4A8D8E35.7060606@gnu.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-In-Reply-To: <1249933887.2501.62.camel@dhcp231-106.rdu.redhat.com>
-References: <1249925740.2501.9.camel@dhcp231-106.rdu.redhat.com>
-	 <19f34abd0908101156x2bc92b22ud1748abb153800fb@mail.gmail.com>
-	 <1249933887.2501.62.camel@dhcp231-106.rdu.redhat.com>
-Date: Fri, 21 Aug 2009 19:20:20 +0200
-Message-ID: <19f34abd0908211020l6888d68w5c14cbadbca5c6c4@mail.gmail.com>
-Subject: Re: kmemcheck in linux-next causes NULL pointer dereference at 
-	task_rq_lock
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi, mingo@elte.hu
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/10 Eric Paris <eparis@redhat.com>:
-> On Mon, 2009-08-10 at 20:56 +0200, Vegard Nossum wrote:
->> 2009/8/10 Eric Paris <eparis@redhat.com>:
->> > I'm using 2.6.31-rc5-next-20090810 on a vmware server.  Originally I saw
->> > messages about setting to one cpu, so I booted with maxcpu=1.  I get
->> > this same panic with and without maxpu.  Booting with kmemcheck=0 boots
->> > just fine.
->> >
->> > I have not tested kmemcheck in linus' tree but will start looking for a
->> > working version now.  Any suggestions or things I should try?
->>
->> Hi, thanks for the report, and for trying it out.
->>
->> Does it crash with "kmemcheck=0 maxcpus=1" (it should be maxcpus, not
->> maxcpu). This should be a simple way of determining whether it was
->> kmemcheck or the existing maxcpus code, which we use, that broke.
->
-> I boots fine with kmemcheck=0
->
-> I did get the command line right.  maxcpus=1 kmemcheck=1 was the panic I
-> showed in the last message.
->
->> If you can send config (off-list, probably), I will try to reproduce
->> and investigate more tomorrow.
->
-> Will send it now.
+On Thu, 20 Aug 2009, Paolo Bonzini wrote:
 
-Thanks. I've tried your config with next-20090810, next-20090820, and
-current mainline, and wasn't able to reproduce it anywhere :-/
+> On 08/20/2009 07:44 PM, Davide Libenzi wrote:
+> > On Thu, 20 Aug 2009, Avi Kivity wrote:
+> > 
+> > > On 08/20/2009 07:20 PM, Davide Libenzi wrote:
+> > > > 
+> > > > I briefly looked at this while in vacation, although I did not reply
+> > > > hoping the horrible feeling about this code would go away.
+> > > > It didn't.
+> > > > I find this to be an ugly and ad-hoc multiplexing of eventfd with added
+> > > > functionalities of questionable general use.
+> > > > I'm pretty sure you can do better on KVM side, to solve the problem
+> > > > w/out
+> > > > littering eventfd.
+> > > 
+> > > While we could argue about this my feeling is that we should drop this, at
+> > > least until we can quantify what benefit it has and whether there are any
+> > > Davide-acceptable alternatives.
+> > 
+> > I really didn't mean to be harsh, but seriously, we cannot just have a
+> > Multiplexing Feast over eventfd, with one-time users.
+> 
+> EFD_STATE actually does two changes: a) makes read block until the value
+> changes; b) makes each write override the previous one.  How would you feel if
+> the two changes were separated?
 
-Does it still occur for you with the most recent linux-next or current mainline?
+I'm afraid that splitting the change won't make less inappropriate for 
+eventfd.
+I've no doubt KVM needs something like this, but this just don't belong to 
+eventfd, which act as either a mutex or a semaphore.
+This EFD_STATE does not belong to a generic interface, proof of which is 
+the lack of such abstraction in any generic library I'm aware of.
+This aside from any consideration about how the code will look with that 
+multiplexing in place.
 
-In any case, I think the kmemcheck SMP-handling code has to be fixed.
-It seems that we currently allow CPU hotplug while kmemcheck is
-enabled, which could lead to, erm, interesting crashes. Maybe we could
-do something like what mmiotrace does.
+
+- Davide
 
 
-Vegard
