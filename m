@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbZHUOpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbZHUOrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932337AbZHUOpE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 10:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbZHUOpD
+	id S932326AbZHUOrf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 10:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932227AbZHUOre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 10:45:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38129 "EHLO mx3.mail.elte.hu"
+	Fri, 21 Aug 2009 10:47:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54508 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932187AbZHUOpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 10:45:01 -0400
-Date: Fri, 21 Aug 2009 16:44:16 +0200
+	id S932161AbZHUOrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 10:47:33 -0400
+Date: Fri, 21 Aug 2009 16:47:07 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, hugh.dickins@tiscali.co.uk,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH -tip/core/rcu 1/6] Cleanups and fixes for RCU in face
-	of heavy CPU-hotplug stress
-Message-ID: <20090821144416.GA16810@elte.hu>
-References: <20090815165153.GA8886@linux.vnet.ibm.com> <1250533487.2709.14.camel@josh-work.beaverton.ibm.com> <20090817192036.GJ6760@linux.vnet.ibm.com> <20090818152643.GA5549@elte.hu> <20090820140335.GA31773@Krystal> <20090821141721.GA11098@elte.hu> <alpine.DEB.2.00.0908211022090.16405@gandalf.stny.rr.com>
+To: Josh Stone <jistone@redhat.com>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
+       Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH v2 1/2] tracing: Move tracepoint callbacks into DEFINE
+Message-ID: <20090821144707.GB16810@elte.hu>
+References: <1250580227-24363-1-git-send-email-jistone@redhat.com> <1250795373-32363-1-git-send-email-jistone@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908211022090.16405@gandalf.stny.rr.com>
+In-Reply-To: <1250795373-32363-1-git-send-email-jistone@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -40,41 +36,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Josh Stone <jistone@redhat.com> wrote:
 
-> On Fri, 21 Aug 2009, Ingo Molnar wrote:
+> It's not strictly correct for the tracepoint reg/unreg callbacks 
+> to occur when a client is hooking up, because the actual 
+> tracepoint may no be present yet.  This happens to be fine for 
+> syscall, since that's in the core kernel, but it would cause 
+> problems for tracepoints defined in a module that hasn't been 
+> loaded yet.  It also means the reg/unreg has to be EXPORTed for 
+> any modules to use the tracepoint (as in SystemTap).
 > 
-> > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > I would not trust this architecture for synchronization tests. 
-> > > There has been reports of a hardware bug affecting the cmpxchg 
-> > > instruction in the field. The load fence normally implied by 
-> > > the semantic seems to be missing. AFAIK, AMD never 
-> > > acknowledged the problem.
-> > 
-> > If cmpxchg was broken i'd be having far worse problems and very 
-> > widely so.
+> This patch removes DECLARE_TRACE_WITH_CALLBACK, and instead 
+> introduces DEFINE_TRACE_WITH_CALLBACK which stores the callbacks 
+> in struct tracepoint.  The callbacks are used now when the active 
+> state of the tracepoint changes in set_tracepoint & 
+> disable_tracepoint.
 > 
-> I believe Mathieu is suggesting that the hardware bug is not that 
-> the compare and exchange does not work in cmpxchg, but that it 
-> does not provide an explicit memory barrier. Such a bug is very 
-> hard to trigger, since it requires a race that allows a memory 
-> write/read to cross the cmpxchg, and then have this be in such a 
-> place that it will cause harm.
+> This also introduces TRACE_EVENT_WITH_CALLBACK, so those events 
+> can also provide callbacks if needed.
 
-We can argue all sorts of exotic hardware bugs really, proof is 
-still needed.
+i think something shorter would be nicer, such as:
 
-[...]
-> > That's not a proof of course (it's near impossible to prove the 
-> > lack of a bug), but it's sure a strong indicator and you'll need 
-> > to provide far more proof of misbehavior before i discount a 
-> > bona fide regression on this box.
-> 
-> But with the above said, I totally agree with your point. More 
-> proof must be given before we can discount that another bug 
-> exists.
-
-Yeah. Especially given that this code was changed recently ;-)
+ DECLARE_TRACE_FN
+ TRACE_EVENT_FN
 
 	Ingo
