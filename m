@@ -1,58 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbZHUXTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932915AbZHUXVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932774AbZHUXTz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 19:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932548AbZHUXTy
+	id S932915AbZHUXVv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 19:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932580AbZHUXVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 19:19:54 -0400
-Received: from outbound-mail-113.bluehost.com ([69.89.24.3]:48385 "HELO
-	outbound-mail-113.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932533AbZHUXTy (ORCPT
+	Fri, 21 Aug 2009 19:21:50 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:41025 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932499AbZHUXVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 19:19:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=Hy54+4hVa01EOCoOEjHs5WgtehEzc9iw+TI5DlVF5quZD+8jXMaEEreYnjltVOi03o1XyR0lA2QJpNZmT0Ed0s7MunfNdXnTkfSrDc0md4GzvSzgovHvgYgVcs1BMBWs;
-Date: Fri, 21 Aug 2009 16:19:52 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Soeren Sonnenburg <bugreports@nn7.de>,
-       =?UTF-8?B?SsOpcsOpbWll?= Huchet <jeremie@lamah.info>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH] Samsung laptop driver
-Message-ID: <20090821161952.1b84480c@jbarnes-g45>
-In-Reply-To: <20090821225925.GA27625@kroah.com>
-References: <20090821225925.GA27625@kroah.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Fri, 21 Aug 2009 19:21:48 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:x-system-of-record;
+	b=QEQtpJVHotwGlDKBB0Aq1idzqxu0Vf7Vgz+L5q/WK09UThR4BR/aU4QWfyhLLpwO+
+	K/yNN0II8veiwAknggGvw==
+Date: Fri, 21 Aug 2009 16:21:40 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [patch 1/4 -mm] flex_array: convert element_nr formals to unsigned
+Message-ID: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Aug 2009 15:59:25 -0700
-Greg KH <greg@kroah.com> wrote:
-> Jesse, I don't know how this is going to play with your recently added
-> backlight support for the i915 driver.  As you don't have control over
-> the LEDs and other stuff that this driver is going to support, I think
-> we need some way to keep the i915 driver from messing with the
-> backlight values, don't you think?
+It's problematic to allow signed element_nr's or total's to be passed as
+part of the flex array API.
 
-Right, it should be fine.  The i915 driver should only take control and
-provide a backlight when:
-  - no ACPI method is available
-  - no platform method is available (like this one)
-  - backlight is exposed through the GPU or i2c
+flex_array_alloc() allows total_nr_elements to be set to a negative
+quantity, which is obviously erroneous.
 
-So I'm a lot happier now that you've figured out the proper platform
-interface. :)  The test code I sent out earlier didn't work for Mike
-because his VBIOS (properly it turns out) indicated that there was an
-external agent in charge of the backlight.
+flex_array_get() and flex_array_put() allows negative array indices in
+dereferencing an array part, which could address memory mapped before
+struct flex_array.
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+The fix is to convert all existing element_nr formals to be qualified as
+unsigned.  Existing checks to compare it to total_nr_elements or the max
+array size based on element_size need not be changed.
+
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ include/linux/flex_array.h |   10 ++++++----
+ lib/flex_array.c           |   24 +++++++++++++-----------
+ 2 files changed, 19 insertions(+), 15 deletions(-)
+
+diff --git a/include/linux/flex_array.h b/include/linux/flex_array.h
+--- a/include/linux/flex_array.h
++++ b/include/linux/flex_array.h
+@@ -36,12 +36,14 @@ struct flex_array {
+ 	.total_nr_elements = (total),	\
+ } } }
+ 
+-struct flex_array *flex_array_alloc(int element_size, int total, gfp_t flags);
+-int flex_array_prealloc(struct flex_array *fa, int start, int end, gfp_t flags);
++struct flex_array *flex_array_alloc(int element_size, unsigned int total,
++		gfp_t flags);
++int flex_array_prealloc(struct flex_array *fa, unsigned int start,
++		unsigned int end, gfp_t flags);
+ void flex_array_free(struct flex_array *fa);
+ void flex_array_free_parts(struct flex_array *fa);
+-int flex_array_put(struct flex_array *fa, int element_nr, void *src,
++int flex_array_put(struct flex_array *fa, unsigned int element_nr, void *src,
+ 		gfp_t flags);
+-void *flex_array_get(struct flex_array *fa, int element_nr);
++void *flex_array_get(struct flex_array *fa, unsigned int element_nr);
+ 
+ #endif /* _FLEX_ARRAY_H */
+diff --git a/lib/flex_array.c b/lib/flex_array.c
+--- a/lib/flex_array.c
++++ b/lib/flex_array.c
+@@ -99,7 +99,8 @@ static inline int elements_fit_in_base(struct flex_array *fa)
+  * capacity in the base structure.  Also note that no effort is made
+  * to efficiently pack objects across page boundaries.
+  */
+-struct flex_array *flex_array_alloc(int element_size, int total, gfp_t flags)
++struct flex_array *flex_array_alloc(int element_size, unsigned int total,
++					gfp_t flags)
+ {
+ 	struct flex_array *ret;
+ 	int max_size = nr_base_part_ptrs() * __elements_per_part(element_size);
+@@ -115,7 +116,8 @@ struct flex_array *flex_array_alloc(int element_size, int total, gfp_t flags)
+ 	return ret;
+ }
+ 
+-static int fa_element_to_part_nr(struct flex_array *fa, int element_nr)
++static int fa_element_to_part_nr(struct flex_array *fa,
++					unsigned int element_nr)
+ {
+ 	return element_nr / __elements_per_part(fa->element_size);
+ }
+@@ -143,14 +145,12 @@ void flex_array_free(struct flex_array *fa)
+ 	kfree(fa);
+ }
+ 
+-static int fa_index_inside_part(struct flex_array *fa, int element_nr)
++static unsigned int index_inside_part(struct flex_array *fa,
++					unsigned int element_nr)
+ {
+-	return element_nr % __elements_per_part(fa->element_size);
+-}
++	unsigned int part_offset;
+ 
+-static int index_inside_part(struct flex_array *fa, int element_nr)
+-{
+-	int part_offset = fa_index_inside_part(fa, element_nr);
++	part_offset = element_nr % __elements_per_part(fa->element_size);
+ 	return part_offset * fa->element_size;
+ }
+ 
+@@ -185,7 +185,8 @@ __fa_get_part(struct flex_array *fa, int part_nr, gfp_t flags)
+  *
+  * Locking must be provided by the caller.
+  */
+-int flex_array_put(struct flex_array *fa, int element_nr, void *src, gfp_t flags)
++int flex_array_put(struct flex_array *fa, unsigned int element_nr, void *src,
++			gfp_t flags)
+ {
+ 	int part_nr = fa_element_to_part_nr(fa, element_nr);
+ 	struct flex_array_part *part;
+@@ -217,7 +218,8 @@ int flex_array_put(struct flex_array *fa, int element_nr, void *src, gfp_t flags
+  *
+  * Locking must be provided by the caller.
+  */
+-int flex_array_prealloc(struct flex_array *fa, int start, int end, gfp_t flags)
++int flex_array_prealloc(struct flex_array *fa, unsigned int start,
++			unsigned int end, gfp_t flags)
+ {
+ 	int start_part;
+ 	int end_part;
+@@ -248,7 +250,7 @@ int flex_array_prealloc(struct flex_array *fa, int start, int end, gfp_t flags)
+  *
+  * Locking must be provided by the caller.
+  */
+-void *flex_array_get(struct flex_array *fa, int element_nr)
++void *flex_array_get(struct flex_array *fa, unsigned int element_nr)
+ {
+ 	int part_nr = fa_element_to_part_nr(fa, element_nr);
+ 	struct flex_array_part *part;
