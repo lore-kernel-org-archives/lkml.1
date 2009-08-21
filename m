@@ -1,118 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932413AbZHUSar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbZHUScg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932413AbZHUSar (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 14:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZHUSaq
+	id S1755742AbZHUScg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 14:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbZHUScf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 14:30:46 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:6686 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751684AbZHUSap (ORCPT
+	Fri, 21 Aug 2009 14:32:35 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:21118 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753048AbZHUScf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 14:30:45 -0400
-X-Trace: 250624617/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.69.192/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.69.192
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqIIAMOEjkpQKUXA/2dsb2JhbACBU45BAccbhBoF
-X-IronPort-AV: E=Sophos;i="4.44,251,1249254000"; 
-   d="scan'208";a="250624617"
-Date: Fri, 21 Aug 2009 19:30:15 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.com>
-cc: Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
-       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       Helge Deller <deller@gmx.de>, Chris Zankel <chris@zankel.net>,
-       Rik van RIel <riel@redhat.com>, Balbir Singh <balbir@in.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Avi Kivity <avi@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH mmotm] ksm: antidote to MADV_MERGEABLE HWPOISON
-Message-ID: <Pine.LNX.4.64.0908211912330.14259@sister.anvils>
+	Fri, 21 Aug 2009 14:32:35 -0400
+Message-ID: <4A8EE7EC.70909@oracle.com>
+Date: Fri, 21 Aug 2009 11:31:08 -0700
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Moyer <jmoyer@redhat.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
+       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 5/6] aio: use lazy workqueues
+References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>	<1250763604-24355-6-git-send-email-jens.axboe@oracle.com> <x49k50yjzdd.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <x49k50yjzdd.fsf@segfault.boston.devel.redhat.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4A8EE7F1.005C:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-next is now sporting MADV_HWPOISON at 12, which would have a very
-nasty effect on KSM if you had CONFIG_MEMORY_FAILURE=y with CONFIG_KSM=y.
-Shift MADV_MERGEABLE and MADV_UNMERGEABLE down two - two to reduce the
-confusion if old and new userspace and kernel are mismatched.
 
-Personally I'd prefer the MADV_HWPOISON testing feature to shift; but
-linux-next comes first in the mmotm lineup, and I can't be sure that
-madvise KSM already has more users than there are HWPOISON testers:
-so unless Andi is happy to shift MADV_HWPOISON, mmotm needs this.
----
-Fix to ksm-define-madv_mergeable-and-madv_unmergeable.patch
-parisc unaffected because its MADVs are displaced.
+> So far as I can tell, the aio workqueue isn't used for much these days.
+> We could probably get away with switching to keventd.
 
- arch/alpha/include/asm/mman.h     |    4 ++--
- arch/mips/include/asm/mman.h      |    4 ++--
- arch/xtensa/include/asm/mman.h    |    4 ++--
- include/asm-generic/mman-common.h |    4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
+It's only used by drivers/usb/gadget to implement O_DIRECT reads by
+DMAing into kmalloc()ed memory and then performing the copy_to_user() in
+the retry thread's task context after it has assumed the submitting
+task's mm.
 
---- mmotm/arch/alpha/include/asm/mman.h	2009-08-21 12:08:18.000000000 +0100
-+++ linux/arch/alpha/include/asm/mman.h	2009-08-21 18:28:14.000000000 +0100
-@@ -48,8 +48,8 @@
- #define MADV_DONTFORK	10		/* don't inherit across fork */
- #define MADV_DOFORK	11		/* do inherit across fork */
- 
--#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
--#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
-+#define MADV_MERGEABLE   14		/* KSM may merge identical pages */
-+#define MADV_UNMERGEABLE 15		/* KSM may not merge identical pages */
- 
- /* compatibility flags */
- #define MAP_FILE	0
---- mmotm/arch/mips/include/asm/mman.h	2009-08-21 12:08:18.000000000 +0100
-+++ linux/arch/mips/include/asm/mman.h	2009-08-21 18:28:24.000000000 +0100
-@@ -71,8 +71,8 @@
- #define MADV_DONTFORK	10		/* don't inherit across fork */
- #define MADV_DOFORK	11		/* do inherit across fork */
- 
--#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
--#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
-+#define MADV_MERGEABLE   14		/* KSM may merge identical pages */
-+#define MADV_UNMERGEABLE 15		/* KSM may not merge identical pages */
- 
- /* compatibility flags */
- #define MAP_FILE	0
---- mmotm/arch/xtensa/include/asm/mman.h	2009-08-21 12:08:18.000000000 +0100
-+++ linux/arch/xtensa/include/asm/mman.h	2009-08-21 18:28:52.000000000 +0100
-@@ -78,8 +78,8 @@
- #define MADV_DONTFORK	10		/* don't inherit across fork */
- #define MADV_DOFORK	11		/* do inherit across fork */
- 
--#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
--#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
-+#define MADV_MERGEABLE   14		/* KSM may merge identical pages */
-+#define MADV_UNMERGEABLE 15		/* KSM may not merge identical pages */
- 
- /* compatibility flags */
- #define MAP_FILE	0
---- mmotm/include/asm-generic/mman-common.h	2009-08-21 12:08:18.000000000 +0100
-+++ linux/include/asm-generic/mman-common.h	2009-08-21 18:29:01.000000000 +0100
-@@ -36,8 +36,8 @@
- #define MADV_DOFORK	11		/* do inherit across fork */
- #define MADV_HWPOISON	12		/* poison a page for testing */
- 
--#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
--#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
-+#define MADV_MERGEABLE   14		/* KSM may merge identical pages */
-+#define MADV_UNMERGEABLE 15		/* KSM may not merge identical pages */
- 
- /* compatibility flags */
- #define MAP_FILE	0
+> Zach, isn't
+> someone working on a patch to get rid of all of the -EIOCBRETRY
+> infrastructure?  That patch would probably make things clearer in this
+> area.
+
+Yeah, a startling amount of fs/aio.c vanishes if we get rid of
+EIOCBRETRY.  I'm puttering away at it, but I'll be on holiday next week
+so it'll be a while before anything emerges.
+
+- z
