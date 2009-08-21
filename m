@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZHULsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbZHULwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbZHULsA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 07:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZHULr7
+	id S1755564AbZHULwB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZHULwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 07:47:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54386 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755129AbZHULr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 07:47:59 -0400
-Date: Fri, 21 Aug 2009 13:46:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jes Sorensen <jes@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Latest Linus tree oopses on Nehalem box
-Message-ID: <20090821114645.GD24647@elte.hu>
-References: <4A8E7CBE.3020209@sgi.com>
+	Fri, 21 Aug 2009 07:52:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51548 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755333AbZHULv7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 07:51:59 -0400
+Date: Fri, 21 Aug 2009 13:51:00 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS
+	devices
+Message-ID: <20090821115100.GA20681@elf.ucw.cz>
+References: <1249290657.2670.250.camel@rzhang-dt> <20090804132129.GH18974@elf.ucw.cz> <1249434170.2670.386.camel@rzhang-dt> <20090805161931.GA9749@elf.ucw.cz> <1249522879.2670.480.camel@rzhang-dt> <20090806071353.GB21847@elf.ucw.cz> <1249548430.2670.517.camel@rzhang-dt> <20090806095258.GA31370@elf.ucw.cz> <1250497963.5351.33.camel@rzhang-dt>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A8E7CBE.3020209@sgi.com>
+In-Reply-To: <1250497963.5351.33.camel@rzhang-dt>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Jes Sorensen <jes@sgi.com> wrote:
+> > > Could you please look at the documentation about ALS sysfs class in the
+> > > patch I sent out just now, and comment on that one please? thanks!
+> > 
+> > I did. The interface is too ugly to live.
+> 
+> Hi, Pavel,
+> 
+> I tried to convert the ALS sysfs I/F to two attributes only, i.e.
+> illuminance and adjustment.
+> But I found several potential problems.
+> 1. the illuminance to display adjustment mappings can not be convert to
+> a brightness level smoothly.
+> for example,
+> 	illuminance	adjustment
+> 1	600		70
+> 2	900		100
+> 3	1500		120
+> when the current illuminance is not one of the values listed in the
+> mappings, e.g. 750, the ALS driver don't have enough knowledge to get
+> the proper display adjustment, especially that a proper display
+> adjustment would be easy to select a proper brightness level.
+> We'd better leave this to user space, which is more flexible.
 
-> Hi,
->
-> I am seeing this one with the latest Linus' git tree as of this 
-> morning on a Nehalem box. Using the defconfig + megaraid driver.
->
-> Not sure if this is already fixed, or if someone already knows 
-> whats wrong? Smells like a yet another BIOS bug - yes the BIOS on 
-> this thing is rubbish.
+Well, what interpolation does ACPI specs suggest to do? Maybe it is
+easier to have linear interpolation in the kernel than to have ugly
+20-file interface?
 
-my Nehalem (16 logical cpus) boots fine:
+> 2. I don't know if there will be laptops exporting buggy mappings that
+> needs to be overridden some day, but the current sysfs I/F is easy for
+> expanding.
+> what do you think?
 
- aldebaran:~> uname -a
- Linux aldebaran 2.6.31-rc6-tip-01272-g9919e28-dirty #1518 SMP Fri 
- Aug 21 11:13:12 CEST 2009 x86_64 x86_64 x86_64 GNU/Linux
+If you have buggy laptop, fix the laptop. (You can still export the
+raw values... and btw if you have buggy laptop and want to work around
+it, maybe the workaround is easier/better done in kernel?)
 
-> [    6.664800] RIP: 0010:[<ffffffff810391e7>]  [<ffffffff810391e7>]  
-> find_busiest_group+0x620/0x6fd 
-
-Nothing similar is open at the moment.
-
-There's only one open .31 scheduler regression bug at the moment: a 
-rare division by zero bug that sometimes crashes boxes - the bigger 
-the box the likelier the crash.
-
-Your crash looks to be one of:
-
- 1) a genuine scheduler bug tickled on your new hardware. Needs to 
-    be bisected/debugged/fixed.
-
- 2) a BIOS bug passing crappy ACPI tables which cause us to create a
-    buggy sched-domains tree or so. We do treat ACPI data as 
-    external untrusted data and try to use it in sane ways only, but 
-    such bugs have happened in the past and could happen again.
-
-The scheduler has sanity check for the sched-domains arch setup: if 
-you enable CONFIG_SCHED_DEBUG=y then sched_domain_debug() will 
-become noisy in your syslog if there's something wrong (but wont 
-stop the bootup so you have to actively check your syslog).
-
-Might be useful to see your full crashlog, if you are allowed to 
-post that, plus your kernel .config would be useful to know too. 
-Plus would be useful to know whether this is a regression relative 
-to .30 or a yet unfixed bug triggering on your class of hardware.
-
-Thanks,
-
-	Ingo
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
