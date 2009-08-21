@@ -1,56 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932446AbZHUSYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932413AbZHUSar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932446AbZHUSYo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 14:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932393AbZHUSYo
+	id S932413AbZHUSar (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 14:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383AbZHUSaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 14:24:44 -0400
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:43365 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932391AbZHUSYn (ORCPT
+	Fri, 21 Aug 2009 14:30:46 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:6686 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751684AbZHUSap (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 14:24:43 -0400
-Date: Fri, 21 Aug 2009 23:54:39 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
-Cc: "Wu, Fengguang" <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090821182439.GN29572@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <4A7AAE07.1010202@redhat.com> <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost> <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost> <4A7AD79E.4020604@redhat.com> <20090816032822.GB6888@localhost> <4A878377.70502@redhat.com> <20090816045522.GA13740@localhost> <9EECC02A4CC333418C00A85D21E89326B6611F25@azsmsx502.amr.corp.intel.com>
+	Fri, 21 Aug 2009 14:30:45 -0400
+X-Trace: 250624617/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.69.192/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.69.192
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqIIAMOEjkpQKUXA/2dsb2JhbACBU45BAccbhBoF
+X-IronPort-AV: E=Sophos;i="4.44,251,1249254000"; 
+   d="scan'208";a="250624617"
+Date: Fri, 21 Aug 2009 19:30:15 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrew Morton <akpm@linux-foundation.com>
+cc: Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
+       Izik Eidus <ieidus@redhat.com>, Chris Wright <chrisw@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Helge Deller <deller@gmx.de>, Chris Zankel <chris@zankel.net>,
+       Rik van RIel <riel@redhat.com>, Balbir Singh <balbir@in.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Avi Kivity <avi@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH mmotm] ksm: antidote to MADV_MERGEABLE HWPOISON
+Message-ID: <Pine.LNX.4.64.0908211912330.14259@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <9EECC02A4CC333418C00A85D21E89326B6611F25@azsmsx502.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dike, Jeffrey G <jeffrey.g.dike@intel.com> [2009-08-17 12:47:29]:
+linux-next is now sporting MADV_HWPOISON at 12, which would have a very
+nasty effect on KSM if you had CONFIG_MEMORY_FAILURE=y with CONFIG_KSM=y.
+Shift MADV_MERGEABLE and MADV_UNMERGEABLE down two - two to reduce the
+confusion if old and new userspace and kernel are mismatched.
 
-> > Jeff, can you have a look at these stats? Thanks!
-> 
-> Yeah, I just did after adding some tracing which dumped out the same data.  It looks pretty much the same.  Inactive anon and active anon are pretty similar.  Inactive file and active file are smaller and fluctuate more, but doesn't look horribly unbalanced.
-> 
-> Below are the stats from memory.stat - inactive_anon, active_anon, inactive_file, active_file, plus some commentary on what's happening.
-> 
+Personally I'd prefer the MADV_HWPOISON testing feature to shift; but
+linux-next comes first in the mmotm lineup, and I can't be sure that
+madvise KSM already has more users than there are HWPOISON testers:
+so unless Andi is happy to shift MADV_HWPOISON, mmotm needs this.
+---
+Fix to ksm-define-madv_mergeable-and-madv_unmergeable.patch
+parisc unaffected because its MADVs are displaced.
 
-Interesting.. there seems to be sufficient number of inactive memory,
-specifically inactive_file. My biggest suspicion now is passing of
-reference info from shadow page tables to host (although to be
-honest, I've never looked at that code).
+ arch/alpha/include/asm/mman.h     |    4 ++--
+ arch/mips/include/asm/mman.h      |    4 ++--
+ arch/xtensa/include/asm/mman.h    |    4 ++--
+ include/asm-generic/mman-common.h |    4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-What do the stats for / from within kvm look like?
-
--- 
-	Balbir
+--- mmotm/arch/alpha/include/asm/mman.h	2009-08-21 12:08:18.000000000 +0100
++++ linux/arch/alpha/include/asm/mman.h	2009-08-21 18:28:14.000000000 +0100
+@@ -48,8 +48,8 @@
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
+ 
+-#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
+-#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
++#define MADV_MERGEABLE   14		/* KSM may merge identical pages */
++#define MADV_UNMERGEABLE 15		/* KSM may not merge identical pages */
+ 
+ /* compatibility flags */
+ #define MAP_FILE	0
+--- mmotm/arch/mips/include/asm/mman.h	2009-08-21 12:08:18.000000000 +0100
++++ linux/arch/mips/include/asm/mman.h	2009-08-21 18:28:24.000000000 +0100
+@@ -71,8 +71,8 @@
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
+ 
+-#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
+-#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
++#define MADV_MERGEABLE   14		/* KSM may merge identical pages */
++#define MADV_UNMERGEABLE 15		/* KSM may not merge identical pages */
+ 
+ /* compatibility flags */
+ #define MAP_FILE	0
+--- mmotm/arch/xtensa/include/asm/mman.h	2009-08-21 12:08:18.000000000 +0100
++++ linux/arch/xtensa/include/asm/mman.h	2009-08-21 18:28:52.000000000 +0100
+@@ -78,8 +78,8 @@
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
+ 
+-#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
+-#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
++#define MADV_MERGEABLE   14		/* KSM may merge identical pages */
++#define MADV_UNMERGEABLE 15		/* KSM may not merge identical pages */
+ 
+ /* compatibility flags */
+ #define MAP_FILE	0
+--- mmotm/include/asm-generic/mman-common.h	2009-08-21 12:08:18.000000000 +0100
++++ linux/include/asm-generic/mman-common.h	2009-08-21 18:29:01.000000000 +0100
+@@ -36,8 +36,8 @@
+ #define MADV_DOFORK	11		/* do inherit across fork */
+ #define MADV_HWPOISON	12		/* poison a page for testing */
+ 
+-#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
+-#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
++#define MADV_MERGEABLE   14		/* KSM may merge identical pages */
++#define MADV_UNMERGEABLE 15		/* KSM may not merge identical pages */
+ 
+ /* compatibility flags */
+ #define MAP_FILE	0
