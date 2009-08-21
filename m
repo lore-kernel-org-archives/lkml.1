@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZHUNxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZHUNxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbZHUNxZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 09:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbZHUNxY
+	id S1755287AbZHUNxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 09:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbZHUNxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 09:53:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34325 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754507AbZHUNxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 09:53:23 -0400
-Date: Fri, 21 Aug 2009 15:52:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, peterz@infradead.org, torvalds@linux-foundation.org,
-       tytso@mit.edu, arjan@infradead.org, greg@kroah.com, mcgrof@gmail.com,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org, sam@ravnborg.org,
-       corbet@lwn.net, sourcejedi.lkml@googlemail.com, andi@firstfloor.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
-Subject: Re: [PATCH 00/14] kconfig: streamline distro configs for testers
-Message-ID: <20090821135249.GB30346@elte.hu>
-References: <20090819025634.987354707@goodmis.org> <20090820143025.7134930f.akpm@linux-foundation.org> <alpine.DEB.2.00.0908201741370.16405@gandalf.stny.rr.com> <20090820151326.b43038ce.akpm@linux-foundation.org>
+	Fri, 21 Aug 2009 09:53:46 -0400
+Received: from chipmunk.wormnet.eu ([195.195.131.226]:42975 "EHLO
+	chipmunk.wormnet.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbZHUNxp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 09:53:45 -0400
+X-Greylist: delayed 776 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Aug 2009 09:53:45 EDT
+Date: Fri, 21 Aug 2009 14:53:46 +0100
+From: Alexander Clouter <alex@digriz.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arm-kernel@lists.infradead.org,
+       Russell King <linux@arm.linux.org.uk>, erikm@nl.linux.org,
+       David Woodhouse <dwmw2@infradead.org>, vince@kyllikki.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] ARM: Mailing lists have moved
+Message-ID: <20090821135345.GP21725@chipmunk>
+References: <1250855566.3311.100.camel@macbook.infradead.org> <200908211513.48424.arnd@arndb.de> <20090821134049.GO21725@chipmunk> <200908211543.31144.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090820151326.b43038ce.akpm@linux-foundation.org>
+In-Reply-To: <200908211543.31144.arnd@arndb.de>
+Organization: diGriz
+X-URL: http://www.digriz.org.uk/
+X-JabberID: alex@digriz.org.uk
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Thu, 20 Aug 2009 17:43:38 -0400 (EDT)
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > > 
-> > > > The following patches are in:
-> > > > 
-> > > >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> > > > 
-> > > >     branch: kconfig
-> > > 
-> > > Sam's been quiet lately.  I suggest that you add this to linux-next
-> > > now so people get a chance to poke at it.
+* Arnd Bergmann <arnd@arndb.de> [2009-08-21 15:43:30+0200]:
+>
+> On Friday 21 August 2009, Alexander Clouter wrote:
 > > 
-> > I have no means of pushing into next. Would someone like to do a pull for 
-> > me?
+> > I subscribed to the list so I can post to it, however I read the list 
+> > via GMANE's NNTP gateway.  To prevent me having to 'read' posting from 
+> > both my usenet client and email client, I enabled the 'don't send any 
+> > mail' flag.
+> > 
+> > I am guessing there are others like me out there so this would be an 
+> > awkward 'fix'.
 > 
-> If suitably bribed, Stephen will add you tree directly to the 
-> linux-nxt lineup.
+> Well, since you no longer have to be subscribed if you want to post
+> to the new list, and you can still read the list through an nntp gateway,
+> I would assume that it works for you as well.
+> 
+Fair enough, just thought we were contining the norm from before?  I 
+hope that does not mean we get the amount of spam we see on the MTD 
+mailing list?
 
-Yep, we always needed another kconfig maintainer (Sam's being mostly 
-busy with kbuild), and it's nice to see that Steve volunteered for 
-that job now! ;-)
+Cheers
 
-	Ingo
+-- 
+Alexander Clouter
+.sigmonster says: When we talk of tomorrow, the gods laugh.
