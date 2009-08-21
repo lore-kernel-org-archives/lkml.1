@@ -1,102 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZHUD7C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751682AbZHUEPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZHUD7C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 23:59:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZHUD7B
+	id S1751682AbZHUEPH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 00:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZHUEPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 23:59:01 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53886 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbZHUD7A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 23:59:00 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 21 Aug 2009 12:56:49 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Anton Blanchard <anton@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       balbir@linux.vnet.ibm.com, Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
-       balajirrao@gmail.com, dhaval@linux.vnet.ibm.com, tglx@linutronix.de,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] better align percpu counter (Was Re: [tip:sched/core]
- sched: cpuacct: Use bigger percpu counter batch values for stats counters
-Message-Id: <20090821125649.7c2e8fa5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090820174123.afa43c48.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090512102412.GG6351@balbir.in.ibm.com>
-	<20090512102939.GB11714@elte.hu>
-	<20090512193656.D647.A69D9226@jp.fujitsu.com>
-	<20090716081010.GB3134@in.ibm.com>
-	<20090716083948.GA2950@kryten>
-	<20090820051038.GF21100@kryten>
-	<20090820052605.GC26265@balbir.in.ibm.com>
-	<1250747579.8282.110.camel@twins>
-	<20090820060528.GG21100@kryten>
-	<20090820151017.2ba95d6e.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090820062451.GH21100@kryten>
-	<20090820174123.afa43c48.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 21 Aug 2009 00:15:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:6669 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751184AbZHUEPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 00:15:04 -0400
+Message-ID: <4A8E1F3C.5000501@redhat.com>
+Date: Fri, 21 Aug 2009 07:14:52 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>, Ingo Molnar <mingo@elte.hu>,
+       Anthony Liguori <anthony@codemonkey.ws>, kvm@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: configfs/sysfs
+References: <4A89B08A.4010103@gmail.com> <4A8A674E.8070200@redhat.com> <4A8ABEC9.6090006@gmail.com> <4A8AD678.7050609@redhat.com> <4A8B9B79.9050004@gmail.com> <4A8BA5AE.3030308@redhat.com> <1250706227.27590.156.camel@haakon2.linux-iscsi.org> <4A8C5CBB.10605@redhat.com> <20090819221654.GA29503@mail.oracle.com> <4A8CE891.2010502@redhat.com> <20090820224828.GC10558@mail.oracle.com>
+In-Reply-To: <20090820224828.GC10558@mail.oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 17:41:23 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On 08/21/2009 01:48 AM, Joel Becker wrote:
+> On Thu, Aug 20, 2009 at 09:09:21AM +0300, Avi Kivity wrote:
+>    
+>> On 08/20/2009 01:16 AM, Joel Becker wrote:
+>>      
+>>> 	With an ioctl() that isn't (well) documented, you have to go
+>>> read the structure and probably even read the code that uses the
+>>> structure to be sure what you are doing.
+>>>        
+>> An ioctl structure and a configfs/sysfs readdir provide similar
+>> information (the structure also provides the types of fields and
+>> isn't able to hide some of these fields).
+>>      
+> 	With an ioctl structure, I can't take a look at what the values
+> look like unless I read the code or write up a C program.  With a
+> configfs file, I can just cat the thing.
+>    
+
+Unless it's system dependent like many sysfs files.  If you're coding 
+something that's supposed to run on several boxes, coding by example is 
+not a good idea.  Look up the documentation to find out what the values 
+look like (unfortunately often there is no documentation).
+
+Looking at the value on your box does not indicate the range of values 
+on other boxes or even if the value will be present on other boxes (due 
+to having older kernels or different configurations).
 
 >
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/percpu_counter.h |   12 +++++++++++-
->  1 file changed, 11 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6.31-rc6/include/linux/percpu_counter.h
-> ===================================================================
-> --- linux-2.6.31-rc6.orig/include/linux/percpu_counter.h	2009-08-20 12:09:27.000000000 +0900
-> +++ linux-2.6.31-rc6/include/linux/percpu_counter.h	2009-08-20 17:31:13.000000000 +0900
-> @@ -14,14 +14,24 @@
->  #include <linux/types.h>
->  
->  #ifdef CONFIG_SMP
-> +struct __percpu_counter_padding {
-> +	char x[0];
-> +} ____cacheline_internodealigned_in_smp;
+>    
+>> "Looking at the values" is what I meant by discouraging
+>> documentation.  That implies looking at a self-documenting live
+>> system.  But that tells you nothing about which fields were added in
+>> which versions, or fields which are hidden because your hardware
+>> doesn't support them or because you didn't echo 1>  somewhere.
+>>      
+> 	Most ioctls don't tell you that either.  It certainly won't let
+> you know that field foo_arg1 is ignored unless foo_arg2 is set to 2, or
+> things like that.
+>    
 
-above alignement is too big...plz ignore this patch :(
+Correct.  What I mean is that discoverability is great for a sysadmin or 
+kernel developers exploring the system, but pretty useless for a 
+programmer writing code that will run on other systems.  The majority of 
+lkml users will find *fs easy to use and useful, but that's not the 
+majority of our users.
 
--Kame
+> 	The problem of versioning requires discipline either way.  It's
+> not obvious from many ioctls.  Conversely, you can create versioned
+> configfs items via attributes or directories (same for sysfs, etc).
+>    
 
+Sure.
 
-> +#define CACHELINE_PADDING(name)  struct __percpu_counter_padding name
->  
->  struct percpu_counter {
-> +	/*
-> +	 * This pointer is persistent and accessed firstly.
-> +	 * Then, should not be purged by locking in other cpus.
-> +	 */
-> +	s32 *counters;
-> +	CACHELINE_PADDING(pad);
->  	spinlock_t lock;
->  	s64 count;
->  #ifdef CONFIG_HOTPLUG_CPU
-> +	/* rarely accessed field */
->  	struct list_head list;	/* All percpu_counters are on a list */
->  #endif
-> -	s32 *counters;
->  };
->  
->  extern int percpu_counter_batch;
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+>> The maintainer of the subsystem should provide a library that talks
+>> to the binary interface and a CLI program that talks to the library.
+>> Boring nonkernely work.  Alternatively a fuse filesystem to talk to
+>> the library, or an IDL can replace the library.
+>>      
+> 	Again, that helps the user nothing.  I don't know it exists.  I
+> don't have it installed.  Unless it ships with the kernel, I have no
+> idea about it.
+>    
+
+That's true for the lkml reader downloading a kernel from kernel.org 
+(use git already) and run it on a random system.  But again the majority 
+of users will run a distro which is supposed to integrate the kernel and 
+userspace.  The short term gratification of early adopters harms the 
+integration that more mainstream users expect.
+
+>> Many things start oriented at people and then, if they're useful,
+>> cross the lines to machines.  You can convert a machine interface to
+>> a human interface at the cost of some work, but it's difficult to
+>> undo the deficiencies of a human oriented interface so it can be
+>> used by a program.
+>>      
+> 	It's work to convert either way.  Outside of fast-path things,
+> the time it takes to strtoll() is unimportant.  Don't use configfs/sysfs
+> for fast-path things.
+>    
+
+Infrastructure must be careful not to code itself into a corner.  
+Already udev takes quite a bit of time to run and I have some memories 
+of problems on thousand-disk configurations.  What works reasonably well 
+with one disk may not work as well with 1000.
+
+No doubt some of the problem is with udev, but I'm sure sysfs 
+contributes.  As a software development exercise reading a table of 1000 
+objects each with a couple dozen attributes should take less that a 
+millisecond.
+
+>> I disagree.  If it's useful for a human, it's useful for a machine.
+>>      
+> 	And if it's useful for a machine, a human might want to peek at
+> it by hand someday to debug it.
+>    
+
+We have strace and wireshark to decode binary syscall and wire streams.
+
+>> Moreover, *fs+bash is a user interface.  It happens that bash is
+>> good at processing files, and filesystems are easily discoverable,
+>> so we code to that.  But we make it more difficult to provide other
+>> interfaces to the same controls.
+>>      
+> 	Not really.  Writing a sane CLI to a binary interface takes
+> about as much work as writing a sane API library to a text interface.
+> The hard part is not the conversion, in either direction.  The hard part
+> is defining the interface.
+>    
+
+A *fs interface limits what you can do, so it makes writing the API 
+library harder.  I'm talking about the issues with atomicity and 
+notifications.
+
+>>> Configfs, as its name implies,
+>>> really does exist for that second case.  It turns out that it's quite
+>>> nice to use for the first case too, but if folks wanted to go the
+>>> syscall route, no worries.
+>>>        
+>> Eventually everything is used in the first case.  For example in the
+>> virtualization space it is common to have a zillion nodes running
+>> virtual machine that are only accessed by a management node.
+>>      
+> 	Everything is eventually used in the second case, and admin or a
+> developer debugging why the daemon is going wrong.  Much easier from a
+> shell or other generic accessor.  Much faster than having to download
+> your library's source, learn how to build it, add some printfs, discover
+> you have the wrong printfs...
+>    
+
+As a kernel/user interface, any syscall replacement for *fs is exposed 
+via strace.  It's true that debugging C code is harder than a bit of bash.
+
+>> __u64 says everything about the type and space requirements of a
+>> field.  It doesn't describe everything (like the name of the field
+>> or what it means) but it does provide a bunch of boring information
+>> that people rarely document in other ways.
+>>
+>> If my program reads a *fs field into a u32 and it later turns out
+>> the field was a u64, I'll get an overflow.  It's a lot harder to get
+>> that wrong with a typed interface.
+>>      
+> 	And if you send the wrong thing to configfs or sysfs you'll get
+> an EINVAL or the like.
+> 	It doesn't look like configfs and sysfs will work for you.
+> Don't use 'em!  Write your interfaces with ioctls and syscalls.  Write
+> your libraries and CLIs.  In the end, you're the one who has to maintain
+> them.  I don't ever want anyone thinking I want to force configfs on
+> them.  I wrote it because it solves its class of problem well, and many
+> people find it fits them too.  So I'll use configfs, you'll use ioctl,
+> and our users will be happy either way because we make it work!
+>    
+
+No, I have to use *fs (at least sysfs) since that's the current blessed 
+interface.  Fragmenting the kernel/userspace is the wrong thing to do, I 
+value a consistent interface more than fixing the *fs problems (which 
+are all fixable or tolerable).
+
+This is not a call to deprecate *fs and switch over to a yet another new 
+thing.  Users (and programmers) need some ABI stability.  It just arose 
+because I remarked that I'm not in love with *fs interfaces in an 
+unrelated flamewar and someone asked me why.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
