@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbZHUE6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752425AbZHUFCl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752444AbZHUE6v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 00:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZHUE6v
+	id S1752425AbZHUFCl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 01:02:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZHUFCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 00:58:51 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:27085 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbZHUE6u (ORCPT
+	Fri, 21 Aug 2009 01:02:40 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:1982 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbZHUFCk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 00:58:50 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=TXFTgzAe19QvHR2Jd6c2+baqzvC3fRLhw/jHLPar7TCnG1pzr/fv0kGH+OIeiQzvy
-	3RS77BRe8jZ2Q80xTtVSA==
+	Fri, 21 Aug 2009 01:02:40 -0400
+Date: Thu, 20 Aug 2009 23:02:40 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "mingo@redhat.com" <mingo@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
+Message-ID: <20090821050240.GA4198@ldl.fc.hp.com>
+References: <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com> <20090819210251.GD13061@ldl.fc.hp.com> <1250794594.2754.10.camel@sbs-t61.sc.intel.com> <20090820205425.GF13061@ldl.fc.hp.com> <20090820210342.GC29994@basil.fritz.box> <20090820212024.GG13061@ldl.fc.hp.com> <1250803577.2754.30.camel@sbs-t61.sc.intel.com> <4A8DC349.5060508@zytor.com> <20090821003232.GD29994@basil.fritz.box>
 MIME-Version: 1.0
-In-Reply-To: <20090820215007.0e774abb.akpm@linux-foundation.org>
-References: <20090818235059.22531.42618.stgit@menage.mtv.corp.google.com>
-	 <20090818235843.22531.57310.stgit@menage.mtv.corp.google.com>
-	 <4A8CB750.7040509@cn.fujitsu.com>
-	 <6599ad830908191945k7c5f86b6j3ea4194f0dffa9ce@mail.gmail.com>
-	 <20090820141356.1bec84ed.akpm@linux-foundation.org>
-	 <20090821042403.GA25865@andrew.cmu.edu>
-	 <20090820215007.0e774abb.akpm@linux-foundation.org>
-Date: Thu, 20 Aug 2009 21:58:46 -0700
-Message-ID: <6599ad830908202158j3578b6a5n2de699fbbf7bf8f0@mail.gmail.com>
-Subject: Re: [PATCH 7/8] Adds functionality to read/write lock CLONE_THREAD 
-	fork()ing per-threadgroup
-From: Paul Menage <menage@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ben Blum <bblum@andrew.cmu.edu>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090821003232.GD29994@basil.fritz.box>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 9:50 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
->
-> I was actually referring to the non-ascii crap in the email.
->
-> 'twas Paul.
->
+* Andi Kleen <andi@firstfloor.org>:
+> > I agree... if this ID is used for topology detection, we
+> > shouldn't replace it arbitrarily with information from BIOS
+> > just to hope that it matches the motherboard stencil.
+> > *Furthermore*, there is no reason why motherboard stencilAs
+> > are purely numeric... consider the rather obvious case of two
+> > rows of four CPUs; they may have CPU slots labelled A1, A2,
+> > A3, A4, B1, B2, B3, B4.  It might very well be the right
+> > thing to support arbitrary strings for platforms we
+> > recognize.
+> 
+> Maintaining a manual mapping to strings in the kernel to such
+> strings would be just crazy. You would need a new entry for
+> basically every system.
+ 
+Well, ideally we could read it from a standard location, say
+evaluating the ACPI _SUN method for the cpu object and then plug
+that answer into a standard kernel data structure.
 
-Hmm, so it was. It's sad how much gmail seems like like mangling ascii
-patches ...
+Hardware vendors can stick whatever they want into that method;
+the kernel just passes it through to userspace.
 
-Paul
+It's what we do for PCI slots today, and I wrote a patch for ia64
+that does that type of fixup: fe086a7.
+
+> The reason to correct SOCKETID is that it it is output on errors.
+> If it is numerical and you know it's wrong you can correct it,
+> and then you can identify the right CPU. Otherwise you lose.
+
+I think numerical vs. ascii is the wrong way to think about it,
+since ACPI could provide either.
+
+/ac
+
