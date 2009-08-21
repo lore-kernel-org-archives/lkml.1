@@ -1,51 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932728AbZHURXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932797AbZHURY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932728AbZHURXH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 13:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932471AbZHURXE
+	id S932797AbZHURY0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 13:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932745AbZHURYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 13:23:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59484 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932705AbZHURXC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 13:23:02 -0400
-Subject: Re: [PATCH] ARM: Mailing lists have moved
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joe Perches <joe@perches.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Bill Gatliff <bgat@billgatliff.com>,
-       Russell King <linux@arm.linux.org.uk>, vince@kyllikki.org,
-       linux-kernel@vger.kernel.org, linux-arm@vger.kernel.org,
-       torvalds@linux-foundation.org, linux-arm-kernel@lists.infradead.org
-In-Reply-To: <1250874318.29546.85.camel@Joe-Laptop.home>
-References: <1250855566.3311.100.camel@macbook.infradead.org>
-	 <alpine.DEB.2.00.0908210925400.24646@utopia.booyaka.com>
-	 <1250868957.3311.110.camel@macbook.infradead.org>
-	 <4A8EBFFD.5000307@billgatliff.com>
-	 <1250870971.3311.173.camel@macbook.infradead.org>
-	 <4A8EC75D.6010203@billgatliff.com>
-	 <1250872415.3311.206.camel@macbook.infradead.org>
-	 <1250874318.29546.85.camel@Joe-Laptop.home>
-Content-Type: text/plain
-Date: Fri, 21 Aug 2009 18:22:55 +0100
-Message-Id: <1250875375.3311.212.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 21 Aug 2009 13:24:21 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52098 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932664AbZHURYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 13:24:09 -0400
+From: Jan Kara <jack@suse.cz>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       Anton Altaparmakov <aia21@cantab.net>,
+       linux-ntfs-dev@lists.sourceforge.net
+Subject: [PATCH 11/17] ntfs: Use new syncing helpers and update comments
+Date: Fri, 21 Aug 2009 19:24:01 +0200
+Message-Id: <1250875447-15622-12-git-send-email-jack@suse.cz>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1250875447-15622-1-git-send-email-jack@suse.cz>
+References: <1250875447-15622-1-git-send-email-jack@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 10:05 -0700, Joe Perches wrote:
-> I don't have a preference for that, but I do have
-> a preference for lists without arbitrary latencies
-> for manual moderation.
+Use new syncing helpers in .write and .aio_write functions. Also
+remove superfluous syncing in ntfs_file_buffered_write() and update
+comments about generic_osync_inode().
 
-I agree.
+CC: Anton Altaparmakov <aia21@cantab.net>
+CC: linux-ntfs-dev@lists.sourceforge.net
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/ntfs/file.c |   16 ++++------------
+ fs/ntfs/mft.c  |   13 ++++++-------
+ 2 files changed, 10 insertions(+), 19 deletions(-)
 
+diff --git a/fs/ntfs/file.c b/fs/ntfs/file.c
+index 3140a44..4350d49 100644
+--- a/fs/ntfs/file.c
++++ b/fs/ntfs/file.c
+@@ -2076,14 +2076,6 @@ err_out:
+ 	*ppos = pos;
+ 	if (cached_page)
+ 		page_cache_release(cached_page);
+-	/* For now, when the user asks for O_SYNC, we actually give O_DSYNC. */
+-	if (likely(!status)) {
+-		if (unlikely((file->f_flags & O_SYNC) || IS_SYNC(vi))) {
+-			if (!mapping->a_ops->writepage || !is_sync_kiocb(iocb))
+-				status = generic_osync_inode(vi, mapping,
+-						OSYNC_METADATA|OSYNC_DATA);
+-		}
+-  	}
+ 	pagevec_lru_add_file(&lru_pvec);
+ 	ntfs_debug("Done.  Returning %s (written 0x%lx, status %li).",
+ 			written ? "written" : "status", (unsigned long)written,
+@@ -2145,8 +2137,8 @@ static ssize_t ntfs_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
+ 	mutex_lock(&inode->i_mutex);
+ 	ret = ntfs_file_aio_write_nolock(iocb, iov, nr_segs, &iocb->ki_pos);
+ 	mutex_unlock(&inode->i_mutex);
+-	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+-		int err = sync_page_range(inode, mapping, pos, ret);
++	if (ret > 0) {
++		int err = generic_write_sync(file, pos, ret);
+ 		if (err < 0)
+ 			ret = err;
+ 	}
+@@ -2173,8 +2165,8 @@ static ssize_t ntfs_file_writev(struct file *file, const struct iovec *iov,
+ 	if (ret == -EIOCBQUEUED)
+ 		ret = wait_on_sync_kiocb(&kiocb);
+ 	mutex_unlock(&inode->i_mutex);
+-	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
+-		int err = sync_page_range(inode, mapping, *ppos - ret, ret);
++	if (ret > 0) {
++		int err = generic_write_sync(file, *ppos - ret, ret);
+ 		if (err < 0)
+ 			ret = err;
+ 	}
+diff --git a/fs/ntfs/mft.c b/fs/ntfs/mft.c
+index 23bf684..1caa0ef 100644
+--- a/fs/ntfs/mft.c
++++ b/fs/ntfs/mft.c
+@@ -384,13 +384,12 @@ unm_err_out:
+  * it is dirty in the inode meta data rather than the data page cache of the
+  * inode, and thus there are no data pages that need writing out.  Therefore, a
+  * full mark_inode_dirty() is overkill.  A mark_inode_dirty_sync(), on the
+- * other hand, is not sufficient, because I_DIRTY_DATASYNC needs to be set to
+- * ensure ->write_inode is called from generic_osync_inode() and this needs to
+- * happen or the file data would not necessarily hit the device synchronously,
+- * even though the vfs inode has the O_SYNC flag set.  Also, I_DIRTY_DATASYNC
+- * simply "feels" better than just I_DIRTY_SYNC, since the file data has not
+- * actually hit the block device yet, which is not what I_DIRTY_SYNC on its own
+- * would suggest.
++ * other hand, is not sufficient, because ->write_inode needs to be called even
++ * in case of fdatasync. This needs to happen or the file data would not
++ * necessarily hit the device synchronously, even though the vfs inode has the
++ * O_SYNC flag set.  Also, I_DIRTY_DATASYNC simply "feels" better than just
++ * I_DIRTY_SYNC, since the file data has not actually hit the block device yet,
++ * which is not what I_DIRTY_SYNC on its own would suggest.
+  */
+ void __mark_mft_record_dirty(ntfs_inode *ni)
+ {
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+1.6.0.2
 
