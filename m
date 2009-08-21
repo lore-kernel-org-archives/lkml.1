@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933108AbZHUWDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932918AbZHUWTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933108AbZHUWDp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 18:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932864AbZHUWDp
+	id S932918AbZHUWTP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 18:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932260AbZHUWTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 18:03:45 -0400
-Received: from trinity.fluff.org ([89.16.178.74]:48837 "EHLO trinity.fluff.org"
+	Fri, 21 Aug 2009 18:19:14 -0400
+Received: from claw.goop.org ([74.207.240.146]:46004 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932841AbZHUWDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 18:03:44 -0400
-Date: Fri, 21 Aug 2009 23:03:39 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Paul Walmsley <paul@pwsan.com>,
-       Russell King <linux@arm.linux.org.uk>, vince@kyllikki.org,
-       linux-kernel@vger.kernel.org, linux-arm@vger.kernel.org,
-       torvalds@linux-foundation.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] ARM: Mailing lists have moved
-Message-ID: <20090821220339.GM25153@trinity.fluff.org>
-References: <1250855566.3311.100.camel@macbook.infradead.org> <alpine.DEB.2.00.0908210925400.24646@utopia.booyaka.com> <1250868957.3311.110.camel@macbook.infradead.org> <4A8EBFFD.5000307@billgatliff.com> <1250870971.3311.173.camel@macbook.infradead.org> <4A8EC75D.6010203@billgatliff.com>
+	id S1752514AbZHUWTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 18:19:14 -0400
+Message-ID: <4A8F1D5A.5030501@goop.org>
+Date: Fri, 21 Aug 2009 15:19:06 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8EC75D.6010203@billgatliff.com>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>, x86 team <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Veen <arjan@infradead.org>, Avi Kivity <avi@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Alok N Kataria <akataria@vmware.com>,
+       Pan Jacob jun <jacob.jun.pan@intel.com>
+Subject: Re: [RFC patch 00/32] x86: Refactor the setup code to provide a base
+ for	embedded platforms
+References: <20090821205008.518392436@linutronix.de>
+In-Reply-To: <20090821205008.518392436@linutronix.de>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 11:12:13AM -0500, Bill Gatliff wrote:
-> David Woodhouse wrote:
-> >On Fri, 2009-08-21 at 10:40 -0500, Bill Gatliff wrote:
-> >  
-> >>Ok, so which of the new lists should former linux-arm-kernel subscribers 
-> >>be subscribed to?  I'm confused, I've seen mention of four different 
-> >>lists now: three at infraded, and one at vger.  :)
-> >>    
-> >
-> >Nothing has changed. There were always three lists: linux-arm (for
-> >userspace stuff), linux-arm-toolchain and linux-arm-kernel.
-> >
-> >If you were subscribed to linux-arm-kernel before, then you are already
-> >subscribed to linux-arm-kernel now. The list has just moved, that's all.
-> >  
-> 
-> Ok.  So help me understand what is the vger list for?  :)
+On 08/21/09 14:29, Thomas Gleixner wrote:
+> The following patch series refactors the setup related x86_quirks and
+> the setup related paravirt hooks and puts them into an extensible
+> platform_setup infrastructure to provide a proper base for adding the
+> Moorestown modifications. As a side effect it also unifies
+> time_32/64.c and removes some leftovers of the pre arch/x86 era.
+>   
 
-To give Pavel and davem a warm feeling inside (although that maybe just
-the residual hatred of moderated mailing lists - god help them if they
-decide to submit stuff to other projects like ALSA).
+I haven't gone through the patches at all yet, but I definitely like
+this direction.  I've got some local patches to generalize x86_quirks a
+bit, and I'm hoping that you've already subsumed them; if not, it should
+be easy to extend on top of your patches.
 
--- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
-
+    J
