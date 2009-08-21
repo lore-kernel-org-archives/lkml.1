@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZHUAgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbZHUAiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbZHUAgy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 20:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZHUAgx
+	id S1754756AbZHUAiG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 20:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbZHUAiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 20:36:53 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48107 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbZHUAgw (ORCPT
+	Thu, 20 Aug 2009 20:38:05 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38501 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751860AbZHUAiD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 20:36:52 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 21 Aug 2009 09:34:52 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org, linux-mm@kvack.org,
-       Neil Horman <nhorman@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 8/8] kexec: allow to shrink reserved memory
-Message-Id: <20090821093452.ead96b2d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4A8D144C.5050005@redhat.com>
-References: <20090812081731.5757.25254.sendpatchset@localhost.localdomain>
-	<20090812081906.5757.39417.sendpatchset@localhost.localdomain>
-	<m1bpmk8l1g.fsf@fess.ebiederm.org>
-	<4A83893D.50707@redhat.com>
-	<m1eirg5j9i.fsf@fess.ebiederm.org>
-	<4A83CD84.8040609@redhat.com>
-	<m1tz0avy4h.fsf@fess.ebiederm.org>
-	<4A8927DD.6060209@redhat.com>
-	<20090818092939.2efbe158.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A8A4ABB.70003@redhat.com>
-	<20090818172552.779d0768.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A8A83F4.6010408@redhat.com>
-	<20090819085703.ccf9992a.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A8B6649.3080103@redhat.com>
-	<20090819171346.aadfeb2c.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A8D144C.5050005@redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 20 Aug 2009 20:38:03 -0400
+Date: Fri, 21 Aug 2009 02:38:04 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Alex Chiang <achiang@hp.com>,
+       "hpa@zytor.com" <hpa@zytor.com>, "mingo@redhat.com" <mingo@redhat.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: add /proc/cpuinfo/physical id quirks
+Message-ID: <20090821003804.GE29994@basil.fritz.box>
+References: <20090814163618.GQ7185@ldl.fc.hp.com> <1250276831.3077.17.camel@sbs-t61.sc.intel.com> <20090814192730.GA6431@ldl.fc.hp.com> <1250279799.3077.41.camel@sbs-t61.sc.intel.com> <20090819210251.GD13061@ldl.fc.hp.com> <1250794594.2754.10.camel@sbs-t61.sc.intel.com> <20090820205425.GF13061@ldl.fc.hp.com> <20090820210342.GC29994@basil.fritz.box> <1250803348.2754.26.camel@sbs-t61.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250803348.2754.26.camel@sbs-t61.sc.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Aug 2009 17:15:56 +0800
-Amerigo Wang <amwang@redhat.com> wrote:
-    
-> > The, problem is whether memmap is there or not. That's all.
-> > plz see init sequence and check there are memmap.
-> > If memory-for-crash is obtained via bootmem,
-> > Don't you try to free memory hole ?
-> >   
-> 
-> Hi,
-> 
-> It looks like that mem_map has 'struct page' for the reserved memory, I 
-> checked my "early_node_map[] active PFN ranges" output, the reserved 
-> memory area for crash kernel is right in one range. Am I missing 
-> something here?
-> 
-> I don't know why that oops comes out, maybe because of no PTE for thoese 
-> pages?
-> 
-Hmm ? Could you show me the code you use ?
+> If we really think overloading the "physical id" helps with existing
+> software, then I am ok with changing the user visible part of the /proc/
+> or /sys files but not with the kernel's per cpu info's phys_proc_id,
+> which is used for topology detection etc.
 
-Thanks,
--Kame
+It's not just the cpuinfo, but also the socketid reported for
+machine check. But yes converting it only for those two 
+would be a possibility.
 
+-Andi
 
+-- 
+ak@linux.intel.com -- Speaking for myself only.
