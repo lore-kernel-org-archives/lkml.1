@@ -1,82 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbZHULFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZHULID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755502AbZHULFM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 07:05:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbZHULFL
+	id S1755512AbZHULID (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 07:08:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbZHULIC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 07:05:11 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:44768 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719AbZHULFK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 07:05:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CGTHW7bpVCrWdkXx04iRAGUw/usU9Me4nSwjjTmOcTDmUwcaB5fi3VOm8h+Eadcvj/
-         GnFSiJON9bqApym9ftUzZzuf4iFQkek8JHtHsBekCr6VsnVi+agsDDCzDpL53xr7ENm6
-         Q975xfCJm1b5HKrHk/aGyLAa8femwXrTC22h0=
+	Fri, 21 Aug 2009 07:08:02 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45008 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754840AbZHULIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 07:08:00 -0400
+Date: Fri, 21 Aug 2009 11:07:04 GMT
+From: tip-bot for Casey Dahlin <cdahlin@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       cdahlin@redhat.com, fujita.tomonori@lab.ntt.co.jp,
+       akpm@linux-foundation.org, tglx@linutronix.de,
+       beckyb@kernel.crashing.org, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, cdahlin@redhat.com,
+       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de,
+       beckyb@kernel.crashing.org, mingo@elte.hu
+In-Reply-To: <200908202327.n7KNRuqK001504@imap1.linux-foundation.org>
+References: <200908202327.n7KNRuqK001504@imap1.linux-foundation.org>
+Subject: [tip:core/iommu] lib/swiotlb.c: Fix strange panic message selection logic when swiotlb fills up
+Message-ID: <tip-c7084b35eb1a4d3353a501508baf9d3d82822c93@git.kernel.org>
+Git-Commit-ID: c7084b35eb1a4d3353a501508baf9d3d82822c93
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <20090728164520.GB13662@gradator.net>
-References: <ct4xS-63o-27@gated-at.bofh.it>
-	 <ba6a8e0d-946b-4d69-9f70-991e93c18f90@o15g2000yqm.googlegroups.com>
-	 <20090728164520.GB13662@gradator.net>
-Date: Fri, 21 Aug 2009 12:05:10 +0100
-Message-ID: <6278d2220908210405n35778e04mc1728f2c37ef0c0f@mail.gmail.com>
-Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Sylvain Rochet <gradator@gradator.net>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 21 Aug 2009 11:07:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sylvain,
+Commit-ID:  c7084b35eb1a4d3353a501508baf9d3d82822c93
+Gitweb:     http://git.kernel.org/tip/c7084b35eb1a4d3353a501508baf9d3d82822c93
+Author:     Casey Dahlin <cdahlin@redhat.com>
+AuthorDate: Thu, 20 Aug 2009 16:27:56 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 21 Aug 2009 10:36:03 +0200
 
-On Tue, Jul 28, 2009 at 5:45 PM, Sylvain Rochet<gradator@gradator.net> wrote:
-> On Tue, Jul 28, 2009 at 09:40:42AM -0700, Daniel J Blueman wrote:
->> On Apr 20, 5:30 pm, Sylvain Rochet <grada...@gradator.net> wrote:
->> > Hi,
->> >
->> > We(TuxFamily) are having some inodes corruptions on a NFS server.
->> >
->> > So, let's start with the facts.
->> >
->> > ==== NFS Server
->> >
->> > Linux bazooka 2.6.28.9 #1 SMP Mon Mar 30 12:58:22 CEST 2009 x86_64 GNU/Linux
->> [snip]
->>
->> Can you do a 'lspci -v' on the server please?
->
-> Of course yes.
->
-> I attached the 'lspci -v' of the previous and the current storage
-> server.
+lib/swiotlb.c: Fix strange panic message selection logic when swiotlb fills up
 
-The reason I ask, I was chasing data corruption across the PCIe bus
-with some high-performance Quadrics interconnect adapters a while ago.
-The reproducer involved multiple outstanding main memory read requests
-to related addresses and a small block of data would be returned from
-the wrong offset.
+swiotlb_full() in lib/swiotlb.c throws one of two panic messages
+based on whether the direction of transfer is from the device
+or to the device. The logic around this is somewhat weird in
+the case of bidirectional transfers. It appears to want to
+throw both in succession, but since its a panic only the first
+makes it.
 
-In the end, I found the nVidia CK804 (also MCP55) HT->PCIe bridge was
-at fault and later found disk corruption when doing heavy rsyncs to
-network. This was never publicly acknowledged, but I guess it
-illustrates the need for some micro-tests to verify data-soundness
-under duress; it took a day (and petabytes of data) of the production
-I/O workload to get this data corruption, and 3 seconds with the right
-reproducer, (still non-trivial to catch on a PCIe protocol analyser).
+This patch adds a third, separate error for DMA_BIDIRECTIONAL
+to make things a bit clearer.
 
-Sometime I'll develop a stress-test driver for a common SATA or
-network controller to drive it's DMA engine with I/O patterns to and
-from main memory, checking the data integrity every few seconds; this
-could be generalised with OpenGL nicely for graphics cards on
-workstations I imagine.
+Signed-off-by: Casey Dahlin <cdahlin@redhat.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Becky Bruce <beckyb@kernel.crashing.org>
+[ further fixed the error message ]
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <200908202327.n7KNRuqK001504@imap1.linux-foundation.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Daniel
--- 
-Daniel J Blueman
+
+---
+ lib/swiotlb.c |   15 +++++++++------
+ 1 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 9e2fe3e..ac25cd2 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -581,12 +581,15 @@ swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
+ 	printk(KERN_ERR "DMA: Out of SW-IOMMU space for %zu bytes at "
+ 	       "device %s\n", size, dev ? dev_name(dev) : "?");
+ 
+-	if (size > io_tlb_overflow && do_panic) {
+-		if (dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL)
+-			panic("DMA: Memory would be corrupted\n");
+-		if (dir == DMA_TO_DEVICE || dir == DMA_BIDIRECTIONAL)
+-			panic("DMA: Random memory would be DMAed\n");
+-	}
++	if (size <= io_tlb_overflow || !do_panic)
++		return;
++
++	if (dir == DMA_BIDIRECTIONAL)
++		panic("DMA: Random memory could be DMA accessed\n");
++	if (dir == DMA_FROM_DEVICE)
++		panic("DMA: Random memory could be DMA written\n");
++	if (dir == DMA_TO_DEVICE)
++		panic("DMA: Random memory could be DMA read\n");
+ }
+ 
+ /*
