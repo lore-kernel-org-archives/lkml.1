@@ -1,25 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbZHUD4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZHUD7C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbZHUD4r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 20 Aug 2009 23:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbZHUD4q
+	id S1752809AbZHUD7C (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 20 Aug 2009 23:59:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZHUD7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 20 Aug 2009 23:56:46 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40638 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754676AbZHUD4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 20 Aug 2009 23:56:45 -0400
-Date: Fri, 21 Aug 2009 13:56:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michel =?UTF-8?B?RMOkbnplcg==?= <daenzer@vmware.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: linux-next: manual merge of the agp tree with the powerpc tree
-Message-Id: <20090821135644.3f817b82.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Thu, 20 Aug 2009 23:59:01 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53886 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZHUD7A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 20 Aug 2009 23:59:00 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 21 Aug 2009 12:56:49 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Anton Blanchard <anton@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       balbir@linux.vnet.ibm.com, Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
+       balajirrao@gmail.com, dhaval@linux.vnet.ibm.com, tglx@linutronix.de,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] better align percpu counter (Was Re: [tip:sched/core]
+ sched: cpuacct: Use bigger percpu counter batch values for stats counters
+Message-Id: <20090821125649.7c2e8fa5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090820174123.afa43c48.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090512102412.GG6351@balbir.in.ibm.com>
+	<20090512102939.GB11714@elte.hu>
+	<20090512193656.D647.A69D9226@jp.fujitsu.com>
+	<20090716081010.GB3134@in.ibm.com>
+	<20090716083948.GA2950@kryten>
+	<20090820051038.GF21100@kryten>
+	<20090820052605.GC26265@balbir.in.ibm.com>
+	<1250747579.8282.110.camel@twins>
+	<20090820060528.GG21100@kryten>
+	<20090820151017.2ba95d6e.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090820062451.GH21100@kryten>
+	<20090820174123.afa43c48.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,53 +46,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+On Thu, 20 Aug 2009 17:41:23 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Today's linux-next merge of the agp tree got a conflict in
-drivers/char/agp/uninorth-agp.c between commit uninorth_create_gatt_table
-("agp/uninorth: Simplify cache flushing") from the powerpc tree and
-commit 6a12235c7d2d75c7d94b9afcaaecd422ff845ce0 ("agp: kill phys_to_gart
-() and gart_to_phys()") from the agp tree.
+>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  include/linux/percpu_counter.h |   12 +++++++++++-
+>  1 file changed, 11 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.31-rc6/include/linux/percpu_counter.h
+> ===================================================================
+> --- linux-2.6.31-rc6.orig/include/linux/percpu_counter.h	2009-08-20 12:09:27.000000000 +0900
+> +++ linux-2.6.31-rc6/include/linux/percpu_counter.h	2009-08-20 17:31:13.000000000 +0900
+> @@ -14,14 +14,24 @@
+>  #include <linux/types.h>
+>  
+>  #ifdef CONFIG_SMP
+> +struct __percpu_counter_padding {
+> +	char x[0];
+> +} ____cacheline_internodealigned_in_smp;
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+above alignement is too big...plz ignore this patch :(
 
-diff --cc drivers/char/agp/uninorth-agp.c
-index bba29ab,4317a55..0000000
---- a/drivers/char/agp/uninorth-agp.c
-+++ b/drivers/char/agp/uninorth-agp.c
-@@@ -424,28 -424,14 +424,28 @@@ static int uninorth_create_gatt_table(s
-  	if (table == NULL)
-  		return -ENOMEM;
-  
- +	pages = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
- +	if (pages == NULL)
- +		goto enomem;
- +
-  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
-  
- -	for (page = virt_to_page(table); page <= virt_to_page(table_end); page++)
- +	for (page = virt_to_page(table), i = 0; page <= virt_to_page(table_end);
- +	     page++, i++) {
-  		SetPageReserved(page);
- +		pages[i] = page;
- +	}
-  
-  	bridge->gatt_table_real = (u32 *) table;
- -	bridge->gatt_table = (u32 *)table;
- +	/* Need to clear out any dirty data still sitting in caches */
- +	flush_dcache_range((unsigned long)table,
- +			   (unsigned long)(table_end + PAGE_SIZE));
- +	bridge->gatt_table = vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NCG);
- +
- +	if (bridge->gatt_table == NULL)
- +		goto enomem;
- +
-- 	bridge->gatt_bus_addr = virt_to_gart(table);
-+ 	bridge->gatt_bus_addr = virt_to_phys(table);
-  
-  	for (i = 0; i < num_entries; i++)
-  		bridge->gatt_table[i] = 0;
+-Kame
+
+
+> +#define CACHELINE_PADDING(name)  struct __percpu_counter_padding name
+>  
+>  struct percpu_counter {
+> +	/*
+> +	 * This pointer is persistent and accessed firstly.
+> +	 * Then, should not be purged by locking in other cpus.
+> +	 */
+> +	s32 *counters;
+> +	CACHELINE_PADDING(pad);
+>  	spinlock_t lock;
+>  	s64 count;
+>  #ifdef CONFIG_HOTPLUG_CPU
+> +	/* rarely accessed field */
+>  	struct list_head list;	/* All percpu_counters are on a list */
+>  #endif
+> -	s32 *counters;
+>  };
+>  
+>  extern int percpu_counter_batch;
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
