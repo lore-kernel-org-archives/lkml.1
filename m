@@ -1,107 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933134AbZHVB6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933181AbZHVCaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933134AbZHVB6P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 21:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933070AbZHVB6P
+	id S933181AbZHVCaY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 22:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbZHVCaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 21:58:15 -0400
-Received: from hq-exedge.brocade.com ([66.243.153.82]:43034 "EHLO
-	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933007AbZHVB6O convert rfc822-to-8bit (ORCPT
+	Fri, 21 Aug 2009 22:30:23 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:51032 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933141AbZHVCaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 21:58:14 -0400
-From: Jing Huang <huangj@Brocade.COM>
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-CC: "James.Bottomley@hansenpartnership.com" 
-	<James.Bottomley@hansenpartnership.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Ramkumar Vadivelu <rvadivel@Brocade.COM>,
-       Vinodh Ravindran <vravindr@Brocade.COM>
-Date: Fri, 21 Aug 2009 18:58:14 -0700
-Subject: RE: [PATCH 2/14] bfa: Brocade BFA FC SCSI driver (bfa part1)
-Thread-Topic: [PATCH 2/14] bfa: Brocade BFA FC SCSI driver (bfa part1)
-Thread-Index: AcoihgNquY4at67tTxuW7SJwRe3FawAQ7OPg
-Message-ID: <B0A7AF226B49A14897036E9B3A68CFFECB1A935EAF@HQ-EXCH-7.corp.brocade.com>
-References: <200908200659.n7K6xqMZ006536@swe57.brocade.com>
- <200908211935.46316.eike-kernel@sf-tec.de>
-In-Reply-To: <200908211935.46316.eike-kernel@sf-tec.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 21 Aug 2009 22:30:22 -0400
+Date: Fri, 21 Aug 2009 22:30:23 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Bruno =?ISO-8859-14?B?UHLpbW9udA==?= <bonbons@linux-vserver.org>,
+       Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+In-Reply-To: <20090822001637.72a08078@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0908212214300.31042-100000@netrider.rowland.org>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rolf Eike Beer wrote:
-> > +/*
-> > + * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
-> > + * All rights reserved
-> > + * www.brocade.com
-> 
-> Shouldn't that be 2009?
+On Sat, 22 Aug 2009, Alan Cox wrote:
 
-Yes, It should be 2009. I will fix it.
+> > What about protecting the use counter?  In tty_port.c it's always
+> > protected by port->lock, but not in serial_open().  Is that a mistake?
+> 
+> Ah good an easy question to begin with
+> 
+> Yes it is in error.
 
-> 
-> > +char *
-> > +wwn2str(char *buf, int bufsize, u64 wwn)
-> > +{
-> > +	char *ptr;
-> > +	union {
-> > +	wwn_t           wwn;
-> > +	u8         byte[sizeof(wwn_t)];
-> > +	} w;
-> > +	int i = sizeof(wwn_t);
-> > +
-> > +	ptr = buf + bufsize;
-> > +	*--ptr = '\0';
-> > +	bufsize--;
-> > +
-> > +	w.wwn = wwn;
-> > +	while (i > 0) {
-> > +		i--;
-> > +		*--ptr = n2b(w.byte[i] & 0x0f);
-> > +		*--ptr = n2b((w.byte[i] >> 4) & 0x0f);
-> > +		if (i > 0)
-> > +			*--ptr = ':';
-> > +	}
-> > +
-> > +	return ptr;
-> > +}
-> 
-> I searched for 20 minutes and found nothing. Is there really no standard
-> function to printf a WWN? I mean, every FC driver needs this, no?
-> 
-> fnic:
-> -"%llx", wwn
-> 
-> ipr:
-> -"%08X%08X", be32_to_cpu(wwid[0]), be32_to_cpu(wwid[1])
-> 
-> lpfc:
-> -"%02x%02x%02x%02x%02x%02x%02x%02x", wwn[0], wwn[1], ...
-> -"%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", wwn[0], wwn[1], ...
-> -"0x%llx", cfg_soft_wwnn
-> 
-> qla2xxx:
-> -like lpfc, version 1. Harder to find as there it is called port_name and
-> node_name instead of wwpn or wwnn or wwn
-> 
-> Is there really nothing like this? Should be an easy job to write one and
-> convert all existing drivers over to use this, no? Would also add the
-> benefit
-> as that all drivers would print that in the same way.
-> 
-> Ei-printk("%WWN", wwn)-ke
+Okay, I'll fix it.
 
-I am not aware of a standard function to print wwn. It would be nice if all the drivers print wwn in the same format. Regarding our implementation of wwpn to string conversion, we are making it unnecessarily complicated, I will fix it. 
+> The core of both hangup and open are still BKL protected against
+> one another (ugly - wants fixing), release_one_dev() liekwise. This is
+> probably inadequate as they may well sleep in various spots
 
-Thanks for the reviewing the code.
+Would you consider ideas for changing the protection to something else?  
+I don't have anything in mind at the moment -- I need to study the code
+some more to understand it better.  But eventually a possibility may
+suggest itself.
 
-Jing
+> > > 		clean up resources
+> > > 		if (last && test_clear INITIALIZED)
+> > 
+> > How do you check for "last"?  Doesn't the fact that we are here mean 
+> > that there are no remaining open references?
+> 
+> It means there are no remaining file references to the handle, but you
+> may have multiple file handles referencing the same tty
+
+So basically this amounts to testing whether port->count == 0?  But 
+isn't that already implicit when tty_port_close_start() returns 0?
+
+It sounds like this is another little thingy needed only by drivers
+that don't use the new helpers.
+
+> > P.S.: Consider this code in tty_port_block_til_ready():
+> > 
+> > 	/* if non-blocking mode is set we can pass directly to open unless
+> > 	   the port has just hung up or is in another error state */
+> > 	if ((filp->f_flags & O_NONBLOCK) ||
+> > 			(tty->flags & (1 << TTY_IO_ERROR))) {
+> > 		port->flags |= ASYNC_NORMAL_ACTIVE;
+> > 		return 0;
+> > 	}
+> > 
+> > The comment doesn't agree with the logic of the test.  Which is wrong?
+> 
+> The code and comment were copied from the original drivers (and occur in
+> several places ;))
+> 
+> The intended logic is
+> 
+> 	if O_NONBLOCK is set
+> 		succeed immediately
+> 	if there is a hangup (or other pending error)
+> 		succeed immediately
+
+Got it -- the comment is wrong.  It should say something like:
+
+	/* If non-blocking mode is set or the port is in an error state
+	 * then we can return directly; tty_open() will handle everything.
+	 */
+
+Thanks,
+
+Alan Stern
+
+
+
