@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933155AbZHVU6E (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 22 Aug 2009 16:58:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbZHVU4y
+	id S933270AbZHVU6I (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 22 Aug 2009 16:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933168AbZHVU6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 16:56:54 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:41787 "EHLO e1.ny.us.ibm.com"
+	Sat, 22 Aug 2009 16:58:04 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:51048 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754943AbZHVU4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 16:56:52 -0400
+	id S1755690AbZHVU4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 16:56:53 -0400
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -15,9 +15,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
    josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
    tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
    "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH -tip] v3 Merge per-RCU-flavor initialization into pre-existing macro.
-Date: Sat, 22 Aug 2009 13:56:49 -0700
-Message-Id: <12509746133916-git-send-email->
+Subject: [PATCH -tip] v3 Use debugfs_remove_recursive() simplify code.
+Date: Sat, 22 Aug 2009 13:56:50 -0700
+Message-Id: <12509746132173-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20090727181401.GA14120@linux.vnet.ibm.com>
 References: <20090727181401.GA14120@linux.vnet.ibm.com>
@@ -27,55 +27,94 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Rename the RCU_DATA_PTR_INIT() macro to RCU_INIT_FLAVOR() and make it
-do the rcu_init_one() and rcu_boot_init_percpu_data() calls.  Merge
-the loop that was in the original macro with the loops that were in
-__rcu_init().
+Suggested by Josh Triplett.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/rcutree.c |   14 +++++---------
- 1 files changed, 5 insertions(+), 9 deletions(-)
+ kernel/rcutree_trace.c |   45 +++++++++++++++------------------------------
+ 1 files changed, 15 insertions(+), 30 deletions(-)
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 4d71d4e..7c51508 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -1543,8 +1543,9 @@ static void __init rcu_init_one(struct rcu_state *rsp)
-  * Helper macro for __rcu_init().  To be used nowhere else!
-  * Assigns leaf node pointers into each CPU's rcu_data structure.
-  */
--#define RCU_DATA_PTR_INIT(rsp, rcu_data) \
-+#define RCU_INIT_FLAVOR(rsp, rcu_data) \
- do { \
-+	rcu_init_one(rsp); \
- 	rnp = (rsp)->level[NUM_RCU_LVLS - 1]; \
- 	j = 0; \
- 	for_each_possible_cpu(i) { \
-@@ -1552,6 +1553,7 @@ do { \
- 			j++; \
- 		per_cpu(rcu_data, i).mynode = &rnp[j]; \
- 		(rsp)->rda[i] = &per_cpu(rcu_data, i); \
-+		rcu_boot_init_percpu_data(i, rsp); \
- 	} \
- } while (0)
+diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
+index ea4a474..31af3a0 100644
+--- a/kernel/rcutree_trace.c
++++ b/kernel/rcutree_trace.c
+@@ -265,62 +265,47 @@ static struct file_operations rcu_pending_fops = {
+ };
  
-@@ -1565,14 +1567,8 @@ void __init __rcu_init(void)
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
- 	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
- #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
--	rcu_init_one(&rcu_sched_state);
--	RCU_DATA_PTR_INIT(&rcu_sched_state, rcu_sched_data);
--	for_each_possible_cpu(i)
--		rcu_boot_init_percpu_data(i, &rcu_sched_state);
--	rcu_init_one(&rcu_bh_state);
--	RCU_DATA_PTR_INIT(&rcu_bh_state, rcu_bh_data);
--	for_each_possible_cpu(i)
--		rcu_boot_init_percpu_data(i, &rcu_bh_state);
-+	RCU_INIT_FLAVOR(&rcu_sched_state, rcu_sched_data);
-+	RCU_INIT_FLAVOR(&rcu_bh_state, rcu_bh_data);
- 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+ static struct dentry *rcudir;
+-static struct dentry *datadir;
+-static struct dentry *datadir_csv;
+-static struct dentry *gpdir;
+-static struct dentry *hierdir;
+-static struct dentry *rcu_pendingdir;
+ 
+ static int __init rcuclassic_trace_init(void)
+ {
++	struct dentry *retval;
++
+ 	rcudir = debugfs_create_dir("rcu", NULL);
+ 	if (!rcudir)
+-		goto out;
++		goto free_out;
+ 
+-	datadir = debugfs_create_file("rcudata", 0444, rcudir,
++	retval = debugfs_create_file("rcudata", 0444, rcudir,
+ 						NULL, &rcudata_fops);
+-	if (!datadir)
++	if (!retval)
+ 		goto free_out;
+ 
+-	datadir_csv = debugfs_create_file("rcudata.csv", 0444, rcudir,
++	retval = debugfs_create_file("rcudata.csv", 0444, rcudir,
+ 						NULL, &rcudata_csv_fops);
+-	if (!datadir_csv)
++	if (!retval)
+ 		goto free_out;
+ 
+-	gpdir = debugfs_create_file("rcugp", 0444, rcudir, NULL, &rcugp_fops);
+-	if (!gpdir)
++	retval = debugfs_create_file("rcugp", 0444, rcudir, NULL, &rcugp_fops);
++	if (!retval)
+ 		goto free_out;
+ 
+-	hierdir = debugfs_create_file("rcuhier", 0444, rcudir,
++	retval = debugfs_create_file("rcuhier", 0444, rcudir,
+ 						NULL, &rcuhier_fops);
+-	if (!hierdir)
++	if (!retval)
+ 		goto free_out;
+ 
+-	rcu_pendingdir = debugfs_create_file("rcu_pending", 0444, rcudir,
++	retval = debugfs_create_file("rcu_pending", 0444, rcudir,
+ 						NULL, &rcu_pending_fops);
+-	if (!rcu_pendingdir)
++	if (!retval)
+ 		goto free_out;
+ 	return 0;
+ free_out:
+-	if (datadir)
+-		debugfs_remove(datadir);
+-	if (datadir_csv)
+-		debugfs_remove(datadir_csv);
+-	if (gpdir)
+-		debugfs_remove(gpdir);
+-	debugfs_remove(rcudir);
+-out:
++	debugfs_remove_recursive(rcudir);
+ 	return 1;
  }
+ 
+ static void __exit rcuclassic_trace_cleanup(void)
+ {
+-	debugfs_remove(datadir);
+-	debugfs_remove(datadir_csv);
+-	debugfs_remove(gpdir);
+-	debugfs_remove(hierdir);
+-	debugfs_remove(rcu_pendingdir);
+-	debugfs_remove(rcudir);
++	debugfs_remove_recursive(rcudir);
+ }
+ 
  
 -- 
 1.5.2.5
