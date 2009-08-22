@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932911AbZHVO0G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbZHVOiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932911AbZHVO0G (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 10:26:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932520AbZHVO0F
+	id S1755431AbZHVOiy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 10:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbZHVOix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 10:26:05 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37001 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932483AbZHVO0E (ORCPT
+	Sat, 22 Aug 2009 10:38:53 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:42308 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753182AbZHVOiw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 10:26:04 -0400
-Date: Sat, 22 Aug 2009 10:25:50 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Felix Blyakher <felixb@sgi.com>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.30.4 XFS(..?) regression (& with/2.6.31-rc6)
-Message-ID: <20090822142550.GA10003@infradead.org>
-References: <alpine.DEB.2.00.0908080422440.12329@p34.internal.lan> <00980BBF-1206-4BEF-A8AE-B4A8DAE7EC27@sgi.com> <alpine.DEB.2.00.0908090605080.16485@p34.internal.lan> <alpine.DEB.2.00.0908110624420.22426@p34.internal.lan> <20090816022331.GA2309@infradead.org> <alpine.DEB.2.00.0908171024380.12533@p34.internal.lan> <alpine.DEB.2.00.0908220624440.30321@p34.internal.lan>
+	Sat, 22 Aug 2009 10:38:52 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A9002D6.3070301@s5r6.in-berlin.de>
+Date: Sat, 22 Aug 2009 16:38:14 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090630 SeaMonkey/1.1.17
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908220624440.30321@p34.internal.lan>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Gene Heskett <gene.heskett@verizon.net>
+CC: Robert Hancock <hancockrwd@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Regression: Linux 2.6.31-rc7 lost sensors on asus mobo
+References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain> <4A8F8C49.2030406@gmail.com> <4A8FCE50.9070801@s5r6.in-berlin.de> <200908220948.03426.gene.heskett@verizon.net>
+In-Reply-To: <200908220948.03426.gene.heskett@verizon.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 22, 2009 at 06:27:30AM -0400, Justin Piszcz wrote:
->
->
-> On Mon, 17 Aug 2009, Justin Piszcz wrote:
->
->>
->>
->> On Sat, 15 Aug 2009, Christoph Hellwig wrote:
->>
->
-> On this system, I am running loop-aes, could that be the culprit?  On all 
-> other systems not using loop-aes with 2.6.30.x, I do not see this issue.
+Gene Heskett wrote:
+> I have applied that fix from the bz entry to my grub.conf but have not 
+> rebooted as yet.  However if this asus_atk0110.ko module is supposed to do 
+> the same job, then obviously I do not have some other, required option set in 
+> my .config's for rc6 and rc7.  Directly choosing it doesn't seem to be 
+> available in a make xconfig.  What am I missing?
 
-Yes, entirely possible.   All the crypto loop / dm implementation used
-to have a tendency to never complete I/O once in a while, although that
-didn't happen anymore recently.
-
+The entry is in 'Device Drivers'/ 'Hardware Monitoring support'/ 'ASUS 
+ATK0110 ACPI hwmon (SENSORS_ATK0110)' and depends on:  HWMON (Hardware 
+Monitoring support), X86, ACPI, EXPERIMENTAL.  ACPI in turn depends on 
+PM (Power Management support).
+-- 
+Stefan Richter
+-=====-==--= =--- =-==-
+http://arcgraph.de/sr/
