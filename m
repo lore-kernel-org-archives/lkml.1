@@ -1,181 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbZHVQh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932983AbZHVQyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932832AbZHVQh5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 12:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932616AbZHVQh5
+	id S932983AbZHVQyF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 12:54:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932933AbZHVQyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 12:37:57 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:60613 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932597AbZHVQhz (ORCPT
+	Sat, 22 Aug 2009 12:54:04 -0400
+Received: from mail-iw0-f204.google.com ([209.85.223.204]:53300 "EHLO
+	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932878AbZHVQyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 12:37:55 -0400
+	Sat, 22 Aug 2009 12:54:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=EUSKU7vCQ9MJBOf465Vqi7JNoQ1nFZid+8voav3vXUbsj9HKVRN+qwps1N178JPeI4
-         hAeIhID6BRGlNmLfDe/Uk1Jg5/gRYmEYL4/1oy9c1SGNCJgQNQ1VS2oO4wxFvWzpK50P
-         D1+S7dG2kW2er8okgODu3tiOceYQp4v/LCmhs=
-Date: Sat, 22 Aug 2009 18:37:50 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-       tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set
- X86_FEATURE_LAHF_LM CPUID bit
-Message-ID: <20090822163750.GA31631@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-	mingo@redhat.com, linux-kernel@vger.kernel.org,
-	kjwinchester@gmail.com, tglx@linutronix.de, borislav.petkov@amd.com,
-	linux-tip-commits@vger.kernel.org
-References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com>
- <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org>
- <20090816064132.GA16278@elte.hu>
- <20090816214934.GB7765@liondog.tnic>
- <4A8EDC02.8000508@zytor.com>
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=mUGc8iQORM0Ajx8Saon/rd0hc5XkTULfTFI+U0uhb8DPfAaKvzwF6lVMTmSLUCqk34
+         y8Lu7tAbijXCH2exHzeRDT8kWLeqSUNWuU9iJS1M9DUqfD1uexTnR28YmI2QR/q/yoVD
+         CUzdogzZ9SsegvmLYRnDo6czdwed2batemiIA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4A8EDC02.8000508@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Date: Sun, 23 Aug 2009 01:54:02 +0900
+Message-ID: <82e12e5f0908220954p7019fb3dg15f9b99bb7e55a8c@mail.gmail.com>
+Subject: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
+From: Hiroaki Wakabayashi <primulaelatior@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Ying Han <yinghan@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 10:40:18AM -0700, H. Peter Anvin wrote:
-> If we're going to modify the paravirt_crap for yet another MSR
-> operation, then let's at least make it something like "write_msr_edi"
-> and have it take a parameter for the EDI value.  Perhaps we should let
-> it set EBX and ESI as well (and the same for the read operation, even
-> though it already exists.)
+>From 27b2fde0222c59049026e7d0bdc4a2a68d0720f5 Mon Sep 17 00:00:00 2001
+From: Hiroaki Wakabayashi <primulaelatior@gmail.com>
+Date: Sat, 22 Aug 2009 19:14:53 +0900
+Subject: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
 
-Ok, how about making all rdmsr* variants indirectly call into a
-native_read_msr_safe_reg() helper which takes esi and edi as additional
-arguments. There was no room for ebx since paravirt has a PVOP_CALL4
-macro which takes the largest number of args - 4 and I am lazy, of
-course, to implement a PVOP_CALL5 thing :o)
+This patch is for making commit 4779280d1e (mm: make get_user_pages()
+interruptible) complete.
 
-The wrmsr variants could be done similarly.
+At first, munlock() assumes that all pages in vma are pinned,
 
-Suggestions, comments?
+Now, by the commit, mlock() can be interrupted by SIGKILL, etc  So, part of
+pages are not pinned.
+If SIGKILL, In exit() path, munlock is called for unlocking pinned pages
+in vma.
 
---
-diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
-index 48ad9d2..2fec363 100644
---- a/arch/x86/include/asm/msr.h
-+++ b/arch/x86/include/asm/msr.h
-@@ -55,8 +55,10 @@ static inline unsigned long long native_read_msr(unsigned int msr)
- 	return EAX_EDX_VAL(val, low, high);
- }
- 
--static inline unsigned long long native_read_msr_safe(unsigned int msr,
--						      int *err)
-+static inline unsigned long long native_read_msr_safe_reg(unsigned int msr,
-+							  int *err,
-+							  unsigned int edi,
-+							  unsigned int esi)
- {
- 	DECLARE_ARGS(val, low, high);
- 
-@@ -67,24 +69,15 @@ static inline unsigned long long native_read_msr_safe(unsigned int msr,
- 		     ".previous\n\t"
- 		     _ASM_EXTABLE(2b, 3b)
- 		     : [err] "=r" (*err), EAX_EDX_RET(val, low, high)
--		     : "c" (msr), [fault] "i" (-EFAULT));
-+		     : "c" (msr), [fault] "i" (-EFAULT), "D" (edi), "S" (esi));
-+
- 	return EAX_EDX_VAL(val, low, high);
- }
- 
--static inline unsigned long long native_read_msr_amd_safe(unsigned int msr,
-+static inline unsigned long long native_read_msr_safe(unsigned int msr,
- 						      int *err)
- {
--	DECLARE_ARGS(val, low, high);
+But, there, get_user_pages(write) is used for munlock(). Then, pages are
+allocated via page-fault for exsiting process !!! This is problem at canceling
+big mlock.
+This patch tries to avoid allocating new pages at munlock().
+
+   mlock( big area )
+        <===== sig kill
+   do_exit()
+    ->mmput()
+       -> do_munlock()
+         -> get_user_pages()
+               <allocate *never used* memory>
+       ->.....freeing allocated memory.
+
+* Test program
+% cat run.sh
+#!/bin/sh
+
+./mlock_test 2000000000 &
+sleep 2
+kill -9 $!
+wait
+
+% cat mlock_test.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/time.h>
+
+int main(int argc, char **argv)
+{
+	size_t length = 50 * 1024 * 1024;
+	void *addr;
+	time_t timer;
+
+	if (argc >= 2)
+		length = strtoul(argv[1], NULL, 10);
+	printf("PID = %d\n", getpid());
+	addr = mmap(NULL, length, PROT_READ | PROT_WRITE,
+				MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	if (addr == MAP_FAILED) {
+		fprintf(stderr, "mmap failed: %s, length=%lu\n",
+				strerror(errno), length);
+		exit(EXIT_FAILURE);
+	}
+	printf("try mlock length=%lu\n", length);
+	timer = time(NULL);
+	if (mlock(addr, length) < 0) {
+		fprintf(stderr, "mlock failed: %s, time=%lu[sec]\n",
+				strerror(errno), time(NULL) - timer);
+		exit(EXIT_FAILURE);
+	}
+	printf("mlock succeed, time=%lu[sec]\n\n", time(NULL) - timer);
+	printf("try munlock length=%lu\n", length);
+	timer = time(NULL);
+	if (munlock(addr, length) < 0) {
+		fprintf(stderr, "munlock failed: %s, time=%lu[sec]\n",
+				strerror(errno), time(NULL)-timer);
+		exit(EXIT_FAILURE);
+	}
+	printf("munlock succeed, time=%lu[sec]\n\n", time(NULL) - timer);
+	if (munmap(addr, length) < 0) {
+		fprintf(stderr, "munmap failed: %s\n", strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	return 0;
+}
+
+* Executed Result
+-- Original executed result
+% time ./run.sh
+
+PID = 2678
+try mlock length=2000000000
+./run.sh: line 6:  2678 Killed                  ./mlock_test 2000000000
+./run.sh  0.00s user 2.59s system 13% cpu 18.781 total
+%
+
+-- After applied this patch
+% time ./run.sh
+
+PID = 2512
+try mlock length=2000000000
+./run.sh: line 6:  2512 Killed                  ./mlock_test 2000000000
+./run.sh  0.00s user 1.15s system 45% cpu 2.507 total
+%
+
+Signed-off-by: Hiroaki Wakabayashi <primulaelatior@gmail.com>
+---
+ mm/internal.h |    1 +
+ mm/memory.c   |    9 +++++++--
+ mm/mlock.c    |   35 +++++++++++++++++++----------------
+ 3 files changed, 27 insertions(+), 18 deletions(-)
+
+diff --git a/mm/internal.h b/mm/internal.h
+index f290c4d..4ab5b24 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -254,6 +254,7 @@ static inline void
+mminit_validate_memmodel_limits(unsigned long *start_pfn,
+ #define GUP_FLAGS_FORCE                  0x2
+ #define GUP_FLAGS_IGNORE_VMA_PERMISSIONS 0x4
+ #define GUP_FLAGS_IGNORE_SIGKILL         0x8
++#define GUP_FLAGS_ALLOW_NULL             0x10
+
+ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 		     unsigned long start, int len, int flags,
+diff --git a/mm/memory.c b/mm/memory.c
+index aede2ce..b41fbf9 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1217,6 +1217,7 @@ int __get_user_pages(struct task_struct *tsk,
+struct mm_struct *mm,
+ 	int force = !!(flags & GUP_FLAGS_FORCE);
+ 	int ignore = !!(flags & GUP_FLAGS_IGNORE_VMA_PERMISSIONS);
+ 	int ignore_sigkill = !!(flags & GUP_FLAGS_IGNORE_SIGKILL);
++	int allow_null = !!(flags & GUP_FLAGS_ALLOW_NULL);
+
+ 	if (nr_pages <= 0)
+ 		return 0;
+@@ -1312,6 +1313,8 @@ int __get_user_pages(struct task_struct *tsk,
+struct mm_struct *mm,
+ 			while (!(page = follow_page(vma, start, foll_flags))) {
+ 				int ret;
+
++				if (allow_null)
++					break;
+ 				ret = handle_mm_fault(mm, vma, start,
+ 					(foll_flags & FOLL_WRITE) ?
+ 					FAULT_FLAG_WRITE : 0);
+@@ -1351,8 +1354,10 @@ int __get_user_pages(struct task_struct *tsk,
+struct mm_struct *mm,
+ 			if (pages) {
+ 				pages[i] = page;
+
+-				flush_anon_page(vma, page, start);
+-				flush_dcache_page(page);
++				if (page) {
++					flush_anon_page(vma, page, start);
++					flush_dcache_page(page);
++				}
+ 			}
+ 			if (vmas)
+ 				vmas[i] = vma;
+diff --git a/mm/mlock.c b/mm/mlock.c
+index 45eb650..0f5827b 100644
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -178,9 +178,10 @@ static long __mlock_vma_pages_range(struct
+vm_area_struct *vma,
+ 	 */
+ 	if (!mlock)
+ 		gup_flags |= GUP_FLAGS_IGNORE_VMA_PERMISSIONS |
+-			     GUP_FLAGS_IGNORE_SIGKILL;
++			     GUP_FLAGS_IGNORE_SIGKILL |
++			     GUP_FLAGS_ALLOW_NULL;
+
+-	if (vma->vm_flags & VM_WRITE)
++	if (mlock && (vma->vm_flags & VM_WRITE))
+ 		gup_flags |= GUP_FLAGS_WRITE;
+
+ 	while (nr_pages > 0) {
+@@ -220,21 +221,23 @@ static long __mlock_vma_pages_range(struct
+vm_area_struct *vma,
+ 		for (i = 0; i < ret; i++) {
+ 			struct page *page = pages[i];
+
+-			lock_page(page);
+-			/*
+-			 * Because we lock page here and migration is blocked
+-			 * by the elevated reference, we need only check for
+-			 * page truncation (file-cache only).
+-			 */
+-			if (page->mapping) {
+-				if (mlock)
+-					mlock_vma_page(page);
+-				else
+-					munlock_vma_page(page);
++			if (page) {
++				lock_page(page);
++				/*
++				 * Because we lock page here and migration is
++				 * blocked by the elevated reference, we need
++				 * only check for page truncation
++				 * (file-cache only).
++				 */
++				if (page->mapping) {
++					if (mlock)
++						mlock_vma_page(page);
++					else
++						munlock_vma_page(page);
++				}
++				unlock_page(page);
++				put_page(page); /* ref from get_user_pages() */
+ 			}
+-			unlock_page(page);
+-			put_page(page);		/* ref from get_user_pages() */
 -
--	asm volatile("2: rdmsr ; xor %0,%0\n"
--		     "1:\n\t"
--		     ".section .fixup,\"ax\"\n\t"
--		     "3:  mov %3,%0 ; jmp 1b\n\t"
--		     ".previous\n\t"
--		     _ASM_EXTABLE(2b, 3b)
--		     : "=r" (*err), EAX_EDX_RET(val, low, high)
--		     : "c" (msr), "D" (0x9c5a203a), "i" (-EFAULT));
--	return EAX_EDX_VAL(val, low, high);
-+	return native_read_msr_safe_reg(msr, err, 0, 0);
- }
- 
- static inline void native_write_msr(unsigned int msr,
-@@ -181,11 +174,12 @@ static inline int rdmsrl_safe(unsigned msr, unsigned long long *p)
- 	*p = native_read_msr_safe(msr, &err);
- 	return err;
- }
-+
- static inline int rdmsrl_amd_safe(unsigned msr, unsigned long long *p)
- {
- 	int err;
- 
--	*p = native_read_msr_amd_safe(msr, &err);
-+	*p = native_read_msr_safe_reg(msr, &err, 0x9c5a203a, 0);
- 	return err;
- }
- 
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 4fb37c8..d49e1ee 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -166,8 +166,9 @@ struct pv_cpu_ops {
- 
- 	/* MSR, PMC and TSR operations.
- 	   err = 0/-EFAULT.  wrmsr returns 0/-EFAULT. */
--	u64 (*read_msr_amd)(unsigned int msr, int *err);
- 	u64 (*read_msr)(unsigned int msr, int *err);
-+	u64 (*read_msr_reg)(unsigned int msr, int *err, unsigned edi,
-+			    unsigned esi);
- 	int (*write_msr)(unsigned int msr, unsigned low, unsigned high);
- 
- 	u64 (*read_tsc)(void);
-@@ -820,9 +821,10 @@ static inline u64 paravirt_read_msr(unsigned msr, int *err)
- {
- 	return PVOP_CALL2(u64, pv_cpu_ops.read_msr, msr, err);
- }
--static inline u64 paravirt_read_msr_amd(unsigned msr, int *err)
-+static inline u64 paravirt_read_msr_reg(unsigned msr, int *err, unsigned edi,
-+					unsigned esi)
- {
--	return PVOP_CALL2(u64, pv_cpu_ops.read_msr_amd, msr, err);
-+	return PVOP_CALL4(u64, pv_cpu_ops.read_msr_reg, msr, err, edi, esi);
- }
- static inline int paravirt_write_msr(unsigned msr, unsigned low, unsigned high)
- {
-@@ -873,7 +875,7 @@ static inline int rdmsrl_amd_safe(unsigned msr, unsigned long long *p)
- {
- 	int err;
- 
--	*p = paravirt_read_msr_amd(msr, &err);
-+	*p = paravirt_read_msr_reg(msr, &err, 0x9c5a203a, 0);
- 	return err;
- }
- 
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
-index 70ec9b9..ecac58d 100644
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -362,7 +362,7 @@ struct pv_cpu_ops pv_cpu_ops = {
- #endif
- 	.wbinvd = native_wbinvd,
- 	.read_msr = native_read_msr_safe,
--	.read_msr_amd = native_read_msr_amd_safe,
-+	.read_msr_reg = native_read_msr_safe_reg,
- 	.write_msr = native_write_msr_safe,
- 	.read_tsc = native_read_tsc,
- 	.read_pmc = native_read_pmc,
-
+ 			/*
+ 			 * here we assume that get_user_pages() has given us
+ 			 * a list of virtually contiguous pages.
 -- 
-Regards/Gruss,
-    Boris.
+1.5.6.5
