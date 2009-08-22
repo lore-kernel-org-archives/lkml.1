@@ -1,188 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbZHVBjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933120AbZHVBs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933112AbZHVBjy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 21:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933078AbZHVBjx
+	id S933120AbZHVBs2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 21:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbZHVBs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 21:39:53 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:39580 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933070AbZHVBjw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 21:39:52 -0400
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, kamezawa.hiroyu@jp.fujitsu.com,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 1/8] kexec: allow to shrink reserved memory
-References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
-	<20090821065650.4855.53279.sendpatchset@localhost.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 21 Aug 2009 18:39:43 -0700
-In-Reply-To: <20090821065650.4855.53279.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Fri\, 21 Aug 2009 02\:54\:25 -0400")
-Message-ID: <m18whcr5i8.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 21 Aug 2009 21:48:26 -0400
+Received: from mga03.intel.com ([143.182.124.21]:62883 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933075AbZHVBs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 21:48:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,253,1249282800"; 
+   d="scan'208";a="178847410"
+Date: Sat, 22 Aug 2009 09:48:19 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Chuck Lever <Chuck.Lever@oracle.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       NFS list <linux-nfs@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: mount.nfs: access denied by server
+Message-ID: <20090822014819.GA7798@localhost>
+References: <20090820071315.GA14765@localhost> <1250773349.5352.23.camel@heimdal.trondhjem.org> <20090821012700.GA9937@localhost> <1250822171.6514.29.camel@heimdal.trondhjem.org> <8C4C4FD5-733E-4327-8618-8C400FAE72C1@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: amwang@redhat.com, avorontsov@ru.mvista.com, kamezawa.hiroyu@jp.fujitsu.com, fenghua.yu@intel.com, bernhard.walle@gmx.de, akpm@linux-foundation.org, mingo@elte.hu, andi@firstfloor.org, nhorman@redhat.com, linux-ia64@vger.kernel.org, tony.luck@intel.com, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <8C4C4FD5-733E-4327-8618-8C400FAE72C1@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang <amwang@redhat.com> writes:
+On Sat, Aug 22, 2009 at 01:50:52AM +0800, Chuck Lever wrote:
+> 
+> On Aug 20, 2009, at 10:36 PM, Trond Myklebust wrote:
+> 
+> > On Fri, 2009-08-21 at 09:27 +0800, Wu Fengguang wrote:
+> >> On Thu, Aug 20, 2009 at 09:02:29PM +0800, Trond Myklebust wrote:
+> >>> On Thu, 2009-08-20 at 15:13 +0800, Wu Fengguang wrote:
+> >>>> Hi,
+> >>>>
+> >>>> After upgrading NFS client kernel to latest linux-next, NFS mount
+> >>>> failed:
+> >>>>
+> >>>>        # mount -t nfs pxe:/cc /cc
+> >>>>        mount.nfs: access denied by server while mounting pxe:/cc
+> >>>>
+> >>>>        # uname -a
+> >>>>        Linux hp 2.6.31-rc6-next-20090818 #61 SMP Thu Aug 20  
+> >>>> 14:46:10 CST 2009 x86_64 GNU/Linux
+> >>>>
+> >>>> However server log says OK:
+> >>>>
+> >>>>        Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated mount  
+> >>>> request from 192.168.11.6:973 for /cc (/cc)
+> >>>>        Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated unmount  
+> >>>> request from 192.168.11.6:974 for /cc (/cc)
+> >>>>
+> >>>> However-2: nfsroot can be mounted at boot time. Server kernel has  
+> >>>> always been 2.6.30.
+> >>>>
+> >>>> Any ideas?
+> >>>>
+> >>>> Thanks,
+> >>>> Fengguang
+> >>>
+> >>> Can you try again after enabling mount debugging on the NFS client?
+> >>>
+> >>> echo 512 > /proc/sys/sunrpc/nfs_debug
+> >>
+> >> I used 1024 and found the mount failed here in nfs_walk_authlist():
+> >>
+> >>        dfprintk(MOUNT, "NFS: server does not support requested auth  
+> >> flavor\ n");
+> >>        nfs_umount(request);
+> >
+> > Thanks Fengguang!
+> >
+> > Chuck, this looks like one of yours. Could it be that you are hitting
+> > the same Linux knfsd bug that Tom Haynes saw with a Solaris client?
+> > AFAICR, the problem was that existing nfs servers do not set a default
+> > auth flavour, and so you just have to try with auth_sys and see if it
+> > succeeds...
+> 
+> With 1024 set, the mount client's XDR routines should have listed the  
+> server's flavors, if any, in the system log.  Should be something like  
+> "NFS: received 0 auth flavors" if the server didn't return any.  Can  
+> you confirm that?
 
-> This patch implements shrinking the reserved memory for crash kernel,
-> if it is more than enough.
->
-> For example, if you have already reserved 128M, now you just want 100M,
-> you can do:
->
-> # echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
->
-> Note, you can only do this before loading the crash kernel.
->
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Neil Horman <nhorman@redhat.com>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> ---
->
-> Index: linux-2.6/include/linux/kexec.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/kexec.h
-> +++ linux-2.6/include/linux/kexec.h
-> @@ -206,6 +206,8 @@ extern size_t vmcoreinfo_max_size;
->  
->  int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
->  		unsigned long long *crash_size, unsigned long long *crash_base);
-> +int shrink_crash_memory(unsigned long new_size);
-> +size_t get_crash_memory_size(void);
->  
->  #else /* !CONFIG_KEXEC */
->  struct pt_regs;
-> Index: linux-2.6/kernel/kexec.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/kexec.c
-> +++ linux-2.6/kernel/kexec.c
-> @@ -31,6 +31,7 @@
->  #include <linux/cpu.h>
->  #include <linux/console.h>
->  #include <linux/vmalloc.h>
-> +#include <linux/swap.h>
->  
->  #include <asm/page.h>
->  #include <asm/uaccess.h>
-> @@ -1083,6 +1084,58 @@ void crash_kexec(struct pt_regs *regs)
->  	}
->  }
->  
-> +size_t get_crash_memory_size(void)
-> +{
-> +	size_t size;
-> +	mutex_lock(&kexec_mutex);
-> +	size = crashk_res.end - crashk_res.start + 1;
-> +	mutex_unlock(&kexec_mutex);
-> +	return size;
-> +}
-> +
-> +int shrink_crash_memory(unsigned long new_size)
-> +{
-> +	int ret = 0;
-> +	unsigned long addr;
-> +	unsigned long start, end;
-> +
-> +	mutex_lock(&kexec_mutex);
-> +
-> +	if (kexec_crash_image) {
-> +		ret = -ENOENT;
-> +		goto unlock;
-> +	}
-> +	start = crashk_res.start;
-> +	end = crashk_res.end;
-> +
-> +	if (new_size >= end - start + 1) {
-> +		ret = -EINVAL;
-> +		if (new_size == end - start + 1)
-> +			ret = 0;
-> +		goto unlock;
-> +	}
-> +
-> +	start = roundup(start, PAGE_SIZE);
-> +	end = roundup(start + new_size, PAGE_SIZE);
-> +
-> +	for (addr = end; addr < crashk_res.end; addr += PAGE_SIZE) {
-> +		ClearPageReserved(pfn_to_page(addr >> PAGE_SHIFT));
-> +		init_page_count(pfn_to_page(addr >> PAGE_SHIFT));
-> +		free_page((unsigned long)__va(addr));
-> +		totalram_pages++;
+Yes. The full logs are:
 
-Any chance we can move this inline snippet into a helper function in
--mm.  To expose what is happening here to the mm developers.
 
-Eric
+Aug 21 09:54:38 hp kernel: [   74.671552] NFS: nfs mount opts='nolock,addr=192.168.11.2'
+Aug 21 09:54:38 hp kernel: [   74.677150] NFS:   parsing nfs mount option 'nolock'
+Aug 21 09:54:38 hp kernel: [   74.682204] NFS:   parsing nfs mount option 'addr=192.168.11.2'
+Aug 21 09:54:38 hp kernel: [   74.688234] NFS: MNTPATH: '/cc'
+Aug 21 09:54:38 hp kernel: [   74.691468] NFS: sending MNT request for pxe:/cc
+Aug 21 09:54:38 hp kernel: [   74.704458] NFS: received 0 auth flavors
+Aug 21 09:54:38 hp kernel: [   74.708587] NFS: MNT request succeeded
+Aug 21 09:54:38 hp kernel: [   74.712435] NFS: server does not support requested auth flavor
+Aug 21 09:54:38 hp kernel: [   74.718358] NFS: sending UMNT request for pxe:/cc
 
-> +	}
-> +
-> +	if (start == end) {
-> +		crashk_res.end = end;
-> +		release_resource(&crashk_res);
-> +	} else
-> +		crashk_res.end = end - 1;
-> +
-> +unlock:
-> +	mutex_unlock(&kexec_mutex);
-> +	return ret;
-> +}
-> +
->  static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
->  			    size_t data_len)
->  {
-> Index: linux-2.6/kernel/ksysfs.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/ksysfs.c
-> +++ linux-2.6/kernel/ksysfs.c
-> @@ -100,6 +100,26 @@ static ssize_t kexec_crash_loaded_show(s
->  }
->  KERNEL_ATTR_RO(kexec_crash_loaded);
->  
-> +static ssize_t kexec_crash_size_show(struct kobject *kobj,
-> +				       struct kobj_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%lu\n", get_crash_memory_size());
-> +}
-> +static ssize_t kexec_crash_size_store(struct kobject *kobj,
-> +				   struct kobj_attribute *attr,
-> +				   const char *buf, size_t count)
-> +{
-> +	unsigned long cnt;
-> +	int ret;
-> +
-> +	if (strict_strtoul(buf, 0, &cnt))
-> +		return -EINVAL;
-> +
-> +	ret = shrink_crash_memory(cnt);
-> +	return ret < 0 ? ret : count;
-> +}
-> +KERNEL_ATTR_RW(kexec_crash_size);
-> +
->  static ssize_t vmcoreinfo_show(struct kobject *kobj,
->  			       struct kobj_attribute *attr, char *buf)
->  {
-> @@ -147,6 +167,7 @@ static struct attribute * kernel_attrs[]
->  #ifdef CONFIG_KEXEC
->  	&kexec_loaded_attr.attr,
->  	&kexec_crash_loaded_attr.attr,
-> +	&kexec_crash_size_attr.attr,
->  	&vmcoreinfo_attr.attr,
->  #endif
->  	NULL
+
+> I'll try to post a fix later today.
+
+Thanks!
+
+Fengguang
