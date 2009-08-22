@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932520AbZHVJaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933160AbZHVJb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932520AbZHVJaR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 05:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbZHVJaQ
+	id S933160AbZHVJb3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 05:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbZHVJb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 05:30:16 -0400
-Received: from ppp-137-74.adsl.restena.lu ([158.64.137.74]:60494 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755005AbZHVJaP (ORCPT
+	Sat, 22 Aug 2009 05:31:28 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:44662 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755005AbZHVJb1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 05:30:15 -0400
-X-Greylist: delayed 525 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Aug 2009 05:30:15 EDT
-Date: Sat, 22 Aug 2009 11:21:03 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andy Whitcroft <apw@canonical.com>, "Ed L. Cashin" <ecashin@coraid.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/1] aoe: ensure we initialise the request_queue
- correctly
-Message-ID: <20090822112103.49174d6b@neptune.home>
-In-Reply-To: <1250872904-10993-1-git-send-email-apw@canonical.com>
-References: <1250872904-10993-1-git-send-email-apw@canonical.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 22 Aug 2009 05:31:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=H/7xNEv/i0A5zlZpDt9rcLAOZHMFzH5ugAobaUMxO+9g8nLHJk6fdR6KDDTK22m95k
+         3VmBrUrV0bGRCdUrfK4KYfTJbhCxF4VyJ7b+dXHzqc9xQ/4a9mH6sbv2lcAIT5vp3Du6
+         BwwtgBWm3754dMVngdJprhJ162aMcrd9HoA3Q=
+MIME-Version: 1.0
+In-Reply-To: <4A8F1500.6070208@dell.com>
+References: <1250706980-10424-1-git-send-email-Mario_Limonciello@Dell.com>
+	 <9b2b86520908200217j6a62b19dk6214b827af34418@mail.gmail.com>
+	 <4A8F1500.6070208@dell.com>
+Date: Sat, 22 Aug 2009 10:31:27 +0100
+Message-ID: <9b2b86520908220231v6d4ab9aahfe69914e5c5fb796@mail.gmail.com>
+Subject: Re: [PATCH 3/3] Drop platform sysfs attributes from compal-laptop
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Mario Limonciello <mario_limonciello@dell.com>
+Cc: cezary.jackiewicz@gmail.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael, this matches regression bug #13942 "Troubles with AoE and
-uninitialized object".
+On 8/21/09, Mario Limonciello <mario_limonciello@dell.com> wrote:
+> Alan Jenkins wrote:
+>> On 8/19/09, Mario Limonciello <Mario_Limonciello@dell.com> wrote:
+>>
+>> Don't you still need to call platform_device_del() for the fail_rfkill
+>> case?
+>>
+>>
+> It was previously only called if the sysfs attribute creation failed.
+> So if it does need to be called, then there was a bug previously there too.
 
-Will test and report how it works out here.
+Nope, look at it again.
 
-Bruno
+> @@ -481,11 +326,7 @@ static int __init compal_init(void)
+>         return 0;
+>
+>   fail_rfkill:
+>  -fail_platform_device2:
+>  -
+>  -       platform_device_del(compal_device);
+>  -
+>  -fail_platform_device1:
+>  +fail_platform_device:
+>
+>         platform_device_put(compal_device);
 
+Without this patch, fail_rfkill falls through to
+fail_platform_device2, and calls platform_device_del().  With the
+patch, the call to platform_device_del() is removed, so it will no
+longer be called for the fail_rfkill case.  It's not a pre-existing
+bug.
 
-On Fri, 21 August 2009 Andy Whitcroft <apw@canonical.com> wrote:
-> We have been seeing oopses in very recent kernels when using the AOE
-> driver. When attempting to mount remote devices we get a warning from
-> the kobject layer:
-> 
->   [ 2645.959090] kobject '<NULL>' (ffff880059ca22c0): tried to add
-> 	an uninitialized object, something is seriously wrong.
-> 
-> Looking at the driver it seems to have always had an embedded
-> request_queue and it is this that is throwing the error.  It appears
-> the intent is tha these would be allocated and released using
-> helpers, and the lack of these leaves the object uninitialised and
-> throws the error.  It is unclear how this could ever have worked.
-> Anyhow the following email contains a patch to allocate and release
-> this request_queue via the standard helpers. This has bene shown to
-> fix the issue in testing.
-> 
-> Comments.
-> 
-> -apw
-> 
-> Andy Whitcroft (1):
->   aoe: ensure we initialise the request_queue correctly
-> 
->  drivers/block/aoe/aoe.h    |    2 +-
->  drivers/block/aoe/aoeblk.c |    6 +++---
->  drivers/block/aoe/aoedev.c |   11 ++++++++++-
->  3 files changed, 14 insertions(+), 5 deletions(-)
+Regards
+Alan
