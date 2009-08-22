@@ -1,112 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbZHVVzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933329AbZHVV4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933299AbZHVVzp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 17:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133AbZHVVzp
+	id S933329AbZHVV4u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 17:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933191AbZHVV4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 17:55:45 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:43189 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932905AbZHVVzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 17:55:44 -0400
-X-Greylist: delayed 1216 seconds by postgrey-1.27 at vger.kernel.org; Sat, 22 Aug 2009 17:55:44 EDT
-From: "Henrik Rydberg" <rydberg@euromail.se>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: nicolas@boichat.ch, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>
-Subject: [PATCH] hwmon: applesmc: restore keyboard backlight on resume
-Date: Sat, 22 Aug 2009 23:33:52 +0200
-Message-Id: <1250976832-9801-1-git-send-email-rydberg@euromail.se>
-X-Mailer: git-send-email 1.6.3.3
-X-Originating-IP: 83.248.196.134
-X-Scan-Result: No virus found in message 1MeyFv-0004ub-7A.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1MeyFv-0004ub-7A e0b77cce9f03b4d49cc3a415ebe08b09
+	Sat, 22 Aug 2009 17:56:49 -0400
+Received: from trinity.fluff.org ([89.16.178.74]:53809 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933188AbZHVV4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 17:56:48 -0400
+Date: Sat, 22 Aug 2009 22:56:20 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Marek Vasut <marek.vasut@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, nicolas.ferre@atmel.com,
+       mirq-linux@rere.qmqm.pl, linux-kernel@vger.kernel.org,
+       manuel.lauss@gmail.com, ppisa@pikron.com, nico@cam.org,
+       maen@marvell.com, s.hauer@pengutronix.de, tony@atomide.com,
+       madhu.cr@ti.com, drzeus@drzeus.cx, ben-linux@fluff.org,
+       avorontsov@ru.mvista.com, pierre@ossman.eu, sdhci-devel@lists.ossman.eu,
+       saschasommer@freenet.de, oakad@yahoo.com, ian@mnementh.co.uk,
+       HaraldWelte@viatech.com, JosephChan@via.com.tw
+Subject: Re: [PATCH] Convert MMC subsys drivers to dev_pm_ops
+Message-ID: <20090822215620.GA2367@trinity.fluff.org>
+References: <200908220223.50588.marek.vasut@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908220223.50588.marek.vasut@gmail.com>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On resume from suspend, the driver currently resets the logical
-state as if it was brought up from halt. This patch uses the
-dev_pm_ops.resume method to synchronize the hardware with the
-memorized logical state, bringing back the backlight to the level
-prior to suspend.
+sorry, there is already quite a big series touching the s3cmci driver
+in drivers/mmc/host/s3cmci.c which already have this conversion done.
 
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
- drivers/hwmon/applesmc.c |   27 +++++++++++++++------------
- 1 files changed, 15 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
-index 678e34b..0b781c8 100644
---- a/drivers/hwmon/applesmc.c
-+++ b/drivers/hwmon/applesmc.c
-@@ -178,6 +178,8 @@ static const int debug;
- static struct platform_device *pdev;
- static s16 rest_x;
- static s16 rest_y;
-+static u8 backlight_state[2];
-+
- static struct device *hwmon_dev;
- static struct input_polled_dev *applesmc_idev;
- 
-@@ -497,17 +499,25 @@ static int applesmc_probe(struct platform_device *dev)
- 	return 0;
- }
- 
--static int applesmc_resume(struct platform_device *dev)
-+/* Synchronize device with memorized backlight state */
-+static int applesmc_pm_resume(struct device *dev)
- {
--	return applesmc_device_init();
-+	mutex_lock(&applesmc_lock);
-+	applesmc_write_key(BACKLIGHT_KEY, backlight_state, 2);
-+	mutex_unlock(&applesmc_lock);
-+	return 0;
- }
- 
-+static struct dev_pm_ops applesmc_pm_ops = {
-+	.resume = applesmc_pm_resume,
-+};
-+
- static struct platform_driver applesmc_driver = {
- 	.probe = applesmc_probe,
--	.resume = applesmc_resume,
- 	.driver	= {
- 		.name = "applesmc",
- 		.owner = THIS_MODULE,
-+		.pm = &applesmc_pm_ops,
- 	},
- };
- 
-@@ -804,17 +814,10 @@ static ssize_t applesmc_calibrate_store(struct device *dev,
- 	return count;
- }
- 
--/* Store the next backlight value to be written by the work */
--static unsigned int backlight_value;
--
- static void applesmc_backlight_set(struct work_struct *work)
- {
--	u8 buffer[2];
--
- 	mutex_lock(&applesmc_lock);
--	buffer[0] = backlight_value;
--	buffer[1] = 0x00;
--	applesmc_write_key(BACKLIGHT_KEY, buffer, 2);
-+	applesmc_write_key(BACKLIGHT_KEY, backlight_state, 2);
- 	mutex_unlock(&applesmc_lock);
- }
- static DECLARE_WORK(backlight_work, &applesmc_backlight_set);
-@@ -824,7 +827,7 @@ static void applesmc_brightness_set(struct led_classdev *led_cdev,
- {
- 	int ret;
- 
--	backlight_value = value;
-+	backlight_state[0] = value;
- 	ret = queue_work(applesmc_led_wq, &backlight_work);
- 
- 	if (debug && (!ret))
 -- 
-1.6.3.3
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
