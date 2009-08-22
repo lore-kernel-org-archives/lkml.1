@@ -1,84 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933065AbZHVA0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933086AbZHVBRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933065AbZHVA0s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 20:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbZHVA0r
+	id S933086AbZHVBRp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 21:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933051AbZHVBRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 20:26:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54080 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933007AbZHVA0q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 20:26:46 -0400
-Date: Fri, 21 Aug 2009 17:24:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, nhorman@redhat.com, ebiederm@xmission.com,
-       andi@firstfloor.org, mingo@elte.hu, amwang@redhat.com,
-       bernhard.walle@gmx.de, fenghua.yu@intel.com,
-       kamezawa.hiroyu@jp.fujitsu.com, avorontsov@ru.mvista.com
-Subject: Re: [Patch 5/8] ia64: implement crashkernel=auto
-Message-Id: <20090821172407.d3a5cd2b.akpm@linux-foundation.org>
-In-Reply-To: <20090821065729.4855.47860.sendpatchset@localhost.localdomain>
-References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
-	<20090821065729.4855.47860.sendpatchset@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 21 Aug 2009 21:17:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:33325 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933016AbZHVBRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 21:17:43 -0400
+Date: Sat, 22 Aug 2009 10:48:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Message-Id: <20090822104811.a7023a4d.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.DEB.2.00.0908212030140.604@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0908212030140.604@gandalf.stny.rr.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__22_Aug_2009_10_48_11_+1000_xvDfXn.1=Nimmhn0"
+Subject: Re: next tree request
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Aug 2009 02:55:04 -0400
-Amerigo Wang <amwang@redhat.com> wrote:
+--Signature=_Sat__22_Aug_2009_10_48_11_+1000_xvDfXn.1=Nimmhn0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
-> +#define ARCH_HAS_DEFAULT_CRASH_SIZE
-> +static inline
-> +unsigned long long arch_default_crash_size(unsigned long long total_size)
-> +{
-> +	if (total_size >= 4ULL<<30 && total_size < 12ULL<<30)
-> +		return 1ULL<<28;
-> +	else if (total_size >= 12ULL<<30 && total_size < 128ULL<<30)
-> +		return 1ULL<<29;
-> +	else if (total_size >= 128ULL<<30 && total_size < 256ULL<<30)
-> +		return 3ULL<<28;
-> +	else if (total_size >= 256ULL<<30 && total_size < 378ULL<<30)
-> +		return 1ULL<<30;
-> +	else if (total_size >= 318ULL<<30 && total_size < 512ULL<<30)
-> +		return 3ULL<<29;
-> +	else if (total_size >= 512ULL<<30 && total_size < 768ULL<<30)
-> +		return 2ULL<<30;
-> +	else if (total_size >= 768ULL<<30)
-> +		return 3ULL<<30;
-> +}
-> +#include <asm-generic/kexec.h>
-> +#endif
+Hi Steve,
 
-a) Why on earth is this inlined?
+On Fri, 21 Aug 2009 20:33:19 -0400 (EDT) Steven Rostedt <rostedt@goodmis.or=
+g> wrote:
+>
+> Here's my request for getting a tree into next.
+>=20
+> Git repo:=20
+>=20
+>  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-kconfig.=
+git
+>=20
+> Branch: for-next
+>=20
+> Name: Kconfig
+>=20
+> Contact: rostedt@goodmis.org
 
-b) Please consider making arch_default_crash_size() a __weak
-   function.  You'll probably find the result to be pleasing.
+That looks fine.  I'll ad it Monday unless you tell me otherwise.  Here
+is the boilerplate:
 
-c) If we can't use __weak then please don't add
-   ARCH_HAS_DEFAULT_CRASH_SIZE.  Instead do this trick:
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgment of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window.=20
 
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+	Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and=20
+     * destined for the current or next Linux merge window.
 
-	#ifndef arch_default_crash_size
-	static inline unsigned long long arch_default_crash_size(unsigned long long total_size)
-	{
-		...
-	}
-	#define arch_default_crash_size arch_default_crash_size
-	#endif
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
 
-	because i) it's good to standardise on something and ii) one less
-	symbol gets added to the kernel.
+--=20
+Cheers,
+Stephen Rothwell=20
+sfr@canb.auug.org.au
 
-d) why is asm-generic/kexec.h only included in asm/kexec.h if
-   CONFIG_KEXEC_AUTO_RESERVE happened to be defined?  That makes no
-   sense - there may be a multitude of reasons why asm/kexec.h wants
-   to include asm-generic/kexec.h.
+Legal Stuff:
+By participating in linux-next, your subsystem tree contributions are
+public and will be included in the linux-next trees.  You may be sent
+e-mail messages indicating errors or other issues when the
+patches/commits from your subsystem tree are merged and tested in
+linux-next.  These messages may also be cross-posted to the linux-next
+mailing list, the linux-kernel mailing list, etc.  The linux-next tree
+project and IBM (my employer) make no warranties regarding the linux-next
+project, the testing procedures, the results, the e-mails, etc.  If you
+don't agree to these ground rules, let me know and I'll remove your tree
+from participation in linux-next.
 
+--Signature=_Sat__22_Aug_2009_10_48_11_+1000_xvDfXn.1=Nimmhn0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqPQEsACgkQjjKRsyhoI8xdFQCfTKhZYlnRMNFYGp6tpzQVgITG
+5SQAn1yT7sDhi2bbWxU1YudOhZKeivDU
+=3x2p
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__22_Aug_2009_10_48_11_+1000_xvDfXn.1=Nimmhn0--
