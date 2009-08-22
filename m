@@ -1,518 +1,969 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933092AbZHVB01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbZHVB3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933092AbZHVB01 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 21:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933052AbZHVB01
+	id S933102AbZHVB3G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 21:29:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933059AbZHVB3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 21:26:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51275 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933051AbZHVB0Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 21:26:25 -0400
-Date: Fri, 21 Aug 2009 18:26:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.31-rc7
-Message-ID: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Fri, 21 Aug 2009 21:29:05 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60446 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933052AbZHVB3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 21:29:02 -0400
+Subject: [GIT PULL] SCSI bug fixes for 2.6.31-rc7
+From: James Bottomley <James.Bottomley@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 21 Aug 2009 20:28:45 -0500
+Message-Id: <1250904525.7363.351.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This represents a set of bugfixes for the new mpt2sas driver only.
 
-You know the drill, so all together now: "Another week, another -rc 
-kernel".
+The patch is available from:
 
-Most of the changes are small one-liners, but the dirstat shows the areas 
-that got a bit more tender loving care:
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-  17.4% arch/arm/mach-omap2/
-   2.2% arch/arm/mm/
-   3.8% arch/arm/plat-omap/
-  24.3% arch/arm/
-   2.5% arch/microblaze/
-  29.2% arch/
-   9.6% drivers/gpu/drm/radeon/
-  13.2% drivers/gpu/drm/
-   3.2% drivers/i2c/busses/
-   2.8% drivers/media/dvb/frontends/
-   4.7% drivers/media/dvb/siano/
-   7.6% drivers/media/dvb/
-   2.6% drivers/media/video/em28xx/
-   8.2% drivers/media/video/
-  16.2% drivers/media/
-   3.0% drivers/net/e1000e/
-   3.4% drivers/net/ixgbe/
-   2.6% drivers/net/netxen/
-  16.6% drivers/net/
-  50.2% drivers/
-   2.9% fs/xfs/
-   5.7% fs/
-   2.5% include/linux/
-   3.1% include/
-   3.1% mm/
-   2.0% net/
-   2.5% security/
- 290 files changed, 3366 insertions(+), 1777 deletions(-)
+The short changelog is
 
-ie we have some arm and microblaze updates, radeon/drm and media updates, 
-and network drivers. The rest tends to be a random smattering all over.
+Kashyap, Desai (9):
+      mpt2sas: fix config request and diag reset deadlock
+      mpt2sas: Bump driver version 01.100.04.00
+      mpt2sas: fix oops because drv data points to NULL on resume from hibernate
+      mpt2sas: fix crash due to Watchdog is active while OS in standby mode
+      mpt2sas: fix infinite loop inside config request
+      mpt2sas: Excessive log info causes sas iounit page time out
+      mpt2sas: Raid 10 Value is showing as Raid 1E in /va/log/messages
+      mpt2sas: Expander fix oops saying "Already part of another port"
+      mpt2sas: Introduced check for enclosure_handle to avoid crash
 
-But apart from a couple of bigger ones (OMAP GPIO/UART fixes and the 
-radeom/kms changes), it's really pretty small. The bulk of those 290 files 
-changed are basically few-liners in 213 commits (shortlog below), and in 
-general we should have cut down the regression list another tiny bit.
+and the diffstat:
 
-Worth testing: if you've seen NULL pointer oopses with reiserfs under 
-load, I committed something I hope fixes it. I'd have wished to get 
-a firm confirmation before doing that, but I wanted to get the fix in 
-before -rc7, so now I'll just have to wait for results after.
+ drivers/scsi/mpt2sas/mpt2sas_base.c   |   98 ++++++++++++++++++--------
+ drivers/scsi/mpt2sas/mpt2sas_base.h   |    6 +
+ drivers/scsi/mpt2sas/mpt2sas_config.c |   91 +++++++-----------------
+ drivers/scsi/mpt2sas/mpt2sas_scsih.c  |  124 ++++++++++++++++++++++++----------
+ 4 files changed, 185 insertions(+), 134 deletions(-)
 
-And if you had odd lock-ups with older dual-CPU machines (PPro, P2, P3, 
-Athlon XP), that should be fixed too.
+The full patch set is attached below.
 
-There's some inotify fixes here too, but I don't think we've confirmed 
-whether they help the (apparently very  hard to trigger) oopses some 
-people have seen. So please test and report.
-
-	Thanks,
-		Linus
+James
 
 ---
-Alex Deucher (1):
-      drm/radeon: add GET_PARAM/INFO support for Z pipes
 
-Amerigo Wang (1):
-      percpu: use the right flag for get_vm_area()
+diff --git a/drivers/scsi/mpt2sas/mpt2sas_base.c b/drivers/scsi/mpt2sas/mpt2sas_base.c
+index f3da592..35a1386 100644
+--- a/drivers/scsi/mpt2sas/mpt2sas_base.c
++++ b/drivers/scsi/mpt2sas/mpt2sas_base.c
+@@ -119,6 +119,64 @@ _base_fault_reset_work(struct work_struct *work)
+ 	spin_unlock_irqrestore(&ioc->ioc_reset_in_progress_lock, flags);
+ }
+ 
++/**
++ * mpt2sas_base_start_watchdog - start the fault_reset_work_q
++ * @ioc: pointer to scsi command object
++ * Context: sleep.
++ *
++ * Return nothing.
++ */
++void
++mpt2sas_base_start_watchdog(struct MPT2SAS_ADAPTER *ioc)
++{
++	unsigned long	 flags;
++
++	if (ioc->fault_reset_work_q)
++		return;
++
++	/* initialize fault polling */
++	INIT_DELAYED_WORK(&ioc->fault_reset_work, _base_fault_reset_work);
++	snprintf(ioc->fault_reset_work_q_name,
++	    sizeof(ioc->fault_reset_work_q_name), "poll_%d_status", ioc->id);
++	ioc->fault_reset_work_q =
++		create_singlethread_workqueue(ioc->fault_reset_work_q_name);
++	if (!ioc->fault_reset_work_q) {
++		printk(MPT2SAS_ERR_FMT "%s: failed (line=%d)\n",
++		    ioc->name, __func__, __LINE__);
++			return;
++	}
++	spin_lock_irqsave(&ioc->ioc_reset_in_progress_lock, flags);
++	if (ioc->fault_reset_work_q)
++		queue_delayed_work(ioc->fault_reset_work_q,
++		    &ioc->fault_reset_work,
++		    msecs_to_jiffies(FAULT_POLLING_INTERVAL));
++	spin_unlock_irqrestore(&ioc->ioc_reset_in_progress_lock, flags);
++}
++
++/**
++ * mpt2sas_base_stop_watchdog - stop the fault_reset_work_q
++ * @ioc: pointer to scsi command object
++ * Context: sleep.
++ *
++ * Return nothing.
++ */
++void
++mpt2sas_base_stop_watchdog(struct MPT2SAS_ADAPTER *ioc)
++{
++	unsigned long	 flags;
++	struct workqueue_struct *wq;
++
++	spin_lock_irqsave(&ioc->ioc_reset_in_progress_lock, flags);
++	wq = ioc->fault_reset_work_q;
++	ioc->fault_reset_work_q = NULL;
++	spin_unlock_irqrestore(&ioc->ioc_reset_in_progress_lock, flags);
++	if (wq) {
++		if (!cancel_delayed_work(&ioc->fault_reset_work))
++			flush_workqueue(wq);
++		destroy_workqueue(wq);
++	}
++}
++
+ #ifdef CONFIG_SCSI_MPT2SAS_LOGGING
+ /**
+  * _base_sas_ioc_info - verbose translation of the ioc status
+@@ -440,6 +498,10 @@ _base_sas_log_info(struct MPT2SAS_ADAPTER *ioc , u32 log_info)
+ 	if (sas_loginfo.dw.bus_type != 3 /*SAS*/)
+ 		return;
+ 
++	/* each nexus loss loginfo */
++	if (log_info == 0x31170000)
++		return;
++
+ 	/* eat the loginfos associated with task aborts */
+ 	if (ioc->ignore_loginfos && (log_info == 30050000 || log_info ==
+ 	    0x31140000 || log_info == 0x31130000))
+@@ -1109,7 +1171,6 @@ mpt2sas_base_map_resources(struct MPT2SAS_ADAPTER *ioc)
+ 		}
+ 	}
+ 
+-	pci_set_drvdata(pdev, ioc->shost);
+ 	_base_mask_interrupts(ioc);
+ 	r = _base_enable_msix(ioc);
+ 	if (r)
+@@ -1132,7 +1193,6 @@ mpt2sas_base_map_resources(struct MPT2SAS_ADAPTER *ioc)
+ 	ioc->pci_irq = -1;
+ 	pci_release_selected_regions(ioc->pdev, ioc->bars);
+ 	pci_disable_device(pdev);
+-	pci_set_drvdata(pdev, NULL);
+ 	return r;
+ }
+ 
+@@ -3191,7 +3251,6 @@ mpt2sas_base_free_resources(struct MPT2SAS_ADAPTER *ioc)
+ 	ioc->chip_phys = 0;
+ 	pci_release_selected_regions(ioc->pdev, ioc->bars);
+ 	pci_disable_device(pdev);
+-	pci_set_drvdata(pdev, NULL);
+ 	return;
+ }
+ 
+@@ -3205,7 +3264,6 @@ int
+ mpt2sas_base_attach(struct MPT2SAS_ADAPTER *ioc)
+ {
+ 	int r, i;
+-	unsigned long	 flags;
+ 
+ 	dinitprintk(ioc, printk(MPT2SAS_DEBUG_FMT "%s\n", ioc->name,
+ 	    __func__));
+@@ -3214,6 +3272,7 @@ mpt2sas_base_attach(struct MPT2SAS_ADAPTER *ioc)
+ 	if (r)
+ 		return r;
+ 
++	pci_set_drvdata(ioc->pdev, ioc->shost);
+ 	r = _base_make_ioc_ready(ioc, CAN_SLEEP, SOFT_RESET);
+ 	if (r)
+ 		goto out_free_resources;
+@@ -3288,23 +3347,7 @@ mpt2sas_base_attach(struct MPT2SAS_ADAPTER *ioc)
+ 	if (r)
+ 		goto out_free_resources;
+ 
+-	/* initialize fault polling */
+-	INIT_DELAYED_WORK(&ioc->fault_reset_work, _base_fault_reset_work);
+-	snprintf(ioc->fault_reset_work_q_name,
+-	    sizeof(ioc->fault_reset_work_q_name), "poll_%d_status", ioc->id);
+-	ioc->fault_reset_work_q =
+-		create_singlethread_workqueue(ioc->fault_reset_work_q_name);
+-	if (!ioc->fault_reset_work_q) {
+-		printk(MPT2SAS_ERR_FMT "%s: failed (line=%d)\n",
+-		    ioc->name, __func__, __LINE__);
+-			goto out_free_resources;
+-	}
+-	spin_lock_irqsave(&ioc->ioc_reset_in_progress_lock, flags);
+-	if (ioc->fault_reset_work_q)
+-		queue_delayed_work(ioc->fault_reset_work_q,
+-		    &ioc->fault_reset_work,
+-		    msecs_to_jiffies(FAULT_POLLING_INTERVAL));
+-	spin_unlock_irqrestore(&ioc->ioc_reset_in_progress_lock, flags);
++	mpt2sas_base_start_watchdog(ioc);
+ 	return 0;
+ 
+  out_free_resources:
+@@ -3312,6 +3355,7 @@ mpt2sas_base_attach(struct MPT2SAS_ADAPTER *ioc)
+ 	ioc->remove_host = 1;
+ 	mpt2sas_base_free_resources(ioc);
+ 	_base_release_memory_pools(ioc);
++	pci_set_drvdata(ioc->pdev, NULL);
+ 	kfree(ioc->tm_cmds.reply);
+ 	kfree(ioc->transport_cmds.reply);
+ 	kfree(ioc->config_cmds.reply);
+@@ -3337,22 +3381,14 @@ mpt2sas_base_attach(struct MPT2SAS_ADAPTER *ioc)
+ void
+ mpt2sas_base_detach(struct MPT2SAS_ADAPTER *ioc)
+ {
+-	unsigned long	 flags;
+-	struct workqueue_struct *wq;
+ 
+ 	dexitprintk(ioc, printk(MPT2SAS_DEBUG_FMT "%s\n", ioc->name,
+ 	    __func__));
+ 
+-	spin_lock_irqsave(&ioc->ioc_reset_in_progress_lock, flags);
+-	wq = ioc->fault_reset_work_q;
+-	ioc->fault_reset_work_q = NULL;
+-	spin_unlock_irqrestore(&ioc->ioc_reset_in_progress_lock, flags);
+-	if (!cancel_delayed_work(&ioc->fault_reset_work))
+-		flush_workqueue(wq);
+-	destroy_workqueue(wq);
+-
++	mpt2sas_base_stop_watchdog(ioc);
+ 	mpt2sas_base_free_resources(ioc);
+ 	_base_release_memory_pools(ioc);
++	pci_set_drvdata(ioc->pdev, NULL);
+ 	kfree(ioc->pfacts);
+ 	kfree(ioc->ctl_cmds.reply);
+ 	kfree(ioc->base_cmds.reply);
+diff --git a/drivers/scsi/mpt2sas/mpt2sas_base.h b/drivers/scsi/mpt2sas/mpt2sas_base.h
+index 286c185..acdcff1 100644
+--- a/drivers/scsi/mpt2sas/mpt2sas_base.h
++++ b/drivers/scsi/mpt2sas/mpt2sas_base.h
+@@ -69,10 +69,10 @@
+ #define MPT2SAS_DRIVER_NAME		"mpt2sas"
+ #define MPT2SAS_AUTHOR	"LSI Corporation <DL-MPTFusionLinux@lsi.com>"
+ #define MPT2SAS_DESCRIPTION	"LSI MPT Fusion SAS 2.0 Device Driver"
+-#define MPT2SAS_DRIVER_VERSION		"01.100.03.00"
++#define MPT2SAS_DRIVER_VERSION		"01.100.04.00"
+ #define MPT2SAS_MAJOR_VERSION		01
+ #define MPT2SAS_MINOR_VERSION		100
+-#define MPT2SAS_BUILD_VERSION		03
++#define MPT2SAS_BUILD_VERSION		04
+ #define MPT2SAS_RELEASE_VERSION		00
+ 
+ /*
+@@ -673,6 +673,8 @@ typedef void (*MPT_CALLBACK)(struct MPT2SAS_ADAPTER *ioc, u16 smid, u8 VF_ID,
+ 
+ /* base shared API */
+ extern struct list_head mpt2sas_ioc_list;
++void mpt2sas_base_start_watchdog(struct MPT2SAS_ADAPTER *ioc);
++void mpt2sas_base_stop_watchdog(struct MPT2SAS_ADAPTER *ioc);
+ 
+ int mpt2sas_base_attach(struct MPT2SAS_ADAPTER *ioc);
+ void mpt2sas_base_detach(struct MPT2SAS_ADAPTER *ioc);
+diff --git a/drivers/scsi/mpt2sas/mpt2sas_config.c b/drivers/scsi/mpt2sas/mpt2sas_config.c
+index 58cfb97..6ddee16 100644
+--- a/drivers/scsi/mpt2sas/mpt2sas_config.c
++++ b/drivers/scsi/mpt2sas/mpt2sas_config.c
+@@ -236,17 +236,25 @@ _config_request(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigRequest_t
+ 	Mpi2ConfigRequest_t *config_request;
+ 	int r;
+ 	u8 retry_count;
+-	u8 issue_reset;
++	u8 issue_host_reset = 0;
+ 	u16 wait_state_count;
+ 
++	mutex_lock(&ioc->config_cmds.mutex);
+ 	if (ioc->config_cmds.status != MPT2_CMD_NOT_USED) {
+ 		printk(MPT2SAS_ERR_FMT "%s: config_cmd in use\n",
+ 		    ioc->name, __func__);
++		mutex_unlock(&ioc->config_cmds.mutex);
+ 		return -EAGAIN;
+ 	}
+ 	retry_count = 0;
+ 
+  retry_config:
++	if (retry_count) {
++		if (retry_count > 2) /* attempt only 2 retries */
++			return -EFAULT;
++		printk(MPT2SAS_INFO_FMT "%s: attempting retry (%d)\n",
++		    ioc->name, __func__, retry_count);
++	}
+ 	wait_state_count = 0;
+ 	ioc_state = mpt2sas_base_get_iocstate(ioc, 1);
+ 	while (ioc_state != MPI2_IOC_STATE_OPERATIONAL) {
+@@ -254,8 +262,8 @@ _config_request(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigRequest_t
+ 			printk(MPT2SAS_ERR_FMT
+ 			    "%s: failed due to ioc not operational\n",
+ 			    ioc->name, __func__);
+-			ioc->config_cmds.status = MPT2_CMD_NOT_USED;
+-			return -EFAULT;
++			r = -EFAULT;
++			goto out;
+ 		}
+ 		ssleep(1);
+ 		ioc_state = mpt2sas_base_get_iocstate(ioc, 1);
+@@ -271,8 +279,8 @@ _config_request(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigRequest_t
+ 	if (!smid) {
+ 		printk(MPT2SAS_ERR_FMT "%s: failed obtaining a smid\n",
+ 		    ioc->name, __func__);
+-		ioc->config_cmds.status = MPT2_CMD_NOT_USED;
+-		return -EAGAIN;
++		r = -EAGAIN;
++		goto out;
+ 	}
+ 
+ 	r = 0;
+@@ -292,9 +300,15 @@ _config_request(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigRequest_t
+ 		    ioc->name, __func__);
+ 		_debug_dump_mf(mpi_request,
+ 		    sizeof(Mpi2ConfigRequest_t)/4);
+-		if (!(ioc->config_cmds.status & MPT2_CMD_RESET))
+-			issue_reset = 1;
+-		goto issue_host_reset;
++		retry_count++;
++		if (ioc->config_cmds.smid == smid)
++			mpt2sas_base_free_smid(ioc, smid);
++		if ((ioc->shost_recovery) ||
++		    (ioc->config_cmds.status & MPT2_CMD_RESET))
++			goto retry_config;
++		issue_host_reset = 1;
++		r = -EFAULT;
++		goto out;
+ 	}
+ 	if (ioc->config_cmds.status & MPT2_CMD_REPLY_VALID)
+ 		memcpy(mpi_reply, ioc->config_cmds.reply,
+@@ -302,21 +316,13 @@ _config_request(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigRequest_t
+ 	if (retry_count)
+ 		printk(MPT2SAS_INFO_FMT "%s: retry completed!!\n",
+ 		    ioc->name, __func__);
++out:
+ 	ioc->config_cmds.status = MPT2_CMD_NOT_USED;
+-	return r;
+-
+- issue_host_reset:
+-	if (issue_reset)
++	mutex_unlock(&ioc->config_cmds.mutex);
++	if (issue_host_reset)
+ 		mpt2sas_base_hard_reset_handler(ioc, CAN_SLEEP,
+ 		    FORCE_BIG_HAMMER);
+-	ioc->config_cmds.status = MPT2_CMD_NOT_USED;
+-	if (!retry_count) {
+-		printk(MPT2SAS_INFO_FMT "%s: attempting retry\n",
+-		    ioc->name, __func__);
+-		retry_count++;
+-		goto retry_config;
+-	}
+-	return -EFAULT;
++	return r;
+ }
+ 
+ /**
+@@ -375,7 +381,6 @@ mpt2sas_config_get_manufacturing_pg0(struct MPT2SAS_ADAPTER *ioc,
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2ManufacturingPage0_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -417,7 +422,6 @@ mpt2sas_config_get_manufacturing_pg0(struct MPT2SAS_ADAPTER *ioc,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -438,7 +442,6 @@ mpt2sas_config_get_bios_pg2(struct MPT2SAS_ADAPTER *ioc,
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2BiosPage2_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -480,7 +483,6 @@ mpt2sas_config_get_bios_pg2(struct MPT2SAS_ADAPTER *ioc,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -501,7 +503,6 @@ mpt2sas_config_get_bios_pg3(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2BiosPage3_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -543,7 +544,6 @@ mpt2sas_config_get_bios_pg3(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -564,7 +564,6 @@ mpt2sas_config_get_iounit_pg0(struct MPT2SAS_ADAPTER *ioc,
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2IOUnitPage0_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -606,7 +605,6 @@ mpt2sas_config_get_iounit_pg0(struct MPT2SAS_ADAPTER *ioc,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -627,7 +625,6 @@ mpt2sas_config_get_iounit_pg1(struct MPT2SAS_ADAPTER *ioc,
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2IOUnitPage1_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -669,7 +666,6 @@ mpt2sas_config_get_iounit_pg1(struct MPT2SAS_ADAPTER *ioc,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -690,7 +686,6 @@ mpt2sas_config_set_iounit_pg1(struct MPT2SAS_ADAPTER *ioc,
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+ 	mpi_request.Action = MPI2_CONFIG_ACTION_PAGE_HEADER;
+@@ -732,7 +727,6 @@ mpt2sas_config_set_iounit_pg1(struct MPT2SAS_ADAPTER *ioc,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -753,7 +747,6 @@ mpt2sas_config_get_ioc_pg8(struct MPT2SAS_ADAPTER *ioc,
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2IOCPage8_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -795,7 +788,6 @@ mpt2sas_config_get_ioc_pg8(struct MPT2SAS_ADAPTER *ioc,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -818,7 +810,6 @@ mpt2sas_config_get_sas_device_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2SasDevicePage0_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -863,7 +854,6 @@ mpt2sas_config_get_sas_device_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -886,7 +876,6 @@ mpt2sas_config_get_sas_device_pg1(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2SasDevicePage1_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -931,7 +920,6 @@ mpt2sas_config_get_sas_device_pg1(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -953,7 +941,6 @@ mpt2sas_config_get_number_hba_phys(struct MPT2SAS_ADAPTER *ioc, u8 *num_phys)
+ 	Mpi2ConfigReply_t mpi_reply;
+ 	Mpi2SasIOUnitPage0_t config_page;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+ 	mpi_request.Action = MPI2_CONFIG_ACTION_PAGE_HEADER;
+@@ -1002,7 +989,6 @@ mpt2sas_config_get_number_hba_phys(struct MPT2SAS_ADAPTER *ioc, u8 *num_phys)
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1026,8 +1012,6 @@ mpt2sas_config_get_sas_iounit_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	Mpi2ConfigRequest_t mpi_request;
+ 	int r;
+ 	struct config_request mem;
+-
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sz);
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1070,7 +1054,6 @@ mpt2sas_config_get_sas_iounit_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1095,7 +1078,6 @@ mpt2sas_config_get_sas_iounit_pg1(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sz);
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1138,7 +1120,6 @@ mpt2sas_config_get_sas_iounit_pg1(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1161,7 +1142,6 @@ mpt2sas_config_get_expander_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2ExpanderPage0_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1206,7 +1186,6 @@ mpt2sas_config_get_expander_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1230,7 +1209,6 @@ mpt2sas_config_get_expander_pg1(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2ExpanderPage1_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1277,7 +1255,6 @@ mpt2sas_config_get_expander_pg1(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1300,7 +1277,6 @@ mpt2sas_config_get_enclosure_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2SasEnclosurePage0_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1345,7 +1321,6 @@ mpt2sas_config_get_enclosure_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1367,7 +1342,6 @@ mpt2sas_config_get_phy_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2SasPhyPage0_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1413,7 +1387,6 @@ mpt2sas_config_get_phy_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1435,7 +1408,6 @@ mpt2sas_config_get_phy_pg1(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2SasPhyPage1_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1481,7 +1453,6 @@ mpt2sas_config_get_phy_pg1(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1505,7 +1476,6 @@ mpt2sas_config_get_raid_volume_pg1(struct MPT2SAS_ADAPTER *ioc,
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(config_page, 0, sizeof(Mpi2RaidVolPage1_t));
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1548,7 +1518,6 @@ mpt2sas_config_get_raid_volume_pg1(struct MPT2SAS_ADAPTER *ioc,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1572,7 +1541,6 @@ mpt2sas_config_get_number_pds(struct MPT2SAS_ADAPTER *ioc, u16 handle,
+ 	struct config_request mem;
+ 	u16 ioc_status;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	*num_pds = 0;
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1620,7 +1588,6 @@ mpt2sas_config_get_number_pds(struct MPT2SAS_ADAPTER *ioc, u16 handle,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1645,7 +1612,6 @@ mpt2sas_config_get_raid_volume_pg0(struct MPT2SAS_ADAPTER *ioc,
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	memset(config_page, 0, sz);
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1687,7 +1653,6 @@ mpt2sas_config_get_raid_volume_pg0(struct MPT2SAS_ADAPTER *ioc,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1711,7 +1676,6 @@ mpt2sas_config_get_phys_disk_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 	int r;
+ 	struct config_request mem;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	memset(config_page, 0, sizeof(Mpi2RaidPhysDiskPage0_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1754,7 +1718,6 @@ mpt2sas_config_get_phys_disk_pg0(struct MPT2SAS_ADAPTER *ioc, Mpi2ConfigReply_t
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+@@ -1778,7 +1741,6 @@ mpt2sas_config_get_volume_handle(struct MPT2SAS_ADAPTER *ioc, u16 pd_handle,
+ 	struct config_request mem;
+ 	u16 ioc_status;
+ 
+-	mutex_lock(&ioc->config_cmds.mutex);
+ 	*volume_handle = 0;
+ 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
+ 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
+@@ -1842,7 +1804,6 @@ mpt2sas_config_get_volume_handle(struct MPT2SAS_ADAPTER *ioc, u16 pd_handle,
+ 		_config_free_config_dma_memory(ioc, &mem);
+ 
+  out:
+-	mutex_unlock(&ioc->config_cmds.mutex);
+ 	return r;
+ }
+ 
+diff --git a/drivers/scsi/mpt2sas/mpt2sas_scsih.c b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
+index 2a01a5f..2e9a444 100644
+--- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
++++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
+@@ -2767,6 +2767,10 @@ _scsih_scsi_ioc_info(struct MPT2SAS_ADAPTER *ioc, struct scsi_cmnd *scmd,
+ 	char *desc_ioc_state = NULL;
+ 	char *desc_scsi_status = NULL;
+ 	char *desc_scsi_state = ioc->tmp_string;
++	u32 log_info = le32_to_cpu(mpi_reply->IOCLogInfo);
++
++	if (log_info == 0x31170000)
++		return;
+ 
+ 	switch (ioc_status) {
+ 	case MPI2_IOCSTATUS_SUCCESS:
+@@ -3426,7 +3430,7 @@ _scsih_expander_add(struct MPT2SAS_ADAPTER *ioc, u16 handle)
+ 	__le64 sas_address;
+ 	int i;
+ 	unsigned long flags;
+-	struct _sas_port *mpt2sas_port;
++	struct _sas_port *mpt2sas_port = NULL;
+ 	int rc = 0;
+ 
+ 	if (!handle)
+@@ -3518,12 +3522,20 @@ _scsih_expander_add(struct MPT2SAS_ADAPTER *ioc, u16 handle)
+ 		    &expander_pg1, i, handle))) {
+ 			printk(MPT2SAS_ERR_FMT "failure at %s:%d/%s()!\n",
+ 			    ioc->name, __FILE__, __LINE__, __func__);
+-			continue;
++			rc = -1;
++			goto out_fail;
+ 		}
+ 		sas_expander->phy[i].handle = handle;
+ 		sas_expander->phy[i].phy_id = i;
+-		mpt2sas_transport_add_expander_phy(ioc, &sas_expander->phy[i],
+-		    expander_pg1, sas_expander->parent_dev);
++
++		if ((mpt2sas_transport_add_expander_phy(ioc,
++		    &sas_expander->phy[i], expander_pg1,
++		    sas_expander->parent_dev))) {
++			printk(MPT2SAS_ERR_FMT "failure at %s:%d/%s()!\n",
++			    ioc->name, __FILE__, __LINE__, __func__);
++			rc = -1;
++			goto out_fail;
++		}
+ 	}
+ 
+ 	if (sas_expander->enclosure_handle) {
+@@ -3540,8 +3552,9 @@ _scsih_expander_add(struct MPT2SAS_ADAPTER *ioc, u16 handle)
+ 
+  out_fail:
+ 
+-	if (sas_expander)
+-		kfree(sas_expander->phy);
++	if (mpt2sas_port)
++		mpt2sas_transport_port_remove(ioc, sas_expander->sas_address,
++		    sas_expander->parent_handle);
+ 	kfree(sas_expander);
+ 	return rc;
+ }
+@@ -3663,12 +3676,11 @@ _scsih_add_device(struct MPT2SAS_ADAPTER *ioc, u16 handle, u8 phy_num, u8 is_pd)
+ 	sas_device->hidden_raid_component = is_pd;
+ 
+ 	/* get enclosure_logical_id */
+-	if (!(mpt2sas_config_get_enclosure_pg0(ioc, &mpi_reply, &enclosure_pg0,
+-	   MPI2_SAS_ENCLOS_PGAD_FORM_HANDLE,
+-	   sas_device->enclosure_handle))) {
++	if (sas_device->enclosure_handle && !(mpt2sas_config_get_enclosure_pg0(
++	   ioc, &mpi_reply, &enclosure_pg0, MPI2_SAS_ENCLOS_PGAD_FORM_HANDLE,
++	   sas_device->enclosure_handle)))
+ 		sas_device->enclosure_logical_id =
+ 		    le64_to_cpu(enclosure_pg0.EnclosureLogicalID);
+-	}
+ 
+ 	/* get device name */
+ 	sas_device->device_name = le64_to_cpu(sas_device_pg0.DeviceName);
+@@ -4250,12 +4262,6 @@ _scsih_sas_volume_add(struct MPT2SAS_ADAPTER *ioc,
+ 	u16 handle = le16_to_cpu(element->VolDevHandle);
+ 	int rc;
+ 
+-#if 0 /* RAID_HACKS */
+-	if (le32_to_cpu(event_data->Flags) &
+-	    MPI2_EVENT_IR_CHANGE_FLAGS_FOREIGN_CONFIG)
+-		return;
+-#endif
+-
+ 	mpt2sas_config_get_volume_wwid(ioc, handle, &wwid);
+ 	if (!wwid) {
+ 		printk(MPT2SAS_ERR_FMT
+@@ -4310,12 +4316,6 @@ _scsih_sas_volume_delete(struct MPT2SAS_ADAPTER *ioc,
+ 	unsigned long flags;
+ 	struct MPT2SAS_TARGET *sas_target_priv_data;
+ 
+-#if 0 /* RAID_HACKS */
+-	if (le32_to_cpu(event_data->Flags) &
+-	    MPI2_EVENT_IR_CHANGE_FLAGS_FOREIGN_CONFIG)
+-		return;
+-#endif
+-
+ 	spin_lock_irqsave(&ioc->raid_device_lock, flags);
+ 	raid_device = _scsih_raid_device_find_by_handle(ioc, handle);
+ 	spin_unlock_irqrestore(&ioc->raid_device_lock, flags);
+@@ -4428,14 +4428,38 @@ _scsih_sas_pd_add(struct MPT2SAS_ADAPTER *ioc,
+ 	struct _sas_device *sas_device;
+ 	unsigned long flags;
+ 	u16 handle = le16_to_cpu(element->PhysDiskDevHandle);
++	Mpi2ConfigReply_t mpi_reply;
++	Mpi2SasDevicePage0_t sas_device_pg0;
++	u32 ioc_status;
+ 
+ 	spin_lock_irqsave(&ioc->sas_device_lock, flags);
+ 	sas_device = _scsih_sas_device_find_by_handle(ioc, handle);
+ 	spin_unlock_irqrestore(&ioc->sas_device_lock, flags);
+-	if (sas_device)
++	if (sas_device) {
+ 		sas_device->hidden_raid_component = 1;
+-	else
+-		_scsih_add_device(ioc, handle, 0, 1);
++		return;
++	}
++
++	if ((mpt2sas_config_get_sas_device_pg0(ioc, &mpi_reply, &sas_device_pg0,
++	    MPI2_SAS_DEVICE_PGAD_FORM_HANDLE, handle))) {
++		printk(MPT2SAS_ERR_FMT "failure at %s:%d/%s()!\n",
++		    ioc->name, __FILE__, __LINE__, __func__);
++		return;
++	}
++
++	ioc_status = le16_to_cpu(mpi_reply.IOCStatus) &
++	    MPI2_IOCSTATUS_MASK;
++	if (ioc_status != MPI2_IOCSTATUS_SUCCESS) {
++		printk(MPT2SAS_ERR_FMT "failure at %s:%d/%s()!\n",
++		    ioc->name, __FILE__, __LINE__, __func__);
++		return;
++	}
++
++	_scsih_link_change(ioc,
++	    le16_to_cpu(sas_device_pg0.ParentDevHandle),
++	    handle, sas_device_pg0.PhyNum, MPI2_SAS_NEG_LINK_RATE_1_5);
++
++	_scsih_add_device(ioc, handle, 0, 1);
+ }
+ 
+ #ifdef CONFIG_SCSI_MPT2SAS_LOGGING
+@@ -4535,12 +4559,15 @@ _scsih_sas_ir_config_change_event(struct MPT2SAS_ADAPTER *ioc, u8 VF_ID,
+ {
+ 	Mpi2EventIrConfigElement_t *element;
+ 	int i;
++	u8 foreign_config;
+ 
+ #ifdef CONFIG_SCSI_MPT2SAS_LOGGING
+ 	if (ioc->logging_level & MPT_DEBUG_EVENT_WORK_TASK)
+ 		_scsih_sas_ir_config_change_event_debug(ioc, event_data);
+ 
+ #endif
++	foreign_config = (le32_to_cpu(event_data->Flags) &
++	    MPI2_EVENT_IR_CHANGE_FLAGS_FOREIGN_CONFIG) ? 1 : 0;
+ 
+ 	element = (Mpi2EventIrConfigElement_t *)&event_data->ConfigElement[0];
+ 	for (i = 0; i < event_data->NumElements; i++, element++) {
+@@ -4548,11 +4575,13 @@ _scsih_sas_ir_config_change_event(struct MPT2SAS_ADAPTER *ioc, u8 VF_ID,
+ 		switch (element->ReasonCode) {
+ 		case MPI2_EVENT_IR_CHANGE_RC_VOLUME_CREATED:
+ 		case MPI2_EVENT_IR_CHANGE_RC_ADDED:
+-			_scsih_sas_volume_add(ioc, element);
++			if (!foreign_config)
++				_scsih_sas_volume_add(ioc, element);
+ 			break;
+ 		case MPI2_EVENT_IR_CHANGE_RC_VOLUME_DELETED:
+ 		case MPI2_EVENT_IR_CHANGE_RC_REMOVED:
+-			_scsih_sas_volume_delete(ioc, element);
++			if (!foreign_config)
++				_scsih_sas_volume_delete(ioc, element);
+ 			break;
+ 		case MPI2_EVENT_IR_CHANGE_RC_PD_CREATED:
+ 			_scsih_sas_pd_hide(ioc, element);
+@@ -4671,6 +4700,9 @@ _scsih_sas_ir_physical_disk_event(struct MPT2SAS_ADAPTER *ioc, u8 VF_ID,
+ 	u32 state;
+ 	struct _sas_device *sas_device;
+ 	unsigned long flags;
++	Mpi2ConfigReply_t mpi_reply;
++	Mpi2SasDevicePage0_t sas_device_pg0;
++	u32 ioc_status;
+ 
+ 	if (event_data->ReasonCode != MPI2_EVENT_IR_PHYSDISK_RC_STATE_CHANGED)
+ 		return;
+@@ -4687,22 +4719,40 @@ _scsih_sas_ir_physical_disk_event(struct MPT2SAS_ADAPTER *ioc, u8 VF_ID,
+ 	spin_unlock_irqrestore(&ioc->sas_device_lock, flags);
+ 
+ 	switch (state) {
+-#if 0
+-	case MPI2_RAID_PD_STATE_OFFLINE:
+-		if (sas_device)
+-			_scsih_remove_device(ioc, handle);
+-		break;
+-#endif
+ 	case MPI2_RAID_PD_STATE_ONLINE:
+ 	case MPI2_RAID_PD_STATE_DEGRADED:
+ 	case MPI2_RAID_PD_STATE_REBUILDING:
+ 	case MPI2_RAID_PD_STATE_OPTIMAL:
+-		if (sas_device)
++		if (sas_device) {
+ 			sas_device->hidden_raid_component = 1;
+-		else
+-			_scsih_add_device(ioc, handle, 0, 1);
++			return;
++		}
++
++		if ((mpt2sas_config_get_sas_device_pg0(ioc, &mpi_reply,
++		    &sas_device_pg0, MPI2_SAS_DEVICE_PGAD_FORM_HANDLE,
++		    handle))) {
++			printk(MPT2SAS_ERR_FMT "failure at %s:%d/%s()!\n",
++			    ioc->name, __FILE__, __LINE__, __func__);
++			return;
++		}
++
++		ioc_status = le16_to_cpu(mpi_reply.IOCStatus) &
++		    MPI2_IOCSTATUS_MASK;
++		if (ioc_status != MPI2_IOCSTATUS_SUCCESS) {
++			printk(MPT2SAS_ERR_FMT "failure at %s:%d/%s()!\n",
++			    ioc->name, __FILE__, __LINE__, __func__);
++			return;
++		}
++
++		_scsih_link_change(ioc,
++		    le16_to_cpu(sas_device_pg0.ParentDevHandle),
++		    handle, sas_device_pg0.PhyNum, MPI2_SAS_NEG_LINK_RATE_1_5);
++
++		_scsih_add_device(ioc, handle, 0, 1);
++
+ 		break;
+ 
++	case MPI2_RAID_PD_STATE_OFFLINE:
+ 	case MPI2_RAID_PD_STATE_NOT_CONFIGURED:
+ 	case MPI2_RAID_PD_STATE_NOT_COMPATIBLE:
+ 	case MPI2_RAID_PD_STATE_HOT_SPARE:
+@@ -5774,6 +5824,7 @@ _scsih_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	struct MPT2SAS_ADAPTER *ioc = shost_priv(shost);
+ 	u32 device_state;
+ 
++	mpt2sas_base_stop_watchdog(ioc);
+ 	flush_scheduled_work();
+ 	scsi_block_requests(shost);
+ 	device_state = pci_choose_state(pdev, state);
+@@ -5816,6 +5867,7 @@ _scsih_resume(struct pci_dev *pdev)
+ 
+ 	mpt2sas_base_hard_reset_handler(ioc, CAN_SLEEP, SOFT_RESET);
+ 	scsi_unblock_requests(shost);
++	mpt2sas_base_start_watchdog(ioc);
+ 	return 0;
+ }
+ #endif /* CONFIG_PM */
 
-Amit Kumar Salecha (1):
-      netxen: remove netxen workqueue
 
-Andreas Schwab (1):
-      security: Fix prompt for LSM_MMAP_MIN_ADDR
-
-Andrew Morton (1):
-      mmc: add the new linux-mmc mailing list to MAINTAINERS
-
-Andy Walls (1):
-      V4L/DVB (12338): cx18: Read buffer overflow
-
-Anton Blanchard (1):
-      AFS: Documentation updates
-
-Antonio Ospite (1):
-      V4L/DVB (12330): pxa_camera: Fix Oops in pxa_camera_probe
-
-Arnaldo Carvalho de Melo (1):
-      perf record: Fix typo in pid_synthesize_comm_event
-
-Atsushi Nemoto (1):
-      MIPS: Fix HPAGE_SIZE redefinition
-
-Bartlomiej Zolnierkiewicz (1):
-      x86, mce: don't log boot MCEs on Pentium M (model == 13) CPUs
-
-Ben Dooks (2):
-      spi_s3c24xx: fix clock rate calculation
-      spi_s3c24xx: fix transfer setup code
-
-Bo Liu (1):
-      mm: build_zonelists(): move clear node_load[] to __build_all_zonelists()
-
-Bob Dunlop (1):
-      libertas: correct packing of rxpd structure
-
-Brian Johnson (1):
-      V4L/DVB (12373a): Add gspca sn9c20x subdriver entry to MAINTAINERS file
-
-Bruce Allan (3):
-      e1000e: fix acquisition of SW/FW/HW semaphore for ICHx parts
-      e1000e: fix potential NVM corruption on ICH9 with 8K bank size
-      e1000e: WoL does not work on 82577/82578 with manageability enabled
-
-Carlos R. Mafra (1):
-      perf: Rename perf-examples.txt to examples.txt
-
-Chris Snook (1):
-      MAINTAINERS: update atlx contact info
-
-Christian Lamparter (1):
-      ar9170usb: fix spurious firmware related message
-
-Christoph Hellwig (2):
-      xfs: fix locking in xfs_iget_cache_hit
-      microblaze: use the generic ack_bad_irq implementation
-
-Cliff Wickman (1):
-      x86: Fix UV BAU destination subnode id
-
-Dan Carpenter (1):
-      ar9170: fix read & write outside array bounds
-
-Dave Airlie (10):
-      drm/edid: fixup detailed timings like the X server.
-      drm/radeon/kms: add rv530 R300_SU_REG_DEST + reloc for ZPASS_ADDR
-      drm/radeon/kms: cut down indirects in register accesses.
-      drm/radeon/kms: implement bo busy check + current domain
-      drm/radeon/kms: although LVDS might be possible on crtc 1 don't do it.
-      drm/radeon/kms: memset the allocated framebuffer before using it.
-      drm/kms/radeon: cleanup combios TV table like DDX.
-      drm/kms: teardown crtc correctly when fb is destroyed.
-      drm/radeon/kms: implement the bo busy ioctl properly.
-      drm/radeon/kms: add r100/r200 OQ support.
-
-Dave Jones (1):
-      security: Make LSM_MMAP_MIN_ADDR default match its help text.
-
-David S. Miller (1):
-      Revert "libertas: Read buffer overflow"
-
-Davide Rizzo (1):
-      ARM: S3C24XX: Fix clkout mpx error
-
-Devin Heitmueller (3):
-      V4L/DVB (12393): cx88: fix regression in tuning for Geniatech X8000 MT
-      V4L/DVB (12394): cx88: Disable xc3028 power management for Geniatech x8000
-      V4L/DVB (12432): em28xx: fix regression in Empire DualTV digital tuning
-
-Dhananjay Phadke (2):
-      netxen: fix dma mask update calculation
-      netxen: free napi resources during detach
-
-Dmitry Eremin-Solenikov (2):
-      af_ieee802154: fix ioctl processing
-      af_ieee802154: provide dummy get/setsockopt
-
-Don Skidmore (1):
-      ixgbe: fix issues setting rx-usecs with legacy interrupts
-
-Dongdong Deng (1):
-      drivers/net: fixed drivers that support netpoll use ndo_start_xmit()
-
-Eero Nurkkala (1):
-      OMAP: PM: CPUfreq: obey min/max settings of policy
-
-Eric Dumazet (8):
-      phonet: phonet_device_get() fix
-      rose: Fix rose_getname() leak
-      econet: Fix econet_getname() leak
-      netrom: Fix nr_getname() leak
-      appletalk: fix atalk_getname() leak
-      irda: Fix irda_getname() leak
-      can: Fix raw_getname() leak
-      net: restore gnet_stats_basic to previous definition
-
-Eric Paris (7):
-      Capabilities: move cap_file_mmap to commoncap.c
-      SELinux: call cap_file_mmap in selinux_file_mmap
-      Security/SELinux: seperate lsm specific mmap_min_addr
-      security: define round_hint_to_min in !CONFIG_SECURITY
-      notify: unused event private race
-      inotify: tail drop inotify q_overflow events
-      inotify: start watch descriptor count at 1
-
-Francois Romieu (1):
-      8139cp: balance dma_map_single vs dma_unmap_single pair
-
-From: Nick Piggin (1):
-      btrfs: fix inode rbtree corruption
-
-Graff Yang (1):
-      nommu: check fd read permission in validate_mmap_request()
-
-Greg Ungerer (1):
-      fec: fix FEC driver packet transmission breakage
-
-Guennadi Liakhovetski (2):
-      mx3: Fix double pin allocation in pcm037_eet.c
-      V4L/DVB (12424): soc-camera: fix recursive locking in .buf_queue()
-
-Guillaume Knispel (1):
-      poll/select: initialize triggered field of struct poll_wqueues
-
-Hans Verkuil (2):
-      V4L/DVB (12428): hdpvr: add missing initialization of current_norm
-      V4L/DVB (12429): v4l2-ioctl: fix G_STD and G_PARM default handlers
-
-Herbert Xu (1):
-      tun: Extend RTNL lock coverage over whole ioctl
-
-Hugh Dickins (1):
-      x86, mce: therm_throt: Don't log redundant normality
-
-Ingo Molnar (3):
-      x86, mce: Don't initialize MCEs on unknown CPUs
-      perf_counter: Fix the PARISC build
-      perf annotate: Fix segmentation fault
-
-Jan Nikitenko (1):
-      V4L/DVB (12341): zl10353 and qt1010: fix stack corruption bug
-
-Janboe Ye (1):
-      OMAP3: Fix omap3 sram virtual addres overlap vmalloc space after increasing vmalloc size
-
-Jean Pihet (2):
-      OMAP3 SDRC: add support for 2 SDRAM chip selects
-      OMAP3: Setup MUX settings for SDRC CKE signals
-
-Jeff Layton (1):
-      vfs: make get_sb_pseudo set s_maxbytes to value that can be cast to signed
-
-Jerome Glisse (1):
-      drm/radeon/kms: Add specific rs690 authorized register table
-
-Joe Perches (3):
-      MAINTAINERS: additional NETWORKING [GENERAL] and NETWORKING DRIVERS patterns
-      MAINTAINERS: OSD LIBRARY and FILESYSTEM pattern fix
-      REPORTING-BUGS: add get_maintainer.pl blurb
-
-John Williams (1):
-      microblaze: Sane handling of missing timer/intc in device tree
-
-Jouni Hogander (1):
-      OMAP3: PM: Fix wrong sequence in suspend.
-
-Jussi Mäki (1):
-      Fix xfrm hash collisions by changing __xfrm4_daddr_saddr_hash to hash addresses with addition
-
-KOSAKI Motohiro (1):
-      mm: revert "oom: move oom_adj value"
-
-Kevin Hilman (11):
-      OMAP2/3: PM: make PM __init calls static
-      OMAP3: PM: CM_REGADDR macros using wrong name
-      OMAP3: PM: Ensure PRCM interrupts are cleared at boot
-      OMAP3: PM: Clear pending PRCM reset flags on init
-      OMAP3: PM: prevent module wakeups from waking IVA2
-      OMAP3: PM: Do not build suspend code if SUSPEND is not enabled
-      OMAP4: UART: cleanup special case IRQ handling
-      OMAP2/3/4: UART: Allow per-UART disabling wakeup for serial ports
-      OMAP2/3/4: UART: allow in-order port traversal
-      OMAP: GPIO: clear/restore level/edge detect settings on mask/unmask
-      OMAP3: Overo: add missing pen-down GPIO definition
-
-Kyle McMartin (1):
-      perf tools: Make 'make html' work
-
-Laurent Pinchart (2):
-      V4L/DVB (12328): uvcvideo: Don't apply the FIX_BANDWIDTH quirk to all ViMicro devices
-      V4L/DVB (12380): uvcvideo: Avoid flooding the kernel log with "unknown event type" messages
-
-Lennert Buytenhek (5):
-      mwl8k: fix NULL pointer dereference on receive out-of-memory
-      mwl8k: add various missing GET_HW_SPEC endian conversions
-      mwl8k: call pci_unmap_single() before accessing command structure again
-      mwl8k: prevent crash in ->configure_filter() if no interface was added
-      mwl8k: prevent module unload hang
-
-Leonardo Potenza (1):
-      x86: Annotate section mismatch warnings in kernel/apic/x2apic_uv_x.c
-
-Linus Torvalds (5):
-      x86: don't send an IPI to the empty set of CPU's
-      Make bitmask 'and' operators return a result code
-      x86: don't call '->send_IPI_mask()' with an empty mask
-      Re-introduce page mapping check in mark_buffer_dirty()
-      Linux 2.6.31-rc7
-
-Linus Walleij (2):
-      ARM: 5673/1: U300 fix initsection compile warning
-      i2c-stu300: I2C STU300 stability updates
-
-Lucy Liu (1):
-      ixgbe: Fix receive on real device when VLANs are configured
-
-Luis R. Rodriguez (1):
-      mac80211: fix panic when splicing unprepared TIDs
-
-Magnus Damm (4):
-      sh: skip disabled LCDC channels
-      sh: CMT suspend/resume
-      sh: use in-soc KEYSC on se7724
-      sh: sh7724 ddr self-refresh changes
-
-Matthias Schwarzott (1):
-      V4L/DVB (12440): Use kzalloc for frontend states to have struct dvb_frontend properly
-
-Mauro Carvalho Chehab (12):
-      V4L/DVB (12340): mtv9v011: Add a missing chip version to the driver
-      V4L/DVB (12344): em28xx: fix support for Plextor ConvertX PX-TV100U
-      V4L/DVB (12399): mt9v011: Add support for controlling frame rates
-      V4L/DVB (12400): em28xx: Allow changing fps on webcams
-      V4L/DVB (12401): m9v011: add vflip/hflip controls to control mirror/upside down
-      V4L/DVB (12402): em28xx: fix: some em2710 chips use a different vendor ID
-      V4L/DVB (12403): em28xx: properly reports some em2710 chips
-      V4L/DVB (12406): em28xx: fix: don't do image interlacing on webcams
-      V4L/DVB (12407): em28xx: Adjust Silvercrest xtal frequency
-      V4L/DVB (12410): em28xx: Move the non-board dependent part to be outside em28xx_pre_card_setup()
-      V4L/DVB (12411): em28xx: Fix artifacts with Silvercrest webcam
-      V4L/DVB (12405): em28xx-cards: move register 0x13 setting to the proper place
-
-Michael Chan (5):
-      cnic: Fix symbol_put_addr() panic on ia64.
-      cnic: Refine registration with bnx2.
-      bnx2: Use mutex on slow path cnic calls.
-      cnic: Fix locking in start/stop calls.
-      cnic: Fix locking in init/exit calls.
-
-Michael Krufky (5):
-      V4L/DVB (12362): cx23885-417: fix manipulation of tvnorms
-      V4L/DVB (12374): sms1xxx: fix broken Hauppauge devices
-      V4L/DVB (12386): sms1xxx: fix build warning: unused variable 'board'
-      V4L/DVB (12390): saa7134: Use correct product name for Hauppauge WinTV-HVR1150 ATSC/QAM-Hybrid
-      V4L/DVB (12391): saa7134: Use correct product name for Hauppauge WinTV-HVR1120 DVB-T/Hybrid
-
-Michal Simek (3):
-      microblaze: Enable ppoll syscall
-      microblaze: Use klimit instead of _end for memory init
-      microblaze: Update Microblaze defconfigs
-
-Michel Dänzer (1):
-      drm/radeon/kms: Fix up vertical blank interrupt support.
-
-Mikael Pettersson (1):
-      IXP4xx: Fix IO_SPACE_LIMIT for 2.6.31-rc core PCI changes
-
-Moiz Sonasath (2):
-      i2c-omap: ACK pending [R/X]DR and [R/X]RDY interrupts
-      i2c-omap: Enable workaround for Errata 1.153 based on
-
-NeilBrown (1):
-      Fix new incorrect error return from do_md_stop.
-
-Nils Kassube (1):
-      V4L/DVB (12371): af9015: Fix for crash in dvb-usb-af9015
-
-Nishanth Menon (1):
-      i2c-omap: Fix I2C status ACK
-
-Oliver Hartkopp (1):
-      can: fix oops caused by wrong rtnl newlink usage
-
-Pascal Terjan (1):
-      Add IDs for 3C905B-TX Fast Etherlink XL PCI
-
-Paul Mackerras (1):
-      perf_counter: Check task on counter read IPI
-
-Paul Walmsley (4):
-      OMAP2/3 SDRC: don't set SDRC_POWER.PWDENA on boot
-      OMAP2/3 clock: split, rename omap2_wait_clock_ready()
-      OMAP2 clock: 2430 I2CHS uses non-standard CM_IDLEST register
-      OMAP3 clock: correct module IDLEST bits: SSI; DSS; USBHOST; HSOTGUSB
-
-Pavel Roskin (1):
-      rt2x00: fix memory corruption in rf cache, add a sanity check
-
-Petko Manolov (1):
-      pegasus: Add new device ID.
-
-Rafael Laufer (1):
-      sctp: fix missing destroy of percpu counter variable in sctp_proc_exit()
-
-Rajendra Nayak (2):
-      OMAP3 SDRC: Fix freeze when scaling CORE dpll to < 83Mhz
-      OMAP3 SDRC: Move the clk stabilization delay to the right place
-
-Ralf Baechle (1):
-      NETROM: Fix use of static buffer
-
-Ramax Lo (1):
-      ARM: S3C64XX: serial: Fix a typo in Kconfig
-
-Randy Dunlap (3):
-      V4L/DVB (12422): media/zr364xx: fix build errors
-      V4L/DVB (12437): dvb: siano uses/depends on INPUT
-      dm-log-userspace: fix printk format warning
-
-Roel Kluin (6):
-      irda: fix read buffer overflow
-      atlx: strncpy does not null terminate string
-      V4L/DVB (12337): ivtv: Read buffer overflow
-      V4L/DVB (12436): stk-webcam: read buffer overflow
-      V4L/DVB (12438): Read buffer overflow
-      V4L/DVB (12441): siano: read buffer overflow
-
-Roger Quadros (4):
-      OMAP: GPIO: Fix incorrect gpio_get logic for output GPIOs
-      OMAP3: RX51: Define TWL4030 USB transceiver in board file
-      OMAP2/3: mmc-twl4030: Free up MMC regulators while cleaning up
-      OMAP3: RX51: Updated rx51_defconfig
-
-Russell King (1):
-      ARM: Fix broken highmem support
-
-Ryusuke Konishi (1):
-      nilfs2: fix oopses with doubly mounted snapshots
-
-Sergio Aguirre (1):
-      OMAP3: Overo: Fix smsc911x platform device resource value
-
-Sohail Syyed (1):
-      V4L/DVB (12349): cx88: HVR1300 ensure switching from Encoder to DVB-T and back is reliable
-
-Steven Whitehouse (1):
-      GFS2: Fix permissions on "recover" file
-
-Takashi Iwai (1):
-      ALSA: hda - Fix probe of Toshiba laptops with ALC268 codec
-
-Tejun Heo (2):
-      init: set nr_cpu_ids before setup_per_cpu_areas()
-      percpu, sparc64: fix sparse possible cpu map handling
-
-Tero Kristo (1):
-      OMAP3: Fixed crash bug with serial + suspend
-
-Thomas Gleixner (1):
-      genirq: Wake up irq thread after action has been installed
-
-Thomas Hellstrom (1):
-      drm: Fix sysfs device confusion.
-
-Tom Goff (1):
-      gre: Fix MTU calculation for bound GRE tunnels
-
-Tony Lindgren (1):
-      OMAP: Fix testing of cpu defines for mach-omap1
-
-Valentin Longchamp (1):
-      mx31moboard: invert sdhc ro signal sense
-
-Vikram Pandita (1):
-      OMAP2/3: DMA errata correction
-
-Wei Yongjun (1):
-      dccp: missing destroy of percpu counter variable while unload module
-
-Wu Fengguang (2):
-      ALSA: hda: enable speaker output for Compaq 6530s/6531s
-      ALSA: hda: add model for Intel DG45ID/DG45FC boards
-
-Xiaotian Feng (1):
-      e1000e: fix use of pci_enable_pcie_error_reporting
-
-Yi Zou (3):
-      ixgbe: Pass rx_ring directly in ixgbe_configure_srrctl()
-      ixgbe: Disable packet split only on FCoE queues in 82599
-      ixgbe: Do not return 0 in ixgbe_fcoe_ddp() upon FCP_RSP in DDP completion
-
-Yong Zhang (1):
-      gianfar: keep vlan related state when restart
-
-Zhang Qiang (1):
-      nilfs2: missing a read lock for segment writer in nilfs_attach_checkpoint()
-
-Zhu Yi (1):
-      ipw2x00: Write outside array bounds
-
-roel kluin (4):
-      pcnet32: Read buffer overflow
-      zorro8390: Fix read buffer overflow in zorro8390_init_one()
-      mlx4_en: Fix read buffer overflow in mlx4_en_complete_rx_desc()
-      via-velocity: Fix test of mii_status bit VELOCITY_DUPLEX_FULL
