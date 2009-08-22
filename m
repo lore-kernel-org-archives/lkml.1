@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933134AbZHVSYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933170AbZHVSex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933134AbZHVSYu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 14:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbZHVSYu
+	id S933170AbZHVSex (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 14:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933130AbZHVSew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 14:24:50 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:38746 "EHLO
+	Sat, 22 Aug 2009 14:34:52 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:39662 "EHLO
 	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933092AbZHVSYt (ORCPT
+	with ESMTP id S933120AbZHVSew (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 14:24:49 -0400
+	Sat, 22 Aug 2009 14:34:52 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
-To: greg@kroah.com
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/1] USB: make usb_buffer_map_sg consistent with doc
-Date: Sat, 22 Aug 2009 20:24:49 +0200
-Message-Id: <1250965489-27976-1-git-send-email-jirislaby@gmail.com>
+To: khali@linux-fr.org
+Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] I2C: i2c-core, make attr groups const
+Date: Sat, 22 Aug 2009 20:34:52 +0200
+Message-Id: <1250966092-28291-1-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-usb_buffer_map_sg should return negative on error according to
-its documentation. But dma_map_sg returns 0 on error. Take this
-into account and return -ENOMEM in such situation.
+Make attribute_group structure const, to avoid a compiler warning.
 
-While at it, return -EINVAL instead of -1 when wrong input is
-passed in.
-
-If this wasn't done, usb_sg_* operations used after usb_sg_init
-which returned 0 may cause oopses/deadlocks since we don't init
-structures/entries, esp. completion and status entry.
+The groups were introduces by commit:
+i2c: Convert i2c adapters to bus devices
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Jean Delvare <khali@linux-fr.org>
 ---
- drivers/usb/core/usb.c |    4 ++--
+ drivers/i2c/i2c-core.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-index a26f738..ba480c2 100644
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -914,11 +914,11 @@ int usb_buffer_map_sg(const struct usb_device *dev, int is_in,
- 			|| !(bus = dev->bus)
- 			|| !(controller = bus->controller)
- 			|| !controller->dma_mask)
--		return -1;
-+		return -EINVAL;
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index eeb9ae5..8d80fce 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -214,7 +214,7 @@ static struct attribute_group i2c_dev_attr_group = {
+ 	.attrs		= i2c_dev_attrs,
+ };
  
- 	/* FIXME generic api broken like pci, can't report errors */
- 	return dma_map_sg(controller, sg, nents,
--			is_in ? DMA_FROM_DEVICE : DMA_TO_DEVICE);
-+			is_in ? DMA_FROM_DEVICE : DMA_TO_DEVICE) ? : -ENOMEM;
- }
- EXPORT_SYMBOL_GPL(usb_buffer_map_sg);
+-static struct attribute_group *i2c_dev_attr_groups[] = {
++static const struct attribute_group *i2c_dev_attr_groups[] = {
+ 	&i2c_dev_attr_group,
+ 	NULL
+ };
+@@ -528,7 +528,7 @@ static struct attribute_group i2c_adapter_attr_group = {
+ 	.attrs		= i2c_adapter_attrs,
+ };
  
+-static struct attribute_group *i2c_adapter_attr_groups[] = {
++static const struct attribute_group *i2c_adapter_attr_groups[] = {
+ 	&i2c_adapter_attr_group,
+ 	NULL
+ };
 -- 
 1.6.3.3
 
