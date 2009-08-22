@@ -1,108 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933120AbZHVBs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933134AbZHVB6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933120AbZHVBs2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 21:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbZHVBs0
+	id S933134AbZHVB6P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 21:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933070AbZHVB6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 21:48:26 -0400
-Received: from mga03.intel.com ([143.182.124.21]:62883 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933075AbZHVBs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 21:48:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,253,1249282800"; 
-   d="scan'208";a="178847410"
-Date: Sat, 22 Aug 2009 09:48:19 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Chuck Lever <Chuck.Lever@oracle.com>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       NFS list <linux-nfs@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: mount.nfs: access denied by server
-Message-ID: <20090822014819.GA7798@localhost>
-References: <20090820071315.GA14765@localhost> <1250773349.5352.23.camel@heimdal.trondhjem.org> <20090821012700.GA9937@localhost> <1250822171.6514.29.camel@heimdal.trondhjem.org> <8C4C4FD5-733E-4327-8618-8C400FAE72C1@oracle.com>
+	Fri, 21 Aug 2009 21:58:15 -0400
+Received: from hq-exedge.brocade.com ([66.243.153.82]:43034 "EHLO
+	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933007AbZHVB6O convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Aug 2009 21:58:14 -0400
+From: Jing Huang <huangj@Brocade.COM>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+CC: "James.Bottomley@hansenpartnership.com" 
+	<James.Bottomley@hansenpartnership.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Ramkumar Vadivelu <rvadivel@Brocade.COM>,
+       Vinodh Ravindran <vravindr@Brocade.COM>
+Date: Fri, 21 Aug 2009 18:58:14 -0700
+Subject: RE: [PATCH 2/14] bfa: Brocade BFA FC SCSI driver (bfa part1)
+Thread-Topic: [PATCH 2/14] bfa: Brocade BFA FC SCSI driver (bfa part1)
+Thread-Index: AcoihgNquY4at67tTxuW7SJwRe3FawAQ7OPg
+Message-ID: <B0A7AF226B49A14897036E9B3A68CFFECB1A935EAF@HQ-EXCH-7.corp.brocade.com>
+References: <200908200659.n7K6xqMZ006536@swe57.brocade.com>
+ <200908211935.46316.eike-kernel@sf-tec.de>
+In-Reply-To: <200908211935.46316.eike-kernel@sf-tec.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8C4C4FD5-733E-4327-8618-8C400FAE72C1@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 22, 2009 at 01:50:52AM +0800, Chuck Lever wrote:
+Rolf Eike Beer wrote:
+> > +/*
+> > + * Copyright (c)  2005-2008 Brocade Communications Systems, Inc.
+> > + * All rights reserved
+> > + * www.brocade.com
 > 
-> On Aug 20, 2009, at 10:36 PM, Trond Myklebust wrote:
+> Shouldn't that be 2009?
+
+Yes, It should be 2009. I will fix it.
+
 > 
-> > On Fri, 2009-08-21 at 09:27 +0800, Wu Fengguang wrote:
-> >> On Thu, Aug 20, 2009 at 09:02:29PM +0800, Trond Myklebust wrote:
-> >>> On Thu, 2009-08-20 at 15:13 +0800, Wu Fengguang wrote:
-> >>>> Hi,
-> >>>>
-> >>>> After upgrading NFS client kernel to latest linux-next, NFS mount
-> >>>> failed:
-> >>>>
-> >>>>        # mount -t nfs pxe:/cc /cc
-> >>>>        mount.nfs: access denied by server while mounting pxe:/cc
-> >>>>
-> >>>>        # uname -a
-> >>>>        Linux hp 2.6.31-rc6-next-20090818 #61 SMP Thu Aug 20  
-> >>>> 14:46:10 CST 2009 x86_64 GNU/Linux
-> >>>>
-> >>>> However server log says OK:
-> >>>>
-> >>>>        Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated mount  
-> >>>> request from 192.168.11.6:973 for /cc (/cc)
-> >>>>        Aug 20 15:02:09 wu-t61 mountd[4599]: authenticated unmount  
-> >>>> request from 192.168.11.6:974 for /cc (/cc)
-> >>>>
-> >>>> However-2: nfsroot can be mounted at boot time. Server kernel has  
-> >>>> always been 2.6.30.
-> >>>>
-> >>>> Any ideas?
-> >>>>
-> >>>> Thanks,
-> >>>> Fengguang
-> >>>
-> >>> Can you try again after enabling mount debugging on the NFS client?
-> >>>
-> >>> echo 512 > /proc/sys/sunrpc/nfs_debug
-> >>
-> >> I used 1024 and found the mount failed here in nfs_walk_authlist():
-> >>
-> >>        dfprintk(MOUNT, "NFS: server does not support requested auth  
-> >> flavor\ n");
-> >>        nfs_umount(request);
-> >
-> > Thanks Fengguang!
-> >
-> > Chuck, this looks like one of yours. Could it be that you are hitting
-> > the same Linux knfsd bug that Tom Haynes saw with a Solaris client?
-> > AFAICR, the problem was that existing nfs servers do not set a default
-> > auth flavour, and so you just have to try with auth_sys and see if it
-> > succeeds...
+> > +char *
+> > +wwn2str(char *buf, int bufsize, u64 wwn)
+> > +{
+> > +	char *ptr;
+> > +	union {
+> > +	wwn_t           wwn;
+> > +	u8         byte[sizeof(wwn_t)];
+> > +	} w;
+> > +	int i = sizeof(wwn_t);
+> > +
+> > +	ptr = buf + bufsize;
+> > +	*--ptr = '\0';
+> > +	bufsize--;
+> > +
+> > +	w.wwn = wwn;
+> > +	while (i > 0) {
+> > +		i--;
+> > +		*--ptr = n2b(w.byte[i] & 0x0f);
+> > +		*--ptr = n2b((w.byte[i] >> 4) & 0x0f);
+> > +		if (i > 0)
+> > +			*--ptr = ':';
+> > +	}
+> > +
+> > +	return ptr;
+> > +}
 > 
-> With 1024 set, the mount client's XDR routines should have listed the  
-> server's flavors, if any, in the system log.  Should be something like  
-> "NFS: received 0 auth flavors" if the server didn't return any.  Can  
-> you confirm that?
+> I searched for 20 minutes and found nothing. Is there really no standard
+> function to printf a WWN? I mean, every FC driver needs this, no?
+> 
+> fnic:
+> -"%llx", wwn
+> 
+> ipr:
+> -"%08X%08X", be32_to_cpu(wwid[0]), be32_to_cpu(wwid[1])
+> 
+> lpfc:
+> -"%02x%02x%02x%02x%02x%02x%02x%02x", wwn[0], wwn[1], ...
+> -"%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x", wwn[0], wwn[1], ...
+> -"0x%llx", cfg_soft_wwnn
+> 
+> qla2xxx:
+> -like lpfc, version 1. Harder to find as there it is called port_name and
+> node_name instead of wwpn or wwnn or wwn
+> 
+> Is there really nothing like this? Should be an easy job to write one and
+> convert all existing drivers over to use this, no? Would also add the
+> benefit
+> as that all drivers would print that in the same way.
+> 
+> Ei-printk("%WWN", wwn)-ke
 
-Yes. The full logs are:
+I am not aware of a standard function to print wwn. It would be nice if all the drivers print wwn in the same format. Regarding our implementation of wwpn to string conversion, we are making it unnecessarily complicated, I will fix it. 
 
+Thanks for the reviewing the code.
 
-Aug 21 09:54:38 hp kernel: [   74.671552] NFS: nfs mount opts='nolock,addr=192.168.11.2'
-Aug 21 09:54:38 hp kernel: [   74.677150] NFS:   parsing nfs mount option 'nolock'
-Aug 21 09:54:38 hp kernel: [   74.682204] NFS:   parsing nfs mount option 'addr=192.168.11.2'
-Aug 21 09:54:38 hp kernel: [   74.688234] NFS: MNTPATH: '/cc'
-Aug 21 09:54:38 hp kernel: [   74.691468] NFS: sending MNT request for pxe:/cc
-Aug 21 09:54:38 hp kernel: [   74.704458] NFS: received 0 auth flavors
-Aug 21 09:54:38 hp kernel: [   74.708587] NFS: MNT request succeeded
-Aug 21 09:54:38 hp kernel: [   74.712435] NFS: server does not support requested auth flavor
-Aug 21 09:54:38 hp kernel: [   74.718358] NFS: sending UMNT request for pxe:/cc
-
-
-> I'll try to post a fix later today.
-
-Thanks!
-
-Fengguang
+Jing
