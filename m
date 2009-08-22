@@ -1,124 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933257AbZHVSnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbZHVSsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933257AbZHVSnH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 14:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933228AbZHVSnG
+	id S933232AbZHVSsx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 14:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933188AbZHVSsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 14:43:06 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:57508 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933153AbZHVSnE (ORCPT
+	Sat, 22 Aug 2009 14:48:52 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:35531 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933180AbZHVSsv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 14:43:04 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Armin Schindler <mac@melware.de>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/2] ISDN: eicon, use offsetof
-Date: Sat, 22 Aug 2009 20:43:03 +0200
-Message-Id: <1250966584-29496-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
+	Sat, 22 Aug 2009 14:48:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HZIINpQlzoLKR/ZkKf8ngi1k8v8b/APq0fw3pzMvKFhWfTKtxR6Iw+qoKHxUgn9yL2
+         iTn5LxBF9GFuPYJlp/udIqy4AImlqRzgRNUJJmS1d5Q237kIeE3QvV0evHfFBmipSq36
+         C6cqkhgydzLXxIMGC9nBNK7qcYOx1dm1QhkM0=
+MIME-Version: 1.0
+In-Reply-To: <200908211814.56800.volkerarmin@googlemail.com>
+References: <200908211814.56800.volkerarmin@googlemail.com>
+Date: Sat, 22 Aug 2009 11:48:52 -0700
+Message-ID: <86802c440908221148q2aee29e0i3fe966c60fced3db@mail.gmail.com>
+Subject: Re: amd64 + mtrr: only 3.1gb of 8gb are covered, kernel 2.6.30 and 
+	earlier.
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Volker Armin Hemmann <volkerarmin@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use offsetof instead of explicit implementation.
-* fixes bug with omitted & like:
-  len = (byte)(((T30_INFO *) 0)->station_id + 20)
-* avoids compiler warnings with wrong sizes (pointer-to-char cast):
-  len = (byte)(&(((T30_INFO *) 0)->universal_6));
-* cleanups the code
+On Fri, Aug 21, 2009 at 9:14 AM, Volker Armin
+Hemmann<volkerarmin@googlemail.com> wrote:
+> Hi,
+>
+> I have an amd64 system with 8GB ram. Of these only 3.1GB are currently covered
+> with mtrr:
+> cat /proc/mtrr
+> reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
+> reg01: base=0x080000000 ( 2048MB), size= 1024MB, count=1: write-back
+> reg02: base=0x0c0000000 ( 3072MB), size=  128MB, count=1: write-back
+>
+> This is with a Phenom II X4. Mobo is an Asrock A770Crossfire with AMD 770
+> chipset. Ram is 1066 ddr2 running at 800.
+>
+> Before that I had a X2 6000 where I had one more mtrr, covering additional
+> 256mb with 6gb ram total.
+>
+> When I use the opensource driver, I get a 'mtrr disabled' message when X
+> starts, nothing like that with fglrx. The results are the same.
+>
+> Is there anything that I can do about it? I already played with mtrr cleanup
+> options - without any results.
+>
+> Except for reiser4 the kernel is 'vanilla', config is attached, dmesg and lspci
+> are folloiwing:
+>
+> dmesg:
+> [    0.000000] Linux version 2.6.30.5r4 (root@energy) (gcc version 4.4.1
+> (Gentoo 4.4.1 p1.0) ) #1 SMP Tue Aug 18 06:28:18 CEST 2009
+> [    0.000000] Command line: root=/dev/md1 md=3,/dev/sda3,/dev/sdb3,/dev/sdc3
+> nmi_watchdog=0 mtrr_spare_reg_nr=1
+> [    0.000000] KERNEL supported cpus:
+> [    0.000000]   Intel GenuineIntel
+> [    0.000000]   AMD AuthenticAMD
+> [    0.000000] BIOS-provided physical RAM map:
+> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+> [    0.000000]  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000000e6000 - 0000000000100000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000c7eb0000 (usable)
+> [    0.000000]  BIOS-e820: 00000000c7eb0000 - 00000000c7ec0000 (ACPI data)
+> [    0.000000]  BIOS-e820: 00000000c7ec0000 - 00000000c7ef0000 (ACPI NVS)
+> [    0.000000]  BIOS-e820: 00000000c7ef0000 - 00000000c7f00000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000100000000 - 0000000238000000 (usable)
+> [    0.000000] DMI present.
+> [    0.000000] AMI BIOS detected: BIOS may corrupt low RAM, working around it.
+> [    0.000000] e820 update range: 0000000000000000 - 0000000000010000 (usable)
+> ==> (reserved)
+> [    0.000000] last_pfn = 0x238000 max_arch_pfn = 0x100000000
+> [    0.000000] MTRR default type: uncachable
+> [    0.000000] MTRR fixed ranges enabled:
+> [    0.000000]   00000-9FFFF write-back
+> [    0.000000]   A0000-EFFFF uncachable
+> [    0.000000]   F0000-FFFFF write-protect
+> [    0.000000] MTRR variable ranges enabled:
+> [    0.000000]   0 base 000000000000 mask FFFF80000000 write-back
+> [    0.000000]   1 base 000080000000 mask FFFFC0000000 write-back
+> [    0.000000]   2 base 0000C0000000 mask FFFFF8000000 write-back
+> [    0.000000]   3 disabled
+> [    0.000000]   4 disabled
+> [    0.000000]   5 disabled
+> [    0.000000]   6 disabled
+> [    0.000000]   7 disabled
+> [    0.000000] TOM2: 0000000238000000 aka 9088M
+> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new
+> 0x7010600070106
+> [    0.000000] e820 update range: 00000000c8000000 - 0000000100000000 (usable)
+> ==> (reserved)
+...
+>
+> 02:00.0 VGA compatible controller: ATI Technologies Inc Radeon HD 3870 (prog-
+> if 00 [VGA controller])
+>        Subsystem: Info-Tek Corp. Device 4070
+>        Flags: bus master, fast devsel, latency 0, IRQ 30
+>        Memory at d0000000 (64-bit, prefetchable) [size=256M]
+>        Memory at fdff0000 (64-bit, non-prefetchable) [size=64K]
+>        I/O ports at b000 [size=256]
+>        Expansion ROM at fdfc0000 [disabled] [size=128K]
+>        Capabilities: [50] Power Management version 3
+>        Capabilities: [58] Express Legacy Endpoint, MSI 00
+>        Capabilities: [a0] MSI: Mask- 64bit+ Count=1/1 Enable+
+>        Capabilities: [100] Vendor Specific Information <?>
+>        Kernel driver in use: fglrx_pci
+>        Kernel modules: fglrx
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/isdn/hardware/eicon/message.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+after your start X server, how about cat /proc/mtrr?
 
-diff --git a/drivers/isdn/hardware/eicon/message.c b/drivers/isdn/hardware/eicon/message.c
-index 27d5dd6..ae89fb8 100644
---- a/drivers/isdn/hardware/eicon/message.c
-+++ b/drivers/isdn/hardware/eicon/message.c
-@@ -2692,7 +2692,7 @@ static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-           if (!(fax_control_bits & T30_CONTROL_BIT_MORE_DOCUMENTS)
-            || (fax_feature_bits & T30_FEATURE_BIT_MORE_DOCUMENTS))
-           {
--            len = (byte)(&(((T30_INFO *) 0)->universal_6));
-+            len = offsetof(T30_INFO, universal_6);
-             fax_info_change = false;
-             if (ncpi->length >= 4)
-             {
-@@ -2754,7 +2754,7 @@ static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-                     for (i = 0; i < w; i++)
-                       ((T30_INFO   *)(plci->fax_connect_info_buffer))->station_id[i] = fax_parms[4].info[1+i];
-                     ((T30_INFO   *)(plci->fax_connect_info_buffer))->head_line_len = 0;
--                    len = (byte)(((T30_INFO *) 0)->station_id + 20);
-+                    len = offsetof(T30_INFO, station_id) + 20;
-                     w = fax_parms[5].length;
-                     if (w > 20)
-                       w = 20;
-@@ -2788,7 +2788,7 @@ static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-                 }
-                 else
-                 {
--                  len = (byte)(&(((T30_INFO *) 0)->universal_6));
-+                  len = offsetof(T30_INFO, universal_6);
-                 }
-                 fax_info_change = true;
- 
-@@ -2892,7 +2892,7 @@ static byte connect_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-     && (plci->nsf_control_bits & T30_NSF_CONTROL_BIT_ENABLE_NSF)
-     && (plci->nsf_control_bits & T30_NSF_CONTROL_BIT_NEGOTIATE_RESP))
-    {
--            len = ((byte)(((T30_INFO *) 0)->station_id + 20));
-+            len = offsetof(T30_INFO, station_id) + 20;
-             if (plci->fax_connect_info_length < len)
-             {
-               ((T30_INFO *)(plci->fax_connect_info_buffer))->station_id_len = 0;
-@@ -3802,7 +3802,7 @@ static byte manufacturer_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
-       break;
-     }
-     ncpi = &m_parms[1];
--    len = ((byte)(((T30_INFO *) 0)->station_id + 20));
-+    len = offsetof(T30_INFO, station_id) + 20;
-     if (plci->fax_connect_info_length < len)
-     {
-       ((T30_INFO *)(plci->fax_connect_info_buffer))->station_id_len = 0;
-@@ -6844,7 +6844,7 @@ static void nl_ind(PLCI *plci)
-         if ((plci->requested_options_conn | plci->requested_options | a->requested_options_table[plci->appl->Id-1])
-           & ((1L << PRIVATE_FAX_SUB_SEP_PWD) | (1L << PRIVATE_FAX_NONSTANDARD)))
-         {
--          i = ((word)(((T30_INFO *) 0)->station_id + 20)) + ((T30_INFO   *)plci->NL.RBuffer->P)->head_line_len;
-+          i = offsetof(T30_INFO, station_id) + 20 + ((T30_INFO   *)plci->NL.RBuffer->P)->head_line_len;
-           while (i < plci->NL.RBuffer->length)
-             plci->ncpi_buffer[++len] = plci->NL.RBuffer->P[i++];
-         }
-@@ -7236,7 +7236,7 @@ static void nl_ind(PLCI *plci)
-     {
-       plci->RData[1].P = plci->RData[0].P;
-       plci->RData[1].PLength = plci->RData[0].PLength;
--      plci->RData[0].P = v120_header_buffer + (-((int) v120_header_buffer) & 3);
-+      plci->RData[0].P = v120_header_buffer + (-((unsigned long)v120_header_buffer) & 3);
-       if ((plci->NL.RBuffer->P[0] & V120_HEADER_EXTEND_BIT) || (plci->NL.RLength == 1))
-         plci->RData[0].PLength = 1;
-       else
-@@ -8473,7 +8473,7 @@ static word add_b23(PLCI *plci, API_PARSE *bp)
-             fax_control_bits |= T30_CONTROL_BIT_ACCEPT_SEL_POLLING;
-           }
-             len = nlc[0];
--          pos = ((byte)(((T30_INFO *) 0)->station_id + 20));
-+          pos = offsetof(T30_INFO, station_id) + 20;
-    if (pos < plci->fax_connect_info_length)
-    {
-      for (i = 1 + plci->fax_connect_info_buffer[pos]; i != 0; i--)
-@@ -8525,7 +8525,7 @@ static word add_b23(PLCI *plci, API_PARSE *bp)
-       }
- 
-       PUT_WORD(&(((T30_INFO *)&nlc[1])->control_bits_low), fax_control_bits);
--      len = ((byte)(((T30_INFO *) 0)->station_id + 20));
-+      len = offsetof(T30_INFO, station_id) + 20;
-       for (i = 0; i < len; i++)
-         plci->fax_connect_info_buffer[i] = nlc[1+i];
-       ((T30_INFO   *) plci->fax_connect_info_buffer)->head_line_len = 0;
--- 
-1.6.3.3
+thought there should be one WC entry about 256M... for graphics card.
 
+YH
