@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZHVVPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbZHVV2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbZHVVPF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 17:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZHVVPE
+	id S1755845AbZHVV2x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 17:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755768AbZHVV2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 17:15:04 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:48976 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755125AbZHVVPC (ORCPT
+	Sat, 22 Aug 2009 17:28:52 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:31053 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755702AbZHVV2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 17:15:02 -0400
-Date: Sat, 22 Aug 2009 23:14:57 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:timers/core] x86: Do not unregister PIT clocksource on	PIT
- oneshot setup/shutdown
-Message-ID: <20090822231457.7139bd00@skybase>
-In-Reply-To: <20090822103541.GA26476@elte.hu>
-References: <tip-8cab02dc3c58a12235c6d463ce684dded9696848@git.kernel.org>
-	<20090822103541.GA26476@elte.hu>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 22 Aug 2009 17:28:51 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=TdNHw5xlZzew93bKyw64YS5UXIufjRW/9bGHWjXOiQYLiXjd2mS2K0RyrK0M4kM+s
+	cf40nTynbOwSIzekK1YOg==
+Date: Sat, 22 Aug 2009 14:28:45 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [patch 4/4 -mm] flex_array: add flex_array_shrink function
+In-Reply-To: <20090821164935.173689a0.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.0908221357421.27738@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com> <alpine.DEB.2.00.0908211621160.28611@chino.kir.corp.google.com> <20090821164935.173689a0.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Aug 2009 12:35:41 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 21 Aug 2009, Andrew Morton wrote:
 
-> even after this fix, -tip testing found yet another circular locking 
-> bug, on a 32-bit Core2 laptop:
+> > +/**
+> > + * flex_array_shrink - free unused second-level pages
+> > + *
+> > + * Frees all second-level pages that consist solely of unused
+> > + * elements.  Returns the number of pages freed.
+> > + *
+> > + * Locking must be provided by the caller.
+> > + */
+> > +int flex_array_shrink(struct flex_array *fa)
+> 
+> It's logical but afaik unconventional that none of the flex_array
+> kerneldoc actually documents the `struct flex_array *fa' argument.
+> 
 
-You got to love lockdep .. another ugly one:
-clocksource_register: has clocksource_mutex, get cpu_add_remove_lock
-native_cpu_up: has cpu_add_remove_lock, get clocksource_mutex
+In the interest of completeness (vs. more doc clutter), we'd need to add 
+seven or eight instances of "@fa: the flex array to manipulate," although 
+that should be fairly obvious.
 
-To register a clocksource the clocksource_mutex is acquired and if
-necessary timekeeping_notify is called to install the clocksource as
-the timekeeper clock. timekeeping_notify uses stop_machine which needs
-to take cpu_add_remove_lock mutex.
-Starting a new cpu is done with the cpu_add_remove_lock mutex held.
-native_cpu_up checks the tsc of the new cpu and if the tsc is no good
-clocksource_change_rating is called. Which needs the clocksource_mutex
-and the deadlock is complete.
+More of a priority might be to document flex_array_free() which lacks any 
+commentary or add kerneldoc lines for the gfp_t formal of the three 
+functions that use them.
 
--- 
-blue skies,
-   Martin.
+> We're all waiting with bated breath to see who will be the first to use
+> flex_array in live code.
+> 
 
-"Reality continues to ruin my life." - Calvin.
+Now that flex_array_shrink() is in -mm, the cgroup code to manipulate 
+arrays of pids could probably now use them without losing any 
+functionality.
 
+Beyond that, I don't know of any other users with enough incentive to 
+immediately convert.  Its scope is unfortunately limited because it's an 
+array and not a list, the latter of which you can efficiently iterate, 
+sort, eliminate upper bounds, etc.
+
+An alternative implementation, like a flex list, would probably find more 
+users and could also be used by the cgroup code to manage pids.  Flex 
+lists would be unbounded and can dynamically expand with linkage through 
+page->lru when additional elements are pushed.
