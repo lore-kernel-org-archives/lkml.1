@@ -1,74 +1,7650 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbZHVKgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933263AbZHVKgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbZHVKgO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 06:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbZHVKgO
+	id S933263AbZHVKgw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 06:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbZHVKgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 06:36:14 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41195 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755343AbZHVKgN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 06:36:13 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A8FCA03.6090107@s5r6.in-berlin.de>
-Date: Sat, 22 Aug 2009 12:35:47 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090630 SeaMonkey/1.1.17
+	Sat, 22 Aug 2009 06:36:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47448 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755515AbZHVKgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 06:36:31 -0400
+Date: Sat, 22 Aug 2009 12:35:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:timers/core] x86: Do not unregister PIT clocksource on
+	PIT oneshot setup/shutdown
+Message-ID: <20090822103541.GA26476@elte.hu>
+References: <tip-8cab02dc3c58a12235c6d463ce684dded9696848@git.kernel.org>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Is adding requeue_delayed_work() a good idea
-References: <adazl9uw3w1.fsf@cisco.com> <20090821115547.GA6901@redhat.com> <adaab1sx29p.fsf@cisco.com>
-In-Reply-To: <adaab1sx29p.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="+QahgC5+KEYLbs62"
+Content-Disposition: inline
+In-Reply-To: <tip-8cab02dc3c58a12235c6d463ce684dded9696848@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-[Oleg Nesterov wrote]
-> Perhaps the semantics are sufficiently fuzzy and not general enough, so
-> that the best answer is my special-case open coded change for my
-> specific case.  I don't know whether other places would even want a
-> requeue_delayed_work() ... I simply raise this point because when I find
-> myself reimplementing the structure of work_struct + timer because
-> delayed_work API is lacking, then it seems prudent to consider extending
-> delayed_work API instead.
 
-There are two or three use cases of rescheduling a delayed work in 
-drivers/firewire, but in one regard they are simpler than your case:
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The work only needs to be pushed back in time, never scheduled earlier 
-than it was originally scheduled.  This is easily implemented with the 
-existing delayed work API by letting the work check whether it is 
-entered too early; if yes, reschedule itself.
 
-Further requirements of this use case:
-   - It doesn't matter on which CPU this kind of work runs on.
-   - If the event which necessitates rescheduling happens when the
-     work is already running, then it might depend on the outcome of
-     the work whether it needs to be scheduled again.  I think the
-     requeue_delayed_work should do nothing in that case and the
-     work needs to test how it went and rearm if necessary.
+* tip-bot for Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Well, considering the latter point, there is no harm in keeping all of 
-the requeue_delayed_work logic concentrated in the work itself in these 
-FireWire use cases.
+> Commit-ID:  8cab02dc3c58a12235c6d463ce684dded9696848
+> Gitweb:     http://git.kernel.org/tip/8cab02dc3c58a12235c6d463ce684dded9696848
+> Author:     Thomas Gleixner <tglx@linutronix.de>
+> AuthorDate: Thu, 20 Aug 2009 18:19:45 +0200
+> Committer:  Thomas Gleixner <tglx@linutronix.de>
+> CommitDate: Fri, 21 Aug 2009 21:13:37 +0200
+> 
+> x86: Do not unregister PIT clocksource on PIT oneshot setup/shutdown
 
-[These use cases are high-level protocols for resource acquisition over 
-the FireWire bus.  Cooperative fairness schemes require them to be timed 
-after a grace period for resource re-acquisition by holders of older 
-resources, following after bus reset events which may happen any time.]
+even after this fix, -tip testing found yet another circular locking 
+bug, on a 32-bit Core2 laptop:
 
-So, the question is whether there is any user besides IB which needs to 
-pull a delayed work forward in time.
+[    1.198605] initcall cpufreq_gov_performance_init+0x0/0x10 returned 0 after 0 usecs
+[    1.198736] calling  init_acpi_pm_clocksource+0x0/0x250 @ 1
+[    1.233442] Switching to clocksource acpi_pm
+[    1.233626] 
+[    1.233627] =======================================================
+[    1.233798] [ INFO: possible circular locking dependency detected ]
+[    1.233889] 2.6.31-rc6-tip-01322-gd685ec8-dirty #7600
+[    1.233977] -------------------------------------------------------
+[    1.233999] swapper/1 is trying to acquire lock:
+[    1.233999]  (cpu_add_remove_lock){+.+.+.}, at: [<c103e6af>] cpu_maps_update_begin+0xf/0x20
+[    1.233999] 
+[    1.233999] but task is already holding lock:
+[    1.233999]  (setup_lock){+.+.+.}, at: [<c10788a2>] stop_machine_create+0x12/0xa0
+[    1.233999] 
+[    1.233999] which lock already depends on the new lock.
+[    1.233999] 
+[    1.233999] 
+[    1.233999] the existing dependency chain (in reverse order) is:
+[    1.233999] 
+[    1.233999] -> #3 (setup_lock){+.+.+.}:
+[    1.233999]        [<c1068410>] validate_chain+0xad0/0x1130
+[    1.233999]        [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]        [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]        [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]        [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]        [<c10788a2>] stop_machine_create+0x12/0xa0
+[    1.233999]        [<c107894b>] stop_machine+0x1b/0x50
+[    1.233999]        [<c105c319>] timekeeping_notify+0x19/0x20
+[    1.233999]        [<c105df94>] clocksource_select+0x84/0xb0
+[    1.233999]        [<c105e262>] clocksource_register+0x22/0x1e0
+[    1.233999]        [<c1901c1c>] init_acpi_pm_clocksource+0x16c/0x250
+[    1.233999]        [<c1001127>] do_one_initcall+0x27/0x190
+[    1.233999]        [<c18c5a0a>] kernel_init+0x14a/0x1a0
+[    1.233999]        [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.233999] 
+[    1.233999] -> #2 (clocksource_mutex){+.+.+.}:
+[    1.233999]        [<c1068410>] validate_chain+0xad0/0x1130
+[    1.233999]        [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]        [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]        [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]        [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]        [<c105e21d>] clocksource_change_rating+0x1d/0x40
+[    1.233999]        [<c100877c>] mark_tsc_unstable+0x4c/0x50
+[    1.233999]        [<c15b18df>] check_tsc_sync_source+0x10f/0x120
+[    1.233999]        [<c15b0b63>] native_cpu_up+0x423/0x800
+[    1.233999]        [<c15b27c9>] _cpu_up+0x89/0x110
+[    1.233999]        [<c15b28c9>] cpu_up+0x49/0x70
+[    1.233999]        [<c18c598c>] kernel_init+0xcc/0x1a0
+[    1.233999]        [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.233999] 
+[    1.233999] -> #1 (cpu_hotplug.lock){+.+.+.}:
+[    1.233999]        [<c1068410>] validate_chain+0xad0/0x1130
+[    1.233999]        [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]        [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]        [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]        [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]        [<c103e70d>] cpu_hotplug_begin+0x1d/0x50
+[    1.233999]        [<c15b279b>] _cpu_up+0x5b/0x110
+[    1.233999]        [<c15b28c9>] cpu_up+0x49/0x70
+[    1.233999]        [<c18c598c>] kernel_init+0xcc/0x1a0
+[    1.233999]        [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.233999] 
+[    1.233999] -> #0 (cpu_add_remove_lock){+.+.+.}:
+[    1.233999]        [<c1068a55>] validate_chain+0x1115/0x1130
+[    1.233999]        [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]        [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]        [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]        [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]        [<c103e6af>] cpu_maps_update_begin+0xf/0x20
+[    1.233999]        [<c1050230>] __create_workqueue_key+0x100/0x1f0
+[    1.233999]        [<c10788d2>] stop_machine_create+0x42/0xa0
+[    1.233999]        [<c107894b>] stop_machine+0x1b/0x50
+[    1.233999]        [<c105c319>] timekeeping_notify+0x19/0x20
+[    1.233999]        [<c105df94>] clocksource_select+0x84/0xb0
+[    1.233999]        [<c105e262>] clocksource_register+0x22/0x1e0
+[    1.233999]        [<c1901c1c>] init_acpi_pm_clocksource+0x16c/0x250
+[    1.233999]        [<c1001127>] do_one_initcall+0x27/0x190
+[    1.233999]        [<c18c5a0a>] kernel_init+0x14a/0x1a0
+[    1.233999]        [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.233999] 
+[    1.233999] other info that might help us debug this:
+[    1.233999] 
+[    1.233999] 2 locks held by swapper/1:
+[    1.233999]  #0:  (clocksource_mutex){+.+.+.}, at: [<c105e256>] clocksource_register+0x16/0x1e0
+[    1.233999]  #1:  (setup_lock){+.+.+.}, at: [<c10788a2>] stop_machine_create+0x12/0xa0
+[    1.233999] 
+[    1.233999] stack backtrace:
+[    1.233999] Pid: 1, comm: swapper Not tainted 2.6.31-rc6-tip-01322-gd685ec8-dirty #7600
+[    1.233999] Call Trace:
+[    1.233999]  [<c10666fb>] print_circular_bug+0xbb/0xd0
+[    1.233999]  [<c1068a55>] validate_chain+0x1115/0x1130
+[    1.233999]  [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]  [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]  [<c103e6af>] ? cpu_maps_update_begin+0xf/0x20
+[    1.233999]  [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]  [<c103e6af>] ? cpu_maps_update_begin+0xf/0x20
+[    1.233999]  [<c15b53d8>] ? mutex_unlock+0x8/0x10
+[    1.233999]  [<c10d566b>] ? pcpu_alloc+0x30b/0x400
+[    1.233999]  [<c10d605b>] ? kmemleak_alloc+0x2b/0x60
+[    1.233999]  [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]  [<c103e6af>] ? cpu_maps_update_begin+0xf/0x20
+[    1.233999]  [<c103e6af>] cpu_maps_update_begin+0xf/0x20
+[    1.233999]  [<c1050230>] __create_workqueue_key+0x100/0x1f0
+[    1.233999]  [<c15b59e9>] ? mutex_lock_nested+0x29/0x40
+[    1.233999]  [<c10788d2>] stop_machine_create+0x42/0xa0
+[    1.233999]  [<c107894b>] stop_machine+0x1b/0x50
+[    1.233999]  [<c105c170>] ? change_clocksource+0x0/0x70
+[    1.233999]  [<c105c319>] timekeeping_notify+0x19/0x20
+[    1.233999]  [<c105df94>] clocksource_select+0x84/0xb0
+[    1.233999]  [<c105e262>] clocksource_register+0x22/0x1e0
+[    1.233999]  [<c11ee57e>] ? __const_udelay+0x2e/0x30
+[    1.233999]  [<c1901c1c>] init_acpi_pm_clocksource+0x16c/0x250
+[    1.233999]  [<c105d16f>] ? ktime_get+0x5f/0x110
+[    1.233999]  [<c1901ab0>] ? init_acpi_pm_clocksource+0x0/0x250
+[    1.233999]  [<c1001127>] do_one_initcall+0x27/0x190
+[    1.233999]  [<c1901ab0>] ? init_acpi_pm_clocksource+0x0/0x250
+[    1.233999]  [<c18c5a0a>] kernel_init+0x14a/0x1a0
+[    1.233999]  [<c18c58c0>] ? kernel_init+0x0/0x1a0
+[    1.233999]  [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.234233] initcall init_acpi_pm_clocksource+0x0/0x250 returned 0 after 35202 usecs
+[    1.234365] calling  ssb_modinit+0x0/0x60 @ 1
+[    1.234455] Switched to high resolution mode on CPU 0
 
-Or another thought:  Would it hurt if you ignored any shortening of 
-timeouts, i.e. reduce your use case also to only ever _deferring_ work, 
-never rescheduling to an earlier point in time?
--- 
-Stefan Richter
--=====-==--= =--- =-==-
-http://arcgraph.de/sr/
+config and full bootlog attached.
+
+	Ingo
+
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=config
+
+# head: d685ec87
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.31-rc6
+# Fri Aug 21 22:10:11 2009
+#
+# CONFIG_64BIT is not set
+CONFIG_X86_32=y
+# CONFIG_X86_64 is not set
+CONFIG_X86=y
+CONFIG_OUTPUT_FORMAT="elf32-i386"
+CONFIG_ARCH_DEFCONFIG="arch/x86/configs/i386_defconfig"
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_FAST_CMPXCHG_LOCAL=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+# CONFIG_GENERIC_TIME_VSYSCALL is not set
+CONFIG_ARCH_HAS_CPU_RELAX=y
+CONFIG_ARCH_HAS_DEFAULT_IDLE=y
+CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
+CONFIG_HAVE_SETUP_PER_CPU_AREA=y
+CONFIG_HAVE_DYNAMIC_PER_CPU_AREA=y
+# CONFIG_HAVE_CPUMASK_OF_CPU_MAP is not set
+CONFIG_ARCH_HIBERNATION_POSSIBLE=y
+CONFIG_ARCH_SUSPEND_POSSIBLE=y
+# CONFIG_ZONE_DMA32 is not set
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+# CONFIG_AUDIT_ARCH is not set
+CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
+CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_GENERIC_PENDING_IRQ=y
+CONFIG_USE_GENERIC_SMP_HELPERS=y
+CONFIG_X86_32_SMP=y
+CONFIG_X86_HT=y
+CONFIG_X86_TRAMPOLINE=y
+CONFIG_KTIME_SCALAR=y
+# CONFIG_BOOTPARAM_SUPPORT is not set
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_CONSTRUCTORS=y
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+# CONFIG_BROKEN_BOOT_ALLOWED4 is not set
+# CONFIG_BROKEN_BOOT_EUROPE is not set
+# CONFIG_BROKEN_BOOT_TITAN is not set
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_HAVE_KERNEL_GZIP=y
+CONFIG_HAVE_KERNEL_BZIP2=y
+CONFIG_HAVE_KERNEL_LZMA=y
+# CONFIG_KERNEL_GZIP is not set
+CONFIG_KERNEL_BZIP2=y
+# CONFIG_KERNEL_LZMA is not set
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_POSIX_MQUEUE_SYSCTL=y
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_BSD_PROCESS_ACCT_V3=y
+# CONFIG_TASKSTATS is not set
+CONFIG_AUDIT=y
+# CONFIG_AUDITSYSCALL is not set
+
+#
+# RCU Subsystem
+#
+CONFIG_TREE_RCU=y
+# CONFIG_PREEMPT_RCU is not set
+# CONFIG_RCU_TRACE is not set
+CONFIG_RCU_FANOUT=32
+# CONFIG_RCU_FANOUT_EXACT is not set
+# CONFIG_TREE_RCU_TRACE is not set
+# CONFIG_PREEMPT_RCU_TRACE is not set
+CONFIG_IKCONFIG=y
+# CONFIG_IKCONFIG_PROC is not set
+CONFIG_LOG_BUF_SHIFT=20
+CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+# CONFIG_GROUP_SCHED is not set
+# CONFIG_CGROUPS is not set
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_SYSFS_DEPRECATED_V2=y
+# CONFIG_RELAY is not set
+CONFIG_NAMESPACES=y
+CONFIG_UTS_NS=y
+CONFIG_IPC_NS=y
+CONFIG_USER_NS=y
+CONFIG_PID_NS=y
+CONFIG_NET_NS=y
+# CONFIG_BLK_DEV_INITRD is not set
+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+CONFIG_SYSCTL=y
+CONFIG_ANON_INODES=y
+# CONFIG_EMBEDDED is not set
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+CONFIG_KALLSYMS_EXTRA_PASS=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_PCSPKR_PLATFORM=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_AIO=y
+CONFIG_HAVE_PERF_COUNTERS=y
+
+#
+# Performance Counters
+#
+CONFIG_PERF_COUNTERS=y
+CONFIG_EVENT_PROFILE=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_PCI_QUIRKS=y
+CONFIG_SLUB_DEBUG=y
+# CONFIG_STRIP_ASM_SYMS is not set
+CONFIG_COMPAT_BRK=y
+# CONFIG_SLAB is not set
+CONFIG_SLUB=y
+# CONFIG_SLOB is not set
+CONFIG_PROFILING=y
+CONFIG_TRACEPOINTS=y
+CONFIG_MARKERS=y
+CONFIG_OPROFILE=m
+# CONFIG_OPROFILE_IBS is not set
+# CONFIG_OPROFILE_EVENT_MULTIPLEX is not set
+CONFIG_HAVE_OPROFILE=y
+CONFIG_KPROBES=y
+CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
+CONFIG_KRETPROBES=y
+CONFIG_HAVE_IOREMAP_PROT=y
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+CONFIG_HAVE_DMA_ATTRS=y
+CONFIG_HAVE_DMA_API_DEBUG=y
+CONFIG_HAVE_HW_BREAKPOINT=y
+
+#
+# GCOV-based kernel profiling
+#
+CONFIG_SLOW_WORK=y
+CONFIG_HAVE_GENERIC_DMA_COHERENT=y
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+# CONFIG_MODULE_FORCE_LOAD is not set
+# CONFIG_MODULE_UNLOAD is not set
+CONFIG_MODVERSIONS=y
+CONFIG_MODULE_SRCVERSION_ALL=y
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+CONFIG_LBDAF=y
+# CONFIG_BLK_DEV_BSG is not set
+CONFIG_BLK_DEV_INTEGRITY=y
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+# CONFIG_IOSCHED_AS is not set
+# CONFIG_IOSCHED_DEADLINE is not set
+# CONFIG_IOSCHED_CFQ is not set
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+# CONFIG_DEFAULT_CFQ is not set
+CONFIG_DEFAULT_NOOP=y
+CONFIG_DEFAULT_IOSCHED="noop"
+CONFIG_FREEZER=y
+
+#
+# Processor type and features
+#
+CONFIG_TICK_ONESHOT=y
+# CONFIG_NO_HZ is not set
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_SMP_SUPPORT=y
+# CONFIG_SPARSE_IRQ is not set
+CONFIG_X86_MPPARSE=y
+CONFIG_X86_BIGSMP=y
+CONFIG_X86_EXTENDED_PLATFORM=y
+# CONFIG_X86_ELAN is not set
+# CONFIG_X86_RDC321X is not set
+CONFIG_X86_32_NON_STANDARD=y
+CONFIG_X86_NUMAQ=y
+# CONFIG_X86_VISWS is not set
+# CONFIG_SCHED_OMIT_FRAME_POINTER is not set
+CONFIG_PARAVIRT_GUEST=y
+CONFIG_KVM_CLOCK=y
+CONFIG_KVM_GUEST=y
+# CONFIG_LGUEST_GUEST is not set
+CONFIG_PARAVIRT=y
+CONFIG_PARAVIRT_SPINLOCKS=y
+CONFIG_PARAVIRT_CLOCK=y
+CONFIG_PARAVIRT_DEBUG=y
+CONFIG_MEMTEST=y
+CONFIG_X86_SUMMIT_NUMA=y
+CONFIG_X86_CYCLONE_TIMER=y
+# CONFIG_M386 is not set
+# CONFIG_M486 is not set
+# CONFIG_M586 is not set
+# CONFIG_M586TSC is not set
+# CONFIG_M586MMX is not set
+# CONFIG_M686 is not set
+# CONFIG_MPENTIUMII is not set
+# CONFIG_MPENTIUMIII is not set
+# CONFIG_MPENTIUMM is not set
+# CONFIG_MPENTIUM4 is not set
+# CONFIG_MK6 is not set
+# CONFIG_MK7 is not set
+# CONFIG_MK8 is not set
+# CONFIG_MCRUSOE is not set
+CONFIG_MEFFICEON=y
+# CONFIG_MWINCHIPC6 is not set
+# CONFIG_MWINCHIP3D is not set
+# CONFIG_MGEODEGX1 is not set
+# CONFIG_MGEODE_LX is not set
+# CONFIG_MCYRIXIII is not set
+# CONFIG_MVIAC3_2 is not set
+# CONFIG_MVIAC7 is not set
+# CONFIG_MPSC is not set
+# CONFIG_MCORE2 is not set
+# CONFIG_GENERIC_CPU is not set
+# CONFIG_X86_GENERIC is not set
+CONFIG_X86_CPU=y
+CONFIG_X86_L1_CACHE_BYTES=64
+CONFIG_X86_INTERNODE_CACHE_BYTES=64
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_L1_CACHE_SHIFT=5
+CONFIG_X86_XADD=y
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_INVLPG=y
+CONFIG_X86_BSWAP=y
+CONFIG_X86_POPAD_OK=y
+CONFIG_X86_INTEL_USERCOPY=y
+CONFIG_X86_USE_PPRO_CHECKSUM=y
+CONFIG_X86_CMPXCHG64=y
+CONFIG_X86_CMOV=y
+CONFIG_X86_MINIMUM_CPU_FAMILY=4
+CONFIG_X86_DEBUGCTLMSR=y
+CONFIG_CPU_SUP_INTEL=y
+CONFIG_CPU_SUP_CYRIX_32=y
+CONFIG_CPU_SUP_AMD=y
+CONFIG_CPU_SUP_CENTAUR=y
+CONFIG_CPU_SUP_TRANSMETA_32=y
+CONFIG_CPU_SUP_UMC_32=y
+# CONFIG_X86_DS is not set
+# CONFIG_HPET_TIMER is not set
+CONFIG_DMI=y
+# CONFIG_IOMMU_HELPER is not set
+# CONFIG_IOMMU_API is not set
+CONFIG_NR_CPUS=32
+# CONFIG_SCHED_SMT is not set
+# CONFIG_SCHED_MC is not set
+# CONFIG_PREEMPT_NONE is not set
+CONFIG_PREEMPT_VOLUNTARY=y
+# CONFIG_PREEMPT is not set
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS=y
+CONFIG_X86_MCE=y
+# CONFIG_X86_MCE_INTEL is not set
+CONFIG_X86_MCE_AMD=y
+# CONFIG_X86_ANCIENT_MCE is not set
+CONFIG_X86_MCE_THRESHOLD=y
+CONFIG_X86_MCE_INJECT=y
+CONFIG_VM86=y
+CONFIG_TOSHIBA=m
+CONFIG_I8K=m
+# CONFIG_X86_REBOOTFIXUPS is not set
+CONFIG_MICROCODE=y
+CONFIG_MICROCODE_INTEL=y
+# CONFIG_MICROCODE_AMD is not set
+CONFIG_MICROCODE_OLD_INTERFACE=y
+CONFIG_X86_MSR=y
+# CONFIG_X86_CPUID is not set
+CONFIG_X86_CPU_DEBUG=m
+# CONFIG_UP_WANTED_1 is not set
+CONFIG_SMP=y
+# CONFIG_NOHIGHMEM is not set
+# CONFIG_HIGHMEM4G is not set
+CONFIG_HIGHMEM64G=y
+CONFIG_PAGE_OFFSET=0xC0000000
+CONFIG_HIGHMEM=y
+CONFIG_X86_PAE=y
+CONFIG_ARCH_PHYS_ADDR_T_64BIT=y
+CONFIG_NUMA=y
+CONFIG_NODES_SHIFT=4
+CONFIG_HAVE_ARCH_BOOTMEM=y
+CONFIG_ARCH_HAVE_MEMORY_PRESENT=y
+CONFIG_NEED_NODE_MEMMAP_SIZE=y
+CONFIG_HAVE_ARCH_ALLOC_REMAP=y
+CONFIG_ARCH_DISCONTIGMEM_ENABLE=y
+CONFIG_ARCH_DISCONTIGMEM_DEFAULT=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_ILLEGAL_POINTER_VALUE=0
+CONFIG_SELECT_MEMORY_MODEL=y
+# CONFIG_FLATMEM_MANUAL is not set
+CONFIG_DISCONTIGMEM_MANUAL=y
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_DISCONTIGMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_NEED_MULTIPLE_NODES=y
+CONFIG_HAVE_MEMORY_PRESENT=y
+CONFIG_SPARSEMEM_STATIC=y
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_MIGRATION=y
+CONFIG_PHYS_ADDR_T_64BIT=y
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_HAVE_MLOCK=y
+CONFIG_HAVE_MLOCKED_PAGE_BIT=y
+CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
+CONFIG_HIGHPTE=y
+CONFIG_X86_CHECK_BIOS_CORRUPTION=y
+CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK=y
+CONFIG_X86_RESERVE_LOW_64K=y
+CONFIG_MATH_EMULATION=y
+CONFIG_MTRR=y
+CONFIG_MTRR_SANITIZER=y
+CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=0
+CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
+# CONFIG_X86_PAT is not set
+CONFIG_EFI=y
+CONFIG_SECCOMP=y
+CONFIG_CC_STACKPROTECTOR_ALL=y
+CONFIG_CC_STACKPROTECTOR=y
+# CONFIG_HZ_100 is not set
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+CONFIG_HZ_1000=y
+CONFIG_HZ=1000
+CONFIG_SCHED_HRTICK=y
+CONFIG_KEXEC=y
+# CONFIG_CRASH_DUMP is not set
+CONFIG_PHYSICAL_START=0x1000000
+CONFIG_RELOCATABLE=y
+CONFIG_X86_NEED_RELOCS=y
+CONFIG_PHYSICAL_ALIGN=0x1000000
+CONFIG_HOTPLUG_CPU=y
+CONFIG_COMPAT_VDSO=y
+# CONFIG_CMDLINE_BOOL is not set
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+# CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID is not set
+
+#
+# Power management and ACPI options
+#
+CONFIG_PM=y
+CONFIG_PM_DEBUG=y
+CONFIG_PM_VERBOSE=y
+CONFIG_CAN_PM_TRACE=y
+CONFIG_PM_TRACE=y
+CONFIG_PM_TRACE_RTC=y
+CONFIG_PM_SLEEP_SMP=y
+CONFIG_PM_SLEEP=y
+CONFIG_SUSPEND=y
+CONFIG_SUSPEND_FREEZER=y
+# CONFIG_HIBERNATION is not set
+CONFIG_ACPI=y
+CONFIG_ACPI_SLEEP=y
+CONFIG_ACPI_PROCFS=y
+# CONFIG_ACPI_PROCFS_POWER is not set
+# CONFIG_ACPI_SYSFS_POWER is not set
+# CONFIG_ACPI_PROC_EVENT is not set
+CONFIG_ACPI_AC=y
+CONFIG_ACPI_BATTERY=m
+# CONFIG_ACPI_BUTTON is not set
+CONFIG_ACPI_FAN=m
+CONFIG_ACPI_DOCK=y
+CONFIG_ACPI_PROCESSOR=m
+CONFIG_ACPI_HOTPLUG_CPU=y
+CONFIG_ACPI_THERMAL=m
+CONFIG_ACPI_NUMA=y
+# CONFIG_ACPI_CUSTOM_DSDT is not set
+CONFIG_ACPI_BLACKLIST_YEAR=0
+CONFIG_ACPI_DEBUG=y
+CONFIG_ACPI_DEBUG_FUNC_TRACE=y
+CONFIG_ACPI_PCI_SLOT=y
+CONFIG_X86_PM_TIMER=y
+CONFIG_ACPI_CONTAINER=m
+CONFIG_ACPI_SBS=y
+CONFIG_X86_APM_BOOT=y
+CONFIG_APM=y
+CONFIG_APM_IGNORE_USER_SUSPEND=y
+CONFIG_APM_DO_ENABLE=y
+CONFIG_APM_CPU_IDLE=y
+CONFIG_APM_DISPLAY_BLANK=y
+CONFIG_APM_ALLOW_INTS=y
+
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+# CONFIG_CPU_FREQ_DEBUG is not set
+CONFIG_CPU_FREQ_STAT=m
+CONFIG_CPU_FREQ_STAT_DETAILS=y
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
+CONFIG_CPU_FREQ_GOV_USERSPACE=m
+# CONFIG_CPU_FREQ_GOV_ONDEMAND is not set
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
+
+#
+# CPUFreq processor drivers
+#
+CONFIG_X86_ACPI_CPUFREQ=m
+# CONFIG_X86_POWERNOW_K6 is not set
+CONFIG_X86_POWERNOW_K7=m
+CONFIG_X86_POWERNOW_K7_ACPI=y
+CONFIG_X86_POWERNOW_K8=m
+# CONFIG_X86_GX_SUSPMOD is not set
+CONFIG_X86_SPEEDSTEP_CENTRINO=y
+CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
+# CONFIG_X86_SPEEDSTEP_ICH is not set
+CONFIG_X86_SPEEDSTEP_SMI=m
+# CONFIG_X86_P4_CLOCKMOD is not set
+CONFIG_X86_CPUFREQ_NFORCE2=y
+# CONFIG_X86_LONGRUN is not set
+# CONFIG_X86_LONGHAUL is not set
+CONFIG_X86_E_POWERSAVER=m
+
+#
+# shared options
+#
+CONFIG_X86_SPEEDSTEP_LIB=m
+CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK=y
+CONFIG_CPU_IDLE=y
+CONFIG_CPU_IDLE_GOV_LADDER=y
+
+#
+# Bus options (PCI etc.)
+#
+CONFIG_PCI=y
+# CONFIG_PCI_GOBIOS is not set
+# CONFIG_PCI_GOMMCONFIG is not set
+CONFIG_PCI_GODIRECT=y
+# CONFIG_PCI_GOOLPC is not set
+# CONFIG_PCI_GOANY is not set
+CONFIG_PCI_BIOS=y
+CONFIG_PCI_DIRECT=y
+CONFIG_PCI_DOMAINS=y
+# CONFIG_DMAR is not set
+CONFIG_PCIEPORTBUS=y
+CONFIG_PCIEAER=y
+CONFIG_PCIE_ECRC=y
+# CONFIG_PCIEAER_INJECT is not set
+CONFIG_PCIEASPM=y
+CONFIG_PCIEASPM_DEBUG=y
+CONFIG_ARCH_SUPPORTS_MSI=y
+CONFIG_PCI_MSI=y
+CONFIG_PCI_LEGACY=y
+CONFIG_PCI_DEBUG=y
+CONFIG_PCI_STUB=y
+# CONFIG_HT_IRQ is not set
+CONFIG_PCI_IOV=y
+CONFIG_ISA_DMA_API=y
+CONFIG_ISA=y
+CONFIG_EISA=y
+CONFIG_EISA_VLB_PRIMING=y
+CONFIG_EISA_PCI_EISA=y
+# CONFIG_EISA_VIRTUAL_ROOT is not set
+# CONFIG_EISA_NAMES is not set
+# CONFIG_MCA is not set
+CONFIG_SCx200=y
+CONFIG_SCx200HR_TIMER=y
+# CONFIG_OLPC is not set
+CONFIG_PCCARD=m
+# CONFIG_PCMCIA_DEBUG is not set
+CONFIG_PCMCIA=m
+CONFIG_PCMCIA_LOAD_CIS=y
+# CONFIG_PCMCIA_IOCTL is not set
+CONFIG_CARDBUS=y
+
+#
+# PC-card bridges
+#
+CONFIG_YENTA=m
+CONFIG_YENTA_O2=y
+CONFIG_YENTA_RICOH=y
+CONFIG_YENTA_TI=y
+CONFIG_YENTA_ENE_TUNE=y
+CONFIG_YENTA_TOSHIBA=y
+CONFIG_PD6729=m
+CONFIG_I82092=m
+# CONFIG_I82365 is not set
+CONFIG_TCIC=m
+CONFIG_PCMCIA_PROBE=y
+CONFIG_PCCARD_NONSTATIC=m
+# CONFIG_HOTPLUG_PCI is not set
+
+#
+# Executable file formats / Emulations
+#
+CONFIG_BINFMT_ELF=y
+CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS=y
+CONFIG_HAVE_AOUT=y
+CONFIG_BINFMT_AOUT=m
+CONFIG_BINFMT_MISC=y
+CONFIG_HAVE_ATOMIC_IOMAP=y
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+# CONFIG_XFRM_USER is not set
+CONFIG_XFRM_SUB_POLICY=y
+CONFIG_XFRM_MIGRATE=y
+CONFIG_XFRM_STATISTICS=y
+CONFIG_XFRM_IPCOMP=y
+CONFIG_NET_KEY=y
+CONFIG_NET_KEY_MIGRATE=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_ADVANCED_ROUTER=y
+# CONFIG_ASK_IP_FIB_HASH is not set
+CONFIG_IP_FIB_TRIE=y
+# CONFIG_IP_FIB_HASH is not set
+CONFIG_IP_FIB_TRIE_STATS=y
+CONFIG_IP_MULTIPLE_TABLES=y
+# CONFIG_IP_ROUTE_MULTIPATH is not set
+CONFIG_IP_ROUTE_VERBOSE=y
+CONFIG_IP_PNP=y
+CONFIG_IP_PNP_DHCP=y
+CONFIG_IP_PNP_BOOTP=y
+CONFIG_IP_PNP_RARP=y
+CONFIG_NET_IPIP=m
+CONFIG_NET_IPGRE=m
+CONFIG_NET_IPGRE_BROADCAST=y
+# CONFIG_IP_MROUTE is not set
+CONFIG_ARPD=y
+CONFIG_SYN_COOKIES=y
+CONFIG_INET_AH=y
+CONFIG_INET_ESP=y
+CONFIG_INET_IPCOMP=y
+CONFIG_INET_XFRM_TUNNEL=y
+CONFIG_INET_TUNNEL=y
+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
+CONFIG_INET_XFRM_MODE_BEET=y
+CONFIG_INET_LRO=y
+CONFIG_INET_DIAG=m
+CONFIG_INET_TCP_DIAG=m
+CONFIG_TCP_CONG_ADVANCED=y
+# CONFIG_TCP_CONG_BIC is not set
+CONFIG_TCP_CONG_CUBIC=m
+# CONFIG_TCP_CONG_WESTWOOD is not set
+CONFIG_TCP_CONG_HTCP=y
+CONFIG_TCP_CONG_HSTCP=m
+CONFIG_TCP_CONG_HYBLA=y
+# CONFIG_TCP_CONG_VEGAS is not set
+# CONFIG_TCP_CONG_SCALABLE is not set
+CONFIG_TCP_CONG_LP=y
+CONFIG_TCP_CONG_VENO=y
+# CONFIG_TCP_CONG_YEAH is not set
+# CONFIG_TCP_CONG_ILLINOIS is not set
+# CONFIG_DEFAULT_BIC is not set
+# CONFIG_DEFAULT_CUBIC is not set
+CONFIG_DEFAULT_HTCP=y
+# CONFIG_DEFAULT_VEGAS is not set
+# CONFIG_DEFAULT_WESTWOOD is not set
+# CONFIG_DEFAULT_RENO is not set
+CONFIG_DEFAULT_TCP_CONG="htcp"
+# CONFIG_TCP_MD5SIG is not set
+CONFIG_IPV6=m
+CONFIG_IPV6_PRIVACY=y
+# CONFIG_IPV6_ROUTER_PREF is not set
+CONFIG_IPV6_OPTIMISTIC_DAD=y
+CONFIG_INET6_AH=m
+CONFIG_INET6_ESP=m
+CONFIG_INET6_IPCOMP=m
+CONFIG_IPV6_MIP6=m
+CONFIG_INET6_XFRM_TUNNEL=m
+CONFIG_INET6_TUNNEL=m
+# CONFIG_INET6_XFRM_MODE_TRANSPORT is not set
+CONFIG_INET6_XFRM_MODE_TUNNEL=m
+CONFIG_INET6_XFRM_MODE_BEET=m
+CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION=m
+# CONFIG_IPV6_SIT is not set
+CONFIG_IPV6_TUNNEL=m
+# CONFIG_IPV6_MULTIPLE_TABLES is not set
+CONFIG_IPV6_MROUTE=y
+CONFIG_IPV6_PIMSM_V2=y
+# CONFIG_NETLABEL is not set
+# CONFIG_NETWORK_SECMARK is not set
+CONFIG_NETFILTER=y
+CONFIG_NETFILTER_DEBUG=y
+# CONFIG_NETFILTER_ADVANCED is not set
+
+#
+# Core Netfilter Configuration
+#
+CONFIG_NETFILTER_NETLINK=y
+CONFIG_NETFILTER_NETLINK_LOG=y
+# CONFIG_NF_CONNTRACK is not set
+CONFIG_NETFILTER_XTABLES=y
+# CONFIG_NETFILTER_XT_TARGET_MARK is not set
+# CONFIG_NETFILTER_XT_TARGET_NFLOG is not set
+CONFIG_NETFILTER_XT_TARGET_TCPMSS=m
+CONFIG_NETFILTER_XT_MATCH_MARK=y
+CONFIG_NETFILTER_XT_MATCH_POLICY=y
+# CONFIG_IP_VS is not set
+
+#
+# IP: Netfilter Configuration
+#
+# CONFIG_NF_DEFRAG_IPV4 is not set
+# CONFIG_IP_NF_IPTABLES is not set
+
+#
+# IPv6: Netfilter Configuration
+#
+CONFIG_IP6_NF_IPTABLES=m
+CONFIG_IP6_NF_MATCH_IPV6HEADER=m
+# CONFIG_IP6_NF_TARGET_LOG is not set
+CONFIG_IP6_NF_FILTER=m
+CONFIG_IP6_NF_TARGET_REJECT=m
+CONFIG_IP6_NF_MANGLE=m
+CONFIG_IP_DCCP=y
+CONFIG_INET_DCCP_DIAG=m
+
+#
+# DCCP CCIDs Configuration (EXPERIMENTAL)
+#
+CONFIG_IP_DCCP_CCID2_DEBUG=y
+CONFIG_IP_DCCP_CCID3=y
+CONFIG_IP_DCCP_CCID3_DEBUG=y
+CONFIG_IP_DCCP_CCID3_RTO=100
+CONFIG_IP_DCCP_TFRC_LIB=y
+CONFIG_IP_DCCP_TFRC_DEBUG=y
+
+#
+# DCCP Kernel Hacking
+#
+CONFIG_IP_DCCP_DEBUG=y
+# CONFIG_NET_DCCPPROBE is not set
+CONFIG_IP_SCTP=m
+# CONFIG_SCTP_DBG_MSG is not set
+# CONFIG_SCTP_DBG_OBJCNT is not set
+CONFIG_SCTP_HMAC_NONE=y
+# CONFIG_SCTP_HMAC_SHA1 is not set
+# CONFIG_SCTP_HMAC_MD5 is not set
+# CONFIG_TIPC is not set
+# CONFIG_ATM is not set
+CONFIG_STP=m
+CONFIG_GARP=m
+CONFIG_BRIDGE=m
+CONFIG_NET_DSA=y
+CONFIG_NET_DSA_TAG_DSA=y
+# CONFIG_NET_DSA_TAG_EDSA is not set
+# CONFIG_NET_DSA_TAG_TRAILER is not set
+CONFIG_NET_DSA_MV88E6XXX=y
+# CONFIG_NET_DSA_MV88E6060 is not set
+CONFIG_NET_DSA_MV88E6XXX_NEED_PPU=y
+CONFIG_NET_DSA_MV88E6131=y
+# CONFIG_NET_DSA_MV88E6123_61_65 is not set
+CONFIG_VLAN_8021Q=m
+CONFIG_VLAN_8021Q_GVRP=y
+CONFIG_DECNET=m
+CONFIG_DECNET_ROUTER=y
+CONFIG_LLC=y
+CONFIG_LLC2=y
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+CONFIG_X25=m
+# CONFIG_LAPB is not set
+CONFIG_ECONET=m
+# CONFIG_ECONET_AUNUDP is not set
+CONFIG_ECONET_NATIVE=y
+CONFIG_WAN_ROUTER=y
+CONFIG_PHONET=y
+# CONFIG_IEEE802154 is not set
+CONFIG_NET_SCHED=y
+
+#
+# Queueing/Scheduling
+#
+# CONFIG_NET_SCH_CBQ is not set
+CONFIG_NET_SCH_HTB=y
+# CONFIG_NET_SCH_HFSC is not set
+CONFIG_NET_SCH_PRIO=m
+CONFIG_NET_SCH_MULTIQ=y
+CONFIG_NET_SCH_RED=m
+CONFIG_NET_SCH_SFQ=y
+CONFIG_NET_SCH_TEQL=y
+CONFIG_NET_SCH_TBF=y
+CONFIG_NET_SCH_GRED=m
+# CONFIG_NET_SCH_DSMARK is not set
+CONFIG_NET_SCH_NETEM=y
+# CONFIG_NET_SCH_DRR is not set
+# CONFIG_NET_SCH_INGRESS is not set
+
+#
+# Classification
+#
+CONFIG_NET_CLS=y
+# CONFIG_NET_CLS_BASIC is not set
+# CONFIG_NET_CLS_TCINDEX is not set
+CONFIG_NET_CLS_ROUTE4=y
+CONFIG_NET_CLS_ROUTE=y
+CONFIG_NET_CLS_FW=m
+# CONFIG_NET_CLS_U32 is not set
+CONFIG_NET_CLS_RSVP=m
+# CONFIG_NET_CLS_RSVP6 is not set
+CONFIG_NET_CLS_FLOW=y
+CONFIG_NET_EMATCH=y
+CONFIG_NET_EMATCH_STACK=32
+CONFIG_NET_EMATCH_CMP=y
+CONFIG_NET_EMATCH_NBYTE=m
+CONFIG_NET_EMATCH_U32=y
+CONFIG_NET_EMATCH_META=m
+CONFIG_NET_EMATCH_TEXT=m
+CONFIG_NET_CLS_ACT=y
+# CONFIG_NET_ACT_POLICE is not set
+CONFIG_NET_ACT_GACT=y
+CONFIG_GACT_PROB=y
+CONFIG_NET_ACT_MIRRED=y
+CONFIG_NET_ACT_NAT=m
+CONFIG_NET_ACT_PEDIT=y
+# CONFIG_NET_ACT_SIMP is not set
+CONFIG_NET_ACT_SKBEDIT=y
+CONFIG_NET_CLS_IND=y
+CONFIG_NET_SCH_FIFO=y
+CONFIG_DCB=y
+
+#
+# Network testing
+#
+# CONFIG_NET_PKTGEN is not set
+CONFIG_NET_TCPPROBE=m
+CONFIG_NET_DROP_MONITOR=y
+CONFIG_HAMRADIO=y
+
+#
+# Packet Radio protocols
+#
+CONFIG_AX25=m
+CONFIG_AX25_DAMA_SLAVE=y
+CONFIG_NETROM=m
+CONFIG_ROSE=m
+
+#
+# AX.25 network device drivers
+#
+CONFIG_MKISS=m
+# CONFIG_6PACK is not set
+CONFIG_BPQETHER=m
+CONFIG_SCC=m
+CONFIG_SCC_DELAY=y
+CONFIG_SCC_TRXECHO=y
+CONFIG_BAYCOM_SER_FDX=m
+CONFIG_BAYCOM_SER_HDX=m
+CONFIG_YAM=m
+# CONFIG_CAN is not set
+CONFIG_IRDA=m
+
+#
+# IrDA protocols
+#
+CONFIG_IRLAN=m
+CONFIG_IRNET=m
+CONFIG_IRCOMM=m
+# CONFIG_IRDA_ULTRA is not set
+
+#
+# IrDA options
+#
+CONFIG_IRDA_CACHE_LAST_LSAP=y
+CONFIG_IRDA_FAST_RR=y
+CONFIG_IRDA_DEBUG=y
+
+#
+# Infrared-port device drivers
+#
+
+#
+# SIR device drivers
+#
+CONFIG_IRTTY_SIR=m
+
+#
+# Dongle support
+#
+CONFIG_DONGLE=y
+CONFIG_ESI_DONGLE=m
+# CONFIG_ACTISYS_DONGLE is not set
+CONFIG_TEKRAM_DONGLE=m
+CONFIG_TOIM3232_DONGLE=m
+# CONFIG_LITELINK_DONGLE is not set
+CONFIG_MA600_DONGLE=m
+CONFIG_GIRBIL_DONGLE=m
+CONFIG_MCP2120_DONGLE=m
+CONFIG_OLD_BELKIN_DONGLE=m
+CONFIG_ACT200L_DONGLE=m
+# CONFIG_KINGSUN_DONGLE is not set
+CONFIG_KSDAZZLE_DONGLE=m
+CONFIG_KS959_DONGLE=m
+
+#
+# FIR device drivers
+#
+CONFIG_USB_IRDA=m
+CONFIG_SIGMATEL_FIR=m
+# CONFIG_NSC_FIR is not set
+CONFIG_WINBOND_FIR=m
+CONFIG_TOSHIBA_FIR=m
+CONFIG_SMC_IRCC_FIR=m
+# CONFIG_ALI_FIR is not set
+CONFIG_VLSI_FIR=m
+# CONFIG_VIA_FIR is not set
+# CONFIG_MCS_FIR is not set
+# CONFIG_BT is not set
+CONFIG_AF_RXRPC=m
+# CONFIG_AF_RXRPC_DEBUG is not set
+CONFIG_RXKAD=m
+CONFIG_FIB_RULES=y
+CONFIG_WIRELESS=y
+CONFIG_CFG80211=y
+CONFIG_CFG80211_REG_DEBUG=y
+# CONFIG_CFG80211_DEBUGFS is not set
+CONFIG_WIRELESS_OLD_REGULATORY=y
+CONFIG_WIRELESS_EXT=y
+CONFIG_WIRELESS_EXT_SYSFS=y
+CONFIG_LIB80211=y
+# CONFIG_LIB80211_DEBUG is not set
+# CONFIG_MAC80211 is not set
+CONFIG_MAC80211_DEFAULT_PS_VALUE=0
+CONFIG_WIMAX=m
+CONFIG_WIMAX_DEBUG_LEVEL=8
+# CONFIG_RFKILL is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+# CONFIG_FIRMWARE_IN_KERNEL is not set
+CONFIG_EXTRA_FIRMWARE=""
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+# CONFIG_SYS_HYPERVISOR is not set
+# CONFIG_CONNECTOR is not set
+# CONFIG_PARPORT is not set
+CONFIG_PNP=y
+CONFIG_PNP_DEBUG_MESSAGES=y
+
+#
+# Protocols
+#
+CONFIG_ISAPNP=y
+CONFIG_PNPBIOS=y
+CONFIG_PNPBIOS_PROC_FS=y
+CONFIG_PNPACPI=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_FD=y
+CONFIG_BLK_DEV_XD=m
+CONFIG_BLK_CPQ_DA=y
+CONFIG_BLK_CPQ_CISS_DA=m
+# CONFIG_CISS_SCSI_TAPE is not set
+# CONFIG_BLK_DEV_DAC960 is not set
+CONFIG_BLK_DEV_UMEM=y
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+CONFIG_BLK_DEV_NBD=y
+CONFIG_BLK_DEV_OSD=m
+# CONFIG_BLK_DEV_SX8 is not set
+# CONFIG_BLK_DEV_UB is not set
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_XIP=y
+# CONFIG_CDROM_PKTCDVD is not set
+# CONFIG_ATA_OVER_ETH is not set
+CONFIG_BLK_DEV_HD=y
+# CONFIG_MISC_DEVICES is not set
+CONFIG_TIFM_CORE=m
+CONFIG_CB710_CORE=m
+CONFIG_HAVE_IDE=y
+
+#
+# SCSI device support
+#
+CONFIG_RAID_ATTRS=y
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+# CONFIG_SCSI_TGT is not set
+# CONFIG_SCSI_NETLINK is not set
+# CONFIG_SCSI_PROC_FS is not set
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=y
+# CONFIG_CHR_DEV_ST is not set
+CONFIG_CHR_DEV_OSST=m
+CONFIG_BLK_DEV_SR=y
+# CONFIG_BLK_DEV_SR_VENDOR is not set
+CONFIG_CHR_DEV_SG=y
+CONFIG_CHR_DEV_SCH=m
+CONFIG_SCSI_MULTI_LUN=y
+CONFIG_SCSI_CONSTANTS=y
+CONFIG_SCSI_LOGGING=y
+CONFIG_SCSI_SCAN_ASYNC=y
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=y
+# CONFIG_SCSI_FC_ATTRS is not set
+CONFIG_SCSI_ISCSI_ATTRS=y
+CONFIG_SCSI_SAS_ATTRS=m
+CONFIG_SCSI_SAS_LIBSAS=m
+CONFIG_SCSI_SAS_ATA=y
+# CONFIG_SCSI_SAS_HOST_SMP is not set
+CONFIG_SCSI_SAS_LIBSAS_DEBUG=y
+CONFIG_SCSI_SRP_ATTRS=m
+# CONFIG_SCSI_LOWLEVEL is not set
+CONFIG_SCSI_AIC7XXX=y
+CONFIG_SCSI_LOWLEVEL_PCMCIA=y
+CONFIG_PCMCIA_AHA152X=m
+CONFIG_PCMCIA_FDOMAIN=m
+CONFIG_PCMCIA_NINJA_SCSI=m
+CONFIG_PCMCIA_QLOGIC=m
+# CONFIG_PCMCIA_SYM53C500 is not set
+# CONFIG_SCSI_DH is not set
+CONFIG_SCSI_OSD_INITIATOR=m
+CONFIG_SCSI_OSD_ULD=m
+CONFIG_SCSI_OSD_DPRINT_SENSE=1
+CONFIG_SCSI_OSD_DEBUG=y
+CONFIG_ATA=y
+# CONFIG_ATA_NONSTANDARD is not set
+# CONFIG_ATA_ACPI is not set
+CONFIG_SATA_PMP=y
+CONFIG_SATA_AHCI=y
+CONFIG_SATA_SIL24=m
+CONFIG_ATA_SFF=y
+CONFIG_SATA_SVW=m
+CONFIG_ATA_PIIX=y
+# CONFIG_SATA_MV is not set
+CONFIG_SATA_NV=y
+CONFIG_PDC_ADMA=m
+CONFIG_SATA_QSTOR=m
+# CONFIG_SATA_PROMISE is not set
+# CONFIG_SATA_SX4 is not set
+# CONFIG_SATA_SIL is not set
+# CONFIG_SATA_SIS is not set
+# CONFIG_SATA_ULI is not set
+CONFIG_SATA_VIA=m
+CONFIG_SATA_VITESSE=m
+CONFIG_SATA_INIC162X=m
+# CONFIG_PATA_ALI is not set
+CONFIG_PATA_AMD=y
+# CONFIG_PATA_ARTOP is not set
+CONFIG_PATA_ATIIXP=y
+# CONFIG_PATA_CMD640_PCI is not set
+# CONFIG_PATA_CMD64X is not set
+CONFIG_PATA_CS5520=m
+CONFIG_PATA_CS5530=y
+CONFIG_PATA_CS5535=m
+# CONFIG_PATA_CS5536 is not set
+# CONFIG_PATA_CYPRESS is not set
+CONFIG_PATA_EFAR=y
+CONFIG_ATA_GENERIC=y
+# CONFIG_PATA_HPT366 is not set
+CONFIG_PATA_HPT37X=m
+CONFIG_PATA_HPT3X2N=m
+CONFIG_PATA_HPT3X3=y
+# CONFIG_PATA_HPT3X3_DMA is not set
+# CONFIG_PATA_ISAPNP is not set
+# CONFIG_PATA_IT821X is not set
+CONFIG_PATA_IT8213=m
+# CONFIG_PATA_JMICRON is not set
+# CONFIG_PATA_LEGACY is not set
+CONFIG_PATA_TRIFLEX=m
+CONFIG_PATA_MARVELL=y
+CONFIG_PATA_MPIIX=m
+CONFIG_PATA_OLDPIIX=y
+CONFIG_PATA_NETCELL=y
+CONFIG_PATA_NINJA32=y
+CONFIG_PATA_NS87410=y
+# CONFIG_PATA_NS87415 is not set
+# CONFIG_PATA_OPTI is not set
+CONFIG_PATA_OPTIDMA=m
+# CONFIG_PATA_PCMCIA is not set
+CONFIG_PATA_PDC_OLD=y
+CONFIG_PATA_QDI=y
+CONFIG_PATA_RADISYS=m
+CONFIG_PATA_RZ1000=m
+# CONFIG_PATA_SC1200 is not set
+CONFIG_PATA_SERVERWORKS=m
+CONFIG_PATA_PDC2027X=m
+# CONFIG_PATA_SIL680 is not set
+# CONFIG_PATA_SIS is not set
+CONFIG_PATA_VIA=y
+CONFIG_PATA_WINBOND=m
+# CONFIG_PATA_WINBOND_VLB is not set
+CONFIG_PATA_SCH=y
+CONFIG_MD=y
+# CONFIG_BLK_DEV_MD is not set
+CONFIG_BLK_DEV_DM=m
+CONFIG_DM_DEBUG=y
+# CONFIG_DM_CRYPT is not set
+# CONFIG_DM_SNAPSHOT is not set
+CONFIG_DM_MIRROR=m
+# CONFIG_DM_LOG_USERSPACE is not set
+CONFIG_DM_ZERO=m
+# CONFIG_DM_MULTIPATH is not set
+# CONFIG_DM_DELAY is not set
+CONFIG_DM_UEVENT=y
+# CONFIG_FUSION is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+
+#
+# You can enable one or both FireWire driver stacks.
+#
+
+#
+# See the help texts for more information.
+#
+CONFIG_FIREWIRE=m
+CONFIG_FIREWIRE_OHCI=m
+CONFIG_FIREWIRE_OHCI_DEBUG=y
+CONFIG_FIREWIRE_SBP2=m
+CONFIG_FIREWIRE_NET=m
+# CONFIG_IEEE1394 is not set
+CONFIG_I2O=y
+CONFIG_I2O_LCT_NOTIFY_ON_CHANGES=y
+CONFIG_I2O_EXT_ADAPTEC=y
+CONFIG_I2O_EXT_ADAPTEC_DMA64=y
+# CONFIG_I2O_CONFIG is not set
+CONFIG_I2O_BUS=y
+# CONFIG_I2O_BLOCK is not set
+# CONFIG_I2O_SCSI is not set
+CONFIG_I2O_PROC=y
+CONFIG_MACINTOSH_DRIVERS=y
+CONFIG_MAC_EMUMOUSEBTN=y
+CONFIG_NETDEVICES=y
+# CONFIG_IFB is not set
+CONFIG_DUMMY=m
+CONFIG_BONDING=m
+# CONFIG_MACVLAN is not set
+CONFIG_EQUALIZER=y
+CONFIG_TUN=y
+# CONFIG_VETH is not set
+CONFIG_NET_SB1000=y
+CONFIG_ARCNET=m
+CONFIG_ARCNET_1201=m
+# CONFIG_ARCNET_1051 is not set
+CONFIG_ARCNET_RAW=m
+CONFIG_ARCNET_CAP=m
+# CONFIG_ARCNET_COM90xx is not set
+CONFIG_ARCNET_COM90xxIO=m
+# CONFIG_ARCNET_RIM_I is not set
+CONFIG_ARCNET_COM20020=m
+# CONFIG_ARCNET_COM20020_ISA is not set
+CONFIG_ARCNET_COM20020_PCI=m
+CONFIG_PHYLIB=y
+
+#
+# MII PHY device drivers
+#
+# CONFIG_MARVELL_PHY is not set
+CONFIG_DAVICOM_PHY=y
+# CONFIG_QSEMI_PHY is not set
+# CONFIG_LXT_PHY is not set
+CONFIG_CICADA_PHY=m
+CONFIG_VITESSE_PHY=m
+CONFIG_SMSC_PHY=y
+CONFIG_BROADCOM_PHY=m
+CONFIG_ICPLUS_PHY=y
+CONFIG_REALTEK_PHY=m
+CONFIG_NATIONAL_PHY=m
+# CONFIG_STE10XP is not set
+CONFIG_LSI_ET1011C_PHY=m
+# CONFIG_FIXED_PHY is not set
+CONFIG_MDIO_BITBANG=y
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+CONFIG_HAPPYMEAL=m
+CONFIG_SUNGEM=y
+CONFIG_CASSINI=m
+CONFIG_NET_VENDOR_3COM=y
+CONFIG_EL1=y
+CONFIG_EL2=m
+CONFIG_ELPLUS=m
+# CONFIG_EL16 is not set
+# CONFIG_EL3 is not set
+CONFIG_3C515=m
+CONFIG_VORTEX=y
+CONFIG_TYPHOON=y
+CONFIG_LANCE=m
+CONFIG_NET_VENDOR_SMC=y
+CONFIG_ULTRA=y
+CONFIG_ULTRA32=m
+CONFIG_SMC9194=y
+# CONFIG_ETHOC is not set
+# CONFIG_NET_VENDOR_RACAL is not set
+# CONFIG_DNET is not set
+# CONFIG_NET_TULIP is not set
+CONFIG_AT1700=m
+# CONFIG_DEPCA is not set
+# CONFIG_HP100 is not set
+CONFIG_NET_ISA=y
+# CONFIG_E2100 is not set
+CONFIG_EWRK3=m
+# CONFIG_EEXPRESS is not set
+CONFIG_EEXPRESS_PRO=y
+CONFIG_HPLAN=y
+CONFIG_LP486E=y
+CONFIG_ETH16I=y
+CONFIG_NE2000=m
+# CONFIG_ZNET is not set
+CONFIG_SEEQ8005=m
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
+# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
+# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
+CONFIG_NET_PCI=y
+CONFIG_PCNET32=m
+# CONFIG_AMD8111_ETH is not set
+# CONFIG_ADAPTEC_STARFIRE is not set
+CONFIG_AC3200=m
+# CONFIG_APRICOT is not set
+CONFIG_B44=y
+CONFIG_B44_PCI_AUTOSELECT=y
+CONFIG_B44_PCICORE_AUTOSELECT=y
+CONFIG_B44_PCI=y
+CONFIG_FORCEDETH=y
+# CONFIG_FORCEDETH_NAPI is not set
+CONFIG_CS89x0=m
+CONFIG_E100=y
+# CONFIG_LNE390 is not set
+CONFIG_FEALNX=y
+CONFIG_NATSEMI=y
+CONFIG_NE2K_PCI=y
+# CONFIG_NE3210 is not set
+# CONFIG_ES3210 is not set
+CONFIG_8139CP=y
+CONFIG_8139TOO=y
+CONFIG_8139TOO_PIO=y
+CONFIG_8139TOO_TUNE_TWISTER=y
+CONFIG_8139TOO_8129=y
+# CONFIG_8139_OLD_RX_RESET is not set
+CONFIG_R6040=m
+CONFIG_SIS900=y
+# CONFIG_EPIC100 is not set
+CONFIG_SMSC9420=y
+# CONFIG_SUNDANCE is not set
+CONFIG_TLAN=y
+# CONFIG_KS8842 is not set
+CONFIG_VIA_RHINE=m
+# CONFIG_VIA_RHINE_MMIO is not set
+CONFIG_SC92031=m
+CONFIG_ATL2=m
+CONFIG_NETDEV_1000=y
+CONFIG_ACENIC=y
+CONFIG_ACENIC_OMIT_TIGON_I=y
+CONFIG_DL2K=y
+CONFIG_E1000=y
+CONFIG_E1000E=y
+CONFIG_IP1000=y
+# CONFIG_IGB is not set
+CONFIG_IGBVF=m
+CONFIG_NS83820=y
+CONFIG_HAMACHI=m
+# CONFIG_YELLOWFIN is not set
+CONFIG_R8169=m
+# CONFIG_R8169_VLAN is not set
+CONFIG_SIS190=y
+# CONFIG_SKGE is not set
+CONFIG_SKY2=m
+# CONFIG_SKY2_DEBUG is not set
+CONFIG_VIA_VELOCITY=m
+CONFIG_TIGON3=y
+CONFIG_BNX2=y
+# CONFIG_QLA3XXX is not set
+CONFIG_ATL1=y
+# CONFIG_ATL1E is not set
+CONFIG_ATL1C=y
+CONFIG_JME=y
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+
+#
+# Wireless LAN
+#
+# CONFIG_WLAN_PRE80211 is not set
+CONFIG_WLAN_80211=y
+# CONFIG_PCMCIA_RAYCS is not set
+CONFIG_LIBERTAS=y
+# CONFIG_LIBERTAS_USB is not set
+CONFIG_LIBERTAS_CS=m
+# CONFIG_LIBERTAS_SDIO is not set
+# CONFIG_LIBERTAS_DEBUG is not set
+# CONFIG_AIRO is not set
+CONFIG_ATMEL=y
+CONFIG_PCI_ATMEL=m
+CONFIG_PCMCIA_ATMEL=m
+CONFIG_AIRO_CS=m
+CONFIG_PCMCIA_WL3501=m
+CONFIG_PRISM54=y
+# CONFIG_USB_ZD1201 is not set
+CONFIG_USB_NET_RNDIS_WLAN=y
+# CONFIG_IPW2100 is not set
+# CONFIG_IPW2200 is not set
+# CONFIG_HOSTAP is not set
+# CONFIG_HERMES is not set
+# CONFIG_IWM is not set
+
+#
+# WiMAX Wireless Broadband devices
+#
+CONFIG_WIMAX_I2400M=m
+CONFIG_WIMAX_I2400M_SDIO=m
+CONFIG_WIMAX_I2400M_DEBUG_LEVEL=8
+
+#
+# USB Network Adapters
+#
+# CONFIG_USB_CATC is not set
+# CONFIG_USB_KAWETH is not set
+CONFIG_USB_PEGASUS=m
+CONFIG_USB_RTL8150=m
+CONFIG_USB_USBNET=y
+CONFIG_USB_NET_AX8817X=y
+CONFIG_USB_NET_CDCETHER=y
+CONFIG_USB_NET_CDC_EEM=m
+# CONFIG_USB_NET_DM9601 is not set
+CONFIG_USB_NET_SMSC95XX=y
+# CONFIG_USB_NET_GL620A is not set
+CONFIG_USB_NET_NET1080=y
+CONFIG_USB_NET_PLUSB=y
+# CONFIG_USB_NET_MCS7830 is not set
+CONFIG_USB_NET_RNDIS_HOST=y
+CONFIG_USB_NET_CDC_SUBSET=m
+# CONFIG_USB_ALI_M5632 is not set
+CONFIG_USB_AN2720=y
+CONFIG_USB_BELKIN=y
+CONFIG_USB_ARMLINUX=y
+CONFIG_USB_EPSON2888=y
+CONFIG_USB_KC2190=y
+CONFIG_USB_NET_ZAURUS=m
+# CONFIG_USB_NET_INT51X1 is not set
+CONFIG_USB_CDC_PHONET=y
+# CONFIG_NET_PCMCIA is not set
+CONFIG_WAN=y
+# CONFIG_HDLC is not set
+# CONFIG_DLCI is not set
+CONFIG_WAN_ROUTER_DRIVERS=m
+CONFIG_CYCLADES_SYNC=m
+CONFIG_CYCLOMX_X25=y
+CONFIG_SBNI=m
+CONFIG_SBNI_MULTILINE=y
+CONFIG_FDDI=m
+CONFIG_DEFXX=m
+# CONFIG_DEFXX_MMIO is not set
+# CONFIG_SKFP is not set
+# CONFIG_HIPPI is not set
+CONFIG_PPP=m
+CONFIG_PPP_MULTILINK=y
+CONFIG_PPP_FILTER=y
+CONFIG_PPP_ASYNC=m
+CONFIG_PPP_SYNC_TTY=m
+CONFIG_PPP_DEFLATE=m
+# CONFIG_PPP_BSDCOMP is not set
+CONFIG_PPP_MPPE=m
+# CONFIG_PPPOE is not set
+# CONFIG_PPPOL2TP is not set
+CONFIG_SLIP=m
+# CONFIG_SLIP_COMPRESSED is not set
+CONFIG_SLHC=m
+CONFIG_SLIP_SMART=y
+# CONFIG_SLIP_MODE_SLIP6 is not set
+CONFIG_NET_FC=y
+CONFIG_NETCONSOLE=y
+# CONFIG_NETCONSOLE_DYNAMIC is not set
+CONFIG_NETPOLL=y
+# CONFIG_NETPOLL_TRAP is not set
+CONFIG_NET_POLL_CONTROLLER=y
+CONFIG_ISDN=y
+CONFIG_ISDN_I4L=m
+CONFIG_ISDN_PPP=y
+# CONFIG_ISDN_PPP_VJ is not set
+CONFIG_ISDN_MPP=y
+CONFIG_IPPP_FILTER=y
+CONFIG_ISDN_PPP_BSDCOMP=m
+CONFIG_ISDN_AUDIO=y
+CONFIG_ISDN_TTY_FAX=y
+CONFIG_ISDN_X25=y
+
+#
+# ISDN feature submodules
+#
+CONFIG_ISDN_DIVERSION=m
+
+#
+# ISDN4Linux hardware drivers
+#
+
+#
+# Passive cards
+#
+# CONFIG_ISDN_DRV_HISAX is not set
+
+#
+# Active cards
+#
+# CONFIG_ISDN_DRV_PCBIT is not set
+CONFIG_ISDN_DRV_SC=m
+CONFIG_ISDN_DRV_ACT2000=m
+CONFIG_HYSDN=m
+CONFIG_HYSDN_CAPI=y
+CONFIG_ISDN_CAPI=y
+# CONFIG_ISDN_DRV_AVMB1_VERBOSE_REASON is not set
+CONFIG_CAPI_TRACE=y
+# CONFIG_ISDN_CAPI_MIDDLEWARE is not set
+CONFIG_ISDN_CAPI_CAPI20=y
+CONFIG_ISDN_CAPI_CAPIDRV=m
+
+#
+# CAPI hardware drivers
+#
+CONFIG_CAPI_AVM=y
+CONFIG_ISDN_DRV_AVMB1_B1ISA=y
+# CONFIG_ISDN_DRV_AVMB1_B1PCI is not set
+CONFIG_ISDN_DRV_AVMB1_T1ISA=m
+CONFIG_ISDN_DRV_AVMB1_B1PCMCIA=m
+# CONFIG_ISDN_DRV_AVMB1_AVM_CS is not set
+# CONFIG_ISDN_DRV_AVMB1_T1PCI is not set
+CONFIG_ISDN_DRV_AVMB1_C4=y
+CONFIG_CAPI_EICON=y
+# CONFIG_ISDN_DIVAS is not set
+CONFIG_ISDN_DRV_GIGASET=m
+# CONFIG_GIGASET_BASE is not set
+CONFIG_GIGASET_M105=m
+CONFIG_GIGASET_M101=m
+CONFIG_GIGASET_DEBUG=y
+CONFIG_PHONE=y
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+CONFIG_INPUT_FF_MEMLESS=y
+CONFIG_INPUT_POLLDEV=y
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+# CONFIG_INPUT_JOYDEV is not set
+CONFIG_INPUT_EVDEV=m
+CONFIG_INPUT_EVBUG=y
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+CONFIG_KEYBOARD_LKKBD=y
+CONFIG_KEYBOARD_LM8323=m
+CONFIG_KEYBOARD_NEWTON=y
+CONFIG_KEYBOARD_STOWAWAY=m
+# CONFIG_KEYBOARD_SUNKBD is not set
+# CONFIG_KEYBOARD_XTKBD is not set
+# CONFIG_INPUT_MOUSE is not set
+CONFIG_INPUT_JOYSTICK=y
+# CONFIG_JOYSTICK_ANALOG is not set
+CONFIG_JOYSTICK_A3D=y
+CONFIG_JOYSTICK_ADI=y
+CONFIG_JOYSTICK_COBRA=m
+CONFIG_JOYSTICK_GF2K=m
+CONFIG_JOYSTICK_GRIP=y
+# CONFIG_JOYSTICK_GRIP_MP is not set
+CONFIG_JOYSTICK_GUILLEMOT=m
+# CONFIG_JOYSTICK_INTERACT is not set
+CONFIG_JOYSTICK_SIDEWINDER=m
+CONFIG_JOYSTICK_TMDC=m
+CONFIG_JOYSTICK_IFORCE=y
+CONFIG_JOYSTICK_IFORCE_USB=y
+CONFIG_JOYSTICK_IFORCE_232=y
+CONFIG_JOYSTICK_WARRIOR=m
+CONFIG_JOYSTICK_MAGELLAN=m
+CONFIG_JOYSTICK_SPACEORB=y
+CONFIG_JOYSTICK_SPACEBALL=y
+# CONFIG_JOYSTICK_STINGER is not set
+CONFIG_JOYSTICK_TWIDJOY=y
+# CONFIG_JOYSTICK_ZHENHUA is not set
+CONFIG_JOYSTICK_JOYDUMP=m
+CONFIG_JOYSTICK_XPAD=y
+CONFIG_JOYSTICK_XPAD_FF=y
+CONFIG_JOYSTICK_XPAD_LEDS=y
+CONFIG_INPUT_TABLET=y
+CONFIG_TABLET_USB_ACECAD=y
+CONFIG_TABLET_USB_AIPTEK=m
+CONFIG_TABLET_USB_GTCO=y
+CONFIG_TABLET_USB_KBTAB=y
+# CONFIG_TABLET_USB_WACOM is not set
+CONFIG_INPUT_TOUCHSCREEN=y
+# CONFIG_TOUCHSCREEN_AD7879_I2C is not set
+# CONFIG_TOUCHSCREEN_AD7879 is not set
+CONFIG_TOUCHSCREEN_EETI=m
+# CONFIG_TOUCHSCREEN_FUJITSU is not set
+# CONFIG_TOUCHSCREEN_GUNZE is not set
+CONFIG_TOUCHSCREEN_ELO=m
+# CONFIG_TOUCHSCREEN_WACOM_W8001 is not set
+# CONFIG_TOUCHSCREEN_MTOUCH is not set
+CONFIG_TOUCHSCREEN_INEXIO=m
+# CONFIG_TOUCHSCREEN_MK712 is not set
+CONFIG_TOUCHSCREEN_HTCPEN=m
+CONFIG_TOUCHSCREEN_PENMOUNT=m
+CONFIG_TOUCHSCREEN_TOUCHRIGHT=y
+CONFIG_TOUCHSCREEN_TOUCHWIN=m
+CONFIG_TOUCHSCREEN_WM97XX=m
+CONFIG_TOUCHSCREEN_WM9705=y
+CONFIG_TOUCHSCREEN_WM9712=y
+CONFIG_TOUCHSCREEN_WM9713=y
+# CONFIG_TOUCHSCREEN_USB_COMPOSITE is not set
+# CONFIG_TOUCHSCREEN_TOUCHIT213 is not set
+CONFIG_TOUCHSCREEN_TSC2007=m
+# CONFIG_TOUCHSCREEN_W90X900 is not set
+# CONFIG_INPUT_MISC is not set
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+CONFIG_SERIO_SERPORT=y
+CONFIG_SERIO_CT82C710=y
+# CONFIG_SERIO_PCIPS2 is not set
+CONFIG_SERIO_LIBPS2=y
+CONFIG_SERIO_RAW=y
+CONFIG_GAMEPORT=y
+CONFIG_GAMEPORT_NS558=y
+CONFIG_GAMEPORT_L4=m
+# CONFIG_GAMEPORT_EMU10K1 is not set
+# CONFIG_GAMEPORT_FM801 is not set
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_CONSOLE_TRANSLATIONS=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_DEVKMEM=y
+CONFIG_SERIAL_NONSTANDARD=y
+# CONFIG_COMPUTONE is not set
+# CONFIG_ROCKETPORT is not set
+CONFIG_CYCLADES=y
+CONFIG_CYZ_INTR=y
+CONFIG_DIGIEPCA=y
+# CONFIG_MOXA_INTELLIO is not set
+CONFIG_MOXA_SMARTIO=m
+CONFIG_ISI=m
+CONFIG_SYNCLINK=m
+# CONFIG_SYNCLINKMP is not set
+# CONFIG_SYNCLINK_GT is not set
+CONFIG_N_HDLC=y
+CONFIG_RISCOM8=y
+# CONFIG_SPECIALIX is not set
+# CONFIG_SX is not set
+CONFIG_RIO=y
+CONFIG_RIO_OLDPCI=y
+# CONFIG_STALDRV is not set
+CONFIG_NOZOMI=y
+
+#
+# Serial drivers
+#
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_FIX_EARLYCON_MEM=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_8250_PNP=y
+# CONFIG_SERIAL_8250_CS is not set
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+CONFIG_SERIAL_8250_EXTENDED=y
+CONFIG_SERIAL_8250_MANY_PORTS=y
+CONFIG_SERIAL_8250_FOURPORT=y
+# CONFIG_SERIAL_8250_ACCENT is not set
+CONFIG_SERIAL_8250_BOCA=y
+# CONFIG_SERIAL_8250_EXAR_ST16C554 is not set
+CONFIG_SERIAL_8250_HUB6=y
+# CONFIG_SERIAL_8250_SHARE_IRQ is not set
+CONFIG_SERIAL_8250_DETECT_IRQ=y
+# CONFIG_SERIAL_8250_RSA is not set
+
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+# CONFIG_SERIAL_JSM is not set
+CONFIG_UNIX98_PTYS=y
+CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+CONFIG_IPMI_HANDLER=y
+# CONFIG_IPMI_PANIC_EVENT is not set
+CONFIG_IPMI_DEVICE_INTERFACE=y
+CONFIG_IPMI_SI=y
+# CONFIG_IPMI_WATCHDOG is not set
+CONFIG_IPMI_POWEROFF=m
+CONFIG_HW_RANDOM=y
+CONFIG_HW_RANDOM_TIMERIOMEM=m
+# CONFIG_HW_RANDOM_INTEL is not set
+CONFIG_HW_RANDOM_AMD=m
+# CONFIG_HW_RANDOM_GEODE is not set
+# CONFIG_HW_RANDOM_VIA is not set
+CONFIG_NVRAM=y
+CONFIG_DTLK=m
+CONFIG_R3964=y
+CONFIG_APPLICOM=m
+# CONFIG_SONYPI is not set
+
+#
+# PCMCIA character devices
+#
+# CONFIG_SYNCLINK_CS is not set
+CONFIG_CARDMAN_4000=m
+CONFIG_CARDMAN_4040=m
+CONFIG_IPWIRELESS=m
+CONFIG_MWAVE=y
+CONFIG_SCx200_GPIO=y
+CONFIG_PC8736x_GPIO=m
+CONFIG_NSC_GPIO=y
+CONFIG_CS5535_GPIO=y
+# CONFIG_RAW_DRIVER is not set
+# CONFIG_HPET is not set
+CONFIG_HANGCHECK_TIMER=y
+CONFIG_TCG_TPM=m
+CONFIG_TCG_TIS=m
+CONFIG_TCG_NSC=m
+CONFIG_TCG_ATMEL=m
+# CONFIG_TCG_INFINEON is not set
+CONFIG_TELCLOCK=m
+CONFIG_DEVPORT=y
+CONFIG_I2C=m
+CONFIG_I2C_BOARDINFO=y
+CONFIG_I2C_CHARDEV=m
+CONFIG_I2C_HELPER_AUTO=y
+CONFIG_I2C_ALGOBIT=m
+CONFIG_I2C_ALGOPCA=m
+
+#
+# I2C Hardware Bus support
+#
+
+#
+# PC SMBus host controller drivers
+#
+# CONFIG_I2C_ALI1535 is not set
+CONFIG_I2C_ALI1563=m
+CONFIG_I2C_ALI15X3=m
+CONFIG_I2C_AMD756=m
+# CONFIG_I2C_AMD8111 is not set
+# CONFIG_I2C_I801 is not set
+# CONFIG_I2C_ISCH is not set
+# CONFIG_I2C_PIIX4 is not set
+CONFIG_I2C_NFORCE2=m
+# CONFIG_I2C_SIS5595 is not set
+CONFIG_I2C_SIS630=m
+CONFIG_I2C_SIS96X=m
+CONFIG_I2C_VIA=m
+CONFIG_I2C_VIAPRO=m
+
+#
+# I2C system bus drivers (mostly embedded / system-on-chip)
+#
+# CONFIG_I2C_OCORES is not set
+CONFIG_I2C_SIMTEC=m
+
+#
+# External I2C/SMBus adapter drivers
+#
+CONFIG_I2C_PARPORT_LIGHT=m
+# CONFIG_I2C_TAOS_EVM is not set
+# CONFIG_I2C_TINY_USB is not set
+
+#
+# Graphics adapter I2C/DDC channel drivers
+#
+CONFIG_I2C_VOODOO3=m
+
+#
+# Other I2C/SMBus bus drivers
+#
+CONFIG_I2C_PCA_PLATFORM=m
+CONFIG_I2C_STUB=m
+CONFIG_SCx200_I2C=m
+CONFIG_SCx200_I2C_SCL=12
+CONFIG_SCx200_I2C_SDA=13
+CONFIG_SCx200_ACB=m
+
+#
+# Miscellaneous I2C Chip support
+#
+# CONFIG_DS1682 is not set
+# CONFIG_SENSORS_PCF8574 is not set
+CONFIG_PCF8575=m
+CONFIG_SENSORS_PCA9539=m
+CONFIG_SENSORS_TSL2550=m
+CONFIG_I2C_DEBUG_CORE=y
+CONFIG_I2C_DEBUG_ALGO=y
+CONFIG_I2C_DEBUG_BUS=y
+CONFIG_I2C_DEBUG_CHIP=y
+# CONFIG_SPI is not set
+
+#
+# PPS support
+#
+# CONFIG_PPS is not set
+CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
+# CONFIG_GPIOLIB is not set
+CONFIG_W1=y
+
+#
+# 1-wire Bus Masters
+#
+CONFIG_W1_MASTER_MATROX=m
+# CONFIG_W1_MASTER_DS2490 is not set
+CONFIG_W1_MASTER_DS2482=m
+
+#
+# 1-wire Slaves
+#
+CONFIG_W1_SLAVE_THERM=m
+CONFIG_W1_SLAVE_SMEM=y
+CONFIG_W1_SLAVE_DS2431=y
+CONFIG_W1_SLAVE_DS2433=m
+# CONFIG_W1_SLAVE_DS2433_CRC is not set
+CONFIG_W1_SLAVE_DS2760=y
+CONFIG_W1_SLAVE_BQ27000=m
+CONFIG_POWER_SUPPLY=y
+CONFIG_POWER_SUPPLY_DEBUG=y
+CONFIG_PDA_POWER=m
+CONFIG_BATTERY_DS2760=y
+CONFIG_BATTERY_DS2782=m
+CONFIG_BATTERY_BQ27x00=m
+CONFIG_BATTERY_MAX17040=m
+CONFIG_CHARGER_PCF50633=m
+CONFIG_HWMON=y
+CONFIG_HWMON_VID=y
+CONFIG_SENSORS_ABITUGURU=m
+# CONFIG_SENSORS_ABITUGURU3 is not set
+CONFIG_SENSORS_AD7414=m
+CONFIG_SENSORS_AD7418=m
+CONFIG_SENSORS_ADM1021=m
+CONFIG_SENSORS_ADM1025=m
+CONFIG_SENSORS_ADM1026=m
+# CONFIG_SENSORS_ADM1029 is not set
+CONFIG_SENSORS_ADM1031=m
+CONFIG_SENSORS_ADM9240=m
+# CONFIG_SENSORS_ADT7462 is not set
+# CONFIG_SENSORS_ADT7470 is not set
+# CONFIG_SENSORS_ADT7473 is not set
+CONFIG_SENSORS_ADT7475=m
+CONFIG_SENSORS_K8TEMP=y
+CONFIG_SENSORS_ASB100=m
+CONFIG_SENSORS_ATK0110=m
+CONFIG_SENSORS_ATXP1=m
+CONFIG_SENSORS_DS1621=m
+# CONFIG_SENSORS_I5K_AMB is not set
+CONFIG_SENSORS_F71805F=y
+CONFIG_SENSORS_F71882FG=y
+CONFIG_SENSORS_F75375S=m
+CONFIG_SENSORS_FSCHER=m
+CONFIG_SENSORS_FSCPOS=m
+CONFIG_SENSORS_FSCHMD=m
+CONFIG_SENSORS_G760A=m
+# CONFIG_SENSORS_GL518SM is not set
+CONFIG_SENSORS_GL520SM=m
+CONFIG_SENSORS_CORETEMP=m
+CONFIG_SENSORS_IBMAEM=y
+CONFIG_SENSORS_IBMPEX=m
+CONFIG_SENSORS_IT87=y
+CONFIG_SENSORS_LM63=m
+CONFIG_SENSORS_LM75=m
+CONFIG_SENSORS_LM77=m
+CONFIG_SENSORS_LM78=m
+# CONFIG_SENSORS_LM80 is not set
+CONFIG_SENSORS_LM83=m
+# CONFIG_SENSORS_LM85 is not set
+CONFIG_SENSORS_LM87=m
+CONFIG_SENSORS_LM90=m
+CONFIG_SENSORS_LM92=m
+CONFIG_SENSORS_LM93=m
+CONFIG_SENSORS_LTC4215=m
+CONFIG_SENSORS_LTC4245=m
+# CONFIG_SENSORS_LM95241 is not set
+# CONFIG_SENSORS_MAX1619 is not set
+# CONFIG_SENSORS_MAX6650 is not set
+CONFIG_SENSORS_PC87360=m
+CONFIG_SENSORS_PC87427=m
+# CONFIG_SENSORS_PCF8591 is not set
+CONFIG_SENSORS_SIS5595=m
+# CONFIG_SENSORS_DME1737 is not set
+CONFIG_SENSORS_SMSC47M1=m
+# CONFIG_SENSORS_SMSC47M192 is not set
+CONFIG_SENSORS_SMSC47B397=y
+CONFIG_SENSORS_ADS7828=m
+CONFIG_SENSORS_THMC50=m
+CONFIG_SENSORS_TMP401=m
+# CONFIG_SENSORS_VIA686A is not set
+CONFIG_SENSORS_VT1211=y
+CONFIG_SENSORS_VT8231=y
+CONFIG_SENSORS_W83781D=m
+CONFIG_SENSORS_W83791D=m
+CONFIG_SENSORS_W83792D=m
+CONFIG_SENSORS_W83793=m
+# CONFIG_SENSORS_W83L785TS is not set
+CONFIG_SENSORS_W83L786NG=m
+CONFIG_SENSORS_W83627HF=y
+CONFIG_SENSORS_W83627EHF=y
+CONFIG_SENSORS_HDAPS=y
+CONFIG_SENSORS_LIS3LV02D=y
+# CONFIG_SENSORS_APPLESMC is not set
+# CONFIG_HWMON_DEBUG_CHIP is not set
+CONFIG_THERMAL=m
+# CONFIG_THERMAL_HWMON is not set
+CONFIG_WATCHDOG=y
+CONFIG_WATCHDOG_NOWAYOUT=y
+
+#
+# Watchdog Device Drivers
+#
+CONFIG_SOFT_WATCHDOG=m
+CONFIG_ACQUIRE_WDT=m
+CONFIG_ADVANTECH_WDT=y
+CONFIG_ALIM1535_WDT=m
+CONFIG_ALIM7101_WDT=y
+CONFIG_SC520_WDT=y
+# CONFIG_IB700_WDT is not set
+CONFIG_IBMASR=y
+CONFIG_WAFER_WDT=y
+CONFIG_I6300ESB_WDT=m
+CONFIG_ITCO_WDT=m
+# CONFIG_ITCO_VENDOR_SUPPORT is not set
+CONFIG_IT8712F_WDT=m
+CONFIG_IT87_WDT=m
+CONFIG_HP_WATCHDOG=m
+# CONFIG_SC1200_WDT is not set
+CONFIG_SCx200_WDT=m
+CONFIG_PC87413_WDT=y
+CONFIG_60XX_WDT=y
+CONFIG_SBC8360_WDT=m
+CONFIG_SBC7240_WDT=m
+CONFIG_CPU5_WDT=m
+# CONFIG_SMSC_SCH311X_WDT is not set
+CONFIG_SMSC37B787_WDT=y
+CONFIG_W83627HF_WDT=y
+CONFIG_W83697HF_WDT=m
+# CONFIG_W83697UG_WDT is not set
+CONFIG_W83877F_WDT=m
+# CONFIG_W83977F_WDT is not set
+CONFIG_MACHZ_WDT=y
+CONFIG_SBC_EPX_C3_WATCHDOG=y
+
+#
+# ISA-based Watchdog Cards
+#
+CONFIG_PCWATCHDOG=y
+CONFIG_MIXCOMWD=y
+
+#
+# PCI-based Watchdog Cards
+#
+CONFIG_PCIPCWATCHDOG=y
+CONFIG_WDTPCI=m
+
+#
+# USB-based Watchdog Cards
+#
+CONFIG_USBPCWATCHDOG=y
+CONFIG_SSB_POSSIBLE=y
+
+#
+# Sonics Silicon Backplane
+#
+CONFIG_SSB=y
+CONFIG_SSB_SPROM=y
+CONFIG_SSB_PCIHOST_POSSIBLE=y
+CONFIG_SSB_PCIHOST=y
+# CONFIG_SSB_B43_PCI_BRIDGE is not set
+CONFIG_SSB_DEBUG=y
+CONFIG_SSB_DRIVER_PCICORE_POSSIBLE=y
+CONFIG_SSB_DRIVER_PCICORE=y
+
+#
+# Multifunction device drivers
+#
+CONFIG_MFD_CORE=y
+CONFIG_MFD_SM501=y
+CONFIG_HTC_PASIC3=y
+# CONFIG_MFD_TMIO is not set
+CONFIG_MFD_WM8400=m
+CONFIG_MFD_PCF50633=m
+# CONFIG_PCF50633_ADC is not set
+CONFIG_PCF50633_GPIO=m
+# CONFIG_AB3100_CORE is not set
+CONFIG_REGULATOR=y
+CONFIG_REGULATOR_DEBUG=y
+# CONFIG_REGULATOR_FIXED_VOLTAGE is not set
+# CONFIG_REGULATOR_VIRTUAL_CONSUMER is not set
+CONFIG_REGULATOR_USERSPACE_CONSUMER=y
+CONFIG_REGULATOR_BQ24022=y
+# CONFIG_REGULATOR_MAX1586 is not set
+CONFIG_REGULATOR_WM8400=m
+# CONFIG_REGULATOR_PCF50633 is not set
+CONFIG_REGULATOR_LP3971=m
+# CONFIG_MEDIA_SUPPORT is not set
+
+#
+# Graphics support
+#
+# CONFIG_AGP is not set
+# CONFIG_DRM is not set
+CONFIG_VGASTATE=m
+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
+CONFIG_FB=m
+CONFIG_FIRMWARE_EDID=y
+CONFIG_FB_DDC=m
+# CONFIG_FB_BOOT_VESA_SUPPORT is not set
+CONFIG_FB_CFB_FILLRECT=m
+CONFIG_FB_CFB_COPYAREA=m
+CONFIG_FB_CFB_IMAGEBLIT=m
+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
+CONFIG_FB_SYS_FILLRECT=m
+CONFIG_FB_SYS_COPYAREA=m
+CONFIG_FB_SYS_IMAGEBLIT=m
+CONFIG_FB_FOREIGN_ENDIAN=y
+CONFIG_FB_BOTH_ENDIAN=y
+# CONFIG_FB_BIG_ENDIAN is not set
+# CONFIG_FB_LITTLE_ENDIAN is not set
+CONFIG_FB_SYS_FOPS=m
+CONFIG_FB_DEFERRED_IO=y
+CONFIG_FB_SVGALIB=m
+# CONFIG_FB_MACMODES is not set
+CONFIG_FB_BACKLIGHT=y
+CONFIG_FB_MODE_HELPERS=y
+CONFIG_FB_TILEBLITTING=y
+
+#
+# Frame buffer hardware drivers
+#
+CONFIG_FB_PM2=m
+CONFIG_FB_PM2_FIFO_DISCONNECT=y
+# CONFIG_FB_CYBER2000 is not set
+# CONFIG_FB_ARC is not set
+# CONFIG_FB_N411 is not set
+CONFIG_FB_HGA=m
+# CONFIG_FB_HGA_ACCEL is not set
+CONFIG_FB_S1D13XXX=m
+CONFIG_FB_NVIDIA=m
+# CONFIG_FB_NVIDIA_I2C is not set
+CONFIG_FB_NVIDIA_DEBUG=y
+CONFIG_FB_NVIDIA_BACKLIGHT=y
+# CONFIG_FB_RIVA is not set
+CONFIG_FB_LE80578=m
+CONFIG_FB_CARILLO_RANCH=m
+CONFIG_FB_MATROX=m
+# CONFIG_FB_MATROX_MILLENIUM is not set
+# CONFIG_FB_MATROX_MYSTIQUE is not set
+CONFIG_FB_MATROX_G=y
+CONFIG_FB_MATROX_I2C=m
+CONFIG_FB_MATROX_MAVEN=m
+CONFIG_FB_MATROX_MULTIHEAD=y
+# CONFIG_FB_ATY128 is not set
+# CONFIG_FB_ATY is not set
+CONFIG_FB_S3=m
+CONFIG_FB_SAVAGE=m
+# CONFIG_FB_SAVAGE_I2C is not set
+CONFIG_FB_SAVAGE_ACCEL=y
+# CONFIG_FB_SIS is not set
+CONFIG_FB_VIA=m
+CONFIG_FB_NEOMAGIC=m
+# CONFIG_FB_KYRO is not set
+CONFIG_FB_3DFX=m
+CONFIG_FB_3DFX_ACCEL=y
+CONFIG_FB_3DFX_I2C=y
+# CONFIG_FB_VOODOO1 is not set
+CONFIG_FB_VT8623=m
+CONFIG_FB_TRIDENT=m
+CONFIG_FB_ARK=m
+CONFIG_FB_PM3=m
+CONFIG_FB_CARMINE=m
+CONFIG_FB_CARMINE_DRAM_EVAL=y
+# CONFIG_CARMINE_DRAM_CUSTOM is not set
+# CONFIG_FB_GEODE is not set
+CONFIG_FB_TMIO=m
+CONFIG_FB_TMIO_ACCELL=y
+CONFIG_FB_SM501=m
+CONFIG_FB_METRONOME=m
+# CONFIG_FB_MB862XX is not set
+CONFIG_FB_BROADSHEET=m
+CONFIG_BACKLIGHT_LCD_SUPPORT=y
+# CONFIG_LCD_CLASS_DEVICE is not set
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
+CONFIG_BACKLIGHT_GENERIC=m
+# CONFIG_BACKLIGHT_PROGEAR is not set
+CONFIG_BACKLIGHT_MBP_NVIDIA=m
+# CONFIG_BACKLIGHT_SAHARA is not set
+
+#
+# Display device support
+#
+CONFIG_DISPLAY_SUPPORT=y
+
+#
+# Display hardware drivers
+#
+
+#
+# Console display driver support
+#
+CONFIG_VGA_CONSOLE=y
+CONFIG_VGACON_SOFT_SCROLLBACK=y
+CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=64
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_LOGO=y
+# CONFIG_LOGO_LINUX_MONO is not set
+CONFIG_LOGO_LINUX_VGA16=y
+# CONFIG_LOGO_LINUX_CLUT224 is not set
+CONFIG_SOUND=m
+CONFIG_SOUND_OSS_CORE=y
+CONFIG_SND=m
+CONFIG_SND_TIMER=m
+CONFIG_SND_PCM=m
+CONFIG_SND_HWDEP=m
+CONFIG_SND_RAWMIDI=m
+CONFIG_SND_JACK=y
+CONFIG_SND_SEQUENCER=m
+CONFIG_SND_SEQ_DUMMY=m
+CONFIG_SND_OSSEMUL=y
+CONFIG_SND_MIXER_OSS=m
+# CONFIG_SND_PCM_OSS is not set
+# CONFIG_SND_SEQUENCER_OSS is not set
+CONFIG_SND_HRTIMER=m
+# CONFIG_SND_SEQ_HRTIMER_DEFAULT is not set
+CONFIG_SND_DYNAMIC_MINORS=y
+# CONFIG_SND_SUPPORT_OLD_API is not set
+# CONFIG_SND_VERBOSE_PROCFS is not set
+CONFIG_SND_VERBOSE_PRINTK=y
+CONFIG_SND_DEBUG=y
+CONFIG_SND_DEBUG_VERBOSE=y
+CONFIG_SND_VMASTER=y
+CONFIG_SND_RAWMIDI_SEQ=m
+CONFIG_SND_OPL3_LIB_SEQ=m
+CONFIG_SND_OPL4_LIB_SEQ=m
+CONFIG_SND_SBAWE_SEQ=m
+# CONFIG_SND_EMU10K1_SEQ is not set
+CONFIG_SND_MPU401_UART=m
+CONFIG_SND_OPL3_LIB=m
+CONFIG_SND_OPL4_LIB=m
+CONFIG_SND_VX_LIB=m
+CONFIG_SND_AC97_CODEC=m
+CONFIG_SND_DRIVERS=y
+CONFIG_SND_PCSP=m
+CONFIG_SND_DUMMY=m
+CONFIG_SND_VIRMIDI=m
+# CONFIG_SND_SERIAL_U16550 is not set
+CONFIG_SND_MPU401=m
+# CONFIG_SND_AC97_POWER_SAVE is not set
+CONFIG_SND_WSS_LIB=m
+CONFIG_SND_SB_COMMON=m
+CONFIG_SND_SB8_DSP=m
+CONFIG_SND_SB16_DSP=m
+CONFIG_SND_ISA=y
+# CONFIG_SND_ADLIB is not set
+CONFIG_SND_AD1816A=m
+CONFIG_SND_AD1848=m
+# CONFIG_SND_ALS100 is not set
+CONFIG_SND_AZT2320=m
+# CONFIG_SND_CMI8330 is not set
+# CONFIG_SND_CS4231 is not set
+CONFIG_SND_CS4236=m
+# CONFIG_SND_DT019X is not set
+CONFIG_SND_ES968=m
+CONFIG_SND_ES1688=m
+# CONFIG_SND_ES18XX is not set
+CONFIG_SND_SC6000=m
+# CONFIG_SND_GUSCLASSIC is not set
+CONFIG_SND_GUSEXTREME=m
+# CONFIG_SND_GUSMAX is not set
+CONFIG_SND_INTERWAVE=m
+CONFIG_SND_INTERWAVE_STB=m
+# CONFIG_SND_OPL3SA2 is not set
+CONFIG_SND_OPTI92X_AD1848=m
+# CONFIG_SND_OPTI92X_CS4231 is not set
+CONFIG_SND_OPTI93X=m
+CONFIG_SND_MIRO=m
+# CONFIG_SND_SB8 is not set
+# CONFIG_SND_SB16 is not set
+CONFIG_SND_SBAWE=m
+CONFIG_SND_SB16_CSP=y
+# CONFIG_SND_SGALAXY is not set
+CONFIG_SND_SSCAPE=m
+CONFIG_SND_WAVEFRONT=m
+CONFIG_SND_MSND_PINNACLE=m
+CONFIG_SND_MSND_CLASSIC=m
+CONFIG_SND_PCI=y
+# CONFIG_SND_AD1889 is not set
+CONFIG_SND_ALS300=m
+CONFIG_SND_ALS4000=m
+# CONFIG_SND_ALI5451 is not set
+# CONFIG_SND_ATIIXP is not set
+CONFIG_SND_ATIIXP_MODEM=m
+CONFIG_SND_AU8810=m
+# CONFIG_SND_AU8820 is not set
+CONFIG_SND_AU8830=m
+CONFIG_SND_AW2=m
+CONFIG_SND_AZT3328=m
+CONFIG_SND_BT87X=m
+CONFIG_SND_BT87X_OVERCLOCK=y
+CONFIG_SND_CA0106=m
+CONFIG_SND_CMIPCI=m
+CONFIG_SND_OXYGEN_LIB=m
+CONFIG_SND_OXYGEN=m
+# CONFIG_SND_CS4281 is not set
+# CONFIG_SND_CS46XX is not set
+# CONFIG_SND_CS5530 is not set
+CONFIG_SND_CS5535AUDIO=m
+# CONFIG_SND_CTXFI is not set
+# CONFIG_SND_DARLA20 is not set
+CONFIG_SND_GINA20=m
+# CONFIG_SND_LAYLA20 is not set
+CONFIG_SND_DARLA24=m
+CONFIG_SND_GINA24=m
+# CONFIG_SND_LAYLA24 is not set
+# CONFIG_SND_MONA is not set
+CONFIG_SND_MIA=m
+CONFIG_SND_ECHO3G=m
+# CONFIG_SND_INDIGO is not set
+CONFIG_SND_INDIGOIO=m
+CONFIG_SND_INDIGODJ=m
+CONFIG_SND_INDIGOIOX=m
+# CONFIG_SND_INDIGODJX is not set
+# CONFIG_SND_EMU10K1 is not set
+CONFIG_SND_EMU10K1X=m
+CONFIG_SND_ENS1370=m
+CONFIG_SND_ENS1371=m
+CONFIG_SND_ES1938=m
+CONFIG_SND_ES1968=m
+CONFIG_SND_FM801=m
+CONFIG_SND_HDA_INTEL=m
+# CONFIG_SND_HDA_HWDEP is not set
+# CONFIG_SND_HDA_INPUT_BEEP is not set
+CONFIG_SND_HDA_INPUT_JACK=y
+CONFIG_SND_HDA_CODEC_REALTEK=y
+CONFIG_SND_HDA_CODEC_ANALOG=y
+# CONFIG_SND_HDA_CODEC_SIGMATEL is not set
+# CONFIG_SND_HDA_CODEC_VIA is not set
+CONFIG_SND_HDA_CODEC_ATIHDMI=y
+# CONFIG_SND_HDA_CODEC_NVHDMI is not set
+CONFIG_SND_HDA_CODEC_INTELHDMI=y
+CONFIG_SND_HDA_ELD=y
+# CONFIG_SND_HDA_CODEC_CONEXANT is not set
+CONFIG_SND_HDA_CODEC_CA0110=y
+# CONFIG_SND_HDA_CODEC_CMEDIA is not set
+CONFIG_SND_HDA_CODEC_SI3054=y
+CONFIG_SND_HDA_GENERIC=y
+CONFIG_SND_HDA_POWER_SAVE=y
+CONFIG_SND_HDA_POWER_SAVE_DEFAULT=0
+CONFIG_SND_HDSP=m
+# CONFIG_SND_HDSPM is not set
+# CONFIG_SND_HIFIER is not set
+# CONFIG_SND_ICE1712 is not set
+CONFIG_SND_ICE1724=m
+CONFIG_SND_INTEL8X0=m
+CONFIG_SND_INTEL8X0M=m
+CONFIG_SND_KORG1212=m
+CONFIG_SND_LX6464ES=m
+# CONFIG_SND_MAESTRO3 is not set
+CONFIG_SND_MIXART=m
+CONFIG_SND_NM256=m
+# CONFIG_SND_PCXHR is not set
+# CONFIG_SND_RIPTIDE is not set
+CONFIG_SND_RME32=m
+# CONFIG_SND_RME96 is not set
+# CONFIG_SND_RME9652 is not set
+# CONFIG_SND_SIS7019 is not set
+CONFIG_SND_SONICVIBES=m
+CONFIG_SND_TRIDENT=m
+CONFIG_SND_VIA82XX=m
+CONFIG_SND_VIA82XX_MODEM=m
+CONFIG_SND_VIRTUOSO=m
+CONFIG_SND_VX222=m
+CONFIG_SND_YMFPCI=m
+CONFIG_SND_USB=y
+CONFIG_SND_USB_AUDIO=m
+CONFIG_SND_USB_USX2Y=m
+# CONFIG_SND_USB_CAIAQ is not set
+# CONFIG_SND_USB_US122L is not set
+CONFIG_SND_PCMCIA=y
+CONFIG_SND_VXPOCKET=m
+CONFIG_SND_PDAUDIOCF=m
+# CONFIG_SND_SOC is not set
+CONFIG_SOUND_PRIME=m
+CONFIG_SOUND_MSNDCLAS=m
+CONFIG_MSNDCLAS_INIT_FILE="/etc/sound/msndinit.bin"
+CONFIG_MSNDCLAS_PERM_FILE="/etc/sound/msndperm.bin"
+CONFIG_SOUND_MSNDPIN=m
+CONFIG_MSNDPIN_INIT_FILE="/etc/sound/pndspini.bin"
+CONFIG_MSNDPIN_PERM_FILE="/etc/sound/pndsperm.bin"
+# CONFIG_SOUND_OSS is not set
+CONFIG_AC97_BUS=m
+CONFIG_HID_SUPPORT=y
+CONFIG_HID=m
+# CONFIG_HID_DEBUG is not set
+CONFIG_HIDRAW=y
+
+#
+# USB Input Devices
+#
+CONFIG_USB_HID=m
+CONFIG_HID_PID=y
+CONFIG_USB_HIDDEV=y
+CONFIG_USB_MOUSE=y
+
+#
+# Special HID drivers
+#
+CONFIG_HID_A4TECH=m
+CONFIG_HID_APPLE=m
+CONFIG_HID_BELKIN=m
+CONFIG_HID_CHERRY=m
+CONFIG_HID_CHICONY=m
+CONFIG_HID_CYPRESS=m
+CONFIG_HID_DRAGONRISE=m
+CONFIG_DRAGONRISE_FF=y
+CONFIG_HID_EZKEY=m
+CONFIG_HID_KYE=m
+CONFIG_HID_GYRATION=m
+CONFIG_HID_KENSINGTON=m
+CONFIG_HID_LOGITECH=m
+CONFIG_LOGITECH_FF=y
+CONFIG_LOGIRUMBLEPAD2_FF=y
+CONFIG_HID_MICROSOFT=m
+CONFIG_HID_MONTEREY=m
+CONFIG_HID_NTRIG=m
+CONFIG_HID_PANTHERLORD=m
+CONFIG_PANTHERLORD_FF=y
+CONFIG_HID_PETALYNX=m
+CONFIG_HID_SAMSUNG=m
+CONFIG_HID_SONY=m
+CONFIG_HID_SUNPLUS=m
+CONFIG_HID_GREENASIA=m
+CONFIG_GREENASIA_FF=y
+CONFIG_HID_SMARTJOYPLUS=m
+CONFIG_SMARTJOYPLUS_FF=y
+CONFIG_HID_TOPSEED=m
+CONFIG_HID_THRUSTMASTER=m
+CONFIG_THRUSTMASTER_FF=y
+CONFIG_HID_ZEROPLUS=m
+# CONFIG_ZEROPLUS_FF is not set
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+CONFIG_USB_DEBUG=y
+CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
+
+#
+# Miscellaneous USB options
+#
+CONFIG_USB_DEVICEFS=y
+CONFIG_USB_DEVICE_CLASS=y
+# CONFIG_USB_DYNAMIC_MINORS is not set
+CONFIG_USB_SUSPEND=y
+# CONFIG_USB_OTG is not set
+CONFIG_USB_MON=m
+CONFIG_USB_WUSB=y
+# CONFIG_USB_WUSB_CBAF is not set
+
+#
+# USB Host Controller Drivers
+#
+# CONFIG_USB_C67X00_HCD is not set
+CONFIG_USB_XHCI_HCD=m
+CONFIG_USB_XHCI_HCD_DEBUGGING=y
+CONFIG_USB_EHCI_HCD=y
+# CONFIG_USB_EHCI_ROOT_HUB_TT is not set
+CONFIG_USB_EHCI_TT_NEWSCHED=y
+# CONFIG_USB_OXU210HP_HCD is not set
+CONFIG_USB_ISP116X_HCD=y
+CONFIG_USB_ISP1760_HCD=m
+CONFIG_USB_OHCI_HCD=y
+CONFIG_USB_OHCI_HCD_SSB=y
+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
+# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+CONFIG_USB_UHCI_HCD=y
+CONFIG_USB_U132_HCD=m
+# CONFIG_USB_SL811_HCD is not set
+CONFIG_USB_R8A66597_HCD=y
+CONFIG_USB_HWA_HCD=y
+
+#
+# USB Device Class drivers
+#
+CONFIG_USB_ACM=y
+CONFIG_USB_PRINTER=m
+# CONFIG_USB_WDM is not set
+CONFIG_USB_TMC=m
+
+#
+# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
+#
+
+#
+# also be needed; see USB_STORAGE Help for more info
+#
+# CONFIG_USB_STORAGE is not set
+# CONFIG_USB_LIBUSUAL is not set
+
+#
+# USB Imaging devices
+#
+CONFIG_USB_MDC800=y
+# CONFIG_USB_MICROTEK is not set
+
+#
+# USB port drivers
+#
+CONFIG_USB_SERIAL=m
+CONFIG_USB_EZUSB=y
+CONFIG_USB_SERIAL_GENERIC=y
+CONFIG_USB_SERIAL_AIRCABLE=m
+CONFIG_USB_SERIAL_ARK3116=m
+# CONFIG_USB_SERIAL_BELKIN is not set
+CONFIG_USB_SERIAL_CH341=m
+CONFIG_USB_SERIAL_WHITEHEAT=m
+CONFIG_USB_SERIAL_DIGI_ACCELEPORT=m
+CONFIG_USB_SERIAL_CP210X=m
+# CONFIG_USB_SERIAL_CYPRESS_M8 is not set
+CONFIG_USB_SERIAL_EMPEG=m
+CONFIG_USB_SERIAL_FTDI_SIO=m
+CONFIG_USB_SERIAL_FUNSOFT=m
+# CONFIG_USB_SERIAL_VISOR is not set
+CONFIG_USB_SERIAL_IPAQ=m
+CONFIG_USB_SERIAL_IR=m
+# CONFIG_USB_SERIAL_EDGEPORT is not set
+CONFIG_USB_SERIAL_EDGEPORT_TI=m
+CONFIG_USB_SERIAL_GARMIN=m
+CONFIG_USB_SERIAL_IPW=m
+CONFIG_USB_SERIAL_IUU=m
+CONFIG_USB_SERIAL_KEYSPAN_PDA=m
+CONFIG_USB_SERIAL_KEYSPAN=m
+CONFIG_USB_SERIAL_KLSI=m
+CONFIG_USB_SERIAL_KOBIL_SCT=m
+CONFIG_USB_SERIAL_MCT_U232=m
+CONFIG_USB_SERIAL_MOS7720=m
+# CONFIG_USB_SERIAL_MOS7840 is not set
+CONFIG_USB_SERIAL_MOTOROLA=m
+CONFIG_USB_SERIAL_NAVMAN=m
+# CONFIG_USB_SERIAL_PL2303 is not set
+CONFIG_USB_SERIAL_OTI6858=m
+CONFIG_USB_SERIAL_QUALCOMM=m
+CONFIG_USB_SERIAL_SPCP8X5=m
+# CONFIG_USB_SERIAL_HP4X is not set
+CONFIG_USB_SERIAL_SAFE=m
+# CONFIG_USB_SERIAL_SAFE_PADDED is not set
+CONFIG_USB_SERIAL_SIEMENS_MPI=m
+# CONFIG_USB_SERIAL_SIERRAWIRELESS is not set
+CONFIG_USB_SERIAL_SYMBOL=m
+CONFIG_USB_SERIAL_TI=m
+CONFIG_USB_SERIAL_CYBERJACK=m
+# CONFIG_USB_SERIAL_XIRCOM is not set
+CONFIG_USB_SERIAL_OPTION=m
+CONFIG_USB_SERIAL_OMNINET=m
+CONFIG_USB_SERIAL_OPTICON=m
+CONFIG_USB_SERIAL_DEBUG=m
+
+#
+# USB Miscellaneous drivers
+#
+CONFIG_USB_EMI62=y
+# CONFIG_USB_EMI26 is not set
+CONFIG_USB_ADUTUX=y
+CONFIG_USB_SEVSEG=y
+# CONFIG_USB_RIO500 is not set
+CONFIG_USB_LEGOTOWER=y
+CONFIG_USB_LCD=m
+CONFIG_USB_BERRY_CHARGE=m
+CONFIG_USB_LED=m
+CONFIG_USB_CYPRESS_CY7C63=m
+CONFIG_USB_CYTHERM=y
+CONFIG_USB_IDMOUSE=y
+CONFIG_USB_FTDI_ELAN=m
+CONFIG_USB_APPLEDISPLAY=m
+# CONFIG_USB_SISUSBVGA is not set
+# CONFIG_USB_LD is not set
+# CONFIG_USB_TRANCEVIBRATOR is not set
+CONFIG_USB_IOWARRIOR=m
+CONFIG_USB_TEST=y
+# CONFIG_USB_ISIGHTFW is not set
+CONFIG_USB_VST=y
+
+#
+# OTG and related infrastructure
+#
+# CONFIG_NOP_USB_XCEIV is not set
+CONFIG_UWB=y
+CONFIG_UWB_HWA=y
+# CONFIG_UWB_WHCI is not set
+CONFIG_UWB_WLP=m
+CONFIG_UWB_I1480U=y
+# CONFIG_UWB_I1480U_WLP is not set
+CONFIG_MMC=m
+# CONFIG_MMC_DEBUG is not set
+# CONFIG_MMC_UNSAFE_RESUME is not set
+
+#
+# MMC/SD/SDIO Card Drivers
+#
+CONFIG_MMC_BLOCK=m
+# CONFIG_MMC_BLOCK_BOUNCE is not set
+CONFIG_SDIO_UART=m
+# CONFIG_MMC_TEST is not set
+
+#
+# MMC/SD/SDIO Host Controller Drivers
+#
+# CONFIG_MMC_SDHCI is not set
+CONFIG_MMC_WBSD=m
+CONFIG_MMC_TIFM_SD=m
+# CONFIG_MMC_SDRICOH_CS is not set
+CONFIG_MMC_CB710=m
+CONFIG_MMC_VIA_SDMMC=m
+CONFIG_MEMSTICK=y
+CONFIG_MEMSTICK_DEBUG=y
+
+#
+# MemoryStick drivers
+#
+CONFIG_MEMSTICK_UNSAFE_RESUME=y
+CONFIG_MSPRO_BLOCK=y
+
+#
+# MemoryStick Host Controller Drivers
+#
+CONFIG_MEMSTICK_TIFM_MS=m
+CONFIG_MEMSTICK_JMICRON_38X=y
+CONFIG_NEW_LEDS=y
+CONFIG_LEDS_CLASS=y
+
+#
+# LED drivers
+#
+CONFIG_LEDS_NET48XX=m
+CONFIG_LEDS_WRAP=m
+CONFIG_LEDS_ALIX2=m
+CONFIG_LEDS_PCA9532=m
+CONFIG_LEDS_LP3944=m
+# CONFIG_LEDS_CLEVO_MAIL is not set
+CONFIG_LEDS_PCA955X=m
+# CONFIG_LEDS_BD2802 is not set
+
+#
+# LED Triggers
+#
+CONFIG_LEDS_TRIGGERS=y
+CONFIG_LEDS_TRIGGER_TIMER=m
+CONFIG_LEDS_TRIGGER_HEARTBEAT=y
+CONFIG_LEDS_TRIGGER_BACKLIGHT=y
+# CONFIG_LEDS_TRIGGER_DEFAULT_ON is not set
+
+#
+# iptables trigger is under Netfilter config (LED target)
+#
+# CONFIG_ACCESSIBILITY is not set
+CONFIG_INFINIBAND=y
+# CONFIG_INFINIBAND_USER_MAD is not set
+# CONFIG_INFINIBAND_USER_ACCESS is not set
+CONFIG_INFINIBAND_MTHCA=m
+CONFIG_INFINIBAND_MTHCA_DEBUG=y
+CONFIG_INFINIBAND_AMSO1100=m
+# CONFIG_INFINIBAND_AMSO1100_DEBUG is not set
+# CONFIG_MLX4_INFINIBAND is not set
+CONFIG_INFINIBAND_NES=y
+# CONFIG_INFINIBAND_NES_DEBUG is not set
+CONFIG_INFINIBAND_IPOIB=m
+# CONFIG_INFINIBAND_IPOIB_CM is not set
+CONFIG_INFINIBAND_IPOIB_DEBUG=y
+# CONFIG_INFINIBAND_IPOIB_DEBUG_DATA is not set
+CONFIG_INFINIBAND_SRP=m
+CONFIG_EDAC=y
+
+#
+# Reporting subsystems
+#
+CONFIG_EDAC_DEBUG=y
+CONFIG_EDAC_DEBUG_VERBOSE=y
+# CONFIG_EDAC_MM_EDAC is not set
+CONFIG_RTC_LIB=y
+CONFIG_RTC_CLASS=y
+CONFIG_RTC_HCTOSYS=y
+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+CONFIG_RTC_DEBUG=y
+
+#
+# RTC interfaces
+#
+CONFIG_RTC_INTF_SYSFS=y
+CONFIG_RTC_INTF_PROC=y
+CONFIG_RTC_INTF_DEV=y
+CONFIG_RTC_INTF_DEV_UIE_EMUL=y
+CONFIG_RTC_DRV_TEST=m
+
+#
+# I2C RTC drivers
+#
+# CONFIG_RTC_DRV_DS1307 is not set
+# CONFIG_RTC_DRV_DS1374 is not set
+CONFIG_RTC_DRV_DS1672=m
+CONFIG_RTC_DRV_MAX6900=m
+# CONFIG_RTC_DRV_RS5C372 is not set
+CONFIG_RTC_DRV_ISL1208=m
+# CONFIG_RTC_DRV_X1205 is not set
+CONFIG_RTC_DRV_PCF8563=m
+CONFIG_RTC_DRV_PCF8583=m
+# CONFIG_RTC_DRV_M41T80 is not set
+CONFIG_RTC_DRV_S35390A=m
+CONFIG_RTC_DRV_FM3130=m
+CONFIG_RTC_DRV_RX8581=m
+CONFIG_RTC_DRV_RX8025=m
+
+#
+# SPI RTC drivers
+#
+
+#
+# Platform RTC drivers
+#
+CONFIG_RTC_DRV_CMOS=m
+CONFIG_RTC_DRV_DS1286=m
+CONFIG_RTC_DRV_DS1511=y
+# CONFIG_RTC_DRV_DS1553 is not set
+CONFIG_RTC_DRV_DS1742=y
+# CONFIG_RTC_DRV_STK17TA8 is not set
+CONFIG_RTC_DRV_M48T86=m
+# CONFIG_RTC_DRV_M48T35 is not set
+# CONFIG_RTC_DRV_M48T59 is not set
+# CONFIG_RTC_DRV_BQ4802 is not set
+CONFIG_RTC_DRV_V3020=m
+CONFIG_RTC_DRV_PCF50633=m
+
+#
+# on-CPU RTC drivers
+#
+CONFIG_DMADEVICES=y
+
+#
+# DMA Devices
+#
+# CONFIG_INTEL_IOATDMA is not set
+# CONFIG_AUXDISPLAY is not set
+CONFIG_UIO=m
+CONFIG_UIO_CIF=m
+CONFIG_UIO_PDRV=m
+CONFIG_UIO_PDRV_GENIRQ=m
+CONFIG_UIO_SMX=m
+CONFIG_UIO_AEC=m
+# CONFIG_UIO_SERCOS3 is not set
+
+#
+# TI VLYNQ
+#
+CONFIG_X86_PLATFORM_DEVICES=y
+CONFIG_ACER_WMI=y
+CONFIG_ASUS_LAPTOP=m
+CONFIG_DELL_WMI=y
+# CONFIG_FUJITSU_LAPTOP is not set
+# CONFIG_TC1100_WMI is not set
+# CONFIG_HP_WMI is not set
+CONFIG_MSI_LAPTOP=m
+CONFIG_PANASONIC_LAPTOP=y
+# CONFIG_COMPAL_LAPTOP is not set
+CONFIG_THINKPAD_ACPI=y
+CONFIG_THINKPAD_ACPI_DEBUGFACILITIES=y
+CONFIG_THINKPAD_ACPI_DEBUG=y
+CONFIG_THINKPAD_ACPI_UNSAFE_LEDS=y
+CONFIG_THINKPAD_ACPI_VIDEO=y
+CONFIG_THINKPAD_ACPI_HOTKEY_POLL=y
+CONFIG_INTEL_MENLOW=m
+CONFIG_ACPI_WMI=y
+CONFIG_ACPI_ASUS=m
+# CONFIG_ACPI_TOSHIBA is not set
+
+#
+# Firmware Drivers
+#
+# CONFIG_EDD is not set
+CONFIG_FIRMWARE_MEMMAP=y
+# CONFIG_EFI_VARS is not set
+CONFIG_DELL_RBU=y
+# CONFIG_DCDBAS is not set
+CONFIG_DMIID=y
+CONFIG_ISCSI_IBFT_FIND=y
+CONFIG_ISCSI_IBFT=m
+
+#
+# File systems
+#
+# CONFIG_EXT2_FS is not set
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_DEFAULTS_TO_ORDERED=y
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_EXT3_FS_SECURITY=y
+CONFIG_EXT4_FS=m
+CONFIG_EXT4DEV_COMPAT=y
+# CONFIG_EXT4_FS_XATTR is not set
+CONFIG_JBD=y
+CONFIG_JBD_DEBUG=y
+CONFIG_JBD2=m
+# CONFIG_JBD2_DEBUG is not set
+CONFIG_FS_MBCACHE=y
+CONFIG_REISERFS_FS=y
+CONFIG_REISERFS_CHECK=y
+CONFIG_REISERFS_PROC_INFO=y
+CONFIG_REISERFS_FS_XATTR=y
+CONFIG_REISERFS_FS_POSIX_ACL=y
+# CONFIG_REISERFS_FS_SECURITY is not set
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=y
+CONFIG_XFS_FS=m
+CONFIG_XFS_QUOTA=y
+CONFIG_XFS_POSIX_ACL=y
+CONFIG_XFS_RT=y
+CONFIG_XFS_DEBUG=y
+CONFIG_GFS2_FS=m
+CONFIG_GFS2_FS_LOCKING_DLM=y
+# CONFIG_OCFS2_FS is not set
+CONFIG_BTRFS_FS=m
+# CONFIG_BTRFS_FS_POSIX_ACL is not set
+CONFIG_FILE_LOCKING=y
+CONFIG_FSNOTIFY=y
+CONFIG_DNOTIFY=y
+CONFIG_INOTIFY=y
+# CONFIG_INOTIFY_USER is not set
+# CONFIG_QUOTA is not set
+CONFIG_QUOTACTL=y
+CONFIG_AUTOFS_FS=y
+CONFIG_AUTOFS4_FS=m
+# CONFIG_FUSE_FS is not set
+
+#
+# Caches
+#
+CONFIG_FSCACHE=m
+# CONFIG_FSCACHE_STATS is not set
+# CONFIG_FSCACHE_HISTOGRAM is not set
+CONFIG_FSCACHE_DEBUG=y
+CONFIG_CACHEFILES=m
+# CONFIG_CACHEFILES_DEBUG is not set
+# CONFIG_CACHEFILES_HISTOGRAM is not set
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=m
+# CONFIG_JOLIET is not set
+CONFIG_ZISOFS=y
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=m
+CONFIG_MSDOS_FS=m
+# CONFIG_VFAT_FS is not set
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_NTFS_FS=m
+CONFIG_NTFS_DEBUG=y
+CONFIG_NTFS_RW=y
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+# CONFIG_TMPFS is not set
+CONFIG_HUGETLBFS=y
+CONFIG_HUGETLB_PAGE=y
+CONFIG_CONFIGFS_FS=m
+CONFIG_MISC_FILESYSTEMS=y
+CONFIG_ADFS_FS=y
+# CONFIG_ADFS_FS_RW is not set
+CONFIG_AFFS_FS=y
+# CONFIG_ECRYPT_FS is not set
+CONFIG_HFS_FS=m
+CONFIG_HFSPLUS_FS=m
+CONFIG_BEFS_FS=y
+# CONFIG_BEFS_DEBUG is not set
+CONFIG_BFS_FS=m
+CONFIG_EFS_FS=m
+# CONFIG_CRAMFS is not set
+# CONFIG_SQUASHFS is not set
+CONFIG_VXFS_FS=m
+CONFIG_MINIX_FS=m
+# CONFIG_OMFS_FS is not set
+# CONFIG_HPFS_FS is not set
+CONFIG_QNX4FS_FS=y
+CONFIG_ROMFS_FS=y
+CONFIG_ROMFS_BACKED_BY_BLOCK=y
+# CONFIG_ROMFS_BACKED_BY_MTD is not set
+# CONFIG_ROMFS_BACKED_BY_BOTH is not set
+CONFIG_ROMFS_ON_BLOCK=y
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+CONFIG_EXOFS_FS=m
+CONFIG_EXOFS_DEBUG=y
+CONFIG_NILFS2_FS=y
+# CONFIG_NETWORK_FILESYSTEMS is not set
+CONFIG_EXPORTFS=m
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_ACORN_PARTITION=y
+# CONFIG_ACORN_PARTITION_CUMANA is not set
+CONFIG_ACORN_PARTITION_EESOX=y
+# CONFIG_ACORN_PARTITION_ICS is not set
+# CONFIG_ACORN_PARTITION_ADFS is not set
+CONFIG_ACORN_PARTITION_POWERTEC=y
+CONFIG_ACORN_PARTITION_RISCIX=y
+# CONFIG_OSF_PARTITION is not set
+# CONFIG_AMIGA_PARTITION is not set
+CONFIG_ATARI_PARTITION=y
+CONFIG_MAC_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BSD_DISKLABEL=y
+CONFIG_MINIX_SUBPARTITION=y
+CONFIG_SOLARIS_X86_PARTITION=y
+CONFIG_UNIXWARE_DISKLABEL=y
+CONFIG_LDM_PARTITION=y
+CONFIG_LDM_DEBUG=y
+CONFIG_SGI_PARTITION=y
+CONFIG_ULTRIX_PARTITION=y
+CONFIG_SUN_PARTITION=y
+# CONFIG_KARMA_PARTITION is not set
+# CONFIG_EFI_PARTITION is not set
+# CONFIG_SYSV68_PARTITION is not set
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=m
+# CONFIG_NLS_CODEPAGE_737 is not set
+CONFIG_NLS_CODEPAGE_775=m
+CONFIG_NLS_CODEPAGE_850=y
+# CONFIG_NLS_CODEPAGE_852 is not set
+CONFIG_NLS_CODEPAGE_855=y
+# CONFIG_NLS_CODEPAGE_857 is not set
+CONFIG_NLS_CODEPAGE_860=m
+CONFIG_NLS_CODEPAGE_861=y
+CONFIG_NLS_CODEPAGE_862=y
+# CONFIG_NLS_CODEPAGE_863 is not set
+# CONFIG_NLS_CODEPAGE_864 is not set
+CONFIG_NLS_CODEPAGE_865=m
+CONFIG_NLS_CODEPAGE_866=y
+CONFIG_NLS_CODEPAGE_869=m
+CONFIG_NLS_CODEPAGE_936=m
+# CONFIG_NLS_CODEPAGE_950 is not set
+# CONFIG_NLS_CODEPAGE_932 is not set
+CONFIG_NLS_CODEPAGE_949=y
+CONFIG_NLS_CODEPAGE_874=y
+# CONFIG_NLS_ISO8859_8 is not set
+CONFIG_NLS_CODEPAGE_1250=m
+CONFIG_NLS_CODEPAGE_1251=m
+CONFIG_NLS_ASCII=m
+CONFIG_NLS_ISO8859_1=m
+CONFIG_NLS_ISO8859_2=y
+CONFIG_NLS_ISO8859_3=y
+# CONFIG_NLS_ISO8859_4 is not set
+# CONFIG_NLS_ISO8859_5 is not set
+# CONFIG_NLS_ISO8859_6 is not set
+CONFIG_NLS_ISO8859_7=y
+CONFIG_NLS_ISO8859_9=m
+# CONFIG_NLS_ISO8859_13 is not set
+CONFIG_NLS_ISO8859_14=y
+# CONFIG_NLS_ISO8859_15 is not set
+CONFIG_NLS_KOI8_R=y
+CONFIG_NLS_KOI8_U=y
+CONFIG_NLS_UTF8=m
+CONFIG_DLM=m
+CONFIG_DLM_DEBUG=y
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_PRINTK_TIME=y
+# CONFIG_ALLOW_WARNINGS is not set
+CONFIG_FRAME_WARN=1024
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_UNUSED_SYMBOLS=y
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+# CONFIG_DEBUG_SECTION_MISMATCH is not set
+CONFIG_DEBUG_KERNEL=y
+# CONFIG_DEBUG_SHIRQ is not set
+CONFIG_DETECT_SOFTLOCKUP=y
+# CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
+CONFIG_DETECT_HUNG_TASK=y
+# CONFIG_BOOTPARAM_HUNG_TASK_PANIC is not set
+CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
+# CONFIG_SCHED_DEBUG is not set
+CONFIG_SCHEDSTATS=y
+CONFIG_TIMER_STATS=y
+# CONFIG_DEBUG_OBJECTS is not set
+# CONFIG_SLUB_DEBUG_ON is not set
+CONFIG_SLUB_STATS=y
+CONFIG_DEBUG_KMEMLEAK=y
+CONFIG_DEBUG_KMEMLEAK_EARLY_LOG_SIZE=400
+CONFIG_DEBUG_KMEMLEAK_TEST=y
+# CONFIG_DEBUG_RT_MUTEXES is not set
+CONFIG_RT_MUTEX_TESTER=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_LOCK_ALLOC=y
+CONFIG_PROVE_LOCKING=y
+CONFIG_LOCKDEP=y
+CONFIG_LOCK_STAT=y
+# CONFIG_DEBUG_LOCKDEP is not set
+CONFIG_TRACE_IRQFLAGS=y
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+CONFIG_STACKTRACE=y
+CONFIG_DEBUG_HIGHMEM=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_VM=y
+CONFIG_DEBUG_VIRTUAL=y
+CONFIG_DEBUG_WRITECOUNT=y
+CONFIG_DEBUG_MEMORY_INIT=y
+CONFIG_DEBUG_LIST=y
+CONFIG_DEBUG_SG=y
+CONFIG_DEBUG_NOTIFIERS=y
+CONFIG_ARCH_WANT_FRAME_POINTERS=y
+CONFIG_FRAME_POINTER=y
+CONFIG_BOOT_PRINTK_DELAY=y
+# CONFIG_RCU_TORTURE_TEST is not set
+CONFIG_RCU_CPU_STALL_DETECTOR=y
+# CONFIG_KPROBES_SANITY_TEST is not set
+# CONFIG_BACKTRACE_SELF_TEST is not set
+CONFIG_LKDTM=y
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_LATENCYTOP is not set
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+CONFIG_DEBUG_PAGEALLOC=y
+CONFIG_USER_STACKTRACE_SUPPORT=y
+CONFIG_NOP_TRACER=y
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_FP_TEST=y
+CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_HAVE_FTRACE_SYSCALLS=y
+CONFIG_RING_BUFFER=y
+CONFIG_EVENT_TRACING=y
+CONFIG_CONTEXT_SWITCH_TRACER=y
+CONFIG_TRACING=y
+CONFIG_TRACING_SUPPORT=y
+# CONFIG_FTRACE is not set
+CONFIG_PROVIDE_OHCI1394_DMA_INIT=y
+CONFIG_FIREWIRE_OHCI_REMOTE_DMA=y
+# CONFIG_DYNAMIC_DEBUG is not set
+CONFIG_DMA_API_DEBUG=y
+CONFIG_SAMPLES=y
+CONFIG_SAMPLE_MARKERS=m
+# CONFIG_SAMPLE_TRACEPOINTS is not set
+CONFIG_SAMPLE_TRACE_EVENTS=m
+CONFIG_SAMPLE_KOBJECT=m
+# CONFIG_SAMPLE_KPROBES is not set
+CONFIG_SAMPLE_HW_BREAKPOINT=m
+CONFIG_HAVE_ARCH_KGDB=y
+CONFIG_KGDB=y
+# CONFIG_KGDB_SERIAL_CONSOLE is not set
+# CONFIG_KGDB_TESTS is not set
+CONFIG_HAVE_ARCH_KMEMCHECK=y
+# CONFIG_STRICT_DEVMEM is not set
+# CONFIG_X86_VERBOSE_BOOTUP is not set
+CONFIG_EARLY_PRINTK=y
+CONFIG_EARLY_PRINTK_DBGP=y
+CONFIG_DEBUG_STACKOVERFLOW=y
+CONFIG_DEBUG_STACK_USAGE=y
+# CONFIG_DEBUG_PER_CPU_MAPS is not set
+CONFIG_X86_PTDUMP=y
+# CONFIG_DEBUG_RODATA is not set
+# CONFIG_DEBUG_NX_TEST is not set
+CONFIG_4KSTACKS=y
+CONFIG_DOUBLEFAULT=y
+CONFIG_IOMMU_STRESS=y
+CONFIG_HAVE_MMIOTRACE_SUPPORT=y
+CONFIG_IO_DELAY_TYPE_0X80=0
+CONFIG_IO_DELAY_TYPE_0XED=1
+CONFIG_IO_DELAY_TYPE_UDELAY=2
+CONFIG_IO_DELAY_TYPE_NONE=3
+# CONFIG_IO_DELAY_0X80 is not set
+# CONFIG_IO_DELAY_0XED is not set
+CONFIG_IO_DELAY_UDELAY=y
+# CONFIG_IO_DELAY_NONE is not set
+CONFIG_DEFAULT_IO_DELAY_TYPE=2
+# CONFIG_DEBUG_BOOT_PARAMS is not set
+# CONFIG_CPA_DEBUG is not set
+CONFIG_OPTIMIZE_INLINING=y
+
+#
+# Security options
+#
+CONFIG_KEYS=y
+CONFIG_KEYS_DEBUG_PROC_KEYS=y
+CONFIG_SECURITY=y
+CONFIG_SECURITYFS=y
+# CONFIG_SECURITY_NETWORK is not set
+CONFIG_SECURITY_PATH=y
+CONFIG_SECURITY_FILE_CAPABILITIES=y
+CONFIG_SECURITY_TOMOYO=y
+# CONFIG_IMA is not set
+CONFIG_CRYPTO=y
+
+#
+# Crypto core or helper
+#
+# CONFIG_CRYPTO_FIPS is not set
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_ALGAPI2=y
+CONFIG_CRYPTO_AEAD=y
+CONFIG_CRYPTO_AEAD2=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_BLKCIPHER2=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_HASH2=y
+CONFIG_CRYPTO_RNG=y
+CONFIG_CRYPTO_RNG2=y
+CONFIG_CRYPTO_PCOMP=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_MANAGER2=y
+CONFIG_CRYPTO_GF128MUL=y
+CONFIG_CRYPTO_NULL=m
+CONFIG_CRYPTO_WORKQUEUE=y
+CONFIG_CRYPTO_CRYPTD=y
+CONFIG_CRYPTO_AUTHENC=y
+CONFIG_CRYPTO_TEST=m
+
+#
+# Authenticated Encryption with Associated Data
+#
+CONFIG_CRYPTO_CCM=m
+CONFIG_CRYPTO_GCM=y
+CONFIG_CRYPTO_SEQIV=y
+
+#
+# Block modes
+#
+CONFIG_CRYPTO_CBC=y
+CONFIG_CRYPTO_CTR=y
+CONFIG_CRYPTO_CTS=m
+CONFIG_CRYPTO_ECB=y
+CONFIG_CRYPTO_LRW=y
+CONFIG_CRYPTO_PCBC=y
+CONFIG_CRYPTO_XTS=m
+
+#
+# Hash modes
+#
+CONFIG_CRYPTO_HMAC=y
+# CONFIG_CRYPTO_XCBC is not set
+
+#
+# Digest
+#
+CONFIG_CRYPTO_CRC32C=y
+CONFIG_CRYPTO_CRC32C_INTEL=m
+CONFIG_CRYPTO_MD4=m
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_MICHAEL_MIC=y
+CONFIG_CRYPTO_RMD128=y
+# CONFIG_CRYPTO_RMD160 is not set
+# CONFIG_CRYPTO_RMD256 is not set
+CONFIG_CRYPTO_RMD320=y
+CONFIG_CRYPTO_SHA1=y
+CONFIG_CRYPTO_SHA256=m
+CONFIG_CRYPTO_SHA512=m
+CONFIG_CRYPTO_TGR192=y
+# CONFIG_CRYPTO_WP512 is not set
+
+#
+# Ciphers
+#
+CONFIG_CRYPTO_AES=y
+CONFIG_CRYPTO_AES_586=m
+CONFIG_CRYPTO_ANUBIS=y
+CONFIG_CRYPTO_ARC4=m
+CONFIG_CRYPTO_BLOWFISH=m
+CONFIG_CRYPTO_CAMELLIA=m
+# CONFIG_CRYPTO_CAST5 is not set
+# CONFIG_CRYPTO_CAST6 is not set
+CONFIG_CRYPTO_DES=y
+CONFIG_CRYPTO_FCRYPT=m
+CONFIG_CRYPTO_KHAZAD=y
+CONFIG_CRYPTO_SALSA20=y
+CONFIG_CRYPTO_SALSA20_586=m
+# CONFIG_CRYPTO_SEED is not set
+# CONFIG_CRYPTO_SERPENT is not set
+CONFIG_CRYPTO_TEA=m
+# CONFIG_CRYPTO_TWOFISH is not set
+CONFIG_CRYPTO_TWOFISH_COMMON=m
+CONFIG_CRYPTO_TWOFISH_586=m
+
+#
+# Compression
+#
+CONFIG_CRYPTO_DEFLATE=y
+CONFIG_CRYPTO_ZLIB=m
+# CONFIG_CRYPTO_LZO is not set
+
+#
+# Random Number Generation
+#
+# CONFIG_CRYPTO_ANSI_CPRNG is not set
+# CONFIG_CRYPTO_HW is not set
+CONFIG_HAVE_KVM=y
+CONFIG_HAVE_KVM_IRQCHIP=y
+CONFIG_VIRTUALIZATION=y
+# CONFIG_KVM is not set
+# CONFIG_LGUEST is not set
+# CONFIG_VIRTIO_PCI is not set
+# CONFIG_VIRTIO_BALLOON is not set
+CONFIG_BINARY_PRINTF=y
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+CONFIG_GENERIC_FIND_FIRST_BIT=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_FIND_LAST_BIT=y
+CONFIG_CRC_CCITT=m
+CONFIG_CRC16=m
+CONFIG_CRC_T10DIF=y
+CONFIG_CRC_ITU_T=m
+CONFIG_CRC32=y
+CONFIG_CRC7=m
+CONFIG_LIBCRC32C=y
+CONFIG_AUDIT_GENERIC=y
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
+CONFIG_TEXTSEARCH=y
+CONFIG_TEXTSEARCH_KMP=m
+CONFIG_TEXTSEARCH_BM=m
+CONFIG_TEXTSEARCH_FSM=m
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+CONFIG_CHECK_SIGNATURE=y
+CONFIG_NLATTR=y
+CONFIG_FORCE_SUCCESSFUL_BUILD=y
+CONFIG_FORCE_MINIMAL_CONFIG=y
+CONFIG_FORCE_MINIMAL_CONFIG_PHYS=y
+CONFIG_X86_32_ALWAYS_ON=y
+
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="boot.log"
+
+[    0.000000] Linux version 2.6.31-rc6-tip-01322-gd685ec8-dirty (mingo@europe) (gcc version 4.2.2) #7600 SMP Fri Aug 21 22:20:30 CEST 2009
+[    0.000000] debug: ignoring loglevel setting.
+[    0.000000] KERNEL supported cpus:
+[    0.000000]   Intel GenuineIntel
+[    0.000000]   AMD AuthenticAMD
+[    0.000000]   NSC Geode by NSC
+[    0.000000]   Cyrix CyrixInstead
+[    0.000000]   Centaur CentaurHauls
+[    0.000000]   Transmeta GenuineTMx86
+[    0.000000]   Transmeta TransmetaCPU
+[    0.000000]   UMC UMC UMC UMC
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f000 (usable)
+[    0.000000]  BIOS-e820: 000000000009f000 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000d2000 - 00000000000d4000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000dc000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 000000007f6e0000 (usable)
+[    0.000000]  BIOS-e820: 000000007f6e0000 - 000000007f6f3000 (ACPI data)
+[    0.000000]  BIOS-e820: 000000007f6f3000 - 000000007f700000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000007f700000 - 0000000080000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000f0000000 - 00000000f4000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fed00000 - 00000000fed00400 (reserved)
+[    0.000000]  BIOS-e820: 00000000fed14000 - 00000000fed1a000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fed1c000 - 00000000fed90000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+[    0.000000]  BIOS-e820: 00000000ff800000 - 0000000100000000 (reserved)
+[    0.000000] DMI present.
+[    0.000000] last_pfn = 0x7f6e0 max_arch_pfn = 0x1000000
+[    0.000000] MTRR default type: uncachable
+[    0.000000] MTRR fixed ranges enabled:
+[    0.000000]   00000-9FFFF write-back
+[    0.000000]   A0000-BFFFF uncachable
+[    0.000000]   C0000-CFFFF write-protect
+[    0.000000]   D0000-DBFFF uncachable
+[    0.000000]   DC000-DFFFF write-back
+[    0.000000]   E0000-FFFFF write-protect
+[    0.000000] MTRR variable ranges enabled:
+[    0.000000]   0 base 000000000 mask F80000000 write-back
+[    0.000000]   1 base 07F700000 mask FFFF00000 uncachable
+[    0.000000]   2 base 07F800000 mask FFF800000 uncachable
+[    0.000000]   3 disabled
+[    0.000000]   4 disabled
+[    0.000000]   5 disabled
+[    0.000000]   6 disabled
+[    0.000000]   7 disabled
+[    0.000000] e820 update range: 0000000000002000 - 0000000000006000 (usable) ==> (reserved)
+[    0.000000] Scanning 1 areas for low memory corruption
+[    0.000000] modified physical RAM map:
+[    0.000000]  modified: 0000000000000000 - 0000000000002000 (usable)
+[    0.000000]  modified: 0000000000002000 - 0000000000006000 (reserved)
+[    0.000000]  modified: 0000000000006000 - 000000000009f000 (usable)
+[    0.000000]  modified: 000000000009f000 - 00000000000a0000 (reserved)
+[    0.000000]  modified: 00000000000d2000 - 00000000000d4000 (reserved)
+[    0.000000]  modified: 00000000000dc000 - 0000000000100000 (reserved)
+[    0.000000]  modified: 0000000000100000 - 000000007f6e0000 (usable)
+[    0.000000]  modified: 000000007f6e0000 - 000000007f6f3000 (ACPI data)
+[    0.000000]  modified: 000000007f6f3000 - 000000007f700000 (ACPI NVS)
+[    0.000000]  modified: 000000007f700000 - 0000000080000000 (reserved)
+[    0.000000]  modified: 00000000f0000000 - 00000000f4000000 (reserved)
+[    0.000000]  modified: 00000000fec00000 - 00000000fec10000 (reserved)
+[    0.000000]  modified: 00000000fed00000 - 00000000fed00400 (reserved)
+[    0.000000]  modified: 00000000fed14000 - 00000000fed1a000 (reserved)
+[    0.000000]  modified: 00000000fed1c000 - 00000000fed90000 (reserved)
+[    0.000000]  modified: 00000000fee00000 - 00000000fee01000 (reserved)
+[    0.000000]  modified: 00000000ff800000 - 0000000100000000 (reserved)
+[    0.000000] initial memory mapped : 0 - 02600000
+[    0.000000] init_memory_mapping: 0000000000000000-00000000375fe000
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000]  0000000000 - 00375fe000 page 4k
+[    0.000000] kernel direct mapping tables up to 375fe000 @ 100000-2c1000
+[    0.000000] ACPI: RSDP 000f68a0 00024 (v02 LENOVO)
+[    0.000000] ACPI: XSDT 7f6e631f 00074 (v01 LENOVO TP-79    00001020  LTP 00000000)
+[    0.000000] ACPI: FACP 7f6e6400 000F4 (v03 LENOVO TP-79    00001020 LNVO 00000001)
+[    0.000000] ACPI Warning: 32/64X length mismatch in Gpe1Block: 0/32 20090521 tbfadt-527
+[    0.000000] ACPI Warning: Optional field Gpe1Block has zero address or length: 000000000000102C/0 20090521 tbfadt-558
+[    0.000000] ACPI: DSDT 7f6e65e7 0C765 (v01 LENOVO TP-79    00001020 MSFT 0100000E)
+[    0.000000] ACPI: FACS 7f6f4000 00040
+[    0.000000] ACPI: SSDT 7f6e65b4 00033 (v01 LENOVO TP-79    00001020 MSFT 0100000E)
+[    0.000000] ACPI: ECDT 7f6f2d4c 00052 (v01 LENOVO TP-79    00001020 LNVO 00000001)
+[    0.000000] ACPI: TCPA 7f6f2d9e 00032 (v02 LENOVO TP-79    00001020 LNVO 00000001)
+[    0.000000] ACPI: APIC 7f6f2dd0 00068 (v01 LENOVO TP-79    00001020 LNVO 00000001)
+[    0.000000] ACPI: MCFG 7f6f2e38 0003E (v01 LENOVO TP-79    00001020 LNVO 00000001)
+[    0.000000] ACPI: HPET 7f6f2e76 00038 (v01 LENOVO TP-79    00001020 LNVO 00000001)
+[    0.000000] ACPI: BOOT 7f6f2fd8 00028 (v01 LENOVO TP-79    00001020  LTP 00000001)
+[    0.000000] ACPI: SSDT 7f6e58da 00507 (v01 LENOVO TP-79    00001020 INTL 20050513)
+[    0.000000] ACPI: SSDT 7f6e5702 001D8 (v01 LENOVO TP-79    00001020 INTL 20050513)
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] Scan SMP from c0000000 for 1024 bytes.
+[    0.000000] Scan SMP from c009fc00 for 1024 bytes.
+[    0.000000] Scan SMP from c00f0000 for 65536 bytes.
+[    0.000000] found SMP MP-table at [c00f68e0] f68e0
+[    0.000000] could not find any ACPI SRAT memory areas.
+[    0.000000] failed to get NUMA memory information from SRAT table
+[    0.000000] NUMA - single node, flat memory mode
+[    0.000000] Node: 0, start_pfn: 0, end_pfn: 7f6e0
+[    0.000000]   Setting physnode_map array to node 0 for pfns:
+[    0.000000]   0 4000 8000 c000 10000 14000 18000 1c000 20000 24000 28000 2c000 30000 34000 38000 3c000 40000 44000 48000 4c000 50000 54000 58000 5c000 60000 64000 68000 6c000 70000 74000 78000 7c000 
+[    0.000000] node 0 pfn: [0 - 7f6e0]
+[    0.000000] Reserving 7680 pages of KVA for lmem_map of node 0 at 7d800
+[    0.000000] remove_active_range (0, 514048, 521728)
+[    0.000000] Reserving total of 1e00 pages for numa KVA remap
+[    0.000000] kva_start_pfn ~ 35600 max_low_pfn ~ 375fe
+[    0.000000] max_pfn = 7f6e0
+[    0.000000] 1152MB HIGHMEM available.
+[    0.000000] 885MB LOWMEM available.
+[    0.000000] max_low_pfn = 375fe, highstart_pfn = 375fe
+[    0.000000] Low memory ends at vaddr f75fe000
+[    0.000000] node 0 will remap to vaddr f5600000 - f7400000
+[    0.000000] allocate_pgdat: node 0 NODE_DATA f5600000
+[    0.000000] remap_numa_kva: node 0
+[    0.000000] remap_numa_kva: f5600000 to pfn 0007d800
+[    0.000000] remap_numa_kva: f5800000 to pfn 0007da00
+[    0.000000] remap_numa_kva: f5a00000 to pfn 0007dc00
+[    0.000000] remap_numa_kva: f5c00000 to pfn 0007de00
+[    0.000000] remap_numa_kva: f5e00000 to pfn 0007e000
+[    0.000000] remap_numa_kva: f6000000 to pfn 0007e200
+[    0.000000] remap_numa_kva: f6200000 to pfn 0007e400
+[    0.000000] remap_numa_kva: f6400000 to pfn 0007e600
+[    0.000000] remap_numa_kva: f6600000 to pfn 0007e800
+[    0.000000] remap_numa_kva: f6800000 to pfn 0007ea00
+[    0.000000] remap_numa_kva: f6a00000 to pfn 0007ec00
+[    0.000000] remap_numa_kva: f6c00000 to pfn 0007ee00
+[    0.000000] remap_numa_kva: f6e00000 to pfn 0007f000
+[    0.000000] remap_numa_kva: f7000000 to pfn 0007f200
+[    0.000000] remap_numa_kva: f7200000 to pfn 0007f400
+[    0.000000] High memory starts at vaddr f75fe000
+[    0.000000]   mapped low ram: 0 - 375fe000
+[    0.000000]   low ram: 0 - 375fe000
+[    0.000000]   node 0 low ram: 00000000 - 375fe000
+[    0.000000]   node 0 bootmap 00007000 - 0000dec0
+[    0.000000] (10 early reservations) ==> bootmem [0000000000 - 00375fe000]
+[    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+[    0.000000]   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
+[    0.000000]   #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
+[    0.000000]   #3 [0001000000 - 0002177994]    TEXT DATA BSS ==> [0001000000 - 0002177994]
+[    0.000000]   #4 [000009f000 - 0000100000]    BIOS reserved ==> [000009f000 - 0000100000]
+[    0.000000]   #5 [0002178000 - 000218b138]              BRK ==> [0002178000 - 000218b138]
+[    0.000000]   #6 [0000100000 - 00002ab000]          PGTABLE ==> [0000100000 - 00002ab000]
+[    0.000000]   #7 [007d800000 - 007f600000]          KVA RAM
+[    0.000000]   #8 [0035600000 - 0037400000]           KVA PG ==> [0035600000 - 0037400000]
+[    0.000000]   #9 [0000007000 - 000000e000]          BOOTMAP ==> [0000007000 - 000000e000]
+[    0.000000] Scan SMP from c0000000 for 1024 bytes.
+[    0.000000] Scan SMP from c009fc00 for 1024 bytes.
+[    0.000000] Scan SMP from c00f0000 for 65536 bytes.
+[    0.000000] found SMP MP-table at [c00f68e0] f68e0
+[    0.000000]   mpc: 9f5a1-9f6b5
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA      0x00000000 -> 0x00001000
+[    0.000000]   Normal   0x00001000 -> 0x000375fe
+[    0.000000]   HighMem  0x000375fe -> 0x0007f6e0
+[    0.000000] Movable zone start PFN for each node
+[    0.000000] early_node_map[4] active PFN ranges
+[    0.000000]     0: 0x00000000 -> 0x00000002
+[    0.000000]     0: 0x00000006 -> 0x0000009f
+[    0.000000]     0: 0x00000100 -> 0x0007d800
+[    0.000000]     0: 0x0007f600 -> 0x0007f6e0
+[    0.000000] On node 0 totalpages: 514171
+[    0.000000] free_area_init_node: node 0, pgdat f5600000, node_mem_map f5602000
+[    0.000000]   DMA zone: 60 pages used for memmap
+[    0.000000]   DMA zone: 0 pages reserved
+[    0.000000]   DMA zone: 3935 pages, LIFO batch:0
+[    0.000000]   Normal zone: 3263 pages used for memmap
+[    0.000000]   Normal zone: 219455 pages, LIFO batch:31
+[    0.000000]   HighMem zone: 4324 pages used for memmap
+[    0.000000]   HighMem zone: 283134 pages, LIFO batch:31
+[    0.000000] Using APIC driver default
+[    0.000000] ACPI: PM-Timer IO Port: 0x1008
+[    0.000000] ACPI: Local APIC address 0xfee00000
+[    0.000000] ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+[    0.000000] ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+[    0.000000] ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+[    0.000000] ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
+[    0.000000] IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.000000] ACPI: IRQ0 used by override.
+[    0.000000] ACPI: IRQ2 used by override.
+[    0.000000] ACPI: IRQ9 used by override.
+[    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
+[    0.000000] Using ACPI (MADT) for SMP configuration information
+[    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
+[    0.000000] mapped APIC to ffffb000 (fee00000)
+[    0.000000] mapped IOAPIC to ffffa000 (fec00000)
+[    0.000000] nr_irqs_gsi: 24
+[    0.000000] Allocating PCI resources starting at 80000000 (gap: 80000000:70000000)
+[    0.000000] NR_CPUS:32 nr_cpumask_bits:32 nr_cpu_ids:2 nr_node_ids:16
+[    0.000000] PERCPU: Embedded 338 pages at c21af000, static data 1361404 bytes
+[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 506524
+[    0.000000] Policy zone: HighMem
+[    0.000000] Kernel command line: root=/dev/sda1 console=tty profile=0 debug initcall_debug enforcing=0 apic=verbose sysrq_always_enabled ignore_loglevel selinux=1 relaxed_check=1 3 netconsole=4444@10.0.1.15/eth0,4444@10.0.1.21/00:30:48:c6:86:26
+[    0.000000] kernel profiling enabled (shift: 0)
+[    0.000000] debug: sysrq always enabled.
+[    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
+[    0.000000] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+[    0.000000] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+[    0.000000] Enabling fast FPU save and restore... done.
+[    0.000000] Enabling unmasked SIMD FPU exception support... done.
+[    0.000000] Initializing CPU#0
+[    0.000000] Initializing HighMem for node 0 (000375fe:0007f6e0)
+[    0.000000] Memory: 2002628k/2087808k available (5870k kernel code, 54052k reserved, 3082k data, 1828k init, 1149832k highmem)
+[    0.000000] virtual kernel memory layout:
+[    0.000000]     fixmap  : 0xffad6000 - 0xfffff000   (5284 kB)
+[    0.000000]     pkmap   : 0xff600000 - 0xff800000   (2048 kB)
+[    0.000000]     vmalloc : 0xf7dfe000 - 0xff5fe000   ( 120 MB)
+[    0.000000]     lowmem  : 0xc0000000 - 0xf75fe000   ( 885 MB)
+[    0.000000]       .init : 0xc18c5000 - 0xc1a8e000   (1828 kB)
+[    0.000000]       .data : 0xc15bbab4 - 0xc18be338   (3082 kB)
+[    0.000000]       .text : 0xc1000000 - 0xc15bbab4   (5870 kB)
+[    0.000000] Checking if this processor honours the WP bit even in supervisor mode...Ok.
+[    0.000000] SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=16
+[    0.000000] Hierarchical RCU implementation.
+[    0.000000] RCU-based detection of stalled CPUs is enabled.
+[    0.000000] NR_IRQS:1280
+[    0.000000] CPU 0 irqstacks, hard=c21af000 soft=c21b0000
+[    0.000000] Extended CMOS year: 2000
+[    0.000000] Fast TSC calibration using PIT
+[    0.000000] Detected 1828.877 MHz processor.
+[    0.000999] Console: colour VGA+ 80x25
+[    0.000999] console [tty0] enabled
+[    0.000999] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
+[    0.000999] ... MAX_LOCKDEP_SUBCLASSES:  8
+[    0.000999] ... MAX_LOCK_DEPTH:          48
+[    0.000999] ... MAX_LOCKDEP_KEYS:        8191
+[    0.000999] ... CLASSHASH_SIZE:          4096
+[    0.000999] ... MAX_LOCKDEP_ENTRIES:     16384
+[    0.000999] ... MAX_LOCKDEP_CHAINS:      32768
+[    0.000999] ... CHAINHASH_SIZE:          16384
+[    0.000999]  memory used by lock dependency info: 3823 kB
+[    0.000999]  per task-struct memory footprint: 1920 bytes
+[    0.001032] Calibrating delay loop (skipped), value calculated using timer frequency.. 3657.75 BogoMIPS (lpj=1828877)
+[    0.001305] Security Framework initialized
+[    0.001370] TOMOYO Linux initialized
+[    0.001609] Mount-cache hash table entries: 512
+[    0.003960] CPU: L1 I cache: 32K, L1 D cache: 32K
+[    0.004043] CPU: L2 cache: 2048K
+[    0.004101] CPU: Physical Processor ID: 0
+[    0.004156] CPU: Processor Core ID: 0
+[    0.004213] mce: CPU supports 6 MCE banks
+[    0.004282] using mwait in idle threads.
+[    0.004346] Performance Counters: no PMU driver, software counters only.
+[    0.004428] Checking 'hlt' instruction... OK.
+[    0.010564] ACPI: Core revision 20090521
+[    0.196281] enabled ExtINT on CPU#0
+[    0.196591] ESR value before enabling vector: 0x00000040  after: 0x00000000
+[    0.196683] Mapping cpu 0 to node 0
+[    0.196769] ENABLING IO-APIC IRQs
+[    0.196854] init IO_APIC IRQs
+[    0.196939]  1-0 (apicid-pin) not connected
+[    0.197054] IOAPIC[0]: Set routing entry (1-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
+[    0.197196] IOAPIC[0]: Set routing entry (1-2 -> 0x30 -> IRQ 0 Mode:0 Active:0)
+[    0.197336] IOAPIC[0]: Set routing entry (1-3 -> 0x33 -> IRQ 3 Mode:0 Active:0)
+[    0.197477] IOAPIC[0]: Set routing entry (1-4 -> 0x34 -> IRQ 4 Mode:0 Active:0)
+[    0.197617] IOAPIC[0]: Set routing entry (1-5 -> 0x35 -> IRQ 5 Mode:0 Active:0)
+[    0.197756] IOAPIC[0]: Set routing entry (1-6 -> 0x36 -> IRQ 6 Mode:0 Active:0)
+[    0.197898] IOAPIC[0]: Set routing entry (1-7 -> 0x37 -> IRQ 7 Mode:0 Active:0)
+[    0.198017] IOAPIC[0]: Set routing entry (1-8 -> 0x38 -> IRQ 8 Mode:0 Active:0)
+[    0.198157] IOAPIC[0]: Set routing entry (1-9 -> 0x39 -> IRQ 9 Mode:1 Active:0)
+[    0.198298] IOAPIC[0]: Set routing entry (1-10 -> 0x3a -> IRQ 10 Mode:0 Active:0)
+[    0.198439] IOAPIC[0]: Set routing entry (1-11 -> 0x3b -> IRQ 11 Mode:0 Active:0)
+[    0.198579] IOAPIC[0]: Set routing entry (1-12 -> 0x3c -> IRQ 12 Mode:0 Active:0)
+[    0.198719] IOAPIC[0]: Set routing entry (1-13 -> 0x3d -> IRQ 13 Mode:0 Active:0)
+[    0.198860] IOAPIC[0]: Set routing entry (1-14 -> 0x3e -> IRQ 14 Mode:0 Active:0)
+[    0.199017] IOAPIC[0]: Set routing entry (1-15 -> 0x3f -> IRQ 15 Mode:0 Active:0)
+[    0.199148]  1-16 1-17 1-18 1-19 1-20 1-21 1-22 1-23 (apicid-pin) not connected
+[    0.199866] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[    0.210078] CPU0: Genuine Intel(R) CPU           T2400  @ 1.83GHz stepping 08
+[    0.210258] Using local APIC timer interrupts.
+[    0.210259] calibrating APIC timer ...
+[    0.210999] ... lapic delta = 1038908
+[    0.210999] ... PM-Timer delta = 357901
+[    0.210999] ... PM-Timer result ok
+[    0.210999] ..... delta 1038908
+[    0.210999] ..... mult: 44627542
+[    0.210999] ..... calibration result: 166225
+[    0.210999] ..... CPU clock speed is 1828.0479 MHz.
+[    0.210999] ..... host bus clock speed is 166.0225 MHz.
+[    0.210999] calling  migration_init+0x0/0x50 @ 1
+[    0.210999] initcall migration_init+0x0/0x50 returned 0 after 0 usecs
+[    0.210999] calling  spawn_ksoftirqd+0x0/0x50 @ 1
+[    0.210999] initcall spawn_ksoftirqd+0x0/0x50 returned 0 after 0 usecs
+[    0.210999] calling  init_call_single_data+0x0/0x90 @ 1
+[    0.210999] initcall init_call_single_data+0x0/0x90 returned 0 after 0 usecs
+[    0.210999] calling  spawn_softlockup_task+0x0/0x70 @ 1
+[    0.211123] initcall spawn_softlockup_task+0x0/0x70 returned 0 after 976 usecs
+[    0.211253] calling  tracer_alloc_buffers+0x0/0x130 @ 1
+[    0.211474] initcall tracer_alloc_buffers+0x0/0x130 returned 0 after 0 usecs
+[    0.211568] calling  init_trace_printk+0x0/0x10 @ 1
+[    0.211659] initcall init_trace_printk+0x0/0x10 returned 0 after 0 usecs
+[    0.213101] lockdep: fixing up alternatives.
+[    0.213410] CPU 1 irqstacks, hard=c2301000 soft=c2302000
+[    0.213502] Booting processor 1 APIC 0x1 ip 0x6000
+[    0.000999] Initializing CPU#1
+[    0.000999] masked ExtINT on CPU#1
+[    0.000999] Mapping cpu 1 to node 0
+[    0.000999] Calibrating delay using timer specific routine.. 3657.01 BogoMIPS (lpj=1828507)
+[    0.000999] CPU: L1 I cache: 32K, L1 D cache: 32K
+[    0.000999] CPU: L2 cache: 2048K
+[    0.000999] CPU: Physical Processor ID: 0
+[    0.000999] CPU: Processor Core ID: 1
+[    0.000999] mce: CPU supports 6 MCE banks
+[    0.284613] CPU1: Genuine Intel(R) CPU           T2400  @ 1.83GHz stepping 08
+[    0.285149] checking TSC synchronization [CPU#0 -> CPU#1]:
+[    0.285999] Measured 580294 cycles TSC warp between CPUs, turning off TSC clock.
+[    0.285999] Marking TSC unstable due to check_tsc_sync_source failed
+[    0.287132] Brought up 2 CPUs
+[    0.287221] Total of 2 processors activated (7314.76 BogoMIPS).
+[    0.288250] PM: Adding info for No Bus:platform
+[    0.289091] khelper used greatest stack depth: 2408 bytes left
+[    0.290709] calling  init_mmap_min_addr+0x0/0x10 @ 1
+[    0.290801] initcall init_mmap_min_addr+0x0/0x10 returned 0 after 0 usecs
+[    0.290894] calling  init_cpufreq_transition_notifier_list+0x0/0x20 @ 1
+[    0.290991] initcall init_cpufreq_transition_notifier_list+0x0/0x20 returned 0 after 0 usecs
+[    0.291010] calling  net_ns_init+0x0/0xe0 @ 1
+[    0.291303] initcall net_ns_init+0x0/0xe0 returned 0 after 0 usecs
+[    0.291397] calling  cpufreq_tsc+0x0/0x30 @ 1
+[    0.291485] initcall cpufreq_tsc+0x0/0x30 returned 0 after 0 usecs
+[    0.291578] calling  pci_reboot_init+0x0/0x20 @ 1
+[    0.291669] initcall pci_reboot_init+0x0/0x20 returned 0 after 0 usecs
+[    0.291760] calling  reboot_init+0x0/0x20 @ 1
+[    0.291854] initcall reboot_init+0x0/0x20 returned 0 after 0 usecs
+[    0.292038] calling  init_lapic_sysfs+0x0/0x30 @ 1
+[    0.292681] initcall init_lapic_sysfs+0x0/0x30 returned 0 after 0 usecs
+[    0.292775] calling  print_banner+0x0/0x10 @ 1
+[    0.292863] Booting paravirtualized kernel on bare hardware
+[    0.293024] initcall print_banner+0x0/0x10 returned 0 after 976 usecs
+[    0.293119] calling  init_smp_flush+0x0/0x50 @ 1
+[    0.294006] initcall init_smp_flush+0x0/0x50 returned 0 after 0 usecs
+[    0.294099] calling  alloc_frozen_cpus+0x0/0x10 @ 1
+[    0.294189] initcall alloc_frozen_cpus+0x0/0x10 returned 0 after 0 usecs
+[    0.294282] calling  sysctl_init+0x0/0x30 @ 1
+[    0.294672] initcall sysctl_init+0x0/0x30 returned 0 after 0 usecs
+[    0.294764] calling  ksysfs_init+0x0/0xa0 @ 1
+[    0.294927] initcall ksysfs_init+0x0/0xa0 returned 0 after 0 usecs
+[    0.295006] calling  async_init+0x0/0x50 @ 1
+[    0.295095] initcall async_init+0x0/0x50 returned 0 after 0 usecs
+[    0.295187] calling  init_jiffies_clocksource+0x0/0x10 @ 1
+[    0.295300] initcall init_jiffies_clocksource+0x0/0x10 returned 0 after 0 usecs
+[    0.295430] calling  pm_init+0x0/0x30 @ 1
+[    0.295569] initcall pm_init+0x0/0x30 returned 0 after 0 usecs
+[    0.295660] calling  init_hw_breakpoint+0x0/0x10 @ 1
+[    0.295752] initcall init_hw_breakpoint+0x0/0x10 returned 0 after 0 usecs
+[    0.295845] calling  filelock_init+0x0/0x30 @ 1
+[    0.295941] initcall filelock_init+0x0/0x30 returned 0 after 0 usecs
+[    0.296005] calling  init_misc_binfmt+0x0/0x50 @ 1
+[    0.296112] initcall init_misc_binfmt+0x0/0x50 returned 0 after 0 usecs
+[    0.296204] calling  init_script_binfmt+0x0/0x20 @ 1
+[    0.296294] initcall init_script_binfmt+0x0/0x20 returned 0 after 0 usecs
+[    0.296387] calling  init_elf_binfmt+0x0/0x20 @ 1
+[    0.296477] initcall init_elf_binfmt+0x0/0x20 returned 0 after 0 usecs
+[    0.296568] calling  debugfs_init+0x0/0x50 @ 1
+[    0.296686] initcall debugfs_init+0x0/0x50 returned 0 after 0 usecs
+[    0.296777] calling  securityfs_init+0x0/0x50 @ 1
+[    0.296893] initcall securityfs_init+0x0/0x50 returned 0 after 0 usecs
+[    0.297008] calling  random32_init+0x0/0xd0 @ 1
+[    0.297098] initcall random32_init+0x0/0xd0 returned 0 after 0 usecs
+[    0.297190] calling  regulator_init+0x0/0x30 @ 1
+[    0.297278] regulator: core version 0.5
+[    0.297635] initcall regulator_init+0x0/0x30 returned 0 after 0 usecs
+[    0.297730] calling  early_resume_init+0x0/0x1c0 @ 1
+[    0.297846] Time: 20:21:23  Date: 08/21/09
+[    0.297934] initcall early_resume_init+0x0/0x1c0 returned 0 after 0 usecs
+[    0.298038] calling  cpufreq_core_init+0x0/0x70 @ 1
+[    0.298130] initcall cpufreq_core_init+0x0/0x70 returned 0 after 0 usecs
+[    0.298222] calling  cpuidle_init+0x0/0x40 @ 1
+[    0.298344] initcall cpuidle_init+0x0/0x40 returned 0 after 0 usecs
+[    0.298436] calling  sock_init+0x0/0x60 @ 1
+[    0.298832] initcall sock_init+0x0/0x60 returned 0 after 0 usecs
+[    0.299006] calling  net_inuse_init+0x0/0x30 @ 1
+[    0.299114] initcall net_inuse_init+0x0/0x30 returned 0 after 0 usecs
+[    0.299206] calling  netpoll_init+0x0/0x40 @ 1
+[    0.299294] initcall netpoll_init+0x0/0x40 returned 0 after 0 usecs
+[    0.299385] calling  netlink_proto_init+0x0/0x1b0 @ 1
+[    0.299652] NET: Registered protocol family 16
+[    0.299855] initcall netlink_proto_init+0x0/0x1b0 returned 0 after 0 usecs
+[    0.299948] calling  bdi_class_init+0x0/0x40 @ 1
+[    0.300534] initcall bdi_class_init+0x0/0x40 returned 0 after 0 usecs
+[    0.300627] calling  kobject_uevent_init+0x0/0x60 @ 1
+[    0.300741] initcall kobject_uevent_init+0x0/0x60 returned 0 after 0 usecs
+[    0.300834] calling  pcibus_class_init+0x0/0x20 @ 1
+[    0.301303] initcall pcibus_class_init+0x0/0x20 returned 0 after 976 usecs
+[    0.301397] calling  pci_driver_init+0x0/0x10 @ 1
+[    0.301843] initcall pci_driver_init+0x0/0x10 returned 0 after 0 usecs
+[    0.301936] calling  backlight_class_init+0x0/0x60 @ 1
+[    0.302380] initcall backlight_class_init+0x0/0x60 returned 0 after 0 usecs
+[    0.302474] calling  tty_class_init+0x0/0x30 @ 1
+[    0.302861] initcall tty_class_init+0x0/0x30 returned 0 after 0 usecs
+[    0.302953] calling  vtconsole_class_init+0x0/0xe0 @ 1
+[    0.303425] PM: Adding info for No Bus:vtcon0
+[    0.303852] initcall vtconsole_class_init+0x0/0xe0 returned 0 after 0 usecs
+[    0.304071] calling  register_node_type+0x0/0x70 @ 1
+[    0.304490] initcall register_node_type+0x0/0x70 returned 0 after 0 usecs
+[    0.304584] calling  eisa_init+0x0/0x30 @ 1
+[    0.305089] EISA bus registered
+[    0.305178] initcall eisa_init+0x0/0x30 returned 0 after 976 usecs
+[    0.305270] calling  amd_postcore_init+0x0/0x70 @ 1
+[    0.305360] initcall amd_postcore_init+0x0/0x70 returned 0 after 0 usecs
+[    0.305452] calling  arch_kdebugfs_init+0x0/0x20 @ 1
+[    0.305564] initcall arch_kdebugfs_init+0x0/0x20 returned 0 after 0 usecs
+[    0.305658] calling  init_pit_clocksource+0x0/0xb0 @ 1
+[    0.305748] initcall init_pit_clocksource+0x0/0xb0 returned 0 after 0 usecs
+[    0.305841] calling  mtrr_if_init+0x0/0x60 @ 1
+[    0.305949] initcall mtrr_if_init+0x0/0x60 returned 0 after 0 usecs
+[    0.306016] calling  ffh_cstate_init+0x0/0x30 @ 1
+[    0.306108] initcall ffh_cstate_init+0x0/0x30 returned 0 after 0 usecs
+[    0.306201] calling  acpi_pci_init+0x0/0x60 @ 1
+[    0.306302] ACPI: bus type pci registered
+[    0.306391] initcall acpi_pci_init+0x0/0x60 returned 0 after 0 usecs
+[    0.306483] calling  dmi_id_init+0x0/0x2f0 @ 1
+[    0.307207] PM: Adding info for No Bus:id
+[    0.307723] initcall dmi_id_init+0x0/0x2f0 returned 0 after 976 usecs
+[    0.307816] calling  init_cyclone_clocksource+0x0/0x200 @ 1
+[    0.307907] initcall init_cyclone_clocksource+0x0/0x200 returned -19 after 0 usecs
+[    0.308007] calling  pci_arch_init+0x0/0x50 @ 1
+[    0.308228] PCI: PCI BIOS revision 2.10 entry at 0xfd84b, last bus=24
+[    0.308318] PCI: Using configuration type 1 for base access
+[    0.308417] initcall pci_arch_init+0x0/0x50 returned 0 after 0 usecs
+[    0.308509] calling  topology_init+0x0/0x80 @ 1
+[    0.309710] initcall topology_init+0x0/0x80 returned 0 after 976 usecs
+[    0.309803] calling  mtrr_init_finialize+0x0/0x40 @ 1
+[    0.309894] initcall mtrr_init_finialize+0x0/0x40 returned 0 after 0 usecs
+[    0.309987] calling  param_sysfs_init+0x0/0x230 @ 1
+[    0.369106] initcall param_sysfs_init+0x0/0x230 returned 0 after 57617 usecs
+[    0.369209] calling  pm_sysrq_init+0x0/0x20 @ 1
+[    0.369323] initcall pm_sysrq_init+0x0/0x20 returned 0 after 0 usecs
+[    0.369416] calling  audit_watch_init+0x0/0x30 @ 1
+[    0.369512] initcall audit_watch_init+0x0/0x30 returned 0 after 0 usecs
+[    0.369606] calling  init_slow_work+0x0/0x40 @ 1
+[    0.369694] initcall init_slow_work+0x0/0x40 returned 0 after 0 usecs
+[    0.369787] calling  default_bdi_init+0x0/0x40 @ 1
+[    0.370157] PM: Adding info for No Bus:default
+[    0.370617] initcall default_bdi_init+0x0/0x40 returned 0 after 976 usecs
+[    0.370711] calling  init_bio+0x0/0x130 @ 1
+[    0.371227] bio: create slab <bio-0> at 0
+[    0.371417] initcall init_bio+0x0/0x130 returned 0 after 976 usecs
+[    0.371509] calling  fsnotify_init+0x0/0x10 @ 1
+[    0.371601] initcall fsnotify_init+0x0/0x10 returned 0 after 0 usecs
+[    0.371694] calling  fsnotify_notification_init+0x0/0x70 @ 1
+[    0.371800] initcall fsnotify_notification_init+0x0/0x70 returned 0 after 0 usecs
+[    0.371931] calling  cryptomgr_init+0x0/0x10 @ 1
+[    0.372007] initcall cryptomgr_init+0x0/0x10 returned 0 after 0 usecs
+[    0.372100] calling  blk_settings_init+0x0/0x20 @ 1
+[    0.372189] initcall blk_settings_init+0x0/0x20 returned 0 after 0 usecs
+[    0.372282] calling  blk_ioc_init+0x0/0x30 @ 1
+[    0.372379] initcall blk_ioc_init+0x0/0x30 returned 0 after 0 usecs
+[    0.372471] calling  blk_softirq_init+0x0/0x60 @ 1
+[    0.372562] initcall blk_softirq_init+0x0/0x60 returned 0 after 0 usecs
+[    0.372654] calling  genhd_device_init+0x0/0x50 @ 1
+[    0.373164] initcall genhd_device_init+0x0/0x50 returned 0 after 976 usecs
+[    0.373258] calling  blk_dev_integrity_init+0x0/0x30 @ 1
+[    0.373356] initcall blk_dev_integrity_init+0x0/0x30 returned 0 after 0 usecs
+[    0.373451] calling  pci_slot_init+0x0/0x50 @ 1
+[    0.373567] initcall pci_slot_init+0x0/0x50 returned 0 after 0 usecs
+[    0.373660] calling  acpi_init+0x0/0x260 @ 1
+[    0.383829] ACPI: EC: EC description table is found, configuring boot EC
+[    0.525999] ACPI: EC: non-query interrupt received, switching to interrupt mode
+[    0.551761] ACPI: Interpreter enabled
+[    0.551856] ACPI: (supports S0 S3 S5)
+[    0.552390] ACPI: Using IOAPIC for interrupt routing
+[    0.553767] PM: Adding info for acpi:LNXSYSTM:00
+[    0.554339] PM: Adding info for acpi:LNXPWRBN:00
+[    0.555040] PM: Adding info for acpi:LNXCPU:00
+[    0.555766] PM: Adding info for acpi:LNXCPU:01
+[    0.556763] PM: Adding info for acpi:device:00
+[    0.560946] PM: Adding info for acpi:PNP0C0F:00
+[    0.565177] PM: Adding info for acpi:PNP0C0F:01
+[    0.569669] PM: Adding info for acpi:PNP0C0F:02
+[    0.573936] PM: Adding info for acpi:PNP0C0F:03
+[    0.578142] PM: Adding info for acpi:PNP0C0F:04
+[    0.582601] PM: Adding info for acpi:PNP0C0F:05
+[    0.586881] PM: Adding info for acpi:PNP0C0F:06
+[    0.591085] PM: Adding info for acpi:PNP0C0F:07
+[    0.592231] PM: Adding info for acpi:PNP0C01:00
+[    0.595690] PM: Adding info for acpi:PNP0C0D:00
+[    0.598885] PM: Adding info for acpi:PNP0C0E:00
+[    0.599971] PM: Adding info for acpi:PNP0A08:00
+[    0.601104] PM: Adding info for acpi:device:01
+[    0.601840] PM: Adding info for acpi:PNP0C02:00
+[    0.603061] PM: Adding info for acpi:PNP0000:00
+[    0.604058] PM: Adding info for acpi:PNP0100:00
+[    0.606350] PM: Adding info for acpi:PNP0103:00
+[    0.607369] PM: Adding info for acpi:PNP0200:00
+[    0.608377] PM: Adding info for acpi:PNP0800:00
+[    0.609445] PM: Adding info for acpi:PNP0C04:00
+[    0.610474] PM: Adding info for acpi:PNP0B00:00
+[    0.611496] PM: Adding info for acpi:PNP0303:00
+[    0.612544] PM: Adding info for acpi:IBM0057:00
+[    0.624027] PM: Adding info for acpi:IBM0071:00
+[    0.625877] PM: Adding info for acpi:PNP0C09:00
+[    0.626921] PM: Adding info for acpi:LNXPOWER:00
+[    0.630326] PM: Adding info for acpi:PNP0C0A:00
+[    0.632969] PM: Adding info for acpi:ACPI0003:00
+[    0.634440] PM: Adding info for acpi:IBM0068:00
+[    0.635970] PM: Adding info for acpi:device:02
+[    0.636701] PM: Adding info for acpi:device:03
+[    0.637497] PM: Adding info for acpi:device:04
+[    0.638233] PM: Adding info for acpi:device:05
+[    0.638978] PM: Adding info for acpi:device:06
+[    0.639835] PM: Adding info for acpi:device:07
+[    0.640658] PM: Adding info for acpi:device:08
+[    0.641394] PM: Adding info for acpi:device:09
+[    0.642637] PM: Adding info for acpi:device:0a
+[    0.643908] PM: Adding info for acpi:device:0b
+[    0.644894] PM: Adding info for acpi:device:0c
+[    0.645871] PM: Adding info for acpi:device:0d
+[    0.646615] PM: Adding info for acpi:device:0e
+[    0.647589] PM: Adding info for acpi:device:0f
+[    0.648321] PM: Adding info for acpi:device:10
+[    0.649302] PM: Adding info for acpi:device:11
+[    0.650327] PM: Adding info for acpi:device:12
+[    0.651082] PM: Adding info for acpi:device:13
+[    0.651955] PM: Adding info for acpi:device:14
+[    0.655649] PM: Adding info for acpi:device:15
+[    0.656770] PM: Adding info for acpi:device:16
+[    0.658095] PM: Adding info for acpi:device:17
+[    0.658862] PM: Adding info for acpi:device:18
+[    0.665721] PM: Adding info for acpi:device:19
+[    0.667376] PM: Adding info for acpi:device:1a
+[    0.668114] PM: Adding info for acpi:device:1b
+[    0.668962] PM: Adding info for acpi:device:1c
+[    0.672080] PM: Adding info for acpi:device:1d
+[    0.672828] PM: Adding info for acpi:device:1e
+[    0.673539] PM: Adding info for acpi:device:1f
+[    0.674281] PM: Adding info for acpi:device:20
+[    0.676787] PM: Adding info for acpi:device:21
+[    0.677537] PM: Adding info for acpi:device:22
+[    0.678357] PM: Adding info for acpi:device:23
+[    0.679067] PM: Adding info for acpi:device:24
+[    0.680240] PM: Adding info for acpi:device:25
+[    0.684794] PM: Adding info for acpi:LNXTHERM:00
+[    0.685501] PM: Adding info for acpi:LNXTHERM:01
+[    0.686202] PM: Adding info for acpi:LNXTHERM:02
+[    0.688428] ACPI: EC: GPE = 0x1c, I/O: command/status = 0x66, data = 0x62
+[    0.688521] ACPI: EC: driver started in interrupt mode
+[    0.690102] ACPI: Power Resource [PUBS] (on)
+[    0.691266] initcall acpi_init+0x0/0x260 returned 0 after 310546 usecs
+[    0.691359] calling  dock_init+0x0/0x80 @ 1
+[    0.692706] PM: Adding info for platform:dock.0
+[    0.701856] PM: Adding info for platform:dock.1
+[    0.709013] PM: Adding info for platform:dock.2
+[    0.719529] ACPI: ACPI Dock Station Driver: 3 docks/bays found
+[    0.719623] initcall dock_init+0x0/0x80 returned 0 after 27343 usecs
+[    0.719716] calling  acpi_pci_root_init+0x0/0x30 @ 1
+[    0.720025] ACPI: PCI Root Bridge [PCI0] (0000:00)
+[    0.720421] PM: Adding info for No Bus:pci0000:00
+[    0.720674] PM: Adding info for No Bus:0000:00
+[    0.721539] PCI: Scanning bus 0000:00
+[    0.721694] pci 0000:00:00.0: found [8086:27a0] class 000600 header type 00
+[    0.721846] pci 0000:00:00.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.721972] pci 0000:00:00.0: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.722074] pci 0000:00:02.0: found [8086:27a2] class 000300 header type 00
+[    0.722198] pci 0000:00:02.0: reg 10 32bit mmio: [0xee100000-0xee17ffff]
+[    0.722296] pci 0000:00:02.0: reg 14 io port: [0x1800-0x1807]
+[    0.722393] pci 0000:00:02.0: reg 18 32bit mmio: [0xd0000000-0xdfffffff]
+[    0.722492] pci 0000:00:02.0: reg 1c 32bit mmio: [0xee200000-0xee23ffff]
+[    0.722608] pci 0000:00:02.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.722702] pci 0000:00:02.0: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.722867] pci 0000:00:02.1: found [8086:27a6] class 000380 header type 00
+[    0.723027] pci 0000:00:02.1: reg 10 32bit mmio: [0xee180000-0xee1fffff]
+[    0.723163] pci 0000:00:02.1: calling quirk_resource_alignment+0x0/0x1f0
+[    0.723256] pci 0000:00:02.1: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.723512] pci 0000:00:1b.0: found [8086:27d8] class 000403 header type 00
+[    0.723648] pci 0000:00:1b.0: reg 10 64bit mmio: [0xee240000-0xee243fff]
+[    0.723795] pci 0000:00:1b.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.723888] pci 0000:00:1b.0: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.724060] pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
+[    0.724156] pci 0000:00:1b.0: PME# disabled
+[    0.724302] pci 0000:00:1c.0: found [8086:27d0] class 000604 header type 01
+[    0.724439] pci 0000:00:1c.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.724532] pci 0000:00:1c.0: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.724689] pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
+[    0.724784] pci 0000:00:1c.0: PME# disabled
+[    0.724935] pci 0000:00:1c.1: found [8086:27d2] class 000604 header type 01
+[    0.725049] pci 0000:00:1c.1: calling quirk_resource_alignment+0x0/0x1f0
+[    0.725143] pci 0000:00:1c.1: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.725300] pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
+[    0.725396] pci 0000:00:1c.1: PME# disabled
+[    0.725546] pci 0000:00:1c.2: found [8086:27d4] class 000604 header type 01
+[    0.725682] pci 0000:00:1c.2: calling quirk_resource_alignment+0x0/0x1f0
+[    0.725774] pci 0000:00:1c.2: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.725932] pci 0000:00:1c.2: PME# supported from D0 D3hot D3cold
+[    0.726011] pci 0000:00:1c.2: PME# disabled
+[    0.726162] pci 0000:00:1c.3: found [8086:27d6] class 000604 header type 01
+[    0.726299] pci 0000:00:1c.3: calling quirk_resource_alignment+0x0/0x1f0
+[    0.726393] pci 0000:00:1c.3: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.726551] pci 0000:00:1c.3: PME# supported from D0 D3hot D3cold
+[    0.726646] pci 0000:00:1c.3: PME# disabled
+[    0.726800] pci 0000:00:1d.0: found [8086:27c8] class 000c03 header type 00
+[    0.727037] pci 0000:00:1d.0: reg 20 io port: [0x1820-0x183f]
+[    0.727153] pci 0000:00:1d.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.727247] pci 0000:00:1d.0: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.727383] pci 0000:00:1d.1: found [8086:27c9] class 000c03 header type 00
+[    0.727534] pci 0000:00:1d.1: reg 20 io port: [0x1840-0x185f]
+[    0.727651] pci 0000:00:1d.1: calling quirk_resource_alignment+0x0/0x1f0
+[    0.727744] pci 0000:00:1d.1: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.727878] pci 0000:00:1d.2: found [8086:27ca] class 000c03 header type 00
+[    0.728036] pci 0000:00:1d.2: reg 20 io port: [0x1860-0x187f]
+[    0.728152] pci 0000:00:1d.2: calling quirk_resource_alignment+0x0/0x1f0
+[    0.728245] pci 0000:00:1d.2: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.728377] pci 0000:00:1d.3: found [8086:27cb] class 000c03 header type 00
+[    0.728529] pci 0000:00:1d.3: reg 20 io port: [0x1880-0x189f]
+[    0.728646] pci 0000:00:1d.3: calling quirk_resource_alignment+0x0/0x1f0
+[    0.728740] pci 0000:00:1d.3: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.728895] pci 0000:00:1d.7: found [8086:27cc] class 000c03 header type 00
+[    0.729040] pci 0000:00:1d.7: reg 10 32bit mmio: [0xee444000-0xee4443ff]
+[    0.729197] pci 0000:00:1d.7: calling quirk_resource_alignment+0x0/0x1f0
+[    0.729290] pci 0000:00:1d.7: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.729421] pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
+[    0.729518] pci 0000:00:1d.7: PME# disabled
+[    0.729658] pci 0000:00:1e.0: found [8086:2448] class 000604 header type 01
+[    0.729804] pci 0000:00:1e.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.729898] pci 0000:00:1e.0: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.730082] pci 0000:00:1f.0: found [8086:27b9] class 000601 header type 00
+[    0.730290] pci 0000:00:1f.0: calling quirk_ich7_lpc+0x0/0x60
+[    0.730387] pci 0000:00:1f.0: quirk: region 1000-107f claimed by ICH6 ACPI/GPIO/TCO
+[    0.730521] pci 0000:00:1f.0: quirk: region 1180-11bf claimed by ICH6 GPIO
+[    0.730616] pci 0000:00:1f.0: ICH7 LPC Generic IO decode 1 PIO at 1600 (mask 007f)
+[    0.730748] pci 0000:00:1f.0: ICH7 LPC Generic IO decode 2 PIO at 15e0 (mask 000f)
+[    0.730881] pci 0000:00:1f.0: ICH7 LPC Generic IO decode 3 PIO at 1680 (mask 001f)
+[    0.731009] pci 0000:00:1f.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.731102] pci 0000:00:1f.0: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.731281] pci 0000:00:1f.1: found [8086:27df] class 000101 header type 00
+[    0.731394] pci 0000:00:1f.1: reg 10 io port: [0x00-0x07]
+[    0.731493] pci 0000:00:1f.1: reg 14 io port: [0x00-0x03]
+[    0.731594] pci 0000:00:1f.1: reg 18 io port: [0x00-0x07]
+[    0.731693] pci 0000:00:1f.1: reg 1c io port: [0x00-0x03]
+[    0.731793] pci 0000:00:1f.1: reg 20 io port: [0x1810-0x181f]
+[    0.731911] pci 0000:00:1f.1: calling quirk_resource_alignment+0x0/0x1f0
+[    0.732006] pci 0000:00:1f.1: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.732153] pci 0000:00:1f.2: found [8086:27c5] class 000106 header type 00
+[    0.732291] pci 0000:00:1f.2: reg 10 io port: [0x18d0-0x18d7]
+[    0.732391] pci 0000:00:1f.2: reg 14 io port: [0x18c4-0x18c7]
+[    0.732492] pci 0000:00:1f.2: reg 18 io port: [0x18c8-0x18cf]
+[    0.732592] pci 0000:00:1f.2: reg 1c io port: [0x18c0-0x18c3]
+[    0.732692] pci 0000:00:1f.2: reg 20 io port: [0x18b0-0x18bf]
+[    0.732793] pci 0000:00:1f.2: reg 24 32bit mmio: [0xee444400-0xee4447ff]
+[    0.732902] pci 0000:00:1f.2: calling quirk_resource_alignment+0x0/0x1f0
+[    0.733006] pci 0000:00:1f.2: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.733143] pci 0000:00:1f.2: PME# supported from D3hot
+[    0.733237] pci 0000:00:1f.2: PME# disabled
+[    0.733373] pci 0000:00:1f.3: found [8086:27da] class 000c05 header type 00
+[    0.733534] pci 0000:00:1f.3: reg 20 io port: [0x18e0-0x18ff]
+[    0.733655] pci 0000:00:1f.3: calling quirk_resource_alignment+0x0/0x1f0
+[    0.733749] pci 0000:00:1f.3: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.733866] PCI: Fixups for bus 0000:00
+[    0.733957] pci 0000:00:1c.0: scanning behind bridge, config 020200, pass 0
+[    0.734034] PCI: Scanning bus 0000:02
+[    0.734185] pci 0000:02:00.0: found [8086:109a] class 000200 header type 00
+[    0.734328] pci 0000:02:00.0: reg 10 32bit mmio: [0xee000000-0xee01ffff]
+[    0.734451] pci 0000:02:00.0: reg 18 io port: [0x2000-0x201f]
+[    0.734612] pci 0000:02:00.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.734706] pci 0000:02:00.0: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.734881] pci 0000:02:00.0: PME# supported from D0 D3hot D3cold
+[    0.735012] pci 0000:02:00.0: PME# disabled
+[    0.735240] pci 0000:02:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+[    0.735658] PCI: Fixups for bus 0000:02
+[    0.735750] pci 0000:00:1c.0: bridge io port: [0x2000-0x2fff]
+[    0.735845] pci 0000:00:1c.0: bridge 32bit mmio: [0xee000000-0xee0fffff]
+[    0.735947] PCI: Bus scan for 0000:02 returning with max=02
+[    0.736011] pci 0000:00:1c.1: scanning behind bridge, config 030300, pass 0
+[    0.736130] PCI: Scanning bus 0000:03
+[    0.736350] pci 0000:03:00.0: found [8086:4227] class 000280 header type 00
+[    0.736566] pci 0000:03:00.0: reg 10 32bit mmio: [0xedf00000-0xedf00fff]
+[    0.736865] pci 0000:03:00.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.737006] pci 0000:03:00.0: calling pci_fixup_transparent_bridge+0x0/0x30
+[    0.737271] pci 0000:03:00.0: PME# supported from D0 D3hot D3cold
+[    0.737414] pci 0000:03:00.0: PME# disabled
+[    0.737646] pci 0000:03:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+[    0.738164] PCI: Fixups for bus 0000:03
+[    0.738256] pci 0000:00:1c.1: bridge io port: [0x3000-0x4fff]
+[    0.738351] pci 0000:00:1c.1: bridge 32bit mmio: [0xec000000-0xedffffff]
+[    0.738452] pci 0000:00:1c.1: bridge 64bit mmio pref: [0xe4000000-0xe40fffff]
+[    0.738545] PCI: Bus scan for 0000:03 returning with max=03
+[    0.738640] pci 0000:00:1c.2: scanning behind bridge, config 0b0400, pass 0
+[    0.738759] PCI: Scanning bus 0000:04
+[    0.739098] PCI: Fixups for bus 0000:04
+[    0.739190] pci 0000:00:1c.2: bridge io port: [0x5000-0x6fff]
+[    0.739285] pci 0000:00:1c.2: bridge 32bit mmio: [0xe8000000-0xe9ffffff]
+[    0.740014] pci 0000:00:1c.2: bridge 64bit mmio pref: [0xe4100000-0xe41fffff]
+[    0.740107] PCI: Bus scan for 0000:04 returning with max=04
+[    0.740202] pci 0000:00:1c.3: scanning behind bridge, config 130c00, pass 0
+[    0.740320] PCI: Scanning bus 0000:0c
+[    0.740500] PCI: Fixups for bus 0000:0c
+[    0.740591] pci 0000:00:1c.3: bridge io port: [0x7000-0x8fff]
+[    0.740686] pci 0000:00:1c.3: bridge 32bit mmio: [0xea000000-0xebffffff]
+[    0.740788] pci 0000:00:1c.3: bridge 64bit mmio pref: [0xe4200000-0xe42fffff]
+[    0.740880] PCI: Bus scan for 0000:0c returning with max=0c
+[    0.740974] pci 0000:00:1e.0: scanning behind bridge, config 181500, pass 0
+[    0.741030] PCI: Scanning bus 0000:15
+[    0.741161] pci 0000:15:00.0: found [104c:ac56] class 000607 header type 02
+[    0.741296] pci 0000:15:00.0: reg 10 32bit mmio: [0xe4300000-0xe4300fff]
+[    0.741397] pci 0000:15:00.0: calling quirk_resource_alignment+0x0/0x1f0
+[    0.741525] pci 0000:15:00.0: supports D1 D2
+[    0.741613] pci 0000:15:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+[    0.741710] pci 0000:15:00.0: PME# disabled
+[    0.742013] PCI: Fixups for bus 0000:15
+[    0.742099] pci 0000:00:1e.0: transparent bridge
+[    0.742191] pci 0000:00:1e.0: bridge io port: [0x9000-0xcfff]
+[    0.742286] pci 0000:00:1e.0: bridge 32bit mmio: [0xe4300000-0xe7ffffff]
+[    0.742388] pci 0000:00:1e.0: bridge 64bit mmio pref: [0xe0000000-0xe3ffffff]
+[    0.742484] pci 0000:15:00.0: scanning behind bridge, config 181615, pass 0
+[    0.742587] pci 0000:15:00.0: scanning behind bridge, config 181615, pass 1
+[    0.742726] PCI: Bus scan for 0000:15 returning with max=17
+[    0.742822] pci 0000:00:1c.0: scanning behind bridge, config 020200, pass 1
+[    0.742924] pci 0000:00:1c.1: scanning behind bridge, config 030300, pass 1
+[    0.743014] pci 0000:00:1c.2: scanning behind bridge, config 0b0400, pass 1
+[    0.743117] pci 0000:00:1c.3: scanning behind bridge, config 130c00, pass 1
+[    0.743219] pci 0000:00:1e.0: scanning behind bridge, config 181500, pass 1
+[    0.743319] PCI: Bus scan for 0000:00 returning with max=18
+[    0.743437] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+[    0.747843] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.EXP0._PRT]
+[    0.749442] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.EXP1._PRT]
+[    0.751046] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.EXP2._PRT]
+[    0.752754] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.EXP3._PRT]
+[    0.754473] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCI1._PRT]
+[    0.763497] PM: Adding info for pci:0000:00:00.0
+[    0.769825] PM: Adding info for pci:0000:00:02.0
+[    0.776847] PM: Adding info for pci:0000:00:02.1
+[    0.783130] PM: Adding info for pci:0000:00:1b.0
+[    0.789756] PM: Adding info for pci:0000:00:1c.0
+[    0.796169] PM: Adding info for pci:0000:00:1c.1
+[    0.802409] PM: Adding info for pci:0000:00:1c.2
+[    0.809061] PM: Adding info for pci:0000:00:1c.3
+[    0.815466] PM: Adding info for pci:0000:00:1d.0
+[    0.821903] PM: Adding info for pci:0000:00:1d.1
+[    0.828484] PM: Adding info for pci:0000:00:1d.2
+[    0.834774] PM: Adding info for pci:0000:00:1d.3
+[    0.841248] PM: Adding info for pci:0000:00:1d.7
+[    0.847445] PM: Adding info for pci:0000:00:1e.0
+[    0.854036] PM: Adding info for pci:0000:00:1f.0
+[    0.860390] PM: Adding info for pci:0000:00:1f.1
+[    0.866797] PM: Adding info for pci:0000:00:1f.2
+[    0.873194] PM: Adding info for pci:0000:00:1f.3
+[    0.873882] PM: Adding info for pci:0000:02:00.0
+[    0.874504] PM: Adding info for No Bus:0000:02
+[    0.875225] PM: Adding info for pci:0000:03:00.0
+[    0.875741] PM: Adding info for No Bus:0000:03
+[    0.876301] PM: Adding info for No Bus:0000:04
+[    0.876836] PM: Adding info for No Bus:0000:0c
+[    0.878405] PM: Adding info for pci:0000:15:00.0
+[    0.878926] PM: Adding info for No Bus:0000:16
+[    0.879511] PM: Adding info for No Bus:0000:15
+[    0.880349] initcall acpi_pci_root_init+0x0/0x30 returned 0 after 157226 usecs
+[    0.880479] calling  acpi_pci_link_init+0x0/0x40 @ 1
+[    0.882896] ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 6 7 9 10 *11)
+[    0.885839] ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 9 10 *11)
+[    0.888776] ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 9 10 *11)
+[    0.891719] ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 9 10 *11)
+[    0.894654] ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 9 10 *11)
+[    0.897592] ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 7 9 10 *11)
+[    0.900540] ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 9 10 *11)
+[    0.903559] ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 9 10 *11)
+[    0.904796] initcall acpi_pci_link_init+0x0/0x40 returned 0 after 23437 usecs
+[    0.904891] calling  pnp_init+0x0/0x10 @ 1
+[    0.905854] initcall pnp_init+0x0/0x10 returned 0 after 976 usecs
+[    0.905947] calling  misc_init+0x0/0xb0 @ 1
+[    0.906377] initcall misc_init+0x0/0xb0 returned 0 after 0 usecs
+[    0.906469] calling  init_scsi+0x0/0xa0 @ 1
+[    0.908722] SCSI subsystem initialized
+[    0.908812] initcall init_scsi+0x0/0xa0 returned 0 after 1953 usecs
+[    0.908903] calling  ata_init+0x0/0x3a0 @ 1
+[    0.909302] libata version 3.00 loaded.
+[    0.909392] initcall ata_init+0x0/0x3a0 returned 0 after 976 usecs
+[    0.909484] calling  phy_init+0x0/0x30 @ 1
+[    0.910556] initcall phy_init+0x0/0x30 returned 0 after 976 usecs
+[    0.910649] calling  usb_init+0x0/0x1a0 @ 1
+[    0.911716] usbcore: registered new interface driver usbfs
+[    0.912512] usbcore: registered new interface driver hub
+[    0.913062] usbcore: registered new device driver usb
+[    0.913153] initcall usb_init+0x0/0x1a0 returned 0 after 2929 usecs
+[    0.913246] calling  serio_init+0x0/0xa0 @ 1
+[    0.913786] initcall serio_init+0x0/0xa0 returned 0 after 0 usecs
+[    0.913879] calling  gameport_init+0x0/0xa0 @ 1
+[    0.914536] initcall gameport_init+0x0/0xa0 returned 0 after 976 usecs
+[    0.914630] calling  input_init+0x0/0x130 @ 1
+[    0.915200] initcall input_init+0x0/0x130 returned 0 after 976 usecs
+[    0.915293] calling  rtc_init+0x0/0x70 @ 1
+[    0.915679] initcall rtc_init+0x0/0x70 returned 0 after 0 usecs
+[    0.915771] calling  power_supply_class_init+0x0/0x30 @ 1
+[    0.916245] initcall power_supply_class_init+0x0/0x30 returned 0 after 976 usecs
+[    0.916375] calling  hwmon_init+0x0/0x100 @ 1
+[    0.916779] initcall hwmon_init+0x0/0x100 returned 0 after 0 usecs
+[    0.916872] calling  leds_init+0x0/0x40 @ 1
+[    0.917369] initcall leds_init+0x0/0x40 returned 0 after 976 usecs
+[    0.917462] calling  acpi_wmi_init+0x0/0x70 @ 1
+[    0.917903] ACPI: WMI: Mapper loaded
+[    0.917992] initcall acpi_wmi_init+0x0/0x70 returned 0 after 0 usecs
+[    0.918098] calling  pci_subsys_init+0x0/0x130 @ 1
+[    0.918187] PCI: Using ACPI for IRQ routing
+[    0.920253] initcall pci_subsys_init+0x0/0x130 returned 0 after 1953 usecs
+[    0.920346] calling  proto_init+0x0/0x10 @ 1
+[    0.920458] initcall proto_init+0x0/0x10 returned 0 after 0 usecs
+[    0.920549] calling  net_dev_init+0x0/0x160 @ 1
+[    0.921766] PM: Adding info for No Bus:lo
+[    0.922376] initcall net_dev_init+0x0/0x160 returned 0 after 1953 usecs
+[    0.922469] calling  neigh_init+0x0/0x80 @ 1
+[    0.922558] initcall neigh_init+0x0/0x80 returned 0 after 0 usecs
+[    0.922649] calling  fib_rules_init+0x0/0xb0 @ 1
+[    0.922743] initcall fib_rules_init+0x0/0xb0 returned 0 after 0 usecs
+[    0.922834] calling  pktsched_init+0x0/0xd0 @ 1
+[    0.922958] initcall pktsched_init+0x0/0xd0 returned 0 after 0 usecs
+[    0.923071] calling  tc_filter_init+0x0/0x60 @ 1
+[    0.923159] initcall tc_filter_init+0x0/0x60 returned 0 after 0 usecs
+[    0.923250] calling  tc_action_init+0x0/0x60 @ 1
+[    0.923339] initcall tc_action_init+0x0/0x60 returned 0 after 0 usecs
+[    0.923430] calling  genl_init+0x0/0xd0 @ 1
+[    0.926089] initcall genl_init+0x0/0xd0 returned 0 after 2929 usecs
+[    0.926182] calling  wanrouter_init+0x0/0x60 @ 1
+[    0.926270] Sangoma WANPIPE Router v1.1 (c) 1995-2000 Sangoma Technologies Inc.
+[    0.926455] initcall wanrouter_init+0x0/0x60 returned 0 after 0 usecs
+[    0.926547] calling  wireless_nlevent_init+0x0/0x40 @ 1
+[    0.926637] initcall wireless_nlevent_init+0x0/0x40 returned 0 after 0 usecs
+[    0.926732] calling  cfg80211_init+0x0/0x80 @ 1
+[    0.941206] PM: Adding info for platform:regulatory.0
+[    0.941547] cfg80211: Using static regulatory domain info
+[    0.941638] cfg80211: Regulatory domain: US
+[    0.941725] 	(start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+[    0.941854] 	(2402000 KHz - 2472000 KHz @ 40000 KHz), (600 mBi, 2700 mBm)
+[    0.941946] 	(5170000 KHz - 5190000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+[    0.942006] 	(5190000 KHz - 5210000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+[    0.942098] 	(5210000 KHz - 5230000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+[    0.942190] 	(5230000 KHz - 5330000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+[    0.942283] 	(5735000 KHz - 5835000 KHz @ 40000 KHz), (600 mBi, 3000 mBm)
+[    0.942501] cfg80211: Calling CRDA for country: US
+[    0.943128] initcall cfg80211_init+0x0/0x80 returned 0 after 16601 usecs
+[    0.943222] calling  sysctl_init+0x0/0x40 @ 1
+[    0.943314] initcall sysctl_init+0x0/0x40 returned 0 after 0 usecs
+[    0.943407] calling  pci_iommu_init+0x0/0x20 @ 1
+[    1.091247] DMA-API: preallocated 32768 debug entries
+[    1.091344] DMA-API: debugging enabled by kernel config
+[    1.091452] initcall pci_iommu_init+0x0/0x20 returned 0 after 144531 usecs
+[    1.091547] calling  print_all_ICs+0x0/0x510 @ 1
+[    1.091635] 
+[    1.091636] printing PIC contents
+[    1.091803] ... PIC  IMR: ffff
+[    1.091890] ... PIC  IRR: 0801
+[    1.091984] ... PIC  ISR: 0000
+[    1.092009] ... PIC ELCR: 0800
+[    1.092096] printing local APIC contents on CPU#0/0:
+[    1.092184] ... APIC ID:      00000000 (0)
+[    1.092270] ... APIC VERSION: 00050014
+[    1.092356] ... APIC TASKPRI: 00000000 (00)
+[    1.092443] ... APIC PROCPRI: 00000000
+[    1.092529] ... APIC LDR: 01000000
+[    1.092614] ... APIC DFR: ffffffff
+[    1.092700] ... APIC SPIV: 000001ff
+[    1.092784] ... APIC ISR field:
+[    1.092870] 0000000000000000000000000000000000000000000000000000000000000000
+[    1.092999] ... APIC TMR field:
+[    1.092999] 0000000002000000000000000000000000000000000000000000000000000000
+[    1.092999] ... APIC IRR field:
+[    1.092999] 0000000000000000000000000000000000000000000000000000000000008000
+[    1.092999] ... APIC ESR: 00000000
+[    1.092999] ... APIC ICR: 000008fb
+[    1.092999] ... APIC ICR2: 02000000
+[    1.092999] ... APIC LVTT: 000200ef
+[    1.092999] ... APIC LVTPC: 00010000
+[    1.092999] ... APIC LVT0: 00010700
+[    1.092999] ... APIC LVT1: 00000400
+[    1.092999] ... APIC LVTERR: 000000fe
+[    1.092999] ... APIC TMICT: 00002895
+[    1.092999] ... APIC TMCCT: 000001f0
+[    1.092999] ... APIC TDCR: 00000003
+[    1.092999] 
+[    1.092997] printing local APIC contents on CPU#1/1:
+[    1.092997] ... APIC ID:      01000000 (1)
+[    1.092997] ... APIC VERSION: 00050014
+[    1.092997] ... APIC TASKPRI: 00000000 (00)
+[    1.092997] ... APIC PROCPRI: 00000000
+[    1.092997] ... APIC LDR: 02000000
+[    1.092997] ... APIC DFR: ffffffff
+[    1.092997] ... APIC SPIV: 000001ff
+[    1.092997] ... APIC ISR field:
+[    1.092997] 0000000000000000000000000000000000000000000000000000000000000000
+[    1.092999] ... APIC TMR field:
+[    1.092999] 0000000000000000000000000000000000000000000000000000000000000000
+[    1.092999] ... APIC IRR field:
+[    1.092999] 0000000000000000000000000000000000000000000000000000000000008000
+[    1.092999] ... APIC ESR: 00000000
+[    1.092999] ... APIC ICR: 000008fd
+[    1.092999] ... APIC ICR2: 01000000
+[    1.092999] ... APIC LVTT: 000200ef
+[    1.092999] ... APIC LVTPC: 00010000
+[    1.092999] ... APIC LVT0: 00010700
+[    1.092999] ... APIC LVT1: 00010400
+[    1.092999] ... APIC LVTERR: 000000fe
+[    1.092999] ... APIC TMICT: 00002895
+[    1.092999] ... APIC TMCCT: 000023d4
+[    1.092999] ... APIC TDCR: 00000003
+[    1.092999] 
+[    1.096481] number of MP IRQ sources: 15.
+[    1.096569] number of IO-APIC #1 registers: 24.
+[    1.096656] testing the IO APIC.......................
+[    1.096752] 
+[    1.096834] IO APIC #1......
+[    1.096917] .... register #00: 02000000
+[    1.097003] .......    : physical APIC id: 02
+[    1.097090] .......    : Delivery Type: 0
+[    1.097177] .......    : LTS          : 0
+[    1.097263] .... register #01: 00170020
+[    1.097349] .......     : max redirection entries: 0017
+[    1.097437] .......     : PRQ implemented: 0
+[    1.097524] .......     : IO APIC version: 0020
+[    1.097611] .... IRQ redirection table:
+[    1.097696]  NR Dst Mask Trig IRR Pol Stat Dmod Deli Vect:   
+[    1.097789]  00 000 1    0    0   0   0    0    0    00
+[    1.097926]  01 003 0    0    0   0   0    1    1    31
+[    1.098007]  02 003 0    0    0   0   0    1    1    30
+[    1.098144]  03 003 0    0    0   0   0    1    1    33
+[    1.098281]  04 003 0    0    0   0   0    1    1    34
+[    1.098416]  05 003 0    0    0   0   0    1    1    35
+[    1.098552]  06 003 0    0    0   0   0    1    1    36
+[    1.098688]  07 003 0    0    0   0   0    1    1    37
+[    1.098824]  08 003 0    0    0   0   0    1    1    38
+[    1.099009]  09 003 0    1    0   0   0    1    1    39
+[    1.099146]  0a 003 0    0    0   0   0    1    1    3A
+[    1.099283]  0b 003 0    0    0   0   0    1    1    3B
+[    1.099419]  0c 003 0    0    0   0   0    1    1    3C
+[    1.099556]  0d 003 0    0    0   0   0    1    1    3D
+[    1.099693]  0e 003 0    0    0   0   0    1    1    3E
+[    1.099828]  0f 003 0    0    0   0   0    1    1    3F
+[    1.099965]  10 000 1    0    0   0   0    0    0    00
+[    1.100092]  11 000 1    0    0   0   0    0    0    00
+[    1.100228]  12 000 1    0    0   0   0    0    0    00
+[    1.100364]  13 000 1    0    0   0   0    0    0    00
+[    1.100501]  14 000 1    0    0   0   0    0    0    00
+[    1.100636]  15 000 1    0    0   0   0    0    0    00
+[    1.100773]  16 000 1    0    0   0   0    0    0    00
+[    1.100909]  17 000 1    0    0   0   0    0    0    00
+[    1.101088] IRQ to pin mappings:
+[    1.101174] IRQ0 -> 0:2
+[    1.101343] IRQ1 -> 0:1
+[    1.101512] IRQ3 -> 0:3
+[    1.101681] IRQ4 -> 0:4
+[    1.101851] IRQ5 -> 0:5
+[    1.102003] IRQ6 -> 0:6
+[    1.102172] IRQ7 -> 0:7
+[    1.102340] IRQ8 -> 0:8
+[    1.102509] IRQ9 -> 0:9
+[    1.102678] IRQ10 -> 0:10
+[    1.102847] IRQ11 -> 0:11
+[    1.103005] IRQ12 -> 0:12
+[    1.103174] IRQ13 -> 0:13
+[    1.103342] IRQ14 -> 0:14
+[    1.103511] IRQ15 -> 0:15
+[    1.103794] .................................... done.
+[    1.103885] initcall print_all_ICs+0x0/0x510 returned 0 after 11718 usecs
+[    1.104007] calling  clocksource_done_booting+0x0/0x20 @ 1
+[    1.104098] Switching to clocksource jiffies
+[    1.104187] initcall clocksource_done_booting+0x0/0x20 returned 0 after 0 usecs
+[    1.104316] calling  rb_init_debugfs+0x0/0x30 @ 1
+[    1.104485] initcall rb_init_debugfs+0x0/0x30 returned 0 after 0 usecs
+[    1.104578] calling  tracer_init_debugfs+0x0/0x300 @ 1
+[    1.105718] initcall tracer_init_debugfs+0x0/0x300 returned 0 after 976 usecs
+[    1.105812] calling  init_trace_printk_function_export+0x0/0x40 @ 1
+[    1.105924] initcall init_trace_printk_function_export+0x0/0x40 returned 0 after 0 usecs
+[    1.106006] calling  event_trace_init+0x0/0x220 @ 1
+[    1.135539] initcall event_trace_init+0x0/0x220 returned 0 after 28320 usecs
+[    1.135638] calling  init_pipe_fs+0x0/0x60 @ 1
+[    1.135931] initcall init_pipe_fs+0x0/0x60 returned 0 after 0 usecs
+[    1.136007] calling  eventpoll_init+0x0/0xa0 @ 1
+[    1.136140] initcall eventpoll_init+0x0/0xa0 returned 0 after 0 usecs
+[    1.136233] calling  anon_inode_init+0x0/0x110 @ 1
+[    1.136484] initcall anon_inode_init+0x0/0x110 returned 0 after 0 usecs
+[    1.136578] calling  tomoyo_initerface_init+0x0/0x110 @ 1
+[    1.137158] initcall tomoyo_initerface_init+0x0/0x110 returned 0 after 976 usecs
+[    1.137288] calling  blk_scsi_ioctl_init+0x0/0x330 @ 1
+[    1.137379] initcall blk_scsi_ioctl_init+0x0/0x330 returned 0 after 0 usecs
+[    1.137473] calling  acpi_event_init+0x0/0x50 @ 1
+[    1.140065] initcall acpi_event_init+0x0/0x50 returned 0 after 2929 usecs
+[    1.140159] calling  pnpacpi_init+0x0/0xa0 @ 1
+[    1.140246] pnp: PnP ACPI init
+[    1.140431] PM: Adding info for No Bus:pnp0
+[    1.140522] ACPI: bus type pnp registered
+[    1.156748] PM: Adding info for pnp:00:00
+[    1.157746] PM: Adding info for pnp:00:01
+[    1.159793] PM: Adding info for pnp:00:02
+[    1.161319] PM: Adding info for pnp:00:03
+[    1.162223] PM: Adding info for pnp:00:04
+[    1.163045] PM: Adding info for pnp:00:05
+[    1.163596] IOAPIC[0]: Set routing entry (1-13 -> 0x3d -> IRQ 13 Mode:0 Active:0)
+[    1.164263] PM: Adding info for pnp:00:06
+[    1.164785] IOAPIC[0]: Set routing entry (1-8 -> 0x38 -> IRQ 8 Mode:0 Active:0)
+[    1.165285] PM: Adding info for pnp:00:07
+[    1.165819] IOAPIC[0]: Set routing entry (1-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
+[    1.166266] PM: Adding info for pnp:00:08
+[    1.166781] IOAPIC[0]: Set routing entry (1-12 -> 0x3c -> IRQ 12 Mode:0 Active:0)
+[    1.167245] PM: Adding info for pnp:00:09
+[    1.177388] IOAPIC[0]: Set routing entry (1-3 -> 0x33 -> IRQ 3 Mode:0 Active:0)
+[    1.178171] PM: Adding info for pnp:00:0a
+[    1.188025] pnp: PnP ACPI: found 11 devices
+[    1.188115] ACPI: ACPI bus type pnp unregistered
+[    1.188209] initcall pnpacpi_init+0x0/0xa0 returned 0 after 46875 usecs
+[    1.188301] calling  pnpbios_init+0x0/0x400 @ 1
+[    1.188391] PnPBIOS: Disabled by ACPI PNP
+[    1.188479] initcall pnpbios_init+0x0/0x400 returned -19 after 0 usecs
+[    1.188571] calling  pnp_system_init+0x0/0x10 @ 1
+[    1.188758] system 00:00: iomem range 0x0-0x9ffff could not be reserved
+[    1.188873] system 00:00: iomem range 0xc0000-0xc3fff could not be reserved
+[    1.188986] system 00:00: iomem range 0xc4000-0xc7fff could not be reserved
+[    1.189025] system 00:00: iomem range 0xc8000-0xcbfff has been reserved
+[    1.189140] system 00:00: iomem range 0xcc000-0xcffff could not be reserved
+[    1.189255] system 00:00: iomem range 0xd0000-0xd3fff could not be reserved
+[    1.189369] system 00:00: iomem range 0xdc000-0xdffff could not be reserved
+[    1.189483] system 00:00: iomem range 0xe0000-0xe3fff could not be reserved
+[    1.189597] system 00:00: iomem range 0xe4000-0xe7fff could not be reserved
+[    1.189711] system 00:00: iomem range 0xe8000-0xebfff could not be reserved
+[    1.189826] system 00:00: iomem range 0xec000-0xeffff could not be reserved
+[    1.190029] system 00:00: iomem range 0xf0000-0xfffff could not be reserved
+[    1.190143] system 00:00: iomem range 0x100000-0x7fffffff could not be reserved
+[    1.190300] system 00:00: iomem range 0xfec00000-0xffffffff could not be reserved
+[    1.190488] system 00:02: ioport range 0x164e-0x164f has been reserved
+[    1.190594] system 00:02: ioport range 0x1000-0x107f has been reserved
+[    1.190700] system 00:02: ioport range 0x1180-0x11bf has been reserved
+[    1.190807] system 00:02: ioport range 0x800-0x80f has been reserved
+[    1.190912] system 00:02: ioport range 0x15e0-0x15ef has been reserved
+[    1.191028] system 00:02: ioport range 0x1600-0x165f could not be reserved
+[    1.191136] system 00:02: iomem range 0xf0000000-0xf3ffffff has been reserved
+[    1.191249] system 00:02: iomem range 0xfed1c000-0xfed1ffff has been reserved
+[    1.191357] system 00:02: iomem range 0xfed14000-0xfed17fff has been reserved
+[    1.191465] system 00:02: iomem range 0xfed18000-0xfed18fff has been reserved
+[    1.192020] system 00:02: iomem range 0xfed19000-0xfed19fff has been reserved
+[    1.192419] initcall pnp_system_init+0x0/0x10 returned 0 after 3906 usecs
+[    1.192513] calling  chr_dev_init+0x0/0xf0 @ 1
+[    1.193443] PM: Adding info for No Bus:mem
+[    1.193958] PM: Adding info for No Bus:kmem
+[    1.194395] PM: Adding info for No Bus:null
+[    1.194878] PM: Adding info for No Bus:port
+[    1.195695] PM: Adding info for No Bus:zero
+[    1.196191] PM: Adding info for No Bus:full
+[    1.196642] PM: Adding info for No Bus:random
+[    1.197129] PM: Adding info for No Bus:urandom
+[    1.197603] PM: Adding info for No Bus:kmsg
+[    1.197964] initcall chr_dev_init+0x0/0xf0 returned 0 after 4882 usecs
+[    1.198007] calling  firmware_class_init+0x0/0x80 @ 1
+[    1.198396] initcall firmware_class_init+0x0/0x80 returned 0 after 0 usecs
+[    1.198492] calling  cpufreq_gov_performance_init+0x0/0x10 @ 1
+[    1.198605] initcall cpufreq_gov_performance_init+0x0/0x10 returned 0 after 0 usecs
+[    1.198736] calling  init_acpi_pm_clocksource+0x0/0x250 @ 1
+[    1.233442] Switching to clocksource acpi_pm
+[    1.233626] 
+[    1.233627] =======================================================
+[    1.233798] [ INFO: possible circular locking dependency detected ]
+[    1.233889] 2.6.31-rc6-tip-01322-gd685ec8-dirty #7600
+[    1.233977] -------------------------------------------------------
+[    1.233999] swapper/1 is trying to acquire lock:
+[    1.233999]  (cpu_add_remove_lock){+.+.+.}, at: [<c103e6af>] cpu_maps_update_begin+0xf/0x20
+[    1.233999] 
+[    1.233999] but task is already holding lock:
+[    1.233999]  (setup_lock){+.+.+.}, at: [<c10788a2>] stop_machine_create+0x12/0xa0
+[    1.233999] 
+[    1.233999] which lock already depends on the new lock.
+[    1.233999] 
+[    1.233999] 
+[    1.233999] the existing dependency chain (in reverse order) is:
+[    1.233999] 
+[    1.233999] -> #3 (setup_lock){+.+.+.}:
+[    1.233999]        [<c1068410>] validate_chain+0xad0/0x1130
+[    1.233999]        [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]        [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]        [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]        [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]        [<c10788a2>] stop_machine_create+0x12/0xa0
+[    1.233999]        [<c107894b>] stop_machine+0x1b/0x50
+[    1.233999]        [<c105c319>] timekeeping_notify+0x19/0x20
+[    1.233999]        [<c105df94>] clocksource_select+0x84/0xb0
+[    1.233999]        [<c105e262>] clocksource_register+0x22/0x1e0
+[    1.233999]        [<c1901c1c>] init_acpi_pm_clocksource+0x16c/0x250
+[    1.233999]        [<c1001127>] do_one_initcall+0x27/0x190
+[    1.233999]        [<c18c5a0a>] kernel_init+0x14a/0x1a0
+[    1.233999]        [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.233999] 
+[    1.233999] -> #2 (clocksource_mutex){+.+.+.}:
+[    1.233999]        [<c1068410>] validate_chain+0xad0/0x1130
+[    1.233999]        [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]        [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]        [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]        [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]        [<c105e21d>] clocksource_change_rating+0x1d/0x40
+[    1.233999]        [<c100877c>] mark_tsc_unstable+0x4c/0x50
+[    1.233999]        [<c15b18df>] check_tsc_sync_source+0x10f/0x120
+[    1.233999]        [<c15b0b63>] native_cpu_up+0x423/0x800
+[    1.233999]        [<c15b27c9>] _cpu_up+0x89/0x110
+[    1.233999]        [<c15b28c9>] cpu_up+0x49/0x70
+[    1.233999]        [<c18c598c>] kernel_init+0xcc/0x1a0
+[    1.233999]        [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.233999] 
+[    1.233999] -> #1 (cpu_hotplug.lock){+.+.+.}:
+[    1.233999]        [<c1068410>] validate_chain+0xad0/0x1130
+[    1.233999]        [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]        [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]        [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]        [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]        [<c103e70d>] cpu_hotplug_begin+0x1d/0x50
+[    1.233999]        [<c15b279b>] _cpu_up+0x5b/0x110
+[    1.233999]        [<c15b28c9>] cpu_up+0x49/0x70
+[    1.233999]        [<c18c598c>] kernel_init+0xcc/0x1a0
+[    1.233999]        [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.233999] 
+[    1.233999] -> #0 (cpu_add_remove_lock){+.+.+.}:
+[    1.233999]        [<c1068a55>] validate_chain+0x1115/0x1130
+[    1.233999]        [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]        [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]        [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]        [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]        [<c103e6af>] cpu_maps_update_begin+0xf/0x20
+[    1.233999]        [<c1050230>] __create_workqueue_key+0x100/0x1f0
+[    1.233999]        [<c10788d2>] stop_machine_create+0x42/0xa0
+[    1.233999]        [<c107894b>] stop_machine+0x1b/0x50
+[    1.233999]        [<c105c319>] timekeeping_notify+0x19/0x20
+[    1.233999]        [<c105df94>] clocksource_select+0x84/0xb0
+[    1.233999]        [<c105e262>] clocksource_register+0x22/0x1e0
+[    1.233999]        [<c1901c1c>] init_acpi_pm_clocksource+0x16c/0x250
+[    1.233999]        [<c1001127>] do_one_initcall+0x27/0x190
+[    1.233999]        [<c18c5a0a>] kernel_init+0x14a/0x1a0
+[    1.233999]        [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.233999] 
+[    1.233999] other info that might help us debug this:
+[    1.233999] 
+[    1.233999] 2 locks held by swapper/1:
+[    1.233999]  #0:  (clocksource_mutex){+.+.+.}, at: [<c105e256>] clocksource_register+0x16/0x1e0
+[    1.233999]  #1:  (setup_lock){+.+.+.}, at: [<c10788a2>] stop_machine_create+0x12/0xa0
+[    1.233999] 
+[    1.233999] stack backtrace:
+[    1.233999] Pid: 1, comm: swapper Not tainted 2.6.31-rc6-tip-01322-gd685ec8-dirty #7600
+[    1.233999] Call Trace:
+[    1.233999]  [<c10666fb>] print_circular_bug+0xbb/0xd0
+[    1.233999]  [<c1068a55>] validate_chain+0x1115/0x1130
+[    1.233999]  [<c1068db1>] __lock_acquire+0x341/0x690
+[    1.233999]  [<c106918e>] lock_acquire+0x8e/0xf0
+[    1.233999]  [<c103e6af>] ? cpu_maps_update_begin+0xf/0x20
+[    1.233999]  [<c15b55b9>] __mutex_lock_common+0x49/0x3d0
+[    1.233999]  [<c103e6af>] ? cpu_maps_update_begin+0xf/0x20
+[    1.233999]  [<c15b53d8>] ? mutex_unlock+0x8/0x10
+[    1.233999]  [<c10d566b>] ? pcpu_alloc+0x30b/0x400
+[    1.233999]  [<c10d605b>] ? kmemleak_alloc+0x2b/0x60
+[    1.233999]  [<c15b59e9>] mutex_lock_nested+0x29/0x40
+[    1.233999]  [<c103e6af>] ? cpu_maps_update_begin+0xf/0x20
+[    1.233999]  [<c103e6af>] cpu_maps_update_begin+0xf/0x20
+[    1.233999]  [<c1050230>] __create_workqueue_key+0x100/0x1f0
+[    1.233999]  [<c15b59e9>] ? mutex_lock_nested+0x29/0x40
+[    1.233999]  [<c10788d2>] stop_machine_create+0x42/0xa0
+[    1.233999]  [<c107894b>] stop_machine+0x1b/0x50
+[    1.233999]  [<c105c170>] ? change_clocksource+0x0/0x70
+[    1.233999]  [<c105c319>] timekeeping_notify+0x19/0x20
+[    1.233999]  [<c105df94>] clocksource_select+0x84/0xb0
+[    1.233999]  [<c105e262>] clocksource_register+0x22/0x1e0
+[    1.233999]  [<c11ee57e>] ? __const_udelay+0x2e/0x30
+[    1.233999]  [<c1901c1c>] init_acpi_pm_clocksource+0x16c/0x250
+[    1.233999]  [<c105d16f>] ? ktime_get+0x5f/0x110
+[    1.233999]  [<c1901ab0>] ? init_acpi_pm_clocksource+0x0/0x250
+[    1.233999]  [<c1001127>] do_one_initcall+0x27/0x190
+[    1.233999]  [<c1901ab0>] ? init_acpi_pm_clocksource+0x0/0x250
+[    1.233999]  [<c18c5a0a>] kernel_init+0x14a/0x1a0
+[    1.233999]  [<c18c58c0>] ? kernel_init+0x0/0x1a0
+[    1.233999]  [<c1003bc3>] kernel_thread_helper+0x7/0x14
+[    1.234233] initcall init_acpi_pm_clocksource+0x0/0x250 returned 0 after 35202 usecs
+[    1.234365] calling  ssb_modinit+0x0/0x60 @ 1
+[    1.234455] Switched to high resolution mode on CPU 0
+[    1.234376] Switched to high resolution mode on CPU 1
+[    1.234777] initcall ssb_modinit+0x0/0x60 returned 0 after 293 usecs
+[    1.234869] calling  pcibios_assign_resources+0x0/0xa0 @ 1
+[    1.235211] pci 0000:00:1c.0: PCI bridge, secondary bus 0000:02
+[    1.235312] pci 0000:00:1c.0:   IO window: 0x2000-0x2fff
+[    1.235407] pci 0000:00:1c.0:   MEM window: 0xee000000-0xee0fffff
+[    1.235502] pci 0000:00:1c.0:   PREFETCH window: disabled
+[    1.235595] pci 0000:00:1c.1: PCI bridge, secondary bus 0000:03
+[    1.235687] pci 0000:00:1c.1:   IO window: 0x3000-0x4fff
+[    1.235781] pci 0000:00:1c.1:   MEM window: 0xec000000-0xedffffff
+[    1.235876] pci 0000:00:1c.1:   PREFETCH window: 0x000000e4000000-0x000000e40fffff
+[    1.236066] pci 0000:00:1c.2: PCI bridge, secondary bus 0000:04
+[    1.236159] pci 0000:00:1c.2:   IO window: 0x5000-0x6fff
+[    1.236255] pci 0000:00:1c.2:   MEM window: 0xe8000000-0xe9ffffff
+[    1.236350] pci 0000:00:1c.2:   PREFETCH window: 0x000000e4100000-0x000000e41fffff
+[    1.236486] pci 0000:00:1c.3: PCI bridge, secondary bus 0000:0c
+[    1.236579] pci 0000:00:1c.3:   IO window: 0x7000-0x8fff
+[    1.236673] pci 0000:00:1c.3:   MEM window: 0xea000000-0xebffffff
+[    1.236767] pci 0000:00:1c.3:   PREFETCH window: 0x000000e4200000-0x000000e42fffff
+[    1.236946] pci 0000:15:00.0: CardBus bridge, secondary bus 0000:16
+[    1.237054] pci 0000:15:00.0:   IO window: 0x009000-0x0090ff
+[    1.237149] pci 0000:15:00.0:   IO window: 0x009400-0x0094ff
+[    1.237244] pci 0000:15:00.0:   PREFETCH window: 0xe0000000-0xe3ffffff
+[    1.237341] pci 0000:15:00.0:   MEM window: 0x80000000-0x83ffffff
+[    1.237437] pci 0000:00:1e.0: PCI bridge, secondary bus 0000:15
+[    1.237529] pci 0000:00:1e.0:   IO window: 0x9000-0xcfff
+[    1.237623] pci 0000:00:1e.0:   MEM window: 0xe4300000-0xe7ffffff
+[    1.237718] pci 0000:00:1e.0:   PREFETCH window: 0x000000e0000000-0x000000e3ffffff
+[    1.237877] IOAPIC[0]: Set routing entry (1-20 -> 0x49 -> IRQ 20 Mode:1 Active:1)
+[    1.238025] pci 0000:00:1c.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+[    1.238901] pci 0000:00:1c.0: setting latency timer to 64
+[    1.239023] IOAPIC[0]: Set routing entry (1-21 -> 0x51 -> IRQ 21 Mode:1 Active:1)
+[    1.239154] pci 0000:00:1c.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
+[    1.239249] pci 0000:00:1c.1: setting latency timer to 64
+[    1.239358] IOAPIC[0]: Set routing entry (1-22 -> 0x59 -> IRQ 22 Mode:1 Active:1)
+[    1.239491] pci 0000:00:1c.2: PCI INT C -> GSI 22 (level, low) -> IRQ 22
+[    1.239587] pci 0000:00:1c.2: setting latency timer to 64
+[    1.239693] IOAPIC[0]: Set routing entry (1-23 -> 0x61 -> IRQ 23 Mode:1 Active:1)
+[    1.239824] pci 0000:00:1c.3: PCI INT D -> GSI 23 (level, low) -> IRQ 23
+[    1.239920] pci 0000:00:1c.3: setting latency timer to 64
+[    1.240030] pci 0000:00:1e.0: enabling device (0005 -> 0007)
+[    1.240126] pci 0000:00:1e.0: setting latency timer to 64
+[    1.240235] IOAPIC[0]: Set routing entry (1-16 -> 0x69 -> IRQ 16 Mode:1 Active:1)
+[    1.240366] pci 0000:15:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    1.240463] pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
+[    1.240553] pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffffffffffff]
+[    1.240647] pci_bus 0000:02: resource 0 io:  [0x2000-0x2fff]
+[    1.240737] pci_bus 0000:02: resource 1 mem: [0xee000000-0xee0fffff]
+[    1.240828] pci_bus 0000:03: resource 0 io:  [0x3000-0x4fff]
+[    1.240919] pci_bus 0000:03: resource 1 mem: [0xec000000-0xedffffff]
+[    1.241025] pci_bus 0000:03: resource 2 pref mem [0xe4000000-0xe40fffff]
+[    1.241117] pci_bus 0000:04: resource 0 io:  [0x5000-0x6fff]
+[    1.241207] pci_bus 0000:04: resource 1 mem: [0xe8000000-0xe9ffffff]
+[    1.241303] pci_bus 0000:04: resource 2 pref mem [0xe4100000-0xe41fffff]
+[    1.241395] pci_bus 0000:0c: resource 0 io:  [0x7000-0x8fff]
+[    1.241485] pci_bus 0000:0c: resource 1 mem: [0xea000000-0xebffffff]
+[    1.241576] pci_bus 0000:0c: resource 2 pref mem [0xe4200000-0xe42fffff]
+[    1.241669] pci_bus 0000:15: resource 0 io:  [0x9000-0xcfff]
+[    1.241759] pci_bus 0000:15: resource 1 mem: [0xe4300000-0xe7ffffff]
+[    1.241850] pci_bus 0000:15: resource 2 pref mem [0xe0000000-0xe3ffffff]
+[    1.241942] pci_bus 0000:15: resource 3 io:  [0x00-0xffff]
+[    1.242046] pci_bus 0000:15: resource 4 mem: [0x000000-0xffffffffffffffff]
+[    1.242138] pci_bus 0000:16: resource 0 io:  [0x9000-0x90ff]
+[    1.242228] pci_bus 0000:16: resource 1 io:  [0x9400-0x94ff]
+[    1.242322] pci_bus 0000:16: resource 2 pref mem [0xe0000000-0xe3ffffff]
+[    1.242415] pci_bus 0000:16: resource 3 mem: [0x80000000-0x83ffffff]
+[    1.242509] initcall pcibios_assign_resources+0x0/0xa0 returned 0 after 7368 usecs
+[    1.242637] calling  sysctl_core_init+0x0/0x30 @ 1
+[    1.242791] initcall sysctl_core_init+0x0/0x30 returned 0 after 62 usecs
+[    1.242884] calling  inet_init+0x0/0x200 @ 1
+[    1.243039] NET: Registered protocol family 2
+[    1.243381] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
+[    1.244509] TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
+[    1.246277] TCP bind hash table entries: 65536 (order: 9, 2621440 bytes)
+[    1.248554] TCP: Hash tables configured (established 131072 bind 65536)
+[    1.248652] TCP reno registered
+[    1.249134] initcall inet_init+0x0/0x200 returned 0 after 6007 usecs
+[    1.249231] calling  af_unix_init+0x0/0x60 @ 1
+[    1.249338] NET: Registered protocol family 1
+[    1.249473] initcall af_unix_init+0x0/0x60 returned 0 after 145 usecs
+[    1.249566] calling  default_rootfs+0x0/0x90 @ 1
+[    1.249751] initcall default_rootfs+0x0/0x90 returned 0 after 92 usecs
+[    1.249843] calling  i8259A_init_sysfs+0x0/0x30 @ 1
+[    1.250503] initcall i8259A_init_sysfs+0x0/0x30 returned 0 after 553 usecs
+[    1.250596] calling  sbf_init+0x0/0xd0 @ 1
+[    1.250690] Simple Boot Flag at 0x35 set to 0x1
+[    1.250783] initcall sbf_init+0x0/0xd0 returned 0 after 96 usecs
+[    1.250874] calling  i8237A_init_sysfs+0x0/0x30 @ 1
+[    1.251469] initcall i8237A_init_sysfs+0x0/0x30 returned 0 after 491 usecs
+[    1.251563] calling  add_rtc_cmos+0x0/0xa0 @ 1
+[    1.251660] initcall add_rtc_cmos+0x0/0xa0 returned 0 after 6 usecs
+[    1.251753] calling  cache_sysfs_init+0x0/0x60 @ 1
+[    1.254383] initcall cache_sysfs_init+0x0/0x60 returned 0 after 2477 usecs
+[    1.254477] calling  mce_init_device+0x0/0x100 @ 1
+[    1.255681] PM: Adding info for No Bus:mcelog
+[    1.255989] initcall mce_init_device+0x0/0x100 returned 0 after 1385 usecs
+[    1.256130] calling  threshold_init_device+0x0/0x50 @ 1
+[    1.256224] initcall threshold_init_device+0x0/0x50 returned 0 after 2 usecs
+[    1.256325] calling  inject_init+0x0/0x20 @ 1
+[    1.256413] Machine check injector initialized
+[    1.256504] initcall inject_init+0x0/0x20 returned 0 after 86 usecs
+[    1.256596] calling  nforce2_init+0x0/0x70 @ 1
+[    1.256707] cpufreq-nforce2: No nForce2 chipset.
+[    1.256799] initcall nforce2_init+0x0/0x70 returned -19 after 109 usecs
+[    1.256891] calling  msr_init+0x0/0x100 @ 1
+[    1.257359] PM: Adding info for No Bus:msr0
+[    1.257775] PM: Adding info for No Bus:msr1
+[    1.258112] initcall msr_init+0x0/0x100 returned 0 after 1102 usecs
+[    1.258204] calling  apm_init+0x0/0x430 @ 1
+[    1.258312] apm: BIOS not found.
+[    1.258401] initcall apm_init+0x0/0x430 returned -19 after 98 usecs
+[    1.258493] calling  ioapic_init_sysfs+0x0/0xb0 @ 1
+[    1.259075] initcall ioapic_init_sysfs+0x0/0xb0 returned 0 after 477 usecs
+[    1.259169] calling  add_pcspkr+0x0/0x30 @ 1
+[    1.259382] PM: Adding info for platform:pcspkr
+[    1.259687] initcall add_pcspkr+0x0/0x30 returned 0 after 415 usecs
+[    1.259778] calling  scx200_init+0x0/0x30 @ 1
+[    1.259867] scx200: NatSemi SCx200 Driver
+[    1.260261] initcall scx200_init+0x0/0x30 returned 0 after 381 usecs
+[    1.260355] calling  microcode_init+0x0/0x130 @ 1
+[    1.260552] PM: Adding info for platform:microcode
+[    1.260892] microcode: CPU0 sig=0x6e8, pf=0x20, revision=0x39
+[    1.261088] microcode: CPU1 sig=0x6e8, pf=0x20, revision=0x39
+[    1.261283] PM: Adding info for No Bus:microcode
+[    1.261597] Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+[    1.261730] initcall microcode_init+0x0/0x130 returned 0 after 1254 usecs
+[    1.261825] calling  start_periodic_check_for_corruption+0x0/0x40 @ 1
+[    1.261916] Scanning for low memory corruption every 60 seconds
+[    1.262058] initcall start_periodic_check_for_corruption+0x0/0x40 returned 0 after 135 usecs
+[    1.262192] calling  pt_dump_init+0x0/0x70 @ 1
+[    1.262312] initcall pt_dump_init+0x0/0x70 returned 0 after 21 usecs
+[    1.262405] calling  proc_schedstat_init+0x0/0x30 @ 1
+[    1.262516] initcall proc_schedstat_init+0x0/0x30 returned 0 after 18 usecs
+[    1.262610] calling  proc_execdomains_init+0x0/0x30 @ 1
+[    1.262716] initcall proc_execdomains_init+0x0/0x30 returned 0 after 14 usecs
+[    1.262810] calling  ioresources_init+0x0/0x40 @ 1
+[    1.262928] initcall ioresources_init+0x0/0x40 returned 0 after 26 usecs
+[    1.263040] calling  uid_cache_init+0x0/0x80 @ 1
+[    1.263142] initcall uid_cache_init+0x0/0x80 returned 0 after 11 usecs
+[    1.263234] calling  init_posix_timers+0x0/0x170 @ 1
+[    1.263337] initcall init_posix_timers+0x0/0x170 returned 0 after 9 usecs
+[    1.263430] calling  init_posix_cpu_timers+0x0/0xc0 @ 1
+[    1.263524] initcall init_posix_cpu_timers+0x0/0xc0 returned 0 after 1 usecs
+[    1.263617] calling  nsproxy_cache_init+0x0/0x30 @ 1
+[    1.263716] initcall nsproxy_cache_init+0x0/0x30 returned 0 after 7 usecs
+[    1.263811] calling  create_proc_profile+0x0/0x250 @ 1
+[    1.263932] initcall create_proc_profile+0x0/0x250 returned 0 after 28 usecs
+[    1.264042] calling  timekeeping_init_device+0x0/0x30 @ 1
+[    1.264598] initcall timekeeping_init_device+0x0/0x30 returned 0 after 453 usecs
+[    1.264728] calling  init_clocksource_sysfs+0x0/0x50 @ 1
+[    1.265356] initcall init_clocksource_sysfs+0x0/0x50 returned 0 after 521 usecs
+[    1.265487] calling  init_timer_list_procfs+0x0/0x30 @ 1
+[    1.265595] initcall init_timer_list_procfs+0x0/0x30 returned 0 after 16 usecs
+[    1.265725] calling  init_tstats_procfs+0x0/0x30 @ 1
+[    1.265832] initcall init_tstats_procfs+0x0/0x30 returned 0 after 14 usecs
+[    1.265925] calling  lockdep_proc_init+0x0/0x90 @ 1
+[    1.266099] initcall lockdep_proc_init+0x0/0x90 returned 0 after 51 usecs
+[    1.266192] calling  futex_init+0x0/0xd0 @ 1
+[    1.266302] initcall futex_init+0x0/0xd0 returned 0 after 13 usecs
+[    1.266395] calling  init_rttest+0x0/0x130 @ 1
+[    1.269474] Initializing RT-Tester: OK
+[    1.269565] initcall init_rttest+0x0/0x130 returned 0 after 3006 usecs
+[    1.269657] calling  proc_dma_init+0x0/0x30 @ 1
+[    1.269764] initcall proc_dma_init+0x0/0x30 returned 0 after 16 usecs
+[    1.269856] calling  proc_modules_init+0x0/0x30 @ 1
+[    1.269961] initcall proc_modules_init+0x0/0x30 returned 0 after 14 usecs
+[    1.270104] calling  kallsyms_init+0x0/0x30 @ 1
+[    1.270211] initcall kallsyms_init+0x0/0x30 returned 0 after 15 usecs
+[    1.270310] calling  crash_save_vmcoreinfo_init+0x0/0x4d0 @ 1
+[    1.270431] initcall crash_save_vmcoreinfo_init+0x0/0x4d0 returned 0 after 27 usecs
+[    1.270560] calling  crash_notes_memory_init+0x0/0x40 @ 1
+[    1.270658] initcall crash_notes_memory_init+0x0/0x40 returned 0 after 5 usecs
+[    1.270788] calling  pid_namespaces_init+0x0/0x30 @ 1
+[    1.270888] initcall pid_namespaces_init+0x0/0x30 returned 0 after 8 usecs
+[    1.270981] calling  audit_init+0x0/0x160 @ 1
+[    1.271167] audit: initializing netlink socket (disabled)
+[    1.271300] type=2000 audit(1250886084.271:1): initialized
+[    1.271399] initcall audit_init+0x0/0x160 returned 0 after 225 usecs
+[    1.271491] calling  init_kprobes+0x0/0x190 @ 1
+[    1.282666] initcall init_kprobes+0x0/0x190 returned 0 after 10824 usecs
+[    1.282759] calling  hung_task_init+0x0/0x50 @ 1
+[    1.282936] initcall hung_task_init+0x0/0x50 returned 0 after 82 usecs
+[    1.283087] calling  utsname_sysctl_init+0x0/0x20 @ 1
+[    1.283229] initcall utsname_sysctl_init+0x0/0x20 returned 0 after 48 usecs
+[    1.283326] calling  init_markers+0x0/0x10 @ 1
+[    1.283417] initcall init_markers+0x0/0x10 returned 0 after 1 usecs
+[    1.283509] calling  init_tracepoints+0x0/0x10 @ 1
+[    1.283602] initcall init_tracepoints+0x0/0x10 returned 0 after 1 usecs
+[    1.283694] calling  init_events+0x0/0x70 @ 1
+[    1.283788] initcall init_events+0x0/0x70 returned 0 after 4 usecs
+[    1.283880] calling  init_sched_switch_trace+0x0/0x10 @ 1
+[    1.283976] initcall init_sched_switch_trace+0x0/0x10 returned 0 after 3 usecs
+[    1.284121] calling  perf_counter_sysfs_init+0x0/0x20 @ 1
+[    1.284245] initcall perf_counter_sysfs_init+0x0/0x20 returned 0 after 30 usecs
+[    1.284376] calling  init_per_zone_wmark_min+0x0/0x80 @ 1
+[    1.285425] initcall init_per_zone_wmark_min+0x0/0x80 returned 0 after 169 usecs
+[    1.285554] calling  pdflush_init+0x0/0x20 @ 1
+[    1.285792] initcall pdflush_init+0x0/0x20 returned 0 after 143 usecs
+[    1.285884] calling  kswapd_init+0x0/0x60 @ 1
+[    1.286121] initcall kswapd_init+0x0/0x60 returned 0 after 141 usecs
+[    1.286213] calling  init_tmpfs+0x0/0xd0 @ 1
+[    1.286404] initcall init_tmpfs+0x0/0xd0 returned 0 after 91 usecs
+[    1.286496] calling  setup_vmstat+0x0/0xd0 @ 1
+[    1.286644] initcall setup_vmstat+0x0/0xd0 returned 0 after 57 usecs
+[    1.286736] calling  mm_sysfs_init+0x0/0x30 @ 1
+[    1.286853] initcall mm_sysfs_init+0x0/0x30 returned 0 after 25 usecs
+[    1.286945] calling  proc_vmalloc_init+0x0/0x30 @ 1
+[    1.287069] initcall proc_vmalloc_init+0x0/0x30 returned 0 after 15 usecs
+[    1.287162] calling  init_emergency_pool+0x0/0x70 @ 1
+[    1.287367] highmem bounce pool size: 64 pages
+[    1.287458] initcall init_emergency_pool+0x0/0x70 returned 0 after 200 usecs
+[    1.287551] calling  procswaps_init+0x0/0x30 @ 1
+[    1.287657] initcall procswaps_init+0x0/0x30 returned 0 after 15 usecs
+[    1.287750] calling  hugetlb_init+0x0/0x420 @ 1
+[    1.287842] HugeTLB registered 2 MB page size, pre-allocated 0 pages
+[    1.288049] initcall hugetlb_init+0x0/0x420 returned 0 after 201 usecs
+[    1.288141] calling  slab_proc_init+0x0/0x30 @ 1
+[    1.288247] initcall slab_proc_init+0x0/0x30 returned 0 after 15 usecs
+[    1.288340] calling  slab_sysfs_init+0x0/0xf0 @ 1
+[    1.322235] initcall slab_sysfs_init+0x0/0xf0 returned 0 after 33008 usecs
+[    1.322334] calling  kmemleak_test_init+0x0/0x5b0 @ 1
+[    1.322423] Kmemleak testing
+[    1.322513] kmemleak: kmalloc(32) = f3d241c0
+[    1.322603] kmemleak: kmalloc(32) = f3d241e0
+[    1.322693] kmemleak: kmalloc(1024) = f4391000
+[    1.322784] kmemleak: kmalloc(1024) = f4391400
+[    1.322876] kmemleak: kmalloc(2048) = f4853000
+[    1.322967] kmemleak: kmalloc(2048) = f4853800
+[    1.323076] kmemleak: kmalloc(4096) = f502c000
+[    1.323167] kmemleak: kmalloc(4096) = f502d000
+[    1.323284] kmemleak: vmalloc(64) = f9540000
+[    1.323394] kmemleak: vmalloc(64) = f9543000
+[    1.323507] kmemleak: vmalloc(64) = f9546000
+[    1.323615] kmemleak: vmalloc(64) = f9549000
+[    1.323723] kmemleak: vmalloc(64) = f954c000
+[    1.323814] kmemleak: kmalloc(sizeof(*elem)) = f48a9400
+[    1.323906] kmemleak: kmalloc(sizeof(*elem)) = f48a9200
+[    1.323998] kmemleak: kmalloc(sizeof(*elem)) = f48a9300
+[    1.324106] kmemleak: kmalloc(sizeof(*elem)) = f48a9100
+[    1.324197] kmemleak: kmalloc(sizeof(*elem)) = f48a9800
+[    1.324295] kmemleak: kmalloc(sizeof(*elem)) = f48a9500
+[    1.324386] kmemleak: kmalloc(sizeof(*elem)) = f48a9900
+[    1.324479] kmemleak: kmalloc(sizeof(*elem)) = f48a9a00
+[    1.324570] kmemleak: kmalloc(sizeof(*elem)) = f48a9b00
+[    1.324662] kmemleak: kmalloc(sizeof(*elem)) = f48a9c00
+[    1.324758] kmemleak: kmalloc(129) = f489de40
+[    1.324850] kmemleak: kmalloc(129) = f489df00
+[    1.324941] initcall kmemleak_test_init+0x0/0x5b0 returned 0 after 2457 usecs
+[    1.325050] calling  fasync_init+0x0/0x30 @ 1
+[    1.325163] initcall fasync_init+0x0/0x30 returned 0 after 22 usecs
+[    1.325256] calling  proc_filesystems_init+0x0/0x30 @ 1
+[    1.325371] initcall proc_filesystems_init+0x0/0x30 returned 0 after 22 usecs
+[    1.325465] calling  dnotify_init+0x0/0x80 @ 1
+[    1.325599] initcall dnotify_init+0x0/0x80 returned 0 after 43 usecs
+[    1.325691] calling  inotify_setup+0x0/0x10 @ 1
+[    1.325782] initcall inotify_setup+0x0/0x10 returned 0 after 1 usecs
+[    1.325874] calling  aio_setup+0x0/0x90 @ 1
+[    1.326174] initcall aio_setup+0x0/0x90 returned 0 after 204 usecs
+[    1.326269] calling  proc_locks_init+0x0/0x30 @ 1
+[    1.326375] initcall proc_locks_init+0x0/0x30 returned 0 after 16 usecs
+[    1.326467] calling  init_mbcache+0x0/0x20 @ 1
+[    1.326559] initcall init_mbcache+0x0/0x20 returned 0 after 2 usecs
+[    1.326651] calling  proc_cmdline_init+0x0/0x30 @ 1
+[    1.326757] initcall proc_cmdline_init+0x0/0x30 returned 0 after 14 usecs
+[    1.326850] calling  proc_cpuinfo_init+0x0/0x30 @ 1
+[    1.326956] initcall proc_cpuinfo_init+0x0/0x30 returned 0 after 14 usecs
+[    1.327092] calling  proc_devices_init+0x0/0x30 @ 1
+[    1.327199] initcall proc_devices_init+0x0/0x30 returned 0 after 15 usecs
+[    1.327300] calling  proc_interrupts_init+0x0/0x30 @ 1
+[    1.327409] initcall proc_interrupts_init+0x0/0x30 returned 0 after 15 usecs
+[    1.327503] calling  proc_loadavg_init+0x0/0x30 @ 1
+[    1.327609] initcall proc_loadavg_init+0x0/0x30 returned 0 after 15 usecs
+[    1.327701] calling  proc_meminfo_init+0x0/0x30 @ 1
+[    1.327806] initcall proc_meminfo_init+0x0/0x30 returned 0 after 14 usecs
+[    1.327898] calling  proc_stat_init+0x0/0x30 @ 1
+[    1.328019] initcall proc_stat_init+0x0/0x30 returned 0 after 28 usecs
+[    1.328111] calling  proc_uptime_init+0x0/0x30 @ 1
+[    1.328216] initcall proc_uptime_init+0x0/0x30 returned 0 after 14 usecs
+[    1.328314] calling  proc_version_init+0x0/0x30 @ 1
+[    1.328420] initcall proc_version_init+0x0/0x30 returned 0 after 15 usecs
+[    1.328512] calling  proc_softirqs_init+0x0/0x30 @ 1
+[    1.328618] initcall proc_softirqs_init+0x0/0x30 returned 0 after 15 usecs
+[    1.328710] calling  proc_kcore_init+0x0/0x50 @ 1
+[    1.328814] initcall proc_kcore_init+0x0/0x50 returned 0 after 14 usecs
+[    1.328906] calling  proc_kmsg_init+0x0/0x30 @ 1
+[    1.329027] initcall proc_kmsg_init+0x0/0x30 returned 0 after 27 usecs
+[    1.329120] calling  proc_page_init+0x0/0x50 @ 1
+[    1.329240] initcall proc_page_init+0x0/0x50 returned 0 after 28 usecs
+[    1.329334] calling  init_devpts_fs+0x0/0x60 @ 1
+[    1.329499] initcall init_devpts_fs+0x0/0x60 returned 0 after 73 usecs
+[    1.329592] calling  init_reiserfs_fs+0x0/0x80 @ 1
+[    1.330324] initcall init_reiserfs_fs+0x0/0x80 returned 0 after 624 usecs
+[    1.330418] calling  init_ext3_fs+0x0/0x80 @ 1
+[    1.331743] initcall init_ext3_fs+0x0/0x80 returned 0 after 1205 usecs
+[    1.331837] calling  journal_init+0x0/0xe0 @ 1
+[    1.333827] initcall journal_init+0x0/0xe0 returned 0 after 1854 usecs
+[    1.333921] calling  init_ramfs_fs+0x0/0x10 @ 1
+[    1.334079] initcall init_ramfs_fs+0x0/0x10 returned 0 after 3 usecs
+[    1.334172] calling  init_hugetlbfs_fs+0x0/0xb0 @ 1
+[    1.334932] initcall init_hugetlbfs_fs+0x0/0xb0 returned 0 after 653 usecs
+[    1.335057] calling  init_nls_cp850+0x0/0x10 @ 1
+[    1.335151] initcall init_nls_cp850+0x0/0x10 returned 0 after 3 usecs
+[    1.335243] calling  init_nls_cp855+0x0/0x10 @ 1
+[    1.335337] initcall init_nls_cp855+0x0/0x10 returned 0 after 1 usecs
+[    1.335429] calling  init_nls_cp861+0x0/0x10 @ 1
+[    1.335521] initcall init_nls_cp861+0x0/0x10 returned 0 after 1 usecs
+[    1.335613] calling  init_nls_cp862+0x0/0x10 @ 1
+[    1.335705] initcall init_nls_cp862+0x0/0x10 returned 0 after 1 usecs
+[    1.335797] calling  init_nls_cp866+0x0/0x10 @ 1
+[    1.335889] initcall init_nls_cp866+0x0/0x10 returned 0 after 1 usecs
+[    1.335982] calling  init_nls_cp874+0x0/0x10 @ 1
+[    1.336095] initcall init_nls_cp874+0x0/0x10 returned 0 after 1 usecs
+[    1.336188] calling  init_nls_cp949+0x0/0x10 @ 1
+[    1.336286] initcall init_nls_cp949+0x0/0x10 returned 0 after 1 usecs
+[    1.336378] calling  init_nls_iso8859_2+0x0/0x10 @ 1
+[    1.336471] initcall init_nls_iso8859_2+0x0/0x10 returned 0 after 1 usecs
+[    1.336563] calling  init_nls_iso8859_3+0x0/0x10 @ 1
+[    1.336657] initcall init_nls_iso8859_3+0x0/0x10 returned 0 after 1 usecs
+[    1.336750] calling  init_nls_iso8859_7+0x0/0x10 @ 1
+[    1.336842] initcall init_nls_iso8859_7+0x0/0x10 returned 0 after 1 usecs
+[    1.336934] calling  init_nls_iso8859_14+0x0/0x10 @ 1
+[    1.337041] initcall init_nls_iso8859_14+0x0/0x10 returned 0 after 1 usecs
+[    1.337133] calling  init_nls_koi8_r+0x0/0x10 @ 1
+[    1.337225] initcall init_nls_koi8_r+0x0/0x10 returned 0 after 1 usecs
+[    1.337323] calling  init_nls_koi8_u+0x0/0x10 @ 1
+[    1.337416] initcall init_nls_koi8_u+0x0/0x10 returned 0 after 1 usecs
+[    1.337508] calling  init_nls_koi8_ru+0x0/0x40 @ 1
+[    1.337600] initcall init_nls_koi8_ru+0x0/0x40 returned 0 after 2 usecs
+[    1.337693] calling  init_affs_fs+0x0/0x60 @ 1
+[    1.338383] initcall init_affs_fs+0x0/0x60 returned 0 after 584 usecs
+[    1.338476] calling  init_romfs_fs+0x0/0x80 @ 1
+[    1.338565] ROMFS MTD (C) 2007 Red Hat, Inc.
+[    1.339261] initcall init_romfs_fs+0x0/0x80 returned 0 after 676 usecs
+[    1.339354] calling  init_qnx4_fs+0x0/0x70 @ 1
+[    1.340030] QNX4 filesystem 0.2.3 registered.
+[    1.340121] initcall init_qnx4_fs+0x0/0x70 returned 0 after 660 usecs
+[    1.340213] calling  init_autofs_fs+0x0/0x10 @ 1
+[    1.340313] initcall init_autofs_fs+0x0/0x10 returned 0 after 3 usecs
+[    1.340405] calling  init_adfs_fs+0x0/0x60 @ 1
+[    1.341084] initcall init_adfs_fs+0x0/0x60 returned 0 after 572 usecs
+[    1.341177] calling  init_nilfs_fs+0x0/0x90 @ 1
+[    1.343697] initcall init_nilfs_fs+0x0/0x90 returned 0 after 2370 usecs
+[    1.343791] calling  init_befs_fs+0x0/0x90 @ 1
+[    1.343878] BeFS version: 0.9.3
+[    1.344605] initcall init_befs_fs+0x0/0x90 returned 0 after 707 usecs
+[    1.344699] calling  ipc_init+0x0/0x20 @ 1
+[    1.344809] msgmni has been set to 1665
+[    1.344937] initcall ipc_init+0x0/0x20 returned 0 after 146 usecs
+[    1.345072] calling  ipc_sysctl_init+0x0/0x20 @ 1
+[    1.345238] initcall ipc_sysctl_init+0x0/0x20 returned 0 after 73 usecs
+[    1.345331] calling  init_mqueue_fs+0x0/0xc0 @ 1
+[    1.346145] initcall init_mqueue_fs+0x0/0xc0 returned 0 after 705 usecs
+[    1.346238] calling  key_proc_init+0x0/0x60 @ 1
+[    1.346361] initcall key_proc_init+0x0/0x60 returned 0 after 30 usecs
+[    1.346453] calling  crypto_wq_init+0x0/0x40 @ 1
+[    1.346703] initcall crypto_wq_init+0x0/0x40 returned 0 after 154 usecs
+[    1.346797] calling  crypto_algapi_init+0x0/0x10 @ 1
+[    1.346905] initcall crypto_algapi_init+0x0/0x10 returned 0 after 16 usecs
+[    1.346999] calling  chainiv_module_init+0x0/0x10 @ 1
+[    1.347132] initcall chainiv_module_init+0x0/0x10 returned 0 after 3 usecs
+[    1.347225] calling  eseqiv_module_init+0x0/0x10 @ 1
+[    1.347324] initcall eseqiv_module_init+0x0/0x10 returned 0 after 2 usecs
+[    1.347418] calling  seqiv_module_init+0x0/0x10 @ 1
+[    1.347511] initcall seqiv_module_init+0x0/0x10 returned 0 after 2 usecs
+[    1.347603] calling  hmac_module_init+0x0/0x10 @ 1
+[    1.347695] initcall hmac_module_init+0x0/0x10 returned 0 after 2 usecs
+[    1.347788] calling  md5_mod_init+0x0/0x10 @ 1
+[    1.348063] initcall md5_mod_init+0x0/0x10 returned 0 after 178 usecs
+[    1.348158] calling  rmd128_mod_init+0x0/0x10 @ 1
+[    1.348423] initcall rmd128_mod_init+0x0/0x10 returned 0 after 169 usecs
+[    1.348516] calling  rmd320_mod_init+0x0/0x10 @ 1
+[    1.348787] cryptomgr_test used greatest stack depth: 1908 bytes left
+[    1.348792] initcall rmd320_mod_init+0x0/0x10 returned 0 after 177 usecs
+[    1.348797] calling  sha1_generic_mod_init+0x0/0x10 @ 1
+[    1.348975] initcall sha1_generic_mod_init+0x0/0x10 returned 0 after 167 usecs
+[    1.348979] calling  tgr192_mod_init+0x0/0x70 @ 1
+[    1.349543] initcall tgr192_mod_init+0x0/0x70 returned 0 after 544 usecs
+[    1.349548] calling  crypto_ecb_module_init+0x0/0x10 @ 1
+[    1.349558] initcall crypto_ecb_module_init+0x0/0x10 returned 0 after 4 usecs
+[    1.349561] calling  crypto_cbc_module_init+0x0/0x10 @ 1
+[    1.349569] initcall crypto_cbc_module_init+0x0/0x10 returned 0 after 2 usecs
+[    1.349573] calling  crypto_pcbc_module_init+0x0/0x10 @ 1
+[    1.349581] initcall crypto_pcbc_module_init+0x0/0x10 returned 0 after 2 usecs
+[    1.349585] calling  crypto_module_init+0x0/0x10 @ 1
+[    1.349593] initcall crypto_module_init+0x0/0x10 returned 0 after 2 usecs
+[    1.349596] calling  crypto_ctr_module_init+0x0/0x40 @ 1
+[    1.349606] initcall crypto_ctr_module_init+0x0/0x40 returned 0 after 3 usecs
+[    1.349609] calling  crypto_gcm_module_init+0x0/0x60 @ 1
+[    1.349619] initcall crypto_gcm_module_init+0x0/0x60 returned 0 after 3 usecs
+[    1.349622] calling  cryptd_init+0x0/0xd0 @ 1
+[    1.349633] initcall cryptd_init+0x0/0xd0 returned 0 after 5 usecs
+[    1.349637] calling  des_generic_mod_init+0x0/0x40 @ 1
+[    1.350068] initcall des_generic_mod_init+0x0/0x40 returned 0 after 412 usecs
+[    1.350072] calling  aes_init+0x0/0x10 @ 1
+[    1.350291] initcall aes_init+0x0/0x10 returned 0 after 207 usecs
+[    1.350295] calling  khazad_mod_init+0x0/0x10 @ 1
+[    1.350546] initcall khazad_mod_init+0x0/0x10 returned 0 after 239 usecs
+[    1.350550] calling  anubis_mod_init+0x0/0x10 @ 1
+[    1.350813] initcall anubis_mod_init+0x0/0x10 returned 0 after 250 usecs
+[    1.350817] calling  salsa20_generic_mod_init+0x0/0x10 @ 1
+[    1.350926] initcall salsa20_generic_mod_init+0x0/0x10 returned 0 after 100 usecs
+[    1.350930] calling  deflate_mod_init+0x0/0x10 @ 1
+[    1.352589] initcall deflate_mod_init+0x0/0x10 returned 0 after 1612 usecs
+[    1.352686] calling  michael_mic_init+0x0/0x10 @ 1
+[    1.352985] initcall michael_mic_init+0x0/0x10 returned 0 after 203 usecs
+[    1.353098] calling  crc32c_mod_init+0x0/0x10 @ 1
+[    1.353436] initcall crc32c_mod_init+0x0/0x10 returned 0 after 240 usecs
+[    1.353529] calling  crypto_authenc_module_init+0x0/0x10 @ 1
+[    1.353625] initcall crypto_authenc_module_init+0x0/0x10 returned 0 after 3 usecs
+[    1.353756] calling  krng_mod_init+0x0/0x10 @ 1
+[    1.353943] alg: No test for stdrng (krng)
+[    1.354054] initcall krng_mod_init+0x0/0x10 returned 0 after 199 usecs
+[    1.354148] calling  proc_genhd_init+0x0/0x40 @ 1
+[    1.354275] initcall proc_genhd_init+0x0/0x40 returned 0 after 34 usecs
+[    1.354369] calling  noop_init+0x0/0x20 @ 1
+[    1.354459] io scheduler noop registered (default)
+[    1.354550] initcall noop_init+0x0/0x20 returned 0 after 88 usecs
+[    1.354642] calling  libcrc32c_mod_init+0x0/0x30 @ 1
+[    1.354741] initcall libcrc32c_mod_init+0x0/0x30 returned 0 after 7 usecs
+[    1.354834] calling  percpu_counter_startup+0x0/0x20 @ 1
+[    1.354929] initcall percpu_counter_startup+0x0/0x20 returned 0 after 3 usecs
+[    1.355088] calling  audit_classes_init+0x0/0x50 @ 1
+[    1.355209] initcall audit_classes_init+0x0/0x50 returned 0 after 27 usecs
+[    1.355310] calling  pci_init+0x0/0x30 @ 1
+[    1.355414] pci 0000:00:00.0: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.355508] pci 0000:00:00.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.355601] pci 0000:00:00.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.355694] pci 0000:00:00.0: calling pci_fixup_video+0x0/0xc0
+[    1.355793] pci 0000:00:02.0: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.355886] pci 0000:00:02.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.355978] pci 0000:00:02.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.356087] pci 0000:00:02.0: calling pci_fixup_video+0x0/0xc0
+[    1.356180] pci 0000:00:02.0: Boot video device
+[    1.356280] pci 0000:00:02.1: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.356372] pci 0000:00:02.1: calling quirk_cardbus_legacy+0x0/0x30
+[    1.356464] pci 0000:00:02.1: calling quirk_usb_early_handoff+0x0/0x640
+[    1.356557] pci 0000:00:02.1: calling pci_fixup_video+0x0/0xc0
+[    1.356657] pci 0000:00:1b.0: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.356749] pci 0000:00:1b.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.356842] pci 0000:00:1b.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.356934] pci 0000:00:1b.0: calling pci_fixup_video+0x0/0xc0
+[    1.357047] pci 0000:00:1c.0: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.357139] pci 0000:00:1c.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.357231] pci 0000:00:1c.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.357327] pci 0000:00:1c.0: calling pci_fixup_video+0x0/0xc0
+[    1.357427] pci 0000:00:1c.1: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.357519] pci 0000:00:1c.1: calling quirk_cardbus_legacy+0x0/0x30
+[    1.357611] pci 0000:00:1c.1: calling quirk_usb_early_handoff+0x0/0x640
+[    1.357703] pci 0000:00:1c.1: calling pci_fixup_video+0x0/0xc0
+[    1.357802] pci 0000:00:1c.2: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.357893] pci 0000:00:1c.2: calling quirk_cardbus_legacy+0x0/0x30
+[    1.357986] pci 0000:00:1c.2: calling quirk_usb_early_handoff+0x0/0x640
+[    1.358094] pci 0000:00:1c.2: calling pci_fixup_video+0x0/0xc0
+[    1.358195] pci 0000:00:1c.3: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.358294] pci 0000:00:1c.3: calling quirk_cardbus_legacy+0x0/0x30
+[    1.358386] pci 0000:00:1c.3: calling quirk_usb_early_handoff+0x0/0x640
+[    1.358479] pci 0000:00:1c.3: calling pci_fixup_video+0x0/0xc0
+[    1.358578] pci 0000:00:1d.0: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.358670] pci 0000:00:1d.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.358762] pci 0000:00:1d.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.358859] pci 0000:00:1d.0: uhci_check_and_reset_hc: legsup = 0x2000
+[    1.358950] pci 0000:00:1d.0: Performing full reset
+[    1.359066] pci 0000:00:1d.0: calling pci_fixup_video+0x0/0xc0
+[    1.359166] pci 0000:00:1d.1: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.359262] pci 0000:00:1d.1: calling quirk_cardbus_legacy+0x0/0x30
+[    1.359355] pci 0000:00:1d.1: calling quirk_usb_early_handoff+0x0/0x640
+[    1.359449] pci 0000:00:1d.1: uhci_check_and_reset_hc: legsup = 0x2000
+[    1.359541] pci 0000:00:1d.1: Performing full reset
+[    1.359642] pci 0000:00:1d.1: calling pci_fixup_video+0x0/0xc0
+[    1.359741] pci 0000:00:1d.2: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.359833] pci 0000:00:1d.2: calling quirk_cardbus_legacy+0x0/0x30
+[    1.359926] pci 0000:00:1d.2: calling quirk_usb_early_handoff+0x0/0x640
+[    1.360035] pci 0000:00:1d.2: uhci_check_and_reset_hc: legsup = 0x2000
+[    1.360127] pci 0000:00:1d.2: Performing full reset
+[    1.360229] pci 0000:00:1d.2: calling pci_fixup_video+0x0/0xc0
+[    1.360332] pci 0000:00:1d.3: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.360424] pci 0000:00:1d.3: calling quirk_cardbus_legacy+0x0/0x30
+[    1.360516] pci 0000:00:1d.3: calling quirk_usb_early_handoff+0x0/0x640
+[    1.360611] pci 0000:00:1d.3: uhci_check_and_reset_hc: legsup = 0x2000
+[    1.360703] pci 0000:00:1d.3: Performing full reset
+[    1.360804] pci 0000:00:1d.3: calling pci_fixup_video+0x0/0xc0
+[    1.360903] pci 0000:00:1d.7: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.360996] pci 0000:00:1d.7: calling quirk_cardbus_legacy+0x0/0x30
+[    1.361104] pci 0000:00:1d.7: calling quirk_usb_early_handoff+0x0/0x640
+[    1.361241] pci 0000:00:1d.7: calling pci_fixup_video+0x0/0xc0
+[    1.361341] pci 0000:00:1e.0: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.361434] pci 0000:00:1e.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.361527] pci 0000:00:1e.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.361619] pci 0000:00:1e.0: calling pci_fixup_video+0x0/0xc0
+[    1.361718] pci 0000:00:1f.0: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.361810] pci 0000:00:1f.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.361902] pci 0000:00:1f.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.361993] pci 0000:00:1f.0: calling pci_fixup_video+0x0/0xc0
+[    1.362108] pci 0000:00:1f.1: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.362201] pci 0000:00:1f.1: calling quirk_cardbus_legacy+0x0/0x30
+[    1.362300] pci 0000:00:1f.1: calling quirk_usb_early_handoff+0x0/0x640
+[    1.362392] pci 0000:00:1f.1: calling pci_fixup_video+0x0/0xc0
+[    1.362492] pci 0000:00:1f.2: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.362583] pci 0000:00:1f.2: calling quirk_cardbus_legacy+0x0/0x30
+[    1.362676] pci 0000:00:1f.2: calling quirk_usb_early_handoff+0x0/0x640
+[    1.362767] pci 0000:00:1f.2: calling pci_fixup_video+0x0/0xc0
+[    1.362867] pci 0000:00:1f.3: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.362958] pci 0000:00:1f.3: calling quirk_cardbus_legacy+0x0/0x30
+[    1.363065] pci 0000:00:1f.3: calling quirk_usb_early_handoff+0x0/0x640
+[    1.363157] pci 0000:00:1f.3: calling pci_fixup_video+0x0/0xc0
+[    1.363256] pci 0000:02:00.0: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.363349] pci 0000:02:00.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.363442] pci 0000:02:00.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.363534] pci 0000:02:00.0: calling pci_fixup_video+0x0/0xc0
+[    1.363633] pci 0000:03:00.0: calling quirk_e100_interrupt+0x0/0x1e0
+[    1.363725] pci 0000:03:00.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.363817] pci 0000:03:00.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.363910] pci 0000:03:00.0: calling pci_fixup_video+0x0/0xc0
+[    1.364024] pci 0000:15:00.0: calling quirk_cardbus_legacy+0x0/0x30
+[    1.364119] pci 0000:15:00.0: calling quirk_usb_early_handoff+0x0/0x640
+[    1.364211] pci 0000:15:00.0: calling pci_fixup_video+0x0/0xc0
+[    1.364318] initcall pci_init+0x0/0x30 returned 0 after 8708 usecs
+[    1.364409] calling  pci_proc_init+0x0/0x70 @ 1
+[    1.365060] initcall pci_proc_init+0x0/0x70 returned 0 after 545 usecs
+[    1.365153] calling  pcie_portdrv_init+0x0/0x60 @ 1
+[    1.365827] pcieport-driver 0000:00:1c.0: irq 24 for MSI/MSI-X
+[    1.365929] pcieport-driver 0000:00:1c.0: setting latency timer to 64
+[    1.366259] PM: Adding info for pci_express:0000:00:1c.0:pcie01
+[    1.366688] PM: Adding info for pci_express:0000:00:1c.0:pcie04
+[    1.367302] pcieport-driver 0000:00:1c.1: irq 25 for MSI/MSI-X
+[    1.367404] pcieport-driver 0000:00:1c.1: setting latency timer to 64
+[    1.367612] PM: Adding info for pci_express:0000:00:1c.1:pcie01
+[    1.368107] PM: Adding info for pci_express:0000:00:1c.1:pcie04
+[    1.368768] pcieport-driver 0000:00:1c.2: irq 26 for MSI/MSI-X
+[    1.368869] pcieport-driver 0000:00:1c.2: setting latency timer to 64
+[    1.369122] PM: Adding info for pci_express:0000:00:1c.2:pcie01
+[    1.369559] PM: Adding info for pci_express:0000:00:1c.2:pcie04
+[    1.370174] pcieport-driver 0000:00:1c.3: irq 27 for MSI/MSI-X
+[    1.370278] pcieport-driver 0000:00:1c.3: setting latency timer to 64
+[    1.370494] PM: Adding info for pci_express:0000:00:1c.3:pcie01
+[    1.370914] PM: Adding info for pci_express:0000:00:1c.3:pcie04
+[    1.371604] initcall pcie_portdrv_init+0x0/0x60 returned 0 after 6208 usecs
+[    1.371698] calling  aer_service_init+0x0/0x30 @ 1
+[    1.372061] initcall aer_service_init+0x0/0x30 returned 0 after 262 usecs
+[    1.372155] calling  pci_stub_init+0x0/0x20 @ 1
+[    1.372537] initcall pci_stub_init+0x0/0x20 returned 0 after 283 usecs
+[    1.372629] calling  display_class_init+0x0/0x70 @ 1
+[    1.372958] initcall display_class_init+0x0/0x70 returned 0 after 231 usecs
+[    1.373083] calling  acpi_reserve_resources+0x0/0xd0 @ 1
+[    1.373202] initcall acpi_reserve_resources+0x0/0xd0 returned 0 after 27 usecs
+[    1.373340] calling  irqrouter_init_sysfs+0x0/0x40 @ 1
+[    1.373892] initcall irqrouter_init_sysfs+0x0/0x40 returned 0 after 449 usecs
+[    1.373986] calling  acpi_ac_init+0x0/0x30 @ 1
+[    1.374929] ACPI: AC Adapter [AC] (on-line)
+[    1.376150] initcall acpi_ac_init+0x0/0x30 returned 0 after 1988 usecs
+[    1.376243] calling  acpi_pci_slot_init+0x0/0x20 @ 1
+[    1.378347] pci_bus 0000:15: dev 00, created physical slot 1
+[    1.378907] initcall acpi_pci_slot_init+0x0/0x20 returned 0 after 2510 usecs
+[    1.379018] calling  acpi_smb_hc_init+0x0/0x20 @ 1
+[    1.379404] initcall acpi_smb_hc_init+0x0/0x20 returned 0 after 288 usecs
+[    1.379497] calling  acpi_sbs_init+0x0/0x30 @ 1
+[    1.379868] initcall acpi_sbs_init+0x0/0x30 returned 0 after 273 usecs
+[    1.379960] calling  pnpbios_thread_init+0x0/0x60 @ 1
+[    1.380093] initcall pnpbios_thread_init+0x0/0x60 returned 0 after 1 usecs
+[    1.380186] calling  isapnp_init+0x0/0xed0 @ 1
+[    1.380360] PM: Adding info for No Bus:pnp1
+[    1.380448] isapnp: Scanning for PnP cards...
+[    1.738267] isapnp: No Plug & Play device found
+[    1.738360] initcall isapnp_init+0x0/0xed0 returned 0 after 349684 usecs
+[    1.738453] calling  regulator_userspace_consumer_init+0x0/0x10 @ 1
+[    1.738822] initcall regulator_userspace_consumer_init+0x0/0x10 returned 0 after 268 usecs
+[    1.738954] calling  bq24022_init+0x0/0x20 @ 1
+[    1.739540] initcall bq24022_init+0x0/0x20 returned -19 after 474 usecs
+[    1.739635] calling  rand_initialize+0x0/0x30 @ 1
+[    1.739755] initcall rand_initialize+0x0/0x30 returned 0 after 28 usecs
+[    1.739847] calling  tty_init+0x0/0x110 @ 1
+[    1.740049] PM: Adding info for No Bus:tty
+[    1.740465] PM: Adding info for No Bus:console
+[    1.740863] PM: Adding info for No Bus:tty0
+[    1.741536] PM: Adding info for No Bus:vcs
+[    1.742061] PM: Adding info for No Bus:vcsa
+[    1.742512] PM: Adding info for No Bus:vcs1
+[    1.742929] PM: Adding info for No Bus:vcsa1
+[    1.743399] PM: Adding info for No Bus:tty1
+[    1.743823] PM: Adding info for No Bus:tty2
+[    1.744298] PM: Adding info for No Bus:tty3
+[    1.744736] PM: Adding info for No Bus:tty4
+[    1.745248] PM: Adding info for No Bus:tty5
+[    1.745686] PM: Adding info for No Bus:tty6
+[    1.746125] PM: Adding info for No Bus:tty7
+[    1.746561] PM: Adding info for No Bus:tty8
+[    1.746984] PM: Adding info for No Bus:tty9
+[    1.747412] PM: Adding info for No Bus:tty10
+[    1.747830] PM: Adding info for No Bus:tty11
+[    1.748397] PM: Adding info for No Bus:tty12
+[    1.748812] PM: Adding info for No Bus:tty13
+[    1.749229] PM: Adding info for No Bus:tty14
+[    1.749671] PM: Adding info for No Bus:tty15
+[    1.750104] PM: Adding info for No Bus:tty16
+[    1.750570] PM: Adding info for No Bus:tty17
+[    1.750989] PM: Adding info for No Bus:tty18
+[    1.751417] PM: Adding info for No Bus:tty19
+[    1.751843] PM: Adding info for No Bus:tty20
+[    1.752316] PM: Adding info for No Bus:tty21
+[    1.752751] PM: Adding info for No Bus:tty22
+[    1.753280] PM: Adding info for No Bus:tty23
+[    1.753708] PM: Adding info for No Bus:tty24
+[    1.754143] PM: Adding info for No Bus:tty25
+[    1.754577] PM: Adding info for No Bus:tty26
+[    1.754998] PM: Adding info for No Bus:tty27
+[    1.755427] PM: Adding info for No Bus:tty28
+[    1.755855] PM: Adding info for No Bus:tty29
+[    1.756396] PM: Adding info for No Bus:tty30
+[    1.756810] PM: Adding info for No Bus:tty31
+[    1.757237] PM: Adding info for No Bus:tty32
+[    1.757676] PM: Adding info for No Bus:tty33
+[    1.758105] PM: Adding info for No Bus:tty34
+[    1.758565] PM: Adding info for No Bus:tty35
+[    1.758988] PM: Adding info for No Bus:tty36
+[    1.759419] PM: Adding info for No Bus:tty37
+[    1.759839] PM: Adding info for No Bus:tty38
+[    1.760306] PM: Adding info for No Bus:tty39
+[    1.760733] PM: Adding info for No Bus:tty40
+[    1.761278] PM: Adding info for No Bus:tty41
+[    1.761708] PM: Adding info for No Bus:tty42
+[    1.762146] PM: Adding info for No Bus:tty43
+[    1.762584] PM: Adding info for No Bus:tty44
+[    1.763016] PM: Adding info for No Bus:tty45
+[    1.763443] PM: Adding info for No Bus:tty46
+[    1.763869] PM: Adding info for No Bus:tty47
+[    1.764407] PM: Adding info for No Bus:tty48
+[    1.764825] PM: Adding info for No Bus:tty49
+[    1.765267] PM: Adding info for No Bus:tty50
+[    1.765693] PM: Adding info for No Bus:tty51
+[    1.766135] PM: Adding info for No Bus:tty52
+[    1.766604] PM: Adding info for No Bus:tty53
+[    1.767044] PM: Adding info for No Bus:tty54
+[    1.767479] PM: Adding info for No Bus:tty55
+[    1.767900] PM: Adding info for No Bus:tty56
+[    1.768353] PM: Adding info for No Bus:tty57
+[    1.768786] PM: Adding info for No Bus:tty58
+[    1.769387] PM: Adding info for No Bus:tty59
+[    1.769807] PM: Adding info for No Bus:tty60
+[    1.770227] PM: Adding info for No Bus:tty61
+[    1.770677] PM: Adding info for No Bus:tty62
+[    1.771115] PM: Adding info for No Bus:tty63
+[    1.771672] initcall tty_init+0x0/0x110 returned 0 after 30986 usecs
+[    1.771765] calling  pty_init+0x0/0x3e0 @ 1
+[    1.772001] PM: Adding info for No Bus:ptyp0
+[    1.772429] PM: Adding info for No Bus:ptyp1
+[    1.772856] PM: Adding info for No Bus:ptyp2
+[    1.773306] PM: Adding info for No Bus:ptyp3
+[    1.773732] PM: Adding info for No Bus:ptyp4
+[    1.774219] PM: Adding info for No Bus:ptyp5
+[    1.774665] PM: Adding info for No Bus:ptyp6
+[    1.775096] PM: Adding info for No Bus:ptyp7
+[    1.775528] PM: Adding info for No Bus:ptyp8
+[    1.775953] PM: Adding info for No Bus:ptyp9
+[    1.776401] PM: Adding info for No Bus:ptypa
+[    1.776816] PM: Adding info for No Bus:ptypb
+[    1.777386] PM: Adding info for No Bus:ptypc
+[    1.777800] PM: Adding info for No Bus:ptypd
+[    1.778227] PM: Adding info for No Bus:ptype
+[    1.778668] PM: Adding info for No Bus:ptypf
+[    1.779098] PM: Adding info for No Bus:ptyq0
+[    1.779557] PM: Adding info for No Bus:ptyq1
+[    1.779973] PM: Adding info for No Bus:ptyq2
+[    1.780405] PM: Adding info for No Bus:ptyq3
+[    1.780825] PM: Adding info for No Bus:ptyq4
+[    1.781304] PM: Adding info for No Bus:ptyq5
+[    1.781729] PM: Adding info for No Bus:ptyq6
+[    1.782237] PM: Adding info for No Bus:ptyq7
+[    1.782682] PM: Adding info for No Bus:ptyq8
+[    1.783130] PM: Adding info for No Bus:ptyq9
+[    1.783573] PM: Adding info for No Bus:ptyqa
+[    1.783992] PM: Adding info for No Bus:ptyqb
+[    1.784418] PM: Adding info for No Bus:ptyqc
+[    1.784843] PM: Adding info for No Bus:ptyqd
+[    1.785401] PM: Adding info for No Bus:ptyqe
+[    1.785813] PM: Adding info for No Bus:ptyqf
+[    1.786232] PM: Adding info for No Bus:ptyr0
+[    1.786671] PM: Adding info for No Bus:ptyr1
+[    1.787108] PM: Adding info for No Bus:ptyr2
+[    1.787569] PM: Adding info for No Bus:ptyr3
+[    1.787990] PM: Adding info for No Bus:ptyr4
+[    1.788419] PM: Adding info for No Bus:ptyr5
+[    1.788843] PM: Adding info for No Bus:ptyr6
+[    1.789314] PM: Adding info for No Bus:ptyr7
+[    1.789731] PM: Adding info for No Bus:ptyr8
+[    1.790245] PM: Adding info for No Bus:ptyr9
+[    1.790692] PM: Adding info for No Bus:ptyra
+[    1.791128] PM: Adding info for No Bus:ptyrb
+[    1.791563] PM: Adding info for No Bus:ptyrc
+[    1.791988] PM: Adding info for No Bus:ptyrd
+[    1.792415] PM: Adding info for No Bus:ptyre
+[    1.792837] PM: Adding info for No Bus:ptyrf
+[    1.793400] PM: Adding info for No Bus:ptys0
+[    1.793819] PM: Adding info for No Bus:ptys1
+[    1.794244] PM: Adding info for No Bus:ptys2
+[    1.794690] PM: Adding info for No Bus:ptys3
+[    1.795124] PM: Adding info for No Bus:ptys4
+[    1.795589] PM: Adding info for No Bus:ptys5
+[    1.796009] PM: Adding info for No Bus:ptys6
+[    1.796439] PM: Adding info for No Bus:ptys7
+[    1.796860] PM: Adding info for No Bus:ptys8
+[    1.797329] PM: Adding info for No Bus:ptys9
+[    1.797755] PM: Adding info for No Bus:ptysa
+[    1.798286] PM: Adding info for No Bus:ptysb
+[    1.798716] PM: Adding info for No Bus:ptysc
+[    1.799156] PM: Adding info for No Bus:ptysd
+[    1.799600] PM: Adding info for No Bus:ptyse
+[    1.800027] PM: Adding info for No Bus:ptysf
+[    1.800466] PM: Adding info for No Bus:ptyt0
+[    1.800893] PM: Adding info for No Bus:ptyt1
+[    1.801411] PM: Adding info for No Bus:ptyt2
+[    1.801828] PM: Adding info for No Bus:ptyt3
+[    1.802309] PM: Adding info for No Bus:ptyt4
+[    1.802731] PM: Adding info for No Bus:ptyt5
+[    1.803172] PM: Adding info for No Bus:ptyt6
+[    1.803621] PM: Adding info for No Bus:ptyt7
+[    1.804065] PM: Adding info for No Bus:ptyt8
+[    1.804503] PM: Adding info for No Bus:ptyt9
+[    1.804925] PM: Adding info for No Bus:ptyta
+[    1.805407] PM: Adding info for No Bus:ptytb
+[    1.805961] PM: Adding info for No Bus:ptytc
+[    1.806470] PM: Adding info for No Bus:ptytd
+[    1.806894] PM: Adding info for No Bus:ptyte
+[    1.807352] PM: Adding info for No Bus:ptytf
+[    1.807775] PM: Adding info for No Bus:ptyu0
+[    1.808312] PM: Adding info for No Bus:ptyu1
+[    1.808745] PM: Adding info for No Bus:ptyu2
+[    1.809182] PM: Adding info for No Bus:ptyu3
+[    1.809641] PM: Adding info for No Bus:ptyu4
+[    1.810907] PM: Adding info for No Bus:ptyu5
+[    1.811357] PM: Adding info for No Bus:ptyu6
+[    1.811780] PM: Adding info for No Bus:ptyu7
+[    1.812237] PM: Adding info for No Bus:ptyu8
+[    1.812693] PM: Adding info for No Bus:ptyu9
+[    1.813129] PM: Adding info for No Bus:ptyua
+[    1.813569] PM: Adding info for No Bus:ptyub
+[    1.814010] PM: Adding info for No Bus:ptyuc
+[    1.814439] PM: Adding info for No Bus:ptyud
+[    1.814862] PM: Adding info for No Bus:ptyue
+[    1.815316] PM: Adding info for No Bus:ptyuf
+[    1.815746] PM: Adding info for No Bus:ptyv0
+[    1.816246] PM: Adding info for No Bus:ptyv1
+[    1.816694] PM: Adding info for No Bus:ptyv2
+[    1.817148] PM: Adding info for No Bus:ptyv3
+[    1.817584] PM: Adding info for No Bus:ptyv4
+[    1.818018] PM: Adding info for No Bus:ptyv5
+[    1.818445] PM: Adding info for No Bus:ptyv6
+[    1.818867] PM: Adding info for No Bus:ptyv7
+[    1.819396] PM: Adding info for No Bus:ptyv8
+[    1.819816] PM: Adding info for No Bus:ptyv9
+[    1.820243] PM: Adding info for No Bus:ptyva
+[    1.820687] PM: Adding info for No Bus:ptyvb
+[    1.821122] PM: Adding info for No Bus:ptyvc
+[    1.821588] PM: Adding info for No Bus:ptyvd
+[    1.822012] PM: Adding info for No Bus:ptyve
+[    1.822447] PM: Adding info for No Bus:ptyvf
+[    1.822881] PM: Adding info for No Bus:ptyw0
+[    1.823342] PM: Adding info for No Bus:ptyw1
+[    1.823767] PM: Adding info for No Bus:ptyw2
+[    1.824302] PM: Adding info for No Bus:ptyw3
+[    1.824741] PM: Adding info for No Bus:ptyw4
+[    1.825193] PM: Adding info for No Bus:ptyw5
+[    1.825637] PM: Adding info for No Bus:ptyw6
+[    1.826078] PM: Adding info for No Bus:ptyw7
+[    1.826520] PM: Adding info for No Bus:ptyw8
+[    1.826944] PM: Adding info for No Bus:ptyw9
+[    1.827463] PM: Adding info for No Bus:ptywa
+[    1.827888] PM: Adding info for No Bus:ptywb
+[    1.828357] PM: Adding info for No Bus:ptywc
+[    1.828779] PM: Adding info for No Bus:ptywd
+[    1.829247] PM: Adding info for No Bus:ptywe
+[    1.829718] PM: Adding info for No Bus:ptywf
+[    1.830149] PM: Adding info for No Bus:ptyx0
+[    1.830608] PM: Adding info for No Bus:ptyx1
+[    1.831055] PM: Adding info for No Bus:ptyx2
+[    1.831499] PM: Adding info for No Bus:ptyx3
+[    1.831931] PM: Adding info for No Bus:ptyx4
+[    1.832394] PM: Adding info for No Bus:ptyx5
+[    1.832822] PM: Adding info for No Bus:ptyx6
+[    1.833385] PM: Adding info for No Bus:ptyx7
+[    1.833807] PM: Adding info for No Bus:ptyx8
+[    1.834235] PM: Adding info for No Bus:ptyx9
+[    1.834678] PM: Adding info for No Bus:ptyxa
+[    1.835112] PM: Adding info for No Bus:ptyxb
+[    1.835578] PM: Adding info for No Bus:ptyxc
+[    1.836005] PM: Adding info for No Bus:ptyxd
+[    1.836436] PM: Adding info for No Bus:ptyxe
+[    1.836859] PM: Adding info for No Bus:ptyxf
+[    1.837319] PM: Adding info for No Bus:ptyy0
+[    1.837748] PM: Adding info for No Bus:ptyy1
+[    1.838285] PM: Adding info for No Bus:ptyy2
+[    1.838731] PM: Adding info for No Bus:ptyy3
+[    1.839180] PM: Adding info for No Bus:ptyy4
+[    1.839631] PM: Adding info for No Bus:ptyy5
+[    1.840071] PM: Adding info for No Bus:ptyy6
+[    1.840513] PM: Adding info for No Bus:ptyy7
+[    1.840941] PM: Adding info for No Bus:ptyy8
+[    1.841449] PM: Adding info for No Bus:ptyy9
+[    1.841873] PM: Adding info for No Bus:ptyya
+[    1.842332] PM: Adding info for No Bus:ptyyb
+[    1.842758] PM: Adding info for No Bus:ptyyc
+[    1.843207] PM: Adding info for No Bus:ptyyd
+[    1.843661] PM: Adding info for No Bus:ptyye
+[    1.844106] PM: Adding info for No Bus:ptyyf
+[    1.844556] PM: Adding info for No Bus:ptyz0
+[    1.844986] PM: Adding info for No Bus:ptyz1
+[    1.845439] PM: Adding info for No Bus:ptyz2
+[    1.845864] PM: Adding info for No Bus:ptyz3
+[    1.846392] PM: Adding info for No Bus:ptyz4
+[    1.846820] PM: Adding info for No Bus:ptyz5
+[    1.847269] PM: Adding info for No Bus:ptyz6
+[    1.847696] PM: Adding info for No Bus:ptyz7
+[    1.848134] PM: Adding info for No Bus:ptyz8
+[    1.848613] PM: Adding info for No Bus:ptyz9
+[    1.849043] PM: Adding info for No Bus:ptyza
+[    1.849487] PM: Adding info for No Bus:ptyzb
+[    1.849920] PM: Adding info for No Bus:ptyzc
+[    1.850385] PM: Adding info for No Bus:ptyzd
+[    1.850822] PM: Adding info for No Bus:ptyze
+[    1.851313] PM: Adding info for No Bus:ptyzf
+[    1.851741] PM: Adding info for No Bus:ptya0
+[    1.852278] PM: Adding info for No Bus:ptya1
+[    1.852717] PM: Adding info for No Bus:ptya2
+[    1.853171] PM: Adding info for No Bus:ptya3
+[    1.853617] PM: Adding info for No Bus:ptya4
+[    1.854050] PM: Adding info for No Bus:ptya5
+[    1.854497] PM: Adding info for No Bus:ptya6
+[    1.854932] PM: Adding info for No Bus:ptya7
+[    1.855450] PM: Adding info for No Bus:ptya8
+[    1.855883] PM: Adding info for No Bus:ptya9
+[    1.856339] PM: Adding info for No Bus:ptyaa
+[    1.856764] PM: Adding info for No Bus:ptyab
+[    1.857245] PM: Adding info for No Bus:ptyac
+[    1.857734] PM: Adding info for No Bus:ptyad
+[    1.858183] PM: Adding info for No Bus:ptyae
+[    1.858633] PM: Adding info for No Bus:ptyaf
+[    1.859068] PM: Adding info for No Bus:ptyb0
+[    1.859511] PM: Adding info for No Bus:ptyb1
+[    1.859946] PM: Adding info for No Bus:ptyb2
+[    1.860463] PM: Adding info for No Bus:ptyb3
+[    1.860891] PM: Adding info for No Bus:ptyb4
+[    1.861354] PM: Adding info for No Bus:ptyb5
+[    1.861783] PM: Adding info for No Bus:ptyb6
+[    1.862314] PM: Adding info for No Bus:ptyb7
+[    1.862739] PM: Adding info for No Bus:ptyb8
+[    1.863190] PM: Adding info for No Bus:ptyb9
+[    1.863662] PM: Adding info for No Bus:ptyba
+[    1.864109] PM: Adding info for No Bus:ptybb
+[    1.864560] PM: Adding info for No Bus:ptybc
+[    1.864990] PM: Adding info for No Bus:ptybd
+[    1.865426] PM: Adding info for No Bus:ptybe
+[    1.865867] PM: Adding info for No Bus:ptybf
+[    1.866399] PM: Adding info for No Bus:ptyc0
+[    1.866824] PM: Adding info for No Bus:ptyc1
+[    1.867276] PM: Adding info for No Bus:ptyc2
+[    1.867707] PM: Adding info for No Bus:ptyc3
+[    1.868149] PM: Adding info for No Bus:ptyc4
+[    1.868629] PM: Adding info for No Bus:ptyc5
+[    1.869070] PM: Adding info for No Bus:ptyc6
+[    1.869516] PM: Adding info for No Bus:ptyc7
+[    1.869956] PM: Adding info for No Bus:ptyc8
+[    1.870411] PM: Adding info for No Bus:ptyc9
+[    1.870993] PM: Adding info for No Bus:ptyca
+[    1.871489] PM: Adding info for No Bus:ptycb
+[    1.871921] PM: Adding info for No Bus:ptycc
+[    1.872381] PM: Adding info for No Bus:ptycd
+[    1.872806] PM: Adding info for No Bus:ptyce
+[    1.873320] PM: Adding info for No Bus:ptycf
+[    1.873759] PM: Adding info for No Bus:ptyd0
+[    1.874208] PM: Adding info for No Bus:ptyd1
+[    1.874687] PM: Adding info for No Bus:ptyd2
+[    1.875151] PM: Adding info for No Bus:ptyd3
+[    1.875594] PM: Adding info for No Bus:ptyd4
+[    1.876032] PM: Adding info for No Bus:ptyd5
+[    1.876483] PM: Adding info for No Bus:ptyd6
+[    1.876912] PM: Adding info for No Bus:ptyd7
+[    1.877440] PM: Adding info for No Bus:ptyd8
+[    1.877870] PM: Adding info for No Bus:ptyd9
+[    1.878339] PM: Adding info for No Bus:ptyda
+[    1.878775] PM: Adding info for No Bus:ptydb
+[    1.879218] PM: Adding info for No Bus:ptydc
+[    1.879666] PM: Adding info for No Bus:ptydd
+[    1.880108] PM: Adding info for No Bus:ptyde
+[    1.880580] PM: Adding info for No Bus:ptydf
+[    1.881012] PM: Adding info for No Bus:ptye0
+[    1.881450] PM: Adding info for No Bus:ptye1
+[    1.881883] PM: Adding info for No Bus:ptye2
+[    1.882350] PM: Adding info for No Bus:ptye3
+[    1.882791] PM: Adding info for No Bus:ptye4
+[    1.883317] PM: Adding info for No Bus:ptye5
+[    1.883750] PM: Adding info for No Bus:ptye6
+[    1.884294] PM: Adding info for No Bus:ptye7
+[    1.884741] PM: Adding info for No Bus:ptye8
+[    1.885200] PM: Adding info for No Bus:ptye9
+[    1.885647] PM: Adding info for No Bus:ptyea
+[    1.886085] PM: Adding info for No Bus:ptyeb
+[    1.886536] PM: Adding info for No Bus:ptyec
+[    1.886975] PM: Adding info for No Bus:ptyed
+[    1.887471] PM: Adding info for No Bus:ptyee
+[    1.887896] PM: Adding info for No Bus:ptyef
+[    1.888370] PM: Adding info for No Bus:ttyp0
+[    1.888804] PM: Adding info for No Bus:ttyp1
+[    1.889291] PM: Adding info for No Bus:ttyp2
+[    1.889721] PM: Adding info for No Bus:ttyp3
+[    1.890223] PM: Adding info for No Bus:ttyp4
+[    1.890677] PM: Adding info for No Bus:ttyp5
+[    1.891119] PM: Adding info for No Bus:ttyp6
+[    1.891568] PM: Adding info for No Bus:ttyp7
+[    1.892006] PM: Adding info for No Bus:ttyp8
+[    1.893230] PM: Adding info for No Bus:ttyp9
+[    1.893723] PM: Adding info for No Bus:ttypa
+[    1.894304] PM: Adding info for No Bus:ttypb
+[    1.894742] PM: Adding info for No Bus:ttypc
+[    1.895196] PM: Adding info for No Bus:ttypd
+[    1.895648] PM: Adding info for No Bus:ttype
+[    1.896084] PM: Adding info for No Bus:ttypf
+[    1.896553] PM: Adding info for No Bus:ttyq0
+[    1.896997] PM: Adding info for No Bus:ttyq1
+[    1.897468] PM: Adding info for No Bus:ttyq2
+[    1.897895] PM: Adding info for No Bus:ttyq3
+[    1.898355] PM: Adding info for No Bus:ttyq4
+[    1.898784] PM: Adding info for No Bus:ttyq5
+[    1.899324] PM: Adding info for No Bus:ttyq6
+[    1.899752] PM: Adding info for No Bus:ttyq7
+[    1.900205] PM: Adding info for No Bus:ttyq8
+[    1.900688] PM: Adding info for No Bus:ttyq9
+[    1.901141] PM: Adding info for No Bus:ttyqa
+[    1.901587] PM: Adding info for No Bus:ttyqb
+[    1.902034] PM: Adding info for No Bus:ttyqc
+[    1.902485] PM: Adding info for No Bus:ttyqd
+[    1.902916] PM: Adding info for No Bus:ttyqe
+[    1.903440] PM: Adding info for No Bus:ttyqf
+[    1.903871] PM: Adding info for No Bus:ttyr0
+[    1.904330] PM: Adding info for No Bus:ttyr1
+[    1.904766] PM: Adding info for No Bus:ttyr2
+[    1.905218] PM: Adding info for No Bus:ttyr3
+[    1.905682] PM: Adding info for No Bus:ttyr4
+[    1.906138] PM: Adding info for No Bus:ttyr5
+[    1.906583] PM: Adding info for No Bus:ttyr6
+[    1.907020] PM: Adding info for No Bus:ttyr7
+[    1.907459] PM: Adding info for No Bus:ttyr8
+[    1.907891] PM: Adding info for No Bus:ttyr9
+[    1.908412] PM: Adding info for No Bus:ttyra
+[    1.908849] PM: Adding info for No Bus:ttyrb
+[    1.909319] PM: Adding info for No Bus:ttyrc
+[    1.909756] PM: Adding info for No Bus:ttyrd
+[    1.910207] PM: Adding info for No Bus:ttyre
+[    1.910685] PM: Adding info for No Bus:ttyrf
+[    1.911132] PM: Adding info for No Bus:ttys0
+[    1.911586] PM: Adding info for No Bus:ttys1
+[    1.912029] PM: Adding info for No Bus:ttys2
+[    1.912499] PM: Adding info for No Bus:ttys3
+[    1.912934] PM: Adding info for No Bus:ttys4
+[    1.913449] PM: Adding info for No Bus:ttys5
+[    1.913879] PM: Adding info for No Bus:ttys6
+[    1.914345] PM: Adding info for No Bus:ttys7
+[    1.914785] PM: Adding info for No Bus:ttys8
+[    1.915235] PM: Adding info for No Bus:ttys9
+[    1.915694] PM: Adding info for No Bus:ttysa
+[    1.916142] PM: Adding info for No Bus:ttysb
+[    1.916624] PM: Adding info for No Bus:ttysc
+[    1.917077] PM: Adding info for No Bus:ttysd
+[    1.917526] PM: Adding info for No Bus:ttyse
+[    1.917966] PM: Adding info for No Bus:ttysf
+[    1.918418] PM: Adding info for No Bus:ttyt0
+[    1.918865] PM: Adding info for No Bus:ttyt1
+[    1.919414] PM: Adding info for No Bus:ttyt2
+[    1.919849] PM: Adding info for No Bus:ttyt3
+[    1.920301] PM: Adding info for No Bus:ttyt4
+[    1.920739] PM: Adding info for No Bus:ttyt5
+[    1.921311] PM: Adding info for No Bus:ttyt6
+[    1.921753] PM: Adding info for No Bus:ttyt7
+[    1.922213] PM: Adding info for No Bus:ttyt8
+[    1.922662] PM: Adding info for No Bus:ttyt9
+[    1.923108] PM: Adding info for No Bus:ttyta
+[    1.923566] PM: Adding info for No Bus:ttytb
+[    1.924006] PM: Adding info for No Bus:ttytc
+[    1.924483] PM: Adding info for No Bus:ttytd
+[    1.924918] PM: Adding info for No Bus:ttyte
+[    1.925394] PM: Adding info for No Bus:ttytf
+[    1.925830] PM: Adding info for No Bus:ttyu0
+[    1.926342] PM: Adding info for No Bus:ttyu1
+[    1.926781] PM: Adding info for No Bus:ttyu2
+[    1.927288] PM: Adding info for No Bus:ttyu3
+[    1.927741] PM: Adding info for No Bus:ttyu4
+[    1.928308] PM: Adding info for No Bus:ttyu5
+[    1.928755] PM: Adding info for No Bus:ttyu6
+[    1.929222] PM: Adding info for No Bus:ttyu7
+[    1.929679] PM: Adding info for No Bus:ttyu8
+[    1.930124] PM: Adding info for No Bus:ttyu9
+[    1.930573] PM: Adding info for No Bus:ttyua
+[    1.931014] PM: Adding info for No Bus:ttyub
+[    1.931474] PM: Adding info for No Bus:ttyuc
+[    1.931917] PM: Adding info for No Bus:ttyud
+[    1.932392] PM: Adding info for No Bus:ttyue
+[    1.932827] PM: Adding info for No Bus:ttyuf
+[    1.933341] PM: Adding info for No Bus:ttyv0
+[    1.933774] PM: Adding info for No Bus:ttyv1
+[    1.934291] PM: Adding info for No Bus:ttyv2
+[    1.934744] PM: Adding info for No Bus:ttyv3
+[    1.935202] PM: Adding info for No Bus:ttyv4
+[    1.935656] PM: Adding info for No Bus:ttyv5
+[    1.936109] PM: Adding info for No Bus:ttyv6
+[    1.936709] PM: Adding info for No Bus:ttyv7
+[    1.937166] PM: Adding info for No Bus:ttyv8
+[    1.937692] PM: Adding info for No Bus:ttyv9
+[    1.938146] PM: Adding info for No Bus:ttyva
+[    1.938597] PM: Adding info for No Bus:ttyvb
+[    1.939043] PM: Adding info for No Bus:ttyvc
+[    1.939507] PM: Adding info for No Bus:ttyvd
+[    1.939957] PM: Adding info for No Bus:ttyve
+[    1.940488] PM: Adding info for No Bus:ttyvf
+[    1.940922] PM: Adding info for No Bus:ttyw0
+[    1.941391] PM: Adding info for No Bus:ttyw1
+[    1.941829] PM: Adding info for No Bus:ttyw2
+[    1.942328] PM: Adding info for No Bus:ttyw3
+[    1.942768] PM: Adding info for No Bus:ttyw4
+[    1.943229] PM: Adding info for No Bus:ttyw5
+[    1.943728] PM: Adding info for No Bus:ttyw6
+[    1.944190] PM: Adding info for No Bus:ttyw7
+[    1.944646] PM: Adding info for No Bus:ttyw8
+[    1.945099] PM: Adding info for No Bus:ttyw9
+[    1.945573] PM: Adding info for No Bus:ttywa
+[    1.946015] PM: Adding info for No Bus:ttywb
+[    1.946489] PM: Adding info for No Bus:ttywc
+[    1.946928] PM: Adding info for No Bus:ttywd
+[    1.947402] PM: Adding info for No Bus:ttywe
+[    1.947841] PM: Adding info for No Bus:ttywf
+[    1.948350] PM: Adding info for No Bus:ttyx0
+[    1.948789] PM: Adding info for No Bus:ttyx1
+[    1.949293] PM: Adding info for No Bus:ttyx2
+[    1.949734] PM: Adding info for No Bus:ttyx3
+[    1.950299] PM: Adding info for No Bus:ttyx4
+[    1.950744] PM: Adding info for No Bus:ttyx5
+[    1.951214] PM: Adding info for No Bus:ttyx6
+[    1.951671] PM: Adding info for No Bus:ttyx7
+[    1.952120] PM: Adding info for No Bus:ttyx8
+[    1.952574] PM: Adding info for No Bus:ttyx9
+[    1.953021] PM: Adding info for No Bus:ttyxa
+[    1.953536] PM: Adding info for No Bus:ttyxb
+[    1.953978] PM: Adding info for No Bus:ttyxc
+[    1.954440] PM: Adding info for No Bus:ttyxd
+[    1.954882] PM: Adding info for No Bus:ttyxe
+[    1.955373] PM: Adding info for No Bus:ttyxf
+[    1.955811] PM: Adding info for No Bus:ttyy0
+[    1.956303] PM: Adding info for No Bus:ttyy1
+[    1.956752] PM: Adding info for No Bus:ttyy2
+[    1.957327] PM: Adding info for No Bus:ttyy3
+[    1.957779] PM: Adding info for No Bus:ttyy4
+[    1.958247] PM: Adding info for No Bus:ttyy5
+[    1.958710] PM: Adding info for No Bus:ttyy6
+[    1.959159] PM: Adding info for No Bus:ttyy7
+[    1.959627] PM: Adding info for No Bus:ttyy8
+[    1.960077] PM: Adding info for No Bus:ttyy9
+[    1.960592] PM: Adding info for No Bus:ttyya
+[    1.961041] PM: Adding info for No Bus:ttyyb
+[    1.961550] PM: Adding info for No Bus:ttyyc
+[    1.961988] PM: Adding info for No Bus:ttyyd
+[    1.962449] PM: Adding info for No Bus:ttyye
+[    1.962907] PM: Adding info for No Bus:ttyyf
+[    1.963400] PM: Adding info for No Bus:ttyz0
+[    1.963844] PM: Adding info for No Bus:ttyz1
+[    1.964346] PM: Adding info for No Bus:ttyz2
+[    1.964794] PM: Adding info for No Bus:ttyz3
+[    1.965318] PM: Adding info for No Bus:ttyz4
+[    1.965766] PM: Adding info for No Bus:ttyz5
+[    1.966309] PM: Adding info for No Bus:ttyz6
+[    1.966765] PM: Adding info for No Bus:ttyz7
+[    1.967235] PM: Adding info for No Bus:ttyz8
+[    1.967695] PM: Adding info for No Bus:ttyz9
+[    1.968157] PM: Adding info for No Bus:ttyza
+[    1.968637] PM: Adding info for No Bus:ttyzb
+[    1.969086] PM: Adding info for No Bus:ttyzc
+[    1.969594] PM: Adding info for No Bus:ttyzd
+[    1.970043] PM: Adding info for No Bus:ttyze
+[    1.970555] PM: Adding info for No Bus:ttyzf
+[    1.971005] PM: Adding info for No Bus:ttya0
+[    1.971458] PM: Adding info for No Bus:ttya1
+[    1.971905] PM: Adding info for No Bus:ttya2
+[    1.972392] PM: Adding info for No Bus:ttya3
+[    1.972849] PM: Adding info for No Bus:ttya4
+[    1.973356] PM: Adding info for No Bus:ttya5
+[    1.973800] PM: Adding info for No Bus:ttya6
+[    1.974324] PM: Adding info for No Bus:ttya7
+[    1.974775] PM: Adding info for No Bus:ttya8
+[    1.975321] PM: Adding info for No Bus:ttya9
+[    1.975760] PM: Adding info for No Bus:ttyaa
+[    1.976318] PM: Adding info for No Bus:ttyab
+[    1.976771] PM: Adding info for No Bus:ttyac
+[    1.978008] PM: Adding info for No Bus:ttyad
+[    1.978457] PM: Adding info for No Bus:ttyae
+[    1.978912] PM: Adding info for No Bus:ttyaf
+[    1.979404] PM: Adding info for No Bus:ttyb0
+[    1.979845] PM: Adding info for No Bus:ttyb1
+[    1.980329] PM: Adding info for No Bus:ttyb2
+[    1.980791] PM: Adding info for No Bus:ttyb3
+[    1.981238] PM: Adding info for No Bus:ttyb4
+[    1.981711] PM: Adding info for No Bus:ttyb5
+[    1.982162] PM: Adding info for No Bus:ttyb6
+[    1.982646] PM: Adding info for No Bus:ttyb7
+[    1.983104] PM: Adding info for No Bus:ttyb8
+[    1.983569] PM: Adding info for No Bus:ttyb9
+[    1.984023] PM: Adding info for No Bus:ttyba
+[    1.984485] PM: Adding info for No Bus:ttybb
+[    1.984935] PM: Adding info for No Bus:ttybc
+[    1.985470] PM: Adding info for No Bus:ttybd
+[    1.985914] PM: Adding info for No Bus:ttybe
+[    1.986398] PM: Adding info for No Bus:ttybf
+[    1.986846] PM: Adding info for No Bus:ttyc0
+[    1.987339] PM: Adding info for No Bus:ttyc1
+[    1.987789] PM: Adding info for No Bus:ttyc2
+[    1.988241] PM: Adding info for No Bus:ttyc3
+[    1.988730] PM: Adding info for No Bus:ttyc4
+[    1.989293] PM: Adding info for No Bus:ttyc5
+[    1.989746] PM: Adding info for No Bus:ttyc6
+[    1.990215] PM: Adding info for No Bus:ttyc7
+[    1.990679] PM: Adding info for No Bus:ttyc8
+[    1.991139] PM: Adding info for No Bus:ttyc9
+[    1.991613] PM: Adding info for No Bus:ttyca
+[    1.992070] PM: Adding info for No Bus:ttycb
+[    1.992581] PM: Adding info for No Bus:ttycc
+[    1.993036] PM: Adding info for No Bus:ttycd
+[    1.993506] PM: Adding info for No Bus:ttyce
+[    1.993948] PM: Adding info for No Bus:ttycf
+[    1.994452] PM: Adding info for No Bus:ttyd0
+[    1.994896] PM: Adding info for No Bus:ttyd1
+[    1.995371] PM: Adding info for No Bus:ttyd2
+[    1.995823] PM: Adding info for No Bus:ttyd3
+[    1.996351] PM: Adding info for No Bus:ttyd4
+[    1.996795] PM: Adding info for No Bus:ttyd5
+[    1.997326] PM: Adding info for No Bus:ttyd6
+[    1.997788] PM: Adding info for No Bus:ttyd7
+[    1.998317] PM: Adding info for No Bus:ttyd8
+[    1.998767] PM: Adding info for No Bus:ttyd9
+[    1.999327] PM: Adding info for No Bus:ttyda
+[    1.999783] PM: Adding info for No Bus:ttydb
+[    2.000278] PM: Adding info for No Bus:ttydc
+[    2.000733] PM: Adding info for No Bus:ttydd
+[    2.001294] PM: Adding info for No Bus:ttyde
+[    2.001750] PM: Adding info for No Bus:ttydf
+[    2.002216] PM: Adding info for No Bus:ttye0
+[    2.002735] PM: Adding info for No Bus:ttye1
+[    2.003370] PM: Adding info for No Bus:ttye2
+[    2.003821] PM: Adding info for No Bus:ttye3
+[    2.004309] PM: Adding info for No Bus:ttye4
+[    2.004884] PM: Adding info for No Bus:ttye5
+[    2.005403] PM: Adding info for No Bus:ttye6
+[    2.005872] PM: Adding info for No Bus:ttye7
+[    2.006424] PM: Adding info for No Bus:ttye8
+[    2.006871] PM: Adding info for No Bus:ttye9
+[    2.007333] PM: Adding info for No Bus:ttyea
+[    2.007786] PM: Adding info for No Bus:ttyeb
+[    2.008344] PM: Adding info for No Bus:ttyec
+[    2.008793] PM: Adding info for No Bus:ttyed
+[    2.009337] PM: Adding info for No Bus:ttyee
+[    2.009787] PM: Adding info for No Bus:ttyef
+[    2.010380] PM: Adding info for No Bus:ptmx
+[    2.010695] initcall pty_init+0x0/0x3e0 returned 0 after 233237 usecs
+[    2.010788] calling  sysrq_init+0x0/0x30 @ 1
+[    2.010905] initcall sysrq_init+0x0/0x30 returned 0 after 25 usecs
+[    2.010998] calling  cy_init+0x0/0x490 @ 1
+[    2.011096] Cyclades driver 2.5 (built Aug 21 2009 22:16:19)
+[    2.026572] initcall cy_init+0x0/0x490 returned 0 after 15115 usecs
+[    2.026665] calling  nozomi_init+0x0/0x110 @ 1
+[    2.026754] Initializing Nozomi driver 2.1d (build date: Aug 21 2009 22:16:20)
+[    2.027244] initcall nozomi_init+0x0/0x110 returned 0 after 476 usecs
+[    2.027353] calling  epca_module_init+0x0/0x480 @ 1
+[    2.027452] DIGI epca driver version 1.3.0.1-LK2.6 loaded.
+[    2.027985] PM: Adding info for No Bus:ttyD0
+[    2.028443] PM: Adding info for No Bus:ttyD1
+[    2.028898] PM: Adding info for No Bus:ttyD2
+[    2.029371] PM: Adding info for No Bus:ttyD3
+[    2.029820] PM: Adding info for No Bus:ttyD4
+[    2.030328] PM: Adding info for No Bus:ttyD5
+[    2.030782] PM: Adding info for No Bus:ttyD6
+[    2.031324] PM: Adding info for No Bus:ttyD7
+[    2.031774] PM: Adding info for No Bus:ttyD8
+[    2.032310] PM: Adding info for No Bus:ttyD9
+[    2.032775] PM: Adding info for No Bus:ttyD10
+[    2.033263] PM: Adding info for No Bus:ttyD11
+[    2.033720] PM: Adding info for No Bus:ttyD12
+[    2.034273] PM: Adding info for No Bus:ttyD13
+[    2.034730] PM: Adding info for No Bus:ttyD14
+[    2.035198] PM: Adding info for No Bus:ttyD15
+[    2.035715] PM: Adding info for No Bus:ttyD16
+[    2.036176] PM: Adding info for No Bus:ttyD17
+[    2.036698] PM: Adding info for No Bus:ttyD18
+[    2.037152] PM: Adding info for No Bus:ttyD19
+[    2.037622] PM: Adding info for No Bus:ttyD20
+[    2.038073] PM: Adding info for No Bus:ttyD21
+[    2.038556] PM: Adding info for No Bus:ttyD22
+[    2.039007] PM: Adding info for No Bus:ttyD23
+[    2.039504] PM: Adding info for No Bus:ttyD24
+[    2.039949] PM: Adding info for No Bus:ttyD25
+[    2.040422] PM: Adding info for No Bus:ttyD26
+[    2.040868] PM: Adding info for No Bus:ttyD27
+[    2.041362] PM: Adding info for No Bus:ttyD28
+[    2.041812] PM: Adding info for No Bus:ttyD29
+[    2.042315] PM: Adding info for No Bus:ttyD30
+[    2.042765] PM: Adding info for No Bus:ttyD31
+[    2.043328] PM: Adding info for No Bus:ttyD32
+[    2.043786] PM: Adding info for No Bus:ttyD33
+[    2.044277] PM: Adding info for No Bus:ttyD34
+[    2.044737] PM: Adding info for No Bus:ttyD35
+[    2.045281] PM: Adding info for No Bus:ttyD36
+[    2.045737] PM: Adding info for No Bus:ttyD37
+[    2.046195] PM: Adding info for No Bus:ttyD38
+[    2.046712] PM: Adding info for No Bus:ttyD39
+[    2.047168] PM: Adding info for No Bus:ttyD40
+[    2.047688] PM: Adding info for No Bus:ttyD41
+[    2.048146] PM: Adding info for No Bus:ttyD42
+[    2.048607] PM: Adding info for No Bus:ttyD43
+[    2.049072] PM: Adding info for No Bus:ttyD44
+[    2.049564] PM: Adding info for No Bus:ttyD45
+[    2.050020] PM: Adding info for No Bus:ttyD46
+[    2.050556] PM: Adding info for No Bus:ttyD47
+[    2.051003] PM: Adding info for No Bus:ttyD48
+[    2.051460] PM: Adding info for No Bus:ttyD49
+[    2.051911] PM: Adding info for No Bus:ttyD50
+[    2.052403] PM: Adding info for No Bus:ttyD51
+[    2.052852] PM: Adding info for No Bus:ttyD52
+[    2.053360] PM: Adding info for No Bus:ttyD53
+[    2.053818] PM: Adding info for No Bus:ttyD54
+[    2.054292] PM: Adding info for No Bus:ttyD55
+[    2.054755] PM: Adding info for No Bus:ttyD56
+[    2.055326] PM: Adding info for No Bus:ttyD57
+[    2.055782] PM: Adding info for No Bus:ttyD58
+[    2.056268] PM: Adding info for No Bus:ttyD59
+[    2.056724] PM: Adding info for No Bus:ttyD60
+[    2.057267] PM: Adding info for No Bus:ttyD61
+[    2.057727] PM: Adding info for No Bus:ttyD62
+[    2.058203] PM: Adding info for No Bus:ttyD63
+[    2.058718] PM: Adding info for No Bus:ttyD64
+[    2.059353] PM: Adding info for No Bus:ttyD65
+[    2.059810] PM: Adding info for No Bus:ttyD66
+[    2.060289] PM: Adding info for No Bus:ttyD67
+[    2.060748] PM: Adding info for No Bus:ttyD68
+[    2.061299] PM: Adding info for No Bus:ttyD69
+[    2.061756] PM: Adding info for No Bus:ttyD70
+[    2.062217] PM: Adding info for No Bus:ttyD71
+[    2.062753] PM: Adding info for No Bus:ttyD72
+[    2.063384] PM: Adding info for No Bus:ttyD73
+[    2.063843] PM: Adding info for No Bus:ttyD74
+[    2.064314] PM: Adding info for No Bus:ttyD75
+[    2.064763] PM: Adding info for No Bus:ttyD76
+[    2.065308] PM: Adding info for No Bus:ttyD77
+[    2.065769] PM: Adding info for No Bus:ttyD78
+[    2.066248] PM: Adding info for No Bus:ttyD79
+[    2.066765] PM: Adding info for No Bus:ttyD80
+[    2.067427] PM: Adding info for No Bus:ttyD81
+[    2.067886] PM: Adding info for No Bus:ttyD82
+[    2.068358] PM: Adding info for No Bus:ttyD83
+[    2.068814] PM: Adding info for No Bus:ttyD84
+[    2.069311] PM: Adding info for No Bus:ttyD85
+[    2.069764] PM: Adding info for No Bus:ttyD86
+[    2.070237] PM: Adding info for No Bus:ttyD87
+[    2.070760] PM: Adding info for No Bus:ttyD88
+[    2.071242] PM: Adding info for No Bus:ttyD89
+[    2.071710] PM: Adding info for No Bus:ttyD90
+[    2.072169] PM: Adding info for No Bus:ttyD91
+[    2.072653] PM: Adding info for No Bus:ttyD92
+[    2.073129] PM: Adding info for No Bus:ttyD93
+[    2.073664] PM: Adding info for No Bus:ttyD94
+[    2.074135] PM: Adding info for No Bus:ttyD95
+[    2.074656] PM: Adding info for No Bus:ttyD96
+[    2.075122] PM: Adding info for No Bus:ttyD97
+[    2.075618] PM: Adding info for No Bus:ttyD98
+[    2.076080] PM: Adding info for No Bus:ttyD99
+[    2.077365] PM: Adding info for No Bus:ttyD100
+[    2.077817] PM: Adding info for No Bus:ttyD101
+[    2.078333] PM: Adding info for No Bus:ttyD102
+[    2.078796] PM: Adding info for No Bus:ttyD103
+[    2.079277] PM: Adding info for No Bus:ttyD104
+[    2.079738] PM: Adding info for No Bus:ttyD105
+[    2.080316] PM: Adding info for No Bus:ttyD106
+[    2.080777] PM: Adding info for No Bus:ttyD107
+[    2.081277] PM: Adding info for No Bus:ttyD108
+[    2.081745] PM: Adding info for No Bus:ttyD109
+[    2.082284] PM: Adding info for No Bus:ttyD110
+[    2.082751] PM: Adding info for No Bus:ttyD111
+[    2.083225] PM: Adding info for No Bus:ttyD112
+[    2.083754] PM: Adding info for No Bus:ttyD113
+[    2.084405] PM: Adding info for No Bus:ttyD114
+[    2.084865] PM: Adding info for No Bus:ttyD115
+[    2.085343] PM: Adding info for No Bus:ttyD116
+[    2.085807] PM: Adding info for No Bus:ttyD117
+[    2.086312] PM: Adding info for No Bus:ttyD118
+[    2.086771] PM: Adding info for No Bus:ttyD119
+[    2.087242] PM: Adding info for No Bus:ttyD120
+[    2.087772] PM: Adding info for No Bus:ttyD121
+[    2.088275] PM: Adding info for No Bus:ttyD122
+[    2.088734] PM: Adding info for No Bus:ttyD123
+[    2.089291] PM: Adding info for No Bus:ttyD124
+[    2.089755] PM: Adding info for No Bus:ttyD125
+[    2.090227] PM: Adding info for No Bus:ttyD126
+[    2.090893] PM: Adding info for No Bus:ttyD127
+[    2.091449] PM: Adding info for No Bus:ttyD128
+[    2.091912] PM: Adding info for No Bus:ttyD129
+[    2.092419] PM: Adding info for No Bus:ttyD130
+[    2.092873] PM: Adding info for No Bus:ttyD131
+[    2.093386] PM: Adding info for No Bus:ttyD132
+[    2.093842] PM: Adding info for No Bus:ttyD133
+[    2.094360] PM: Adding info for No Bus:ttyD134
+[    2.094817] PM: Adding info for No Bus:ttyD135
+[    2.095337] PM: Adding info for No Bus:ttyD136
+[    2.095798] PM: Adding info for No Bus:ttyD137
+[    2.096322] PM: Adding info for No Bus:ttyD138
+[    2.096790] PM: Adding info for No Bus:ttyD139
+[    2.097339] PM: Adding info for No Bus:ttyD140
+[    2.097801] PM: Adding info for No Bus:ttyD141
+[    2.098330] PM: Adding info for No Bus:ttyD142
+[    2.098790] PM: Adding info for No Bus:ttyD143
+[    2.099330] PM: Adding info for No Bus:ttyD144
+[    2.099794] PM: Adding info for No Bus:ttyD145
+[    2.100338] PM: Adding info for No Bus:ttyD146
+[    2.100804] PM: Adding info for No Bus:ttyD147
+[    2.101337] PM: Adding info for No Bus:ttyD148
+[    2.101806] PM: Adding info for No Bus:ttyD149
+[    2.102336] PM: Adding info for No Bus:ttyD150
+[    2.102793] PM: Adding info for No Bus:ttyD151
+[    2.103337] PM: Adding info for No Bus:ttyD152
+[    2.103797] PM: Adding info for No Bus:ttyD153
+[    2.104343] PM: Adding info for No Bus:ttyD154
+[    2.104802] PM: Adding info for No Bus:ttyD155
+[    2.105333] PM: Adding info for No Bus:ttyD156
+[    2.105795] PM: Adding info for No Bus:ttyD157
+[    2.106335] PM: Adding info for No Bus:ttyD158
+[    2.106792] PM: Adding info for No Bus:ttyD159
+[    2.107335] PM: Adding info for No Bus:ttyD160
+[    2.107797] PM: Adding info for No Bus:ttyD161
+[    2.108333] PM: Adding info for No Bus:ttyD162
+[    2.108802] PM: Adding info for No Bus:ttyD163
+[    2.109334] PM: Adding info for No Bus:ttyD164
+[    2.109796] PM: Adding info for No Bus:ttyD165
+[    2.110350] PM: Adding info for No Bus:ttyD166
+[    2.110815] PM: Adding info for No Bus:ttyD167
+[    2.111340] PM: Adding info for No Bus:ttyD168
+[    2.111804] PM: Adding info for No Bus:ttyD169
+[    2.112342] PM: Adding info for No Bus:ttyD170
+[    2.112801] PM: Adding info for No Bus:ttyD171
+[    2.113345] PM: Adding info for No Bus:ttyD172
+[    2.113809] PM: Adding info for No Bus:ttyD173
+[    2.114340] PM: Adding info for No Bus:ttyD174
+[    2.114801] PM: Adding info for No Bus:ttyD175
+[    2.115338] PM: Adding info for No Bus:ttyD176
+[    2.115804] PM: Adding info for No Bus:ttyD177
+[    2.116346] PM: Adding info for No Bus:ttyD178
+[    2.116816] PM: Adding info for No Bus:ttyD179
+[    2.117344] PM: Adding info for No Bus:ttyD180
+[    2.117804] PM: Adding info for No Bus:ttyD181
+[    2.118349] PM: Adding info for No Bus:ttyD182
+[    2.118808] PM: Adding info for No Bus:ttyD183
+[    2.119341] PM: Adding info for No Bus:ttyD184
+[    2.119803] PM: Adding info for No Bus:ttyD185
+[    2.120342] PM: Adding info for No Bus:ttyD186
+[    2.120806] PM: Adding info for No Bus:ttyD187
+[    2.121342] PM: Adding info for No Bus:ttyD188
+[    2.121808] PM: Adding info for No Bus:ttyD189
+[    2.122347] PM: Adding info for No Bus:ttyD190
+[    2.122815] PM: Adding info for No Bus:ttyD191
+[    2.123345] PM: Adding info for No Bus:ttyD192
+[    2.123812] PM: Adding info for No Bus:ttyD193
+[    2.124342] PM: Adding info for No Bus:ttyD194
+[    2.124809] PM: Adding info for No Bus:ttyD195
+[    2.125342] PM: Adding info for No Bus:ttyD196
+[    2.125810] PM: Adding info for No Bus:ttyD197
+[    2.126342] PM: Adding info for No Bus:ttyD198
+[    2.126820] PM: Adding info for No Bus:ttyD199
+[    2.127342] PM: Adding info for No Bus:ttyD200
+[    2.127803] PM: Adding info for No Bus:ttyD201
+[    2.128349] PM: Adding info for No Bus:ttyD202
+[    2.128814] PM: Adding info for No Bus:ttyD203
+[    2.129344] PM: Adding info for No Bus:ttyD204
+[    2.129808] PM: Adding info for No Bus:ttyD205
+[    2.130343] PM: Adding info for No Bus:ttyD206
+[    2.130811] PM: Adding info for No Bus:ttyD207
+[    2.131342] PM: Adding info for No Bus:ttyD208
+[    2.131809] PM: Adding info for No Bus:ttyD209
+[    2.132347] PM: Adding info for No Bus:ttyD210
+[    2.132812] PM: Adding info for No Bus:ttyD211
+[    2.133345] PM: Adding info for No Bus:ttyD212
+[    2.133810] PM: Adding info for No Bus:ttyD213
+[    2.134349] PM: Adding info for No Bus:ttyD214
+[    2.134820] PM: Adding info for No Bus:ttyD215
+[    2.135340] PM: Adding info for No Bus:ttyD216
+[    2.135805] PM: Adding info for No Bus:ttyD217
+[    2.136342] PM: Adding info for No Bus:ttyD218
+[    2.136810] PM: Adding info for No Bus:ttyD219
+[    2.137346] PM: Adding info for No Bus:ttyD220
+[    2.137814] PM: Adding info for No Bus:ttyD221
+[    2.138350] PM: Adding info for No Bus:ttyD222
+[    2.138818] PM: Adding info for No Bus:ttyD223
+[    2.139345] PM: Adding info for No Bus:ttyD224
+[    2.139815] PM: Adding info for No Bus:ttyD225
+[    2.140349] PM: Adding info for No Bus:ttyD226
+[    2.140816] PM: Adding info for No Bus:ttyD227
+[    2.141346] PM: Adding info for No Bus:ttyD228
+[    2.141810] PM: Adding info for No Bus:ttyD229
+[    2.142344] PM: Adding info for No Bus:ttyD230
+[    2.142810] PM: Adding info for No Bus:ttyD231
+[    2.143343] PM: Adding info for No Bus:ttyD232
+[    2.143811] PM: Adding info for No Bus:ttyD233
+[    2.144346] PM: Adding info for No Bus:ttyD234
+[    2.144810] PM: Adding info for No Bus:ttyD235
+[    2.145346] PM: Adding info for No Bus:ttyD236
+[    2.145815] PM: Adding info for No Bus:ttyD237
+[    2.146351] PM: Adding info for No Bus:ttyD238
+[    2.146826] PM: Adding info for No Bus:ttyD239
+[    2.147347] PM: Adding info for No Bus:ttyD240
+[    2.147817] PM: Adding info for No Bus:ttyD241
+[    2.148350] PM: Adding info for No Bus:ttyD242
+[    2.148818] PM: Adding info for No Bus:ttyD243
+[    2.149346] PM: Adding info for No Bus:ttyD244
+[    2.149810] PM: Adding info for No Bus:ttyD245
+[    2.150348] PM: Adding info for No Bus:ttyD246
+[    2.150814] PM: Adding info for No Bus:ttyD247
+[    2.151348] PM: Adding info for No Bus:ttyD248
+[    2.151823] PM: Adding info for No Bus:ttyD249
+[    2.152343] PM: Adding info for No Bus:ttyD250
+[    2.152816] PM: Adding info for No Bus:ttyD251
+[    2.153346] PM: Adding info for No Bus:ttyD252
+[    2.153817] PM: Adding info for No Bus:ttyD253
+[    2.154350] PM: Adding info for No Bus:ttyD254
+[    2.154824] PM: Adding info for No Bus:ttyD255
+[    2.155358] PM: Adding info for No Bus:digi_ctl0
+[    2.155813] PM: Adding info for No Bus:digi_ctl1
+[    2.156334] PM: Adding info for No Bus:digi_ctl2
+[    2.156796] PM: Adding info for No Bus:digi_ctl3
+[    2.157337] PM: Adding info for No Bus:digi_ctl4
+[    2.157800] PM: Adding info for No Bus:digi_ctl5
+[    2.158332] PM: Adding info for No Bus:digi_ctl6
+[    2.158795] PM: Adding info for No Bus:digi_ctl7
+[    2.159329] PM: Adding info for No Bus:digi_ctl8
+[    2.159783] PM: Adding info for No Bus:digi_ctl9
+[    2.160335] PM: Adding info for No Bus:digi_ctl10
+[    2.160796] PM: Adding info for No Bus:digi_ctl11
+[    2.161460] PM: Adding info for No Bus:digi_ctl12
+[    2.161937] PM: Adding info for No Bus:digi_ctl13
+[    2.162441] PM: Adding info for No Bus:digi_ctl14
+[    2.162900] PM: Adding info for No Bus:digi_ctl15
+[    2.163387] PM: Adding info for No Bus:digi_ctl16
+[    2.163846] PM: Adding info for No Bus:digi_ctl17
+[    2.164347] PM: Adding info for No Bus:digi_ctl18
+[    2.164814] PM: Adding info for No Bus:digi_ctl19
+[    2.165340] PM: Adding info for No Bus:digi_ctl20
+[    2.165803] PM: Adding info for No Bus:digi_ctl21
+[    2.166335] PM: Adding info for No Bus:digi_ctl22
+[    2.166792] PM: Adding info for No Bus:digi_ctl23
+[    2.168071] PM: Adding info for No Bus:digi_ctl24
+[    2.168549] PM: Adding info for No Bus:digi_ctl25
+[    2.169011] PM: Adding info for No Bus:digi_ctl26
+[    2.169475] PM: Adding info for No Bus:digi_ctl27
+[    2.169942] PM: Adding info for No Bus:digi_ctl28
+[    2.170427] PM: Adding info for No Bus:digi_ctl29
+[    2.170888] PM: Adding info for No Bus:digi_ctl30
+[    2.171386] PM: Adding info for No Bus:digi_ctl31
+[    2.171841] PM: Adding info for No Bus:digi_ctl32
+[    2.172341] PM: Adding info for No Bus:digi_ctl33
+[    2.172798] PM: Adding info for No Bus:digi_ctl34
+[    2.173330] PM: Adding info for No Bus:digi_ctl35
+[    2.173792] PM: Adding info for No Bus:digi_ctl36
+[    2.174332] PM: Adding info for No Bus:digi_ctl37
+[    2.174792] PM: Adding info for No Bus:digi_ctl38
+[    2.175334] PM: Adding info for No Bus:digi_ctl39
+[    2.175793] PM: Adding info for No Bus:digi_ctl40
+[    2.176333] PM: Adding info for No Bus:digi_ctl41
+[    2.176794] PM: Adding info for No Bus:digi_ctl42
+[    2.177344] PM: Adding info for No Bus:digi_ctl43
+[    2.177815] PM: Adding info for No Bus:digi_ctl44
+[    2.178346] PM: Adding info for No Bus:digi_ctl45
+[    2.178808] PM: Adding info for No Bus:digi_ctl46
+[    2.179340] PM: Adding info for No Bus:digi_ctl47
+[    2.179803] PM: Adding info for No Bus:digi_ctl48
+[    2.180336] PM: Adding info for No Bus:digi_ctl49
+[    2.180790] PM: Adding info for No Bus:digi_ctl50
+[    2.181336] PM: Adding info for No Bus:digi_ctl51
+[    2.181800] PM: Adding info for No Bus:digi_ctl52
+[    2.182337] PM: Adding info for No Bus:digi_ctl53
+[    2.182800] PM: Adding info for No Bus:digi_ctl54
+[    2.183341] PM: Adding info for No Bus:digi_ctl55
+[    2.183801] PM: Adding info for No Bus:digi_ctl56
+[    2.184337] PM: Adding info for No Bus:digi_ctl57
+[    2.184801] PM: Adding info for No Bus:digi_ctl58
+[    2.185340] PM: Adding info for No Bus:digi_ctl59
+[    2.185802] PM: Adding info for No Bus:digi_ctl60
+[    2.186340] PM: Adding info for No Bus:digi_ctl61
+[    2.186803] PM: Adding info for No Bus:digi_ctl62
+[    2.187339] PM: Adding info for No Bus:digi_ctl63
+[    2.187804] PM: Adding info for No Bus:digi_ctl64
+[    2.188335] PM: Adding info for No Bus:digi_ctl65
+[    2.188793] PM: Adding info for No Bus:digi_ctl66
+[    2.189338] PM: Adding info for No Bus:digi_ctl67
+[    2.189809] PM: Adding info for No Bus:digi_ctl68
+[    2.190343] PM: Adding info for No Bus:digi_ctl69
+[    2.190806] PM: Adding info for No Bus:digi_ctl70
+[    2.191342] PM: Adding info for No Bus:digi_ctl71
+[    2.191811] PM: Adding info for No Bus:digi_ctl72
+[    2.192349] PM: Adding info for No Bus:digi_ctl73
+[    2.192810] PM: Adding info for No Bus:digi_ctl74
+[    2.193340] PM: Adding info for No Bus:digi_ctl75
+[    2.193799] PM: Adding info for No Bus:digi_ctl76
+[    2.194346] PM: Adding info for No Bus:digi_ctl77
+[    2.194812] PM: Adding info for No Bus:digi_ctl78
+[    2.195344] PM: Adding info for No Bus:digi_ctl79
+[    2.195819] PM: Adding info for No Bus:digi_ctl80
+[    2.196341] PM: Adding info for No Bus:digi_ctl81
+[    2.196802] PM: Adding info for No Bus:digi_ctl82
+[    2.197339] PM: Adding info for No Bus:digi_ctl83
+[    2.197801] PM: Adding info for No Bus:digi_ctl84
+[    2.198340] PM: Adding info for No Bus:digi_ctl85
+[    2.198801] PM: Adding info for No Bus:digi_ctl86
+[    2.199339] PM: Adding info for No Bus:digi_ctl87
+[    2.199808] PM: Adding info for No Bus:digi_ctl88
+[    2.200340] PM: Adding info for No Bus:digi_ctl89
+[    2.200806] PM: Adding info for No Bus:digi_ctl90
+[    2.201340] PM: Adding info for No Bus:digi_ctl91
+[    2.201814] PM: Adding info for No Bus:digi_ctl92
+[    2.202343] PM: Adding info for No Bus:digi_ctl93
+[    2.202819] PM: Adding info for No Bus:digi_ctl94
+[    2.203348] PM: Adding info for No Bus:digi_ctl95
+[    2.203811] PM: Adding info for No Bus:digi_ctl96
+[    2.204344] PM: Adding info for No Bus:digi_ctl97
+[    2.204813] PM: Adding info for No Bus:digi_ctl98
+[    2.205350] PM: Adding info for No Bus:digi_ctl99
+[    2.205823] PM: Adding info for No Bus:digi_ctl100
+[    2.206342] PM: Adding info for No Bus:digi_ctl101
+[    2.206808] PM: Adding info for No Bus:digi_ctl102
+[    2.207344] PM: Adding info for No Bus:digi_ctl103
+[    2.207818] PM: Adding info for No Bus:digi_ctl104
+[    2.208343] PM: Adding info for No Bus:digi_ctl105
+[    2.208812] PM: Adding info for No Bus:digi_ctl106
+[    2.209348] PM: Adding info for No Bus:digi_ctl107
+[    2.209816] PM: Adding info for No Bus:digi_ctl108
+[    2.210362] PM: Adding info for No Bus:digi_ctl109
+[    2.210833] PM: Adding info for No Bus:digi_ctl110
+[    2.211350] PM: Adding info for No Bus:digi_ctl111
+[    2.211820] PM: Adding info for No Bus:digi_ctl112
+[    2.212346] PM: Adding info for No Bus:digi_ctl113
+[    2.212812] PM: Adding info for No Bus:digi_ctl114
+[    2.213348] PM: Adding info for No Bus:digi_ctl115
+[    2.213823] PM: Adding info for No Bus:digi_ctl116
+[    2.214347] PM: Adding info for No Bus:digi_ctl117
+[    2.214815] PM: Adding info for No Bus:digi_ctl118
+[    2.215352] PM: Adding info for No Bus:digi_ctl119
+[    2.215822] PM: Adding info for No Bus:digi_ctl120
+[    2.216350] PM: Adding info for No Bus:digi_ctl121
+[    2.216820] PM: Adding info for No Bus:digi_ctl122
+[    2.217348] PM: Adding info for No Bus:digi_ctl123
+[    2.217817] PM: Adding info for No Bus:digi_ctl124
+[    2.218349] PM: Adding info for No Bus:digi_ctl125
+[    2.218818] PM: Adding info for No Bus:digi_ctl126
+[    2.219353] PM: Adding info for No Bus:digi_ctl127
+[    2.219830] PM: Adding info for No Bus:digi_ctl128
+[    2.220346] PM: Adding info for No Bus:digi_ctl129
+[    2.220816] PM: Adding info for No Bus:digi_ctl130
+[    2.221348] PM: Adding info for No Bus:digi_ctl131
+[    2.221820] PM: Adding info for No Bus:digi_ctl132
+[    2.222352] PM: Adding info for No Bus:digi_ctl133
+[    2.222822] PM: Adding info for No Bus:digi_ctl134
+[    2.223348] PM: Adding info for No Bus:digi_ctl135
+[    2.223816] PM: Adding info for No Bus:digi_ctl136
+[    2.224351] PM: Adding info for No Bus:digi_ctl137
+[    2.224821] PM: Adding info for No Bus:digi_ctl138
+[    2.225355] PM: Adding info for No Bus:digi_ctl139
+[    2.225835] PM: Adding info for No Bus:digi_ctl140
+[    2.226352] PM: Adding info for No Bus:digi_ctl141
+[    2.226819] PM: Adding info for No Bus:digi_ctl142
+[    2.227351] PM: Adding info for No Bus:digi_ctl143
+[    2.227831] PM: Adding info for No Bus:digi_ctl144
+[    2.228355] PM: Adding info for No Bus:digi_ctl145
+[    2.228824] PM: Adding info for No Bus:digi_ctl146
+[    2.229355] PM: Adding info for No Bus:digi_ctl147
+[    2.229825] PM: Adding info for No Bus:digi_ctl148
+[    2.230351] PM: Adding info for No Bus:digi_ctl149
+[    2.230829] PM: Adding info for No Bus:digi_ctl150
+[    2.231349] PM: Adding info for No Bus:digi_ctl151
+[    2.231817] PM: Adding info for No Bus:digi_ctl152
+[    2.232355] PM: Adding info for No Bus:digi_ctl153
+[    2.232946] PM: Adding info for No Bus:digi_ctl154
+[    2.233466] PM: Adding info for No Bus:digi_ctl155
+[    2.233949] PM: Adding info for No Bus:digi_ctl156
+[    2.234448] PM: Adding info for No Bus:digi_ctl157
+[    2.234926] PM: Adding info for No Bus:digi_ctl158
+[    2.235432] PM: Adding info for No Bus:digi_ctl159
+[    2.235901] PM: Adding info for No Bus:digi_ctl160
+[    2.236406] PM: Adding info for No Bus:digi_ctl161
+[    2.236882] PM: Adding info for No Bus:digi_ctl162
+[    2.237380] PM: Adding info for No Bus:digi_ctl163
+[    2.237857] PM: Adding info for No Bus:digi_ctl164
+[    2.238362] PM: Adding info for No Bus:digi_ctl165
+[    2.238828] PM: Adding info for No Bus:digi_ctl166
+[    2.239356] PM: Adding info for No Bus:digi_ctl167
+[    2.239830] PM: Adding info for No Bus:digi_ctl168
+[    2.240357] PM: Adding info for No Bus:digi_ctl169
+[    2.240832] PM: Adding info for No Bus:digi_ctl170
+[    2.241352] PM: Adding info for No Bus:digi_ctl171
+[    2.241825] PM: Adding info for No Bus:digi_ctl172
+[    2.242352] PM: Adding info for No Bus:digi_ctl173
+[    2.242826] PM: Adding info for No Bus:digi_ctl174
+[    2.243357] PM: Adding info for No Bus:digi_ctl175
+[    2.243836] PM: Adding info for No Bus:digi_ctl176
+[    2.244366] PM: Adding info for No Bus:digi_ctl177
+[    2.244847] PM: Adding info for No Bus:digi_ctl178
+[    2.245359] PM: Adding info for No Bus:digi_ctl179
+[    2.245836] PM: Adding info for No Bus:digi_ctl180
+[    2.246356] PM: Adding info for No Bus:digi_ctl181
+[    2.246827] PM: Adding info for No Bus:digi_ctl182
+[    2.247353] PM: Adding info for No Bus:digi_ctl183
+[    2.247823] PM: Adding info for No Bus:digi_ctl184
+[    2.248352] PM: Adding info for No Bus:digi_ctl185
+[    2.248827] PM: Adding info for No Bus:digi_ctl186
+[    2.249357] PM: Adding info for No Bus:digi_ctl187
+[    2.249831] PM: Adding info for No Bus:digi_ctl188
+[    2.250359] PM: Adding info for No Bus:digi_ctl189
+[    2.250829] PM: Adding info for No Bus:digi_ctl190
+[    2.251356] PM: Adding info for No Bus:digi_ctl191
+[    2.251834] PM: Adding info for No Bus:digi_ctl192
+[    2.252355] PM: Adding info for No Bus:digi_ctl193
+[    2.252826] PM: Adding info for No Bus:digi_ctl194
+[    2.253360] PM: Adding info for No Bus:digi_ctl195
+[    2.253832] PM: Adding info for No Bus:digi_ctl196
+[    2.254358] PM: Adding info for No Bus:digi_ctl197
+[    2.254835] PM: Adding info for No Bus:digi_ctl198
+[    2.255357] PM: Adding info for No Bus:digi_ctl199
+[    2.255836] PM: Adding info for No Bus:digi_ctl200
+[    2.256364] PM: Adding info for No Bus:digi_ctl201
+[    2.256835] PM: Adding info for No Bus:digi_ctl202
+[    2.257352] PM: Adding info for No Bus:digi_ctl203
+[    2.258612] PM: Adding info for No Bus:digi_ctl204
+[    2.259087] PM: Adding info for No Bus:digi_ctl205
+[    2.259585] PM: Adding info for No Bus:digi_ctl206
+[    2.260072] PM: Adding info for No Bus:digi_ctl207
+[    2.260563] PM: Adding info for No Bus:digi_ctl208
+[    2.261044] PM: Adding info for No Bus:digi_ctl209
+[    2.261538] PM: Adding info for No Bus:digi_ctl210
+[    2.262014] PM: Adding info for No Bus:digi_ctl211
+[    2.262494] PM: Adding info for No Bus:digi_ctl212
+[    2.262989] PM: Adding info for No Bus:digi_ctl213
+[    2.263470] PM: Adding info for No Bus:digi_ctl214
+[    2.263944] PM: Adding info for No Bus:digi_ctl215
+[    2.264446] PM: Adding info for No Bus:digi_ctl216
+[    2.264917] PM: Adding info for No Bus:digi_ctl217
+[    2.265419] PM: Adding info for No Bus:digi_ctl218
+[    2.265904] PM: Adding info for No Bus:digi_ctl219
+[    2.266406] PM: Adding info for No Bus:digi_ctl220
+[    2.266879] PM: Adding info for No Bus:digi_ctl221
+[    2.267383] PM: Adding info for No Bus:digi_ctl222
+[    2.267858] PM: Adding info for No Bus:digi_ctl223
+[    2.268362] PM: Adding info for No Bus:digi_ctl224
+[    2.268845] PM: Adding info for No Bus:digi_ctl225
+[    2.269357] PM: Adding info for No Bus:digi_ctl226
+[    2.269840] PM: Adding info for No Bus:digi_ctl227
+[    2.270359] PM: Adding info for No Bus:digi_ctl228
+[    2.270836] PM: Adding info for No Bus:digi_ctl229
+[    2.271358] PM: Adding info for No Bus:digi_ctl230
+[    2.271850] PM: Adding info for No Bus:digi_ctl231
+[    2.272359] PM: Adding info for No Bus:digi_ctl232
+[    2.272835] PM: Adding info for No Bus:digi_ctl233
+[    2.273361] PM: Adding info for No Bus:digi_ctl234
+[    2.273839] PM: Adding info for No Bus:digi_ctl235
+[    2.274357] PM: Adding info for No Bus:digi_ctl236
+[    2.274834] PM: Adding info for No Bus:digi_ctl237
+[    2.275364] PM: Adding info for No Bus:digi_ctl238
+[    2.275843] PM: Adding info for No Bus:digi_ctl239
+[    2.276366] PM: Adding info for No Bus:digi_ctl240
+[    2.276846] PM: Adding info for No Bus:digi_ctl241
+[    2.277363] PM: Adding info for No Bus:digi_ctl242
+[    2.277848] PM: Adding info for No Bus:digi_ctl243
+[    2.278369] PM: Adding info for No Bus:digi_ctl244
+[    2.278848] PM: Adding info for No Bus:digi_ctl245
+[    2.279360] PM: Adding info for No Bus:digi_ctl246
+[    2.279848] PM: Adding info for No Bus:digi_ctl247
+[    2.280362] PM: Adding info for No Bus:digi_ctl248
+[    2.280842] PM: Adding info for No Bus:digi_ctl249
+[    2.281367] PM: Adding info for No Bus:digi_ctl250
+[    2.281848] PM: Adding info for No Bus:digi_ctl251
+[    2.282361] PM: Adding info for No Bus:digi_ctl252
+[    2.282844] PM: Adding info for No Bus:digi_ctl253
+[    2.283363] PM: Adding info for No Bus:digi_ctl254
+[    2.283844] PM: Adding info for No Bus:digi_ctl255
+[    2.284182] initcall epca_module_init+0x0/0x480 returned 0 after 250716 usecs
+[    2.284293] calling  riscom8_init_module+0x0/0x420 @ 1
+[    2.284384] rc: SDL RISCom/8 card driver v1.1, (c) D.Gorodchanin 1994-1996.
+[    2.284674] PM: Adding info for No Bus:ttyL0
+[    2.285161] PM: Adding info for No Bus:ttyL1
+[    2.285655] PM: Adding info for No Bus:ttyL2
+[    2.286146] PM: Adding info for No Bus:ttyL3
+[    2.286648] PM: Adding info for No Bus:ttyL4
+[    2.287131] PM: Adding info for No Bus:ttyL5
+[    2.287630] PM: Adding info for No Bus:ttyL6
+[    2.288115] PM: Adding info for No Bus:ttyL7
+[    2.288610] PM: Adding info for No Bus:ttyL8
+[    2.289112] PM: Adding info for No Bus:ttyL9
+[    2.289609] PM: Adding info for No Bus:ttyL10
+[    2.290100] PM: Adding info for No Bus:ttyL11
+[    2.290594] PM: Adding info for No Bus:ttyL12
+[    2.291078] PM: Adding info for No Bus:ttyL13
+[    2.291574] PM: Adding info for No Bus:ttyL14
+[    2.292067] PM: Adding info for No Bus:ttyL15
+[    2.292567] PM: Adding info for No Bus:ttyL16
+[    2.293059] PM: Adding info for No Bus:ttyL17
+[    2.293563] PM: Adding info for No Bus:ttyL18
+[    2.294055] PM: Adding info for No Bus:ttyL19
+[    2.294556] PM: Adding info for No Bus:ttyL20
+[    2.295042] PM: Adding info for No Bus:ttyL21
+[    2.295543] PM: Adding info for No Bus:ttyL22
+[    2.296023] PM: Adding info for No Bus:ttyL23
+[    2.296520] PM: Adding info for No Bus:ttyL24
+[    2.297007] PM: Adding info for No Bus:ttyL25
+[    2.297497] PM: Adding info for No Bus:ttyL26
+[    2.297987] PM: Adding info for No Bus:ttyL27
+[    2.298475] PM: Adding info for No Bus:ttyL28
+[    2.298958] PM: Adding info for No Bus:ttyL29
+[    2.299471] PM: Adding info for No Bus:ttyL30
+[    2.299955] PM: Adding info for No Bus:ttyL31
+[    2.300362] rc0: RISCom/8 Board at 0x220 not found.
+[    2.300538] rc1: RISCom/8 Board at 0x240 not found.
+[    2.300713] rc2: RISCom/8 Board at 0x250 not found.
+[    2.300890] rc3: RISCom/8 Board at 0x260 not found.
+[    2.301485] PM: Removing info for No Bus:ttyL0
+[    2.302231] PM: Removing info for No Bus:ttyL1
+[    2.302977] PM: Removing info for No Bus:ttyL2
+[    2.303723] PM: Removing info for No Bus:ttyL3
+[    2.304522] PM: Removing info for No Bus:ttyL4
+[    2.305271] PM: Removing info for No Bus:ttyL5
+[    2.305988] PM: Removing info for No Bus:ttyL6
+[    2.306734] PM: Removing info for No Bus:ttyL7
+[    2.307576] PM: Removing info for No Bus:ttyL8
+[    2.308313] PM: Removing info for No Bus:ttyL9
+[    2.309031] PM: Removing info for No Bus:ttyL10
+[    2.309784] PM: Removing info for No Bus:ttyL11
+[    2.310551] PM: Removing info for No Bus:ttyL12
+[    2.311297] PM: Removing info for No Bus:ttyL13
+[    2.312010] PM: Removing info for No Bus:ttyL14
+[    2.312745] PM: Removing info for No Bus:ttyL15
+[    2.313545] PM: Removing info for No Bus:ttyL16
+[    2.314285] PM: Removing info for No Bus:ttyL17
+[    2.315001] PM: Removing info for No Bus:ttyL18
+[    2.315737] PM: Removing info for No Bus:ttyL19
+[    2.316542] PM: Removing info for No Bus:ttyL20
+[    2.317285] PM: Removing info for No Bus:ttyL21
+[    2.317998] PM: Removing info for No Bus:ttyL22
+[    2.318735] PM: Removing info for No Bus:ttyL23
+[    2.319549] PM: Removing info for No Bus:ttyL24
+[    2.320293] PM: Removing info for No Bus:ttyL25
+[    2.321007] PM: Removing info for No Bus:ttyL26
+[    2.321757] PM: Removing info for No Bus:ttyL27
+[    2.322555] PM: Removing info for No Bus:ttyL28
+[    2.323300] PM: Removing info for No Bus:ttyL29
+[    2.324017] PM: Removing info for No Bus:ttyL30
+[    2.324762] PM: Removing info for No Bus:ttyL31
+[    2.325203] rc: No RISCom/8 boards detected.
+[    2.325322] initcall riscom8_init_module+0x0/0x420 returned -5 after 39973 usecs
+[    2.325453] initcall riscom8_init_module+0x0/0x420 returned with error code -5 
+[    2.325583] calling  n_hdlc_init+0x0/0xb0 @ 1
+[    2.325672] HDLC line discipline maxframe=4096
+[    2.325760] N_HDLC line discipline registered.
+[    2.325849] initcall n_hdlc_init+0x0/0xb0 returned 0 after 171 usecs
+[    2.325942] calling  rio_init+0x0/0x11f0 @ 1
+[    2.326180] PM: Adding info for No Bus:rioctl
+[    2.329197] PM: Removing info for No Bus:rioctl
+[    2.329662] initcall rio_init+0x0/0x11f0 returned -5 after 3533 usecs
+[    2.329756] initcall rio_init+0x0/0x11f0 returned with error code -5 
+[    2.329849] calling  r3964_init+0x0/0x40 @ 1
+[    2.329937] r3964: Philips r3964 Driver $Revision: 1.10 $
+[    2.330035] initcall r3964_init+0x0/0x40 returned 0 after 94 usecs
+[    2.330127] calling  nvram_init+0x0/0x90 @ 1
+[    2.330370] PM: Adding info for No Bus:nvram
+[    2.330696] Non-volatile memory driver v1.3
+[    2.330789] initcall nvram_init+0x0/0x90 returned 0 after 556 usecs
+[    2.330881] calling  scx200_gpio_init+0x0/0x140 @ 1
+[    2.330970] scx200_gpio: no SCx200 gpio present
+[    2.331070] initcall scx200_gpio_init+0x0/0x140 returned -19 after 96 usecs
+[    2.331165] calling  nsc_gpio_init+0x0/0x20 @ 1
+[    2.331273] nsc_gpio initializing
+[    2.331362] initcall nsc_gpio_init+0x0/0x20 returned 0 after 85 usecs
+[    2.331454] calling  cs5535_gpio_init+0x0/0x1d0 @ 1
+[    2.331556] cs5535_gpio: DIVIL not found
+[    2.331646] initcall cs5535_gpio_init+0x0/0x1d0 returned -19 after 100 usecs
+[    2.331740] calling  mwave_init+0x0/0x350 @ 1
+[    2.332493] smapi::smapi_query_DSP_cfg: Error: Could not get DSP modem settings. Aborting.
+[    2.332624] mwave: tp3780i::tp3780I_CalcResources: Error: Could not query DSP config. Aborting.
+[    2.332755] mwave: mwavedd:mwave_init: Error: Failed to calculate resources
+[    2.332847] mwave: mwavedd::mwave_init: Error: Failed to initialize
+[    2.332941] initcall mwave_init+0x0/0x350 returned -5 after 1084 usecs
+[    2.333038] initcall mwave_init+0x0/0x350 returned with error code -5 
+[    2.333131] calling  ipmi_init_msghandler_mod+0x0/0x10 @ 1
+[    2.333491] ipmi message handler version 39.2
+[    2.333604] initcall ipmi_init_msghandler_mod+0x0/0x10 returned 0 after 369 usecs
+[    2.333734] calling  init_ipmi_devintf+0x0/0x100 @ 1
+[    2.333823] ipmi device interface
+[    2.334172] initcall init_ipmi_devintf+0x0/0x100 returned 0 after 338 usecs
+[    2.334283] calling  init_ipmi_si+0x0/0x990 @ 1
+[    2.334631] IPMI System Interface driver.
+[    2.343766] ipmi_si: Unable to find any System Interface(s)
+[    2.343861] initcall init_ipmi_si+0x0/0x990 returned -19 after 9264 usecs
+[    2.343954] calling  hangcheck_init+0x0/0xe0 @ 1
+[    2.344053] Hangcheck: starting hangcheck timer 0.9.0 (tick is 180 seconds, margin is 60 seconds).
+[    2.344183] Hangcheck: Using get_cycles().
+[    2.344289] initcall hangcheck_init+0x0/0xe0 returned 0 after 228 usecs
+[    2.344381] calling  serial8250_init+0x0/0x170 @ 1
+[    2.344470] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    2.345519] PM: Adding info for platform:serial8250
+[    2.346174] PM: Adding info for No Bus:ttyS0
+[    2.346625] async_waiting @ 1
+[    2.346714] async_continuing @ 1 after 2 usec
+[    2.470050] async_waiting @ 1
+[    2.470139] async_continuing @ 1 after 1 usec
+[    2.593101] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a NS16550A
+[    2.593458] PM: Adding info for No Bus:ttyS1
+[    2.594043] PM: Adding info for No Bus:ttyS2
+[    2.594639] PM: Adding info for No Bus:ttyS3
+[    2.595290] initcall serial8250_init+0x0/0x170 returned 0 after 244937 usecs
+[    2.595384] calling  serial8250_pnp_init+0x0/0x10 @ 1
+[    2.595952] initcall serial8250_pnp_init+0x0/0x10 returned 0 after 466 usecs
+[    2.596053] calling  serial8250_pci_init+0x0/0x20 @ 1
+[    2.596464] initcall serial8250_pci_init+0x0/0x20 returned 0 after 309 usecs
+[    2.596557] calling  fourport_init+0x0/0x10 @ 1
+[    2.596756] PM: Adding info for platform:serial8250.3
+[    2.597607] PM: Removing info for No Bus:ttyS0
+[    2.598462] PM: Adding info for No Bus:ttyS0
+[    2.599175] PM: Removing info for No Bus:ttyS0
+[    2.599981] PM: Adding info for No Bus:ttyS0
+[    2.600731] PM: Removing info for No Bus:ttyS0
+[    2.601563] PM: Adding info for No Bus:ttyS0
+[    2.602299] PM: Removing info for No Bus:ttyS0
+[    2.603078] PM: Adding info for No Bus:ttyS0
+[    2.603790] PM: Removing info for No Bus:ttyS0
+[    2.604606] PM: Adding info for No Bus:ttyS0
+[    2.605330] PM: Removing info for No Bus:ttyS0
+[    2.606112] PM: Adding info for No Bus:ttyS0
+[    2.606827] PM: Removing info for No Bus:ttyS0
+[    2.607635] PM: Adding info for No Bus:ttyS0
+[    2.608357] PM: Removing info for No Bus:ttyS0
+[    2.609142] PM: Adding info for No Bus:ttyS0
+[    2.609519] initcall fourport_init+0x0/0x10 returned 0 after 12566 usecs
+[    2.609613] calling  boca_init+0x0/0x10 @ 1
+[    2.609807] PM: Adding info for platform:serial8250.5
+[    2.610563] PM: Removing info for No Bus:ttyS0
+[    2.611372] PM: Adding info for No Bus:ttyS0
+[    2.612074] PM: Removing info for No Bus:ttyS0
+[    2.612875] PM: Adding info for No Bus:ttyS0
+[    2.613602] PM: Removing info for No Bus:ttyS0
+[    2.614465] PM: Adding info for No Bus:ttyS0
+[    2.615174] PM: Removing info for No Bus:ttyS0
+[    2.615975] PM: Adding info for No Bus:ttyS0
+[    2.616704] PM: Removing info for No Bus:ttyS0
+[    2.617569] PM: Adding info for No Bus:ttyS0
+[    2.618288] PM: Removing info for No Bus:ttyS0
+[    2.619074] PM: Adding info for No Bus:ttyS0
+[    2.619803] PM: Removing info for No Bus:ttyS0
+[    2.620615] PM: Adding info for No Bus:ttyS0
+[    2.621340] PM: Removing info for No Bus:ttyS0
+[    2.622121] PM: Adding info for No Bus:ttyS0
+[    2.622832] PM: Removing info for No Bus:ttyS0
+[    2.623636] PM: Adding info for No Bus:ttyS0
+[    2.624358] PM: Removing info for No Bus:ttyS0
+[    2.625139] PM: Adding info for No Bus:ttyS0
+[    2.625852] PM: Removing info for No Bus:ttyS0
+[    2.626653] PM: Adding info for No Bus:ttyS0
+[    2.627371] PM: Removing info for No Bus:ttyS0
+[    2.628157] PM: Adding info for No Bus:ttyS0
+[    2.628868] PM: Removing info for No Bus:ttyS0
+[    2.629670] PM: Adding info for No Bus:ttyS0
+[    2.630488] PM: Removing info for No Bus:ttyS0
+[    2.631293] PM: Adding info for No Bus:ttyS0
+[    2.631989] PM: Removing info for No Bus:ttyS0
+[    2.632827] PM: Adding info for No Bus:ttyS0
+[    2.633846] PM: Removing info for No Bus:ttyS0
+[    2.634642] PM: Adding info for No Bus:ttyS0
+[    2.635000] initcall boca_init+0x0/0x10 returned 0 after 24702 usecs
+[    2.635095] calling  hub6_init+0x0/0x10 @ 1
+[    2.635320] PM: Adding info for platform:serial8250.7
+[    2.635993] PM: Removing info for No Bus:ttyS0
+[    2.636821] PM: Adding info for No Bus:ttyS0
+[    2.637563] PM: Removing info for No Bus:ttyS0
+[    2.638373] PM: Adding info for No Bus:ttyS0
+[    2.639073] PM: Removing info for No Bus:ttyS0
+[    2.639881] PM: Adding info for No Bus:ttyS0
+[    2.640607] PM: Removing info for No Bus:ttyS0
+[    2.641418] PM: Adding info for No Bus:ttyS0
+[    2.642129] PM: Removing info for No Bus:ttyS0
+[    2.642939] PM: Adding info for No Bus:ttyS0
+[    2.643648] PM: Removing info for No Bus:ttyS0
+[    2.644558] PM: Adding info for No Bus:ttyS0
+[    2.645282] PM: Removing info for No Bus:ttyS0
+[    2.646073] PM: Adding info for No Bus:ttyS0
+[    2.646825] PM: Removing info for No Bus:ttyS0
+[    2.647639] PM: Adding info for No Bus:ttyS0
+[    2.648370] PM: Removing info for No Bus:ttyS0
+[    2.649156] PM: Adding info for No Bus:ttyS0
+[    2.649869] PM: Removing info for No Bus:ttyS0
+[    2.650677] PM: Adding info for No Bus:ttyS0
+[    2.651440] PM: Removing info for No Bus:ttyS0
+[    2.652236] PM: Adding info for No Bus:ttyS0
+[    2.652945] PM: Removing info for No Bus:ttyS0
+[    2.653764] PM: Adding info for No Bus:ttyS0
+[    2.654160] initcall hub6_init+0x0/0x10 returned 0 after 18527 usecs
+[    2.654298] calling  isa_bus_init+0x0/0x40 @ 1
+[    2.654724] PM: Adding info for No Bus:isa
+[    2.654816] initcall isa_bus_init+0x0/0x40 returned 0 after 418 usecs
+[    2.654910] calling  topology_sysfs_init+0x0/0x50 @ 1
+[    2.655107] initcall topology_sysfs_init+0x0/0x50 returned 0 after 101 usecs
+[    2.655201] calling  floppy_init+0x0/0xe80 @ 1
+[    5.666280] floppy0: no floppy controllers found
+[    5.666711] initcall floppy_init+0x0/0xe80 returned -19 after 2940818 usecs
+[    5.666804] calling  brd_init+0x0/0x1a0 @ 1
+[    5.667600] PM: Adding info for No Bus:ram0
+[    5.668179] PM: Adding info for No Bus:1:0
+[    5.668738] PM: Adding info for No Bus:ram1
+[    5.669350] PM: Adding info for No Bus:1:1
+[    5.669865] PM: Adding info for No Bus:ram2
+[    5.670452] PM: Adding info for No Bus:1:2
+[    5.670954] PM: Adding info for No Bus:ram3
+[    5.671669] PM: Adding info for No Bus:1:3
+[    5.672204] PM: Adding info for No Bus:ram4
+[    5.672812] PM: Adding info for No Bus:1:4
+[    5.673328] PM: Adding info for No Bus:ram5
+[    5.673906] PM: Adding info for No Bus:1:5
+[    5.674445] PM: Adding info for No Bus:ram6
+[    5.675015] PM: Adding info for No Bus:1:6
+[    5.675524] PM: Adding info for No Bus:ram7
+[    5.676103] PM: Adding info for No Bus:1:7
+[    5.676630] PM: Adding info for No Bus:ram8
+[    5.677207] PM: Adding info for No Bus:1:8
+[    5.677724] PM: Adding info for No Bus:ram9
+[    5.678389] PM: Adding info for No Bus:1:9
+[    5.678898] PM: Adding info for No Bus:ram10
+[    5.679495] PM: Adding info for No Bus:1:10
+[    5.680006] PM: Adding info for No Bus:ram11
+[    5.680599] PM: Adding info for No Bus:1:11
+[    5.681116] PM: Adding info for No Bus:ram12
+[    5.681731] PM: Adding info for No Bus:1:12
+[    5.682283] PM: Adding info for No Bus:ram13
+[    5.682877] PM: Adding info for No Bus:1:13
+[    5.683404] PM: Adding info for No Bus:ram14
+[    5.683983] PM: Adding info for No Bus:1:14
+[    5.684498] PM: Adding info for No Bus:ram15
+[    5.685085] PM: Adding info for No Bus:1:15
+[    5.685480] brd: module loaded
+[    5.685571] initcall brd_init+0x0/0x1a0 returned 0 after 18235 usecs
+[    5.685663] calling  loop_init+0x0/0x1b0 @ 1
+[    5.686216] PM: Adding info for No Bus:loop0
+[    5.686813] PM: Adding info for No Bus:7:0
+[    5.687343] PM: Adding info for No Bus:loop1
+[    5.687918] PM: Adding info for No Bus:7:1
+[    5.688455] PM: Adding info for No Bus:loop2
+[    5.689024] PM: Adding info for No Bus:7:2
+[    5.689553] PM: Adding info for No Bus:loop3
+[    5.690135] PM: Adding info for No Bus:7:3
+[    5.690657] PM: Adding info for No Bus:loop4
+[    5.691235] PM: Adding info for No Bus:7:4
+[    5.691761] PM: Adding info for No Bus:loop5
+[    5.692364] PM: Adding info for No Bus:7:5
+[    5.692878] PM: Adding info for No Bus:loop6
+[    5.693475] PM: Adding info for No Bus:7:6
+[    5.693976] PM: Adding info for No Bus:loop7
+[    5.694618] PM: Adding info for No Bus:7:7
+[    5.694968] loop: module loaded
+[    5.695068] initcall loop_init+0x0/0x1b0 returned 0 after 9095 usecs
+[    5.695163] calling  cpqarray_init+0x0/0x2c0 @ 1
+[    5.695268] Compaq SMART2 Driver (v 2.6.0)
+[    5.695891] initcall cpqarray_init+0x0/0x2c0 returned -19 after 606 usecs
+[    5.695985] calling  mm_init+0x0/0x1a0 @ 1
+[    5.696441] MM: desc_per_page = 128
+[    5.696531] initcall mm_init+0x0/0x1a0 returned 0 after 441 usecs
+[    5.696623] calling  nbd_init+0x0/0x330 @ 1
+[    5.698013] nbd: registered device at major 43
+[    5.698277] PM: Adding info for No Bus:nbd0
+[    5.698891] PM: Adding info for No Bus:43:0
+[    5.699425] PM: Adding info for No Bus:nbd1
+[    5.700018] PM: Adding info for No Bus:43:1
+[    5.700556] PM: Adding info for No Bus:nbd2
+[    5.701169] PM: Adding info for No Bus:43:2
+[    5.701703] PM: Adding info for No Bus:nbd3
+[    5.702509] PM: Adding info for No Bus:43:3
+[    5.703037] PM: Adding info for No Bus:nbd4
+[    5.703651] PM: Adding info for No Bus:43:4
+[    5.704174] PM: Adding info for No Bus:nbd5
+[    5.704791] PM: Adding info for No Bus:43:5
+[    5.705348] PM: Adding info for No Bus:nbd6
+[    5.705945] PM: Adding info for No Bus:43:6
+[    5.707332] PM: Adding info for No Bus:nbd7
+[    5.707936] PM: Adding info for No Bus:43:7
+[    5.708469] PM: Adding info for No Bus:nbd8
+[    5.709077] PM: Adding info for No Bus:43:8
+[    5.709600] PM: Adding info for No Bus:nbd9
+[    5.710207] PM: Adding info for No Bus:43:9
+[    5.710757] PM: Adding info for No Bus:nbd10
+[    5.711374] PM: Adding info for No Bus:43:10
+[    5.711893] PM: Adding info for No Bus:nbd11
+[    5.712522] PM: Adding info for No Bus:43:11
+[    5.713039] PM: Adding info for No Bus:nbd12
+[    5.713654] PM: Adding info for No Bus:43:12
+[    5.714178] PM: Adding info for No Bus:nbd13
+[    5.714803] PM: Adding info for No Bus:43:13
+[    5.715381] PM: Adding info for No Bus:nbd14
+[    5.715979] PM: Adding info for No Bus:43:14
+[    5.716494] PM: Adding info for No Bus:nbd15
+[    5.717104] PM: Adding info for No Bus:43:15
+[    5.717466] initcall nbd_init+0x0/0x330 returned 0 after 20264 usecs
+[    5.717560] calling  lkdtm_module_init+0x0/0x210 @ 1
+[    5.717649] lkdtm : Invalid command
+[    5.717737] initcall lkdtm_module_init+0x0/0x210 returned -22 after 84 usecs
+[    5.717831] initcall lkdtm_module_init+0x0/0x210 returned with error code -22 
+[    5.717960] calling  sm501_base_init+0x0/0x20 @ 1
+[    5.718614] initcall sm501_base_init+0x0/0x20 returned 0 after 538 usecs
+[    5.718707] calling  pasic3_base_init+0x0/0x20 @ 1
+[    5.719401] initcall pasic3_base_init+0x0/0x20 returned -19 after 586 usecs
+[    5.719495] calling  mac_hid_init+0x0/0xd0 @ 1
+[    5.719810] PM: Adding info for No Bus:input0
+[    5.720142] input: Macintosh mouse button emulation as /class/input/input0
+[    5.720303] initcall mac_hid_init+0x0/0xd0 returned 0 after 699 usecs
+[    5.720395] calling  raid_init+0x0/0x10 @ 1
+[    5.720724] initcall raid_init+0x0/0x10 returned 0 after 232 usecs
+[    5.720816] calling  spi_transport_init+0x0/0x90 @ 1
+[    5.721422] initcall spi_transport_init+0x0/0x90 returned 0 after 500 usecs
+[    5.721515] calling  iscsi_transport_init+0x0/0x140 @ 1
+[    5.721606] Loading iSCSI transport class v2.0-870.
+[    5.723000] initcall iscsi_transport_init+0x0/0x140 returned 0 after 1359 usecs
+[    5.723134] calling  ahc_linux_init+0x0/0x70 @ 1
+[    5.723850] initcall ahc_linux_init+0x0/0x70 returned 0 after 608 usecs
+[    5.723943] calling  init_sd+0x0/0xe0 @ 1
+[    5.724630] initcall init_sd+0x0/0xe0 returned 0 after 575 usecs
+[    5.724722] calling  init_sr+0x0/0x50 @ 1
+[    5.725176] initcall init_sr+0x0/0x50 returned 0 after 355 usecs
+[    5.725287] calling  init_sg+0x0/0xc0 @ 1
+[    5.725630] initcall init_sg+0x0/0xc0 returned 0 after 247 usecs
+[    5.725723] calling  ahci_init+0x0/0x20 @ 1
+[    5.725967] ahci 0000:00:1f.2: version 3.0
+[    5.726187] ahci 0000:00:1f.2: PCI INT B -> GSI 16 (level, low) -> IRQ 16
+[    5.726424] ahci 0000:00:1f.2: irq 28 for MSI/MSI-X
+[    5.726644] ahci 0000:00:1f.2: AHCI 0001.0100 32 slots 4 ports 1.5 Gbps 0x1 impl SATA mode
+[    5.726775] ahci 0000:00:1f.2: flags: 64bit ncq pm led clo pio slum part 
+[    5.726872] ahci 0000:00:1f.2: setting latency timer to 64
+[    5.727310] scsi0 : ahci
+[    5.727561] PM: Adding info for No Bus:host0
+[    5.727917] PM: Adding info for No Bus:host0
+[    5.728506] scsi1 : ahci
+[    5.728677] PM: Adding info for No Bus:host1
+[    5.729052] PM: Adding info for No Bus:host1
+[    5.729557] scsi2 : ahci
+[    5.729724] PM: Adding info for No Bus:host2
+[    5.730186] PM: Adding info for No Bus:host2
+[    5.730642] scsi3 : ahci
+[    5.730810] PM: Adding info for No Bus:host3
+[    5.731209] PM: Adding info for No Bus:host3
+[    5.731578] ata1: SATA max UDMA/133 abar m1024@0xee444400 port 0xee444500 irq 28
+[    5.731707] ata2: DUMMY
+[    5.731791] ata3: DUMMY
+[    5.731875] ata4: DUMMY
+[    6.291278] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[    6.292579] ata1.00: ATA-7: HTS541080G9SA00, MB4IC60H, max UDMA/100
+[    6.292671] ata1.00: 156301488 sectors, multi 16: LBA48 
+[    6.294242] ata1.00: configured for UDMA/100
+[    6.305024] async_waiting @ 1854
+[    6.305112] async_continuing @ 1854 after 1 usec
+[    6.305667] scsi 0:0:0:0: Direct-Access     ATA      HTS541080G9SA00  MB4I PQ: 0 ANSI: 5
+[    6.305885] PM: Adding info for No Bus:target0:0:0
+[    6.306349] PM: Adding info for scsi:0:0:0:0
+[    6.307272] PM: Adding info for No Bus:0:0:0:0
+[    6.307969] sd 0:0:0:0: [sda] 156301488 512-byte logical blocks: (80.0 GB/74.5 GiB)
+[    6.308891] sd 0:0:0:0: [sda] Write Protect is off
+[    6.308980] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[    6.309482] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    6.310066] PM: Adding info for No Bus:sda
+[    6.311900]  sda: sda1 sda2
+[    6.691374] PM: Adding info for No Bus:sda1
+[    6.691839] PM: Adding info for No Bus:sda2
+[    6.693460] PM: Adding info for No Bus:8:0
+[    6.695453] sd 0:0:0:0: [sda] Attached SCSI disk
+[    6.695712] PM: Adding info for No Bus:0:0:0:0
+[    6.696703] PM: Adding info for No Bus:sg0
+[    6.697128] sd 0:0:0:0: Attached scsi generic sg0 type 0
+[    6.697297] async_waiting @ 1854
+[    6.697389] async_continuing @ 1854 after 1 usec
+[    6.697498] async_waiting @ 1854
+[    6.697586] async_continuing @ 1854 after 1 usec
+[    6.697704] async_waiting @ 1854
+[    6.697793] async_continuing @ 1854 after 1 usec
+[    6.697890] work_for_cpu used greatest stack depth: 924 bytes left
+[    6.698219] initcall ahci_init+0x0/0x20 returned 0 after 949611 usecs
+[    6.698337] calling  piix_init+0x0/0x30 @ 1
+[    6.698573] ata_piix 0000:00:1f.1: version 2.13
+[    6.698682] ata_piix 0000:00:1f.1: PCI INT C -> GSI 16 (level, low) -> IRQ 16
+[    6.698923] ata_piix 0000:00:1f.1: setting latency timer to 64
+[    6.699281] scsi4 : ata_piix
+[    6.699453] PM: Adding info for No Bus:host4
+[    6.699796] PM: Adding info for No Bus:host4
+[    6.700239] scsi5 : ata_piix
+[    6.700403] PM: Adding info for No Bus:host5
+[    6.700741] PM: Adding info for No Bus:host5
+[    6.701088] ata5: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x1810 irq 14
+[    6.701181] ata6: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x1818 irq 15
+[    6.855651] ata5.00: ATAPI: HL-DT-STCD-RW/DVD DRIVE GCC-4246N, 0X05, max UDMA/33
+[    6.861557] ata5.00: configured for UDMA/33
+[    6.862570] async_waiting @ 1872
+[    6.862659] async_continuing @ 1872 after 1 usec
+[    6.867443] scsi 4:0:0:0: CD-ROM            HL-DT-ST RW/DVD GCC-4246N 0X05 PQ: 0 ANSI: 5
+[    6.867674] PM: Adding info for No Bus:target4:0:0
+[    6.868115] PM: Adding info for scsi:4:0:0:0
+[    6.879849] sr0: scsi3-mmc drive: 24x/24x writer cd/rw xa/form2 cdda tray
+[    6.879944] Uniform CD-ROM driver Revision: 3.20
+[    6.880525] PM: Adding info for No Bus:sr0
+[    6.881766] PM: Adding info for No Bus:11:0
+[    6.882214] sr 4:0:0:0: Attached scsi CD-ROM sr0
+[    6.882480] PM: Adding info for No Bus:4:0:0:0
+[    6.883239] PM: Adding info for No Bus:sg1
+[    6.883631] sr 4:0:0:0: Attached scsi generic sg1 type 5
+[    6.883809] ata6: port disabled. ignoring.
+[    6.883905] async_waiting @ 1872
+[    6.883994] async_continuing @ 1872 after 1 usec
+[    6.884400] initcall piix_init+0x0/0x30 returned 0 after 181612 usecs
+[    6.884493] calling  nv_init+0x0/0x20 @ 1
+[    6.884938] initcall nv_init+0x0/0x20 returned 0 after 345 usecs
+[    6.885037] calling  amd_init+0x0/0x20 @ 1
+[    6.885431] initcall amd_init+0x0/0x20 returned 0 after 295 usecs
+[    6.885524] calling  atiixp_init+0x0/0x20 @ 1
+[    6.885898] initcall atiixp_init+0x0/0x20 returned 0 after 276 usecs
+[    6.885992] calling  cs5530_init+0x0/0x20 @ 1
+[    6.886411] initcall cs5530_init+0x0/0x20 returned 0 after 316 usecs
+[    6.886505] calling  efar_init+0x0/0x20 @ 1
+[    6.886870] initcall efar_init+0x0/0x20 returned 0 after 269 usecs
+[    6.886963] calling  hpt3x3_init+0x0/0x20 @ 1
+[    6.887416] initcall hpt3x3_init+0x0/0x20 returned 0 after 342 usecs
+[    6.887509] calling  netcell_init+0x0/0x20 @ 1
+[    6.887885] initcall netcell_init+0x0/0x20 returned 0 after 277 usecs
+[    6.887977] calling  ninja32_init+0x0/0x20 @ 1
+[    6.888369] initcall ninja32_init+0x0/0x20 returned 0 after 284 usecs
+[    6.888462] calling  ns87410_init+0x0/0x20 @ 1
+[    6.888834] initcall ns87410_init+0x0/0x20 returned 0 after 274 usecs
+[    6.888926] calling  marvell_init+0x0/0x20 @ 1
+[    6.889319] initcall marvell_init+0x0/0x20 returned 0 after 292 usecs
+[    6.889411] calling  oldpiix_init+0x0/0x20 @ 1
+[    6.889783] initcall oldpiix_init+0x0/0x20 returned 0 after 273 usecs
+[    6.889875] calling  pdc202xx_init+0x0/0x20 @ 1
+[    6.890302] initcall pdc202xx_init+0x0/0x20 returned 0 after 325 usecs
+[    6.890395] calling  qdi_init+0x0/0x270 @ 1
+[    6.890487] initcall qdi_init+0x0/0x270 returned -19 after 1 usecs
+[    6.890579] calling  via_init+0x0/0x20 @ 1
+[    6.890943] initcall via_init+0x0/0x20 returned 0 after 267 usecs
+[    6.891042] calling  sch_init+0x0/0x20 @ 1
+[    6.891429] initcall sch_init+0x0/0x20 returned 0 after 286 usecs
+[    6.891521] calling  ata_generic_init+0x0/0x20 @ 1
+[    6.891897] initcall ata_generic_init+0x0/0x20 returned 0 after 276 usecs
+[    6.891991] calling  e1000_init_module+0x0/0x90 @ 1
+[    6.892084] Intel(R) PRO/1000 Network Driver - version 7.3.21-k3-NAPI
+[    6.892175] Copyright (c) 1999-2006 Intel Corporation.
+[    6.892642] initcall e1000_init_module+0x0/0x90 returned 0 after 541 usecs
+[    6.892736] calling  e1000_init_module+0x0/0x70 @ 1
+[    6.892827] e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
+[    6.892915] e1000e: Copyright (c) 1999-2008 Intel Corporation.
+[    6.893198] e1000e 0000:02:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    6.894168] e1000e 0000:02:00.0: pci_enable_pcie_error_reporting failed 0xfffffffb
+[    6.894312] e1000e 0000:02:00.0: setting latency timer to 64
+[    6.894660] e1000e 0000:02:00.0: irq 29 for MSI/MSI-X
+[    6.936460] e1000e 0000:02:00.0: Warning: detected ASPM enabled in EEPROM
+[    6.979519] PM: Adding info for No Bus:eth0
+[    6.980330] 0000:02:00.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:16:41:17:49:d2
+[    6.980460] 0000:02:00.0: eth0: Intel(R) PRO/1000 Network Connection
+[    6.980626] 0000:02:00.0: eth0: MAC: 2, PHY: 2, PBA No: 005301-003
+[    6.981054] initcall e1000_init_module+0x0/0x70 returned 0 after 86157 usecs
+[    6.981148] calling  ipg_init_module+0x0/0x20 @ 1
+[    6.981564] initcall ipg_init_module+0x0/0x20 returned 0 after 314 usecs
+[    6.981657] calling  atl1_init_module+0x0/0x20 @ 1
+[    6.982031] initcall atl1_init_module+0x0/0x20 returned 0 after 277 usecs
+[    6.982124] calling  atl1c_init_module+0x0/0x20 @ 1
+[    6.982546] initcall atl1c_init_module+0x0/0x20 returned 0 after 320 usecs
+[    6.982640] calling  jme_init_module+0x0/0x30 @ 1
+[    6.982729] jme: JMicron JMC2XX ethernet driver version 1.0.4
+[    6.983110] initcall jme_init_module+0x0/0x30 returned 0 after 369 usecs
+[    6.983204] calling  gem_init+0x0/0x20 @ 1
+[    6.983599] initcall gem_init+0x0/0x20 returned 0 after 284 usecs
+[    6.983691] calling  vortex_init+0x0/0xe0 @ 1
+[    6.984396] initcall vortex_init+0x0/0xe0 returned 0 after 597 usecs
+[    6.984488] calling  typhoon_init+0x0/0x20 @ 1
+[    6.984868] initcall typhoon_init+0x0/0x20 returned 0 after 280 usecs
+[    6.984960] calling  ne2k_pci_init+0x0/0x20 @ 1
+[    6.985417] initcall ne2k_pci_init+0x0/0x20 returned 0 after 346 usecs
+[    6.985511] calling  e100_init_module+0x0/0x60 @ 1
+[    6.985600] e100: Intel(R) PRO/100 Network Driver, 3.5.24-k2-NAPI
+[    6.985690] e100: Copyright(c) 1999-2006 Intel Corporation
+[    6.986158] initcall e100_init_module+0x0/0x60 returned 0 after 543 usecs
+[    6.986269] calling  tlan_probe+0x0/0x360 @ 1
+[    6.986358] ThunderLAN driver v1.15a
+[    6.986743] TLAN: 0 devices installed, PCI: 0  EISA: 0
+[    6.987083] initcall tlan_probe+0x0/0x360 returned -19 after 706 usecs
+[    6.987176] calling  smsc9420_init_module+0x0/0x40 @ 1
+[    6.987581] initcall smsc9420_init_module+0x0/0x40 returned 0 after 284 usecs
+[    6.987675] calling  sis190_init_module+0x0/0x20 @ 1
+[    6.988111] initcall sis190_init_module+0x0/0x20 returned 0 after 335 usecs
+[    6.988205] calling  sis900_init_module+0x0/0x20 @ 1
+[    6.988738] initcall sis900_init_module+0x0/0x20 returned 0 after 342 usecs
+[    6.988832] calling  acenic_init+0x0/0x20 @ 1
+[    6.989222] initcall acenic_init+0x0/0x20 returned 0 after 292 usecs
+[    6.989329] calling  natsemi_init_mod+0x0/0x20 @ 1
+[    6.989757] initcall natsemi_init_mod+0x0/0x20 returned 0 after 327 usecs
+[    6.989850] calling  ns83820_init+0x0/0x30 @ 1
+[    6.989940] ns83820.c: National Semiconductor DP83820 10/100/1000 driver.
+[    6.990333] initcall ns83820_init+0x0/0x30 returned 0 after 380 usecs
+[    6.990425] calling  fealnx_init+0x0/0x20 @ 1
+[    6.990794] initcall fealnx_init+0x0/0x20 returned 0 after 272 usecs
+[    6.990886] calling  tg3_init+0x0/0x20 @ 1
+[    6.991340] initcall tg3_init+0x0/0x20 returned 0 after 353 usecs
+[    6.991433] calling  bnx2_init+0x0/0x20 @ 1
+[    6.991801] initcall bnx2_init+0x0/0x20 returned 0 after 271 usecs
+[    6.991894] calling  davicom_init+0x0/0x60 @ 1
+[    6.992768] initcall davicom_init+0x0/0x60 returned 0 after 764 usecs
+[    6.992862] calling  smsc_init+0x0/0x90 @ 1
+[    6.994292] initcall smsc_init+0x0/0x90 returned 0 after 1306 usecs
+[    6.994385] calling  ip175c_init+0x0/0x10 @ 1
+[    6.994725] initcall ip175c_init+0x0/0x10 returned 0 after 242 usecs
+[    6.994817] calling  net_olddevs_init+0x0/0x90 @ 1
+[    6.995812] initcall net_olddevs_init+0x0/0x90 returned 0 after 881 usecs
+[    6.995905] calling  sb1000_init+0x0/0x10 @ 1
+[    6.996278] initcall sb1000_init+0x0/0x10 returned 0 after 274 usecs
+[    6.996371] calling  NS8390p_init_module+0x0/0x10 @ 1
+[    6.996463] initcall NS8390p_init_module+0x0/0x10 returned 0 after 1 usecs
+[    6.996556] calling  b44_init+0x0/0x70 @ 1
+[    6.997187] initcall b44_init+0x0/0x70 returned 0 after 529 usecs
+[    6.997332] calling  init_nic+0x0/0x20 @ 1
+[    6.997702] initcall init_nic+0x0/0x20 returned 0 after 273 usecs
+[    6.997794] calling  cp_init+0x0/0x20 @ 1
+[    6.998167] initcall cp_init+0x0/0x20 returned 0 after 276 usecs
+[    6.998276] calling  rtl8139_init_module+0x0/0x20 @ 1
+[    6.998651] initcall rtl8139_init_module+0x0/0x20 returned 0 after 277 usecs
+[    6.998744] calling  lp486e_init_module+0x0/0x2d0 @ 1
+[    6.999492] eth%d: i82596 initialization timed out
+[    6.999592] initcall lp486e_init_module+0x0/0x2d0 returned -19 after 738 usecs
+[    6.999721] calling  eql_init_module+0x0/0x60 @ 1
+[    6.999811] Equalizer2002: Simon Janes (simon@ncm.com) and David S. Miller (davem@redhat.com)
+[    7.000347] PM: Adding info for No Bus:eql
+[    7.001163] initcall eql_init_module+0x0/0x60 returned 0 after 1317 usecs
+[    7.001272] calling  tun_init+0x0/0xa0 @ 1
+[    7.001361] tun: Universal TUN/TAP device driver, 1.6
+[    7.001449] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+[    7.001732] PM: Adding info for No Bus:tun
+[    7.002121] initcall tun_init+0x0/0xa0 returned 0 after 741 usecs
+[    7.002213] calling  rio_init+0x0/0x20 @ 1
+[    7.002613] initcall rio_init+0x0/0x20 returned 0 after 282 usecs
+[    7.002705] calling  asix_init+0x0/0x20 @ 1
+[    7.003069] usbcore: registered new interface driver asix
+[    7.003172] initcall asix_init+0x0/0x20 returned 0 after 369 usecs
+[    7.003277] calling  cdc_init+0x0/0x20 @ 1
+[    7.003622] usbcore: registered new interface driver cdc_ether
+[    7.003723] initcall cdc_init+0x0/0x20 returned 0 after 348 usecs
+[    7.003815] calling  smsc95xx_init+0x0/0x20 @ 1
+[    7.004223] usbcore: registered new interface driver smsc95xx
+[    7.004343] initcall smsc95xx_init+0x0/0x20 returned 0 after 426 usecs
+[    7.004435] calling  net1080_init+0x0/0x20 @ 1
+[    7.004789] usbcore: registered new interface driver net1080
+[    7.004889] initcall net1080_init+0x0/0x20 returned 0 after 355 usecs
+[    7.004982] calling  plusb_init+0x0/0x20 @ 1
+[    7.005395] usbcore: registered new interface driver plusb
+[    7.005495] initcall plusb_init+0x0/0x20 returned 0 after 408 usecs
+[    7.005587] calling  rndis_init+0x0/0x20 @ 1
+[    7.005925] usbcore: registered new interface driver rndis_host
+[    7.006031] initcall rndis_init+0x0/0x20 returned 0 after 345 usecs
+[    7.006124] calling  usbnet_init+0x0/0x30 @ 1
+[    7.006223] initcall usbnet_init+0x0/0x30 returned 0 after 8 usecs
+[    7.006330] calling  usbpn_init+0x0/0x20 @ 1
+[    7.006673] usbcore: registered new interface driver cdc_phonet
+[    7.006775] initcall usbpn_init+0x0/0x20 returned 0 after 346 usecs
+[    7.006867] calling  prism54_module_init+0x0/0x40 @ 1
+[    7.006958] Loaded prism54 driver, version 1.2
+[    7.007340] initcall prism54_module_init+0x0/0x40 returned 0 after 370 usecs
+[    7.007433] calling  rndis_wlan_init+0x0/0x20 @ 1
+[    7.007855] usbcore: registered new interface driver rndis_wlan
+[    7.007957] initcall rndis_wlan_init+0x0/0x20 returned 0 after 422 usecs
+[    7.008059] calling  lbs_init_module+0x0/0x50 @ 1
+[    7.008173] initcall lbs_init_module+0x0/0x50 returned 0 after 21 usecs
+[    7.008304] calling  init_netconsole+0x0/0x200 @ 1
+[    7.008401] netconsole: local port 4444
+[    7.008487] netconsole: local IP 10.0.1.15
+[    7.008574] netconsole: interface eth0
+[    7.008660] netconsole: remote port 4444
+[    7.008746] netconsole: remote IP 10.0.1.21
+[    7.008833] netconsole: remote ethernet address 00:30:48:c6:86:26
+[    7.008929] netconsole: device eth0 not up yet, forcing it
+[    7.029077] e1000e 0000:02:00.0: irq 29 for MSI/MSI-X
+[    7.080380] e1000e 0000:02:00.0: irq 29 for MSI/MSI-X
+[    8.628601] e1000e: eth0 NIC Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
+[    8.628731] 0000:02:00.0: eth0: 10/100 speed: disabling TSO
+[    9.029819] console [netcon0] enabled
+[    9.029932] netconsole: network logging started
+[    9.030062] initcall init_netconsole+0x0/0x200 returned 0 after 1974278 usecs
+[    9.030184] calling  cdrom_init+0x0/0x10 @ 1
+[    9.030309] initcall cdrom_init+0x0/0x10 returned 0 after 1 usecs
+[    9.030423] calling  uwb_subsys_init+0x0/0x60 @ 1
+[    9.030901] initcall uwb_subsys_init+0x0/0x60 returned 0 after 355 usecs
+[    9.031019] calling  hwarc_driver_init+0x0/0x20 @ 1
+[    9.031417] usbcore: registered new interface driver hwa-rc
+[    9.031545] initcall hwarc_driver_init+0x0/0x20 returned 0 after 396 usecs
+[    9.031660] calling  i1480_dfu_driver_init+0x0/0x20 @ 1
+[    9.032080] usbcore: registered new interface driver i1480-dfu-usb
+[    9.032207] initcall i1480_dfu_driver_init+0x0/0x20 returned 0 after 422 usecs
+[    9.032377] calling  i1480_est_init+0x0/0xb0 @ 1
+[    9.032500] initcall i1480_est_init+0x0/0xb0 returned 0 after 10 usecs
+[    9.032614] calling  ehci_hcd_init+0x0/0x110 @ 1
+[    9.032728] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    9.032841] ehci_hcd: block sizes: qh 128 qtd 96 itd 160 sitd 96
+[    9.034239] ehci_hcd 0000:00:1d.7: power state changed by ACPI to D0
+[    9.034388] IOAPIC[0]: Set routing entry (1-19 -> 0xb1 -> IRQ 19 Mode:1 Active:1)
+[    9.034553] ehci_hcd 0000:00:1d.7: PCI INT D -> GSI 19 (level, low) -> IRQ 19
+[    9.034720] ehci_hcd 0000:00:1d.7: setting latency timer to 64
+[    9.034840] ehci_hcd 0000:00:1d.7: EHCI Host Controller
+[    9.035176] drivers/usb/core/inode.c: creating file 'devices'
+[    9.035321] drivers/usb/core/inode.c: creating file '001'
+[    9.035468] ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 1
+[    9.035645] ehci_hcd 0000:00:1d.7: reset hcs_params 0x104208 dbg=1 cc=4 pcc=2 ordered !ppc ports=8
+[    9.035812] ehci_hcd 0000:00:1d.7: reset hcc_params 6871 thresh 7 uframes 1024 64 bit addr
+[    9.036166] ehci_hcd 0000:00:1d.7: reset command 080022 (park)=0 ithresh=8 Async period=1024 Reset HALT
+[    9.040230] ehci_hcd 0000:00:1d.7: debug port 1
+[    9.040363] ehci_hcd 0000:00:1d.7: cache line size of 32 is not supported
+[    9.040489] ehci_hcd 0000:00:1d.7: supports USB remote wakeup
+[    9.040699] ehci_hcd 0000:00:1d.7: irq 19, io mem 0xee444000
+[    9.040820] ehci_hcd 0000:00:1d.7: reset command 080002 (park)=0 ithresh=8 period=1024 Reset HALT
+[    9.044854] ehci_hcd 0000:00:1d.7: init command 010001 (park)=0 ithresh=1 period=1024 RUN
+[    9.051051] ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
+[    9.051453] usb usb1: default language 0x0409
+[    9.051705] usb usb1: udev 1, busnum 1, minor = 0
+[    9.051824] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
+[    9.051945] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    9.052153] usb usb1: Product: EHCI Host Controller
+[    9.052273] usb usb1: Manufacturer: Linux 2.6.31-rc6-tip-01322-gd685ec8-dirty ehci_hcd
+[    9.052432] usb usb1: SerialNumber: 0000:00:1d.7
+[    9.053108] PM: Adding info for usb:usb1
+[    9.053319] usb usb1: uevent
+[    9.053733] usb usb1: usb_probe_device
+[    9.053857] usb usb1: configuration #1 chosen from 1 choice
+[    9.054092] usb usb1: adding 1-0:1.0 (config #1, interface 0)
+[    9.054471] PM: Adding info for usb:1-0:1.0
+[    9.054625] usb 1-0:1.0: uevent
+[    9.055098] hub 1-0:1.0: usb_probe_interface
+[    9.055230] hub 1-0:1.0: usb_probe_interface - got id
+[    9.055367] hub 1-0:1.0: USB hub found
+[    9.055606] hub 1-0:1.0: 8 ports detected
+[    9.055742] hub 1-0:1.0: standalone hub
+[    9.055876] hub 1-0:1.0: no power switching (usb 1.0)
+[    9.056848] hub 1-0:1.0: individual port over-current protection
+[    9.056996] hub 1-0:1.0: power on to power good time: 20ms
+[    9.057227] hub 1-0:1.0: local power source is good
+[    9.057381] hub 1-0:1.0: trying to enable port power on non-switchable hub
+[    9.058076] PM: Adding info for No Bus:ep_81
+[    9.058436] PM: Adding info for No Bus:usbdev1.1
+[    9.058850] drivers/usb/core/inode.c: creating file '001'
+[    9.059212] PM: Adding info for No Bus:ep_00
+[    9.059707] initcall ehci_hcd_init+0x0/0x110 returned 0 after 26342 usecs
+[    9.059825] calling  isp116x_init+0x0/0x50 @ 1
+[    9.059937] 116x: driver isp116x-hcd, 03 Nov 2005
+[    9.060355] initcall isp116x_init+0x0/0x50 returned 0 after 405 usecs
+[    9.060471] calling  ohci_hcd_mod_init+0x0/0x100 @ 1
+[    9.060584] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+[    9.060698] ohci_hcd: block sizes: ed 64 td 64
+[    9.061726] initcall ohci_hcd_mod_init+0x0/0x100 returned 0 after 1112 usecs
+[    9.061843] calling  uhci_hcd_init+0x0/0x160 @ 1
+[    9.061954] uhci_hcd: USB Universal Host Controller Interface driver
+[    9.063314] uhci_hcd 0000:00:1d.0: power state changed by ACPI to D0
+[    9.063447] uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    9.063587] uhci_hcd 0000:00:1d.0: setting latency timer to 64
+[    9.063707] uhci_hcd 0000:00:1d.0: UHCI Host Controller
+[    9.063865] drivers/usb/core/inode.c: creating file '002'
+[    9.064145] uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 2
+[    9.064322] uhci_hcd 0000:00:1d.0: detected 2 ports
+[    9.064442] uhci_hcd 0000:00:1d.0: uhci_check_and_reset_hc: cmd = 0x0000
+[    9.064565] uhci_hcd 0000:00:1d.0: Performing full reset
+[    9.064698] uhci_hcd 0000:00:1d.0: supports USB remote wakeup
+[    9.064918] uhci_hcd 0000:00:1d.0: irq 16, io base 0x00001820
+[    9.065402] usb usb2: default language 0x0409
+[    9.065663] usb usb2: udev 1, busnum 2, minor = 128
+[    9.065782] usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
+[    9.065903] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    9.066104] usb usb2: Product: UHCI Host Controller
+[    9.066223] usb usb2: Manufacturer: Linux 2.6.31-rc6-tip-01322-gd685ec8-dirty uhci_hcd
+[    9.066386] usb usb2: SerialNumber: 0000:00:1d.0
+[    9.066941] PM: Adding info for usb:usb2
+[    9.067204] usb usb2: uevent
+[    9.067593] usb usb2: usb_probe_device
+[    9.067715] usb usb2: configuration #1 chosen from 1 choice
+[    9.067907] usb usb2: adding 2-0:1.0 (config #1, interface 0)
+[    9.068338] PM: Adding info for usb:2-0:1.0
+[    9.068491] usb 2-0:1.0: uevent
+[    9.068913] hub 2-0:1.0: usb_probe_interface
+[    9.069087] hub 2-0:1.0: usb_probe_interface - got id
+[    9.069221] hub 2-0:1.0: USB hub found
+[    9.069461] hub 2-0:1.0: 2 ports detected
+[    9.069597] hub 2-0:1.0: standalone hub
+[    9.069732] hub 2-0:1.0: no power switching (usb 1.0)
+[    9.069868] hub 2-0:1.0: individual port over-current protection
+[    9.070123] hub 2-0:1.0: power on to power good time: 2ms
+[    9.070364] hub 2-0:1.0: local power source is good
+[    9.070513] hub 2-0:1.0: trying to enable port power on non-switchable hub
+[    9.070940] PM: Adding info for No Bus:ep_81
+[    9.071350] PM: Adding info for No Bus:usbdev2.1
+[    9.071761] drivers/usb/core/inode.c: creating file '001'
+[    9.072108] PM: Adding info for No Bus:ep_00
+[    9.072397] IOAPIC[0]: Set routing entry (1-17 -> 0xb9 -> IRQ 17 Mode:1 Active:1)
+[    9.072563] uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+[    9.072699] uhci_hcd 0000:00:1d.1: setting latency timer to 64
+[    9.072817] uhci_hcd 0000:00:1d.1: UHCI Host Controller
+[    9.073044] drivers/usb/core/inode.c: creating file '003'
+[    9.073187] uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 3
+[    9.073368] uhci_hcd 0000:00:1d.1: detected 2 ports
+[    9.073488] uhci_hcd 0000:00:1d.1: uhci_check_and_reset_hc: cmd = 0x0000
+[    9.073610] uhci_hcd 0000:00:1d.1: Performing full reset
+[    9.073744] uhci_hcd 0000:00:1d.1: supports USB remote wakeup
+[    9.073959] uhci_hcd 0000:00:1d.1: irq 17, io base 0x00001840
+[    9.074395] usb usb3: default language 0x0409
+[    9.074648] usb usb3: udev 1, busnum 3, minor = 256
+[    9.074766] usb usb3: New USB device found, idVendor=1d6b, idProduct=0001
+[    9.074887] usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    9.075090] usb usb3: Product: UHCI Host Controller
+[    9.075209] usb usb3: Manufacturer: Linux 2.6.31-rc6-tip-01322-gd685ec8-dirty uhci_hcd
+[    9.075374] usb usb3: SerialNumber: 0000:00:1d.1
+[    9.075882] PM: Adding info for usb:usb3
+[    9.076134] usb usb3: uevent
+[    9.076513] usb usb3: usb_probe_device
+[    9.076635] usb usb3: configuration #1 chosen from 1 choice
+[    9.076826] usb usb3: adding 3-0:1.0 (config #1, interface 0)
+[    9.077277] PM: Adding info for usb:3-0:1.0
+[    9.077431] usb 3-0:1.0: uevent
+[    9.077849] hub 3-0:1.0: usb_probe_interface
+[    9.078023] hub 3-0:1.0: usb_probe_interface - got id
+[    9.078157] hub 3-0:1.0: USB hub found
+[    9.078393] hub 3-0:1.0: 2 ports detected
+[    9.078528] hub 3-0:1.0: standalone hub
+[    9.078661] hub 3-0:1.0: no power switching (usb 1.0)
+[    9.078795] hub 3-0:1.0: individual port over-current protection
+[    9.078932] hub 3-0:1.0: power on to power good time: 2ms
+[    9.079228] hub 3-0:1.0: local power source is good
+[    9.079380] hub 3-0:1.0: trying to enable port power on non-switchable hub
+[    9.079801] PM: Adding info for No Bus:ep_81
+[    9.080196] PM: Adding info for No Bus:usbdev3.1
+[    9.080620] drivers/usb/core/inode.c: creating file '001'
+[    9.080943] PM: Adding info for No Bus:ep_00
+[    9.082323] uhci_hcd 0000:00:1d.2: power state changed by ACPI to D0
+[    9.082460] IOAPIC[0]: Set routing entry (1-18 -> 0xc1 -> IRQ 18 Mode:1 Active:1)
+[    9.082625] uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+[    9.082762] uhci_hcd 0000:00:1d.2: setting latency timer to 64
+[    9.082880] uhci_hcd 0000:00:1d.2: UHCI Host Controller
+[    9.083099] drivers/usb/core/inode.c: creating file '004'
+[    9.083242] uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number 4
+[    9.083421] uhci_hcd 0000:00:1d.2: detected 2 ports
+[    9.083542] uhci_hcd 0000:00:1d.2: uhci_check_and_reset_hc: cmd = 0x0000
+[    9.083664] uhci_hcd 0000:00:1d.2: Performing full reset
+[    9.083800] uhci_hcd 0000:00:1d.2: supports USB remote wakeup
+[    9.084065] uhci_hcd 0000:00:1d.2: irq 18, io base 0x00001860
+[    9.084445] usb usb4: default language 0x0409
+[    9.084703] usb usb4: udev 1, busnum 4, minor = 384
+[    9.084822] usb usb4: New USB device found, idVendor=1d6b, idProduct=0001
+[    9.084948] usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    9.085156] usb usb4: Product: UHCI Host Controller
+[    9.085276] usb usb4: Manufacturer: Linux 2.6.31-rc6-tip-01322-gd685ec8-dirty uhci_hcd
+[    9.085435] usb usb4: SerialNumber: 0000:00:1d.2
+[    9.085983] PM: Adding info for usb:usb4
+[    9.086204] usb usb4: uevent
+[    9.086599] usb usb4: usb_probe_device
+[    9.086722] usb usb4: configuration #1 chosen from 1 choice
+[    9.086909] usb usb4: adding 4-0:1.0 (config #1, interface 0)
+[    9.087367] PM: Adding info for usb:4-0:1.0
+[    9.087522] usb 4-0:1.0: uevent
+[    9.087935] hub 4-0:1.0: usb_probe_interface
+[    9.088108] hub 4-0:1.0: usb_probe_interface - got id
+[    9.088242] hub 4-0:1.0: USB hub found
+[    9.088476] hub 4-0:1.0: 2 ports detected
+[    9.088611] hub 4-0:1.0: standalone hub
+[    9.088744] hub 4-0:1.0: no power switching (usb 1.0)
+[    9.088879] hub 4-0:1.0: individual port over-current protection
+[    9.089101] hub 4-0:1.0: power on to power good time: 2ms
+[    9.089335] hub 4-0:1.0: local power source is good
+[    9.089483] hub 4-0:1.0: trying to enable port power on non-switchable hub
+[    9.089906] PM: Adding info for No Bus:ep_81
+[    9.090316] PM: Adding info for No Bus:usbdev4.1
+[    9.090726] drivers/usb/core/inode.c: creating file '001'
+[    9.091076] PM: Adding info for No Bus:ep_00
+[    9.091355] uhci_hcd 0000:00:1d.3: PCI INT D -> GSI 19 (level, low) -> IRQ 19
+[    9.091493] uhci_hcd 0000:00:1d.3: setting latency timer to 64
+[    9.091612] uhci_hcd 0000:00:1d.3: UHCI Host Controller
+[    9.091767] drivers/usb/core/inode.c: creating file '005'
+[    9.091908] uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number 5
+[    9.092138] uhci_hcd 0000:00:1d.3: detected 2 ports
+[    9.092262] uhci_hcd 0000:00:1d.3: uhci_check_and_reset_hc: cmd = 0x0000
+[    9.092385] uhci_hcd 0000:00:1d.3: Performing full reset
+[    9.092549] uhci_hcd 0000:00:1d.3: irq 19, io base 0x00001880
+[    9.092923] usb usb5: default language 0x0409
+[    9.093236] usb usb5: udev 1, busnum 5, minor = 512
+[    9.093355] usb usb5: New USB device found, idVendor=1d6b, idProduct=0001
+[    9.093475] usb usb5: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    9.093632] usb usb5: Product: UHCI Host Controller
+[    9.093749] usb usb5: Manufacturer: Linux 2.6.31-rc6-tip-01322-gd685ec8-dirty uhci_hcd
+[    9.093908] usb usb5: SerialNumber: 0000:00:1d.3
+[    9.094466] PM: Adding info for usb:usb5
+[    9.094674] usb usb5: uevent
+[    9.095087] usb usb5: usb_probe_device
+[    9.095210] usb usb5: configuration #1 chosen from 1 choice
+[    9.095404] usb usb5: adding 5-0:1.0 (config #1, interface 0)
+[    9.095788] PM: Adding info for usb:5-0:1.0
+[    9.095940] usb 5-0:1.0: uevent
+[    9.096413] hub 5-0:1.0: usb_probe_interface
+[    9.096545] hub 5-0:1.0: usb_probe_interface - got id
+[    9.096684] hub 5-0:1.0: USB hub found
+[    9.096915] hub 5-0:1.0: 2 ports detected
+[    9.097114] hub 5-0:1.0: standalone hub
+[    9.097248] hub 5-0:1.0: no power switching (usb 1.0)
+[    9.097388] hub 5-0:1.0: individual port over-current protection
+[    9.098336] hub 5-0:1.0: power on to power good time: 2ms
+[    9.098553] hub 5-0:1.0: local power source is good
+[    9.098701] hub 5-0:1.0: trying to enable port power on non-switchable hub
+[    9.099163] PM: Adding info for No Bus:ep_81
+[    9.099526] PM: Adding info for No Bus:usbdev5.1
+[    9.099935] drivers/usb/core/inode.c: creating file '001'
+[    9.100465] PM: Adding info for No Bus:ep_00
+[    9.100968] initcall uhci_hcd_init+0x0/0x160 returned 0 after 38094 usecs
+[    9.101093] calling  r8a66597_init+0x0/0x50 @ 1
+[    9.101204] r8a66597_hcd: driver r8a66597_hcd, 2009-05-26
+[    9.101629] initcall r8a66597_init+0x0/0x50 returned 0 after 411 usecs
+[    9.101746] calling  hwahc_driver_init+0x0/0x20 @ 1
+[    9.102133] usbcore: registered new interface driver hwa-hc
+[    9.102337] initcall hwahc_driver_init+0x0/0x20 returned 0 after 465 usecs
+[    9.102454] calling  wusbcore_init+0x0/0x80 @ 1
+[    9.102647] initcall wusbcore_init+0x0/0x80 returned 0 after 78 usecs
+[    9.102762] calling  acm_init+0x0/0xe0 @ 1
+[    9.103165] usbcore: registered new interface driver cdc_acm
+[    9.103317] cdc_acm: v0.26:USB Abstract Control Model driver for USB modems and ISDN adapters
+[    9.103472] initcall acm_init+0x0/0xe0 returned 0 after 583 usecs
+[    9.103585] calling  usb_mdc800_init+0x0/0x380 @ 1
+[    9.104016] usbcore: registered new interface driver mdc800
+[    9.104140] mdc800: v0.7.5 (30/10/2000):USB Driver for Mustek MDC800 Digital Camera
+[    9.104335] initcall usb_mdc800_init+0x0/0x380 returned 0 after 621 usecs
+[    9.104452] calling  adu_init+0x0/0xa0 @ 1
+[    9.104563] drivers/usb/misc/adutux.c :  adu_init : enter 
+[    9.105011] usbcore: registered new interface driver adutux
+[    9.105135] adutux adutux (see www.ontrak.net) v0.0.13
+[    9.105246] adutux is an experimental driver. Use at your own risk
+[    9.105379] drivers/usb/misc/adutux.c :  adu_init : leave, return value 0 
+[    9.105499] initcall adu_init+0x0/0xa0 returned 0 after 912 usecs
+[    9.105612] calling  usb_cytherm_init+0x0/0x50 @ 1
+[    9.106084] usbcore: registered new interface driver cytherm
+[    9.106207] cytherm: v1.0:Cypress USB Thermometer driver
+[    9.106370] initcall usb_cytherm_init+0x0/0x50 returned 0 after 628 usecs
+[    9.106486] calling  emi62_init+0x0/0x30 @ 1
+[    9.106867] usbcore: registered new interface driver emi62 - firmware loader
+[    9.107001] initcall emi62_init+0x0/0x30 returned 0 after 393 usecs
+[    9.107118] calling  usb_idmouse_init+0x0/0x50 @ 1
+[    9.107230] idmouse: 0.6:Siemens ID Mouse FingerTIP Sensor Driver
+[    9.107627] usbcore: registered new interface driver idmouse
+[    9.107759] initcall usb_idmouse_init+0x0/0x50 returned 0 after 513 usecs
+[    9.107874] calling  lego_usb_tower_init+0x0/0x90 @ 1
+[    9.107994] drivers/usb/misc/legousbtower.c: lego_usb_tower_init: enter
+[    9.108488] usbcore: registered new interface driver legousbtower
+[    9.108612] legousbtower: v0.96:LEGO USB Tower Driver
+[    9.108724] drivers/usb/misc/legousbtower.c: lego_usb_tower_init: leave, return value 0
+[    9.108880] initcall lego_usb_tower_init+0x0/0x90 returned 0 after 863 usecs
+[    9.109003] calling  usbtest_init+0x0/0x40 @ 1
+[    9.109462] usbcore: registered new interface driver usbtest
+[    9.109589] initcall usbtest_init+0x0/0x40 returned 0 after 458 usecs
+[    9.109704] calling  usb_sevseg_init+0x0/0x40 @ 1
+[    9.110122] usbcore: registered new interface driver usbsevseg
+[    9.110249] initcall usb_sevseg_init+0x0/0x40 returned 0 after 422 usecs
+[    9.110395] calling  vstusb_init+0x0/0x40 @ 1
+[    9.110768] usbcore: registered new interface driver vstusb
+[    9.110894] initcall vstusb_init+0x0/0x40 returned 0 after 376 usecs
+[    9.111018] calling  i8042_init+0x0/0x430 @ 1
+[    9.111774] PNP: PS/2 Controller [PNP0303:KBD,PNP0f13:MOU] at 0x60,0x64 irq 1,12
+[    9.112360] PM: Adding info for platform:i8042
+[    9.122190] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    9.122337] serio: i8042 AUX port at 0x60,0x64 irq 12
+[    9.122461] PM: Adding info for serio:serio0
+[    9.122482] initcall i8042_init+0x0/0x430 returned 0 after 11082 usecs
+[    9.122486] calling  serport_init+0x0/0x30 @ 1
+[    9.122493] initcall serport_init+0x0/0x30 returned 0 after 2 usecs
+[    9.122497] calling  ct82c710_init+0x0/0x1a0 @ 1
+[    9.122533] initcall ct82c710_init+0x0/0x1a0 returned -19 after 30 usecs
+[    9.122536] calling  serio_raw_init+0x0/0x20 @ 1
+[    9.123516] initcall serio_raw_init+0x0/0x20 returned 0 after 951 usecs
+[    9.123634] calling  ns558_init+0x0/0x470 @ 1
+[    9.124173] PM: Adding info for serio:serio1
+[    9.155065] initcall ns558_init+0x0/0x470 returned 0 after 30581 usecs
+[    9.155182] calling  mousedev_init+0x0/0x90 @ 1
+[    9.155455] PM: Adding info for No Bus:mice
+[    9.156148] PM: Adding info for No Bus:mouse0
+[    9.156625] PM: Adding info for No Bus:psaux
+[    9.156959] mice: PS/2 mouse device common for all mice
+[    9.157095] initcall mousedev_init+0x0/0x90 returned 0 after 1754 usecs
+[    9.157212] calling  evbug_init+0x0/0x10 @ 1
+[    9.157499] ehci_hcd 0000:00:1d.7: GetStatus port 8 status 001803 POWER sig=j CSC CONNECT
+[    9.157680] hub 1-0:1.0: port 8: status 0501 change 0001
+[    9.157829] evbug.c: Connected device: input0 (Macintosh mouse button emulation at unknown)
+[    9.158092] initcall evbug_init+0x0/0x10 returned 0 after 742 usecs
+[    9.158208] calling  atkbd_init+0x0/0x20 @ 1
+[    9.158620] initcall atkbd_init+0x0/0x20 returned 0 after 283 usecs
+[    9.158741] calling  lkkbd_init+0x0/0x20 @ 1
+[    9.159168] initcall lkkbd_init+0x0/0x20 returned 0 after 306 usecs
+[    9.159295] calling  nkbd_init+0x0/0x20 @ 1
+[    9.159692] initcall nkbd_init+0x0/0x20 returned 0 after 277 usecs
+[    9.159807] calling  a3d_init+0x0/0x20 @ 1
+[    9.160260] initcall a3d_init+0x0/0x20 returned 0 after 292 usecs
+[    9.160377] calling  adi_init+0x0/0x20 @ 1
+[    9.160762] initcall adi_init+0x0/0x20 returned 0 after 268 usecs
+[    9.160879] calling  grip_init+0x0/0x20 @ 1
+[    9.161353] initcall grip_init+0x0/0x20 returned 0 after 291 usecs
+[    9.161469] calling  iforce_init+0x0/0x50 @ 1
+[    9.161867] usbcore: registered new interface driver iforce
+[    9.162372] initcall iforce_init+0x0/0x50 returned 0 after 770 usecs
+[    9.162488] calling  spaceball_init+0x0/0x20 @ 1
+[    9.162889] initcall spaceball_init+0x0/0x20 returned 0 after 273 usecs
+[    9.163066] calling  spaceorb_init+0x0/0x20 @ 1
+[    9.163560] initcall spaceorb_init+0x0/0x20 returned 0 after 369 usecs
+[    9.163678] calling  twidjoy_init+0x0/0x20 @ 1
+[    9.163687] PM: Adding info for No Bus:input1
+[    9.164342] input: AT Translated Set 2 keyboard as /class/input/input1
+[    9.164433] initcall twidjoy_init+0x0/0x20 returned 0 after 519 usecs
+[    9.164437] calling  usb_xpad_init+0x0/0x30 @ 1
+[    9.164730] evbug.c: Connected device: input1 (AT Translated Set 2 keyboard at isa0060/serio0/input0)
+[    9.164783] usbcore: registered new interface driver xpad
+[    9.164793] xpad: X-Box pad driver
+[    9.164799] initcall usb_xpad_init+0x0/0x30 returned 0 after 348 usecs
+[    9.164802] calling  usb_acecad_init+0x0/0x30 @ 1
+[    9.165131] usbcore: registered new interface driver usb_acecad
+[    9.165143] acecad: v3.2:USB Acecad Flair tablet driver
+[    9.165149] initcall usb_acecad_init+0x0/0x30 returned 0 after 331 usecs
+[    9.165152] calling  gtco_init+0x0/0x60 @ 1
+[    9.165432] usbcore: registered new interface driver gtco
+[    9.165443] GTCO usb driver version: 2.00.0006initcall gtco_init+0x0/0x60 returned 0 after 284 usecs
+[    9.165451] calling  kbtab_init+0x0/0x30 @ 1
+[    9.165725] usbcore: registered new interface driver kbtab
+[    9.165735] kbtab: v0.0.2:USB KB Gear JamStudio Tablet driver
+[    9.165741] initcall kbtab_init+0x0/0x30 returned 0 after 278 usecs
+[    9.165744] calling  tr_init+0x0/0x20 @ 1
+[    9.166125] initcall tr_init+0x0/0x20 returned 0 after 364 usecs
+[    9.166129] calling  i2o_iop_init+0x0/0x50 @ 1
+[    9.166132] I2O subsystem v1.325
+[    9.166135] i2o: max drivers = 8
+[    9.167265] initcall i2o_iop_init+0x0/0x50 returned 0 after 1102 usecs
+[    9.167390] calling  i2o_bus_init+0x0/0x40 @ 1
+[    9.167503] I2O Bus Adapter OSM v1.317
+[    9.167883] initcall i2o_bus_init+0x0/0x40 returned 0 after 369 usecs
+[    9.168102] calling  i2o_proc_init+0x0/0x1a0 @ 1
+[    9.168215] I2O ProcFS OSM v1.316
+[    9.168614] initcall i2o_proc_init+0x0/0x1a0 returned 0 after 387 usecs
+[    9.168729] calling  ds1511_rtc_init+0x0/0x10 @ 1
+[    9.169238] initcall ds1511_rtc_init+0x0/0x10 returned 0 after 384 usecs
+[    9.169357] calling  ds1742_init+0x0/0x10 @ 1
+[    9.169723] initcall ds1742_init+0x0/0x10 returned 0 after 247 usecs
+[    9.169841] calling  w1_init+0x0/0xa0 @ 1
+[    9.169984] Driver for 1-wire Dallas network protocol.
+[    9.170394] hub 2-0:1.0: state 7 ports 2 chg 0000 evt 0000
+[    9.171374] initcall w1_init+0x0/0xa0 returned 0 after 1354 usecs
+[    9.171490] calling  w1_smem_init+0x0/0x40 @ 1
+[    9.171607] initcall w1_smem_init+0x0/0x40 returned 0 after 3 usecs
+[    9.171722] calling  w1_f2d_init+0x0/0x10 @ 1
+[    9.171835] initcall w1_f2d_init+0x0/0x10 returned 0 after 2 usecs
+[    9.171985] calling  w1_ds2760_init+0x0/0x30 @ 1
+[    9.172152] 1-Wire driver for the DS2760 battery monitor  chip  - (c) 2004-2005, Szabolcs Gyurko
+[    9.172315] initcall w1_ds2760_init+0x0/0x30 returned 0 after 158 usecs
+[    9.172439] calling  ds2760_battery_init+0x0/0x10 @ 1
+[    9.172810] initcall ds2760_battery_init+0x0/0x10 returned 0 after 248 usecs
+[    9.172963] calling  sensors_w83627hf_init+0x0/0x170 @ 1
+[    9.173166] initcall sensors_w83627hf_init+0x0/0x170 returned -19 after 19 usecs
+[    9.173329] calling  f71805f_init+0x0/0x190 @ 1
+[    9.173470] initcall f71805f_init+0x0/0x190 returned -19 after 26 usecs
+[    9.173584] calling  f71882fg_init+0x0/0x160 @ 1
+[    9.173725] initcall f71882fg_init+0x0/0x160 returned -19 after 26 usecs
+[    9.173839] calling  hdaps_init+0x0/0x200 @ 1
+[    9.174018] hdaps: inverting axis (3) readings.
+[    9.174129] hdaps: LENOVO ThinkPad T60 detected.
+[    9.174610] PM: Adding info for platform:hdaps
+[    9.175857] PM: Adding info for No Bus:input2
+[    9.176224] input: hdaps as /class/input/input2
+[    9.176431] evbug.c: Connected device: input2 (hdaps at isa1600/input0)
+[    9.176551] hdaps: driver successfully loaded.
+[    9.176665] initcall hdaps_init+0x0/0x200 returned 0 after 2603 usecs
+[    9.176780] calling  aem_init+0x0/0x50 @ 1
+[    9.177229] initcall aem_init+0x0/0x50 returned 0 after 327 usecs
+[    9.177350] calling  sm_it87_init+0x0/0x340 @ 1
+[    9.178322] initcall sm_it87_init+0x0/0x340 returned -19 after 22 usecs
+[    9.178439] calling  k8temp_init+0x0/0x20 @ 1
+[    9.178839] initcall k8temp_init+0x0/0x20 returned 0 after 280 usecs
+[    9.178982] calling  lis3lv02d_init_module+0x0/0x40 @ 1
+[    9.179173] hub 3-0:1.0: state 7 ports 2 chg 0000 evt 0000
+[    9.179593] lis3lv02d driver loaded.
+[    9.179708] initcall lis3lv02d_init_module+0x0/0x40 returned 0 after 579 usecs
+[    9.179860] calling  smsc47b397_init+0x0/0x1a0 @ 1
+[    9.180038] initcall smsc47b397_init+0x0/0x1a0 returned -19 after 10 usecs
+[    9.180155] calling  vt1211_init+0x0/0x180 @ 1
+[    9.180288] initcall vt1211_init+0x0/0x180 returned -19 after 20 usecs
+[    9.180404] calling  sm_vt8231_init+0x0/0x20 @ 1
+[    9.180800] initcall sm_vt8231_init+0x0/0x20 returned 0 after 274 usecs
+[    9.180953] calling  sensors_w83627ehf_init+0x0/0x180 @ 1
+[    9.181121] initcall sensors_w83627ehf_init+0x0/0x180 returned -19 after 30 usecs
+[    9.181276] calling  pcwd_init_module+0x0/0x20 @ 1
+[    9.181745] PM: Adding info for isa:pcwd.0
+[    9.182139] PM: Removing info for isa:pcwd.0
+[    9.182627] PM: Adding info for isa:pcwd.1
+[    9.182965] PM: Removing info for isa:pcwd.1
+[    9.183510] PM: Adding info for isa:pcwd.2
+[    9.183849] PM: Removing info for isa:pcwd.2
+[    9.184507] initcall pcwd_init_module+0x0/0x20 returned -19 after 3043 usecs
+[    9.184625] calling  mixcomwd_init+0x0/0x180 @ 1
+[    9.184958] mixcomwd: No card detected, or port not available.
+[    9.185100] initcall mixcomwd_init+0x0/0x180 returned -19 after 351 usecs
+[    9.185216] calling  pcipcwd_init_module+0x0/0x30 @ 1
+[    9.185626] initcall pcipcwd_init_module+0x0/0x30 returned 0 after 279 usecs
+[    9.185742] calling  usb_pcwd_init+0x0/0x50 @ 1
+[    9.186181] usbcore: registered new interface driver pcwd_usb
+[    9.186313] pcwd_usb: Berkshire USB-PC Watchdog driver v1.02
+[    9.186430] initcall usb_pcwd_init+0x0/0x50 returned 0 after 560 usecs
+[    9.186545] calling  advwdt_init+0x0/0x70 @ 1
+[    9.186656] WDT driver for Advantech single board computer initialising.
+[    9.187172] PM: Adding info for platform:advantechwdt
+[    9.187760] PM: Adding info for No Bus:watchdog
+[    9.188154] advantechwdt: initialized. timeout=60 sec (nowayout=1)
+[    9.188284] initcall advwdt_init+0x0/0x70 returned 0 after 1586 usecs
+[    9.188401] calling  alim7101_wdt_init+0x0/0x200 @ 1
+[    9.188513] alim7101_wdt: Steve Hill <steve@navaho.co.uk>.
+[    9.188640] alim7101_wdt: ALi M7101 PMU not present - WDT not set
+[    9.188756] initcall alim7101_wdt_init+0x0/0x200 returned -16 after 235 usecs
+[    9.188873] initcall alim7101_wdt_init+0x0/0x200 returned with error code -16 
+[    9.189092] calling  sc520_wdt_init+0x0/0x110 @ 1
+[    9.189276] hub 4-0:1.0: state 7 ports 2 chg 0000 evt 0000
+[    9.189421] sc520_wdt: cannot register miscdev on minor=130 (err=-16)
+[    9.189549] initcall sc520_wdt_init+0x0/0x110 returned -16 after 334 usecs
+[    9.189667] initcall sc520_wdt_init+0x0/0x110 returned with error code -16 
+[    9.189783] calling  ibmasr_init+0x0/0x290 @ 1
+[    9.189940] initcall ibmasr_init+0x0/0x290 returned -19 after 1 usecs
+[    9.190075] calling  wafwdt_init+0x0/0x1c0 @ 1
+[    9.190186] WDT driver for Wafer 5823 single board computer initialising.
+[    9.190322] Wafer 5823 WDT: I/O address 0x0443 already in use
+[    9.190442] initcall wafwdt_init+0x0/0x1c0 returned -5 after 249 usecs
+[    9.190557] initcall wafwdt_init+0x0/0x1c0 returned with error code -5 
+[    9.190671] calling  pc87413_init+0x0/0xa0 @ 1
+[    9.190783] pc87413 WDT: Version 1.1 at io 0x2E
+[    9.190945] pc87413 WDT: cannot register miscdev on minor=130 (err=-16)
+[    9.191078] initcall pc87413_init+0x0/0xa0 returned -16 after 285 usecs
+[    9.191194] initcall pc87413_init+0x0/0xa0 returned with error code -16 
+[    9.191313] calling  sbc60xxwdt_init+0x0/0x1e0 @ 1
+[    9.191434] sbc60xxwdt: I/O address 0x0443 already in use
+[    9.191549] initcall sbc60xxwdt_init+0x0/0x1e0 returned -5 after 118 usecs
+[    9.191664] initcall sbc60xxwdt_init+0x0/0x1e0 returned with error code -5 
+[    9.191778] calling  wb_smsc_wdt_init+0x0/0x1d0 @ 1
+[    9.191941] SMsC 37B787 watchdog component driver 1.1 initialising...
+[    9.193116] smsc37b787_wdt: Unable to register miscdev on minor 130
+[    9.193236] initcall wb_smsc_wdt_init+0x0/0x1d0 returned -16 after 1262 usecs
+[    9.193354] initcall wb_smsc_wdt_init+0x0/0x1d0 returned with error code -16 
+[    9.193469] calling  wdt_init+0x0/0x220 @ 1
+[    9.193580] WDT driver for the Winbond(TM) W83627HF/THF/HG Super I/O chip initialising.
+[    9.193774] w83627hf/thf/hg WDT: Watchdog already running. Resetting timeout to 60 sec
+[    9.193999] w83627hf/thf/hg WDT: cannot register miscdev on minor=130 (err=-16)
+[    9.194173] initcall wdt_init+0x0/0x220 returned -16 after 576 usecs
+[    9.194290] initcall wdt_init+0x0/0x220 returned with error code -16 
+[    9.194404] calling  zf_init+0x0/0x1b0 @ 1
+[    9.194514] machzwd: MachZ ZF-Logic Watchdog driver initializing.
+[    9.194630] machzwd: no ZF-Logic found
+[    9.194742] initcall zf_init+0x0/0x1b0 returned -19 after 220 usecs
+[    9.194856] calling  watchdog_init+0x0/0xd0 @ 1
+[    9.195037] epx_c3: cannot register miscdev on minor=130 (err=-16)
+[    9.195157] initcall watchdog_init+0x0/0xd0 returned -16 after 121 usecs
+[    9.195273] initcall watchdog_init+0x0/0xd0 returned with error code -16 
+[    9.195388] calling  telephony_init+0x0/0x50 @ 1
+[    9.195499] Linux telephony interface: v1.00
+[    9.195632] initcall telephony_init+0x0/0x50 returned 0 after 128 usecs
+[    9.195748] calling  kcapi_init+0x0/0xa0 @ 1
+[    9.196035] CAPI Subsystem Rev 1.1.2.8
+[    9.196154] initcall kcapi_init+0x0/0xa0 returned 0 after 286 usecs
+[    9.196268] calling  capi_init+0x0/0x180 @ 1
+[    9.196784] PM: Adding info for No Bus:capi
+[    9.197193] capi20: Rev 1.1.2.7: started up with major 68 (no middleware)
+[    9.197320] initcall capi_init+0x0/0x180 returned 0 after 917 usecs
+[    9.197435] calling  b1isa_init+0x0/0x100 @ 1
+[    9.197546] b1isa: revision 1.1.2.3
+[    9.197658] initcall b1isa_init+0x0/0x100 returned 0 after 108 usecs
+[    9.197772] calling  b1_init+0x0/0x80 @ 1
+[    9.197924] b1: revision 1.1.2.2
+[    9.198081] initcall b1_init+0x0/0x80 returned 0 after 150 usecs
+[    9.198196] calling  c4_init+0x0/0xd0 @ 1
+[    9.198370] uhci_hcd 0000:00:1d.3: port 2 portsc 008a,00
+[    9.198838] c4: revision 1.1.2.2
+[    9.198987] initcall c4_init+0x0/0xd0 returned 0 after 657 usecs
+[    9.199118] calling  pci_eisa_init_module+0x0/0x20 @ 1
+[    9.199528] initcall pci_eisa_init_module+0x0/0x20 returned 0 after 288 usecs
+[    9.199645] calling  init_ladder+0x0/0x10 @ 1
+[    9.199757] cpuidle: using governor ladder
+[    9.199869] initcall init_ladder+0x0/0x10 returned 0 after 110 usecs
+[    9.200045] calling  memstick_init+0x0/0x90 @ 1
+[    9.200756] initcall memstick_init+0x0/0x90 returned 0 after 582 usecs
+[    9.200873] calling  mspro_block_init+0x0/0x90 @ 1
+[    9.201343] initcall mspro_block_init+0x0/0x90 returned 0 after 307 usecs
+[    9.201461] calling  jmb38x_ms_init+0x0/0x20 @ 1
+[    9.201952] initcall jmb38x_ms_init+0x0/0x20 returned 0 after 368 usecs
+[    9.202097] calling  heartbeat_trig_init+0x0/0x10 @ 1
+[    9.202214] initcall heartbeat_trig_init+0x0/0x10 returned 0 after 2 usecs
+[    9.202340] calling  bl_trig_init+0x0/0x10 @ 1
+[    9.202458] initcall bl_trig_init+0x0/0x10 returned 0 after 3 usecs
+[    9.202572] calling  ib_core_init+0x0/0x40 @ 1
+[    9.202943] initcall ib_core_init+0x0/0x40 returned 0 after 252 usecs
+[    9.203080] calling  ib_mad_init_module+0x0/0xb0 @ 1
+[    9.203233] initcall ib_mad_init_module+0x0/0xb0 returned 0 after 37 usecs
+[    9.203351] calling  ib_sa_init+0x0/0x90 @ 1
+[    9.203553] initcall ib_sa_init+0x0/0x90 returned 0 after 87 usecs
+[    9.203669] calling  ib_cm_init+0x0/0x140 @ 1
+[    9.204402] initcall ib_cm_init+0x0/0x140 returned 0 after 604 usecs
+[    9.204519] calling  iw_cm_init+0x0/0x40 @ 1
+[    9.204710] initcall iw_cm_init+0x0/0x40 returned 0 after 75 usecs
+[    9.204826] calling  nes_init_module+0x0/0x140 @ 1
+[    9.205573] initcall nes_init_module+0x0/0x140 returned 0 after 585 usecs
+[    9.205690] calling  dcdrbu_init+0x0/0x140 @ 1
+[    9.205936] PM: Adding info for platform:dell_rbu
+[    9.206351] initcall dcdrbu_init+0x0/0x140 returned 0 after 527 usecs
+[    9.206468] calling  init_hrt_clocksource+0x0/0x190 @ 1
+[    9.206584] initcall init_hrt_clocksource+0x0/0x190 returned -19 after 1 usecs
+[    9.206734] calling  dell_wmi_init+0x0/0x130 @ 1
+[    9.206847] dell-wmi: No known WMI GUID found
+[    9.207031] initcall dell_wmi_init+0x0/0x130 returned 0 after 178 usecs
+[    9.207146] calling  acer_wmi_init+0x0/0x580 @ 1
+[    9.207258] acer-wmi: Acer Laptop ACPI-WMI Extras
+[    9.207377] acer-wmi: No or unsupported WMI interface, unable to load
+[    9.207494] initcall acer_wmi_init+0x0/0x580 returned -19 after 228 usecs
+[    9.207608] calling  thinkpad_acpi_module_init+0x0/0xaa0 @ 1
+[    9.208779] PM: Adding info for platform:thinkpad_acpi
+[    9.209307] PM: Adding info for platform:thinkpad_hwmon
+[    9.209903] PM: Adding info for No Bus:hwmon0
+[    9.210297] thinkpad_acpi: ThinkPad ACPI Extras v0.23
+[    9.210411] thinkpad_acpi: http://ibm-acpi.sf.net/
+[    9.210523] thinkpad_acpi: ThinkPad BIOS 79ET56WW (1.02 ), EC 79HT42WW-1.01
+[    9.210638] thinkpad_acpi: Lenovo ThinkPad T60, model 1951A26
+[    9.211965] thinkpad_acpi: radio switch found; radios are disabled
+[    9.226445] evbug.c: Event. Dev: input2, Type: 0, Code: 0, Value: 0
+[    9.254206] PM: Adding info for No Bus:tpacpi::thinklight
+[    9.255084] Registered led device: tpacpi::thinklight
+[    9.255418] PM: Adding info for No Bus:tpacpi::power
+[    9.255786] Registered led device: tpacpi::power
+[    9.256091] PM: Adding info for No Bus:tpacpi:orange:batt
+[    9.256462] Registered led device: tpacpi:orange:batt
+[    9.256705] PM: Adding info for No Bus:tpacpi:green:batt
+[    9.257043] hub 1-0:1.0: state 7 ports 8 chg 0100 evt 0000
+[    9.257192] hub 1-0:1.0: port 8, status 0501, change 0000, 480 Mb/s
+[    9.257397] Registered led device: tpacpi:green:batt
+[    9.257642] PM: Adding info for No Bus:tpacpi::dock_active
+[    9.258063] Registered led device: tpacpi::dock_active
+[    9.258322] PM: Adding info for No Bus:tpacpi::bay_active
+[    9.258694] Registered led device: tpacpi::bay_active
+[    9.258968] PM: Adding info for No Bus:tpacpi::dock_batt
+[    9.259391] Registered led device: tpacpi::dock_batt
+[    9.259641] PM: Adding info for No Bus:tpacpi::unknown_led
+[    9.260059] Registered led device: tpacpi::unknown_led
+[    9.260313] PM: Adding info for No Bus:tpacpi::standby
+[    9.260681] Registered led device: tpacpi::standby
+[    9.260959] PM: Adding info for No Bus:tpacpi::dock_status1
+[    9.262148] Registered led device: tpacpi::dock_status1
+[    9.262408] PM: Adding info for No Bus:tpacpi::dock_status2
+[    9.262777] Registered led device: tpacpi::dock_status2
+[    9.263075] PM: Adding info for No Bus:tpacpi::unknown_led2
+[    9.263447] Registered led device: tpacpi::unknown_led2
+[    9.263697] PM: Adding info for No Bus:tpacpi::unknown_led3
+[    9.264115] Registered led device: tpacpi::unknown_led3
+[    9.264379] PM: Adding info for No Bus:tpacpi::thinkvantage
+[    9.264753] Registered led device: tpacpi::thinkvantage
+[    9.264895] thinkpad_acpi: warning: userspace override of important firmware LEDs is enabled
+[    9.267665] PM: Adding info for No Bus:thinkpad_screen
+[    9.268603] PM: Adding info for No Bus:input3
+[    9.268972] input: ThinkPad Extra Buttons as /class/input/input3
+[    9.269124] evbug.c: Connected device: input3 (ThinkPad Extra Buttons at thinkpad_acpi/input0)
+[    9.269297] initcall thinkpad_acpi_module_init+0x0/0xaa0 returned 0 after 60126 usecs
+[    9.269450] calling  acpi_pcc_init+0x0/0x30 @ 1
+[    9.269878] initcall acpi_pcc_init+0x0/0x30 returned 0 after 306 usecs
+[    9.269994] calling  flow_cache_init+0x0/0x180 @ 1
+[    9.270169] initcall flow_cache_init+0x0/0x180 returned 0 after 44 usecs
+[    9.270290] calling  llc_init+0x0/0x20 @ 1
+[    9.270405] initcall llc_init+0x0/0x20 returned 0 after 3 usecs
+[    9.270519] calling  llc2_init+0x0/0xd0 @ 1
+[    9.270800] NET: Registered protocol family 26
+[    9.270968] initcall llc2_init+0x0/0xd0 returned 0 after 329 usecs
+[    9.271103] calling  snap_init+0x0/0x40 @ 1
+[    9.271221] initcall snap_init+0x0/0x40 returned 0 after 6 usecs
+[    9.271339] calling  blackhole_module_init+0x0/0x10 @ 1
+[    9.271455] initcall blackhole_module_init+0x0/0x10 returned 0 after 2 usecs
+[    9.271570] calling  gact_init_module+0x0/0x20 @ 1
+[    9.271680] GACT probability on
+[    9.271790] initcall gact_init_module+0x0/0x20 returned 0 after 105 usecs
+[    9.271957] calling  mirred_init_module+0x0/0x20 @ 1
+[    9.272085] Mirror/redirect action on
+[    9.272196] initcall mirred_init_module+0x0/0x20 returned 0 after 107 usecs
+[    9.272319] calling  pedit_init_module+0x0/0x10 @ 1
+[    9.272433] initcall pedit_init_module+0x0/0x10 returned 0 after 1 usecs
+[    9.272548] calling  skbedit_init_module+0x0/0x10 @ 1
+[    9.272662] initcall skbedit_init_module+0x0/0x10 returned 0 after 1 usecs
+[    9.272776] calling  htb_module_init+0x0/0x10 @ 1
+[    9.272942] initcall htb_module_init+0x0/0x10 returned 0 after 1 usecs
+[    9.273071] calling  sfq_module_init+0x0/0x10 @ 1
+[    9.273190] initcall sfq_module_init+0x0/0x10 returned 0 after 1 usecs
+[    9.273309] calling  tbf_module_init+0x0/0x10 @ 1
+[    9.273423] initcall tbf_module_init+0x0/0x10 returned 0 after 1 usecs
+[    9.273537] calling  teql_init+0x0/0xc0 @ 1
+[    9.274115] PM: Adding info for No Bus:teql0
+[    9.275038] initcall teql_init+0x0/0xc0 returned 0 after 1356 usecs
+[    9.275154] calling  multiq_module_init+0x0/0x10 @ 1
+[    9.275270] initcall multiq_module_init+0x0/0x10 returned 0 after 1 usecs
+[    9.275386] calling  netem_module_init+0x0/0x20 @ 1
+[    9.275497] netem: version 1.2
+[    9.275608] initcall netem_module_init+0x0/0x20 returned 0 after 106 usecs
+[    9.275723] calling  init_route4+0x0/0x10 @ 1
+[    9.275885] initcall init_route4+0x0/0x10 returned 0 after 2 usecs
+[    9.275998] calling  cls_flow_init+0x0/0x10 @ 1
+[    9.276127] initcall cls_flow_init+0x0/0x10 returned 0 after 1 usecs
+[    9.276243] calling  init_em_cmp+0x0/0x10 @ 1
+[    9.276359] initcall init_em_cmp+0x0/0x10 returned 0 after 2 usecs
+[    9.276474] calling  init_em_u32+0x0/0x10 @ 1
+[    9.276592] initcall init_em_u32+0x0/0x10 returned 0 after 1 usecs
+[    9.276706] calling  nfnetlink_init+0x0/0x70 @ 1
+[    9.276818] Netfilter messages via NETLINK v0.30.
+[    9.277034] initcall nfnetlink_init+0x0/0x70 returned 0 after 207 usecs
+[    9.277150] calling  nfnetlink_log_init+0x0/0xe0 @ 1
+[    9.277290] initcall nfnetlink_log_init+0x0/0xe0 returned 0 after 25 usecs
+[    9.277405] calling  xt_init+0x0/0x140 @ 1
+[    9.277524] initcall xt_init+0x0/0x140 returned 0 after 8 usecs
+[    9.277636] calling  tcpudp_mt_init+0x0/0x20 @ 1
+[    9.277752] initcall tcpudp_mt_init+0x0/0x20 returned 0 after 4 usecs
+[    9.277916] calling  mark_mt_init+0x0/0x20 @ 1
+[    9.278046] initcall mark_mt_init+0x0/0x20 returned 0 after 2 usecs
+[    9.278159] calling  policy_mt_init+0x0/0x20 @ 1
+[    9.278274] initcall policy_mt_init+0x0/0x20 returned 0 after 2 usecs
+[    9.278388] calling  sysctl_ipv4_init+0x0/0x50 @ 1
+[    9.279411] initcall sysctl_ipv4_init+0x0/0x50 returned 0 after 889 usecs
+[    9.279526] calling  init_syncookies+0x0/0x20 @ 1
+[    9.279684] initcall init_syncookies+0x0/0x20 returned 0 after 44 usecs
+[    9.279799] calling  ah4_init+0x0/0x70 @ 1
+[    9.279948] initcall ah4_init+0x0/0x70 returned 0 after 3 usecs
+[    9.280077] calling  esp4_init+0x0/0x70 @ 1
+[    9.280191] initcall esp4_init+0x0/0x70 returned 0 after 2 usecs
+[    9.280309] calling  ipcomp4_init+0x0/0x70 @ 1
+[    9.280424] initcall ipcomp4_init+0x0/0x70 returned 0 after 3 usecs
+[    9.280537] calling  ipip_init+0x0/0xb0 @ 1
+[    9.280651] initcall ipip_init+0x0/0xb0 returned 0 after 3 usecs
+[    9.280764] calling  xfrm4_beet_init+0x0/0x20 @ 1
+[    9.280927] initcall xfrm4_beet_init+0x0/0x20 returned 0 after 2 usecs
+[    9.281056] calling  tunnel4_init+0x0/0x70 @ 1
+[    9.281175] initcall tunnel4_init+0x0/0x70 returned 0 after 2 usecs
+[    9.281292] calling  ipv4_netfilter_init+0x0/0x10 @ 1
+[    9.281409] initcall ipv4_netfilter_init+0x0/0x10 returned 0 after 3 usecs
+[    9.281524] calling  hybla_register+0x0/0x10 @ 1
+[    9.281636] TCP hybla registered
+[    9.281745] initcall hybla_register+0x0/0x10 returned 0 after 106 usecs
+[    9.281909] calling  htcp_register+0x0/0x10 @ 1
+[    9.282036] TCP htcp registered
+[    9.282147] initcall htcp_register+0x0/0x10 returned 0 after 107 usecs
+[    9.282262] calling  tcp_veno_register+0x0/0x20 @ 1
+[    9.282378] TCP veno registered
+[    9.282489] initcall tcp_veno_register+0x0/0x20 returned 0 after 107 usecs
+[    9.282603] calling  tcp_lp_register+0x0/0x10 @ 1
+[    9.282714] TCP lp registered
+[    9.282873] initcall tcp_lp_register+0x0/0x10 returned 0 after 153 usecs
+[    9.282987] calling  packet_init+0x0/0x40 @ 1
+[    9.283115] NET: Registered protocol family 17
+[    9.283249] initcall packet_init+0x0/0x40 returned 0 after 130 usecs
+[    9.283365] calling  ipsec_pfkey_init+0x0/0x80 @ 1
+[    9.283481] NET: Registered protocol family 15
+[    9.283691] initcall ipsec_pfkey_init+0x0/0x80 returned 0 after 204 usecs
+[    9.283808] calling  dsa_init_module+0x0/0x20 @ 1
+[    9.283973] initcall dsa_init_module+0x0/0x20 returned 0 after 2 usecs
+[    9.284108] calling  mv88e6131_init+0x0/0x20 @ 1
+[    9.284225] initcall mv88e6131_init+0x0/0x20 returned 0 after 3 usecs
+[    9.284344] calling  dsa_init_module+0x0/0x10 @ 1
+[    9.284723] initcall dsa_init_module+0x0/0x10 returned 0 after 259 usecs
+[    9.284876] calling  phonet_init+0x0/0x80 @ 1
+[    9.285041] NET: Registered protocol family 35
+[    9.285214] initcall phonet_init+0x0/0x80 returned 0 after 218 usecs
+[    9.285336] calling  pep_register+0x0/0x20 @ 1
+[    9.285472] initcall pep_register+0x0/0x20 returned 0 after 22 usecs
+[    9.285587] calling  dccp_init+0x0/0x380 @ 1
+[    9.292737] CCID: Activated CCID 2 (TCP-like)
+[    9.292932] CCID: Activated CCID 3 (TCP-Friendly Rate Control)
+[    9.293121] initcall dccp_init+0x0/0x380 returned 0 after 7241 usecs
+[    9.293238] calling  dccp_v4_init+0x0/0x80 @ 1
+[    9.294681] initcall dccp_v4_init+0x0/0x80 returned 0 after 1291 usecs
+[    9.294798] calling  lib80211_init+0x0/0x20 @ 1
+[    9.294909] lib80211: common routines for IEEE802.11 drivers
+[    9.295047] lib80211_crypt: registered algorithm 'NULL'
+[    9.295162] initcall lib80211_init+0x0/0x20 returned 0 after 244 usecs
+[    9.295280] calling  dcbnl_init+0x0/0x40 @ 1
+[    9.295397] initcall dcbnl_init+0x0/0x40 returned 0 after 1 usecs
+[    9.295512] calling  severities_debugfs_init+0x0/0x60 @ 1
+[    9.295677] initcall severities_debugfs_init+0x0/0x60 returned 0 after 48 usecs
+[    9.295891] calling  centrino_init+0x0/0x30 @ 1
+[    9.296047] initcall centrino_init+0x0/0x30 returned -19 after 26 usecs
+[    9.296163] calling  update_mp_table+0x0/0x490 @ 1
+[    9.296279] initcall update_mp_table+0x0/0x490 returned 0 after 1 usecs
+[    9.296393] calling  lapic_insert_resource+0x0/0x50 @ 1
+[    9.296514] initcall lapic_insert_resource+0x0/0x50 returned 0 after 6 usecs
+[    9.296630] calling  print_ipi_mode+0x0/0x30 @ 1
+[    9.296741] Using IPI No-Shortcut mode
+[    9.296904] initcall print_ipi_mode+0x0/0x30 returned 0 after 158 usecs
+[    9.297035] calling  init_lapic_nmi_sysfs+0x0/0x40 @ 1
+[    9.297150] initcall init_lapic_nmi_sysfs+0x0/0x40 returned 0 after 1 usecs
+[    9.297265] calling  io_apic_bug_finalize+0x0/0x20 @ 1
+[    9.297381] initcall io_apic_bug_finalize+0x0/0x20 returned 0 after 1 usecs
+[    9.297497] calling  check_early_ioremap_leak+0x0/0x70 @ 1
+[    9.297614] initcall check_early_ioremap_leak+0x0/0x70 returned 0 after 1 usecs
+[    9.297766] calling  init_oops_id+0x0/0x50 @ 1
+[    9.297936] initcall init_oops_id+0x0/0x50 returned 0 after 6 usecs
+[    9.298075] calling  disable_boot_consoles+0x0/0x50 @ 1
+[    9.298191] initcall disable_boot_consoles+0x0/0x50 returned 0 after 1 usecs
+[    9.298309] calling  pm_qos_power_init+0x0/0x80 @ 1
+[    9.298881] PM: Adding info for No Bus:cpu_dma_latency
+[    9.299433] PM: Adding info for No Bus:network_latency
+[    9.299944] PM: Adding info for No Bus:network_throughput
+[    9.300338] initcall pm_qos_power_init+0x0/0x80 returned 0 after 1870 usecs
+[    9.300457] calling  debugfs_kprobe_init+0x0/0x90 @ 1
+[    9.300617] initcall debugfs_kprobe_init+0x0/0x90 returned 0 after 43 usecs
+[    9.300733] calling  clear_boot_tracer+0x0/0x30 @ 1
+[    9.300884] initcall clear_boot_tracer+0x0/0x30 returned 0 after 1 usecs
+[    9.301000] calling  max_swapfiles_check+0x0/0x10 @ 1
+[    9.301132] initcall max_swapfiles_check+0x0/0x10 returned 0 after 1 usecs
+[    9.301246] calling  kmemleak_late_init+0x0/0x90 @ 1
+[    9.301451] kmemleak: Kernel memory leak detector initialized
+[    9.301454] kmemleak: Automatic memory scanning thread started
+[    9.301677] initcall kmemleak_late_init+0x0/0x90 returned 0 after 309 usecs
+[    9.301794] calling  random32_reseed+0x0/0x90 @ 1
+[    9.301976] initcall random32_reseed+0x0/0x90 returned 0 after 17 usecs
+[    9.302139] calling  pci_resource_alignment_sysfs_init+0x0/0x20 @ 1
+[    9.302270] initcall pci_resource_alignment_sysfs_init+0x0/0x20 returned 0 after 11 usecs
+[    9.302423] calling  pci_sysfs_init+0x0/0x60 @ 1
+[    9.303286] initcall pci_sysfs_init+0x0/0x60 returned 0 after 731 usecs
+[    9.304194] calling  regulator_init_complete+0x0/0x150 @ 1
+[    9.304317] initcall regulator_init_complete+0x0/0x150 returned 0 after 2 usecs
+[    9.304474] calling  seqgen_init+0x0/0x10 @ 1
+[    9.304607] initcall seqgen_init+0x0/0x10 returned 0 after 21 usecs
+[    9.304724] calling  late_resume_init+0x0/0x110 @ 1
+[    9.304878]   Magic number: 5:535:397
+[    9.305174] tty ttyD75: hash matches
+[    9.305452] mem random: hash matches
+[    9.305596] initcall late_resume_init+0x0/0x110 returned 0 after 699 usecs
+[    9.305712] calling  hd_init+0x0/0x360 @ 1
+[    9.305938] hd: no drives specified - use hd=cyl,head,sectors on kernel command line
+[    9.306149] initcall hd_init+0x0/0x360 returned -1 after 281 usecs
+[    9.306265] initcall hd_init+0x0/0x360 returned with error code -1 
+[    9.306380] calling  scsi_complete_async_scans+0x0/0x150 @ 1
+[    9.306498] initcall scsi_complete_async_scans+0x0/0x150 returned 0 after 1 usecs
+[    9.306651] calling  rtc_hctosys+0x0/0x160 @ 1
+[    9.306768] drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
+[    9.306934] initcall rtc_hctosys+0x0/0x160 returned -19 after 162 usecs
+[    9.307065] calling  memmap_init+0x0/0xb0 @ 1
+[    9.307769] initcall memmap_init+0x0/0xb0 returned 0 after 576 usecs
+[    9.307911] calling  init_net_drop_monitor+0x0/0x150 @ 1
+[    9.308043] Initalizing network drop monitor service
+[    9.308346] ehci_hcd 0000:00:1d.7: port 8 full speed --> companion
+[    9.308489] ehci_hcd 0000:00:1d.7: GetStatus port 8 status 003801 POWER OWNER sig=j CONNECT
+[    9.308678] hub 1-0:1.0: port 8 not reset yet, waiting 50ms
+[    9.308921] initcall init_net_drop_monitor+0x0/0x150 returned 0 after 856 usecs
+[    9.309127] calling  tcp_congestion_default+0x0/0x10 @ 1
+[    9.309246] initcall tcp_congestion_default+0x0/0x10 returned 0 after 2 usecs
+[    9.309366] calling  ip_auto_config+0x0/0xfc0 @ 1
+[    9.309504] initcall ip_auto_config+0x0/0xfc0 returned 0 after 26 usecs
+[    9.309618] calling  initialize_hashrnd+0x0/0x20 @ 1
+[    9.309739] initcall initialize_hashrnd+0x0/0x20 returned 0 after 6 usecs
+[    9.309927] async_waiting @ 1
+[    9.310056] async_continuing @ 1 after 2 usec
+[    9.359040] ehci_hcd 0000:00:1d.7: GetStatus port 8 status 003002 POWER OWNER sig=se0 CSC
+[    9.359318] hub 5-0:1.0: state 7 ports 2 chg 0000 evt 0000
+[    9.359467] hub 1-0:1.0: state 7 ports 8 chg 0000 evt 0100
+[    9.359696] kjournald starting.  Commit interval 5 seconds
+[    9.359727] EXT3-fs: mounted filesystem with ordered data mode.
+[    9.359755] VFS: Mounted root (ext3 filesystem) readonly on device 8:1.
+[    9.359819] async_waiting @ 1
+[    9.359825] async_continuing @ 1 after 1 usec
+[    9.359828] debug: unmapping init memory c18c5000..c1a8e000
+[    9.454066] hub 5-0:1.0: state 7 ports 2 chg 0000 evt 0004
+[    9.454209] uhci_hcd 0000:00:1d.3: port 2 portsc 0093,00
+[    9.454379] hub 5-0:1.0: port 2, status 0101, change 0001, 12 Mb/s
+[    9.486062] Not activating Mandatory Access Control now since /sbin/tomoyo-init doesn't exist.
+[    9.558045] hub 5-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x101
+[    9.660046] usb 5-2: new full speed USB device using uhci_hcd and address 2
+[    9.780018] usb 5-2: ep0 maxpacket = 8
+[    9.803698] usb 5-2: default language 0x0409
+[    9.822710] usb 5-2: udev 2, busnum 5, minor = 513
+[    9.822829] usb 5-2: New USB device found, idVendor=0483, idProduct=2016
+[    9.822951] usb 5-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[    9.823088] usb 5-2: Product: Biometric Coprocessor
+[    9.823208] usb 5-2: Manufacturer: STMicroelectronics
+[    9.823866] PM: Adding info for usb:5-2
+[    9.824108] usb 5-2: uevent
+[    9.824529] usb 5-2: usb_probe_device
+[    9.824653] usb 5-2: configuration #1 chosen from 1 choice
+[    9.827710] usb 5-2: adding 5-2:1.0 (config #1, interface 0)
+[    9.828116] PM: Adding info for usb:5-2:1.0
+[    9.828273] usb 5-2:1.0: uevent
+[    9.828810] usbtest 5-2:1.0: usb_probe_interface
+[    9.828945] usbtest 5-2:1.0: usb_probe_interface - got id
+[    9.829479] PM: Adding info for No Bus:ep_81
+[    9.829947] PM: Adding info for No Bus:ep_02
+[    9.830317] PM: Adding info for No Bus:ep_83
+[    9.830725] PM: Adding info for No Bus:usbdev5.2
+[    9.831155] drivers/usb/core/inode.c: creating file '002'
+[    9.831505] PM: Adding info for No Bus:ep_00
+[    9.831631] hub 5-0:1.0: state 7 ports 2 chg 0000 evt 0004
+[   10.204051] usb usb2: suspend_rh (auto-stop)
+[   10.204215] usb usb3: suspend_rh (auto-stop)
+[   10.204379] usb usb4: suspend_rh (auto-stop)
+[   11.704042] hub 2-0:1.0: hub_suspend
+[   11.704179] usb usb2: bus auto-suspend
+[   11.704296] usb usb2: suspend_rh
+[   11.704433] hub 3-0:1.0: hub_suspend
+[   11.704550] usb usb3: bus auto-suspend
+[   11.704668] usb usb3: suspend_rh
+[   11.704804] hub 4-0:1.0: hub_suspend
+[   11.704924] usb usb4: bus auto-suspend
+[   11.705062] usb usb4: suspend_rh
+[   11.705330] hub 1-0:1.0: hub_suspend
+[   11.705450] usb usb1: bus auto-suspend
+[   11.705567] ehci_hcd 0000:00:1d.7: suspend root hub
+[   69.087846] udevd version 127 started
+[   69.671810] usb usb2: uevent
+[   69.671903] usb 2-0:1.0: uevent
+[   69.672128] usb usb3: uevent
+[   69.672344] usb 3-0:1.0: uevent
+[   69.672720] usb usb4: uevent
+[   69.672953] usb 4-0:1.0: uevent
+[   69.673327] usb usb5: uevent
+[   69.673546] usb 5-0:1.0: uevent
+[   69.673818] usb 5-2: uevent
+[   69.674203] usb 5-2:1.0: uevent
+[   69.674580] usb usb1: uevent
+[   69.674802] usb 1-0:1.0: uevent
+[   69.705803] Warning: dev (tty1) tty->count(4) != #fd's(3) in tty_release_dev
+[   69.991557] Warning: dev (tty1) tty->count(4) != #fd's(3) in tty_release_dev
+[   70.133322] Warning: dev (tty1) tty->count(4) != #fd's(3) in tty_release_dev
+[   70.275401] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   70.550423] Warning: dev (tty1) tty->count(4) != #fd's(3) in tty_release_dev
+[   70.951606] Warning: dev (tty1) tty->count(10) != #fd's(9) in tty_release_dev
+[   70.951865] Warning: dev (tty1) tty->count(11) != #fd's(10) in tty_release_dev
+[   71.089998] Warning: dev (tty1) tty->count(4) != #fd's(3) in tty_release_dev
+[   71.269651] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   71.270153] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   71.413123] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   71.413843] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.044655] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.066937] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.093997] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.117835] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.164335] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.213832] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.256087] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.366249] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.369702] Warning: dev (tty1) tty->count(4) != #fd's(3) in tty_release_dev
+[   72.374754] Warning: dev (tty1) tty->count(4) != #fd's(3) in tty_release_dev
+[   72.441678] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   72.507837] Warning: dev (tty1) tty->count(6) != #fd's(5) in tty_release_dev
+[   72.533223] Warning: dev (tty1) tty->count(6) != #fd's(5) in tty_release_dev
+[   72.625930] Warning: dev (tty1) tty->count(6) != #fd's(5) in tty_release_dev
+[   72.630936] Warning: dev (tty1) tty->count(7) != #fd's(6) in tty_release_dev
+[   72.800570] Warning: dev (tty1) tty->count(6) != #fd's(5) in tty_release_dev
+[   72.805231] Warning: dev (tty1) tty->count(6) != #fd's(5) in tty_release_dev
+[   72.818270] loadkeys used greatest stack depth: 792 bytes left
+[   73.184460] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   73.746193] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   73.975089] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.139967] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.178181] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.199863] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.201141] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.210271] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.262115] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.313972] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.336756] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.349931] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.402295] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.458213] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.458739] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.479365] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.583896] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.611121] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.648035] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.650056] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.672278] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.696078] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.697359] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.722086] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.722397] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.743478] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.783873] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.866064] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.896742] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.918553] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.966126] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   74.966632] Warning: dev (tty1) tty->count(5) != #fd's(4) in tty_release_dev
+[   75.010404] Warning: dev (tty1) tty->count(7) != #fd's(6) in tty_release_dev
+[   75.011769] Warning: dev (tty1) tty->count(10) != #fd's(9) in tty_release_dev
+[   75.012303] Warning: dev (tty1) tty->count(10) != #fd's(9) in tty_release_dev
+[   75.013592] Warning: dev (tty1) tty->count(10) != #fd's(9) in tty_release_dev
+[   75.014081] Warning: dev (tty1) tty->count(10) != #fd's(9) in tty_release_dev
+[   75.014573] Warning: dev (tty1) tty->count(10) != #fd's(9) in tty_release_dev
+[   75.014849] Warning: dev (tty1) tty->count(10) != #fd's(9) in tty_release_dev
+[   79.735900] kmemleak: 15 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[   96.717991] IPv4 FIB: Using LC-trie version 0.408
+[  162.557802] EXT3 FS on sda1, internal journal
+[  164.798005] Adding 4096564k swap on /dev/sda2.  Priority:-1 extents:1 across:4096564k 
+[  180.301620] PM: Adding info for No Bus:vcs8
+[  180.301866] PM: Adding info for No Bus:vcsa8
+[  180.303174] PM: Adding info for No Bus:vcs4
+[  180.303428] PM: Adding info for No Bus:vcsa4
+[  180.304898] PM: Adding info for No Bus:vcs3
+[  180.305135] PM: Adding info for No Bus:vcsa3
+[  180.306360] PM: Adding info for No Bus:vcs10
+[  180.306601] PM: Adding info for No Bus:vcsa10
+[  180.308007] PM: Adding info for No Bus:vcs9
+[  180.308240] PM: Adding info for No Bus:vcsa9
+[  180.353266] PM: Adding info for No Bus:vcs6
+[  180.353506] PM: Adding info for No Bus:vcsa6
+[  180.354065] PM: Adding info for No Bus:vcs2
+[  180.354342] PM: Adding info for No Bus:vcsa2
+[  180.355728] PM: Adding info for No Bus:vcs11
+[  180.355961] PM: Adding info for No Bus:vcsa11
+[  180.356669] PM: Adding info for No Bus:vcs5
+[  180.356900] PM: Adding info for No Bus:vcsa5
+[  180.357585] PM: Adding info for No Bus:vcs7
+[  180.357820] PM: Adding info for No Bus:vcsa7
+[ 1295.596466] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[ 2511.564568] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[ 3119.550078] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[ 3727.521955] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[ 4335.441675] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[ 5551.291720] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[ 6767.178293] kmemleak: 3 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[ 7375.105563] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[ 8590.954210] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[ 9198.878163] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[10414.730095] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[15278.333097] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[15886.267970] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[16494.201503] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[18318.001954] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[21357.673340] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[23205.818058] kmemleak: 3 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[23838.141986] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[25734.400245] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[26366.474613] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[27630.623886] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[28262.700037] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[30159.152950] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[30791.425441] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[31423.499238] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[32055.576537] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[33319.726227] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[33951.800407] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[34584.155586] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[35216.271372] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[35848.382003] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[36480.491299] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[37112.616569] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[37744.799710] kmemleak: 3 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[39009.189672] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[39641.426505] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[40273.539884] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[41537.770046] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[42802.152102] kmemleak: 3 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[43434.263250] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[44066.373177] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[44698.476800] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[45330.577701] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[45962.678294] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[46594.781002] kmemleak: 2 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[47226.922484] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[47859.179511] kmemleak: 3 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[48491.248780] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+[50387.455083] kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+
+--+QahgC5+KEYLbs62--
