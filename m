@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbZHVUnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbZHVUqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754458AbZHVUnK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 16:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZHVUnJ
+	id S1755158AbZHVUqv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 16:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZHVUqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 16:43:09 -0400
-Received: from smtp.knology.net ([24.214.63.101]:34038 "EHLO smtp.knology.net"
+	Sat, 22 Aug 2009 16:46:51 -0400
+Received: from lucidpixels.com ([75.144.35.66]:57224 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbZHVUnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 16:43:08 -0400
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-From: David Dillow <dave@thedillows.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <m18whcf3w2.fsf@fess.ebiederm.org>
-References: <200903041828.49972.m.bueker@berlin.de>
-	 <1242001754.4093.12.camel@obelisk.thedillows.org>
-	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
-	 <1242077392.3716.15.camel@lap75545.ornl.gov>
-	 <4A09DC3E.2080807@googlemail.com>
-	 <1242268709.4979.7.camel@obelisk.thedillows.org>
-	 <4A0C6504.8000704@googlemail.com>
-	 <1242328457.32579.12.camel@lap75545.ornl.gov>
-	 <4A0C7443.1010000@googlemail.com>
-	 <1243042174.3580.23.camel@obelisk.thedillows.org>
-	 <m1skfkrik2.fsf@fess.ebiederm.org>
-	 <1250895567.23419.1.camel@obelisk.thedillows.org>
-	 <1250897657.23419.5.camel@obelisk.thedillows.org>
-	 <m1iqggf4rf.fsf@fess.ebiederm.org>  <m18whcf3w2.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Date: Sat, 22 Aug 2009 16:43:07 -0400
-Message-Id: <1250973787.3582.14.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1754508AbZHVUqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 16:46:50 -0400
+Date: Sat, 22 Aug 2009 16:46:52 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Christoph Hellwig <hch@infradead.org>
+cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.30.4 XFS(..?) regression (& with/2.6.31-rc6)
+In-Reply-To: <20090822201558.GA17955@infradead.org>
+Message-ID: <alpine.DEB.2.00.0908221645440.20848@p34.internal.lan>
+References: <alpine.DEB.2.00.0908080422440.12329@p34.internal.lan> <00980BBF-1206-4BEF-A8AE-B4A8DAE7EC27@sgi.com> <alpine.DEB.2.00.0908090605080.16485@p34.internal.lan> <alpine.DEB.2.00.0908110624420.22426@p34.internal.lan> <20090816022331.GA2309@infradead.org>
+ <alpine.DEB.2.00.0908171024380.12533@p34.internal.lan> <alpine.DEB.2.00.0908220624440.30321@p34.internal.lan> <20090822142550.GA10003@infradead.org> <alpine.DEB.2.00.0908221044420.30321@p34.internal.lan> <20090822201558.GA17955@infradead.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-22 at 05:07 -0700, Eric W. Biederman wrote:
-> ebiederm@xmission.com (Eric W. Biederman) writes:
-> 
-> > David Dillow <dave@thedillows.org> writes:
-> >
-> >>
-> >> Re-looking at the code, I'd guess that some IRQ status line is getting
-> >> stuck high, but I don't see why -- we should acknowledge all outstanding
-> >> interrupts each time through the loop, whether we care about them or
-> >> not.
-> >>
-> >> Could reproduce a problem with the following patch applied, and send the
-> >> full dmesg, please?
-> >
-> > Here is what I get.
-> >
-> > r8169 screaming irq status 00000085 mask 0000ffff event 0000803f napi 0000001d
-> 
-> And now that the machine has come out of it, that was followed by:
-> Looks like the soft lockup did not manage to trigger in this case.
 
-I need some more context, please. What is the network load through this
-NIC when you have the issues? Light, heavy? Can you give me more details
-about the machine? A full dmesg from boot until this happens would help
-quite a bit. At a minimum it would help answer which version of the chip
-we're dealing with and what the machine it is in looks like.
 
-Can you reproduce this with pci=nomsi? I'm assuming it the chip running
-in MSI mode.
+On Sat, 22 Aug 2009, Christoph Hellwig wrote:
 
-Also, can you reproduce it when booting UP (or maxcpus=1)? I'm thinking
-about a race between rtl8169_interrupt() and rtl8169_poll(), but it
-isn't jumping out at me.
+> On Sat, Aug 22, 2009 at 10:45:13AM -0400, Justin Piszcz wrote:
+>>> Yes, entirely possible.   All the crypto loop / dm implementation used
+>>> to have a tendency to never complete I/O once in a while, although that
+>>> didn't happen anymore recently.
+>>
+>> Ok,
+>>
+>> What is the best way to debug the issue? git bi-sects between 2.6.29.x
+>> and 2.6.31-rc6? or?
+>
+> Well, that would be a good way to find it.  But I'm personally not
+> interested in spending much time on debugging a problem if it only
+> happens with fishy out of tree modules.
+>
 
-Also, I'm having connectivity troubles this weekend, so my response may
-be spotty. :(
+.. No out of tree modules are used ..
 
+Here is the kernel config used:
+http://home.comcast.net/~jpiszcz/20090822/config.txt
+
+After 24hrs of various tar-like read/write/verify I/O, the error usually 
+recurs.
+
+Justin.
