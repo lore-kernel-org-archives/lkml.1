@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933139AbZHVU5I (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 22 Aug 2009 16:57:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932905AbZHVU5E
+	id S933223AbZHVU5P (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 22 Aug 2009 16:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932905AbZHVU5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 16:57:04 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:51055 "EHLO e2.ny.us.ibm.com"
+	Sat, 22 Aug 2009 16:57:11 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:48452 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932518AbZHVU44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 16:56:56 -0400
+	id S932894AbZHVU45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 16:56:57 -0400
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -15,9 +15,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
    josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
    tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
    "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH -tip] v3 Merge preemptable-RCU functionality into hierarchical RCU
-Date: Sat, 22 Aug 2009 13:56:52 -0700
-Message-Id: <12509746134003-git-send-email->
+Subject: [PATCH -tip] v3 Remove CONFIG_PREEMPT_RCU
+Date: Sat, 22 Aug 2009 13:56:53 -0700
+Message-Id: <125097461396-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20090727181401.GA14120@linux.vnet.ibm.com>
 References: <20090727181401.GA14120@linux.vnet.ibm.com>
@@ -27,1181 +27,2325 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Create a kernel/rcutree_plugin.h file that contains definitions
-for preemptable RCU (or, under the #else branch of the #ifdef, empty
-definitions for the classic non-preemptable semantics).  These definitions
-fit into plugins defined in kernel/rcutree.c for this purpose.
-
-This variant of preemptable RCU uses a new algorithm whose read-side
-expense is roughly that of classic hierarchical RCU under CONFIG_PREEMPT.
-This new algorithm's update-side expense is similar to that of classic
-hierarchical RCU, and, in absence of read-side preemption or blocking,
-is exactly that of classic hierarchical RCU.  Perhaps more important,
-this new algorithm has a much simpler implementation, saving well over
-1,000 lines of code compared to mainline's implementation of preemptable
-RCU, which will hopefully be retired in favor of this new algorithm.
-
-The simplifications are obtained by maintaining per-task nesting
-state for running tasks, and using a simple lock-protected algorithm
-to handle accounting when tasks block within RCU read-side critical
-sections, making use of lessons learned while creating numerous
-user-level RCU implementations over the past 18 months.
+Now that CONFIG_TREE_PREEMPT_RCU is in place, there is no further need
+for CONFIG_PREEMPT_RCU.  Remove it, along with whatever subtle bugs it
+may (or may not) contain.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/init_task.h  |   15 ++
- include/linux/rcupdate.h   |    2 +-
- include/linux/rcupreempt.h |    4 +
- include/linux/rcutree.h    |   16 ++
- include/linux/sched.h      |   37 ++++
- init/Kconfig               |   22 ++-
- kernel/Makefile            |    1 +
- kernel/exit.c              |    1 +
- kernel/fork.c              |    5 +-
- kernel/rcupreempt.c        |    2 +-
- kernel/rcutree.c           |  135 +++++++++-----
- kernel/rcutree.h           |    9 +
- kernel/rcutree_plugin.h    |  447 ++++++++++++++++++++++++++++++++++++++++++++
- kernel/rcutree_trace.c     |   20 ++
- lib/Kconfig.debug          |    2 +-
- 15 files changed, 662 insertions(+), 56 deletions(-)
- create mode 100644 kernel/rcutree_plugin.h
+ Documentation/RCU/rcu.txt        |   10 +-
+ Documentation/RCU/whatisRCU.txt  |    8 +-
+ include/linux/init_task.h        |    6 +-
+ include/linux/rcupdate.h         |    4 +-
+ include/linux/rcupreempt.h       |  140 ----
+ include/linux/rcupreempt_trace.h |   97 ---
+ include/linux/sched.h            |   13 -
+ init/Kconfig                     |   20 +-
+ kernel/Makefile                  |    2 -
+ kernel/rcupreempt.c              | 1518 --------------------------------------
+ kernel/rcupreempt_trace.c        |  335 ---------
+ lib/Kconfig.debug                |    2 +-
+ 12 files changed, 13 insertions(+), 2142 deletions(-)
+ delete mode 100644 include/linux/rcupreempt.h
+ delete mode 100644 include/linux/rcupreempt_trace.h
+ delete mode 100644 kernel/rcupreempt.c
+ delete mode 100644 kernel/rcupreempt_trace.c
 
+diff --git a/Documentation/RCU/rcu.txt b/Documentation/RCU/rcu.txt
+index 7aa2002..2a23523 100644
+--- a/Documentation/RCU/rcu.txt
++++ b/Documentation/RCU/rcu.txt
+@@ -36,7 +36,7 @@ o	How can the updater tell when a grace period has completed
+ 	executed in user mode, or executed in the idle loop, we can
+ 	safely free up that item.
+ 
+-	Preemptible variants of RCU (CONFIG_PREEMPT_RCU) get the
++	Preemptible variants of RCU (CONFIG_TREE_PREEMPT_RCU) get the
+ 	same effect, but require that the readers manipulate CPU-local
+ 	counters.  These counters allow limited types of blocking
+ 	within RCU read-side critical sections.  SRCU also uses
+@@ -79,10 +79,10 @@ o	I hear that RCU is patented?  What is with that?
+ o	I hear that RCU needs work in order to support realtime kernels?
+ 
+ 	This work is largely completed.  Realtime-friendly RCU can be
+-	enabled via the CONFIG_PREEMPT_RCU kernel configuration parameter.
+-	However, work is in progress for enabling priority boosting of
+-	preempted RCU read-side critical sections.  This is needed if you
+-	have CPU-bound realtime threads.
++	enabled via the CONFIG_TREE_PREEMPT_RCU kernel configuration
++	parameter.  However, work is in progress for enabling priority
++	boosting of preempted RCU read-side critical sections.	This is
++	needed if you have CPU-bound realtime threads.
+ 
+ o	Where can I find more information on RCU?
+ 
+diff --git a/Documentation/RCU/whatisRCU.txt b/Documentation/RCU/whatisRCU.txt
+index 97ded24..e41a7fe 100644
+--- a/Documentation/RCU/whatisRCU.txt
++++ b/Documentation/RCU/whatisRCU.txt
+@@ -136,10 +136,10 @@ rcu_read_lock()
+ 	Used by a reader to inform the reclaimer that the reader is
+ 	entering an RCU read-side critical section.  It is illegal
+ 	to block while in an RCU read-side critical section, though
+-	kernels built with CONFIG_PREEMPT_RCU can preempt RCU read-side
+-	critical sections.  Any RCU-protected data structure accessed
+-	during an RCU read-side critical section is guaranteed to remain
+-	unreclaimed for the full duration of that critical section.
++	kernels built with CONFIG_TREE_PREEMPT_RCU can preempt RCU
++	read-side critical sections.  Any RCU-protected data structure
++	accessed during an RCU read-side critical section is guaranteed to
++	remain unreclaimed for the full duration of that critical section.
+ 	Reference counts may be used in conjunction with RCU to maintain
+ 	longer-term references to data structures.
+ 
 diff --git a/include/linux/init_task.h b/include/linux/init_task.h
-index 7fc01b1..971a968 100644
+index 971a968..79d4bae 100644
 --- a/include/linux/init_task.h
 +++ b/include/linux/init_task.h
-@@ -94,6 +94,20 @@ extern struct group_info init_groups;
+@@ -94,11 +94,7 @@ extern struct group_info init_groups;
  # define CAP_INIT_BSET  CAP_INIT_EFF_SET
  #endif
  
-+#ifdef CONFIG_PREEMPT_RCU
-+#define INIT_TASK_RCU_PREEMPT(tsk)					\
-+	.rcu_read_lock_nesting = 0,					\
-+	.rcu_flipctr_idx = 0,
-+#elif defined(CONFIG_TREE_PREEMPT_RCU)
-+#define INIT_TASK_RCU_PREEMPT(tsk)					\
-+	.rcu_read_lock_nesting = 0,					\
-+	.rcu_read_unlock_special = 0,					\
-+	.rcu_blocked_cpu = -1,						\
-+	.rcu_node_entry = LIST_HEAD_INIT(tsk.rcu_node_entry),
-+#else
-+#define INIT_TASK_RCU_PREEMPT(tsk)
-+#endif
-+
- extern struct cred init_cred;
- 
- #ifdef CONFIG_PERF_COUNTERS
-@@ -173,6 +187,7 @@ extern struct cred init_cred;
- 	INIT_LOCKDEP							\
- 	INIT_FTRACE_GRAPH						\
- 	INIT_TRACE_RECURSION						\
-+	INIT_TASK_RCU_PREEMPT(tsk)					\
- }
- 
- 
+-#ifdef CONFIG_PREEMPT_RCU
+-#define INIT_TASK_RCU_PREEMPT(tsk)					\
+-	.rcu_read_lock_nesting = 0,					\
+-	.rcu_flipctr_idx = 0,
+-#elif defined(CONFIG_TREE_PREEMPT_RCU)
++#ifdef CONFIG_TREE_PREEMPT_RCU
+ #define INIT_TASK_RCU_PREEMPT(tsk)					\
+ 	.rcu_read_lock_nesting = 0,					\
+ 	.rcu_read_unlock_special = 0,					\
 diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 9d85ee1..26892f5 100644
+index 26892f5..ec90fc3 100644
 --- a/include/linux/rcupdate.h
 +++ b/include/linux/rcupdate.h
-@@ -66,7 +66,7 @@ extern void rcu_scheduler_starting(void);
- extern int rcu_needs_cpu(int cpu);
- extern int rcu_scheduler_active;
+@@ -68,11 +68,9 @@ extern int rcu_scheduler_active;
  
--#if defined(CONFIG_TREE_RCU)
-+#if defined(CONFIG_TREE_RCU) || defined(CONFIG_TREE_PREEMPT_RCU)
+ #if defined(CONFIG_TREE_RCU) || defined(CONFIG_TREE_PREEMPT_RCU)
  #include <linux/rcutree.h>
- #elif defined(CONFIG_PREEMPT_RCU)
- #include <linux/rcupreempt.h>
+-#elif defined(CONFIG_PREEMPT_RCU)
+-#include <linux/rcupreempt.h>
+ #else
+ #error "Unknown RCU implementation specified to kernel configuration"
+-#endif /* #else #if defined(CONFIG_CLASSIC_RCU) */
++#endif
+ 
+ #define RCU_HEAD_INIT 	{ .next = NULL, .func = NULL }
+ #define RCU_HEAD(head) struct rcu_head head = RCU_HEAD_INIT
 diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
-index aff4772..a42ab88 100644
+deleted file mode 100644
+index a42ab88..0000000
 --- a/include/linux/rcupreempt.h
-+++ b/include/linux/rcupreempt.h
-@@ -98,6 +98,10 @@ static inline long rcu_batches_completed_bh(void)
- 	return rcu_batches_completed();
- }
- 
-+static inline void exit_rcu(void)
-+{
-+}
-+
- #ifdef CONFIG_RCU_TRACE
- struct rcupreempt_trace;
- extern long *rcupreempt_flipctr(int cpu);
-diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
-index c739d90..a893077 100644
---- a/include/linux/rcutree.h
-+++ b/include/linux/rcutree.h
-@@ -35,14 +35,30 @@ extern void rcu_bh_qs(int cpu);
- 
- extern int rcu_needs_cpu(int cpu);
- 
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+
-+extern void __rcu_read_lock(void);
-+extern void __rcu_read_unlock(void);
-+extern void exit_rcu(void);
-+
-+#else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
-+
- static inline void __rcu_read_lock(void)
- {
- 	preempt_disable();
- }
-+
- static inline void __rcu_read_unlock(void)
- {
- 	preempt_enable();
- }
-+
-+static inline void exit_rcu(void)
-+{
-+}
-+
-+#endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
-+
- static inline void __rcu_read_lock_bh(void)
- {
- 	local_bh_disable();
++++ /dev/null
+@@ -1,140 +0,0 @@
+-/*
+- * Read-Copy Update mechanism for mutual exclusion (RT implementation)
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+- *
+- * Copyright (C) IBM Corporation, 2006
+- *
+- * Author:  Paul McKenney <paulmck@us.ibm.com>
+- *
+- * Based on the original work by Paul McKenney <paul.mckenney@us.ibm.com>
+- * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
+- * Papers:
+- * http://www.rdrop.com/users/paulmck/paper/rclockpdcsproof.pdf
+- * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
+- *
+- * For detailed explanation of Read-Copy Update mechanism see -
+- * 		Documentation/RCU
+- *
+- */
+-
+-#ifndef __LINUX_RCUPREEMPT_H
+-#define __LINUX_RCUPREEMPT_H
+-
+-#include <linux/cache.h>
+-#include <linux/spinlock.h>
+-#include <linux/threads.h>
+-#include <linux/smp.h>
+-#include <linux/cpumask.h>
+-#include <linux/seqlock.h>
+-
+-extern void rcu_sched_qs(int cpu);
+-static inline void rcu_bh_qs(int cpu) { }
+-
+-/*
+- * Someone might want to pass call_rcu_bh as a function pointer.
+- * So this needs to just be a rename and not a macro function.
+- *  (no parentheses)
+- */
+-#define call_rcu_bh		call_rcu
+-
+-/**
+- * call_rcu_sched - Queue RCU callback for invocation after sched grace period.
+- * @head: structure to be used for queueing the RCU updates.
+- * @func: actual update function to be invoked after the grace period
+- *
+- * The update function will be invoked some time after a full
+- * synchronize_sched()-style grace period elapses, in other words after
+- * all currently executing preempt-disabled sections of code (including
+- * hardirq handlers, NMI handlers, and local_irq_save() blocks) have
+- * completed.
+- */
+-extern void call_rcu_sched(struct rcu_head *head,
+-			   void (*func)(struct rcu_head *head));
+-
+-extern void __rcu_read_lock(void);
+-extern void __rcu_read_unlock(void);
+-extern int rcu_needs_cpu(int cpu);
+-
+-#define __rcu_read_lock_bh()	{ rcu_read_lock(); local_bh_disable(); }
+-#define __rcu_read_unlock_bh()	{ local_bh_enable(); rcu_read_unlock(); }
+-
+-extern void __synchronize_sched(void);
+-
+-static inline void synchronize_rcu_expedited(void)
+-{
+-	synchronize_rcu();  /* Placeholder for new rcupreempt implementation. */
+-}
+-
+-static inline void synchronize_rcu_bh_expedited(void)
+-{
+-	synchronize_rcu_bh();  /* Placeholder for new rcupreempt impl. */
+-}
+-
+-extern void __rcu_init(void);
+-extern void rcu_init_sched(void);
+-extern void rcu_check_callbacks(int cpu, int user);
+-extern void rcu_restart_cpu(int cpu);
+-extern long rcu_batches_completed(void);
+-
+-/*
+- * Return the number of RCU batches processed thus far. Useful for debug
+- * and statistic. The _bh variant is identifcal to straight RCU
+- */
+-static inline long rcu_batches_completed_bh(void)
+-{
+-	return rcu_batches_completed();
+-}
+-
+-static inline void exit_rcu(void)
+-{
+-}
+-
+-#ifdef CONFIG_RCU_TRACE
+-struct rcupreempt_trace;
+-extern long *rcupreempt_flipctr(int cpu);
+-extern long rcupreempt_data_completed(void);
+-extern int rcupreempt_flip_flag(int cpu);
+-extern int rcupreempt_mb_flag(int cpu);
+-extern char *rcupreempt_try_flip_state_name(void);
+-extern struct rcupreempt_trace *rcupreempt_trace_cpu(int cpu);
+-#endif
+-
+-struct softirq_action;
+-
+-#ifdef CONFIG_NO_HZ
+-extern void rcu_enter_nohz(void);
+-extern void rcu_exit_nohz(void);
+-#else
+-# define rcu_enter_nohz()	do { } while (0)
+-# define rcu_exit_nohz()	do { } while (0)
+-#endif
+-
+-/*
+- * A context switch is a grace period for rcupreempt synchronize_rcu()
+- * only during early boot, before the scheduler has been initialized.
+- * So, how the heck do we get a context switch?  Well, if the caller
+- * invokes synchronize_rcu(), they are willing to accept a context
+- * switch, so we simply pretend that one happened.
+- *
+- * After boot, there might be a blocked or preempted task in an RCU
+- * read-side critical section, so we cannot then take the fastpath.
+- */
+-static inline int rcu_blocking_is_gp(void)
+-{
+-	return num_online_cpus() == 1 && !rcu_scheduler_active;
+-}
+-
+-#endif /* __LINUX_RCUPREEMPT_H */
+diff --git a/include/linux/rcupreempt_trace.h b/include/linux/rcupreempt_trace.h
+deleted file mode 100644
+index b99ae07..0000000
+--- a/include/linux/rcupreempt_trace.h
++++ /dev/null
+@@ -1,97 +0,0 @@
+-/*
+- * Read-Copy Update mechanism for mutual exclusion (RT implementation)
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+- *
+- * Copyright (C) IBM Corporation, 2006
+- *
+- * Author:  Paul McKenney <paulmck@us.ibm.com>
+- *
+- * Based on the original work by Paul McKenney <paul.mckenney@us.ibm.com>
+- * and inputs from Rusty Russell, Andrea Arcangeli and Andi Kleen.
+- * Papers:
+- * http://www.rdrop.com/users/paulmck/paper/rclockpdcsproof.pdf
+- * http://lse.sourceforge.net/locking/rclock_OLS.2001.05.01c.sc.pdf (OLS2001)
+- *
+- * For detailed explanation of the Preemptible Read-Copy Update mechanism see -
+- * 		 http://lwn.net/Articles/253651/
+- */
+-
+-#ifndef __LINUX_RCUPREEMPT_TRACE_H
+-#define __LINUX_RCUPREEMPT_TRACE_H
+-
+-#include <linux/types.h>
+-#include <linux/kernel.h>
+-
+-#include <asm/atomic.h>
+-
+-/*
+- * PREEMPT_RCU data structures.
+- */
+-
+-struct rcupreempt_trace {
+-	long		next_length;
+-	long		next_add;
+-	long		wait_length;
+-	long		wait_add;
+-	long		done_length;
+-	long		done_add;
+-	long		done_remove;
+-	atomic_t	done_invoked;
+-	long		rcu_check_callbacks;
+-	atomic_t	rcu_try_flip_1;
+-	atomic_t	rcu_try_flip_e1;
+-	long		rcu_try_flip_i1;
+-	long		rcu_try_flip_ie1;
+-	long		rcu_try_flip_g1;
+-	long		rcu_try_flip_a1;
+-	long		rcu_try_flip_ae1;
+-	long		rcu_try_flip_a2;
+-	long		rcu_try_flip_z1;
+-	long		rcu_try_flip_ze1;
+-	long		rcu_try_flip_z2;
+-	long		rcu_try_flip_m1;
+-	long		rcu_try_flip_me1;
+-	long		rcu_try_flip_m2;
+-};
+-
+-#ifdef CONFIG_RCU_TRACE
+-#define RCU_TRACE(fn, arg) 	fn(arg);
+-#else
+-#define RCU_TRACE(fn, arg)
+-#endif
+-
+-extern void rcupreempt_trace_move2done(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_move2wait(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_e1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_i1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_ie1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_g1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_a1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_ae1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_a2(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_z1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_ze1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_z2(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_m1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_me1(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_try_flip_m2(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_check_callbacks(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_done_remove(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_invoke(struct rcupreempt_trace *trace);
+-extern void rcupreempt_trace_next_add(struct rcupreempt_trace *trace);
+-
+-#endif /* __LINUX_RCUPREEMPT_TRACE_H */
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 3ab08e4..d7f98f6 100644
+index d7f98f6..bfca26d 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -1210,6 +1210,13 @@ struct task_struct {
- 	int rcu_flipctr_idx;
- #endif /* #ifdef CONFIG_PREEMPT_RCU */
+@@ -1205,11 +1205,6 @@ struct task_struct {
+ 	unsigned int policy;
+ 	cpumask_t cpus_allowed;
  
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+	int rcu_read_lock_nesting;
-+	char rcu_read_unlock_special;
-+	int rcu_blocked_cpu;
-+	struct list_head rcu_node_entry;
-+#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
-+
- #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
- 	struct sched_info sched_info;
- #endif
-@@ -1723,6 +1730,36 @@ extern cputime_t task_gtime(struct task_struct *p);
- #define tsk_used_math(p) ((p)->flags & PF_USED_MATH)
- #define used_math() tsk_used_math(current)
+-#ifdef CONFIG_PREEMPT_RCU
+-	int rcu_read_lock_nesting;
+-	int rcu_flipctr_idx;
+-#endif /* #ifdef CONFIG_PREEMPT_RCU */
+-
+ #ifdef CONFIG_TREE_PREEMPT_RCU
+ 	int rcu_read_lock_nesting;
+ 	char rcu_read_unlock_special;
+@@ -1744,14 +1739,6 @@ static inline void rcu_copy_process(struct task_struct *p)
+ 	INIT_LIST_HEAD(&p->rcu_node_entry);
+ }
  
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+
-+#define RCU_READ_UNLOCK_BLOCKED (1 << 0) /* blocked while in RCU read-side. */
-+#define RCU_READ_UNLOCK_NEED_QS (1 << 1) /* RCU core needs CPU response. */
-+#define RCU_READ_UNLOCK_GOT_QS  (1 << 2) /* CPU has responded to RCU core. */
-+
-+static inline void rcu_copy_process(struct task_struct *p)
-+{
-+	p->rcu_read_lock_nesting = 0;
-+	p->rcu_read_unlock_special = 0;
-+	p->rcu_blocked_cpu = -1;
-+	INIT_LIST_HEAD(&p->rcu_node_entry);
-+}
-+
-+#elif defined(CONFIG_PREEMPT_RCU)
-+
-+static inline void rcu_copy_process(struct task_struct *p)
-+{
-+	p->rcu_read_lock_nesting = 0;
-+	p->rcu_flipctr_idx = 0;
-+}
-+
-+#else
-+
-+static inline void rcu_copy_process(struct task_struct *p)
-+{
-+}
-+
-+#endif
-+
- #ifdef CONFIG_SMP
- extern int set_cpus_allowed_ptr(struct task_struct *p,
- 				const struct cpumask *new_mask);
+-#elif defined(CONFIG_PREEMPT_RCU)
+-
+-static inline void rcu_copy_process(struct task_struct *p)
+-{
+-	p->rcu_read_lock_nesting = 0;
+-	p->rcu_flipctr_idx = 0;
+-}
+-
+ #else
+ 
+ static inline void rcu_copy_process(struct task_struct *p)
 diff --git a/init/Kconfig b/init/Kconfig
-index 25373cf..f88da2d 100644
+index f88da2d..8e8b76d 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -335,11 +335,20 @@ config PREEMPT_RCU
- 	  now-naive assumptions about each RCU read-side critical section
- 	  remaining on a given CPU through its execution.
+@@ -324,17 +324,6 @@ config TREE_RCU
+ 	  thousands of CPUs.  It also scales down nicely to
+ 	  smaller systems.
  
-+config TREE_PREEMPT_RCU
-+	bool "Preemptable tree-based hierarchical RCU"
-+	depends on PREEMPT
-+	help
-+	  This option selects the RCU implementation that is
-+	  designed for very large SMP systems with hundreds or
-+	  thousands of CPUs, but for which real-time response
-+	  is also required.
-+
- endchoice
+-config PREEMPT_RCU
+-	bool "Preemptible RCU"
+-	depends on PREEMPT
+-	help
+-	  This option reduces the latency of the kernel by making certain
+-	  RCU sections preemptible. Normally RCU code is non-preemptible, if
+-	  this option is selected then read-only RCU sections become
+-	  preemptible. This helps latency, but may expose bugs due to
+-	  now-naive assumptions about each RCU read-side critical section
+-	  remaining on a given CPU through its execution.
+-
+ config TREE_PREEMPT_RCU
+ 	bool "Preemptable tree-based hierarchical RCU"
+ 	depends on PREEMPT
+@@ -348,7 +337,7 @@ endchoice
  
  config RCU_TRACE
  	bool "Enable tracing for RCU"
--	depends on TREE_RCU || PREEMPT_RCU
-+	depends on TREE_RCU || PREEMPT_RCU || TREE_PREEMPT_RCU
+-	depends on TREE_RCU || PREEMPT_RCU || TREE_PREEMPT_RCU
++	depends on TREE_RCU || TREE_PREEMPT_RCU
  	help
  	  This option provides tracing in RCU which presents stats
  	  in debugfs for debugging RCU implementation.
-@@ -351,7 +360,7 @@ config RCU_FANOUT
- 	int "Tree-based hierarchical RCU fanout value"
- 	range 2 64 if 64BIT
- 	range 2 32 if !64BIT
--	depends on TREE_RCU
-+	depends on TREE_RCU || TREE_PREEMPT_RCU
- 	default 64 if 64BIT
- 	default 32 if !64BIT
- 	help
-@@ -366,7 +375,7 @@ config RCU_FANOUT
+@@ -395,13 +384,6 @@ config TREE_RCU_TRACE
+ 	  TREE_PREEMPT_RCU implementations, permitting Makefile to
+ 	  trivially select kernel/rcutree_trace.c.
  
- config RCU_FANOUT_EXACT
- 	bool "Disable tree-based hierarchical RCU auto-balancing"
--	depends on TREE_RCU
-+	depends on TREE_RCU || TREE_PREEMPT_RCU
- 	default n
- 	help
- 	  This option forces use of the exact RCU_FANOUT value specified,
-@@ -379,11 +388,12 @@ config RCU_FANOUT_EXACT
- 	  Say N if unsure.
+-config PREEMPT_RCU_TRACE
+-	def_bool RCU_TRACE && PREEMPT_RCU
+-	select DEBUG_FS
+-	help
+-	  This option provides tracing for the PREEMPT_RCU implementation,
+-	  permitting Makefile to trivially select kernel/rcupreempt_trace.c.
+-
+ endmenu # "RCU Subsystem"
  
- config TREE_RCU_TRACE
--	def_bool RCU_TRACE && TREE_RCU
-+	def_bool RCU_TRACE && ( TREE_RCU || TREE_PREEMPT_RCU )
- 	select DEBUG_FS
- 	help
--	  This option provides tracing for the TREE_RCU implementation,
--	  permitting Makefile to trivially select kernel/rcutree_trace.c.
-+	  This option provides tracing for the TREE_RCU and
-+	  TREE_PREEMPT_RCU implementations, permitting Makefile to
-+	  trivially select kernel/rcutree_trace.c.
- 
- config PREEMPT_RCU_TRACE
- 	def_bool RCU_TRACE && PREEMPT_RCU
+ config IKCONFIG
 diff --git a/kernel/Makefile b/kernel/Makefile
-index 2419c9d..1a38b47 100644
+index 1a38b47..b833bd5 100644
 --- a/kernel/Makefile
 +++ b/kernel/Makefile
-@@ -81,6 +81,7 @@ obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
- obj-$(CONFIG_SECCOMP) += seccomp.o
+@@ -82,9 +82,7 @@ obj-$(CONFIG_SECCOMP) += seccomp.o
  obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
  obj-$(CONFIG_TREE_RCU) += rcutree.o
-+obj-$(CONFIG_TREE_PREEMPT_RCU) += rcutree.o
- obj-$(CONFIG_PREEMPT_RCU) += rcupreempt.o
+ obj-$(CONFIG_TREE_PREEMPT_RCU) += rcutree.o
+-obj-$(CONFIG_PREEMPT_RCU) += rcupreempt.o
  obj-$(CONFIG_TREE_RCU_TRACE) += rcutree_trace.o
- obj-$(CONFIG_PREEMPT_RCU_TRACE) += rcupreempt_trace.o
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 869dc22..263f95e 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1010,6 +1010,7 @@ NORET_TYPE void do_exit(long code)
- 		__free_pipe_info(tsk->splice_pipe);
- 
- 	preempt_disable();
-+	exit_rcu();
- 	/* causes final put_task_struct in finish_task_switch(). */
- 	tsk->state = TASK_DEAD;
- 	schedule();
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 021e113..642e8b5 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1022,10 +1022,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	copy_flags(clone_flags, p);
- 	INIT_LIST_HEAD(&p->children);
- 	INIT_LIST_HEAD(&p->sibling);
--#ifdef CONFIG_PREEMPT_RCU
--	p->rcu_read_lock_nesting = 0;
--	p->rcu_flipctr_idx = 0;
--#endif /* #ifdef CONFIG_PREEMPT_RCU */
-+	rcu_copy_process(p);
- 	p->vfork_done = NULL;
- 	spin_lock_init(&p->alloc_lock);
- 
+-obj-$(CONFIG_PREEMPT_RCU_TRACE) += rcupreempt_trace.o
+ obj-$(CONFIG_RELAY) += relay.o
+ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+ obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
 diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-index 2ab2146..0053ce5 100644
+deleted file mode 100644
+index 0053ce5..0000000
 --- a/kernel/rcupreempt.c
-+++ b/kernel/rcupreempt.c
-@@ -986,7 +986,7 @@ void rcu_check_callbacks(int cpu, int user)
- 	    (idle_cpu(cpu) && !in_softirq() &&
- 	     hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
- 		smp_mb();	/* Guard against aggressive schedule(). */
--	     	rcu_sched_qs(cpu);
-+		rcu_sched_qs(cpu);
- 	}
- 
- 	rcu_check_mb(cpu);
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 4ce3adc..cc02557 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -80,6 +80,21 @@ DEFINE_PER_CPU(struct rcu_data, rcu_sched_data);
- struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
- DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
- 
-+extern long rcu_batches_completed_sched(void);
-+static void cpu_quiet_msk(unsigned long mask, struct rcu_state *rsp,
-+			  struct rcu_node *rnp, unsigned long flags);
-+static void cpu_quiet_msk_finish(struct rcu_state *rsp, unsigned long flags);
-+static void __rcu_process_callbacks(struct rcu_state *rsp,
-+				    struct rcu_data *rdp);
-+static void __call_rcu(struct rcu_head *head,
-+		       void (*func)(struct rcu_head *rcu),
-+		       struct rcu_state *rsp);
-+static int __rcu_pending(struct rcu_state *rsp, struct rcu_data *rdp);
-+static void __cpuinit rcu_init_percpu_data(int cpu, struct rcu_state *rsp,
-+					   int preemptable);
-+
-+#include "rcutree_plugin.h"
-+
- /*
-  * Note a quiescent state.  Because we do not need to know
-  * how many quiescent states passed, just if there was at least
-@@ -87,16 +102,27 @@ DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
-  */
- void rcu_sched_qs(int cpu)
- {
--	struct rcu_data *rdp = &per_cpu(rcu_sched_data, cpu);
-+	unsigned long flags;
-+	struct rcu_data *rdp;
-+
-+	local_irq_save(flags);
-+	rdp = &per_cpu(rcu_sched_data, cpu);
- 	rdp->passed_quiesc = 1;
- 	rdp->passed_quiesc_completed = rdp->completed;
-+	rcu_preempt_qs(cpu);
-+	local_irq_restore(flags);
- }
- 
- void rcu_bh_qs(int cpu)
- {
--	struct rcu_data *rdp = &per_cpu(rcu_bh_data, cpu);
-+	unsigned long flags;
-+	struct rcu_data *rdp;
-+
-+	local_irq_save(flags);
-+	rdp = &per_cpu(rcu_bh_data, cpu);
- 	rdp->passed_quiesc = 1;
- 	rdp->passed_quiesc_completed = rdp->completed;
-+	local_irq_restore(flags);
- }
- 
- #ifdef CONFIG_NO_HZ
-@@ -123,16 +149,6 @@ long rcu_batches_completed_sched(void)
- EXPORT_SYMBOL_GPL(rcu_batches_completed_sched);
- 
- /*
-- * Return the number of RCU batches processed thus far for debug & stats.
-- * @@@ placeholder, maps to rcu_batches_completed_sched().
++++ /dev/null
+@@ -1,1518 +0,0 @@
+-/*
+- * Read-Copy Update mechanism for mutual exclusion, realtime implementation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+- *
+- * Copyright IBM Corporation, 2006
+- *
+- * Authors: Paul E. McKenney <paulmck@us.ibm.com>
+- *		With thanks to Esben Nielsen, Bill Huey, and Ingo Molnar
+- *		for pushing me away from locks and towards counters, and
+- *		to Suparna Bhattacharya for pushing me completely away
+- *		from atomic instructions on the read side.
+- *
+- *  - Added handling of Dynamic Ticks
+- *      Copyright 2007 - Paul E. Mckenney <paulmck@us.ibm.com>
+- *                     - Steven Rostedt <srostedt@redhat.com>
+- *
+- * Papers:  http://www.rdrop.com/users/paulmck/RCU
+- *
+- * Design Document: http://lwn.net/Articles/253651/
+- *
+- * For detailed explanation of Read-Copy Update mechanism see -
+- * 		Documentation/RCU/ *.txt
+- *
+- */
+-#include <linux/types.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/spinlock.h>
+-#include <linux/smp.h>
+-#include <linux/rcupdate.h>
+-#include <linux/interrupt.h>
+-#include <linux/sched.h>
+-#include <asm/atomic.h>
+-#include <linux/bitops.h>
+-#include <linux/module.h>
+-#include <linux/kthread.h>
+-#include <linux/completion.h>
+-#include <linux/moduleparam.h>
+-#include <linux/percpu.h>
+-#include <linux/notifier.h>
+-#include <linux/cpu.h>
+-#include <linux/random.h>
+-#include <linux/delay.h>
+-#include <linux/cpumask.h>
+-#include <linux/rcupreempt_trace.h>
+-#include <asm/byteorder.h>
+-
+-/*
+- * PREEMPT_RCU data structures.
+- */
+-
+-/*
+- * GP_STAGES specifies the number of times the state machine has
+- * to go through the all the rcu_try_flip_states (see below)
+- * in a single Grace Period.
+- *
+- * GP in GP_STAGES stands for Grace Period ;)
+- */
+-#define GP_STAGES    2
+-struct rcu_data {
+-	spinlock_t	lock;		/* Protect rcu_data fields. */
+-	long		completed;	/* Number of last completed batch. */
+-	int		waitlistcount;
+-	struct rcu_head *nextlist;
+-	struct rcu_head **nexttail;
+-	struct rcu_head *waitlist[GP_STAGES];
+-	struct rcu_head **waittail[GP_STAGES];
+-	struct rcu_head *donelist;	/* from waitlist & waitschedlist */
+-	struct rcu_head **donetail;
+-	long rcu_flipctr[2];
+-	struct rcu_head *nextschedlist;
+-	struct rcu_head **nextschedtail;
+-	struct rcu_head *waitschedlist;
+-	struct rcu_head **waitschedtail;
+-	int rcu_sched_sleeping;
+-#ifdef CONFIG_RCU_TRACE
+-	struct rcupreempt_trace trace;
+-#endif /* #ifdef CONFIG_RCU_TRACE */
+-};
+-
+-/*
+- * States for rcu_try_flip() and friends.
+- */
+-
+-enum rcu_try_flip_states {
+-
+-	/*
+-	 * Stay here if nothing is happening. Flip the counter if somthing
+-	 * starts happening. Denoted by "I"
+-	 */
+-	rcu_try_flip_idle_state,
+-
+-	/*
+-	 * Wait here for all CPUs to notice that the counter has flipped. This
+-	 * prevents the old set of counters from ever being incremented once
+-	 * we leave this state, which in turn is necessary because we cannot
+-	 * test any individual counter for zero -- we can only check the sum.
+-	 * Denoted by "A".
+-	 */
+-	rcu_try_flip_waitack_state,
+-
+-	/*
+-	 * Wait here for the sum of the old per-CPU counters to reach zero.
+-	 * Denoted by "Z".
+-	 */
+-	rcu_try_flip_waitzero_state,
+-
+-	/*
+-	 * Wait here for each of the other CPUs to execute a memory barrier.
+-	 * This is necessary to ensure that these other CPUs really have
+-	 * completed executing their RCU read-side critical sections, despite
+-	 * their CPUs wildly reordering memory. Denoted by "M".
+-	 */
+-	rcu_try_flip_waitmb_state,
+-};
+-
+-/*
+- * States for rcu_ctrlblk.rcu_sched_sleep.
+- */
+-
+-enum rcu_sched_sleep_states {
+-	rcu_sched_not_sleeping,	/* Not sleeping, callbacks need GP.  */
+-	rcu_sched_sleep_prep,	/* Thinking of sleeping, rechecking. */
+-	rcu_sched_sleeping,	/* Sleeping, awaken if GP needed. */
+-};
+-
+-struct rcu_ctrlblk {
+-	spinlock_t	fliplock;	/* Protect state-machine transitions. */
+-	long		completed;	/* Number of last completed batch. */
+-	enum rcu_try_flip_states rcu_try_flip_state; /* The current state of
+-							the rcu state machine */
+-	spinlock_t	schedlock;	/* Protect rcu_sched sleep state. */
+-	enum rcu_sched_sleep_states sched_sleep; /* rcu_sched state. */
+-	wait_queue_head_t sched_wq;	/* Place for rcu_sched to sleep. */
+-};
+-
+-struct rcu_dyntick_sched {
+-	int dynticks;
+-	int dynticks_snap;
+-	int sched_qs;
+-	int sched_qs_snap;
+-	int sched_dynticks_snap;
+-};
+-
+-static DEFINE_PER_CPU_SHARED_ALIGNED(struct rcu_dyntick_sched, rcu_dyntick_sched) = {
+-	.dynticks = 1,
+-};
+-
+-static int rcu_pending(int cpu);
+-
+-void rcu_sched_qs(int cpu)
+-{
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	rdssp->sched_qs++;
+-}
+-
+-#ifdef CONFIG_NO_HZ
+-
+-void rcu_enter_nohz(void)
+-{
+-	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
+-
+-	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
+-	__get_cpu_var(rcu_dyntick_sched).dynticks++;
+-	WARN_ON_RATELIMIT(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, &rs);
+-}
+-
+-void rcu_exit_nohz(void)
+-{
+-	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
+-
+-	__get_cpu_var(rcu_dyntick_sched).dynticks++;
+-	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+-	WARN_ON_RATELIMIT(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1),
+-				&rs);
+-}
+-
+-#endif /* CONFIG_NO_HZ */
+-
+-
+-static DEFINE_PER_CPU(struct rcu_data, rcu_data);
+-
+-static struct rcu_ctrlblk rcu_ctrlblk = {
+-	.fliplock = __SPIN_LOCK_UNLOCKED(rcu_ctrlblk.fliplock),
+-	.completed = 0,
+-	.rcu_try_flip_state = rcu_try_flip_idle_state,
+-	.schedlock = __SPIN_LOCK_UNLOCKED(rcu_ctrlblk.schedlock),
+-	.sched_sleep = rcu_sched_not_sleeping,
+-	.sched_wq = __WAIT_QUEUE_HEAD_INITIALIZER(rcu_ctrlblk.sched_wq),
+-};
+-
+-static struct task_struct *rcu_sched_grace_period_task;
+-
+-#ifdef CONFIG_RCU_TRACE
+-static char *rcu_try_flip_state_names[] =
+-	{ "idle", "waitack", "waitzero", "waitmb" };
+-#endif /* #ifdef CONFIG_RCU_TRACE */
+-
+-static DECLARE_BITMAP(rcu_cpu_online_map, NR_CPUS) __read_mostly
+-	= CPU_BITS_NONE;
+-
+-/*
+- * Enum and per-CPU flag to determine when each CPU has seen
+- * the most recent counter flip.
+- */
+-
+-enum rcu_flip_flag_values {
+-	rcu_flip_seen,		/* Steady/initial state, last flip seen. */
+-				/* Only GP detector can update. */
+-	rcu_flipped		/* Flip just completed, need confirmation. */
+-				/* Only corresponding CPU can update. */
+-};
+-static DEFINE_PER_CPU_SHARED_ALIGNED(enum rcu_flip_flag_values, rcu_flip_flag)
+-								= rcu_flip_seen;
+-
+-/*
+- * Enum and per-CPU flag to determine when each CPU has executed the
+- * needed memory barrier to fence in memory references from its last RCU
+- * read-side critical section in the just-completed grace period.
+- */
+-
+-enum rcu_mb_flag_values {
+-	rcu_mb_done,		/* Steady/initial state, no mb()s required. */
+-				/* Only GP detector can update. */
+-	rcu_mb_needed		/* Flip just completed, need an mb(). */
+-				/* Only corresponding CPU can update. */
+-};
+-static DEFINE_PER_CPU_SHARED_ALIGNED(enum rcu_mb_flag_values, rcu_mb_flag)
+-								= rcu_mb_done;
+-
+-/*
+- * RCU_DATA_ME: find the current CPU's rcu_data structure.
+- * RCU_DATA_CPU: find the specified CPU's rcu_data structure.
+- */
+-#define RCU_DATA_ME()		(&__get_cpu_var(rcu_data))
+-#define RCU_DATA_CPU(cpu)	(&per_cpu(rcu_data, cpu))
+-
+-/*
+- * Helper macro for tracing when the appropriate rcu_data is not
+- * cached in a local variable, but where the CPU number is so cached.
+- */
+-#define RCU_TRACE_CPU(f, cpu) RCU_TRACE(f, &(RCU_DATA_CPU(cpu)->trace));
+-
+-/*
+- * Helper macro for tracing when the appropriate rcu_data is not
+- * cached in a local variable.
+- */
+-#define RCU_TRACE_ME(f) RCU_TRACE(f, &(RCU_DATA_ME()->trace));
+-
+-/*
+- * Helper macro for tracing when the appropriate rcu_data is pointed
+- * to by a local variable.
+- */
+-#define RCU_TRACE_RDP(f, rdp) RCU_TRACE(f, &((rdp)->trace));
+-
+-#define RCU_SCHED_BATCH_TIME (HZ / 50)
+-
+-/*
+- * Return the number of RCU batches processed thus far.  Useful
+- * for debug and statistics.
 - */
 -long rcu_batches_completed(void)
 -{
--	return rcu_batches_completed_sched();
+-	return rcu_ctrlblk.completed;
 -}
 -EXPORT_SYMBOL_GPL(rcu_batches_completed);
 -
+-void __rcu_read_lock(void)
+-{
+-	int idx;
+-	struct task_struct *t = current;
+-	int nesting;
+-
+-	nesting = ACCESS_ONCE(t->rcu_read_lock_nesting);
+-	if (nesting != 0) {
+-
+-		/* An earlier rcu_read_lock() covers us, just count it. */
+-
+-		t->rcu_read_lock_nesting = nesting + 1;
+-
+-	} else {
+-		unsigned long flags;
+-
+-		/*
+-		 * We disable interrupts for the following reasons:
+-		 * - If we get scheduling clock interrupt here, and we
+-		 *   end up acking the counter flip, it's like a promise
+-		 *   that we will never increment the old counter again.
+-		 *   Thus we will break that promise if that
+-		 *   scheduling clock interrupt happens between the time
+-		 *   we pick the .completed field and the time that we
+-		 *   increment our counter.
+-		 *
+-		 * - We don't want to be preempted out here.
+-		 *
+-		 * NMIs can still occur, of course, and might themselves
+-		 * contain rcu_read_lock().
+-		 */
+-
+-		local_irq_save(flags);
+-
+-		/*
+-		 * Outermost nesting of rcu_read_lock(), so increment
+-		 * the current counter for the current CPU.  Use volatile
+-		 * casts to prevent the compiler from reordering.
+-		 */
+-
+-		idx = ACCESS_ONCE(rcu_ctrlblk.completed) & 0x1;
+-		ACCESS_ONCE(RCU_DATA_ME()->rcu_flipctr[idx])++;
+-
+-		/*
+-		 * Now that the per-CPU counter has been incremented, we
+-		 * are protected from races with rcu_read_lock() invoked
+-		 * from NMI handlers on this CPU.  We can therefore safely
+-		 * increment the nesting counter, relieving further NMIs
+-		 * of the need to increment the per-CPU counter.
+-		 */
+-
+-		ACCESS_ONCE(t->rcu_read_lock_nesting) = nesting + 1;
+-
+-		/*
+-		 * Now that we have preventing any NMIs from storing
+-		 * to the ->rcu_flipctr_idx, we can safely use it to
+-		 * remember which counter to decrement in the matching
+-		 * rcu_read_unlock().
+-		 */
+-
+-		ACCESS_ONCE(t->rcu_flipctr_idx) = idx;
+-		local_irq_restore(flags);
+-	}
+-}
+-EXPORT_SYMBOL_GPL(__rcu_read_lock);
+-
+-void __rcu_read_unlock(void)
+-{
+-	int idx;
+-	struct task_struct *t = current;
+-	int nesting;
+-
+-	nesting = ACCESS_ONCE(t->rcu_read_lock_nesting);
+-	if (nesting > 1) {
+-
+-		/*
+-		 * We are still protected by the enclosing rcu_read_lock(),
+-		 * so simply decrement the counter.
+-		 */
+-
+-		t->rcu_read_lock_nesting = nesting - 1;
+-
+-	} else {
+-		unsigned long flags;
+-
+-		/*
+-		 * Disable local interrupts to prevent the grace-period
+-		 * detection state machine from seeing us half-done.
+-		 * NMIs can still occur, of course, and might themselves
+-		 * contain rcu_read_lock() and rcu_read_unlock().
+-		 */
+-
+-		local_irq_save(flags);
+-
+-		/*
+-		 * Outermost nesting of rcu_read_unlock(), so we must
+-		 * decrement the current counter for the current CPU.
+-		 * This must be done carefully, because NMIs can
+-		 * occur at any point in this code, and any rcu_read_lock()
+-		 * and rcu_read_unlock() pairs in the NMI handlers
+-		 * must interact non-destructively with this code.
+-		 * Lots of volatile casts, and -very- careful ordering.
+-		 *
+-		 * Changes to this code, including this one, must be
+-		 * inspected, validated, and tested extremely carefully!!!
+-		 */
+-
+-		/*
+-		 * First, pick up the index.
+-		 */
+-
+-		idx = ACCESS_ONCE(t->rcu_flipctr_idx);
+-
+-		/*
+-		 * Now that we have fetched the counter index, it is
+-		 * safe to decrement the per-task RCU nesting counter.
+-		 * After this, any interrupts or NMIs will increment and
+-		 * decrement the per-CPU counters.
+-		 */
+-		ACCESS_ONCE(t->rcu_read_lock_nesting) = nesting - 1;
+-
+-		/*
+-		 * It is now safe to decrement this task's nesting count.
+-		 * NMIs that occur after this statement will route their
+-		 * rcu_read_lock() calls through this "else" clause, and
+-		 * will thus start incrementing the per-CPU counter on
+-		 * their own.  They will also clobber ->rcu_flipctr_idx,
+-		 * but that is OK, since we have already fetched it.
+-		 */
+-
+-		ACCESS_ONCE(RCU_DATA_ME()->rcu_flipctr[idx])--;
+-		local_irq_restore(flags);
+-	}
+-}
+-EXPORT_SYMBOL_GPL(__rcu_read_unlock);
+-
 -/*
-  * Return the number of RCU BH batches processed thus far for debug & stats.
-  */
- long rcu_batches_completed_bh(void)
-@@ -193,6 +209,10 @@ static int rcu_implicit_offline_qs(struct rcu_data *rdp)
- 		return 1;
- 	}
- 
-+	/* If preemptable RCU, no point in sending reschedule IPI. */
-+	if (rdp->preemptable)
-+		return 0;
-+
- 	/* The CPU is online, so send it a reschedule IPI. */
- 	if (rdp->cpu != smp_processor_id())
- 		smp_send_reschedule(rdp->cpu);
-@@ -473,6 +493,7 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
- 
- 	printk(KERN_ERR "INFO: RCU detected CPU stalls:");
- 	for (; rnp_cur < rnp_end; rnp_cur++) {
-+		rcu_print_task_stall(rnp);
- 		if (rnp_cur->qsmask == 0)
- 			continue;
- 		for (cpu = 0; cpu <= rnp_cur->grphi - rnp_cur->grplo; cpu++)
-@@ -686,6 +707,19 @@ rcu_process_gp_end(struct rcu_state *rsp, struct rcu_data *rdp)
- }
- 
- /*
-+ * Clean up after the prior grace period and let rcu_start_gp() start up
-+ * the next grace period if one is needed.  Note that the caller must
-+ * hold rnp->lock, as required by rcu_start_gp(), which will release it.
-+ */
-+static void cpu_quiet_msk_finish(struct rcu_state *rsp, unsigned long flags)
-+	__releases(rnp->lock)
-+{
-+	rsp->completed = rsp->gpnum;
-+	rcu_process_gp_end(rsp, rsp->rda[smp_processor_id()]);
-+	rcu_start_gp(rsp, flags);  /* releases root node's rnp->lock. */
-+}
-+
-+/*
-  * Similar to cpu_quiet(), for which it is a helper function.  Allows
-  * a group of CPUs to be quieted at one go, though all the CPUs in the
-  * group must be represented by the same leaf rcu_node structure.
-@@ -706,7 +740,7 @@ cpu_quiet_msk(unsigned long mask, struct rcu_state *rsp, struct rcu_node *rnp,
- 			return;
- 		}
- 		rnp->qsmask &= ~mask;
--		if (rnp->qsmask != 0) {
-+		if (rnp->qsmask != 0 || rcu_preempted_readers(rnp)) {
- 
- 			/* Other bits still set at this level, so done. */
- 			spin_unlock_irqrestore(&rnp->lock, flags);
-@@ -726,14 +760,10 @@ cpu_quiet_msk(unsigned long mask, struct rcu_state *rsp, struct rcu_node *rnp,
- 
- 	/*
- 	 * Get here if we are the last CPU to pass through a quiescent
--	 * state for this grace period.  Clean up and let rcu_start_gp()
--	 * start up the next grace period if one is needed.  Note that
--	 * we still hold rnp->lock, as required by rcu_start_gp(), which
--	 * will release it.
-+	 * state for this grace period.  Invoke cpu_quiet_msk_finish()
-+	 * to clean up and start the next grace period if one is needed.
- 	 */
--	rsp->completed = rsp->gpnum;
--	rcu_process_gp_end(rsp, rsp->rda[smp_processor_id()]);
--	rcu_start_gp(rsp, flags);  /* releases rnp->lock. */
-+	cpu_quiet_msk_finish(rsp, flags); /* releases rnp->lock. */
- }
- 
- /*
-@@ -840,11 +870,11 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
- 		spin_lock(&rnp->lock);		/* irqs already disabled. */
- 		rnp->qsmaskinit &= ~mask;
- 		if (rnp->qsmaskinit != 0) {
--			spin_unlock(&rnp->lock); /* irqs already disabled. */
-+			spin_unlock(&rnp->lock); /* irqs remain disabled. */
- 			break;
- 		}
- 		mask = rnp->grpmask;
--		spin_unlock(&rnp->lock);	/* irqs already disabled. */
-+		spin_unlock(&rnp->lock);	/* irqs remain disabled. */
- 		rnp = rnp->parent;
- 	} while (rnp != NULL);
- 	lastcomp = rsp->completed;
-@@ -1007,6 +1037,7 @@ void rcu_check_callbacks(int cpu, int user)
- 
- 		rcu_bh_qs(cpu);
- 	}
-+	rcu_preempt_check_callbacks(cpu);
- 	raise_softirq(RCU_SOFTIRQ);
- }
- 
-@@ -1188,6 +1219,7 @@ static void rcu_process_callbacks(struct softirq_action *unused)
- 	__rcu_process_callbacks(&rcu_sched_state,
- 				&__get_cpu_var(rcu_sched_data));
- 	__rcu_process_callbacks(&rcu_bh_state, &__get_cpu_var(rcu_bh_data));
-+	rcu_preempt_process_callbacks();
- 
- 	/*
- 	 * Memory references from any later RCU read-side critical sections
-@@ -1252,17 +1284,6 @@ void call_rcu_sched(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
- EXPORT_SYMBOL_GPL(call_rcu_sched);
- 
- /*
-- * @@@ Queue an RCU callback for invocation after a grace period.
-- * @@@ Placeholder pending rcutree_plugin.h.
+- * If a global counter flip has occurred since the last time that we
+- * advanced callbacks, advance them.  Hardware interrupts must be
+- * disabled when calling this function.
 - */
+-static void __rcu_advance_callbacks(struct rcu_data *rdp)
+-{
+-	int cpu;
+-	int i;
+-	int wlc = 0;
+-
+-	if (rdp->completed != rcu_ctrlblk.completed) {
+-		if (rdp->waitlist[GP_STAGES - 1] != NULL) {
+-			*rdp->donetail = rdp->waitlist[GP_STAGES - 1];
+-			rdp->donetail = rdp->waittail[GP_STAGES - 1];
+-			RCU_TRACE_RDP(rcupreempt_trace_move2done, rdp);
+-		}
+-		for (i = GP_STAGES - 2; i >= 0; i--) {
+-			if (rdp->waitlist[i] != NULL) {
+-				rdp->waitlist[i + 1] = rdp->waitlist[i];
+-				rdp->waittail[i + 1] = rdp->waittail[i];
+-				wlc++;
+-			} else {
+-				rdp->waitlist[i + 1] = NULL;
+-				rdp->waittail[i + 1] =
+-					&rdp->waitlist[i + 1];
+-			}
+-		}
+-		if (rdp->nextlist != NULL) {
+-			rdp->waitlist[0] = rdp->nextlist;
+-			rdp->waittail[0] = rdp->nexttail;
+-			wlc++;
+-			rdp->nextlist = NULL;
+-			rdp->nexttail = &rdp->nextlist;
+-			RCU_TRACE_RDP(rcupreempt_trace_move2wait, rdp);
+-		} else {
+-			rdp->waitlist[0] = NULL;
+-			rdp->waittail[0] = &rdp->waitlist[0];
+-		}
+-		rdp->waitlistcount = wlc;
+-		rdp->completed = rcu_ctrlblk.completed;
+-	}
+-
+-	/*
+-	 * Check to see if this CPU needs to report that it has seen
+-	 * the most recent counter flip, thereby declaring that all
+-	 * subsequent rcu_read_lock() invocations will respect this flip.
+-	 */
+-
+-	cpu = raw_smp_processor_id();
+-	if (per_cpu(rcu_flip_flag, cpu) == rcu_flipped) {
+-		smp_mb();  /* Subsequent counter accesses must see new value */
+-		per_cpu(rcu_flip_flag, cpu) = rcu_flip_seen;
+-		smp_mb();  /* Subsequent RCU read-side critical sections */
+-			   /*  seen -after- acknowledgement. */
+-	}
+-}
+-
+-#ifdef CONFIG_NO_HZ
+-static DEFINE_PER_CPU(int, rcu_update_flag);
+-
+-/**
+- * rcu_irq_enter - Called from Hard irq handlers and NMI/SMI.
+- *
+- * If the CPU was idle with dynamic ticks active, this updates the
+- * rcu_dyntick_sched.dynticks to let the RCU handling know that the
+- * CPU is active.
+- */
+-void rcu_irq_enter(void)
+-{
+-	int cpu = smp_processor_id();
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	if (per_cpu(rcu_update_flag, cpu))
+-		per_cpu(rcu_update_flag, cpu)++;
+-
+-	/*
+-	 * Only update if we are coming from a stopped ticks mode
+-	 * (rcu_dyntick_sched.dynticks is even).
+-	 */
+-	if (!in_interrupt() &&
+-	    (rdssp->dynticks & 0x1) == 0) {
+-		/*
+-		 * The following might seem like we could have a race
+-		 * with NMI/SMIs. But this really isn't a problem.
+-		 * Here we do a read/modify/write, and the race happens
+-		 * when an NMI/SMI comes in after the read and before
+-		 * the write. But NMI/SMIs will increment this counter
+-		 * twice before returning, so the zero bit will not
+-		 * be corrupted by the NMI/SMI which is the most important
+-		 * part.
+-		 *
+-		 * The only thing is that we would bring back the counter
+-		 * to a postion that it was in during the NMI/SMI.
+-		 * But the zero bit would be set, so the rest of the
+-		 * counter would again be ignored.
+-		 *
+-		 * On return from the IRQ, the counter may have the zero
+-		 * bit be 0 and the counter the same as the return from
+-		 * the NMI/SMI. If the state machine was so unlucky to
+-		 * see that, it still doesn't matter, since all
+-		 * RCU read-side critical sections on this CPU would
+-		 * have already completed.
+-		 */
+-		rdssp->dynticks++;
+-		/*
+-		 * The following memory barrier ensures that any
+-		 * rcu_read_lock() primitives in the irq handler
+-		 * are seen by other CPUs to follow the above
+-		 * increment to rcu_dyntick_sched.dynticks. This is
+-		 * required in order for other CPUs to correctly
+-		 * determine when it is safe to advance the RCU
+-		 * grace-period state machine.
+-		 */
+-		smp_mb(); /* see above block comment. */
+-		/*
+-		 * Since we can't determine the dynamic tick mode from
+-		 * the rcu_dyntick_sched.dynticks after this routine,
+-		 * we use a second flag to acknowledge that we came
+-		 * from an idle state with ticks stopped.
+-		 */
+-		per_cpu(rcu_update_flag, cpu)++;
+-		/*
+-		 * If we take an NMI/SMI now, they will also increment
+-		 * the rcu_update_flag, and will not update the
+-		 * rcu_dyntick_sched.dynticks on exit. That is for
+-		 * this IRQ to do.
+-		 */
+-	}
+-}
+-
+-/**
+- * rcu_irq_exit - Called from exiting Hard irq context.
+- *
+- * If the CPU was idle with dynamic ticks active, update the
+- * rcu_dyntick_sched.dynticks to let the RCU handling be
+- * aware that the CPU is going back to idle with no ticks.
+- */
+-void rcu_irq_exit(void)
+-{
+-	int cpu = smp_processor_id();
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	/*
+-	 * rcu_update_flag is set if we interrupted the CPU
+-	 * when it was idle with ticks stopped.
+-	 * Once this occurs, we keep track of interrupt nesting
+-	 * because a NMI/SMI could also come in, and we still
+-	 * only want the IRQ that started the increment of the
+-	 * rcu_dyntick_sched.dynticks to be the one that modifies
+-	 * it on exit.
+-	 */
+-	if (per_cpu(rcu_update_flag, cpu)) {
+-		if (--per_cpu(rcu_update_flag, cpu))
+-			return;
+-
+-		/* This must match the interrupt nesting */
+-		WARN_ON(in_interrupt());
+-
+-		/*
+-		 * If an NMI/SMI happens now we are still
+-		 * protected by the rcu_dyntick_sched.dynticks being odd.
+-		 */
+-
+-		/*
+-		 * The following memory barrier ensures that any
+-		 * rcu_read_unlock() primitives in the irq handler
+-		 * are seen by other CPUs to preceed the following
+-		 * increment to rcu_dyntick_sched.dynticks. This
+-		 * is required in order for other CPUs to determine
+-		 * when it is safe to advance the RCU grace-period
+-		 * state machine.
+-		 */
+-		smp_mb(); /* see above block comment. */
+-		rdssp->dynticks++;
+-		WARN_ON(rdssp->dynticks & 0x1);
+-	}
+-}
+-
+-void rcu_nmi_enter(void)
+-{
+-	rcu_irq_enter();
+-}
+-
+-void rcu_nmi_exit(void)
+-{
+-	rcu_irq_exit();
+-}
+-
+-static void dyntick_save_progress_counter(int cpu)
+-{
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	rdssp->dynticks_snap = rdssp->dynticks;
+-}
+-
+-static inline int
+-rcu_try_flip_waitack_needed(int cpu)
+-{
+-	long curr;
+-	long snap;
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	curr = rdssp->dynticks;
+-	snap = rdssp->dynticks_snap;
+-	smp_mb(); /* force ordering with cpu entering/leaving dynticks. */
+-
+-	/*
+-	 * If the CPU remained in dynticks mode for the entire time
+-	 * and didn't take any interrupts, NMIs, SMIs, or whatever,
+-	 * then it cannot be in the middle of an rcu_read_lock(), so
+-	 * the next rcu_read_lock() it executes must use the new value
+-	 * of the counter.  So we can safely pretend that this CPU
+-	 * already acknowledged the counter.
+-	 */
+-
+-	if ((curr == snap) && ((curr & 0x1) == 0))
+-		return 0;
+-
+-	/*
+-	 * If the CPU passed through or entered a dynticks idle phase with
+-	 * no active irq handlers, then, as above, we can safely pretend
+-	 * that this CPU already acknowledged the counter.
+-	 */
+-
+-	if ((curr - snap) > 2 || (curr & 0x1) == 0)
+-		return 0;
+-
+-	/* We need this CPU to explicitly acknowledge the counter flip. */
+-
+-	return 1;
+-}
+-
+-static inline int
+-rcu_try_flip_waitmb_needed(int cpu)
+-{
+-	long curr;
+-	long snap;
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	curr = rdssp->dynticks;
+-	snap = rdssp->dynticks_snap;
+-	smp_mb(); /* force ordering with cpu entering/leaving dynticks. */
+-
+-	/*
+-	 * If the CPU remained in dynticks mode for the entire time
+-	 * and didn't take any interrupts, NMIs, SMIs, or whatever,
+-	 * then it cannot have executed an RCU read-side critical section
+-	 * during that time, so there is no need for it to execute a
+-	 * memory barrier.
+-	 */
+-
+-	if ((curr == snap) && ((curr & 0x1) == 0))
+-		return 0;
+-
+-	/*
+-	 * If the CPU either entered or exited an outermost interrupt,
+-	 * SMI, NMI, or whatever handler, then we know that it executed
+-	 * a memory barrier when doing so.  So we don't need another one.
+-	 */
+-	if (curr != snap)
+-		return 0;
+-
+-	/* We need the CPU to execute a memory barrier. */
+-
+-	return 1;
+-}
+-
+-static void dyntick_save_progress_counter_sched(int cpu)
+-{
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	rdssp->sched_dynticks_snap = rdssp->dynticks;
+-}
+-
+-static int rcu_qsctr_inc_needed_dyntick(int cpu)
+-{
+-	long curr;
+-	long snap;
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	curr = rdssp->dynticks;
+-	snap = rdssp->sched_dynticks_snap;
+-	smp_mb(); /* force ordering with cpu entering/leaving dynticks. */
+-
+-	/*
+-	 * If the CPU remained in dynticks mode for the entire time
+-	 * and didn't take any interrupts, NMIs, SMIs, or whatever,
+-	 * then it cannot be in the middle of an rcu_read_lock(), so
+-	 * the next rcu_read_lock() it executes must use the new value
+-	 * of the counter.  Therefore, this CPU has been in a quiescent
+-	 * state the entire time, and we don't need to wait for it.
+-	 */
+-
+-	if ((curr == snap) && ((curr & 0x1) == 0))
+-		return 0;
+-
+-	/*
+-	 * If the CPU passed through or entered a dynticks idle phase with
+-	 * no active irq handlers, then, as above, this CPU has already
+-	 * passed through a quiescent state.
+-	 */
+-
+-	if ((curr - snap) > 2 || (snap & 0x1) == 0)
+-		return 0;
+-
+-	/* We need this CPU to go through a quiescent state. */
+-
+-	return 1;
+-}
+-
+-#else /* !CONFIG_NO_HZ */
+-
+-# define dyntick_save_progress_counter(cpu)		do { } while (0)
+-# define rcu_try_flip_waitack_needed(cpu)		(1)
+-# define rcu_try_flip_waitmb_needed(cpu)		(1)
+-
+-# define dyntick_save_progress_counter_sched(cpu)	do { } while (0)
+-# define rcu_qsctr_inc_needed_dyntick(cpu)		(1)
+-
+-#endif /* CONFIG_NO_HZ */
+-
+-static void save_qsctr_sched(int cpu)
+-{
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	rdssp->sched_qs_snap = rdssp->sched_qs;
+-}
+-
+-static inline int rcu_qsctr_inc_needed(int cpu)
+-{
+-	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
+-
+-	/*
+-	 * If there has been a quiescent state, no more need to wait
+-	 * on this CPU.
+-	 */
+-
+-	if (rdssp->sched_qs != rdssp->sched_qs_snap) {
+-		smp_mb(); /* force ordering with cpu entering schedule(). */
+-		return 0;
+-	}
+-
+-	/* We need this CPU to go through a quiescent state. */
+-
+-	return 1;
+-}
+-
+-/*
+- * Get here when RCU is idle.  Decide whether we need to
+- * move out of idle state, and return non-zero if so.
+- * "Straightforward" approach for the moment, might later
+- * use callback-list lengths, grace-period duration, or
+- * some such to determine when to exit idle state.
+- * Might also need a pre-idle test that does not acquire
+- * the lock, but let's get the simple case working first...
+- */
+-
+-static int
+-rcu_try_flip_idle(void)
+-{
+-	int cpu;
+-
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_i1);
+-	if (!rcu_pending(smp_processor_id())) {
+-		RCU_TRACE_ME(rcupreempt_trace_try_flip_ie1);
+-		return 0;
+-	}
+-
+-	/*
+-	 * Do the flip.
+-	 */
+-
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_g1);
+-	rcu_ctrlblk.completed++;  /* stands in for rcu_try_flip_g2 */
+-
+-	/*
+-	 * Need a memory barrier so that other CPUs see the new
+-	 * counter value before they see the subsequent change of all
+-	 * the rcu_flip_flag instances to rcu_flipped.
+-	 */
+-
+-	smp_mb();	/* see above block comment. */
+-
+-	/* Now ask each CPU for acknowledgement of the flip. */
+-
+-	for_each_cpu(cpu, to_cpumask(rcu_cpu_online_map)) {
+-		per_cpu(rcu_flip_flag, cpu) = rcu_flipped;
+-		dyntick_save_progress_counter(cpu);
+-	}
+-
+-	return 1;
+-}
+-
+-/*
+- * Wait for CPUs to acknowledge the flip.
+- */
+-
+-static int
+-rcu_try_flip_waitack(void)
+-{
+-	int cpu;
+-
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_a1);
+-	for_each_cpu(cpu, to_cpumask(rcu_cpu_online_map))
+-		if (rcu_try_flip_waitack_needed(cpu) &&
+-		    per_cpu(rcu_flip_flag, cpu) != rcu_flip_seen) {
+-			RCU_TRACE_ME(rcupreempt_trace_try_flip_ae1);
+-			return 0;
+-		}
+-
+-	/*
+-	 * Make sure our checks above don't bleed into subsequent
+-	 * waiting for the sum of the counters to reach zero.
+-	 */
+-
+-	smp_mb();	/* see above block comment. */
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_a2);
+-	return 1;
+-}
+-
+-/*
+- * Wait for collective ``last'' counter to reach zero,
+- * then tell all CPUs to do an end-of-grace-period memory barrier.
+- */
+-
+-static int
+-rcu_try_flip_waitzero(void)
+-{
+-	int cpu;
+-	int lastidx = !(rcu_ctrlblk.completed & 0x1);
+-	int sum = 0;
+-
+-	/* Check to see if the sum of the "last" counters is zero. */
+-
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_z1);
+-	for_each_possible_cpu(cpu)
+-		sum += RCU_DATA_CPU(cpu)->rcu_flipctr[lastidx];
+-	if (sum != 0) {
+-		RCU_TRACE_ME(rcupreempt_trace_try_flip_ze1);
+-		return 0;
+-	}
+-
+-	/*
+-	 * This ensures that the other CPUs see the call for
+-	 * memory barriers -after- the sum to zero has been
+-	 * detected here
+-	 */
+-	smp_mb();  /*  ^^^^^^^^^^^^ */
+-
+-	/* Call for a memory barrier from each CPU. */
+-	for_each_cpu(cpu, to_cpumask(rcu_cpu_online_map)) {
+-		per_cpu(rcu_mb_flag, cpu) = rcu_mb_needed;
+-		dyntick_save_progress_counter(cpu);
+-	}
+-
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_z2);
+-	return 1;
+-}
+-
+-/*
+- * Wait for all CPUs to do their end-of-grace-period memory barrier.
+- * Return 0 once all CPUs have done so.
+- */
+-
+-static int
+-rcu_try_flip_waitmb(void)
+-{
+-	int cpu;
+-
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_m1);
+-	for_each_cpu(cpu, to_cpumask(rcu_cpu_online_map))
+-		if (rcu_try_flip_waitmb_needed(cpu) &&
+-		    per_cpu(rcu_mb_flag, cpu) != rcu_mb_done) {
+-			RCU_TRACE_ME(rcupreempt_trace_try_flip_me1);
+-			return 0;
+-		}
+-
+-	smp_mb(); /* Ensure that the above checks precede any following flip. */
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_m2);
+-	return 1;
+-}
+-
+-/*
+- * Attempt a single flip of the counters.  Remember, a single flip does
+- * -not- constitute a grace period.  Instead, the interval between
+- * at least GP_STAGES consecutive flips is a grace period.
+- *
+- * If anyone is nuts enough to run this CONFIG_PREEMPT_RCU implementation
+- * on a large SMP, they might want to use a hierarchical organization of
+- * the per-CPU-counter pairs.
+- */
+-static void rcu_try_flip(void)
+-{
+-	unsigned long flags;
+-
+-	RCU_TRACE_ME(rcupreempt_trace_try_flip_1);
+-	if (unlikely(!spin_trylock_irqsave(&rcu_ctrlblk.fliplock, flags))) {
+-		RCU_TRACE_ME(rcupreempt_trace_try_flip_e1);
+-		return;
+-	}
+-
+-	/*
+-	 * Take the next transition(s) through the RCU grace-period
+-	 * flip-counter state machine.
+-	 */
+-
+-	switch (rcu_ctrlblk.rcu_try_flip_state) {
+-	case rcu_try_flip_idle_state:
+-		if (rcu_try_flip_idle())
+-			rcu_ctrlblk.rcu_try_flip_state =
+-				rcu_try_flip_waitack_state;
+-		break;
+-	case rcu_try_flip_waitack_state:
+-		if (rcu_try_flip_waitack())
+-			rcu_ctrlblk.rcu_try_flip_state =
+-				rcu_try_flip_waitzero_state;
+-		break;
+-	case rcu_try_flip_waitzero_state:
+-		if (rcu_try_flip_waitzero())
+-			rcu_ctrlblk.rcu_try_flip_state =
+-				rcu_try_flip_waitmb_state;
+-		break;
+-	case rcu_try_flip_waitmb_state:
+-		if (rcu_try_flip_waitmb())
+-			rcu_ctrlblk.rcu_try_flip_state =
+-				rcu_try_flip_idle_state;
+-	}
+-	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, flags);
+-}
+-
+-/*
+- * Check to see if this CPU needs to do a memory barrier in order to
+- * ensure that any prior RCU read-side critical sections have committed
+- * their counter manipulations and critical-section memory references
+- * before declaring the grace period to be completed.
+- */
+-static void rcu_check_mb(int cpu)
+-{
+-	if (per_cpu(rcu_mb_flag, cpu) == rcu_mb_needed) {
+-		smp_mb();  /* Ensure RCU read-side accesses are visible. */
+-		per_cpu(rcu_mb_flag, cpu) = rcu_mb_done;
+-	}
+-}
+-
+-void rcu_check_callbacks(int cpu, int user)
+-{
+-	unsigned long flags;
+-	struct rcu_data *rdp;
+-
+-	if (!rcu_pending(cpu))
+-		return; /* if nothing for RCU to do. */
+-
+-	/*
+-	 * If this CPU took its interrupt from user mode or from the
+-	 * idle loop, and this is not a nested interrupt, then
+-	 * this CPU has to have exited all prior preept-disable
+-	 * sections of code.  So invoke rcu_sched_qs() to note this.
+-	 *
+-	 * The memory barrier is needed to handle the case where
+-	 * writes from a preempt-disable section of code get reordered
+-	 * into schedule() by this CPU's write buffer.  So the memory
+-	 * barrier makes sure that the rcu_sched_qs() is seen by other
+-	 * CPUs to happen after any such write.
+-	 */
+-
+-	rdp = RCU_DATA_CPU(cpu);
+-	if (user ||
+-	    (idle_cpu(cpu) && !in_softirq() &&
+-	     hardirq_count() <= (1 << HARDIRQ_SHIFT))) {
+-		smp_mb();	/* Guard against aggressive schedule(). */
+-		rcu_sched_qs(cpu);
+-	}
+-
+-	rcu_check_mb(cpu);
+-	if (rcu_ctrlblk.completed == rdp->completed)
+-		rcu_try_flip();
+-	spin_lock_irqsave(&rdp->lock, flags);
+-	RCU_TRACE_RDP(rcupreempt_trace_check_callbacks, rdp);
+-	__rcu_advance_callbacks(rdp);
+-	if (rdp->donelist == NULL) {
+-		spin_unlock_irqrestore(&rdp->lock, flags);
+-	} else {
+-		spin_unlock_irqrestore(&rdp->lock, flags);
+-		raise_softirq(RCU_SOFTIRQ);
+-	}
+-}
+-
+-/*
+- * Needed by dynticks, to make sure all RCU processing has finished
+- * when we go idle:
+- */
+-void rcu_advance_callbacks(int cpu, int user)
+-{
+-	unsigned long flags;
+-	struct rcu_data *rdp = RCU_DATA_CPU(cpu);
+-
+-	if (rcu_ctrlblk.completed == rdp->completed) {
+-		rcu_try_flip();
+-		if (rcu_ctrlblk.completed == rdp->completed)
+-			return;
+-	}
+-	spin_lock_irqsave(&rdp->lock, flags);
+-	RCU_TRACE_RDP(rcupreempt_trace_check_callbacks, rdp);
+-	__rcu_advance_callbacks(rdp);
+-	spin_unlock_irqrestore(&rdp->lock, flags);
+-}
+-
+-#ifdef CONFIG_HOTPLUG_CPU
+-#define rcu_offline_cpu_enqueue(srclist, srctail, dstlist, dsttail) do { \
+-		*dsttail = srclist; \
+-		if (srclist != NULL) { \
+-			dsttail = srctail; \
+-			srclist = NULL; \
+-			srctail = &srclist;\
+-		} \
+-	} while (0)
+-
+-void rcu_offline_cpu(int cpu)
+-{
+-	int i;
+-	struct rcu_head *list = NULL;
+-	unsigned long flags;
+-	struct rcu_data *rdp = RCU_DATA_CPU(cpu);
+-	struct rcu_head *schedlist = NULL;
+-	struct rcu_head **schedtail = &schedlist;
+-	struct rcu_head **tail = &list;
+-
+-	/*
+-	 * Remove all callbacks from the newly dead CPU, retaining order.
+-	 * Otherwise rcu_barrier() will fail
+-	 */
+-
+-	spin_lock_irqsave(&rdp->lock, flags);
+-	rcu_offline_cpu_enqueue(rdp->donelist, rdp->donetail, list, tail);
+-	for (i = GP_STAGES - 1; i >= 0; i--)
+-		rcu_offline_cpu_enqueue(rdp->waitlist[i], rdp->waittail[i],
+-						list, tail);
+-	rcu_offline_cpu_enqueue(rdp->nextlist, rdp->nexttail, list, tail);
+-	rcu_offline_cpu_enqueue(rdp->waitschedlist, rdp->waitschedtail,
+-				schedlist, schedtail);
+-	rcu_offline_cpu_enqueue(rdp->nextschedlist, rdp->nextschedtail,
+-				schedlist, schedtail);
+-	rdp->rcu_sched_sleeping = 0;
+-	spin_unlock_irqrestore(&rdp->lock, flags);
+-	rdp->waitlistcount = 0;
+-
+-	/* Disengage the newly dead CPU from the grace-period computation. */
+-
+-	spin_lock_irqsave(&rcu_ctrlblk.fliplock, flags);
+-	rcu_check_mb(cpu);
+-	if (per_cpu(rcu_flip_flag, cpu) == rcu_flipped) {
+-		smp_mb();  /* Subsequent counter accesses must see new value */
+-		per_cpu(rcu_flip_flag, cpu) = rcu_flip_seen;
+-		smp_mb();  /* Subsequent RCU read-side critical sections */
+-			   /*  seen -after- acknowledgement. */
+-	}
+-
+-	cpumask_clear_cpu(cpu, to_cpumask(rcu_cpu_online_map));
+-
+-	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, flags);
+-
+-	/*
+-	 * Place the removed callbacks on the current CPU's queue.
+-	 * Make them all start a new grace period: simple approach,
+-	 * in theory could starve a given set of callbacks, but
+-	 * you would need to be doing some serious CPU hotplugging
+-	 * to make this happen.  If this becomes a problem, adding
+-	 * a synchronize_rcu() to the hotplug path would be a simple
+-	 * fix.
+-	 */
+-
+-	local_irq_save(flags);  /* disable preempt till we know what lock. */
+-	rdp = RCU_DATA_ME();
+-	spin_lock(&rdp->lock);
+-	*rdp->nexttail = list;
+-	if (list)
+-		rdp->nexttail = tail;
+-	*rdp->nextschedtail = schedlist;
+-	if (schedlist)
+-		rdp->nextschedtail = schedtail;
+-	spin_unlock_irqrestore(&rdp->lock, flags);
+-}
+-
+-#else /* #ifdef CONFIG_HOTPLUG_CPU */
+-
+-void rcu_offline_cpu(int cpu)
+-{
+-}
+-
+-#endif /* #else #ifdef CONFIG_HOTPLUG_CPU */
+-
+-void __cpuinit rcu_online_cpu(int cpu)
+-{
+-	unsigned long flags;
+-	struct rcu_data *rdp;
+-
+-	spin_lock_irqsave(&rcu_ctrlblk.fliplock, flags);
+-	cpumask_set_cpu(cpu, to_cpumask(rcu_cpu_online_map));
+-	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, flags);
+-
+-	/*
+-	 * The rcu_sched grace-period processing might have bypassed
+-	 * this CPU, given that it was not in the rcu_cpu_online_map
+-	 * when the grace-period scan started.  This means that the
+-	 * grace-period task might sleep.  So make sure that if this
+-	 * should happen, the first callback posted to this CPU will
+-	 * wake up the grace-period task if need be.
+-	 */
+-
+-	rdp = RCU_DATA_CPU(cpu);
+-	spin_lock_irqsave(&rdp->lock, flags);
+-	rdp->rcu_sched_sleeping = 1;
+-	spin_unlock_irqrestore(&rdp->lock, flags);
+-}
+-
+-static void rcu_process_callbacks(struct softirq_action *unused)
+-{
+-	unsigned long flags;
+-	struct rcu_head *next, *list;
+-	struct rcu_data *rdp;
+-
+-	local_irq_save(flags);
+-	rdp = RCU_DATA_ME();
+-	spin_lock(&rdp->lock);
+-	list = rdp->donelist;
+-	if (list == NULL) {
+-		spin_unlock_irqrestore(&rdp->lock, flags);
+-		return;
+-	}
+-	rdp->donelist = NULL;
+-	rdp->donetail = &rdp->donelist;
+-	RCU_TRACE_RDP(rcupreempt_trace_done_remove, rdp);
+-	spin_unlock_irqrestore(&rdp->lock, flags);
+-	while (list) {
+-		next = list->next;
+-		list->func(list);
+-		list = next;
+-		RCU_TRACE_ME(rcupreempt_trace_invoke);
+-	}
+-}
+-
 -void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
 -{
--	call_rcu_sched(head, func);
+-	unsigned long flags;
+-	struct rcu_data *rdp;
+-
+-	head->func = func;
+-	head->next = NULL;
+-	local_irq_save(flags);
+-	rdp = RCU_DATA_ME();
+-	spin_lock(&rdp->lock);
+-	__rcu_advance_callbacks(rdp);
+-	*rdp->nexttail = head;
+-	rdp->nexttail = &head->next;
+-	RCU_TRACE_RDP(rcupreempt_trace_next_add, rdp);
+-	spin_unlock_irqrestore(&rdp->lock, flags);
 -}
 -EXPORT_SYMBOL_GPL(call_rcu);
 -
+-void call_rcu_sched(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
+-{
+-	unsigned long flags;
+-	struct rcu_data *rdp;
+-	int wake_gp = 0;
+-
+-	head->func = func;
+-	head->next = NULL;
+-	local_irq_save(flags);
+-	rdp = RCU_DATA_ME();
+-	spin_lock(&rdp->lock);
+-	*rdp->nextschedtail = head;
+-	rdp->nextschedtail = &head->next;
+-	if (rdp->rcu_sched_sleeping) {
+-
+-		/* Grace-period processing might be sleeping... */
+-
+-		rdp->rcu_sched_sleeping = 0;
+-		wake_gp = 1;
+-	}
+-	spin_unlock_irqrestore(&rdp->lock, flags);
+-	if (wake_gp) {
+-
+-		/* Wake up grace-period processing, unless someone beat us. */
+-
+-		spin_lock_irqsave(&rcu_ctrlblk.schedlock, flags);
+-		if (rcu_ctrlblk.sched_sleep != rcu_sched_sleeping)
+-			wake_gp = 0;
+-		rcu_ctrlblk.sched_sleep = rcu_sched_not_sleeping;
+-		spin_unlock_irqrestore(&rcu_ctrlblk.schedlock, flags);
+-		if (wake_gp)
+-			wake_up_interruptible(&rcu_ctrlblk.sched_wq);
+-	}
+-}
+-EXPORT_SYMBOL_GPL(call_rcu_sched);
 -
 -/*
-  * Queue an RCU for invocation after a quicker grace period.
-  */
- void call_rcu_bh(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
-@@ -1335,7 +1356,8 @@ static int __rcu_pending(struct rcu_state *rsp, struct rcu_data *rdp)
- static int rcu_pending(int cpu)
- {
- 	return __rcu_pending(&rcu_sched_state, &per_cpu(rcu_sched_data, cpu)) ||
--	       __rcu_pending(&rcu_bh_state, &per_cpu(rcu_bh_data, cpu));
-+	       __rcu_pending(&rcu_bh_state, &per_cpu(rcu_bh_data, cpu)) ||
-+	       rcu_preempt_pending(cpu);
- }
- 
- /*
-@@ -1348,7 +1370,8 @@ int rcu_needs_cpu(int cpu)
- {
- 	/* RCU callbacks either ready or pending? */
- 	return per_cpu(rcu_sched_data, cpu).nxtlist ||
--	       per_cpu(rcu_bh_data, cpu).nxtlist;
-+	       per_cpu(rcu_bh_data, cpu).nxtlist ||
-+	       rcu_preempt_needs_cpu(cpu);
- }
- 
- /*
-@@ -1383,7 +1406,7 @@ rcu_boot_init_percpu_data(int cpu, struct rcu_state *rsp)
-  * that this CPU cannot possibly have any RCU callbacks in flight yet.
-  */
- static void __cpuinit
--rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
-+rcu_init_percpu_data(int cpu, struct rcu_state *rsp, int preemptable)
- {
- 	unsigned long flags;
- 	long lastcomp;
-@@ -1399,6 +1422,7 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
- 	rdp->passed_quiesc = 0;  /* We could be racing with new GP, */
- 	rdp->qs_pending = 1;	 /*  so set up to respond to current GP. */
- 	rdp->beenonline = 1;	 /* We have now been online. */
-+	rdp->preemptable = preemptable;
- 	rdp->passed_quiesc_completed = lastcomp - 1;
- 	rdp->blimit = blimit;
- 	spin_unlock(&rnp->lock);		/* irqs remain disabled. */
-@@ -1441,12 +1465,13 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
- 
- static void __cpuinit rcu_online_cpu(int cpu)
- {
--	rcu_init_percpu_data(cpu, &rcu_sched_state);
--	rcu_init_percpu_data(cpu, &rcu_bh_state);
-+	rcu_init_percpu_data(cpu, &rcu_sched_state, 0);
-+	rcu_init_percpu_data(cpu, &rcu_bh_state, 0);
-+	rcu_preempt_init_percpu_data(cpu);
- }
- 
- /*
-- * Handle CPU online/offline notifcation events.
-+ * Handle CPU online/offline notification events.
-  */
- int __cpuinit rcu_cpu_notify(struct notifier_block *self,
- 			     unsigned long action, void *hcpu)
-@@ -1521,6 +1546,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
- 		rnp = rsp->level[i];
- 		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
- 			spin_lock_init(&rnp->lock);
-+			rnp->gpnum = 0;
- 			rnp->qsmask = 0;
- 			rnp->qsmaskinit = 0;
- 			rnp->grplo = j * cpustride;
-@@ -1538,13 +1564,16 @@ static void __init rcu_init_one(struct rcu_state *rsp)
- 					      j / rsp->levelspread[i - 1];
- 			}
- 			rnp->level = i;
-+			INIT_LIST_HEAD(&rnp->blocked_tasks[0]);
-+			INIT_LIST_HEAD(&rnp->blocked_tasks[1]);
- 		}
- 	}
- }
- 
- /*
-- * Helper macro for __rcu_init().  To be used nowhere else!
-- * Assigns leaf node pointers into each CPU's rcu_data structure.
-+ * Helper macro for __rcu_init() and __rcu_init_preempt().  To be used
-+ * nowhere else!  Assigns leaf node pointers into each CPU's rcu_data
-+ * structure.
-  */
- #define RCU_INIT_FLAVOR(rsp, rcu_data) \
- do { \
-@@ -1560,18 +1589,38 @@ do { \
- 	} \
- } while (0)
- 
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+
-+void __init __rcu_init_preempt(void)
-+{
-+	int i;			/* All used by RCU_INIT_FLAVOR(). */
-+	int j;
-+	struct rcu_node *rnp;
-+
-+	RCU_INIT_FLAVOR(&rcu_preempt_state, rcu_preempt_data);
-+}
-+
-+#else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
-+
-+void __init __rcu_init_preempt(void)
-+{
-+}
-+
-+#endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
-+
- void __init __rcu_init(void)
- {
--	int i;			/* All used by RCU_DATA_PTR_INIT(). */
-+	int i;			/* All used by RCU_INIT_FLAVOR(). */
- 	int j;
- 	struct rcu_node *rnp;
- 
--	printk(KERN_INFO "Hierarchical RCU implementation.\n");
-+	rcu_bootup_announce();
- #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
- 	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
- #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
- 	RCU_INIT_FLAVOR(&rcu_sched_state, rcu_sched_data);
- 	RCU_INIT_FLAVOR(&rcu_bh_state, rcu_bh_data);
-+	__rcu_init_preempt();
- 	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
- }
- 
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index 0024e5d..ca56036 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -80,6 +80,7 @@ struct rcu_dynticks {
-  */
- struct rcu_node {
- 	spinlock_t lock;
-+	long	gpnum;		/* Current grace period for this node. */
- 	unsigned long qsmask;	/* CPUs or groups that need to switch in */
- 				/*  order for current grace period to proceed.*/
- 	unsigned long qsmaskinit;
-@@ -90,6 +91,8 @@ struct rcu_node {
- 	u8	grpnum;		/* CPU/group number for next level up. */
- 	u8	level;		/* root is at level 0. */
- 	struct rcu_node *parent;
-+	struct list_head blocked_tasks[2];
-+				/* Tasks blocked in RCU read-side critsect. */
- } ____cacheline_internodealigned_in_smp;
- 
- /* Index values for nxttail array in struct rcu_data. */
-@@ -111,6 +114,7 @@ struct rcu_data {
- 	bool		passed_quiesc;	/* User-mode/idle loop etc. */
- 	bool		qs_pending;	/* Core waits for quiesc state. */
- 	bool		beenonline;	/* CPU online at least once. */
-+	bool		preemptable;	/* Preemptable RCU? */
- 	struct rcu_node *mynode;	/* This CPU's leaf of hierarchy */
- 	unsigned long grpmask;		/* Mask to apply to leaf qsmask. */
- 
-@@ -244,5 +248,10 @@ DECLARE_PER_CPU(struct rcu_data, rcu_sched_data);
- extern struct rcu_state rcu_bh_state;
- DECLARE_PER_CPU(struct rcu_data, rcu_bh_data);
- 
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+extern struct rcu_state rcu_preempt_state;
-+DECLARE_PER_CPU(struct rcu_data, rcu_preempt_data);
-+#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
-+
- #endif /* #ifdef RCU_TREE_NONCORE */
- 
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-new file mode 100644
-index 0000000..cd2ab67
---- /dev/null
-+++ b/kernel/rcutree_plugin.h
-@@ -0,0 +1,447 @@
-+/*
-+ * Read-Copy Update mechanism for mutual exclusion (tree-based version)
-+ * Internal non-public definitions that provide either classic
-+ * or preemptable semantics.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright Red Hat, 2009
-+ * Copyright IBM Corporation, 2009
-+ *
-+ * Author: Ingo Molnar <mingo@elte.hu>
-+ *	   Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-+ */
-+
-+
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+
-+struct rcu_state rcu_preempt_state = RCU_STATE_INITIALIZER(rcu_preempt_state);
-+DEFINE_PER_CPU(struct rcu_data, rcu_preempt_data);
-+
-+/*
-+ * Tell them what RCU they are running.
-+ */
-+static inline void rcu_bootup_announce(void)
-+{
-+	printk(KERN_INFO
-+	       "Experimental preemptable hierarchical RCU implementation.\n");
-+}
-+
-+/*
-+ * Return the number of RCU-preempt batches processed thus far
-+ * for debug and statistics.
-+ */
-+long rcu_batches_completed_preempt(void)
-+{
-+	return rcu_preempt_state.completed;
-+}
-+EXPORT_SYMBOL_GPL(rcu_batches_completed_preempt);
-+
-+/*
-+ * Return the number of RCU batches processed thus far for debug & stats.
-+ */
-+long rcu_batches_completed(void)
-+{
-+	return rcu_batches_completed_preempt();
-+}
-+EXPORT_SYMBOL_GPL(rcu_batches_completed);
-+
-+/*
-+ * Record a preemptable-RCU quiescent state for the specified CPU.  Note
-+ * that this just means that the task currently running on the CPU is
-+ * not in a quiescent state.  There might be any number of tasks blocked
-+ * while in an RCU read-side critical section.
-+ */
-+static void rcu_preempt_qs_record(int cpu)
-+{
-+	struct rcu_data *rdp = &per_cpu(rcu_preempt_data, cpu);
-+	rdp->passed_quiesc = 1;
-+	rdp->passed_quiesc_completed = rdp->completed;
-+}
-+
-+/*
-+ * We have entered the scheduler or are between softirqs in ksoftirqd.
-+ * If we are in an RCU read-side critical section, we need to reflect
-+ * that in the state of the rcu_node structure corresponding to this CPU.
-+ * Caller must disable hardirqs.
-+ */
-+static void rcu_preempt_qs(int cpu)
-+{
-+	struct task_struct *t = current;
-+	int phase;
-+	struct rcu_data *rdp;
-+	struct rcu_node *rnp;
-+
-+	if (t->rcu_read_lock_nesting &&
-+	    (t->rcu_read_unlock_special & RCU_READ_UNLOCK_BLOCKED) == 0) {
-+
-+		/* Possibly blocking in an RCU read-side critical section. */
-+		rdp = rcu_preempt_state.rda[cpu];
-+		rnp = rdp->mynode;
-+		spin_lock(&rnp->lock);
-+		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
-+		t->rcu_blocked_cpu = cpu;
-+
-+		/*
-+		 * If this CPU has already checked in, then this task
-+		 * will hold up the next grace period rather than the
-+		 * current grace period.  Queue the task accordingly.
-+		 * If the task is queued for the current grace period
-+		 * (i.e., this CPU has not yet passed through a quiescent
-+		 * state for the current grace period), then as long
-+		 * as that task remains queued, the current grace period
-+		 * cannot end.
-+		 */
-+		phase = !(rnp->qsmask & rdp->grpmask) ^ (rnp->gpnum & 0x1);
-+		list_add(&t->rcu_node_entry, &rnp->blocked_tasks[phase]);
-+		smp_mb();  /* Ensure later ctxt swtch seen after above. */
-+		spin_unlock(&rnp->lock);
-+	}
-+
-+	/*
-+	 * Either we were not in an RCU read-side critical section to
-+	 * begin with, or we have now recorded that critical section
-+	 * globally.  Either way, we can now note a quiescent state
-+	 * for this CPU.  Again, if we were in an RCU read-side critical
-+	 * section, and if that critical section was blocking the current
-+	 * grace period, then the fact that the task has been enqueued
-+	 * means that we continue to block the current grace period.
-+	 */
-+	rcu_preempt_qs_record(cpu);
-+	t->rcu_read_unlock_special &= ~(RCU_READ_UNLOCK_NEED_QS |
-+					RCU_READ_UNLOCK_GOT_QS);
-+}
-+
-+/*
-+ * Tree-preemptable RCU implementation for rcu_read_lock().
-+ * Just increment ->rcu_read_lock_nesting, shared state will be updated
-+ * if we block.
-+ */
-+void __rcu_read_lock(void)
-+{
-+	ACCESS_ONCE(current->rcu_read_lock_nesting)++;
-+	barrier();  /* needed if we ever invoke rcu_read_lock in rcutree.c */
-+}
-+EXPORT_SYMBOL_GPL(__rcu_read_lock);
-+
-+static void rcu_read_unlock_special(struct task_struct *t)
-+{
-+	int empty;
-+	unsigned long flags;
-+	unsigned long mask;
-+	struct rcu_node *rnp;
-+	int special;
-+
-+	/* NMI handlers cannot block and cannot safely manipulate state. */
-+	if (in_nmi())
-+		return;
-+
-+	local_irq_save(flags);
-+
-+	/*
-+	 * If RCU core is waiting for this CPU to exit critical section,
-+	 * let it know that we have done so.
-+	 */
-+	special = t->rcu_read_unlock_special;
-+	if (special & RCU_READ_UNLOCK_NEED_QS) {
-+		t->rcu_read_unlock_special &= ~RCU_READ_UNLOCK_NEED_QS;
-+		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_GOT_QS;
-+	}
-+
-+	/* Hardware IRQ handlers cannot block. */
-+	if (in_irq()) {
-+		local_irq_restore(flags);
-+		return;
-+	}
-+
-+	/* Clean up if blocked during RCU read-side critical section. */
-+	if (special & RCU_READ_UNLOCK_BLOCKED) {
-+		t->rcu_read_unlock_special &= ~RCU_READ_UNLOCK_BLOCKED;
-+
-+		/* Remove this task from the list it blocked on. */
-+		rnp = rcu_preempt_state.rda[t->rcu_blocked_cpu]->mynode;
-+		spin_lock(&rnp->lock);
-+		empty = list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]);
-+		list_del_init(&t->rcu_node_entry);
-+		t->rcu_blocked_cpu = -1;
-+
-+		/*
-+		 * If this was the last task on the current list, and if
-+		 * we aren't waiting on any CPUs, report the quiescent state.
-+		 * Note that both cpu_quiet_msk_finish() and cpu_quiet_msk()
-+		 * drop rnp->lock and restore irq.
-+		 */
-+		if (!empty && rnp->qsmask == 0 &&
-+		    list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1])) {
-+			t->rcu_read_unlock_special &=
-+				~(RCU_READ_UNLOCK_NEED_QS |
-+				  RCU_READ_UNLOCK_GOT_QS);
-+			if (rnp->parent == NULL) {
-+				/* Only one rcu_node in the tree. */
-+				cpu_quiet_msk_finish(&rcu_preempt_state, flags);
-+				return;
-+			}
-+			/* Report up the rest of the hierarchy. */
-+			mask = rnp->grpmask;
-+			spin_unlock_irqrestore(&rnp->lock, flags);
-+			rnp = rnp->parent;
-+			spin_lock_irqsave(&rnp->lock, flags);
-+			cpu_quiet_msk(mask, &rcu_preempt_state, rnp, flags);
-+			return;
-+		}
-+		spin_unlock(&rnp->lock);
-+	}
-+	local_irq_restore(flags);
-+}
-+
-+/*
-+ * Tree-preemptable RCU implementation for rcu_read_unlock().
-+ * Decrement ->rcu_read_lock_nesting.  If the result is zero (outermost
-+ * rcu_read_unlock()) and ->rcu_read_unlock_special is non-zero, then
-+ * invoke rcu_read_unlock_special() to clean up after a context switch
-+ * in an RCU read-side critical section and other special cases.
-+ */
-+void __rcu_read_unlock(void)
-+{
-+	struct task_struct *t = current;
-+
-+	barrier();  /* needed if we ever invoke rcu_read_unlock in rcutree.c */
-+	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
-+	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
-+		rcu_read_unlock_special(t);
-+}
-+EXPORT_SYMBOL_GPL(__rcu_read_unlock);
-+
-+#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
-+
-+/*
-+ * Scan the current list of tasks blocked within RCU read-side critical
-+ * sections, printing out the tid of each.
-+ */
-+static void rcu_print_task_stall(struct rcu_node *rnp)
-+{
-+	unsigned long flags;
-+	struct list_head *lp;
-+	int phase = rnp->gpnum & 0x1;
-+	struct task_struct *t;
-+
-+	if (!list_empty(&rnp->blocked_tasks[phase])) {
-+		spin_lock_irqsave(&rnp->lock, flags);
-+		phase = rnp->gpnum & 0x1; /* re-read under lock. */
-+		lp = &rnp->blocked_tasks[phase];
-+		list_for_each_entry(t, lp, rcu_node_entry)
-+			printk(" P%d", t->pid);
-+		spin_unlock_irqrestore(&rnp->lock, flags);
-+	}
-+}
-+
-+#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-+
-+/*
-+ * Check for preempted RCU readers for the specified rcu_node structure.
-+ * If the caller needs a reliable answer, it must hold the rcu_node's
-+ * >lock.
-+ */
-+static int rcu_preempted_readers(struct rcu_node *rnp)
-+{
-+	return !list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]);
-+}
-+
-+/*
-+ * Check for a quiescent state from the current CPU.  When a task blocks,
-+ * the task is recorded in the corresponding CPU's rcu_node structure,
-+ * which is checked elsewhere.
-+ *
-+ * Caller must disable hard irqs.
-+ */
-+static void rcu_preempt_check_callbacks(int cpu)
-+{
-+	struct task_struct *t = current;
-+
-+	if (t->rcu_read_lock_nesting == 0) {
-+		t->rcu_read_unlock_special &=
-+			~(RCU_READ_UNLOCK_NEED_QS | RCU_READ_UNLOCK_GOT_QS);
-+		rcu_preempt_qs_record(cpu);
-+		return;
-+	}
-+	if (per_cpu(rcu_preempt_data, cpu).qs_pending) {
-+		if (t->rcu_read_unlock_special & RCU_READ_UNLOCK_GOT_QS) {
-+			rcu_preempt_qs_record(cpu);
-+			t->rcu_read_unlock_special &= ~RCU_READ_UNLOCK_GOT_QS;
-+		} else if (!(t->rcu_read_unlock_special &
-+			     RCU_READ_UNLOCK_NEED_QS)) {
-+			t->rcu_read_unlock_special |= RCU_READ_UNLOCK_NEED_QS;
-+		}
-+	}
-+}
-+
-+/*
-+ * Process callbacks for preemptable RCU.
-+ */
-+static void rcu_preempt_process_callbacks(void)
-+{
-+	__rcu_process_callbacks(&rcu_preempt_state,
-+				&__get_cpu_var(rcu_preempt_data));
-+}
-+
-+/*
-+ * Queue a preemptable-RCU callback for invocation after a grace period.
-+ */
-+void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
-+{
-+	__call_rcu(head, func, &rcu_preempt_state);
-+}
-+EXPORT_SYMBOL_GPL(call_rcu);
-+
-+/*
-+ * Check to see if there is any immediate preemptable-RCU-related work
-+ * to be done.
-+ */
-+static int rcu_preempt_pending(int cpu)
-+{
-+	return __rcu_pending(&rcu_preempt_state,
-+			     &per_cpu(rcu_preempt_data, cpu));
-+}
-+
-+/*
-+ * Does preemptable RCU need the CPU to stay out of dynticks mode?
-+ */
-+static int rcu_preempt_needs_cpu(int cpu)
-+{
-+	return !!per_cpu(rcu_preempt_data, cpu).nxtlist;
-+}
-+
-+/*
-+ * Initialize preemptable RCU's per-CPU data.
-+ */
-+static void __cpuinit rcu_preempt_init_percpu_data(int cpu)
-+{
-+	rcu_init_percpu_data(cpu, &rcu_preempt_state, 1);
-+}
-+
-+/*
-+ * Check for a task exiting while in a preemptable-RCU read-side
-+ * critical section, clean up if so.  No need to issue warnings,
-+ * as debug_check_no_locks_held() already does this if lockdep
-+ * is enabled.
-+ */
-+void exit_rcu(void)
-+{
-+	struct task_struct *t = current;
-+
-+	if (t->rcu_read_lock_nesting == 0)
-+		return;
-+	t->rcu_read_lock_nesting = 1;
-+	rcu_read_unlock();
-+}
-+
-+#else /* #ifdef CONFIG_TREE_PREEMPT_RCU */
-+
-+/*
-+ * Tell them what RCU they are running.
-+ */
-+static inline void rcu_bootup_announce(void)
-+{
-+	printk(KERN_INFO "Hierarchical RCU implementation.\n");
-+}
-+
-+/*
-+ * Return the number of RCU batches processed thus far for debug & stats.
-+ */
-+long rcu_batches_completed(void)
-+{
-+	return rcu_batches_completed_sched();
-+}
-+EXPORT_SYMBOL_GPL(rcu_batches_completed);
-+
-+/*
-+ * Because preemptable RCU does not exist, we never have to check for
-+ * CPUs being in quiescent states.
-+ */
-+static void rcu_preempt_qs(int cpu)
-+{
-+}
-+
-+#ifdef CONFIG_RCU_CPU_STALL_DETECTOR
-+
-+/*
-+ * Because preemptable RCU does not exist, we never have to check for
-+ * tasks blocked within RCU read-side critical sections.
-+ */
-+static void rcu_print_task_stall(struct rcu_node *rnp)
-+{
-+}
-+
-+#endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
-+
-+/*
-+ * Because preemptable RCU does not exist, there are never any preempted
-+ * RCU readers.
-+ */
-+static int rcu_preempted_readers(struct rcu_node *rnp)
-+{
-+	return 0;
-+}
-+
-+/*
-+ * Because preemptable RCU does not exist, it never has any callbacks
-+ * to check.
-+ */
-+void rcu_preempt_check_callbacks(int cpu)
-+{
-+}
-+
-+/*
-+ * Because preemptable RCU does not exist, it never has any callbacks
-+ * to process.
-+ */
-+void rcu_preempt_process_callbacks(void)
-+{
-+}
-+
-+/*
-+ * In classic RCU, call_rcu() is just call_rcu_sched().
-+ */
-+void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
-+{
-+	call_rcu_sched(head, func);
-+}
-+EXPORT_SYMBOL_GPL(call_rcu);
-+
-+/*
-+ * Because preemptable RCU does not exist, it never has any work to do.
-+ */
-+static int rcu_preempt_pending(int cpu)
-+{
-+	return 0;
-+}
-+
-+/*
-+ * Because preemptable RCU does not exist, it never needs any CPU.
-+ */
-+static int rcu_preempt_needs_cpu(int cpu)
-+{
-+	return 0;
-+}
-+
-+/*
-+ * Because preemptable RCU does not exist, there is no per-CPU
-+ * data to initialize.
-+ */
-+static void __cpuinit rcu_preempt_init_percpu_data(int cpu)
-+{
-+}
-+
-+#endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
-diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
-index 31af3a0..0ea1bff 100644
---- a/kernel/rcutree_trace.c
-+++ b/kernel/rcutree_trace.c
-@@ -77,6 +77,10 @@ static void print_one_rcu_data(struct seq_file *m, struct rcu_data *rdp)
- 
- static int show_rcudata(struct seq_file *m, void *unused)
- {
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+	seq_puts(m, "rcu_preempt:\n");
-+	PRINT_RCU_DATA(rcu_preempt_data, print_one_rcu_data, m);
-+#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
- 	seq_puts(m, "rcu_sched:\n");
- 	PRINT_RCU_DATA(rcu_sched_data, print_one_rcu_data, m);
- 	seq_puts(m, "rcu_bh:\n");
-@@ -125,6 +129,10 @@ static int show_rcudata_csv(struct seq_file *m, void *unused)
- 	seq_puts(m, "\"dt\",\"dt nesting\",\"dn\",\"df\",");
- #endif /* #ifdef CONFIG_NO_HZ */
- 	seq_puts(m, "\"of\",\"ri\",\"ql\",\"b\"\n");
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+	seq_puts(m, "\"rcu_preempt:\"\n");
-+	PRINT_RCU_DATA(rcu_preempt_data, print_one_rcu_data_csv, m);
-+#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
- 	seq_puts(m, "\"rcu_sched:\"\n");
- 	PRINT_RCU_DATA(rcu_sched_data, print_one_rcu_data_csv, m);
- 	seq_puts(m, "\"rcu_bh:\"\n");
-@@ -172,6 +180,10 @@ static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
- 
- static int show_rcuhier(struct seq_file *m, void *unused)
- {
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+	seq_puts(m, "rcu_preempt:\n");
-+	print_one_rcu_state(m, &rcu_preempt_state);
-+#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
- 	seq_puts(m, "rcu_sched:\n");
- 	print_one_rcu_state(m, &rcu_sched_state);
- 	seq_puts(m, "rcu_bh:\n");
-@@ -194,6 +206,10 @@ static struct file_operations rcuhier_fops = {
- 
- static int show_rcugp(struct seq_file *m, void *unused)
- {
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+	seq_printf(m, "rcu_preempt: completed=%ld  gpnum=%ld\n",
-+		   rcu_preempt_state.completed, rcu_preempt_state.gpnum);
-+#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
- 	seq_printf(m, "rcu_sched: completed=%ld  gpnum=%ld\n",
- 		   rcu_sched_state.completed, rcu_sched_state.gpnum);
- 	seq_printf(m, "rcu_bh: completed=%ld  gpnum=%ld\n",
-@@ -244,6 +260,10 @@ static void print_rcu_pendings(struct seq_file *m, struct rcu_state *rsp)
- 
- static int show_rcu_pending(struct seq_file *m, void *unused)
- {
-+#ifdef CONFIG_TREE_PREEMPT_RCU
-+	seq_puts(m, "rcu_preempt:\n");
-+	print_rcu_pendings(m, &rcu_preempt_state);
-+#endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
- 	seq_puts(m, "rcu_sched:\n");
- 	print_rcu_pendings(m, &rcu_sched_state);
- 	seq_puts(m, "rcu_bh:\n");
+- * Wait until all currently running preempt_disable() code segments
+- * (including hardware-irq-disable segments) complete.  Note that
+- * in -rt this does -not- necessarily result in all currently executing
+- * interrupt -handlers- having completed.
+- */
+-void __synchronize_sched(void)
+-{
+-	struct rcu_synchronize rcu;
+-
+-	if (num_online_cpus() == 1)
+-		return;  /* blocking is gp if only one CPU! */
+-
+-	init_completion(&rcu.completion);
+-	/* Will wake me after RCU finished. */
+-	call_rcu_sched(&rcu.head, wakeme_after_rcu);
+-	/* Wait for it. */
+-	wait_for_completion(&rcu.completion);
+-}
+-EXPORT_SYMBOL_GPL(__synchronize_sched);
+-
+-/*
+- * kthread function that manages call_rcu_sched grace periods.
+- */
+-static int rcu_sched_grace_period(void *arg)
+-{
+-	int couldsleep;		/* might sleep after current pass. */
+-	int couldsleepnext = 0; /* might sleep after next pass. */
+-	int cpu;
+-	unsigned long flags;
+-	struct rcu_data *rdp;
+-	int ret;
+-
+-	/*
+-	 * Each pass through the following loop handles one
+-	 * rcu_sched grace period cycle.
+-	 */
+-	do {
+-		/* Save each CPU's current state. */
+-
+-		for_each_online_cpu(cpu) {
+-			dyntick_save_progress_counter_sched(cpu);
+-			save_qsctr_sched(cpu);
+-		}
+-
+-		/*
+-		 * Sleep for about an RCU grace-period's worth to
+-		 * allow better batching and to consume less CPU.
+-		 */
+-		schedule_timeout_interruptible(RCU_SCHED_BATCH_TIME);
+-
+-		/*
+-		 * If there was nothing to do last time, prepare to
+-		 * sleep at the end of the current grace period cycle.
+-		 */
+-		couldsleep = couldsleepnext;
+-		couldsleepnext = 1;
+-		if (couldsleep) {
+-			spin_lock_irqsave(&rcu_ctrlblk.schedlock, flags);
+-			rcu_ctrlblk.sched_sleep = rcu_sched_sleep_prep;
+-			spin_unlock_irqrestore(&rcu_ctrlblk.schedlock, flags);
+-		}
+-
+-		/*
+-		 * Wait on each CPU in turn to have either visited
+-		 * a quiescent state or been in dynticks-idle mode.
+-		 */
+-		for_each_online_cpu(cpu) {
+-			while (rcu_qsctr_inc_needed(cpu) &&
+-			       rcu_qsctr_inc_needed_dyntick(cpu)) {
+-				/* resched_cpu(cpu); @@@ */
+-				schedule_timeout_interruptible(1);
+-			}
+-		}
+-
+-		/* Advance callbacks for each CPU.  */
+-
+-		for_each_online_cpu(cpu) {
+-
+-			rdp = RCU_DATA_CPU(cpu);
+-			spin_lock_irqsave(&rdp->lock, flags);
+-
+-			/*
+-			 * We are running on this CPU irq-disabled, so no
+-			 * CPU can go offline until we re-enable irqs.
+-			 * The current CPU might have already gone
+-			 * offline (between the for_each_offline_cpu and
+-			 * the spin_lock_irqsave), but in that case all its
+-			 * callback lists will be empty, so no harm done.
+-			 *
+-			 * Advance the callbacks!  We share normal RCU's
+-			 * donelist, since callbacks are invoked the
+-			 * same way in either case.
+-			 */
+-			if (rdp->waitschedlist != NULL) {
+-				*rdp->donetail = rdp->waitschedlist;
+-				rdp->donetail = rdp->waitschedtail;
+-
+-				/*
+-				 * Next rcu_check_callbacks() will
+-				 * do the required raise_softirq().
+-				 */
+-			}
+-			if (rdp->nextschedlist != NULL) {
+-				rdp->waitschedlist = rdp->nextschedlist;
+-				rdp->waitschedtail = rdp->nextschedtail;
+-				couldsleep = 0;
+-				couldsleepnext = 0;
+-			} else {
+-				rdp->waitschedlist = NULL;
+-				rdp->waitschedtail = &rdp->waitschedlist;
+-			}
+-			rdp->nextschedlist = NULL;
+-			rdp->nextschedtail = &rdp->nextschedlist;
+-
+-			/* Mark sleep intention. */
+-
+-			rdp->rcu_sched_sleeping = couldsleep;
+-
+-			spin_unlock_irqrestore(&rdp->lock, flags);
+-		}
+-
+-		/* If we saw callbacks on the last scan, go deal with them. */
+-
+-		if (!couldsleep)
+-			continue;
+-
+-		/* Attempt to block... */
+-
+-		spin_lock_irqsave(&rcu_ctrlblk.schedlock, flags);
+-		if (rcu_ctrlblk.sched_sleep != rcu_sched_sleep_prep) {
+-
+-			/*
+-			 * Someone posted a callback after we scanned.
+-			 * Go take care of it.
+-			 */
+-			spin_unlock_irqrestore(&rcu_ctrlblk.schedlock, flags);
+-			couldsleepnext = 0;
+-			continue;
+-		}
+-
+-		/* Block until the next person posts a callback. */
+-
+-		rcu_ctrlblk.sched_sleep = rcu_sched_sleeping;
+-		spin_unlock_irqrestore(&rcu_ctrlblk.schedlock, flags);
+-		ret = 0; /* unused */
+-		__wait_event_interruptible(rcu_ctrlblk.sched_wq,
+-			rcu_ctrlblk.sched_sleep != rcu_sched_sleeping,
+-			ret);
+-
+-		couldsleepnext = 0;
+-
+-	} while (!kthread_should_stop());
+-
+-	return (0);
+-}
+-
+-/*
+- * Check to see if any future RCU-related work will need to be done
+- * by the current CPU, even if none need be done immediately, returning
+- * 1 if so.  Assumes that notifiers would take care of handling any
+- * outstanding requests from the RCU core.
+- *
+- * This function is part of the RCU implementation; it is -not-
+- * an exported member of the RCU API.
+- */
+-int rcu_needs_cpu(int cpu)
+-{
+-	struct rcu_data *rdp = RCU_DATA_CPU(cpu);
+-
+-	return (rdp->donelist != NULL ||
+-		!!rdp->waitlistcount ||
+-		rdp->nextlist != NULL ||
+-		rdp->nextschedlist != NULL ||
+-		rdp->waitschedlist != NULL);
+-}
+-
+-static int rcu_pending(int cpu)
+-{
+-	struct rcu_data *rdp = RCU_DATA_CPU(cpu);
+-
+-	/* The CPU has at least one callback queued somewhere. */
+-
+-	if (rdp->donelist != NULL ||
+-	    !!rdp->waitlistcount ||
+-	    rdp->nextlist != NULL ||
+-	    rdp->nextschedlist != NULL ||
+-	    rdp->waitschedlist != NULL)
+-		return 1;
+-
+-	/* The RCU core needs an acknowledgement from this CPU. */
+-
+-	if ((per_cpu(rcu_flip_flag, cpu) == rcu_flipped) ||
+-	    (per_cpu(rcu_mb_flag, cpu) == rcu_mb_needed))
+-		return 1;
+-
+-	/* This CPU has fallen behind the global grace-period number. */
+-
+-	if (rdp->completed != rcu_ctrlblk.completed)
+-		return 1;
+-
+-	/* Nothing needed from this CPU. */
+-
+-	return 0;
+-}
+-
+-int __cpuinit rcu_cpu_notify(struct notifier_block *self,
+-			     unsigned long action, void *hcpu)
+-{
+-	long cpu = (long)hcpu;
+-
+-	switch (action) {
+-	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+-		rcu_online_cpu(cpu);
+-		break;
+-	case CPU_UP_CANCELED:
+-	case CPU_UP_CANCELED_FROZEN:
+-	case CPU_DEAD:
+-	case CPU_DEAD_FROZEN:
+-		rcu_offline_cpu(cpu);
+-		break;
+-	default:
+-		break;
+-	}
+-	return NOTIFY_OK;
+-}
+-
+-void __init __rcu_init(void)
+-{
+-	int cpu;
+-	int i;
+-	struct rcu_data *rdp;
+-
+-	printk(KERN_NOTICE "Preemptible RCU implementation.\n");
+-	for_each_possible_cpu(cpu) {
+-		rdp = RCU_DATA_CPU(cpu);
+-		spin_lock_init(&rdp->lock);
+-		rdp->completed = 0;
+-		rdp->waitlistcount = 0;
+-		rdp->nextlist = NULL;
+-		rdp->nexttail = &rdp->nextlist;
+-		for (i = 0; i < GP_STAGES; i++) {
+-			rdp->waitlist[i] = NULL;
+-			rdp->waittail[i] = &rdp->waitlist[i];
+-		}
+-		rdp->donelist = NULL;
+-		rdp->donetail = &rdp->donelist;
+-		rdp->rcu_flipctr[0] = 0;
+-		rdp->rcu_flipctr[1] = 0;
+-		rdp->nextschedlist = NULL;
+-		rdp->nextschedtail = &rdp->nextschedlist;
+-		rdp->waitschedlist = NULL;
+-		rdp->waitschedtail = &rdp->waitschedlist;
+-		rdp->rcu_sched_sleeping = 0;
+-	}
+-	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+-}
+-
+-/*
+- * Late-boot-time RCU initialization that must wait until after scheduler
+- * has been initialized.
+- */
+-void __init rcu_init_sched(void)
+-{
+-	rcu_sched_grace_period_task = kthread_run(rcu_sched_grace_period,
+-						  NULL,
+-						  "rcu_sched_grace_period");
+-	WARN_ON(IS_ERR(rcu_sched_grace_period_task));
+-}
+-
+-#ifdef CONFIG_RCU_TRACE
+-long *rcupreempt_flipctr(int cpu)
+-{
+-	return &RCU_DATA_CPU(cpu)->rcu_flipctr[0];
+-}
+-EXPORT_SYMBOL_GPL(rcupreempt_flipctr);
+-
+-int rcupreempt_flip_flag(int cpu)
+-{
+-	return per_cpu(rcu_flip_flag, cpu);
+-}
+-EXPORT_SYMBOL_GPL(rcupreempt_flip_flag);
+-
+-int rcupreempt_mb_flag(int cpu)
+-{
+-	return per_cpu(rcu_mb_flag, cpu);
+-}
+-EXPORT_SYMBOL_GPL(rcupreempt_mb_flag);
+-
+-char *rcupreempt_try_flip_state_name(void)
+-{
+-	return rcu_try_flip_state_names[rcu_ctrlblk.rcu_try_flip_state];
+-}
+-EXPORT_SYMBOL_GPL(rcupreempt_try_flip_state_name);
+-
+-struct rcupreempt_trace *rcupreempt_trace_cpu(int cpu)
+-{
+-	struct rcu_data *rdp = RCU_DATA_CPU(cpu);
+-
+-	return &rdp->trace;
+-}
+-EXPORT_SYMBOL_GPL(rcupreempt_trace_cpu);
+-
+-#endif /* #ifdef RCU_TRACE */
+diff --git a/kernel/rcupreempt_trace.c b/kernel/rcupreempt_trace.c
+deleted file mode 100644
+index 1164034..0000000
+--- a/kernel/rcupreempt_trace.c
++++ /dev/null
+@@ -1,335 +0,0 @@
+-/*
+- * Read-Copy Update tracing for realtime implementation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+- *
+- * Copyright IBM Corporation, 2006
+- *
+- * Papers:  http://www.rdrop.com/users/paulmck/RCU
+- *
+- * For detailed explanation of Read-Copy Update mechanism see -
+- * 		Documentation/RCU/ *.txt
+- *
+- */
+-#include <linux/types.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/spinlock.h>
+-#include <linux/smp.h>
+-#include <linux/rcupdate.h>
+-#include <linux/interrupt.h>
+-#include <linux/sched.h>
+-#include <asm/atomic.h>
+-#include <linux/bitops.h>
+-#include <linux/module.h>
+-#include <linux/completion.h>
+-#include <linux/moduleparam.h>
+-#include <linux/percpu.h>
+-#include <linux/notifier.h>
+-#include <linux/cpu.h>
+-#include <linux/mutex.h>
+-#include <linux/rcupreempt_trace.h>
+-#include <linux/debugfs.h>
+-
+-static struct mutex rcupreempt_trace_mutex;
+-static char *rcupreempt_trace_buf;
+-#define RCUPREEMPT_TRACE_BUF_SIZE 4096
+-
+-void rcupreempt_trace_move2done(struct rcupreempt_trace *trace)
+-{
+-	trace->done_length += trace->wait_length;
+-	trace->done_add += trace->wait_length;
+-	trace->wait_length = 0;
+-}
+-void rcupreempt_trace_move2wait(struct rcupreempt_trace *trace)
+-{
+-	trace->wait_length += trace->next_length;
+-	trace->wait_add += trace->next_length;
+-	trace->next_length = 0;
+-}
+-void rcupreempt_trace_try_flip_1(struct rcupreempt_trace *trace)
+-{
+-	atomic_inc(&trace->rcu_try_flip_1);
+-}
+-void rcupreempt_trace_try_flip_e1(struct rcupreempt_trace *trace)
+-{
+-	atomic_inc(&trace->rcu_try_flip_e1);
+-}
+-void rcupreempt_trace_try_flip_i1(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_i1++;
+-}
+-void rcupreempt_trace_try_flip_ie1(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_ie1++;
+-}
+-void rcupreempt_trace_try_flip_g1(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_g1++;
+-}
+-void rcupreempt_trace_try_flip_a1(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_a1++;
+-}
+-void rcupreempt_trace_try_flip_ae1(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_ae1++;
+-}
+-void rcupreempt_trace_try_flip_a2(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_a2++;
+-}
+-void rcupreempt_trace_try_flip_z1(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_z1++;
+-}
+-void rcupreempt_trace_try_flip_ze1(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_ze1++;
+-}
+-void rcupreempt_trace_try_flip_z2(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_z2++;
+-}
+-void rcupreempt_trace_try_flip_m1(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_m1++;
+-}
+-void rcupreempt_trace_try_flip_me1(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_me1++;
+-}
+-void rcupreempt_trace_try_flip_m2(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_try_flip_m2++;
+-}
+-void rcupreempt_trace_check_callbacks(struct rcupreempt_trace *trace)
+-{
+-	trace->rcu_check_callbacks++;
+-}
+-void rcupreempt_trace_done_remove(struct rcupreempt_trace *trace)
+-{
+-	trace->done_remove += trace->done_length;
+-	trace->done_length = 0;
+-}
+-void rcupreempt_trace_invoke(struct rcupreempt_trace *trace)
+-{
+-	atomic_inc(&trace->done_invoked);
+-}
+-void rcupreempt_trace_next_add(struct rcupreempt_trace *trace)
+-{
+-	trace->next_add++;
+-	trace->next_length++;
+-}
+-
+-static void rcupreempt_trace_sum(struct rcupreempt_trace *sp)
+-{
+-	struct rcupreempt_trace *cp;
+-	int cpu;
+-
+-	memset(sp, 0, sizeof(*sp));
+-	for_each_possible_cpu(cpu) {
+-		cp = rcupreempt_trace_cpu(cpu);
+-		sp->next_length += cp->next_length;
+-		sp->next_add += cp->next_add;
+-		sp->wait_length += cp->wait_length;
+-		sp->wait_add += cp->wait_add;
+-		sp->done_length += cp->done_length;
+-		sp->done_add += cp->done_add;
+-		sp->done_remove += cp->done_remove;
+-		atomic_add(atomic_read(&cp->done_invoked), &sp->done_invoked);
+-		sp->rcu_check_callbacks += cp->rcu_check_callbacks;
+-		atomic_add(atomic_read(&cp->rcu_try_flip_1),
+-			   &sp->rcu_try_flip_1);
+-		atomic_add(atomic_read(&cp->rcu_try_flip_e1),
+-			   &sp->rcu_try_flip_e1);
+-		sp->rcu_try_flip_i1 += cp->rcu_try_flip_i1;
+-		sp->rcu_try_flip_ie1 += cp->rcu_try_flip_ie1;
+-		sp->rcu_try_flip_g1 += cp->rcu_try_flip_g1;
+-		sp->rcu_try_flip_a1 += cp->rcu_try_flip_a1;
+-		sp->rcu_try_flip_ae1 += cp->rcu_try_flip_ae1;
+-		sp->rcu_try_flip_a2 += cp->rcu_try_flip_a2;
+-		sp->rcu_try_flip_z1 += cp->rcu_try_flip_z1;
+-		sp->rcu_try_flip_ze1 += cp->rcu_try_flip_ze1;
+-		sp->rcu_try_flip_z2 += cp->rcu_try_flip_z2;
+-		sp->rcu_try_flip_m1 += cp->rcu_try_flip_m1;
+-		sp->rcu_try_flip_me1 += cp->rcu_try_flip_me1;
+-		sp->rcu_try_flip_m2 += cp->rcu_try_flip_m2;
+-	}
+-}
+-
+-static ssize_t rcustats_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
+-{
+-	struct rcupreempt_trace trace;
+-	ssize_t bcount;
+-	int cnt = 0;
+-
+-	rcupreempt_trace_sum(&trace);
+-	mutex_lock(&rcupreempt_trace_mutex);
+-	snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-		 "ggp=%ld rcc=%ld\n",
+-		 rcu_batches_completed(),
+-		 trace.rcu_check_callbacks);
+-	snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-		 "na=%ld nl=%ld wa=%ld wl=%ld da=%ld dl=%ld dr=%ld di=%d\n"
+-		 "1=%d e1=%d i1=%ld ie1=%ld g1=%ld a1=%ld ae1=%ld a2=%ld\n"
+-		 "z1=%ld ze1=%ld z2=%ld m1=%ld me1=%ld m2=%ld\n",
+-
+-		 trace.next_add, trace.next_length,
+-		 trace.wait_add, trace.wait_length,
+-		 trace.done_add, trace.done_length,
+-		 trace.done_remove, atomic_read(&trace.done_invoked),
+-		 atomic_read(&trace.rcu_try_flip_1),
+-		 atomic_read(&trace.rcu_try_flip_e1),
+-		 trace.rcu_try_flip_i1, trace.rcu_try_flip_ie1,
+-		 trace.rcu_try_flip_g1,
+-		 trace.rcu_try_flip_a1, trace.rcu_try_flip_ae1,
+-			 trace.rcu_try_flip_a2,
+-		 trace.rcu_try_flip_z1, trace.rcu_try_flip_ze1,
+-			 trace.rcu_try_flip_z2,
+-		 trace.rcu_try_flip_m1, trace.rcu_try_flip_me1,
+-			trace.rcu_try_flip_m2);
+-	bcount = simple_read_from_buffer(buffer, count, ppos,
+-			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
+-	mutex_unlock(&rcupreempt_trace_mutex);
+-	return bcount;
+-}
+-
+-static ssize_t rcugp_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
+-{
+-	long oldgp = rcu_batches_completed();
+-	ssize_t bcount;
+-
+-	mutex_lock(&rcupreempt_trace_mutex);
+-	synchronize_rcu();
+-	snprintf(rcupreempt_trace_buf, RCUPREEMPT_TRACE_BUF_SIZE,
+-		"oldggp=%ld  newggp=%ld\n", oldgp, rcu_batches_completed());
+-	bcount = simple_read_from_buffer(buffer, count, ppos,
+-			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
+-	mutex_unlock(&rcupreempt_trace_mutex);
+-	return bcount;
+-}
+-
+-static ssize_t rcuctrs_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
+-{
+-	int cnt = 0;
+-	int cpu;
+-	int f = rcu_batches_completed() & 0x1;
+-	ssize_t bcount;
+-
+-	mutex_lock(&rcupreempt_trace_mutex);
+-
+-	cnt += snprintf(&rcupreempt_trace_buf[cnt], RCUPREEMPT_TRACE_BUF_SIZE,
+-				"CPU last cur F M\n");
+-	for_each_possible_cpu(cpu) {
+-		long *flipctr = rcupreempt_flipctr(cpu);
+-		cnt += snprintf(&rcupreempt_trace_buf[cnt],
+-				RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-					"%3d%c %4ld %3ld %d %d\n",
+-			       cpu,
+-			       cpu_is_offline(cpu) ? '!' : ' ',
+-			       flipctr[!f],
+-			       flipctr[f],
+-			       rcupreempt_flip_flag(cpu),
+-			       rcupreempt_mb_flag(cpu));
+-	}
+-	cnt += snprintf(&rcupreempt_trace_buf[cnt],
+-			RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-			"ggp = %ld, state = %s\n",
+-			rcu_batches_completed(),
+-			rcupreempt_try_flip_state_name());
+-	cnt += snprintf(&rcupreempt_trace_buf[cnt],
+-			RCUPREEMPT_TRACE_BUF_SIZE - cnt,
+-			"\n");
+-	bcount = simple_read_from_buffer(buffer, count, ppos,
+-			rcupreempt_trace_buf, strlen(rcupreempt_trace_buf));
+-	mutex_unlock(&rcupreempt_trace_mutex);
+-	return bcount;
+-}
+-
+-static struct file_operations rcustats_fops = {
+-	.owner = THIS_MODULE,
+-	.read = rcustats_read,
+-};
+-
+-static struct file_operations rcugp_fops = {
+-	.owner = THIS_MODULE,
+-	.read = rcugp_read,
+-};
+-
+-static struct file_operations rcuctrs_fops = {
+-	.owner = THIS_MODULE,
+-	.read = rcuctrs_read,
+-};
+-
+-static struct dentry *rcudir, *statdir, *ctrsdir, *gpdir;
+-static int rcupreempt_debugfs_init(void)
+-{
+-	rcudir = debugfs_create_dir("rcu", NULL);
+-	if (!rcudir)
+-		goto out;
+-	statdir = debugfs_create_file("rcustats", 0444, rcudir,
+-						NULL, &rcustats_fops);
+-	if (!statdir)
+-		goto free_out;
+-
+-	gpdir = debugfs_create_file("rcugp", 0444, rcudir, NULL, &rcugp_fops);
+-	if (!gpdir)
+-		goto free_out;
+-
+-	ctrsdir = debugfs_create_file("rcuctrs", 0444, rcudir,
+-						NULL, &rcuctrs_fops);
+-	if (!ctrsdir)
+-		goto free_out;
+-	return 0;
+-free_out:
+-	if (statdir)
+-		debugfs_remove(statdir);
+-	if (gpdir)
+-		debugfs_remove(gpdir);
+-	debugfs_remove(rcudir);
+-out:
+-	return 1;
+-}
+-
+-static int __init rcupreempt_trace_init(void)
+-{
+-	int ret;
+-
+-	mutex_init(&rcupreempt_trace_mutex);
+-	rcupreempt_trace_buf = kmalloc(RCUPREEMPT_TRACE_BUF_SIZE, GFP_KERNEL);
+-	if (!rcupreempt_trace_buf)
+-		return 1;
+-	ret = rcupreempt_debugfs_init();
+-	if (ret)
+-		kfree(rcupreempt_trace_buf);
+-	return ret;
+-}
+-
+-static void __exit rcupreempt_trace_cleanup(void)
+-{
+-	debugfs_remove(statdir);
+-	debugfs_remove(gpdir);
+-	debugfs_remove(ctrsdir);
+-	debugfs_remove(rcudir);
+-	kfree(rcupreempt_trace_buf);
+-}
+-
+-
+-module_init(rcupreempt_trace_init);
+-module_exit(rcupreempt_trace_cleanup);
 diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 12327b2..f87fb0c 100644
+index f87fb0c..82fbc49 100644
 --- a/lib/Kconfig.debug
 +++ b/lib/Kconfig.debug
 @@ -725,7 +725,7 @@ config RCU_TORTURE_TEST_RUNNABLE
  
  config RCU_CPU_STALL_DETECTOR
  	bool "Check for stalled CPUs delaying RCU grace periods"
--	depends on CLASSIC_RCU || TREE_RCU
-+	depends on CLASSIC_RCU || TREE_RCU || TREE_PREEMPT_RCU
+-	depends on CLASSIC_RCU || TREE_RCU || TREE_PREEMPT_RCU
++	depends on TREE_RCU || TREE_PREEMPT_RCU
  	default n
  	help
  	  This option causes RCU to printk information on which
