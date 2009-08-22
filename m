@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933257AbZHVKdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbZHVKgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933257AbZHVKdH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 06:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbZHVKdG
+	id S1755702AbZHVKgO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 06:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbZHVKgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 06:33:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47089 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755343AbZHVKdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 06:33:05 -0400
-Date: Sat, 22 Aug 2009 12:32:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: dwalker@fifo99.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
-       schwidefsky@de.ibm.com, tglx@linutronix.de
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:timers/core] timekeeping: Increase granularity of
-	read_persistent_clock()
-Message-ID: <20090822103252.GA32369@elte.hu>
-References: <20090814134811.013873340@de.ibm.com> <tip-d4f587c67fc39e0030ddd718675e252e208da4d7@git.kernel.org>
+	Sat, 22 Aug 2009 06:36:14 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41195 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755343AbZHVKgN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 06:36:13 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A8FCA03.6090107@s5r6.in-berlin.de>
+Date: Sat, 22 Aug 2009 12:35:47 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090630 SeaMonkey/1.1.17
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-d4f587c67fc39e0030ddd718675e252e208da4d7@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Roland Dreier <rdreier@cisco.com>
+CC: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Is adding requeue_delayed_work() a good idea
+References: <adazl9uw3w1.fsf@cisco.com> <20090821115547.GA6901@redhat.com> <adaab1sx29p.fsf@cisco.com>
+In-Reply-To: <adaab1sx29p.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roland Dreier wrote:
+[Oleg Nesterov wrote]
+> Perhaps the semantics are sufficiently fuzzy and not general enough, so
+> that the best answer is my special-case open coded change for my
+> specific case.  I don't know whether other places would even want a
+> requeue_delayed_work() ... I simply raise this point because when I find
+> myself reimplementing the structure of work_struct + timer because
+> delayed_work API is lacking, then it seems prudent to consider extending
+> delayed_work API instead.
 
-* tip-bot for Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+There are two or three use cases of rescheduling a delayed work in 
+drivers/firewire, but in one regard they are simpler than your case:
 
-> Commit-ID:  d4f587c67fc39e0030ddd718675e252e208da4d7
-> Gitweb:     http://git.kernel.org/tip/d4f587c67fc39e0030ddd718675e252e208da4d7
-> Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
-> AuthorDate: Fri, 14 Aug 2009 15:47:31 +0200
-> Committer:  Thomas Gleixner <tglx@linutronix.de>
-> CommitDate: Sat, 15 Aug 2009 10:55:46 +0200
-> 
-> timekeeping: Increase granularity of read_persistent_clock()
+The work only needs to be pushed back in time, never scheduled earlier 
+than it was originally scheduled.  This is easily implemented with the 
+existing delayed work API by letting the work check whether it is 
+entered too early; if yes, reschedule itself.
 
-FYI, -tip arch-testing found that this commit broke the PowerPC 
-build:
+Further requirements of this use case:
+   - It doesn't matter on which CPU this kind of work runs on.
+   - If the event which necessitates rescheduling happens when the
+     work is already running, then it might depend on the outcome of
+     the work whether it needs to be scheduled again.  I think the
+     requeue_delayed_work should do nothing in that case and the
+     work needs to test how it went and rearm if necessary.
 
-/home/mingo/tip/arch/powerpc/kernel/time.c: In function 'read_persistent_clock':
-/home/mingo/tip/arch/powerpc/kernel/time.c:788: error: 'return' with a value, in function returning void
-/home/mingo/tip/arch/powerpc/kernel/time.c:791: error: 'return' with a value, in function returning void
-make[2]: *** [arch/powerpc/kernel/time.o] Error 1
-make[2]: *** Waiting for unfinished jobs....
-make[1]: *** [arch/powerpc/kernel] Error 2
+Well, considering the latter point, there is no harm in keeping all of 
+the requeue_delayed_work logic concentrated in the work itself in these 
+FireWire use cases.
 
-	Ingo
+[These use cases are high-level protocols for resource acquisition over 
+the FireWire bus.  Cooperative fairness schemes require them to be timed 
+after a grace period for resource re-acquisition by holders of older 
+resources, following after bus reset events which may happen any time.]
+
+So, the question is whether there is any user besides IB which needs to 
+pull a delayed work forward in time.
+
+Or another thought:  Would it hurt if you ignored any shortening of 
+timeouts, i.e. reduce your use case also to only ever _deferring_ work, 
+never rescheduling to an earlier point in time?
+-- 
+Stefan Richter
+-=====-==--= =--- =-==-
+http://arcgraph.de/sr/
