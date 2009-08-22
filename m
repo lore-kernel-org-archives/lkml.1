@@ -1,83 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755786AbZHVLrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933288AbZHVLtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755786AbZHVLrB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 07:47:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbZHVLrA
+	id S933288AbZHVLtB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 07:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbZHVLtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 07:47:00 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39865 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755734AbZHVLq7 (ORCPT
+	Sat, 22 Aug 2009 07:49:00 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:52825 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755732AbZHVLs7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 07:46:59 -0400
-Date: Fri, 21 Aug 2009 16:02:41 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, David Wagner <daw-news@cs.berkeley.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Security: information leaks in /proc enable keystroke recovery
-Message-ID: <20090821140241.GB1337@ucw.cz>
-References: <200908152221.n7FMLRuw005799@taverner.cs.berkeley.edu> <20090816003326.GC7554@mit.edu> <h67kou$ahr$1@taverner.cs.berkeley.edu> <20090816013346.GA17958@mit.edu> <h6a8da$40j$1@taverner.cs.berkeley.edu> <20090817022215.GI17958@mit.edu>
+	Sat, 22 Aug 2009 07:48:59 -0400
+To: David Dillow <dave@thedillows.org>
+Cc: Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?utf-8?Q?B=C3=BCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+References: <200903041828.49972.m.bueker@berlin.de>
+	<1242001754.4093.12.camel@obelisk.thedillows.org>
+	<200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+	<1242077392.3716.15.camel@lap75545.ornl.gov>
+	<4A09DC3E.2080807@googlemail.com>
+	<1242268709.4979.7.camel@obelisk.thedillows.org>
+	<4A0C6504.8000704@googlemail.com>
+	<1242328457.32579.12.camel@lap75545.ornl.gov>
+	<4A0C7443.1010000@googlemail.com>
+	<1243042174.3580.23.camel@obelisk.thedillows.org>
+	<m1skfkrik2.fsf@fess.ebiederm.org>
+	<1250895567.23419.1.camel@obelisk.thedillows.org>
+	<1250897657.23419.5.camel@obelisk.thedillows.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sat, 22 Aug 2009 04:48:52 -0700
+In-Reply-To: <1250897657.23419.5.camel@obelisk.thedillows.org> (David Dillow's message of "Fri\, 21 Aug 2009 19\:34\:17 -0400")
+Message-ID: <m1iqggf4rf.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090817022215.GI17958@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: dave@thedillows.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, romieu@fr.zoreil.com, mb@bu3sch.de, michael.riepe@googlemail.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+David Dillow <dave@thedillows.org> writes:
 
-> > (b) Keep /proc/$pid/wchan.  We suspect that it's possible this might
-> > be usable for keystroke recovery, but we're not sure, and we do know
-> > that blocking this entirely might annoy administrators, so rather than
-> > blocking access entirely, apply a more lenient policy.  If the user
-> > is not the owner of the process and is not root, allow up to about 10
-> > accesses to /proc/$pid/wchan per, say, 10 minutes; if a user makes more
-> > than 10 accesses per 10-minute period, insert random delays on the order
-> > of a few hundred milliseconds into every access to /proc/$pid/wchan.
-> > 
-> > Notes: It is critical to do this by user, rather than by process;
-> > otherwise a malicious user can fork a bazillion processes, each of which
-> > reads /proc/$pid/wchan a constant number of times.  The "few hundred
-> > milliseconds" comes from the fact that, for touch typists, typing two
-> > keys with alternating hands typically takes something like 0-150ms,
-> 
-> I was going to suggest instead of doing it by user or by process,
-> doing it globally; that is, *any* non-root process tries to access a
-> particular task's wchan /proc file more than X accesses per Y minutes,
-> we start inserting random delays.  Note that the "top" program by
-> default will refresh the screen once every 3 seconds, so allowing at
-> least 20 accesses per minute would be necessary to prevent "top" from
-> getting hit by a pretty massive slowdown.
-> 
-> That should be fine, I think; even if someone were to query wchan once
-> a second, it doesn't seem likely that would be enough to be able to
-> carry out a keystroke timing attack.
+>
+> Re-looking at the code, I'd guess that some IRQ status line is getting
+> stuck high, but I don't see why -- we should acknowledge all outstanding
+> interrupts each time through the loop, whether we care about them or
+> not.
+>
+> Could reproduce a problem with the following patch applied, and send the
+> full dmesg, please?
 
-It will still be complex accounting :-(. Is really wchan so useful?
+Here is what I get.
 
-> In addition, if you know that the user is entering a password at that
-> point in time, simply looking to see whether the process is in state
-> 'R' or 'S' might be enough to know when the keystrokes are being
-> entered.  I might be willing to put that in the category, "We suspect
-> that it's possible this might be usable for keystroke recovery, but
-> we're not sure" --- but it would be a pretty strong suspicion.  As far
-> as whether you could use WCHAN for keystroke recovery, I'd call that a
-> near-certainty.
-> 
-> There are other timing channels I'd be wary of as well; for example,
-> simply using stat on the pseudo-tty will record the last access time
-> to a very high degree of accuracy:
+r8169 screaming irq status 00000085 mask 0000ffff event 0000803f napi 0000001d
 
-/proc/interrupts ? various interfaces powertop uses?
+Eric
 
-I did not have chance to read the paper yet, but... does not ssh have
-bad problem in that case?
-
-								Pavel
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+> index b82780d..46cb05a 100644
+> --- a/drivers/net/r8169.c
+> +++ b/drivers/net/r8169.c
+> @@ -3556,6 +3556,7 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+>  	void __iomem *ioaddr = tp->mmio_addr;
+>  	int handled = 0;
+>  	int status;
+> +	int count = 0;
+>  
+>  	/* loop handling interrupts until we have no new ones or
+>  	 * we hit a invalid/hotplug case.
+> @@ -3564,6 +3565,15 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+>  	while (status && status != 0xffff) {
+>  		handled = 1;
+>  
+> +		if (count++ > 100) {
+> +			printk_once("r8169 screaming irq status %08x "
+> +				"mask %08x event %08x napi %08x\n",
+> +				status, tp->intr_mask, tp->intr_event,
+> +				tp->napi_event);
+> +			break;
+> +		}
+> +
+> +
+>  		/* Handle all of the error cases first. These will reset
+>  		 * the chip, so just exit the loop.
+>  		 */
