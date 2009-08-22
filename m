@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbZHVOiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbZHVOpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbZHVOiy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 10:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbZHVOix
+	id S1755792AbZHVOpN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 10:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbZHVOpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 10:38:53 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42308 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753182AbZHVOiw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 10:38:52 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A9002D6.3070301@s5r6.in-berlin.de>
-Date: Sat, 22 Aug 2009 16:38:14 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090630 SeaMonkey/1.1.17
+	Sat, 22 Aug 2009 10:45:12 -0400
+Received: from lucidpixels.com ([75.144.35.66]:49553 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755058AbZHVOpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 10:45:12 -0400
+Date: Sat, 22 Aug 2009 10:45:13 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Christoph Hellwig <hch@infradead.org>
+cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.30.4 XFS(..?) regression (& with/2.6.31-rc6)
+In-Reply-To: <20090822142550.GA10003@infradead.org>
+Message-ID: <alpine.DEB.2.00.0908221044420.30321@p34.internal.lan>
+References: <alpine.DEB.2.00.0908080422440.12329@p34.internal.lan> <00980BBF-1206-4BEF-A8AE-B4A8DAE7EC27@sgi.com> <alpine.DEB.2.00.0908090605080.16485@p34.internal.lan> <alpine.DEB.2.00.0908110624420.22426@p34.internal.lan> <20090816022331.GA2309@infradead.org>
+ <alpine.DEB.2.00.0908171024380.12533@p34.internal.lan> <alpine.DEB.2.00.0908220624440.30321@p34.internal.lan> <20090822142550.GA10003@infradead.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@verizon.net>
-CC: Robert Hancock <hancockrwd@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Regression: Linux 2.6.31-rc7 lost sensors on asus mobo
-References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain> <4A8F8C49.2030406@gmail.com> <4A8FCE50.9070801@s5r6.in-berlin.de> <200908220948.03426.gene.heskett@verizon.net>
-In-Reply-To: <200908220948.03426.gene.heskett@verizon.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> I have applied that fix from the bz entry to my grub.conf but have not 
-> rebooted as yet.  However if this asus_atk0110.ko module is supposed to do 
-> the same job, then obviously I do not have some other, required option set in 
-> my .config's for rc6 and rc7.  Directly choosing it doesn't seem to be 
-> available in a make xconfig.  What am I missing?
 
-The entry is in 'Device Drivers'/ 'Hardware Monitoring support'/ 'ASUS 
-ATK0110 ACPI hwmon (SENSORS_ATK0110)' and depends on:  HWMON (Hardware 
-Monitoring support), X86, ACPI, EXPERIMENTAL.  ACPI in turn depends on 
-PM (Power Management support).
--- 
-Stefan Richter
--=====-==--= =--- =-==-
-http://arcgraph.de/sr/
+
+On Sat, 22 Aug 2009, Christoph Hellwig wrote:
+
+> On Sat, Aug 22, 2009 at 06:27:30AM -0400, Justin Piszcz wrote:
+>>
+>>
+>> On Mon, 17 Aug 2009, Justin Piszcz wrote:
+>>
+>>>
+>>>
+>>> On Sat, 15 Aug 2009, Christoph Hellwig wrote:
+>>>
+>>
+>> On this system, I am running loop-aes, could that be the culprit?  On all
+>> other systems not using loop-aes with 2.6.30.x, I do not see this issue.
+>
+> Yes, entirely possible.   All the crypto loop / dm implementation used
+> to have a tendency to never complete I/O once in a while, although that
+> didn't happen anymore recently.
+
+Ok,
+
+What is the best way to debug the issue? git bi-sects between 2.6.29.x and 
+2.6.31-rc6? or?
+
+Justin.
