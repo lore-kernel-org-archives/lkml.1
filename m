@@ -1,209 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933348AbZHVU3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933360AbZHVUXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933348AbZHVU3p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 16:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932731AbZHVU3o
+	id S933360AbZHVUXU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 16:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933333AbZHVUXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 16:29:44 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:59280 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932528AbZHVU3o (ORCPT
+	Sat, 22 Aug 2009 16:23:19 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:57485 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933300AbZHVUXS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 16:29:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=wl4s86sCrKBovCx0vF3CiF4MEGvwSB2KKWOb+YwawBGt1IP3Ibe6Q1TpWGpIU16Knd
-         r+eLpkg+VaDfHA0EGnHkMOTaIOOQmQu2zfWz3rsuLprZZzk2OIZmSOlE1cWAZPxHG1RW
-         60xXabYQo6ZJNF70vVEBsdPk4+554D/CIlCRQ=
-Subject: Subject:[ PATCH 001:003] OFFSCHED CORE
-From: raz ben yehuda <raziebe@gmail.com>
-To: riel@redhat.com
-Cc: mingo@elte.hu, peterz@infradead.org, wiseman@macs.biu.ac.il,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 23 Aug 2009 02:29:46 +0300
-Message-Id: <1250983786.5688.23.camel@raz>
+	Sat, 22 Aug 2009 16:23:18 -0400
+Date: Sat, 22 Aug 2009 22:23:13 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dwalker@fifo99.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, johnstul@us.ibm.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:timers/core] timekeeping: Increase granularity of
+ read_persistent_clock()
+Message-ID: <20090822222313.74b9619c@skybase>
+In-Reply-To: <20090822153346.GA3313@elte.hu>
+References: <20090814134811.013873340@de.ibm.com>
+	<tip-d4f587c67fc39e0030ddd718675e252e208da4d7@git.kernel.org>
+	<20090822103252.GA32369@elte.hu>
+	<20090822171540.1220f50d@skybase>
+	<20090822153346.GA3313@elte.hu>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-		OFFSCHED support.
+On Sat, 22 Aug 2009 17:33:46 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-. A callback invoked just before halting the processor.
-. SMP alternative work-around. we do not run smp alternatives if we are
-   left with a single processor.
-. A set of utilities used by the offsched driver.
+> 
+> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> 
+> > > FYI, -tip arch-testing found that this commit broke the PowerPC 
+> > > build:
+> > > 
+> > > /home/mingo/tip/arch/powerpc/kernel/time.c: In function 'read_persistent_clock':
+> > > /home/mingo/tip/arch/powerpc/kernel/time.c:788: error: 'return' with a value, in function returning void
+> > > /home/mingo/tip/arch/powerpc/kernel/time.c:791: error: 'return' with a value, in function returning void
+> > > make[2]: *** [arch/powerpc/kernel/time.o] Error 1
+> > > make[2]: *** Waiting for unfinished jobs....
+> > > make[1]: *** [arch/powerpc/kernel] Error 2
+> > 
+> > I overlooked a case in the powerpc version of read_persistent_lock.
+> > New patch:
+> 
+> the patches are already committed and this patch doesnt apply - mind 
+> sending a delta fix against tip:master:
+> 
+>  http://people.redhat.com/mingo/tip.git/README
 
-process.c |  109 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-smpboot.c |   13 +++++--
-2 files changed, 118 insertions(+), 4 deletions(-)
+Here we go:
 
-Signed-off-by: raziebe@gmail.com
+--
+Subject: [PATCH] powerpc: build fix for read_persistent_clock
+
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+
+Fix the following build problem on powerpc:
+
+arch/powerpc/kernel/time.c: In function 'read_persistent_clock':
+arch/powerpc/kernel/time.c:788: error: 'return' with a value, in function returning void
+arch/powerpc/kernel/time.c:791: error: 'return' with a value, in function returning void
+make[2]: *** [arch/powerpc/kernel/time.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [arch/powerpc/kernel] Error 2  
+
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
-diff -X 2.6.30-offsched/Documentation/dontdiff -urN tmp/linux-2.6.30/arch/x86/kernel/process.c 2.6.30-offsched/arch/x86/kernel/process.c
---- tmp/linux-2.6.30/arch/x86/kernel/process.c	2009-06-10 06:05:27.000000000 +0300
-+++ 2.6.30-offsched/arch/x86/kernel/process.c	2009-08-21 22:02:44.000000000 +0300
-@@ -613,3 +613,112 @@
- }
- early_param("idle", idle_setup);
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+struct hotplug_cpu{
-+	long flags;
-+	void (*hotplug_cpu_dead)(void);
-+};
-+
-+static long 	offsched_services;
-+
-+#define CPU_OFFSCHED		31
-+#define CPU_OFFSCHED_KMEM	30
-+#define SERVICE_TIMER		01
-+#define SERVICE_NAPI		02
-+
-+DEFINE_PER_CPU(struct hotplug_cpu, offschedcpu);
-+
-+void unregister_offsched(int cpuid)
-+{
-+	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-+	cpu->hotplug_cpu_dead = NULL;
-+	clear_bit(CPU_OFFSCHED, &cpu->flags);
-+}
-+EXPORT_SYMBOL_GPL(unregister_offsched);
-+
-+int is_offsched(int cpuid)
-+{
-+	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-+	return test_bit(CPU_OFFSCHED, &cpu->flags);
-+}
-+EXPORT_SYMBOL_GPL(is_offsched);
-+
-+int is_offsched_kmem(int cpuid)
-+{
-+	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-+	return test_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
-+}
-+EXPORT_SYMBOL_GPL(is_offsched_kmem);
-+
-+void set_offsched_kmem(int cpuid)
-+{
-+	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-+	set_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
-+}
-+EXPORT_SYMBOL_GPL(set_offsched_kmem);
-+
-+void unset_offsched_kmem(int cpuid)
-+{
-+	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-+	clear_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
-+}
-+EXPORT_SYMBOL_GPL(unset_offsched_kmem);
-+
-+int register_offsched(void (*offsched_callback)(void), int cpuid)
-+{
-+	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-+	if (is_offsched(cpuid))
-+		return -1;
-+	cpu->hotplug_cpu_dead = offsched_callback;
-+	set_bit(CPU_OFFSCHED, &cpu->flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(register_offsched);
-+
-+void run_offsched(void)
-+{
-+	int cpuid = raw_smp_processor_id();
-+	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-+	cpu->hotplug_cpu_dead();
-+}
-+
-+int  offsched_is_napi_avail(void)
-+{
-+	return SERVICE_NAPI & offsched_services;
-+}
-+
-+int (*offsched_rule)(void *);
-+EXPORT_SYMBOL(offsched_rule);
-+/*
-+* if we a have filter than apply filter.
-+* return 0 if packet should go to kernel
-+* return 1 if packet should go to offsched.
-+*/
-+int offsched_pkt(void *s)
-+{
-+	if (offsched_rule)
-+		return offsched_rule(s);
-+	return 0;
-+}
-+
-+void offsched_register_napi(void)
-+{
-+	offsched_services |= SERVICE_NAPI;
-+}
-+EXPORT_SYMBOL_GPL(offsched_register_napi);
-+
-+void offsched_unregister_napi(void)
-+{
-+	offsched_services &= ~SERVICE_NAPI;
-+}
-+EXPORT_SYMBOL_GPL(offsched_unregister_napi);
-+
-+/*
-+ * napi scheudule is called in offsched context.
-+*/
-+void offsched_napi_schedule(void *n)
-+{
-+
-+}
-+
-+#endif
-diff -X 2.6.30-offsched/Documentation/dontdiff -urN tmp/linux-2.6.30/arch/x86/kernel/smpboot.c 2.6.30-offsched/arch/x86/kernel/smpboot.c
---- tmp/linux-2.6.30/arch/x86/kernel/smpboot.c	2009-06-10 06:05:27.000000000 +0300
-+++ 2.6.30-offsched/arch/x86/kernel/smpboot.c	2009-07-25 13:59:19.000000000 +0300
-@@ -39,6 +39,8 @@
-  *	Glauber Costa		:	i386 and x86_64 integration
-  */
- 
-+#define DEBUG
-+
- #include <linux/init.h>
- #include <linux/smp.h>
- #include <linux/module.h>
-@@ -686,8 +688,8 @@
- 	};
- 
- 	INIT_WORK(&c_idle.work, do_fork_idle);
--
--	alternatives_smp_switch(1);
-+	if (!is_offsched(cpu))
-+		alternatives_smp_switch(1);
- 
- 	c_idle.idle = get_idle_for_cpu(cpu);
- 
-@@ -1283,8 +1285,9 @@
- 	for (i = 0; i < 10; i++) {
- 		/* They ack this in play_dead by setting CPU_DEAD */
- 		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
--			printk(KERN_INFO "CPU %d is now offline\n", cpu);
--			if (1 == num_online_cpus())
-+			printk(KERN_INFO "CPU %d is now offline %s\n", cpu,
-+				is_offsched(cpu) ? "and OFFSCHED" : "");
-+			if (1 == num_online_cpus() && !is_offsched(cpu))
- 				alternatives_smp_switch(0);
- 			return;
- 		}
-@@ -1313,6 +1316,8 @@
- void native_play_dead(void)
- {
- 	play_dead_common();
-+	if (is_offsched(raw_smp_processor_id()))
-+		run_offsched();
- 	wbinvd_halt();
- }
- 
+ arch/powerpc/kernel/time.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
+Index: linux-2.6/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/time.c
++++ linux-2.6/arch/powerpc/kernel/time.c
+@@ -774,6 +774,7 @@ void read_persistent_clock(struct timesp
+ 	struct rtc_time tm;
+ 	static int first = 1;
+ 
++	ts->tv_nsec = 0;
+ 	/* XXX this is a litle fragile but will work okay in the short term */
+ 	if (first) {
+ 		first = 0;
+@@ -781,15 +782,18 @@ void read_persistent_clock(struct timesp
+ 			timezone_offset = ppc_md.time_init();
+ 
+ 		/* get_boot_time() isn't guaranteed to be safe to call late */
+-		if (ppc_md.get_boot_time)
+-			return ppc_md.get_boot_time() -timezone_offset;
++		if (ppc_md.get_boot_time) {
++			ts->tv_sec = ppc_md.get_boot_time() -timezone_offset;
++			return;
++		}
++	}
++	if (!ppc_md.get_rtc_time) {
++		ts->tv_sec = 0;
++		return;
+ 	}
+-	if (!ppc_md.get_rtc_time)
+-		return 0;
+ 	ppc_md.get_rtc_time(&tm);
+ 	ts->tv_sec = mktime(tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
+ 			    tm.tm_hour, tm.tm_min, tm.tm_sec);
+-	ts->tv_nsec = 0;
+ }
+ 
+ /* clocksource code */
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
