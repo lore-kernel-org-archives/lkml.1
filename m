@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933181AbZHVCaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933189AbZHVCob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933181AbZHVCaY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Aug 2009 22:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbZHVCaX
+	id S933189AbZHVCob (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Aug 2009 22:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbZHVCob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Aug 2009 22:30:23 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:51032 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933141AbZHVCaW (ORCPT
+	Fri, 21 Aug 2009 22:44:31 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:57086 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933176AbZHVCoa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Aug 2009 22:30:22 -0400
-Date: Fri, 21 Aug 2009 22:30:23 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Bruno =?ISO-8859-14?B?UHLpbW9udA==?= <bonbons@linux-vserver.org>,
-       Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
- in use
-In-Reply-To: <20090822001637.72a08078@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.44L0.0908212214300.31042-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 21 Aug 2009 22:44:30 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 21 Aug 2009 22:44:00 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Marek Vasut <marek.vasut@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, nicolas.ferre@atmel.com,
+       mirq-linux@rere.qmqm.pl, lkml <linux-kernel@vger.kernel.org>,
+       manuel.lauss@gmail.com, ppisa@pikron.com, maen@marvell.com,
+       s.hauer@pengutronix.de, tony@atomide.com, madhu.cr@ti.com,
+       drzeus@drzeus.cx, ben-linux@fluff.org, avorontsov@ru.mvista.com,
+       pierre@ossman.eu, sdhci-devel@lists.ossman.eu, saschasommer@freenet.de,
+       oakad@yahoo.com, ian@mnementh.co.uk, HaraldWelte@viatech.com,
+       JosephChan@via.com.tw
+Subject: Re: [PATCH] Convert MMC subsys drivers to dev_pm_ops
+In-reply-to: <200908220223.50588.marek.vasut@gmail.com>
+Message-id: <alpine.LFD.2.00.0908212234150.6044@xanadu.home>
+References: <200908220223.50588.marek.vasut@gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 22 Aug 2009, Alan Cox wrote:
+On Sat, 22 Aug 2009, Marek Vasut wrote:
 
-> > What about protecting the use counter?  In tty_port.c it's always
-> > protected by port->lock, but not in serial_open().  Is that a mistake?
+> Hi,
 > 
-> Ah good an easy question to begin with
-> 
-> Yes it is in error.
+> This converts most of the drivers found in drivers/mmc/host to dev_pm_ops.
+> Also, it contains some fixes for the probe/remove functions in some cases.
 
-Okay, I'll fix it.
+Are you sure you're actually fixing things?
 
-> The core of both hangup and open are still BKL protected against
-> one another (ugly - wants fixing), release_one_dev() liekwise. This is
-> probably inadequate as they may well sleep in various spots
-
-Would you consider ideas for changing the protection to something else?  
-I don't have anything in mind at the moment -- I need to study the code
-some more to understand it better.  But eventually a possibility may
-suggest itself.
-
-> > > 		clean up resources
-> > > 		if (last && test_clear INITIALIZED)
-> > 
-> > How do you check for "last"?  Doesn't the fact that we are here mean 
-> > that there are no remaining open references?
-> 
-> It means there are no remaining file references to the handle, but you
-> may have multiple file handles referencing the same tty
-
-So basically this amounts to testing whether port->count == 0?  But 
-isn't that already implicit when tty_port_close_start() returns 0?
-
-It sounds like this is another little thingy needed only by drivers
-that don't use the new helpers.
-
-> > P.S.: Consider this code in tty_port_block_til_ready():
-> > 
-> > 	/* if non-blocking mode is set we can pass directly to open unless
-> > 	   the port has just hung up or is in another error state */
-> > 	if ((filp->f_flags & O_NONBLOCK) ||
-> > 			(tty->flags & (1 << TTY_IO_ERROR))) {
-> > 		port->flags |= ASYNC_NORMAL_ACTIVE;
-> > 		return 0;
-> > 	}
-> > 
-> > The comment doesn't agree with the logic of the test.  Which is wrong?
-> 
-> The code and comment were copied from the original drivers (and occur in
-> several places ;))
-> 
-> The intended logic is
-> 
-> 	if O_NONBLOCK is set
-> 		succeed immediately
-> 	if there is a hangup (or other pending error)
-> 		succeed immediately
-
-Got it -- the comment is wrong.  It should say something like:
-
-	/* If non-blocking mode is set or the port is in an error state
-	 * then we can return directly; tty_open() will handle everything.
-	 */
-
-Thanks,
-
-Alan Stern
+You replaced platform_driver_probe() calls with 
+platform_driver_register() calls, and made the probe functions __devinit 
+instead of __init.  Especially when the platform device is unlikely to 
+go away or new ones to ever appear, there is no point keeping the 
+probe code around after it is done.
 
 
-
+Nicolas
