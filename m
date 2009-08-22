@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933009AbZHVRVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933056AbZHVRWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933009AbZHVRVN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 13:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755836AbZHVRVN
+	id S933056AbZHVRWz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 13:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932709AbZHVRWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 13:21:13 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:51845 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755636AbZHVRVM (ORCPT
+	Sat, 22 Aug 2009 13:22:54 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:55497 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932684AbZHVRWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 13:21:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=h0o1dqzCSZbNoT2SZ17/wmNjgwTXcaCCLnBdagSmpVMulP5nqCl8NszWXa442t6fdp
-         s/+1rBj9sJNn2m3vHGTmAeqOsfRSPgTi4/NAmEkIf32+bDaU1rxTHLTmcYn3M4u6BErF
-         OeDoLuujivMKfizSGxM0QhEviuFoOgma6bpVo=
-Message-ID: <4A902904.2090008@gmail.com>
-Date: Sat, 22 Aug 2009 19:21:08 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-7.5 Thunderbird/3.0b3
+	Sat, 22 Aug 2009 13:22:53 -0400
+X-Sasl-enc: t3+TPQum02c97t1b66GezY0efJ/IdGmpR8E7DLafDDRp 1250961774
+Date: Sat, 22 Aug 2009 14:22:52 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Theodore Tso <tytso@mit.edu>, David Wagner <daw-news@cs.berkeley.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Security: information leaks in /proc enable keystroke recovery
+Message-ID: <20090822172252.GA4894@khazad-dum.debian.net>
+References: <200908152221.n7FMLRuw005799@taverner.cs.berkeley.edu> <20090816003326.GC7554@mit.edu> <h67kou$ahr$1@taverner.cs.berkeley.edu> <20090816013346.GA17958@mit.edu> <h6a8da$40j$1@taverner.cs.berkeley.edu> <20090817022215.GI17958@mit.edu> <20090821140241.GB1337@ucw.cz>
 MIME-Version: 1.0
-To: Trilok Soni <soni.trilok@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: haptics devices linux driver support
-References: <5d5443650908221004y5b893382m368dc18a38636c1b@mail.gmail.com>
-In-Reply-To: <5d5443650908221004y5b893382m368dc18a38636c1b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090821140241.GB1337@ucw.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/22/2009 07:04 PM, Trilok Soni wrote:
-> Does anyone know example Linux drivers for haptics devices?
+On Fri, 21 Aug 2009, Pavel Machek wrote:
+> /proc/interrupts ? various interfaces powertop uses?
+> 
+> I did not have chance to read the paper yet, but... does not ssh have
+> bad problem in that case?
 
-Yup, drivers/misc/phantom.c for Sensable Phantom (the old one over PCI).
-The rest needed (esp. floating point computation) is done in userspace.
+I am told that SSH tries it best to take constant time for everything
+that is even remotely sensitive (or at least, it should)... but it, as
+well as openssl, gpg, gnutls and libc for that matter, can't really
+protect themselves from sidechannels and information leaks that show up
+when one abuses other CPUs (especially if SMT is operational) to gather
+behaviour data of the other tasks/processes/threads in the system, or
+when one gets to watch the cache misses, CPU pipeline stalls, etc.
 
-Then, all force-feedack drivers under drivers/input and drivers/hid.
+I would also expect that *any* timing-related, power-related or
+cache-/brach-prediction-/pipeline-stall-/CPU-behaviour- related high-
+and medium-precision statistic to be viable side-channels to leak data.
 
-What exactly do you want to know?
+These things are way too subtle to play the "prove it to me then" crap:
+it often takes a stroke of geniality on top of extreme skill to find,
+let alone exploit them.  Therefore, it is really difficult to say "they
+don't exist".
+
+IMO, it is too hard a problem to try to close for real, but we really
+should try to have all our crypto be constant-everything as much as we
+can (constant CPU effort, constant timing, constant memory pattern
+access), and to clamp the precision of measurements sent to userspace to
+the strictly needed for them to be useful for system administration,
+unless the kernel was compiled to expose high-precision statistics for
+development work.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
