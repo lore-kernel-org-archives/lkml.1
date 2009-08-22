@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbZHVJZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933170AbZHVJ0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932079AbZHVJZW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 05:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932093AbZHVJZV
+	id S933170AbZHVJ0B (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 05:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932148AbZHVJ0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 05:25:21 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:59644 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754821AbZHVJZU (ORCPT
+	Sat, 22 Aug 2009 05:26:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43299 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932086AbZHVJ0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 05:25:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :message-id;
-        b=M2HdO5hkkuxT1KghBEuJbk17XodTtfHzRVowijoMcsKfsL765iho6C1plgLF5itsr2
-         X0JOfjT8Df3racU4/OzSmrrYgsB/hUPU/JwlRsIql1jBhsTV3OAHo892ItqkYmspOm+4
-         TiVf8nJSmjX5oIDVhs6JSj8+h8t1SfO2NbEIw=
-From: Marek Vasut <marek.vasut@gmail.com>
-Organization: Hack&Dev
-To: Matt Fleming <matt@console-pimps.org>
-Subject: Re: [PATCH] Convert MMC subsys drivers to dev_pm_ops
-Date: Sat, 22 Aug 2009 11:24:57 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30-1-amd64; KDE/4.3.0; x86_64; ; )
-Cc: linux-arm-kernel@lists.infradead.org, nicolas.ferre@atmel.com,
-       mirq-linux@rere.qmqm.pl, linux-kernel@vger.kernel.org,
-       manuel.lauss@gmail.com, ppisa@pikron.com, nico@cam.org,
-       maen@marvell.com, s.hauer@pengutronix.de, tony@atomide.com,
-       madhu.cr@ti.com, drzeus@drzeus.cx, ben-linux@fluff.org,
-       avorontsov@ru.mvista.com, pierre@ossman.eu, sdhci-devel@lists.ossman.eu,
-       saschasommer@freenet.de, oakad@yahoo.com, ian@mnementh.co.uk,
-       HaraldWelte@viatech.com, JosephChan@via.com.tw,
-       linux-mmc@vger.kernel.org
-References: <200908220223.50588.marek.vasut@gmail.com> <20090822082559.GA6562@console-pimps.org>
-In-Reply-To: <20090822082559.GA6562@console-pimps.org>
+	Sat, 22 Aug 2009 05:26:00 -0400
+Date: Sat, 22 Aug 2009 11:25:54 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [RFC][PATCH 2/3] PM: Asynchronous suspend of devices
+Message-ID: <20090822092554.GD11448@elf.ucw.cz>
+References: <200908122218.13975.rjw@sisk.pl> <200908122221.20568.rjw@sisk.pl> <20090814163509.GK1626@ucw.cz> <200908152304.59881.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908221124.57585.marek.vasut@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908152304.59881.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dne So 22. srpna 2009 10:27:37 Matt Fleming napsal(a):
-> (Adding linux-mmc@vger.kernel.org to the CC list)
->
-> On Sat, Aug 22, 2009 at 02:23:50AM +0200, Marek Vasut wrote:
-> > Hi,
-> >
-> > This converts most of the drivers found in drivers/mmc/host to
-> > dev_pm_ops. Also, it contains some fixes for the probe/remove functions
-> > in some cases.
-> >
-> > This needs testing, so I'd be very glad if the affected maintainers
-> > expressed their opinion on this.
-> >
-> > Cheers!
-> >
-> > From 66978eef1d2bd64222901f0b6c6d9c35dcca044e Mon Sep 17 00:00:00 2001
-> > From: Marek Vasut <marek.vasut@gmail.com>
-> > Date: Sat, 22 Aug 2009 02:10:27 +0200
-> > Subject: [PATCH] Convert MMC subsys drivers to dev_pm_ops
-> >
-> > This converts most of the drivers found in drivers/mmc/host to
-> > dev_pm_ops. Also, it contains some fixes for the probe/remove functions
-> > in some cases.
-Hi.
+> > > + * The driver of the device won't receive interrupts while this function is
+> > > + * being executed.
+> > >   */
+> > > @@ -696,13 +746,19 @@ int dpm_suspend_noirq(pm_message_t state
+> > >  	suspend_device_irqs();
+> > >  	mutex_lock(&dpm_list_mtx);
+> > >  	list_for_each_entry_reverse(dev, &dpm_list, power.entry) {
+> > > +		dev->power.status = DPM_OFF_IRQ;
+> > >  		error = device_suspend_noirq(dev, state);
+> > >  		if (error) {
+> > >  			pm_dev_err(dev, state, " late", error);
+> > > +			dev->power.status = DPM_OFF;
+> > > +			break;
+> > > +		}
+> > > +		if (async_error) {
+> > > +			error = async_error;
+> > >  			break;
+> > 
+> > async_error is 'interesting'. How does locking work in noirq case?
+> 
+> It's racy, a little bit. :-)
+> 
+> If two async drivers return errors exactly at the same time, one of them will
+> win the race, but it doesn't really matter which one wins as long as
+> async_error is different from zero as a result.  And it will be, since it's
+> an 'int' and the integrity of these is guaranteed.
 
-it might be actually better if you fixed your platforms and submitted the 
-patches independently as it seems you have better understanding of the 
-hardware you maintain ;-)
+Rather than relying on atomicity of 'int' (where half of kernel
+hackers says it is and second half says it is not), can we just use
+atomic_t? It compiles to same code on sane architectures, and serves
+as documentation/warning...
 
-Cheers!
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
