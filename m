@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933374AbZHVUgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbZHVUnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933374AbZHVUgR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 16:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933300AbZHVUgR
+	id S1754458AbZHVUnK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 16:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZHVUnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 16:36:17 -0400
-Received: from relay8.uol.com.br ([187.17.116.6]:51312 "EHLO relay8.uol.com.br"
+	Sat, 22 Aug 2009 16:43:09 -0400
+Received: from smtp.knology.net ([24.214.63.101]:34038 "EHLO smtp.knology.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932860AbZHVUgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 16:36:16 -0400
-Date: Sat, 22 Aug 2009 17:33:53 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, bugzilla-daemon@bugzilla.kernel.org
-Subject: [PATCH] usb: fix paths in usbmon documentation
-Message-ID: <20090822203353.GA2103@ime.usp.br>
-References: <20090820220740.GA767@ime.usp.br>
- <Pine.LNX.4.44L0.0908211003090.2912-100000@iolanthe.rowland.org>
- <20090822191420.GA5572@ime.usp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090822191420.GA5572@ime.usp.br>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SIG5: d12c5be76ec9203ee49214bece3a84d2
+	id S1751063AbZHVUnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 16:43:08 -0400
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+From: David Dillow <dave@thedillows.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <m18whcf3w2.fsf@fess.ebiederm.org>
+References: <200903041828.49972.m.bueker@berlin.de>
+	 <1242001754.4093.12.camel@obelisk.thedillows.org>
+	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+	 <1242077392.3716.15.camel@lap75545.ornl.gov>
+	 <4A09DC3E.2080807@googlemail.com>
+	 <1242268709.4979.7.camel@obelisk.thedillows.org>
+	 <4A0C6504.8000704@googlemail.com>
+	 <1242328457.32579.12.camel@lap75545.ornl.gov>
+	 <4A0C7443.1010000@googlemail.com>
+	 <1243042174.3580.23.camel@obelisk.thedillows.org>
+	 <m1skfkrik2.fsf@fess.ebiederm.org>
+	 <1250895567.23419.1.camel@obelisk.thedillows.org>
+	 <1250897657.23419.5.camel@obelisk.thedillows.org>
+	 <m1iqggf4rf.fsf@fess.ebiederm.org>  <m18whcf3w2.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Sat, 22 Aug 2009 16:43:07 -0400
+Message-Id: <1250973787.3582.14.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there.
-
-On Aug 21 2009, Alan Stern wrote:
-> On Thu, 20 Aug 2009, Rogério Brito wrote:
-> > Again, just reiterating, what I said before, even though I am not sure
-> > if I can reproduce it, I will try to.
+On Sat, 2009-08-22 at 05:07 -0700, Eric W. Biederman wrote:
+> ebiederm@xmission.com (Eric W. Biederman) writes:
 > 
-> A usbmon trace showing what happens when you plug in the drive and 
-> when you run smartctl would help.
+> > David Dillow <dave@thedillows.org> writes:
+> >
+> >>
+> >> Re-looking at the code, I'd guess that some IRQ status line is getting
+> >> stuck high, but I don't see why -- we should acknowledge all outstanding
+> >> interrupts each time through the loop, whether we care about them or
+> >> not.
+> >>
+> >> Could reproduce a problem with the following patch applied, and send the
+> >> full dmesg, please?
+> >
+> > Here is what I get.
+> >
+> > r8169 screaming irq status 00000085 mask 0000ffff event 0000803f napi 0000001d
+> 
+> And now that the machine has come out of it, that was followed by:
+> Looks like the soft lockup did not manage to trigger in this case.
 
-The documentation for usbmon in the kernel 2.6.31-rc7 kernel doesn't
-match what the kernel exposes in the debug fs tree. This patch fixes it.
+I need some more context, please. What is the network load through this
+NIC when you have the issues? Light, heavy? Can you give me more details
+about the machine? A full dmesg from boot until this happens would help
+quite a bit. At a minimum it would help answer which version of the chip
+we're dealing with and what the machine it is in looks like.
 
-Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
+Can you reproduce this with pci=nomsi? I'm assuming it the chip running
+in MSI mode.
 
----
+Also, can you reproduce it when booting UP (or maxcpus=1)? I'm thinking
+about a race between rtl8169_interrupt() and rtl8169_poll(), but it
+isn't jumping out at me.
 
-diff --git a/Documentation/usb/usbmon.txt b/Documentation/usb/usbmon.txt
-index 6c3c625..ea05cf7 100644
---- a/Documentation/usb/usbmon.txt
-+++ b/Documentation/usb/usbmon.txt
-@@ -33,7 +33,7 @@ if usbmon is built into the kernel.
- 
- Verify that bus sockets are present.
- 
--# ls /sys/kernel/debug/usbmon
-+# ls /sys/kernel/debug/usb/usbmon
- 0s  0u  1s  1t  1u  2s  2t  2u  3s  3t  3u  4s  4t  4u
- #
- 
-@@ -58,11 +58,11 @@ Bus=03 means it's bus 3.
- 
- 3. Start 'cat'
- 
--# cat /sys/kernel/debug/usbmon/3u > /tmp/1.mon.out
-+# cat /sys/kernel/debug/usb/usbmon/3u > /tmp/1.mon.out
- 
- to listen on a single bus, otherwise, to listen on all buses, type:
- 
--# cat /sys/kernel/debug/usbmon/0u > /tmp/1.mon.out
-+# cat /sys/kernel/debug/usb/usbmon/0u > /tmp/1.mon.out
- 
- This process will be reading until killed. Naturally, the output can be
- redirected to a desirable location. This is preferred, because it is going
+Also, I'm having connectivity troubles this weekend, so my response may
+be spotty. :(
 
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
