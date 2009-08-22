@@ -1,93 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932636AbZHVFJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbZHVFNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932636AbZHVFJE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 01:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932302AbZHVFJD
+	id S932760AbZHVFNU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 01:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932377AbZHVFNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 01:09:03 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:35831 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932294AbZHVFJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 01:09:02 -0400
-Date: Fri, 21 Aug 2009 22:08:51 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
-Subject: [PATCH -tip/core/rcu] expunge lingering references to
-	CONFIG_CLASSIC_RCU
-Message-ID: <20090822050851.GA8414@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Sat, 22 Aug 2009 01:13:20 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:53380 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932302AbZHVFNU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 01:13:20 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Marek Vasut <marek.vasut@gmail.com>
+Subject: Re: [PATCH] Convert MMC subsys drivers to dev_pm_ops
+Date: Sat, 22 Aug 2009 07:13:16 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-arm-kernel@lists.infradead.org, nicolas.ferre@atmel.com,
+       mirq-linux@rere.qmqm.pl, linux-kernel@vger.kernel.org,
+       manuel.lauss@gmail.com, ppisa@pikron.com, nico@cam.org,
+       maen@marvell.com, s.hauer@pengutronix.de, tony@atomide.com,
+       madhu.cr@ti.com, drzeus@drzeus.cx, ben-linux@fluff.org,
+       avorontsov@ru.mvista.com, pierre@ossman.eu, sdhci-devel@lists.ossman.eu,
+       saschasommer@freenet.de, oakad@yahoo.com, ian@mnementh.co.uk,
+       HaraldWelte@viatech.com, JosephChan@via.com.tw
+References: <200908220223.50588.marek.vasut@gmail.com>
+In-reply-To: <200908220223.50588.marek.vasut@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200908220713.20637.elendil@planet.nl>
+X-OriginalArrivalTime: 22 Aug 2009 05:13:21.0349 (UTC) FILETIME=[44612F50:01CA22E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A couple of references to CONFIG_CLASSIC_RCU have survived.  Although
-these are harmless, it is past time for them to go.  The one in hardirq.h
-is strictly a readability problem.  The two in pagemap.h appear to disable
-a !SMP performance optimization (which this patch re-enables).
+Marek Vasut wrote:
+> +static struct dev_pm_ops cm710_mmc_pm_ops = {
+> +       .suspend = cb710_mmc_suspend,
+> +       .resume = cb710_mmc_resume,
+> +};
 
-This does raise the issue as to whether pagemap.h should really be
-referring to the CPU implementation.  Long term, I intend to make
-the RCU implementation driven by CONFIG_PREEMPT, at which point these
-should change from defined(CONFIG_TREE_RCU) to !defined(CONFIG_PREEMPT).
-In the meantime, is there something else that could be done in
-pagemap.h?
+This is almost certainly wrong (same for the other drivers you converted) 
+as they now no longer support hibernation, which requires different ops.
+Please see: http://lkml.org/lkml/2009/7/25/118.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+You also seem to have handled the #ifndef CONFIG_PM case incorrectly.
+See http://lkml.org/lkml/2009/8/3/253 for an example how it can be done.
 
- hardirq.h |    4 ++--
- pagemap.h |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+There have already been several threads on lkml discussing this. Please 
+search for posts with dev_pm_ops in the subject if you want more 
+information.
 
-diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-index 8246c69..330cb31 100644
---- a/include/linux/hardirq.h
-+++ b/include/linux/hardirq.h
-@@ -132,7 +132,7 @@ static inline void account_system_vtime(struct task_struct *tsk)
- }
- #endif
- 
--#if defined(CONFIG_NO_HZ) && !defined(CONFIG_CLASSIC_RCU)
-+#if defined(CONFIG_NO_HZ)
- extern void rcu_irq_enter(void);
- extern void rcu_irq_exit(void);
- extern void rcu_nmi_enter(void);
-@@ -142,7 +142,7 @@ extern void rcu_nmi_exit(void);
- # define rcu_irq_exit() do { } while (0)
- # define rcu_nmi_enter() do { } while (0)
- # define rcu_nmi_exit() do { } while (0)
--#endif /* #if defined(CONFIG_NO_HZ) && !defined(CONFIG_CLASSIC_RCU) */
-+#endif /* #if defined(CONFIG_NO_HZ) */
- 
- /*
-  * It is safe to do non-atomic ops on ->hardirq_context,
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index aec3252..ed5d750 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -132,7 +132,7 @@ static inline int page_cache_get_speculative(struct page *page)
- {
- 	VM_BUG_ON(in_interrupt());
- 
--#if !defined(CONFIG_SMP) && defined(CONFIG_CLASSIC_RCU)
-+#if !defined(CONFIG_SMP) && defined(CONFIG_TREE_RCU)
- # ifdef CONFIG_PREEMPT
- 	VM_BUG_ON(!in_atomic());
- # endif
-@@ -170,7 +170,7 @@ static inline int page_cache_add_speculative(struct page *page, int count)
- {
- 	VM_BUG_ON(in_interrupt());
- 
--#if !defined(CONFIG_SMP) && defined(CONFIG_CLASSIC_RCU)
-+#if !defined(CONFIG_SMP) && defined(CONFIG_TREE_RCU)
- # ifdef CONFIG_PREEMPT
- 	VM_BUG_ON(!in_atomic());
- # endif
+Also, please CC linux-pm@lists.linux-foundation.org on patches related to 
+this conversion.
+
+Cheers,
+FJP
