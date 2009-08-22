@@ -1,184 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZHVHec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZHVHon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbZHVHec (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 03:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZHVHeb
+	id S1754986AbZHVHon (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 03:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZHVHom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 03:34:31 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:52940 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbZHVHea convert rfc822-to-8bit (ORCPT
+	Sat, 22 Aug 2009 03:44:42 -0400
+Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:50387 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbZHVHol convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 03:34:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uzznuY/yfRZAfqkyl3zuraHDPJ8VYjo39/cpsKIzeq1Ckms1b1M8fWGOidwt84Qqkw
-         ggMddJhnXoLlTKGytsitzT/APySJ3Zh5nmVe4ocidY5d92Eb8CmcxUcv7a1DbQcJdFvP
-         fepRHjluS39sF5LtDkHmALeFPfvCVs7BU2XO8=
+	Sat, 22 Aug 2009 03:44:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
+	:date:message-id:mime-version:content-type
+	:content-transfer-encoding; q=dns; s=sasl; b=EE/vFwett49D+p2Plj4
+	OFPTnaVrx2GEcxC+3SL2B0eveA5J/hCL6ehiTObtsUDgcujasqScdgiiRCdb4jRT
+	DCH6ZXL24+kX3yHLbkLBQwuM2Zty3zF69Jxgp+loUgc/f8tSLLHQk7RBmf2buUWp
+	VtIhCuJZAoN18styEuQSrelA=
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.4.1
+From: Junio C Hamano <gitster@pobox.com>
+Date: Sat, 22 Aug 2009 00:44:25 -0700
+Message-ID: <7vvdkg47ja.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20090817115529.59395cea.kamezawa.hiroyu@jp.fujitsu.com>
-References: <200908122007.43522.ngupta@vflare.org>
-	 <20090817115529.59395cea.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sat, 22 Aug 2009 15:34:31 +0800
-Message-ID: <ab418ea90908220034v72e80142x2bed8c0b9e7729ea@mail.gmail.com>
-Subject: Re: [PATCH] swap: send callback when swap slot is freed
-From: Nai Xia <nai.xia@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: ngupta@vflare.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
+X-Pobox-Relay-ID: A4B7C6B0-8EEF-11DE-BA8A-CA0F1FFB4A78-77302942!a-pb-sasl-quonix.pobox.com
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2009 at 10:55 AM, KAMEZAWA
-Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Wed, 12 Aug 2009 20:07:43 +0530
-> Nitin Gupta <ngupta@vflare.org> wrote:
->
->> Currently, we have "swap discard" mechanism which sends a discard bio request
->> when we find a free cluster during scan_swap_map(). This callback can come a
->> long time after swap slots are actually freed.
->>
->> This delay in callback is a great problem when (compressed) RAM [1] is used
->> as a swap device. So, this change adds a callback which is called as
->> soon as a swap slot becomes free. For above mentioned case of swapping
->> over compressed RAM device, this is very useful since we can immediately
->> free memory allocated for this swap page.
->>
->> This callback does not replace swap discard support. It is called with
->> swap_lock held, so it is meant to trigger action that finishes quickly.
->> However, swap discard is an I/O request and can be used for taking longer
->> actions.
->>
->> Links:
->> [1] http://code.google.com/p/compcache/
->>
->
-> Hmm, do you really need notify at *every* swap free ?
-> No batching is necessary ?
+The latest maintenance release GIT 1.6.4.1 is available at the
+usual places:
 
-Compcache is a block device, it passively accepts swap pages, compresses
-them and stores in compressed pages. There is little information for when the
-reclaiming of unused slots should be batched.
+  http://www.kernel.org/pub/software/scm/git/
 
-For a normal swap device, it does not need to care much about unused slots
-because the storage is always there, but for compcache, the storage is
-allocated in RAM, it needs to be freed as soon as possible, otherwise
-the compressing loses its meaning.
+  git-1.6.4.1.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.4.1.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.4.1.tar.{gz,bz2}		(preformatted docs)
 
-Assume the compressed ratio is 50% and there is 8 stale compressed
-pages in compcache (16 user pages already be swapined), 8 more swap
-pages may be pushed into it, which means 4 more compressed pages and
-then 4 more swap pages  -> 2 compressed pages -> 2 more swap pages
-->1 compressed page ->1 more swap page ->half compressed page->
-1 more swap page->another half compressed page.
-It's about 8+4+2+1+1 = 16 wasted pages, still not counting the overhead
-for compressed pages management.
+The RPM binary packages for a few architectures are found in:
 
-That means, if you batch N slots (even if you have the batch information),
-your waste the same number of pages during the delayed time.
-For time when swapping is already happening,  we really do not want to hold
-any pages which are wasted for 100% sure.
+  RPMS/$arch/git-*-1.6.4.1-1.fc9.$arch.rpm	(RPM)
 
+GIT v1.6.4.1 Release Notes
+==========================
 
-Thanks,
-Nai
+Fixes since v1.6.4
+------------------
 
->
-> Thanks,
-> -Kame
->
->> Signed-off-by: Nitin Gupta <ngupta@vflare.org>
->> ---
->>
->>  include/linux/swap.h |    5 +++++
->>  mm/swapfile.c        |   16 ++++++++++++++++
->>  2 files changed, 21 insertions(+), 0 deletions(-)
->>
->> diff --git a/include/linux/swap.h b/include/linux/swap.h
->> index 7c15334..4cbe3c4 100644
->> --- a/include/linux/swap.h
->> +++ b/include/linux/swap.h
->> @@ -8,6 +8,7 @@
->>  #include <linux/memcontrol.h>
->>  #include <linux/sched.h>
->>  #include <linux/node.h>
->> +#include <linux/blkdev.h>
->>
->>  #include <asm/atomic.h>
->>  #include <asm/page.h>
->> @@ -20,6 +21,8 @@ struct bio;
->>  #define SWAP_FLAG_PRIO_MASK  0x7fff
->>  #define SWAP_FLAG_PRIO_SHIFT 0
->>
->> +typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
->> +
->>  static inline int current_is_kswapd(void)
->>  {
->>       return current->flags & PF_KSWAPD;
->> @@ -155,6 +158,7 @@ struct swap_info_struct {
->>       unsigned int max;
->>       unsigned int inuse_pages;
->>       unsigned int old_block_size;
->> +     swap_free_notify_fn *swap_free_notify_fn;
->>  };
->>
->>  struct swap_list_t {
->> @@ -295,6 +299,7 @@ extern sector_t swapdev_block(int, pgoff_t);
->>  extern struct swap_info_struct *get_swap_info_struct(unsigned);
->>  extern int reuse_swap_page(struct page *);
->>  extern int try_to_free_swap(struct page *);
->> +extern void set_swap_free_notify(unsigned, swap_free_notify_fn *);
->>  struct backing_dev_info;
->>
->>  /* linux/mm/thrash.c */
->> diff --git a/mm/swapfile.c b/mm/swapfile.c
->> index 8ffdc0d..aa95fc7 100644
->> --- a/mm/swapfile.c
->> +++ b/mm/swapfile.c
->> @@ -552,6 +552,20 @@ out:
->>       return NULL;
->>  }
->>
->> +/*
->> + * Sets callback for event when swap_map[offset] == 0
->> + * i.e. page at this swap offset is no longer used.
->> + */
->> +void set_swap_free_notify(unsigned type, swap_free_notify_fn *notify_fn)
->> +{
->> +     struct swap_info_struct *sis;
->> +     sis = get_swap_info_struct(type);
->> +     BUG_ON(!sis);
->> +     sis->swap_free_notify_fn = notify_fn;
->> +     return;
->> +}
->> +EXPORT_SYMBOL(set_swap_free_notify);
->> +
->>  static int swap_entry_free(struct swap_info_struct *p,
->>                          swp_entry_t ent, int cache)
->>  {
->> @@ -583,6 +597,8 @@ static int swap_entry_free(struct swap_info_struct *p,
->>                       swap_list.next = p - swap_info;
->>               nr_swap_pages++;
->>               p->inuse_pages--;
->> +             if (p->swap_free_notify_fn)
->> +                     p->swap_free_notify_fn(p->bdev, offset);
->>       }
->>       if (!swap_count(count))
->>               mem_cgroup_uncharge_swap(ent);
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+ * An unquoted value in the configuration file, when it contains more than
+   one whitespaces in a row, got them replaced with a single space.
+
+ * "git am" used to accept a single piece of e-mail per file (not a mbox)
+   as its input, but multiple input format support in v1.6.4 broke it.
+   Apparently many people have been depending on this feature.
+
+ * The short help text for "git filter-branch" command was a single long
+   line, wrapped by terminals, and was hard to read.
+
+ * The "recursive" strategy of "git merge" segfaulted when a merge has
+   more than one merge-bases, and merging of these merge-bases involves
+   a rename/rename or a rename/add conflict.
+
+ * "git pull --rebase" did not use the right fork point when the
+   repository has already fetched from the upstream that rewinds the
+   branch it is based on in an earlier fetch.
+
+ * Explain the concept of fast-forward more fully in "git push"
+   documentation, and hint to refer to it from an error message when the
+   command refuses an update to protect the user.
+
+ * The default value for pack.deltacachesize, used by "git repack", is now
+   256M, instead of unbounded.  Otherwise a repack of a moderately sized
+   repository would needlessly eat into swap.
+
+ * Document how "git repack" (hence "git gc") interacts with a repository
+   that borrows its objects from other repositories (e.g. ones created by
+   "git clone -s").
+
+ * "git show" on an annotated tag lacked a delimiting blank line between
+   the tag itself and the contents of the object it tags.
+
+ * "git verify-pack -v" erroneously reported number of objects with too
+   deep delta depths as "chain length 0" objects.
+
+ * Long names of authors and committers outside US-ASCII were sometimes
+   incorrectly shown in "gitweb".
+
+Other minor documentation updates are included.
+
+----------------------------------------------------------------
+
+Changes since v1.6.4 are as follows:
+
+BjÃ¶rn Steinbrink (1):
+      config: Keep inner whitespace verbatim
+
+Erik Faye-Lund (1):
+      send-email: remove debug trace
+
+Jakub Narebski (1):
+      gitweb/README: Document $base_url
+
+Jeff King (3):
+      show: suppress extra newline when showing annotated tag
+      show: add space between multiple items
+      docs: describe impact of repack on "clone -s"
+
+Jens Lehmann (1):
+      Documentation: git submodule: add missing options to synopsis
+
+Johan Herland (1):
+      help.c: give correct structure's size to memset()
+
+Johannes Schindelin (1):
+      filter-branch: add an example how to add ACKs to a range of commits
+
+Junio C Hamano (5):
+      merge-recursive: don't segfault while handling rename clashes
+      t5510: harden the way verify-pack is used
+      verify-pack -v: do not report "chain length 0"
+      am: allow individual e-mail files as input
+      GIT 1.6.4.1
+
+Mark A Rada (1):
+      git-instaweb: fix mod_perl detection for apache2
+
+Matthieu Moy (3):
+      Better usage string for reflog.
+      push: point to 'git pull' and 'git push --force' in case of non-fast forward
+      filter-branch: make the usage string fit on 80 chars terminals.
+
+Miklos Vajna (1):
+      hg-to-git: don't import the unused popen2 module
+
+Nicolas Pitre (1):
+      don't let the delta cache grow unbounded in 'git repack'
+
+Nicolas Sebrecht (1):
+      git-am: print fair error message when format detection fails
+
+Ori Avtalion (1):
+      Change mentions of "git programs" to "git commands"
+
+Paul Bolle (2):
+      Documentation: merge: one <remote> is required
+      Documentation: add: <filepattern>... is optional
+
+Santi BÃ©jar (2):
+      t5520-pull: Test for rebased upstream + fetch + pull --rebase
+      pull: support rebased upstream + fetch + pull --rebase
+
+ZoltÃ¡n FÃ¼zesi (1):
+      gitweb: parse_commit_text encoding fix
+
+Å tÄ›pÃ¡n NÄ›mec (1):
+      Fix typos in git-remote.txt and git-symbolic-ref.txt
+
