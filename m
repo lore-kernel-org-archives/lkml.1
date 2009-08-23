@@ -1,147 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933987AbZHWThc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934006AbZHWTna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933987AbZHWThc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 15:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933924AbZHWThb
+	id S934006AbZHWTna (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 15:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933952AbZHWTn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 15:37:31 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:34406 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933922AbZHWTha (ORCPT
+	Sun, 23 Aug 2009 15:43:29 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:65486 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933951AbZHWTn3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 15:37:30 -0400
-Date: Sun, 23 Aug 2009 21:37:14 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [GIT PULL] s390 patches for v2.6.31-rc7
-Message-ID: <20090823213714.11757b14@skybase>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Aug 2009 15:43:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RHpIGrii0Ay7LLYuYhrW+yWyu1hZm1yqU3r/cu8sR8NF/qYeR6ZvbJeWYmCVWSczb2
+         CQ4wjKugYsbo4GQLTonD6wdnHr/VRy6fsm2v+jumVV2QzbZxb351yZytct5CzKEwyEyp
+         GZm9ebl2HE7zTbnvRBVvD5k45BrI85u2J57H4=
+Date: Sun, 23 Aug 2009 21:43:28 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Mike Frysinger <vapier@gentoo.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH resend] vsprintf: use WARN_ON_ONCE
+Message-ID: <20090823194327.GC6256@nowhere>
+References: <4A918A64.9040201@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A918A64.9040201@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sun, Aug 23, 2009 at 08:28:52PM +0200, Marcin Slusarz wrote:
+> From: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Subject: vsprintf: use WARN_ON_ONCE
+> 
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
 
-please pull from 'for-linus' branch of
 
-	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
+Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-to receive the following updates:
 
-Hendrik Brueckner (1):
-      [S390] set preferred console based on conmode
+> 
+> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+> index 756ccaf..a63bb18 100644
+> --- a/lib/vsprintf.c
+> +++ b/lib/vsprintf.c
+> @@ -983,13 +983,8 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+>  
+>  	/* Reject out-of-range values early.  Large positive sizes are
+>  	   used for unknown buffer sizes. */
+> -	if (unlikely((int) size < 0)) {
+> -		/* There can be only one.. */
+> -		static char warn = 1;
+> -		WARN_ON(warn);
+> -		warn = 0;
+> +	if (WARN_ON_ONCE((int) size < 0))
+>  		return 0;
+> -	}
+>  
+>  	str = buf;
+>  	end = buf + size;
+> @@ -1439,13 +1434,8 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
+>  
+>  	struct printf_spec spec = {0};
+>  
+> -	if (unlikely((int) size < 0)) {
+> -		/* There can be only one.. */
+> -		static char warn = 1;
+> -		WARN_ON(warn);
+> -		warn = 0;
+> +	if (WARN_ON_ONCE((int) size < 0))
+>  		return 0;
+> -	}
+>  
+>  	str = buf;
+>  	end = buf + size;
 
-Julia Lawall (1):
-      [S390] drivers/s390: put NULL test before dereference
-
-Sebastian Ott (1):
-      [S390] cio: fix double free after failed device initialization
-
- arch/s390/kernel/setup.c  |   25 ++++++++++++++++++-------
- drivers/s390/block/dasd.c |    2 +-
- drivers/s390/cio/device.c |    4 +---
- 3 files changed, 20 insertions(+), 11 deletions(-)
-
-diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
-index 9717717..cbb897b 100644
---- a/arch/s390/kernel/setup.c
-+++ b/arch/s390/kernel/setup.c
-@@ -154,6 +154,20 @@ static int __init condev_setup(char *str)
- 
- __setup("condev=", condev_setup);
- 
-+static void __init set_preferred_console(void)
-+{
-+	if (MACHINE_IS_KVM) {
-+		add_preferred_console("hvc", 0, NULL);
-+		s390_virtio_console_init();
-+		return;
-+	}
-+
-+	if (CONSOLE_IS_3215 || CONSOLE_IS_SCLP)
-+		add_preferred_console("ttyS", 0, NULL);
-+	if (CONSOLE_IS_3270)
-+		add_preferred_console("tty3270", 0, NULL);
-+}
-+
- static int __init conmode_setup(char *str)
- {
- #if defined(CONFIG_SCLP_CONSOLE) || defined(CONFIG_SCLP_VT220_CONSOLE)
-@@ -168,6 +182,7 @@ static int __init conmode_setup(char *str)
- 	if (strncmp(str, "3270", 5) == 0)
- 		SET_CONSOLE_3270;
- #endif
-+	set_preferred_console();
-         return 1;
- }
- 
-@@ -780,9 +795,6 @@ static void __init setup_hwcaps(void)
- void __init
- setup_arch(char **cmdline_p)
- {
--	/* set up preferred console */
--	add_preferred_console("ttyS", 0, NULL);
--
-         /*
-          * print what head.S has found out about the machine
-          */
-@@ -802,11 +814,9 @@ setup_arch(char **cmdline_p)
- 	if (MACHINE_IS_VM)
- 		pr_info("Linux is running as a z/VM "
- 			"guest operating system in 64-bit mode\n");
--	else if (MACHINE_IS_KVM) {
-+	else if (MACHINE_IS_KVM)
- 		pr_info("Linux is running under KVM in 64-bit mode\n");
--		add_preferred_console("hvc", 0, NULL);
--		s390_virtio_console_init();
--	} else
-+	else
- 		pr_info("Linux is running natively in 64-bit mode\n");
- #endif /* CONFIG_64BIT */
- 
-@@ -851,6 +861,7 @@ setup_arch(char **cmdline_p)
- 
-         /* Setup default console */
- 	conmode_default();
-+	set_preferred_console();
- 
- 	/* Setup zfcpdump support */
- 	setup_zfcpdump(console_devno);
-diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
-index 7498366..3f62dd5 100644
---- a/drivers/s390/block/dasd.c
-+++ b/drivers/s390/block/dasd.c
-@@ -2135,9 +2135,9 @@ static int dasd_getgeo(struct block_device *bdev, struct hd_geometry *geo)
- 	struct dasd_device *base;
- 
- 	block = bdev->bd_disk->private_data;
--	base = block->base;
- 	if (!block)
- 		return -ENODEV;
-+	base = block->base;
- 
- 	if (!base->discipline ||
- 	    !base->discipline->fill_geometry)
-diff --git a/drivers/s390/cio/device.c b/drivers/s390/cio/device.c
-index 3c57c1a..d593bc7 100644
---- a/drivers/s390/cio/device.c
-+++ b/drivers/s390/cio/device.c
-@@ -772,10 +772,8 @@ static struct ccw_device * io_subchannel_create_ccwdev(struct subchannel *sch)
- 	cdev = io_subchannel_allocate_dev(sch);
- 	if (!IS_ERR(cdev)) {
- 		ret = io_subchannel_initialize_dev(sch, cdev);
--		if (ret) {
--			kfree(cdev);
-+		if (ret)
- 			cdev = ERR_PTR(ret);
--		}
- 	}
- 	return cdev;
- }
