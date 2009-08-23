@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933628AbZHWL56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933607AbZHWL5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933628AbZHWL56 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 07:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933600AbZHWL5O
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S933607AbZHWL5O (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 23 Aug 2009 07:57:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56036 "EHLO mx1.redhat.com"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933511AbZHWL5M
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 23 Aug 2009 07:57:12 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:33792 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933565AbZHWL4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933568AbZHWL4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 23 Aug 2009 07:56:51 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 41/46] KVM: MMU: rename is_largepage_backed to mapping_level
-Date: Sun, 23 Aug 2009 14:56:40 +0300
-Message-Id: <1251028605-31977-42-git-send-email-avi@redhat.com>
+Subject: [PATCH 43/46] KVM: MMU: make page walker aware of mapping levels
+Date: Sun, 23 Aug 2009 14:56:42 +0300
+Message-Id: <1251028605-31977-44-git-send-email-avi@redhat.com>
 In-Reply-To: <1251028605-31977-1-git-send-email-avi@redhat.com>
 References: <1251028605-31977-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,222 +23,173 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Joerg Roedel <joerg.roedel@amd.com>
 
-With the new name and the corresponding backend changes this function
-can now support multiple hugepage sizes.
+The page walker may be used with nested paging too when accessing mmio
+areas.  Make it support the additional page-level too.
+
+[ Marcelo: fix reserved bit check for 1gb pte ]
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/mmu.c         |  100 +++++++++++++++++++++++++++++--------------
- arch/x86/kvm/paging_tmpl.h |    4 +-
- 2 files changed, 69 insertions(+), 35 deletions(-)
+ arch/x86/kvm/mmu.c         |   17 +++++++++++++-
+ arch/x86/kvm/paging_tmpl.h |   52 +++++++++++++++++++++++--------------------
+ 2 files changed, 44 insertions(+), 25 deletions(-)
 
 diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index b93ad2c..c707936 100644
+index 110c224..09ab643 100644
 --- a/arch/x86/kvm/mmu.c
 +++ b/arch/x86/kvm/mmu.c
-@@ -393,37 +393,52 @@ static void mmu_free_rmap_desc(struct kvm_rmap_desc *rd)
-  * Return the pointer to the largepage write count for a given
-  * gfn, handling slots that are not large page aligned.
-  */
--static int *slot_largepage_idx(gfn_t gfn, struct kvm_memory_slot *slot)
-+static int *slot_largepage_idx(gfn_t gfn,
-+			       struct kvm_memory_slot *slot,
-+			       int level)
- {
- 	unsigned long idx;
+@@ -108,6 +108,9 @@ module_param(oos_shadow, bool, 0644);
  
--	idx = (gfn / KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL)) -
--	      (slot->base_gfn / KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL));
--	return &slot->lpage_info[0][idx].write_count;
-+	idx = (gfn / KVM_PAGES_PER_HPAGE(level)) -
-+	      (slot->base_gfn / KVM_PAGES_PER_HPAGE(level));
-+	return &slot->lpage_info[level - 2][idx].write_count;
- }
+ #define PT32_LEVEL_MASK(level) \
+ 		(((1ULL << PT32_LEVEL_BITS) - 1) << PT32_LEVEL_SHIFT(level))
++#define PT32_LVL_OFFSET_MASK(level) \
++	(PT32_BASE_ADDR_MASK & ((1ULL << (PAGE_SHIFT + (((level) - 1) \
++						* PT32_LEVEL_BITS))) - 1))
  
- static void account_shadowed(struct kvm *kvm, gfn_t gfn)
- {
-+	struct kvm_memory_slot *slot;
- 	int *write_count;
-+	int i;
+ #define PT32_INDEX(address, level)\
+ 	(((address) >> PT32_LEVEL_SHIFT(level)) & ((1 << PT32_LEVEL_BITS) - 1))
+@@ -116,10 +119,19 @@ module_param(oos_shadow, bool, 0644);
+ #define PT64_BASE_ADDR_MASK (((1ULL << 52) - 1) & ~(u64)(PAGE_SIZE-1))
+ #define PT64_DIR_BASE_ADDR_MASK \
+ 	(PT64_BASE_ADDR_MASK & ~((1ULL << (PAGE_SHIFT + PT64_LEVEL_BITS)) - 1))
++#define PT64_LVL_ADDR_MASK(level) \
++	(PT64_BASE_ADDR_MASK & ~((1ULL << (PAGE_SHIFT + (((level) - 1) \
++						* PT64_LEVEL_BITS))) - 1))
++#define PT64_LVL_OFFSET_MASK(level) \
++	(PT64_BASE_ADDR_MASK & ((1ULL << (PAGE_SHIFT + (((level) - 1) \
++						* PT64_LEVEL_BITS))) - 1))
  
- 	gfn = unalias_gfn(kvm, gfn);
--	write_count = slot_largepage_idx(gfn,
--					 gfn_to_memslot_unaliased(kvm, gfn));
--	*write_count += 1;
-+
-+	slot = gfn_to_memslot_unaliased(kvm, gfn);
-+	for (i = PT_DIRECTORY_LEVEL;
-+	     i < PT_PAGE_TABLE_LEVEL + KVM_NR_PAGE_SIZES; ++i) {
-+		write_count   = slot_largepage_idx(gfn, slot, i);
-+		*write_count += 1;
-+	}
- }
+ #define PT32_BASE_ADDR_MASK PAGE_MASK
+ #define PT32_DIR_BASE_ADDR_MASK \
+ 	(PAGE_MASK & ~((1ULL << (PAGE_SHIFT + PT32_LEVEL_BITS)) - 1))
++#define PT32_LVL_ADDR_MASK(level) \
++	(PAGE_MASK & ~((1ULL << (PAGE_SHIFT + (((level) - 1) \
++					    * PT32_LEVEL_BITS))) - 1))
  
- static void unaccount_shadowed(struct kvm *kvm, gfn_t gfn)
- {
-+	struct kvm_memory_slot *slot;
- 	int *write_count;
-+	int i;
+ #define PT64_PERM_MASK (PT_PRESENT_MASK | PT_WRITABLE_MASK | PT_USER_MASK \
+ 			| PT64_NX_MASK)
+@@ -130,6 +142,7 @@ module_param(oos_shadow, bool, 0644);
+ #define PFERR_RSVD_MASK (1U << 3)
+ #define PFERR_FETCH_MASK (1U << 4)
  
- 	gfn = unalias_gfn(kvm, gfn);
--	write_count = slot_largepage_idx(gfn,
--					 gfn_to_memslot_unaliased(kvm, gfn));
--	*write_count -= 1;
--	WARN_ON(*write_count < 0);
-+	for (i = PT_DIRECTORY_LEVEL;
-+	     i < PT_PAGE_TABLE_LEVEL + KVM_NR_PAGE_SIZES; ++i) {
-+		slot          = gfn_to_memslot_unaliased(kvm, gfn);
-+		write_count   = slot_largepage_idx(gfn, slot, i);
-+		*write_count -= 1;
-+		WARN_ON(*write_count < 0);
-+	}
- }
++#define PT_PDPE_LEVEL 3
+ #define PT_DIRECTORY_LEVEL 2
+ #define PT_PAGE_TABLE_LEVEL 1
  
--static int has_wrprotected_page(struct kvm *kvm, gfn_t gfn)
-+static int has_wrprotected_page(struct kvm *kvm,
-+				gfn_t gfn,
-+				int level)
- {
- 	struct kvm_memory_slot *slot;
- 	int *largepage_idx;
-@@ -431,47 +446,67 @@ static int has_wrprotected_page(struct kvm *kvm, gfn_t gfn)
- 	gfn = unalias_gfn(kvm, gfn);
- 	slot = gfn_to_memslot_unaliased(kvm, gfn);
- 	if (slot) {
--		largepage_idx = slot_largepage_idx(gfn, slot);
-+		largepage_idx = slot_largepage_idx(gfn, slot, level);
- 		return *largepage_idx;
- 	}
- 
- 	return 1;
- }
- 
--static int host_largepage_backed(struct kvm *kvm, gfn_t gfn)
-+static int host_mapping_level(struct kvm *kvm, gfn_t gfn)
- {
-+	unsigned long page_size = PAGE_SIZE;
- 	struct vm_area_struct *vma;
- 	unsigned long addr;
--	int ret = 0;
-+	int i, ret = 0;
- 
- 	addr = gfn_to_hva(kvm, gfn);
- 	if (kvm_is_error_hva(addr))
--		return ret;
-+		return page_size;
- 
- 	down_read(&current->mm->mmap_sem);
- 	vma = find_vma(current->mm, addr);
--	if (vma && is_vm_hugetlb_page(vma))
--		ret = 1;
-+	if (!vma)
-+		goto out;
-+
-+	page_size = vma_kernel_pagesize(vma);
-+
-+out:
- 	up_read(&current->mm->mmap_sem);
- 
-+	for (i = PT_PAGE_TABLE_LEVEL;
-+	     i < (PT_PAGE_TABLE_LEVEL + KVM_NR_PAGE_SIZES); ++i) {
-+		if (page_size >= KVM_HPAGE_SIZE(i))
-+			ret = i;
-+		else
-+			break;
-+	}
-+
- 	return ret;
- }
- 
--static int is_largepage_backed(struct kvm_vcpu *vcpu, gfn_t large_gfn)
-+static int mapping_level(struct kvm_vcpu *vcpu, gfn_t large_gfn)
- {
- 	struct kvm_memory_slot *slot;
--
--	if (has_wrprotected_page(vcpu->kvm, large_gfn))
--		return 0;
--
--	if (!host_largepage_backed(vcpu->kvm, large_gfn))
--		return 0;
-+	int host_level;
-+	int level = PT_PAGE_TABLE_LEVEL;
- 
- 	slot = gfn_to_memslot(vcpu->kvm, large_gfn);
- 	if (slot && slot->dirty_bitmap)
--		return 0;
-+		return PT_PAGE_TABLE_LEVEL;
- 
--	return 1;
-+	host_level = host_mapping_level(vcpu->kvm, large_gfn);
-+
-+	if (host_level == PT_PAGE_TABLE_LEVEL)
-+		return host_level;
-+
-+	for (level = PT_DIRECTORY_LEVEL; level <= host_level; ++level) {
-+
-+		if (has_wrprotected_page(vcpu->kvm, large_gfn, level))
-+			break;
-+	}
-+
-+	return level - 1;
- }
- 
- /*
-@@ -1733,7 +1768,7 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
- 	if ((pte_access & ACC_WRITE_MASK)
- 	    || (write_fault && !is_write_protection(vcpu) && !user_fault)) {
- 
--		if (largepage && has_wrprotected_page(vcpu->kvm, gfn)) {
-+		if (largepage && has_wrprotected_page(vcpu->kvm, gfn, 1)) {
- 			ret = 1;
- 			spte = shadow_trap_nonpresent_pte;
- 			goto set_pte;
-@@ -1884,8 +1919,7 @@ static int nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, int write, gfn_t gfn)
- 	pfn_t pfn;
- 	unsigned long mmu_seq;
- 
--	if (is_largepage_backed(vcpu, gfn &
--			~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1))) {
-+	if (mapping_level(vcpu, gfn) == PT_DIRECTORY_LEVEL) {
- 		gfn &= ~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1);
- 		largepage = 1;
- 	}
-@@ -2091,8 +2125,7 @@ static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa,
- 	if (r)
- 		return r;
- 
--	if (is_largepage_backed(vcpu, gfn &
--			~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1))) {
-+	if (mapping_level(vcpu, gfn) == PT_DIRECTORY_LEVEL) {
- 		gfn &= ~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1);
- 		largepage = 1;
- 	}
-@@ -2494,7 +2527,8 @@ static void mmu_guess_page_from_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
- 		return;
- 	gfn = (gpte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT;
- 
--	if (is_large_pte(gpte) && is_largepage_backed(vcpu, gfn)) {
-+	if (is_large_pte(gpte) &&
-+	    (mapping_level(vcpu, gfn) == PT_DIRECTORY_LEVEL)) {
- 		gfn &= ~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1);
- 		vcpu->arch.update_pte.largepage = 1;
- 	}
+@@ -2273,7 +2286,9 @@ static void reset_rsvds_bits_mask(struct kvm_vcpu *vcpu, int level)
+ 		context->rsvd_bits_mask[0][0] = exb_bit_rsvd |
+ 			rsvd_bits(maxphyaddr, 51);
+ 		context->rsvd_bits_mask[1][3] = context->rsvd_bits_mask[0][3];
+-		context->rsvd_bits_mask[1][2] = context->rsvd_bits_mask[0][2];
++		context->rsvd_bits_mask[1][2] = exb_bit_rsvd |
++			rsvd_bits(maxphyaddr, 51) |
++			rsvd_bits(13, 29);
+ 		context->rsvd_bits_mask[1][1] = exb_bit_rsvd |
+ 			rsvd_bits(maxphyaddr, 51) |
+ 			rsvd_bits(13, 20);		/* large page */
 diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-index 36ac6d7..44f0346 100644
+index b167f0d..578276e 100644
 --- a/arch/x86/kvm/paging_tmpl.h
 +++ b/arch/x86/kvm/paging_tmpl.h
-@@ -407,8 +407,8 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
- 	if (walker.level == PT_DIRECTORY_LEVEL) {
- 		gfn_t large_gfn;
- 		large_gfn = walker.gfn &
--			~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1);
--		if (is_largepage_backed(vcpu, large_gfn)) {
-+			    ~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1);
-+		if (mapping_level(vcpu, large_gfn) == PT_DIRECTORY_LEVEL) {
- 			walker.gfn = large_gfn;
- 			largepage = 1;
+@@ -27,7 +27,8 @@
+ 	#define guest_walker guest_walker64
+ 	#define FNAME(name) paging##64_##name
+ 	#define PT_BASE_ADDR_MASK PT64_BASE_ADDR_MASK
+-	#define PT_DIR_BASE_ADDR_MASK PT64_DIR_BASE_ADDR_MASK
++	#define PT_LVL_ADDR_MASK(lvl) PT64_LVL_ADDR_MASK(lvl)
++	#define PT_LVL_OFFSET_MASK(lvl) PT64_LVL_OFFSET_MASK(lvl)
+ 	#define PT_INDEX(addr, level) PT64_INDEX(addr, level)
+ 	#define PT_LEVEL_MASK(level) PT64_LEVEL_MASK(level)
+ 	#define PT_LEVEL_BITS PT64_LEVEL_BITS
+@@ -43,7 +44,8 @@
+ 	#define guest_walker guest_walker32
+ 	#define FNAME(name) paging##32_##name
+ 	#define PT_BASE_ADDR_MASK PT32_BASE_ADDR_MASK
+-	#define PT_DIR_BASE_ADDR_MASK PT32_DIR_BASE_ADDR_MASK
++	#define PT_LVL_ADDR_MASK(lvl) PT32_LVL_ADDR_MASK(lvl)
++	#define PT_LVL_OFFSET_MASK(lvl) PT32_LVL_OFFSET_MASK(lvl)
+ 	#define PT_INDEX(addr, level) PT32_INDEX(addr, level)
+ 	#define PT_LEVEL_MASK(level) PT32_LEVEL_MASK(level)
+ 	#define PT_LEVEL_BITS PT32_LEVEL_BITS
+@@ -53,8 +55,8 @@
+ 	#error Invalid PTTYPE value
+ #endif
+ 
+-#define gpte_to_gfn FNAME(gpte_to_gfn)
+-#define gpte_to_gfn_pde FNAME(gpte_to_gfn_pde)
++#define gpte_to_gfn_lvl FNAME(gpte_to_gfn_lvl)
++#define gpte_to_gfn(pte) gpte_to_gfn_lvl((pte), PT_PAGE_TABLE_LEVEL)
+ 
+ /*
+  * The guest_walker structure emulates the behavior of the hardware page
+@@ -71,14 +73,9 @@ struct guest_walker {
+ 	u32 error_code;
+ };
+ 
+-static gfn_t gpte_to_gfn(pt_element_t gpte)
++static gfn_t gpte_to_gfn_lvl(pt_element_t gpte, int lvl)
+ {
+-	return (gpte & PT_BASE_ADDR_MASK) >> PAGE_SHIFT;
+-}
+-
+-static gfn_t gpte_to_gfn_pde(pt_element_t gpte)
+-{
+-	return (gpte & PT_DIR_BASE_ADDR_MASK) >> PAGE_SHIFT;
++	return (gpte & PT_LVL_ADDR_MASK(lvl)) >> PAGE_SHIFT;
+ }
+ 
+ static bool FNAME(cmpxchg_gpte)(struct kvm *kvm,
+@@ -189,18 +186,24 @@ walk:
+ 
+ 		walker->ptes[walker->level - 1] = pte;
+ 
+-		if (walker->level == PT_PAGE_TABLE_LEVEL) {
+-			walker->gfn = gpte_to_gfn(pte);
+-			break;
+-		}
+-
+-		if (walker->level == PT_DIRECTORY_LEVEL
+-		    && (pte & PT_PAGE_SIZE_MASK)
+-		    && (PTTYPE == 64 || is_pse(vcpu))) {
+-			walker->gfn = gpte_to_gfn_pde(pte);
+-			walker->gfn += PT_INDEX(addr, PT_PAGE_TABLE_LEVEL);
+-			if (PTTYPE == 32 && is_cpuid_PSE36())
++		if ((walker->level == PT_PAGE_TABLE_LEVEL) ||
++		    ((walker->level == PT_DIRECTORY_LEVEL) &&
++				(pte & PT_PAGE_SIZE_MASK)  &&
++				(PTTYPE == 64 || is_pse(vcpu))) ||
++		    ((walker->level == PT_PDPE_LEVEL) &&
++				(pte & PT_PAGE_SIZE_MASK)  &&
++				is_long_mode(vcpu))) {
++			int lvl = walker->level;
++
++			walker->gfn = gpte_to_gfn_lvl(pte, lvl);
++			walker->gfn += (addr & PT_LVL_OFFSET_MASK(lvl))
++					>> PAGE_SHIFT;
++
++			if (PTTYPE == 32 &&
++			    walker->level == PT_DIRECTORY_LEVEL &&
++			    is_cpuid_PSE36())
+ 				walker->gfn += pse36_gfn_delta(pte);
++
+ 			break;
  		}
+ 
+@@ -609,9 +612,10 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ #undef PT_BASE_ADDR_MASK
+ #undef PT_INDEX
+ #undef PT_LEVEL_MASK
+-#undef PT_DIR_BASE_ADDR_MASK
++#undef PT_LVL_ADDR_MASK
++#undef PT_LVL_OFFSET_MASK
+ #undef PT_LEVEL_BITS
+ #undef PT_MAX_FULL_LEVELS
+ #undef gpte_to_gfn
+-#undef gpte_to_gfn_pde
++#undef gpte_to_gfn_lvl
+ #undef CMPXCHG
 -- 
 1.6.4.1
 
