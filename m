@@ -1,45 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934007AbZHWRgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934049AbZHWRnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934007AbZHWRgh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 13:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZHWRgg
+	id S934049AbZHWRnz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 13:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933248AbZHWRny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 13:36:36 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:54411 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752089AbZHWRgf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 13:36:35 -0400
-Date: Sun, 23 Aug 2009 18:36:21 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Henrik Rydberg <rydberg@euromail.se>
-Cc: Richard Purdie <rpurdie@rpsys.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mario Schwalbe <schwalbe@inf.tu-dresden.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] video: mbp_nvidia_bl: add support for MacBookAir 1,1
-Message-ID: <20090823173621.GA24477@srcf.ucam.org>
-References: <1251040684-10399-1-git-send-email-rydberg@euromail.se>
+	Sun, 23 Aug 2009 13:43:54 -0400
+Received: from drutsystem.com ([80.72.38.138]:2306 "EHLO drutsystem.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752760AbZHWRny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 13:43:54 -0400
+Message-ID: <4A917FD8.6030201@ziu.info>
+Date: Sun, 23 Aug 2009 19:43:52 +0200
+From: Michal Soltys <soltys@ziu.info>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251040684-10399-1-git-send-email-rydberg@euromail.se>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Dillow <dave@thedillows.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+References: <200903041828.49972.m.bueker@berlin.de>	 <1242001754.4093.12.camel@obelisk.thedillows.org>	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>	 <1242077392.3716.15.camel@lap75545.ornl.gov>	 <4A09DC3E.2080807@googlemail.com>	 <1242268709.4979.7.camel@obelisk.thedillows.org>	 <4A0C6504.8000704@googlemail.com>	 <1242328457.32579.12.camel@lap75545.ornl.gov>	 <4A0C7443.1010000@googlemail.com>	 <1243042174.3580.23.camel@obelisk.thedillows.org>	 <m1skfkrik2.fsf@fess.ebiederm.org>	 <1250895567.23419.1.camel@obelisk.thedillows.org>	 <1250897657.23419.5.camel@obelisk.thedillows.org>	 <m1iqggf4rf.fsf@fess.ebiederm.org>  <m18whcf3w2.fsf@fess.ebiederm.org> <1250973787.3582.14.camel@obelisk.thedillows.org> <4A91799D.7090802@gmail.com>
+In-Reply-To: <4A91799D.7090802@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AV-Checked: ClamAV on drutsystem.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 23, 2009 at 05:18:04PM +0200, Henrik Rydberg wrote:
-> This patch adds LCD backlight support for the Intel GMA965
-> found in the MacBookAir 1,1.
+Jarek Poplawski wrote:
+> David Dillow wrote, On 08/22/2009 10:43 PM:
+> 
+>> On Sat, 2009-08-22 at 05:07 -0700, Eric W. Biederman wrote:
+>>> ebiederm@xmission.com (Eric W. Biederman) writes:
+>>>
+>>>> David Dillow <dave@thedillows.org> writes:
+>>>>
+>>>>> Re-looking at the code, I'd guess that some IRQ status line is getting
+>>>>> stuck high, but I don't see why -- we should acknowledge all outstanding
+>>>>> interrupts each time through the loop, whether we care about them or
+>>>>> not.
+>>>>>
+>>>>> Could reproduce a problem with the following patch applied, and send the
+>>>>> full dmesg, please?
+>>>> Here is what I get.
+>>>>
+>>>> r8169 screaming irq status 00000085 mask 0000ffff event 0000803f napi 0000001d
+>>> And now that the machine has come out of it, that was followed by:
+>>> Looks like the soft lockup did not manage to trigger in this case.
+>> 
+>> I need some more context, please. What is the network load through this
+>> NIC when you have the issues? Light, heavy? Can you give me more details
+>> about the machine? A full dmesg from boot until this happens would help
+>> quite a bit. At a minimum it would help answer which version of the chip
+>> we're dealing with and what the machine it is in looks like.
+>> 
+>> Can you reproduce this with pci=nomsi? I'm assuming it the chip running
+>> in MSI mode.
+>> 
+>> Also, can you reproduce it when booting UP (or maxcpus=1)? I'm thinking
+>> about a race between rtl8169_interrupt() and rtl8169_poll(), but it
+>> isn't jumping out at me.
+>> 
+>> Also, I'm having connectivity troubles this weekend, so my response may
+>> be spotty. :(
+>> 
+> 
+> 
+> BTW, FYI, it seems Michal stopped tracking this problem, but he
+> found this commit problematic as well.
+> 
+> From: Michal Soltys <soltys@ziu.info>
+> Subject: Re: r8169 (+others ?) and note_interrupt performance hit on 2.6.30.x
+> Date: Wed, 05 Aug 2009 20:54:47 +0200
+> http://marc.info/?l=linux-netdev&m=124949848110710&w=2
+> 
 
-Acked-by: Matthew Garrett <mjg@redhat.com>
+Well - not really stopped, but not sure what to look at before that 
+particular commit (as cpu load for the tests I've done increased rather 
+significantly as well before that, and after 2.6.29 - but it doesn't 
+seem to be related to the driver). And I was away for over a week...
 
-With the proviso that this should probably be disabled once the i915 drm 
-grows a proper backlight driver.
+As fot the changes that commit introduced, here's is link to the mail 
+with the oprofile I did back then:
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+http://www.spinics.net/lists/netdev/msg102709.html
+
+I'm happy to assist any way I can.
