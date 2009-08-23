@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933902AbZHWQDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933913AbZHWQP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933902AbZHWQDq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 12:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933862AbZHWQDq
+	id S933913AbZHWQP3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 12:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933896AbZHWQP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 12:03:46 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:23367 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933839AbZHWQDp (ORCPT
+	Sun, 23 Aug 2009 12:15:29 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:48108 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933882AbZHWQP2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 12:03:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=f1qmyparX485e94t8gAQJ8/I9NCp3oPJ48CdGd4516DVBqA7iwknqrpJ5s9luRJhVX
-         xwQQEYdkN35qfHCfL0sdL/AN9T/AAWzG4Y/qHZiOoZkeyboqhOvSqIKslZqgN9oWui+0
-         jc4heK27dV8qBaSSJWmOJ3xctzspBLit0zSQU=
-Date: Mon, 24 Aug 2009 00:06:56 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Matthias Urlichs <matthias@urlichs.de>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Amerigo Wang <xiyou.wangcong@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Nicolas Palix <npalix@diku.dk>, linux-kernel@vger.kernel.org,
-       Yoann Padioleau <yoann.padioleau@gmail.com>,
-       Julia Lawall <julia@diku.dk>, Joe Perches <joe@perches.com>,
-       devel@driverdev.osuosl.org, akpm@linux-foundation.org
-Subject: Re: [PATCH v2] scripts: add typdef removal tool
-Message-ID: <20090823160656.GB12070@hack>
-References: <1250228384-19823-1-git-send-email-lrodriguez@atheros.com> <20090817060203.GL5039@cr0.nay.redhat.com> <4A8E5F73.6010904@gmail.com> <1251032950.10339.1101.camel@kiste>
+	Sun, 23 Aug 2009 12:15:28 -0400
+Date: Sun, 23 Aug 2009 12:15:29 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Bruno =?ISO-8859-14?B?UHLpbW9udA==?= <bonbons@linux-vserver.org>,
+       Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+In-Reply-To: <Pine.LNX.4.44L0.0908222236100.11562-100000@netrider.rowland.org>
+Message-ID: <Pine.LNX.4.44L0.0908231142530.26309-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251032950.10339.1101.camel@kiste>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 23, 2009 at 03:09:10PM +0200, Matthias Urlichs wrote:
->On Fri, 2009-08-21 at 10:48 +0200, Jiri Slaby wrote:
->> >> +if [[ $# -lt 3 ]]; then
->> 
->> Could that be [ ] instead of [[ ]]?
->> 
->Yes. In fact, it should be, as [[ ]] is a bashism.
+On Sat, 22 Aug 2009, Alan Stern wrote:
 
-Also that the classic test command is enough here,
-no need to bother conditional expression.
+> Alan:
+> 
+> There's a problem with the tty->ops->shutdown method.  It needs to
+> release the last port reference owned by the current tty.  But when was
+> that reference originally acquired?  Evidently during the first time
+> serial_open() was called for the current tty.
+> 
+> The problem is that serial_open() has no way to know if a particular 
+> invocation is the first one for this tty!  The ASYNCB_INITIALIZED flag 
+> doesn't help, because it might not get set during the first call (i.e., 
+> if an error occurs).
+> 
+> To do this right, we need a flag in the tty_struct or the tty_port
+> which serial_open() can set when acquiring that first reference and
+> shutdown method can clear.  Should I add such a flag?
 
+Never mind, I figured out an answer.  Instead of a new flag, the 
+routine can simply test whether or not tty->driver_data has been set.
 
--- 
-Live like a child, think like the god.
- 
+One more question: Under what circumstances should serial_open() 
+increment port->port.count?  It seems that this should happen on every 
+call unless tty->driver_data is NULL or filp has been hung up.  Is that 
+right?
+
+I have a big patch almost ready for testing.  Unfortunately I don't 
+have access to my usual hardware right now, so I can't test it until 
+the middle of the week.  Bruno, if you like I will send you the patch 
+when it looks okay and you can try it out.
+
+Alan Stern
+
