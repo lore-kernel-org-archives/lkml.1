@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbZHWVQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbZHWWD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbZHWVQb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 17:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZHWVQa
+	id S1750969AbZHWWD6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 18:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZHWWD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 17:16:30 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:51618 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755934AbZHWVQa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 17:16:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WszmAwZUOKPAL47iZItH3gyeE1TsgG0ZPFZ4GpfxHKKAevVVT/hTnQ6BQ5LZbcPd/S
-         QY+6JQu6ahdY2lv2yEdZi4UGJ/if5huuBaBwS2SsRilc9A/EERWONzfP5zFHBIRvGPM7
-         3/IczVVDnAeZZfdI5fqND1E7UWbrUlqq1ovkk=
-Date: Sun, 23 Aug 2009 23:16:27 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Josh Stone <jistone@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH v3 1/4] tracing: Rename TIF_SYSCALL_FTRACE->_TRACEPOINT
-Message-ID: <20090823211625.GH6256@nowhere>
-References: <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250917125-6174-1-git-send-email-jistone@redhat.com> <1250917125-6174-2-git-send-email-jistone@redhat.com>
+	Sun, 23 Aug 2009 18:03:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48600 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750759AbZHWWD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 18:03:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: What to do?
+Date: Mon, 24 Aug 2009 00:04:16 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "TuxOnIce-devel" <tuxonice-devel@lists.tuxonice.net>
+References: <4A8CCF95.9030401@crca.org.au> <4A91A2D4.90203@gmail.com>
+In-Reply-To: <4A91A2D4.90203@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250917125-6174-2-git-send-email-jistone@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908240004.16769.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 09:58:42PM -0700, Josh Stone wrote:
-> This thread flag is no longer specific to just ftrace, so
-> TIF_SYSCALL_TRACEPOINT may be a more apt name.
+On Sunday 23 August 2009, Jiri Slaby wrote:
+> On 08/20/2009 06:22 AM, Nigel Cunningham wrote:
+> > I'd therefore like to ask whether there's anyone out there who could do
+> > one or more of:
+> > 
+> > 1) Step up to the plate and help improve swsusp, without relying on any
+> > help from me but with my blessing if they choose to copy wholesale bits
+> > of TuxOnIce;
+> 
+> Hi, I think I can help here.
 
+Great, thanks!
 
-Adding Paul Mundt <lethal@linux-sh.org> in Cc, the sh
-tree also has the syscalls tracing support (in a seperate
-branch).
+> Is there any TODO or similar resources?
 
-Thanks.
+Not that I know of, but I think we should start with the non-controversial
+things, like image compression etc.
 
+Best,
+Rafael
