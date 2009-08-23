@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750961AbZHWWSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751009AbZHWWpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750961AbZHWWSD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 18:18:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbZHWWSC
+	id S1751009AbZHWWpF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 18:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbZHWWpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 18:18:02 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:39596 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbZHWWSB (ORCPT
+	Sun, 23 Aug 2009 18:45:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56949 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbZHWWpE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 18:18:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=I99PcxT6QUTuEUM9JgFK9HdDJ2cxsZkijbZ+jKivIkBikiszNiLyM0jwlXkES4RU3W
-         h4IOErep7e2DBrcLWrMGvxRF0TGzHVh5SOF+obWrAu9RN3xatOrl0BBMZ60yYXML07Go
-         Y6Flfy4LACwzJWF0VQ8Gcccuka2t5NvNjyYxQ=
+	Sun, 23 Aug 2009 18:45:04 -0400
+Date: Sun, 23 Aug 2009 18:45:04 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.30.4 XFS(..?) regression (& with/2.6.31-rc6)
+Message-ID: <20090823224504.GA19942@infradead.org>
+References: <alpine.DEB.2.00.0908110624420.22426@p34.internal.lan> <20090816022331.GA2309@infradead.org> <alpine.DEB.2.00.0908171024380.12533@p34.internal.lan> <alpine.DEB.2.00.0908220624440.30321@p34.internal.lan> <20090822142550.GA10003@infradead.org> <alpine.DEB.2.00.0908221044420.30321@p34.internal.lan> <20090822201558.GA17955@infradead.org> <alpine.DEB.2.00.0908221645440.20848@p34.internal.lan> <20090822205502.GA18904@infradead.org> <alpine.DEB.2.00.0908221659030.23463@p34.internal.lan>
 MIME-Version: 1.0
-Date: Sun, 23 Aug 2009 17:18:02 -0500
-Message-ID: <7fcc02550908231518m1d35a0c6kd4397b974ac65747@mail.gmail.com>
-Subject: kernel/posix-timer.c: Forgot to disable interrupts in 
-	sys_timer_settime()?
-From: Lin Tan <tammy000@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0908221659030.23463@p34.internal.lan>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ok, let's see where errors could happen then.
 
-Did we forget to disable interrupts before calling
-posix_cpu_timer_set() in the system call function sys_timer_settime()
-(in code literally as SYSCALL_DEFINE4(timer_settime, ...) as shown
-below)? The CLOCK_DISPATCH macro invokes posix_cpu_timer_set(), which
-requires interrupts to be disabled upon entry of calling. When
-posix_cpu_timer_set() was called from other functions such as
-do_cpu_nanosleep(), interrupts are disabled.
+There are four theoretical possibilities:
 
+ (a) XFS
+ (b) loop driver
+ (c) crypto loop code
+ (d) block layer
 
-SYSCALL_DEFINE4(timer_settime, timer_t, timer_id, int, flags,
- 769                const struct itimerspec __user *, new_setting,
- 770                struct itimerspec __user *, old_setting)
- 771{
-    ...
- 792        error = CLOCK_DISPATCH(timr->it_clock, timer_set,
- 793                               (timr, flags, &new_spec, rtn)); //
-this MACRO invokes posix_cpu_timer_set()
- ...
-}
+Or combinations thereof.
 
+I would take (a) and (d) as more unlikely as they tend to get used much
+more and I would have heard more bug reports already.
 
-In addition, its block comments also state that we must disable
-interrupts before calling it (in posix-cpu-timers.c):
+The cryptoloop code hasn't changed at all since 2.6.29.
 
-/*
- 712 * ...
- 713 * This is called with the timer locked and interrupts disabled.
- 714 *
- ...
- 716 */
- 717int posix_cpu_timer_set(struct k_itimer *timer, int flags,
- 718                        struct itimerspec *new, struct itimerspec *old)
- 719{
-  ...
-}
+The loop code howver has a very interesting commit just after 2.6.39:
 
-Thanks,
-Lin
+commit 68db1961bbf4e16c220ccec4a780e966bc1fece3
+Author: Nikanth Karthikesan <knikanth@suse.de>
+Date:   Tue Mar 24 12:29:54 2009 +0100
+
+    loop: support barrier writes
+
+Can you try reverting this one (it cleanly reverse-applies against
+2.6.30 and current mainline) and see if that makes a difference?
