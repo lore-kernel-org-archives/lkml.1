@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933582AbZHWSWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933625AbZHWSWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933582AbZHWSWm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 14:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933468AbZHWSWl
+	id S933625AbZHWSWu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 14:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933611AbZHWSWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 14:22:41 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:58062 "EHLO elrond.infotech.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933459AbZHWSWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 14:22:40 -0400
-Message-ID: <4A9188EA.2080903@interlog.com>
-Date: Sun, 23 Aug 2009 14:22:34 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 23 Aug 2009 14:22:49 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:46895 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933468AbZHWSWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 14:22:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=nD8HES6rn8/ENHcAET9kgrj0cQLwMgkM3SnKE0absvptIC+2nYVwq0d4NLowZVDoO8
+         jVxnzLq1kMCbuYwcrsAiKD97aQSkqLInB03ygyJo1UIqJbAbBU20o80DY5m0M34rrpvf
+         G6ZSJYK/XG2b7+MN5ZTQAcZQYystmoYP7gYLU=
+Message-ID: <4A9188F0.3030603@gmail.com>
+Date: Sun, 23 Aug 2009 20:22:40 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-usb@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bugzilla-daemon@bugzilla.kernel.org
-Subject: Re: [Bugme-new] [Bug 14020] New: Stack trace when running smartctl
- on an USB disk
-References: <Pine.LNX.4.44L0.0908222002110.9952-100000@netrider.rowland.org> <31690E3D-43A0-484D-9D65-C0003E033D1E@ime.usp.br>
-In-Reply-To: <31690E3D-43A0-484D-9D65-C0003E033D1E@ime.usp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH resend] ia64: use printk_once
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rogério Brito wrote:
-> Hi again, Alan.
-> 
-> (Sorry if this message seems messed up, but I am not using my regular 
-> mailer right now, unfortunately).
-> 
-> On 2009-08-22, at 21:17, Alan Stern wrote:
-> 
->> On Sat, 22 Aug 2009, Rogério Brito wrote:
->>
->>> The requested trace is attached to this message. Please let me know if
->>> you need more information.
->>
->> The trace shows that something (presumably smartctl) sends a command
->> the drive doesn't understand.  The drive then violates the USB
->> mass-storage protocol, sending an invalid response.
-> 
-> Right.
-> 
->> The kernel waits
->> for a proper response but nothing more happens, so after 30 seconds the
->> command times out and is aborted and the drive is reset.
-> 
-> I'm not with the kernel sources here (so, I can't check the code), but 
-> is there any option to be able to log such invalid responses when the 
-> kernel gets one? Perhaps the verbose USB logging does that?
-> 
->> The command
->> then gets retried, and the same thing happens again.  The retries take
->> so long that the kernel complains about smartctl being blocked for more
->> than 120 seconds -- that's the reason for the stack dump.
-> 
-> Right.
-> 
-> Geeez, Alan, is there any vendor out there that gets the USB 
-> implementation according to the specs?
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org
 
-The fact that you invoked:
-   smartctl -d usbcypress -a /dev/sda
+diff --git a/arch/ia64/kernel/unaligned.c b/arch/ia64/kernel/unaligned.c
+index 6db0859..776dd40 100644
+--- a/arch/ia64/kernel/unaligned.c
++++ b/arch/ia64/kernel/unaligned.c
+@@ -60,7 +60,6 @@ dump (const char *str, void *vp, size_t len)
+  */
+ int no_unaligned_warning;
+ int unaligned_dump_stack;
+-static int noprint_warning;
+ 
+ /*
+  * For M-unit:
+@@ -1357,9 +1356,8 @@ ia64_handle_unaligned (unsigned long ifa, struct pt_regs *regs)
+ 			/* watch for command names containing %s */
+ 			printk(KERN_WARNING "%s", buf);
+ 		} else {
+-			if (no_unaligned_warning && !noprint_warning) {
+-				noprint_warning = 1;
+-				printk(KERN_WARNING "%s(%d) encountered an "
++			if (no_unaligned_warning) {
++				printk_once(KERN_WARNING "%s(%d) encountered an "
+ 				       "unaligned exception which required\n"
+ 				       "kernel assistance, which degrades "
+ 				       "the performance of the application.\n"
+diff --git a/arch/ia64/sn/kernel/io_common.c b/arch/ia64/sn/kernel/io_common.c
+index 25831c4..308e659 100644
+--- a/arch/ia64/sn/kernel/io_common.c
++++ b/arch/ia64/sn/kernel/io_common.c
+@@ -119,7 +119,6 @@ sn_pcidev_info_get(struct pci_dev *dev)
+  * Additionally note that the struct sn_flush_device_war also has to be
+  * removed from arch/ia64/sn/include/xtalk/hubdev.h
+  */
+-static u8 war_implemented = 0;
+ 
+ static s64 sn_device_fixup_war(u64 nasid, u64 widget, int device,
+ 			       struct sn_flush_device_common *common)
+@@ -128,11 +127,8 @@ static s64 sn_device_fixup_war(u64 nasid, u64 widget, int device,
+ 	struct sn_flush_device_war *dev_entry;
+ 	struct ia64_sal_retval isrv = {0,0,0,0};
+ 
+-	if (!war_implemented) {
+-		printk(KERN_WARNING "PROM version < 4.50 -- implementing old "
+-		       "PROM flush WAR\n");
+-		war_implemented = 1;
+-	}
++	printk_once(KERN_WARNING
++		"PROM version < 4.50 -- implementing old PROM flush WAR\n");
+ 
+ 	war_list = kzalloc(DEV_PER_WIDGET * sizeof(*war_list), GFP_KERNEL);
+ 	BUG_ON(!war_list);
 
-means that the cypress chip does not comply with SAT.
-To find out what commands are being sent (via the SG_IO
-ioctl I presume) by smartctl please try adding:
-   '-r ioctl,3'
-to the above invocation.
-
-
-Doug Gilbert
