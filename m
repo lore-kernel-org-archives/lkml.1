@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934077AbZHWNdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933805AbZHWNhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934077AbZHWNdy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 09:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933984AbZHWNaT
+	id S933805AbZHWNhs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 09:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933700AbZHWNhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 09:30:19 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:49132 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933978AbZHWNaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 09:30:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=FAD5FHx7bW6RKl4DWieY0cDalbSQmKhvrieiSKsMx90MWQjMKU8sEYJCgrIrCCWXea
-         1DvBZNCgM76cOZwIlDFNcl/MiZj/SI2Ajfmi7TwJkfR0C1AiTOzETb8vT539apzKRfRF
-         Ed5Mb3RecD7q14A+de1R6fsdzB6KgfwidaS4E=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Greg Kroah-Hartman" <gregkh@suse.de>
-Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Date: Sun, 23 Aug 2009 15:30:43 +0200
-Message-Id: <20090823133043.17784.28086.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
-References: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
-Subject: [PATCH 18/33] Staging: rt28x0: AsicSwitchChannel() fix
+	Sun, 23 Aug 2009 09:37:47 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:54928 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933665AbZHWNhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 09:37:45 -0400
+Date: Sun, 23 Aug 2009 16:36:21 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>, gleb@redhat.com,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+Message-ID: <20090823133620.GA12841@redhat.com>
+References: <20090820155655.GA8764@redhat.com> <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A913DA9.1020403@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rt28x0: AsicSwitchChannel() fix
+On Sun, Aug 23, 2009 at 04:01:29PM +0300, Avi Kivity wrote:
+> On 08/20/2009 09:28 PM, Michael S. Tsirkin wrote:
+>>>> I thought the point was to move assigned devices out of KVM?
+>>>>
+>>>>        
+>>> Grr.  Forgot about that.
+>>>
+>>> That's much more important.
+>>>      
+>> Looks like we'll have do with a separate char device or
+>> something?
+>>    
+>
+> We can still tunnel it through userspace.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/staging/rt2860/common/mlme.c |   12 ------------
- 1 file changed, 12 deletions(-)
+More important here is realization that eventfd is a mutex/semaphore
+implementation, not a generic event reporting interface as we are trying
+to use it.
 
-Index: b/drivers/staging/rt2860/common/mlme.c
-===================================================================
---- a/drivers/staging/rt2860/common/mlme.c
-+++ b/drivers/staging/rt2860/common/mlme.c
-@@ -5756,7 +5756,6 @@ VOID AsicSwitchChannel(
- 	RTMP_RF_REGS *RFRegTable;
- 
- 	// Search Tx power value
--#ifdef RT30xx
- 	// We can't use ChannelList to search channel, since some central channl's txpowr doesn't list
- 	// in ChannelList, so use TxPower array instead.
- 	//
-@@ -5769,17 +5768,6 @@ VOID AsicSwitchChannel(
- 			break;
- 		}
- 	}
--#else
--	for (index = 0; index < pAd->ChannelListNum; index++)
--	{
--		if (Channel == pAd->ChannelList[index].Channel)
--		{
--			TxPwer = pAd->ChannelList[index].Power;
--			TxPwer2 = pAd->ChannelList[index].Power2;
--			break;
--		}
--	}
--#endif
- 
- 	if (index == MAX_NUM_OF_CHANNELS)
- 		DBGPRINT(RT_DEBUG_ERROR, ("AsicSwitchChannel: Can't find the Channel#%d \n", Channel));
+> Most assigned devices will  
+> have MSI.  uio can signal the eventfd when the level changes, qemu can  
+> read the level and write it to kvm.
+> -- 
+> error compiling committee.c: too many arguments to function
