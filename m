@@ -1,73 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZHWK4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933488AbZHWLUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbZHWK4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 06:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbZHWK4Q
+	id S933488AbZHWLUm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 07:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933319AbZHWLUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 06:56:16 -0400
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:65462 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755995AbZHWK4P convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 06:56:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=iil92JSOLbZM0QLex3krIoMajsl+dvKFKOD4DW69b2QEwUBW2NB/FMoovJPO1ExTRf
-         rN9n8TE1Fh/xj9kPYNMpmm60H/iiMI0YWsfgTN/tqDKtAT9JbXvlZVm3KHlCojE5e8gQ
-         CgaKDMKAqadfLlkLHJg7adTmfqgK6L/U4VZUY=
+	Sun, 23 Aug 2009 07:20:41 -0400
+Received: from mx44.mail.ru ([94.100.176.58]:39659 "EHLO mx44.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933011AbZHWLUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 07:20:40 -0400
+X-Greylist: delayed 3351 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Aug 2009 07:20:40 EDT
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: linux-ide@vger.kernel.org
+Subject: 2.6.31-rc6: ACPI handle has no context apparenty from libata during suspend to RAM
+Date: Sun, 23 Aug 2009 14:24:03 +0400
+User-Agent: KMail/1.12.0 (Linux/2.6.31-desktop-0.rc6.1mnb; KDE/4.3.0; x86_64; ; )
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain>
-References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain>
-Date: Sun, 23 Aug 2009 12:56:17 +0200
-X-Google-Sender-Auth: 76cb81acc2c572d8
-Message-ID: <10f740e80908230356j4622a042nb83da4952f940b2@mail.gmail.com>
-Subject: Re: Linux 2.6.31-rc7
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed;
+  boundary="nextPart3197210.qu4hLDVgC1";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908231424.07900.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 22, 2009 at 03:26, Linus
-Torvalds<torvalds@linux-foundation.org> wrote:
-> KOSAKI Motohiro (1):
->      mm: revert "oom: move oom_adj value"
+--nextPart3197210.qu4hLDVgC1
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-drivers/staging/android/lowmemorykiller.c: In function 'lowmem_shrink':
-drivers/staging/android/lowmemorykiller.c:108: error: 'struct
-mm_struct' has no member named 'oom_adj'
+Even if messages is DEBUG, I assume condition is unusual (otherwise we=20
+would not need any message in the first place).
 
-I guess this one must be reverted as well?
+This is Dell XPS M1330 with ICH8M:
 
-commit a6a9f81ccc9f5c86ccc22bbed1960a57d0316e8b
-Author: David Rientjes <rientjes@google.com>
-Date:   Tue Jun 16 16:42:53 2009 -0700
+00:1f.1 IDE interface: Intel Corporation 82801HBM/HEM (ICH8M/ICH8M-E)=20
+IDE Controller (rev 02)                                                    =
+            =20
+        Subsystem: Dell Device 0209                                        =
+   =20
+        Kernel driver in use: ata_piix                                     =
+   =20
+        Kernel modules: ata_piix, pata_acpi, ata_generic, piix, ide-pci-
+generic
+00:1f.2 SATA controller: Intel Corporation 82801HBM/HEM (ICH8M/ICH8M-E)=20
+SATA AHCI Controller (rev 02)                                              =
+          =20
+        Subsystem: Dell Device 0209                                        =
+   =20
+        Kernel driver in use: ahci                                         =
+   =20
+        Kernel modules: ahci                                               =
+   =20
 
-    Staging: android: lowmemorykiller.c: fix it for "oom: move oom_adj value fro
+Every time I do to sleep I get:
 
-    I'm about to merge "oom: move oom_adj value from task_struct to
-    mm_struct", and this fixup is needed to repair linux-next's
-    drivers/staging/android/lowmemorykiller.c.
+PM: Entering mem sleep
+Suspending console(s) (use no_console_suspend to debug)
+btusb_bulk_complete: hci0 urb ffff88005485d180 failed to resubmit (1)
+btusb_bulk_complete: hci0 urb ffff880039086c00 failed to resubmit (1)
+btusb_intr_complete: hci0 urb ffff880078556780 failed to resubmit (1)
+sd 0:0:0:0: [sda] Synchronizing SCSI cache
+sd 0:0:0:0: [sda] Stopping disk
+ACPI handle has no context!
+sdhci-pci 0000:03:01.1: PME# disabled
+sdhci-pci 0000:03:01.1: PCI INT B disabled
+ACPI handle has no context!
+ata5: port disabled. ignoring.
+ata_piix 0000:00:1f.1: PCI INT A disabled
+ehci_hcd 0000:00:1d.7: PCI INT A disabled
+=2E..
 
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Otherwise there are no negative effects as far as I can tell.
 
-Gr{oetje,eeting}s,
+--nextPart3197210.qu4hLDVgC1
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-						Geert
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+iEYEABECAAYFAkqRGMMACgkQR6LMutpd94zqkQCgtfdwnBu7Gc9ycFLqkoaRpaXA
+WE4AnRaQV9ATG1//aO8DXZf6N1YiiexF
+=rs/A
+-----END PGP SIGNATURE-----
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--nextPart3197210.qu4hLDVgC1--
