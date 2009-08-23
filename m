@@ -1,98 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbZHWJwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZHWKOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755982AbZHWJwS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 05:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932934AbZHWJwR
+	id S1755997AbZHWKOl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 06:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755923AbZHWKOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 05:52:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53453 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755964AbZHWJwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 05:52:16 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19cmKlubyVcXJ4EQSIGL8atQbwMYYuwXe8tBIhVJ2
-	dysNQUMhTj/epr
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-From: Mike Galbraith <efault@gmx.de>
-To: raz ben yehuda <raziebe@gmail.com>
-Cc: riel@redhat.com, mingo@elte.hu, peterz@infradead.org,
-       andrew motron <akpm@osdl.org>, wiseman@macs.biu.ac.il,
-       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
-In-Reply-To: <1251025557.3810.65.camel@raz>
-References: <1250983671.5688.21.camel@raz>
-	 <1251004897.7043.70.camel@marge.simson.net>  <1251018551.3810.35.camel@raz>
-	 <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>
-Content-Type: text/plain
-Date: Sun, 23 Aug 2009 11:52:13 +0200
-Message-Id: <1251021133.14003.172.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Sun, 23 Aug 2009 06:14:40 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:63782 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755922AbZHWKOi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 06:14:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=UG3YDBJWyx74kej4vTjlWdM3CkLPHFEp715hNy7GmpwBIiC0D7jq49sbblAe1r6tNZ
+         GRcg60Fvh9ZS8kxUoZBa/wMo/uatxaQKb03m5/j9RKQqMEOZbSskZYwCQ8JXzABO3Rja
+         jNL49AFsctjxhRFJ8KCNV5J6hwKE2xEo86njs=
+MIME-Version: 1.0
+Date: Sun, 23 Aug 2009 11:14:38 +0100
+Message-ID: <9b2b86520908230314q37d07da6mbde9dc48ad5a17ce@mail.gmail.com>
+Subject: r8189 mac address changes persist across reboot (was: duplicate MAC 
+	addresses)
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: marty <marty@goodoldmarty.com>, linux-hotplug@vger.kernel.org,
+       netdev <netdev@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-08-23 at 14:05 +0300, raz ben yehuda wrote:
-> On Sun, 2009-08-23 at 09:30 +0200, Mike Galbraith wrote:
-> > On Sun, 2009-08-23 at 12:09 +0300, raz ben yehuda wrote:
-> > > On Sun, 2009-08-23 at 07:21 +0200, Mike Galbraith wrote:
-> > 
-> > > > Seems to me this boils down to a different way to make a SW box in a HW
-> > > > box, which already exists.  What does this provide that  partitioning a
-> > > > box with csets and virtualization doesn't?
-> > > OFFSCHED does not compete with cpu sets nor virtualization.it is
-> > > different.
-> > > 
-> > > 1. Neither virtuallization nor cpu sets provide hard real time. OFFSCHED
-> > > does this with a little cost and no impact on the OS.OFFSCHED is not
-> > > just accurate , it is also extremely fast,after all, it is NMI'ed
-> > > processor.
-> > 
-> > Why not?  Why can't I run an RT kernel with an RTOS guest and let it do
-> > it's deadline management thing?
-> Have you ever tested how long a single context switch cost ? can you run
-> this system with a 1us accuracy ? you cannot.try ftrac'ing your system.
-> the interrupt alone costs several hundreds nano seconds. By the time you
-> will be reaching your code, the deadline will be nearly gone.  
+On 8/23/09, marty <marty@goodoldmarty.com> wrote:
+> Greg KH wrote:
+>> > On Tue, Aug 18, 2009 at 04:27:04PM -0400, marty wrote:
+>>> >> I got trouble...
+>>> >> (duplicate MAC addresses)
+>> >
+>> > That's a bug in your hardware, have you asked your manufacturer to
+>> > resolve this for you?  That violates the ethernet spec...
+>
+> I have resolved that problem as of today. I found this was caused
+> by the software I had been using. If a hardware issue remains, it is moot.
+>
+> The bonding driver/utilities normally sets the bond address to the MAC of
+> the
+> first NIC. But it also set the MAC of the slave (eth3) to the MAC of the
+> first
+> NIC. This persists through reboots so that is how my MACs got duplicated.
+>
+> Resetting the MAC corrected those problems and everything works fine now.
+>
+> Marty B.
 
-I've measured context switch cost many times.  The point though, wasn't
-how tight a constraint may be, you maintained that realtime was out the
-window, and I didn't see any reason for that to be the case.
+Hmm.  <Documentation/networking/bonding.txt>
 
-> > > 2. OFFSCHED has a access to every piece of memory in the system. so it
-> > > can act as a centry for the system, or use linux facilities. Also, the
-> > > kernel can access OFFSCHED memory, it is the same address space.
-> > 
-> > Hm.  That appears to be a self negating argument.
-> correct. but I can receive packets over napi and transmit packets over hard_start_xmit
-> much faster than any guest OS. I can disable interrupts and move to poll
-> mode, thus helping the operating system. can a guest OS help linux?
+"To restore your slaves' MAC addresses, you need to detach them
+from the bond (`ifenslave -d bond0 eth0'). The bonding driver will
+then restore the MAC addresses that the slaves had before they were
+enslaved."
 
-Depends entirely on the job at hand.  If the job is running a firewall
-in kernel mode, no it won't cut the mustard.
+In which case one would hope that a clean shutdown would restore the
+MAC addresses in the same way as ifenslave -d.
 
-(no offense intended, but this all sounds like a great big kernel module
-to me, one which doesn't even taint the kernel)
-  
-> > > 3. OFFSCHED can improve the linux OS ( NAPI,OFFSCHED firewall,RTOP ),
-> > > while a guest OS cannot.
-> > > 
-> > > 4. cpu sets cannot replace softirqs and hardirqs. OFFSCHED can. cpu sets
-> > > deals with kernel threads and user space threads. in OFFSCHED we use
-> > > offlets.
-> > 
-> > Which still looks like OS-fu to me.
-> I do not understand this remark.
+I found that snippet via Google, which pointed me to the 2.4 version
+of the same document [1].  It suggests that your hardware or driver is
+a little unusual.
 
-Whether it's offlet, tasklet, insert buzz-word of the day, it's thread
-of execution management, which I called OS-fu, ie one of those things
-that OSs do.
+"To restore your slaves' MAC addresses, you need to detach them
+from the bond (`ifenslave -d bond0 eth0'), set them down
+(`ifconfig eth0 down'), unload the drivers (`rmmod 3c59x', for
+example) and reload them to get the MAC addresses from their
+eeproms."
 
-The rest, I'll leave off replying to, we're kinda splitting hairs.  I
-don't see a big generic benefit to OFFSCHED or ilk, others do.
+So other drivers would not have this problem, because they always
+reset the MAC address at load time.  That would explain why the the
+kernel doesn't bother resetting the MAC addresses on shutdown.
 
-	-Mike
+Looking at r8169.c confirms this.  It doesn't appear to initialize the
+MAC address register from elsewhere; it just uses the current value.
+It will also report this initial value as the "permanent" MAC address,
+which your report suggests is wrong.  I think your problem is a bug in
+r8169.
+
+Francois, I found a datasheet for the 8139; it was claimed to be
+similar and it does indeed appear so.  The datasheet suggests that the
+driver needs to provoke "auto-load" from the EEPROM at load time.
+Could you please have a look at fixing this, so that MAC address
+changes do not persist over a reboot?
+
+Thanks
+Alan
+
+"1. Features
+
+Uses 93C46 (64*16-bit EEPROM) to store resource
+                    configuration, ID parameter, and VPD data
+...
+
+5. Register Descriptions
+The RTL8139D(L) provides the following set of operational registers
+mapped into PCI memory space or I/O space.
+     Offset       R/W                Tag
+           Description
+     0000h         R/W               IDR0            ID Register 0,
+The ID register0-5 are only permitted to read/write by
+                                                     4-byte access.
+Read access can be byte, word, or double word access.
+                                                     The initial value
+is autoloaded from EEPROM EthernetID field.
+
+...
+
+5.9 9346CR: 93C46 Command Register
+(Offset 0050h, R/W)
+This register is used for issuing commands to the RTL8139D(L). These
+commands are issued by setting the corresponding bits for the
+function. A warm software reset along with individual reset and
+enable/disable for transmitter and receiver are provided as well.
+
+Bit R/W Symbol                          Description
+7-6 R/W EEM1-0 Operating Mode: These 2 bits select the RTL8139D(L) operating
+               mode.
+
+                 EEM1    EEM0                      Operating Mode
+                    0      0    Normal (RTL8139D(L) network/host communication
+                                mode)
+                    0      1    Auto-load: Entering this mode will make the
+                                RTL8139D(L) load the contents of 93C46
+like when the
+                                RSTB signal is asserted. This
+auto-load operation will
+                                take about 2 ms. After it is
+completed, the RTL8139D(L)
+                                goes back to the normal mode
+automatically (EEM1 =
+                                EEM0 = 0) and all the other registers
+are reset to default
+                                values."
 
 
+
+
+[1] Bonding mini-howto for 2.4 kernel
+<http://www.kernel.org/pub/linux/kernel/people/marcelo/linux-2.4/Documentation/networking/bonding.txt>
