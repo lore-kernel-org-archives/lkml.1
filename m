@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933464AbZHWJL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZHWJTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933464AbZHWJL3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 05:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbZHWJL2
+	id S1755932AbZHWJTK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 05:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbZHWJTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 05:11:28 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:60780 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755894AbZHWJL1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 05:11:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:message-id;
-        b=FYDRNftP0RePQORjWiPI0DytPo2z2QsBW+Vbr4KVltuPqBkMsYFkvu8cf7I5UYcUv1
-         0WZzlpp6wTIF5jKCKJrJxiWtnxL2EZBqCxDpQow/IiIiF9UbTrOLk+jrOTk6z0n8qe4E
-         n0sH0o/ujMMO7uG++YfVzEJISAOKLZfAj9ZSM=
-From: Volker Armin Hemmann <volkerarmin@googlemail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: amd64 + mtrr: only 3.1gb of 8gb are covered, kernel 2.6.30 and earlier.
-Date: Sun, 23 Aug 2009 11:11:26 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30.5r4; KDE/4.3.0; x86_64; ; )
-References: <200908211814.56800.volkerarmin@googlemail.com> <200908222126.31390.volkerarmin@googlemail.com> <86802c440908222322s44957498s72a76940f89271cf@mail.gmail.com>
-In-Reply-To: <86802c440908222322s44957498s72a76940f89271cf@mail.gmail.com>
+	Sun, 23 Aug 2009 05:19:09 -0400
+Received: from www.tglx.de ([62.245.132.106]:40093 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755907AbZHWJTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 05:19:08 -0400
+Date: Sun, 23 Aug 2009 11:15:49 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, x86 team <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Veen <arjan@infradead.org>, Avi Kivity <avi@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Alok N Kataria <akataria@vmware.com>,
+       Pan Jacob jun <jacob.jun.pan@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC patch 00/32] x86: Refactor the setup code to provide a base
+ for embedded platforms
+In-Reply-To: <20090822105726.GB30434@elte.hu>
+Message-ID: <alpine.LFD.2.00.0908231110480.1769@localhost.localdomain>
+References: <20090821205008.518392436@linutronix.de> <20090822105726.GB30434@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200908231111.26414.volkerarmin@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sonntag 23 August 2009, Yinghai Lu wrote:
-> On Sat, Aug 22, 2009 at 12:26 PM, Volker Armin
->
-> Hemmann<volkerarmin@googlemail.com> wrote:
-> > when I went from 4gb to 6gb I had a performance degradation. Since the
-> > 8gb are faster and the new cpu is faster, I don't see degradation. But I
-> > wonder how much better performance could be with 'correct' mtrr.
->
-> that is weird. with 4g should have mem hole remapping.
->
-> do you still have /proc/mtrr for 6g setup?
->
-> YH
+On Sat, 22 Aug 2009, Ingo Molnar wrote:
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
+> >  47 files changed, 622 insertions(+), 808 deletions(-)
+> 
+> Very nice!
+> 
+> One small detail, before we spread out these patches. While looking 
+> at the patches i noticed that at places our new x86 init namespace 
+> is very long:
+> 
+> > +     platform_setup.timers.setup_percpu_clockev = platform_setup_noop;
+> > +     platform_cpuhotplug_setup.setup_percpu_clockev = platform_setup_noop;
+> > +
+> 
+> I think we should shorten the name-space a bit - we'll use it in a 
+> _lot_ of places, so the shorter, the better and the easier to use. 
+> 
+> I'd suggest something like:
+> 
+>      x86_init.timers.init_percpu_clockev = x86_init_noop;
+>      x86_cpuhotplug_init.init_percpu_clockev = x86_init_noop;
+> 
+> ( This also has the advantage that 'init' is the general term we use 
+>   for kernel structure initialization - 'setup' is a more 
+>   restrictive term we use related to bootloading, most of the time. )
 
-I have it here:
-http://marc.info/?l=linux-kernel&m=124336823415460&w=2
+Fair enough.
+ 
+> An even shorter form would be to use 'x86' as a general template for 
+> platform details:
+> 
+>      x86.timers.init_percpu_ce = x86_init_noop;
+>      x86_cpuhotplug.init_percpu_ce = x86_init_noop;
+> 
+> this is even shorter, plus it allows us to put runtime details into 
+> this structure as well. Note that the fields themselves 
 
-Glück Auf,
-Volker
+We should have a separate struct for runtime details otherwise we need
+to keep the full init stuff around forever instead of freeing
+it. That's why I already have that separate cpuhotplug struct.
+
+> (init_percpu_clockev) already signal the 'init' property 
+> sufficiently. Plus 'ce' is an existing, well-known abbreviation for 
+> clockevents. (but 'clockev' would be good too - i might be pushing 
+> it)
+
+Yes you do. Next you suggest to have x86_i.pcpu_ce :)
+ 
+Thanks,
+
+	tglx
