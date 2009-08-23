@@ -1,97 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933730AbZHWPAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933768AbZHWPNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933730AbZHWPAK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 11:00:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933613AbZHWPAJ
+	id S933768AbZHWPNX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 11:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933689AbZHWPNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 11:00:09 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:62539 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933665AbZHWPAI (ORCPT
+	Sun, 23 Aug 2009 11:13:23 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:45280 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933686AbZHWPNW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 11:00:08 -0400
-Subject: Re: [PATCH] kmemleak: Fix scheduling-while-atomic bug
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <d82e647a0908221948q380c3365v827c93c549d5f084@mail.gmail.com>
-References: <200907010300.n6130rRf026194@hera.kernel.org>
-	 <20090701075332.GA17252@elte.hu>
-	 <1246439937.8492.18.camel@pc1117.cambridge.arm.com>
-	 <20090701093015.GA6862@elte.hu>
-	 <1247059996.6595.36.camel@pc1117.cambridge.arm.com>
-	 <d82e647a0908221948q380c3365v827c93c549d5f084@mail.gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Sun, 23 Aug 2009 15:59:50 +0100
-Message-Id: <1251039590.27032.8.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Aug 2009 14:59:51.0920 (UTC) FILETIME=[5E01EF00:01CA2402]
+	Sun, 23 Aug 2009 11:13:22 -0400
+In-Reply-To: <Pine.LNX.4.44L0.0908222002110.9952-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0908222002110.9952-100000@netrider.rowland.org>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <31690E3D-43A0-484D-9D65-C0003E033D1E@ime.usp.br>
+Cc: Andrew Morton <akpm@linux-foundation.org>, <linux-usb@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <bugzilla-daemon@bugzilla.kernel.org>
+Content-Transfer-Encoding: 8BIT
+From: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+Subject: Re: [Bugme-new] [Bug 14020] New: Stack trace when running smartctl on an USB disk
+Date: Sun, 23 Aug 2009 12:11:50 -0300
+To: Alan Stern <stern@rowland.harvard.edu>
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi again, Alan.
 
-On Sun, 2009-08-23 at 10:48 +0800, Ming Lei wrote:
-> 2009/7/8 Catalin Marinas <catalin.marinas@arm.com>:
-> > kmemleak: Add more cond_resched() calls in the scanning thread
-> >
-> > From: Catalin Marinas <catalin.marinas@arm.com>
-> >
-> > Following recent fix to no longer reschedule in the scan_block()
-> > function, the system may become unresponsive with !PREEMPT. This patch
-> > re-adds the cond_resched() call to scan_block() but conditioned by the
-> > allow_resched parameter.
-> >
-> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-[...]
-> This still exits in 2.6.31-rc7 if kmemcheck is enabled, and isn't  the patch
-> merged into mainline?
+(Sorry if this message seems messed up, but I am not using my regular  
+mailer right now, unfortunately).
 
-Is this kmemcheck or kmemleak (two different things with similar names)?
+On 2009-08-22, at 21:17, Alan Stern wrote:
 
-> [    0.006569] ACPI: Core revision 20090521
-> [    0.011476] BUG: scheduling while atomic: swapper/0/0x10000002
-> [    0.011558] no locks held by swapper/0.
-> [    0.011561] Modules linked in:
-> [    0.011566] Pid: 0, comm: swapper Not tainted 2.6.31-rc7 #141
-> [    0.011569] Call Trace:
-> [    0.011577]  [<ffffffff81070bb7>] ? __debug_show_held_locks+0x22/0x24
-> [    0.011584]  [<ffffffff8103d4ba>] __schedule_bug+0x77/0x7c
-> [    0.011590]  [<ffffffff812da32f>] schedule+0xd6/0xa3f
-> [    0.011596]  [<ffffffff810e4b9b>] ? kmem_cache_free+0xe2/0x158
-> [    0.011600]  [<ffffffff810717e2>] ? trace_hardirqs_on_caller+0x12d/0x158
-> [    0.011604]  [<ffffffff8107181a>] ? trace_hardirqs_on+0xd/0xf
-> [    0.011609]  [<ffffffff8103e3f0>] __cond_resched+0x29/0x47
-> [    0.011614]  [<ffffffff812dae24>] _cond_resched+0x29/0x34
-> [    0.011620]  [<ffffffff811da90a>] acpi_ps_complete_op+0x246/0x25c
-> [    0.011625]  [<ffffffff811db024>] acpi_ps_parse_loop+0x704/0x860
-> [    0.011630]  [<ffffffff811da200>] acpi_ps_parse_aml+0x9f/0x2de
-> [    0.011635]  [<ffffffff811d9181>] acpi_ns_one_complete_parse+0x101/0x11c
-> [    0.011640]  [<ffffffff811d91bd>] acpi_ns_parse_table+0x21/0x3c
-> [    0.011645]  [<ffffffff811d67e3>] acpi_ns_load_table+0x4f/0x94
-> [    0.011650]  [<ffffffff811dd14a>] acpi_load_tables+0x72/0x133
-> [    0.011656]  [<ffffffff8153c592>] acpi_early_init+0x60/0xf5
-> [    0.011661]  [<ffffffff81519cb0>] start_kernel+0x38b/0x3a0
-> [    0.011666]  [<ffffffff81519140>] ? early_idt_handler+0x0/0x71
-> [    0.011670]  [<ffffffff815192a3>] x86_64_start_reservations+0xaa/0xae
-> [    0.011675]  [<ffffffff8151939e>] x86_64_start_kernel+0xf7/0x106
+> On Sat, 22 Aug 2009, Rogério Brito wrote:
+>
+>> The requested trace is attached to this message. Please let me  
+>> know if
+>> you need more information.
+>
+> The trace shows that something (presumably smartctl) sends a command
+> the drive doesn't understand.  The drive then violates the USB
+> mass-storage protocol, sending an invalid response.
 
-I looked at the traces and there are no kmemleak calls. It's either that
-kmemleak is disabled or the error is not on a kmemleak path. It looks
-more like an ACPI bug to me.
+Right.
 
-Can you try only with slab debugging enabled (without kmemleak or
-kmemcheck)? IIRC someone else reported a similar issue a few weeks ago.
+> The kernel waits
+> for a proper response but nothing more happens, so after 30 seconds  
+> the
+> command times out and is aborted and the drive is reset.
 
--- 
-Catalin
+I'm not with the kernel sources here (so, I can't check the code),  
+but is there any option to be able to log such invalid responses when  
+the kernel gets one? Perhaps the verbose USB logging does that?
+
+> The command
+> then gets retried, and the same thing happens again.  The retries take
+> so long that the kernel complains about smartctl being blocked for  
+> more
+> than 120 seconds -- that's the reason for the stack dump.
+
+Right.
+
+Geeez, Alan, is there any vendor out there that gets the USB  
+implementation according to the specs?
+
+This is the 3rd USB device that I sent you some message about where  
+the kernel moans about something that it doesn't understand (I can  
+get you the vendor and device ids when I get home).
+
+I will test with some other devices that I have, just to see what  
+their response is. :-(
+
+> So the problem has several causes.  One is that the drive is buggy (it
+> doesn't respond with an error code in the proper way when it  
+> receives a
+> command it doesn't understand).  Another is that smartctl is trying to
+> send commands in a form the drive can't handle.
+
+That's probably not smartctl, but the user (me) that is telling it to  
+use a given command set to check if the USB adapter understands/ 
+allows pass-thru of the SMART protocol to the drive.
+
+> Finally, there's the
+> problem about all the retries taking too long.
+
+Is there anything that could be done about this?
+
+> Perhaps you can blame the kernel for spending too much time on  
+> retries,
+> but the other two are the fault of the drive and smartctl.
+
+I understand the p-o-v of the kernel: some devices need a little bit  
+more time on a retry, while others don't. There's no way to hardcode  
+a once and for all behavior. It seems that an expensive solution to  
+this would be to create (yet) another list of blacklisted devices  
+(how many lists of quirks do we have in the kernel already---this is  
+really causing some bloat, especially for some embedded devices). :-(
+
+OTOH, creating blacklists seem to not be the adequate (let alone  
+"right") solution (see the ASUS/it87 monitoring cause) in many  
+situations. :-/
+
+
+Thanks for your always kind messages, Rogério Brito.
 
