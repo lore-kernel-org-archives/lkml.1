@@ -1,255 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933373AbZHWACx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933378AbZHWAHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933373AbZHWACx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 20:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933356AbZHWACx
+	id S933378AbZHWAHD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 20:07:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933333AbZHWAHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 20:02:53 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:61482 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933354AbZHWACw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 20:02:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=WMfohcqKonG4CWdfpNDZuT53QhKfaYdhh83NY8NAHIoiilWMTPnvmWsREUtegy6J5s
-         xGlpA+KZQs0uUcxt1rDgwjO9zyd3vlqmu0bm/lRlq3JqX7yUZVsipxXVLq9Uwy8ANxFb
-         qsC6NAzM5CPrJX0QrOlBzYyqvEAMJb+tE7GcA=
-Subject: Re: ACPI locks hardware devices when it doesn't detect vista
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Mairo <rety@poczta.onet.pl>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-In-Reply-To: <1250980612.6402.17.camel@maxim-laptop>
-References: <1250945310.14167.150.camel@maxim-laptop>
-	 <200908222341.06300.rjw@sisk.pl>  <1250978550.6402.14.camel@maxim-laptop>
-	 <1250980612.6402.17.camel@maxim-laptop>
-Content-Type: text/plain
-Date: Sun, 23 Aug 2009 03:02:46 +0300
-Message-Id: <1250985766.28634.3.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sat, 22 Aug 2009 20:07:01 -0400
+Received: from bu3sch.de ([62.75.166.246]:50462 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933265AbZHWAHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 20:07:00 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Peter Huewe <PeterHuewe@gmx.de>
+Subject: Re: [PATCH] gpio: adding __init/__exit macros in drivers/gpio/bt8xxgpio.c
+Date: Sun, 23 Aug 2009 02:06:57 +0200
+User-Agent: KMail/1.9.9
+Cc: Jiri Kosina <trivial@kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+References: <200908230201.10471.PeterHuewe@gmx.de>
+In-Reply-To: <200908230201.10471.PeterHuewe@gmx.de>
+X-Move-Along: Nothing to see here. No, really... Nothing.
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908230206.57937.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-08-23 at 01:36 +0300, Maxim Levitsky wrote:
-> On Sun, 2009-08-23 at 01:02 +0300, Maxim Levitsky wrote:
-> > On Sat, 2009-08-22 at 23:41 +0200, Rafael J. Wysocki wrote:
-> > > On Saturday 22 August 2009, Maxim Levitsky wrote:
-> > > > Hi,
-> > > > 
-> > > > <joke>
-> > > > This should be brought to a Microsoft antitrust case...
-> > > > </joke>
-> > > > 
-> > > > 
-> > > > Today many notebooks ship with a embedded infrared receiver.
-> > > > In Vista there is new subsystem that decodes these signals.
-> > > > (of course it works only with Microsoft Certificated Remotes (TM)...)
-> > > > 
-> > > > The receiver is usually presented to system as a pnp device 
-> > > > (using acpi tables)
-> > > > 
-> > > > It turns out that some bioses actually use the OSI, ACPI feature of the
-> > > > operation system to detect if running inside Vista. If not they disable
-> > > > the infrared receiver.
-> > 
-> > Just one note. At least I am now sure that OSI("Windows 2006") does
-> > return true by default.
-> > 
-> > I have tried booting here with acpi_osi="!Windows 2006", and actually
-> > the CIR PNP device disappeared. I guess that _STA that returns zero
-> > causes that.
-> > 
-> > On his laptop, ENE0100 device doesn't disappear, but still someone
-> > writes zero to LPCB.IOR2 (we checked and found out that it was zero)
-> > 
-Just to make it clear:
-on Mairo's laptop, booting without any special parameters, doesn't
-remove the device from pnp list, but its I/O range is blocked.
-Booting with acpi_osi="!Windows 2006" actually removes it from pnp list,
-exactly, like on my system (I don't have completely confirmation of
-that, but according to dmesg, my driver never gets loaded)
+On Sunday 23 August 2009 02:01:10 Peter Huewe wrote:
+> From: Peter Huewe <peterhuewe@gmx.de>
+> 
+> Trivial patch which adds the __init/__exit macro to the init/exit functions of
+> drivers/gpio/bt8xxgpio.c
+> 
+> Michael, Kay or Greg, please have a look at the small patch and either pull it
+> through your tree, or please ack' it so Jiri can pull it through the trivial
+> tree.
+> 
+> linux version 2.6.31-rc7 - linus git tree, So 23. Aug 01:38:43 CEST 2009
+> 
+> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+
+Acked-by: Michael Buesch <mb@bu3sch.de>
+
+> ---
+> diff --git a/drivers/gpio/bt8xxgpio.c b/drivers/gpio/bt8xxgpio.c
+> index 984b587..5590414 100644
+> --- a/drivers/gpio/bt8xxgpio.c
+> +++ b/drivers/gpio/bt8xxgpio.c
+> @@ -331,13 +331,13 @@ static struct pci_driver bt8xxgpio_pci_driver = {
+>  	.resume		= bt8xxgpio_resume,
+>  };
+>  
+> -static int bt8xxgpio_init(void)
+> +static int __init bt8xxgpio_init(void)
+>  {
+>  	return pci_register_driver(&bt8xxgpio_pci_driver);
+>  }
+>  module_init(bt8xxgpio_init)
+>  
+> -static void bt8xxgpio_exit(void)
+> +static void __exit bt8xxgpio_exit(void)
+>  {
+>  	pci_unregister_driver(&bt8xxgpio_pci_driver);
+>  }
+> 
+> 
 
 
-Best regards,
-	Maxim Levitsky
 
-
-> > Maybe its zero by default, but some 'magic' driver in windows sets it
-> > up, but this is a PCI config register on LPC bridge, (0x88) and I am
-> > almost sure that nobody except bios knows about it.
-> > 
-> > Windows IR driver doesn't touch it for sure.
-> > 
-> > So, it could be that _STA is once called before the _SB._INI ?
-> 
-> We have just tested, and it turns out that on boot, the device is
-> unlocked. So it must ACPI
-> 
-> I have put a printk very early in kernel initialization, and it proved
-> that CIR io range is accessible, before acpi initialization.
-> 
-> 
-> Best regards,
-> 	Maxim Levitsky
-> 
-> 
-> 
-> > Best regards,
-> > 	Maxim Levitsky
-> > 
-> > > 
-> > > Oh well.
-> > > 
-> > > That should've been Cced to linux-acpi (now added).  I'm looking forward to
-> > > seeng a comment from Len. 
-> > Sorry....
-> > > 
-> > > > On my system this it is still tolerable:
-> > > > 
-> > > >             Device (MIR)
-> > > >             {
-> > > >                 Name (_HID, EisaId ("ENE0100"))
-> > > >                 Method (_STA, 0, NotSerialized)
-> > > >                 {
-> > > >                     If (LGreaterEqual (OSYS, 0x07D6))
-> > > >                     {
-> > > >                         If (LOr (And (OTHR, 0x02), And (OTHR, 0x40)))
-> > > >                         {
-> > > >                             Return (0x00)
-> > > >                         }
-> > > >                         Else
-> > > >                         {
-> > > >                             Return (0x0F)
-> > > >                         }
-> > > >                     }
-> > > >                     Else
-> > > >                     {
-> > > >                         Return (0x00)
-> > > >                     }
-> > > >                 }
-> > > > 
-> > > > But not so, on Mairo's system:
-> > > > 
-> > > >             Device (MIR)
-> > > >             {
-> > > >                 Name (_HID, EisaId ("ENE0100"))
-> > > >                 Method (_STA, 0, NotSerialized)
-> > > >                 {
-> > > >                     If (LAnd (MCIR, LEqual (OSYS, 0x07D6)))
-> > > >                     {
-> > > >                         Return (0x0F)
-> > > >                     }
-> > > >                     Else
-> > > >                     {
-> > > >                         Store (Zero, ^^LPCB.IOR2)
-> > > >                         Return (Zero)
-> > > >                     }
-> > > >                 }
-> > > > 
-> > > > 	.......
-> > > > 
-> > > >     Method (_WAK, 1, NotSerialized)
-> > > >     {
-> > > >     .......
-> > > >         If (Not (LAnd (MCIR, LEqual (OSYS, 0x07D6))))
-> > > >         {
-> > > >             Store (Zero, \_SB.PCI0.LPCB.IOR2)
-> > > >         }
-> > > > 
-> > > > 
-> > > > .....
-> > > > 
-> > > >     Scope (_SB)
-> > > >     {
-> > > >         Method (_INI, 0, NotSerialized)
-> > > >         {
-> > > >             If (DTSE)
-> > > >             {
-> > > >                 TRAP (0x47)
-> > > >             }
-> > > > 
-> > > >             Store (0x07D0, OSYS)
-> > > >             If (CondRefOf (_OSI, Local0))
-> > > >             {
-> > > >                 If (_OSI ("Linux"))
-> > > >                 {
-> > > >                     Store (One, LINX)
-> > > >                     Store (Zero, ECDY)
-> > > >                 }
-> > > > 
-> > > >                 If (_OSI ("Windows 2001"))
-> > > >                 {
-> > > >                     Store (0x07D1, OSYS)
-> > > >                 }
-> > > > 
-> > > >                 If (_OSI ("Windows 2001 SP1"))
-> > > >                 {
-> > > >                     Store (0x07D1, OSYS)
-> > > >                 }
-> > > > 
-> > > >                 If (_OSI ("Windows 2001 SP2"))
-> > > >                 {
-> > > >                     Store (0x07D2, OSYS)
-> > > >                 }
-> > > > 
-> > > >                 If (_OSI ("Windows 2006"))
-> > > >                 {
-> > > >                     Store (0x07D6, OSYS)
-> > > >                 }
-> > > > 
-> > > >                 If (LEqual (TPMV, One))
-> > > >                 {
-> > > >                     If (LLessEqual (OSYS, 0x07D2))
-> > > >                     {
-> > > >                         TRAP (0x49)
-> > > >                     }
-> > > >                 }
-> > > >             }
-> > > > 
-> > > >             If (LAnd (MPEN, LEqual (OSYS, 0x07D1)))
-> > > >             {
-> > > >                 TRAP (0x3D)
-> > > >             }
-> > > > 
-> > > >             TRAP (0x2B)
-> > > >         }
-> > > >     }
-> > > > 
-> > > > We have tried to boot the system with acpi_osi="Windows 2006", but it
-> > > > didn't help (kernel log confirmed that this parameter was set)
-> > > > 
-> > > > The only explanation I think of is ether his laptop is whitelisted on
-> > > > osi=Linux, or that _SB._INI is called by linux _after_ MIR._STA
-> > > > or that acpi_osi isn't yet in charge when _SB._INI is called.
-> > > > 
-> > > > 
-> > > > The kernel in question is quite recent kernel, (2.6.30.5 from debian
-> > > > unstable).
-> > > > 
-> > > > 
-> > > > The only way I managed to 'enable' this device is to 
-> > > > do 'sudo setpci -s 00:1f.0 0x88.W=0x701'
-> > > > 
-> > > > Or in other words undo the damage done by these ACPI commands.
-> > > > 
-> > > > Mairo, can you boot the system with acpi=off, and then poke the cir IO
-> > > > range (0x700-0x703) ?
-> > > 
-> > > Best,
-> > > Rafael
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
-> 
-
+-- 
+Greetings, Michael.
