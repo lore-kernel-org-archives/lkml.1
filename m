@@ -1,84 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751026AbZHWWxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750937AbZHWXFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751026AbZHWWxW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 18:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbZHWWxV
+	id S1750937AbZHWXFm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 19:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbZHWXFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 18:53:21 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:50991 "EHLO e7.ny.us.ibm.com"
+	Sun, 23 Aug 2009 19:05:42 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:55209 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830AbZHWWxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 18:53:20 -0400
-Date: Sun, 23 Aug 2009 15:53:21 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/rcu] rcu: Consolidate sparse and lockdep
-	declarations in include/linux/rcupdate.h
-Message-ID: <20090823225321.GA3976@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <tip-bc33f24bdca8b6e97376e3a182ab69e6cdefa989@git.kernel.org> <20090823184202.GA20404@elte.hu> <20090823193356.GB6882@linux.vnet.ibm.com>
+	id S1750743AbZHWXFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 19:05:41 -0400
+Message-ID: <4A91CBB9.1080702@crca.org.au>
+Date: Mon, 24 Aug 2009 09:07:37 +1000
+From: Nigel Cunningham <ncunningham@crca.org.au>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090823193356.GB6882@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Jiri Slaby <jirislaby@gmail.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       TuxOnIce-devel <tuxonice-devel@lists.tuxonice.net>
+Subject: Re: What to do?
+References: <4A8CCF95.9030401@crca.org.au> <4A91A2D4.90203@gmail.com> <200908240004.16769.rjw@sisk.pl>
+In-Reply-To: <200908240004.16769.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 23, 2009 at 12:33:56PM -0700, Paul E. McKenney wrote:
-> On Sun, Aug 23, 2009 at 08:42:02PM +0200, Ingo Molnar wrote:
-> > 
-> > * tip-bot for Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > Commit-ID:  bc33f24bdca8b6e97376e3a182ab69e6cdefa989
-> > > Gitweb:     http://git.kernel.org/tip/bc33f24bdca8b6e97376e3a182ab69e6cdefa989
-> > > Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > AuthorDate: Sat, 22 Aug 2009 13:56:47 -0700
-> > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > CommitDate: Sun, 23 Aug 2009 10:32:37 +0200
-> > > 
-> > > rcu: Consolidate sparse and lockdep declarations in include/linux/rcupdate.h
-> > 
-> > -tip testing found a spontaneous reboot crash, which i 
-> > bisected back to this commit:
-> > 
-> >   bc33f24bdca8b6e97376e3a182ab69e6cdefa989 is first bad commit
-> > 
-> > the reboot happens during the ftrace syscall tracepoints 
-> > self-test:
-> > 
-> > [   34.618832] Testing event sys_exit_set_robust_list: OK
-> > [   34.635511] Testing event sys_enter_get_robust_list: OK
-> > [   34.652164] Testing event sys_exit_get_robust_list: OK
-> > [   34.668844] Testing event sys_enter_futex: OK
-> > [   34.685495] Testing event sys_exit_futex: OK
-> > [   34.702170] Testing event lock_acquire: [instant reboot]
-> > 
-> > There's no log message - just a reboot - which signals some 
-> > severe crash - perhaps some locking related infinite 
-> > recursion or something like that?
+Hi.
+
+Rafael J. Wysocki wrote:
+> On Sunday 23 August 2009, Jiri Slaby wrote:
+>> On 08/20/2009 06:22 AM, Nigel Cunningham wrote:
+>>> I'd therefore like to ask whether there's anyone out there who could do
+>>> one or more of:
+>>>
+>>> 1) Step up to the plate and help improve swsusp, without relying on any
+>>> help from me but with my blessing if they choose to copy wholesale bits
+>>> of TuxOnIce;
+>> Hi, I think I can help here.
 > 
-> Pretty impressive for having mostly moved RCU's lockdep-related
-> declarations from one file to another...  :-/
+> Great, thanks!
+
+Yes, thanks for volunteering, Jiri!
+
+We should start by asking where you're at as far as knowledge of swsusp
+and TuxOnIce goes. I know you've been around the TuxOnIce lists a bit,
+but don't know how much you know about C programming or the inards of
+the kernel, swsusp or TuxOnIce (ie how much help do you need to get up
+to speed?).
+
+>> Is there any TODO or similar resources?
 > 
-> Looking into it, probably a typo on my part.
+> Not that I know of, but I think we should start with the non-controversial
+> things, like image compression etc.
 
-I rechecked this several times, and don't see how anything else should
-have noticed this patch.  That said, that self-test is rather amazing
-code, so...
+No, I have a bit of a mental to-do list, but haven't written anything
+down yet. Here's a quick, high-level list (some of these things are big):
 
-For the moment, I will simply drop bc33f24bdca8 from my stack.  For one
-thing, once CONFIG_PREEMPT_RCU is dropped, there is much less advantage
-to consolidating these annotations.
+- Rework swap allocation (as per below) and freeing.
+- Rework i/o to use bmapping and lay the foundations for use multiple
+block devices.
+- Add modular design (will simplify the following additions)
+- Add multithreaded I/O
+- Add compression support
+- Add support for multiple swap devices
+- Add support for generic files (file allocator)
+- Do storage allocation etc ('image preparation') prior to the atomic
+copy instead of afterwards, making the only remaining variable how much
+ram drivers' pm routines need (and that might not be an issue by then).
+- Add userspace helper support (storage manager/userui).
 
-But I do have one stupid question...  Given that rcu_read_lock() cannot
-participate in deadlock cycles, why is lockdep tracking it?
+I'd really like to start with adding the modular design - it will make
+things a lot cleaner, but I think we need to do some disentanglement
+first (TuxOnIce has all the support for compression in one file that
+simply isn't compiled if we don't want compression support. It would be
+good to get swsusp set up like that). This is why I have above the
+initial thought of handling doing the swap & compression stuff first.
 
-In any case, I will send a new stack in a day or so (currently testing)
-that drops bc33f24bdca8 and adds some changes that make CPU hotplug work
-much better for CONFIG_TREE_PREEMPT_RCU.
+When I prepared those compression patches earlier, it became apparent
+that we really need to begin with reworking how the swap is allocated,
+remembered and stored in the image header.
 
-							Thanx, Paul
+The current swsusp scheme of having a page of swap addresses preceding
+the pages that are written doesn't work well for compression, because
+when rereading the image, you can only do readahead in batches of that
+size. Everything will have to grind to a halt while we wait for the next
+'index' page.
+
+In TuxOnIce, we allocate all of the swap at the start of preparing to
+hibernate, which has other advantages I won't go into now. The pages
+allocated are stored as extents in memory. For doing the actual I/O, we
+bmap the swap that's allocated right after allocating it, storing the
+sector numbers in extents as well (remembering the block sizes that are
+relevant as well). We then use them directly in writing the image,
+storing major and minor numbers, block sizes and the extents in the
+image header for use at resume time.
+
+I'd suggest that the place to begin would be converting swsusp to use
+this sort of scheme.
+
+Regarding the non-controversial vs controversial thing, let's not worry
+about that. We should do things in the order that's logical, sensible
+and lays the foundation for the improvements we're planning to have
+follow. If an improvement is really an improvement, it shouldn't be a
+big problem to show that it has technical merits that make it
+worthwhile. As always in Linux, if someone wants to nak something
+without good reason, they'll just end up getting themselves ignored.
+
+Regards,
+
+Nigel
