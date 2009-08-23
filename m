@@ -1,85 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933992AbZHWQwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934008AbZHWQ7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933992AbZHWQwR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 12:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933949AbZHWQwQ
+	id S934008AbZHWQ7s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 12:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933969AbZHWQ7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 12:52:16 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33888 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933947AbZHWQwP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 12:52:15 -0400
-X-Sasl-enc: ic/mjUppqF0fHhSK/slarrVBxsTZBffnu48Fm29cbRao 1251046337
-Message-ID: <4A9173B5.10603@imap.cc>
-Date: Sun, 23 Aug 2009 18:52:05 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Sun, 23 Aug 2009 12:59:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51571 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933963AbZHWQ7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 12:59:47 -0400
+Date: Sun, 23 Aug 2009 09:49:42 -0700
+From: Greg KH <gregkh@suse.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: devel@driverdev.osuosl.org, Marcin Slusarz <marcin.slusarz@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/33] Staging: rt{286,287,307}0: merge rt3070 with
+ rt2870
+Message-ID: <20090823164942.GA2513@suse.de>
+References: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Kconfig Q: expressing a modularity dependency
-References: <49E5E8D0.1090505@imap.cc> <4A8448B7.6030007@imap.cc> <20090814163250.GD1626@ucw.cz>
-In-Reply-To: <20090814163250.GD1626@ucw.cz>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig86BE2751FE4206DA0C283F64"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig86BE2751FE4206DA0C283F64
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sun, Aug 23, 2009 at 03:28:46PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
+> Hi,
+> 
+> The final part of rt2870 and rt3070 merge.
+> 
+> It adds RT3070 chipset support to rt2870 driver and removes no longer needed
+> rt3070 driver (yes, it means one Ralink driver less in the staging tree!).
+> 
+> [ in the process many bugs in all Ralink drivers were fixed, RT2870 chipset
+>   support was converted to use the new firmware and ~1.5 KLOC were removed ]
 
-Pavel Machek schrieb:
+Wonderful work, thanks so much for doing this.  I'll merge these into my
+tree when I get home tomorrow.
 
->> So I'll just put a notice in the help text then, warning people
->> not to set CONFIG_ISDN_DRV_GIGASET=3Dy if their ISDN subsystem
->> is built as a module. If anybody has a better idea I'll be
->> glad to hear it.
->=20
-> That will break randconfig testing, AFAICT.
+thanks again,
 
-I don't think so. Ignoring the warning will not result in a build
-failure, just in reduced functionality, and AFAIK that isn't an
-issue in randconfig testing.
-
-> AFAIK Kconfig supports if statement just fine, so can you just
->=20
-> if something
-> 	bool GIGASET
-> else
-> 	tristate GIGASET
-
-Interesting idea. I'll try that. It'll probably not make it into my
-submission for 2.6.32 anymore, but perhaps it can be retrofitted
-later.
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig86BE2751FE4206DA0C283F64
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFKkXO+Q3+did9BuFsRAjnBAJ4/gPlPygaJgqiMmoZ++0UR48myHACfXL1z
-24vpXiHNxY888mKO2Zcfc3E=
-=2enh
------END PGP SIGNATURE-----
-
---------------enig86BE2751FE4206DA0C283F64--
+greg k-h
