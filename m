@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933460AbZHWCv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933463AbZHWDdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933460AbZHWCv1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 22:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933446AbZHWCv1
+	id S933463AbZHWDdG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 23:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933447AbZHWDdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 22:51:27 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:34700 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933438AbZHWCv0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 22:51:26 -0400
-Date: Sat, 22 Aug 2009 22:51:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Bruno =?ISO-8859-14?B?UHLpbW9udA==?= <bonbons@linux-vserver.org>,
-       Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
- in use
-In-Reply-To: <20090822001637.72a08078@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.44L0.0908222236100.11562-100000@netrider.rowland.org>
+	Sat, 22 Aug 2009 23:33:05 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:43246 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933442AbZHWDdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 23:33:04 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19088.47213.327897.703458@cargo.ozlabs.ibm.com>
+Date: Sun, 23 Aug 2009 13:33:01 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, dwalker@fifo99.com,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:timers/core] timekeeping: Increase granularity of
+	read_persistent_clock()
+In-Reply-To: <20090822153346.GA3313@elte.hu>
+References: <20090814134811.013873340@de.ibm.com>
+	<tip-d4f587c67fc39e0030ddd718675e252e208da4d7@git.kernel.org>
+	<20090822103252.GA32369@elte.hu>
+	<20090822171540.1220f50d@skybase>
+	<20090822153346.GA3313@elte.hu>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan:
+Ingo Molnar writes:
 
-There's a problem with the tty->ops->shutdown method.  It needs to
-release the last port reference owned by the current tty.  But when was
-that reference originally acquired?  Evidently during the first time
-serial_open() was called for the current tty.
+> * Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> > I overlooked a case in the powerpc version of read_persistent_lock.
+> > New patch:
+> 
+> the patches are already committed and this patch doesnt apply - mind 
+> sending a delta fix against tip:master:
 
-The problem is that serial_open() has no way to know if a particular 
-invocation is the first one for this tty!  The ASYNCB_INITIALIZED flag 
-doesn't help, because it might not get set during the first call (i.e., 
-if an error occurs).
+Is that going to leave us with a bisection breakage on powerpc once
+this stuff goes upstream?  If so please fold the fix into the original
+patch.
 
-To do this right, we need a flag in the tty_struct or the tty_port
-which serial_open() can set when acquiring that first reference and
-shutdown method can clear.  Should I add such a flag?
-
-Alan Stern
-
+Thanks,
+Paul.
