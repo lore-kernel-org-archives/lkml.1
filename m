@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933378AbZHWAHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932479AbZHWARc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933378AbZHWAHD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 22 Aug 2009 20:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933333AbZHWAHB
+	id S932479AbZHWARc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 22 Aug 2009 20:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbZHWARb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 22 Aug 2009 20:07:01 -0400
-Received: from bu3sch.de ([62.75.166.246]:50462 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933265AbZHWAHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 22 Aug 2009 20:07:00 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Peter Huewe <PeterHuewe@gmx.de>
-Subject: Re: [PATCH] gpio: adding __init/__exit macros in drivers/gpio/bt8xxgpio.c
-Date: Sun, 23 Aug 2009 02:06:57 +0200
-User-Agent: KMail/1.9.9
-Cc: Jiri Kosina <trivial@kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-References: <200908230201.10471.PeterHuewe@gmx.de>
-In-Reply-To: <200908230201.10471.PeterHuewe@gmx.de>
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	Sat, 22 Aug 2009 20:17:31 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:33951 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752760AbZHWARb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 22 Aug 2009 20:17:31 -0400
+Date: Sat, 22 Aug 2009 20:17:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+cc: Andrew Morton <akpm@linux-foundation.org>, <linux-usb@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <bugzilla-daemon@bugzilla.kernel.org>
+Subject: Re: [Bugme-new] [Bug 14020] New: Stack trace when running smartctl
+ on an USB disk
+In-Reply-To: <20090822211430.GA2547@ime.usp.br>
+Message-ID: <Pine.LNX.4.44L0.0908222002110.9952-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908230206.57937.mb@bu3sch.de>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 23 August 2009 02:01:10 Peter Huewe wrote:
-> From: Peter Huewe <peterhuewe@gmx.de>
-> 
-> Trivial patch which adds the __init/__exit macro to the init/exit functions of
-> drivers/gpio/bt8xxgpio.c
-> 
-> Michael, Kay or Greg, please have a look at the small patch and either pull it
-> through your tree, or please ack' it so Jiri can pull it through the trivial
-> tree.
-> 
-> linux version 2.6.31-rc7 - linus git tree, So 23. Aug 01:38:43 CEST 2009
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+On Sat, 22 Aug 2009, [utf-8] Rogério Brito wrote:
 
-Acked-by: Michael Buesch <mb@bu3sch.de>
-
-> ---
-> diff --git a/drivers/gpio/bt8xxgpio.c b/drivers/gpio/bt8xxgpio.c
-> index 984b587..5590414 100644
-> --- a/drivers/gpio/bt8xxgpio.c
-> +++ b/drivers/gpio/bt8xxgpio.c
-> @@ -331,13 +331,13 @@ static struct pci_driver bt8xxgpio_pci_driver = {
->  	.resume		= bt8xxgpio_resume,
->  };
->  
-> -static int bt8xxgpio_init(void)
-> +static int __init bt8xxgpio_init(void)
->  {
->  	return pci_register_driver(&bt8xxgpio_pci_driver);
->  }
->  module_init(bt8xxgpio_init)
->  
-> -static void bt8xxgpio_exit(void)
-> +static void __exit bt8xxgpio_exit(void)
->  {
->  	pci_unregister_driver(&bt8xxgpio_pci_driver);
->  }
+> Hi, Alan.
 > 
+> On Aug 21 2009, Alan Stern wrote:
+> > A usbmon trace showing what happens when you plug in the drive and
+> > when you run smartctl would help.
 > 
+> The requested trace is attached to this message. Please let me know if
+> you need more information.
 
+The trace shows that something (presumably smartctl) sends a command
+the drive doesn't understand.  The drive then violates the USB
+mass-storage protocol, sending an invalid response.  The kernel waits
+for a proper response but nothing more happens, so after 30 seconds the
+command times out and is aborted and the drive is reset.  The command
+then gets retried, and the same thing happens again.  The retries take
+so long that the kernel complains about smartctl being blocked for more
+than 120 seconds -- that's the reason for the stack dump.
 
+So the problem has several causes.  One is that the drive is buggy (it
+doesn't respond with an error code in the proper way when it receives a
+command it doesn't understand).  Another is that smartctl is trying to
+send commands in a form the drive can't handle.  Finally, there's the
+problem about all the retries taking too long.
 
--- 
-Greetings, Michael.
+Perhaps you can blame the kernel for spending too much time on retries, 
+but the other two are the fault of the drive and smartctl.
+
+Alan Stern
+
