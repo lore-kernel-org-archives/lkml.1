@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933859AbZHWMHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933875AbZHWMHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933859AbZHWMHs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 08:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbZHWMHp
+	id S933875AbZHWMHT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 08:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933839AbZHWMHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 08:07:45 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:54120 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933522AbZHWMHk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 08:07:40 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: 2.6.31-rc6: ACPI handle has no context apparenty from libata during suspend to RAM
-Date: Sun, 23 Aug 2009 14:07:37 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200908231424.07900.arvidjaar@mail.ru>
-In-reply-To: <200908231424.07900.arvidjaar@mail.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908231407.38543.elendil@planet.nl>
-X-OriginalArrivalTime: 23 Aug 2009 12:07:39.0008 (UTC) FILETIME=[4F1CB000:01CA23EA]
+	Sun, 23 Aug 2009 08:07:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59971 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933520AbZHWL4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 07:56:46 -0400
+From: Avi Kivity <avi@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 04/46] KVM: Trace apic registers using their symbolic names
+Date: Sun, 23 Aug 2009 14:56:03 +0300
+Message-Id: <1251028605-31977-5-git-send-email-avi@redhat.com>
+In-Reply-To: <1251028605-31977-1-git-send-email-avi@redhat.com>
+References: <1251028605-31977-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> sd 0:0:0:0: [sda] Stopping disk
-> ACPI handle has no context!
-> sdhci-pci 0000:03:01.1: PME# disabled
-> sdhci-pci 0000:03:01.1: PCI INT B disabled
-> ACPI handle has no context!
-> ata5: port disabled. ignoring.
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/trace.h |   14 ++++++++++++--
+ 1 files changed, 12 insertions(+), 2 deletions(-)
 
-I have a few of those too. I've been intending to try to investigate them, 
-but haven't gotten around to it yet. One problem is that there is no 
-context information in the error message itself (what 
-driver/function/whatever).
+diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
+index cd8c90d..6c2c87f 100644
+--- a/arch/x86/kvm/trace.h
++++ b/arch/x86/kvm/trace.h
+@@ -111,6 +111,15 @@ TRACE_EVENT(kvm_cpuid,
+ 		  __entry->rbx, __entry->rcx, __entry->rdx)
+ );
+ 
++#define AREG(x) { APIC_##x, "APIC_" #x }
++
++#define kvm_trace_symbol_apic						    \
++	AREG(ID), AREG(LVR), AREG(TASKPRI), AREG(ARBPRI), AREG(PROCPRI),    \
++	AREG(EOI), AREG(RRR), AREG(LDR), AREG(DFR), AREG(SPIV), AREG(ISR),  \
++	AREG(TMR), AREG(IRR), AREG(ESR), AREG(ICR), AREG(ICR2), AREG(LVTT), \
++	AREG(LVTTHMR), AREG(LVTPC), AREG(LVT0), AREG(LVT1), AREG(LVTERR),   \
++	AREG(TMICT), AREG(TMCCT), AREG(TDCR), AREG(SELF_IPI), AREG(EFEAT),  \
++	AREG(ECTRL)
+ /*
+  * Tracepoint for apic access.
+  */
+@@ -130,9 +139,10 @@ TRACE_EVENT(kvm_apic,
+ 		__entry->val		= val;
+ 	),
+ 
+-	TP_printk("apic_%s 0x%x = 0x%x",
++	TP_printk("apic_%s %s = 0x%x",
+ 		  __entry->rw ? "write" : "read",
+-		  __entry->reg, __entry->val)
++		  __print_symbolic(__entry->reg, kvm_trace_symbol_apic),
++		  __entry->val)
+ );
+ 
+ #define trace_kvm_apic_read(reg, val)		trace_kvm_apic(0, reg, val)
+-- 
+1.6.4.1
 
-Are they new for you in .31 or have they always been there? I suspect the 
-latter, in which case I wouldn't worry about them too much. I at least 
-have never noticed any actual negative impact from them.
-
-Cheers,
-FJP
