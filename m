@@ -1,148 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZHWKOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbZHWKyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbZHWKOl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 06:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755923AbZHWKOk
+	id S1756007AbZHWKyK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 06:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZHWKyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 06:14:40 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:63782 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755922AbZHWKOi (ORCPT
+	Sun, 23 Aug 2009 06:54:09 -0400
+Received: from smtpfb1-g21.free.fr ([212.27.42.9]:33429 "EHLO
+	smtpfb1-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755927AbZHWKyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 06:14:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=UG3YDBJWyx74kej4vTjlWdM3CkLPHFEp715hNy7GmpwBIiC0D7jq49sbblAe1r6tNZ
-         GRcg60Fvh9ZS8kxUoZBa/wMo/uatxaQKb03m5/j9RKQqMEOZbSskZYwCQ8JXzABO3Rja
-         jNL49AFsctjxhRFJ8KCNV5J6hwKE2xEo86njs=
+	Sun, 23 Aug 2009 06:54:08 -0400
+Message-ID: <4A911F93.5030905@free.fr>
+Date: Sun, 23 Aug 2009 12:53:07 +0200
+From: bernard pidoux <bpidoux@free.fr>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
 MIME-Version: 1.0
-Date: Sun, 23 Aug 2009 11:14:38 +0100
-Message-ID: <9b2b86520908230314q37d07da6mbde9dc48ad5a17ce@mail.gmail.com>
-Subject: r8189 mac address changes persist across reboot (was: duplicate MAC 
-	addresses)
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: marty <marty@goodoldmarty.com>, linux-hotplug@vger.kernel.org,
-       netdev <netdev@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: gfs2_mkdir : array subscript is above array bounds
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/23/09, marty <marty@goodoldmarty.com> wrote:
-> Greg KH wrote:
->> > On Tue, Aug 18, 2009 at 04:27:04PM -0400, marty wrote:
->>> >> I got trouble...
->>> >> (duplicate MAC addresses)
->> >
->> > That's a bug in your hardware, have you asked your manufacturer to
->> > resolve this for you?  That violates the ethernet spec...
->
-> I have resolved that problem as of today. I found this was caused
-> by the software I had been using. If a hardware issue remains, it is moot.
->
-> The bonding driver/utilities normally sets the bond address to the MAC of
-> the
-> first NIC. But it also set the MAC of the slave (eth3) to the MAC of the
-> first
-> NIC. This persists through reboots so that is how my MACs got duplicated.
->
-> Resetting the MAC corrected those problems and everything works fine now.
->
-> Marty B.
+I observed the following warning when compiling 2.6.30.5 kernel
 
-Hmm.  <Documentation/networking/bonding.txt>
+root@F6BVP-5 linux]# make
+CHK include/linux/version.h
+CHK include/linux/utsrelease.h
+SYMLINK include/asm -> include/asm-x86
+CALL scripts/checksyscalls.sh
+CHK include/linux/compile.h
+CC [M] fs/gfs2/ops_inode.o
+fs/gfs2/ops_inode.c: In function ‘gfs2_mkdir’:
+/usr/src/linux-2.6.30.5/arch/x86/include/asm/string_32.h:75: attention : 
+array subscript is above array bounds
+LD [M] fs/gfs2/gfs2.o
+Kernel: arch/x86/boot/bzImage is ready (#2)
 
-"To restore your slaves' MAC addresses, you need to detach them
-from the bond (`ifenslave -d bond0 eth0'). The bonding driver will
-then restore the MAC addresses that the slaves had before they were
-enslaved."
+Bernard Pidoux
 
-In which case one would hope that a clean shutdown would restore the
-MAC addresses in the same way as ifenslave -d.
-
-I found that snippet via Google, which pointed me to the 2.4 version
-of the same document [1].  It suggests that your hardware or driver is
-a little unusual.
-
-"To restore your slaves' MAC addresses, you need to detach them
-from the bond (`ifenslave -d bond0 eth0'), set them down
-(`ifconfig eth0 down'), unload the drivers (`rmmod 3c59x', for
-example) and reload them to get the MAC addresses from their
-eeproms."
-
-So other drivers would not have this problem, because they always
-reset the MAC address at load time.  That would explain why the the
-kernel doesn't bother resetting the MAC addresses on shutdown.
-
-Looking at r8169.c confirms this.  It doesn't appear to initialize the
-MAC address register from elsewhere; it just uses the current value.
-It will also report this initial value as the "permanent" MAC address,
-which your report suggests is wrong.  I think your problem is a bug in
-r8169.
-
-Francois, I found a datasheet for the 8139; it was claimed to be
-similar and it does indeed appear so.  The datasheet suggests that the
-driver needs to provoke "auto-load" from the EEPROM at load time.
-Could you please have a look at fixing this, so that MAC address
-changes do not persist over a reboot?
-
-Thanks
-Alan
-
-"1. Features
-
-Uses 93C46 (64*16-bit EEPROM) to store resource
-                    configuration, ID parameter, and VPD data
-...
-
-5. Register Descriptions
-The RTL8139D(L) provides the following set of operational registers
-mapped into PCI memory space or I/O space.
-     Offset       R/W                Tag
-           Description
-     0000h         R/W               IDR0            ID Register 0,
-The ID register0-5 are only permitted to read/write by
-                                                     4-byte access.
-Read access can be byte, word, or double word access.
-                                                     The initial value
-is autoloaded from EEPROM EthernetID field.
-
-...
-
-5.9 9346CR: 93C46 Command Register
-(Offset 0050h, R/W)
-This register is used for issuing commands to the RTL8139D(L). These
-commands are issued by setting the corresponding bits for the
-function. A warm software reset along with individual reset and
-enable/disable for transmitter and receiver are provided as well.
-
-Bit R/W Symbol                          Description
-7-6 R/W EEM1-0 Operating Mode: These 2 bits select the RTL8139D(L) operating
-               mode.
-
-                 EEM1    EEM0                      Operating Mode
-                    0      0    Normal (RTL8139D(L) network/host communication
-                                mode)
-                    0      1    Auto-load: Entering this mode will make the
-                                RTL8139D(L) load the contents of 93C46
-like when the
-                                RSTB signal is asserted. This
-auto-load operation will
-                                take about 2 ms. After it is
-completed, the RTL8139D(L)
-                                goes back to the normal mode
-automatically (EEM1 =
-                                EEM0 = 0) and all the other registers
-are reset to default
-                                values."
-
-
-
-
-[1] Bonding mini-howto for 2.4 kernel
-<http://www.kernel.org/pub/linux/kernel/people/marcelo/linux-2.4/Documentation/networking/bonding.txt>
