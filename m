@@ -1,152 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933810AbZHWN2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933839AbZHWN2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933810AbZHWN2d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 09:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbZHWN2c
+	id S933839AbZHWN2k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 09:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933649AbZHWN2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 09:28:32 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:58451 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933770AbZHWN23 (ORCPT
+	Sun, 23 Aug 2009 09:28:38 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:49132 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933781AbZHWN2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 09:28:29 -0400
+	Sun, 23 Aug 2009 09:28:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=i6C4i48Zl6o39fEiC0fHnWG+2qr3/07lgkECw+/t6jjCJHo0mpOnZWn38bC5amAPI2
-         Ht1l92z+83y4wKSts5XjpcAx8Vo3fl8KL2qAAVhtv6HBReUhdyvJkPI/pwFPSGE7fGUX
-         N6i6ihtoFQHsFdATQb2sgceQNYQ/R9WjnAw2Q=
+        b=cvFrUjFQJ+eXEA6GY3z2028SFMQrbz5agL/klxZ7SyHU/1BEkXq0qO1vhNi0E0XSPe
+         nxx+Yj+ccE4Wrcsid97dPpw1w3MG2JP0dq1uG/EV96cCwE/PecyS9yi2uRLNH0nv0STF
+         iDM3Wvz7eMWSI95Xl0nkrWzFu6UQB5Y7jo/1E=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        Marcin Slusarz <marcin.slusarz@gmail.com>,
        Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Date: Sun, 23 Aug 2009 15:28:58 +0200
-Message-Id: <20090823132858.17784.17117.sendpatchset@localhost.localdomain>
+Date: Sun, 23 Aug 2009 15:29:05 +0200
+Message-Id: <20090823132905.17784.97814.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
 References: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
-Subject: [PATCH 02/33] Staging: rtxxxx: unify AsicSwitchChannel()
+Subject: [PATCH 03/33] Staging: rtxx70: unify NICInitRT30xxRFRegisters()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtxxxx: unify AsicSwitchChannel()
+Subject: [PATCH] Staging: rtxx70: unify NICInitRT30xxRFRegisters()
 
-Unify RT30xx and !RT30xx code in AsicSwitchChannel().
+Unify RT30xx and !RT30xx code in NICInitRT30xxRFRegisters().
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2860/common/mlme.c |   46 ++++++-----------------------------
- 1 file changed, 9 insertions(+), 37 deletions(-)
+ drivers/staging/rt2860/common/rtmp_init.c |   41 ++++++++----------------------
+ 1 file changed, 12 insertions(+), 29 deletions(-)
 
-Index: b/drivers/staging/rt2860/common/mlme.c
+Index: b/drivers/staging/rt2860/common/rtmp_init.c
 ===================================================================
---- a/drivers/staging/rt2860/common/mlme.c
-+++ b/drivers/staging/rt2860/common/mlme.c
-@@ -5787,8 +5787,7 @@ VOID AsicSwitchChannel(
- 			break;
- 		}
- 	}
--#endif
+--- a/drivers/staging/rt2860/common/rtmp_init.c
++++ b/drivers/staging/rt2860/common/rtmp_init.c
+@@ -1263,37 +1263,20 @@ VOID NICInitRT30xxRFRegisters(IN PRTMP_A
+ 	INT i;
+ 	// Driver must read EEPROM to get RfIcType before initial RF registers
+ 	// Initialize RF register to default value
 -#ifndef RT30xx
-+#else
- 	for (index = 0; index < pAd->ChannelListNum; index++)
- 	{
- 		if (Channel == pAd->ChannelList[index].Channel)
-@@ -5805,13 +5804,11 @@ VOID AsicSwitchChannel(
- 
- #ifdef RT2870
- 	// The RF programming sequence is difference between 3xxx and 2xxx
-+	if ((IS_RT3070(pAd) || IS_RT3090(pAd)) && (
+-        if (IS_RT3070(pAd) && ((pAd->RfIcType == RFIC_3020) ||(pAd->RfIcType == RFIC_2020)))
+-        {
+-                // Init RF calibration
+-                // Driver should toggle RF R30 bit7 before init RF registers
+-                ULONG RfReg = 0;
+-                RT30xxReadRFRegister(pAd, RF_R30, (PUCHAR)&RfReg);
+-                RfReg |= 0x80;
+-                RT30xxWriteRFRegister(pAd, RF_R30, (UCHAR)RfReg);
+-                RTMPusecDelay(1000);
+-                RfReg &= 0x7F;
+-                RT30xxWriteRFRegister(pAd, RF_R30, (UCHAR)RfReg);
+-
+-                // Initialize RF register to default value
+-                for (i = 0; i < NUM_RF_REG_PARMS; i++)
+-                {
+-                        RT30xxWriteRFRegister(pAd, RT30xx_RFRegTable[i].Register, RT30xx_RFRegTable[i].Value);
+-                }
+-
+-                //For RF filter Calibration
+-		RTMPFilterCalibration(pAd);
+-        }
+-#endif
++	if (IS_RT3070(pAd)
  #ifdef RT30xx
--	if ((IS_RT3070(pAd) || IS_RT3090(pAd)) && ((pAd->RfIcType == RFIC_3020) || (pAd->RfIcType == RFIC_2020) ||
--		(pAd->RfIcType == RFIC_3021) || (pAd->RfIcType == RFIC_3022)))
--#endif
--#ifndef RT30xx
--	if (IS_RT3070(pAd) && ((pAd->RfIcType == RFIC_3020) || (pAd->RfIcType == RFIC_2020)))
-+	     (pAd->RfIcType == RFIC_3022) || (pAd->RfIcType == RFIC_3021) ||
- #endif
-+	     (pAd->RfIcType == RFIC_3020) || (pAd->RfIcType == RFIC_2020)))
+-	if (IS_RT3070(pAd) || IS_RT3071(pAd))
++	    || IS_RT3071(pAd)
++#else
++	    && (pAd->RfIcType == RFIC_3020 || pAd->RfIcType == RFIC_2020)
++#endif
++	   )
  	{
- 		/* modify by WY for Read RF Reg. error */
- 		UCHAR RFValue;
-@@ -5824,22 +5821,6 @@ VOID AsicSwitchChannel(
- 				RT30xxWriteRFRegister(pAd, RF_R02, FreqItems3020[index].N);
- 				RT30xxWriteRFRegister(pAd, RF_R03, FreqItems3020[index].K);
- 
--#ifndef RT30xx
--				RT30xxReadRFRegister(pAd, RF_R06, (PUCHAR)&RFValue);
--				RFValue = (RFValue & 0xFC) | FreqItems3020[index].R;
--				RT30xxWriteRFRegister(pAd, RF_R06, (UCHAR)RFValue);
--
--				// Set Tx Power
--				RT30xxReadRFRegister(pAd, RF_R12, (PUCHAR)&RFValue);
--				RFValue = (RFValue & 0xE0) | TxPwer;
--				RT30xxWriteRFRegister(pAd, RF_R12, (UCHAR)RFValue);
--
--				// Set RF offset
--				RT30xxReadRFRegister(pAd, RF_R23, (PUCHAR)&RFValue);
--				RFValue = (RFValue & 0x80) | pAd->RfFreqOffset;
--				RT30xxWriteRFRegister(pAd, RF_R23, (UCHAR)RFValue);
--#endif
--#ifdef RT30xx
- 				RT30xxReadRFRegister(pAd, RF_R06, &RFValue);
- 				RFValue = (RFValue & 0xFC) | FreqItems3020[index].R;
- 				RT30xxWriteRFRegister(pAd, RF_R06, RFValue);
-@@ -5849,6 +5830,7 @@ VOID AsicSwitchChannel(
- 				RFValue = (RFValue & 0xE0) | TxPwer;
- 				RT30xxWriteRFRegister(pAd, RF_R12, RFValue);
- 
+ 		// Init RF calibration
+ 		// Driver should toggle RF R30 bit7 before init RF registers
+ 		UINT32 RfReg = 0;
 +#ifdef RT30xx
- 				// Set Tx1 Power
- 				RT30xxReadRFRegister(pAd, RF_R13, &RFValue);
- 				RFValue = (RFValue & 0xE0) | TxPwer2;
-@@ -5868,12 +5850,12 @@ VOID AsicSwitchChannel(
- 				else if (pAd->Antenna.field.RxPath == 2)
- 					RFValue |= 0x40;
- 				RT30xxWriteRFRegister(pAd, RF_R01, RFValue);
-+#endif
- 
- 				// Set RF offset
- 				RT30xxReadRFRegister(pAd, RF_R23, &RFValue);
- 				RFValue = (RFValue & 0x80) | pAd->RfFreqOffset;
- 				RT30xxWriteRFRegister(pAd, RF_R23, RFValue);
--#endif
- 
- 				// Set BW
- 				if (!bScan && (pAd->CommonCfg.BBPCurrentBW == BW_40))
-@@ -5885,21 +5867,10 @@ VOID AsicSwitchChannel(
- 				{
- 					RFValue = pAd->Mlme.CaliBW20RfR24;
- 				}
--#ifndef RT30xx
--				RT30xxWriteRFRegister(pAd, RF_R24, (UCHAR)RFValue);
--
--				// Enable RF tuning
--				RT30xxReadRFRegister(pAd, RF_R07, (PUCHAR)&RFValue);
--				RFValue = RFValue | 0x1;
--				RT30xxWriteRFRegister(pAd, RF_R07, (UCHAR)RFValue);
--
--				// latch channel for future usage.
--				pAd->LatchRfRegs.Channel = Channel;
--#endif
--#ifdef RT30xx
- 				RT30xxWriteRFRegister(pAd, RF_R24, RFValue);
-+#ifdef RT30xx
- 				RT30xxWriteRFRegister(pAd, RF_R31, RFValue);
+ 		UINT32 data;
 -
 +#endif
- 				// Enable RF tuning
- 				RT30xxReadRFRegister(pAd, RF_R07, &RFValue);
- 				RFValue = RFValue | 0x1;
-@@ -5908,6 +5879,7 @@ VOID AsicSwitchChannel(
- 				// latch channel for future usage.
- 				pAd->LatchRfRegs.Channel = Channel;
+ 		RT30xxReadRFRegister(pAd, RF_R30, (PUCHAR)&RfReg);
+ 		RfReg |= 0x80;
+ 		RT30xxWriteRFRegister(pAd, RF_R30, (UCHAR)RfReg);
+@@ -1307,7 +1290,7 @@ VOID NICInitRT30xxRFRegisters(IN PRTMP_A
+ 			RT30xxWriteRFRegister(pAd, RT30xx_RFRegTable[i].Register, RT30xx_RFRegTable[i].Value);
+ 		}
  
+-		// add by johnli
 +#ifdef RT30xx
- 				DBGPRINT(RT_DEBUG_TRACE, ("SwitchChannel#%d(RF=%d, Pwr0=%d, Pwr1=%d, %dT), N=0x%02X, K=0x%02X, R=0x%02X\n",
- 					Channel,
- 					pAd->RfIcType,
+ 		if (IS_RT3070(pAd))
+ 		{
+ 			//  Update MAC 0x05D4 from 01xxxxxx to 0Dxxxxxx (voltage 1.2V to 1.35V) for RT3070 to improve yield rate
+@@ -1345,10 +1328,10 @@ VOID NICInitRT30xxRFRegisters(IN PRTMP_A
+ 			data &= ~(0x20);
+ 			RTUSBWriteMACRegister(pAd, GPIO_SWITCH, data);
+ 		}
+-
++#endif
+ 		//For RF filter Calibration
+ 		RTMPFilterCalibration(pAd);
+-
++#ifdef RT30xx
+ 		// Initialize RF R27 register, set RF R27 must be behind RTMPFilterCalibration()
+ 		if ((pAd->MACVersion & 0xffff) < 0x0211)
+ 			RT30xxWriteRFRegister(pAd, RF_R27, 0x3);
+@@ -1363,8 +1346,8 @@ VOID NICInitRT30xxRFRegisters(IN PRTMP_A
+ 			// add by johnli, RF power sequence setup, load RF normal operation-mode setup
+ 			RT30xxLoadRFNormalModeSetup(pAd);
+ 		}
+-	}
+ #endif
++	}
+ }
+ #endif // RT2870 //
+ 
