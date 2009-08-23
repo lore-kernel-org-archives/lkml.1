@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752058AbZHWEpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbZHWFVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752058AbZHWEpl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 00:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbZHWEpk
+	id S1752760AbZHWFVm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 01:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbZHWFVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 00:45:40 -0400
-Received: from mail-vw0-f172.google.com ([209.85.212.172]:62478 "EHLO
-	mail-vw0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398AbZHWEpj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 00:45:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=PZdCevktxAJEYHGEUKOtLuE3APquzTGpTUky4lwxVjZuaWoq9qrqohKBKX2oxt4lcC
-         ml4GtNpjN0X/rn6TkH9HkielTcGF0xLc66wxFeGupw29UrzjE1+RW6DqsuBnwntkw9yV
-         HYm2fm20khlIeFtfR7ZBUgsRi0VidgY6sm5lY=
-MIME-Version: 1.0
-In-Reply-To: <4A902904.2090008@gmail.com>
-References: <5d5443650908221004y5b893382m368dc18a38636c1b@mail.gmail.com>
-	 <4A902904.2090008@gmail.com>
-Date: Sun, 23 Aug 2009 13:45:40 +0900
-X-Google-Sender-Auth: 11ebfbee2f4265bf
-Message-ID: <9c9fda240908222145j1938baa3v3ecf8c5899ce3850@mail.gmail.com>
-Subject: Re: haptics devices linux driver support
-From: Kyungmin Park <kmpark@infradead.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 23 Aug 2009 01:21:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37735 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751923AbZHWFVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 01:21:40 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/fNVcfE/7fNc+DZvGJDiBqj4S8FPln594ytTwH+E
+	TOmHHJOGoloPpE
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+From: Mike Galbraith <efault@gmx.de>
+To: raz ben yehuda <raziebe@gmail.com>
+Cc: riel@redhat.com, mingo@elte.hu, peterz@infradead.org,
+       andrew motron <akpm@osdl.org>, wiseman@macs.biu.ac.il,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1250983671.5688.21.camel@raz>
+References: <1250983671.5688.21.camel@raz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 23 Aug 2009 07:21:37 +0200
+Message-Id: <1251004897.7043.70.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 2009-08-23 at 02:27 +0300, raz ben yehuda wrote:
+> 			The Open University of Israel
+> 		  Department of Mathematics and computer science	
+> 			
+> 		  	 	FINAL PAPER
+> 			     OFFLINE  SCHEDULER
+> 
+> 
+> 
+> OFFSCHED is a platform aimed to assign an assignment to an offloaded processor.An offloaded processor is a processor that is hot un-plugged from the operating system.
+> 
+> Description
+> 
+> In today’s computer world, we find that most processors have several embedded cores and hyper-threading. Most programmers do not really use these powerful features and let the operating system do the work.
+> At most, a programmer will bound an application to a certain processor or assign an interrupt to a different processor. At the end, we get system busy in maintaining tasks across processors, balancing interrupts, flushing TLBs and DTLBs using atomic operations even when not needed and worst of all, spin locks across processors in vein; and the more processors the merrier. I argue that in some cases, part of this behavior is due to fact the multiple core operating system is not service oriented but a system oriented. There is no easy way to assign a processor to do a distinct service, undisturbed, accurate, and fast as long as the processor is an active part of an operating system and still be a part of most of the operating system address space.
+> 
+> OFFSCHED Purpose
+> 
+> The purpose of the OFFSCHED is to create a platform for services. For example, assume a firewall is being attacked; the Linux operating system will generate endless number of interrupts and/or softirqs to analyze the traffic and throw out bad packets. This is on the expense of “good” packets. Have you ever tried to “ssh” to an attacked machine? Who protects the operating system ?
+> What if we can simply do the packet analysis outside the operating system, without being interrupted ?
+> Why not assign a core to do only “firewalling”? Or just routing? Design a new type of Real Time system? Maybe assign it as an ultra accurate timer? Create a delaying service that does not just spin? Offload a TCP stack? perhaps a new type of a locking scheme? New type bottom-halves? Debug a running kernel through an offloaded processor? Maybe assign a GPU to do other things than just graphics?
+> Amdahl Law teaches us that linear speed-up is not very feasible , so why not spare a processor to do certain tasks better?
+> Technologically speaking, I am referring to the Linux kernel ability to virtually hot unplug a (SMT) processor ;but instead of letting it wonder in endless “halts”, assign it a service.
 
-There's three types as I know,
+Seems to me this boils down to a different way to make a SW box in a HW
+box, which already exists.  What does this provide that partitioning a
+box with csets and virtualization doesn't?
 
-1) just GPIO enable motor
-2) GPIO & PWM motor.
-3) I2C based GPIO & PWM motor.
+	-Mike
 
-Frankly we made a motor framework at kernel. but I 'm not sure motor
-is right naming or not.
-I think we need new framework. since it's not input device.
-
-Thank you,
-Kyungmin Park
-
-
-On Sun, Aug 23, 2009 at 2:21 AM, Jiri Slaby<jirislaby@gmail.com> wrote:
-> On 08/22/2009 07:04 PM, Trilok Soni wrote:
->> Does anyone know example Linux drivers for haptics devices?
->
-> Yup, drivers/misc/phantom.c for Sensable Phantom (the old one over PCI).
-> The rest needed (esp. floating point computation) is done in userspace.
->
-> Then, all force-feedack drivers under drivers/input and drivers/hid.
->
-> What exactly do you want to know?
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-input" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at �http://vger.kernel.org/majordomo-info.html
->
