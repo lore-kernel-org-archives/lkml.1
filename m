@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934102AbZHWUQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934110AbZHWURo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934102AbZHWUQs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 16:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934066AbZHWUQr
+	id S934110AbZHWURo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 16:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934067AbZHWURn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 16:16:47 -0400
-Received: from ppp-136-251.adsl.restena.lu ([158.64.136.251]:56577 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933931AbZHWUQq convert rfc822-to-8bit (ORCPT
+	Sun, 23 Aug 2009 16:17:43 -0400
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:50923 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934061AbZHWURm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 16:16:46 -0400
-Date: Sun, 23 Aug 2009 22:16:21 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andy Whitcroft <apw@canonical.com>,
-       "Ed L. Cashin" <ecashin@coraid.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jens Axboe <axboe@kernel.dk>
-Subject: Re: [PATCH 0/1] aoe: ensure we initialise the request_queue
- correctly
-Message-ID: <20090823221621.25fdb491@neptune.home>
-In-Reply-To: <20090823110021.28fc40dc@neptune.home>
-References: <1250872904-10993-1-git-send-email-apw@canonical.com>
-	<20090822112103.49174d6b@neptune.home>
-	<200908222352.07482.rjw@sisk.pl>
-	<20090823110021.28fc40dc@neptune.home>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-To: unlisted-recipients:; (no To-header on input)
+	Sun, 23 Aug 2009 16:17:42 -0400
+Date: Sun, 23 Aug 2009 22:15:26 +0200
+From: Bastian Blank <bastian@waldi.eu.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [GIT PULL] s390 patches for v2.6.31-rc7
+Message-ID: <20090823201526.GA30461@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-s390 <linux-s390@vger.kernel.org>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>
+References: <20090823213714.11757b14@skybase>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090823213714.11757b14@skybase>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 August 2009 Bruno Prémont <bonbons@linux-vserver.org> wrote:
-> At least this uninitialized object warning already existed with
-> 2.6.31-rc1. More bisect-like details later today.
+On Sun, Aug 23, 2009 at 09:37:14PM +0200, Martin Schwidefsky wrote:
+> +static void __init set_preferred_console(void)
+> +{
+> +	if (MACHINE_IS_KVM) {
+> +		add_preferred_console("hvc", 0, NULL);
+> +		s390_virtio_console_init();
+> +		return;
+> +	}
 
-Hm, the NULL bio->bi_io_vec on unmount seems picky as to when it wants
-to be reproduced, half a day bisecting on a spare system without
-result...
+Why this early return instead of else if as all options are mutually
+exclusive? Also why do you init the virtio console here instead of an
+console_initcall?
 
-I got it on one system with -rc1, on spare system a bisect
-v2.6.30..v2.6.31-rc1 was always good. Will have to retry with complete,
-not simplified config on one of the two systems where I got that trace.
+Bastian
 
-FYI: someone else did report it on 2.6.30-gentoo-r4 which is
-similar to 2.6.30.x, see http://bugs.gentoo.org/show_bug.cgi?id=281929
-
-Bruno
+-- 
+Four thousand throats may be cut in one night by a running man.
+		-- Klingon Soldier, "Day of the Dove", stardate unknown
