@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933686AbZHWL7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933724AbZHWMAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933686AbZHWL7l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 07:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933512AbZHWL6h
+	id S933724AbZHWMAz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 08:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933697AbZHWMA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 07:58:37 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
+	Sun, 23 Aug 2009 08:00:28 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:11057 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933525AbZHWL4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933545AbZHWL4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 23 Aug 2009 07:56:50 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 31/46] KVM: x86: use get_desc_base() and get_desc_limit()
-Date: Sun, 23 Aug 2009 14:56:30 +0300
-Message-Id: <1251028605-31977-32-git-send-email-avi@redhat.com>
+Subject: [PATCH 35/46] KVM: Drop obsolete cpu_get/put in make_all_cpus_request
+Date: Sun, 23 Aug 2009 14:56:34 +0300
+Message-Id: <1251028605-31977-36-git-send-email-avi@redhat.com>
 In-Reply-To: <1251028605-31977-1-git-send-email-avi@redhat.com>
 References: <1251028605-31977-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Akinobu Mita <akinobu.mita@gmail.com>
+From: Jan Kiszka <jan.kiszka@siemens.com>
 
-Use get_desc_base() and get_desc_limit() to get the base address and
-limit in desc_struct.
+spin_lock disables preemption, so we can simply read the current cpu.
 
-Cc: Avi Kivity <avi@redhat.com>
-Cc: kvm@vger.kernel.org
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/x86/kvm/x86.c |   18 +++++-------------
- 1 files changed, 5 insertions(+), 13 deletions(-)
+ virt/kvm/kvm_main.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 48567fa..0ebd684 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -142,8 +142,7 @@ unsigned long segment_base(u16 selector)
- 		table_base = segment_base(ldt_selector);
- 	}
- 	d = (struct desc_struct *)(table_base + (selector & ~7));
--	v = d->base0 | ((unsigned long)d->base1 << 16) |
--		((unsigned long)d->base2 << 24);
-+	v = get_desc_base(d);
- #ifdef CONFIG_X86_64
- 	if (d->s == 0 && (d->type == 2 || d->type == 9 || d->type == 11))
- 		v |= ((unsigned long)((struct ldttss_desc64 *)d)->base3) << 32;
-@@ -3943,11 +3942,8 @@ static void kvm_set_segment(struct kvm_vcpu *vcpu,
- static void seg_desct_to_kvm_desct(struct desc_struct *seg_desc, u16 selector,
- 				   struct kvm_segment *kvm_desct)
- {
--	kvm_desct->base = seg_desc->base0;
--	kvm_desct->base |= seg_desc->base1 << 16;
--	kvm_desct->base |= seg_desc->base2 << 24;
--	kvm_desct->limit = seg_desc->limit0;
--	kvm_desct->limit |= seg_desc->limit << 16;
-+	kvm_desct->base = get_desc_base(seg_desc);
-+	kvm_desct->limit = get_desc_limit(seg_desc);
- 	if (seg_desc->g) {
- 		kvm_desct->limit <<= 12;
- 		kvm_desct->limit |= 0xfff;
-@@ -4026,11 +4022,7 @@ static int save_guest_segment_descriptor(struct kvm_vcpu *vcpu, u16 selector,
- static u32 get_tss_base_addr(struct kvm_vcpu *vcpu,
- 			     struct desc_struct *seg_desc)
- {
--	u32 base_addr;
--
--	base_addr = seg_desc->base0;
--	base_addr |= (seg_desc->base1 << 16);
--	base_addr |= (seg_desc->base2 << 24);
-+	u32 base_addr = get_desc_base(seg_desc);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 532af9b..646cf2a 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -741,8 +741,8 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
+ 	if (alloc_cpumask_var(&cpus, GFP_ATOMIC))
+ 		cpumask_clear(cpus);
  
- 	return vcpu->arch.mmu.gva_to_gpa(vcpu, base_addr);
+-	me = get_cpu();
+ 	spin_lock(&kvm->requests_lock);
++	me = smp_processor_id();
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+ 		if (test_and_set_bit(req, &vcpu->requests))
+ 			continue;
+@@ -757,7 +757,6 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
+ 	else
+ 		called = false;
+ 	spin_unlock(&kvm->requests_lock);
+-	put_cpu();
+ 	free_cpumask_var(cpus);
+ 	return called;
  }
-@@ -4319,7 +4311,7 @@ int kvm_task_switch(struct kvm_vcpu *vcpu, u16 tss_selector, int reason)
- 		}
- 	}
- 
--	if (!nseg_desc.p || (nseg_desc.limit0 | nseg_desc.limit << 16) < 0x67) {
-+	if (!nseg_desc.p || get_desc_limit(&nseg_desc) < 0x67) {
- 		kvm_queue_exception_e(vcpu, TS_VECTOR, tss_selector & 0xfffc);
- 		return 1;
- 	}
 -- 
 1.6.4.1
 
