@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934059AbZHWREk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934035AbZHWRRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934059AbZHWREk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 13:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934033AbZHWREj
+	id S934035AbZHWRRX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 13:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933827AbZHWRRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 13:04:39 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:49878 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934021AbZHWREj (ORCPT
+	Sun, 23 Aug 2009 13:17:23 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:60205 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933807AbZHWRRV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 13:04:39 -0400
-Date: Sun, 23 Aug 2009 18:03:59 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: Tony Lindgren <tony@atomide.com>,
-       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-arm-kernel@lists.infradead.org" 
-	<linux-arm-kernel@lists.infradead.org>
-Subject: Re: [alsa-devel] [RFC][PATCH 1/3 v2] ARM: OMAP: DMA: Add support
-	for DMA channel self linking on OMAP1510
-Message-ID: <20090823170359.GA3488@sirena.org.uk>
-References: <200908101050.02530.jkrzyszt@tis.icnet.pl> <200908231756.13016.jkrzyszt@tis.icnet.pl>
+	Sun, 23 Aug 2009 13:17:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=G5x4oEuglNfsW1ztxYCU1txdtep9AnekdsNEuIZAsKY2xKyj477J8C/H3Ita9kqDG/
+         jlMrdE4mGI+YTr5TsGHlpYA+TDKkcQ7n7NxQqeASUJb6eocphyLqAyx1DMFjDamjMYWO
+         79R5sloTJAzLrYdAK872D7PtxmqpOAHtMFMis=
+Message-ID: <4A91799D.7090802@gmail.com>
+Date: Sun, 23 Aug 2009 19:17:17 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908231756.13016.jkrzyszt@tis.icnet.pl>
-X-Cookie: Don't SANFORIZE me!!
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+To: David Dillow <dave@thedillows.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michal Soltys <soltys@ziu.info>
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+References: <200903041828.49972.m.bueker@berlin.de>	 <1242001754.4093.12.camel@obelisk.thedillows.org>	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>	 <1242077392.3716.15.camel@lap75545.ornl.gov>	 <4A09DC3E.2080807@googlemail.com>	 <1242268709.4979.7.camel@obelisk.thedillows.org>	 <4A0C6504.8000704@googlemail.com>	 <1242328457.32579.12.camel@lap75545.ornl.gov>	 <4A0C7443.1010000@googlemail.com>	 <1243042174.3580.23.camel@obelisk.thedillows.org>	 <m1skfkrik2.fsf@fess.ebiederm.org>	 <1250895567.23419.1.camel@obelisk.thedillows.org>	 <1250897657.23419.5.camel@obelisk.thedillows.org>	 <m1iqggf4rf.fsf@fess.ebiederm.org>  <m18whcf3w2.fsf@fess.ebiederm.org> <1250973787.3582.14.camel@obelisk.thedillows.org>
+In-Reply-To: <1250973787.3582.14.camel@obelisk.thedillows.org>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 23, 2009 at 05:56:12PM +0200, Janusz Krzysztofik wrote:
+David Dillow wrote, On 08/22/2009 10:43 PM:
 
-> I know it's not very fair to change the patch after others that depend on it
-> have already been applied, but I hope there will be no problems with accepting
-> the way I have reimplemented it. In any case, I'll appreciate any comments or
-> suggestions.
+> On Sat, 2009-08-22 at 05:07 -0700, Eric W. Biederman wrote:
+>> ebiederm@xmission.com (Eric W. Biederman) writes:
+>>
+>>> David Dillow <dave@thedillows.org> writes:
+>>>
+>>>> Re-looking at the code, I'd guess that some IRQ status line is getting
+>>>> stuck high, but I don't see why -- we should acknowledge all outstanding
+>>>> interrupts each time through the loop, whether we care about them or
+>>>> not.
+>>>>
+>>>> Could reproduce a problem with the following patch applied, and send the
+>>>> full dmesg, please?
+>>> Here is what I get.
+>>>
+>>> r8169 screaming irq status 00000085 mask 0000ffff event 0000803f napi 0000001d
+>> And now that the machine has come out of it, that was followed by:
+>> Looks like the soft lockup did not manage to trigger in this case.
+> 
+> I need some more context, please. What is the network load through this
+> NIC when you have the issues? Light, heavy? Can you give me more details
+> about the machine? A full dmesg from boot until this happens would help
+> quite a bit. At a minimum it would help answer which version of the chip
+> we're dealing with and what the machine it is in looks like.
+> 
+> Can you reproduce this with pci=nomsi? I'm assuming it the chip running
+> in MSI mode.
+> 
+> Also, can you reproduce it when booting UP (or maxcpus=1)? I'm thinking
+> about a race between rtl8169_interrupt() and rtl8169_poll(), but it
+> isn't jumping out at me.
+> 
+> Also, I'm having connectivity troubles this weekend, so my response may
+> be spotty. :(
+> 
 
-It's not that it's not fair, at this point it's not possible - please
-make any changes you feel are required against current ASoC.  The patch
-has been applied for a little while now and is buried quite deep in the
-already published history.
+
+BTW, FYI, it seems Michal stopped tracking this problem, but he
+found this commit problematic as well.
+
+From: Michal Soltys <soltys@ziu.info>
+Subject: Re: r8169 (+others ?) and note_interrupt performance hit on 2.6.30.x
+Date: Wed, 05 Aug 2009 20:54:47 +0200
+http://marc.info/?l=linux-netdev&m=124949848110710&w=2
+
+Jarek P.
