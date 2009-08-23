@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934035AbZHWRRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933977AbZHWRdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934035AbZHWRRX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 13:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933827AbZHWRRX
+	id S933977AbZHWRdb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 13:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZHWRdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 13:17:23 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:60205 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933807AbZHWRRV (ORCPT
+	Sun, 23 Aug 2009 13:33:31 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:23183 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752058AbZHWRda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 13:17:21 -0400
+	Sun, 23 Aug 2009 13:33:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        b=G5x4oEuglNfsW1ztxYCU1txdtep9AnekdsNEuIZAsKY2xKyj477J8C/H3Ita9kqDG/
-         jlMrdE4mGI+YTr5TsGHlpYA+TDKkcQ7n7NxQqeASUJb6eocphyLqAyx1DMFjDamjMYWO
-         79R5sloTJAzLrYdAK872D7PtxmqpOAHtMFMis=
-Message-ID: <4A91799D.7090802@gmail.com>
-Date: Sun, 23 Aug 2009 19:17:17 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+        b=CfvkoltPzwZ1lxRLCYARC8Za13kzoc5ghgp59ocw4cTdgbvAtEzupal9PAwDXpIFgt
+         d2HXkuFLATB7bUEBxU18ej9Dev1J/UVjfl8g0shUpDsCbZF1h53ji/owQjrWTMlDWQAE
+         R1rsUFEozWDerWxPSb4SKLXQCCOsSDF4YDvuY=
+Message-ID: <4A917D64.7010504@gmail.com>
+Date: Sun, 23 Aug 2009 19:33:24 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: David Dillow <dave@thedillows.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michal Soltys <soltys@ziu.info>
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-References: <200903041828.49972.m.bueker@berlin.de>	 <1242001754.4093.12.camel@obelisk.thedillows.org>	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>	 <1242077392.3716.15.camel@lap75545.ornl.gov>	 <4A09DC3E.2080807@googlemail.com>	 <1242268709.4979.7.camel@obelisk.thedillows.org>	 <4A0C6504.8000704@googlemail.com>	 <1242328457.32579.12.camel@lap75545.ornl.gov>	 <4A0C7443.1010000@googlemail.com>	 <1243042174.3580.23.camel@obelisk.thedillows.org>	 <m1skfkrik2.fsf@fess.ebiederm.org>	 <1250895567.23419.1.camel@obelisk.thedillows.org>	 <1250897657.23419.5.camel@obelisk.thedillows.org>	 <m1iqggf4rf.fsf@fess.ebiederm.org>  <m18whcf3w2.fsf@fess.ebiederm.org> <1250973787.3582.14.camel@obelisk.thedillows.org>
-In-Reply-To: <1250973787.3582.14.camel@obelisk.thedillows.org>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/33] Staging: rt{286,287,307}0: merge rt3070 with rt2870
+References: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Dillow wrote, On 08/22/2009 10:43 PM:
-
-> On Sat, 2009-08-22 at 05:07 -0700, Eric W. Biederman wrote:
->> ebiederm@xmission.com (Eric W. Biederman) writes:
->>
->>> David Dillow <dave@thedillows.org> writes:
->>>
->>>> Re-looking at the code, I'd guess that some IRQ status line is getting
->>>> stuck high, but I don't see why -- we should acknowledge all outstanding
->>>> interrupts each time through the loop, whether we care about them or
->>>> not.
->>>>
->>>> Could reproduce a problem with the following patch applied, and send the
->>>> full dmesg, please?
->>> Here is what I get.
->>>
->>> r8169 screaming irq status 00000085 mask 0000ffff event 0000803f napi 0000001d
->> And now that the machine has come out of it, that was followed by:
->> Looks like the soft lockup did not manage to trigger in this case.
+Bartlomiej Zolnierkiewicz wrote:
+> Hi,
 > 
-> I need some more context, please. What is the network load through this
-> NIC when you have the issues? Light, heavy? Can you give me more details
-> about the machine? A full dmesg from boot until this happens would help
-> quite a bit. At a minimum it would help answer which version of the chip
-> we're dealing with and what the machine it is in looks like.
+> The final part of rt2870 and rt3070 merge.
 > 
-> Can you reproduce this with pci=nomsi? I'm assuming it the chip running
-> in MSI mode.
+> It adds RT3070 chipset support to rt2870 driver and removes no longer needed
+> rt3070 driver (yes, it means one Ralink driver less in the staging tree!).
 > 
-> Also, can you reproduce it when booting UP (or maxcpus=1)? I'm thinking
-> about a race between rtl8169_interrupt() and rtl8169_poll(), but it
-> isn't jumping out at me.
+> [ in the process many bugs in all Ralink drivers were fixed, RT2870 chipset
+>   support was converted to use the new firmware and ~1.5 KLOC were removed ]
 > 
-> Also, I'm having connectivity troubles this weekend, so my response may
-> be spotty. :(
-> 
+> I tested it on RT2860 and RT3070 chipsets already but I would need some help
+> from people with RT2870 hardware to verify those changes (Mike? Marcin?).
 
+I tested this patchset on WUSB54GC-V3 (1737:0077) and it works fine so far.
+Unfortunately it's not rt2870 you are looking for. With rt2800usb driver I get:
+phy0 -> rt2x00_set_chip: Info - Chipset detected - rt: 1600, rf: 0006, rev: 30700200.
+so it's rt3070 chipset.
 
-BTW, FYI, it seems Michal stopped tracking this problem, but he
-found this commit problematic as well.
-
-From: Michal Soltys <soltys@ziu.info>
-Subject: Re: r8169 (+others ?) and note_interrupt performance hit on 2.6.30.x
-Date: Wed, 05 Aug 2009 20:54:47 +0200
-http://marc.info/?l=linux-netdev&m=124949848110710&w=2
-
-Jarek P.
+Marcin
