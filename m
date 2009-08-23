@@ -1,62 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933976AbZHWTeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933987AbZHWThc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933976AbZHWTeQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 15:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933882AbZHWTeP
+	id S933987AbZHWThc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 15:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933924AbZHWThb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 15:34:15 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:51940 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933939AbZHWTeL (ORCPT
+	Sun, 23 Aug 2009 15:37:31 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:34406 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933922AbZHWTha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 15:34:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hbbLAfFPgp0ue8m09VZPwwD8eBSR2oH1+k9y6V6Wl//MxFdvNH5yDJbx4cYgro/3/t
-         4g0L9bXHtTiisprNgak60vHrxxYxjP+6eDkEb7sxL2CBb1SkeWMgDa2GPcDHhAR1t2hZ
-         Rw8gzYGhEb634EtPXt4wf9n0aQDDN8OnYIeaE=
-Date: Sun, 23 Aug 2009 21:34:07 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       =?utf-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>,
-       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH tracing/kprobes 1/4] x86: Fix x86 instruction decoder
-	selftest to check only .text
-Message-ID: <20090823193405.GA6256@nowhere>
-References: <20090821000108.GC6078@nowhere> <20090821194307.12478.76938.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090821194307.12478.76938.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 23 Aug 2009 15:37:30 -0400
+Date: Sun, 23 Aug 2009 21:37:14 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [GIT PULL] s390 patches for v2.6.31-rc7
+Message-ID: <20090823213714.11757b14@skybase>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 03:43:07PM -0400, Masami Hiramatsu wrote:
-> Fix x86 instruction decoder selftest to check only .text because other
-> sections (e.g. .notes) will have random bytes which don't need to be checked.
+Hi Linus,
 
+please pull from 'for-linus' branch of
 
-Applied these 4 patches in
+	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
 
-git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
-	tracing/kprobes
+to receive the following updates:
 
-Thanks!
+Hendrik Brueckner (1):
+      [S390] set preferred console based on conmode
 
+Julia Lawall (1):
+      [S390] drivers/s390: put NULL test before dereference
+
+Sebastian Ott (1):
+      [S390] cio: fix double free after failed device initialization
+
+ arch/s390/kernel/setup.c  |   25 ++++++++++++++++++-------
+ drivers/s390/block/dasd.c |    2 +-
+ drivers/s390/cio/device.c |    4 +---
+ 3 files changed, 20 insertions(+), 11 deletions(-)
+
+diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
+index 9717717..cbb897b 100644
+--- a/arch/s390/kernel/setup.c
++++ b/arch/s390/kernel/setup.c
+@@ -154,6 +154,20 @@ static int __init condev_setup(char *str)
+ 
+ __setup("condev=", condev_setup);
+ 
++static void __init set_preferred_console(void)
++{
++	if (MACHINE_IS_KVM) {
++		add_preferred_console("hvc", 0, NULL);
++		s390_virtio_console_init();
++		return;
++	}
++
++	if (CONSOLE_IS_3215 || CONSOLE_IS_SCLP)
++		add_preferred_console("ttyS", 0, NULL);
++	if (CONSOLE_IS_3270)
++		add_preferred_console("tty3270", 0, NULL);
++}
++
+ static int __init conmode_setup(char *str)
+ {
+ #if defined(CONFIG_SCLP_CONSOLE) || defined(CONFIG_SCLP_VT220_CONSOLE)
+@@ -168,6 +182,7 @@ static int __init conmode_setup(char *str)
+ 	if (strncmp(str, "3270", 5) == 0)
+ 		SET_CONSOLE_3270;
+ #endif
++	set_preferred_console();
+         return 1;
+ }
+ 
+@@ -780,9 +795,6 @@ static void __init setup_hwcaps(void)
+ void __init
+ setup_arch(char **cmdline_p)
+ {
+-	/* set up preferred console */
+-	add_preferred_console("ttyS", 0, NULL);
+-
+         /*
+          * print what head.S has found out about the machine
+          */
+@@ -802,11 +814,9 @@ setup_arch(char **cmdline_p)
+ 	if (MACHINE_IS_VM)
+ 		pr_info("Linux is running as a z/VM "
+ 			"guest operating system in 64-bit mode\n");
+-	else if (MACHINE_IS_KVM) {
++	else if (MACHINE_IS_KVM)
+ 		pr_info("Linux is running under KVM in 64-bit mode\n");
+-		add_preferred_console("hvc", 0, NULL);
+-		s390_virtio_console_init();
+-	} else
++	else
+ 		pr_info("Linux is running natively in 64-bit mode\n");
+ #endif /* CONFIG_64BIT */
+ 
+@@ -851,6 +861,7 @@ setup_arch(char **cmdline_p)
+ 
+         /* Setup default console */
+ 	conmode_default();
++	set_preferred_console();
+ 
+ 	/* Setup zfcpdump support */
+ 	setup_zfcpdump(console_devno);
+diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
+index 7498366..3f62dd5 100644
+--- a/drivers/s390/block/dasd.c
++++ b/drivers/s390/block/dasd.c
+@@ -2135,9 +2135,9 @@ static int dasd_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+ 	struct dasd_device *base;
+ 
+ 	block = bdev->bd_disk->private_data;
+-	base = block->base;
+ 	if (!block)
+ 		return -ENODEV;
++	base = block->base;
+ 
+ 	if (!base->discipline ||
+ 	    !base->discipline->fill_geometry)
+diff --git a/drivers/s390/cio/device.c b/drivers/s390/cio/device.c
+index 3c57c1a..d593bc7 100644
+--- a/drivers/s390/cio/device.c
++++ b/drivers/s390/cio/device.c
+@@ -772,10 +772,8 @@ static struct ccw_device * io_subchannel_create_ccwdev(struct subchannel *sch)
+ 	cdev = io_subchannel_allocate_dev(sch);
+ 	if (!IS_ERR(cdev)) {
+ 		ret = io_subchannel_initialize_dev(sch, cdev);
+-		if (ret) {
+-			kfree(cdev);
++		if (ret)
+ 			cdev = ERR_PTR(ret);
+-		}
+ 	}
+ 	return cdev;
+ }
