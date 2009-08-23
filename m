@@ -1,84 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZHWJWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZHWJkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbZHWJWU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 05:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbZHWJWS
+	id S1755973AbZHWJkA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 05:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755961AbZHWJkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 05:22:18 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:51320 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755941AbZHWJWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 05:22:16 -0400
-Date: Sun, 23 Aug 2009 11:22:14 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: akpm@linux-foundation.org, deepak@laptop.org, Tobias_Mueller@twam.info,
-       Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
-       cjb@laptop.org, linux-geode@lists.infradead.org
-Subject: Re: [PATCH 1/3] cs5535-gpio: add AMD CS5535/CS5536 GPIO driver
- support
-Message-ID: <20090823112214.3adca590@i1501.lan.towertech.it>
-In-Reply-To: <20090818175314.16c81ca4@mycelium.queued.net>
-References: <20090818175314.16c81ca4@mycelium.queued.net>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 23 Aug 2009 05:40:00 -0400
+Received: from mail01a.mail.t-online.hu ([84.2.40.6]:57602 "EHLO
+	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755960AbZHWJj7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 05:39:59 -0400
+X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Aug 2009 05:39:59 EDT
+Message-ID: <4A910C42.5000001@freemail.hu>
+Date: Sun, 23 Aug 2009 11:30:42 +0200
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Jean-Francois Moine <moinejf@free.fr>,
+       Thomas Kaiser <thomas@kaiser-linux.li>, linux-media@vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [RESEND][PATCH 1/2] v4l2: modify the webcam video standard handling
+References: <4A52E897.8000607@freemail.hu>
+In-Reply-To: <4A52E897.8000607@freemail.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32721; Body=5 Fuz1=5
+	Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Aug 2009 17:53:14 -0400
-Andres Salomon <dilinger@collabora.co.uk> wrote:
+From: Márton Németh <nm127@freemail.hu>
 
-> 
-> This creates a CS5535/CS5536 GPIO driver which uses a gpio_chip backend
-> (allowing GPIO users to use the generic GPIO API if desired) while also
-> allowing architecture-specific users directly (via the cs5535_gpio_*
-> functions).
-> 
-> Tested on an OLPC machine.  Some Leemotes also use CS5536 (with a mips
-> cpu), which is why this is in drivers/gpio rather than arch/x86.
-> Currently, it conflicts with older geode GPIO support; once MFGPT support
-> is reworked to also be more generic, the older geode code will be removed.
-> 
-> Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
+Change the handling of the case when vdev->tvnorms == 0.
 
- fwiw,
+Quote from V4L2 API specification, rev. 0.24 [1]:
+> Special rules apply to USB cameras where the notion of video
+> standards makes little sense. More generally any capture device,
+> output devices accordingly, which is
+>
+> * incapable of capturing fields or frames at the nominal rate
+>   of the video standard, or
+> * where timestamps refer to the instant the field or frame was
+>   received by the driver, not the capture time, or
+> * where sequence numbers refer to the frames received by the
+>   driver, not the captured frames.
+>
+> Here the driver shall set the std field of struct v4l2_input
+> and struct v4l2_output to zero, the VIDIOC_G_STD, VIDIOC_S_STD,
+> VIDIOC_QUERYSTD and VIDIOC_ENUMSTD ioctls shall return the
+> EINVAL error code.
 
- Reviewed-by: Alessandro Zummo <a.zummo@towertech.it>
+The changeset was tested together with v4l-test 0.19 [2] with
+gspca_sunplus driver together with Trust 610 LCD POWERC@M ZOOM and
+with gspca_pac7311 together with Labtec Webcam 2200.
 
-> +	dev_info(&pdev->dev, "allocated PCI BAR #%d: base 0x%llx\n", GPIO_BAR,
-> +			(unsigned long long) cs5535_gpio_chip.base);
+References:
+[1] V4L2 API specification, revision 0.24
+    http://v4l2spec.bytesex.org/spec/x448.htm
 
- shouldn't this be dev_dbg ?
+[2] v4l-test: Test environment for Video For Linux Two API
+    http://v4l-test.sourceforge.net/
 
-> 
-> +	/* finally, register with the generic GPIO API */
-> +	err = gpiochip_add(&cs5535_gpio_chip.chip);
-> +	if (err) {
-> +		dev_err(&pdev->dev, "failed to register gpio chip\n");
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+diff -upr linux-2.6.31-rc7.orig/drivers/media/video/v4l2-dev.c linux-2.6.31-rc7/drivers/media/video/v4l2-dev.c
+--- linux-2.6.31-rc7.orig/drivers/media/video/v4l2-dev.c	2009-08-23 07:36:09.000000000 +0200
++++ linux-2.6.31-rc7/drivers/media/video/v4l2-dev.c	2009-08-23 10:47:03.000000000 +0200
+@@ -396,6 +396,11 @@ int video_register_device_index(struct v
+ 	if (!vdev->release)
+ 		return -EINVAL;
 
- gpiochip_add already uses pr_err for error conditions, there's no need
- to report twice.
++	/* if no video standards are supported then no need to get and set
++	   them: they will never be called */
++	WARN_ON(!vdev->tvnorms && vdev->ioctl_ops->vidioc_g_std);
++	WARN_ON(!vdev->tvnorms && vdev->ioctl_ops->vidioc_s_std);
++
+ 	/* Part 1: check device type */
+ 	switch (type) {
+ 	case VFL_TYPE_GRABBER:
+diff -upr linux-2.6.31-rc7.orig/drivers/media/video/v4l2-ioctl.c linux-2.6.31-rc7/drivers/media/video/v4l2-ioctl.c
+--- linux-2.6.31-rc7.orig/drivers/media/video/v4l2-ioctl.c	2009-08-23 07:36:09.000000000 +0200
++++ linux-2.6.31-rc7/drivers/media/video/v4l2-ioctl.c	2009-08-23 10:50:08.000000000 +0200
+@@ -1077,14 +1077,17 @@ static long __video_do_ioctl(struct file
+ 	{
+ 		v4l2_std_id *id = arg;
 
-> +		goto release_region;
-> +	}
-> +
-> +	printk(KERN_INFO DRV_NAME ": GPIO support successfully loaded.\n");
+-		ret = 0;
+-		/* Calls the specific handler */
+-		if (ops->vidioc_g_std)
+-			ret = ops->vidioc_g_std(file, fh, id);
+-		else if (vfd->current_norm)
+-			*id = vfd->current_norm;
+-		else
+-			ret = -EINVAL;
++		/* Check if any standard is supported */
++		if (vfd->tvnorms) {
++			ret = 0;
++			/* Calls the specific handler */
++			if (ops->vidioc_g_std)
++				ret = ops->vidioc_g_std(file, fh, id);
++			else if (vfd->current_norm)
++				*id = vfd->current_norm;
++			else
++				ret = -EINVAL;
++		}
 
- I'd use dev_xxx here, maybe it's worth to have a generic one
- in gpiochip_add .
+ 		if (!ret)
+ 			dbgarg(cmd, "std=0x%08Lx\n", (long long unsigned)*id);
+@@ -1097,7 +1100,7 @@ static long __video_do_ioctl(struct file
+ 		dbgarg(cmd, "std=%08Lx\n", (long long unsigned)*id);
 
+ 		norm = (*id) & vfd->tvnorms;
+-		if (vfd->tvnorms && !norm)	/* Check if std is supported */
++		if (!norm)	/* Check if std is supported */
+ 			break;
 
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+ 		/* Calls the specific handler */
