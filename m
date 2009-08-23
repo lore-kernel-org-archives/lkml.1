@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZHWJkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbZHWJlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbZHWJkA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 05:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755961AbZHWJkA
+	id S1755978AbZHWJlN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 05:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbZHWJlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 05:40:00 -0400
-Received: from mail01a.mail.t-online.hu ([84.2.40.6]:57602 "EHLO
-	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755960AbZHWJj7 (ORCPT
+	Sun, 23 Aug 2009 05:41:13 -0400
+Received: from mail00a.mail.t-online.hu ([84.2.40.5]:53374 "EHLO
+	mail00a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755961AbZHWJlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 05:39:59 -0400
-X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Aug 2009 05:39:59 EDT
-Message-ID: <4A910C42.5000001@freemail.hu>
-Date: Sun, 23 Aug 2009 11:30:42 +0200
+	Sun, 23 Aug 2009 05:41:12 -0400
+Message-ID: <4A910C4B.1070600@freemail.hu>
+Date: Sun, 23 Aug 2009 11:30:51 +0200
 From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
@@ -20,12 +19,13 @@ To: Mauro Carvalho Chehab <mchehab@infradead.org>,
        Jean-Francois Moine <moinejf@free.fr>,
        Thomas Kaiser <thomas@kaiser-linux.li>, linux-media@vger.kernel.org
 CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [RESEND][PATCH 1/2] v4l2: modify the webcam video standard handling
-References: <4A52E897.8000607@freemail.hu>
-In-Reply-To: <4A52E897.8000607@freemail.hu>
+Subject: [RESEND][PATCH 2/2] v4l2: remove unnecessary vidioc_s_std() from
+ gspca
+References: <4A52E8A1.40408@freemail.hu>
+In-Reply-To: <4A52E8A1.40408@freemail.hu>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32721; Body=5 Fuz1=5
+X-DCC-mail.t-online.hu-Metrics: mail00a.mail.t-online.hu 32711; Body=5 Fuz1=5
 	Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,24 +33,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Márton Németh <nm127@freemail.hu>
 
-Change the handling of the case when vdev->tvnorms == 0.
-
-Quote from V4L2 API specification, rev. 0.24 [1]:
-> Special rules apply to USB cameras where the notion of video
-> standards makes little sense. More generally any capture device,
-> output devices accordingly, which is
->
-> * incapable of capturing fields or frames at the nominal rate
->   of the video standard, or
-> * where timestamps refer to the instant the field or frame was
->   received by the driver, not the capture time, or
-> * where sequence numbers refer to the frames received by the
->   driver, not the captured frames.
->
-> Here the driver shall set the std field of struct v4l2_input
-> and struct v4l2_output to zero, the VIDIOC_G_STD, VIDIOC_S_STD,
-> VIDIOC_QUERYSTD and VIDIOC_ENUMSTD ioctls shall return the
-> EINVAL error code.
+The vidioc_s_std() is not necessary when vdev->tvnorms == 0. [1]
 
 The changeset was tested together with v4l-test 0.19 [2] with
 gspca_sunplus driver together with Trust 610 LCD POWERC@M ZOOM and
@@ -65,56 +48,27 @@ References:
 
 Signed-off-by: Márton Németh <nm127@freemail.hu>
 ---
-diff -upr linux-2.6.31-rc7.orig/drivers/media/video/v4l2-dev.c linux-2.6.31-rc7/drivers/media/video/v4l2-dev.c
---- linux-2.6.31-rc7.orig/drivers/media/video/v4l2-dev.c	2009-08-23 07:36:09.000000000 +0200
-+++ linux-2.6.31-rc7/drivers/media/video/v4l2-dev.c	2009-08-23 10:47:03.000000000 +0200
-@@ -396,6 +396,11 @@ int video_register_device_index(struct v
- 	if (!vdev->release)
- 		return -EINVAL;
+--- linux-2.6.31-rc7.orig/drivers/media/video/gspca/gspca.c	2009-08-23 07:36:08.000000000 +0200
++++ linux-2.6.31-rc7/drivers/media/video/gspca/gspca.c	2009-08-23 11:06:22.000000000 +0200
+@@ -1473,12 +1473,6 @@ static int vidioc_s_parm(struct file *fi
+ 	return 0;
+ }
 
-+	/* if no video standards are supported then no need to get and set
-+	   them: they will never be called */
-+	WARN_ON(!vdev->tvnorms && vdev->ioctl_ops->vidioc_g_std);
-+	WARN_ON(!vdev->tvnorms && vdev->ioctl_ops->vidioc_s_std);
-+
- 	/* Part 1: check device type */
- 	switch (type) {
- 	case VFL_TYPE_GRABBER:
-diff -upr linux-2.6.31-rc7.orig/drivers/media/video/v4l2-ioctl.c linux-2.6.31-rc7/drivers/media/video/v4l2-ioctl.c
---- linux-2.6.31-rc7.orig/drivers/media/video/v4l2-ioctl.c	2009-08-23 07:36:09.000000000 +0200
-+++ linux-2.6.31-rc7/drivers/media/video/v4l2-ioctl.c	2009-08-23 10:50:08.000000000 +0200
-@@ -1077,14 +1077,17 @@ static long __video_do_ioctl(struct file
- 	{
- 		v4l2_std_id *id = arg;
+-static int vidioc_s_std(struct file *filp, void *priv,
+-			v4l2_std_id *parm)
+-{
+-	return 0;
+-}
+-
+ #ifdef CONFIG_VIDEO_V4L1_COMPAT
+ static int vidiocgmbuf(struct file *file, void *priv,
+ 			struct video_mbuf *mbuf)
+@@ -1949,7 +1943,6 @@ static const struct v4l2_ioctl_ops dev_i
+ 	.vidioc_s_jpegcomp	= vidioc_s_jpegcomp,
+ 	.vidioc_g_parm		= vidioc_g_parm,
+ 	.vidioc_s_parm		= vidioc_s_parm,
+-	.vidioc_s_std		= vidioc_s_std,
+ 	.vidioc_enum_framesizes = vidioc_enum_framesizes,
+ #ifdef CONFIG_VIDEO_ADV_DEBUG
+ 	.vidioc_g_register	= vidioc_g_register,
 
--		ret = 0;
--		/* Calls the specific handler */
--		if (ops->vidioc_g_std)
--			ret = ops->vidioc_g_std(file, fh, id);
--		else if (vfd->current_norm)
--			*id = vfd->current_norm;
--		else
--			ret = -EINVAL;
-+		/* Check if any standard is supported */
-+		if (vfd->tvnorms) {
-+			ret = 0;
-+			/* Calls the specific handler */
-+			if (ops->vidioc_g_std)
-+				ret = ops->vidioc_g_std(file, fh, id);
-+			else if (vfd->current_norm)
-+				*id = vfd->current_norm;
-+			else
-+				ret = -EINVAL;
-+		}
-
- 		if (!ret)
- 			dbgarg(cmd, "std=0x%08Lx\n", (long long unsigned)*id);
-@@ -1097,7 +1100,7 @@ static long __video_do_ioctl(struct file
- 		dbgarg(cmd, "std=%08Lx\n", (long long unsigned)*id);
-
- 		norm = (*id) & vfd->tvnorms;
--		if (vfd->tvnorms && !norm)	/* Check if std is supported */
-+		if (!norm)	/* Check if std is supported */
- 			break;
-
- 		/* Calls the specific handler */
