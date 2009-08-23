@@ -1,162 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933768AbZHWN20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933810AbZHWN2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933768AbZHWN20 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 09:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933714AbZHWN2Y
+	id S933810AbZHWN2d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 09:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbZHWN2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 09:28:24 -0400
+	Sun, 23 Aug 2009 09:28:32 -0400
 Received: from mail-fx0-f217.google.com ([209.85.220.217]:58451 "EHLO
 	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933713AbZHWN2X (ORCPT
+	with ESMTP id S933770AbZHWN23 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 09:28:23 -0400
+	Sun, 23 Aug 2009 09:28:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=Qt8FPsd4JXz2qovCKsD8WP/lfzZ1g0gNrBknUUI9AtPURYo+fmLoYODa0G0KRfGcLb
-         3V5BNDgyQT2xxG5WHM3e9OnBpvtYiG/m8ipV7DJxLbUxvPTEFnYQwQ9U/oqKRHgOUd8x
-         Txf7dkX55ydnKBP0CA5wfFZ7KOl1o3s366vPY=
+        b=i6C4i48Zl6o39fEiC0fHnWG+2qr3/07lgkECw+/t6jjCJHo0mpOnZWn38bC5amAPI2
+         Ht1l92z+83y4wKSts5XjpcAx8Vo3fl8KL2qAAVhtv6HBReUhdyvJkPI/pwFPSGE7fGUX
+         N6i6ihtoFQHsFdATQb2sgceQNYQ/R9WjnAw2Q=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: devel@driverdev.osuosl.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        Marcin Slusarz <marcin.slusarz@gmail.com>,
        Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Date: Sun, 23 Aug 2009 15:28:52 +0200
-Message-Id: <20090823132852.17784.9175.sendpatchset@localhost.localdomain>
+Date: Sun, 23 Aug 2009 15:28:58 +0200
+Message-Id: <20090823132858.17784.17117.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
 References: <20090823132846.17784.13359.sendpatchset@localhost.localdomain>
-Subject: [PATCH 01/33] Staging: rtxxxx: unify AsicRxAntEvalTimeout()
+Subject: [PATCH 02/33] Staging: rtxxxx: unify AsicSwitchChannel()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtxxxx: unify AsicRxAntEvalTimeout()
+Subject: [PATCH] Staging: rtxxxx: unify AsicSwitchChannel()
 
-Unify RT30xx and !RT30xx code in AsicRxAntEvalTimeout().
+Unify RT30xx and !RT30xx code in AsicSwitchChannel().
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rt2860/common/mlme.c |   79 +++--------------------------------
- 1 file changed, 7 insertions(+), 72 deletions(-)
+ drivers/staging/rt2860/common/mlme.c |   46 ++++++-----------------------------
+ 1 file changed, 9 insertions(+), 37 deletions(-)
 
 Index: b/drivers/staging/rt2860/common/mlme.c
 ===================================================================
 --- a/drivers/staging/rt2860/common/mlme.c
 +++ b/drivers/staging/rt2860/common/mlme.c
-@@ -8233,85 +8233,19 @@ VOID AsicRxAntEvalTimeout(
- 	UCHAR			BBPR3 = 0;
- 	CHAR			larger = -127, rssi0, rssi1, rssi2;
- 
--#ifndef RT30xx
--	{
--		if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_RESET_IN_PROGRESS)	||
--			RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_HALT_IN_PROGRESS)		||
--			RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_RADIO_OFF)			||
--			RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST))
--			return;
--
--		if (pAd->StaCfg.Psm == PWR_SAVE)
--			return;
--
--
--		// if the traffic is low, use average rssi as the criteria
--		if (pAd->Mlme.bLowThroughput == TRUE)
--		{
--			rssi0 = pAd->StaCfg.RssiSample.LastRssi0;
--			rssi1 = pAd->StaCfg.RssiSample.LastRssi1;
--			rssi2 = pAd->StaCfg.RssiSample.LastRssi2;
--		}
--		else
--		{
--			rssi0 = pAd->StaCfg.RssiSample.AvgRssi0;
--			rssi1 = pAd->StaCfg.RssiSample.AvgRssi1;
--			rssi2 = pAd->StaCfg.RssiSample.AvgRssi2;
--		}
--
--		if(pAd->Antenna.field.RxPath == 3)
--		{
--			larger = max(rssi0, rssi1);
--
--			if (larger > (rssi2 + 20))
--				pAd->Mlme.RealRxPath = 2;
--			else
--				pAd->Mlme.RealRxPath = 3;
--		}
--		else if(pAd->Antenna.field.RxPath == 2)
--		{
--			if (rssi0 > (rssi1 + 20))
--				pAd->Mlme.RealRxPath = 1;
--			else
--				pAd->Mlme.RealRxPath = 2;
--		}
--
--		RTMP_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BBPR3);
--		BBPR3 &= (~0x18);
--		if(pAd->Mlme.RealRxPath == 3)
--		{
--			BBPR3 |= (0x10);
--		}
--		else if(pAd->Mlme.RealRxPath == 2)
--		{
--			BBPR3 |= (0x8);
--		}
--		else if(pAd->Mlme.RealRxPath == 1)
--		{
--			BBPR3 |= (0x0);
--		}
--		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BBPR3);
--#ifdef RT2860
--		pAd->StaCfg.BBPR3 = BBPR3;
--#endif
--	}
--#endif /* RT30xx */
--#ifdef RT30xx
- 	if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_RESET_IN_PROGRESS	|
- 							fRTMP_ADAPTER_HALT_IN_PROGRESS	|
- 							fRTMP_ADAPTER_RADIO_OFF			|
--							fRTMP_ADAPTER_NIC_NOT_EXIST) ||
--							OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE)
-+							fRTMP_ADAPTER_NIC_NOT_EXIST)
- #ifdef RT30xx
-+							|| OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_DOZE)
- 							|| (pAd->EepromAccess)
- #endif // RT30xx //
- 							)
- 		return;
- 
- 	{
--		//if (pAd->StaCfg.Psm == PWR_SAVE)
--		//	return;
--
-+#ifdef RT30xx
- 		if (pAd->NicConfig2.field.AntDiversity)
- 		{
- 			if ((pAd->RxAnt.RcvPktNumWhenEvaluate != 0) && (pAd->RxAnt.Pair1AvgRssi[pAd->RxAnt.Pair1SecondaryRxAnt] >= pAd->RxAnt.Pair1AvgRssi[pAd->RxAnt.Pair1PrimaryRxAnt]))
-@@ -8343,6 +8277,7 @@ VOID AsicRxAntEvalTimeout(
- 					pAd->RxAnt.Pair1PrimaryRxAnt, (pAd->RxAnt.Pair1AvgRssi[0] >> 3), (pAd->RxAnt.Pair1AvgRssi[1] >> 3), pAd->RxAnt.RcvPktNumWhenEvaluate));
- 		}
- 		else
-+#endif
- 		{
- 			if (pAd->StaCfg.Psm == PWR_SAVE)
- 				return;
-@@ -8393,13 +8328,13 @@ VOID AsicRxAntEvalTimeout(
- 				BBPR3 |= (0x0);
- 			}
- 			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BBPR3);
-+#ifdef RT2860
-+			pAd->StaCfg.BBPR3 = BBPR3;
-+#endif
+@@ -5787,8 +5787,7 @@ VOID AsicSwitchChannel(
+ 			break;
  		}
  	}
--#endif /* RT30xx */
- }
+-#endif
+-#ifndef RT30xx
++#else
+ 	for (index = 0; index < pAd->ChannelListNum; index++)
+ 	{
+ 		if (Channel == pAd->ChannelList[index].Channel)
+@@ -5805,13 +5804,11 @@ VOID AsicSwitchChannel(
  
+ #ifdef RT2870
+ 	// The RF programming sequence is difference between 3xxx and 2xxx
++	if ((IS_RT3070(pAd) || IS_RT3090(pAd)) && (
+ #ifdef RT30xx
+-	if ((IS_RT3070(pAd) || IS_RT3090(pAd)) && ((pAd->RfIcType == RFIC_3020) || (pAd->RfIcType == RFIC_2020) ||
+-		(pAd->RfIcType == RFIC_3021) || (pAd->RfIcType == RFIC_3022)))
+-#endif
+-#ifndef RT30xx
+-	if (IS_RT3070(pAd) && ((pAd->RfIcType == RFIC_3020) || (pAd->RfIcType == RFIC_2020)))
++	     (pAd->RfIcType == RFIC_3022) || (pAd->RfIcType == RFIC_3021) ||
+ #endif
++	     (pAd->RfIcType == RFIC_3020) || (pAd->RfIcType == RFIC_2020)))
+ 	{
+ 		/* modify by WY for Read RF Reg. error */
+ 		UCHAR RFValue;
+@@ -5824,22 +5821,6 @@ VOID AsicSwitchChannel(
+ 				RT30xxWriteRFRegister(pAd, RF_R02, FreqItems3020[index].N);
+ 				RT30xxWriteRFRegister(pAd, RF_R03, FreqItems3020[index].K);
+ 
+-#ifndef RT30xx
+-				RT30xxReadRFRegister(pAd, RF_R06, (PUCHAR)&RFValue);
+-				RFValue = (RFValue & 0xFC) | FreqItems3020[index].R;
+-				RT30xxWriteRFRegister(pAd, RF_R06, (UCHAR)RFValue);
 -
+-				// Set Tx Power
+-				RT30xxReadRFRegister(pAd, RF_R12, (PUCHAR)&RFValue);
+-				RFValue = (RFValue & 0xE0) | TxPwer;
+-				RT30xxWriteRFRegister(pAd, RF_R12, (UCHAR)RFValue);
 -
- VOID APSDPeriodicExec(
- 	IN PVOID SystemSpecific1,
- 	IN PVOID FunctionContext,
+-				// Set RF offset
+-				RT30xxReadRFRegister(pAd, RF_R23, (PUCHAR)&RFValue);
+-				RFValue = (RFValue & 0x80) | pAd->RfFreqOffset;
+-				RT30xxWriteRFRegister(pAd, RF_R23, (UCHAR)RFValue);
+-#endif
+-#ifdef RT30xx
+ 				RT30xxReadRFRegister(pAd, RF_R06, &RFValue);
+ 				RFValue = (RFValue & 0xFC) | FreqItems3020[index].R;
+ 				RT30xxWriteRFRegister(pAd, RF_R06, RFValue);
+@@ -5849,6 +5830,7 @@ VOID AsicSwitchChannel(
+ 				RFValue = (RFValue & 0xE0) | TxPwer;
+ 				RT30xxWriteRFRegister(pAd, RF_R12, RFValue);
+ 
++#ifdef RT30xx
+ 				// Set Tx1 Power
+ 				RT30xxReadRFRegister(pAd, RF_R13, &RFValue);
+ 				RFValue = (RFValue & 0xE0) | TxPwer2;
+@@ -5868,12 +5850,12 @@ VOID AsicSwitchChannel(
+ 				else if (pAd->Antenna.field.RxPath == 2)
+ 					RFValue |= 0x40;
+ 				RT30xxWriteRFRegister(pAd, RF_R01, RFValue);
++#endif
+ 
+ 				// Set RF offset
+ 				RT30xxReadRFRegister(pAd, RF_R23, &RFValue);
+ 				RFValue = (RFValue & 0x80) | pAd->RfFreqOffset;
+ 				RT30xxWriteRFRegister(pAd, RF_R23, RFValue);
+-#endif
+ 
+ 				// Set BW
+ 				if (!bScan && (pAd->CommonCfg.BBPCurrentBW == BW_40))
+@@ -5885,21 +5867,10 @@ VOID AsicSwitchChannel(
+ 				{
+ 					RFValue = pAd->Mlme.CaliBW20RfR24;
+ 				}
+-#ifndef RT30xx
+-				RT30xxWriteRFRegister(pAd, RF_R24, (UCHAR)RFValue);
+-
+-				// Enable RF tuning
+-				RT30xxReadRFRegister(pAd, RF_R07, (PUCHAR)&RFValue);
+-				RFValue = RFValue | 0x1;
+-				RT30xxWriteRFRegister(pAd, RF_R07, (UCHAR)RFValue);
+-
+-				// latch channel for future usage.
+-				pAd->LatchRfRegs.Channel = Channel;
+-#endif
+-#ifdef RT30xx
+ 				RT30xxWriteRFRegister(pAd, RF_R24, RFValue);
++#ifdef RT30xx
+ 				RT30xxWriteRFRegister(pAd, RF_R31, RFValue);
+-
++#endif
+ 				// Enable RF tuning
+ 				RT30xxReadRFRegister(pAd, RF_R07, &RFValue);
+ 				RFValue = RFValue | 0x1;
+@@ -5908,6 +5879,7 @@ VOID AsicSwitchChannel(
+ 				// latch channel for future usage.
+ 				pAd->LatchRfRegs.Channel = Channel;
+ 
++#ifdef RT30xx
+ 				DBGPRINT(RT_DEBUG_TRACE, ("SwitchChannel#%d(RF=%d, Pwr0=%d, Pwr1=%d, %dT), N=0x%02X, K=0x%02X, R=0x%02X\n",
+ 					Channel,
+ 					pAd->RfIcType,
