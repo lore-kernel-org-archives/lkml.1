@@ -1,25 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934016AbZHWRAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934028AbZHWRBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934016AbZHWRAw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 13:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933969AbZHWRAw
+	id S934028AbZHWRBJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 13:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934002AbZHWRBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 13:00:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48393 "EHLO mx2.suse.de"
+	Sun, 23 Aug 2009 13:01:08 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48400 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933938AbZHWRAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 13:00:51 -0400
-Date: Sun, 23 Aug 2009 19:00:52 +0200
-Message-ID: <s5hy6paihx7.wl%tiwai@suse.de>
+	id S933969AbZHWRBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 13:01:07 -0400
+Date: Sun, 23 Aug 2009 19:01:08 +0200
+Message-ID: <s5hws4uihwr.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jack Byer <ojbyer@usa.net>, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ali5451: fix timeout handling in snd_ali_{codecs,timer}_ready()
-In-Reply-To: <200908231527.25987.bzolnier@gmail.com>
-References: <200908192209.50994.bzolnier@gmail.com>
-	<s5hbpmbvvta.wl%tiwai@suse.de>
-	<200908231527.25987.bzolnier@gmail.com>
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ali5451: remove dead code
+In-Reply-To: <200908192209.55701.bzolnier@gmail.com>
+References: <200908192209.55701.bzolnier@gmail.com>
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?UTF-8?B?R29qxY0=?=) APEL/10.7 Emacs/23.1
  (x86_64-suse-linux-gnu) MULE/6.0 (HANACHIRUSATO)
@@ -29,117 +26,114 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sun, 23 Aug 2009 15:27:25 +0200,
+At Wed, 19 Aug 2009 22:09:55 +0200,
 Bartlomiej Zolnierkiewicz wrote:
 > 
-> On Thursday 20 August 2009 08:33:21 Takashi Iwai wrote:
-> > At Wed, 19 Aug 2009 22:09:50 +0200,
-> > Bartlomiej Zolnierkiewicz wrote:
-> > > 
-> > > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > Subject: [PATCH] ali5451: fix timeout handling in snd_ali_{codecs,timer}_ready()
-> > > 
-> > > Modify loops in such way that the register value is checked also after
-> > > the timeout condition, just in case the heavy interrupt load etc. caused
-> > > the thread to sleep for the time period exceeding the timeout value.
-> > > 
-> > > While at it remove an extra ALI_STIMER read from snd_ali_stimer_ready().
-> > > 
-> > > Reported-by: Jack Byer <ojbyer@usa.net>
-> > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > ---
-> > >  sound/pci/ali5451/ali5451.c |   11 ++++++++---
-> > >  1 file changed, 8 insertions(+), 3 deletions(-)
-> > > 
-> > > Index: b/sound/pci/ali5451/ali5451.c
-> > > ===================================================================
-> > > --- a/sound/pci/ali5451/ali5451.c
-> > > +++ b/sound/pci/ali5451/ali5451.c
-> > > @@ -314,8 +314,11 @@ static int snd_ali_codec_ready(struct sn
-> > >  		res = snd_ali_5451_peek(codec,port);
-> > >  		if (!(res & 0x8000))
-> > >  			return 0;
-> > > +		if (!time_after_eq(end_time, jiffies))
-> > > +			break;
-> > >  		schedule_timeout_uninterruptible(1);
-> > > -	} while (time_after_eq(end_time, jiffies));
-> > > +	} while (1);
-> > 
-> > Using for (;;) is more generic.  I see your patch keeps the changes
-> > minimal, but I'm afraid that the result, do {} while(1), can be
-> > misleading.
-> > 
-> > Could you replace with for (;;) ?
-> 
-> Sure, though I don't see a much value added from this operation..
-
-Heh, it would save one commit I'd do unnecessarily ;)
-
 > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH v2] ali5451: fix timeout handling in snd_ali_{codecs,timer}_ready()
+> Subject: [PATCH] ali5451: remove dead code
 > 
-> Modify loops in such way that the register value is checked also after
-> the timeout condition, just in case the heavy interrupt load etc. caused
-> the thread to sleep for the time period exceeding the timeout value.
+> Remove code covered by #if/endif 0 and #ifdef/endif CODEC_RESET
+> (CODEC_RESET is never defined).
 > 
-> While at it remove an extra ALI_STIMER read from snd_ali_stimer_ready().
-> 
-> Reported-by: Jack Byer <ojbyer@usa.net>
 > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Thanks, applied now.
+Applied now.  Thanks!
 
 
 Takashi
 
 > ---
->  sound/pci/ali5451/ali5451.c |   18 ++++++++++++------
->  1 file changed, 12 insertions(+), 6 deletions(-)
+>  sound/pci/ali5451/ali5451.c |   65 --------------------------------------------
+>  1 file changed, 65 deletions(-)
 > 
 > Index: b/sound/pci/ali5451/ali5451.c
 > ===================================================================
 > --- a/sound/pci/ali5451/ali5451.c
 > +++ b/sound/pci/ali5451/ali5451.c
-> @@ -310,12 +310,16 @@ static int snd_ali_codec_ready(struct sn
->  	unsigned int res;
->  	
->  	end_time = jiffies + msecs_to_jiffies(250);
-> -	do {
-> +
-> +	for (;;) {
->  		res = snd_ali_5451_peek(codec,port);
->  		if (!(res & 0x8000))
->  			return 0;
-> +		if (!time_after_eq(end_time, jiffies))
-> +			break;
->  		schedule_timeout_uninterruptible(1);
-> -	} while (time_after_eq(end_time, jiffies));
-> +	}
-> +
->  	snd_ali_5451_poke(codec, port, res & ~0x8000);
->  	snd_printdd("ali_codec_ready: codec is not ready.\n ");
->  	return -EIO;
-> @@ -327,15 +331,17 @@ static int snd_ali_stimer_ready(struct s
->  	unsigned long dwChk1,dwChk2;
->  	
->  	dwChk1 = snd_ali_5451_peek(codec, ALI_STIMER);
-> -	dwChk2 = snd_ali_5451_peek(codec, ALI_STIMER);
-> -
->  	end_time = jiffies + msecs_to_jiffies(250);
-> -	do {
-> +
-> +	for (;;) {
->  		dwChk2 = snd_ali_5451_peek(codec, ALI_STIMER);
->  		if (dwChk2 != dwChk1)
->  			return 0;
-> +		if (!time_after_eq(end_time, jiffies))
-> +			break;
->  		schedule_timeout_uninterruptible(1);
-> -	} while (time_after_eq(end_time, jiffies));
-> +	}
-> +
->  	snd_printk(KERN_ERR "ali_stimer_read: stimer is not ready.\n");
->  	return -EIO;
+> @@ -477,45 +477,6 @@ static int snd_ali_reset_5451(struct snd
+>  	return 0;
 >  }
-> 
+>  
+> -#ifdef CODEC_RESET
+> -
+> -static int snd_ali_reset_codec(struct snd_ali *codec)
+> -{
+> -	struct pci_dev *pci_dev;
+> -	unsigned char bVal;
+> -	unsigned int   dwVal;
+> -	unsigned short wCount, wReg;
+> -
+> -	pci_dev = codec->pci_m1533;
+> -	
+> -	pci_read_config_dword(pci_dev, 0x7c, &dwVal);
+> -	pci_write_config_dword(pci_dev, 0x7c, dwVal | 0x08000000);
+> -	udelay(5000);
+> -	pci_read_config_dword(pci_dev, 0x7c, &dwVal);
+> -	pci_write_config_dword(pci_dev, 0x7c, dwVal & 0xf7ffffff);
+> -	udelay(5000);
+> -
+> -	bVal = inb(ALI_REG(codec,ALI_SCTRL));
+> -	bVal |= 0x02;
+> -	outb(ALI_REG(codec,ALI_SCTRL),bVal);
+> -	udelay(5000);
+> -	bVal = inb(ALI_REG(codec,ALI_SCTRL));
+> -	bVal &= 0xfd;
+> -	outb(ALI_REG(codec,ALI_SCTRL),bVal);
+> -	udelay(15000);
+> -
+> -	wCount = 200;
+> -	while (wCount--) {
+> -		wReg = snd_ali_codec_read(codec->ac97, AC97_POWERDOWN);
+> -		if ((wReg & 0x000f) == 0x000f)
+> -			return 0;
+> -		udelay(5000);
+> -	}
+> -	return -1;
+> -}
+> -
+> -#endif
+> -
+>  /*
+>   *  ALI 5451 Controller
+>   */
+> @@ -560,22 +521,6 @@ static void snd_ali_disable_address_inte
+>  	outl(gc, ALI_REG(codec, ALI_GC_CIR));
+>  }
+>  
+> -#if 0 /* not used */
+> -static void snd_ali_enable_voice_irq(struct snd_ali *codec,
+> -				     unsigned int channel)
+> -{
+> -	unsigned int mask;
+> -	struct snd_ali_channel_control *pchregs = &(codec->chregs);
+> -
+> -	snd_ali_printk("enable_voice_irq channel=%d\n",channel);
+> -	
+> -	mask = 1 << (channel & 0x1f);
+> -	pchregs->data.ainten  = inl(ALI_REG(codec, pchregs->regs.ainten));
+> -	pchregs->data.ainten |= mask;
+> -	outl(pchregs->data.ainten, ALI_REG(codec, pchregs->regs.ainten));
+> -}
+> -#endif
+> -
+>  static void snd_ali_disable_voice_irq(struct snd_ali *codec,
+>  				      unsigned int channel)
+>  {
+> @@ -676,16 +621,6 @@ static void snd_ali_free_channel_pcm(str
+>  	}
+>  }
+>  
+> -#if 0 /* not used */
+> -static void snd_ali_start_voice(struct snd_ali *codec, unsigned int channel)
+> -{
+> -	unsigned int mask = 1 << (channel & 0x1f);
+> -	
+> -	snd_ali_printk("start_voice: channel=%d\n",channel);
+> -	outl(mask, ALI_REG(codec,codec->chregs.regs.start));
+> -}
+> -#endif
+> -
+>  static void snd_ali_stop_voice(struct snd_ali *codec, unsigned int channel)
+>  {
+>  	unsigned int mask = 1 << (channel & 0x1f);
 > 
