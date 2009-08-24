@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbZHXSb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbZHXSex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290AbZHXSb0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 14:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbZHXSbZ
+	id S1753193AbZHXSex (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 14:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbZHXSev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 14:31:25 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51874 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753251AbZHXSbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 14:31:24 -0400
-Message-ID: <4A92DC93.6030406@redhat.com>
-Date: Mon, 24 Aug 2009 21:31:47 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Mon, 24 Aug 2009 14:34:51 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:54245 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752959AbZHXSev (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 14:34:51 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH 2/3] inotify: do not BUG on idr entries at inotify destruction
+Date: Mon, 24 Aug 2009 20:34:47 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-fs-devel@vger.kernel.org,
+       zdenek.kabelac@gmail.com, torvalds@linux-foundation.org,
+       christoph.thielecke@gmx.de, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk, grant.wilson@zen.co.uk, mikko.cal@gmail.com
+References: <20090824173524.14196.25992.stgit@paris.rdu.redhat.com> <20090824173524.14196.25992.stgit@paris.rdu.redhat.com> <20090824173812.14196.381.stgit@paris.rdu.redhat.com>
+In-reply-To: <20090824173812.14196.381.stgit@paris.rdu.redhat.com>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, gleb@redhat.com,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-References: <20090820155655.GA8764@redhat.com> <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908242034.50885.elendil@planet.nl>
+X-OriginalArrivalTime: 24 Aug 2009 18:34:51.0352 (UTC) FILETIME=[9114CD80:01CA24E9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/24/2009 09:25 PM, Davide Libenzi wrote:
-> Indeed, the default eventfd behaviour is like, well, an event. Signaling
-> (kernel side) or writing (userspace side), signals the event.
-> Waiting (reading) it, will reset the event.
-> If you use EFD_SEMAPHORE, you get a semaphore-like behavior.
-> Events and sempahores are two widely known and used abstractions.
-> The EFD_STATE proposed one, well, no. Not at all.
->    
+Eric Paris wrote:
 
-There are libraries that provide notifications (or fire watches) when 
-some value changes.  They're much less frequently used than events or 
-semaphores, though.
+> If an inotify watch is left in the idr when an fsnotify group is destroyed
+> this will lead to a BUG.  This is not a dangerous situation and really
+> indicates a programming bug and leak of memory.  This patch changes it to
+> use a WARN and a printk rather than killing people's boxes.
+> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+> ---
+> 
+> --- a/fs/notify/inotify/inotify_fsnotify.c
+> +++ b/fs/notify/inotify/inotify_fsnotify.c
+> @@ -107,6 +107,16 @@ static bool inotify_should_send_event(struct
+> fsnotify_group *group, struct inode
+> 
+> static int idr_callback(int id, void *p, void *data)
+> {
+> +       struct fsnotify_mark_entry *entry;
+> +       struct inotify_inode_mark_entry *ientry;
+> +
+> +       entry = p;
+> +       ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
+> + 
+> +       WARN(1, "inotify closing but id=%d still in idr.  Probably leaking memory\n", id); +
+> +       printk(KERN_WARNING "group=%p entry->group=%p inode=%p wd=%d\n",
+> +              data, entry->group, entry->inode, ientry->wd);
+>         BUG();
+>         return 0;
+> }
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+I suspect you intended to remove the BUG?
 
+Cheers,
+FJP
