@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZHXVu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbZHXWFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbZHXVu3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 17:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZHXVu0
+	id S1753643AbZHXWFc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbZHXWFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 17:50:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:13039 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753688AbZHXVuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 17:50:25 -0400
-Date: Tue, 25 Aug 2009 00:49:00 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Avi Kivity <avi@redhat.com>, gleb@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-Message-ID: <20090824214900.GA9899@redhat.com>
-References: <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com>
+	Mon, 24 Aug 2009 18:05:32 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:37401 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753517AbZHXWFb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:05:31 -0400
+Date: Tue, 25 Aug 2009 07:05:32 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, fweisbec@gmail.com,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+       mbligh@google.com, lizf@cn.fujitsu.com, jistone@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [PATCH 1/4] add NR_syscalls define for x86
+Message-ID: <20090824220531.GA20832@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+	x86@kernel.org, fweisbec@gmail.com, mingo@elte.hu,
+	laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+	mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+	mbligh@google.com, lizf@cn.fujitsu.com, jistone@redhat.com,
+	tglx@linutronix.de, hpa@zytor.com
+References: <cover.1251146512.git.jbaron@redhat.com> <0f33c0f96d198fccc3ddd9ff7f5334ff5cb42706.1251146513.git.jbaron@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <0f33c0f96d198fccc3ddd9ff7f5334ff5cb42706.1251146513.git.jbaron@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 11:25:01AM -0700, Davide Libenzi wrote:
-> On Sun, 23 Aug 2009, Michael S. Tsirkin wrote:
+On Mon, Aug 24, 2009 at 05:40:14PM -0400, Jason Baron wrote:
+> Add a NR_syscalls #define for x86. This is used in the syscall events tracing
+> code. Todo: make it dynamic like x86_64
 > 
-> > On Sun, Aug 23, 2009 at 04:40:51PM +0300, Avi Kivity wrote:
-> > > On 08/23/2009 04:36 PM, Michael S. Tsirkin wrote:
-> > >> More important here is realization that eventfd is a mutex/semaphore
-> > >> implementation, not a generic event reporting interface as we are trying
-> > >> to use it.
-> > >>    
-> > >
-> > > Well it is a generic event reporting interface (for example, aio uses it).
-> > 
-> > Davide, I think it's a valid point.  For example, what read on eventfd
-> > does (zero a counter and return) is not like any semaphore I saw.
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
 > 
 > 
-> Indeed, the default eventfd behaviour is like, well, an event. Signaling 
-> (kernel side) or writing (userspace side), signals the event.
-> Waiting (reading) it, will reset the event.
-> If you use EFD_SEMAPHORE, you get a semaphore-like behavior.
-> Events and sempahores are two widely known and used abstractions.
-> The EFD_STATE proposed one, well, no. Not at all.
-
-Hmm. All we try to do is, associate a small key with the event
-that we signal. Is it really that uncommon/KVM specific?
-
+> ---
+>  arch/x86/include/asm/unistd_32.h |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> 
-> - Davide
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+> index 732a307..8deaada 100644
+> --- a/arch/x86/include/asm/unistd_32.h
+> +++ b/arch/x86/include/asm/unistd_32.h
+> @@ -345,6 +345,8 @@
+>  
+>  #ifdef __KERNEL__
+>  
+> +#define NR_syscalls 337
+> +
+Syscalls start at 0 and end at 337, there are 338 syscalls, not 337.
+Hence the off-by-1 that I initially reported. NR_syscalls is always the
+last syscall + 1.
