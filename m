@@ -1,145 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbZHXR0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbZHXR1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752987AbZHXR0K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 13:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbZHXR0J
+	id S1752999AbZHXR1j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 13:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbZHXR1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 13:26:09 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:26828 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752844AbZHXR0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 13:26:08 -0400
-X-IronPort-AV: E=Sophos;i="4.44,266,1249282800"; 
-   d="scan'208";a="230559128"
-Subject: Re: [2.6.31-rc7] NFS4 client manager kthread spinning...
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: linux-nfs@vger.kernel.org, Chuck Lever <chuck.lever@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <6278d2220908240818g3fc23311i607143b7cb6b965d@mail.gmail.com>
-References: <6278d2220908240818g3fc23311i607143b7cb6b965d@mail.gmail.com>
+	Mon, 24 Aug 2009 13:27:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37976 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941AbZHXR1i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 13:27:38 -0400
+Subject: Re: [PATCH 11/15] sched: Pass unlimited __cpu_power information to
+ upper domain level groups
+From: Peter Zijlstra <peterz@infradead.org>
+To: balbir@linux.vnet.ibm.com
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Gautham Shenoy <ego@in.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <20090824164452.GR29572@balbir.in.ibm.com>
+References: <20090820131243.GO29327@alberich.amd.com>
+	 <20090820134155.GZ29327@alberich.amd.com> <1251127297.7538.291.camel@twins>
+	 <20090824164452.GR29572@balbir.in.ibm.com>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Mon, 24 Aug 2009 13:26:09 -0400
-Message-Id: <1251134769.6325.273.camel@heimdal.trondhjem.org>
+Date: Mon, 24 Aug 2009 19:26:50 +0200
+Message-Id: <1251134810.7538.320.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
-X-OriginalArrivalTime: 24 Aug 2009 17:26:10.0194 (UTC) FILETIME=[F8ADFF20:01CA24DF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-24 at 16:18 +0100, Daniel J Blueman wrote:
-> Hi Trond,
+On Mon, 2009-08-24 at 22:14 +0530, Balbir Singh wrote:
+> * Peter Zijlstra <peterz@infradead.org> [2009-08-24 17:21:37]:
 > 
-> On Mon, Aug 17, 2009 at 2:53 PM, Daniel J
-> Blueman<daniel.blueman@gmail.com> wrote:
-> > Hi Trond,
-> >
-> > On Mon, Aug 17, 2009 at 2:12 PM, Trond
-> > Myklebust<Trond.Myklebust@netapp.com> wrote:
-> >> On Sun, 2009-08-16 at 23:40 +0100, Daniel J Blueman wrote:
-> >>> After losing and regaining ethernet link a few times with 2.6.31-rc5
-> >>> [1], I've hit an oops in the NFS4 client manager kthread [2] on my
-> >>> client with NFS4 homedir mount.
-> >>>
-> >>> Do you have a frequent test-case for when the client's manager kthread
-> >>> gets invoked (with and without succeeding callbacks, due to eg a
-> >>> firewall)? Server here is unpatched 2.6.30-rc6; I recall seeing
-> >>> problems when the manager kthread gets invoked, across quite a few
-> >>> kernel releases, just wasn't lucky enough to catch an oops.
-> >>>
-> >>> Oppsing in allow_signal() suggests task state corruption perhaps? I'm
-> >>> downloading the debug kernel to match up the disassembly and line
-> >>> numbers, if that helps? This time, the client had no firewall (but
-> >>> have seen other issues when the callback has failed due to the
-> >>> firewall).
-> >>
-> >> Those aren't Oopses. They are 'soft lockup' warnings. Basically, they're
-> >> saying that the CPU is getting stuck waiting for a spin lock or a mutex.
-> >>
-> >> In this case, it is probably the fact that the state manager is going
-> >> nuts trying to recover, while the connection to the server keeps coming
-> >> up and going down.
-> >>
-> >> What does 'netstat -t' say when you get into this situation?
-> >
-> > Whoops; it's true the stack-trace comes from the soft-lockup detector.
-> >
-> > There was a single 200s link excursion, but the client didn't recover
-> > as locks are held and never released it seems; I observe the
-> > '192.168.1.250-m' NFS4 manager kthread being created and not going
-> > away, despite IP connectivity with the server being fine after.
-> >
-> > I'll reproduce it with stock 2.6.31-rc6 on the client and get 'netstat
-> > -t' output.
+> > On Thu, 2009-08-20 at 15:41 +0200, Andreas Herrmann wrote:
+> > > For performance reasons __cpu_power in a sched_group might be limited
+> > > such that the group can handle only one task. To correctly calculate
+> > > the capacity in upper domain level groups the unlimited power
+> > > information is required. This patch stores unlimited __cpu_power
+> > > information in sched_groups.orig_power and uses this when calculating
+> > > __cpu_power in upper domain level groups.
+> > 
+> > OK, so this tries to fix the cpu_power wreckage?
+> > 
+> > ok, so let me try this with an example:
+> > 
+> > 
+> > Suppose we have a dual-core with shared cache and SMT
+> > 
+> >   0-3     MC
+> > 0-1 2-3   SMT
+> > 
+> > Then both levels fancy setting SHARED_RESOURCES and both levels end up
+> > normalizing the cpu_power to 1, so when we unplug cpu 2, load-balancing
+> > gets all screwy because the whole system doesn't get normalized
+> > properly.
+> > 
+> > What you propose here is every time we muck with cpu_power we keep the
+> > real stuff in orig_power and use that to compute the level above.
+> > 
+> > Except you don't use it in the load-balancer proper, so normalization is
+> > still hosed.
+> > 
+> > Its a creative solution, but I'd rather see cpu_power returned to a
+> > straight sum of actual power to normalize the inter-cpu runqueue weights
+> > and do the placement decision using something else.
 > 
-> (subject line updated)
-> 
-> After further analysis, I see that NFS services do correctly recover
-> after the link excursion, however we see:
->  - link is restored
->  - the manager kthread gets created, does some work
->  - we see lock reclamation fail [1]
->  - after a short while, NFS read()s continue, all is good
->  - the manager kthread spins indefinitely [2, 3] on (struct
-> rpc_wait_queue)queue->lock with spin_lock_bh() [see rpc_wake_up]
-> 
-> This seems reproducible with various kernel debugging enabled (perhaps
-> suggesting use-after-free via the lock being reinitialised/poisoned?).
-> 
-> Let me know if anything else may help track this down (config, stack
-> frame resolution etc). I'll take a deeper look if I get time in a
-> couple of weeks, but alas it may be after 2.6.31 is released. NFS+RPC
-> debugging (taken at a different time than [1]) at
-> http://quora.org/hive/nfs-manager-spin.bz2 .
+> The real solution is to find a way to solve asymmetric load balancing,
+> I suppose. The asymmetry might be due to cores being hot-plugged for
+> example
 
-I think I've found the bug. Does the following patch fix it for you?
+No, the solution is to not use cpu_power for placement and use it for
+normalization of the weight only. That would make the asym work by
+definition.
 
-Cheers
-  Trond
-----------------------------------------------------------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-NFSv4: Fix an infinite looping problem with the nfs4_state_manager
+The real fun comes when we then introduce dynamic cpu_power based on
+feedback from things like aperf/mperf ratios for SMT and feedback from
+the RT scheduler.
 
-Commit 76db6d9500caeaa774a3e32a997eba30bbdc176b (nfs41: add session setup
-to the state manager) introduces an infinite loop possibility in the NFSv4
-state manager. By first checking nfs4_has_session() before clearing the
-NFS4CLNT_SESSION_SETUP flag, it allows for a situation where someone sets
-that flag, but it never gets cleared, and so the state manager loops.
-
-In fact commit c3fad1b1aaf850bf692642642ace7cd0d64af0a3 (nfs41: add session
-reset to state manager) causes this to happen every time we get a network
-partition error.
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/nfs/nfs4state.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
-index 65ca8c1..1434080 100644
---- a/fs/nfs/nfs4state.c
-+++ b/fs/nfs/nfs4state.c
-@@ -1250,8 +1250,8 @@ static void nfs4_state_manager(struct nfs_client *clp)
- 				continue;
- 		}
- 		/* Initialize or reset the session */
--		if (nfs4_has_session(clp) &&
--		   test_and_clear_bit(NFS4CLNT_SESSION_SETUP, &clp->cl_state)) {
-+		if (test_and_clear_bit(NFS4CLNT_SESSION_SETUP, &clp->cl_state)
-+		   && nfs4_has_session(clp)) {
- 			if (clp->cl_cons_state == NFS_CS_SESSION_INITING)
- 				status = nfs4_initialize_session(clp);
- 			else
-
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+The trouble is that cpu_power is now abused for placement decisions too,
+and that needs to be taken out.
