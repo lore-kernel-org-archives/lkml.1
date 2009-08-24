@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbZHXQcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZHXQhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752726AbZHXQcI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 12:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZHXQcG
+	id S1752703AbZHXQhD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 12:37:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZHXQhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 12:32:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53253 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752542AbZHXQcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 12:32:05 -0400
-Message-ID: <4A92C081.50207@garzik.org>
-Date: Mon, 24 Aug 2009 12:32:01 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 24 Aug 2009 12:37:00 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:40260 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752436AbZHXQg7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 12:36:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=LBQpnX8HzL4iTw7vGgYF0B051oyOTEBbfPIVQTq3RWcQUTRvuhF7GBm9qlQEH/C5+M
+         lWDHqfDpc2gDc1xGfTcJ0W24nb9eihzaks64ERzEC0Q0L5uJGrt64A+b2vOAYbsUPWJ7
+         rKuoSXdFzJAFMuQOWNgZgGla327vi+MkxKEUo=
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, benh@kernel.crashing.org, htejun@gmail.com,
-       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
-Subject: Re: [PATCH 4/7] libata: use lazy workqueues for the pio task
-References: <1251100616-28604-1-git-send-email-jens.axboe@oracle.com> <1251100616-28604-5-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1251100616-28604-5-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <5d5443650908230051wa8fa77cu280707281fe450ff@mail.gmail.com>
+References: <5d5443650908221004y5b893382m368dc18a38636c1b@mail.gmail.com> 
+	<4A902904.2090008@gmail.com> <9c9fda240908222145j1938baa3v3ecf8c5899ce3850@mail.gmail.com> 
+	<5d5443650908230051wa8fa77cu280707281fe450ff@mail.gmail.com>
+From: Mohamed Ikbel Boulabiar <boulabiar@gmail.com>
+Date: Mon, 24 Aug 2009 17:36:32 +0100
+Message-ID: <45cc95260908240936y2f8c1e24h6c8b031c898fd551@mail.gmail.com>
+Subject: Re: haptics devices linux driver support
+To: Trilok Soni <soni.trilok@gmail.com>
+Cc: Kyungmin Park <kmpark@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/24/2009 03:56 AM, Jens Axboe wrote:
-> Signed-off-by: Jens Axboe<jens.axboe@oracle.com>
-> ---
->   drivers/ata/libata-core.c |    2 +-
->   1 files changed, 1 insertions(+), 1 deletions(-)
+Hi,
+
+I am interested to know real examples of haptic devices you speak about.
+It would be nice if you send some links or pics.
+
+I remember there was the same problem categorizing other input devices
+like accelerometers.
+
+Thanks
+
+
+On Sun, Aug 23, 2009 at 8:51 AM, Trilok Soni<soni.trilok@gmail.com> wrote:
+> Hi Kyungmin,
 >
-> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> index 072ba5e..35f74c9 100644
-> --- a/drivers/ata/libata-core.c
-> +++ b/drivers/ata/libata-core.c
-> @@ -6580,7 +6580,7 @@ static int __init ata_init(void)
->   {
->   	ata_parse_force_param();
+> On Sun, Aug 23, 2009 at 10:15 AM, Kyungmin Park<kmpark@infradead.org> wrote:
+>> Hi,
+>>
+>> There's three types as I know,
+>>
+>> 1) just GPIO enable motor
+>> 2) GPIO & PWM motor.
+>> 3) I2C based GPIO & PWM motor.
+>>
+>> Frankly we made a motor framework at kernel. but I 'm not sure motor
+>> is right naming or not.
+>> I think we need new framework. since it's not input device.
 >
-> -	ata_wq = create_workqueue("ata");
-> +	ata_wq = create_lazy_workqueue("ata");
->   	if (!ata_wq)
->   		goto free_force_tbl;
-
-No objections to the code, operationally...
-
-But it is disappointing that the "1 thread on UP" problem is not solved 
-while changing this libata area.  Is there no way to specify a minimum 
-lazy-thread count?
-
-A key problem continues to be tying to the number of CPUs, which is 
-quite inappropriate for libata.
-
-	Jeff
-
-
-
+> I am looking at 3rd type, and evaulating that for embedded systems
+> devices having haptics chips can be programmed under drivers/input or
+> not. It is kind of early discussion and gathering inputs on what could
+> be lacking part in input subsystem for support such category of
+> devices.
+>
+> Is it possible for you to submit your version of code and drivers? It
+> will be good starting point for discussion.
+>
+>
+> --
+> ---Trilok Soni
+> http://triloksoni.wordpress.com
+> http://www.linkedin.com/in/triloksoni
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-input" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
