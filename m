@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbZHXISu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZHXIVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751886AbZHXISu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZHXISu
+	id S1751956AbZHXIVA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbZHXIU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:18:50 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41540 "EHLO mx1.suse.de"
+	Mon, 24 Aug 2009 04:20:59 -0400
+Received: from mga09.intel.com ([134.134.136.24]:42232 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751081AbZHXISt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:18:49 -0400
-Date: Mon, 24 Aug 2009 10:18:50 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Peter Huewe <PeterHuewe@gmx.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] gpio: adding __init/__exit macros in
- drivers/gpio/bt8xxgpio.c
-In-Reply-To: <200908230206.57937.mb@bu3sch.de>
-Message-ID: <alpine.LNX.2.00.0908241018380.25797@wotan.suse.de>
-References: <200908230201.10471.PeterHuewe@gmx.de> <200908230206.57937.mb@bu3sch.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1751829AbZHXIU6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 04:20:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,264,1249282800"; 
+   d="scan'208";a="544151028"
+From: "Wang, Shane" <shane.wang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
+CC: Andi Kleen <andi@firstfloor.org>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Wei, Gang" <gang.wei@intel.com>
+Date: Mon, 24 Aug 2009 16:20:05 +0800
+Subject: RE: [PATCH] intel_txt: fix the build errors of intel_txt patch on
+ non-X86 platforms
+Thread-Topic: [PATCH] intel_txt: fix the build errors of intel_txt patch on
+ non-X86 platforms
+Thread-Index: AcoihBpVxMaOWNEVRG+wL0/wgDA7vgCDyh/g
+Message-ID: <037F493892196B458CD3E193E8EBAD4F01EC3ABB56@pdsmsx502.ccr.corp.intel.com>
+References: <4A4ACA66.2000706@intel.com> <20090817154055.GA12985@elte.hu>
+ <20090817155348.GA2254@elte.hu>
+ <037F493892196B458CD3E193E8EBAD4F01EC3AB3B2@pdsmsx502.ccr.corp.intel.com>
+ <20090820161038.GA29994@basil.fritz.box> <4A8E9B3C.5070604@intel.com>
+ <20090821135050.GA30346@elte.hu> <4A8EBBF6.3020505@intel.com>
+ <20090821161204.GB17731@elte.hu> <4A8ED800.30901@zytor.com>
+In-Reply-To: <4A8ED800.30901@zytor.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Aug 2009, Michael Buesch wrote:
-
-> > Trivial patch which adds the __init/__exit macro to the init/exit functions of
-> > drivers/gpio/bt8xxgpio.c
-> > 
-> > Michael, Kay or Greg, please have a look at the small patch and either pull it
-> > through your tree, or please ack' it so Jiri can pull it through the trivial
-> > tree.
-> > 
-> > linux version 2.6.31-rc7 - linus git tree, So 23. Aug 01:38:43 CEST 2009
-> > 
-> > Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+>> 
+>> If then these should be dummy inlines - but in any case, do you
+>> expect tboot to be used by non-x86 too?
+>> 
 > 
-> Acked-by: Michael Buesch <mb@bu3sch.de>
+> It would have to be IA64 ... I can't ask Tony since he's out, but I
+> would assume it is x86-specific at this point.
+> 
+> 	-hpa
 
-Applied, thanks.
+Yes, to my knowledge, it is x86 at this point. TXT-SX is the server extension also for ia32 only.
 
--- 
-Jiri Kosina
-SUSE Labs
+Shane
+
