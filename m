@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbZHXUKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbZHXUMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549AbZHXUKq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 16:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZHXUKo
+	id S1752894AbZHXUMQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 16:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbZHXUMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 16:10:44 -0400
-Received: from cmpxchg.org ([85.214.51.133]:59089 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751689AbZHXUKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 16:10:44 -0400
-Date: Mon, 24 Aug 2009 22:09:50 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       stern@owland.harvard.edu, akpm@linux-foundation.org, apw@canonical.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, peterz@infradead.org
-Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
-Message-ID: <20090824200950.GA3435@cmpxchg.org>
-References: <20090813145106.GA25333@cmpxchg.org> <1250175853.3901.34.camel@mulgrave.site> <4A843D66.1060407@xenotime.net> <20090813180856.GB26020@cmpxchg.org> <4A85ABBB.5060806@oracle.com> <20090818090419.GA3730@cmpxchg.org> <20090819222357.GA12821@cmpxchg.org> <4A8C88F3.1000609@oracle.com> <20090824190653.GA2197@cmpxchg.org> <20090824122711.33b0691e.randy.dunlap@oracle.com>
-Mime-Version: 1.0
+	Mon, 24 Aug 2009 16:12:15 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:15226 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689AbZHXUMO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 16:12:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pq69bnUrIo4Zyy7fQRVZlQqtwMzunx2cDcH71keOLsSH2uW8EYADiZxiBMezkk9qWx
+         3iYaumJsoxb8g4hUsZmtQU51wLo9Hgc4Llk93rndynKeFQcfWEe0LklVe9DWqSjh8dYe
+         CrENpUWQD83LTul0uzvcnimG7mlV9o5W5TTCc=
+Date: Mon, 24 Aug 2009 22:12:12 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Josh Stone <jistone@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH v3 2/4] tracing: Make syscall_(un)regfunc arch-specific
+Message-ID: <20090824201209.GB5050@nowhere>
+References: <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250917125-6174-1-git-send-email-jistone@redhat.com> <1250917125-6174-2-git-send-email-jistone@redhat.com> <1250917125-6174-3-git-send-email-jistone@redhat.com> <20090823211422.GG6256@nowhere> <4A92EA8E.8020400@redhat.com> <20090824195759.GA5050@nowhere> <4A92F157.9040709@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090824122711.33b0691e.randy.dunlap@oracle.com>
+In-Reply-To: <4A92F157.9040709@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Randy,
-
-On Mon, Aug 24, 2009 at 12:27:11PM -0700, Randy Dunlap wrote:
-> On Mon, 24 Aug 2009 12:06:54 -0700 (PDT) Johannes Weiner wrote:
+On Mon, Aug 24, 2009 at 01:00:23PM -0700, Josh Stone wrote:
+> On 08/24/2009 12:58 PM, Frederic Weisbecker wrote:
+> > On Mon, Aug 24, 2009 at 12:31:26PM -0700, Josh Stone wrote:
+> >> On 08/23/2009 02:14 PM, Frederic Weisbecker wrote:
+> >>> I really don't like that.
+> >>> See how the s390 and x86 version of the above code are completely
+> >>> identical?
+> >>>
+> >>> Please put this in kernel/ptrace.c
+> >>
+> >> Yes, I see your point, and I think kernel/ptrace.c is a fine place for
+> >> it.  Making it conditional on CONFIG_TRACEPOINTS and
+> >> CONFIG_HAVE_FTRACE_SYSCALLS is probably best too, though I think the
+> >> latter should now be HAVE_SYSCALL_TRACEPOINTS.
+> > 
+> > 
+> > As you prefer, this new name can be indeed more verbose.
 > 
-> I'll add this to my kernel-doc quilt patch series.
-
-Thanks!
-
-> Oh, one question below...
-
-> > @@ -2119,11 +2122,19 @@ sub process_file($) {
-> >  	    } elsif (/$doc_content/) {
-> >  		# miguel-style comment kludge, look for blank lines after
-> >  		# @parameter line to signify start of description
-> > -		if ($1 eq "" &&
-> > -			($section =~ m/^@/ || $section eq $section_context)) {
-> > -		    dump_section($file, $section, xml_escape($contents));
-> > -		    $section = $section_default;
-> > -		    $contents = "";
-> > +		if ($1 eq "") {
-> > +		    if ($section =~ m/^@/ || $section eq $section_context) {
-> > +			dump_section($file, $section, xml_escape($contents));
-> > +			$section = $section_default;
-> > +			$contents = "";
-> > +		    } else {
-> > +			$contents .= "\n";
-> > +		    }
-> > +		    $in_purpose = 0;
-> > +		} elsif ($in_purpose == 1) {
-> > +		    # Continued declaration purpose
-> > +		    chomp($declaration_purpose);
-> > +		    $declaration_purpose .= " " . $1;
+> Actually, now I'm second-guessing the need to move these at all.  Since
+> they only make sense for CONFIG_TRACEPOINTS, can't they stay in
+> kernel/tracepoint.c and just be conditional on HAVE_SYSCALL_TRACEPOINTS?
+>  The only real change needed is for the tracepoint declarations to also
+> be conditional.
 > 
-> Why shouldn't this be:
-> 		    $declaration_purpose .= " " . xml_escape($1);
-> ?
+> Josh
+> 
 
-Sorry, this should be escaped of course!  Could you edit the patch on
-your side?
+Both ways make sense to me, although I generally see the role of
+kernel/tracepoint.c to only host the general core tracepoints mechanism.
 
-Thanks,
-	Hannes
+And here these two callbacks are more about specific tracepoints coverage,
+somewhat tied to the ptrace background because we are using a ptrace
+bridge to reach these tracepoints.
+
+Well, either ways look good:
+
+- tracepoint.c: to solve the lack of a functionnality in very
+  specific cases.
+
+- ptrace.c: because it's part of a ptrace mechanism.
+
+
+I don't feel strongly about that :-)
+
