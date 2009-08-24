@@ -1,106 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbZHXJgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbZHXJhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752075AbZHXJgP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 05:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZHXJgO
+	id S1751971AbZHXJhY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 05:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZHXJhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 05:36:14 -0400
-Received: from mail.windriver.com ([147.11.1.11]:60654 "EHLO
+	Mon, 24 Aug 2009 05:37:20 -0400
+Received: from mail.windriver.com ([147.11.1.11]:60859 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750974AbZHXJgN convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751680AbZHXJhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 05:36:13 -0400
-Subject: Re: [PATCH] sctp: fix the check for path failure detection
-From: Luo Chunbo <chunbo.luo@windriver.com>
-To: Wei Yongjun <yjwei@cn.fujitsu.com>
-Cc: Vlad Yasevich <vladislav.yasevich@hp.com>, davem@davemloft.net,
-       netdev@vger.kernel.org, linux-sctp@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4A924734.6000702@cn.fujitsu.com>
-References: <1250838275-7444-1-git-send-email-chunbo.luo@windriver.com>
-	 <4A8F15F5.3020901@hp.com> <1251080117.6513.11.camel@pek-cluo-desktop>
-	 <4A924734.6000702@cn.fujitsu.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Date: Mon, 24 Aug 2009 17:35:20 +0800
-Message-Id: <1251106520.6513.51.camel@pek-cluo-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-OriginalArrivalTime: 24 Aug 2009 09:36:01.0781 (UTC) FILETIME=[4B27C250:01CA249E]
+	Mon, 24 Aug 2009 05:37:19 -0400
+From: Chunbo Luo <chunbo.luo@windriver.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-sctp@vger.kernel.org,
+       linux-kernel@vger.kernel.org, chunbo.luo@windriver.com
+Subject: [PATCH v2] sctp: fix the check for path failure detection
+Date: Mon, 24 Aug 2009 17:37:17 +0800
+Message-Id: <1251106637-434-1-git-send-email-chunbo.luo@windriver.com>
+X-Mailer: git-send-email 1.6.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-24 at 15:54 +0800, Wei Yongjun wrote:
-> Luo Chunbo 写道:
-> > On Fri, 2009-08-21 at 17:47 -0400, Vlad Yasevich wrote:
-> >   
-> >> Chunbo Luo wrote:
-> >>     
-> >>> The transport is marked DOWN immediately after sending the max+1 HB,
-> >>> which is equal to not sending the max+1 HB at all. We should wait
-> >>> a next period and make sure the last HB is not acknowledged.
-> >>>
-> >>>       
-> >> I don't think this code does what you want either...
-> >>
-> >> Let's say path_max_rxt = 2.  What we'll get is:
-> >> 	timeout:
-> >> 		err++ (1)
-> >> 		if (err > 2) false
-> >> 		send HB
-> >> 		reset timer
-> >> 	timeout:
-> >> 		err++ (2)
-> >> 		if (err > 2) false
-> >> 		send HB
-> >> 		reset timer
-> >> 	timeout:
-> >> 		err++ (3)
-> >> 		if (err > 2)
-> >> 			set transport DOWN
-> >> 		send HB
-> >> 		reset timer.
-> >>
-> >> We only had 2 unacknowledged HB when we should have had 3.
-> >>     
-> >
-> > The error count is increment after the HB was sent, and the error count
-> > check is before sending HB.
-> >
-> > Let's say path_max_rxt =2 . What we really get is:
-> >
-> > timeout:
-> > 	if( err > 2) false
-> > 	send HB
-> > 	err++ (1)
-> > 	reset timer
-> > timeout:
-> > 	if( err > 2) false
-> > 	send HB
-> > 	err++ (2)
-> > 	reset timer
-> > timeout:
-> > 	if( err > 2) false
-> > 	send HB
-> > 	err++ (3)
-> > 	reset timer
-> > timeout:
-> > 	if( err > 2)
-> > 		set transport DOWN
-> > 	send HB
-> > 	reset timer
-> >
-> > Here We had 3 unacknowledged HBs
-> 
-> 
-> But with Vlad's advice, you just need to do little change to the kernel
-> codes, may be two lines's patch, and it can do the same thing.
+The transport error count should be incremented when an outstanding
+HB is not acknowledged. And the path failure detection should be done
+before sending out the HB.
 
+Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
+---
+ net/sctp/sm_sideeffect.c |    6 +++++-
+ net/sctp/sm_statefuns.c  |    8 ++++----
+ 2 files changed, 9 insertions(+), 5 deletions(-)
 
-OK, I'll send a new patch later.
+diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
+index 86426aa..fbdf4de 100644
+--- a/net/sctp/sm_sideeffect.c
++++ b/net/sctp/sm_sideeffect.c
+@@ -446,7 +446,11 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
+ 	if (transport->state != SCTP_UNCONFIRMED)
+ 		asoc->overall_error_count++;
+ 
+-	if (transport->state != SCTP_INACTIVE &&
++	/*
++	 * The transport error count is incremented when an outstanding HB
++	 * is not acknowledged. 
++	 */
++	if (transport->hb_sent && transport->state != SCTP_INACTIVE &&
+ 	    (transport->error_count++ >= transport->pathmaxrxt)) {
+ 		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
+ 					 " transport IP: port:%d failed.\n",
+diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
+index 7288192..7f77099 100644
+--- a/net/sctp/sm_statefuns.c
++++ b/net/sctp/sm_statefuns.c
+@@ -981,10 +981,6 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
+ 	 */
+ 
+ 	if (transport->param_flags & SPP_HB_ENABLE) {
+-		if (SCTP_DISPOSITION_NOMEM ==
+-				sctp_sf_heartbeat(ep, asoc, type, arg,
+-						  commands))
+-			return SCTP_DISPOSITION_NOMEM;
+ 		/* Set transport error counter and association error counter
+ 		 * when sending heartbeat.
+ 		 */
+@@ -992,6 +988,10 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
+ 				SCTP_TRANSPORT(transport));
+ 		sctp_add_cmd_sf(commands, SCTP_CMD_TRANSPORT_HB_SENT,
+ 				SCTP_TRANSPORT(transport));
++		if (SCTP_DISPOSITION_NOMEM ==
++				sctp_sf_heartbeat(ep, asoc, type, arg,
++						  commands))
++			return SCTP_DISPOSITION_NOMEM;
+ 	}
+ 	sctp_add_cmd_sf(commands, SCTP_CMD_HB_TIMER_UPDATE,
+ 			SCTP_TRANSPORT(transport));
+-- 
+1.6.4
 
-
-> 
-> 
-> 
