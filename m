@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbZHXPqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752739AbZHXP40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752810AbZHXPqG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 11:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZHXPqD
+	id S1752739AbZHXP40 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 11:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbZHXP4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 11:46:03 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36945 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752766AbZHXPqC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 11:46:02 -0400
-Subject: Re: [PATCH 8/15] sched: Add parameter sched_mn_power_savings to
- control MN domain sched policy
-From: Peter Zijlstra <peterz@infradead.org>
-To: svaidy@linux.vnet.ibm.com
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Gautham Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-In-Reply-To: <20090824153229.GL6474@dirshya.in.ibm.com>
-References: <20090820131243.GO29327@alberich.amd.com>
-	 <20090820133914.GW29327@alberich.amd.com> <1251125778.7538.268.camel@twins>
-	 <20090824153229.GL6474@dirshya.in.ibm.com>
+	Mon, 24 Aug 2009 11:56:25 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:36193 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752426AbZHXP4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 11:56:25 -0400
+Subject: Re: [patch 3/4 -mm] flex_array: poison free elements
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Aug 2009 17:45:14 +0200
-Message-Id: <1251128714.7538.308.camel@twins>
+Date: Mon, 24 Aug 2009 08:56:24 -0700
+Message-Id: <1251129384.22398.7166.camel@nimitz>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-24 at 21:02 +0530, Vaidyanathan Srinivasan wrote:
-> * Peter Zijlstra <peterz@infradead.org> [2009-08-24 16:56:18]:
+On Fri, 2009-08-21 at 16:21 -0700, David Rientjes wrote:
 > 
-> > On Thu, 2009-08-20 at 15:39 +0200, Andreas Herrmann wrote:
-> > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > > ---
-> > 
-> > > +#ifdef CONFIG_SCHED_MN
-> > > +	if (!err && mc_capable())
-> > > +		err = sysfs_create_file(&cls->kset.kobj,
-> > > +					&attr_sched_mn_power_savings.attr);
-> > > +#endif
-> > 
-> > *sigh* another crappy sysfs file
-> > 
-> > Guys, can't we come up with anything better than sched_*_power_saving=n?
-> > 
-> > This configuration space is _way_ too large, and now it gets even
-> > crazier.
+> diff --git a/include/linux/poison.h b/include/linux/poison.h
+> --- a/include/linux/poison.h
+> +++ b/include/linux/poison.h
+> @@ -65,6 +65,9 @@
+>  #define MUTEX_DEBUG_INIT       0x11
+>  #define MUTEX_DEBUG_FREE       0x22
 > 
-> Hi Peter and Andreas,
-> 
-> Actually we had sched_power_savings and related simplifications, but
-> that did not really simplify the interface.
+> +/********** lib/flex_array.c **********/
+> +#define FLEX_ARRAY_FREE        0x6c    /* for use-after-free poisoning */
 
-Well, I prefer a single sched_power knob that either goes on or off.
+This seems like a good idea, but perhaps we should pick a non-ASCII
+character as the poison value.  If someone ever tried to store strings
+as one-byte elements, they'd be in for a rude awakening the first time
+they store an 'l'.
 
-A user really isn't interested in exploring a 3^3 configuration space
-{PERF, POWER, POWER-WAKE-BALANCE} x {SMT, MC, MN} in order to find what
-works best.
+Or, maybe we should just disable poisoning if the elements are 4 bytes
+or less.  Or, perhaps the minimum element size should just be 4 bytes
+and we have a 4-byte poison value.  
 
-> As for this mulit-node MN stuff, Gautham had posted a better solution
-> to propagate the sched_mc flags without need for new sysfs file and
-> related changes.
-> 
-> Please take a look at: http://lkml.org/lkml/2009/3/31/137 and
-> http://lkml.org/lkml/2009/3/31/142 which actually degenerates the
-> domain.
+The other alternative is to just use '\0' as the cleared value.  We
+won't be able to track whether accesses in the middle of the array are
+valid, but we can at least always shrink the array with no fear of
+misdetection of the poison value.  That also rids us of some of the
+logic around GFP_ZERO and the poisoning that is a bit confusing.
 
-Ah, right, that got lost in my inbox :/ Let me go read those too.
+Do you think it is confusing that passing GFP_ZERO will keep you from
+doing a shrink unless you do a clear for all of the allocated data?
+Should we expose some of the functions so that users can tell if what
+was allocated precisely?
 
-> However Andreas's requirement seem to indicate multiple nodes within
-> a single socket.  I did not yet completely understand that topology.
-> Some for of smart degeneration may save an additional tunable here.
-
-Yes, apparently AMD is going to put multiple nodes in a single socket,
-not sure how they do that, Andreas do these chips have multiple memory
-busses?
-
-I was thinking chips were pin constrained and wouldn't add a whole
-second memory interface to the package, but what do I know...
-
+-- Dave
 
