@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbZHXWOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZHXWPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753822AbZHXWOx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbZHXWOv
+	id S1753839AbZHXWPL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZHXWPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:14:51 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:38350 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753617AbZHXWOv (ORCPT
+	Mon, 24 Aug 2009 18:15:09 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:48392 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753815AbZHXWPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:14:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=D/kv62h8RCiQ95aBgSYBvY4HFajv0h/cN+X2jvWz1/dDdi9yTc8wRk+GtRXzy9QIB2
-         4lYpVaaceWfJK7IGQPv2ZtbR2CoSXKOAoZh825pkcW1VFaHBXydGVOv3OqS/+rt17Ua+
-         THmDKTaUIHVYxfC8o6zZ9DlUOxr4/zQ7mq+Qs=
-Date: Tue, 25 Aug 2009 00:14:48 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, lethal@linux-sh.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, lizf@cn.fujitsu.com, jistone@redhat.com,
-       tglx@linutronix.de, hpa@zytor.com
-Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
-Message-ID: <20090824221447.GA5124@nowhere>
-References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com>
+	Mon, 24 Aug 2009 18:15:08 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 24 Aug 2009 15:15:05 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: "Michael S. Tsirkin" <mst@redhat.com>
+cc: Avi Kivity <avi@redhat.com>, gleb@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+In-Reply-To: <20090824214900.GA9899@redhat.com>
+Message-ID: <alpine.DEB.2.00.0908241508440.7951@makko.or.mcafeemobile.com>
+References: <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com>
+ <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com> <20090824214900.GA9899@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 05:40:18PM -0400, Jason Baron wrote:
-> Add a dynamic definition of NR_syscalls for x86_64. This is used in the 
-> syscall events tracing code.
+On Tue, 25 Aug 2009, Michael S. Tsirkin wrote:
+
+> On Mon, Aug 24, 2009 at 11:25:01AM -0700, Davide Libenzi wrote:
+> > On Sun, 23 Aug 2009, Michael S. Tsirkin wrote:
+> > 
+> > > On Sun, Aug 23, 2009 at 04:40:51PM +0300, Avi Kivity wrote:
+> > > > On 08/23/2009 04:36 PM, Michael S. Tsirkin wrote:
+> > > >> More important here is realization that eventfd is a mutex/semaphore
+> > > >> implementation, not a generic event reporting interface as we are trying
+> > > >> to use it.
+> > > >>    
+> > > >
+> > > > Well it is a generic event reporting interface (for example, aio uses it).
+> > > 
+> > > Davide, I think it's a valid point.  For example, what read on eventfd
+> > > does (zero a counter and return) is not like any semaphore I saw.
+> > 
+> > 
+> > Indeed, the default eventfd behaviour is like, well, an event. Signaling 
+> > (kernel side) or writing (userspace side), signals the event.
+> > Waiting (reading) it, will reset the event.
+> > If you use EFD_SEMAPHORE, you get a semaphore-like behavior.
+> > Events and sempahores are two widely known and used abstractions.
+> > The EFD_STATE proposed one, well, no. Not at all.
 > 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> 
-> ---
->  include/linux/ftrace.h |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> index dc3b132..3bd94ee 100644
-> --- a/include/linux/ftrace.h
-> +++ b/include/linux/ftrace.h
-> @@ -14,6 +14,11 @@
->  
->  #include <asm/ftrace.h>
->  
-> +#ifdef CONFIG_X86_64
-> +#include <asm/asm-offsets.h>
-> +#define NR_syscalls (__NR_syscall_max + 1)
-> +#endif
-> +
+> Hmm. All we try to do is, associate a small key with the event
+> that we signal. Is it really that uncommon/KVM specific?
+
+All I'm trying to do, is to avoid that eventfd will become an horrible 
+multiplexor for every freaky one-time-use behaviors arising inside kernel 
+modules.
 
 
-I'd rather see this in arch/x86/include/unistd_64.h, since
-NR_syscalls seems to be the defined in unistd.h in all archs.
 
-That also makes a unified way to retrieve this number for
-other users.
+- Davide
 
-
->  #ifdef CONFIG_FUNCTION_TRACER
->  
->  extern int ftrace_enabled;
-> -- 
-> 1.6.2.5
-> 
 
