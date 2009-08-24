@@ -1,62 +1,106 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752890AbZHXQmI (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 24 Aug 2009 12:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbZHXQmG
+	id S1754190AbZHYCbe (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 24 Aug 2009 22:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZHYCbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 12:42:06 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:50126 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752657AbZHXQmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 12:42:01 -0400
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-   akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-   josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
-   tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-   "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH -tip 1/2] Add "notrace" to RCU function headers used by ftrace.
-Date: Mon, 24 Aug 2009 09:42:00 -0700
-Message-Id: <12511321213243-git-send-email->
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <20090824164112.GA13693@linux.vnet.ibm.com>
-References: <20090824164112.GA13693@linux.vnet.ibm.com>
+	Mon, 24 Aug 2009 22:31:32 -0400
+Received: from dabasnet-server.acenet.hu ([195.70.54.195]:42896 "EHLO
+	dabasnet.acenet.hu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754036AbZHYCbb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 22:31:31 -0400
+X-Greylist: delayed 31124 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Aug 2009 22:31:28 EDT
+Message-ID: <51682.41.205.168.10.1251136549.squirrel@mail.dabasnet.hu>
+Date: Mon, 24 Aug 2009 17:55:49 -0000 (GMT)
+Subject: Dear WebMail Account Owner
+From: "DataBase Upgrade" <database@upgrade.com>
+Reply-To: database.upgrade@live.com
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+Apparently-To: <rruth@vision.arc.nasa.gov>
+Apparently-To: <landrews@virtual.park.uga.edu>
+Apparently-To: <xw3f@virginia.edu>
+Apparently-To: <ww9c@virginia.edu>
+Apparently-To: <wc4p@virginia.edu>
+Apparently-To: <wbl@virginia.edu>
+Apparently-To: <vassilopoulos@virginia.edu>
+Apparently-To: <translationmh7g@virginia.edu>
+Apparently-To: <shot@virginia.edu>
+Apparently-To: <rgrizzle@virginia.edu>
+Apparently-To: <na-net@virginia.edu>
+Apparently-To: <mn4n@virginia.edu>
+Apparently-To: <mloyen@virginia.edu>
+Apparently-To: <let@virginia.edu>
+Apparently-To: <legion@virginia.edu>
+Apparently-To: <job5g@virginia.edu>
+Apparently-To: <iwh@virginia.edu>
+Apparently-To: <hh5f@virginia.edu>
+Apparently-To: <epr5d@virginia.edu>
+Apparently-To: <dbw3e@virginia.edu>
+Apparently-To: <cfd5z@virginia.edu>
+Apparently-To: <sandy.pragmatix@virgin.net>
+Apparently-To: <Ulf.Blomqvist@VINNOVA.se>
+Apparently-To: <adams1976@vieng.com>
+Apparently-To: <black@vidalia.unh.edu>
+Apparently-To: <jack@victron.nl>
+Apparently-To: <Blanchet@viagenie.qc.ca>
+Apparently-To: <mats.lundalv@vgregion.se>
+Apparently-To: <helene.stanne@vgregion.se>
+Apparently-To: <pjb@vgernet.net>
+Apparently-To: <gronenborn@vger.niddk.nih.gov>
+Apparently-To: <linux-kernel@vger.kernel.org>
+Apparently-To: <elisabeth@verna.se>
+Apparently-To: <melissa@vermont.org>
+Apparently-To: <sherrillw.sew@verizon.net>
+Apparently-To: <Sharon@verizon.net>
+Apparently-To: <Shan.Holt@verizon.net>
+Apparently-To: <rhoke@verizon.net>
+Apparently-To: <ntemdurke8@verizon.net>
+Apparently-To: <darkangela@verizon.net>
+Apparently-To: <brenda.leonard@verizon.net>
+Apparently-To: <ashley6@verizon.net>
+Apparently-To: <ashley3@verizon.net>
+Apparently-To: <ashley121@verizon.net>
+Apparently-To: <ashley05@verizon.net>
+Apparently-To: <donna@verixtech.com>
+Apparently-To: <vino@verity.com>
+Apparently-To: <rangan.doreswamy@veritas.com>
+Apparently-To: <margaret@veritas.com>
+Apparently-To: <tendler@venus.fusion.kth.se>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both rcu_read_lock_sched_notrace() and rcu_read_unlock_sched_notrace()
-are used by ftrace, and thus need to be marked "notrace".  Unfortunately,
-my naive assumption that gcc would see the inner "notrace" does not hold.
-Kudos to Lai Jiangshan for noting this.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- include/linux/rcupdate.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index ec90fc3..8b4422c 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -191,7 +191,7 @@ static inline void rcu_read_lock_sched(void)
- 	__acquire(RCU_SCHED);
- 	rcu_read_acquire();
- }
--static inline void rcu_read_lock_sched_notrace(void)
-+static inline notrace void rcu_read_lock_sched_notrace(void)
- {
- 	preempt_disable_notrace();
- 	__acquire(RCU_SCHED);
-@@ -209,7 +209,7 @@ static inline void rcu_read_unlock_sched(void)
- 	__release(RCU_SCHED);
- 	preempt_enable();
- }
--static inline void rcu_read_unlock_sched_notrace(void)
-+static inline notrace void rcu_read_unlock_sched_notrace(void)
- {
- 	rcu_read_release();
- 	__release(RCU_SCHED);
--- 
-1.5.2.5
+
+Dear WebMail Account Owner,
+
+This message is from  messaging center to all  webmail account owners. We
+are currently upgrading our data base and e-mail account center. We are
+deleting all unused  webmail email account to create more space for new
+accounts.
+To prevent your account from closing you will have to update it below so
+that we will know that it's a present used account.
+
+CONFIRM YOUR EMAIL IDENTITY BELOW
+***************************************
+Full Name :
+Email Username :
+Email Password :
+Email Address  :
+Comfirm Password :
+webmail Site:http://
+***************************************
+WARNING!!! Account owner that refuses to update his or her account within
+Seven days of receiving this
+Notification will lose his or her account permanently.
+
+Thank you for using webmail!
+Notification
 
