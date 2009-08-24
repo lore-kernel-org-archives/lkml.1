@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbZHXXsC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbZHXXxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbZHXXsC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 19:48:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZHXXr6
+	id S1753927AbZHXXxB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 19:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZHXXw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 19:47:58 -0400
-Received: from csmtp3.one.com ([195.47.247.213]:40847 "EHLO csmtp3.one.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753501AbZHXXr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 19:47:58 -0400
-X-Greylist: delayed 600 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Aug 2009 19:47:58 EDT
-Message-ID: <4A932456.9000500@bitmath.org>
-Date: Tue, 25 Aug 2009 01:37:58 +0200
-From: Henrik Rydberg <rydberg@bitmath.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 24 Aug 2009 19:52:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56352 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752895AbZHXXw4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 19:52:56 -0400
+Date: Mon, 24 Aug 2009 16:51:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: linux-kernel@vger.kernel.org, x86@kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer dereference
+ at 0000000000000008
+In-Reply-To: <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain>
+References: <m163cjhwa4.fsf@fess.ebiederm.org> <m1skfnggrb.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Henrik Rydberg <rydberg@euromail.se>, nicolas@boichat.ch,
-       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hwmon: applesmc: restore keyboard backlight on resume
-References: <1250976832-9801-1-git-send-email-rydberg@euromail.se> <20090824140717.e7011b8c.akpm@linux-foundation.org>
-In-Reply-To: <20090824140717.e7011b8c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 22 Aug 2009 23:33:52 +0200
-> "Henrik Rydberg" <rydberg@euromail.se> wrote:
+
+
+On Mon, 24 Aug 2009, Linus Torvalds wrote:
 > 
->> On resume from suspend, the driver currently resets the logical
->> state as if it was brought up from halt. This patch uses the
->> dev_pm_ops.resume method to synchronize the hardware with the
->> memorized logical state, bringing back the backlight to the level
->> prior to suspend.
-> 
-> What are the runtime effects of this change?
-> 
+> Untested. VERY untested. Just going by "that looks odd".
 
-My apologies, the patch has two flaws.
+Btw, one issue here is that we at least sometimes do tty_ldisc_halt() 
+under the tty->ldisc_mutex.  Now that's fine - as long as we never take 
+that lock inside any delayed work - because then the delayed work itself 
+may need the lock we hold in order to complete, and now the 
+'cancel_delayed_work_sync()' thing might deadlock.
 
-1) For macbook models without keyboard backlight, the resume function
-will fail internally, presumably resulting in a small unnecessary delay.
+And sadly, we do end up having 'do_tty_hangup()' as a workqueue entry, and 
+that one does tty_ldisc_hangp, and that one in turn does take 
+tty->ldisc_mutex.
 
-2) The accelerometer does not reset properly after hibernation.
+So it looks like either we can't use the 'sync()' version, or we should 
+never hold the ldisc_mutex while doing that tty_ldisc_halt(). Because 
+waiting for the workqueue while holding the mutex looks like it could 
+deadlock. It's probably very rare, but whatever.
 
-Please drop this patch from -mm, I am sending a corrected patch
-with a slightly different title. Sorry about this.
+Still, it would be good for people to test whether that patch makes the 
+problem go away. Just to see if the issue really is a race between 
+"tty_ldisc_halt()" and an ldisc being active on another CPU right then. 
 
-Henrik
+But I wanted to let people know that the patch is clearly not the "last 
+word" on this. It's a useful thing to try, but we need something better.
+
+And it looks like we've hit that problem before, which is probably why it 
+didn't use sync. several of the callers of 'tty_ldisc_halt()' do a 
+flush_scheduled_work() afterwards, outside the ldisc_mutex. Of course, the 
+sane one (tty_ldisc_release()) does a tty_ldisc_halt() even before taking 
+the mutex lock.
+
+			Linus
