@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbZHXHGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751830AbZHXHLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751783AbZHXHGb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 03:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZHXHGb
+	id S1751830AbZHXHLO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 03:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZHXHLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 03:06:31 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49070 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbZHXHGa (ORCPT
+	Mon, 24 Aug 2009 03:11:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54082 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751635AbZHXHLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 03:06:30 -0400
-Subject: git send-email defaults
+	Mon, 24 Aug 2009 03:11:13 -0400
+Subject: Re: [PATCH -tip] v3 Simplify rcu_pending()/rcu_check_callbacks()
+ API
 From: Peter Zijlstra <peterz@infradead.org>
-To: Junio C Hamano <junio@pobox.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
-       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk
-In-Reply-To: <7vfxbj1car.fsf@alter.siamese.dyndns.org>
-References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
-	 <1250769861.8282.182.camel@twins> <20090820120858.GJ12579@kernel.dk>
-	 <1250770571.8282.186.camel@twins> <7vfxbj1car.fsf@alter.siamese.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       rostedt@goodmis.org
+In-Reply-To: <125097461311-git-send-email->
+References: <20090727181401.GA14120@linux.vnet.ibm.com>
+	 <125097461311-git-send-email->
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Aug 2009 09:04:50 +0200
-Message-Id: <1251097490.7538.127.camel@twins>
+Date: Mon, 24 Aug 2009 09:10:16 +0200
+Message-Id: <1251097816.7538.129.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-22 at 19:42 -0700, Junio C Hamano wrote:
-> Peter Zijlstra <peterz@infradead.org> writes:
+On Sat, 2009-08-22 at 13:56 -0700, Paul E. McKenney wrote:
+> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > 
-> > On Thu, 2009-08-20 at 14:08 +0200, Jens Axboe wrote:
-> > ...
-> >> That's pretty new... But perhaps I should complain too, it's been
-> >> annoying me forever.
-> >
-> > http://marc.info/?l=git&m=123457137328461&w=2
-> >
-> > Apparently it didn't happen, nor did I ever see a reply to that posting.
-> >
-> > Junio, what happened here?
+> All calls from outside RCU are of the form:
 > 
-> Nothing happened.
+> 	if (rcu_pending(cpu))
+> 		rcu_check_callbacks(cpu, user);
 > 
-> I do not recall anybody objecting to, but then when nothing happened in
-> neither 1.6.3 nor 1.6.4, nobody jumped up-and-down demanding the change of
-> default either.  So overall impression I got from this was that nobody
-> really cared deeply enough either way.
+> This is silly, instead we put a call to rcu_pending() in
+> rcu_check_callbacks(),
 
-And here I was thinking it was settled when no objections came ;-)
+It could be non-silly if rcu_pending() were a very simple inline
+function, in that case it would avoid the full function call.
 
-> But we are talking about 1.7.0 to become a release to correct wrong
-> defaults we have had once and for all ;-), and I am tempted to roll this
-> topic into the mix.  Here is what I queued to my 'next' branch tonight.
+Still in such a case you can make rcu_check_callbacks() the inline
+function which does the same and have the real function called somthing
+else.
 
-The sooner this hits the distros the better.. 
-
-Thanks for committing the change, looking fwd to 1.7
+Anyway, its all moot since rcu_pending() wasn't a simple inline function
+anyway, so you've replaced two function calls with one, which seems
+good.
