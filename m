@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbZHXWa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbZHXWa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753817AbZHXWa3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZHXWa2
+	id S1753845AbZHXWa5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZHXWa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:30:28 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:42840
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753476AbZHXWa1 (ORCPT
+	Mon, 24 Aug 2009 18:30:56 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:37014 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753476AbZHXWa4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:30:27 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
-Date: Mon, 24 Aug 2009 17:30:24 -0500
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
-Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Pavel Machek <pavel@ucw.cz>, Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-References: <20090312092114.GC6949@elf.ucw.cz> <20090824130125.GG23677@mit.edu> <4A92A9F9.10706@gmail.com>
-In-Reply-To: <4A92A9F9.10706@gmail.com>
+	Mon, 24 Aug 2009 18:30:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=YROHxzsR/fia0snp3cbFMy71OFdfwojEGLUHK84xVL7y+wmn3kWm6cWyUS2FMfG2cM
+         hYniU2mUDM0jPOi+xPgg/nDRLmkDdtKdV5AfJeYFkI9Pwm0hZgfuwSi7closJffWA/+Y
+         lzBnxxceKyZ0g8nhrLy2p2QfUWrLRyBJGHCgQ=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908241730.26356.rob@landley.net>
+Reply-To: eranian@gmail.com
+In-Reply-To: <19091.1974.528045.724091@cargo.ozlabs.ibm.com>
+References: <7c86c4470908200649u290f2378n126442ea3a823540@mail.gmail.com>
+	 <19091.1974.528045.724091@cargo.ozlabs.ibm.com>
+Date: Tue, 25 Aug 2009 00:30:56 +0200
+Message-ID: <7c86c4470908241530r21804dbfqed2a218c3275ced5@mail.gmail.com>
+Subject: Re: perf_counters issue with enable_on_exec
+From: stephane eranian <eranian@googlemail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
+       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 24 August 2009 09:55:53 Artem Bityutskiy wrote:
-> Probably, Pavel did too good job in generalizing things, and it could be
-> better to make a doc about HDD vs SSD or HDD vs Flash-based-storage.
-> Not sure. But the idea to document subtle FS assumption is good, IMO.
-
-The standard procedure for this seems to be to cc: Jonathan Corbet on the 
-discussion, make puppy eyes at him, and subscribe to Linux Weekly News.
-
-Rob
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+On Mon, Aug 24, 2009 at 11:35 PM, Paul Mackerras<paulus@samba.org> wrote:
+> stephane eranian writes:
+>
+>> I am running into an issue trying to use enable_on_exec
+>> in per-thread mode with an event group.
+>>
+>> My understanding is that enable_on_exec allows activation
+>> of an event on first exec. This is useful for tools monitoring
+>> other tasks and which you invoke as: tool my_program. In
+>> other words, the tool forks+execs my_program. This option
+>> allows developers to setup the events after the fork (to get
+>> the pid) but before the exec(). Only execution after the exec
+>> is monitored. This alleviates the need to use the
+>> ptrace(PTRACE_TRACEME) call.
+>>
+>> My understanding is that an event group is scheduled only
+>> if all events in the group are active (disabled=0). Thus, one
+>
+> Not quite - if the leader is disabled then none of the group goes on.
+> If the leader is enabled then it and any other group members that are
+> enabled go on.  If a non-leader member is disabled then it doesn't go
+> on but it doesn't stop other members from going on.
+>
+okay, what is not clear to me is why you need that level of granularity?
