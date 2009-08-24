@@ -1,59 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbZHXWGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZHXWGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722AbZHXWGZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbZHXWGX
+	id S1753808AbZHXWGj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbZHXWGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:06:23 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:51173 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753526AbZHXWGW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:06:22 -0400
-Date: Mon, 24 Aug 2009 23:06:13 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Jarkko Nikula <jhnikula@gmail.com>,
-       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
-       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-arm-kernel@lists.infradead.org" 
-	<linux-arm-kernel@lists.infradead.org>
-Message-ID: <20090824220612.GB4338@sirena.org.uk>
-References: <200908101050.02530.jkrzyszt@tis.icnet.pl>
- <200908231945.40187.jkrzyszt@tis.icnet.pl>
- <20090823180543.GA6167@opensource.wolfsonmicro.com>
- <200908232038.05593.jkrzyszt@tis.icnet.pl>
- <20090823184943.GA6994@opensource.wolfsonmicro.com>
- <20090824084920.c99c561a.jhnikula@gmail.com>
- <20090824124902.GH7069@atomide.com>
+	Mon, 24 Aug 2009 18:06:37 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:22682 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753791AbZHXWGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:06:35 -0400
+Message-ID: <4A930EB9.8030903@redhat.com>
+Date: Mon, 24 Aug 2009 18:05:45 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824124902.GH7069@atomide.com>
-X-Cookie: You dialed 5483.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [alsa-devel] [RFC][PATCH 1/3 v2] ARM: OMAP: DMA: Add support
- for DMA channel self linking on OMAP1510
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+To: Pavel Machek <pavel@ucw.cz>
+CC: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+References: <200903161426.24904.rob@landley.net> <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz>
+In-Reply-To: <20090824212518.GF29763@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 03:49:03PM +0300, Tony Lindgren wrote:
+Pavel Machek wrote:
+> Hi!
+>
+>   
+>>> I can reproduce data loss with ext3 on flashcard in about 40
+>>> seconds. I'd not call that "odd event". It would be nice to handle
+>>> that, but that is hard. So ... can we at least get that documented
+>>> please?
+>>>   
+>>>       
+>> Part of documenting best practices is to put down very specific things  
+>> that do/don't work. What I worry about is producing too much detail to  
+>> be of use for real end users.
+>>     
+>
+> Well, I was trying to write for kernel audience. Someone can turn that
+> into nice end-user manual.
+>   
 
-> > We should remember that arch/arm/plat-omap/mcbsp.c changes done via
-> > ALSA tree has been an exception and that's only for simpler procedure.
-> > McBSP is not so critical if sources goes out-of-sync but DMA is.
+Kernel people who don't do storage or file systems will still need a 
+summary - making very specific proposals based on real data and analysis 
+is useful.
+>   
+>> I have to admit that I have not paid enough attention to this specifics  
+>> of your ext3 + flash card issue - is it the ftl stuff doing out of order  
+>> IO's? 
+>>     
+>
+> The problem is that flash cards destroy whole erase block on unplug,
+> and ext3 can't cope with that.
+>
+>   
 
-> Sorry for the delay in replying. I'm OK for these to go in via the alsa
-> tree as there are not currently other patches pending in the mcbsp or
-> dma area for omap. So I think it's better merge all the audio related
-> patches together in this case.
+Even if you unmount the file system? Why isn't this an issue with ext2?
 
-Applied, thanks.
+Sounds like you want to suggest very specifically that journalled file 
+systems are not appropriate for low end flash cards (which seems quite 
+reasonable).
+>>> _All_ flash cards (MMC, USB, SD) had the problems. You don't need to
+>>> get clear grasp on trends. Those cards just don't meet ext3
+>>> expectations, and if you pull them, you get data loss.
+>>>   
+>>>       
+>> Pull them even after an unmount, or pull them hot?
+>>     
+>
+> Pull them hot.
+>
+> [Some people try -osync to avoid data loss on flash cards... that will
+> not do the trick. Flashcard will still kill the eraseblock.]
+>   
+
+Pulling hot any device will cause data loss for recent data loss, even 
+with ext2 you will have data in the page cache, right?
+>   
+>>>> Nothing is perfect. It is still a trade off between storage 
+>>>> utilization  (how much storage we give users for say 5 2TB drives), 
+>>>> performance and  costs (throw away any disks over 2 years old?).
+>>>>     
+>>>>         
+>>> "Nothing is perfect"?! That's design decision/problem in raid5/ext3. I
+>>> believe that should be at least documented. (And understand why ZFS is
+>>> interesting thing).
+>>>   
+>>>       
+>> Your statement is overly broad - ext3 on a commercial RAID array that  
+>> does RAID5 or RAID6, etc has no issues that I know of.
+>>     
+>
+> If your commercial RAID array is battery backed, maybe. But I was
+> talking Linux MD here.
+>   
+
+Many people in the real world who use RAID5 (for better or worse) use 
+external raid cards or raid arrays, so you need to be very specific.
+>   
+>>> And I still use my zaurus with crappy DRAM.
+>>>
+>>> I would not trust raid5 array with my data, for multiple
+>>> reasons. The fact that degraded raid5 breaks ext3 assumptions should
+>>> really be documented.
+>>>       
+>> Again, you say RAID5 without enough specifics.  Are you pointing just at  
+>> MD RAID5 on S-ATA? Hardware RAID cards? A specific commercial RAID5 
+>> vendor?
+>>     
+>
+> Degraded MD RAID5 on anything, including SATA, and including
+> hypothetical "perfect disk".
+>   
+
+Degraded is one faulted drive while MD is doing a rebuild? And then you 
+hot unplug it or power cycle? I think that would certainly cause failure 
+for ext2 as well (again, you would lose any data in the page cache).
+>   
+>>> The papers show failures in "once a year" range. I have "twice a
+>>> minute" failure scenario with flashdisks.
+>>>
+>>> Not sure how often "degraded raid5 breaks ext3 atomicity" would bite,
+>>> but I bet it would be on "once a day" scale.
+>>>
+>>> We should document those.
+>>>       
+>> Documentation is fine with sufficient, hard data....
+>>     
+>
+> Degraded MD RAID5 does not work by design; whole stripe will be
+> damaged on powerfail or reset or kernel bug, and ext3 can not cope
+> with that kind of damage. [I don't see why statistics should be
+> neccessary for that; the same way we don't need statistics to see that
+> ext2 needs fsck after powerfail.]
+> 									Pavel
+>   
+What you are describing is a double failure and RAID5 is not double 
+failure tolerant regardless of the file system type....
+
+I don't want to be overly negative since getting good documentation is 
+certainly very useful. We just need to be document things correctly 
+based on real data.
+
+Ric
+
+
