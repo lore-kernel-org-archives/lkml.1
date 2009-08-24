@@ -1,107 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbZHXO6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbZHXPDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbZHXO6g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 10:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbZHXO6e
+	id S1752277AbZHXPDh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 11:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZHXPDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 10:58:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34967 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752716AbZHXO6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 10:58:31 -0400
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>
-Subject: [PATCH] ext3: Improve error message that changing journaling mode on remount is not possible
-Date: Mon, 24 Aug 2009 16:58:30 +0200
-Message-Id: <1251125910-2457-3-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1251125910-2457-1-git-send-email-jack@suse.cz>
-References: <1251125910-2457-1-git-send-email-jack@suse.cz>
+	Mon, 24 Aug 2009 11:03:36 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:62274 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbZHXPDf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 11:03:35 -0400
+Message-ID: <4A92A9F9.10706@gmail.com>
+Date: Mon, 24 Aug 2009 17:55:53 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>
+CC: Florian Weimer <fweimer@bfk.de>, Pavel Machek <pavel@ucw.cz>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net> <20090316122847.GI2405@elf.ucw.cz> <200903161426.24904.rob@landley.net> <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu>
+In-Reply-To: <20090824130125.GG23677@mit.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 24 Aug 2009 14:56:06.0021 (UTC) FILETIME=[01C63B50:01CA24CB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the error message about changing journaling mode on remount
-more descriptive. Some people are going to hit this error now due to commit
-bbae8bcc49bc4d002221dab52c79a50a82e7cd1f if they configure a kernel to default
-to data=writeback mode. The problem happens if they have data=ordered set for
-the root filesystem in /etc/fstab but not in the kernel command line (and they
-don't use initrd). Their filesystem then gets mounted as data=writeback by
-kernel but then their boot fails because init scripts won't be able to remount
-the filesystem rw. Better error message will hopefully make it easier for them
-to find the error in their setup and bother us less with error reports :).
+Hi Theodore,
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/ext3/super.c |   40 +++++++++++++++++++++++++++-------------
- 1 files changed, 27 insertions(+), 13 deletions(-)
+thanks for the insightful writing.
 
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index 524b349..a8d80a7 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -543,6 +543,19 @@ static inline void ext3_show_quota_options(struct seq_file *seq, struct super_bl
- #endif
- }
- 
-+static char *data_mode_string(unsigned long mode)
-+{
-+	switch (mode) {
-+	case EXT3_MOUNT_JOURNAL_DATA:
-+		return "journal";
-+	case EXT3_MOUNT_ORDERED_DATA:
-+		return "ordered";
-+	case EXT3_MOUNT_WRITEBACK_DATA:
-+		return "writeback";
-+	}
-+	return "unknown";
-+}
-+
- /*
-  * Show an option if
-  *  - it's set to a non-default value OR
-@@ -616,13 +629,8 @@ static int ext3_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 	if (test_opt(sb, NOBH))
- 		seq_puts(seq, ",nobh");
- 
--	if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_JOURNAL_DATA)
--		seq_puts(seq, ",data=journal");
--	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_ORDERED_DATA)
--		seq_puts(seq, ",data=ordered");
--	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)
--		seq_puts(seq, ",data=writeback");
--
-+	seq_printf(seq, ",data=%s", data_mode_string(sbi->s_mount_opt &
-+						     EXT3_MOUNT_DATA_FLAGS));
- 	if (test_opt(sb, DATA_ERR_ABORT))
- 		seq_puts(seq, ",data_err=abort");
- 
-@@ -1024,12 +1032,18 @@ static int parse_options (char *options, struct super_block *sb,
- 		datacheck:
- 			if (is_remount) {
- 				if ((sbi->s_mount_opt & EXT3_MOUNT_DATA_FLAGS)
--						!= data_opt) {
--					printk(KERN_ERR
--						"EXT3-fs: cannot change data "
--						"mode on remount\n");
--					return 0;
--				}
-+						== data_opt)
-+					break;
-+				printk(KERN_ERR
-+					"EXT3-fs (device %s): Cannot change "
-+					"data mode on remount. The filesystem "
-+					"is mounted in data=%s mode and you "
-+					"try to remount it in data=%s mode.\n",
-+					sb->s_id,
-+					data_mode_string(sbi->s_mount_opt &
-+							EXT3_MOUNT_DATA_FLAGS),
-+					data_mode_string(data_opt));
-+				return 0;
- 			} else {
- 				sbi->s_mount_opt &= ~EXT3_MOUNT_DATA_FLAGS;
- 				sbi->s_mount_opt |= data_opt;
+On 08/24/2009 04:01 PM, Theodore Tso wrote:
+
+...snip ...
+
+> It's for this reason that I've never been completely sure how useful
+> Pavel's proposed treatise about file systems expectations really are
+> --- because all storage subsystems *usually* provide these guarantees,
+> but it is the very rare storage system that *always* provides these
+> guarantees.
+
+There is a thing called eMMC (embedded MMC) in the embedded world. You
+may consider it as a non-removable MMC. This thing is a block device from
+the Linux POW, and you may mount ext3 on top of it. And people do this.
+
+The device seems to have a decent FTL, and does not look bad.
+
+However, there are subtle things which mortals never think about. In
+case of eMMC - power cuts may make some sectors unreadable - eMMC returns
+ECC errors on reads. Namely, the sectors which were being written at
+the very moment when the power cut happened may become unreadable.
+And this makes ext3 refuse mounting the file-system, this makes
+chkfs.ext3 refuse the file-system. Although this should be fixable in
+SW, but we did not find time to do this so far.
+
+Anyway, my point is that documenting subtle things like this is a very
+good thing to do, just because nowadays we are trying to use existing
+software with flash-based storage devices, which may violate these
+subtle assumptions, or introduce other ones.
+
+Probably, Pavel did too good job in generalizing things, and it could be
+better to make a doc about HDD vs SSD or HDD vs Flash-based-storage.
+Not sure. But the idea to document subtle FS assumption is good, IMO.
+
 -- 
-1.6.0.2
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
