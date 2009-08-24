@@ -1,71 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbZHXLE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbZHXLFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752185AbZHXLE4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 07:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZHXLEv
+	id S1752232AbZHXLFB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 07:05:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbZHXLE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 07:04:51 -0400
-Received: from lucidpixels.com ([75.144.35.66]:46786 "EHLO lucidpixels.com"
+	Mon, 24 Aug 2009 07:04:59 -0400
+Received: from mx1.melware.net ([78.47.171.162]:50655 "EHLO mx1.melware.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751113AbZHXLEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 07:04:51 -0400
-Date: Mon, 24 Aug 2009 07:04:52 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Christoph Hellwig <hch@infradead.org>
-cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.30.4 XFS(..?) regression (& with/2.6.31-rc6)
-In-Reply-To: <20090823224504.GA19942@infradead.org>
-Message-ID: <alpine.DEB.2.00.0908240704130.9427@p34.internal.lan>
-References: <alpine.DEB.2.00.0908110624420.22426@p34.internal.lan> <20090816022331.GA2309@infradead.org> <alpine.DEB.2.00.0908171024380.12533@p34.internal.lan> <alpine.DEB.2.00.0908220624440.30321@p34.internal.lan> <20090822142550.GA10003@infradead.org>
- <alpine.DEB.2.00.0908221044420.30321@p34.internal.lan> <20090822201558.GA17955@infradead.org> <alpine.DEB.2.00.0908221645440.20848@p34.internal.lan> <20090822205502.GA18904@infradead.org> <alpine.DEB.2.00.0908221659030.23463@p34.internal.lan>
- <20090823224504.GA19942@infradead.org>
+	id S1752202AbZHXLE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 07:04:57 -0400
+Date: Mon, 24 Aug 2009 13:04:58 +0200 (CEST)
+From: Armin Schindler <armin@melware.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: akpm@linux-foundation.org,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] ISDN: eicon, use offsetof
+In-Reply-To: <1250966584-29496-1-git-send-email-jirislaby@gmail.com>
+Message-ID: <alpine.DEB.2.00.0908241304030.5388@justus.melware.de>
+References: <1250966584-29496-1-git-send-email-jirislaby@gmail.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+Organization: Cytronics & Melware
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Use offsetof instead of explicit implementation.
+* fixes bug with omitted & like:
+   len = (byte)(((T30_INFO *) 0)->station_id + 20)
+* avoids compiler warnings with wrong sizes (pointer-to-char cast):
+   len = (byte)(&(((T30_INFO *) 0)->universal_6));
+* cleanups the code
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Acked-by: Armin Schindler <armin@melware.de>
+---
+  drivers/isdn/hardware/eicon/message.c |   18 +++++++++---------
+  1 files changed, 9 insertions(+), 9 deletions(-)
 
-On Sun, 23 Aug 2009, Christoph Hellwig wrote:
+diff --git a/drivers/isdn/hardware/eicon/message.c b/drivers/isdn/hardware/eicon/message.c
+index 27d5dd6..ae89fb8 100644
+--- a/drivers/isdn/hardware/eicon/message.c
++++ b/drivers/isdn/hardware/eicon/message.c
+@@ -2692,7 +2692,7 @@ static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
+            if (!(fax_control_bits & T30_CONTROL_BIT_MORE_DOCUMENTS)
+             || (fax_feature_bits & T30_FEATURE_BIT_MORE_DOCUMENTS))
+            {
+-            len = (byte)(&(((T30_INFO *) 0)->universal_6));
++            len = offsetof(T30_INFO, universal_6);
+              fax_info_change = false;
+              if (ncpi->length >= 4)
+              {
+@@ -2754,7 +2754,7 @@ static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
+                      for (i = 0; i < w; i++)
+                        ((T30_INFO   *)(plci->fax_connect_info_buffer))->station_id[i] = fax_parms[4].info[1+i];
+                      ((T30_INFO   *)(plci->fax_connect_info_buffer))->head_line_len = 0;
+-                    len = (byte)(((T30_INFO *) 0)->station_id + 20);
++                    len = offsetof(T30_INFO, station_id) + 20;
+                      w = fax_parms[5].length;
+                      if (w > 20)
+                        w = 20;
+@@ -2788,7 +2788,7 @@ static byte connect_b3_req(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
+                  }
+                  else
+                  {
+-                  len = (byte)(&(((T30_INFO *) 0)->universal_6));
++                  len = offsetof(T30_INFO, universal_6);
+                  }
+                  fax_info_change = true;
 
-> Ok, let's see where errors could happen then.
->
-> There are four theoretical possibilities:
->
-> (a) XFS
-> (b) loop driver
-> (c) crypto loop code
-> (d) block layer
->
-> Or combinations thereof.
->
-> I would take (a) and (d) as more unlikely as they tend to get used much
-> more and I would have heard more bug reports already.
->
-> The cryptoloop code hasn't changed at all since 2.6.29.
->
-> The loop code howver has a very interesting commit just after 2.6.39:
->
-> commit 68db1961bbf4e16c220ccec4a780e966bc1fece3
-> Author: Nikanth Karthikesan <knikanth@suse.de>
-> Date:   Tue Mar 24 12:29:54 2009 +0100
->
->    loop: support barrier writes
->
-> Can you try reverting this one (it cleanly reverse-applies against
-> 2.6.30 and current mainline) and see if that makes a difference?
->
+@@ -2892,7 +2892,7 @@ static byte connect_b3_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
+      && (plci->nsf_control_bits & T30_NSF_CONTROL_BIT_ENABLE_NSF)
+      && (plci->nsf_control_bits & T30_NSF_CONTROL_BIT_NEGOTIATE_RESP))
+     {
+-            len = ((byte)(((T30_INFO *) 0)->station_id + 20));
++            len = offsetof(T30_INFO, station_id) + 20;
+              if (plci->fax_connect_info_length < len)
+              {
+                ((T30_INFO *)(plci->fax_connect_info_buffer))->station_id_len = 0;
+@@ -3802,7 +3802,7 @@ static byte manufacturer_res(dword Id, word Number, DIVA_CAPI_ADAPTER *a,
+        break;
+      }
+      ncpi = &m_parms[1];
+-    len = ((byte)(((T30_INFO *) 0)->station_id + 20));
++    len = offsetof(T30_INFO, station_id) + 20;
+      if (plci->fax_connect_info_length < len)
+      {
+        ((T30_INFO *)(plci->fax_connect_info_buffer))->station_id_len = 0;
+@@ -6844,7 +6844,7 @@ static void nl_ind(PLCI *plci)
+          if ((plci->requested_options_conn | plci->requested_options | a->requested_options_table[plci->appl->Id-1])
+            & ((1L << PRIVATE_FAX_SUB_SEP_PWD) | (1L << PRIVATE_FAX_NONSTANDARD)))
+          {
+-          i = ((word)(((T30_INFO *) 0)->station_id + 20)) + ((T30_INFO   *)plci->NL.RBuffer->P)->head_line_len;
++          i = offsetof(T30_INFO, station_id) + 20 + ((T30_INFO   *)plci->NL.RBuffer->P)->head_line_len;
+            while (i < plci->NL.RBuffer->length)
+              plci->ncpi_buffer[++len] = plci->NL.RBuffer->P[i++];
+          }
+@@ -7236,7 +7236,7 @@ static void nl_ind(PLCI *plci)
+      {
+        plci->RData[1].P = plci->RData[0].P;
+        plci->RData[1].PLength = plci->RData[0].PLength;
+-      plci->RData[0].P = v120_header_buffer + (-((int) v120_header_buffer) & 3);
++      plci->RData[0].P = v120_header_buffer + (-((unsigned long)v120_header_buffer) & 3);
+        if ((plci->NL.RBuffer->P[0] & V120_HEADER_EXTEND_BIT) || (plci->NL.RLength == 1))
+          plci->RData[0].PLength = 1;
+        else
+@@ -8473,7 +8473,7 @@ static word add_b23(PLCI *plci, API_PARSE *bp)
+              fax_control_bits |= T30_CONTROL_BIT_ACCEPT_SEL_POLLING;
+            }
+              len = nlc[0];
+-          pos = ((byte)(((T30_INFO *) 0)->station_id + 20));
++          pos = offsetof(T30_INFO, station_id) + 20;
+     if (pos < plci->fax_connect_info_length)
+     {
+       for (i = 1 + plci->fax_connect_info_buffer[pos]; i != 0; i--)
+@@ -8525,7 +8525,7 @@ static word add_b23(PLCI *plci, API_PARSE *bp)
+        }
 
-Hello Christoph,
-
-# patch -p1 -R < ../unpatch.patch
-patching file drivers/block/loop.c
-Hunk #1 succeeded at 473 (offset -1 lines).
-Hunk #2 succeeded at 804 (offset -22 lines).
-#
-
-Patched, we'll see if the problem recurs.. thanks!
-
-Justin.
+        PUT_WORD(&(((T30_INFO *)&nlc[1])->control_bits_low), fax_control_bits);
+-      len = ((byte)(((T30_INFO *) 0)->station_id + 20));
++      len = offsetof(T30_INFO, station_id) + 20;
+        for (i = 0; i < len; i++)
+          plci->fax_connect_info_buffer[i] = nlc[1+i];
+        ((T30_INFO   *) plci->fax_connect_info_buffer)->head_line_len = 0;
+-- 
+1.6.3.3
