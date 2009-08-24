@@ -1,35 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865AbZHXRGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752910AbZHXRK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752865AbZHXRGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 13:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZHXRF7
+	id S1752910AbZHXRK6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 13:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZHXRK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 13:05:59 -0400
-Received: from mx1-old.redhat.com ([66.187.233.31]:34062 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752660AbZHXRF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 13:05:59 -0400
+	Mon, 24 Aug 2009 13:10:57 -0400
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:58210 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752889AbZHXRK5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 13:10:57 -0400
+Date: Mon, 24 Aug 2009 22:14:52 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Gautham Shenoy <ego@in.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 11/15] sched: Pass unlimited __cpu_power information to
+	upper domain level groups
+Message-ID: <20090824164452.GR29572@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090820131243.GO29327@alberich.amd.com> <20090820134155.GZ29327@alberich.amd.com> <1251127297.7538.291.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       linux-kernel@vger.kernel.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, stable@kernel.org
-Subject: Re: [PATCH v3] fix race copy_process() vs de_thread()
-In-Reply-To: Oleg Nesterov's message of  Monday, 24 August 2009 18:27:30 +0200 <20090824162730.GA14367@redhat.com>
-References: <4A9210A4.4010108@ct.jp.nec.com>
-	<20090824061420.341A9414DF@magilla.sf.frob.com>
-	<4A923403.6010201@ct.jp.nec.com>
-	<20090824083826.GA475@redhat.com>
-	<20090824162730.GA14367@redhat.com>
-Emacs: (setq software-quality (/ 1 number-of-authors))
-Message-Id: <20090824165701.D51AA414DF@magilla.sf.frob.com>
-Date: Mon, 24 Aug 2009 09:57:01 -0700 (PDT)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1251127297.7538.291.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Roland McGrath <roland@redhat.com>
+* Peter Zijlstra <peterz@infradead.org> [2009-08-24 17:21:37]:
+
+> On Thu, 2009-08-20 at 15:41 +0200, Andreas Herrmann wrote:
+> > For performance reasons __cpu_power in a sched_group might be limited
+> > such that the group can handle only one task. To correctly calculate
+> > the capacity in upper domain level groups the unlimited power
+> > information is required. This patch stores unlimited __cpu_power
+> > information in sched_groups.orig_power and uses this when calculating
+> > __cpu_power in upper domain level groups.
+> 
+> OK, so this tries to fix the cpu_power wreckage?
+> 
+> ok, so let me try this with an example:
+> 
+> 
+> Suppose we have a dual-core with shared cache and SMT
+> 
+>   0-3     MC
+> 0-1 2-3   SMT
+> 
+> Then both levels fancy setting SHARED_RESOURCES and both levels end up
+> normalizing the cpu_power to 1, so when we unplug cpu 2, load-balancing
+> gets all screwy because the whole system doesn't get normalized
+> properly.
+> 
+> What you propose here is every time we muck with cpu_power we keep the
+> real stuff in orig_power and use that to compute the level above.
+> 
+> Except you don't use it in the load-balancer proper, so normalization is
+> still hosed.
+> 
+> Its a creative solution, but I'd rather see cpu_power returned to a
+> straight sum of actual power to normalize the inter-cpu runqueue weights
+> and do the placement decision using something else.
+
+The real solution is to find a way to solve asymmetric load balancing,
+I suppose. The asymmetry might be due to cores being hot-plugged for
+example
+
+-- 
+	Balbir
