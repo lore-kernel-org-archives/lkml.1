@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbZHXXiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbZHXXjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbZHXXiw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 19:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZHXXiv
+	id S1753937AbZHXXjR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 19:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZHXXjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 19:38:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46788 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753247AbZHXXiv (ORCPT
+	Mon, 24 Aug 2009 19:39:17 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:32990 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753799AbZHXXjQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 19:38:51 -0400
-Date: Mon, 24 Aug 2009 19:38:51 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org
-Subject: Re: [PATCH -tip 1/2] Add "notrace" to RCU function headers used by
- ftrace.
-In-Reply-To: <12511321213243-git-send-email->
-Message-ID: <alpine.DEB.2.00.0908241938330.6710@gandalf.stny.rr.com>
-References: <20090824164112.GA13693@linux.vnet.ibm.com> <12511321213243-git-send-email->
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 24 Aug 2009 19:39:16 -0400
+Subject: Re: Fw: Build failure on linux-next master branch
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-bluetooth@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, netdev@vger.kernel.org
+In-Reply-To: <20090825093707.13bf8c49.sfr@canb.auug.org.au>
+References: <20090825093707.13bf8c49.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Mon, 24 Aug 2009 16:38:35 -0700
+Message-Id: <1251157115.2950.85.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Stephen,
 
-On Mon, 24 Aug 2009, Paul E. McKenney wrote:
-
-> Both rcu_read_lock_sched_notrace() and rcu_read_unlock_sched_notrace()
-> are used by ftrace, and thus need to be marked "notrace".  Unfortunately,
-> my naive assumption that gcc would see the inner "notrace" does not hold.
-> Kudos to Lai Jiangshan for noting this.
+> [Let try a few folks who might know]
 > 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
->  include/linux/rcupdate.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> Begin forwarded message:
 > 
-> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> index ec90fc3..8b4422c 100644
-> --- a/include/linux/rcupdate.h
-> +++ b/include/linux/rcupdate.h
-> @@ -191,7 +191,7 @@ static inline void rcu_read_lock_sched(void)
->  	__acquire(RCU_SCHED);
->  	rcu_read_acquire();
->  }
-> -static inline void rcu_read_lock_sched_notrace(void)
-> +static inline notrace void rcu_read_lock_sched_notrace(void)
->  {
->  	preempt_disable_notrace();
->  	__acquire(RCU_SCHED);
-> @@ -209,7 +209,7 @@ static inline void rcu_read_unlock_sched(void)
->  	__release(RCU_SCHED);
->  	preempt_enable();
->  }
-> -static inline void rcu_read_unlock_sched_notrace(void)
-> +static inline notrace void rcu_read_unlock_sched_notrace(void)
-
-Funny, inlines should not be traced. Is gcc ignoring the inlines here?
-
--- Steve
-
->  {
->  	rcu_read_release();
->  	__release(RCU_SCHED);
-> -- 
-> 1.5.2.5
+> Date: Mon, 24 Aug 2009 12:00:24 -0400 (EDT)
+> From: Steven Rostedt <rostedt@goodmis.org>
+> To: Stephen Rothwell <sfr@canb.auug.org.au>
+> Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+> Subject: Build failure on linux-next master branch
 > 
 > 
+> 
+> With latest next master branch I got this failure in my build system.
+> 
+>   Building modules, stage 2.
+> Kernel: arch/x86/boot/bzImage is ready  (#1801)
+>   MODPOST 96 modules
+> ERROR: "crc16" [net/bluetooth/l2cap.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+
+just pushed a fix from Randy to bluetooth-next-2.6 tree. The
+CONFIG_L2CAP was missing a select CRC16.
+
+Regards
+
+Marcel
+
+
