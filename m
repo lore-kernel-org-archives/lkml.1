@@ -1,302 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbZHXI6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbZHXI7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbZHXI6a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZHXI63
+	id S1752125AbZHXI7q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZHXI7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:58:29 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:49908 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbZHXI62 (ORCPT
+	Mon, 24 Aug 2009 04:59:45 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:51496 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbZHXI7o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:58:28 -0400
-Date: Mon, 24 Aug 2009 17:58:29 +0900 (JST)
-Message-Id: <20090824.175829.39166392.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: [PATCH 8/8] blkio-cgroup-v11: The document of a cgroup support for
- dm-ioband
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090824.175802.183032600.ryov@valinux.co.jp>
-References: <20090824.175712.189718197.ryov@valinux.co.jp>
-	<20090824.175736.112614790.ryov@valinux.co.jp>
-	<20090824.175802.183032600.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Aug 2009 04:59:44 -0400
+Date: Mon, 24 Aug 2009 17:59:44 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Josh Stone <jistone@redhat.com>,
+       linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH v3 2/4] tracing: Make syscall_(un)regfunc arch-specific
+Message-ID: <20090824085944.GA15330@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
+	Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Jiaying Zhang <jiayingz@google.com>,
+	Martin Bligh <mbligh@google.com>,
+	Lai Jiangshan <laijs@cn.fujitsu.com>
+References: <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250917125-6174-1-git-send-email-jistone@redhat.com> <1250917125-6174-2-git-send-email-jistone@redhat.com> <1250917125-6174-3-git-send-email-jistone@redhat.com> <20090823211422.GG6256@nowhere> <20090824014025.GA12653@linux-sh.org> <20090824084101.GE2424@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090824084101.GE2424@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The document of a cgroup support for dm-ioband.
+On Mon, Aug 24, 2009 at 10:41:01AM +0200, Ingo Molnar wrote:
+> * Paul Mundt <lethal@linux-sh.org> wrote:
+> > On Sun, Aug 23, 2009 at 11:14:24PM +0200, Frederic Weisbecker wrote:
+> > > On Fri, Aug 21, 2009 at 09:58:43PM -0700, Josh Stone wrote:
+> > > > The bodies of syscall_regfunc and syscall_unregfunc need the
+> > > > arch-specific flag TIF_SYSCALL_TRACEPOINT, which only exists
+> > > > on x86 and s390, so they should live in arch-specific files.
+> > > 
+> > > Sh also does, but currently in a seperate development branch. 
+> > > (Adding Paul Mundt in Cc to prevent from further linux-next 
+> > > breakage).
+> > 
+> > Thanks, I'll take care of this as well as the other ftrace 
+> > syscalls breakage during the merge window. At the moment I don't 
+> > have any good ideas on how to fix the workflow issues, and -tip 
+> > likewise doesn't care about -next impact, so there's somewhat of 
+> > an impasse.
+> 
+> Where did you take the nonsense from that '-tip likewise doesn't 
+> care about -next impact'? It's a false statement on several levels.
+> 
+> The thing is, there is just a single 'breakage' here (SH does not 
+> build if the tracing tree is mixed with the SH tree), and you 
+> inflicted it upon yourself: you mixed ftrace development into the SH 
+> tree (thinking that the syscall-tracing facility was a stable API - 
+> where did _that_ nonsense come from?), while the tracing tree did 
+> development of ftrace too (surprise), so when the two versions were 
+> mixed in linux-next it broke.
+> 
+I think this is the source of confusion, given that I expected the
+interface would remain reasonable stable until all of the existing users
+had had a chance to catch up. As it is now it is impossible to make any
+changes to things that are taken over by -tip given that the first sign
+of there being any changes are failures introduced through -next, which
+would have been avoided if folks eagerly merging things in to -tip
+considered the implications for -next.
 
-Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
-Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+Pointing fingers however is rather pointless at this stage, and is not
+what I am trying to do. I've lost count of the number of times -tip has
+broken things in -next that were easily avoidable, and at this point I
+don't even care anymore (as I've stated before, it's not just -tip,
+people in general seem to be doing a lot of aggressive merging without
+even a cursory grep to check for the build implications). I fix them up
+as I encounter them, and try to keep my configs in general buildable
+shape. You call that nonsense, I call it statistics.
 
----
- Documentation/cgroups/blkio.txt |  242 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 241 insertions(+), 1 deletion(-)
+In any event, at least some of these issues are self-inflicted given that
+some feature implementation is done in my tree directly without passing
+through -tip first, but none of that changes the fact that -tip is
+merging things in to -next without any consideration of the impact it
+will have. This is what I have a fundamental issue with, given that there
+are a lot more trees than just -tip being merged, and at least some
+effort should be made to permit things to co-exist rather than just
+blaming it all on workflow.
 
-Index: linux-2.6.31-rc7/Documentation/cgroups/blkio.txt
-===================================================================
---- linux-2.6.31-rc7.orig/Documentation/cgroups/blkio.txt
-+++ linux-2.6.31-rc7/Documentation/cgroups/blkio.txt
-@@ -11,6 +11,9 @@ I/O with a little enhancement.
- 
- 2. Setting up blkio-cgroup
- 
-+Note: If dm-ioband is to be used with blkio-cgroup, then the dm-ioband
-+patch needs to be applied first.
-+
- The following kernel config options are required.
- 
- CONFIG_CGROUPS=y
-@@ -43,7 +46,244 @@ determined by retrieving the ID number f
- the page cgroup is associated with the page which is involved in the
- I/O.
- 
--4. Contact
-+If the dm-ioband support patch was applied then the blkio.devices and
-+blkio.settings files will also be present.
-+
-+4. Using dm-ioband and blkio-cgroup
-+
-+This section describes how to set up dm-ioband and blkio-cgroup in
-+order to control bandwidth on a per cgroup per logical volume basis.
-+The example used in this section assumes that there are two LVM volume
-+groups on individual hard disks and two logical volumes on each volume
-+group.
-+
-+                         Table. LVM configurations
-+
-+     --------------------------------------------------------------
-+    |   LVM volume groups  |  vg0 on /dev/sda  |  vg1 on /dev/sdb  |
-+    |----------------------|-------------------|-------------------|
-+    |  LVM logical volume  |   lv0   |   lv1   |   lv0   |   lv1   |
-+     --------------------------------------------------------------
-+
-+4.1. Creating a dm-ioband logical device
-+
-+A dm-ioband logical device needs to be created and stacked on the
-+device that is to bandwidth controlled. In this example the dm-ioband
-+logical devices are stacked on each of the existing LVM logical
-+volumes. By using the LVM facilities there is no need to unmount any
-+logical volumes, even in the case of a volume being used as the root
-+device. The following script is an example of how to stack and remove
-+dm-ioband devices.
-+
-+==================== cut here (ioband.sh) ====================
-+#!/bin/sh
-+#
-+# NOTE: You must run "ioband.sh stop" to restore the device-mapper
-+# settings before changing logical volume settings, such as activate,
-+# rename, resize and so on. These constraints would be eliminated by
-+# enhancing LVM tools to support dm-ioband.
-+
-+logvols="vg0-lv0 vg0-lv1 vg1-lv0 vg1-lv1"
-+
-+start()
-+{
-+	for lv in $logvols; do
-+		volgrp=${lv%%-*}
-+		orig=${lv}-orig
-+
-+		# clone an existing logical volume.
-+		/sbin/dmsetup table $lv | /sbin/dmsetup create $orig
-+
-+		# stack a dm-ioband device on the clone.
-+		size=$(/sbin/blockdev --getsize /dev/mapper/$orig)
-+		cat<<-EOM | /sbin/dmsetup load ${lv}
-+	0 $size ioband /dev/mapper/${orig} ${volgrp} 0 0 cgroup weight 0 :100
-+		EOM
-+
-+		# activate the new setting.
-+		/sbin/dmsetup resume $lv
-+	done
-+}
-+
-+stop()
-+{
-+	for lv in $logvols; do
-+		orig=${lv}-orig
-+
-+		# restore the original setting.
-+		/sbin/dmsetup table $orig | /sbin/dmsetup load $lv
-+
-+		# activate the new setting.
-+		/sbin/dmsetup resume $lv
-+
-+		# remove the clone.
-+		/sbin/dmsetup remove $orig
-+	done
-+}
-+
-+case "$1" in
-+	start)
-+		start
-+        ;;
-+	stop)
-+		stop
-+        ;;
-+esac
-+exit 0
-+==================== cut here (ioband.sh) ====================
-+
-+The following diagram shows how dm-ioband devices are stacked on and
-+removed from the logical volumes.
-+
-+           Figure. stacking and removing dm-ioband devices
-+
-+                     run "ioband.sh start"
-+                              ===>
-+
-+     -----------------------        -----------------------
-+    |    lv0    |    lv1    |      |    lv0    |    lv1    |
-+    |(dm-linear)|(dm-linear)|      |(dm-ioband)|(dm-ioband)|
-+    |-----------------------|      |-----------------------|
-+    |         vg0           |      | lv0-orig  | lv1-orig  |
-+     -----------------------       |(dm-linear)|(dm-linear)|
-+                                   |-----------------------|
-+                                   |          vg0          |
-+                                    -----------------------
-+                              <===
-+                      run "ioband.sh stop"
-+
-+After creating the dm-ioband devices, the settings can be observed by
-+reading the blkio.devices file.
-+
-+# cat /cgroup/blkio.devices
-+vg0 policy=weight io_throttle=4 io_limit=192 token=768 carryover=2
-+  vg0-lv0
-+  vg0-lv1
-+vg1 policy=weight io_throttle=4 io_limit=192 token=768 carryover=2
-+  vg1-lv0
-+  vg1-lv1
-+
-+The first field in the first line is the symbolic name for an ioband
-+device group, and the subsequent fields are settings for the ioband
-+device group. The settings can be changed by writing to the
-+blkio.devices, for example:
-+
-+# echo vg1 policy range-bw > /cgroup/blkio.devices
-+
-+Please refer to Document/device-mapper/ioband.txt which describes the
-+details of the ioband device group settings.
-+
-+The second and the third indented lines "vg0-lv0" and "vg0-lv1" are
-+the names of the dm-ioband devices that belong to the ioband device
-+group. Typically, dm-ioband devices that reside on the same hard disk
-+should belong to the same ioband device group in order to share the
-+bandwidth of the hard disk.
-+
-+dm-ioband is not restricted to working with LVM, it may work in
-+conjunction with any type of block device. Please refer to
-+Documentation/device-mapper/ioband.txt for more details.
-+
-+4.2 Setting up dm-ioband through the blkio-cgroup interface
-+
-+The following table shows the given settings for this example. The
-+bandwidth will be assigned on a per cgroup per logical volume basis.
-+
-+                   Table. Settings for each cgroup
-+
-+     --------------------------------------------------------------
-+    |   LVM volume groups  |  vg0 on /dev/sda  |  vg1 on /dev/sdb  |
-+    |----------------------|-------------------|-------------------|
-+    |  LVM logical volume  |   lv0   |   lv1   |   lv0   |   lv1   |
-+    |----------------------|-------------------|-------------------|
-+    |   bandwidth control  |     relative      |     absolute      |
-+    |        policy        |      weight       |  bandwidth limit  |
-+    |----------------------|-------------------|-------------------|
-+    |         unit         | weight value (*1) | throughput [KB/s] |
-+    |----------------------|-------------------|-------------------|
-+    | settings for cgroup1 | 40 (16) | 90 (36) |   400   |   900   |
-+    |----------------------|---------|---------|---------|---------|
-+    | settings for cgroup2 | 20  (8) | 60 (24) |   200   |   600   |
-+    |----------------------|---------|---------|---------|---------|
-+    |   for other cgroups  | 10  (4) | 30 (12) |   100   |   300   |
-+     --------------------------------------------------------------
-+
-+        *1: The values enclosed in () denote the preceding weight
-+            as a percentage of the total weight. The bandwidth of
-+            vg0 is distributed proportional to the total weight.
-+
-+The set-up is described step-by-step below.
-+
-+1) Create new cgroups using the mkdir command
-+
-+# mkdir /cgroup/1
-+# mkdir /cgroup/2
-+
-+2) Set bandwidth control policy on each ioband device group
-+
-+The set-up of bandwidth control policy is done by writing to
-+blkio.devices file.
-+
-+# echo vg0 policy weight > /cgroup/blkio.devices
-+# echo vg1 policy range-bw > /cgroup/blkio.devices
-+
-+3) Set up the root cgroup
-+
-+The root cgroup represents the default blkio-cgroup. If an I/O is
-+performed by a process in a cgroup and the cgroup is not set up by
-+blkio-cgroup, the I/O is charged to the root cgroup.
-+
-+The set-up of the root cgroup is done by writing to blkio.settings
-+file in the cgroup's root directory. The following commands write
-+the settings of each logical volume to that file.
-+
-+# echo vg0-lv0 10 > /cgroup/bklio.settings
-+# echo vg0-lv1 30 > /cgroup/bklio.settings
-+# echo vg1-lv0 100:100 > /cgroup/blkio.settings
-+# echo vg1-lv1 300:300 > /cgroup/blkio.settings
-+
-+The settings can be verified by reading the blkio.settings file.
-+
-+# cat /cgroup/blkio.settings
-+vg0-lv0 weight=10
-+vg0-lv1 weight=30
-+vg1-lv0 range-bw=100:100
-+vg1-lv1 range-bw=300:300
-+
-+4) Set up cgroup1 and cgroup2
-+
-+New cgroups are set up in the same manner as the root cgroup.
-+
-+Settings for cgroup1
-+# echo vg0-lv0 40 > /cgroup/1/blkio.settings
-+# echo vg0-lv1 90 > /cgroup/1/bklio.settings
-+# echo vg1-lv0 400:400 > /cgroup/1/blkio.settings
-+# echo vg1-lv1 900:900 > /cgroup/1/bklio.settings
-+
-+Settings for cgroup2
-+# echo vg0-lv0 20 > /cgroup/2/blkio.settings
-+# echo vg0-lv1 60 > /cgroup/2/bklio.settings
-+# echo vg1-lv0 200:200 > /cgroup/2/blkio.settings
-+# echo vg1-lv1 600:600 > /cgroup/2/bklio.settings
-+
-+Again, the settings can be verified by reading the appropriate
-+blkio.settings file.
-+
-+# cat /cgroup/1/blkio.settings
-+vg0-lv0 weight=40
-+vg0-lv1 weight=90
-+vg1-lv0 range-bw=400:400
-+vg1-lv1 range-bw=900:900
-+
-+If only the logical volume name is specified, the entry for the
-+logical volume is removed.
-+
-+# echo vg0-lv1 > /cgroup/1/vlkio.setting
-+# cat /cgroup/1/blkio.settings
-+vg0-lv0 weight=40
-+vg0-lv1 weight=90
-+vg1-lv0 range-bw=400:400
-+
-+5. Contact
- 
- Linux Block I/O Bandwidth Control Project
- http://sourceforge.net/projects/ioband/
+> There's numerous ways to resolve this and i'm willing to help out 
+> with any of the solutions your chose (or with some other variant if 
+> it makes sense):
+> 
+>  - Easiest: you can turn off the old-API based ftrace bits in the SH 
+>    tree, in your for-next branch. This is the easiest, but keeps new 
+>    SH ftrace bits untested in linux-next.
+> 
+I've already done this.
+
+>  - The proper workflow: you can actually help out the development of 
+>    tracing facilities by doing tracing development in the tracing 
+>    tree. We merged a number of architecture ftrace improvements via 
+>    the tracing tree already, as long as it's acked by the maintainer 
+>    (which is a given here - you maintain SH) and as long as it does 
+>    not touch non-ftrace bits of the architecture unreasonably.
+> 
+>    This is the most natural workflow and the fastest one as well. 
+>    The ftrace bits are well separated (or should be well separated). 
+>    We didnt do ftrace development via the x86 tree either.
+> 
+> I'd favor the third one as it's the most intelligent variant and we 
+> used that in a number of other cases - but it's up to you.
+> 
+Agreed, this is the way we will try to handle ftrace bits for sh from now
+on. There is not much to be done about the present mess other than
+waiting for things to sync up in the merge window, which I'm fine with at
+present given that it's not so far off.
