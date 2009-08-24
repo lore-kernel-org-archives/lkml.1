@@ -1,64 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751653AbZHXGOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751674AbZHXGSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751653AbZHXGOa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 02:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZHXGO3
+	id S1751674AbZHXGSm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 02:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZHXGSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 02:14:29 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:23714 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbZHXGO3 convert rfc822-to-8bit (ORCPT
+	Mon, 24 Aug 2009 02:18:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38050
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751522AbZHXGSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 02:14:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=AZm6Nje7MqF97axari9uGTz1cV/C7enrglV/I7WiWIQpfX2A09iiacOgKmzhJ+SJWb
-         kp2/GBZ1SWwdXCHv6RBe6zGgakT8WdanpK6f2zXiXb8IiJMrbQXcyCSIT8aQfuf99B8m
-         HAFNcgc9Ig7JjXwaVftf2+aZv6NUtluAt9inQ=
-MIME-Version: 1.0
-In-Reply-To: <20090819100553.GE24809@csn.ul.ie>
-References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org>
-	 <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com>
-	 <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com>
-	 <20090819100553.GE24809@csn.ul.ie>
-Date: Mon, 24 Aug 2009 18:14:30 +1200
-Message-ID: <202cde0e0908232314j4b90aa61pb4bcd0223ffbc087@mail.gmail.com>
-Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
-From: Alexey Korolev <akorolex@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Eric Munson <linux-mm@mgebm.net>, Alexey Korolev <akorolev@infradead.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 24 Aug 2009 02:18:41 -0400
+Date: Sun, 23 Aug 2009 23:18:53 -0700 (PDT)
+Message-Id: <20090823.231853.202608464.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n7O6Iv16000574
 
-Mel,
 
-> How about;
->
-> ¬† ¬† ¬† ¬†o Extend Eric's helper slightly to take a GFP mask that is
-> ¬† ¬† ¬† ¬† ¬†associated with the inode and used for allocations from
-> ¬† ¬† ¬† ¬† ¬†outside the hugepage pool
-> ¬† ¬† ¬† ¬†o A helper that returns the page at a given offset within
-> ¬† ¬† ¬† ¬† ¬†a hugetlbfs file for population before the page has been
-> ¬† ¬† ¬† ¬† ¬†faulted.
->
-> I know this is a bit hand-wavy, but it would allow significant sharing
-> of the existing code and remove much of the hugetlbfs-awareness from
-> your current driver.
->
+1) Improper error return in allocation failure case in xt_quota
+   netfilter module results in NULL deref, from Patrick McHardy.
 
-I'm trying to write the solution you have described. The question I
-have is about extension of hugetlb_file_setup function.
-Is it supposed to allocate memory in hugetlb_file_setup function? Or
-it is supposed to have reservation only.
-If reservation only, then it is necessary to keep a gfp_mask for a
-file somewhere. Would it be Ok to keep a gfp_mask for a file in
-file->private_data?
+2) Use the tasklet_hrtimer facility added by Peter Z. in order to
+   fix hrtimers in networking that can't actually safely run from
+   HW interrupt context.
 
-Thanks,
-Alexey
+3) LLC protocol leaks some bytes to userspace via ->getname().
+   Fix from Jiri Slaby.
+
+4) Fix an ipv6 commit that broke bind() error reporting to userspace.
+   From Bruno Pr√©mont.
+
+5) Fix bonding with ibm_newemac, from Petri Gynther.
+
+6) pxaficp-ir netdev_ops conversion was buggy, fix from Marek Vasut.
+
+7) ks8851 build fix from Randy Dunlap
+
+8) Orinoco and RTL8187 wireless fixes from John Linville and
+   Herton Ronaldo Krzesinski respectively.
+
+9) netpoll transmit locking fixes from Dongdong Deng, and he also
+   added a check so that we can quickly discover any drivers that
+   are still buggy in this regard.
+
+Please pull, thanks a lot!
+
+The following changes since commit 3edf2fb9d80a46d6c32ba12547a42419845b4b76:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Andreas Mohr (1):
+      net: Fix Micrel KSZ8842 Kconfig description
+
+Bruno Pr√©mont (1):
+      ipv6: Fix commit 63d9950b08184e6531adceb65f64b429909cc101 (ipv6: Make v4-mapped bindings consistent with IPv4)
+
+David S. Miller (4):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+      pkt_sched: Convert qdisc_watchdog to tasklet_hrtimer
+      pkt_sched: Convert CBQ to tasklet_hrtimer.
+
+Dongdong Deng (3):
+      netpoll: warning for ndo_start_xmit returns with interrupts enabled
+      drivers/net: fixed drivers that support netpoll use ndo_start_xmit()
+      smc91x: let smc91x work well under netpoll
+
+Herton Ronaldo Krzesinski (1):
+      rtl8187: always set MSR_LINK_ENEDCA flag with RTL8187B
+
+Jiri Slaby (1):
+      NET: llc, zero sockaddr_llc struct
+
+Johannes Berg (1):
+      mac80211: fix todo lock
+
+John W. Linville (1):
+      orinoco: correct key bounds check in orinoco_hw_get_tkip_iv
+
+Krzysztof Ha≈Çasa (1):
+      E100: fix interaction with swiotlb on X86.
+
+Marek Vasut (1):
+      pxaficp-ir: remove incorrect net_device_ops
+
+Patrick McHardy (1):
+      netfilter: xt_quota: fix wrong return value (error case)
+
+Petri Gynther (1):
+      ibm_newemac: emac_close() needs to call netif_carrier_off()
+
+Randy Dunlap (1):
+      net: fix ks8851 build errors
+
+Roel Kluin (1):
+      yellowfin: Fix buffer underrun after dev_alloc_skb() failure
+
+Wan ZongShun (1):
+      net: Rename MAC platform driver for w90p910 platform
+
+ drivers/net/Kconfig                        |    4 ++-
+ drivers/net/arm/w90p910_ether.c            |    4 +-
+ drivers/net/e100.c                         |    2 +-
+ drivers/net/fec_mpc52xx.c                  |    5 ++-
+ drivers/net/ibm_newemac/core.c             |    2 +
+ drivers/net/irda/pxaficp_ir.c              |    4 +--
+ drivers/net/ixp2000/ixpdev.c               |    5 ++-
+ drivers/net/macb.c                         |    7 +++--
+ drivers/net/mlx4/en_tx.c                   |    5 ++-
+ drivers/net/smc91x.c                       |   40 +++++++++++++++------------
+ drivers/net/wireless/orinoco/hw.c          |    2 +-
+ drivers/net/wireless/rtl818x/rtl8187_dev.c |   14 +++++++---
+ drivers/net/yellowfin.c                    |   28 ++++++++++++-------
+ include/net/pkt_sched.h                    |    4 +-
+ net/core/netpoll.c                         |    5 +++
+ net/ipv6/af_inet6.c                        |    4 ++-
+ net/llc/af_llc.c                           |    1 +
+ net/mac80211/key.c                         |   28 ++++++++++---------
+ net/netfilter/xt_quota.c                   |    2 +-
+ net/sched/sch_api.c                        |    8 +++---
+ net/sched/sch_cbq.c                        |   23 +++++++++-------
+ 21 files changed, 117 insertions(+), 80 deletions(-)
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
