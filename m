@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751928AbZHXI6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbZHXI6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751928AbZHXI6E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:58:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbZHXI6D
+	id S1752114AbZHXI6a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZHXI63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:58:03 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:49880 "EHLO
+	Mon, 24 Aug 2009 04:58:29 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:49908 "EHLO
 	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691AbZHXI6B (ORCPT
+	with ESMTP id S1751816AbZHXI62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:58:01 -0400
-Date: Mon, 24 Aug 2009 17:58:02 +0900 (JST)
-Message-Id: <20090824.175802.183032600.ryov@valinux.co.jp>
+	Mon, 24 Aug 2009 04:58:28 -0400
+Date: Mon, 24 Aug 2009 17:58:29 +0900 (JST)
+Message-Id: <20090824.175829.39166392.ryov@valinux.co.jp>
 To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
        containers@lists.linux-foundation.org,
        virtualization@lists.linux-foundation.org,
        xen-devel@lists.xensource.com
-Subject: [PATCH 7/8] blkio-cgroup-v11: Add a cgroup support to dm-ioband
+Subject: [PATCH 8/8] blkio-cgroup-v11: The document of a cgroup support for
+ dm-ioband
 From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090824.175736.112614790.ryov@valinux.co.jp>
-References: <20090824.175526.104043252.ryov@valinux.co.jp>
-	<20090824.175712.189718197.ryov@valinux.co.jp>
+In-Reply-To: <20090824.175802.183032600.ryov@valinux.co.jp>
+References: <20090824.175712.189718197.ryov@valinux.co.jp>
 	<20090824.175736.112614790.ryov@valinux.co.jp>
+	<20090824.175802.183032600.ryov@valinux.co.jp>
 X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,659 +31,272 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With this patch, dm-ioband can work with the blkio-cgroup.
+The document of a cgroup support for dm-ioband.
 
 Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
 Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
 
 ---
- drivers/md/dm-ioband-ctl.c     |  201 ++++++++++++++++++++++++++++++++++++++++-
- drivers/md/dm-ioband-policy.c  |   20 +++-
- drivers/md/dm-ioband-rangebw.c |   13 ++
- drivers/md/dm-ioband-type.c    |   10 --
- drivers/md/dm-ioband.h         |   14 ++
- drivers/md/dm-ioctl.c          |    1 
- include/linux/biotrack.h       |    7 +
- mm/biotrack.c                  |  115 +++++++++++++++++++++++
- 8 files changed, 370 insertions(+), 11 deletions(-)
+ Documentation/cgroups/blkio.txt |  242 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 241 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.31-rc7/include/linux/biotrack.h
+Index: linux-2.6.31-rc7/Documentation/cgroups/blkio.txt
 ===================================================================
---- linux-2.6.31-rc7.orig/include/linux/biotrack.h
-+++ linux-2.6.31-rc7/include/linux/biotrack.h
-@@ -9,6 +9,7 @@
+--- linux-2.6.31-rc7.orig/Documentation/cgroups/blkio.txt
++++ linux-2.6.31-rc7/Documentation/cgroups/blkio.txt
+@@ -11,6 +11,9 @@ I/O with a little enhancement.
  
- struct io_context;
- struct block_device;
-+struct ioband_cgroup_ops;
+ 2. Setting up blkio-cgroup
  
- struct blkio_cgroup {
- 	struct cgroup_subsys_state css;
-@@ -48,6 +49,12 @@ extern void blkio_cgroup_copy_owner(stru
- extern struct io_context *get_blkio_cgroup_iocontext(struct bio *bio);
- extern unsigned long get_blkio_cgroup_id(struct bio *bio);
- extern struct cgroup *get_cgroup_from_page(struct page *page);
-+extern int blkio_cgroup_register_ioband(const struct ioband_cgroup_ops *ops);
++Note: If dm-ioband is to be used with blkio-cgroup, then the dm-ioband
++patch needs to be applied first.
 +
-+static inline int blkio_cgroup_unregister_ioband(void)
-+{
-+	return blkio_cgroup_register_ioband(NULL);
-+}
+ The following kernel config options are required.
  
- #else /* !CONFIG_CGROUP_BLKIO */
+ CONFIG_CGROUPS=y
+@@ -43,7 +46,244 @@ determined by retrieving the ID number f
+ the page cgroup is associated with the page which is involved in the
+ I/O.
  
-Index: linux-2.6.31-rc7/mm/biotrack.c
-===================================================================
---- linux-2.6.31-rc7.orig/mm/biotrack.c
-+++ linux-2.6.31-rc7/mm/biotrack.c
-@@ -20,6 +20,9 @@
- #include <linux/blkdev.h>
- #include <linux/biotrack.h>
- #include <linux/mm_inline.h>
-+#include <linux/seq_file.h>
-+#include <linux/dm-ioctl.h>
-+#include <../drivers/md/dm-ioband.h>
- 
- /*
-  * The block I/O tracking mechanism is implemented on the cgroup memory
-@@ -46,6 +49,8 @@ static struct io_context default_blkio_i
- static struct blkio_cgroup default_blkio_cgroup = {
- 	.io_context	= &default_blkio_io_context,
- };
-+static DEFINE_MUTEX(ioband_ops_lock);
-+static const struct ioband_cgroup_ops *ioband_ops = NULL;
- 
- /**
-  * blkio_cgroup_set_owner() - set the owner ID of a page.
-@@ -181,6 +186,14 @@ blkio_cgroup_create(struct cgroup_subsys
- static void blkio_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
- {
- 	struct blkio_cgroup *biog = cgroup_blkio(cgrp);
-+	int id;
+-4. Contact
++If the dm-ioband support patch was applied then the blkio.devices and
++blkio.settings files will also be present.
 +
-+	mutex_lock(&ioband_ops_lock);
-+	if (ioband_ops) {
-+		id = css_id(&biog->css);
-+		ioband_ops->remove_group(id);
-+	}
-+	mutex_unlock(&ioband_ops_lock);
- 
- 	put_io_context(biog->io_context);
- 	free_css_id(&blkio_cgroup_subsys, &biog->css);
-@@ -258,9 +271,27 @@ struct cgroup *get_cgroup_from_page(stru
- 	return css->cgroup;
- }
- 
-+/**
-+ * blkio_cgroup_register_ioband() - register ioband
-+ * @p:	a pointer to struct ioband_cgroup_ops
-+ *
-+ * Calling with NULL means unregistration.
-+ * Returns 0 on success.
-+ */
-+int blkio_cgroup_register_ioband(const struct ioband_cgroup_ops *p)
-+{
-+	if (blkio_cgroup_disabled())
-+		return -1;
++4. Using dm-ioband and blkio-cgroup
 +
-+	mutex_lock(&ioband_ops_lock);
-+	ioband_ops = p;
-+	mutex_unlock(&ioband_ops_lock);
-+	return 0;
-+}
- EXPORT_SYMBOL(get_blkio_cgroup_id);
- EXPORT_SYMBOL(get_blkio_cgroup_iocontext);
- EXPORT_SYMBOL(get_cgroup_from_page);
-+EXPORT_SYMBOL(blkio_cgroup_register_ioband);
- 
- /* Read the ID of the specified blkio cgroup. */
- static u64 blkio_id_read(struct cgroup *cgrp, struct cftype *cft)
-@@ -270,11 +301,95 @@ static u64 blkio_id_read(struct cgroup *
- 	return (u64)css_id(&biog->css);
- }
- 
-+/* Show all ioband devices and their settings. */
-+static int blkio_devs_read(struct cgroup *cgrp, struct cftype *cft,
-+							struct seq_file *m)
++This section describes how to set up dm-ioband and blkio-cgroup in
++order to control bandwidth on a per cgroup per logical volume basis.
++The example used in this section assumes that there are two LVM volume
++groups on individual hard disks and two logical volumes on each volume
++group.
++
++                         Table. LVM configurations
++
++     --------------------------------------------------------------
++    |   LVM volume groups  |  vg0 on /dev/sda  |  vg1 on /dev/sdb  |
++    |----------------------|-------------------|-------------------|
++    |  LVM logical volume  |   lv0   |   lv1   |   lv0   |   lv1   |
++     --------------------------------------------------------------
++
++4.1. Creating a dm-ioband logical device
++
++A dm-ioband logical device needs to be created and stacked on the
++device that is to bandwidth controlled. In this example the dm-ioband
++logical devices are stacked on each of the existing LVM logical
++volumes. By using the LVM facilities there is no need to unmount any
++logical volumes, even in the case of a volume being used as the root
++device. The following script is an example of how to stack and remove
++dm-ioband devices.
++
++==================== cut here (ioband.sh) ====================
++#!/bin/sh
++#
++# NOTE: You must run "ioband.sh stop" to restore the device-mapper
++# settings before changing logical volume settings, such as activate,
++# rename, resize and so on. These constraints would be eliminated by
++# enhancing LVM tools to support dm-ioband.
++
++logvols="vg0-lv0 vg0-lv1 vg1-lv0 vg1-lv1"
++
++start()
 +{
-+	mutex_lock(&ioband_ops_lock);
-+	if (ioband_ops)
-+		ioband_ops->show_device(m);
-+	mutex_unlock(&ioband_ops_lock);
-+	return 0;
++	for lv in $logvols; do
++		volgrp=${lv%%-*}
++		orig=${lv}-orig
++
++		# clone an existing logical volume.
++		/sbin/dmsetup table $lv | /sbin/dmsetup create $orig
++
++		# stack a dm-ioband device on the clone.
++		size=$(/sbin/blockdev --getsize /dev/mapper/$orig)
++		cat<<-EOM | /sbin/dmsetup load ${lv}
++	0 $size ioband /dev/mapper/${orig} ${volgrp} 0 0 cgroup weight 0 :100
++		EOM
++
++		# activate the new setting.
++		/sbin/dmsetup resume $lv
++	done
 +}
 +
-+/* Configure ioband devices specified by an ioband device ID */
-+static int blkio_devs_write(struct cgroup *cgrp, struct cftype *cft,
-+							const char *buffer)
++stop()
 +{
-+	char **argv;
-+	int argc, r = 0;
++	for lv in $logvols; do
++		orig=${lv}-orig
 +
-+	if (cgrp != cgrp->top_cgroup)
-+		return -EACCES;
++		# restore the original setting.
++		/sbin/dmsetup table $orig | /sbin/dmsetup load $lv
 +
-+	argv = argv_split(GFP_KERNEL, buffer, &argc);
-+	if (!argv)
-+		return -ENOMEM;
++		# activate the new setting.
++		/sbin/dmsetup resume $lv
 +
-+	mutex_lock(&ioband_ops_lock);
-+	if (ioband_ops)
-+		r = ioband_ops->config_device(argc, argv);
-+	mutex_unlock(&ioband_ops_lock);
-+
-+	argv_free(argv);
-+	return r;
++		# remove the clone.
++		/sbin/dmsetup remove $orig
++	done
 +}
 +
-+/* Show the settings of the specified blkio cgroup. */
-+static int blkio_settings_read(struct cgroup *cgrp, struct cftype *cft,
-+							struct seq_file *m)
-+{
-+	struct blkio_cgroup *biog;
-+	int id;
++case "$1" in
++	start)
++		start
++        ;;
++	stop)
++		stop
++        ;;
++esac
++exit 0
++==================== cut here (ioband.sh) ====================
 +
-+	mutex_lock(&ioband_ops_lock);
-+	if (ioband_ops) {
-+		biog = cgroup_blkio(cgrp);
-+		id = css_id(&biog->css);
-+		ioband_ops->show_group(m, biog, id);
-+	}
-+	mutex_unlock(&ioband_ops_lock);
-+	return 0;
-+}
++The following diagram shows how dm-ioband devices are stacked on and
++removed from the logical volumes.
 +
-+/* Configure the specified blkio cgroup. */
-+static int blkio_settings_write(struct cgroup *cgrp, struct cftype *cft,
-+							const char *buffer)
-+{
-+	struct blkio_cgroup *biog;
-+	char **argv;
-+	int argc, id, r = 0;
++           Figure. stacking and removing dm-ioband devices
 +
-+	argv = argv_split(GFP_KERNEL, buffer, &argc);
-+	if (!argv)
-+		return -ENOMEM;
++                     run "ioband.sh start"
++                              ===>
 +
-+	mutex_lock(&ioband_ops_lock);
-+	if (ioband_ops) {
-+		biog = cgroup_blkio(cgrp);
-+		id = css_id(&biog->css);
-+		r = ioband_ops->config_group(argc, argv, biog, id);
-+	}
-+	mutex_unlock(&ioband_ops_lock);
-+	argv_free(argv);
-+	return r;
-+}
++     -----------------------        -----------------------
++    |    lv0    |    lv1    |      |    lv0    |    lv1    |
++    |(dm-linear)|(dm-linear)|      |(dm-ioband)|(dm-ioband)|
++    |-----------------------|      |-----------------------|
++    |         vg0           |      | lv0-orig  | lv1-orig  |
++     -----------------------       |(dm-linear)|(dm-linear)|
++                                   |-----------------------|
++                                   |          vg0          |
++                                    -----------------------
++                              <===
++                      run "ioband.sh stop"
 +
- static struct cftype blkio_files[] = {
- 	{
- 		.name = "id",
- 		.read_u64 = blkio_id_read,
- 	},
-+	{
-+		.name = "devices",
-+		.read_seq_string = blkio_devs_read,
-+		.write_string = blkio_devs_write,
-+	},
-+	{
-+		.name = "settings",
-+		.read_seq_string = blkio_settings_read,
-+		.write_string = blkio_settings_write,
-+	},
- };
++After creating the dm-ioband devices, the settings can be observed by
++reading the blkio.devices file.
++
++# cat /cgroup/blkio.devices
++vg0 policy=weight io_throttle=4 io_limit=192 token=768 carryover=2
++  vg0-lv0
++  vg0-lv1
++vg1 policy=weight io_throttle=4 io_limit=192 token=768 carryover=2
++  vg1-lv0
++  vg1-lv1
++
++The first field in the first line is the symbolic name for an ioband
++device group, and the subsequent fields are settings for the ioband
++device group. The settings can be changed by writing to the
++blkio.devices, for example:
++
++# echo vg1 policy range-bw > /cgroup/blkio.devices
++
++Please refer to Document/device-mapper/ioband.txt which describes the
++details of the ioband device group settings.
++
++The second and the third indented lines "vg0-lv0" and "vg0-lv1" are
++the names of the dm-ioband devices that belong to the ioband device
++group. Typically, dm-ioband devices that reside on the same hard disk
++should belong to the same ioband device group in order to share the
++bandwidth of the hard disk.
++
++dm-ioband is not restricted to working with LVM, it may work in
++conjunction with any type of block device. Please refer to
++Documentation/device-mapper/ioband.txt for more details.
++
++4.2 Setting up dm-ioband through the blkio-cgroup interface
++
++The following table shows the given settings for this example. The
++bandwidth will be assigned on a per cgroup per logical volume basis.
++
++                   Table. Settings for each cgroup
++
++     --------------------------------------------------------------
++    |   LVM volume groups  |  vg0 on /dev/sda  |  vg1 on /dev/sdb  |
++    |----------------------|-------------------|-------------------|
++    |  LVM logical volume  |   lv0   |   lv1   |   lv0   |   lv1   |
++    |----------------------|-------------------|-------------------|
++    |   bandwidth control  |     relative      |     absolute      |
++    |        policy        |      weight       |  bandwidth limit  |
++    |----------------------|-------------------|-------------------|
++    |         unit         | weight value (*1) | throughput [KB/s] |
++    |----------------------|-------------------|-------------------|
++    | settings for cgroup1 | 40 (16) | 90 (36) |   400   |   900   |
++    |----------------------|---------|---------|---------|---------|
++    | settings for cgroup2 | 20  (8) | 60 (24) |   200   |   600   |
++    |----------------------|---------|---------|---------|---------|
++    |   for other cgroups  | 10  (4) | 30 (12) |   100   |   300   |
++     --------------------------------------------------------------
++
++        *1: The values enclosed in () denote the preceding weight
++            as a percentage of the total weight. The bandwidth of
++            vg0 is distributed proportional to the total weight.
++
++The set-up is described step-by-step below.
++
++1) Create new cgroups using the mkdir command
++
++# mkdir /cgroup/1
++# mkdir /cgroup/2
++
++2) Set bandwidth control policy on each ioband device group
++
++The set-up of bandwidth control policy is done by writing to
++blkio.devices file.
++
++# echo vg0 policy weight > /cgroup/blkio.devices
++# echo vg1 policy range-bw > /cgroup/blkio.devices
++
++3) Set up the root cgroup
++
++The root cgroup represents the default blkio-cgroup. If an I/O is
++performed by a process in a cgroup and the cgroup is not set up by
++blkio-cgroup, the I/O is charged to the root cgroup.
++
++The set-up of the root cgroup is done by writing to blkio.settings
++file in the cgroup's root directory. The following commands write
++the settings of each logical volume to that file.
++
++# echo vg0-lv0 10 > /cgroup/bklio.settings
++# echo vg0-lv1 30 > /cgroup/bklio.settings
++# echo vg1-lv0 100:100 > /cgroup/blkio.settings
++# echo vg1-lv1 300:300 > /cgroup/blkio.settings
++
++The settings can be verified by reading the blkio.settings file.
++
++# cat /cgroup/blkio.settings
++vg0-lv0 weight=10
++vg0-lv1 weight=30
++vg1-lv0 range-bw=100:100
++vg1-lv1 range-bw=300:300
++
++4) Set up cgroup1 and cgroup2
++
++New cgroups are set up in the same manner as the root cgroup.
++
++Settings for cgroup1
++# echo vg0-lv0 40 > /cgroup/1/blkio.settings
++# echo vg0-lv1 90 > /cgroup/1/bklio.settings
++# echo vg1-lv0 400:400 > /cgroup/1/blkio.settings
++# echo vg1-lv1 900:900 > /cgroup/1/bklio.settings
++
++Settings for cgroup2
++# echo vg0-lv0 20 > /cgroup/2/blkio.settings
++# echo vg0-lv1 60 > /cgroup/2/bklio.settings
++# echo vg1-lv0 200:200 > /cgroup/2/blkio.settings
++# echo vg1-lv1 600:600 > /cgroup/2/bklio.settings
++
++Again, the settings can be verified by reading the appropriate
++blkio.settings file.
++
++# cat /cgroup/1/blkio.settings
++vg0-lv0 weight=40
++vg0-lv1 weight=90
++vg1-lv0 range-bw=400:400
++vg1-lv1 range-bw=900:900
++
++If only the logical volume name is specified, the entry for the
++logical volume is removed.
++
++# echo vg0-lv1 > /cgroup/1/vlkio.setting
++# cat /cgroup/1/blkio.settings
++vg0-lv0 weight=40
++vg0-lv1 weight=90
++vg1-lv0 range-bw=400:400
++
++5. Contact
  
- static int blkio_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
-Index: linux-2.6.31-rc7/drivers/md/dm-ioctl.c
-===================================================================
---- linux-2.6.31-rc7.orig/drivers/md/dm-ioctl.c
-+++ linux-2.6.31-rc7/drivers/md/dm-ioctl.c
-@@ -1601,3 +1601,4 @@ out:
- 
- 	return r;
- }
-+EXPORT_SYMBOL(dm_copy_name_and_uuid);
-Index: linux-2.6.31-rc7/drivers/md/dm-ioband-policy.c
-===================================================================
---- linux-2.6.31-rc7.orig/drivers/md/dm-ioband-policy.c
-+++ linux-2.6.31-rc7/drivers/md/dm-ioband-policy.c
-@@ -8,6 +8,7 @@
- #include <linux/bio.h>
- #include <linux/workqueue.h>
- #include <linux/rbtree.h>
-+#include <linux/seq_file.h>
- #include "dm.h"
- #include "dm-ioband.h"
- 
-@@ -275,7 +276,7 @@ static int policy_weight_param(struct io
- 	if (value)
- 		err = strict_strtol(value, 0, &val);
- 
--	if (!strcmp(cmd, "weight")) {
-+	if (!cmd || !strcmp(cmd, "weight")) {
- 		if (!value)
- 			set_weight(gp, DEFAULT_WEIGHT);
- 		else if (!err && 0 < val && val <= SHORT_MAX)
-@@ -340,6 +341,19 @@ static void policy_weight_show(struct io
- 	*szp = sz;
- }
- 
-+static void policy_weight_show_device(struct seq_file *m,
-+				      struct ioband_device *dp)
-+{
-+	seq_printf(m, " token=%d carryover=%d",
-+				dp->g_token_bucket, dp->g_carryover);
-+}
-+
-+static void policy_weight_show_group(struct seq_file *m,
-+				     struct ioband_group *gp)
-+{
-+	seq_printf(m, " weight=%d", gp->c_weight);
-+}
-+
- /*
-  *  <Method>      <description>
-  * g_can_submit   : To determine whether a given group has the right to
-@@ -368,6 +382,8 @@ static void policy_weight_show(struct io
-  *                  Return 1 if a given group can't receive any more BIOs,
-  *                  otherwise return 0.
-  * g_show         : Show the configuration.
-+ * g_show_device  : Show the configuration of the specified ioband device.
-+ * g_show_group   : Show the configuration of the spacified ioband group.
-  */
- static int policy_weight_init(struct ioband_device *dp, int argc, char **argv)
- {
-@@ -390,6 +406,8 @@ static int policy_weight_init(struct iob
- 	dp->g_set_param = policy_weight_param;
- 	dp->g_should_block = is_queue_full;
- 	dp->g_show = policy_weight_show;
-+	dp->g_show_device = policy_weight_show_device;
-+	dp->g_show_group = policy_weight_show_group;
- 
- 	dp->g_epoch = 0;
- 	dp->g_weight_total = 0;
-Index: linux-2.6.31-rc7/drivers/md/dm-ioband-rangebw.c
-===================================================================
---- linux-2.6.31-rc7.orig/drivers/md/dm-ioband-rangebw.c
-+++ linux-2.6.31-rc7/drivers/md/dm-ioband-rangebw.c
-@@ -25,6 +25,7 @@
- #include <linux/random.h>
- #include <linux/time.h>
- #include <linux/timer.h>
-+#include <linux/seq_file.h>
- #include "dm.h"
- #include "md.h"
- #include "dm-ioband.h"
-@@ -455,7 +456,7 @@ static int policy_range_bw_param(struct 
- 			err++;
- 	}
- 
--	if (!strcmp(cmd, "range-bw")) {
-+	if (!cmd || !strcmp(cmd, "range-bw")) {
- 		if (!err && 0 <= min_val &&
- 		    min_val <= (INT_MAX / 2) &&	0 <= max_val &&
- 		    max_val <= (INT_MAX / 2) && min_val <= max_val)
-@@ -543,6 +544,12 @@ static void policy_range_bw_show(struct 
- 	*szp = sz;
- }
- 
-+static void policy_range_bw_show_group(struct seq_file *m,
-+				       struct ioband_group *gp)
-+{
-+	seq_printf(m, " range-bw=%d:%d", gp->c_min_bw, gp->c_max_bw);
-+}
-+
- static int range_bw_prepare_token(struct ioband_group *gp,
- 						struct bio *bio, int flag)
- {
-@@ -629,6 +636,8 @@ static void range_bw_timeover(unsigned l
-  *                  Return 1 if a given group can't receive any more BIOs,
-  *                  otherwise return 0.
-  * g_show         : Show the configuration.
-+ * g_show_device  : Show the configuration of the specified ioband device.
-+ * g_show_group   : Show the configuration of the spacified ioband group.
-  */
- 
- int policy_range_bw_init(struct ioband_device *dp, int argc, char **argv)
-@@ -652,6 +661,8 @@ int policy_range_bw_init(struct ioband_d
- 	dp->g_set_param = policy_range_bw_param;
- 	dp->g_should_block = range_bw_queue_full;
- 	dp->g_show = policy_range_bw_show;
-+	dp->g_show_device = NULL;
-+	dp->g_show_group = policy_range_bw_show_group;
- 
- 	dp->g_min_bw_total = 0;
- 	dp->g_running_gp = NULL;
-Index: linux-2.6.31-rc7/drivers/md/dm-ioband-ctl.c
-===================================================================
---- linux-2.6.31-rc7.orig/drivers/md/dm-ioband-ctl.c
-+++ linux-2.6.31-rc7/drivers/md/dm-ioband-ctl.c
-@@ -15,6 +15,8 @@
- #include <linux/slab.h>
- #include <linux/workqueue.h>
- #include <linux/rbtree.h>
-+#include <linux/biotrack.h>
-+#include <linux/dm-ioctl.h>
- #include "dm.h"
- #include "md.h"
- #include "dm-ioband.h"
-@@ -108,6 +110,7 @@ static struct ioband_device *alloc_ioban
- 	INIT_DELAYED_WORK(&new_dp->g_conductor, ioband_conduct);
- 	INIT_LIST_HEAD(&new_dp->g_groups);
- 	INIT_LIST_HEAD(&new_dp->g_list);
-+	INIT_LIST_HEAD(&new_dp->g_heads);
- 	spin_lock_init(&new_dp->g_lock);
- 	bio_list_init(&new_dp->g_urgent_bios);
- 	new_dp->g_io_throttle = io_throttle;
-@@ -240,6 +243,7 @@ static int ioband_group_init(struct ioba
- 	int r;
- 
- 	INIT_LIST_HEAD(&gp->c_list);
-+	INIT_LIST_HEAD(&gp->c_heads);
- 	bio_list_init(&gp->c_blocked_bios);
- 	bio_list_init(&gp->c_prio_bios);
- 	gp->c_id = id;	/* should be verified */
-@@ -270,7 +274,8 @@ static int ioband_group_init(struct ioba
- 		ioband_group_add_node(&head->c_group_root, gp);
- 		gp->c_dev = head->c_dev;
- 		gp->c_target = head->c_target;
--	}
-+	} else
-+		list_add_tail(&gp->c_heads, &dp->g_heads);
- 
- 	spin_unlock_irqrestore(&dp->g_lock, flags);
- 	return 0;
-@@ -284,6 +289,8 @@ static void ioband_group_release(struct 
- 	list_del(&gp->c_list);
- 	if (head)
- 		rb_erase(&gp->c_group_node, &head->c_group_root);
-+	else
-+		list_del(&gp->c_heads);
- 	dp->g_group_dtr(gp);
- 	kfree(gp);
- }
-@@ -1296,6 +1303,191 @@ static struct target_type ioband_target 
- 	.iterate_devices = ioband_iterate_devices,
- };
- 
-+#ifdef CONFIG_CGROUP_BLKIO
-+/* Read the ID of the specified blkio cgroup. */
-+static void ioband_copy_name(struct ioband_group *gp, char *name)
-+{
-+	struct mapped_device *md;
-+
-+	md = dm_table_get_md(gp->c_target->table);
-+	dm_copy_name_and_uuid(md, name, NULL);
-+	dm_put(md);
-+}
-+
-+/* Show all ioband devices and their settings. */
-+static void ioband_cgroup_show_device(struct seq_file *m)
-+{
-+	struct ioband_device *dp;
-+	struct ioband_group *gp;
-+	char name[DM_NAME_LEN];
-+
-+	mutex_lock(&ioband_lock);
-+	list_for_each_entry(dp, &ioband_device_list, g_list) {
-+		seq_printf(m, "%s policy=%s io_throttle=%d io_limit=%d",
-+			   dp->g_name, dp->g_policy->p_name,
-+			   dp->g_io_throttle, dp->g_io_limit);
-+		if (dp->g_show_device)
-+			dp->g_show_device(m, dp);
-+		seq_putc(m, '\n');
-+
-+		list_for_each_entry(gp, &dp->g_heads, c_heads) {
-+			if (strcmp(gp->c_type->t_name, "cgroup"))
-+				continue;
-+			ioband_copy_name(gp, name);
-+			seq_printf(m, "  %s\n", name);
-+		}
-+	}
-+	mutex_unlock(&ioband_lock);
-+}
-+
-+/* Configure ioband devices specified by an ioband device ID */
-+static int ioband_cgroup_config_device(int argc, char **argv)
-+{
-+	struct ioband_device *dp;
-+	struct ioband_group *gp;
-+	char name[DM_NAME_LEN];
-+	int r;
-+
-+	if (argc < 1)
-+		return -EINVAL;
-+
-+	mutex_lock(&ioband_lock);
-+	/* look up the ioband device */
-+	list_for_each_entry(dp, &ioband_device_list, g_list) {
-+		/* assuming argv[0] is a share name */
-+		if (!strcmp(dp->g_name, argv[0])) {
-+			gp = list_first_entry(&dp->g_heads,
-+					      struct ioband_group, c_heads);
-+			goto found;
-+		}
-+
-+		/* assuming argv[0] is a device name */
-+		list_for_each_entry(gp, &dp->g_heads, c_heads) {
-+			ioband_copy_name(gp, name);
-+			if (!strcmp(name, argv[0]))
-+				goto found;
-+		}
-+	}
-+	mutex_unlock(&ioband_lock);
-+	return -ENODEV;
-+
-+found:
-+	if (!strcmp(gp->c_type->t_name, "cgroup"))
-+		r = __ioband_message(gp->c_target, --argc, &argv[1]);
-+	else
-+		r = -ENODEV;
-+
-+	mutex_unlock(&ioband_lock);
-+	return r;
-+}
-+
-+/* Show the settings of the specified blkio cgroup. */
-+static void ioband_cgroup_show_group(struct seq_file *m,
-+				     struct blkio_cgroup *biog, int id)
-+{
-+	struct ioband_device *dp;
-+	struct ioband_group *head, *gp;
-+	struct cgroup *cgrp = biog->css.cgroup;
-+	char name[DM_NAME_LEN];
-+
-+	mutex_lock(&ioband_lock);
-+	list_for_each_entry(dp, &ioband_device_list, g_list) {
-+		list_for_each_entry(head, &dp->g_heads, c_heads) {
-+			if (strcmp(head->c_type->t_name, "cgroup"))
-+				continue;
-+
-+			if (cgrp == cgrp->top_cgroup)
-+				gp = head;
-+			else {
-+				gp = ioband_group_find(head, id);
-+				if (!gp)
-+					continue;
-+			}
-+
-+			ioband_copy_name(head, name);
-+			seq_puts(m, name);
-+			if (dp->g_show_group)
-+				dp->g_show_group(m, gp);
-+			seq_putc(m, '\n');
-+		}
-+	}
-+	mutex_unlock(&ioband_lock);
-+}
-+
-+/* Configure the specified blkio cgroup. */
-+static int ioband_cgroup_config_group(int argc, char **argv,
-+				      struct blkio_cgroup *biog, int id)
-+{
-+	struct ioband_device *dp;
-+	struct ioband_group *head, *gp;
-+	struct cgroup *cgrp = biog->css.cgroup;
-+	char name[DM_NAME_LEN];
-+	int r;
-+
-+	if (argc != 1 && argc != 2)
-+		return -EINVAL;
-+
-+	mutex_lock(&ioband_lock);
-+	list_for_each_entry(dp, &ioband_device_list, g_list) {
-+		list_for_each_entry(head, &dp->g_heads, c_heads) {
-+			if (strcmp(head->c_type->t_name, "cgroup"))
-+				continue;
-+			ioband_copy_name(head, name);
-+			if (!strcmp(name, argv[0]))
-+				goto found;
-+		}
-+	}
-+	mutex_unlock(&ioband_lock);
-+	return -ENODEV;
-+
-+found:
-+	if (argc == 1) {
-+		if (cgrp == cgrp->top_cgroup)
-+			r = -EINVAL;
-+		else
-+			r = ioband_group_detach(head, id);
-+	} else {
-+		if (cgrp == cgrp->top_cgroup)
-+			gp = head;
-+		else
-+			gp = ioband_group_find(head, id);
-+
-+		if (!gp)
-+			r = ioband_group_attach(head, id, argv[1]);
-+		else
-+			r = gp->c_banddev->g_set_param(gp, NULL, argv[1]);
-+	}
-+
-+	mutex_unlock(&ioband_lock);
-+	return r;
-+}
-+
-+/* Remove the specified blkio cgroup. */
-+static void ioband_cgroup_remove_group(int id)
-+{
-+	struct ioband_device *dp;
-+	struct ioband_group *head;
-+
-+	mutex_lock(&ioband_lock);
-+	list_for_each_entry(dp, &ioband_device_list, g_list) {
-+		list_for_each_entry(head, &dp->g_heads, c_heads) {
-+			if (strcmp(head->c_type->t_name, "cgroup"))
-+				continue;
-+			ioband_group_detach(head, id);
-+		}
-+	}
-+	mutex_unlock(&ioband_lock);
-+}
-+
-+static const struct ioband_cgroup_ops ioband_ops = {
-+	.show_device	= ioband_cgroup_show_device,
-+	.config_device	= ioband_cgroup_config_device,
-+	.show_group	= ioband_cgroup_show_group,
-+	.config_group	= ioband_cgroup_config_group,
-+	.remove_group	= ioband_cgroup_remove_group,
-+};
-+#endif
-+
- static int __init dm_ioband_init(void)
- {
- 	int r;
-@@ -1303,11 +1495,18 @@ static int __init dm_ioband_init(void)
- 	r = dm_register_target(&ioband_target);
- 	if (r < 0)
- 		DMERR("register failed %d", r);
-+#ifdef CONFIG_CGROUP_BLKIO
-+	else
-+		r = blkio_cgroup_register_ioband(&ioband_ops);
-+#endif
- 	return r;
- }
- 
- static void __exit dm_ioband_exit(void)
- {
-+#ifdef CONFIG_CGROUP_BLKIO
-+	blkio_cgroup_unregister_ioband();
-+#endif
- 	dm_unregister_target(&ioband_target);
- }
- 
-Index: linux-2.6.31-rc7/drivers/md/dm-ioband.h
-===================================================================
---- linux-2.6.31-rc7.orig/drivers/md/dm-ioband.h
-+++ linux-2.6.31-rc7/drivers/md/dm-ioband.h
-@@ -44,6 +44,7 @@ struct ioband_device {
- 
- 	int g_ref;
- 	struct list_head g_list;
-+	struct list_head g_heads;
- 	int g_flags;
- 	char g_name[IOBAND_NAME_MAX + 1];
- 	const struct ioband_policy_type *g_policy;
-@@ -59,6 +60,8 @@ struct ioband_device {
- 	int (*g_set_param) (struct ioband_group *, const char *, const char *);
- 	int (*g_should_block) (struct ioband_group *);
- 	void (*g_show) (struct ioband_group *, int *, char *, unsigned);
-+	void (*g_show_device) (struct seq_file *, struct ioband_device *);
-+	void (*g_show_group) (struct seq_file *, struct ioband_group *);
- 
- 	/* members for weight balancing policy */
- 	int g_epoch;
-@@ -104,6 +107,7 @@ struct ioband_group_stat {
- 
- struct ioband_group {
- 	struct list_head c_list;
-+	struct list_head c_heads;
- 	struct ioband_device *c_banddev;
- 	struct dm_dev *c_dev;
- 	struct dm_target *c_target;
-@@ -150,6 +154,16 @@ struct ioband_group {
- 
- };
- 
-+struct blkio_cgroup;
-+
-+struct ioband_cgroup_ops {
-+	void (*show_device)(struct seq_file *);
-+	int (*config_device)(int, char **);
-+	void (*show_group)(struct seq_file *, struct blkio_cgroup *, int);
-+	int (*config_group)(int, char **, struct blkio_cgroup *, int);
-+	void (*remove_group)(int);
-+};
-+
- #define IOBAND_URGENT 1
- 
- #define DEV_BIO_BLOCKED		1
-Index: linux-2.6.31-rc7/drivers/md/dm-ioband-type.c
-===================================================================
---- linux-2.6.31-rc7.orig/drivers/md/dm-ioband-type.c
-+++ linux-2.6.31-rc7/drivers/md/dm-ioband-type.c
-@@ -6,6 +6,7 @@
-  * This file is released under the GPL.
-  */
- #include <linux/bio.h>
-+#include <linux/biotrack.h>
- #include "dm.h"
- #include "dm-ioband.h"
- 
-@@ -52,14 +53,7 @@ static int ioband_node(struct bio *bio)
- 
- static int ioband_cgroup(struct bio *bio)
- {
--	/*
--	 * This function should return the ID of the cgroup which
--	 * issued "bio". The ID of the cgroup which the current
--	 * process belongs to won't be suitable ID for this purpose,
--	 * since some BIOs will be handled by kernel threads like aio
--	 * or pdflush on behalf of the process requesting the BIOs.
--	 */
--	return 0;	/* not implemented yet */
-+	return get_blkio_cgroup_id(bio);
- }
- 
- const struct ioband_group_type dm_ioband_group_type[] = {
+ Linux Block I/O Bandwidth Control Project
+ http://sourceforge.net/projects/ioband/
