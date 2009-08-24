@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751170AbZHXBk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751206AbZHXBol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751170AbZHXBk2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 21:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbZHXBk2
+	id S1751206AbZHXBol (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 21:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZHXBol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 21:40:28 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:44385 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbZHXBk1 (ORCPT
+	Sun, 23 Aug 2009 21:44:41 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:37613 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbZHXBok (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 21:40:27 -0400
-Date: Mon, 24 Aug 2009 10:40:25 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH v3 2/4] tracing: Make syscall_(un)regfunc arch-specific
-Message-ID: <20090824014025.GA12653@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
-	Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-	Li Zefan <lizf@cn.fujitsu.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Jiaying Zhang <jiayingz@google.com>,
-	Martin Bligh <mbligh@google.com>,
-	Lai Jiangshan <laijs@cn.fujitsu.com>
-References: <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250917125-6174-1-git-send-email-jistone@redhat.com> <1250917125-6174-2-git-send-email-jistone@redhat.com> <1250917125-6174-3-git-send-email-jistone@redhat.com> <20090823211422.GG6256@nowhere>
+	Sun, 23 Aug 2009 21:44:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Q/RVIYh2kkYn9NcTPDl0RJkeRNkjodmDgA6hhxJrGwiKLzQYjbYBqr2mcryj167P9Q
+         LqIm6lC58wkEEkYsAb/Vh5P9omo+WMmhRqVQJDod3EII0FgnkAOHuvk/gsG7btK7ARzd
+         1jnwJ3DhvIh7a20juCHvRZSb1jCqjVDGVwJuQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090823211422.GG6256@nowhere>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <82e12e5f0908220954p7019fb3dg15f9b99bb7e55a8c@mail.gmail.com>
+References: <82e12e5f0908220954p7019fb3dg15f9b99bb7e55a8c@mail.gmail.com>
+Date: Mon, 24 Aug 2009 10:44:41 +0900
+Message-ID: <28c262360908231844o3df95b14v15b2d4424465f033@mail.gmail.com>
+Subject: Re: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Hiroaki Wakabayashi <primulaelatior@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Ying Han <yinghan@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n7O1iu16030603
 
-On Sun, Aug 23, 2009 at 11:14:24PM +0200, Frederic Weisbecker wrote:
-> On Fri, Aug 21, 2009 at 09:58:43PM -0700, Josh Stone wrote:
-> > The bodies of syscall_regfunc and syscall_unregfunc need the
-> > arch-specific flag TIF_SYSCALL_TRACEPOINT, which only exists
-> > on x86 and s390, so they should live in arch-specific files.
-> 
-> Sh also does, but currently in a seperate development branch.
-> (Adding Paul Mundt in Cc to prevent from further linux-next breakage).
-> 
-Thanks, I'll take care of this as well as the other ftrace syscalls
-breakage during the merge window. At the moment I don't have any good
-ideas on how to fix the workflow issues, and -tip likewise doesn't care
-about -next impact, so there's somewhat of an impasse.
+On Sun, Aug 23, 2009 at 1:54 AM, HiroakiWakabayashi<primulaelatior@gmail.com> wrote:> From 27b2fde0222c59049026e7d0bdc4a2a68d0720f5 Mon Sep 17 00:00:00 2001> From: Hiroaki Wakabayashi <primulaelatior@gmail.com>> Date: Sat, 22 Aug 2009 19:14:53 +0900> Subject: [PATCH] mm: make munlock fast when mlock is canceled by sigkill>> This patch is for making commit 4779280d1e (mm: make get_user_pages()> interruptible) complete.>> At first, munlock() assumes that all pages in vma are pinned,>> Now, by the commit, mlock() can be interrupted by SIGKILL, etc  So, part of> pages are not pinned.> If SIGKILL, In exit() path, munlock is called for unlocking pinned pages> in vma.>> But, there, get_user_pages(write) is used for munlock(). Then, pages are> allocated via page-fault for exsiting process !!! This is problem at canceling> big mlock.> This patch tries to avoid allocating new pages at munlock().>>   mlock( big area )>        <===== sig kill>   do_exit()>    ->mmput()>       -> do_munlock()>         -> get_user_pages()>               <allocate *never used* memory>>       ->.....freeing allocated memory.>> * Test program> % cat run.sh> #!/bin/sh>> ./mlock_test 2000000000 &> sleep 2> kill -9 $!> wait>> % cat mlock_test.c> #include <stdio.h>> #include <stdlib.h>> #include <string.h>> #include <sys/mman.h>> #include <sys/types.h>> #include <sys/stat.h>> #include <fcntl.h>> #include <errno.h>> #include <time.h>> #include <unistd.h>> #include <sys/time.h>>> int main(int argc, char **argv)> {>        size_t length = 50 * 1024 * 1024;>        void *addr;>        time_t timer;>>        if (argc >= 2)>                length = strtoul(argv[1], NULL, 10);>        printf("PID = %d\n", getpid());>        addr = mmap(NULL, length, PROT_READ | PROT_WRITE,>                                MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);>        if (addr == MAP_FAILED) {>                fprintf(stderr, "mmap failed: %s, length=%lu\n",>                                strerror(errno), length);>                exit(EXIT_FAILURE);>        }>        printf("try mlock length=%lu\n", length);>        timer = time(NULL);>        if (mlock(addr, length) < 0) {>                fprintf(stderr, "mlock failed: %s, time=%lu[sec]\n",>                                strerror(errno), time(NULL) - timer);>                exit(EXIT_FAILURE);>        }>        printf("mlock succeed, time=%lu[sec]\n\n", time(NULL) - timer);>        printf("try munlock length=%lu\n", length);>        timer = time(NULL);>        if (munlock(addr, length) < 0) {>                fprintf(stderr, "munlock failed: %s, time=%lu[sec]\n",>                                strerror(errno), time(NULL)-timer);>                exit(EXIT_FAILURE);>        }>        printf("munlock succeed, time=%lu[sec]\n\n", time(NULL) - timer);>        if (munmap(addr, length) < 0) {>                fprintf(stderr, "munmap failed: %s\n", strerror(errno));>                exit(EXIT_FAILURE);>        }>        return 0;> }>> * Executed Result> -- Original executed result> % time ./run.sh>> PID = 2678> try mlock length=2000000000> ./run.sh: line 6:  2678 Killed                  ./mlock_test 2000000000> ./run.sh  0.00s user 2.59s system 13% cpu 18.781 total> %>> -- After applied this patch> % time ./run.sh>> PID = 2512> try mlock length=2000000000> ./run.sh: line 6:  2512 Killed                  ./mlock_test 2000000000> ./run.sh  0.00s user 1.15s system 45% cpu 2.507 total> %>> Signed-off-by: Hiroaki Wakabayashi <primulaelatior@gmail.com>> --->  mm/internal.h |    1 +>  mm/memory.c   |    9 +++++++-->  mm/mlock.c    |   35 +++++++++++++++++++---------------->  3 files changed, 27 insertions(+), 18 deletions(-)>> diff --git a/mm/internal.h b/mm/internal.h> index f290c4d..4ab5b24 100644> --- a/mm/internal.h> +++ b/mm/internal.h> @@ -254,6 +254,7 @@ static inline void> mminit_validate_memmodel_limits(unsigned long *start_pfn,>  #define GUP_FLAGS_FORCE                  0x2>  #define GUP_FLAGS_IGNORE_VMA_PERMISSIONS 0x4>  #define GUP_FLAGS_IGNORE_SIGKILL         0x8> +#define GUP_FLAGS_ALLOW_NULL             0x10>
+I am worried about adding new flag whenever we need it.But I think this case makes sense to me.In addition, I guess ZERO page can also use this flag.
+Kame. What do you think about it?
+
+>  int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,>                     unsigned long start, int len, int flags,> diff --git a/mm/memory.c b/mm/memory.c> index aede2ce..b41fbf9 100644> --- a/mm/memory.c> +++ b/mm/memory.c> @@ -1217,6 +1217,7 @@ int __get_user_pages(struct task_struct *tsk,> struct mm_struct *mm,>        int force = !!(flags & GUP_FLAGS_FORCE);>        int ignore = !!(flags & GUP_FLAGS_IGNORE_VMA_PERMISSIONS);>        int ignore_sigkill = !!(flags & GUP_FLAGS_IGNORE_SIGKILL);> +       int allow_null = !!(flags & GUP_FLAGS_ALLOW_NULL);>>        if (nr_pages <= 0)>                return 0;> @@ -1312,6 +1313,8 @@ int __get_user_pages(struct task_struct *tsk,> struct mm_struct *mm,>                        while (!(page = follow_page(vma, start, foll_flags))) {>                                int ret;>> +                               if (allow_null)> +                                       break;>                                ret = handle_mm_fault(mm, vma, start,>                                        (foll_flags & FOLL_WRITE) ?>                                        FAULT_FLAG_WRITE : 0);> @@ -1351,8 +1354,10 @@ int __get_user_pages(struct task_struct *tsk,> struct mm_struct *mm,>                        if (pages) {>                                pages[i] = page;>> -                               flush_anon_page(vma, page, start);> -                               flush_dcache_page(page);> +                               if (page) {> +                                       flush_anon_page(vma, page, start);> +                                       flush_dcache_page(page);> +                               }>                        }>                        if (vmas)>                                vmas[i] = vma;> diff --git a/mm/mlock.c b/mm/mlock.c> index 45eb650..0f5827b 100644> --- a/mm/mlock.c> +++ b/mm/mlock.c> @@ -178,9 +178,10 @@ static long __mlock_vma_pages_range(struct> vm_area_struct *vma,>         */>        if (!mlock)>                gup_flags |= GUP_FLAGS_IGNORE_VMA_PERMISSIONS |> -                            GUP_FLAGS_IGNORE_SIGKILL;> +                            GUP_FLAGS_IGNORE_SIGKILL |> +                            GUP_FLAGS_ALLOW_NULL;>> -       if (vma->vm_flags & VM_WRITE)> +       if (mlock && (vma->vm_flags & VM_WRITE))>                gup_flags |= GUP_FLAGS_WRITE;>>        while (nr_pages > 0) {> @@ -220,21 +221,23 @@ static long __mlock_vma_pages_range(struct> vm_area_struct *vma,>                for (i = 0; i < ret; i++) {>                        struct page *page = pages[i];>> -                       lock_page(page);> -                       /*> -                        * Because we lock page here and migration is blocked> -                        * by the elevated reference, we need only check for> -                        * page truncation (file-cache only).> -                        */> -                       if (page->mapping) {> -                               if (mlock)> -                                       mlock_vma_page(page);> -                               else> -                                       munlock_vma_page(page);> +                       if (page) {> +                               lock_page(page);> +                               /*> +                                * Because we lock page here and migration is> +                                * blocked by the elevated reference, we need> +                                * only check for page truncation> +                                * (file-cache only).> +                                */> +                               if (page->mapping) {> +                                       if (mlock)> +                                               mlock_vma_page(page);> +                                       else> +                                               munlock_vma_page(page);> +                               }> +                               unlock_page(page);> +                               put_page(page); /* ref from get_user_pages() */>                        }> -                       unlock_page(page);> -                       put_page(page);         /* ref from get_user_pages() */> ->                        /*>                         * here we assume that get_user_pages() has given us>                         * a list of virtually contiguous pages.> --> 1.5.6.5> --> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in> the body of a message to majordomo@vger.kernel.org> More majordomo info at  http://vger.kernel.org/majordomo-info.html> Please read the FAQ at  http://www.tux.org/lkml/>
+
+
+-- Kind regards,Minchan Kim���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
