@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbZHXWcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZHXWcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753877AbZHXWcl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZHXWcj
+	id S1753887AbZHXWcv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbZHXWcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:32:39 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:32965 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753838AbZHXWcj (ORCPT
+	Mon, 24 Aug 2009 18:32:48 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:56257 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753854AbZHXWcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:32:39 -0400
-Date: Tue, 25 Aug 2009 07:32:39 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH -tip] timekeeping: Fix up read_persistent_clock() breakage on sh.
-Message-ID: <20090824223239.GB20832@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linux-kernel@vger.kernel.org
+	Mon, 24 Aug 2009 18:32:45 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 24 Aug 2009 15:32:46 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Paolo Bonzini <bonzini@gnu.org>
+cc: Avi Kivity <avi@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+       gleb@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+In-Reply-To: <4A930FE4.6090209@gnu.org>
+Message-ID: <alpine.DEB.2.00.0908241515150.7951@makko.or.mcafeemobile.com>
+References: <20090820155655.GA8764@redhat.com> <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com>
+ <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com> <4A92DC93.6030406@redhat.com> <alpine.DEB.2.00.0908241503150.7951@makko.or.mcafeemobile.com>
+ <4A930FE4.6090209@gnu.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The recent commit "timekeeping: Increase granularity of
-read_persistent_clock()" introduced read_persistent_clock() rework which
-inadvertently broke the sh conversion:
+On Tue, 25 Aug 2009, Paolo Bonzini wrote:
 
-	arch/sh/kernel/time.c:45: error: passing argument 1 of 'rtc_sh_get_time' from incompatible pointer type
-	distcc[13470] ERROR: compile arch/sh/kernel/time.c on sprygo/32 failed
-	make[2]: *** [arch/sh/kernel/time.o] Error 1
+> 
+> > There are userspace libraries that do almost everything, but you hardly
+> > see things like pthread_(EFD_STATE-like)_create() or similar system
+> > interfaces based on such abstraction.
+> 
+> It actually seems as close to a condition variable as an eventfd can be.
 
-This trivial fix gets it working again.
+A pthread condition typical code usage maps to eventfd like:
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+	while (read(efd, ...) > 0)
+		if (CONDITION)
+			break;
 
----
+So a pthread condition is really a wakeup gate like eventfd is.
+EFD_STATE has nothing to do with a pthread condition.
 
- arch/sh/kernel/time.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/sh/kernel/time.c b/arch/sh/kernel/time.c
-index 3f4706a..0e0e858 100644
---- a/arch/sh/kernel/time.c
-+++ b/arch/sh/kernel/time.c
-@@ -41,7 +41,7 @@ int (*rtc_sh_set_time)(const time_t) = null_rtc_set_time;
- #ifdef CONFIG_GENERIC_CMOS_UPDATE
- void read_persistent_clock(struct timespec *ts)
- {
--	rtc_sh_get_time(&ts);
-+	rtc_sh_get_time(ts);
- }
- 
- int update_persistent_clock(struct timespec now)
+
+- Davide
+
+
