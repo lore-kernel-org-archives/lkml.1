@@ -1,255 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbZHXUY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZHXU0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbZHXUY7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 16:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZHXUY5
+	id S1753349AbZHXU0P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 16:26:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZHXU0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 16:24:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:2523 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752359AbZHXUYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 16:24:55 -0400
-Message-ID: <4A92F6FC.4060907@redhat.com>
-Date: Mon, 24 Aug 2009 16:24:28 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net> <20090316122847.GI2405@elf.ucw.cz> <200903161426.24904.rob@landley.net> <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz>
-In-Reply-To: <20090824195159.GD29763@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Aug 2009 16:26:13 -0400
+Received: from ppp-145-226.adsl.restena.lu ([158.64.145.226]:49450 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751078AbZHXU0M convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 16:26:12 -0400
+X-Greylist: delayed 635 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Aug 2009 16:26:11 EDT
+Date: Mon, 24 Aug 2009 22:15:08 +0200
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc5 regression: Oops when USB Serial disconnected while
+ in use
+Message-ID: <20090824221508.055cfbc6@neptune.home>
+In-Reply-To: <Pine.LNX.4.44L0.0908232109400.30663-100000@netrider.rowland.org>
+References: <20090823183058.01fa4700@neptune.home>
+	<Pine.LNX.4.44L0.0908232109400.30663-100000@netrider.rowland.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
->
->   
->>> Isn't this by design?  In other words, if the metadata doesn't survive
->>> non-atomic writes, wouldn't it be an ext3 bug?
->>>       
->> Part of the problem here is that "atomic-writes" is confusing; it
->> doesn't mean what many people think it means.  The assumption which
->> many naive filesystem designers make is that writes succeed or they
->> don't.  If they don't succeed, they don't change the previously
->> existing data in any way.  
->>
->> So in the case of journalling, the assumption which gets made is that
->> when the power fails, the disk either writes a particular disk block,
->> or it doesn't.  The problem here is as with humans and animals, death
->> is not an event, it is a process.  When the power fails, the system
->> just doesn't stop functioning; the power on the +5 and +12 volt rails
->> start dropping to zero, and different components fail at different
->> times.  Specifically, DRAM, being the most voltage sensitve, tends to
->> fail before the DMA subsystem, the PCI bus, and the hard drive fails.
->> So as a result, garbage can get written out to disk as part of the
->> failure.  That's just the way hardware works.
->>     
->
-> Yep, and at that point you lost data. You had "silent data corruption"
-> from fs point of view, and that's bad. 
->
-> It will be probably very bad on XFS, probably okay on Ext3, and
-> certainly okay on Ext2: you do filesystem check, and you should be
-> able to repair any damage. So yes, physical journaling is good, but
-> fsck is better.
->   
+On Sun, 23 August 2009 Alan Stern <stern@rowland.harvard.edu> wrote:
 
-I don't see why you think that. In general, fsck (for any fs) only 
-checks metadata. If you have silent data corruption that corrupts things 
-that are fixable by fsck, you most likely have silent corruption hitting 
-things users care about like their data blocks inside of files. Fsck 
-will not fix (or notice) any of that, that is where things like full 
-data checksums can help.
-
-Also note (from first hand experience), unless you check and validate 
-your data, you can have data corruptions that will not get flagged as IO 
-errors so data signing or scrubbing is a critical part of data integrity.
->   
->> Is that a file system "bug"?  Well, it's better to call that a
->> mismatch between the assumptions made of physical devices, and of the
->> file system code.  On Irix, SGI hardware had a powerfail interrupt,
->>     
->
-> If those filesystem assumptions were not documented, I'd call it
-> filesystem bug. So better document them ;-).
->
->   
-I think that we need to help people understand the full spectrum of data 
-concerns, starting with reasonable best practices that will help most 
-people suffer *less* (not no) data loss. And make very sure that they 
-are not falsely assured that by following any specific script that they 
-can skip backups, remote backups, etc :-)
-
-Nothing in our code in any part of the kernel deals well with every 
-disaster or odd event.
-
->> There is another kind of non-atomic write that nearly all file systems
->> are subject to, however, and to give an example of this, consider what
->> happens if you a laptop is subjected to a sudden shock while it is
->> writing a sector, and the hard drive doesn't an accelerometer which
->>     
-> ...
->   
->> Depending on how severe the shock happens to be, the head could end up
->> impacting the platter, destroying the medium (which used to be
->> iron-oxide; hence the term "spinning rust platters") at that spot.
->> This will obviously cause a write failure, and the previous contents
->> of the sector will be lost.  This is also considered a failure of the
->> ATOMIC-WRITE property, and no, ext3 doesn't handle this case
->> gracefully.  Very few file systems do.  (It is possible for an OS
->> that
->>     
->
-> Actually, ext2 should be able to survive that, no? Error writing ->
-> remount ro -> fsck on next boot -> drive relocates the sectors.
->   
-
-I think that the example and the response are both off base. If your 
-head ever touches the platter, you won't be reading from a huge part of 
-your drive ever again (usually, you have 2 heads per platter, 3-4 
-platters, impact would kill one head and a corresponding percentage of 
-your data).
-
-No file system will recover that data although you might be able to 
-scrape out some remaining useful bits and bytes.
-
-More common causes of silent corruption would be bad DRAM in things like 
-the drive write cache, hot spots (that cause adjacent track data 
-errors), etc.  Note in this last case, your most recently written data 
-is fine, just the data you wrote months/years ago is toast!
->   
->> It's for this reason that I've never been completely sure how useful
->> Pavel's proposed treatise about file systems expectations really are
->> --- because all storage subsystems *usually* provide these guarantees,
->> but it is the very rare storage system that *always* provides these
->> guarantees.
->>     
->
-> Well... there's very big difference between harddrives and flash
-> memory. Harddrives usually work, and flash memory never does.
->   
-
-It is hard for anyone to see the real data without looking in detail at 
-large numbers of parts. Back at EMC, we looked at failures for lots of 
-parts so we got a clear grasp on trends.  I do agree that flash/SSD 
-parts are still very young so we will have interesting and unexpected 
-failure modes to learn to deal with....
->   
->> We could just as easily have several kilobytes of explanation in
->> Documentation/* explaining how we assume that DRAM always returns the
->> same value that was stored in it previously --- and yet most PC class
->> hardware still does not use ECC memory, and cosmic rays are a reality.
->> That means that most Linux systems run on systems that are vulnerable
->> to this kind of failure --- and the world hasn't ended.
->>     
->
-> There's a difference. In case of cosmic rays, hardware is clearly
-> buggy. I have one machine with bad DRAM (about 1 errors in 2 days),
-> and I still use it. I will not complain if ext3 trashes that.
->
-> In case of degraded raid-5, even with perfect hardware, and with
-> ext3 on top of that, you'll get silent data corruption. Nice, eh?
->
-> Clearly, Linux is buggy there. It could be argued it is raid-5's
-> fault, or maybe it is ext3's fault, but... linux is still buggy.
->   
-
-Nothing is perfect. It is still a trade off between storage utilization 
-(how much storage we give users for say 5 2TB drives), performance and 
-costs (throw away any disks over 2 years old?).
->   
->> As I recall, the main problem which Pavel had was when he was using
->> ext3 on a *really* trashy flash drive, on a *really* trashing laptop
->> where the flash card stuck out slightly, and any jostling of the
->> netbook would cause the flash card to become disconnected from the
->> laptop, and cause write errors, very easily and very frequently.  In
->> those circumstnaces, it's highly unlikely that ***any*** file system
->> would have been able to survive such an unreliable storage system.
->>     
->
-> Well well well. Before I pulled that flash card, I assumed that doing
-> so is safe, because flashcard is presented as block device and ext3
-> should cope with sudden disk disconnects.
->
-> And I was wrong wrong wrong. (Noone told me at the university. I guess
-> I should want my money back).
->
-> Plus note that it is not only my trashy laptop and one trashy MMC
-> card; every USB thumb drive I seen is affected. (OTOH USB disks should
-> be safe AFAICT).
->
-> Ext3 is unsuitable for flash cards and RAID arrays, plain and
-> simple. It is not documented anywhere :-(. [ext2 should work better --
-> at least you'll not get silent data corruption.]
->   
-
-ext3 is used on lots of raid arrays without any issue.
->   
->> One of the problems I have with the break down which Pavel has used is
->> that it doesn't break things down according to probability; the chance
->> of a storage subsystem scribbling garbage on its last write during a
->>     
->
-> Can you suggest better patch? I'm not saying we should redesign ext3,
-> but... someone should have told me that ext3+USB thumb drive=problems.
->
->   
->> But these things are never absolute, mainly because people aren't
->> willing to pay for either the cost of superior hardware (consider the
->> cost of ECC memory, which isn't *that* much more expensive; and yet
->> most PC class systems don't use it) or in terms of software overhead
->> (historically many file system designers have eschewed the use of
->> physical block journalling because it really hurts on meta-data
->> intensive benchmarks), talking about absolute requirements for
->> ATOMIC-WRITE isn't all that useful --- because nearly all hardware
->> doesn't provide these guarantees, and nearly all filesystems require
->> them.  So to call out ext2 and ext3 for requiring them, without
->> making
->>     
->
-> ext3+raid5 will fail even if you have perfect hardware.
->
->   
->> clear that pretty much *all* file systems require them, ends up
->> causing people to switch over to some other file system that
->> ironically enough, might end up being *more* vulernable, but which
->> didn't earn Pavel's displeasure because he didn't try using, say, XFS
->> on his flashcard on his trashy laptop.
->>     
->
-> I hold ext2/ext3 to higher standards than other filesystem in
-> tree. I'd not use XFS/VFAT etc. 
->
-> I would not want people to migrate towards XFS/VFAT, and yes I believe
-> XFSs/VFATs/... requirements should be documented, too. (But I know too
-> little about those filesystems).
->
-> If you can suggest better wording, please help me. But... those
-> requirements are non-trivial, commonly not met and the result is data
-> loss. It has to be documented somehow. Make it as innocent-looking as
-> you can...
->
-> 								Pavel
->   
-
-I think that you really need to step back and look harder at real 
-failures - not just your personal experience - but a larger set of real 
-world failures. Many papers have been published recently about that (the 
-google paper, the Bianca paper from FAST, Netapp, etc).
-
-Regards,
-
-Ric
+> On Sun, 23 Aug 2009, Bruno [UTF-8] PrÃ©mont wrote:
+> 
+> > On Sun, 23 August 2009 Alan Stern <stern@rowland.harvard.edu> wrote:
+> > > I have a big patch almost ready for testing.  Unfortunately I
+> > > don't have access to my usual hardware right now, so I can't test
+> > > it until the middle of the week.  Bruno, if you like I will send
+> > > you the patch when it looks okay and you can try it out.
+> > 
+> > Fine for me, I can test every week-day during evening as well as
+> > during week-end (European time, UTC+2).
+> > If there are any specific tests (other than the surviving of
+> > disconnect) that I shall run, just ask!
+> 
+> Here it is.  This is meant to apply on top of gregkh-all-2.6.31-rc6;  
+> it replaces the small patch you tried earlier.  In fact this ought to
+> be split up into at least four individual patches, but you can test it
+> all in one piece.
+> 
+> Surviving disconnect, ability to reconnect, deallocating memory 
+> (destroy_serial and port_free) at the right time...  Anything else
+> you can think of.
+> 
+> Alan Stern
+> 
+> P.S.: You may already have the first part, with the changes to
+> tty_port.c.
+Yep, that one was already included
 
 
+The patch does not work properly:
+
+When I plug in the USB2serial converter (be it ftdi or pl2302) device
+node is created properly and minicom can use it.
+
+When I exit minicom I can no longer start it again, eventually I get
+a killed minicom with NULL-dereference
+
+A rmmod/modprobe cycle works but the end result is no device node
+created by udev and udev's path_id helper is stuck. (unable to
+determine where for now as netconsole causes trouble with netdev
+polling)
+I will have a deeper look tomorrow as this evening is already over.
+
+Bruno
+
+
+Trace result for ftdi device:
+[   75.620038] usb 1-2: new full speed USB device using uhci_hcd and address 2
+[   75.838941] usb 1-2: New USB device found, idVendor=9e88, idProduct=9e8f
+[   75.844208] usb 1-2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[   75.849432] usb 1-2: Product: SheevaPlug JTAGKey FT2232D B
+[   75.854628] usb 1-2: Manufacturer: FTDI
+[   75.859783] usb 1-2: SerialNumber: FTS55QK6
+[   75.866989] usb 1-2: configuration #1 chosen from 1 choice
+[   76.001724] usbcore: registered new interface driver usbserial
+[   76.006901] usbserial: USB Serial Driver core
+[   76.085962] USB Serial support registered for FTDI USB Serial Device
+[   76.091471] usb 1-2: Ignoring serial port reserved for JTAG
+[   76.093889] ftdi_sio 1-2:1.1: FTDI USB Serial Device converter detected
+[   76.096350] usb 1-2: Detected FT2232C
+[   76.098739] usb 1-2: Number of endpoints 2
+[   76.101418] usb 1-2: Endpoint 1 MaxPacketSize 64
+[   76.103792] usb 1-2: Endpoint 2 MaxPacketSize 64
+[   76.106153] usb 1-2: Setting MaxPacketSize 64
+[   76.111012] usb 1-2: FTDI USB Serial Device converter now attached to ttyUSB0
+[   76.113433] usbcore: registered new interface driver ftdi_sio
+[   76.115797] ftdi_sio: v1.5.0:USB FTDI Serial Converters Driver
+[  163.471333] BUG: unable to handle kernel NULL pointer dereference at 00000064
+[  163.471531] IP: [<c115f7ae>] tty_open+0x11e/0x4b0
+[  163.471650] *pde = 00000000 
+[  163.471730] Oops: 0000 [#1] 
+[  163.471809] last sysfs file: /sys/devices/virtual/hwmon/hwmon0/temp1_input
+[  163.471944] Modules linked in: ftdi_sio usbserial squashfs zlib_inflate nfs lockd nfs_acl sunrpc 8021q snd_pcm_oss snd_mixer_oss xfs exportfs loop usb_storage snd_intel8x0 nsc_ircc snd_ac97_codec ac97_bus irda snd_pcm snd_timer snd snd_page_alloc ehci_hcd pcspkr i2c_i801 uhci_hcd usbcore crc_ccitt
+[  163.472927] 
+[  163.472967] Pid: 2157, comm: minicom Tainted: G   M       (2.6.31-rc6-gregkh #2) TravelMate 660
+[  163.473148] EIP: 0060:[<c115f7ae>] EFLAGS: 00010246 CPU: 0
+[  163.473247] EIP is at tty_open+0x11e/0x4b0
+[  163.473338] EAX: dba89000 EBX: dbdb2480 ECX: 00000000 EDX: 00000000
+[  163.473449] ESI: dd24d400 EDI: 0bc00000 EBP: db646e70 ESP: db646e4c
+[  163.473575]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[  163.473673] Process minicom (pid: 2157, ti=db646000 task=dd9ae7c0 task.ti=db646000)
+[  163.473833] Stack:
+[  163.473873]  dbdb2484 dbe24e00 dba8e67c 00000902 00000100 00000000 00000000 dbdb2488
+[  163.474133] <0> dba8e67c db646e8c c1077246 dbe24e00 db646e98 dbe24e00 dba8e67c 00000000
+[  163.474431] <0> db646ea8 c1072fdf dd8afb00 dd524f00 dbe24e00 db646ef4 dbe24e00 db646ec4
+[  163.474751] Call Trace:
+[  163.474808]  [<c1077246>] ? chrdev_open+0x96/0x140
+[  163.474918]  [<c1072fdf>] ? __dentry_open+0x9f/0x250
+[  163.475012]  [<c1073279>] ? nameidata_to_filp+0x59/0x70
+[  163.475124]  [<c10771b0>] ? chrdev_open+0x0/0x140
+[  163.475214]  [<c107f569>] ? do_filp_open+0x269/0x890
+[  163.475324]  [<c1038c5c>] ? ktime_get_ts+0x4c/0x50
+[  163.475417]  [<c1072da7>] ? do_sys_open+0x57/0x140
+[  163.475525]  [<c1026d55>] ? alarm_setitimer+0x35/0x70
+[  163.475619]  [<c1072ef9>] ? sys_open+0x29/0x40
+[  163.475719]  [<c1002e08>] ? sysenter_do_call+0x12/0x26
+[  163.475811] Code: d0 89 45 f0 8d 43 04 89 45 dc e8 9e f7 f9 ff 85 db 74 ca 85 f6 0f 84 22 02 00 00 80 be 84 00 00 00 00 8b 56 08 0f 88 32 01 00 00 <66> 83 7a 64 04 75 0b 66 83 7a 66 01 0f 84 05 01 00 00 ff 86 88 
+[  163.477244] EIP: [<c115f7ae>] tty_open+0x11e/0x4b0 SS:ESP 0068:db646e4c
+[  163.477410] CR2: 0000000000000064
+[  163.477472] ---[ end trace e2a30538356d938d ]---
+
+# Plug-in
+# minicom
+# exit minicom
+# minicom
+#   (it can't open serial port & exits)
+# minicom
+#   -> havok
+# rmmod + modprobe
+# minicom
+#   (ad infinitum as no dev node,
+#    udev fails to recreate device node: hangs on path_id)
+
+
+
+Similar results for pl2302:
+[   69.260039] usb 1-1: new full speed USB device using uhci_hcd and address 2
+[   69.426990] usb 1-1: New USB device found, idVendor=067b, idProduct=2303
+[   69.427000] usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[   69.427008] usb 1-1: Product: USB-Serial Controller
+[   69.427015] usb 1-1: Manufacturer: Prolific Technology Inc.
+[   69.427242] usb 1-1: configuration #1 chosen from 1 choice
+[   69.558897] usbcore: registered new interface driver usbserial
+[   69.558906] usbserial: USB Serial Driver core
+[   69.612215] USB Serial support registered for pl2303
+[   69.612267] pl2303 1-1:1.0: pl2303 converter detected
+[   69.624165] usb 1-1: pl2303 converter now attached to ttyUSB0
+[   69.624205] usbcore: registered new interface driver pl2303
+[   69.624211] pl2303: Prolific PL2303 USB to serial adaptor driver
+[  140.790070] usb 1-1: USB disconnect, address 2
+[  140.793165] pl2303 ttyUSB0: pl2303 converter now disconnected from ttyUSB0
+[  140.796051] pl2303 1-1:1.0: device disconnected
+[  147.280036] usb 1-1: new full speed USB device using uhci_hcd and address 3
+[  147.446990] usb 1-1: New USB device found, idVendor=067b, idProduct=2303
+[  147.449674] usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[  147.452428] usb 1-1: Product: USB-Serial Controller
+[  147.455149] usb 1-1: Manufacturer: Prolific Technology Inc.
+[  147.459847] usb 1-1: configuration #1 chosen from 1 choice
+[  147.466047] pl2303 1-1:1.0: pl2303 converter detected
+[  147.479158] usb 1-1: pl2303 converter now attached to ttyUSB0
+[  168.770687] BUG: unable to handle kernel paging request at 697665c8
+[  168.770876] IP: [<c115f7ae>] tty_open+0x11e/0x4b0
+[  168.770995] *pde = 00000000 
+[  168.771075] Oops: 0000 [#1] 
+[  168.771154] last sysfs file: /sys/devices/virtual/hwmon/hwmon0/temp1_input
+[  168.771304] Modules linked in: pl2303 usbserial squashfs zlib_inflate nfs lockd nfs_acl sunrpc 8021q snd_pcm_oss snd_mixer_oss xfs exportfs loop usb_storage snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer ehci_hcd snd uhci_hcd usbcore pcspkr snd_page_alloc nsc_ircc i2c_i801 irda crc_ccitt
+[  168.772283] 
+[  168.772322] Pid: 2166, comm: minicom Tainted: G   M       (2.6.31-rc6-gregkh #2) TravelMate 660
+[  168.772503] EIP: 0060:[<c115f7ae>] EFLAGS: 00010202 CPU: 0
+[  168.772602] EIP is at tty_open+0x11e/0x4b0
+[  168.772694] EAX: db661800 EBX: db07c6c0 ECX: 00000000 EDX: 69766564
+[  168.772804] ESI: db17e000 EDI: 0bc00000 EBP: db17ae70 ESP: db17ae4c
+[  168.772944]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[  168.773041] Process minicom (pid: 2166, ti=db17a000 task=dd9ae7c0 task.ti=db17a000)
+[  168.773202] Stack:
+[  168.773242]  db07c6c4 dd07d200 dd33c4f4 00000902 00000100 00000000 00000000 db07c6c8
+[  168.773502] <0> dd33c4f4 db17ae8c c1077246 dd07d200 00000000 dd07d200 dd33c4f4 00000000
+[  168.773799] <0> db17aea8 c1072fdf dd8d2680 dd502e80 dd07d200 db17aef4 dd07d200 db17aec4
+[  168.774120] Call Trace:
+[  168.774177]  [<c1077246>] ? chrdev_open+0x96/0x140
+[  168.774287]  [<c1072fdf>] ? __dentry_open+0x9f/0x250
+[  168.774380]  [<c1073279>] ? nameidata_to_filp+0x59/0x70
+[  168.774492]  [<c10771b0>] ? chrdev_open+0x0/0x140
+[  168.774582]  [<c107f569>] ? do_filp_open+0x269/0x890
+[  168.774691]  [<c1038c5c>] ? ktime_get_ts+0x4c/0x50
+[  168.774784]  [<c1072da7>] ? do_sys_open+0x57/0x140
+[  168.774893]  [<c1026d55>] ? alarm_setitimer+0x35/0x70
+[  168.774987]  [<c1072ef9>] ? sys_open+0x29/0x40
+[  168.775088]  [<c1002e08>] ? sysenter_do_call+0x12/0x26
+[  168.775180] Code: d0 89 45 f0 8d 43 04 89 45 dc e8 9e f7 f9 ff 85 db 74 ca 85 f6 0f 84 22 02 00 00 80 be 84 00 00 00 00 8b 56 08 0f 88 32 01 00 00 <66> 83 7a 64 04 75 0b 66 83 7a 66 01 0f 84 05 01 00 00 ff 86 88 
+[  168.776606] EIP: [<c115f7ae>] tty_open+0x11e/0x4b0 SS:ESP 0068:db17ae4c
+[  168.776772] CR2: 00000000697665c8
+[  168.776836] ---[ end trace f7ba75fd75a3f993 ]---
+
+
+For both cases EIP is at:
+  drivers/char/tty_io.c:1253:
+1246:static int tty_reopen(struct tty_struct *tty)
+1247:{
+1248:	struct tty_driver *driver = tty->driver;
+...
+1253:	if (driver->type == TTY_DRIVER_TYPE_PTY &&
+1254:	    driver->subtype == PTY_TYPE_MASTER) {
