@@ -1,101 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751459AbZHXFNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751477AbZHXFQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751459AbZHXFNm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 01:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZHXFNl
+	id S1751477AbZHXFQH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 01:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbZHXFQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 01:13:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35748 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbZHXFNl (ORCPT
+	Mon, 24 Aug 2009 01:16:06 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:41828 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751335AbZHXFQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 01:13:41 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 24 Aug 2009 14:11:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix race copy_process() vs de_thread()
-Message-Id: <20090824141141.0893a2c0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4A9210A4.4010108@ct.jp.nec.com>
-References: <4A9210A4.4010108@ct.jp.nec.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Aug 2009 01:16:05 -0400
+From: Miles Bader <miles@gnu.org>
+To: eric.y.miao@gmail.com
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: Mailing List Etiquette
+References: <20090819060004.GA23859@n2100.arm.linux.org.uk>
+	<20090821072607.GA26983@atrey.karlin.mff.cuni.cz>
+	<20090821081849.GA14431@n2100.arm.linux.org.uk>
+	<20090821083028.GH8431@elf.ucw.cz>
+	<20090821083953.GA14800@n2100.arm.linux.org.uk>
+	<20090821090546.GI8431@elf.ucw.cz> <4A8EBA3A.6080205@gmail.com>
+Reply-To: Miles Bader <miles@gnu.org>
+System-Type: x86_64-unknown-linux-gnu
+Blat: Foop
+Date: Mon, 24 Aug 2009 14:15:31 +0900
+In-Reply-To: <4A8EBA3A.6080205@gmail.com> (Eric Miao's message of "Fri, 21 Aug
+	2009 23:16:10 +0800")
+Message-ID: <buo63cddc7g.fsf@dhlpc061.dev.necel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Aug 2009 13:01:40 +0900
-Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
- 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> ---
->  kernel/fork.c |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index 3ffa10f..be6c5b5 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -882,6 +882,9 @@ static void cleanup_signal(struct task_struct *tsk)
->  {
->  	struct signal_struct *sig = tsk->signal;
->  
-> +	if (!sig)
-> +		return;
-> +
->  	atomic_dec(&sig->live);
->  
->  	if (atomic_dec_and_test(&sig->count))
-> @@ -1230,6 +1233,15 @@ static struct task_struct *copy_process(unsigned long clone_flags,
->   	 */
->  	recalc_sigpending();
->  	if (signal_pending(current)) {
-> +		/* If there is any task waiting for the group exit, notify it */
-> +		if ((clone_flags & CLONE_THREAD) &&
-> +		    p->signal->group_exit_task) {
-> +			atomic_dec(&p->signal->live);
-> +			atomic_dec(&p->signal->count);
-> +			if (atomic_read(&p->signal->count) == p->signal->notify_count)
-> +				wake_up_process(p->signal->group_exit_task);
-> +			p->signal = NULL;
-> +		}
->  		spin_unlock(&current->sighand->siglock);
->  		write_unlock_irq(&tasklist_lock);
->  		retval = -ERESTARTNOINTR;
+Eric Miao <eric.y.miao@gmail.com> writes:
+> Well, I mean if there are really good reasons to move over to vger,
+> the vast majority of the ARM community would have already moved there,
+> there must be some values within the ARM-list.
 
-I'm not sure whehter I catch the issue correctly but, shouldn't we encapsulate
-this check in cleanup_signal() ?
+E.g., "inertia"...
 
-like...
+-Miles
 
-static void cleanup_signal(struct task_struct *tsk)
-{
-        struct signal_struct *sig = tsk->signal;
-	sighand = rcu_dereference(tsk->sighand);
- 
-        spin_lock(&sighand->siglock);
-        if (sig->group_exit_task && atomic_read(&sig->count) == sig->notify_count)
- 		wake_up_process(sig->group_exit_task);
-	spin_unlock(&sighand->siglock);
-
-	atomic_dec(&sig->live);
-	if (!atomic_dec_and_test(&sig->count))
-		 __cleanup_signal(sig);
-}
-
-
-BTW, why sig->xxx members in "signal" struct is guarded by lock in "sighand"
-struct ??
-
-Thanks,
--Kame
-
-
-
-
-
+-- 
+White, adj. and n. Black.
