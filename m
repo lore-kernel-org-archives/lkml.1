@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbZHXUMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbZHXUQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752894AbZHXUMQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 16:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbZHXUMP
+	id S1753183AbZHXUQh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 16:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZHXUQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 16:12:15 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:15226 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbZHXUMO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 16:12:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=pq69bnUrIo4Zyy7fQRVZlQqtwMzunx2cDcH71keOLsSH2uW8EYADiZxiBMezkk9qWx
-         3iYaumJsoxb8g4hUsZmtQU51wLo9Hgc4Llk93rndynKeFQcfWEe0LklVe9DWqSjh8dYe
-         CrENpUWQD83LTul0uzvcnimG7mlV9o5W5TTCc=
-Date: Mon, 24 Aug 2009 22:12:12 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Josh Stone <jistone@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH v3 2/4] tracing: Make syscall_(un)regfunc arch-specific
-Message-ID: <20090824201209.GB5050@nowhere>
-References: <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250917125-6174-1-git-send-email-jistone@redhat.com> <1250917125-6174-2-git-send-email-jistone@redhat.com> <1250917125-6174-3-git-send-email-jistone@redhat.com> <20090823211422.GG6256@nowhere> <4A92EA8E.8020400@redhat.com> <20090824195759.GA5050@nowhere> <4A92F157.9040709@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A92F157.9040709@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 24 Aug 2009 16:16:36 -0400
+Received: from mga11.intel.com ([192.55.52.93]:12038 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752436AbZHXUQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 16:16:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,267,1249282800"; 
+   d="scan'208";a="486930030"
+Subject: Re: [tip:x86/pat] generic-ipi: Allow cpus not yet online to call
+ smp_call_function with irqs disabled
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-tip-commits@vger.kernel.org" 
+	<linux-tip-commits@vger.kernel.org>
+In-Reply-To: <20090824054026.GR25721@wotan.suse.de>
+References: <tip-269c861baa2fe7c114c3bc7831292758d29eb336@git.kernel.org>
+	 <20090824054026.GR25721@wotan.suse.de>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Mon, 24 Aug 2009 13:15:43 -0700
+Message-Id: <1251144943.2636.16.camel@sbs-t61>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 01:00:23PM -0700, Josh Stone wrote:
-> On 08/24/2009 12:58 PM, Frederic Weisbecker wrote:
-> > On Mon, Aug 24, 2009 at 12:31:26PM -0700, Josh Stone wrote:
-> >> On 08/23/2009 02:14 PM, Frederic Weisbecker wrote:
-> >>> I really don't like that.
-> >>> See how the s390 and x86 version of the above code are completely
-> >>> identical?
-> >>>
-> >>> Please put this in kernel/ptrace.c
-> >>
-> >> Yes, I see your point, and I think kernel/ptrace.c is a fine place for
-> >> it.  Making it conditional on CONFIG_TRACEPOINTS and
-> >> CONFIG_HAVE_FTRACE_SYSCALLS is probably best too, though I think the
-> >> latter should now be HAVE_SYSCALL_TRACEPOINTS.
+On Sun, 2009-08-23 at 22:40 -0700, Nick Piggin wrote:
+> On Fri, Aug 21, 2009 at 11:51:50PM +0000, Suresh B wrote:
+> > Commit-ID:  269c861baa2fe7c114c3bc7831292758d29eb336
+> > Gitweb:     http://git.kernel.org/tip/269c861baa2fe7c114c3bc7831292758d29eb336
+> > Author:     Suresh Siddha <suresh.b.siddha@intel.com>
+> > AuthorDate: Wed, 19 Aug 2009 18:05:35 -0700
+> > Committer:  H. Peter Anvin <hpa@zytor.com>
+> > CommitDate: Fri, 21 Aug 2009 16:25:43 -0700
 > > 
+> > generic-ipi: Allow cpus not yet online to call smp_call_function with irqs disabled
 > > 
-> > As you prefer, this new name can be indeed more verbose.
+> > Because of deadlock possiblities smp_call_function() is not allowed to
+> > be called with interrupts disabled. Add an exception for the cpu not
+> > yet online, as no one else can send smp call function interrupt to this
+> > cpu that is not yet online and as such deadlock condition is not possible.
+> > 
+> > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> > Acked-by: Nick Piggin <npiggin@suse.de>
+> > Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 > 
-> Actually, now I'm second-guessing the need to move these at all.  Since
-> they only make sense for CONFIG_TRACEPOINTS, can't they stay in
-> kernel/tracepoint.c and just be conditional on HAVE_SYSCALL_TRACEPOINTS?
->  The only real change needed is for the tracepoint declarations to also
-> be conditional.
-> 
-> Josh
-> 
+> I don't know if we should allow the use of smp_call_function here --
+> only call_function_single. CPU hotplug code is required to set up
+> some call_function data and if the cpu is offline then it might not
+> be set up correctly.
 
-Both ways make sense to me, although I generally see the role of
-kernel/tracepoint.c to only host the general core tracepoints mechanism.
+We are doing the required allocations in CPU_UP_PREPARE. So we should be
+okay for any smp_call_function usage.
 
-And here these two callbacks are more about specific tracepoints coverage,
-somewhat tied to the ptrace background because we are using a ptrace
-bridge to reach these tracepoints.
+> Also, I would say that we should just restrict this to wait==1 case
+> because in that case the stack can trivially be used for data. In
+> the wait==0 case, it is more complex. In the current implementation
+> it should be OK (it uses per-cpu data), but we've used kmalloc
+> there in the past, which probably wouldn't work either.
 
-Well, either ways look good:
+In future if we add any kmalloc, we already have checks in kmalloc()
+that can be easily caught. I would like to make this change as generic
+as possible.
 
-- tracepoint.c: to solve the lack of a functionnality in very
-  specific cases.
-
-- ptrace.c: because it's part of a ptrace mechanism.
-
-
-I don't feel strongly about that :-)
+thanks,
+suresh
 
