@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbZHXRwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbZHXRwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753134AbZHXRwO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 13:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZHXRwI
+	id S1753139AbZHXRwp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 13:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZHXRwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 13:52:08 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:42137 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbZHXRwH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 13:52:07 -0400
-Subject: Re: [RFC] defer skb allocation in virtio_net -- mergable buff part
-From: Shirley Ma <mashirle@us.ibm.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: netdev@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4A880DFE.2040507@redhat.com>
-References: <1250145231.6653.29.camel@localhost.localdomain>
-	 <4A880DFE.2040507@redhat.com>
-Content-Type: text/plain
-Date: Mon, 24 Aug 2009 10:51:50 -0700
-Message-Id: <1251136310.588.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Aug 2009 13:52:45 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:24803 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752948AbZHXRwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 13:52:44 -0400
+Date: Mon, 24 Aug 2009 19:49:10 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: cancel_delayed_work and its use of del_timer_sync
+Message-ID: <20090824174910.GA16202@redhat.com>
+References: <20090824065111.A51D8526EC9@mailhub.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090824065111.A51D8526EC9@mailhub.coreip.homeip.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Avi,
+Hi Dmitry,
 
-Thanks for you review. I was on vacation last week.
+(add Roland and Stefan)
 
-On Sun, 2009-08-16 at 16:47 +0300, Avi Kivity wrote:
-> Alternatives include:
-> - store the link in the page itself
-> - have an array of pages per list element instead of just one pointer
-> - combine the two, store an array of page pointers in one of the free
-> pages
-> - use the struct page::lru member
-> 
-> The last is the most traditional and easiest so I'd recommend it
-> (though 
-> it still takes the cacheline hit).
+On 08/23, Dmitry Torokhov wrote:
+>
+> I noticed that you went back and forth on using del_timer() vs.
+> del_timer_sync() in cancel_delayed_work(), finally settling on using
+> del_timer_sync().
 
-I prefer the combine of the two. But I will compare the performance
-differences if no much difference, we can use the easiest one.
+Yes. del_timer() can't work when the user does something like
 
-> > +static struct page_list *get_a_free_page(struct virtnet_info *vi,
-> gfp_t gfp_mask)
-> > +{
-> > +     struct page_list *plist;
-> > +
-> > +     if (list_empty(&vi->freed_pages)) {
-> > +             plist = kmalloc(sizeof(struct page_list), gfp_mask);
-> > +             if (!plist)
-> > +                     return NULL;
-> > +             list_add_tail(&plist->list,&vi->freed_pages);
-> > +             plist->page = alloc_page(gfp_mask);
-> >    
-> 
-> What if the allocation fails here?
+	cancel_delayed_work(dw);
+	flush_workqueue();
 
-It is handled by the caller.
+	kfree(dw);
 
-Thanks
-Shirley
+Perhaps we can add __cancel_delayed_work() which uses del_timer(), most
+callers don't really need del_timer_sync. I dunno.
+
+> I must say that the fact that cancel_delayed_work()
+> might sleep
+
+Just in case, it can spin, but not sleep
+
+> (given that there exists cancel_delayed_work_sync) catches a
+> few drivers writers by surprise. Moreover it makes delayed works
+> unsuitable in cases when we do want to cancel (so we can reschedule)
+> work in an interrupt context.
+
+Yep. it is not useable from irq. But only because nobody removed
+"#ifdef CONFIG_SMP" from set_running_timer(). I guess I should send a
+patch finally.
+
+> it is possible to have a reschedule_delayed_work() taht would do a
+> "soft" cancel and [re]submit the work. In the use cases I am concerned
+> about we don't really care if work is not reliably cancelled, we just
+> need to be able to schedule it earlier if it has already been scheduled
+> for execution in some point in the future.
+
+Well. this depends on how "soft" should be that cancel.
+
+Consider the auto-rearming delayed work, its work->func() calls
+queue_delayed_work(self, BIG_DELAY). The caller of requeue_work(SMALL_DELAY)
+preempts cwq->thread right after it sets _PENDING.
+
+Now, what should requeue_work() do ? Even if the requeue_work() and
+work->func() run on different CPUs, in this case requeue_ must spin.
+
+So. It is easy to create requeue_work() which never sleeps/spins, but
+it can return the error in case it hits the queueing in progress.
+
+Is it OK?
+
+And another question, should it cancel (without sleep/spin) this dwork
+if the timer has expired, the work is pending, but its ->func() has not
+started yet?
+
+Oleg.
 
