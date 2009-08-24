@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475AbZHXEkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751488AbZHXE7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751475AbZHXEkx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 00:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbZHXEkw
+	id S1751488AbZHXE7F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 00:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZHXE7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 00:40:52 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44575 "EHLO smtps.tip.net.au"
+	Mon, 24 Aug 2009 00:59:05 -0400
+Received: from tundra.namei.org ([65.99.196.166]:36648 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751375AbZHXEkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 00:40:52 -0400
-Date: Mon, 24 Aug 2009 14:40:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Anuj Aggarwal <anuj.aggarwal@ti.com>
-Subject: linux-next: voltage tree build failure
-Message-Id: <20090824144044.fad8639f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__24_Aug_2009_14_40_44_+1000_8_zPKV8vG04_o8UV"
+	id S1751278AbZHXE7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 00:59:04 -0400
+Date: Mon, 24 Aug 2009 14:58:06 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
+       Roland Kletzing <devzero@web.de>,
+       "<David Safford" <safford@watson.ibm.com>, stable@kernel.org,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 1/2] kernel_read: redefine offset type
+In-Reply-To: <df9691ba169503565c2e3b71c593f9c43a6b3eb2.1250871856.git.zohar@linux.vnet.ibm.com>
+Message-ID: <alpine.LRH.2.00.0908241458010.22597@tundra.namei.org>
+References: <df9691ba169503565c2e3b71c593f9c43a6b3eb2.1250871856.git.zohar@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__24_Aug_2009_14_40_44_+1000_8_zPKV8vG04_o8UV
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 21 Aug 2009, Mimi Zohar wrote:
 
-Hi Liam,
+> vfs_read() offset is defined as loff_t, but kernel_read()
+> offset is only defined as unsigned long. Redefine
+> kernel_read() offset as loff_t.
+> 
+> Cc: stable@kernel.org
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-drivers/regulator/tps65023-regulator: struct i2c_device_id is 32 bytes.  Th=
-e last of 1 is:
-0x74 0x70 0x73 0x36 0x35 0x30 0x32 0x33 0x00 0x00 0x00 0x00 0x00 0x00 0x00 =
-0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 =
-0x00 0x00=20
-FATAL: drivers/regulator/tps65023-regulator: struct i2c_device_id is not te=
-rminated with a NULL entry!
+Reviewed-by: James Morris <jmorris@namei.org>
 
-Caused by commit 9cfd343f14bf4bd95f8bfc6a1d411d2002bf94d8 ("Regulator:
-Add TPS65023 regulator driver").
+> ---
+>  fs/exec.c          |    4 ++--
+>  include/linux/fs.h |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 4a8849e..fb4f3cd 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -678,8 +678,8 @@ exit:
+>  }
+>  EXPORT_SYMBOL(open_exec);
+>  
+> -int kernel_read(struct file *file, unsigned long offset,
+> -	char *addr, unsigned long count)
+> +int kernel_read(struct file *file, loff_t offset,
+> +		char *addr, unsigned long count)
+>  {
+>  	mm_segment_t old_fs;
+>  	loff_t pos = offset;
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 67888a9..73e9b64 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -2123,7 +2123,7 @@ extern struct file *do_filp_open(int dfd, const char *pathname,
+>  		int open_flag, int mode, int acc_mode);
+>  extern int may_open(struct path *, int, int);
+>  
+> -extern int kernel_read(struct file *, unsigned long, char *, unsigned long);
+> +extern int kernel_read(struct file *, loff_t, char *, unsigned long);
+>  extern struct file * open_exec(const char *);
+>   
+>  /* fs/dcache.c -- generic fs support functions */
+> -- 
+> 1.6.0.6
+> 
 
-I have used the version of the voltage tree from next-20090821 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__24_Aug_2009_14_40_44_+1000_8_zPKV8vG04_o8UV
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqSGcwACgkQjjKRsyhoI8zomACeO0YHmRlUkAGj/MAbAhFtImGa
-VFsAn06y4cb7+156n6PhBAGVQkIjgJTV
-=SvLQ
------END PGP SIGNATURE-----
-
---Signature=_Mon__24_Aug_2009_14_40_44_+1000_8_zPKV8vG04_o8UV--
+-- 
+James Morris
+<jmorris@namei.org>
