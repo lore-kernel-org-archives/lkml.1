@@ -1,300 +1,688 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbZHXI5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751928AbZHXI6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752139AbZHXI5k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZHXI5j
+	id S1751928AbZHXI6E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:58:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbZHXI6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:57:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37281 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbZHXI5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:57:37 -0400
-Date: Mon, 24 Aug 2009 18:57:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for August 24
-Message-Id: <20090824185730.7d89ecbe.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Mon, 24 Aug 2009 04:58:03 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:49880 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691AbZHXI6B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 04:58:01 -0400
+Date: Mon, 24 Aug 2009 17:58:02 +0900 (JST)
+Message-Id: <20090824.175802.183032600.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: [PATCH 7/8] blkio-cgroup-v11: Add a cgroup support to dm-ioband
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090824.175736.112614790.ryov@valinux.co.jp>
+References: <20090824.175526.104043252.ryov@valinux.co.jp>
+	<20090824.175712.189718197.ryov@valinux.co.jp>
+	<20090824.175736.112614790.ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__24_Aug_2009_18_57_30_+1000_nbypop2wQ2r/H8VT"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__24_Aug_2009_18_57_30_+1000_nbypop2wQ2r/H8VT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+With this patch, dm-ioband can work with the blkio-cgroup.
 
-Hi all,
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
 
-Changes since 20090821:
+---
+ drivers/md/dm-ioband-ctl.c     |  201 ++++++++++++++++++++++++++++++++++++++++-
+ drivers/md/dm-ioband-policy.c  |   20 +++-
+ drivers/md/dm-ioband-rangebw.c |   13 ++
+ drivers/md/dm-ioband-type.c    |   10 --
+ drivers/md/dm-ioband.h         |   14 ++
+ drivers/md/dm-ioctl.c          |    1 
+ include/linux/biotrack.h       |    7 +
+ mm/biotrack.c                  |  115 +++++++++++++++++++++++
+ 8 files changed, 370 insertions(+), 11 deletions(-)
 
-New tree: kconfig
-
-This tree fails to build for powerpc allyesconfig (due to a TOC overflow
-problem in the final link).
-
-The configfs tree lost its conflict.
-
-The nfs tree lost its boot failure.
-
-The kconfig tree gained a conflict against the kbuild tree.
-
-The rr tree gained a conflict against Linus' tree.
-
-The voltage tree gained a build failure so I used the version from
-next-20090821.
-
-The suspend tree lost its conflict.
-
-The tip tree gained a conflict against the s390 tree, and also a build
-failure for which I reverted a commit.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 141 trees (counting Linus' and 21 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-Merging thumb-2/thumb-2
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-CONFLICT (content): Merge conflict in arch/powerpc/include/asm/mmu-book3e.h
-CONFLICT (content): Merge conflict in arch/powerpc/include/asm/tlb.h
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_sync.h
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
-m.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
-355.h
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
-644x.h
-Merging quota/for_next
-Merging kbuild/master
-Merging kconfig/for-next
-CONFLICT (content): Merge conflict in scripts/extract-ikconfig
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in include/linux/cpumask.h
-Merging mmc/next
-Merging input/next
-CONFLICT (content): Merge conflict in drivers/base/platform.c
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/regulator/Kconfig
-$ git reset --hard HEAD^
-Merging refs/next/20090821/voltage
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-CONFLICT (content): Merge conflict in drivers/char/agp/uninorth-agp.c
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-4430sdp.c
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging drbd/drbd
-Merging kmemleak/kmemleak
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/s390/kernel/time.c
-CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
-CONFLICT (content): Merge conflict in include/linux/rcupdate.h
-CONFLICT (content): Merge conflict in kernel/fork.c
-CONFLICT (content): Merge conflict in kernel/trace/trace.h
-Merging oprofile/for-next
-CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
-[master f2be015] Revert "perf_counter: powerpc: Support the anonimized kern=
-el callchain bits"
-Merging edac-amd/for-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
-CONFLICT (content): Merge conflict in include/linux/topology.h
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
-Merging sfi/sfi-test
-CONFLICT (content): Merge conflict in arch/x86/include/asm/io_apic.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/boot.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/apic/io_apic.c
-CONFLICT (content): Merge conflict in drivers/acpi/internal.h
-CONFLICT (content): Merge conflict in drivers/acpi/tables.c
-CONFLICT (content): Merge conflict in include/linux/acpi.h
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in drivers/base/class.c
-CONFLICT (content): Merge conflict in init/main.c
-Merging quilt/tty
-CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
-Merging quilt/usb
-Merging quilt/staging
-CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
-d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
-l/VirtualEthernetLinux.c left in tree.
-$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
-Merging scsi-post-merge/master
-
---Signature=_Mon__24_Aug_2009_18_57_30_+1000_nbypop2wQ2r/H8VT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqSVfoACgkQjjKRsyhoI8xRCACfco5ynF1+g6eqZsuVG/7bUlYh
-79YAn1EiE9i11E8k7MIvnknLdJTT/Qgb
-=qoZf
------END PGP SIGNATURE-----
-
---Signature=_Mon__24_Aug_2009_18_57_30_+1000_nbypop2wQ2r/H8VT--
+Index: linux-2.6.31-rc7/include/linux/biotrack.h
+===================================================================
+--- linux-2.6.31-rc7.orig/include/linux/biotrack.h
++++ linux-2.6.31-rc7/include/linux/biotrack.h
+@@ -9,6 +9,7 @@
+ 
+ struct io_context;
+ struct block_device;
++struct ioband_cgroup_ops;
+ 
+ struct blkio_cgroup {
+ 	struct cgroup_subsys_state css;
+@@ -48,6 +49,12 @@ extern void blkio_cgroup_copy_owner(stru
+ extern struct io_context *get_blkio_cgroup_iocontext(struct bio *bio);
+ extern unsigned long get_blkio_cgroup_id(struct bio *bio);
+ extern struct cgroup *get_cgroup_from_page(struct page *page);
++extern int blkio_cgroup_register_ioband(const struct ioband_cgroup_ops *ops);
++
++static inline int blkio_cgroup_unregister_ioband(void)
++{
++	return blkio_cgroup_register_ioband(NULL);
++}
+ 
+ #else /* !CONFIG_CGROUP_BLKIO */
+ 
+Index: linux-2.6.31-rc7/mm/biotrack.c
+===================================================================
+--- linux-2.6.31-rc7.orig/mm/biotrack.c
++++ linux-2.6.31-rc7/mm/biotrack.c
+@@ -20,6 +20,9 @@
+ #include <linux/blkdev.h>
+ #include <linux/biotrack.h>
+ #include <linux/mm_inline.h>
++#include <linux/seq_file.h>
++#include <linux/dm-ioctl.h>
++#include <../drivers/md/dm-ioband.h>
+ 
+ /*
+  * The block I/O tracking mechanism is implemented on the cgroup memory
+@@ -46,6 +49,8 @@ static struct io_context default_blkio_i
+ static struct blkio_cgroup default_blkio_cgroup = {
+ 	.io_context	= &default_blkio_io_context,
+ };
++static DEFINE_MUTEX(ioband_ops_lock);
++static const struct ioband_cgroup_ops *ioband_ops = NULL;
+ 
+ /**
+  * blkio_cgroup_set_owner() - set the owner ID of a page.
+@@ -181,6 +186,14 @@ blkio_cgroup_create(struct cgroup_subsys
+ static void blkio_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
+ {
+ 	struct blkio_cgroup *biog = cgroup_blkio(cgrp);
++	int id;
++
++	mutex_lock(&ioband_ops_lock);
++	if (ioband_ops) {
++		id = css_id(&biog->css);
++		ioband_ops->remove_group(id);
++	}
++	mutex_unlock(&ioband_ops_lock);
+ 
+ 	put_io_context(biog->io_context);
+ 	free_css_id(&blkio_cgroup_subsys, &biog->css);
+@@ -258,9 +271,27 @@ struct cgroup *get_cgroup_from_page(stru
+ 	return css->cgroup;
+ }
+ 
++/**
++ * blkio_cgroup_register_ioband() - register ioband
++ * @p:	a pointer to struct ioband_cgroup_ops
++ *
++ * Calling with NULL means unregistration.
++ * Returns 0 on success.
++ */
++int blkio_cgroup_register_ioband(const struct ioband_cgroup_ops *p)
++{
++	if (blkio_cgroup_disabled())
++		return -1;
++
++	mutex_lock(&ioband_ops_lock);
++	ioband_ops = p;
++	mutex_unlock(&ioband_ops_lock);
++	return 0;
++}
+ EXPORT_SYMBOL(get_blkio_cgroup_id);
+ EXPORT_SYMBOL(get_blkio_cgroup_iocontext);
+ EXPORT_SYMBOL(get_cgroup_from_page);
++EXPORT_SYMBOL(blkio_cgroup_register_ioband);
+ 
+ /* Read the ID of the specified blkio cgroup. */
+ static u64 blkio_id_read(struct cgroup *cgrp, struct cftype *cft)
+@@ -270,11 +301,95 @@ static u64 blkio_id_read(struct cgroup *
+ 	return (u64)css_id(&biog->css);
+ }
+ 
++/* Show all ioband devices and their settings. */
++static int blkio_devs_read(struct cgroup *cgrp, struct cftype *cft,
++							struct seq_file *m)
++{
++	mutex_lock(&ioband_ops_lock);
++	if (ioband_ops)
++		ioband_ops->show_device(m);
++	mutex_unlock(&ioband_ops_lock);
++	return 0;
++}
++
++/* Configure ioband devices specified by an ioband device ID */
++static int blkio_devs_write(struct cgroup *cgrp, struct cftype *cft,
++							const char *buffer)
++{
++	char **argv;
++	int argc, r = 0;
++
++	if (cgrp != cgrp->top_cgroup)
++		return -EACCES;
++
++	argv = argv_split(GFP_KERNEL, buffer, &argc);
++	if (!argv)
++		return -ENOMEM;
++
++	mutex_lock(&ioband_ops_lock);
++	if (ioband_ops)
++		r = ioband_ops->config_device(argc, argv);
++	mutex_unlock(&ioband_ops_lock);
++
++	argv_free(argv);
++	return r;
++}
++
++/* Show the settings of the specified blkio cgroup. */
++static int blkio_settings_read(struct cgroup *cgrp, struct cftype *cft,
++							struct seq_file *m)
++{
++	struct blkio_cgroup *biog;
++	int id;
++
++	mutex_lock(&ioband_ops_lock);
++	if (ioband_ops) {
++		biog = cgroup_blkio(cgrp);
++		id = css_id(&biog->css);
++		ioband_ops->show_group(m, biog, id);
++	}
++	mutex_unlock(&ioband_ops_lock);
++	return 0;
++}
++
++/* Configure the specified blkio cgroup. */
++static int blkio_settings_write(struct cgroup *cgrp, struct cftype *cft,
++							const char *buffer)
++{
++	struct blkio_cgroup *biog;
++	char **argv;
++	int argc, id, r = 0;
++
++	argv = argv_split(GFP_KERNEL, buffer, &argc);
++	if (!argv)
++		return -ENOMEM;
++
++	mutex_lock(&ioband_ops_lock);
++	if (ioband_ops) {
++		biog = cgroup_blkio(cgrp);
++		id = css_id(&biog->css);
++		r = ioband_ops->config_group(argc, argv, biog, id);
++	}
++	mutex_unlock(&ioband_ops_lock);
++	argv_free(argv);
++	return r;
++}
++
+ static struct cftype blkio_files[] = {
+ 	{
+ 		.name = "id",
+ 		.read_u64 = blkio_id_read,
+ 	},
++	{
++		.name = "devices",
++		.read_seq_string = blkio_devs_read,
++		.write_string = blkio_devs_write,
++	},
++	{
++		.name = "settings",
++		.read_seq_string = blkio_settings_read,
++		.write_string = blkio_settings_write,
++	},
+ };
+ 
+ static int blkio_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
+Index: linux-2.6.31-rc7/drivers/md/dm-ioctl.c
+===================================================================
+--- linux-2.6.31-rc7.orig/drivers/md/dm-ioctl.c
++++ linux-2.6.31-rc7/drivers/md/dm-ioctl.c
+@@ -1601,3 +1601,4 @@ out:
+ 
+ 	return r;
+ }
++EXPORT_SYMBOL(dm_copy_name_and_uuid);
+Index: linux-2.6.31-rc7/drivers/md/dm-ioband-policy.c
+===================================================================
+--- linux-2.6.31-rc7.orig/drivers/md/dm-ioband-policy.c
++++ linux-2.6.31-rc7/drivers/md/dm-ioband-policy.c
+@@ -8,6 +8,7 @@
+ #include <linux/bio.h>
+ #include <linux/workqueue.h>
+ #include <linux/rbtree.h>
++#include <linux/seq_file.h>
+ #include "dm.h"
+ #include "dm-ioband.h"
+ 
+@@ -275,7 +276,7 @@ static int policy_weight_param(struct io
+ 	if (value)
+ 		err = strict_strtol(value, 0, &val);
+ 
+-	if (!strcmp(cmd, "weight")) {
++	if (!cmd || !strcmp(cmd, "weight")) {
+ 		if (!value)
+ 			set_weight(gp, DEFAULT_WEIGHT);
+ 		else if (!err && 0 < val && val <= SHORT_MAX)
+@@ -340,6 +341,19 @@ static void policy_weight_show(struct io
+ 	*szp = sz;
+ }
+ 
++static void policy_weight_show_device(struct seq_file *m,
++				      struct ioband_device *dp)
++{
++	seq_printf(m, " token=%d carryover=%d",
++				dp->g_token_bucket, dp->g_carryover);
++}
++
++static void policy_weight_show_group(struct seq_file *m,
++				     struct ioband_group *gp)
++{
++	seq_printf(m, " weight=%d", gp->c_weight);
++}
++
+ /*
+  *  <Method>      <description>
+  * g_can_submit   : To determine whether a given group has the right to
+@@ -368,6 +382,8 @@ static void policy_weight_show(struct io
+  *                  Return 1 if a given group can't receive any more BIOs,
+  *                  otherwise return 0.
+  * g_show         : Show the configuration.
++ * g_show_device  : Show the configuration of the specified ioband device.
++ * g_show_group   : Show the configuration of the spacified ioband group.
+  */
+ static int policy_weight_init(struct ioband_device *dp, int argc, char **argv)
+ {
+@@ -390,6 +406,8 @@ static int policy_weight_init(struct iob
+ 	dp->g_set_param = policy_weight_param;
+ 	dp->g_should_block = is_queue_full;
+ 	dp->g_show = policy_weight_show;
++	dp->g_show_device = policy_weight_show_device;
++	dp->g_show_group = policy_weight_show_group;
+ 
+ 	dp->g_epoch = 0;
+ 	dp->g_weight_total = 0;
+Index: linux-2.6.31-rc7/drivers/md/dm-ioband-rangebw.c
+===================================================================
+--- linux-2.6.31-rc7.orig/drivers/md/dm-ioband-rangebw.c
++++ linux-2.6.31-rc7/drivers/md/dm-ioband-rangebw.c
+@@ -25,6 +25,7 @@
+ #include <linux/random.h>
+ #include <linux/time.h>
+ #include <linux/timer.h>
++#include <linux/seq_file.h>
+ #include "dm.h"
+ #include "md.h"
+ #include "dm-ioband.h"
+@@ -455,7 +456,7 @@ static int policy_range_bw_param(struct 
+ 			err++;
+ 	}
+ 
+-	if (!strcmp(cmd, "range-bw")) {
++	if (!cmd || !strcmp(cmd, "range-bw")) {
+ 		if (!err && 0 <= min_val &&
+ 		    min_val <= (INT_MAX / 2) &&	0 <= max_val &&
+ 		    max_val <= (INT_MAX / 2) && min_val <= max_val)
+@@ -543,6 +544,12 @@ static void policy_range_bw_show(struct 
+ 	*szp = sz;
+ }
+ 
++static void policy_range_bw_show_group(struct seq_file *m,
++				       struct ioband_group *gp)
++{
++	seq_printf(m, " range-bw=%d:%d", gp->c_min_bw, gp->c_max_bw);
++}
++
+ static int range_bw_prepare_token(struct ioband_group *gp,
+ 						struct bio *bio, int flag)
+ {
+@@ -629,6 +636,8 @@ static void range_bw_timeover(unsigned l
+  *                  Return 1 if a given group can't receive any more BIOs,
+  *                  otherwise return 0.
+  * g_show         : Show the configuration.
++ * g_show_device  : Show the configuration of the specified ioband device.
++ * g_show_group   : Show the configuration of the spacified ioband group.
+  */
+ 
+ int policy_range_bw_init(struct ioband_device *dp, int argc, char **argv)
+@@ -652,6 +661,8 @@ int policy_range_bw_init(struct ioband_d
+ 	dp->g_set_param = policy_range_bw_param;
+ 	dp->g_should_block = range_bw_queue_full;
+ 	dp->g_show = policy_range_bw_show;
++	dp->g_show_device = NULL;
++	dp->g_show_group = policy_range_bw_show_group;
+ 
+ 	dp->g_min_bw_total = 0;
+ 	dp->g_running_gp = NULL;
+Index: linux-2.6.31-rc7/drivers/md/dm-ioband-ctl.c
+===================================================================
+--- linux-2.6.31-rc7.orig/drivers/md/dm-ioband-ctl.c
++++ linux-2.6.31-rc7/drivers/md/dm-ioband-ctl.c
+@@ -15,6 +15,8 @@
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
+ #include <linux/rbtree.h>
++#include <linux/biotrack.h>
++#include <linux/dm-ioctl.h>
+ #include "dm.h"
+ #include "md.h"
+ #include "dm-ioband.h"
+@@ -108,6 +110,7 @@ static struct ioband_device *alloc_ioban
+ 	INIT_DELAYED_WORK(&new_dp->g_conductor, ioband_conduct);
+ 	INIT_LIST_HEAD(&new_dp->g_groups);
+ 	INIT_LIST_HEAD(&new_dp->g_list);
++	INIT_LIST_HEAD(&new_dp->g_heads);
+ 	spin_lock_init(&new_dp->g_lock);
+ 	bio_list_init(&new_dp->g_urgent_bios);
+ 	new_dp->g_io_throttle = io_throttle;
+@@ -240,6 +243,7 @@ static int ioband_group_init(struct ioba
+ 	int r;
+ 
+ 	INIT_LIST_HEAD(&gp->c_list);
++	INIT_LIST_HEAD(&gp->c_heads);
+ 	bio_list_init(&gp->c_blocked_bios);
+ 	bio_list_init(&gp->c_prio_bios);
+ 	gp->c_id = id;	/* should be verified */
+@@ -270,7 +274,8 @@ static int ioband_group_init(struct ioba
+ 		ioband_group_add_node(&head->c_group_root, gp);
+ 		gp->c_dev = head->c_dev;
+ 		gp->c_target = head->c_target;
+-	}
++	} else
++		list_add_tail(&gp->c_heads, &dp->g_heads);
+ 
+ 	spin_unlock_irqrestore(&dp->g_lock, flags);
+ 	return 0;
+@@ -284,6 +289,8 @@ static void ioband_group_release(struct 
+ 	list_del(&gp->c_list);
+ 	if (head)
+ 		rb_erase(&gp->c_group_node, &head->c_group_root);
++	else
++		list_del(&gp->c_heads);
+ 	dp->g_group_dtr(gp);
+ 	kfree(gp);
+ }
+@@ -1296,6 +1303,191 @@ static struct target_type ioband_target 
+ 	.iterate_devices = ioband_iterate_devices,
+ };
+ 
++#ifdef CONFIG_CGROUP_BLKIO
++/* Read the ID of the specified blkio cgroup. */
++static void ioband_copy_name(struct ioband_group *gp, char *name)
++{
++	struct mapped_device *md;
++
++	md = dm_table_get_md(gp->c_target->table);
++	dm_copy_name_and_uuid(md, name, NULL);
++	dm_put(md);
++}
++
++/* Show all ioband devices and their settings. */
++static void ioband_cgroup_show_device(struct seq_file *m)
++{
++	struct ioband_device *dp;
++	struct ioband_group *gp;
++	char name[DM_NAME_LEN];
++
++	mutex_lock(&ioband_lock);
++	list_for_each_entry(dp, &ioband_device_list, g_list) {
++		seq_printf(m, "%s policy=%s io_throttle=%d io_limit=%d",
++			   dp->g_name, dp->g_policy->p_name,
++			   dp->g_io_throttle, dp->g_io_limit);
++		if (dp->g_show_device)
++			dp->g_show_device(m, dp);
++		seq_putc(m, '\n');
++
++		list_for_each_entry(gp, &dp->g_heads, c_heads) {
++			if (strcmp(gp->c_type->t_name, "cgroup"))
++				continue;
++			ioband_copy_name(gp, name);
++			seq_printf(m, "  %s\n", name);
++		}
++	}
++	mutex_unlock(&ioband_lock);
++}
++
++/* Configure ioband devices specified by an ioband device ID */
++static int ioband_cgroup_config_device(int argc, char **argv)
++{
++	struct ioband_device *dp;
++	struct ioband_group *gp;
++	char name[DM_NAME_LEN];
++	int r;
++
++	if (argc < 1)
++		return -EINVAL;
++
++	mutex_lock(&ioband_lock);
++	/* look up the ioband device */
++	list_for_each_entry(dp, &ioband_device_list, g_list) {
++		/* assuming argv[0] is a share name */
++		if (!strcmp(dp->g_name, argv[0])) {
++			gp = list_first_entry(&dp->g_heads,
++					      struct ioband_group, c_heads);
++			goto found;
++		}
++
++		/* assuming argv[0] is a device name */
++		list_for_each_entry(gp, &dp->g_heads, c_heads) {
++			ioband_copy_name(gp, name);
++			if (!strcmp(name, argv[0]))
++				goto found;
++		}
++	}
++	mutex_unlock(&ioband_lock);
++	return -ENODEV;
++
++found:
++	if (!strcmp(gp->c_type->t_name, "cgroup"))
++		r = __ioband_message(gp->c_target, --argc, &argv[1]);
++	else
++		r = -ENODEV;
++
++	mutex_unlock(&ioband_lock);
++	return r;
++}
++
++/* Show the settings of the specified blkio cgroup. */
++static void ioband_cgroup_show_group(struct seq_file *m,
++				     struct blkio_cgroup *biog, int id)
++{
++	struct ioband_device *dp;
++	struct ioband_group *head, *gp;
++	struct cgroup *cgrp = biog->css.cgroup;
++	char name[DM_NAME_LEN];
++
++	mutex_lock(&ioband_lock);
++	list_for_each_entry(dp, &ioband_device_list, g_list) {
++		list_for_each_entry(head, &dp->g_heads, c_heads) {
++			if (strcmp(head->c_type->t_name, "cgroup"))
++				continue;
++
++			if (cgrp == cgrp->top_cgroup)
++				gp = head;
++			else {
++				gp = ioband_group_find(head, id);
++				if (!gp)
++					continue;
++			}
++
++			ioband_copy_name(head, name);
++			seq_puts(m, name);
++			if (dp->g_show_group)
++				dp->g_show_group(m, gp);
++			seq_putc(m, '\n');
++		}
++	}
++	mutex_unlock(&ioband_lock);
++}
++
++/* Configure the specified blkio cgroup. */
++static int ioband_cgroup_config_group(int argc, char **argv,
++				      struct blkio_cgroup *biog, int id)
++{
++	struct ioband_device *dp;
++	struct ioband_group *head, *gp;
++	struct cgroup *cgrp = biog->css.cgroup;
++	char name[DM_NAME_LEN];
++	int r;
++
++	if (argc != 1 && argc != 2)
++		return -EINVAL;
++
++	mutex_lock(&ioband_lock);
++	list_for_each_entry(dp, &ioband_device_list, g_list) {
++		list_for_each_entry(head, &dp->g_heads, c_heads) {
++			if (strcmp(head->c_type->t_name, "cgroup"))
++				continue;
++			ioband_copy_name(head, name);
++			if (!strcmp(name, argv[0]))
++				goto found;
++		}
++	}
++	mutex_unlock(&ioband_lock);
++	return -ENODEV;
++
++found:
++	if (argc == 1) {
++		if (cgrp == cgrp->top_cgroup)
++			r = -EINVAL;
++		else
++			r = ioband_group_detach(head, id);
++	} else {
++		if (cgrp == cgrp->top_cgroup)
++			gp = head;
++		else
++			gp = ioband_group_find(head, id);
++
++		if (!gp)
++			r = ioband_group_attach(head, id, argv[1]);
++		else
++			r = gp->c_banddev->g_set_param(gp, NULL, argv[1]);
++	}
++
++	mutex_unlock(&ioband_lock);
++	return r;
++}
++
++/* Remove the specified blkio cgroup. */
++static void ioband_cgroup_remove_group(int id)
++{
++	struct ioband_device *dp;
++	struct ioband_group *head;
++
++	mutex_lock(&ioband_lock);
++	list_for_each_entry(dp, &ioband_device_list, g_list) {
++		list_for_each_entry(head, &dp->g_heads, c_heads) {
++			if (strcmp(head->c_type->t_name, "cgroup"))
++				continue;
++			ioband_group_detach(head, id);
++		}
++	}
++	mutex_unlock(&ioband_lock);
++}
++
++static const struct ioband_cgroup_ops ioband_ops = {
++	.show_device	= ioband_cgroup_show_device,
++	.config_device	= ioband_cgroup_config_device,
++	.show_group	= ioband_cgroup_show_group,
++	.config_group	= ioband_cgroup_config_group,
++	.remove_group	= ioband_cgroup_remove_group,
++};
++#endif
++
+ static int __init dm_ioband_init(void)
+ {
+ 	int r;
+@@ -1303,11 +1495,18 @@ static int __init dm_ioband_init(void)
+ 	r = dm_register_target(&ioband_target);
+ 	if (r < 0)
+ 		DMERR("register failed %d", r);
++#ifdef CONFIG_CGROUP_BLKIO
++	else
++		r = blkio_cgroup_register_ioband(&ioband_ops);
++#endif
+ 	return r;
+ }
+ 
+ static void __exit dm_ioband_exit(void)
+ {
++#ifdef CONFIG_CGROUP_BLKIO
++	blkio_cgroup_unregister_ioband();
++#endif
+ 	dm_unregister_target(&ioband_target);
+ }
+ 
+Index: linux-2.6.31-rc7/drivers/md/dm-ioband.h
+===================================================================
+--- linux-2.6.31-rc7.orig/drivers/md/dm-ioband.h
++++ linux-2.6.31-rc7/drivers/md/dm-ioband.h
+@@ -44,6 +44,7 @@ struct ioband_device {
+ 
+ 	int g_ref;
+ 	struct list_head g_list;
++	struct list_head g_heads;
+ 	int g_flags;
+ 	char g_name[IOBAND_NAME_MAX + 1];
+ 	const struct ioband_policy_type *g_policy;
+@@ -59,6 +60,8 @@ struct ioband_device {
+ 	int (*g_set_param) (struct ioband_group *, const char *, const char *);
+ 	int (*g_should_block) (struct ioband_group *);
+ 	void (*g_show) (struct ioband_group *, int *, char *, unsigned);
++	void (*g_show_device) (struct seq_file *, struct ioband_device *);
++	void (*g_show_group) (struct seq_file *, struct ioband_group *);
+ 
+ 	/* members for weight balancing policy */
+ 	int g_epoch;
+@@ -104,6 +107,7 @@ struct ioband_group_stat {
+ 
+ struct ioband_group {
+ 	struct list_head c_list;
++	struct list_head c_heads;
+ 	struct ioband_device *c_banddev;
+ 	struct dm_dev *c_dev;
+ 	struct dm_target *c_target;
+@@ -150,6 +154,16 @@ struct ioband_group {
+ 
+ };
+ 
++struct blkio_cgroup;
++
++struct ioband_cgroup_ops {
++	void (*show_device)(struct seq_file *);
++	int (*config_device)(int, char **);
++	void (*show_group)(struct seq_file *, struct blkio_cgroup *, int);
++	int (*config_group)(int, char **, struct blkio_cgroup *, int);
++	void (*remove_group)(int);
++};
++
+ #define IOBAND_URGENT 1
+ 
+ #define DEV_BIO_BLOCKED		1
+Index: linux-2.6.31-rc7/drivers/md/dm-ioband-type.c
+===================================================================
+--- linux-2.6.31-rc7.orig/drivers/md/dm-ioband-type.c
++++ linux-2.6.31-rc7/drivers/md/dm-ioband-type.c
+@@ -6,6 +6,7 @@
+  * This file is released under the GPL.
+  */
+ #include <linux/bio.h>
++#include <linux/biotrack.h>
+ #include "dm.h"
+ #include "dm-ioband.h"
+ 
+@@ -52,14 +53,7 @@ static int ioband_node(struct bio *bio)
+ 
+ static int ioband_cgroup(struct bio *bio)
+ {
+-	/*
+-	 * This function should return the ID of the cgroup which
+-	 * issued "bio". The ID of the cgroup which the current
+-	 * process belongs to won't be suitable ID for this purpose,
+-	 * since some BIOs will be handled by kernel threads like aio
+-	 * or pdflush on behalf of the process requesting the BIOs.
+-	 */
+-	return 0;	/* not implemented yet */
++	return get_blkio_cgroup_id(bio);
+ }
+ 
+ const struct ioband_group_type dm_ioband_group_type[] = {
