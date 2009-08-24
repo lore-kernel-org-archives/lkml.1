@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZHXWPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753732AbZHXWW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbZHXWPL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZHXWPJ
+	id S1753732AbZHXWW2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZHXWW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:15:09 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:48392 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753815AbZHXWPI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:15:08 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 24 Aug 2009 15:15:05 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: "Michael S. Tsirkin" <mst@redhat.com>
-cc: Avi Kivity <avi@redhat.com>, gleb@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-In-Reply-To: <20090824214900.GA9899@redhat.com>
-Message-ID: <alpine.DEB.2.00.0908241508440.7951@makko.or.mcafeemobile.com>
-References: <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com>
- <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com> <20090824214900.GA9899@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 24 Aug 2009 18:22:28 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:44672 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753671AbZHXWW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:22:27 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19091.1974.528045.724091@cargo.ozlabs.ibm.com>
+Date: Tue, 25 Aug 2009 07:35:50 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: eranian@gmail.com
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
+       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: perf_counters issue with enable_on_exec
+In-Reply-To: <7c86c4470908200649u290f2378n126442ea3a823540@mail.gmail.com>
+References: <7c86c4470908200649u290f2378n126442ea3a823540@mail.gmail.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009, Michael S. Tsirkin wrote:
+stephane eranian writes:
 
-> On Mon, Aug 24, 2009 at 11:25:01AM -0700, Davide Libenzi wrote:
-> > On Sun, 23 Aug 2009, Michael S. Tsirkin wrote:
-> > 
-> > > On Sun, Aug 23, 2009 at 04:40:51PM +0300, Avi Kivity wrote:
-> > > > On 08/23/2009 04:36 PM, Michael S. Tsirkin wrote:
-> > > >> More important here is realization that eventfd is a mutex/semaphore
-> > > >> implementation, not a generic event reporting interface as we are trying
-> > > >> to use it.
-> > > >>    
-> > > >
-> > > > Well it is a generic event reporting interface (for example, aio uses it).
-> > > 
-> > > Davide, I think it's a valid point.  For example, what read on eventfd
-> > > does (zero a counter and return) is not like any semaphore I saw.
-> > 
-> > 
-> > Indeed, the default eventfd behaviour is like, well, an event. Signaling 
-> > (kernel side) or writing (userspace side), signals the event.
-> > Waiting (reading) it, will reset the event.
-> > If you use EFD_SEMAPHORE, you get a semaphore-like behavior.
-> > Events and sempahores are two widely known and used abstractions.
-> > The EFD_STATE proposed one, well, no. Not at all.
+> I am running into an issue trying to use enable_on_exec
+> in per-thread mode with an event group.
 > 
-> Hmm. All we try to do is, associate a small key with the event
-> that we signal. Is it really that uncommon/KVM specific?
+> My understanding is that enable_on_exec allows activation
+> of an event on first exec. This is useful for tools monitoring
+> other tasks and which you invoke as: tool my_program. In
+> other words, the tool forks+execs my_program. This option
+> allows developers to setup the events after the fork (to get
+> the pid) but before the exec(). Only execution after the exec
+> is monitored. This alleviates the need to use the
+> ptrace(PTRACE_TRACEME) call.
+> 
+> My understanding is that an event group is scheduled only
+> if all events in the group are active (disabled=0). Thus, one
 
-All I'm trying to do, is to avoid that eventfd will become an horrible 
-multiplexor for every freaky one-time-use behaviors arising inside kernel 
-modules.
+Not quite - if the leader is disabled then none of the group goes on.
+If the leader is enabled then it and any other group members that are
+enabled go on.  If a non-leader member is disabled then it doesn't go
+on but it doesn't stop other members from going on.
 
-
-
-- Davide
-
-
+Paul.
