@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751384AbZHXEQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751413AbZHXER3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751384AbZHXEQg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 00:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZHXEQg
+	id S1751413AbZHXER3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 00:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZHXER3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 00:16:36 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:42038 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbZHXEQf convert rfc822-to-8bit (ORCPT
+	Mon, 24 Aug 2009 00:17:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:48890 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751278AbZHXER2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 00:16:35 -0400
-Date: Sun, 23 Aug 2009 20:41:04 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       akpm <akpm@linux-foundation.org>, Brian Johnson <brijohn@gmail.com>
-Cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [PATCH] gspca: fix sn9c20x build errors
-Message-Id: <20090823204104.6043aebe.randy.dunlap@oracle.com>
-In-Reply-To: <200908231417.49207.toralf.foerster@gmx.de>
-References: <200908231417.49207.toralf.foerster@gmx.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: abhmt014.oracle.com [141.146.116.23]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4A9213F7.002D:SCFSTAT5015188,ss=1,fgs=0
+	Mon, 24 Aug 2009 00:17:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rzRXf7e1P+tPjJU+QbVrdmpKR3RZ21Ub3FLdtncLhTAiqSdL8yB/ae2ChT8BGXcn+p
+         vecfzUcSKuILuM4eG+zFnNtZBEB96ld1ywwmCIgButjcVY9VoM8HOYQAsI28atC+nlMR
+         a9yNnrsWYat9QbRR5+2tasX/2KdsH91zjsrzw=
+Date: Mon, 24 Aug 2009 12:19:46 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
+       bunk@kernel.org
+Subject: Re: [PATCH] scripts/ver_linux
+Message-ID: <20090824041946.GA4578@cr0.nay.redhat.com>
+References: <alpine.DEB.2.01.0908132251000.30417@bogon.housecafe.de> <20090817054732.GK5039@cr0.nay.redhat.com> <alpine.DEB.2.01.0908162250450.30417@bogon.housecafe.de> <alpine.DEB.2.01.0908232044190.5744@bogon.housecafe.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.01.0908232044190.5744@bogon.housecafe.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Sun, Aug 23, 2009 at 08:52:05PM -0700, Christian Kujau wrote:
+>On Sun, 16 Aug 2009 at 22:54, Christian Kujau wrote:
+>> On Mon, 17 Aug 2009 at 13:47, Amerigo Wang wrote:
+>> > Hmm, so probably you are also using a Red Hat distribution?
+>> > AFAIK, only some Fedora and RHEL don't have /sbin and /usr/sbin in $PATH.
+>> 
+>> No, Debian Linux - but as a mere user I never have sbin directories in my 
+>> PATH. And since it is a headless system, I removed the console-* packages, 
+>> that's why I did not have the "loadkeys" command installed. No big deal, 
+>> but the ver_linux output looked weird....
+>
+>Hm, looking at the changelog of scripts/ver_linux again I see:
+>
+> > commit 48a61569bb5396415c5dad0e81e1cfeb87c0aca3
+> > Author: Adrian Bunk <bunk@kernel.org>
+> > Date:   Wed Jul 23 22:50:45 2008 +0300
+> > 
+> >  kbuild: scripts/ver_linux: don't set PATH
+> >
+> >  It would have saved both a bug submitter and me a few hours if
+> >  scripts/ver_linux had picked the same gcc as the build.
+> >
+> >  Since I can't see any reason why it fiddles with PATH at all this 
+> > patch therefore removes the PATH setting.
+>
+>I'm still a bit confused, Amerigo, why you thought not having /sbin
+>directories in PATH was distribution specific - I don't recall any 
+>distribution where mere users had /sbin:/usr/sbin in their PATH.
 
-Fix gscpa sn9c20x build errors:
-ERROR: "input_event" [drivers/media/video/gspca/gspca_sn9c20x.ko] undefined!
-ERROR: "input_register_device" [drivers/media/video/gspca/gspca_sn9c20x.ko] undefined!
-ERROR: "input_free_device" [drivers/media/video/gspca/gspca_sn9c20x.ko] undefined!
-ERROR: "input_unregister_device" [drivers/media/video/gspca/gspca_sn9c20x.ko] undefined!
-ERROR: "input_allocate_device" [drivers/media/video/gspca/gspca_sn9c20x.ko] undefined!
 
-Reported-by: Toralf Förster <toralf.foerster@gmx.de
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/media/video/gspca/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.31-rc7-git1.orig/drivers/media/video/gspca/Kconfig
-+++ linux-2.6.31-rc7-git1/drivers/media/video/gspca/Kconfig
-@@ -114,7 +114,7 @@ config USB_GSPCA_SN9C20X
- 
- config USB_GSPCA_SN9C20X_EVDEV
-        bool "Enable evdev support"
--       depends on USB_GSPCA_SN9C20X
-+       depends on USB_GSPCA_SN9C20X && INPUT
-        ---help---
- 	 Say Y here in order to enable evdev support for sn9c20x webcam button.
- 
+Try archlinux.
 
 
+>I was tempted to specify the whole path in ver_linux, but that'll break 
+>for sure. 
+>
+>Adrian, what do you think - this patch puts the sbin paths *after*
+>PATH, so that should not lead to such conflicts your commit once fixed, 
+>right?
 
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+I believe so.
