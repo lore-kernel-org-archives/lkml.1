@@ -1,95 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751834AbZHXG4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822AbZHXG5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751834AbZHXG4m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 02:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZHXG4l
+	id S1751822AbZHXG5d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 02:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZHXG5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 02:56:41 -0400
-Received: from centrinvest.ru ([94.25.115.130]:41099 "EHLO centrinvest.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751574AbZHXG4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 02:56:41 -0400
-From: "Andrey Panin" <pazke@centrinvest.ru>
-Date: Mon, 24 Aug 2009 10:48:25 +0400
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86 team <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>, Avi Kivity <avi@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alok N Kataria <akataria@vmware.com>,
-       Pan Jacob jun <jacob.jun.pan@intel.com>
-Subject: Re: [RFC patch 21/32] x86: Add timer_init to platform
-Message-ID: <20090824064309.GA24326@centrinvest.ru>
-Mail-Followup-To: Thomas Gleixner <tglx@linutronix.de>,
-	LKML <linux-kernel@vger.kernel.org>, x86 team <x86@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Arjan van de Veen <arjan@infradead.org>,
-	Avi Kivity <avi@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Alok N Kataria <akataria@vmware.com>,
-	Pan Jacob jun <jacob.jun.pan@intel.com>
-References: <20090821205008.518392436@linutronix.de>
- <20090821205602.826717491@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090821205602.826717491@linutronix.de>
-X-Uname: Linux 2.6.26-1-amd64 x86_64
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Anti-Virus: kav4lms: continue
+	Mon, 24 Aug 2009 02:57:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37622 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751587AbZHXG5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 02:57:32 -0400
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+From: Peter Zijlstra <peterz@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A923197.4040708@cn.fujitsu.com>
+References: <4A9214E3.2070807@cn.fujitsu.com>
+	 <1251093660.7538.119.camel@twins>  <4A923197.4040708@cn.fujitsu.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 24 Aug 2009 08:56:52 +0200
+Message-Id: <1251097012.7538.123.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 233, 08 21, 2009 at 09:31:20 -0000, Thomas Gleixner wrote:
-> The timer init code is convoluted with several quirks and the paravirt
-> timer chooser. Figuring out which code path is actually taken is not
-> for the faint hearted.
+On Mon, 2009-08-24 at 14:22 +0800, Li Zefan wrote:
+> Peter Zijlstra wrote:
+> > On Mon, 2009-08-24 at 12:19 +0800, Li Zefan wrote:
+> >> If the correspoding module is unloaded before ftrace_profile_disable()
+> >> is called, event->profile_disable() won't be called, which can
+> >> cause oops:
+> >>
+> >>   # insmod trace-events-sample.ko
+> >>   # perf record -f -a -e sample:foo_bar sleep 3 &
+> >>   # sleep 1
+> >>   # rmmod trace_events_sample
+> >>   # insmod trace-events-sample.ko
+> >>   OOPS!
+> >>
+> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> > 
+> > 
+> > Hrmm, feel fragile, why don't we check if all a modules tracepoints are
+> > unused on unload?
+> > 
 > 
-> Move the numaq TSC quirk to tsc_pre_init platform function and replace
-> the paravirt time chooser and the remaining x86 quirk with a simple
-> platform setup function.
+> I don't think it's fragile. We are profiling via a module's
+> tracepoint, so we should pin the module, via module_get().
+> If event->profile_enable() has been calld, we should make
+> sure it's profile_disable() will be called.
 
-> Index: linux-2.6/arch/x86/kernel/visws_quirks.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/visws_quirks.c
-> +++ linux-2.6/arch/x86/kernel/visws_quirks.c
-> @@ -30,6 +30,7 @@
->  #include <asm/setup.h>
->  #include <asm/apic.h>
->  #include <asm/e820.h>
-> +#include <asm/time.h>
->  #include <asm/io.h>
->  
->  #include <linux/kernel_stat.h>
-> @@ -53,8 +54,10 @@ int is_visws_box(void)
->  	return visws_board_type >= 0;
->  }
->  
-> -static int __init visws_time_init(void)
-> +static void __init visws_time_init(void)
->  {
-> +	hpet_time_init();
+What I call fragile is that everyone registering a tracepoint callback
+will now apparently need to worry about modules, _that_ is fragile.
 
-What's the purpose of this line ? It's highly unlikely that there is HPET hidden
-somewhere inside VisWs :)
+Either make module unload look at tracepoint users, or place the
+try_get_module() in the registration hooks so that regular users don't
+need to worry about it.
 
-
->  	printk(KERN_INFO "Starting Cobalt Timer system clock\n");
->  
->  	/* Set the countdown value */
-> @@ -65,12 +68,6 @@ static int __init visws_time_init(void)
->  
->  	/* Enable (unmask) the timer interrupt */
->  	co_cpu_write(CO_CPU_CTRL, co_cpu_read(CO_CPU_CTRL) & ~CO_CTRL_TIMEMASK);
-> -
-> -	/*
-> -	 * Zero return means the generic timer setup code will set up
-> -	 * the standard vector:
-> -	 */
-> -	return 0;
->  }
->  
+But this is rediculous.
