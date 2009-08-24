@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbZHXIsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751987AbZHXIty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751933AbZHXIsm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZHXIsl
+	id S1751987AbZHXIty (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZHXIty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:48:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53492 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbZHXIsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:48:41 -0400
-Date: Mon, 24 Aug 2009 10:48:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Wang, Shane" <shane.wang@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>
-Subject: Re: [PATCH] intel_txt: fix the build errors of intel_txt patch on
-	non-X86 platforms
-Message-ID: <20090824084821.GA29804@elte.hu>
-References: <20090817154055.GA12985@elte.hu> <20090817155348.GA2254@elte.hu> <037F493892196B458CD3E193E8EBAD4F01EC3AB3B2@pdsmsx502.ccr.corp.intel.com> <20090820161038.GA29994@basil.fritz.box> <4A8E9B3C.5070604@intel.com> <20090821135050.GA30346@elte.hu> <4A8EBBF6.3020505@intel.com> <20090821161204.GB17731@elte.hu> <4A8ED800.30901@zytor.com> <037F493892196B458CD3E193E8EBAD4F01EC3ABB56@pdsmsx502.ccr.corp.intel.com>
+	Mon, 24 Aug 2009 04:49:54 -0400
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:17958 "EHLO
+	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbZHXItx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 04:49:53 -0400
+X-SpamScore: -11
+X-BigFish: VPS-11(zz1432R98dNa594i873fizz1202hzzz32i6bh203h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KOVHUW-02-5VK-02
+X-M-MSG: 
+Date: Mon, 24 Aug 2009 10:49:35 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Valdis.Kletnieks@vt.edu
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/15] x86, sched: Add config option for multi-node CPU
+	scheduling
+Message-ID: <20090824084935.GT29515@alberich.amd.com>
+References: <20090820131243.GO29327@alberich.amd.com> <20090820131521.GP29327@alberich.amd.com> <57214.1250862635@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <037F493892196B458CD3E193E8EBAD4F01EC3ABB56@pdsmsx502.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <57214.1250862635@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 24 Aug 2009 08:49:36.0437 (UTC) FILETIME=[CEF5FE50:01CA2497]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Wang, Shane <shane.wang@intel.com> wrote:
-
-> >> 
-> >> If then these should be dummy inlines - but in any case, do you
-> >> expect tboot to be used by non-x86 too?
-> >> 
+On Fri, Aug 21, 2009 at 09:50:35AM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Thu, 20 Aug 2009 15:15:21 +0200, Andreas Herrmann said:
 > > 
-> > It would have to be IA64 ... I can't ask Tony since he's out, but I
-> > would assume it is x86-specific at this point.
+> > I've decided to add this as a subitem of MC scheduling.
+> > I think the normal case will be that a multi-node CPU has more than 1
+> > core on each of its nodes. Thus using MN scheduling without MC
+> > scheduling does not make much sense.
 > > 
-> > 	-hpa
+> > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> > ---
+> >  arch/x86/Kconfig |   10 ++++++++++
+> >  1 files changed, 10 insertions(+), 0 deletions(-)
 > 
-> Yes, to my knowledge, it is x86 at this point. TXT-SX is the 
-> server extension also for ia32 only.
+> Is this patch series bisectable? I admit not having checked deeply, and
+> at least at first glance the rest looks sane - but usually Kconfig changes
+> are kept until the *last* patch so that there's no chance of inter-patch
+> dependencies breaking...
 
-Then i'd suggest to keep it simple and clean for now and move those 
-very few lines to arch/x86 files only. It will be easy to generalize 
-it later on, should the need arise.
+It should be bisectable -- i.e. it shouldn't cause build errors.
+Furthermore the real usage of MN domains gets activated with
+patch 7.
 
-	Ingo
+
+Regards,
+
+Andreas
+
+
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
+
