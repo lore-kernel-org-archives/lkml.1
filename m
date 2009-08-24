@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbZHXQi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbZHXQlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752858AbZHXQi6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 12:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZHXQiz
+	id S1752778AbZHXQlQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 12:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZHXQlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 12:38:55 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:53363 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbZHXQiy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 12:38:54 -0400
-Message-ID: <4A92C1C1.4010007@gmail.com>
-Date: Mon, 24 Aug 2009 18:37:21 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 24 Aug 2009 12:41:16 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:41049 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751724AbZHXQlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 12:41:15 -0400
+Date: Mon, 24 Aug 2009 09:41:12 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+Subject: [PATCH -tip 0/2] Temporary RCU fixes for notrace and hotplug CPU
+Message-ID: <20090824164112.GA13693@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH] cciss: memory leak in cciss_init_one()
-References: <4A7961DE.1090702@gmail.com> <4A91058F.3050708@gmail.com> <20090824080115.GA12579@kernel.dk> <0F5B06BAB751E047AB5C87D1F77A778869529DACD7@GVW0547EXC.americas.hpqcorp.net>
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A778869529DACD7@GVW0547EXC.americas.hpqcorp.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 24 Aug 2009 18:37:21 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miller, Mike (OS Dev) a écrit :
->  
-> 
->> -----Original Message-----
->> From: Jens Axboe [mailto:jens.axboe@oracle.com] 
->> Sent: Monday, August 24, 2009 3:01 AM
->> To: Eric Dumazet
->> Cc: Andrew Morton; Miller, Mike (OS Dev); linux kernel; 
->> stable@kernel.org; FUJITA Tomonori
->> Subject: Re: [PATCH] cciss: memory leak in cciss_init_one()
->>
->> On Sun, Aug 23 2009, Eric Dumazet wrote:
->>> Andrew, I originally sent this 18 days ago and got no reply 
->> yet, maybe 
->>> could you get the baby ?
->> I'll add it for 2.6.32.
->>
-> 
-> I guess I'm missing something. Where is the leak?
+This patchset adds a couple of needed "notrace" declarations and one
+of two needed CPU-hotplug rcutree plugins.  This applies on top of
+current tip/core/rcu, but is a temporary fix.  The problem with it is
+that it is not bisectable when using ftrace.
 
-Well...
+This will be replaced with a later rework of the tip/core/rcu patch
+stack.
 
-Problem is : In normal path, kfree(inq_buff); is not called.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-It is called only if a "goto clean4;" is done (error path,
-and in this case, inq_buff is NULL anyway)
-
-So we exit from cciss_init_one() without freeing
-a "InquiryData_struct" structure.
-
-I am pretty sure kmemleak would complain on this leak :)
+ include/linux/rcupdate.h |    5 ++---
+ kernel/rcutree.c         |    2 ++
+ kernel/rcutree_plugin.h  |   25 ++++++++++++++++++++++++-
+ 3 files changed, 28 insertions(+), 4 deletions(-)
