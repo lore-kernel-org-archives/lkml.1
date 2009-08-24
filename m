@@ -1,212 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751297AbZHXDHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751380AbZHXDHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751297AbZHXDHD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 23:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbZHXDHC
+	id S1751380AbZHXDHS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 23:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbZHXDHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 23:07:02 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:43610 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbZHXDHB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 23:07:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=TV7/IWQ+fFIvlEV0DHfZF080HJ621+IFOjbZE0HXIU3gExnNdR7xlBqnvIz5xyYHqx
-         0Pp4U7R/keg2lN8Ha01oDrP6j5lHupD75nzGqKHxVSCir/4H3svRy6qjuK/6SWXfXLi+
-         +rACVevBnVBMZQj1Z2C6NxxFcQLg9b53YwywQ=
-Message-ID: <4A9203E8.307@gmail.com>
-Date: Sun, 23 Aug 2009 20:07:20 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
-MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: system gets stuck in a lock during boot
-References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>  <20090818160911.GA21243@goodmis.org> <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com> <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com> <4A8B4607.6090303@gmail.com> <4A8B5113.20102@cn.fujitsu.com> <4A8FA2BD.4030707@gmail.com> <4A91FDED.9050801@cn.fujitsu.com>
-In-Reply-To: <4A91FDED.9050801@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sun, 23 Aug 2009 23:07:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47493 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751137AbZHXDHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 23:07:06 -0400
+Date: Mon, 24 Aug 2009 13:07:04 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: manual merge of the rr tree with Linus' tree
+Message-Id: <20090824130704.a2bbb738.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> CC: Peter, Ingo
->
->    
->> Hey alright 2.6.31-rc6 booted.
->>
->> I must admit, I've been afraid of doing
->> a git bisect for some time now. but after learning
->> to do a bisect, I cant see a better solution to finding a
->> bug(biggest issue I see is having a huge .config).
->>
->> Anyways the culprit for my issue is this commit:
->>
->> af6af30c0fcd77e621638e53ef8b176bca8bd3b4
->>
->> reverting this on rc6 booted the machine up.
->>
->>      
->
-> Thanks!
->
-> Hmm...I don't see how this commit can cause oops:
->    
+Hi Rusty,
 
-same here, perf  is not enabled at all.
-before the git bisect I manually reverted all perf
-and came to the conclusion the perf had nothing to do with this.
-(must have missed this commit).
->    
->> @@ -119,11 +119,9 @@ struct ftrace_event_call {
->>          void                    *filter;
->>          void                    *mod;
->>
->> -#ifdef CONFIG_EVENT_PROFILE
->> -       atomic_t        profile_count;
->> -       int             (*profile_enable)(struct ftrace_event_call *);
->> -       void            (*profile_disable)(struct ftrace_event_call *);
->> -#endif
->> +       atomic_t                profile_count;
->> +       int                     (*profile_enable)(struct ftrace_event_call *);
->> +       void                    (*profile_disable)(struct ftrace_event_call *);
->>      
->
-> In your .config, CONFIG_EVENT_PROFILE=y, so this change makes
-> no difference.
->
->    
->>   };
->>
->>   #define MAX_FILTER_PRED                32
->> diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profil
->> index 5b5895a..11ba5bb 100644
->> --- a/kernel/trace/trace_event_profile.c
->> +++ b/kernel/trace/trace_event_profile.c
->> @@ -14,7 +14,7 @@ int ftrace_profile_enable(int event_id)
->>
->>          mutex_lock(&event_mutex);
->>          list_for_each_entry(event,&ftrace_events, list) {
->> -               if (event->id == event_id) {
->> +               if (event->id == event_id&&  event->profile_enable) {
->>      
->
-> You will run into this hunk only when you run the perf tool,
-> so should have nothing to do with the boot failure.
->    
-I haven't really looked into perf  yet, nor have it enabled.
->    
->>                          ret = event->profile_enable(event);
->>                          break;
->>                  }
->> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
->> index 23d2972..e75276a 100644
->> --- a/kernel/trace/trace_events.c
->> +++ b/kernel/trace/trace_events.c
->> @@ -940,7 +940,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentr
->>                  entry = trace_create_file("enable", 0644, call->dir, call,
->>                                            enable);
->>
->> -       if (call->id)
->> +       if (call->id&&  call->profile_enable)
->>      
->
-> We do an extra check on ->profile_enable, shouldn't cause bug..
->    
-maybe this has something to do with SELinux, since I saw with
-the oops something with inode_do_init_dentry, and some other stuff
-pertaining to SELinux(again though I'm lost as to why I'm hitting this).
->    
->>                  entry = trace_create_file("id", 0444, call->dir, call,
->>                                            id);
->>      
->
-> Any way, I don't think this commit does the right thing:
->
->    - If CONFIG_EVENT_PROFILE=y, we'll create events/<dir>/<event>/id,
->      except events/ftrace/<event>/id.
->
->    - if CONFIG_EVENT_PROFILE=n, there's no 'id' file at all!
->
-> I think it's better to skip ftrace/ dir in perf tool code, instead of
-> skipping creating id files in ftrace code.
->
-> can you try this patch:
->
-> ---
->   include/linux/ftrace_event.h   |    2 ++
->   kernel/trace/trace_events.c    |    2 +-
->   tools/perf/util/parse-events.c |    8 +++++++-
->   3 files changed, 10 insertions(+), 2 deletions(-)
->
-> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> index a81170d..398c925 100644
-> --- a/include/linux/ftrace_event.h
-> +++ b/include/linux/ftrace_event.h
-> @@ -121,9 +121,11 @@ struct ftrace_event_call {
->   	void			*filter;
->   	void			*mod;
->
-> +#ifdef CONFIG_EVENT_PROFILE
->   	atomic_t		profile_count;
->   	int			(*profile_enable)(struct ftrace_event_call *);
->   	void			(*profile_disable)(struct ftrace_event_call *);
-> +#endif
->   };
->
->   #define MAX_FILTER_PRED		32
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index e75276a..23d2972 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -940,7 +940,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
->   		entry = trace_create_file("enable", 0644, call->dir, call,
->   					  enable);
->
-> -	if (call->id&&  call->profile_enable)
-> +	if (call->id)
->   		entry = trace_create_file("id", 0444, call->dir, call,
->   					  id);
->
-> diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-> index 0441784..1077ebd 100644
-> --- a/tools/perf/util/parse-events.c
-> +++ b/tools/perf/util/parse-events.c
-> @@ -113,13 +113,19 @@ static unsigned long hw_cache_stat[C(MAX)] = {
->    [C(BPU)]	= (CACHE_READ),
->   };
->
-> +static int is_tp_subsystem(struct dirent *sys_dir)
-> +{
-> +	return !!strcmp(sys_dir->d_name, "ftrace");
-> +}
-> +
->   #define for_each_subsystem(sys_dir, sys_dirent, sys_next, file, st)	       \
->   	while (!readdir_r(sys_dir,&sys_dirent,&sys_next)&&  sys_next)	       \
->   	if (snprintf(file, MAXPATHLEN, "%s/%s", debugfs_path,	       	       \
->   			sys_dirent.d_name)&&		       		\
->   	   (!stat(file,&st))&&  (S_ISDIR(st.st_mode))&&		\
->   	   (strcmp(sys_dirent.d_name, "."))&&				\
-> -	   (strcmp(sys_dirent.d_name, "..")))
-> +	   (strcmp(sys_dirent.d_name, ".."))&&				\
-> +	   (is_tp_subsystem(&sys_dirent)))
->
->   static int tp_event_has_id(struct dirent *sys_dir, struct dirent *evt_dir)
->   {
->
->
->
->    
-Alright, in the morning I try this out and let you
-know what happens.
+Today's linux-next merge of the rr tree got a conflict in
+include/linux/cpumask.h between commit
+f4b0373b26567cafd421d91101852ed7a34e9e94 ("Make bitmask 'and' operators
+return a result code") from Linus' tree and commits
+de1cb441e0bc1be491e25d3968d0448c0ea0e5eb
+("cpumask:remove-unused-deprecated-functions") and
+6a795cf86742749ebf01efbe53baa7023bebc7c6
+("cpumask:move-obsolete-functions-to-end-of-header") from the rr tree.
 
-Thanks for looking at this.
+I fixed it up (see below) and can carry the fix for a while.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Justin P. Mattock
+diff --cc include/linux/cpumask.h
+index 796df12,5b44e9f..0000000
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@@ -1088,4 -646,241 +646,241 @@@ void set_cpu_active(unsigned int cpu, b
+  void init_cpu_present(const struct cpumask *src);
+  void init_cpu_possible(const struct cpumask *src);
+  void init_cpu_online(const struct cpumask *src);
++ 
++ /**
++  * to_cpumask - convert an NR_CPUS bitmap to a struct cpumask *
++  * @bitmap: the bitmap
++  *
++  * There are a few places where cpumask_var_t isn't appropriate and
++  * static cpumasks must be used (eg. very early boot), yet we don't
++  * expose the definition of 'struct cpumask'.
++  *
++  * This does the conversion, and can be used as a constant initializer.
++  */
++ #define to_cpumask(bitmap)						\
++ 	((struct cpumask *)(1 ? (bitmap)				\
++ 			    : (void *)sizeof(__check_is_bitmap(bitmap))))
++ 
++ static inline int __check_is_bitmap(const unsigned long *bitmap)
++ {
++ 	return 1;
++ }
++ 
++ /*
++  * Special-case data structure for "single bit set only" constant CPU masks.
++  *
++  * We pre-generate all the 64 (or 32) possible bit positions, with enough
++  * padding to the left and the right, and return the constant pointer
++  * appropriately offset.
++  */
++ extern const unsigned long
++ 	cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)];
++ 
++ static inline const struct cpumask *get_cpu_mask(unsigned int cpu)
++ {
++ 	const unsigned long *p = cpu_bit_bitmap[1 + cpu % BITS_PER_LONG];
++ 	p -= cpu / BITS_PER_LONG;
++ 	return to_cpumask(p);
++ }
++ 
++ #define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
++ 
++ #if NR_CPUS <= BITS_PER_LONG
++ #define CPU_BITS_ALL						\
++ {								\
++ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD	\
++ }
++ 
++ #else /* NR_CPUS > BITS_PER_LONG */
++ 
++ #define CPU_BITS_ALL						\
++ {								\
++ 	[0 ... BITS_TO_LONGS(NR_CPUS)-2] = ~0UL,		\
++ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD		\
++ }
++ #endif /* NR_CPUS > BITS_PER_LONG */
++ 
++ /*
++  *
++  * From here down, all obsolete.  Use cpumask_ variants!
++  *
++  */
++ #ifndef CONFIG_DISABLE_OBSOLETE_CPUMASK_FUNCTIONS
++ /* These strip const, as traditionally they weren't const. */
++ #define cpu_possible_map	(*(cpumask_t *)cpu_possible_mask)
++ #define cpu_online_map		(*(cpumask_t *)cpu_online_mask)
++ #define cpu_present_map		(*(cpumask_t *)cpu_present_mask)
++ #define cpu_active_map		(*(cpumask_t *)cpu_active_mask)
++ 
++ #define cpumask_of_cpu(cpu) (*get_cpu_mask(cpu))
++ 
++ #define CPU_MASK_LAST_WORD BITMAP_LAST_WORD_MASK(NR_CPUS)
++ 
++ #if NR_CPUS <= BITS_PER_LONG
++ 
++ #define CPU_MASK_ALL							\
++ (cpumask_t) { {								\
++ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD			\
++ } }
++ 
++ #else
++ 
++ #define CPU_MASK_ALL							\
++ (cpumask_t) { {								\
++ 	[0 ... BITS_TO_LONGS(NR_CPUS)-2] = ~0UL,			\
++ 	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD			\
++ } }
++ 
++ #endif
++ 
++ #define CPU_MASK_NONE							\
++ (cpumask_t) { {								\
++ 	[0 ... BITS_TO_LONGS(NR_CPUS)-1] =  0UL				\
++ } }
++ 
++ #define CPU_MASK_CPU0							\
++ (cpumask_t) { {								\
++ 	[0] =  1UL							\
++ } }
++ 
++ #if NR_CPUS == 1
++ #define first_cpu(src)		({ (void)(src); 0; })
++ #define next_cpu(n, src)	({ (void)(src); 1; })
++ #define any_online_cpu(mask)	0
++ #define for_each_cpu_mask(cpu, mask)	\
++ 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
++ #else /* NR_CPUS > 1 */
++ int __first_cpu(const cpumask_t *srcp);
++ int __next_cpu(int n, const cpumask_t *srcp);
++ int __any_online_cpu(const cpumask_t *mask);
++ 
++ #define first_cpu(src)		__first_cpu(&(src))
++ #define next_cpu(n, src)	__next_cpu((n), &(src))
++ #define any_online_cpu(mask) __any_online_cpu(&(mask))
++ #define for_each_cpu_mask(cpu, mask)			\
++ 	for ((cpu) = -1;				\
++ 		(cpu) = next_cpu((cpu), (mask)),	\
++ 		(cpu) < NR_CPUS; )
++ #endif /* SMP */
++ 
++ #if NR_CPUS <= 64
++ 
++ #define for_each_cpu_mask_nr(cpu, mask)	for_each_cpu_mask(cpu, mask)
++ 
++ #else /* NR_CPUS > 64 */
++ 
++ int __next_cpu_nr(int n, const cpumask_t *srcp);
++ #define for_each_cpu_mask_nr(cpu, mask)			\
++ 	for ((cpu) = -1;				\
++ 		(cpu) = __next_cpu_nr((cpu), &(mask)),	\
++ 		(cpu) < nr_cpu_ids; )
++ 
++ #endif /* NR_CPUS > 64 */
++ 
++ #define cpus_addr(src) ((src).bits)
++ 
++ #define cpu_set(cpu, dst) __cpu_set((cpu), &(dst))
++ static inline void __cpu_set(int cpu, volatile cpumask_t *dstp)
++ {
++ 	set_bit(cpu, dstp->bits);
++ }
++ 
++ #define cpu_clear(cpu, dst) __cpu_clear((cpu), &(dst))
++ static inline void __cpu_clear(int cpu, volatile cpumask_t *dstp)
++ {
++ 	clear_bit(cpu, dstp->bits);
++ }
++ 
++ #define cpus_setall(dst) __cpus_setall(&(dst), NR_CPUS)
++ static inline void __cpus_setall(cpumask_t *dstp, int nbits)
++ {
++ 	bitmap_fill(dstp->bits, nbits);
++ }
++ 
++ #define cpus_clear(dst) __cpus_clear(&(dst), NR_CPUS)
++ static inline void __cpus_clear(cpumask_t *dstp, int nbits)
++ {
++ 	bitmap_zero(dstp->bits, nbits);
++ }
++ 
++ /* No static inline type checking - see Subtlety (1) above. */
++ #define cpu_isset(cpu, cpumask) test_bit((cpu), (cpumask).bits)
++ 
++ #define cpu_test_and_set(cpu, cpumask) __cpu_test_and_set((cpu), &(cpumask))
++ static inline int __cpu_test_and_set(int cpu, cpumask_t *addr)
++ {
++ 	return test_and_set_bit(cpu, addr->bits);
++ }
++ 
++ #define cpus_and(dst, src1, src2) __cpus_and(&(dst), &(src1), &(src2), NR_CPUS)
+ -static inline void __cpus_and(cpumask_t *dstp, const cpumask_t *src1p,
+++static inline int __cpus_and(cpumask_t *dstp, const cpumask_t *src1p,
++ 					const cpumask_t *src2p, int nbits)
++ {
+ -	bitmap_and(dstp->bits, src1p->bits, src2p->bits, nbits);
+++	return bitmap_and(dstp->bits, src1p->bits, src2p->bits, nbits);
++ }
++ 
++ #define cpus_or(dst, src1, src2) __cpus_or(&(dst), &(src1), &(src2), NR_CPUS)
++ static inline void __cpus_or(cpumask_t *dstp, const cpumask_t *src1p,
++ 					const cpumask_t *src2p, int nbits)
++ {
++ 	bitmap_or(dstp->bits, src1p->bits, src2p->bits, nbits);
++ }
++ 
++ #define cpus_xor(dst, src1, src2) __cpus_xor(&(dst), &(src1), &(src2), NR_CPUS)
++ static inline void __cpus_xor(cpumask_t *dstp, const cpumask_t *src1p,
++ 					const cpumask_t *src2p, int nbits)
++ {
++ 	bitmap_xor(dstp->bits, src1p->bits, src2p->bits, nbits);
++ }
++ 
++ #define cpus_andnot(dst, src1, src2) \
++ 				__cpus_andnot(&(dst), &(src1), &(src2), NR_CPUS)
+ -static inline void __cpus_andnot(cpumask_t *dstp, const cpumask_t *src1p,
+++static inline int __cpus_andnot(cpumask_t *dstp, const cpumask_t *src1p,
++ 					const cpumask_t *src2p, int nbits)
++ {
+ -	bitmap_andnot(dstp->bits, src1p->bits, src2p->bits, nbits);
+++	return bitmap_andnot(dstp->bits, src1p->bits, src2p->bits, nbits);
++ }
++ 
++ #define cpus_equal(src1, src2) __cpus_equal(&(src1), &(src2), NR_CPUS)
++ static inline int __cpus_equal(const cpumask_t *src1p,
++ 					const cpumask_t *src2p, int nbits)
++ {
++ 	return bitmap_equal(src1p->bits, src2p->bits, nbits);
++ }
++ 
++ #define cpus_intersects(src1, src2) __cpus_intersects(&(src1), &(src2), NR_CPUS)
++ static inline int __cpus_intersects(const cpumask_t *src1p,
++ 					const cpumask_t *src2p, int nbits)
++ {
++ 	return bitmap_intersects(src1p->bits, src2p->bits, nbits);
++ }
++ 
++ #define cpus_subset(src1, src2) __cpus_subset(&(src1), &(src2), NR_CPUS)
++ static inline int __cpus_subset(const cpumask_t *src1p,
++ 					const cpumask_t *src2p, int nbits)
++ {
++ 	return bitmap_subset(src1p->bits, src2p->bits, nbits);
++ }
++ 
++ #define cpus_empty(src) __cpus_empty(&(src), NR_CPUS)
++ static inline int __cpus_empty(const cpumask_t *srcp, int nbits)
++ {
++ 	return bitmap_empty(srcp->bits, nbits);
++ }
++ 
++ #define cpus_weight(cpumask) __cpus_weight(&(cpumask), NR_CPUS)
++ static inline int __cpus_weight(const cpumask_t *srcp, int nbits)
++ {
++ 	return bitmap_weight(srcp->bits, nbits);
++ }
++ 
++ #define cpus_shift_left(dst, src, n) \
++ 			__cpus_shift_left(&(dst), &(src), (n), NR_CPUS)
++ static inline void __cpus_shift_left(cpumask_t *dstp,
++ 					const cpumask_t *srcp, int n, int nbits)
++ {
++ 	bitmap_shift_left(dstp->bits, srcp->bits, n, nbits);
++ }
++ #endif /* !CONFIG_DISABLE_OBSOLETE_CPUMASK_FUNCTIONS */
++ 
+  #endif /* __LINUX_CPUMASK_H */
