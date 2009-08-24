@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751575AbZHXF7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbZHXF7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751575AbZHXF7B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 01:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbZHXF7A
+	id S1751596AbZHXF7b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 01:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZHXF7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 01:59:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53840
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751133AbZHXF7A (ORCPT
+	Mon, 24 Aug 2009 01:59:30 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46320 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbZHXF7a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 01:59:00 -0400
-Date: Sun, 23 Aug 2009 22:59:12 -0700 (PDT)
-Message-Id: <20090823.225912.87554943.davem@davemloft.net>
-To: Dongdong.deng@windriver.com
-Cc: nico@cam.org, mpm@selenic.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jason.wessel@windriver.com
-Subject: Re: [PATCH] [net] smc91x: let smc91x work well under netpoll
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1251085351.6588.21.camel@dengdd-desktop>
-References: <1250862005.24178.28.camel@dengdd-desktop>
-	<alpine.LFD.2.00.0908211304000.6044@xanadu.home>
-	<1251085351.6588.21.camel@dengdd-desktop>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 24 Aug 2009 01:59:30 -0400
+Subject: Re: system gets stuck in a lock during boot
+From: Peter Zijlstra <peterz@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4A91FDED.9050801@cn.fujitsu.com>
+References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>
+	 <20090818160911.GA21243@goodmis.org>
+	 <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com>
+	 <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com>
+	 <4A8B4607.6090303@gmail.com> <4A8B5113.20102@cn.fujitsu.com>
+	 <4A8FA2BD.4030707@gmail.com>  <4A91FDED.9050801@cn.fujitsu.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Mon, 24 Aug 2009 07:58:43 +0200
+Message-Id: <1251093523.7538.118.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: DDD <Dongdong.deng@windriver.com>
-Date: Mon, 24 Aug 2009 11:42:31 +0800
+On Mon, 2009-08-24 at 10:41 +0800, Li Zefan wrote:
 
-> The NETPOLL requires that interrupts remain disabled in its callbacks.
+> > @@ -940,7 +940,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentr
+> >                 entry = trace_create_file("enable", 0644, call->dir, call,
+> >                                           enable);
+> > 
+> > -       if (call->id)
+> > +       if (call->id && call->profile_enable)
 > 
-> Using *_irq_save()/irq_restore() to replace *_irq_disable()/irq_enable()
-> functions in NETPOLL's callbacks of smc91x, so that it doesn't enable
-> interrupts when already disabled, and kgdboe/netconsole would work
-> properly over smc91x.
+> We do an extra check on ->profile_enable, shouldn't cause bug..
 > 
-> Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
-> Acked-by: Nicolas Pitre <nico@cam.org>
+> >                 entry = trace_create_file("id", 0444, call->dir, call,
+> >                                           id);
+> 
+> Any way, I don't think this commit does the right thing:
+> 
+>   - If CONFIG_EVENT_PROFILE=y, we'll create events/<dir>/<event>/id,
+>     except events/ftrace/<event>/id.
+> 
+>   - if CONFIG_EVENT_PROFILE=n, there's no 'id' file at all!
+> 
+> I think it's better to skip ftrace/ dir in perf tool code, instead of
+> skipping creating id files in ftrace code.
 
-Applied, thanks.
+No, it does do the right thing. Your patch breaks things because not all
+tracepoints are created through TRACE_EVENT() and will thus not have
+their profile_enable/disable hooks set.
+
+By giving them an ID file, there is no way to distinguish good from bad
+tracepoints.
+
+Expempting ftrace is no solid solution, suppose someone else does a
+TRACE_EVENT_FORMAT() tracepoint, how would you know you could use it as
+a profile event source?
+
+The id files really must stay conditional.
+
+Aside from that, you only add #ifdef fuzz back which with his config is
+moot, and shouldn't result in anything but a slightly bigger structure
+to begin with.
