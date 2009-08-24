@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751880AbZHXIG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751807AbZHXIR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751880AbZHXIG0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZHXIGZ
+	id S1751807AbZHXIR3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbZHXIR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:06:25 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57399 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751439AbZHXIGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:06:25 -0400
-Date: Mon, 24 Aug 2009 10:06:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, jeff@garzik.org, benh@kernel.crashing.org,
-       htejun@gmail.com, bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/6] workqueue: add support for lazy workqueues
-Message-ID: <20090824080626.GD12579@kernel.dk>
-References: <1250763466-24282-1-git-send-email-jens.axboe@oracle.com> <1250763466-24282-2-git-send-email-jens.axboe@oracle.com> <1250763466-24282-3-git-send-email-jens.axboe@oracle.com> <1250763466-24282-4-git-send-email-jens.axboe@oracle.com> <1250763466-24282-5-git-send-email-jens.axboe@oracle.com> <20090820172027.cdc41d1e.akpm@linux-foundation.org>
+	Mon, 24 Aug 2009 04:17:28 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:61941 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbZHXIR1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 04:17:27 -0400
+Date: Mon, 24 Aug 2009 10:17:23 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: linux-next: manual merge of the tip tree with the s390 tree
+Message-ID: <20090824081723.GA4798@osiris.boeblingen.de.ibm.com>
+References: <20090824170119.57cf4f59.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090820172027.cdc41d1e.akpm@linux-foundation.org>
+In-Reply-To: <20090824170119.57cf4f59.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20 2009, Andrew Morton wrote:
-> On Thu, 20 Aug 2009 12:17:39 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
+On Mon, Aug 24, 2009 at 05:01:19PM +1000, Stephen Rothwell wrote:
+> Hi all,
 > 
-> > Lazy workqueues are like normal workqueues, except they don't
-> > start a thread per CPU by default. Instead threads are started
-> > when they are needed, and exit when they have been idle for
-> > some time.
-> > 
-> >
-> > ...
-> >
-> > @@ -280,7 +309,34 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
-> >  		trace_workqueue_execution(cwq->thread, work);
-> >  		cwq->current_work = work;
-> >  		list_del_init(cwq->worklist.next);
-> > +		cpu = smp_processor_id();
-> >  		spin_unlock_irq(&cwq->lock);
-> > +		did_work = 1;
-> > +
-> > +		/*
-> > +		 * If work->cpu isn't us, then we need to create the target
-> > +		 * workqueue thread (if someone didn't already do that) and
-> > +		 * move the work over there.
-> > +		 */
-> > +		if ((cwq->wq->flags & WQ_F_LAZY) && work->cpu != cpu) {
-> > +			struct cpu_workqueue_struct *__cwq;
-> > +			struct task_struct *p;
-> > +			int err;
-> > +
-> > +			__cwq = wq_per_cpu(cwq->wq, work->cpu);
-> > +			p = __cwq->thread;
-> > +			if (!p)
-> > +				err = create_workqueue_thread(__cwq, work->cpu);
-> > +			p = __cwq->thread;
-> > +			if (p) {
-> > +				if (work->cpu >= 0)
+> Today's linux-next merge of the tip tree got a conflict in
+> arch/s390/kernel/time.c between commit
+> 6342887c12d79c5a2c8c1de5be6f483e16a2acdd ("[S390] introduce
+> get_clock_monotonic") from the s390 tree and commit
+> 23970e389e9cee43c4b41023935e1417271708b2 ("timekeeping: Introduce
+> read_boot_clock") from the tip tree.
 > 
-> It's an unsigned int.  This test is always true.
-> 
-> > +					kthread_bind(p, work->cpu);
-> 
-> I wonder what happens if work->cpu isn't online any more.
+> I fixed it up (see below) and can carry the fix as necessary.
 
-That's a good question. The workqueue "documentation" states that it is
-the callers responsibility to ensure that the CPU stays online, but I
-think that requirement is pretty much ignored. Probably since it'd be
-costly to do.
-
-So that bits needs looking into.
-
--- 
-Jens Axboe
-
+I reverted the sched_clock_base_cc rename. The merge conflict
+should be gone as soon as Martin pushes a new tree out.
