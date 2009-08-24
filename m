@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbZHXJhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752148AbZHXJox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751971AbZHXJhY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 05:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZHXJhU
+	id S1752148AbZHXJox (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 05:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbZHXJov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 05:37:20 -0400
-Received: from mail.windriver.com ([147.11.1.11]:60859 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbZHXJhT (ORCPT
+	Mon, 24 Aug 2009 05:44:51 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51468 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752083AbZHXJou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 05:37:19 -0400
-From: Chunbo Luo <chunbo.luo@windriver.com>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-sctp@vger.kernel.org,
-       linux-kernel@vger.kernel.org, chunbo.luo@windriver.com
-Subject: [PATCH v2] sctp: fix the check for path failure detection
-Date: Mon, 24 Aug 2009 17:37:17 +0800
-Message-Id: <1251106637-434-1-git-send-email-chunbo.luo@windriver.com>
-X-Mailer: git-send-email 1.6.4
+	Mon, 24 Aug 2009 05:44:50 -0400
+Date: Mon, 24 Aug 2009 11:43:54 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: James Morris <jmorris@namei.org>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       Joseph Cihula <joseph.cihula@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com, hpa@zytor.com,
+       andi@firstfloor.org, jbeulich@novell.com, peterm@redhat.com,
+       gang.wei@intel.com, shane.wang@intel.com
+Subject: Re: [RFC v4][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+	support
+Message-ID: <20090824094353.GE25591@elf.ucw.cz>
+References: <4A299051.40405@intel.com> <alpine.LRH.2.00.0906121509001.14633@tundra.namei.org> <20090619150514.GE1389@ucw.cz> <20090619183414.GG19771@sequoia.sous-sol.org> <alpine.LRH.2.00.0906221135550.18633@tundra.namei.org> <20090626213045.GA22359@elf.ucw.cz> <alpine.LRH.2.00.0906290828200.29509@tundra.namei.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0906290828200.29509@tundra.namei.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The transport error count should be incremented when an outstanding
-HB is not acknowledged. And the path failure detection should be done
-before sending out the HB.
+On Mon 2009-06-29 08:46:07, James Morris wrote:
+> On Fri, 26 Jun 2009, Pavel Machek wrote:
+> 
+> > 
+> > > Also, hardware security measures such as TXT are important in providing 
+> > > stronger mechanisms to ensure that kernel security mechanisms are 
+> > > functioning correctly.
+> > 
+> > I don't get it. How does TXT help kernel security mechanisms?
+> 
+> Kernel security mechanisms can be subverted and bypassed in the case of an 
+> exploitable kernel vulnerability, or from exploitable buggy hardware (e.g. 
+> which can access the entire host's memory via DMA).  Attacks on kernel 
+> security mechanisms have been describe in detail, see: 
+> http://www.phrack.com/issues.html?issue=66&id=15#article
+> 
+> This is close to impossible to solve from within the kernel alone. 
+> Hardware support is required to allow protection of the IO space (e.g. via 
+> IOMMU/VT-d), and to allow verification of the kernel itself (via
+> TXT).
 
-Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
----
- net/sctp/sm_sideeffect.c |    6 +++++-
- net/sctp/sm_statefuns.c  |    8 ++++----
- 2 files changed, 9 insertions(+), 5 deletions(-)
+So... you can exploit kernel security holes. How does intel TXT help?
 
-diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
-index 86426aa..fbdf4de 100644
---- a/net/sctp/sm_sideeffect.c
-+++ b/net/sctp/sm_sideeffect.c
-@@ -446,7 +446,11 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
- 	if (transport->state != SCTP_UNCONFIRMED)
- 		asoc->overall_error_count++;
- 
--	if (transport->state != SCTP_INACTIVE &&
-+	/*
-+	 * The transport error count is incremented when an outstanding HB
-+	 * is not acknowledged. 
-+	 */
-+	if (transport->hb_sent && transport->state != SCTP_INACTIVE &&
- 	    (transport->error_count++ >= transport->pathmaxrxt)) {
- 		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
- 					 " transport IP: port:%d failed.\n",
-diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
-index 7288192..7f77099 100644
---- a/net/sctp/sm_statefuns.c
-+++ b/net/sctp/sm_statefuns.c
-@@ -981,10 +981,6 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
- 	 */
- 
- 	if (transport->param_flags & SPP_HB_ENABLE) {
--		if (SCTP_DISPOSITION_NOMEM ==
--				sctp_sf_heartbeat(ep, asoc, type, arg,
--						  commands))
--			return SCTP_DISPOSITION_NOMEM;
- 		/* Set transport error counter and association error counter
- 		 * when sending heartbeat.
- 		 */
-@@ -992,6 +988,10 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
- 				SCTP_TRANSPORT(transport));
- 		sctp_add_cmd_sf(commands, SCTP_CMD_TRANSPORT_HB_SENT,
- 				SCTP_TRANSPORT(transport));
-+		if (SCTP_DISPOSITION_NOMEM ==
-+				sctp_sf_heartbeat(ep, asoc, type, arg,
-+						  commands))
-+			return SCTP_DISPOSITION_NOMEM;
- 	}
- 	sctp_add_cmd_sf(commands, SCTP_CMD_HB_TIMER_UPDATE,
- 			SCTP_TRANSPORT(transport));
+AFAICT it does not.  From what I see, intel TXT only prevents user
+from physically tampering with his own machine. Preventing user from
+tampering with his own machine is immoral to me, and from what I've
+seen it will be ineffective as soon as user suspends the machine, uses
+some liquid nitrogen, does whatever he needs with the RAM modules, and
+then places them back.
+
+									Pavel
 -- 
-1.6.4
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
