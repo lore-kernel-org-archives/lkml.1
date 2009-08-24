@@ -1,86 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbZHXVUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbZHXVZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753620AbZHXVUV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 17:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZHXVUU
+	id S1753496AbZHXVZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 17:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbZHXVZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 17:20:20 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:50799
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753364AbZHXVUT (ORCPT
+	Mon, 24 Aug 2009 17:25:28 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55351 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751080AbZHXVZ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 17:20:19 -0400
-X-Greylist: delayed 547 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Aug 2009 17:20:18 EDT
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
-Date: Mon, 24 Aug 2009 16:11:08 -0500
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
-Cc: Goswin von Brederlow <goswin-v-b@web.de>,
+	Mon, 24 Aug 2009 17:25:27 -0400
+Date: Mon, 24 Aug 2009 23:25:19 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
        kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com, tytso@mit.edu,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
        rdunlap@xenotime.net, linux-doc@vger.kernel.org,
        linux-ext4@vger.kernel.org
-References: <20090312092114.GC6949@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz>
-In-Reply-To: <20090824093143.GD25591@elf.ucw.cz>
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090824212518.GF29763@elf.ucw.cz>
+References: <200903161426.24904.rob@landley.net> <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908241611.10400.rob@landley.net>
+In-Reply-To: <4A930160.8060508@redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 24 August 2009 04:31:43 Pavel Machek wrote:
-> Running journaling filesystem such as ext3 over flashdisk or degraded
-> RAID array is a bad idea: journaling guarantees no longer apply and
-> you will get data corruption on powerfail.
+Hi!
+
+>> I can reproduce data loss with ext3 on flashcard in about 40
+>> seconds. I'd not call that "odd event". It would be nice to handle
+>> that, but that is hard. So ... can we at least get that documented
+>> please?
+>>   
 >
-> We can't solve it easily, but we should certainly warn the users. I
-> actually lost data because I did not understand these limitations...
+> Part of documenting best practices is to put down very specific things  
+> that do/don't work. What I worry about is producing too much detail to  
+> be of use for real end users.
+
+Well, I was trying to write for kernel audience. Someone can turn that
+into nice end-user manual.
+
+> I have to admit that I have not paid enough attention to this specifics  
+> of your ext3 + flash card issue - is it the ftl stuff doing out of order  
+> IO's? 
+
+The problem is that flash cards destroy whole erase block on unplug,
+and ext3 can't cope with that.
+
+>> _All_ flash cards (MMC, USB, SD) had the problems. You don't need to
+>> get clear grasp on trends. Those cards just don't meet ext3
+>> expectations, and if you pull them, you get data loss.
+>>   
+> Pull them even after an unmount, or pull them hot?
+
+Pull them hot.
+
+[Some people try -osync to avoid data loss on flash cards... that will
+not do the trick. Flashcard will still kill the eraseblock.]
+
+>>> Nothing is perfect. It is still a trade off between storage 
+>>> utilization  (how much storage we give users for say 5 2TB drives), 
+>>> performance and  costs (throw away any disks over 2 years old?).
+>>>     
+>>
+>> "Nothing is perfect"?! That's design decision/problem in raid5/ext3. I
+>> believe that should be at least documented. (And understand why ZFS is
+>> interesting thing).
+>>   
+> Your statement is overly broad - ext3 on a commercial RAID array that  
+> does RAID5 or RAID6, etc has no issues that I know of.
+
+If your commercial RAID array is battery backed, maybe. But I was
+talking Linux MD here.
+
+>> And I still use my zaurus with crappy DRAM.
+>>
+>> I would not trust raid5 array with my data, for multiple
+>> reasons. The fact that degraded raid5 breaks ext3 assumptions should
+>> really be documented.
 >
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> Again, you say RAID5 without enough specifics.  Are you pointing just at  
+> MD RAID5 on S-ATA? Hardware RAID cards? A specific commercial RAID5 
+> vendor?
 
-Acked-by: Rob Landley <rob@landley.net>
+Degraded MD RAID5 on anything, including SATA, and including
+hypothetical "perfect disk".
 
-With a couple comments:
+>> The papers show failures in "once a year" range. I have "twice a
+>> minute" failure scenario with flashdisks.
+>>
+>> Not sure how often "degraded raid5 breaks ext3 atomicity" would bite,
+>> but I bet it would be on "once a day" scale.
+>>
+>> We should document those.
+>
+> Documentation is fine with sufficient, hard data....
 
-> +* write caching is disabled. ext2 does not know how to issue barriers
-> +  as of 2.6.28. hdparm -W0 disables it on SATA disks.
-
-It's coming up on 2.6.31, has it learned anything since or should that version 
-number be bumped?
-
-> +	(Thrash may get written into sectors during powerfail.  And
-> +	ext3 handles this surprisingly well at least in the
-> +	catastrophic case of garbage getting written into the inode
-> +	table, since the journal replay often will "repair" the
-> +	garbage that was written into the filesystem metadata blocks.
-> +	It won't do a bit of good for the data blocks, of course
-> +	(unless you are using data=journal mode).  But this means that
-> +	in fact, ext3 is more resistant to suriving failures to the
-> +	first problem (powerfail while writing can damage old data on
-> +	a failed write) but fortunately, hard drives generally don't
-> +	cause collateral damage on a failed write.
-
-Possible rewording of this paragraph:
-
-  Ext3 handles trash getting written into sectors during powerfail
-  surprisingly well.  It's not foolproof, but it is resilient.  Incomplete
-  journal entries are ignored, and journal replay of complete entries will
-  often "repair" garbage written into the inode table.  The data=journal
-  option extends this behavior to file and directory data blocks as well
-  (without which your dentries can still be badly corrupted by a power fail
-  during a write).
-
-(I'm not entirely sure about that last bit, but clarifying it one way or the 
-other would be nice because I can't tell from reading it which it is.  My 
-_guess_ is that directories are just treated as files with an attitude and an 
-extra cacheing layer...?)
-
-Rob
+Degraded MD RAID5 does not work by design; whole stripe will be
+damaged on powerfail or reset or kernel bug, and ext3 can not cope
+with that kind of damage. [I don't see why statistics should be
+neccessary for that; the same way we don't need statistics to see that
+ext2 needs fsck after powerfail.]
+									Pavel
 -- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
