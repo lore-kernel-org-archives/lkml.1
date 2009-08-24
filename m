@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752224AbZHXLn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZHXLw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752224AbZHXLn1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 07:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZHXLn0
+	id S1752184AbZHXLw7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 07:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZHXLw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 07:43:26 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49818 "EHLO kernel.dk"
+	Mon, 24 Aug 2009 07:52:58 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50096 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751937AbZHXLnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 07:43:25 -0400
-Date: Mon, 24 Aug 2009 13:43:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr, fweisbec@gmail.com,
-       Alan.Brunelle@hp.com
-Subject: Re: [PATCH 5/9] writeback: support > 1 flusher thread per bdi
-Message-ID: <20090824114326.GK12579@kernel.dk>
-References: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com> <1248989044-21605-6-git-send-email-jens.axboe@oracle.com> <20090805195504.GD27505@duck.suse.cz> <20090806070546.GH12579@kernel.dk> <20090806205621.GB8177@duck.suse.cz>
+	id S1751080AbZHXLw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 07:52:58 -0400
+Date: Mon, 24 Aug 2009 13:52:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mundt <lethal@linux-sh.org>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH v3 2/4] tracing: Make syscall_(un)regfunc arch-specific
+Message-ID: <20090824115241.GD10215@elte.hu>
+References: <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250917125-6174-1-git-send-email-jistone@redhat.com> <1250917125-6174-2-git-send-email-jistone@redhat.com> <1250917125-6174-3-git-send-email-jistone@redhat.com> <20090823211422.GG6256@nowhere> <20090824014025.GA12653@linux-sh.org> <20090824084101.GE2424@elte.hu> <20090824085944.GA15330@linux-sh.org> <20090824095652.GC25267@elte.hu> <20090824103251.GA18106@linux-sh.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090806205621.GB8177@duck.suse.cz>
+In-Reply-To: <20090824103251.GA18106@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 06 2009, Jan Kara wrote:
->   Actually, looking again that the work struct "state" field has lots of
-> free bits. I think the code looks nicer with the attached patch, what do
-> you think?
+
+* Paul Mundt <lethal@linux-sh.org> wrote:
+
+> On Mon, Aug 24, 2009 at 11:56:52AM +0200, Ingo Molnar wrote:
+
+> > So i'd really like you to back up your claims with facts. Your 
+> > mail is basically unsubstantiated FUD right now and i'll just 
+> > ignore you if you continue this pattern of unsubstantiated 
+> > attacks and unconstructive behavior.
 > 
-> > >   2) I'd introduce a flag with the meaning: free the work when you are
-> > > done. Obviusly this flag makes sence only with dynamically allocated work
-> > > structure. There would be no "on stack" flag.
-> > >   3) I'd create a function:
-> > > bdi_wait_work_submitted()
-> > >   which you'd have to call whenever you didn't set the flag and want to
-> > > free the work (either explicitely, or via returning from a function which
-> > > has the structure on stack).
-> > >   It would do:
-> > > bdi_wait_on_work_clear(work);
-> > > call_rcu(&work->rcu_head, bdi_work_free);
-> > > 
-> > >   wb_work_complete() would just depending on the flag setting either
-> > > completely do away with the work struct or just do bdi_work_clear().
-> > > 
-> > >   IMO that would make the code easier to check and also less prone to
-> > > errors (currently you have to think twice when you have to wait for the rcu
-> > > period, call bdi_work_free, etc.).
-> > 
-> > Didn't we go over all that last time, too?
->   Well, probably about something similar. But this time I have a patch ;-)
-> Compile tested only... IMO it looks nicer this way as it wraps up all the
-> details of work freeing into one function.
+> I could sit here and itemize individual breakages all day long, 
+> but what would be the point? [...]
 
-The first patch looks nice and obvious, I'll fold that in with the
-original patch if you don't mind. It's definitely cleaner, instead of
-overloading the pointer.
+The point would be to prove your so far unsubstantiated (and IMO 
+unfair) attacks.
 
-The second one I'd rather hold off on, I've run over the existing code
-many times and tested it heavily threaded and know it's safe. So I'd
-rather not introduce any drastic changes there so close to 2.6.32, but
-I'd be happy to revisit this soon after merge. OK?
-
--- 
-Jens Axboe
-
+	Ingo
