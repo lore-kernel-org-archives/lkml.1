@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbZHXHam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbZHXHaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751870AbZHXHam (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 03:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZHXHal
+	id S1751906AbZHXHaw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 03:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZHXHav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 03:30:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38214 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbZHXHak (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 03:30:40 -0400
-Subject: Re: [PATCH 1/4] perf_counter: Default to higher paranoia level
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>, James Morris <jmorris@namei.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090821142151.GC11098@elte.hu>
-References: <20090819091823.916851355@chello.nl>
-	 <20090819092023.728070630@chello.nl> <1250690853.8282.59.camel@twins>
-	 <1250769606.8282.181.camel@twins>  <20090821142151.GC11098@elte.hu>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Aug 2009 09:29:22 +0200
-Message-Id: <1251098962.7538.143.camel@twins>
+	Mon, 24 Aug 2009 03:30:51 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38426 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751882AbZHXHat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 03:30:49 -0400
+Date: Mon, 24 Aug 2009 17:30:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for August 19
+Message-Id: <20090824173046.c4f67b80.sfr@canb.auug.org.au>
+In-Reply-To: <20090819093528.GA16547@mail.oracle.com>
+References: <20090819190233.86e78493.sfr@canb.auug.org.au>
+	<20090819093528.GA16547@mail.oracle.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__24_Aug_2009_17_30_46_+1000_Gqb9YG4hmYUQIb0E"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-21 at 16:21 +0200, Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
+--Signature=_Mon__24_Aug_2009_17_30_46_+1000_Gqb9YG4hmYUQIb0E
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-> > index 9ba1822..2b0528f 100644
-> > --- a/include/linux/perf_counter.h
-> > +++ b/include/linux/perf_counter.h
-> > @@ -439,6 +439,7 @@ enum perf_callchain_context {
-> >  struct perf_callchain_entry {
-> >  	__u64				nr;
-> >  	__u64				ip[PERF_MAX_STACK_DEPTH];
-> > +	int				restricted;
-> >  };
-> 
-> i'd love to have something more specific here - i.e. a context type 
-> ID that identifies these basic types:
-> 
->  - process
->  - softirq
->  - hardirq
->  - NMI
-> 
-> and then let it be up to upper layers to decide what they do with a 
-> restricted entry, and how to further process this information.
-> 
-> And it's not just security: for example it would be interesting to 
-> sample pure, non-irq overhead - as IRQ overhead is often unrelated 
-> to the process being measured.
+Hi Joel,
 
-Yes it is, this is purely about not showing some data. If you don't want
-to sample IRQ stuff that's something else, we'd have to grow that
-capability in hardware (like the OS/USR bits) or put perf enable/disable
-hooks into the irq entry/exit hooks (which doesn't sound all too hot an
-idea to me).
+[Sorry for being a bit slow]
 
-Simply not showing the call-trace is something all-together different
-from not profiling it.
+On Wed, 19 Aug 2009 02:35:28 -0700 Joel Becker <Joel.Becker@oracle.com> wro=
+te:
+>
+> On Wed, Aug 19, 2009 at 07:02:33PM +1000, Stephen Rothwell wrote:
+> > Merging configfs/linux-next
+> > CONFLICT (content): Merge conflict in fs/configfs/dir.c
+>=20
+> 	Silly question.  The last time I had a conflict in next, you
+> emailed me the details.  How do I go about finding them on my own
+> (without doing the complete merge you do)?
+
+Not a silly question, really.  I have no idea if you can generate those
+merge resolution diffs without actually doing the merge.
+
+Thanks for fixing up the configfs tree.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__24_Aug_2009_17_30_46_+1000_Gqb9YG4hmYUQIb0E
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqSQaYACgkQjjKRsyhoI8ydIwCgvei+SlBGDyNLopVKGHzlhKOY
+fbwAn2EurNI8dcijRJvdo+eLfSDNvgVm
+=I5ai
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__24_Aug_2009_17_30_46_+1000_Gqb9YG4hmYUQIb0E--
