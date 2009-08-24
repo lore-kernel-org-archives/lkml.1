@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822AbZHXG5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbZHXG7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751822AbZHXG5d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 02:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZHXG5c
+	id S1751825AbZHXG7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 02:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbZHXG7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 02:57:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37622 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751587AbZHXG5c (ORCPT
+	Mon, 24 Aug 2009 02:59:43 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45245 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbZHXG7m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 02:57:32 -0400
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+	Mon, 24 Aug 2009 02:59:42 -0400
+Subject: Re: linux-next: tip tree build failure
 From: Peter Zijlstra <peterz@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A923197.4040708@cn.fujitsu.com>
-References: <4A9214E3.2070807@cn.fujitsu.com>
-	 <1251093660.7538.119.camel@twins>  <4A923197.4040708@cn.fujitsu.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090824165449.559d1597.sfr@canb.auug.org.au>
+References: <20090824165449.559d1597.sfr@canb.auug.org.au>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Aug 2009 08:56:52 +0200
-Message-Id: <1251097012.7538.123.camel@twins>
+Date: Mon, 24 Aug 2009 08:58:56 +0200
+Message-Id: <1251097136.7538.124.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-24 at 14:22 +0800, Li Zefan wrote:
-> Peter Zijlstra wrote:
-> > On Mon, 2009-08-24 at 12:19 +0800, Li Zefan wrote:
-> >> If the correspoding module is unloaded before ftrace_profile_disable()
-> >> is called, event->profile_disable() won't be called, which can
-> >> cause oops:
-> >>
-> >>   # insmod trace-events-sample.ko
-> >>   # perf record -f -a -e sample:foo_bar sleep 3 &
-> >>   # sleep 1
-> >>   # rmmod trace_events_sample
-> >>   # insmod trace-events-sample.ko
-> >>   OOPS!
-> >>
-> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > 
-> > 
-> > Hrmm, feel fragile, why don't we check if all a modules tracepoints are
-> > unused on unload?
-> > 
+On Mon, 2009-08-24 at 16:54 +1000, Stephen Rothwell wrote:
+> Hi all,
 > 
-> I don't think it's fragile. We are profiling via a module's
-> tracepoint, so we should pin the module, via module_get().
-> If event->profile_enable() has been calld, we should make
-> sure it's profile_disable() will be called.
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> 
+> arch/powerpc/kernel/perf_callchain.c: In function 'perf_callchain_kernel':
+> arch/powerpc/kernel/perf_callchain.c:73: error: implicit declaration of function 'perf_paranoid_anon_ip'
+> 
+> Caused by commit 512cec5d6f2a71e04464bf4fd76a50571bd0dea1 ("perf_counter:
+> powerpc: Support the anonimized kernel callchain bits") which I have
+> reverted for today.
 
-What I call fragile is that everyone registering a tracepoint callback
-will now apparently need to worry about modules, _that_ is fragile.
-
-Either make module unload look at tracepoint users, or place the
-try_get_module() in the registration hooks so that regular users don't
-need to worry about it.
-
-But this is rediculous.
+Yes, that needs to be gone, it relied on another change which never went
+in. Ingo could you make that commit disappear?
