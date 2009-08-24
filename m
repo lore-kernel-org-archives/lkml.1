@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZHXMgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZHXMtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412AbZHXMgO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 08:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZHXMgN
+	id S1752420AbZHXMtR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 08:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZHXMtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 08:36:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51683 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751080AbZHXMgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 08:36:12 -0400
-Date: Mon, 24 Aug 2009 14:36:11 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-       yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk,
-       damien.wyart@free.fr, fweisbec@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: [PATCH 5/9] writeback: support > 1 flusher thread per bdi
-Message-ID: <20090824123611.GE10080@duck.novell.com>
-References: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com> <1248989044-21605-6-git-send-email-jens.axboe@oracle.com> <20090805195504.GD27505@duck.suse.cz> <20090806070546.GH12579@kernel.dk> <20090806205621.GB8177@duck.suse.cz> <20090824114326.GK12579@kernel.dk>
+	Mon, 24 Aug 2009 08:49:15 -0400
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:52924 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbZHXMtP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 08:49:15 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+ESVh0lp3eXieSUVruHcUW
+Date: Mon, 24 Aug 2009 15:49:03 +0300
+From: Tony Lindgren <tony@atomide.com>
+To: Jarkko Nikula <jhnikula@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
+       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>
+Subject: Re: [alsa-devel] [RFC][PATCH 1/3 v2] ARM: OMAP: DMA: Add support
+	for DMA channel self linking on OMAP1510
+Message-ID: <20090824124902.GH7069@atomide.com>
+References: <200908101050.02530.jkrzyszt@tis.icnet.pl> <200908231945.40187.jkrzyszt@tis.icnet.pl> <20090823180543.GA6167@opensource.wolfsonmicro.com> <200908232038.05593.jkrzyszt@tis.icnet.pl> <20090823184943.GA6994@opensource.wolfsonmicro.com> <20090824084920.c99c561a.jhnikula@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090824114326.GK12579@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090824084920.c99c561a.jhnikula@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 24-08-09 13:43:26, Jens Axboe wrote:
-> On Thu, Aug 06 2009, Jan Kara wrote:
-> >   Actually, looking again that the work struct "state" field has lots of
-> > free bits. I think the code looks nicer with the attached patch, what do
-> > you think?
-> > 
-> > > >   2) I'd introduce a flag with the meaning: free the work when you are
-> > > > done. Obviusly this flag makes sence only with dynamically allocated work
-> > > > structure. There would be no "on stack" flag.
-> > > >   3) I'd create a function:
-> > > > bdi_wait_work_submitted()
-> > > >   which you'd have to call whenever you didn't set the flag and want to
-> > > > free the work (either explicitely, or via returning from a function which
-> > > > has the structure on stack).
-> > > >   It would do:
-> > > > bdi_wait_on_work_clear(work);
-> > > > call_rcu(&work->rcu_head, bdi_work_free);
-> > > > 
-> > > >   wb_work_complete() would just depending on the flag setting either
-> > > > completely do away with the work struct or just do bdi_work_clear().
-> > > > 
-> > > >   IMO that would make the code easier to check and also less prone to
-> > > > errors (currently you have to think twice when you have to wait for the rcu
-> > > > period, call bdi_work_free, etc.).
-> > > 
-> > > Didn't we go over all that last time, too?
-> >   Well, probably about something similar. But this time I have a patch ;-)
-> > Compile tested only... IMO it looks nicer this way as it wraps up all the
-> > details of work freeing into one function.
+* Jarkko Nikula <jhnikula@gmail.com> [090824 08:47]:
+> On Sun, 23 Aug 2009 19:49:43 +0100
+> Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 > 
-> The first patch looks nice and obvious, I'll fold that in with the
-> original patch if you don't mind. It's definitely cleaner, instead of
-> overloading the pointer.
-  Yes, that's fine.
+> > On Sun, Aug 23, 2009 at 08:38:05PM +0200, Janusz Krzysztofik wrote:
+> > > Sunday 23 August 2009 20:05:43 Mark Brown wrote:
+> > 
+> > > > then what are the other 
+> > > > patches that depend on this? Nobody reported any issues in testing with 
+> > > > the other OMAP patches.
+> > 
+> > > Dependency on patch 1/3 is not compile time, but run time, and OMAP1510 
+> > > specific, that's probably why nobody has reported any issues.
+> > 
+> > OK, given that and the fact that you're reporting that none of these
+> > files are afected by any of the other patches it sounds like it'd be
+> > better to keep it in the OMAP tree unless Tony says otherwse.
+> 
+> Yep, Janusz's commits 64844a6ac8ddd586cb832fea7cf2e93e5e7e03f4 and
+> 471e3dec3abe2d41e8c742046353fcb01bc2459e do not cause problems on other
+> OMAPs but will cause that ASoC on 1510 is broken until his DMA
+> patch(es) are applied. I'm sure you Janusz will ping Tony until he'll
+> apply them :-)
+> 
+> We should remember that arch/arm/plat-omap/mcbsp.c changes done via
+> ALSA tree has been an exception and that's only for simpler procedure.
+> McBSP is not so critical if sources goes out-of-sync but DMA is.
 
-> The second one I'd rather hold off on, I've run over the existing code
-> many times and tested it heavily threaded and know it's safe. So I'd
-> rather not introduce any drastic changes there so close to 2.6.32, but
-> I'd be happy to revisit this soon after merge. OK?
-  Fine with me, I'm just not sure about the merging in 2.6.32 - the
-umount_sem and sb->s_count problems (http://lkml.org/lkml/2009/8/5/322 -
-BTW I didn't see a response from you) should get sorted out before the
-merge. To be honest, I'm not much in favor of merging your patches before
-having resolved that and I think Christoph Hellwig or Al Viro will express
-their opinion even more strongly ;).
+Sorry for the delay in replying. I'm OK for these to go in via the alsa
+tree as there are not currently other patches pending in the mcbsp or
+dma area for omap. So I think it's better merge all the audio related
+patches together in this case.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Acked-by: Tony Lindgren <tony@atomide.com>
+
