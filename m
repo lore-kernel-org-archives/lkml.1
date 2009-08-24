@@ -1,70 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751392AbZHXDUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751401AbZHXDaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751392AbZHXDUz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 23:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZHXDUy
+	id S1751401AbZHXDaT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 23:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZHXDaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 23:20:54 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:41921 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbZHXDUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 23:20:53 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 23 Aug 2009 23:30:18 -0400
+Received: from mail.windriver.com ([147.11.1.11]:40816 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbZHXDaR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 23:30:17 -0400
+Subject: [PATCH] [net] smc91x: let smc91x work well under netpoll
+From: DDD <Dongdong.deng@windriver.com>
+To: Nicolas Pitre <nico@cam.org>, David Miller <davem@davemloft.net>
+Cc: Matt Mackall <mpm@selenic.com>, lkml <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
+In-Reply-To: <alpine.LFD.2.00.0908211304000.6044@xanadu.home>
+References: <1250861616.24178.20.camel@dengdd-desktop>
+	 <1250862005.24178.28.camel@dengdd-desktop>
+	 <alpine.LFD.2.00.0908211304000.6044@xanadu.home>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-ID: <19090.1800.521794.839576@cargo.ozlabs.ibm.com>
-Date: Mon, 24 Aug 2009 13:20:40 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, dwalker@fifo99.com,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:timers/core] timekeeping: Increase granularity of
-	read_persistent_clock()
-In-Reply-To: <20090823084740.GA7651@elte.hu>
-References: <20090814134811.013873340@de.ibm.com>
-	<tip-d4f587c67fc39e0030ddd718675e252e208da4d7@git.kernel.org>
-	<20090822103252.GA32369@elte.hu>
-	<20090822171540.1220f50d@skybase>
-	<20090822153346.GA3313@elte.hu>
-	<19088.47213.327897.703458@cargo.ozlabs.ibm.com>
-	<20090823084740.GA7651@elte.hu>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Date: Mon, 24 Aug 2009 11:42:31 +0800
+Message-Id: <1251085351.6588.21.camel@dengdd-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-OriginalArrivalTime: 24 Aug 2009 03:29:47.0342 (UTC) FILETIME=[215E76E0:01CA246B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+The NETPOLL requires that interrupts remain disabled in its callbacks.
 
-> Do you ask Linus to rebase the upstream kernel as well, if the 
-> powerpc or x86 build happens to break? There's more than a dozen 
-> such cases per development cycle triggering on my tests alone. If 
-> not, why not?
+Using *_irq_save()/irq_restore() to replace *_irq_disable()/irq_enable()
+functions in NETPOLL's callbacks of smc91x, so that it doesn't enable
+interrupts when already disabled, and kgdboe/netconsole would work
+properly over smc91x.
 
-I see you pulling commits out of the tip tree quite often, when they
-have testing failures of various kinds.  I presume that, like other
-maintainers, you have some branches that you try hard not to rebase
-and other testing branches that are quite volatile and get
-reconstructed frequently (though I don't know what branch names you
-use for them).
+Signed-off-by: Dongdong Deng <dongdong.deng@windriver.com>
+Acked-by: Nicolas Pitre <nico@cam.org>
+---
+ drivers/net/smc91x.c |   40 ++++++++++++++++++++++------------------
+ 1 files changed, 22 insertions(+), 18 deletions(-)
 
-I presumed that you wouldn't have put a commit that hadn't even passed
-basic build testing into one of your non-rebasing branches.  That's
-why I assumed you could fold the fix into the original patch without
-difficulty.
+diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
+index 1c70e99..9da1fa1 100644
+--- a/drivers/net/smc91x.c
++++ b/drivers/net/smc91x.c
+@@ -196,21 +196,23 @@ static void PRINT_PKT(u_char *buf, int length)
+ /* this enables an interrupt in the interrupt mask register */
+ #define SMC_ENABLE_INT(lp, x) do {					\
+ 	unsigned char mask;						\
+-	spin_lock_irq(&lp->lock);					\
++	unsigned long smc_enable_flags;					\
++	spin_lock_irqsave(&lp->lock, smc_enable_flags);			\
+ 	mask = SMC_GET_INT_MASK(lp);					\
+ 	mask |= (x);							\
+ 	SMC_SET_INT_MASK(lp, mask);					\
+-	spin_unlock_irq(&lp->lock);					\
++	spin_unlock_irqrestore(&lp->lock, smc_enable_flags);		\
+ } while (0)
+ 
+ /* this disables an interrupt from the interrupt mask register */
+ #define SMC_DISABLE_INT(lp, x) do {					\
+ 	unsigned char mask;						\
+-	spin_lock_irq(&lp->lock);					\
++	unsigned long smc_disable_flags;				\
++	spin_lock_irqsave(&lp->lock, smc_disable_flags);		\
+ 	mask = SMC_GET_INT_MASK(lp);					\
+ 	mask &= ~(x);							\
+ 	SMC_SET_INT_MASK(lp, mask);					\
+-	spin_unlock_irq(&lp->lock);					\
++	spin_unlock_irqrestore(&lp->lock, smc_disable_flags);		\
+ } while (0)
+ 
+ /*
+@@ -520,21 +522,21 @@ static inline void  smc_rcv(struct net_device *dev)
+  * any other concurrent access and C would always interrupt B. But life
+  * isn't that easy in a SMP world...
+  */
+-#define smc_special_trylock(lock)					\
++#define smc_special_trylock(lock, flags)				\
+ ({									\
+ 	int __ret;							\
+-	local_irq_disable();						\
++	local_irq_save(flags);						\
+ 	__ret = spin_trylock(lock);					\
+ 	if (!__ret)							\
+-		local_irq_enable();					\
++		local_irq_restore(flags);				\
+ 	__ret;								\
+ })
+-#define smc_special_lock(lock)		spin_lock_irq(lock)
+-#define smc_special_unlock(lock)	spin_unlock_irq(lock)
++#define smc_special_lock(lock, flags)		spin_lock_irq(lock, flags)
++#define smc_special_unlock(lock, flags) 	spin_unlock_irqrestore(lock, flags)
+ #else
+-#define smc_special_trylock(lock)	(1)
+-#define smc_special_lock(lock)		do { } while (0)
+-#define smc_special_unlock(lock)	do { } while (0)
++#define smc_special_trylock(lock, flags)	(1)
++#define smc_special_lock(lock, flags)   	do { } while (0)
++#define smc_special_unlock(lock, flags)	do { } while (0)
+ #endif
+ 
+ /*
+@@ -548,10 +550,11 @@ static void smc_hardware_send_pkt(unsigned long data)
+ 	struct sk_buff *skb;
+ 	unsigned int packet_no, len;
+ 	unsigned char *buf;
++	unsigned long flags;
+ 
+ 	DBG(3, "%s: %s\n", dev->name, __func__);
+ 
+-	if (!smc_special_trylock(&lp->lock)) {
++	if (!smc_special_trylock(&lp->lock, flags)) {
+ 		netif_stop_queue(dev);
+ 		tasklet_schedule(&lp->tx_task);
+ 		return;
+@@ -559,7 +562,7 @@ static void smc_hardware_send_pkt(unsigned long data)
+ 
+ 	skb = lp->pending_tx_skb;
+ 	if (unlikely(!skb)) {
+-		smc_special_unlock(&lp->lock);
++		smc_special_unlock(&lp->lock, flags);
+ 		return;
+ 	}
+ 	lp->pending_tx_skb = NULL;
+@@ -569,7 +572,7 @@ static void smc_hardware_send_pkt(unsigned long data)
+ 		printk("%s: Memory allocation failed.\n", dev->name);
+ 		dev->stats.tx_errors++;
+ 		dev->stats.tx_fifo_errors++;
+-		smc_special_unlock(&lp->lock);
++		smc_special_unlock(&lp->lock, flags);
+ 		goto done;
+ 	}
+ 
+@@ -608,7 +611,7 @@ static void smc_hardware_send_pkt(unsigned long data)
+ 
+ 	/* queue the packet for TX */
+ 	SMC_SET_MMU_CMD(lp, MC_ENQUEUE);
+-	smc_special_unlock(&lp->lock);
++	smc_special_unlock(&lp->lock, flags);
+ 
+ 	dev->trans_start = jiffies;
+ 	dev->stats.tx_packets++;
+@@ -633,6 +636,7 @@ static int smc_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	struct smc_local *lp = netdev_priv(dev);
+ 	void __iomem *ioaddr = lp->base;
+ 	unsigned int numPages, poll_count, status;
++	unsigned long flags;
+ 
+ 	DBG(3, "%s: %s\n", dev->name, __func__);
+ 
+@@ -658,7 +662,7 @@ static int smc_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 		return 0;
+ 	}
+ 
+-	smc_special_lock(&lp->lock);
++	smc_special_lock(&lp->lock, flags);
+ 
+ 	/* now, try to allocate the memory */
+ 	SMC_SET_MMU_CMD(lp, MC_ALLOC | numPages);
+@@ -676,7 +680,7 @@ static int smc_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 		}
+    	} while (--poll_count);
+ 
+-	smc_special_unlock(&lp->lock);
++	smc_special_unlock(&lp->lock, flags);
+ 
+ 	lp->pending_tx_skb = skb;
+    	if (!poll_count) {
+-- 
+1.6.0.4
 
-> The thing is, we'll probably redo this portion of the timer tree as 
-> i found other problems in testing, but generally the disadvantages 
-> of a build breakage with a very small non-bisectability window has 
-> to be weighed against the disadvantages of a rebase (which are 
-> significant).
-> 
-> The equation does not automatically flip in favor of a rebase as you 
-> seem to suggest - in fact it generally goes _against_ a rebase.
 
-In a stable, non-rebasing branch, sure.  But putting untested patches
-into such a branch would be a bit silly, so I assumed you hadn't done
-that. :)
-
-Paul.
