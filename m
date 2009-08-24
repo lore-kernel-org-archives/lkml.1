@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbZHXOHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbZHXOJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbZHXOHy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 10:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZHXOHw
+	id S1752608AbZHXOJm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 10:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZHXOJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 10:07:52 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:2806 "EHLO mx1.redhat.com"
+	Mon, 24 Aug 2009 10:09:41 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:50883 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468AbZHXOHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 10:07:51 -0400
-Date: Mon, 24 Aug 2009 10:06:29 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Paul Mundt <lethal@linux-sh.org>, Frederic Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 05/12] update FTRACE_SYSCALL_MAX
-Message-ID: <20090824140629.GA2656@redhat.com>
-References: <cover.1249932670.git.jbaron@redhat.com> <7fca984182691041c0d139eccd080f82045f86f7.1249932670.git.jbaron@redhat.com> <20090811110023.GC4938@nowhere> <20090824134151.GB18974@linux-sh.org>
+	id S1752505AbZHXOJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 10:09:40 -0400
+Date: Mon, 24 Aug 2009 16:09:42 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr, fweisbec@gmail.com,
+       Alan.Brunelle@hp.com
+Subject: Re: [PATCH 5/9] writeback: support > 1 flusher thread per bdi
+Message-ID: <20090824140942.GM12579@kernel.dk>
+References: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com> <1248989044-21605-6-git-send-email-jens.axboe@oracle.com> <20090805195504.GD27505@duck.suse.cz> <20090806070546.GH12579@kernel.dk> <20090806205621.GB8177@duck.suse.cz> <20090824114326.GK12579@kernel.dk> <20090824123611.GE10080@duck.novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090824134151.GB18974@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090824123611.GE10080@duck.novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 10:41:52PM +0900, Paul Mundt wrote:
-> > On Mon, Aug 10, 2009 at 04:52:35PM -0400, Jason Baron wrote:
-> > > update FTRACE_SYSCALL_MAX to the current number of syscalls
+On Mon, Aug 24 2009, Jan Kara wrote:
+> On Mon 24-08-09 13:43:26, Jens Axboe wrote:
+> > On Thu, Aug 06 2009, Jan Kara wrote:
+> > >   Actually, looking again that the work struct "state" field has lots of
+> > > free bits. I think the code looks nicer with the attached patch, what do
+> > > you think?
 > > > 
-> > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > 
-> > > ---
-> > >  arch/x86/include/asm/ftrace.h |    4 ++--
-> > >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
-> > > index bd2c651..7113654 100644
-> > > --- a/arch/x86/include/asm/ftrace.h
-> > > +++ b/arch/x86/include/asm/ftrace.h
-> > > @@ -30,9 +30,9 @@
-> > >  
-> > >  /* FIXME: I don't want to stay hardcoded */
-> > >  #ifdef CONFIG_X86_64
-> > > -# define FTRACE_SYSCALL_MAX     296
-> > > +# define FTRACE_SYSCALL_MAX     299
-> > >  #else
-> > > -# define FTRACE_SYSCALL_MAX     333
-> > > +# define FTRACE_SYSCALL_MAX     337
-> > >  #endif
+> > > > >   2) I'd introduce a flag with the meaning: free the work when you are
+> > > > > done. Obviusly this flag makes sence only with dynamically allocated work
+> > > > > structure. There would be no "on stack" flag.
+> > > > >   3) I'd create a function:
+> > > > > bdi_wait_work_submitted()
+> > > > >   which you'd have to call whenever you didn't set the flag and want to
+> > > > > free the work (either explicitely, or via returning from a function which
+> > > > > has the structure on stack).
+> > > > >   It would do:
+> > > > > bdi_wait_on_work_clear(work);
+> > > > > call_rcu(&work->rcu_head, bdi_work_free);
+> > > > > 
+> > > > >   wb_work_complete() would just depending on the flag setting either
+> > > > > completely do away with the work struct or just do bdi_work_clear().
+> > > > > 
+> > > > >   IMO that would make the code easier to check and also less prone to
+> > > > > errors (currently you have to think twice when you have to wait for the rcu
+> > > > > period, call bdi_work_free, etc.).
+> > > > 
+> > > > Didn't we go over all that last time, too?
+> > >   Well, probably about something similar. But this time I have a patch ;-)
+> > > Compile tested only... IMO it looks nicer this way as it wraps up all the
+> > > details of work freeing into one function.
 > > 
-> > 
-> > I don't remember why we had to use a hardcoded number.
-> > Is there no way to keep being sync with the current number of
-> > syscalls? We dwant to avoid patching the kernel each time we
-> > have a new syscall :-)
-> > 
-> I hope you can clarify what the meaning of this is supposed to be
-> exactly. Is this number supposed to be the last usable syscall, or is it
-> supposed to be the equivalent of NR_syscalls?
+> > The first patch looks nice and obvious, I'll fold that in with the
+> > original patch if you don't mind. It's definitely cleaner, instead of
+> > overloading the pointer.
+>   Yes, that's fine.
 > 
+> > The second one I'd rather hold off on, I've run over the existing code
+> > many times and tested it heavily threaded and know it's safe. So I'd
+> > rather not introduce any drastic changes there so close to 2.6.32, but
+> > I'd be happy to revisit this soon after merge. OK?
+>   Fine with me, I'm just not sure about the merging in 2.6.32 - the
+> umount_sem and sb->s_count problems (http://lkml.org/lkml/2009/8/5/322 -
+> BTW I didn't see a response from you) should get sorted out before the
+> merge. To be honest, I'm not much in favor of merging your patches before
+> having resolved that and I think Christoph Hellwig or Al Viro will express
+> their opinion even more strongly ;).
 
-I am using as the equivalent of NR_syscalls.
+I don't plan to merge it before we have that sorted, don't worry. I'll
+be posting it soon here again!
 
-> Presently on SH we have this as NR_syscalls - 1, while on s390 I see it
-> is treated as NR_syscalls directly. s390 opencodes the NR_syscalls
-> directly and so presently blows up in -next due to a missing
-> FTRACE_SYSCALL_MAX definition:
-> 
-> 	http://kisskb.ellerman.id.au/kisskb/buildresult/1120523/
-> 
-> I was in the process of fixing that up when I noticed this difference.
-> x86 seems to also treat this as NR_syscalls - 1, but that looks to me
-> like there is an off-by-1 in arch_init_ftrace_syscalls() causing the last
-> syscall to be skipped?
-
-I don't see how its used as 'NR_syscalls - 1' on x86,
-arch_init_ftrace_syscalls() does:
-
-        for (i = 0; i < FTRACE_SYSCALL_MAX; i++) {
-                meta = find_syscall_meta(psys_syscall_table[i]);
-                syscalls_metadata[i] = meta;
-        }
-
-So the last syscall should not be skipped.
-
-We should probably convert *all* the arches to be using NR_syscalls
-directly.
-
-thanks,
-
--Jason
-
-
+-- 
+Jens Axboe
 
