@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330AbZHXSlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbZHXSo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753330AbZHXSlJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 14:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZHXSlG
+	id S1753317AbZHXSo2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 14:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbZHXSo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 14:41:06 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:58583 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753224AbZHXSlE (ORCPT
+	Mon, 24 Aug 2009 14:44:26 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51077 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753222AbZHXSo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 14:41:04 -0400
-Message-ID: <4A92DEA2.7050000@vflare.org>
-Date: Tue, 25 Aug 2009 00:10:34 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 24 Aug 2009 14:44:26 -0400
+Date: Mon, 24 Aug 2009 20:44:21 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Greg Freemyer <greg.freemyer@gmail.com>
+Cc: Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com, tytso@mit.edu,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090824184421.GC28403@elf.ucw.cz>
+References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net> <20090316122847.GI2405@elf.ucw.cz> <200903161426.24904.rob@landley.net> <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <87f94c370908240621n32ea310sd24196084c42107a@mail.gmail.com>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-mm-cc@laptop.org
-Subject: Re: [PATCH 1/4] compcache: xvmalloc memory allocator
-References: <200908241007.47910.ngupta@vflare.org>	 <84144f020908241033l4af09e7h9caac47d8d9b7841@mail.gmail.com>	 <4A92D35F.50604@vflare.org>	 <84144f020908241108o4d9d6e38wba7806977b8b6073@mail.gmail.com>	 <4A92D7D4.7020807@vflare.org> <84144f020908241127vc8dafa4l340d000097cf5548@mail.gmail.com>
-In-Reply-To: <84144f020908241127vc8dafa4l340d000097cf5548@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87f94c370908240621n32ea310sd24196084c42107a@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/24/2009 11:57 PM, Pekka Enberg wrote:
-> On Mon, Aug 24, 2009 at 9:11 PM, Nitin Gupta<ngupta@vflare.org>  wrote:
->>> Is the name rzmalloc() too similar to kzalloc() which stands for
->>> zeroing allocator, though? I think I suggested
->>> ramzswap_alloc()/ramzswap_free() in the past to avoid confusion. I'd
->>> rather go with that if we can't come up with a nice generic name that
->>> stands for alloc_part_of_page_including_highmem().
->>
->> rzs_malloc()/rzs_free() ?
->
-> I am not sure what we gain from the shorter and more cryptic "rzs"
-> prefix compared to "ramzswap" but yeah, it's less likely to be
-> confused with kzalloc() so I'm okay with that.
->
 
-Perhaps, I'm just too bad with naming :)
+> > +Either whole sector is correctly written or nothing is written during
+> > +powerfail.
+> > +
+> > +       Because RAM tends to fail faster than rest of system during
+> > +       powerfail, special hw killing DMA transfers may be necessary;
+> > +       otherwise, disks may write garbage during powerfail.
+> > +       This may be quite common on generic PC machines.
+> > +
+> > +       Note that atomic write is very hard to guarantee for RAID-4/5/6,
+> > +       because it needs to write both changed data, and parity, to
+> > +       different disks. (But it will only really show up in degraded mode).
+> > +       UPS for RAID array should help.
+> 
+> Can someone clarify if this is true in raid-6 with just a single disk
+> failure?  I don't see why it would be.
+> 
+> And if not can the above text be changed to reflect raid 4/5 with a
+> single disk failure and raid 6 with a double disk failure are the
+> modes that have atomicity problems.
 
-xvmalloc -> ramzswap_alloc() (compiled with ramzswap instead of as a separate 
-module).
+I don't know enough about raid-6, but... I said "degraded mode" above,
+and you can read it as double failure in raid-6 case ;-). I'll prefer
+to avoid too many details here.
 
-BTW, [rzs]control is the name of userspace utility to send ioctl()s to ramzswap.
-Somehow, I am happy with rzscontrol name atleast.
-
-Thanks,
-Nitin
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
