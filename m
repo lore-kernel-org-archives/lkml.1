@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZHXWn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZHXWoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbZHXWn0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZHXWnR
+	id S1753901AbZHXWoK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbZHXWoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:43:17 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:43083 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753709AbZHXWnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:43:16 -0400
+	Mon, 24 Aug 2009 18:44:09 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50907 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753709AbZHXWoI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:44:08 -0400
+Date: Mon, 24 Aug 2009 18:44:00 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com, jistone@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com
+Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
+In-Reply-To: <20090824221447.GA5124@nowhere>
+Message-ID: <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com>
+References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19091.5338.992510.245918@cargo.ozlabs.ibm.com>
-Date: Tue, 25 Aug 2009 08:31:54 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: eranian@gmail.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
-       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: perf_counters issue with enable_on_exec
-In-Reply-To: <7c86c4470908240844u7450b13eicf4c4a466e29d701@mail.gmail.com>
-References: <7c86c4470908200649u290f2378n126442ea3a823540@mail.gmail.com>
-	<1251121618.7538.262.camel@twins>
-	<7c86c4470908240844u7450b13eicf4c4a466e29d701@mail.gmail.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-stephane eranian writes:
 
-> As you indicated the issue is with the timing information and I think
-> it is not related to enable_on_exec. It is more related to the fact
-> that to enable a group with a single ioctl() you enable ALL BUT the
-> leader. But that means that the time_enabled for the !leader is
-> ticking. Thus scaling won't be as expected yet it is correct
-> given what happens internally.
+On Tue, 25 Aug 2009, Frederic Weisbecker wrote:
 
-No, time_enabled shouldn't be increasing for a counter that's in a
-group whose leader is disabled.
+> On Mon, Aug 24, 2009 at 05:40:18PM -0400, Jason Baron wrote:
+> > Add a dynamic definition of NR_syscalls for x86_64. This is used in the 
+> > syscall events tracing code.
+> > 
+> > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > 
+> > ---
+> >  include/linux/ftrace.h |    5 +++++
+> >  1 files changed, 5 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> > index dc3b132..3bd94ee 100644
+> > --- a/include/linux/ftrace.h
+> > +++ b/include/linux/ftrace.h
+> > @@ -14,6 +14,11 @@
+> >  
+> >  #include <asm/ftrace.h>
+> >  
+> > +#ifdef CONFIG_X86_64
+> > +#include <asm/asm-offsets.h>
+> > +#define NR_syscalls (__NR_syscall_max + 1)
+> > +#endif
+> > +
+> 
+> 
+> I'd rather see this in arch/x86/include/unistd_64.h, since
+> NR_syscalls seems to be the defined in unistd.h in all archs.
+> 
+> That also makes a unified way to retrieve this number for
+> other users.
+> 
 
-I'll try out your test program today.
+Yes, NR_syscalls should be included there.
 
-> I think there needs to be a distinction between 'enabled immediately
-> but cannot run because group is not totally enabled' and 'cannot run
-> because the group has been multiplexed out yet all could be dispatched
-> because all events were dispatched'. In the former, it seems you don't
-> want time_enabled to tick, while in the latter you do. In other words,
-> time_enabled ticks for each event if the group is 'dispatch-able' (or
-> runnable in your terminology) otherwise it does not. time_enabled reflects
-> the fact that the group could run but did not have access to the PMU
-> resource because of contention with other groups.
+-- Steve
 
-Right.  That is exactly what the code is supposed to do.  If it
-doesn't there's a bug.
-
-Paul.
