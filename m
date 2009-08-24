@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751830AbZHXHLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751803AbZHXHOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751830AbZHXHLO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 03:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZHXHLO
+	id S1751803AbZHXHOT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 03:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZHXHOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 03:11:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54082 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635AbZHXHLN (ORCPT
+	Mon, 24 Aug 2009 03:14:18 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37557 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751546AbZHXHOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 03:11:13 -0400
-Subject: Re: [PATCH -tip] v3 Simplify rcu_pending()/rcu_check_callbacks()
- API
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       rostedt@goodmis.org
-In-Reply-To: <125097461311-git-send-email->
-References: <20090727181401.GA14120@linux.vnet.ibm.com>
-	 <125097461311-git-send-email->
-Content-Type: text/plain
+	Mon, 24 Aug 2009 03:14:18 -0400
+Message-ID: <4A923D98.4090501@zytor.com>
+Date: Mon, 24 Aug 2009 00:13:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Jan Beulich <JBeulich@novell.com>
+CC: mingo@elte.hu, tglx@linutronix.de, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix build with older binutils and	 consolidate	
+ linker script
+References: <4A8AEA1F0200007800010563@vpn.id2.novell.com> <4A8F0228.80805@zytor.com> <4A92557002000078000113DD@vpn.id2.novell.com>
+In-Reply-To: <4A92557002000078000113DD@vpn.id2.novell.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Aug 2009 09:10:16 +0200
-Message-Id: <1251097816.7538.129.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-22 at 13:56 -0700, Paul E. McKenney wrote:
-> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+On 08/23/2009 11:55 PM, Jan Beulich wrote:
+>>>> "H. Peter Anvin" <hpa@zytor.com> 21.08.09 22:23 >>>
+>> On 08/18/2009 08:51 AM, Jan Beulich wrote:
+>>>  
+>>>  #define VSYSCALL_ADDR (-10*1024*1024)
+>>> -#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data.read_mostly) + \
+>>> -                            SIZEOF(.data.read_mostly) + 4095) & ~(4095))
+>>> -#define VSYSCALL_VIRT_ADDR ((ADDR(.data.read_mostly) + \
+>>> -                            SIZEOF(.data.read_mostly) + 4095) & ~(4095))
+>>> +#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data) + SIZEOF(.data) + \
+>>> +                            PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
+>>> +#define VSYSCALL_VIRT_ADDR ((ADDR(.data) + SIZEOF(.data) + \
+>>> +                            PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
+>>>  
+>> I'm missing something with this chunk... could you please explain?
 > 
-> All calls from outside RCU are of the form:
+> There are two changes here: One is the adjustment to properly use the
+> new preceding section's name, and the other is to replace the hard coded
+> 4095 by PAGE_SIZE-1.
 > 
-> 	if (rcu_pending(cpu))
-> 		rcu_check_callbacks(cpu, user);
-> 
-> This is silly, instead we put a call to rcu_pending() in
-> rcu_check_callbacks(),
 
-It could be non-silly if rcu_pending() were a very simple inline
-function, in that case it would avoid the full function call.
+Hm.  I'm wondering if an actual (NOLOAD)/@nobits section wouldn't be
+better...
 
-Still in such a case you can make rcu_check_callbacks() the inline
-function which does the same and have the real function called somthing
-else.
+	-hpa
 
-Anyway, its all moot since rcu_pending() wasn't a simple inline function
-anyway, so you've replaced two function calls with one, which seems
-good.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
