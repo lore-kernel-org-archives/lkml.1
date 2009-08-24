@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZHXXVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZHXX0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZHXXVd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 19:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZHXXV3
+	id S1753787AbZHXX0N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 19:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZHXX0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 19:21:29 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:35251 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753470AbZHXXV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 19:21:28 -0400
-X-IronPort-AV: E=Sophos;i="4.44,267,1249282800"; 
-   d="scan'208";a="230723998"
-Subject: [PATCH] NFSv4: Fix an infinite looping problem with the
- nfs4_state_manager
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Daniel J Blueman <daniel.blueman@gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Mon, 24 Aug 2009 19:21:29 -0400
-Message-Id: <1251156089.6325.362.camel@heimdal.trondhjem.org>
+	Mon, 24 Aug 2009 19:26:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58430 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753638AbZHXX0L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 19:26:11 -0400
+Date: Mon, 24 Aug 2009 16:21:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yohan <kernel@yohan.staff.proxad.net>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: VM issue causing high CPU loads
+Message-Id: <20090824162155.ce323f08.akpm@linux-foundation.org>
+In-Reply-To: <4A92A25A.4050608@yohan.staff.proxad.net>
+References: <4A92A25A.4050608@yohan.staff.proxad.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-X-OriginalArrivalTime: 24 Aug 2009 23:21:30.0591 (UTC) FILETIME=[9CA066F0:01CA2511]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 76db6d9500caeaa774a3e32a997eba30bbdc176b (nfs41: add session setup
-to the state manager) introduces an infinite loop possibility in the NFSv4
-state manager. By first checking nfs4_has_session() before clearing the
-NFS4CLNT_SESSION_SETUP flag, it allows for a situation where someone sets
-that flag, but it never gets cleared, and so the state manager loops.
+On Mon, 24 Aug 2009 16:23:22 +0200
+Yohan <kernel@yohan.staff.proxad.net> wrote:
 
-In fact commit c3fad1b1aaf850bf692642642ace7cd0d64af0a3 (nfs41: add session
-reset to state manager) causes this to happen every time we get a network
-partition error.
+> Hi,
+> 
+>     Is someone have an idea for that :
+> 
+>         http://bugzilla.kernel.org/show_bug.cgi?id=14024
+> 
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Tested-by: Daniel J Blueman <daniel.blueman@gmail.com>
----
+Please generate a kernel profile to work out where all the CPU tie is
+being spent.  Documentation/basic_profiling.txt is a starting point.
 
- fs/nfs/nfs4state.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Thanks.
 
-
-diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
-index 65ca8c1..1434080 100644
---- a/fs/nfs/nfs4state.c
-+++ b/fs/nfs/nfs4state.c
-@@ -1250,8 +1250,8 @@ static void nfs4_state_manager(struct nfs_client *clp)
- 				continue;
- 		}
- 		/* Initialize or reset the session */
--		if (nfs4_has_session(clp) &&
--		   test_and_clear_bit(NFS4CLNT_SESSION_SETUP, &clp->cl_state)) {
-+		if (test_and_clear_bit(NFS4CLNT_SESSION_SETUP, &clp->cl_state)
-+		   && nfs4_has_session(clp)) {
- 			if (clp->cl_cons_state == NFS_CS_SESSION_INITING)
- 				status = nfs4_initialize_session(clp);
- 			else
-
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
