@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751832AbZHXHVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751857AbZHXHW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751832AbZHXHVZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 03:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZHXHVZ
+	id S1751857AbZHXHW7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 03:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZHXHW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 03:21:25 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:38699 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbZHXHVY convert rfc822-to-8bit (ORCPT
+	Mon, 24 Aug 2009 03:22:59 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:59432 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbZHXHW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 03:21:24 -0400
-Message-Id: <4A925B930200007800011409@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Mon, 24 Aug 2009 08:21:23 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <sam@ravnborg.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix build with older binutils and	
-	 consolidate	 linker script
-References: <4A8AEA1F0200007800010563@vpn.id2.novell.com>
- <4A8F0228.80805@zytor.com> <4A92557002000078000113DD@vpn.id2.novell.com>
- <4A923D98.4090501@zytor.com>
-In-Reply-To: <4A923D98.4090501@zytor.com>
+	Mon, 24 Aug 2009 03:22:58 -0400
+Subject: Re: [PATCH RFC -tip 0/4] v3 RCU cleanups and simplified
+ preemptable RCU
+From: Peter Zijlstra <peterz@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       rostedt@goodmis.org
+In-Reply-To: <20090727181401.GA14120@linux.vnet.ibm.com>
+References: <20090727181401.GA14120@linux.vnet.ibm.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 24 Aug 2009 09:21:59 +0200
+Message-Id: <1251098519.7538.139.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> "H. Peter Anvin" <hpa@zytor.com> 24.08.09 09:13 >>>
->On 08/23/2009 11:55 PM, Jan Beulich wrote:
->>>>> "H. Peter Anvin" <hpa@zytor.com> 21.08.09 22:23 >>>
->>> On 08/18/2009 08:51 AM, Jan Beulich wrote:
->>>>  
->>>>  #define VSYSCALL_ADDR (-10*1024*1024)
->>>> -#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data.read_mostly) + \
->>>> -                            SIZEOF(.data.read_mostly) + 4095) & ~(4095))
->>>> -#define VSYSCALL_VIRT_ADDR ((ADDR(.data.read_mostly) + \
->>>> -                            SIZEOF(.data.read_mostly) + 4095) & ~(4095))
->>>> +#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data) + SIZEOF(.data) + \
->>>> +                            PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
->>>> +#define VSYSCALL_VIRT_ADDR ((ADDR(.data) + SIZEOF(.data) + \
->>>> +                            PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
->>>>  
->>> I'm missing something with this chunk... could you please explain?
->> 
->> There are two changes here: One is the adjustment to properly use the
->> new preceding section's name, and the other is to replace the hard coded
->> 4095 by PAGE_SIZE-1.
->> 
->
->Hm.  I'm wondering if an actual (NOLOAD)/@nobits section wouldn't be
->better...
+On Sat, 2009-08-22 at 13:52 -0700, Paul E. McKenney wrote:
+> 
+> o       Rename variables and functions so that RCU-sched is an
+>         underlying definition, along with RCU-bh and (when so
+>         configured) RCU-preempt.  RCU then maps to either RCU-sched
+>         or RCU-preempt, depending on configuration.
 
-For what? The immediately preceding section?
+Nice, but we're not quite there yet it seems, since RCU-preempt isn't
+available outside of TREE_PREEMPT_RCU afaiks.
 
-In any case, it would seem that this would be an independent patch on top
-of mine...
+That is, I'm still hoping for the day that generic code can do:
 
-Jan
+  rcu_preempt_read_lock();
 
+
+  call_rcu_preempt(&my_rcu_thing);
+  rcu_preempt_read_unlock();
+
+And have it work like expected, this would, I think, remove much of the
+need for SRCU.
+
+
+The thing I've talked about earlier is an extension of this where you
+can create multiple RCU domains along the lines of:
+
+  struct rcu_preempt_domain my_domain;
+
+  rcu_preempt_init(&my_domain);
+
+
+and
+
+  rcu_preempt_read_lock(&my_domain);
+
+  call_rcu_preempt(&my_domain, &my_rcu_head);
+  rcu_preempt_read_unlock(&my_domain);
+
+
+Which would allow you to create smaller RCU domains for when you want
+faster grace periods due to less interference of other rcu users.
+
+
+Anyway, enough rambling, the patch-set does look very nice, and if time
+permits I'll try and go through the preempt-tree-rcu thing.
+
+Thanks
