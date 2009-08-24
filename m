@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZHXWmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbZHXWnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864AbZHXWmE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZHXWmD
+	id S1753883AbZHXWnS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbZHXWnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:42:03 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58480 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753617AbZHXWmB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:42:01 -0400
-Date: Tue, 25 Aug 2009 00:41:54 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090824224154.GH29763@elf.ucw.cz>
-References: <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <4A930EB9.8030903@redhat.com>
+	Mon, 24 Aug 2009 18:43:17 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:43076 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753703AbZHXWnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:43:16 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A930EB9.8030903@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19091.5100.328432.510132@cargo.ozlabs.ibm.com>
+Date: Tue, 25 Aug 2009 08:27:56 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: eranian@gmail.com, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
+       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: perf_counters issue with enable_on_exec
+In-Reply-To: <1251121618.7538.262.camel@twins>
+References: <7c86c4470908200649u290f2378n126442ea3a823540@mail.gmail.com>
+	<1251121618.7538.262.camel@twins>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> I have to admit that I have not paid enough attention to this 
->>> specifics  of your ext3 + flash card issue - is it the ftl stuff 
->>> doing out of order  IO's?     
->>
->> The problem is that flash cards destroy whole erase block on unplug,
->> and ext3 can't cope with that.
->
-> Even if you unmount the file system? Why isn't this an issue with
-> ext2?
+Peter Zijlstra writes:
 
-No, I'm talking hot unplug here. It is the issue with ext2, but ext2
-will run fsck on next mount, making it less severe.
+> 2. enable_on_exec only works on leaders, Paul, was that intended?
 
+I think I thought that would be sufficient, but I guess it would be
+cleaner if it also worked on non-leaders.
 
->>> Pull them even after an unmount, or pull them hot?
->>>     
->>
->> Pull them hot.
->>
->> [Some people try -osync to avoid data loss on flash cards... that will
->> not do the trick. Flashcard will still kill the eraseblock.]
->
-> Pulling hot any device will cause data loss for recent data loss, even  
-> with ext2 you will have data in the page cache, right?
+> 3. the scale stuff seems broken
+> 
+> # perf stat -e cycles -e instructions --repeat 10 true
+> 
+>  Performance counter stats for 'true' (10 runs):
+> 
+>         2612124  cycles                     ( +-   1.327% )
+>         1870479  instructions             #      0.716 IPC     ( +-   0.132% )
+> 
+>     0.003743155  seconds time elapsed   ( +-   1.203% )
+> 
+> # ./test-enable_on_exec true
+>              2651600 PERF_COUNT_HW_CPU_CYCLES 1111509 1111509 2651600.000000
+>              1832720 PERF_COUNT_HW_INSTRUCTIONS 839395242 1111509 1384043177.264637
+> 
+> Paul, would a counter's time start running when its 'enabled' but part
+> of a non-runnable group?
 
-Right. But in ext3 case you basically loose whole filesystem, because
-fs is inconsistent and you did not run fsck.
+No, it shouldn't.  If it does it's a bug.
 
->>> Again, you say RAID5 without enough specifics.  Are you pointing just 
->>> at  MD RAID5 on S-ATA? Hardware RAID cards? A specific commercial 
->>> RAID5 vendor?
->>>     
->>
->> Degraded MD RAID5 on anything, including SATA, and including
->> hypothetical "perfect disk".
->
-> Degraded is one faulted drive while MD is doing a rebuild? And then you  
-> hot unplug it or power cycle? I think that would certainly cause failure  
-> for ext2 as well (again, you would lose any data in the page cache).
-
-Losing data in page cache is expected. Losing fs consistency is not.
-
->> Degraded MD RAID5 does not work by design; whole stripe will be
->> damaged on powerfail or reset or kernel bug, and ext3 can not cope
->> with that kind of damage. [I don't see why statistics should be
->> neccessary for that; the same way we don't need statistics to see that
->> ext2 needs fsck after powerfail.]
-
-> What you are describing is a double failure and RAID5 is not double  
-> failure tolerant regardless of the file system type....
-
-You get single disk failure then powerfail (or reset or kernel
-panic). I would not call that double failure. I agree that it will
-mean problems for most filesystems.
-
-Anyway, even if that can be called a double failure, this limitation
-should be clearly documented somewhere.
-
-...and that's exactly what I'm trying to fix.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Paul.
