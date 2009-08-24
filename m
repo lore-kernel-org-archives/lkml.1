@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbZHXIxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752032AbZHXIyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752011AbZHXIxZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZHXIxY
+	id S1752032AbZHXIyD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:54:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZHXIyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:53:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60458 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750974AbZHXIxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:53:24 -0400
-Date: Mon, 24 Aug 2009 10:53:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: linux-next: manual merge of the tip tree with the s390 tree
-Message-ID: <20090824085313.GB29804@elte.hu>
-References: <20090824170119.57cf4f59.sfr@canb.auug.org.au> <20090824081723.GA4798@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824081723.GA4798@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 24 Aug 2009 04:54:01 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:39582 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751780AbZHXIyA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 04:54:00 -0400
+Date: Mon, 24 Aug 2009 17:54:02 +0900 (JST)
+Message-Id: <20090824.175402.193692180.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: [PATCH 1/8] blkio-cgroup-v11: Introduction
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+This is a new release of blkio-cgroup v11.
 
-> On Mon, Aug 24, 2009 at 05:01:19PM +1000, Stephen Rothwell wrote:
-> > Hi all,
-> > 
-> > Today's linux-next merge of the tip tree got a conflict in
-> > arch/s390/kernel/time.c between commit
-> > 6342887c12d79c5a2c8c1de5be6f483e16a2acdd ("[S390] introduce
-> > get_clock_monotonic") from the s390 tree and commit
-> > 23970e389e9cee43c4b41023935e1417271708b2 ("timekeeping: Introduce
-> > read_boot_clock") from the tip tree.
-> > 
-> > I fixed it up (see below) and can carry the fix as necessary.
-> 
-> I reverted the sched_clock_base_cc rename. The merge conflict
-> should be gone as soon as Martin pushes a new tree out.
+Changes:
+- The function cgroup_get_from_page() is added which determines to
+  which cgroup a given page belongs. This function is introduced from
+  Vivek's io-controller patch. Thanks Vivek.
+- Fix a type mismatch of the refcount of io_context. The refcount has
+  been changed to atomic_long_t.
 
-thanks Heiko.
+This patch can be applied to 2.6.31-rc7.
 
-Note that such simpler conflicts can be kept just fine (i.e. there's 
-no hard need to revert) - especially now that Stephen has already 
-resolved it and tested the end result, and git-rerere will pick it 
-up in the future too.
+The list of the patches:
+  [PATCH 1/8] blkio-cgroup-v11: Introduction
+  [PATCH 2/8] blkio-cgroup-v11: The new page_cgroup framework
+  [PATCH 3/8] blkio-cgroup-v11: Refactoring io-context initialization
+  [PATCH 4/8] blkio-cgroup-v11: The body of blkio-cgroup
+  [PATCH 5/8] blkio-cgroup-v11: Page tracking hooks
+  [PATCH 6/8] blkio-cgroup-v11: The document of blkio-cgroup
+  [PATCH 7/8] blkio-cgroup-v11: Add a cgroup support to dm-ioband
+  [PATCH 8/8] blkio-cgroup-v11: The document of a cgroup support for dm-ioband
 
-The most valuable conflicts in linux-next are the ones that show 
-conflicts that should never occur: which happen due to trees doing 
-changes they should not do.
+About blkio-cgroup:
+blkio-cgroup is a block I/O tracking mechanism implemented on the
+cgroup memory subsystem. Using this feature the owners of any type of
+I/O can be determined. This allows dm-ioband to control block I/O
+bandwidth even when it is accepting delayed write requests. dm-ioband
+can find the cgroup of each request. It is also for possible that
+others working on I/O bandwidth throttling to use this functionality
+to control asynchronous I/O with a little enhancement.
 
-	Ingo
+Please visit our website, all-in-one-patch and more information are
+available.
+  Linux Block I/O Bandwidth Control Project
+  http://sourceforge.net/apps/trac/ioband/
+
+I'd like to get some feedbacks from the list. Any comments are
+appreciated.
+
+Thanks,
+Ryo Tsuruta
