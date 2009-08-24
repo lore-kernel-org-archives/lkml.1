@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbZHXLFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbZHXLHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752146AbZHXLFf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 07:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZHXLFd
+	id S1752241AbZHXLHg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 07:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZHXLHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 07:05:33 -0400
-Received: from mx1.melware.net ([78.47.171.162]:50662 "EHLO mx1.melware.net"
+	Mon, 24 Aug 2009 07:07:35 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:53186 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751850AbZHXLFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 07:05:32 -0400
-Date: Mon, 24 Aug 2009 13:05:34 +0200 (CEST)
-From: Armin Schindler <armin@melware.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ISDN: eicon, return on error
-In-Reply-To: <1250966584-29496-2-git-send-email-jirislaby@gmail.com>
-Message-ID: <alpine.DEB.2.00.0908241305080.5388@justus.melware.de>
-References: <1250966584-29496-1-git-send-email-jirislaby@gmail.com> <1250966584-29496-2-git-send-email-jirislaby@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-Organization: Cytronics & Melware
+	id S1750859AbZHXLHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 07:07:34 -0400
+Date: Mon, 24 Aug 2009 13:07:36 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Mark Landis <mark.landis@teradata.com>, Alasdair G Kergon <agk@redhat.com>,
+       dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Seperate read and write statistics of in_flight
+	requests
+Message-ID: <20090824110735.GI12579@kernel.dk>
+References: <200908241603.15158.knikanth@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908241603.15158.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When diva_strace_read_uint returns an error, return even from
-process_idi_event, because l2_state is uninitialized.
+On Mon, Aug 24 2009, Nikanth Karthikesan wrote:
+> Currently, there is a single in_flight counter measuring the number of
+> requests in the request_queue. But some monitoring tools would like to know
+> how many read requests and write requests are in progress. Split the current
+> in_flight counter into two seperate counters for read and write.
+> 
+> This patch is based on a patch from Mark Landis <mark.landis@teradata.com>
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Acked-by: Armin Schindler <armin@melware.de>
----
-  drivers/isdn/hardware/eicon/maintidi.c |    5 +++--
-  1 files changed, 3 insertions(+), 2 deletions(-)
+With fear of stating the obvious, this changes the output format of the
+exported stat files. This can/will break existing tools.
 
-diff --git a/drivers/isdn/hardware/eicon/maintidi.c b/drivers/isdn/hardware/eicon/maintidi.c
-index 23960cb..41c26e7 100644
---- a/drivers/isdn/hardware/eicon/maintidi.c
-+++ b/drivers/isdn/hardware/eicon/maintidi.c
-@@ -959,8 +959,9 @@ static int process_idi_event (diva_strace_context_t* pLib,
-  	}
-  	if (!strncmp("State\\Layer2 No1", path, pVar->path_length)) {
-  		char* tmp = &pLib->lines[0].pInterface->Layer2[0];
--    dword l2_state;
--    diva_strace_read_uint (pVar, &l2_state);
-+		dword l2_state;
-+		if (diva_strace_read_uint(pVar, &l2_state))
-+			return -1;
-
-  		switch (l2_state) {
-  			case 0:
 -- 
-1.6.3.3
+Jens Axboe
+
