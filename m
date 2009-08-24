@@ -1,90 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753719AbZHXWhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZHXWjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753719AbZHXWhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZHXWhw
+	id S1753856AbZHXWjq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbZHXWjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:37:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41657 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753692AbZHXWhv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:37:51 -0400
-Date: Mon, 24 Aug 2009 15:34:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: linux-kernel@vger.kernel.org, x86@kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer dereference
- at 0000000000000008
-In-Reply-To: <m1skfnggrb.fsf@fess.ebiederm.org>
-Message-ID: <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain>
-References: <m163cjhwa4.fsf@fess.ebiederm.org> <m1skfnggrb.fsf@fess.ebiederm.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 24 Aug 2009 18:39:43 -0400
+Received: from thunk.org ([69.25.196.29]:40491 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753501AbZHXWjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:39:41 -0400
+Date: Mon, 24 Aug 2009 18:39:15 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090824223915.GI17684@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
+	Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
+	Goswin von Brederlow <goswin-v-b@web.de>,
+	Rob Landley <rob@landley.net>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+	linux-ext4@vger.kernel.org
+References: <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090824212518.GF29763@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 19 Aug 2009, Eric W. Biederman wrote:
+On Mon, Aug 24, 2009 at 11:25:19PM +0200, Pavel Machek wrote:
+> > I have to admit that I have not paid enough attention to this specifics  
+> > of your ext3 + flash card issue - is it the ftl stuff doing out of order  
+> > IO's? 
 > 
-> I was looking into a change in behavior on 2.6.31-rc6 where
-> data was being lost, and it appears one variant of my test program
-> kills the kernel.
+> The problem is that flash cards destroy whole erase block on unplug,
+> and ext3 can't cope with that.
+
+Sure --- but name **any** filesystem that can deal with the fact that
+128k or 256k worth of data might disappear when you pull out the flash
+card while it is writing a single sector? 
+
+> > Your statement is overly broad - ext3 on a commercial RAID array that  
+> > does RAID5 or RAID6, etc has no issues that I know of.
 > 
-> The following program run as an unprivileged user causes a kernel
-> panic in about a minute:
-> 
-> aka
-> 
-> while :; do ./KernelTtyTest ; done
+> If your commercial RAID array is battery backed, maybe. But I was
+> talking Linux MD here.
 
-Ok, so I got back to this one after having worked on other regressions, 
-and I'm not seeing anything really obvious. But it does look like we may 
-have a situation where we're resetting the ldisc due to hangup at the same 
-time as the writer is still active in the flushing on another CPU.
+It's not just high end RAID arrays that have battery backups; I happen
+to use a mid-range hardware RAID card that comes with a battery
+backup.   It's just a matter of choosing your hardware carefully.
 
-When we halt the lfisc, we cancel the delayed work, but we do it without 
-the "non-sync" version that only removes the timer. If the timer just 
-triggered, the delayed work might be busy running on another CPU.
+If your concern is that with Linux MD, you could potentially lose an
+entire stripe in RAID 5 mode, then you should say that explicitly; but
+again, this isn't a filesystem specific cliam; it's true for all
+filesystems.  I don't know of any file system that can survive having
+a RAID stripe-shaped-hole blown into the middle of it due to a power
+failure.
 
-Does changing the "cancel_delayed_work()" to "cancel_delayed_work_sync()" 
-as in the patch below help your case? Oh, and I noticed that there was a 
-stale comment lying around, so the patch removes that one too.
+I'll note, BTW, that AIX uses a journal to protect against these sorts
+of problems with software raid; this also means that with AIX, you
+also don't have to rebuild a RAID 1 device after an unclean shutdown,
+like you have do with Linux MD.  This was on the EVMS's team
+development list to implement for Linux, but it got canned after LVM
+won out, lo those many years ago.  Ce la vie; but it's a problem which
+is solvable at the RAID layer, and which is traditionally and
+historically solved in competent RAID implementations.
 
-Untested. VERY untested. Just going by "that looks odd".
-
-		Linus
-
----
-
- drivers/char/tty_ldisc.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-index 1733d34..658638f 100644
---- a/drivers/char/tty_ldisc.c
-+++ b/drivers/char/tty_ldisc.c
-@@ -507,15 +507,12 @@ static void tty_ldisc_restore(struct tty_struct *tty, struct tty_ldisc *old)
-  *	The TTY_LDISC flag being cleared ensures no further references can
-  *	be obtained while the delayed work queue halt ensures that no more
-  *	data is fed to the ldisc.
-- *
-- *	In order to wait for any existing references to complete see
-- *	tty_ldisc_wait_idle.
-  */
- 
- static int tty_ldisc_halt(struct tty_struct *tty)
- {
- 	clear_bit(TTY_LDISC, &tty->flags);
--	return cancel_delayed_work(&tty->buf.work);
-+	return cancel_delayed_work_sync(&tty->buf.work);
- }
- 
- /**
+							- Ted
