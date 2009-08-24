@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753034AbZHXR2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753048AbZHXRaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753034AbZHXR2j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 13:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZHXR2h
+	id S1753048AbZHXRaz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 13:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbZHXRaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 13:28:37 -0400
-Received: from stinky.trash.net ([213.144.137.162]:56840 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752977AbZHXR2g (ORCPT
+	Mon, 24 Aug 2009 13:30:55 -0400
+Received: from mail-vw0-f172.google.com ([209.85.212.172]:59635 "EHLO
+	mail-vw0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752995AbZHXRay convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 13:28:36 -0400
-Message-ID: <4A92CDC5.2060707@trash.net>
-Date: Mon, 24 Aug 2009 19:28:37 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Mon, 24 Aug 2009 13:30:54 -0400
 MIME-Version: 1.0
-To: Maximilian Engelhardt <maxi@daemonizer.de>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: Logic for SNAT persistent handling introduced in 2.6.30 is inverted
-References: <200908241516.16544.maxi@daemonizer.de>
-In-Reply-To: <200908241516.16544.maxi@daemonizer.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090824090121.61c6f0ea.randy.dunlap@oracle.com>
+References: <200908241007.33844.ngupta@vflare.org>
+	 <20090824090121.61c6f0ea.randy.dunlap@oracle.com>
+Date: Mon, 24 Aug 2009 23:00:55 +0530
+Message-ID: <d760cf2d0908241030u6efdd816i2bafdf0a0368e34@mail.gmail.com>
+Subject: Re: [PATCH 0/4] compcache: compressed in-memory swapping
+From: Nitin Gupta <ngupta@vflare.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-mm-cc@laptop.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maximilian Engelhardt wrote:
-> Kernel 2.6.30 introduced a patch [1] for the persistent option in the 
-> netfilter SNAT target. This is exactly what we need here so I had a quick look 
-> at the code and noticed that the patch is wrong. The logic is simply inverted.
-> The patch below fixes this.
+On Mon, Aug 24, 2009 at 9:31 PM, Randy Dunlap<randy.dunlap@oracle.com> wrote:
+> On Mon, 24 Aug 2009 10:07:33 +0530 Nitin Gupta wrote:
+>
+>> (Sorry for long patch[2/4] but its now very hard to split it up).
+>>
+>>  Documentation/blockdev/00-INDEX       |    2 +
+>>  Documentation/blockdev/ramzswap.txt   |   52 ++
+>>  drivers/block/Kconfig                 |   22 +
+>>  drivers/block/Makefile                |    1 +
+>>  drivers/block/ramzswap/Makefile       |    2 +
+>
+> I can't find drivers/block/ramzswap/Makefile in the patches...
+>
 
-Good catch, applied. I'm wondering what the people who requested and
-tested this change did actually test :)
+My bad. I missed it. Here it is:
 
-> Also note that because of this the default behavior of the SNAT target has 
-> changed since kernel 2.6.30 as it now ignores the destination IP in choosing 
-> the source IP for nating (which should only be the case if the persistent 
-> option is set).
+obj-$(CONFIG_BLK_DEV_RAMZSWAP)  +=      ramzswap.o xvmalloc.o
 
-It fortunately only affects NAT to a range of IPs, which isn't
-used that much.
+
+I will send updated diffs with swap_lock fix in patch[3/4] with this Makefile
+include once I get additional reviews.
+
+Thanks,
+Nitin
