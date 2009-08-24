@@ -1,180 +1,340 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753407AbZHXTwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbZHXTxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753407AbZHXTwF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 15:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbZHXTwE
+	id S1753438AbZHXTxn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 15:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZHXTxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 15:52:04 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35219 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753252AbZHXTwD (ORCPT
+	Mon, 24 Aug 2009 15:53:41 -0400
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:39613 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753329AbZHXTxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 15:52:03 -0400
-Date: Mon, 24 Aug 2009 21:52:00 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090824195159.GD29763@elf.ucw.cz>
-References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net> <20090316122847.GI2405@elf.ucw.cz> <200903161426.24904.rob@landley.net> <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824130125.GG23677@mit.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 24 Aug 2009 15:53:37 -0400
+X-Loopcount0: from 10.9.160.253
+From: Mario Limonciello <Mario_Limonciello@Dell.com>
+To: cezary.jackiewicz@gmail.com
+Cc: linux-wireless@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Mario Limonciello <Mario_Limonciello@Dell.com>
+Subject: [PATCH] compal-laptop: Replace sysfs support with rfkill support
+Date: Mon, 24 Aug 2009 14:50:22 -0500
+Message-Id: <1251143422-13905-1-git-send-email-Mario_Limonciello@Dell.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <9b2b86520908220420p282c862fn9c44697db010a08d@mail.gmail.com>
+References: <9b2b86520908220420p282c862fn9c44697db010a08d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+This drops the support for manually groking the files in sysfs
+to turn on and off the WLAN and BT for Compal laptops in favor
+of platform rfkill support.
 
-> > Isn't this by design?  In other words, if the metadata doesn't survive
-> > non-atomic writes, wouldn't it be an ext3 bug?
-> 
-> Part of the problem here is that "atomic-writes" is confusing; it
-> doesn't mean what many people think it means.  The assumption which
-> many naive filesystem designers make is that writes succeed or they
-> don't.  If they don't succeed, they don't change the previously
-> existing data in any way.  
-> 
-> So in the case of journalling, the assumption which gets made is that
-> when the power fails, the disk either writes a particular disk block,
-> or it doesn't.  The problem here is as with humans and animals, death
-> is not an event, it is a process.  When the power fails, the system
-> just doesn't stop functioning; the power on the +5 and +12 volt rails
-> start dropping to zero, and different components fail at different
-> times.  Specifically, DRAM, being the most voltage sensitve, tends to
-> fail before the DMA subsystem, the PCI bus, and the hard drive fails.
-> So as a result, garbage can get written out to disk as part of the
-> failure.  That's just the way hardware works.
+It has been combined into a single patch to not introduce regressions
+in the process of simply adding rfkill support
 
-Yep, and at that point you lost data. You had "silent data corruption"
-from fs point of view, and that's bad. 
+Signed-off-by: Mario Limonciello <Mario_Limonciello@Dell.com>
+Reviewed-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+---
+ drivers/platform/x86/compal-laptop.c |  201 +++++++++++-----------------------
+ 1 files changed, 63 insertions(+), 138 deletions(-)
 
-It will be probably very bad on XFS, probably okay on Ext3, and
-certainly okay on Ext2: you do filesystem check, and you should be
-able to repair any damage. So yes, physical journaling is good, but
-fsck is better.
-
-> Is that a file system "bug"?  Well, it's better to call that a
-> mismatch between the assumptions made of physical devices, and of the
-> file system code.  On Irix, SGI hardware had a powerfail interrupt,
-
-If those filesystem assumptions were not documented, I'd call it
-filesystem bug. So better document them ;-).
-
-> There is another kind of non-atomic write that nearly all file systems
-> are subject to, however, and to give an example of this, consider what
-> happens if you a laptop is subjected to a sudden shock while it is
-> writing a sector, and the hard drive doesn't an accelerometer which
-...
-> Depending on how severe the shock happens to be, the head could end up
-> impacting the platter, destroying the medium (which used to be
-> iron-oxide; hence the term "spinning rust platters") at that spot.
-> This will obviously cause a write failure, and the previous contents
-> of the sector will be lost.  This is also considered a failure of the
-> ATOMIC-WRITE property, and no, ext3 doesn't handle this case
-> gracefully.  Very few file systems do.  (It is possible for an OS
-> that
-
-Actually, ext2 should be able to survive that, no? Error writing ->
-remount ro -> fsck on next boot -> drive relocates the sectors.
-
-> It's for this reason that I've never been completely sure how useful
-> Pavel's proposed treatise about file systems expectations really are
-> --- because all storage subsystems *usually* provide these guarantees,
-> but it is the very rare storage system that *always* provides these
-> guarantees.
-
-Well... there's very big difference between harddrives and flash
-memory. Harddrives usually work, and flash memory never does.
-
-> We could just as easily have several kilobytes of explanation in
-> Documentation/* explaining how we assume that DRAM always returns the
-> same value that was stored in it previously --- and yet most PC class
-> hardware still does not use ECC memory, and cosmic rays are a reality.
-> That means that most Linux systems run on systems that are vulnerable
-> to this kind of failure --- and the world hasn't ended.
-
-There's a difference. In case of cosmic rays, hardware is clearly
-buggy. I have one machine with bad DRAM (about 1 errors in 2 days),
-and I still use it. I will not complain if ext3 trashes that.
-
-In case of degraded raid-5, even with perfect hardware, and with
-ext3 on top of that, you'll get silent data corruption. Nice, eh?
-
-Clearly, Linux is buggy there. It could be argued it is raid-5's
-fault, or maybe it is ext3's fault, but... linux is still buggy.
-
-> As I recall, the main problem which Pavel had was when he was using
-> ext3 on a *really* trashy flash drive, on a *really* trashing laptop
-> where the flash card stuck out slightly, and any jostling of the
-> netbook would cause the flash card to become disconnected from the
-> laptop, and cause write errors, very easily and very frequently.  In
-> those circumstnaces, it's highly unlikely that ***any*** file system
-> would have been able to survive such an unreliable storage system.
-
-Well well well. Before I pulled that flash card, I assumed that doing
-so is safe, because flashcard is presented as block device and ext3
-should cope with sudden disk disconnects.
-
-And I was wrong wrong wrong. (Noone told me at the university. I guess
-I should want my money back).
-
-Plus note that it is not only my trashy laptop and one trashy MMC
-card; every USB thumb drive I seen is affected. (OTOH USB disks should
-be safe AFAICT).
-
-Ext3 is unsuitable for flash cards and RAID arrays, plain and
-simple. It is not documented anywhere :-(. [ext2 should work better --
-at least you'll not get silent data corruption.]
-
-> One of the problems I have with the break down which Pavel has used is
-> that it doesn't break things down according to probability; the chance
-> of a storage subsystem scribbling garbage on its last write during a
-
-Can you suggest better patch? I'm not saying we should redesign ext3,
-but... someone should have told me that ext3+USB thumb drive=problems.
-
-> But these things are never absolute, mainly because people aren't
-> willing to pay for either the cost of superior hardware (consider the
-> cost of ECC memory, which isn't *that* much more expensive; and yet
-> most PC class systems don't use it) or in terms of software overhead
-> (historically many file system designers have eschewed the use of
-> physical block journalling because it really hurts on meta-data
-> intensive benchmarks), talking about absolute requirements for
-> ATOMIC-WRITE isn't all that useful --- because nearly all hardware
-> doesn't provide these guarantees, and nearly all filesystems require
-> them.  So to call out ext2 and ext3 for requiring them, without
-> making
-
-ext3+raid5 will fail even if you have perfect hardware.
-
-> clear that pretty much *all* file systems require them, ends up
-> causing people to switch over to some other file system that
-> ironically enough, might end up being *more* vulernable, but which
-> didn't earn Pavel's displeasure because he didn't try using, say, XFS
-> on his flashcard on his trashy laptop.
-
-I hold ext2/ext3 to higher standards than other filesystem in
-tree. I'd not use XFS/VFAT etc. 
-
-I would not want people to migrate towards XFS/VFAT, and yes I believe
-XFSs/VFATs/... requirements should be documented, too. (But I know too
-little about those filesystems).
-
-If you can suggest better wording, please help me. But... those
-requirements are non-trivial, commonly not met and the result is data
-loss. It has to be documented somehow. Make it as innocent-looking as
-you can...
-
-								Pavel
+diff --git a/drivers/platform/x86/compal-laptop.c b/drivers/platform/x86/compal-laptop.c
+index c1c8c03..9b1cc45 100644
+--- a/drivers/platform/x86/compal-laptop.c
++++ b/drivers/platform/x86/compal-laptop.c
+@@ -26,17 +26,8 @@
+ /*
+  * comapl-laptop.c - Compal laptop support.
+  *
+- * This driver exports a few files in /sys/devices/platform/compal-laptop/:
+- *
+- *   wlan - wlan subsystem state: contains 0 or 1 (rw)
+- *
+- *   bluetooth - Bluetooth subsystem state: contains 0 or 1 (rw)
+- *
+- *   raw - raw value taken from embedded controller register (ro)
+- *
+- * In addition to these platform device attributes the driver
+- * registers itself in the Linux backlight control subsystem and is
+- * available to userspace under /sys/class/backlight/compal-laptop/.
++ * The driver registers itself with the rfkill subsystem and
++ * the Linux backlight control subsystem.
+  *
+  * This driver might work on other laptops produced by Compal. If you
+  * want to try it you can pass force=1 as argument to the module which
+@@ -52,6 +43,7 @@
+ #include <linux/backlight.h>
+ #include <linux/platform_device.h>
+ #include <linux/autoconf.h>
++#include <linux/rfkill.h>
+ 
+ #define COMPAL_DRIVER_VERSION "0.2.6"
+ 
+@@ -64,6 +56,10 @@
+ #define WLAN_MASK	0x01
+ #define BT_MASK 	0x02
+ 
++static struct rfkill *wifi_rfkill;
++static struct rfkill *bt_rfkill;
++static struct platform_device *compal_device;
++
+ static int force;
+ module_param(force, bool, 0);
+ MODULE_PARM_DESC(force, "Force driver load, ignore DMI data");
+@@ -89,65 +85,75 @@ static int get_lcd_level(void)
+ 	return (int) result;
+ }
+ 
+-static int set_wlan_state(int state)
++static int compal_rfkill_set(void *data, bool blocked)
+ {
++	unsigned long radio = (unsigned long) data;
+ 	u8 result, value;
+ 
+ 	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
+ 
+-	if ((result & KILLSWITCH_MASK) == 0)
+-		return -EINVAL;
+-	else {
+-		if (state)
+-			value = (u8) (result | WLAN_MASK);
+-		else
+-			value = (u8) (result & ~WLAN_MASK);
+-		ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
+-	}
++	if (!blocked)
++		value = (u8) (result | radio);
++	else
++		value = (u8) (result & ~radio);
++	ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
+ 
+ 	return 0;
+ }
+ 
+-static int set_bluetooth_state(int state)
++static void compal_rfkill_poll(struct rfkill *rfkill, void *data)
+ {
+-	u8 result, value;
++	u8 result;
++	bool hw_blocked;
+ 
+ 	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
+ 
+-	if ((result & KILLSWITCH_MASK) == 0)
+-		return -EINVAL;
+-	else {
+-		if (state)
+-			value = (u8) (result | BT_MASK);
+-		else
+-			value = (u8) (result & ~BT_MASK);
+-		ec_write(COMPAL_EC_COMMAND_WIRELESS, value);
+-	}
+-
+-	return 0;
++	hw_blocked = !(result & KILLSWITCH_MASK);
++	rfkill_set_hw_state(rfkill, hw_blocked);
+ }
+ 
+-static int get_wireless_state(int *wlan, int *bluetooth)
++static const struct rfkill_ops compal_rfkill_ops = {
++	.poll = compal_rfkill_poll,
++	.set_block = compal_rfkill_set,
++};
++
++static int setup_rfkill(void)
+ {
+-	u8 result;
++	int ret;
+ 
+-	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
++	wifi_rfkill = rfkill_alloc("compal-wifi", &compal_device->dev,
++				RFKILL_TYPE_WLAN, &compal_rfkill_ops,
++				(void *) WLAN_MASK);
++	if (!wifi_rfkill)
++		return -ENOMEM;
+ 
+-	if (wlan) {
+-		if ((result & KILLSWITCH_MASK) == 0)
+-			*wlan = 0;
+-		else
+-			*wlan = result & WLAN_MASK;
+-	}
++	ret = rfkill_register(wifi_rfkill);
++	if (ret)
++		goto err_wifi;
+ 
+-	if (bluetooth) {
+-		if ((result & KILLSWITCH_MASK) == 0)
+-			*bluetooth = 0;
+-		else
+-			*bluetooth = (result & BT_MASK) >> 1;
++	bt_rfkill = rfkill_alloc("compal-bluetooth", &compal_device->dev,
++				RFKILL_TYPE_BLUETOOTH, &compal_rfkill_ops,
++				(void *) BT_MASK);
++	if (!bt_rfkill) {
++		ret = -ENOMEM;
++		goto err_allocate_bt;
+ 	}
++	ret = rfkill_register(bt_rfkill);
++	if (ret)
++		goto err_register_bt;
+ 
+ 	return 0;
++
++err_register_bt:
++	rfkill_destroy(bt_rfkill);
++
++err_allocate_bt:
++	rfkill_unregister(wifi_rfkill);
++
++err_wifi:
++	rfkill_destroy(wifi_rfkill);
++
++	return ret;
+ }
+ 
+ /* Backlight device stuff */
+@@ -170,86 +176,6 @@ static struct backlight_ops compalbl_ops = {
+ 
+ static struct backlight_device *compalbl_device;
+ 
+-/* Platform device */
+-
+-static ssize_t show_wlan(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	int ret, enabled;
+-
+-	ret = get_wireless_state(&enabled, NULL);
+-	if (ret < 0)
+-		return ret;
+-
+-	return sprintf(buf, "%i\n", enabled);
+-}
+-
+-static ssize_t show_raw(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	u8 result;
+-
+-	ec_read(COMPAL_EC_COMMAND_WIRELESS, &result);
+-
+-	return sprintf(buf, "%i\n", result);
+-}
+-
+-static ssize_t show_bluetooth(struct device *dev,
+-	struct device_attribute *attr, char *buf)
+-{
+-	int ret, enabled;
+-
+-	ret = get_wireless_state(NULL, &enabled);
+-	if (ret < 0)
+-		return ret;
+-
+-	return sprintf(buf, "%i\n", enabled);
+-}
+-
+-static ssize_t store_wlan_state(struct device *dev,
+-	struct device_attribute *attr, const char *buf, size_t count)
+-{
+-	int state, ret;
+-
+-	if (sscanf(buf, "%i", &state) != 1 || (state < 0 || state > 1))
+-		return -EINVAL;
+-
+-	ret = set_wlan_state(state);
+-	if (ret < 0)
+-		return ret;
+-
+-	return count;
+-}
+-
+-static ssize_t store_bluetooth_state(struct device *dev,
+-	struct device_attribute *attr, const char *buf, size_t count)
+-{
+-	int state, ret;
+-
+-	if (sscanf(buf, "%i", &state) != 1 || (state < 0 || state > 1))
+-		return -EINVAL;
+-
+-	ret = set_bluetooth_state(state);
+-	if (ret < 0)
+-		return ret;
+-
+-	return count;
+-}
+-
+-static DEVICE_ATTR(bluetooth, 0644, show_bluetooth, store_bluetooth_state);
+-static DEVICE_ATTR(wlan, 0644, show_wlan, store_wlan_state);
+-static DEVICE_ATTR(raw, 0444, show_raw, NULL);
+-
+-static struct attribute *compal_attributes[] = {
+-	&dev_attr_bluetooth.attr,
+-	&dev_attr_wlan.attr,
+-	&dev_attr_raw.attr,
+-	NULL
+-};
+-
+-static struct attribute_group compal_attribute_group = {
+-	.attrs = compal_attributes
+-};
+ 
+ static struct platform_driver compal_driver = {
+ 	.driver = {
+@@ -258,8 +184,6 @@ static struct platform_driver compal_driver = {
+ 	}
+ };
+ 
+-static struct platform_device *compal_device;
+-
+ /* Initialization */
+ 
+ static int dmi_check_cb(const struct dmi_system_id *id)
+@@ -390,23 +314,21 @@ static int __init compal_init(void)
+ 
+ 	ret = platform_device_add(compal_device);
+ 	if (ret)
+-		goto fail_platform_device1;
++		goto fail_platform_device;
+ 
+-	ret = sysfs_create_group(&compal_device->dev.kobj,
+-		&compal_attribute_group);
++	ret = setup_rfkill();
+ 	if (ret)
+-		goto fail_platform_device2;
++		goto fail_rfkill;
+ 
+ 	printk(KERN_INFO "compal-laptop: driver "COMPAL_DRIVER_VERSION
+ 		" successfully loaded.\n");
+ 
+ 	return 0;
+ 
+-fail_platform_device2:
+-
++fail_rfkill:
+ 	platform_device_del(compal_device);
+ 
+-fail_platform_device1:
++fail_platform_device:
+ 
+ 	platform_device_put(compal_device);
+ 
+@@ -424,10 +346,13 @@ fail_backlight:
+ static void __exit compal_cleanup(void)
+ {
+ 
+-	sysfs_remove_group(&compal_device->dev.kobj, &compal_attribute_group);
+ 	platform_device_unregister(compal_device);
+ 	platform_driver_unregister(&compal_driver);
+ 	backlight_device_unregister(compalbl_device);
++	rfkill_unregister(wifi_rfkill);
++	rfkill_destroy(wifi_rfkill);
++	rfkill_unregister(bt_rfkill);
++	rfkill_destroy(bt_rfkill);
+ 
+ 	printk(KERN_INFO "compal-laptop: driver unloaded.\n");
+ }
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.3.3
+
