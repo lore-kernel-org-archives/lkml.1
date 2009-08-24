@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbZHXJ3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZHXJaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752110AbZHXJ3J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 05:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZHXJ3G
+	id S1752118AbZHXJaP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 05:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZHXJaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 05:29:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39656 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbZHXJ3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 05:29:05 -0400
-Date: Mon, 24 Aug 2009 11:29:05 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>, hch@lst.de,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/17] Make O_SYNC handling use standard syncing path
-	(Version 2)
-Message-ID: <20090824092905.GA10080@duck.novell.com>
-References: <1250875447-15622-1-git-send-email-jack@suse.cz> <20090822162711.GA7542@shareable.org>
+	Mon, 24 Aug 2009 05:30:13 -0400
+Received: from webmail10.mail.sp.isp-net.nl ([217.149.192.62]:51545 "EHLO
+	webmail10.mail.sp.isp-net.nl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750933AbZHXJaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 05:30:11 -0400
+X-Greylist: delayed 3317 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Aug 2009 05:30:11 EDT
+Date: Mon, 24 Aug 2009 10:34:33 +0200
+From: Dick Streefland <dick@streefland.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: linux-next: manual merge of the kconfig tree with the kbuild
+	tree
+Message-ID: <20090824083433.GA6147@streefland.net>
+References: <20090824113226.b61cccc6.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090822162711.GA7542@shareable.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090824113226.b61cccc6.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Language-Detected: en
+X-Spam-Scanned: InterNLnet Mail Scan System V2.03
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 22-08-09 17:27:11, Jamie Lokier wrote:
-> Jan Kara wrote:
-> > The patch set unifines O_SYNC handling with standard fsync() path.  After this,
-> > we have just one place forcing a single file to disk so filesystems like ext3 /
-> > ext4 don't have to force a transaction commit in ext?_file_write for O_SYNC
-> > files / IS_SYNC inodes.  The code is also cleaner this way (actually about 150
-> > lines shorter), we don't sync the inode several times as it happened previously
-> > etc.
-> 
-> Afaik, O_SYNC requires just the written data to be committed to disk,
-> but fsync() requires all dirty data for the file (including written by
-> other processes / descriptors) to be committed to disk.
-> 
-> So doing the equivalent of fsync() after write might be the wrong
-> thing to do.
-  It's OK, we essentially end up doing fdatasync() on the range of the file
-where the write happened. So no unnecessary writing happens.
+On Monday 2009-08-24 11:32, Stephen Rothwell wrote:
+| Today's linux-next merge of the kconfig tree got conflicts in
+| scripts/extract-ikconfig between commit
+| 692d21e03cfc740684639b019ce9ad708930eb47 ("kconfig: simplification of
+| scripts/extract-ikconfig") from the kbuild tree and commits
+| fd3132d5815bf72aeec7d5ad87161b4831f8e48c ("kconfig: add check if end
+| exists in extract-ikconfig") and 6be51ffc1791b72d11cef9bb0a578fe8c5d64c6a
+| ("kconfig: have extract-ikconfig read ELF files") from the kconfig tree.
+| 
+| It looks like the kbuild patch obsoletes the first of the kconfig patches
+| and may obsolete the second.  I used the kbuild version for now, but
+| invite advice.
 
-									Honza
+My simplified script that you merged from the kbuild tree will also
+extract config information from ELF files. So both patches from the
+kconfig tree are not needed anymore.
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Dick
