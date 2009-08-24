@@ -1,159 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbZHXPSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbZHXPW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752535AbZHXPSa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 11:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbZHXPS3
+	id S1752680AbZHXPW2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 11:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbZHXPW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 11:18:29 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:52317 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbZHXPS2 (ORCPT
+	Mon, 24 Aug 2009 11:22:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56239 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752630AbZHXPW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 11:18:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=SzTBDzjKmVfAQTROlJi5BWNNe7Cllk1SZBcmViP+r3IzomliYMLis0gxfHATZHeAaT
-         93NzEhGtGwzx7FPM1glIXCZuPUaMJZuhRv5vg7zmy7wtI07idS4eTh48WfnXlnGuoM3c
-         sVm0CPQ/hHu4f4pJhmRP5k7hHnnChQkB6kog8=
-MIME-Version: 1.0
-Date: Mon, 24 Aug 2009 16:18:28 +0100
-Message-ID: <6278d2220908240818g3fc23311i607143b7cb6b965d@mail.gmail.com>
-Subject: Re: [2.6.31-rc7] NFS4 client manager kthread spinning...
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: linux-nfs@vger.kernel.org, Chuck Lever <chuck.lever@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Aug 2009 11:22:27 -0400
+Subject: Re: [PATCH 11/15] sched: Pass unlimited __cpu_power information to
+ upper domain level groups
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Gautham Shenoy <ego@in.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+In-Reply-To: <20090820134155.GZ29327@alberich.amd.com>
+References: <20090820131243.GO29327@alberich.amd.com>
+	 <20090820134155.GZ29327@alberich.amd.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 24 Aug 2009 17:21:37 +0200
+Message-Id: <1251127297.7538.291.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Trond,
+On Thu, 2009-08-20 at 15:41 +0200, Andreas Herrmann wrote:
+> For performance reasons __cpu_power in a sched_group might be limited
+> such that the group can handle only one task. To correctly calculate
+> the capacity in upper domain level groups the unlimited power
+> information is required. This patch stores unlimited __cpu_power
+> information in sched_groups.orig_power and uses this when calculating
+> __cpu_power in upper domain level groups.
 
-On Mon, Aug 17, 2009 at 2:53 PM, Daniel J
-Blueman<daniel.blueman@gmail.com> wrote:
-> Hi Trond,
->
-> On Mon, Aug 17, 2009 at 2:12 PM, Trond
-> Myklebust<Trond.Myklebust@netapp.com> wrote:
->> On Sun, 2009-08-16 at 23:40 +0100, Daniel J Blueman wrote:
->>> After losing and regaining ethernet link a few times with 2.6.31-rc5
->>> [1], I've hit an oops in the NFS4 client manager kthread [2] on my
->>> client with NFS4 homedir mount.
->>>
->>> Do you have a frequent test-case for when the client's manager kthread
->>> gets invoked (with and without succeeding callbacks, due to eg a
->>> firewall)? Server here is unpatched 2.6.30-rc6; I recall seeing
->>> problems when the manager kthread gets invoked, across quite a few
->>> kernel releases, just wasn't lucky enough to catch an oops.
->>>
->>> Oppsing in allow_signal() suggests task state corruption perhaps? I'm
->>> downloading the debug kernel to match up the disassembly and line
->>> numbers, if that helps? This time, the client had no firewall (but
->>> have seen other issues when the callback has failed due to the
->>> firewall).
->>
->> Those aren't Oopses. They are 'soft lockup' warnings. Basically, they're
->> saying that the CPU is getting stuck waiting for a spin lock or a mutex.
->>
->> In this case, it is probably the fact that the state manager is going
->> nuts trying to recover, while the connection to the server keeps coming
->> up and going down.
->>
->> What does 'netstat -t' say when you get into this situation?
->
-> Whoops; it's true the stack-trace comes from the soft-lockup detector.
->
-> There was a single 200s link excursion, but the client didn't recover
-> as locks are held and never released it seems; I observe the
-> '192.168.1.250-m' NFS4 manager kthread being created and not going
-> away, despite IP connectivity with the server being fine after.
->
-> I'll reproduce it with stock 2.6.31-rc6 on the client and get 'netstat
-> -t' output.
+OK, so this tries to fix the cpu_power wreckage?
 
-(subject line updated)
+ok, so let me try this with an example:
 
-After further analysis, I see that NFS services do correctly recover
-after the link excursion, however we see:
- - link is restored
- - the manager kthread gets created, does some work
- - we see lock reclamation fail [1]
- - after a short while, NFS read()s continue, all is good
- - the manager kthread spins indefinitely [2, 3] on (struct
-rpc_wait_queue)queue->lock with spin_lock_bh() [see rpc_wake_up]
 
-This seems reproducible with various kernel debugging enabled (perhaps
-suggesting use-after-free via the lock being reinitialised/poisoned?).
+Suppose we have a dual-core with shared cache and SMT
 
-Let me know if anything else may help track this down (config, stack
-frame resolution etc). I'll take a deeper look if I get time in a
-couple of weeks, but alas it may be after 2.6.31 is released. NFS+RPC
-debugging (taken at a different time than [1]) at
-http://quora.org/hive/nfs-manager-spin.bz2 .
+  0-3     MC
+0-1 2-3   SMT
 
-Thanks,
-  Daniel
+Then both levels fancy setting SHARED_RESOURCES and both levels end up
+normalizing the cpu_power to 1, so when we unplug cpu 2, load-balancing
+gets all screwy because the whole system doesn't get normalized
+properly.
 
---- [1]
+What you propose here is every time we muck with cpu_power we keep the
+real stuff in orig_power and use that to compute the level above.
 
-[ 1692.147184] e1000e: eth0 NIC Link is Down
-[ 1894.417242] nfs: server x1 not responding, still trying
-[ 1904.715032] e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow
-Control: RX/TX
-[ 1957.423232] nfs: server x1 OK
-[ 1957.481925] nfs4_reclaim_open_state: Lock reclaim failed!
+Except you don't use it in the load-balancer proper, so normalization is
+still hosed.
 
---- [2]
+Its a creative solution, but I'd rather see cpu_power returned to a
+straight sum of actual power to normalize the inter-cpu runqueue weights
+and do the placement decision using something else.
 
-$ ps -ef
-<snip>
-UID        PID  PPID  C STIME TTY          TIME CMD
-root      5028     2 99 22:59 ?        00:00:09 [192.168.10.250-]
-
---- [3]
-
-192.168.10.25 R  running task     4040  5107      2 0x00000000
-
-ffffffff826c5470 00000000000002fb ffff88014b215d90 ffffffff810a2321
-
-ffffffff8168f99e 0000000000024390 0000000100000001 ffff880100000000
-
-0000000100000001 0000000000000001 0000000000000000 ffff8801451b54e8
-
-Call Trace:
-
-[<ffffffff810a2321>] __lock_acquire+0x2d1/0x1240
-
-[<ffffffff8168f99e>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-
-[<ffffffff81693fa2>] ? sub_preempt_count+0x142/0x150
-
-[<ffffffff810a33ae>] lock_acquire+0x11e/0x170
-
-[<ffffffff8163f718>] ? rpc_wake_up+0x18/0xa0
-
-[<ffffffff81693fa2>] ? sub_preempt_count+0x142/0x150
-
-[<ffffffff8168fee6>] ? _spin_lock_bh+0x46/0x80
-
-[<ffffffff8163f718>] ? rpc_wake_up+0x18/0xa0
-
-[<ffffffff8124ff26>] ? nfs4_clear_state_manager_bit+0x36/0x40
-
-[<ffffffff812515a8>] ? nfs4_run_state_manager+0x378/0x500
-
-[<ffffffff81251230>] ? nfs4_run_state_manager+0x0/0x500
-
-[<ffffffff81088946>] ? kthread+0xa6/0xc0
-
-[<ffffffff8100d71a>] ? child_rip+0xa/0x20
-
-[<ffffffff8100d054>] ? restore_args+0x0/0x30
-
-[<ffffffff810888a0>] ? kthread+0x0/0xc0
-
-[<ffffffff8100d710>] ? child_rip+0x0/0x20
--- 
-Daniel J Blueman
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+>  include/linux/sched.h |    8 +++++++-
+>  kernel/sched.c        |   36 ++++++++++++++++++++++++------------
+>  2 files changed, 31 insertions(+), 13 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index c53bdd8..d230717 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -890,7 +890,13 @@ struct sched_group {
+>  	 * (see include/linux/reciprocal_div.h)
+>  	 */
+>  	u32 reciprocal_cpu_power;
+> -
+> +	/*
+> +	 * Backup of original power for this group.
+> +	 * It is used to pass correct power information to upper
+> +	 * domain level groups in case __cpu_power is limited for
+> +	 * performance reasons.
+> +	 */
+> +	unsigned int orig_power;
+>  	/*
+>  	 * The CPUs this group covers.
+>  	 *
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 7a0d710..464b6ba 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -8376,6 +8376,7 @@ static void init_numa_sched_groups_power(struct sched_group *group_head)
+>  
+>  			sg_inc_cpu_power(sg, sd->groups->__cpu_power);
+>  		}
+> +		sg->orig_power = sg->__cpu_power;
+>  		sg = sg->next;
+>  	} while (sg != group_head);
+>  }
+> @@ -8514,18 +8515,9 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
+>  	child = sd->child;
+>  
+>  	sd->groups->__cpu_power = 0;
+> -
+> -	/*
+> -	 * For perf policy, if the groups in child domain share resources
+> -	 * (for example cores sharing some portions of the cache hierarchy
+> -	 * or SMT), then set this domain groups cpu_power such that each group
+> -	 * can handle only one task, when there are other idle groups in the
+> -	 * same sched domain.
+> -	 */
+> -	if (!child || (!(sd->flags & SD_POWERSAVINGS_BALANCE) &&
+> -		       (child->flags &
+> -			(SD_SHARE_CPUPOWER | SD_SHARE_PKG_RESOURCES)))) {
+> +	if (!child) {
+>  		sg_inc_cpu_power(sd->groups, SCHED_LOAD_SCALE);
+> +		sd->groups->orig_power = sd->groups->__cpu_power;
+>  		return;
+>  	}
+>  
+> @@ -8534,9 +8526,29 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
+>  	 */
+>  	group = child->groups;
+>  	do {
+> -		sg_inc_cpu_power(sd->groups, group->__cpu_power);
+> +		sg_inc_cpu_power(sd->groups, group->orig_power);
+>  		group = group->next;
+>  	} while (group != child->groups);
+> +	sd->groups->orig_power = sd->groups->__cpu_power;
+> +
+> +	/*
+> +	 * For perf policy, if the groups in child domain share resources
+> +	 * (for example cores sharing some portions of the cache hierarchy
+> +	 * or SMT), then set this domain groups cpu_power such that each group
+> +	 * can handle only one task, when there are other idle groups in the
+> +	 * same sched domain.
+> +	 * Note: Unmodified power information is kept in orig_power and
+> +	 *       can be used in higher domain levels to calculate
+> +	 *       and reflect the correct capacity of a sched_group.
+> +	 *       This is required for power_savings scheduling.
+> +	 */
+> +	if (!(sd->flags & SD_POWERSAVINGS_BALANCE) &&
+> +	    ((child->flags &
+> +	      (SD_SHARE_CPUPOWER | SD_SHARE_PKG_RESOURCES)))) {
+> +		sd->groups->__cpu_power = 0;
+> +		sg_inc_cpu_power(sd->groups, SCHED_LOAD_SCALE);
+> +	}
+> +
+>  }
+>  
+>  /*
