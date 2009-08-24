@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbZHXWof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbZHXWzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753928AbZHXWof (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbZHXWod
+	id S1753747AbZHXWzX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZHXWzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:44:33 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48541 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753885AbZHXWoc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:44:32 -0400
-Date: Tue, 25 Aug 2009 00:44:27 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Zan Lynx <zlynx@acm.org>
-Cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090824224427.GI29763@elf.ucw.cz>
-References: <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <4A930EB9.8030903@redhat.com> <4A93129E.6080704@acm.org>
+	Mon, 24 Aug 2009 18:55:22 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:18337 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753501AbZHXWzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:55:22 -0400
+Date: Mon, 24 Aug 2009 18:55:15 -0400
+From: Mike Snitzer <snitzer@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: dm snapshot: implement .iterate_devices
+Message-ID: <20090824225514.GA30263@redhat.com>
+References: <1251007867-13004-1-git-send-email-snitzer@redhat.com> <20090824141536.30df105c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A93129E.6080704@acm.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090824141536.30df105c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-08-24 16:22:22, Zan Lynx wrote:
-> Ric Wheeler wrote:
->> Pavel Machek wrote:
->>> Degraded MD RAID5 does not work by design; whole stripe will be
->>> damaged on powerfail or reset or kernel bug, and ext3 can not cope
->>> with that kind of damage. [I don't see why statistics should be
->>> neccessary for that; the same way we don't need statistics to see that
->>> ext2 needs fsck after powerfail.]
->>>                                     Pavel
->>>   
->> What you are describing is a double failure and RAID5 is not double  
->> failure tolerant regardless of the file system type....
->
-> Are you sure he isn't talking about how RAID must write all the data  
-> chunks to make a complete stripe and if there is a power-loss, some of  
-> the chunks may be written and some may not?
->
-> As I read Pavel's point he is saying that the incomplete write can be  
-> detected by the incorrect parity chunk, but degraded RAID-5 has no  
-> working parity chunk so the incomplete write would go undetected.
+On Mon, Aug 24 2009 at  5:15pm -0400,
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Yep.
+> On Sun, 23 Aug 2009 02:11:07 -0400
+> Mike Snitzer <snitzer@redhat.com> wrote:
+> 
+> > This patch implements .iterate_devices for the origin and snapshot
+> > targets.  dm-snapshot's lack of .iterate_devices resulted in the
+> > inability to properly establish queue_limits for both targets.  
+> > 
+> > With 4K sector drives: an unfortunate side-effect of not establishing
+> > proper limits in either targets' DM device was that IO to the devices
+> > would fail even though both had been created without error.
+> 
+> Does this make the patch a regression fix?
 
-> I know this is a RAID failure mode. However, I actually thought this was  
-> a problem even for a intact RAID-5. AFAIK, RAID-5 does not generally  
-> read the complete stripe and perform verification unless that is  
-> requested, because doing so would hurt performance and lose the entire  
-> point of the RAID-5 rotating parity blocks.
+Yes.
+ 
+> > Commit af4874e03ed82f050d5872d8c39ce64bf16b5c38 should have implemented
+> > .iterate_devices for dm-snap.c's origin and snapshot targets.
+> 
+> Please use the form af4874e03ed82f050d5872d8c39ce64bf16b5c38 ("dm
+> target:s introduce iterate devices fn") when referring to commits. 
+> Because commits might have different IDs in different trees (I think
+> that's the reason).
 
-Not sure; is not RAID expected to verify the array after unclean
-shutdown?
+OK, thanks for picking this up.  I believe Alasdair is back from
+vacation tomorrow and will be pushing other remaining DM fixes for
+2.6.31 final.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
