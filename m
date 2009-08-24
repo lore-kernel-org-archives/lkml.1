@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZHXWWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbZHXWa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbZHXWWr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbZHXWWo
+	id S1753817AbZHXWa3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZHXWa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:22:44 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:37034 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753805AbZHXWWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:22:44 -0400
-Message-ID: <4A93129E.6080704@acm.org>
-Date: Mon, 24 Aug 2009 16:22:22 -0600
-From: Zan Lynx <zlynx@acm.org>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Ric Wheeler <rwheeler@redhat.com>
-CC: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+	Mon, 24 Aug 2009 18:30:28 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:42840
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753476AbZHXWa1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:30:27 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
+Date: Mon, 24 Aug 2009 17:30:24 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
+Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Pavel Machek <pavel@ucw.cz>, Goswin von Brederlow <goswin-v-b@web.de>,
        kernel list <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
        rdunlap@xenotime.net, linux-doc@vger.kernel.org,
        linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <200903161426.24904.rob@landley.net> <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <4A930EB9.8030903@redhat.com>
-In-Reply-To: <4A930EB9.8030903@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20090312092114.GC6949@elf.ucw.cz> <20090824130125.GG23677@mit.edu> <4A92A9F9.10706@gmail.com>
+In-Reply-To: <4A92A9F9.10706@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20090824/1Mfhvi-00087a-CL-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+Content-Disposition: inline
+Message-Id: <200908241730.26356.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ric Wheeler wrote:
-> Pavel Machek wrote:
->> Degraded MD RAID5 does not work by design; whole stripe will be
->> damaged on powerfail or reset or kernel bug, and ext3 can not cope
->> with that kind of damage. [I don't see why statistics should be
->> neccessary for that; the same way we don't need statistics to see that
->> ext2 needs fsck after powerfail.]
->>                                     Pavel
->>   
-> What you are describing is a double failure and RAID5 is not double 
-> failure tolerant regardless of the file system type....
+On Monday 24 August 2009 09:55:53 Artem Bityutskiy wrote:
+> Probably, Pavel did too good job in generalizing things, and it could be
+> better to make a doc about HDD vs SSD or HDD vs Flash-based-storage.
+> Not sure. But the idea to document subtle FS assumption is good, IMO.
 
-Are you sure he isn't talking about how RAID must write all the data 
-chunks to make a complete stripe and if there is a power-loss, some of 
-the chunks may be written and some may not?
+The standard procedure for this seems to be to cc: Jonathan Corbet on the 
+discussion, make puppy eyes at him, and subscribe to Linux Weekly News.
 
-As I read Pavel's point he is saying that the incomplete write can be 
-detected by the incorrect parity chunk, but degraded RAID-5 has no 
-working parity chunk so the incomplete write would go undetected.
-
-I know this is a RAID failure mode. However, I actually thought this was 
-a problem even for a intact RAID-5. AFAIK, RAID-5 does not generally 
-read the complete stripe and perform verification unless that is 
-requested, because doing so would hurt performance and lose the entire 
-point of the RAID-5 rotating parity blocks.
-
+Rob
 -- 
-Zan Lynx
-zlynx@acm.org
-
-"Knowledge is Power.  Power Corrupts.  Study Hard.  Be Evil."
+Latency is more important than throughput. It's that simple. - Linus Torvalds
