@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751371AbZHXDL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751392AbZHXDUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751371AbZHXDL3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 23:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbZHXDL3
+	id S1751392AbZHXDUz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 23:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZHXDUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 23:11:29 -0400
-Received: from vms173017pub.verizon.net ([206.46.173.17]:56007 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbZHXDL2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 23:11:28 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 8BIT
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Message-id: <4A9204B4.2030800@acm.org>
-Date: Sun, 23 Aug 2009 22:10:44 -0500
-From: Corey Minyard <minyard@acm.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-To: =?ISO-8859-1?Q?Peter_H=FCwe?= <PeterHuewe@gmx.de>
-Cc: Jiri Kosina <trivial@kernel.org>, openipmi-developer@lists.sourceforge.net,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Openipmi-developer] [PATCH] char/impi: adding __init macro/ fix
- of	__exit macro location in ipmi_poweroff.c
-References: <200908230146.56283.PeterHuewe@gmx.de>
-In-reply-to: <200908230146.56283.PeterHuewe@gmx.de>
+	Sun, 23 Aug 2009 23:20:54 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:41921 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750696AbZHXDUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 23:20:53 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19090.1800.521794.839576@cargo.ozlabs.ibm.com>
+Date: Mon, 24 Aug 2009 13:20:40 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, dwalker@fifo99.com,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:timers/core] timekeeping: Increase granularity of
+	read_persistent_clock()
+In-Reply-To: <20090823084740.GA7651@elte.hu>
+References: <20090814134811.013873340@de.ibm.com>
+	<tip-d4f587c67fc39e0030ddd718675e252e208da4d7@git.kernel.org>
+	<20090822103252.GA32369@elte.hu>
+	<20090822171540.1220f50d@skybase>
+	<20090822153346.GA3313@elte.hu>
+	<19088.47213.327897.703458@cargo.ozlabs.ibm.com>
+	<20090823084740.GA7651@elte.hu>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is correct, I'm fine with it going through the trivial tree.  Thanks.
+Ingo Molnar writes:
 
-Acked-by: Corey Minyard <minyard@acm.org>
+> Do you ask Linus to rebase the upstream kernel as well, if the 
+> powerpc or x86 build happens to break? There's more than a dozen 
+> such cases per development cycle triggering on my tests alone. If 
+> not, why not?
 
-Peter Hüwe wrote:
-> From: Peter Huewe <peterhuewe@gmx.de>
->
-> Trivial patch which adds the __init to the module_init function of
-> drivers/char/ipmi/ipmy_poweroff.c and corrects the location of __exit for the
-> cleanup function.
->
-> According to ldd3, page 31 the __exit token hast to be after the return type.
-> Or am I getting something wrong here?
->
-> Corey, please have a look at the small patch and either pull it through
-> your tree, or please ack' it so Jiri can pull it through the trivial tree.
->
-> linux version 2.6.31-rc6 - linus git tree, So 23. Aug 01:38:43 CEST 2009
->
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-> ---
-> diff --git a/drivers/char/ipmi/ipmi_poweroff.c b/drivers/char/ipmi/ipmi_poweroff.c
-> index a261bd7..2e66b5f 100644
-> --- a/drivers/char/ipmi/ipmi_poweroff.c
-> +++ b/drivers/char/ipmi/ipmi_poweroff.c
-> @@ -691,7 +691,7 @@ static struct ctl_table_header *ipmi_table_header;
->  /*
->   * Startup and shutdown functions.
->   */
-> -static int ipmi_poweroff_init(void)
-> +static int __init ipmi_poweroff_init(void)
->  {
->  	int rv;
->  
-> @@ -725,7 +725,7 @@ static int ipmi_poweroff_init(void)
->  }
->  
->  #ifdef MODULE
-> -static __exit void ipmi_poweroff_cleanup(void)
-> +static void __exit ipmi_poweroff_cleanup(void)
->  {
->  	int rv;
->  
->
-> ------------------------------------------------------------------------------
-> Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
-> trial. Simplify your report design, integration and deployment - and focus on 
-> what you do best, core application coding. Discover what's new with 
-> Crystal Reports now.  http://p.sf.net/sfu/bobj-july
-> _______________________________________________
-> Openipmi-developer mailing list
-> Openipmi-developer@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/openipmi-developer
->
->   
+I see you pulling commits out of the tip tree quite often, when they
+have testing failures of various kinds.  I presume that, like other
+maintainers, you have some branches that you try hard not to rebase
+and other testing branches that are quite volatile and get
+reconstructed frequently (though I don't know what branch names you
+use for them).
 
+I presumed that you wouldn't have put a commit that hadn't even passed
+basic build testing into one of your non-rebasing branches.  That's
+why I assumed you could fold the fix into the original patch without
+difficulty.
+
+> The thing is, we'll probably redo this portion of the timer tree as 
+> i found other problems in testing, but generally the disadvantages 
+> of a build breakage with a very small non-bisectability window has 
+> to be weighed against the disadvantages of a rebase (which are 
+> significant).
+> 
+> The equation does not automatically flip in favor of a rebase as you 
+> seem to suggest - in fact it generally goes _against_ a rebase.
+
+In a stable, non-rebasing branch, sure.  But putting untested patches
+into such a branch would be a bit silly, so I assumed you hadn't done
+that. :)
+
+Paul.
