@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbZHXLCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbZHXLE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752157AbZHXLCw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 07:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZHXLCv
+	id S1752185AbZHXLE4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 07:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZHXLEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 07:02:51 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:51210 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbZHXLCu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 07:02:50 -0400
-Date: Mon, 24 Aug 2009 20:02:51 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Josh Stone <jistone@redhat.com>,
-       linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH v3 2/4] tracing: Make syscall_(un)regfunc arch-specific
-Message-ID: <20090824110251.GA18420@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
-	Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Jiaying Zhang <jiayingz@google.com>,
-	Martin Bligh <mbligh@google.com>,
-	Lai Jiangshan <laijs@cn.fujitsu.com>
-References: <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250917125-6174-1-git-send-email-jistone@redhat.com> <1250917125-6174-2-git-send-email-jistone@redhat.com> <1250917125-6174-3-git-send-email-jistone@redhat.com> <20090823211422.GG6256@nowhere> <20090824014025.GA12653@linux-sh.org> <20090824084101.GE2424@elte.hu> <20090824085944.GA15330@linux-sh.org> <20090824095652.GC25267@elte.hu> <20090824110123.GA6162@elte.hu>
+	Mon, 24 Aug 2009 07:04:51 -0400
+Received: from lucidpixels.com ([75.144.35.66]:46786 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751113AbZHXLEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 07:04:51 -0400
+Date: Mon, 24 Aug 2009 07:04:52 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Christoph Hellwig <hch@infradead.org>
+cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.30.4 XFS(..?) regression (& with/2.6.31-rc6)
+In-Reply-To: <20090823224504.GA19942@infradead.org>
+Message-ID: <alpine.DEB.2.00.0908240704130.9427@p34.internal.lan>
+References: <alpine.DEB.2.00.0908110624420.22426@p34.internal.lan> <20090816022331.GA2309@infradead.org> <alpine.DEB.2.00.0908171024380.12533@p34.internal.lan> <alpine.DEB.2.00.0908220624440.30321@p34.internal.lan> <20090822142550.GA10003@infradead.org>
+ <alpine.DEB.2.00.0908221044420.30321@p34.internal.lan> <20090822201558.GA17955@infradead.org> <alpine.DEB.2.00.0908221645440.20848@p34.internal.lan> <20090822205502.GA18904@infradead.org> <alpine.DEB.2.00.0908221659030.23463@p34.internal.lan>
+ <20090823224504.GA19942@infradead.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824110123.GA6162@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 01:01:23PM +0200, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > ( Also, could you please fix your mailer so that it does not damage 
-> >   threads? It generates such bogus headers:
-> > 
-> >     Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-> >         Ingo Molnar <mingo@elte.hu>,
-> >         Frederic Weisbecker <fweisbec@gmail.com>,
-> >         Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
-> >         Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-> >        	Steven Rostedt <rostedt@goodmis.org>,
-> >         Peter Zijlstra <peterz@infradead.org>,
-> >         Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-> >         Jiaying Zhang <jiayingz@google.com>,
-> >         Martin Bligh <mbligh@google.com>,
-> >         Lai Jiangshan <laijs@cn.fujitsu.com>
-> > 
-> >   which messes up replies. )
-> 
-> Paul, you forgot to reply to this bit. Mail-Followup-To is quite a 
-> PITA on lkml.
-> 
-Yes, this is the first I realized it was doing this, I'll look in to it,
-thanks.
+
+
+On Sun, 23 Aug 2009, Christoph Hellwig wrote:
+
+> Ok, let's see where errors could happen then.
+>
+> There are four theoretical possibilities:
+>
+> (a) XFS
+> (b) loop driver
+> (c) crypto loop code
+> (d) block layer
+>
+> Or combinations thereof.
+>
+> I would take (a) and (d) as more unlikely as they tend to get used much
+> more and I would have heard more bug reports already.
+>
+> The cryptoloop code hasn't changed at all since 2.6.29.
+>
+> The loop code howver has a very interesting commit just after 2.6.39:
+>
+> commit 68db1961bbf4e16c220ccec4a780e966bc1fece3
+> Author: Nikanth Karthikesan <knikanth@suse.de>
+> Date:   Tue Mar 24 12:29:54 2009 +0100
+>
+>    loop: support barrier writes
+>
+> Can you try reverting this one (it cleanly reverse-applies against
+> 2.6.30 and current mainline) and see if that makes a difference?
+>
+
+Hello Christoph,
+
+# patch -p1 -R < ../unpatch.patch
+patching file drivers/block/loop.c
+Hunk #1 succeeded at 473 (offset -1 lines).
+Hunk #2 succeeded at 804 (offset -22 lines).
+#
+
+Patched, we'll see if the problem recurs.. thanks!
+
+Justin.
