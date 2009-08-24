@@ -1,77 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbZHXF7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751617AbZHXGAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751596AbZHXF7b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 01:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZHXF7a
+	id S1751617AbZHXGAH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 02:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbZHXGAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 01:59:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46320 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbZHXF7a (ORCPT
+	Mon, 24 Aug 2009 02:00:06 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:49940 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbZHXGAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 01:59:30 -0400
-Subject: Re: system gets stuck in a lock during boot
-From: Peter Zijlstra <peterz@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4A91FDED.9050801@cn.fujitsu.com>
-References: <4A84345D.60506@gmail.com> <20090818104905.GC5231@nowhere>
-	 <20090818160911.GA21243@goodmis.org>
-	 <dd18b0c30908180924n3848d32ave258f98a5f703c38@mail.gmail.com>
-	 <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com>
-	 <4A8B4607.6090303@gmail.com> <4A8B5113.20102@cn.fujitsu.com>
-	 <4A8FA2BD.4030707@gmail.com>  <4A91FDED.9050801@cn.fujitsu.com>
-Content-Type: text/plain
+	Mon, 24 Aug 2009 02:00:06 -0400
+Message-ID: <4A922BF6.4010607@ct.jp.nec.com>
+Date: Mon, 24 Aug 2009 14:58:14 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] fix race copy_process() vs de_thread()
+References: <4A9210A4.4010108@ct.jp.nec.com> <20090824141141.0893a2c0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090824141141.0893a2c0.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Aug 2009 07:58:43 +0200
-Message-Id: <1251093523.7538.118.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-24 at 10:41 +0800, Li Zefan wrote:
-
-> > @@ -940,7 +940,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentr
-> >                 entry = trace_create_file("enable", 0644, call->dir, call,
-> >                                           enable);
-> > 
-> > -       if (call->id)
-> > +       if (call->id && call->profile_enable)
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 24 Aug 2009 13:01:40 +0900
+> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+>  
+>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> ---
+>>  kernel/fork.c |   12 ++++++++++++
+>>  1 files changed, 12 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/kernel/fork.c b/kernel/fork.c
+>> index 3ffa10f..be6c5b5 100644
+>> --- a/kernel/fork.c
+>> +++ b/kernel/fork.c
+>> @@ -882,6 +882,9 @@ static void cleanup_signal(struct task_struct *tsk)
+>>  {
+>>  	struct signal_struct *sig = tsk->signal;
+>>  
+>> +	if (!sig)
+>> +		return;
+>> +
+>>  	atomic_dec(&sig->live);
+>>  
+>>  	if (atomic_dec_and_test(&sig->count))
+>> @@ -1230,6 +1233,15 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>>   	 */
+>>  	recalc_sigpending();
+>>  	if (signal_pending(current)) {
+>> +		/* If there is any task waiting for the group exit, notify it */
+>> +		if ((clone_flags & CLONE_THREAD) &&
+>> +		    p->signal->group_exit_task) {
+>> +			atomic_dec(&p->signal->live);
+>> +			atomic_dec(&p->signal->count);
+>> +			if (atomic_read(&p->signal->count) == p->signal->notify_count)
+>> +				wake_up_process(p->signal->group_exit_task);
+>> +			p->signal = NULL;
+>> +		}
+>>  		spin_unlock(&current->sighand->siglock);
+>>  		write_unlock_irq(&tasklist_lock);
+>>  		retval = -ERESTARTNOINTR;
 > 
-> We do an extra check on ->profile_enable, shouldn't cause bug..
-> 
-> >                 entry = trace_create_file("id", 0444, call->dir, call,
-> >                                           id);
-> 
-> Any way, I don't think this commit does the right thing:
-> 
->   - If CONFIG_EVENT_PROFILE=y, we'll create events/<dir>/<event>/id,
->     except events/ftrace/<event>/id.
-> 
->   - if CONFIG_EVENT_PROFILE=n, there's no 'id' file at all!
-> 
-> I think it's better to skip ftrace/ dir in perf tool code, instead of
-> skipping creating id files in ftrace code.
+> I'm not sure whehter I catch the issue correctly but, shouldn't we encapsulate
+> this check in cleanup_signal() ?
 
-No, it does do the right thing. Your patch breaks things because not all
-tracepoints are created through TRACE_EVENT() and will thus not have
-their profile_enable/disable hooks set.
+Ah, you're right. clone_process() may fail several reasons and failures after
+copy_signal() will cause this issue.
 
-By giving them an ID file, there is no way to distinguish good from bad
-tracepoints.
+> 
+> like...
+> 
+> static void cleanup_signal(struct task_struct *tsk)
+> {
+>         struct signal_struct *sig = tsk->signal;
+> 	sighand = rcu_dereference(tsk->sighand);
+>  
+>         spin_lock(&sighand->siglock);
+>         if (sig->group_exit_task && atomic_read(&sig->count) == sig->notify_count)
+>  		wake_up_process(sig->group_exit_task);
+> 	spin_unlock(&sighand->siglock);
+> 
+> 	atomic_dec(&sig->live);
+> 	if (!atomic_dec_and_test(&sig->count))
+> 		 __cleanup_signal(sig);
+> }
+> 
+> 
+> BTW, why sig->xxx members in "signal" struct is guarded by lock in "sighand"
+> struct ??
 
-Expempting ftrace is no solid solution, suppose someone else does a
-TRACE_EVENT_FORMAT() tracepoint, how would you know you could use it as
-a profile event source?
+I don't know.
 
-The id files really must stay conditional.
+Update version is below.
 
-Aside from that, you only add #ifdef fuzz back which with his config is
-moot, and shouldn't result in anything but a slightly bigger structure
-to begin with.
+Thanks,
+Hiroshi
+
+========
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+
+There is a race between de_thread() and copy_process().
+When a thread is during execve and another thread is during clone, a exec-ing
+thread may be hung up in de_thread() waiting other threads are finished.
+The root cause is that cleanup_signal() which is called when fork() failed
+doesn't cause wake up the waiting thread at de_thread(), because there is no
+check signal->count.
+
+We need the check signal->group_exit_task and signal->notify_count.
+
+Here is a reproducer, it may generate a thread which never die.
+
+void *null_thread(void *p)
+{
+	for (;;)
+		sleep(1);
+
+	return NULL;
+}
+
+void *exec_thread(void *p)
+{
+	execl("/bin/true", "/bin/true", NULL);
+
+	return null_thread(p);
+}
+
+int main(int argc, char **argv)
+{
+	for (;;) {
+		pid_t pid;
+		int ret, status;
+
+		pid = fork();
+		if (pid < 0)
+			break;
+
+		if (!pid) {
+			pthread_t tid;
+
+			pthread_create(&tid, NULL, exec_thread, NULL);
+			for (;;)
+				pthread_create(&tid, NULL, null_thread, NULL);
+		}
+
+		do {
+			ret = waitpid(pid, &status, 0);
+		} while (ret == -1 && errno == EINTR);
+	}
+
+	return 0;
+}
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ kernel/fork.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 3ffa10f..bc41c41 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -886,6 +886,14 @@ static void cleanup_signal(struct task_struct *tsk)
+ 
+ 	if (atomic_dec_and_test(&sig->count))
+ 		__cleanup_signal(sig);
++	else {
++		/* If there is any task waiting for the group exit, notify it */
++		spin_lock(&tsk->sighand->siglock);
++		if (sig->group_exit_task &&
++		    atomic_read(&sig->count) == sig->notify_count)
++			wake_up_process(sig->group_exit_task);
++		spin_unlock(&tsk->sighand->siglock);
++	}
+ }
+ 
+ static void copy_flags(unsigned long clone_flags, struct task_struct *p)
+-- 
+1.6.3.3
+
