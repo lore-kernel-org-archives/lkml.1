@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbZHXSZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZHXSZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237AbZHXSZE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 14:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZHXSZD
+	id S1753248AbZHXSZe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 14:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZHXSZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 14:25:03 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:53352 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753186AbZHXSZC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 14:25:02 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 24 Aug 2009 11:25:01 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: "Michael S. Tsirkin" <mst@redhat.com>
-cc: Avi Kivity <avi@redhat.com>, gleb@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-In-Reply-To: <20090823143021.GA27495@redhat.com>
-Message-ID: <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com>
-References: <20090820155655.GA8764@redhat.com> <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com>
- <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 24 Aug 2009 14:25:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60694 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753163AbZHXSZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 14:25:30 -0400
+Date: Mon, 24 Aug 2009 18:24:58 GMT
+From: tip-bot for Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       amwang@redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de, amwang@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <20090821083709.5098.52505.sendpatchset@localhost.localdomain>
+References: <20090821083709.5098.52505.sendpatchset@localhost.localdomain>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: Fix an incorrect argument of reserve_bootmem()
+Message-ID: <tip-a6a06f7b577f89d0b916c5ccaff67ca5ed444a78@git.kernel.org>
+Git-Commit-ID: a6a06f7b577f89d0b916c5ccaff67ca5ed444a78
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 24 Aug 2009 18:24:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 23 Aug 2009, Michael S. Tsirkin wrote:
+Commit-ID:  a6a06f7b577f89d0b916c5ccaff67ca5ed444a78
+Gitweb:     http://git.kernel.org/tip/a6a06f7b577f89d0b916c5ccaff67ca5ed444a78
+Author:     Amerigo Wang <amwang@redhat.com>
+AuthorDate: Fri, 21 Aug 2009 04:34:45 -0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 24 Aug 2009 20:22:55 +0200
 
-> On Sun, Aug 23, 2009 at 04:40:51PM +0300, Avi Kivity wrote:
-> > On 08/23/2009 04:36 PM, Michael S. Tsirkin wrote:
-> >> More important here is realization that eventfd is a mutex/semaphore
-> >> implementation, not a generic event reporting interface as we are trying
-> >> to use it.
-> >>    
-> >
-> > Well it is a generic event reporting interface (for example, aio uses it).
-> 
-> Davide, I think it's a valid point.  For example, what read on eventfd
-> does (zero a counter and return) is not like any semaphore I saw.
+x86: Fix an incorrect argument of reserve_bootmem()
 
+This line looks suspicious, because if this is true, then the
+'flags' parameter of function reserve_bootmem_generic() will be
+unused when !CONFIG_NUMA. I don't think this is what we want.
 
-Indeed, the default eventfd behaviour is like, well, an event. Signaling 
-(kernel side) or writing (userspace side), signals the event.
-Waiting (reading) it, will reset the event.
-If you use EFD_SEMAPHORE, you get a semaphore-like behavior.
-Events and sempahores are two widely known and used abstractions.
-The EFD_STATE proposed one, well, no. Not at all.
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: akpm@linux-foundation.org
+LKML-Reference: <20090821083709.5098.52505.sendpatchset@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ arch/x86/mm/init_64.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-- Davide
-
-
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 6176fe8..ea56b8c 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -796,7 +796,7 @@ int __init reserve_bootmem_generic(unsigned long phys, unsigned long len,
+ 		return ret;
+ 
+ #else
+-	reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
++	reserve_bootmem(phys, len, flags);
+ #endif
+ 
+ 	if (phys+len <= MAX_DMA_PFN*PAGE_SIZE) {
