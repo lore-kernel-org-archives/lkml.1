@@ -1,108 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbZHXR4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbZHXSEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbZHXR4i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 13:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbZHXR4e
+	id S1753179AbZHXSEr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 14:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZHXSEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 13:56:34 -0400
-Received: from mail-ew0-f207.google.com ([209.85.219.207]:38834 "EHLO
-	mail-ew0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753057AbZHXRzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 13:55:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:user-agent:date:from:to:cc:subject:references
-         :content-disposition;
-        b=YP3ekwRKq2zsssLv4sOOCD6s5d6mzW5FEIWQaeluY/TYk+KNjUCTpjlSv0mdipsoM4
-         /D3JD0ItRM16hY5Z79mJmLBuETEMjkrE/joxy3YaliLHrcsJeBZ67AVlCk+VtlxjAJlY
-         a4er86ip/DCygfAghdUraBZJqLtT/KQ6qHN6Y=
-Message-Id: <20090824175551.493629148@openvz.org>
-User-Agent: quilt/0.47-1
-Date: Mon, 24 Aug 2009 21:53:39 +0400
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@openvz.org>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: [rfc -tip 4/4] x86,ioapic: ioapic_setup_resources - get rid of needless check and simplify
-References: <20090824175335.186713800@openvz.org>
-Content-Disposition: inline; filename=x86-io-apic-bootmem
+	Mon, 24 Aug 2009 14:04:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:53729 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753128AbZHXSEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 14:04:46 -0400
+Date: Mon, 24 Aug 2009 20:01:12 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Is adding requeue_delayed_work() a good idea
+Message-ID: <20090824180112.GC16202@redhat.com>
+References: <adazl9uw3w1.fsf@cisco.com> <20090821115547.GA6901@redhat.com> <adaab1sx29p.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adaab1sx29p.fsf@cisco.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alloc_bootmem do panic on allication failure.
-There is no need to check the result.
+On 08/21, Roland Dreier wrote:
+>
+>  > The main question is: what should requeue_delayed_work(dwork) do when
+>  > dwork->timer is not pending but dwork->work is queued or running?
+>  > Should it cancel dwork->work is this case?
+>
+> In my particular case it doesn't really matter.  In the queued case it
+> could leave it to run whenever it gets to the head of the workqueue.  In
+> the already running case then I think the timer should be reset.  The
+> main point is that if I do requeue_delayed_work() I want to make sure
+> the work runs all the way through from the beginning at some point in
+> the future.  The pattern I have in mind is something like:
+>
+> 	spin_lock_irqsave(&mydata_lock);
+> 	new_timeout = add_item_to_timeout_list();
+> 	requeue_delayed_work(wq, &process_timeout_list_work, new_timeout);
+> 	spin_unlock_irqsave(&mydata_lock);
+>
+> so if the process_timeout_list_work runs early or twice it doesn't
+> matter; I just want to make sure that the work runs from the beginning
+> and sees the new item I added to the list at some point after the
+> requeue.
 
-Also there is a way to unbind global variable from its
-body and use it as a parameter which allow us to simplify
-ioapic_init_mappings as well -- "for" cycle already uses
-nr_ioapics as a conditional variable and there is no need
-to check if ioapic_setup_resources was returning NULL again.
+Hmm. But, asuming that process_timeout_list_work->func() takes mydata_lock
+too, you can just use queue_delayed_work() ?
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-CC: Yinghai Lu <yinghai@kernel.org>
----
- arch/x86/kernel/apic/io_apic.c |   26 +++++++++++---------------
- 1 file changed, 11 insertions(+), 15 deletions(-)
+process_timeout_list_work can't miss new items, queue_delayed_work()
+can only fail if dwork is pending and its ->func has not started yet.
 
-Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-@@ -4056,7 +4056,7 @@ void __init setup_ioapic_dest(void)
- 
- static struct resource *ioapic_resources;
- 
--static struct resource * __init ioapic_setup_resources(void)
-+static struct resource * __init ioapic_setup_resources(int nr_ioapics)
- {
- 	unsigned long n;
- 	struct resource *res;
-@@ -4072,15 +4072,13 @@ static struct resource * __init ioapic_s
- 	mem = alloc_bootmem(n);
- 	res = (void *)mem;
- 
--	if (mem != NULL) {
--		mem += sizeof(struct resource) * nr_ioapics;
-+	mem += sizeof(struct resource) * nr_ioapics;
- 
--		for (i = 0; i < nr_ioapics; i++) {
--			res[i].name = mem;
--			res[i].flags = IORESOURCE_MEM | IORESOURCE_BUSY;
--			sprintf(mem,  "IOAPIC %u", i);
--			mem += IOAPIC_RESOURCE_NAME_SIZE;
--		}
-+	for (i = 0; i < nr_ioapics; i++) {
-+		res[i].name = mem;
-+		res[i].flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-+		sprintf(mem,  "IOAPIC %u", i);
-+		mem += IOAPIC_RESOURCE_NAME_SIZE;
- 	}
- 
- 	ioapic_resources = res;
-@@ -4094,7 +4092,7 @@ void __init ioapic_init_mappings(void)
- 	struct resource *ioapic_res;
- 	int i;
- 
--	ioapic_res = ioapic_setup_resources();
-+	ioapic_res = ioapic_setup_resources(nr_ioapics);
- 	for (i = 0; i < nr_ioapics; i++) {
- 		if (smp_found_config) {
- 			ioapic_phys = mp_ioapics[i].apicaddr;
-@@ -4123,11 +4121,9 @@ fake_ioapic_page:
- 			    __fix_to_virt(idx), ioapic_phys);
- 		idx++;
- 
--		if (ioapic_res != NULL) {
--			ioapic_res->start = ioapic_phys;
--			ioapic_res->end = ioapic_phys + (4 * 1024) - 1;
--			ioapic_res++;
--		}
-+		ioapic_res->start = ioapic_phys;
-+		ioapic_res->end = ioapic_phys + (4 * 1024) - 1;
-+		ioapic_res++;
- 	}
- }
- 
+No?
+
+> Perhaps the semantics are sufficiently fuzzy and not general enough, so
+> that the best answer is my special-case open coded change for my
+> specific case.  I don't know whether other places would even want a
+> requeue_delayed_work() ... I simply raise this point because when I find
+> myself reimplementing the structure of work_struct + timer because
+> delayed_work API is lacking, then it seems prudent to consider extending
+> delayed_work API instead.
+
+Yes, I completely agree with you.
+
+I think we need requeue_xxx helper(s), but the exact semantics is not
+clear to me.
+
+Oleg.
 
