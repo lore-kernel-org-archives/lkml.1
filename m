@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbZHXKJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbZHXKWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752217AbZHXKJT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 06:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZHXKJS
+	id S1752188AbZHXKWI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 06:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZHXKWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 06:09:18 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:64257 "EHLO aun.it.uu.se"
+	Mon, 24 Aug 2009 06:22:07 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:14973 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752180AbZHXKJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 06:09:17 -0400
+	id S1750933AbZHXKWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 06:22:06 -0400
+Message-ID: <4A926A0A.1000607@redhat.com>
+Date: Mon, 24 Aug 2009 18:23:06 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Bernhard Walle <bernhard.walle@gmx.de>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, nhorman@redhat.com, ebiederm@xmission.com,
+       andi@firstfloor.org, fenghua.yu@intel.com,
+       kamezawa.hiroyu@jp.fujitsu.com, avorontsov@ru.mvista.com
+Subject: Re: [Patch 5/8] ia64: implement crashkernel=auto
+References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain> <20090821065729.4855.47860.sendpatchset@localhost.localdomain> <20090821172407.d3a5cd2b.akpm@linux-foundation.org> <20090822111816.GA12281@elte.hu> <4A91F57D.10708@redhat.com> <20090824074318.GB2424@elte.hu> <20090824082148.GA16457@mail1.bwalle.de>
+In-Reply-To: <20090824082148.GA16457@mail1.bwalle.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <19090.26298.630328.344190@pilspetsen.it.uu.se>
-Date: Mon, 24 Aug 2009 12:08:58 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Mikael Pettersson" <mikpe@it.uu.se>
-Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
-In-Reply-To: <ADSuNT6McuD.A.wlH.nNIjKB@chimera>
-References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera>
-	<ADSuNT6McuD.A.wlH.nNIjKB@chimera>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 19 Aug 2009 22:27:02 +0200 (CEST), Rafael J. Wysocki wrote:
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14015
-> Subject		: pty regressed again, breaking expect and gcc's testsuite
-> Submitter	: Mikael Pettersson <mikpe@it.uu.se>
-> Date		: 2009-08-14 23:41 (6 days old)
-> References	: http://marc.info/?l=3Dlinux-kernel&m=3D125029329805643&w=3D4
+Bernhard Walle wrote:
+> * Ingo Molnar <mingo@elte.hu> [2009-08-24 09:43]:
+>   
+>> * Amerigo Wang <amwang@redhat.com> wrote:
+>>     
+>>> The reason that I kept 2ULL<<30 instead of 1ULL<<31 is that '1<<30' is  
+>>> exactly 1G, so 2ULL<<30 can be easily read as 2G. ;)
+>>>       
+>> i have no trouble reading 1ULL<<31 as 2G ;-) OTOH, the logic and 
+>> pattern of the comparisons (especially without the comment) looked 
+>> odd at first sight, until i noticed this.
+>>     
+>
+> Why not just something like
+>
+>     #define KBYTE(x)  ((x)*1024ULL)
+>     #define MBYTE(x)  ((x)*1024ULL*1024)
+>     #define GBYTE(x)  ((x)*1024ULL*1024*1024) 
+>     #define TBYTE(x)  ((x)*1024ULL*1024*1024*1024)
+>
+> I find GBYTE(2) much easier to read than 1ULL<<31. Honestly, I would
+> add a comment '/* 2G */' if I would write 1ULL<<31 in own code.
+>
+> But I'm of course not one of that super kernel hackers. ;-)
+>
+>   
 
-The good news is that I don't see this issue any more with 2.6.31-rc7
-on x86. The bad news is that the first time I reported this issue, for
--rc3 or -rc4 I think, I thought it was fixed in -rc5 only to see it
-reappear in -rc6 on x86 and in -rc5 on ARM. So I'd like to keep this
-open another week while I run more regression tests on non-x86 platforms.
+Yeah, great. Here we only need MBYTES() and GBYTES(). ;)
 
-While I don't suspect any arch-specific problems in the pty/tty code,
-I do suspect timing/race-type problems which are obviously affected
-by platform speed etc.
+Thanks.
 
-/Mikael
+
