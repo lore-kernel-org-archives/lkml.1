@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752359AbZHXVoC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbZHXVoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752359AbZHXVoC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 17:44:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbZHXVn7
+	id S1753748AbZHXVoO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 17:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbZHXVoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 17:43:59 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:25082 "EHLO mx1.redhat.com"
+	Mon, 24 Aug 2009 17:44:11 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:13770 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753684AbZHXVn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 17:43:57 -0400
-Date: Mon, 24 Aug 2009 17:40:26 -0400
+	id S1753684AbZHXVoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 17:44:00 -0400
+Date: Mon, 24 Aug 2009 17:40:14 -0400
 From: Jason Baron <jbaron@redhat.com>
 To: linux-kernel@vger.kernel.org, x86@kernel.org
 Cc: lethal@linux-sh.org, fweisbec@gmail.com, mingo@elte.hu,
@@ -17,41 +17,37 @@ Cc: lethal@linux-sh.org, fweisbec@gmail.com, mingo@elte.hu,
        mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
        lizf@cn.fujitsu.com, jistone@redhat.com, tglx@linutronix.de,
        hpa@zytor.com
-Message-Id: <f2240cdc8f0b1ca7617390c8f5ec90ba2bd348cf.1251146513.git.jbaron@redhat.com>
+Message-Id: <0f33c0f96d198fccc3ddd9ff7f5334ff5cb42706.1251146513.git.jbaron@redhat.com>
 In-Reply-To: <cover.1251146512.git.jbaron@redhat.com>
 References: <cover.1251146512.git.jbaron@redhat.com>
-Subject: [PATCH 4/4] remove FTRACE_SYSCALL_MAX definitions
+Subject: [PATCH 1/4] add NR_syscalls define for x86 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the FTRACE_SYSCALL_MAX definitions now that we have converted the
-syscall event tracing code to use NR_syscalls.
+Add a NR_syscalls #define for x86. This is used in the syscall events tracing
+code. Todo: make it dynamic like x86_64
 
 Signed-off-by: Jason Baron <jbaron@redhat.com>
 
----
- arch/x86/include/asm/ftrace.h |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
-index 7113654..db24c22 100644
---- a/arch/x86/include/asm/ftrace.h
-+++ b/arch/x86/include/asm/ftrace.h
-@@ -28,13 +28,6 @@
+---
+ arch/x86/include/asm/unistd_32.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+index 732a307..8deaada 100644
+--- a/arch/x86/include/asm/unistd_32.h
++++ b/arch/x86/include/asm/unistd_32.h
+@@ -345,6 +345,8 @@
  
- #endif
+ #ifdef __KERNEL__
  
--/* FIXME: I don't want to stay hardcoded */
--#ifdef CONFIG_X86_64
--# define FTRACE_SYSCALL_MAX     299
--#else
--# define FTRACE_SYSCALL_MAX     337
--#endif
--
- #ifdef CONFIG_FUNCTION_TRACER
- #define MCOUNT_ADDR		((long)(mcount))
- #define MCOUNT_INSN_SIZE	5 /* sizeof mcount call */
++#define NR_syscalls 337
++
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+ #define __ARCH_WANT_OLD_STAT
 -- 
 1.6.2.5
 
