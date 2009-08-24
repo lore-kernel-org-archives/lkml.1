@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbZHXVdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZHXVhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbZHXVdW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 17:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbZHXVdV
+	id S1753537AbZHXVhA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 17:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZHXVg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 17:33:21 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35014 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752895AbZHXVdU (ORCPT
+	Mon, 24 Aug 2009 17:36:57 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:42933 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343AbZHXVg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 17:33:20 -0400
-Date: Mon, 24 Aug 2009 23:33:12 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Rob Landley <rob@landley.net>, jack@suse.cz
-Cc: Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com, tytso@mit.edu,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090824213312.GG29763@elf.ucw.cz>
-References: <20090312092114.GC6949@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <200908241611.10400.rob@landley.net>
+	Mon, 24 Aug 2009 17:36:56 -0400
+Date: Mon, 24 Aug 2009 14:34:30 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: [GIT PULL] ocfs2 fixes for 2.6.31-rc7
+Message-ID: <20090824213430.GD7698@mail.oracle.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mark Fasheh <mfasheh@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908241611.10400.rob@landley.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4A9307EA.01A0:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-08-24 16:11:08, Rob Landley wrote:
-> On Monday 24 August 2009 04:31:43 Pavel Machek wrote:
-> > Running journaling filesystem such as ext3 over flashdisk or degraded
-> > RAID array is a bad idea: journaling guarantees no longer apply and
-> > you will get data corruption on powerfail.
-> >
-> > We can't solve it easily, but we should certainly warn the users. I
-> > actually lost data because I did not understand these limitations...
-> >
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> 
-> Acked-by: Rob Landley <rob@landley.net>
-> 
-> With a couple comments:
-> 
-> > +* write caching is disabled. ext2 does not know how to issue barriers
-> > +  as of 2.6.28. hdparm -W0 disables it on SATA disks.
-> 
-> It's coming up on 2.6.31, has it learned anything since or should that version 
-> number be bumped?
+Linus, et al,
+	Here are a couple small ocfs2 fixes for 2.6.31.  They fix
+user-visible bugs, so I wanted to make sure they were in this cycle.
+	Please pull.
 
-Jan, did those "barrier for ext2" patches get merged? 
+Joel
 
-> > +	(Thrash may get written into sectors during powerfail.  And
-> > +	ext3 handles this surprisingly well at least in the
-> > +	catastrophic case of garbage getting written into the inode
-> > +	table, since the journal replay often will "repair" the
-> > +	garbage that was written into the filesystem metadata blocks.
-> > +	It won't do a bit of good for the data blocks, of course
-> > +	(unless you are using data=journal mode).  But this means that
-> > +	in fact, ext3 is more resistant to suriving failures to the
-> > +	first problem (powerfail while writing can damage old data on
-> > +	a failed write) but fortunately, hard drives generally don't
-> > +	cause collateral damage on a failed write.
-> 
-> Possible rewording of this paragraph:
-> 
->   Ext3 handles trash getting written into sectors during powerfail
->   surprisingly well.  It's not foolproof, but it is resilient.  Incomplete
->   journal entries are ignored, and journal replay of complete entries will
->   often "repair" garbage written into the inode table.  The data=journal
->   option extends this behavior to file and directory data blocks as well
->   (without which your dentries can still be badly corrupted by a power fail
->   during a write).
-> 
-> (I'm not entirely sure about that last bit, but clarifying it one way or the 
-> other would be nice because I can't tell from reading it which it is.  My 
-> _guess_ is that directories are just treated as files with an attitude and an 
-> extra cacheing layer...?)
+The following changes since commit b409d7a0ab46fe530efe52734984b4ed5d46c3eb:
+  Jan Kara (1):
+        ocfs2: Fix possible deadlock when extending quota file
 
-Thanks, applied, it looks better than what I wrote. I removed the ()
-part, as I'm not sure about it...
-									Pavel
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jlbec/ocfs2.git upstream-linus
+
+Goldwyn Rodrigues (1):
+      ocfs2/dlm: Wait on lockres instead of erroring cancel requests
+
+Jan Kara (3):
+      ocfs2: Handle quota file corruption more gracefully
+      ocfs2: Don't oops in ocfs2_kill_sb on a failed mount
+      ocfs2: Add missing lock name
+
+Tao Ma (1):
+      ocfs2: release the buffer head in ocfs2_do_truncate.
+
+ fs/ocfs2/alloc.c         |    2 +-
+ fs/ocfs2/dlm/dlmunlock.c |    4 ++--
+ fs/ocfs2/ocfs2_lockid.h  |    1 +
+ fs/ocfs2/quota_global.c  |   10 ++++++++++
+ fs/ocfs2/super.c         |    6 +++++-
+ 5 files changed, 19 insertions(+), 4 deletions(-)
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+Life's Little Instruction Book #99
+
+	"Think big thoughts, but relish small pleasures."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
