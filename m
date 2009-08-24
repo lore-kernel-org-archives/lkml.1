@@ -1,153 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752089AbZHXJ5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZHXKDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752089AbZHXJ5V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 05:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbZHXJ5V
+	id S1752203AbZHXKDc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 06:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbZHXKDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 05:57:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35796 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbZHXJ5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 05:57:20 -0400
-Date: Mon, 24 Aug 2009 11:56:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mundt <lethal@linux-sh.org>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH v3 2/4] tracing: Make syscall_(un)regfunc arch-specific
-Message-ID: <20090824095652.GC25267@elte.hu>
-References: <1250795373-32363-1-git-send-email-jistone@redhat.com> <1250917125-6174-1-git-send-email-jistone@redhat.com> <1250917125-6174-2-git-send-email-jistone@redhat.com> <1250917125-6174-3-git-send-email-jistone@redhat.com> <20090823211422.GG6256@nowhere> <20090824014025.GA12653@linux-sh.org> <20090824084101.GE2424@elte.hu> <20090824085944.GA15330@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824085944.GA15330@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 24 Aug 2009 06:03:31 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:38762 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752169AbZHXKDa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 06:03:30 -0400
+Subject: ACPI scheduling while atomic (was: Re: [PATCH] kmemleak: Fix
+	scheduling-while-atomic bug)
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-acpi@vger.kernel.org
+In-Reply-To: <d82e647a0908231710h35feb992q8ee503187faac02d@mail.gmail.com>
+References: <200907010300.n6130rRf026194@hera.kernel.org>
+	 <20090701075332.GA17252@elte.hu>
+	 <1246439937.8492.18.camel@pc1117.cambridge.arm.com>
+	 <20090701093015.GA6862@elte.hu>
+	 <1247059996.6595.36.camel@pc1117.cambridge.arm.com>
+	 <d82e647a0908221948q380c3365v827c93c549d5f084@mail.gmail.com>
+	 <1251039590.27032.8.camel@pc1117.cambridge.arm.com>
+	 <d82e647a0908231710h35feb992q8ee503187faac02d@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 24 Aug 2009 11:02:33 +0100
+Message-Id: <1251108153.28030.21.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Aug 2009 10:02:34.0816 (UTC) FILETIME=[00AD9C00:01CA24A2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mundt <lethal@linux-sh.org> wrote:
-
-> On Mon, Aug 24, 2009 at 10:41:01AM +0200, Ingo Molnar wrote:
-> > * Paul Mundt <lethal@linux-sh.org> wrote:
-> > > On Sun, Aug 23, 2009 at 11:14:24PM +0200, Frederic Weisbecker wrote:
-> > > > On Fri, Aug 21, 2009 at 09:58:43PM -0700, Josh Stone wrote:
-> > > > > The bodies of syscall_regfunc and syscall_unregfunc need the
-> > > > > arch-specific flag TIF_SYSCALL_TRACEPOINT, which only exists
-> > > > > on x86 and s390, so they should live in arch-specific files.
-> > > > 
-> > > > Sh also does, but currently in a seperate development branch. 
-> > > > (Adding Paul Mundt in Cc to prevent from further linux-next 
-> > > > breakage).
-> > > 
-> > > Thanks, I'll take care of this as well as the other ftrace 
-> > > syscalls breakage during the merge window. At the moment I don't 
-> > > have any good ideas on how to fix the workflow issues, and -tip 
-> > > likewise doesn't care about -next impact, so there's somewhat of 
-> > > an impasse.
-> > 
-> > Where did you take the nonsense from that '-tip likewise doesn't 
-> > care about -next impact'? It's a false statement on several levels.
-> > 
-> > The thing is, there is just a single 'breakage' here (SH does 
-> > not build if the tracing tree is mixed with the SH tree), and 
-> > you inflicted it upon yourself: you mixed ftrace development 
-> > into the SH tree (thinking that the syscall-tracing facility was 
-> > a stable API - where did _that_ nonsense come from?), while the 
-> > tracing tree did development of ftrace too (surprise), so when 
-> > the two versions were mixed in linux-next it broke.
+On Mon, 2009-08-24 at 08:10 +0800, Ming Lei wrote:
+> 2009/8/23 Catalin Marinas <catalin.marinas@arm.com>:
+> > On Sun, 2009-08-23 at 10:48 +0800, Ming Lei wrote:
+> >> [    0.006569] ACPI: Core revision 20090521
+> >> [    0.011476] BUG: scheduling while atomic: swapper/0/0x10000002
+> >> [    0.011558] no locks held by swapper/0.
+> >> [    0.011561] Modules linked in:
+> >> [    0.011566] Pid: 0, comm: swapper Not tainted 2.6.31-rc7 #141
+> >> [    0.011569] Call Trace:
+> >> [    0.011577]  [<ffffffff81070bb7>] ? __debug_show_held_locks+0x22/0x24
+> >> [    0.011584]  [<ffffffff8103d4ba>] __schedule_bug+0x77/0x7c
+> >> [    0.011590]  [<ffffffff812da32f>] schedule+0xd6/0xa3f
+> >> [    0.011596]  [<ffffffff810e4b9b>] ? kmem_cache_free+0xe2/0x158
+> >> [    0.011600]  [<ffffffff810717e2>] ? trace_hardirqs_on_caller+0x12d/0x158
+> >> [    0.011604]  [<ffffffff8107181a>] ? trace_hardirqs_on+0xd/0xf
+> >> [    0.011609]  [<ffffffff8103e3f0>] __cond_resched+0x29/0x47
+> >> [    0.011614]  [<ffffffff812dae24>] _cond_resched+0x29/0x34
+> >> [    0.011620]  [<ffffffff811da90a>] acpi_ps_complete_op+0x246/0x25c
+> >> [    0.011625]  [<ffffffff811db024>] acpi_ps_parse_loop+0x704/0x860
+> >> [    0.011630]  [<ffffffff811da200>] acpi_ps_parse_aml+0x9f/0x2de
+> >> [    0.011635]  [<ffffffff811d9181>] acpi_ns_one_complete_parse+0x101/0x11c
+> >> [    0.011640]  [<ffffffff811d91bd>] acpi_ns_parse_table+0x21/0x3c
+> >> [    0.011645]  [<ffffffff811d67e3>] acpi_ns_load_table+0x4f/0x94
+> >> [    0.011650]  [<ffffffff811dd14a>] acpi_load_tables+0x72/0x133
+> >> [    0.011656]  [<ffffffff8153c592>] acpi_early_init+0x60/0xf5
+> >> [    0.011661]  [<ffffffff81519cb0>] start_kernel+0x38b/0x3a0
+> >> [    0.011666]  [<ffffffff81519140>] ? early_idt_handler+0x0/0x71
+> >> [    0.011670]  [<ffffffff815192a3>] x86_64_start_reservations+0xaa/0xae
+> >> [    0.011675]  [<ffffffff8151939e>] x86_64_start_kernel+0xf7/0x106
+> >
+> > I looked at the traces and there are no kmemleak calls. It's either that
+> > kmemleak is disabled or the error is not on a kmemleak path. It looks
+> > more like an ACPI bug to me.
+> >
+> > Can you try only with slab debugging enabled (without kmemleak or
+> > kmemcheck)? IIRC someone else reported a similar issue a few weeks ago.
 > 
-> I think this is the source of confusion, given that I expected the 
-> interface would remain reasonable stable until all of the existing 
-> users had had a chance to catch up. [...]
+> If I only disabled kmemleak, the kernel does not print the warning, so I suppose
+> it is related with kmemleak.
 
-All existing upstream users of APIs were fixed up. Which was x86 and 
-s390. (and yes, we initially missed s390)
+I can't really see how kmemleak gets involved in here. Maybe you could
+just enable some of the features turned on by kmemleak like STACKTRACE
+and see if you still get the error.
 
-Stable APIs are not how upstream Linux kernel development works - it 
-would be way too inflexible.
+For x86-64 you may need this patch - http://lkml.org/lkml/2009/8/16/269
 
-Instead facility trees (such as the tracing tree) are either 
-expected to convert all upstream API uses (which we did), or are 
-supposed to provide different versions of APIs, if an API is so 
-widespread (used by hundreds of callsites, etc.) that it's not 
-reasonable to convert it in one go.
+> Attachment is the .config,  hope it is usable to help to fix the warning.
 
-> [...] As it is now it is impossible to make any changes to things 
-> that are taken over by -tip given that the first sign of there 
-> being any changes are failures introduced through -next, which 
-> would have been avoided if folks eagerly merging things in to -tip 
-> considered the implications for -next.
+Thanks but I don't have such hardware to test and I don't get this error
+on x86-32.
 
-Paul, what you say is not making any sense to me. All those ftrace 
-patches were sent to lkml multiple times (as all ftrace patches), so 
-if you wanted you could have known about them.
+Looking at the code, the acpi_ps_complete_op() function calls the
+ACPI_PREEMPTION_POINT() macro which expands to a cond_resched() call if
+IRQs aren't disabled. The IRQs are probably enabled at that point but it
+seems that the context is atomic.
 
-If there's someone who failed to notify it was _you_. You might as 
-well have Cc:-ed the guys who wrote the code you started using in 
-SH.
+I cc'ed the ACPI people, maybe they can help with some suggestions 
 
-> Pointing fingers however is rather pointless at this stage, and is 
-> not what I am trying to do. [...]
+Thanks.
 
-( Hey what was the purpose of the previous 3 paragraphs then? ;-)
+-- 
+Catalin
 
-> [...] I've lost count of the number of times -tip has broken 
-> things in -next that were easily avoidable, [...]
-
-Do you realize that 1) what you say is false 2) we push thousands of 
-commits so even if it was true it would be natural relative to the 
-number of kernel developers who work on the various -tip based 
-trees?
-
-I know it as i always cross-build SH (too) before i push out to 
-linux-next. I dont remember a _single_ SH breakage in the past few 
-months, and we push thousands of commits. In fact the last time the 
-ftrace tree broke linux-next was 8 months ago:
-
-  Date: Wed, 7 Jan 2009 10:55:05 +0100
-  From: Ingo Molnar <mingo@elte.hu>
-  To: Stephen Rothwell <sfr@canb.auug.org.au>
-  Subject: Re: linux-next: ftrace tree build failure
-
-and that too was a breakage already fixed by the time it got 
-reported.
-
-So i'd really like you to back up your claims with facts. Your mail 
-is basically unsubstantiated FUD right now and i'll just ignore you 
-if you continue this pattern of unsubstantiated attacks and 
-unconstructive behavior.
-
-( Also, could you please fix your mailer so that it does not damage 
-  threads? It generates such bogus headers:
-
-    Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-        Ingo Molnar <mingo@elte.hu>,
-        Frederic Weisbecker <fweisbec@gmail.com>,
-        Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
-        Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       	Steven Rostedt <rostedt@goodmis.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-        Jiaying Zhang <jiayingz@google.com>,
-        Martin Bligh <mbligh@google.com>,
-        Lai Jiangshan <laijs@cn.fujitsu.com>
-
-  which messes up replies. )
-
-Thanks,
-
-	Ingo
