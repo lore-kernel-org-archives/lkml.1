@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbZHXPgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbZHXPhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752749AbZHXPgQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 11:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZHXPgO
+	id S1752761AbZHXPhA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 11:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbZHXPg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 11:36:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50808 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689AbZHXPgO (ORCPT
+	Mon, 24 Aug 2009 11:36:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56588 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752690AbZHXPg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 11:36:14 -0400
-Subject: Re: [PATCH 14/15] sched: Conditionally limit __cpu_power when
- child sched domain has type NODE
+	Mon, 24 Aug 2009 11:36:57 -0400
+Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
+ cpumask on multi-node processors
 From: Peter Zijlstra <peterz@infradead.org>
 To: Andreas Herrmann <andreas.herrmann3@amd.com>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090820134506.GC29327@alberich.amd.com>
+In-Reply-To: <20090820134604.GD29327@alberich.amd.com>
 References: <20090820131243.GO29327@alberich.amd.com>
-	 <20090820134506.GC29327@alberich.amd.com>
+	 <20090820134604.GD29327@alberich.amd.com>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Aug 2009 17:35:32 +0200
-Message-Id: <1251128132.7538.300.camel@twins>
+Date: Mon, 24 Aug 2009 17:36:16 +0200
+Message-Id: <1251128176.7538.301.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-20 at 15:45 +0200, Andreas Herrmann wrote:
-> We need this in case of performance policy. All sched_groups in
-> child's parent domain (MN in this case) should be limited such that
-> tasks are balanced among these sched_groups.
+On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
+> The correct mask that describes core-siblings of an processor
+> is topology_core_cpumask. See topology adapation patches, especially
+> http://marc.info/?l=linux-kernel&m=124964999608179
 
-/me fails at correlating the above changelog and the below patch.
 
-So here we go mess up cpu_power again in order to invluence the
-placement policy?
+argh, violence, murder kill.. this is the worst possible hack and you're
+extending it :/
 
 > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 > ---
->  kernel/sched.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>  arch/x86/kernel/smpboot.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 0c950dc..ab88d88 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -8555,11 +8555,11 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index f797214..f39bb2c 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -446,7 +446,7 @@ const struct cpumask *cpu_coregroup_mask(int cpu)
+>  	 * And for power savings, we return cpu_core_map
 >  	 */
->  	if (!(sd->flags & SD_POWERSAVINGS_BALANCE) &&
->  	    ((child->flags &
-> -	      (SD_SHARE_CPUPOWER | SD_SHARE_PKG_RESOURCES)))) {
-> +	      (SD_SHARE_CPUPOWER | SD_SHARE_PKG_RESOURCES)) ||
-> +	     (child->level == SD_LV_NODE))) {
->  		sd->groups->__cpu_power = 0;
->  		sg_inc_cpu_power(sd->groups, SCHED_LOAD_SCALE);
->  	}
-> -
+>  	if (sched_mc_power_savings || sched_smt_power_savings)
+> -		return cpu_core_mask(cpu);
+> +		return topology_core_cpumask(cpu);
+>  	else
+>  		return c->llc_shared_map;
 >  }
->  
->  /*
