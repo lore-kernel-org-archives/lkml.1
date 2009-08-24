@@ -1,156 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbZHXJBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751829AbZHXJDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062AbZHXJBe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 05:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZHXJBd
+	id S1751829AbZHXJDm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 05:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbZHXJDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 05:01:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40840 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751441AbZHXJBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 05:01:33 -0400
-Date: Mon, 24 Aug 2009 11:00:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
-Subject: Re: [PATCH -tip] v3 Consolidate sparse and lockdep declarations in
-	include/linux/rcupdate.h
-Message-ID: <20090824090058.GC29804@elte.hu>
-References: <20090727181401.GA14120@linux.vnet.ibm.com> <4A924296.3070308@cn.fujitsu.com>
+	Mon, 24 Aug 2009 05:03:42 -0400
+Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:44833 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbZHXJDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 05:03:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:cc:subject
+	:references:from:date:in-reply-to:message-id:mime-version
+	:content-type; q=dns; s=sasl; b=QgmGvsgksRmM2XLiVnL5mTIrdH2c2QkO
+	daXTOScUK+E7iRCKckrNnnw78GUn9MCnlU2lfzT/XbtZ4wQvYv68cOoY4hM74stU
+	FaN3hLpe+NVnKqJzChnvdLdUAhe3nSUDNltmHz2T997zWAhBDLZobOD85UHKoprT
+	NuUQMeuVv8M=
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
+       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 0/6] Lazy workqueues
+References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
+ <1250769861.8282.182.camel@twins> <20090820120858.GJ12579@kernel.dk>
+ <1250770571.8282.186.camel@twins> <7vfxbj1car.fsf@alter.siamese.dyndns.org>
+ <20090824080429.GC12579@kernel.dk>
+From: Junio C Hamano <junio@pobox.com>
+Date: Mon, 24 Aug 2009 02:03:23 -0700
+In-Reply-To: <20090824080429.GC12579@kernel.dk> (Jens Axboe's message of
+ "Mon\, 24 Aug 2009 10\:04\:29 +0200")
+Message-ID: <7veir1lh2c.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A924296.3070308@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Pobox-Relay-ID: 0087D2DE-908D-11DE-B4B0-CA0F1FFB4A78-77302942!a-pb-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> OK that's at least something, looking forward to being able to prune
+> that argument from my scripts.
 
-> Paul E. McKenney wrote:
-> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> >  include/linux/rcupdate.h   |   46 ++++++++++++++++++++++++++++++++++++++++---
-> >  include/linux/rcupreempt.h |    4 +-
-> >  include/linux/rcutree.h    |   18 -----------------
-> >  3 files changed, 44 insertions(+), 24 deletions(-)
-> > 
-> > diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> > index e920f0f..9d85ee1 100644
-> > --- a/include/linux/rcupdate.h
-> > +++ b/include/linux/rcupdate.h
-> > @@ -80,6 +80,16 @@ extern int rcu_scheduler_active;
-> >         (ptr)->next = NULL; (ptr)->func = NULL; \
-> >  } while (0)
-> >  
-> > +#ifdef CONFIG_DEBUG_LOCK_ALLOC
-> > +extern struct lockdep_map rcu_lock_map;
-> > +# define rcu_read_acquire()	\
-> > +			lock_acquire(&rcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
-> > +# define rcu_read_release()	lock_release(&rcu_lock_map, 1, _THIS_IP_)
-> > +#else
-> > +# define rcu_read_acquire()	do { } while (0)
-> > +# define rcu_read_release()	do { } while (0)
-> > +#endif
-> > +
-> >  /**
-> >   * rcu_read_lock - mark the beginning of an RCU read-side critical section.
-> >   *
-> > @@ -109,7 +119,12 @@ extern int rcu_scheduler_active;
-> >   *
-> >   * It is illegal to block while in an RCU read-side critical section.
-> >   */
-> > -#define rcu_read_lock() __rcu_read_lock()
-> > +static inline void rcu_read_lock(void)
-> > +{
-> > +	__rcu_read_lock();
-> > +	__acquire(RCU);
-> > +	rcu_read_acquire();
-> > +}
-> >  
-> >  /**
-> >   * rcu_read_unlock - marks the end of an RCU read-side critical section.
-> > @@ -126,7 +141,12 @@ extern int rcu_scheduler_active;
-> >   * used as well.  RCU does not care how the writers keep out of each
-> >   * others' way, as long as they do so.
-> >   */
-> > -#define rcu_read_unlock() __rcu_read_unlock()
-> > +static inline void rcu_read_unlock(void)
-> > +{
-> > +	rcu_read_release();
-> > +	__release(RCU);
-> > +	__rcu_read_unlock();
-> > +}
-> >  
-> >  /**
-> >   * rcu_read_lock_bh - mark the beginning of a softirq-only RCU critical section
-> > @@ -139,14 +159,24 @@ extern int rcu_scheduler_active;
-> >   * can use just rcu_read_lock().
-> >   *
-> >   */
-> > -#define rcu_read_lock_bh() __rcu_read_lock_bh()
-> > +static inline void rcu_read_lock_bh(void)
-> > +{
-> > +	__rcu_read_lock_bh();
-> > +	__acquire(RCU_BH);
-> > +	rcu_read_acquire();
-> > +}
-> >  
-> >  /*
-> >   * rcu_read_unlock_bh - marks the end of a softirq-only RCU critical section
-> >   *
-> >   * See rcu_read_lock_bh() for more information.
-> >   */
-> > -#define rcu_read_unlock_bh() __rcu_read_unlock_bh()
-> > +static inline void rcu_read_unlock_bh(void)
-> > +{
-> > +	rcu_read_release();
-> > +	__release(RCU_BH);
-> > +	__rcu_read_unlock_bh();
-> > +}
-> >  
-> >  /**
-> >   * rcu_read_lock_sched - mark the beginning of a RCU-classic critical section
-> > @@ -160,10 +190,14 @@ extern int rcu_scheduler_active;
-> >  static inline void rcu_read_lock_sched(void)
-> >  {
-> >  	preempt_disable();
-> > +	__acquire(RCU_SCHED);
-> > +	rcu_read_acquire();
-> >  }
-> >  static inline void rcu_read_lock_sched_notrace(void)
-> 
-> It need be marked "notrace" too.
-> 
-> >  {
-> >  	preempt_disable_notrace();
-> > +	__acquire(RCU_SCHED);
-> > +	rcu_read_acquire();
-> >  }
-> >  
-> 
-> It may cause infinity recursion.
-> rcu_read_acquire() calls rcu_read_lock_sched_notrace()
-> before current->lockdep_recursion is set to 1 when tracing in on,
-> thus infinity recursion occurs.
+Ahahh.
 
-ah, this would explain the crash i reported in:
+An option everybody will want to pass but is prone to be forgotten and
+hard to type from the command line is one thing, but if you are scripting
+in order to reuse the script over and over, that is a separate story.  Is
+losing an option from your script really the goal of this fuss?
 
-    http://lkml.org/lkml/2009/8/23/170
+In any case, you not need to wait for a new version nor a patch at all for
+that goal.  You can simply add
 
-	Ingo
+[sendemail]
+	chainreplyto = no
+
+to your .git/config (or $HOME/.gitconfig).  Both your script and your
+command line invocation will default not to create deep threads with the
+setting.
+
+
