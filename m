@@ -1,143 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbZHXUek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbZHXUg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753434AbZHXUek (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 16:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbZHXUek
+	id S1753430AbZHXUg0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 16:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZHXUgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 16:34:40 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60931 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753381AbZHXUej (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 16:34:39 -0400
-Message-ID: <4A92F93F.8000502@zytor.com>
-Date: Mon, 24 Aug 2009 13:34:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-       tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
- CPUID bit
-References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com> <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org> <20090816064132.GA16278@elte.hu> <20090816214934.GB7765@liondog.tnic> <4A8EDC02.8000508@zytor.com> <20090822163750.GA31631@liondog.tnic>
-In-Reply-To: <20090822163750.GA31631@liondog.tnic>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 24 Aug 2009 16:36:22 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:51456 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752359AbZHXUgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 16:36:22 -0400
+Subject: Re: [PATCH 2/3] inotify: do not BUG on idr entries at inotify
+ destruction
+From: Eric Paris <eparis@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       zdenek.kabelac@gmail.com, christoph.thielecke@gmx.de,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
+       grant.wilson@zen.co.uk, mikko.cal@gmail.com
+In-Reply-To: <alpine.LFD.2.01.0908241220590.3158@localhost.localdomain>
+References: <20090824173524.14196.25992.stgit@paris.rdu.redhat.com>
+	 <20090824173524.14196.25992.stgit@paris.rdu.redhat.com>
+	 <20090824173812.14196.381.stgit@paris.rdu.redhat.com>
+	 <200908242034.50885.elendil@planet.nl>
+	 <1251140949.25096.16.camel@dhcp231-106.rdu.redhat.com>
+	 <alpine.LFD.2.01.0908241220590.3158@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 24 Aug 2009 16:36:06 -0400
+Message-Id: <1251146166.25096.22.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/22/2009 09:37 AM, Borislav Petkov wrote:
-> On Fri, Aug 21, 2009 at 10:40:18AM -0700, H. Peter Anvin wrote:
->> If we're going to modify the paravirt_crap for yet another MSR
->> operation, then let's at least make it something like "write_msr_edi"
->> and have it take a parameter for the EDI value.  Perhaps we should let
->> it set EBX and ESI as well (and the same for the read operation, even
->> though it already exists.)
+On Mon, 2009-08-24 at 12:23 -0700, Linus Torvalds wrote:
 > 
-> Ok, how about making all rdmsr* variants indirectly call into a
-> native_read_msr_safe_reg() helper which takes esi and edi as additional
-> arguments. There was no room for ebx since paravirt has a PVOP_CALL4
-> macro which takes the largest number of args - 4 and I am lazy, of
-> course, to implement a PVOP_CALL5 thing :o)
+> On Mon, 24 Aug 2009, Eric Paris wrote:
+> > 
+> > You suspect correctly.  :(  I'll fix in my tree before I request a
+> > pull....
 > 
-> The wrmsr variants could be done similarly.
+> Can you change the WARN() to a WARN_ONCE() too. 
 > 
-> Suggestions, comments?
+> Generally, we prefer the "ONCE" variant if there isn't some intrisic 
+> reason why we'd want to know about each event. If there is some load that 
+> triggers this, do you care about _how_many_times_ it happens, or about the 
+> fact that it happens in the first place? In this case, I think it's the 
+> "happens in the first place" case - once you see it a single time, the 
+> rest of the reports aren't that interesting.
 > 
+> And using the ONCE thing means that we know it's not going to spam the 
+> logs.
 
-Looks reasonable... although part of me wonders if having a pointer to
-an array containing the entire register file in and out is even better,
-of if I'm just overengineering at this point.
+If everyone having {fs,i}notify problems want to check out my latest
+for-linus tree that would be great.  It has his latest tree plus fixed
+'versions' of the 3 patches I sent earlier.
 
-Note that the only difference between "rdmsr" and "wrmsr" is the actual
-opcode being executed at this point...
+http://git.infradead.org/users/eparis/notify.git/shortlog/refs/heads/for-linus
 
-/*
- * int native_rdmsr_safe_regs(u32 gprs[8]);
- *
- * 32-bit implementation
- *
- */
-ENTRY(native_rdmsr_safe_regs)
-	push	%ebx
-	push	%ebp
-	push	%esi
-	push	%edi
-	push	$0		/* Return value */
-	push	%eax
-	movl	4(%eax), %ecx
-	movl	8(%eax), %edx
-	movl	12(%eax), %ebx
-	movl	20(%eax), %ebp
-	movl	24(%eax), %esi
-	movl	28(%eax), %edi
-	movl	(%eax), %eax
-1:	rdmsr
-2:	push	%eax
-	movl	4(%esp), %eax
-	pop	(%eax)
-	addl	$4, %esp
-	movl	%ecx, 4(%eax)
-	movl	%edx, 8(%eax)
-	movl	%ebx, 12(%eax)
-	movl	%ebp, 20(%eax)
-	movl	%esi, 24(%eax)
-	movl	%edi, 28(%eax)
-	pop	%eax
-	pop	%edi
-	pop	%esi
-	pop	%ebp
-	pop	%ebx
-	ret
-3:
-	movl	$-EIO, 4(%esp)
-	jmp	2b
-	__ASM_EX_SEC
-	.balign	4
-	.long	1b, 3b
-	.previous
-EXIT(native_rdmsr_safe_regs)
+-Eric
 
-/*
- * int native_rdmsr_safe_regs(u32 gprs[8]);
- *
- * 64-bit implementation
- *
- */
-ENTRY(native_rdmsr_safe_regs)
-	push	%rbx
-	push	%rbp
-	push	$0		/* Return value */
-	push	%rdi
-	movl	(%rdi), %eax
-	movl	4(%rdi), %ecx
-	movl	8(%rdi), %edx
-	movl	12(%rdi), %ebx
-	movl	20(%rdi), %ebp
-	movl	24(%rdi), %esi
-	movl	28(%rdi), %edi
-1:	rdmsr
-2:	movl	%edi, %r10
-	pop	%rdi
-	movl	%eax, (%rdi)
-	movl	%ecx, 4(%rdi)
-	movl	%edx, 8(%rdi)
-	movl	%ebx, 12(%rdi)
-	movl	%ebp, 20(%rdi)
-	movl	%esi, 24(%rdi)
-	movl	%r10d, 28(%rdi)
-	pop	%rax
-	pop	%rbp
-	pop	%rbx
-	ret
-3:
-	movq	$-EIO, 8(%esp)
-	jmp	2b
-	__ASM_EX_SEC
-	.balign	4
-	.long	1b, 3b
-	.previous
-EXIT(native_rdmsr_safe_regs)
