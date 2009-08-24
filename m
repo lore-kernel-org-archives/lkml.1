@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZHXVnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753673AbZHXVnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbZHXVnq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 17:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZHXVnp
+	id S1753673AbZHXVnu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 17:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbZHXVnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 17:43:45 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37289 "EHLO mx1.redhat.com"
+	Mon, 24 Aug 2009 17:43:49 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:34694 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753593AbZHXVnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 17:43:42 -0400
+	id S1753606AbZHXVnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 17:43:43 -0400
 From: Josh Stone <jistone@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Josh Stone <jistone@redhat.com>, Jason Baron <jbaron@redhat.com>,
@@ -17,22 +17,22 @@ Cc: Josh Stone <jistone@redhat.com>, Jason Baron <jbaron@redhat.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: [PATCH v4 2/4] tracing: Make syscall tracepoints conditional
-Date: Mon, 24 Aug 2009 14:43:12 -0700
-Message-Id: <1251150194-1713-3-git-send-email-jistone@redhat.com>
-In-Reply-To: <1251150194-1713-2-git-send-email-jistone@redhat.com>
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Paul Mundt <lethal@linux-sh.org>
+Subject: [PATCH v4 1/4] tracing: Rename FTRACE_SYSCALLS for tracepoints
+Date: Mon, 24 Aug 2009 14:43:11 -0700
+Message-Id: <1251150194-1713-2-git-send-email-jistone@redhat.com>
+In-Reply-To: <1251150194-1713-1-git-send-email-jistone@redhat.com>
 References: <1250917125-6174-1-git-send-email-jistone@redhat.com>
  <1251150194-1713-1-git-send-email-jistone@redhat.com>
- <1251150194-1713-2-git-send-email-jistone@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The syscall enter/exit tracepoints are only supported on archs that
-HAVE_SYSCALL_TRACEPOINTS, so the declarations should be #ifdef'ed.
-Also, the definition of syscall_regfunc and syscall_unregfunc need the
-should use this same flag, rather than the ftrace-specific one.
+s/HAVE_FTRACE_SYSCALLS/HAVE_SYSCALL_TRACEPOINTS/g
+s/TIF_SYSCALL_FTRACE/TIF_SYSCALL_TRACEPOINT/g
+
+The syscall enter/exit tracing is no longer specific to just ftrace, so
+they now have names that reflect their tie to tracepoints instead.
 
 Signed-off-by: Josh Stone <jistone@redhat.com>
 Cc: Jason Baron <jbaron@redhat.com>
@@ -45,46 +45,269 @@ Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: Jiaying Zhang <jiayingz@google.com>
 Cc: Martin Bligh <mbligh@google.com>
 Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
 ---
- include/trace/syscall.h |    4 ++++
- kernel/tracepoint.c     |    2 +-
- 2 files changed, 5 insertions(+), 1 deletions(-)
+ arch/s390/Kconfig                   |    2 +-
+ arch/s390/defconfig                 |    2 +-
+ arch/s390/include/asm/thread_info.h |    4 ++--
+ arch/s390/kernel/entry.S            |    2 +-
+ arch/s390/kernel/entry64.S          |    2 +-
+ arch/s390/kernel/ptrace.c           |    4 ++--
+ arch/x86/Kconfig                    |    2 +-
+ arch/x86/configs/i386_defconfig     |    2 +-
+ arch/x86/configs/x86_64_defconfig   |    2 +-
+ arch/x86/include/asm/thread_info.h  |   13 +++++++------
+ arch/x86/kernel/ptrace.c            |    4 ++--
+ kernel/trace/Kconfig                |    4 ++--
+ kernel/tracepoint.c                 |    4 ++--
+ 13 files changed, 24 insertions(+), 23 deletions(-)
 
-diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-index 9661dd4..5dcb7e3 100644
---- a/include/trace/syscall.h
-+++ b/include/trace/syscall.h
-@@ -8,6 +8,8 @@
- #include <asm/ptrace.h>
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 2ae5d72..7238ef4 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -84,7 +84,7 @@ config S390
+ 	select HAVE_FUNCTION_TRACER
+ 	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+-	select HAVE_FTRACE_SYSCALLS
++	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_DYNAMIC_FTRACE
+ 	select HAVE_FUNCTION_GRAPH_TRACER
+ 	select HAVE_DEFAULT_NO_SPIN_MUTEXES
+diff --git a/arch/s390/defconfig b/arch/s390/defconfig
+index fcba206..4e91a25 100644
+--- a/arch/s390/defconfig
++++ b/arch/s390/defconfig
+@@ -900,7 +900,7 @@ CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+ CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
+ CONFIG_HAVE_DYNAMIC_FTRACE=y
+ CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+-CONFIG_HAVE_FTRACE_SYSCALLS=y
++CONFIG_HAVE_SYSCALL_TRACEPOINTS=y
+ CONFIG_TRACING_SUPPORT=y
+ CONFIG_FTRACE=y
+ # CONFIG_FUNCTION_TRACER is not set
+diff --git a/arch/s390/include/asm/thread_info.h b/arch/s390/include/asm/thread_info.h
+index ba1cab9..07eb61b 100644
+--- a/arch/s390/include/asm/thread_info.h
++++ b/arch/s390/include/asm/thread_info.h
+@@ -92,7 +92,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define TIF_SYSCALL_TRACE	8	/* syscall trace active */
+ #define TIF_SYSCALL_AUDIT	9	/* syscall auditing active */
+ #define TIF_SECCOMP		10	/* secure computing */
+-#define TIF_SYSCALL_FTRACE	11	/* ftrace syscall instrumentation */
++#define TIF_SYSCALL_TRACEPOINT	11	/* syscall tracepoint instrumentation */
+ #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
+ #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling 
+ 					   TIF_NEED_RESCHED */
+@@ -111,7 +111,7 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+-#define _TIF_SYSCALL_FTRACE	(1<<TIF_SYSCALL_FTRACE)
++#define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+ #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_31BIT		(1<<TIF_31BIT)
+diff --git a/arch/s390/kernel/entry.S b/arch/s390/kernel/entry.S
+index c4c80a2..5d40fce 100644
+--- a/arch/s390/kernel/entry.S
++++ b/arch/s390/kernel/entry.S
+@@ -54,7 +54,7 @@ _TIF_WORK_SVC = (_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_NEED_RESCHED | \
+ _TIF_WORK_INT = (_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_NEED_RESCHED | \
+ 		 _TIF_MCCK_PENDING)
+ _TIF_SYSCALL = (_TIF_SYSCALL_TRACE>>8 | _TIF_SYSCALL_AUDIT>>8 | \
+-		_TIF_SECCOMP>>8 | _TIF_SYSCALL_FTRACE>>8)
++		_TIF_SECCOMP>>8 | _TIF_SYSCALL_TRACEPOINT>>8)
  
+ STACK_SHIFT = PAGE_SHIFT + THREAD_ORDER
+ STACK_SIZE  = 1 << STACK_SHIFT
+diff --git a/arch/s390/kernel/entry64.S b/arch/s390/kernel/entry64.S
+index f6618e9..3ceb53c 100644
+--- a/arch/s390/kernel/entry64.S
++++ b/arch/s390/kernel/entry64.S
+@@ -57,7 +57,7 @@ _TIF_WORK_SVC = (_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_NEED_RESCHED | \
+ _TIF_WORK_INT = (_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_NEED_RESCHED | \
+ 		 _TIF_MCCK_PENDING)
+ _TIF_SYSCALL = (_TIF_SYSCALL_TRACE>>8 | _TIF_SYSCALL_AUDIT>>8 | \
+-		_TIF_SECCOMP>>8 | _TIF_SYSCALL_FTRACE>>8)
++		_TIF_SECCOMP>>8 | _TIF_SYSCALL_TRACEPOINT>>8)
  
-+#ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
-+
- extern void syscall_regfunc(void);
- extern void syscall_unregfunc(void);
+ #define BASED(name) name-system_call(%r13)
  
-@@ -25,6 +27,8 @@ DECLARE_TRACE_WITH_CALLBACK(syscall_exit,
- 	syscall_unregfunc
- );
+diff --git a/arch/s390/kernel/ptrace.c b/arch/s390/kernel/ptrace.c
+index c5e87d8..9d3dcfa 100644
+--- a/arch/s390/kernel/ptrace.c
++++ b/arch/s390/kernel/ptrace.c
+@@ -664,7 +664,7 @@ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
+ 		ret = -1;
+ 	}
  
-+#endif
-+
- /*
-  * A syscall entry in the ftrace syscalls array.
-  *
+-	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
++	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+ 		trace_syscall_enter(regs, regs->gprs[2]);
+ 
+ 	if (unlikely(current->audit_context))
+@@ -682,7 +682,7 @@ asmlinkage void do_syscall_trace_exit(struct pt_regs *regs)
+ 		audit_syscall_exit(AUDITSC_RESULT(regs->gprs[2]),
+ 				   regs->gprs[2]);
+ 
+-	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
++	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+ 		trace_syscall_exit(regs, regs->gprs[2]);
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE))
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 738bdc6..d59cbf7 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -37,7 +37,7 @@ config X86
+ 	select HAVE_FUNCTION_GRAPH_FP_TEST
+ 	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
+ 	select HAVE_FTRACE_NMI_ENTER if DYNAMIC_FTRACE
+-	select HAVE_FTRACE_SYSCALLS
++	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_KVM
+ 	select HAVE_ARCH_KGDB
+ 	select HAVE_ARCH_TRACEHOOK
+diff --git a/arch/x86/configs/i386_defconfig b/arch/x86/configs/i386_defconfig
+index edb992e..d28fad1 100644
+--- a/arch/x86/configs/i386_defconfig
++++ b/arch/x86/configs/i386_defconfig
+@@ -2355,7 +2355,7 @@ CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
+ CONFIG_HAVE_DYNAMIC_FTRACE=y
+ CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+ CONFIG_HAVE_HW_BRANCH_TRACER=y
+-CONFIG_HAVE_FTRACE_SYSCALLS=y
++CONFIG_HAVE_SYSCALL_TRACEPOINTS=y
+ CONFIG_RING_BUFFER=y
+ CONFIG_TRACING=y
+ CONFIG_TRACING_SUPPORT=y
+diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
+index cee1dd2..6c86acd 100644
+--- a/arch/x86/configs/x86_64_defconfig
++++ b/arch/x86/configs/x86_64_defconfig
+@@ -2329,7 +2329,7 @@ CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
+ CONFIG_HAVE_DYNAMIC_FTRACE=y
+ CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+ CONFIG_HAVE_HW_BRANCH_TRACER=y
+-CONFIG_HAVE_FTRACE_SYSCALLS=y
++CONFIG_HAVE_SYSCALL_TRACEPOINTS=y
+ CONFIG_RING_BUFFER=y
+ CONFIG_TRACING=y
+ CONFIG_TRACING_SUPPORT=y
+diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
+index fad7d40..6f7786a 100644
+--- a/arch/x86/include/asm/thread_info.h
++++ b/arch/x86/include/asm/thread_info.h
+@@ -95,7 +95,7 @@ struct thread_info {
+ #define TIF_DEBUGCTLMSR		25	/* uses thread_struct.debugctlmsr */
+ #define TIF_DS_AREA_MSR		26      /* uses thread_struct.ds_area_msr */
+ #define TIF_LAZY_MMU_UPDATES	27	/* task is updating the mmu lazily */
+-#define TIF_SYSCALL_FTRACE	28	/* for ftrace syscall instrumentation */
++#define TIF_SYSCALL_TRACEPOINT	28	/* syscall tracepoint instrumentation */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
+@@ -118,17 +118,17 @@ struct thread_info {
+ #define _TIF_DEBUGCTLMSR	(1 << TIF_DEBUGCTLMSR)
+ #define _TIF_DS_AREA_MSR	(1 << TIF_DS_AREA_MSR)
+ #define _TIF_LAZY_MMU_UPDATES	(1 << TIF_LAZY_MMU_UPDATES)
+-#define _TIF_SYSCALL_FTRACE	(1 << TIF_SYSCALL_FTRACE)
++#define _TIF_SYSCALL_TRACEPOINT	(1 << TIF_SYSCALL_TRACEPOINT)
+ 
+ /* work to do in syscall_trace_enter() */
+ #define _TIF_WORK_SYSCALL_ENTRY	\
+-	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | _TIF_SYSCALL_FTRACE |	\
+-	 _TIF_SYSCALL_AUDIT | _TIF_SECCOMP | _TIF_SINGLESTEP)
++	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | _TIF_SYSCALL_AUDIT |	\
++	 _TIF_SECCOMP | _TIF_SINGLESTEP | _TIF_SYSCALL_TRACEPOINT)
+ 
+ /* work to do in syscall_trace_leave() */
+ #define _TIF_WORK_SYSCALL_EXIT	\
+ 	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | _TIF_SINGLESTEP |	\
+-	 _TIF_SYSCALL_FTRACE)
++	 _TIF_SYSCALL_TRACEPOINT)
+ 
+ /* work to do on interrupt/exception return */
+ #define _TIF_WORK_MASK							\
+@@ -137,7 +137,8 @@ struct thread_info {
+ 	   _TIF_SINGLESTEP|_TIF_SECCOMP|_TIF_SYSCALL_EMU))
+ 
+ /* work to do on any return to user space */
+-#define _TIF_ALLWORK_MASK ((0x0000FFFF & ~_TIF_SECCOMP) | _TIF_SYSCALL_FTRACE)
++#define _TIF_ALLWORK_MASK						\
++	((0x0000FFFF & ~_TIF_SECCOMP) | _TIF_SYSCALL_TRACEPOINT)
+ 
+ /* Only used for 64 bit */
+ #define _TIF_DO_NOTIFY_MASK						\
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 34dd6f1..a909afe 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1500,7 +1500,7 @@ asmregparm long syscall_trace_enter(struct pt_regs *regs)
+ 	    tracehook_report_syscall_entry(regs))
+ 		ret = -1L;
+ 
+-	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
++	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+ 		trace_syscall_enter(regs, regs->orig_ax);
+ 
+ 	if (unlikely(current->audit_context)) {
+@@ -1526,7 +1526,7 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
+ 	if (unlikely(current->audit_context))
+ 		audit_syscall_exit(AUDITSC_RESULT(regs->ax), regs->ax);
+ 
+-	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
++	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+ 		trace_syscall_exit(regs, regs->ax);
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE))
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 019f380..06be85a 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -41,7 +41,7 @@ config HAVE_FTRACE_MCOUNT_RECORD
+ config HAVE_HW_BRANCH_TRACER
+ 	bool
+ 
+-config HAVE_FTRACE_SYSCALLS
++config HAVE_SYSCALL_TRACEPOINTS
+ 	bool
+ 
+ config TRACER_MAX_TRACE
+@@ -211,7 +211,7 @@ config ENABLE_DEFAULT_TRACERS
+ 
+ config FTRACE_SYSCALLS
+ 	bool "Trace syscalls"
+-	depends on HAVE_FTRACE_SYSCALLS
++	depends on HAVE_SYSCALL_TRACEPOINTS
+ 	select GENERIC_TRACER
+ 	select KALLSYMS
+ 	help
 diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 43bca1f..6c2e12c 100644
+index 35dd27a..43bca1f 100644
 --- a/kernel/tracepoint.c
 +++ b/kernel/tracepoint.c
-@@ -579,7 +579,7 @@ __initcall(init_tracepoints);
- 
- #endif /* CONFIG_MODULES */
- 
--#ifdef CONFIG_FTRACE_SYSCALLS
-+#ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
- 
- static DEFINE_MUTEX(regfunc_mutex);
- static int sys_tracepoint_refcount;
+@@ -593,7 +593,7 @@ void syscall_regfunc(void)
+ 	if (!sys_tracepoint_refcount) {
+ 		read_lock_irqsave(&tasklist_lock, flags);
+ 		do_each_thread(g, t) {
+-			set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
++			set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+ 		} while_each_thread(g, t);
+ 		read_unlock_irqrestore(&tasklist_lock, flags);
+ 	}
+@@ -611,7 +611,7 @@ void syscall_unregfunc(void)
+ 	if (!sys_tracepoint_refcount) {
+ 		read_lock_irqsave(&tasklist_lock, flags);
+ 		do_each_thread(g, t) {
+-			clear_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
++			clear_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
+ 		} while_each_thread(g, t);
+ 		read_unlock_irqrestore(&tasklist_lock, flags);
+ 	}
 -- 
 1.6.2.5
 
