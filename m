@@ -1,83 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbZHXNlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZHXNoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752514AbZHXNlx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 09:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZHXNlv
+	id S1752543AbZHXNoH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 09:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZHXNoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 09:41:51 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:39787 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbZHXNlv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 09:41:51 -0400
-Date: Mon, 24 Aug 2009 22:41:52 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 05/12] update FTRACE_SYSCALL_MAX
-Message-ID: <20090824134151.GB18974@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-	mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-	peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-	jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com
-References: <cover.1249932670.git.jbaron@redhat.com> <7fca984182691041c0d139eccd080f82045f86f7.1249932670.git.jbaron@redhat.com> <20090811110023.GC4938@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090811110023.GC4938@nowhere>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 24 Aug 2009 09:44:05 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:49439 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752525AbZHXNoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 09:44:03 -0400
+Subject: Re: [Patch 6/8] powerpc: add CONFIG_KEXEC_AUTO_RESERVE
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090821065739.4855.19179.sendpatchset@localhost.localdomain>
+References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
+	 <20090821065739.4855.19179.sendpatchset@localhost.localdomain>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Io39234LEQW+b+fdpE6S"
+Date: Mon, 24 Aug 2009 23:44:03 +1000
+Message-Id: <1251121443.10645.56.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 11, 2009 at 01:00:25PM +0200, Frederic Weisbecker wrote:
-> On Mon, Aug 10, 2009 at 04:52:35PM -0400, Jason Baron wrote:
-> > update FTRACE_SYSCALL_MAX to the current number of syscalls
-> > 
-> > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > 
-> > ---
-> >  arch/x86/include/asm/ftrace.h |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
-> > index bd2c651..7113654 100644
-> > --- a/arch/x86/include/asm/ftrace.h
-> > +++ b/arch/x86/include/asm/ftrace.h
-> > @@ -30,9 +30,9 @@
-> >  
-> >  /* FIXME: I don't want to stay hardcoded */
-> >  #ifdef CONFIG_X86_64
-> > -# define FTRACE_SYSCALL_MAX     296
-> > +# define FTRACE_SYSCALL_MAX     299
-> >  #else
-> > -# define FTRACE_SYSCALL_MAX     333
-> > +# define FTRACE_SYSCALL_MAX     337
-> >  #endif
-> 
-> 
-> I don't remember why we had to use a hardcoded number.
-> Is there no way to keep being sync with the current number of
-> syscalls? We dwant to avoid patching the kernel each time we
-> have a new syscall :-)
-> 
-I hope you can clarify what the meaning of this is supposed to be
-exactly. Is this number supposed to be the last usable syscall, or is it
-supposed to be the equivalent of NR_syscalls?
 
-Presently on SH we have this as NR_syscalls - 1, while on s390 I see it
-is treated as NR_syscalls directly. s390 opencodes the NR_syscalls
-directly and so presently blows up in -next due to a missing
-FTRACE_SYSCALL_MAX definition:
+--=-Io39234LEQW+b+fdpE6S
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-	http://kisskb.ellerman.id.au/kisskb/buildresult/1120523/
+On Fri, 2009-08-21 at 02:55 -0400, Amerigo Wang wrote:
+> Introduce a new config option KEXEC_AUTO_RESERVE for powerpc.
+>=20
+> Index: linux-2.6/arch/powerpc/Kconfig
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.orig/arch/powerpc/Kconfig
+> +++ linux-2.6/arch/powerpc/Kconfig
+> @@ -346,6 +346,17 @@ config KEXEC
+>  	  support.  As of this writing the exact hardware interface is
+>  	  strongly in flux, so no good recommendation can be made.
+> =20
+> +config KEXEC_AUTO_RESERVE
+> +	bool "automatically reserve memory for kexec kernel"
+> +	depends on KEXEC
+> +	default y
+> +	---help---
+> +	  Automatically reserve memory for a kexec kernel, so that you don't
+> +	  need to specify numbers for the "crashkernel=3DX@Y" boot option,
+> +	  instead you can use "crashkernel=3Dauto". To make this work, you need
+> +	  to have more than 4G memory. On PPC, 256M is reserved, 1/32 memory
+> +	  on PPC64, but it will not exceed 1T/32.
 
-I was in the process of fixing that up when I noticed this difference.
-x86 seems to also treat this as NR_syscalls - 1, but that looks to me
-like there is an off-by-1 in arch_init_ftrace_syscalls() causing the last
-syscall to be skipped?
+To be honest I don't see why this logic goes in the kernel. It seems to
+me that it's policy how much memory you devote to the crash kernel vs
+the production kernel. It depends on what kind of crash kernel you're
+loading, a minimal UP dump kernel, or a full-featured SMP behemoth, An
+it depends on how much memory you're willing to leave idle in the
+off-chance you crash.
+
+That aside, I don't see how this will be useful in practice, if it only
+works for memory sizes over 4G? Or are we saying that people with less
+than 4G don't need crash kernels? If we're not saying that, those users,
+or those users' distros, still need to do some logic to work out if they
+have < 4GB of memory and if so pick a crash kernel size. So why can't
+they pick the size in the > 4GB case also?
+
+Also the numbers seem a bit arbitrary. 4GB ? 256M ? 1/32?  I don't think
+we really want to be blowing 32GB on a crash kernel, even if we do have
+1T of RAM :)
+
+cheers
+
+
+
+--=-Io39234LEQW+b+fdpE6S
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkqSmSMACgkQdSjSd0sB4dIYZACdEjqjz1MY6jN9Rl4rCbTS7Fpa
+4xAAnjIVTnikpRn/PSmkK8YfCnbcNGCS
+=ECts
+-----END PGP SIGNATURE-----
+
+--=-Io39234LEQW+b+fdpE6S--
+
