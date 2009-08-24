@@ -1,147 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZHXTTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZHXTXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753299AbZHXTTE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 15:19:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZHXTTC
+	id S1753346AbZHXTXi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 15:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZHXTXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 15:19:02 -0400
-Received: from mail-gx0-f205.google.com ([209.85.217.205]:59458 "EHLO
-	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbZHXTTB convert rfc822-to-8bit (ORCPT
+	Mon, 24 Aug 2009 15:23:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41876 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753104AbZHXTXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 15:19:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QddDj+lVoTOVGbfEkkAUfsvOOx0DCdXw8TSQtIoW5DznrXHUsVs6H54TWo2umnEKUH
-         IUtgVkPIyuDtjY2PU9CWNLflJmuNTJryQf9YWZYnOPmpEh0E7/bqKqPxmDedJP/4X3cS
-         prUIZi51NL49BUjXixyqUS29pfPdUPjP37mk0=
+	Mon, 24 Aug 2009 15:23:37 -0400
+Date: Mon, 24 Aug 2009 12:23:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Eric Paris <eparis@redhat.com>
+cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-fs-devel@vger.kernel.org, zdenek.kabelac@gmail.com,
+       christoph.thielecke@gmx.de, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk, grant.wilson@zen.co.uk, mikko.cal@gmail.com
+Subject: Re: [PATCH 2/3] inotify: do not BUG on idr entries at inotify
+ destruction
+In-Reply-To: <1251140949.25096.16.camel@dhcp231-106.rdu.redhat.com>
+Message-ID: <alpine.LFD.2.01.0908241220590.3158@localhost.localdomain>
+References: <20090824173524.14196.25992.stgit@paris.rdu.redhat.com>  <20090824173524.14196.25992.stgit@paris.rdu.redhat.com>  <20090824173812.14196.381.stgit@paris.rdu.redhat.com>  <200908242034.50885.elendil@planet.nl>
+ <1251140949.25096.16.camel@dhcp231-106.rdu.redhat.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-In-Reply-To: <4A9251EB.8040805@gmail.com>
-References: <4A84345D.60506@gmail.com>
-	 <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com>
-	 <4A8B4607.6090303@gmail.com> <4A8B5113.20102@cn.fujitsu.com>
-	 <4A8FA2BD.4030707@gmail.com> <4A91FDED.9050801@cn.fujitsu.com>
-	 <1251093523.7538.118.camel@twins> <4A922F82.9080000@cn.fujitsu.com>
-	 <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>
-Date: Mon, 24 Aug 2009 12:19:02 -0700
-Message-ID: <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>
-Subject: Re: system gets stuck in a lock during boot
-From: Justin Mattock <justinmattock@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 1:40 AM, Justin P.
-Mattock<justinmattock@gmail.com> wrote:
-> Peter Zijlstra wrote:
->>
->> On Mon, 2009-08-24 at 14:13 +0800, Li Zefan wrote:
->>
->>>
->>> Peter Zijlstra wrote:
->>>
->>>>
->>>> On Mon, 2009-08-24 at 10:41 +0800, Li Zefan wrote:
->>>>
->>>>
->>>>>>
->>>>>> @@ -940,7 +940,7 @@ event_create_dir(struct ftrace_event_call *call,
->>>>>> struct dentr
->>>>>>                 entry = trace_create_file("enable", 0644, call->dir,
->>>>>> call,
->>>>>>                                           enable);
->>>>>>
->>>>>> -       if (call->id)
->>>>>> +       if (call->id&&  call->profile_enable)
->>>>>>
->>>>>
->>>>> We do an extra check on ->profile_enable, shouldn't cause bug..
->>>>>
->>>>>
->>>>>>
->>>>>>                 entry = trace_create_file("id", 0444, call->dir, call,
->>>>>>                                           id);
->>>>>>
->>>>>
->>>>> Any way, I don't think this commit does the right thing:
->>>>>
->>>>>   - If CONFIG_EVENT_PROFILE=y, we'll create events/<dir>/<event>/id,
->>>>>     except events/ftrace/<event>/id.
->>>>>
->>>>>   - if CONFIG_EVENT_PROFILE=n, there's no 'id' file at all!
->>>>>
->>>>> I think it's better to skip ftrace/ dir in perf tool code, instead of
->>>>> skipping creating id files in ftrace code.
->>>>>
->>>>
->>>> No, it does do the right thing. Your patch breaks things because not all
->>>> tracepoints are created through TRACE_EVENT() and will thus not have
->>>> their profile_enable/disable hooks set.
->>>>
->>>> By giving them an ID file, there is no way to distinguish good from bad
->>>> tracepoints.
->>>>
->>>>
->>>
->>> But removing the id file from events/ftrace/ might break some ftrace
->>> binary parsers?
->>>
->>> And this commit makes 'id' file disapeared with CONFIG_EVENT_PROFILE=n.
->>>
->>
->> I introduced the id file for EVENT_PROFILE, tough luck if someone else
->> relies on it.
->>
->>
->>>>
->>>> Expempting ftrace is no solid solution, suppose someone else does a
->>>> TRACE_EVENT_FORMAT() tracepoint, how would you know you could use it as
->>>> a profile event source?
->>>>
->>>>
->>>
->>> Agree.
->>>
->>>
->>>>
->>>> The id files really must stay conditional.
->>>>
->>>>
->>>
->>> I don't think it's a good idea to connect it with perfcounter
->>> this way. Wouldn't adding a 'profilable' file more intuitive?
->>>
->>
->> its called: id ;-)
->>
->>
->
-> After looking at ps auxZ
-> I see xterm as root instead of my user name.
-> This gives me enough evidence to throw
-> this system away and start over.
->
-> sorry for the waste of time.
->
-> Justin P. Mattock
->
 
-O.K. I feel better, deleted
-my system, and threw in a minimal built system
-with only the bare essentials to boot.
-(just to make sure things are correct).
 
-unfortunately after building rc6 I'm still hitting
-this. really am not sure why this is happening.
+On Mon, 24 Aug 2009, Eric Paris wrote:
+> 
+> You suspect correctly.  :(  I'll fix in my tree before I request a
+> pull....
 
--- 
-Justin P. Mattock
+Can you change the WARN() to a WARN_ONCE() too. 
+
+Generally, we prefer the "ONCE" variant if there isn't some intrisic 
+reason why we'd want to know about each event. If there is some load that 
+triggers this, do you care about _how_many_times_ it happens, or about the 
+fact that it happens in the first place? In this case, I think it's the 
+"happens in the first place" case - once you see it a single time, the 
+rest of the reports aren't that interesting.
+
+And using the ONCE thing means that we know it's not going to spam the 
+logs.
+
+			Linus
