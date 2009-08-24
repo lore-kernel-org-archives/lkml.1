@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751857AbZHXHW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751870AbZHXHam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751857AbZHXHW7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 03:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZHXHW7
+	id S1751870AbZHXHam (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 03:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZHXHal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 03:22:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59432 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbZHXHW6 (ORCPT
+	Mon, 24 Aug 2009 03:30:41 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38214 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559AbZHXHak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 03:22:58 -0400
-Subject: Re: [PATCH RFC -tip 0/4] v3 RCU cleanups and simplified
- preemptable RCU
+	Mon, 24 Aug 2009 03:30:40 -0400
+Subject: Re: [PATCH 1/4] perf_counter: Default to higher paranoia level
 From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       rostedt@goodmis.org
-In-Reply-To: <20090727181401.GA14120@linux.vnet.ibm.com>
-References: <20090727181401.GA14120@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, James Morris <jmorris@namei.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20090821142151.GC11098@elte.hu>
+References: <20090819091823.916851355@chello.nl>
+	 <20090819092023.728070630@chello.nl> <1250690853.8282.59.camel@twins>
+	 <1250769606.8282.181.camel@twins>  <20090821142151.GC11098@elte.hu>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Aug 2009 09:21:59 +0200
-Message-Id: <1251098519.7538.139.camel@twins>
+Date: Mon, 24 Aug 2009 09:29:22 +0200
+Message-Id: <1251098962.7538.143.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-22 at 13:52 -0700, Paul E. McKenney wrote:
+On Fri, 2009-08-21 at 16:21 +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+
+> > diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+> > index 9ba1822..2b0528f 100644
+> > --- a/include/linux/perf_counter.h
+> > +++ b/include/linux/perf_counter.h
+> > @@ -439,6 +439,7 @@ enum perf_callchain_context {
+> >  struct perf_callchain_entry {
+> >  	__u64				nr;
+> >  	__u64				ip[PERF_MAX_STACK_DEPTH];
+> > +	int				restricted;
+> >  };
 > 
-> o       Rename variables and functions so that RCU-sched is an
->         underlying definition, along with RCU-bh and (when so
->         configured) RCU-preempt.  RCU then maps to either RCU-sched
->         or RCU-preempt, depending on configuration.
+> i'd love to have something more specific here - i.e. a context type 
+> ID that identifies these basic types:
+> 
+>  - process
+>  - softirq
+>  - hardirq
+>  - NMI
+> 
+> and then let it be up to upper layers to decide what they do with a 
+> restricted entry, and how to further process this information.
+> 
+> And it's not just security: for example it would be interesting to 
+> sample pure, non-irq overhead - as IRQ overhead is often unrelated 
+> to the process being measured.
 
-Nice, but we're not quite there yet it seems, since RCU-preempt isn't
-available outside of TREE_PREEMPT_RCU afaiks.
+Yes it is, this is purely about not showing some data. If you don't want
+to sample IRQ stuff that's something else, we'd have to grow that
+capability in hardware (like the OS/USR bits) or put perf enable/disable
+hooks into the irq entry/exit hooks (which doesn't sound all too hot an
+idea to me).
 
-That is, I'm still hoping for the day that generic code can do:
-
-  rcu_preempt_read_lock();
-
-
-  call_rcu_preempt(&my_rcu_thing);
-  rcu_preempt_read_unlock();
-
-And have it work like expected, this would, I think, remove much of the
-need for SRCU.
-
-
-The thing I've talked about earlier is an extension of this where you
-can create multiple RCU domains along the lines of:
-
-  struct rcu_preempt_domain my_domain;
-
-  rcu_preempt_init(&my_domain);
-
-
-and
-
-  rcu_preempt_read_lock(&my_domain);
-
-  call_rcu_preempt(&my_domain, &my_rcu_head);
-  rcu_preempt_read_unlock(&my_domain);
-
-
-Which would allow you to create smaller RCU domains for when you want
-faster grace periods due to less interference of other rcu users.
-
-
-Anyway, enough rambling, the patch-set does look very nice, and if time
-permits I'll try and go through the preempt-tree-rcu thing.
-
-Thanks
+Simply not showing the call-trace is something all-together different
+from not profiling it.
