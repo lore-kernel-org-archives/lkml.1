@@ -1,79 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZHXSst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbZHXSxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbZHXSst (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 14:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZHXSss
+	id S1753328AbZHXSxZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 14:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZHXSxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 14:48:48 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51736 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753282AbZHXSss (ORCPT
+	Mon, 24 Aug 2009 14:53:23 -0400
+Received: from smtp4m5.poczta.onet.pl ([213.180.138.35]:35950 "EHLO
+	smtp4m5.poczta.onet.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753198AbZHXSxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 14:48:48 -0400
-Date: Mon, 24 Aug 2009 20:48:43 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090824184842.GB29763@elf.ucw.cz>
-References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net> <20090316122847.GI2405@elf.ucw.cz> <200903161426.24904.rob@landley.net> <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824135035.GI23677@mit.edu>
+	Mon, 24 Aug 2009 14:53:22 -0400
+X-Greylist: delayed 475 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Aug 2009 14:53:21 EDT
+From: Mario <rety@poczta.onet.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: ACPI locks hardware devices when it doesn't detect vista
+Date: Mon, 24 Aug 2009 20:47:55 +0200
+User-Agent: KMail/1.9.10
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <1250945310.14167.150.camel@maxim-laptop> <1250985766.28634.3.camel@maxim-laptop> <1251130636.12927.5.camel@maxim-laptop>
+In-Reply-To: <1251130636.12927.5.camel@maxim-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090824135035.GI23677@mit.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908242047.55867.rety@poczta.onet.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Maxim,
 
-> > > +* don't damage the old data on a failed write (ATOMIC-WRITES)
-> > > +
-> > > +	(Thrash may get written into sectors during powerfail.  And
-> > > +	ext3 handles this surprisingly well at least in the
-> > > +	catastrophic case of garbage getting written into the inode
-> > > +	table, since the journal replay often will "repair" the
-> > > +	garbage that was written into the filesystem metadata blocks.
-> > 
-> > Isn't this by design?  In other words, if the metadata doesn't survive
-> > non-atomic writes, wouldn't it be an ext3 bug?
-> 
-> So I got confused when I quoted your note, which I had assumed was
-> exactly what Pavel had written in his documentation.  In fact, what he
-> had written was this:
-> 
-> +Don't damage the old data on a failed write (ATOMIC-WRITES)
-> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> +
-> +Either whole sector is correctly written or nothing is written during
-> +powerfail.
-> +
-> +....
-> 
-> So he had explicitly stated that he only cared about the whole sector
-> being written (or not written) in the power fail case, and not any
-> other.  I'd suggest changing ATOMIC-WRITES to
-> ATOMIC-WRITE-ON-POWERFAIL, since the one-line summary, "Don't damage
-> the old data on a failed write", is also singularly misleading.
-
-Ok, something like this?
-
-Don't damage the old data on a powerfail (ATOMIC-WRITES-ON-POWERFAIL)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Either whole sector is correctly written or nothing is written during
-powerfail.
+I've compiled the latest kernel from the git (2.6.31-rc7).
+No changes still only the setpci hack works.
 
 
-									Pavel
+Monday 24 of August 2009 18:17:16 Maxim Levitsky wrote:
+> On Sun, 2009-08-23 at 03:02 +0300, Maxim Levitsky wrote:
+> > On Sun, 2009-08-23 at 01:36 +0300, Maxim Levitsky wrote:
+> > > On Sun, 2009-08-23 at 01:02 +0300, Maxim Levitsky wrote:
+> > > > On Sat, 2009-08-22 at 23:41 +0200, Rafael J. Wysocki wrote:
+> > > > > On Saturday 22 August 2009, Maxim Levitsky wrote:
+> > > > > > Hi,
+> > > > > >
+> > > > > > <joke>
+> > > > > > This should be brought to a Microsoft antitrust case...
+> > > > > > </joke>
+> > > > > >
+> > > > > >
+> > > > > > Today many notebooks ship with a embedded infrared receiver.
+> > > > > > In Vista there is new subsystem that decodes these signals.
+> > > > > > (of course it works only with Microsoft Certificated Remotes
+> > > > > > (TM)...)
+> > > > > >
+> > > > > > The receiver is usually presented to system as a pnp device
+> > > > > > (using acpi tables)
+> > > > > >
+> > > > > > It turns out that some bioses actually use the OSI, ACPI feature
+> > > > > > of the operation system to detect if running inside Vista. If not
+> > > > > > they disable the infrared receiver.
+> > > >
+> > > > Just one note. At least I am now sure that OSI("Windows 2006") does
+> > > > return true by default.
+> > > >
+> > > > I have tried booting here with acpi_osi="!Windows 2006", and actually
+> > > > the CIR PNP device disappeared. I guess that _STA that returns zero
+> > > > causes that.
+> > > >
+> > > > On his laptop, ENE0100 device doesn't disappear, but still someone
+> > > > writes zero to LPCB.IOR2 (we checked and found out that it was zero)
+> >
+> > Just to make it clear:
+> > on Mairo's laptop, booting without any special parameters, doesn't
+> > remove the device from pnp list, but its I/O range is blocked.
+> > Booting with acpi_osi="!Windows 2006" actually removes it from pnp list,
+> > exactly, like on my system (I don't have completely confirmation of
+> > that, but according to dmesg, my driver never gets loaded)
+> >
+> >
+> > Best regards,
+> > 	Maxim Levitsky
+> >
+> > > > Maybe its zero by default, but some 'magic' driver in windows sets it
+> > > > up, but this is a PCI config register on LPC bridge, (0x88) and I am
+> > > > almost sure that nobody except bios knows about it.
+> > > >
+> > > > Windows IR driver doesn't touch it for sure.
+> > > >
+> > > > So, it could be that _STA is once called before the _SB._INI ?
+> > >
+> > > We have just tested, and it turns out that on boot, the device is
+> > > unlocked. So it must ACPI
+> > >
+> > > I have put a printk very early in kernel initialization, and it proved
+> > > that CIR io range is accessible, before acpi initialization.
+> > >
+> > >
+> > > Best regards,
+> > > 	Maxim Levitsky
+>
+> Any update on that?
+>
+> I have tried to 'reproduce' same issue on my system by editing my acpi
+> tables, but couldn't
+> (I am sure that I did everything correctly, and to be even more sure, I
+> have inverted the test for windows vista in _STA, and IR device did
+> lock)
+>
+>
+> Mairo, could you somehow compile latest kernel  from git from
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+>
+> you just need to exectute
+>
+> git clone
+> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+>
+> Then remove the setpci workaround, boot that kernel, and see if acpi still
+> locks the IR device OK?
+>
+>
+> Best regards,
+> 	Maxim Levitsky
+>
+> > > > Best regards,
+> > > > 	Maxim Levitsky
+> > > >
+> > > > > Oh well.
+> > > > >
+> > > > > That should've been Cced to linux-acpi (now added).  I'm looking
+> > > > > forward to seeng a comment from Len.
+> > > >
+> > > > Sorry....
+> > > >
+> > > > > > On my system this it is still tolerable:
+> > > > > >
+> > > > > >             Device (MIR)
+> > > > > >             {
+> > > > > >                 Name (_HID, EisaId ("ENE0100"))
+> > > > > >                 Method (_STA, 0, NotSerialized)
+> > > > > >                 {
+> > > > > >                     If (LGreaterEqual (OSYS, 0x07D6))
+> > > > > >                     {
+> > > > > >                         If (LOr (And (OTHR, 0x02), And (OTHR,
+> > > > > > 0x40))) {
+> > > > > >                             Return (0x00)
+> > > > > >                         }
+> > > > > >                         Else
+> > > > > >                         {
+> > > > > >                             Return (0x0F)
+> > > > > >                         }
+> > > > > >                     }
+> > > > > >                     Else
+> > > > > >                     {
+> > > > > >                         Return (0x00)
+> > > > > >                     }
+> > > > > >                 }
+> > > > > >
+> > > > > > But not so, on Mairo's system:
+> > > > > >
+> > > > > >             Device (MIR)
+> > > > > >             {
+> > > > > >                 Name (_HID, EisaId ("ENE0100"))
+> > > > > >                 Method (_STA, 0, NotSerialized)
+> > > > > >                 {
+> > > > > >                     If (LAnd (MCIR, LEqual (OSYS, 0x07D6)))
+> > > > > >                     {
+> > > > > >                         Return (0x0F)
+> > > > > >                     }
+> > > > > >                     Else
+> > > > > >                     {
+> > > > > >                         Store (Zero, ^^LPCB.IOR2)
+> > > > > >                         Return (Zero)
+> > > > > >                     }
+> > > > > >                 }
+> > > > > >
+> > > > > > 	.......
+> > > > > >
+> > > > > >     Method (_WAK, 1, NotSerialized)
+> > > > > >     {
+> > > > > >     .......
+> > > > > >         If (Not (LAnd (MCIR, LEqual (OSYS, 0x07D6))))
+> > > > > >         {
+> > > > > >             Store (Zero, \_SB.PCI0.LPCB.IOR2)
+> > > > > >         }
+> > > > > >
+> > > > > >
+> > > > > > .....
+> > > > > >
+> > > > > >     Scope (_SB)
+> > > > > >     {
+> > > > > >         Method (_INI, 0, NotSerialized)
+> > > > > >         {
+> > > > > >             If (DTSE)
+> > > > > >             {
+> > > > > >                 TRAP (0x47)
+> > > > > >             }
+> > > > > >
+> > > > > >             Store (0x07D0, OSYS)
+> > > > > >             If (CondRefOf (_OSI, Local0))
+> > > > > >             {
+> > > > > >                 If (_OSI ("Linux"))
+> > > > > >                 {
+> > > > > >                     Store (One, LINX)
+> > > > > >                     Store (Zero, ECDY)
+> > > > > >                 }
+> > > > > >
+> > > > > >                 If (_OSI ("Windows 2001"))
+> > > > > >                 {
+> > > > > >                     Store (0x07D1, OSYS)
+> > > > > >                 }
+> > > > > >
+> > > > > >                 If (_OSI ("Windows 2001 SP1"))
+> > > > > >                 {
+> > > > > >                     Store (0x07D1, OSYS)
+> > > > > >                 }
+> > > > > >
+> > > > > >                 If (_OSI ("Windows 2001 SP2"))
+> > > > > >                 {
+> > > > > >                     Store (0x07D2, OSYS)
+> > > > > >                 }
+> > > > > >
+> > > > > >                 If (_OSI ("Windows 2006"))
+> > > > > >                 {
+> > > > > >                     Store (0x07D6, OSYS)
+> > > > > >                 }
+> > > > > >
+> > > > > >                 If (LEqual (TPMV, One))
+> > > > > >                 {
+> > > > > >                     If (LLessEqual (OSYS, 0x07D2))
+> > > > > >                     {
+> > > > > >                         TRAP (0x49)
+> > > > > >                     }
+> > > > > >                 }
+> > > > > >             }
+> > > > > >
+> > > > > >             If (LAnd (MPEN, LEqual (OSYS, 0x07D1)))
+> > > > > >             {
+> > > > > >                 TRAP (0x3D)
+> > > > > >             }
+> > > > > >
+> > > > > >             TRAP (0x2B)
+> > > > > >         }
+> > > > > >     }
+> > > > > >
+> > > > > > We have tried to boot the system with acpi_osi="Windows 2006",
+> > > > > > but it didn't help (kernel log confirmed that this parameter was
+> > > > > > set)
+> > > > > >
+> > > > > > The only explanation I think of is ether his laptop is
+> > > > > > whitelisted on osi=Linux, or that _SB._INI is called by linux
+> > > > > > _after_ MIR._STA or that acpi_osi isn't yet in charge when
+> > > > > > _SB._INI is called.
+> > > > > >
+> > > > > >
+> > > > > > The kernel in question is quite recent kernel, (2.6.30.5 from
+> > > > > > debian unstable).
+> > > > > >
+> > > > > >
+> > > > > > The only way I managed to 'enable' this device is to
+> > > > > > do 'sudo setpci -s 00:1f.0 0x88.W=0x701'
+> > > > > >
+> > > > > > Or in other words undo the damage done by these ACPI commands.
+> > > > > >
+> > > > > > Mairo, can you boot the system with acpi=off, and then poke the
+> > > > > > cir IO range (0x700-0x703) ?
+> > > > >
+> > > > > Best,
+> > > > > Rafael
+> > > > > --
+> > > > > To unsubscribe from this list: send the line "unsubscribe
+> > > > > linux-acpi" in the body of a message to majordomo@vger.kernel.org
+> > > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
