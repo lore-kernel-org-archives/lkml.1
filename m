@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZHXWjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZHXWkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbZHXWjq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbZHXWjn
+	id S1753880AbZHXWkf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZHXWke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:39:43 -0400
-Received: from thunk.org ([69.25.196.29]:40491 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753501AbZHXWjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:39:41 -0400
-Date: Mon, 24 Aug 2009 18:39:15 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090824223915.GI17684@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-	Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
-	Goswin von Brederlow <goswin-v-b@web.de>,
-	Rob Landley <rob@landley.net>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-	linux-ext4@vger.kernel.org
-References: <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz>
+	Mon, 24 Aug 2009 18:40:34 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:21550 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753694AbZHXWke (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:40:34 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=eaZAucng5vnNaUPjsRggPqQrqX5b5lKfeM0saXRMXgIRBwdiap7TIKgz++aZGUgeo
+	fLBTWMrii4bVmISjnpNAw==
+Date: Mon, 24 Aug 2009 15:40:30 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/4 -mm] flex_array: poison free elements
+In-Reply-To: <1251148618.22398.8188.camel@nimitz>
+Message-ID: <alpine.DEB.2.00.0908241535000.12448@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com> <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com> <1251129384.22398.7166.camel@nimitz> <alpine.DEB.2.00.0908241330361.5574@chino.kir.corp.google.com>
+ <1251148618.22398.8188.camel@nimitz>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824212518.GF29763@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 11:25:19PM +0200, Pavel Machek wrote:
-> > I have to admit that I have not paid enough attention to this specifics  
-> > of your ext3 + flash card issue - is it the ftl stuff doing out of order  
-> > IO's? 
+On Mon, 24 Aug 2009, Dave Hansen wrote:
+
+> On Mon, 2009-08-24 at 13:41 -0700, David Rientjes wrote:
+> > LEX_ARRAY_FREE (or an additional poison value to 
+> > distinguish between use-uninitialized vs. use-after-free) must be used in 
+> > flex_array_clear() otherwise the cgroup patchset, the only proposed user 
+> > of this library code, could never shrink this array when pid's are free 
+> > like the kmalloc vs. vmalloc patchset could do.
 > 
-> The problem is that flash cards destroy whole erase block on unplug,
-> and ext3 can't cope with that.
-
-Sure --- but name **any** filesystem that can deal with the fact that
-128k or 256k worth of data might disappear when you pull out the flash
-card while it is writing a single sector? 
-
-> > Your statement is overly broad - ext3 on a commercial RAID array that  
-> > does RAID5 or RAID6, etc has no issues that I know of.
+> Are you saying that you expected it to never reallocate the array, but
+> have a permanent flex_array and that it just calls flex_array_clear() on
+> the elements that it doesn't want any more, and the array ends up
+> sparsely populated?  I can see why we'd need a poison value in that
+> case.
 > 
-> If your commercial RAID array is battery backed, maybe. But I was
-> talking Linux MD here.
 
-It's not just high end RAID arrays that have battery backups; I happen
-to use a mid-range hardware RAID card that comes with a battery
-backup.   It's just a matter of choosing your hardware carefully.
+Yeah, similar to using flex_array_free_parts() with a statically allocated 
+struct flex_array storing the array's metadata (which is also broken, 
+by the way, since it does no sanity check on either parameter in 
+FLEX_ARRAY_INIT()).
 
-If your concern is that with Linux MD, you could potentially lose an
-entire stripe in RAID 5 mode, then you should say that explicitly; but
-again, this isn't a filesystem specific cliam; it's true for all
-filesystems.  I don't know of any file system that can survive having
-a RAID stripe-shaped-hole blown into the middle of it due to a power
-failure.
+> Or, are we just talking about a situation where we need to truncate the
+> pidlist?
+> 
 
-I'll note, BTW, that AIX uses a journal to protect against these sorts
-of problems with software raid; this also means that with AIX, you
-also don't have to rebuild a RAID 1 device after an unclean shutdown,
-like you have do with Linux MD.  This was on the EVMS's team
-development list to implement for Linux, but it got canned after LVM
-won out, lo those many years ago.  Ce la vie; but it's a problem which
-is solvable at the RAID layer, and which is traditionally and
-historically solved in competent RAID implementations.
+The patchset Andrew referred to where he proposed using flex array instead 
+would re-kmalloc (or re-vmalloc, I guess) a smaller amount of memory and 
+then transfer elements into it to free the larger set of pages.  If they 
+were to convert to using flex array, this would be achieved with 
+flex_array_shrink() so they lose no functionality with the switch.
 
-							- Ted
+I don't think they can use flex array for another reason, however, because 
+they want to sort the pidlist as its returned to userspace.  That would 
+require dynamically allocating almost the same amount of memory as the 
+flex array would, sorting it, and then storing it in the array.  This 
+doesn't seem to be the best example use of flex array since the mapping of 
+array indices to pid isn't really relevant and there's a longer iteration 
+through the array if it is sparsely populated, which is why I suggested an 
+alternative implementation of flex list.
