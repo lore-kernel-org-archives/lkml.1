@@ -1,138 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751674AbZHXGSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751715AbZHXGTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751674AbZHXGSm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 02:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZHXGSl
+	id S1751715AbZHXGTY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 02:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZHXGTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 02:18:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38050
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751522AbZHXGSl (ORCPT
+	Mon, 24 Aug 2009 02:19:24 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:56233 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbZHXGTX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 02:18:41 -0400
-Date: Sun, 23 Aug 2009 23:18:53 -0700 (PDT)
-Message-Id: <20090823.231853.202608464.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Mon, 24 Aug 2009 02:19:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:mime-version:content-type
+         :content-disposition:user-agent:message-id;
+        b=fRux8RAsY6/tdphMFnItQEEnH36sBwzb/bIoYZ8KdDXaDjEcCNoJFcvrTWZvIPnpqV
+         jSeyaJOsUbossccu1Ly6Go6QzhApjGd8rIa0fEkCUQRM4+52DNTaqnAmIZroUn0cWkSG
+         Fm7fi24acy9o1EW3le7k5x3znx8jcQiwAibmU=
+Date: Sun, 23 Aug 2009 23:19:20 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: cancel_delayed_work and its use of del_timer_sync
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090824065111.A51D8526EC9@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n7O6Iv16000574
 
+Hi Oleg,
 
-1) Improper error return in allocation failure case in xt_quota
-   netfilter module results in NULL deref, from Patrick McHardy.
+I noticed that you went back and forth on using del_timer() vs.
+del_timer_sync() in cancel_delayed_work(), finally settling on using
+del_timer_sync(). I must say that the fact that cancel_delayed_work()
+might sleep (given that there exists cancel_delayed_work_sync) catches a
+few drivers writers by surprise. Moreover it makes delayed works
+unsuitable in cases when we do want to cancel (so we can reschedule)
+work in an interrupt context.
 
-2) Use the tasklet_hrtimer facility added by Peter Z. in order to
-   fix hrtimers in networking that can't actually safely run from
-   HW interrupt context.
+My question is if sleeping in cancel_delayed_work can be avoided or if
+it is possible to have a reschedule_delayed_work() taht would do a
+"soft" cancel and [re]submit the work. In the use cases I am concerned
+about we don't really care if work is not reliably cancelled, we just
+need to be able to schedule it earlier if it has already been scheduled
+for execution in some point in the future.
 
-3) LLC protocol leaks some bytes to userspace via ->getname().
-   Fix from Jiri Slaby.
+Thanks!
 
-4) Fix an ipv6 commit that broke bind() error reporting to userspace.
-   From Bruno Pr√©mont.
-
-5) Fix bonding with ibm_newemac, from Petri Gynther.
-
-6) pxaficp-ir netdev_ops conversion was buggy, fix from Marek Vasut.
-
-7) ks8851 build fix from Randy Dunlap
-
-8) Orinoco and RTL8187 wireless fixes from John Linville and
-   Herton Ronaldo Krzesinski respectively.
-
-9) netpoll transmit locking fixes from Dongdong Deng, and he also
-   added a check so that we can quickly discover any drivers that
-   are still buggy in this regard.
-
-Please pull, thanks a lot!
-
-The following changes since commit 3edf2fb9d80a46d6c32ba12547a42419845b4b76:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Andreas Mohr (1):
-      net: Fix Micrel KSZ8842 Kconfig description
-
-Bruno Pr√©mont (1):
-      ipv6: Fix commit 63d9950b08184e6531adceb65f64b429909cc101 (ipv6: Make v4-mapped bindings consistent with IPv4)
-
-David S. Miller (4):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      pkt_sched: Convert qdisc_watchdog to tasklet_hrtimer
-      pkt_sched: Convert CBQ to tasklet_hrtimer.
-
-Dongdong Deng (3):
-      netpoll: warning for ndo_start_xmit returns with interrupts enabled
-      drivers/net: fixed drivers that support netpoll use ndo_start_xmit()
-      smc91x: let smc91x work well under netpoll
-
-Herton Ronaldo Krzesinski (1):
-      rtl8187: always set MSR_LINK_ENEDCA flag with RTL8187B
-
-Jiri Slaby (1):
-      NET: llc, zero sockaddr_llc struct
-
-Johannes Berg (1):
-      mac80211: fix todo lock
-
-John W. Linville (1):
-      orinoco: correct key bounds check in orinoco_hw_get_tkip_iv
-
-Krzysztof Ha≈Çasa (1):
-      E100: fix interaction with swiotlb on X86.
-
-Marek Vasut (1):
-      pxaficp-ir: remove incorrect net_device_ops
-
-Patrick McHardy (1):
-      netfilter: xt_quota: fix wrong return value (error case)
-
-Petri Gynther (1):
-      ibm_newemac: emac_close() needs to call netif_carrier_off()
-
-Randy Dunlap (1):
-      net: fix ks8851 build errors
-
-Roel Kluin (1):
-      yellowfin: Fix buffer underrun after dev_alloc_skb() failure
-
-Wan ZongShun (1):
-      net: Rename MAC platform driver for w90p910 platform
-
- drivers/net/Kconfig                        |    4 ++-
- drivers/net/arm/w90p910_ether.c            |    4 +-
- drivers/net/e100.c                         |    2 +-
- drivers/net/fec_mpc52xx.c                  |    5 ++-
- drivers/net/ibm_newemac/core.c             |    2 +
- drivers/net/irda/pxaficp_ir.c              |    4 +--
- drivers/net/ixp2000/ixpdev.c               |    5 ++-
- drivers/net/macb.c                         |    7 +++--
- drivers/net/mlx4/en_tx.c                   |    5 ++-
- drivers/net/smc91x.c                       |   40 +++++++++++++++------------
- drivers/net/wireless/orinoco/hw.c          |    2 +-
- drivers/net/wireless/rtl818x/rtl8187_dev.c |   14 +++++++---
- drivers/net/yellowfin.c                    |   28 ++++++++++++-------
- include/net/pkt_sched.h                    |    4 +-
- net/core/netpoll.c                         |    5 +++
- net/ipv6/af_inet6.c                        |    4 ++-
- net/llc/af_llc.c                           |    1 +
- net/mac80211/key.c                         |   28 ++++++++++---------
- net/netfilter/xt_quota.c                   |    2 +-
- net/sched/sch_api.c                        |    8 +++---
- net/sched/sch_cbq.c                        |   23 +++++++++-------
- 21 files changed, 117 insertions(+), 80 deletions(-)
-ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+-- 
+Dmitry
