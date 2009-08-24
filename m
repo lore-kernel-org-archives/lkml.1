@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbZHXIVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752012AbZHXIXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751997AbZHXIVj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZHXIVi
+	id S1752012AbZHXIXW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZHXIXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:21:38 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33934 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751731AbZHXIVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:21:38 -0400
-X-Authenticated: #2360897
-X-Provags-ID: V01U2FsdGVkX1+2rZtNGTi2sXug/n3ImMyvkforUH9a95JxcE1iYx
-	eaD7cnj83NLLU0
-Date: Mon, 24 Aug 2009 10:21:49 +0200
-From: Bernhard Walle <bernhard.walle@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Amerigo Wang <amwang@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org, nhorman@redhat.com,
-       ebiederm@xmission.com, andi@firstfloor.org, fenghua.yu@intel.com,
-       kamezawa.hiroyu@jp.fujitsu.com, avorontsov@ru.mvista.com
-Subject: Re: [Patch 5/8] ia64: implement crashkernel=auto
-Message-ID: <20090824082148.GA16457@mail1.bwalle.de>
-References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
- <20090821065729.4855.47860.sendpatchset@localhost.localdomain>
- <20090821172407.d3a5cd2b.akpm@linux-foundation.org>
- <20090822111816.GA12281@elte.hu>
- <4A91F57D.10708@redhat.com>
- <20090824074318.GB2424@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824074318.GB2424@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.61
+	Mon, 24 Aug 2009 04:23:21 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46542 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751692AbZHXIXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 04:23:21 -0400
+Date: Mon, 24 Aug 2009 18:23:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: linux-next: manual merge of the tip tree with the s390 tree
+Message-Id: <20090824182315.85210a5a.sfr@canb.auug.org.au>
+In-Reply-To: <20090824081723.GA4798@osiris.boeblingen.de.ibm.com>
+References: <20090824170119.57cf4f59.sfr@canb.auug.org.au>
+	<20090824081723.GA4798@osiris.boeblingen.de.ibm.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__24_Aug_2009_18_23_15_+1000_nDPVFqBMXYOraf3k"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2009-08-24 09:43]:
-> * Amerigo Wang <amwang@redhat.com> wrote:
-> >
-> > The reason that I kept 2ULL<<30 instead of 1ULL<<31 is that '1<<30' is  
-> > exactly 1G, so 2ULL<<30 can be easily read as 2G. ;)
-> 
-> i have no trouble reading 1ULL<<31 as 2G ;-) OTOH, the logic and 
-> pattern of the comparisons (especially without the comment) looked 
-> odd at first sight, until i noticed this.
+--Signature=_Mon__24_Aug_2009_18_23_15_+1000_nDPVFqBMXYOraf3k
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Why not just something like
+Hi Heiko,
 
-    #define KBYTE(x)  ((x)*1024ULL)
-    #define MBYTE(x)  ((x)*1024ULL*1024)
-    #define GBYTE(x)  ((x)*1024ULL*1024*1024) 
-    #define TBYTE(x)  ((x)*1024ULL*1024*1024*1024)
+On Mon, 24 Aug 2009 10:17:23 +0200 Heiko Carstens <heiko.carstens@de.ibm.co=
+m> wrote:
+>
+> I reverted the sched_clock_base_cc rename. The merge conflict
+> should be gone as soon as Martin pushes a new tree out.
 
-I find GBYTE(2) much easier to read than 1ULL<<31. Honestly, I would
-add a comment '/* 2G */' if I would write 1ULL<<31 in own code.
+Thanks.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-But I'm of course not one of that super kernel hackers. ;-)
+--Signature=_Mon__24_Aug_2009_18_23_15_+1000_nDPVFqBMXYOraf3k
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Regards,
-Bernhard
+iEYEARECAAYFAkqSTfMACgkQjjKRsyhoI8zofQCfQhwrvL31IUVFhHuvSAYPXLsB
+c2oAn0ArVaTbygXqZrvwdD6iCWFiVvoP
+=Ofpg
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__24_Aug_2009_18_23_15_+1000_nDPVFqBMXYOraf3k--
