@@ -1,106 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752137AbZHXI5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139AbZHXI5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752137AbZHXI5g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZHXI5f
+	id S1752139AbZHXI5k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZHXI5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:57:35 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:49857 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752092AbZHXI5e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:57:34 -0400
-Date: Mon, 24 Aug 2009 17:57:36 +0900 (JST)
-Message-Id: <20090824.175736.112614790.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: [PATCH 6/8] blkio-cgroup-v11: The document of blkio-cgroup
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090824.175712.189718197.ryov@valinux.co.jp>
-References: <20090824.175501.71097896.ryov@valinux.co.jp>
-	<20090824.175526.104043252.ryov@valinux.co.jp>
-	<20090824.175712.189718197.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 24 Aug 2009 04:57:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:37281 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752113AbZHXI5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 04:57:37 -0400
+Date: Mon, 24 Aug 2009 18:57:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 24
+Message-Id: <20090824185730.7d89ecbe.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__24_Aug_2009_18_57_30_+1000_nbypop2wQ2r/H8VT"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The document of blkio-cgroup.
+--Signature=_Mon__24_Aug_2009_18_57_30_+1000_nbypop2wQ2r/H8VT
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
-Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+Hi all,
 
----
- Documentation/cgroups/00-INDEX  |    2 +
- Documentation/cgroups/blkio.txt |   49 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 51 insertions(+)
+Changes since 20090821:
 
-Index: linux-2.6.31-rc7/Documentation/cgroups/00-INDEX
-===================================================================
---- linux-2.6.31-rc7.orig/Documentation/cgroups/00-INDEX
-+++ linux-2.6.31-rc7/Documentation/cgroups/00-INDEX
-@@ -16,3 +16,5 @@ memory.txt
- 	- Memory Resource Controller; design, accounting, interface, testing.
- resource_counter.txt
- 	- Resource Counter API.
-+blkio.txt
-+	- Block I/O Tracking; description, interface and examples.
-Index: linux-2.6.31-rc7/Documentation/cgroups/blkio.txt
-===================================================================
---- /dev/null
-+++ linux-2.6.31-rc7/Documentation/cgroups/blkio.txt
-@@ -0,0 +1,49 @@
-+Block I/O Cgroup
-+
-+1. Overview
-+
-+Using this feature the owners of any type of I/O can be determined.
-+This allows dm-ioband to control block I/O bandwidth even when it is
-+accepting delayed write requests. dm-ioband can find the cgroup of
-+each request. It is also for possible that others working on I/O
-+bandwidth throttling to use this functionality to control asynchronous
-+I/O with a little enhancement.
-+
-+2. Setting up blkio-cgroup
-+
-+The following kernel config options are required.
-+
-+CONFIG_CGROUPS=y
-+CONFIG_CGROUP_BLKIO=y
-+
-+Selecting the options for the cgroup memory subsystem is also recommended
-+as it makes it possible to give some I/O bandwidth and memory to a selected
-+cgroup to control delayed write requests. The amount of dirty pages is
-+limited within the cgroup even if the allocated bandwidth is narrow.
-+
-+CONFIG_RESOURCE_COUNTERS=y
-+CONFIG_CGROUP_MEM_RES_CTLR=y
-+
-+3. User interface
-+
-+3.1 Mounting the cgroup filesystem
-+
-+First, mount the cgroup filesystem in order to enable observation and
-+modification of the blkio-cgroup settings.
-+
-+# mount -t cgroup -o blkio none /cgroup
-+
-+3.2 The blkio.id file
-+
-+After mounting the cgroup filesystem the blkio.id file will be visible
-+in the cgroup directory. This file contains a unique ID number for
-+each cgroup. When an I/O operation starts, blkio-cgroup sets the
-+page's ID number on the page cgroup. The cgroup of I/O can be
-+determined by retrieving the ID number from the page cgroup, because
-+the page cgroup is associated with the page which is involved in the
-+I/O.
-+
-+4. Contact
-+
-+Linux Block I/O Bandwidth Control Project
-+http://sourceforge.net/projects/ioband/
+New tree: kconfig
+
+This tree fails to build for powerpc allyesconfig (due to a TOC overflow
+problem in the final link).
+
+The configfs tree lost its conflict.
+
+The nfs tree lost its boot failure.
+
+The kconfig tree gained a conflict against the kbuild tree.
+
+The rr tree gained a conflict against Linus' tree.
+
+The voltage tree gained a build failure so I used the version from
+next-20090821.
+
+The suspend tree lost its conflict.
+
+The tip tree gained a conflict against the s390 tree, and also a build
+failure for which I reverted a commit.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 141 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+CONFLICT (content): Merge conflict in arch/powerpc/include/asm/mmu-book3e.h
+CONFLICT (content): Merge conflict in arch/powerpc/include/asm/tlb.h
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_sync.h
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
+m.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+355.h
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+644x.h
+Merging quota/for_next
+Merging kbuild/master
+Merging kconfig/for-next
+CONFLICT (content): Merge conflict in scripts/extract-ikconfig
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in include/linux/cpumask.h
+Merging mmc/next
+Merging input/next
+CONFLICT (content): Merge conflict in drivers/base/platform.c
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/regulator/Kconfig
+$ git reset --hard HEAD^
+Merging refs/next/20090821/voltage
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+CONFLICT (content): Merge conflict in drivers/char/agp/uninorth-agp.c
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-4430sdp.c
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/s390/kernel/time.c
+CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in kernel/fork.c
+CONFLICT (content): Merge conflict in kernel/trace/trace.h
+Merging oprofile/for-next
+CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
+[master f2be015] Revert "perf_counter: powerpc: Support the anonimized kern=
+el callchain bits"
+Merging edac-amd/for-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+CONFLICT (content): Merge conflict in include/linux/topology.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+Merging sfi/sfi-test
+CONFLICT (content): Merge conflict in arch/x86/include/asm/io_apic.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/boot.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/apic/io_apic.c
+CONFLICT (content): Merge conflict in drivers/acpi/internal.h
+CONFLICT (content): Merge conflict in drivers/acpi/tables.c
+CONFLICT (content): Merge conflict in include/linux/acpi.h
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/tty
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
+d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
+l/VirtualEthernetLinux.c left in tree.
+$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
+Merging scsi-post-merge/master
+
+--Signature=_Mon__24_Aug_2009_18_57_30_+1000_nbypop2wQ2r/H8VT
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqSVfoACgkQjjKRsyhoI8xRCACfco5ynF1+g6eqZsuVG/7bUlYh
+79YAn1EiE9i11E8k7MIvnknLdJTT/Qgb
+=qoZf
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__24_Aug_2009_18_57_30_+1000_nbypop2wQ2r/H8VT--
