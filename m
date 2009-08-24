@@ -1,175 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbZHXS2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZHXS16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753255AbZHXS2G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 14:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZHXS2D
+	id S1753203AbZHXS16 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 14:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZHXS15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 14:28:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38011 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753176AbZHXS17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 14:27:59 -0400
-Date: Mon, 24 Aug 2009 20:27:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Zachary Amsden <zach@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Xiao Guangrong <xiaooguangrong@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: reservetop fix disables mem=
-Message-ID: <20090824182713.GB9785@elte.hu>
-References: <Pine.LNX.4.64.0908241736520.32764@sister.anvils> <4A92D029.8090807@kernel.org>
+	Mon, 24 Aug 2009 14:27:57 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:57654 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753102AbZHXS14 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 14:27:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=dbzQkPMYnfPYNffGqGKPDltXMTgKuEA8g6gCxasZr03BXLcJS+L1d9xmMe0YoW9Onj
+         CIWJJKbebPIfJmbDfEBx1Iir4/TvKyceDllo0zg61mNEnNwTA13R4lPk45heKp0TD+BZ
+         BY2+NzycbLveLVOvz0ktY0PkU6kGQ6UKYg1Vo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A92D029.8090807@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4A92D7D4.7020807@vflare.org>
+References: <200908241007.47910.ngupta@vflare.org>
+	 <84144f020908241033l4af09e7h9caac47d8d9b7841@mail.gmail.com>
+	 <4A92D35F.50604@vflare.org>
+	 <84144f020908241108o4d9d6e38wba7806977b8b6073@mail.gmail.com>
+	 <4A92D7D4.7020807@vflare.org>
+Date: Mon, 24 Aug 2009 21:27:57 +0300
+X-Google-Sender-Auth: 0d59b3509737a809
+Message-ID: <84144f020908241127vc8dafa4l340d000097cf5548@mail.gmail.com>
+Subject: Re: [PATCH 1/4] compcache: xvmalloc memory allocator
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: ngupta@vflare.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-mm-cc@laptop.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yinghai@kernel.org> wrote:
-
-> Hugh Dickins wrote:
-> > I find the "mem=" boot parameter disabled in today's linux-next:
-> > reverting the tip commit below fixes that.
-> > 
-> > Hugh
-> > 
-> > From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> > Date: Thu, 20 Aug 2009 12:23:11 +0000 (+0800)
-> > Subject: x86: Fix system crash when loading with "reservetop" parameter
-> > X-Git-Url: http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fmingo%2Flinux-2.6-x86.git;a=commitdiff_plain;h=8126dec32738421afa362114337331337b4be17f
-> > 
-> > x86: Fix system crash when loading with "reservetop" parameter
-> > 
-> > The system will die if the kernel is booted with "reservetop"
-> > parameter, in present code, parse "reservetop" parameter after
-> > early_ioremap_init(), and some function still use
-> > early_ioremap() after it.
-> > 
-> > The problem is, "reservetop" parameter can modify
-> > 'FIXADDR_TOP', then the virtual address got by early_ioremap()
-> > is base on old 'FIXADDR_TOP', but the page mapping is base on
-> > new 'FIXADDR_TOP', it will occur page fault, and the IDT is not
-> > prepare yet, so, the system is dead.
-> > 
-> > So, put parse_early_param() in the front of
-> > early_ioremap_init() in this patch.
-> > 
-> > Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> > Cc: yinghai@kernel.org
-> > Cc: Andrew Morton <akpm@linux-foundation.org>
-> > LKML-Reference: <4A8D402F.4080805@cn.fujitsu.com>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
-> > 
-> > diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> > index 63f32d2..02643cc 100644
-> > --- a/arch/x86/kernel/setup.c
-> > +++ b/arch/x86/kernel/setup.c
-> > @@ -711,6 +711,11 @@ void __init setup_arch(char **cmdline_p)
-> >  	printk(KERN_INFO "Command line: %s\n", boot_command_line);
-> >  #endif
-> >  
-> > +	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
-> > +	*cmdline_p = command_line;
-> > +
-> > +	parse_early_param();
-> > +
-> >  	/* VMI may relocate the fixmap; do this before touching ioremap area */
-> >  	vmi_init();
-> >  
-> > @@ -793,11 +798,6 @@ void __init setup_arch(char **cmdline_p)
-> >  #endif
-> >  #endif
-> >  
-> > -	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
-> > -	*cmdline_p = command_line;
-> > -
-> > -	parse_early_param();
-> > -
-> >  #ifdef CONFIG_X86_64
-> >  	check_efer();
-> >  #endif
-> 
-> yes, that patch will break other built-in command too.
-> 
-> need drop that patch.
-
-done. Was nervous about the patch already:
-
-  http://lkml.org/lkml/2009/8/21/127
-
-> also the problem was caused by vmi patch, and that commit should 
-> be reverted.
+On Mon, Aug 24, 2009 at 9:11 PM, Nitin Gupta<ngupta@vflare.org> wrote:
+>> Is the name rzmalloc() too similar to kzalloc() which stands for
+>> zeroing allocator, though? I think I suggested
+>> ramzswap_alloc()/ramzswap_free() in the past to avoid confusion. I'd
+>> rather go with that if we can't come up with a nice generic name that
+>> stands for alloc_part_of_page_including_highmem().
 >
-> commit ae8d04e2ecbb233926860e9ce145eac19c7835dc
-> Author: Zachary Amsden <zach@vmware.com>
-> Date:   Sat Dec 13 12:36:58 2008 -0800
-> 
->     x86 Fix VMI crash on boot in 2.6.28-rc8
->     
->     VMI initialiation can relocate the fixmap, causing early_ioremap to
->     malfunction if it is initialized before the relocation.  To fix this,
->     VMI activation is split into two phases; the detection, which must
->     happen before setting up ioremap, and the activation, which must happen
->     after parsing early boot parameters.
->     
->     This fixes a crash on boot when VMI is enabled under VMware.
->     
->     Signed-off-by: Zachary Amsden <zach@vmware.com>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index 9d5674f..bdec76e 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -794,6 +794,9 @@ void __init setup_arch(char **cmdline_p)
->         printk(KERN_INFO "Command line: %s\n", boot_command_line);
->  #endif
->  
-> +       /* VMI may relocate the fixmap; do this before touching ioremap area */
-> +       vmi_init();
-> +
->         early_cpu_init();
->         early_ioremap_init();
->  
-> @@ -880,13 +883,8 @@ void __init setup_arch(char **cmdline_p)
->         check_efer();
->  #endif
->  
-> -#if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
-> -       /*
-> -        * Must be before kernel pagetables are setup
-> -        * or fixmap area is touched.
-> -        */
-> -       vmi_init();
-> -#endif
-> +       /* Must be before kernel pagetables are setup */
-> +       vmi_activate();
->  
->         /* after early param, so could get panic from serial */
->         reserve_early_setup_data();
-> 
-> 
-> and according to
-> http://lkml.org/lkml/2008/12/10/388
-> http://lkml.org/lkml/2008/12/10/456
-> 
-> Zachary should split reserve_top_address() to two functions... 
-> before sending that patch to Linus
+> rzs_malloc()/rzs_free() ?
 
-mind looking at this yourself if interested? Zachary has not been 
-active for quite some time.
-
-	Ingo
+I am not sure what we gain from the shorter and more cryptic "rzs"
+prefix compared to "ramzswap" but yeah, it's less likely to be
+confused with kzalloc() so I'm okay with that.
