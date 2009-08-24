@@ -1,186 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751617AbZHXGAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624AbZHXGBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751617AbZHXGAH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 02:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbZHXGAG
+	id S1751624AbZHXGBm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 02:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZHXGBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 02:00:06 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:49940 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbZHXGAG (ORCPT
+	Mon, 24 Aug 2009 02:01:42 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49171 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751480AbZHXGBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 02:00:06 -0400
-Message-ID: <4A922BF6.4010607@ct.jp.nec.com>
-Date: Mon, 24 Aug 2009 14:58:14 +0900
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] fix race copy_process() vs de_thread()
-References: <4A9210A4.4010108@ct.jp.nec.com> <20090824141141.0893a2c0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090824141141.0893a2c0.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 24 Aug 2009 02:01:41 -0400
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+From: Peter Zijlstra <peterz@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A9214E3.2070807@cn.fujitsu.com>
+References: <4A9214E3.2070807@cn.fujitsu.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Mon, 24 Aug 2009 08:01:00 +0200
+Message-Id: <1251093660.7538.119.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Mon, 24 Aug 2009 13:01:40 +0900
-> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+On Mon, 2009-08-24 at 12:19 +0800, Li Zefan wrote:
+> If the correspoding module is unloaded before ftrace_profile_disable()
+> is called, event->profile_disable() won't be called, which can
+> cause oops:
+> 
+>   # insmod trace-events-sample.ko
+>   # perf record -f -a -e sample:foo_bar sleep 3 &
+>   # sleep 1
+>   # rmmod trace_events_sample
+>   # insmod trace-events-sample.ko
+>   OOPS!
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+
+
+Hrmm, feel fragile, why don't we check if all a modules tracepoints are
+unused on unload?
+
+> ---
+>  kernel/trace/trace_event_profile.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
+> index 11ba5bb..55a25c9 100644
+> --- a/kernel/trace/trace_event_profile.c
+> +++ b/kernel/trace/trace_event_profile.c
+> @@ -5,6 +5,7 @@
+>   *
+>   */
 >  
->> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->> ---
->>  kernel/fork.c |   12 ++++++++++++
->>  1 files changed, 12 insertions(+), 0 deletions(-)
->>
->> diff --git a/kernel/fork.c b/kernel/fork.c
->> index 3ffa10f..be6c5b5 100644
->> --- a/kernel/fork.c
->> +++ b/kernel/fork.c
->> @@ -882,6 +882,9 @@ static void cleanup_signal(struct task_struct *tsk)
->>  {
->>  	struct signal_struct *sig = tsk->signal;
->>  
->> +	if (!sig)
->> +		return;
->> +
->>  	atomic_dec(&sig->live);
->>  
->>  	if (atomic_dec_and_test(&sig->count))
->> @@ -1230,6 +1233,15 @@ static struct task_struct *copy_process(unsigned long clone_flags,
->>   	 */
->>  	recalc_sigpending();
->>  	if (signal_pending(current)) {
->> +		/* If there is any task waiting for the group exit, notify it */
->> +		if ((clone_flags & CLONE_THREAD) &&
->> +		    p->signal->group_exit_task) {
->> +			atomic_dec(&p->signal->live);
->> +			atomic_dec(&p->signal->count);
->> +			if (atomic_read(&p->signal->count) == p->signal->notify_count)
->> +				wake_up_process(p->signal->group_exit_task);
->> +			p->signal = NULL;
->> +		}
->>  		spin_unlock(&current->sighand->siglock);
->>  		write_unlock_irq(&tasklist_lock);
->>  		retval = -ERESTARTNOINTR;
-> 
-> I'm not sure whehter I catch the issue correctly but, shouldn't we encapsulate
-> this check in cleanup_signal() ?
-
-Ah, you're right. clone_process() may fail several reasons and failures after
-copy_signal() will cause this issue.
-
-> 
-> like...
-> 
-> static void cleanup_signal(struct task_struct *tsk)
-> {
->         struct signal_struct *sig = tsk->signal;
-> 	sighand = rcu_dereference(tsk->sighand);
+> +#include <linux/module.h>
+>  #include "trace.h"
 >  
->         spin_lock(&sighand->siglock);
->         if (sig->group_exit_task && atomic_read(&sig->count) == sig->notify_count)
->  		wake_up_process(sig->group_exit_task);
-> 	spin_unlock(&sighand->siglock);
-> 
-> 	atomic_dec(&sig->live);
-> 	if (!atomic_dec_and_test(&sig->count))
-> 		 __cleanup_signal(sig);
-> }
-> 
-> 
-> BTW, why sig->xxx members in "signal" struct is guarded by lock in "sighand"
-> struct ??
-
-I don't know.
-
-Update version is below.
-
-Thanks,
-Hiroshi
-
-========
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-
-There is a race between de_thread() and copy_process().
-When a thread is during execve and another thread is during clone, a exec-ing
-thread may be hung up in de_thread() waiting other threads are finished.
-The root cause is that cleanup_signal() which is called when fork() failed
-doesn't cause wake up the waiting thread at de_thread(), because there is no
-check signal->count.
-
-We need the check signal->group_exit_task and signal->notify_count.
-
-Here is a reproducer, it may generate a thread which never die.
-
-void *null_thread(void *p)
-{
-	for (;;)
-		sleep(1);
-
-	return NULL;
-}
-
-void *exec_thread(void *p)
-{
-	execl("/bin/true", "/bin/true", NULL);
-
-	return null_thread(p);
-}
-
-int main(int argc, char **argv)
-{
-	for (;;) {
-		pid_t pid;
-		int ret, status;
-
-		pid = fork();
-		if (pid < 0)
-			break;
-
-		if (!pid) {
-			pthread_t tid;
-
-			pthread_create(&tid, NULL, exec_thread, NULL);
-			for (;;)
-				pthread_create(&tid, NULL, null_thread, NULL);
-		}
-
-		do {
-			ret = waitpid(pid, &status, 0);
-		} while (ret == -1 && errno == EINTR);
-	}
-
-	return 0;
-}
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- kernel/fork.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 3ffa10f..bc41c41 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -886,6 +886,14 @@ static void cleanup_signal(struct task_struct *tsk)
- 
- 	if (atomic_dec_and_test(&sig->count))
- 		__cleanup_signal(sig);
-+	else {
-+		/* If there is any task waiting for the group exit, notify it */
-+		spin_lock(&tsk->sighand->siglock);
-+		if (sig->group_exit_task &&
-+		    atomic_read(&sig->count) == sig->notify_count)
-+			wake_up_process(sig->group_exit_task);
-+		spin_unlock(&tsk->sighand->siglock);
-+	}
- }
- 
- static void copy_flags(unsigned long clone_flags, struct task_struct *p)
--- 
-1.6.3.3
-
+>  int ftrace_profile_enable(int event_id)
+> @@ -14,7 +15,8 @@ int ftrace_profile_enable(int event_id)
+>  
+>  	mutex_lock(&event_mutex);
+>  	list_for_each_entry(event, &ftrace_events, list) {
+> -		if (event->id == event_id && event->profile_enable) {
+> +		if (event->id == event_id && event->profile_enable &&
+> +		    try_module_get(event->mod)) {
+>  			ret = event->profile_enable(event);
+>  			break;
+>  		}
+> @@ -32,6 +34,7 @@ void ftrace_profile_disable(int event_id)
+>  	list_for_each_entry(event, &ftrace_events, list) {
+>  		if (event->id == event_id) {
+>  			event->profile_disable(event);
+> +			module_put(event->mod);
+>  			break;
+>  		}
+>  	}
