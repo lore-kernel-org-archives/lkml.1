@@ -1,156 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZHXWGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbZHXWIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753808AbZHXWGj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 18:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbZHXWGh
+	id S1753780AbZHXWIR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 18:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbZHXWIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 18:06:37 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:22682 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753791AbZHXWGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 18:06:35 -0400
-Message-ID: <4A930EB9.8030903@redhat.com>
-Date: Mon, 24 Aug 2009 18:05:45 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 24 Aug 2009 18:08:15 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:50611 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753247AbZHXWIP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 18:08:15 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 24 Aug 2009 15:08:16 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Avi Kivity <avi@redhat.com>
+cc: "Michael S. Tsirkin" <mst@redhat.com>, gleb@redhat.com,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+In-Reply-To: <4A92DC93.6030406@redhat.com>
+Message-ID: <alpine.DEB.2.00.0908241503150.7951@makko.or.mcafeemobile.com>
+References: <20090820155655.GA8764@redhat.com> <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com>
+ <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com> <4A92DC93.6030406@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <200903161426.24904.rob@landley.net> <20090323104525.GA17969@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz>
-In-Reply-To: <20090824212518.GF29763@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
->
->   
->>> I can reproduce data loss with ext3 on flashcard in about 40
->>> seconds. I'd not call that "odd event". It would be nice to handle
->>> that, but that is hard. So ... can we at least get that documented
->>> please?
->>>   
->>>       
->> Part of documenting best practices is to put down very specific things  
->> that do/don't work. What I worry about is producing too much detail to  
->> be of use for real end users.
->>     
->
-> Well, I was trying to write for kernel audience. Someone can turn that
-> into nice end-user manual.
->   
+On Mon, 24 Aug 2009, Avi Kivity wrote:
 
-Kernel people who don't do storage or file systems will still need a 
-summary - making very specific proposals based on real data and analysis 
-is useful.
->   
->> I have to admit that I have not paid enough attention to this specifics  
->> of your ext3 + flash card issue - is it the ftl stuff doing out of order  
->> IO's? 
->>     
->
-> The problem is that flash cards destroy whole erase block on unplug,
-> and ext3 can't cope with that.
->
->   
+> On 08/24/2009 09:25 PM, Davide Libenzi wrote:
+> > Indeed, the default eventfd behaviour is like, well, an event. Signaling
+> > (kernel side) or writing (userspace side), signals the event.
+> > Waiting (reading) it, will reset the event.
+> > If you use EFD_SEMAPHORE, you get a semaphore-like behavior.
+> > Events and sempahores are two widely known and used abstractions.
+> > The EFD_STATE proposed one, well, no. Not at all.
+> >    
+> 
+> There are libraries that provide notifications (or fire watches) when some
+> value changes.  They're much less frequently used than events or semaphores,
+> though.
 
-Even if you unmount the file system? Why isn't this an issue with ext2?
+There are userspace libraries that do almost everything, but you hardly 
+see things like pthread_(EFD_STATE-like)_create() or similar system 
+interfaces based on such abstraction.
+Is that really difficult to understand where I'm standing, leaving the KVM 
+hat off for a moment?
 
-Sounds like you want to suggest very specifically that journalled file 
-systems are not appropriate for low end flash cards (which seems quite 
-reasonable).
->>> _All_ flash cards (MMC, USB, SD) had the problems. You don't need to
->>> get clear grasp on trends. Those cards just don't meet ext3
->>> expectations, and if you pull them, you get data loss.
->>>   
->>>       
->> Pull them even after an unmount, or pull them hot?
->>     
->
-> Pull them hot.
->
-> [Some people try -osync to avoid data loss on flash cards... that will
-> not do the trick. Flashcard will still kill the eraseblock.]
->   
 
-Pulling hot any device will cause data loss for recent data loss, even 
-with ext2 you will have data in the page cache, right?
->   
->>>> Nothing is perfect. It is still a trade off between storage 
->>>> utilization  (how much storage we give users for say 5 2TB drives), 
->>>> performance and  costs (throw away any disks over 2 years old?).
->>>>     
->>>>         
->>> "Nothing is perfect"?! That's design decision/problem in raid5/ext3. I
->>> believe that should be at least documented. (And understand why ZFS is
->>> interesting thing).
->>>   
->>>       
->> Your statement is overly broad - ext3 on a commercial RAID array that  
->> does RAID5 or RAID6, etc has no issues that I know of.
->>     
->
-> If your commercial RAID array is battery backed, maybe. But I was
-> talking Linux MD here.
->   
 
-Many people in the real world who use RAID5 (for better or worse) use 
-external raid cards or raid arrays, so you need to be very specific.
->   
->>> And I still use my zaurus with crappy DRAM.
->>>
->>> I would not trust raid5 array with my data, for multiple
->>> reasons. The fact that degraded raid5 breaks ext3 assumptions should
->>> really be documented.
->>>       
->> Again, you say RAID5 without enough specifics.  Are you pointing just at  
->> MD RAID5 on S-ATA? Hardware RAID cards? A specific commercial RAID5 
->> vendor?
->>     
->
-> Degraded MD RAID5 on anything, including SATA, and including
-> hypothetical "perfect disk".
->   
-
-Degraded is one faulted drive while MD is doing a rebuild? And then you 
-hot unplug it or power cycle? I think that would certainly cause failure 
-for ext2 as well (again, you would lose any data in the page cache).
->   
->>> The papers show failures in "once a year" range. I have "twice a
->>> minute" failure scenario with flashdisks.
->>>
->>> Not sure how often "degraded raid5 breaks ext3 atomicity" would bite,
->>> but I bet it would be on "once a day" scale.
->>>
->>> We should document those.
->>>       
->> Documentation is fine with sufficient, hard data....
->>     
->
-> Degraded MD RAID5 does not work by design; whole stripe will be
-> damaged on powerfail or reset or kernel bug, and ext3 can not cope
-> with that kind of damage. [I don't see why statistics should be
-> neccessary for that; the same way we don't need statistics to see that
-> ext2 needs fsck after powerfail.]
-> 									Pavel
->   
-What you are describing is a double failure and RAID5 is not double 
-failure tolerant regardless of the file system type....
-
-I don't want to be overly negative since getting good documentation is 
-certainly very useful. We just need to be document things correctly 
-based on real data.
-
-Ric
+- Davide
 
 
