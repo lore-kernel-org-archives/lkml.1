@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbZHXJG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbZHXJMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752005AbZHXJG4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 05:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbZHXJG4
+	id S1752095AbZHXJMs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 05:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZHXJMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 05:06:56 -0400
-Received: from relay.atmel.no ([80.232.32.139]:62842 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbZHXJGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 05:06:55 -0400
-Date: Mon, 24 Aug 2009 11:06:50 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       AVR32 Linux Kernel <kernel@avr32linux.org>
-Subject: Re: [GIT PULL] AVR32 update for 2.6.31
-Message-ID: <20090824110650.266f9d5b@hskinnemoen-d830>
-In-Reply-To: <20090824105953.0865db37@hskinnemoen-d830>
-References: <20090824105953.0865db37@hskinnemoen-d830>
-Organization: Atmel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 24 Aug 2009 05:12:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44721 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbZHXJMr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 05:12:47 -0400
+Subject: Re: [PATCH 0/6] Lazy workqueues
+From: Peter Zijlstra <peterz@infradead.org>
+To: Junio C Hamano <junio@pobox.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, benh@kernel.crashing.org, htejun@gmail.com,
+       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk
+In-Reply-To: <7veir1lh2c.fsf@alter.siamese.dyndns.org>
+References: <1250763604-24355-1-git-send-email-jens.axboe@oracle.com>
+	 <1250769861.8282.182.camel@twins> <20090820120858.GJ12579@kernel.dk>
+	 <1250770571.8282.186.camel@twins> <7vfxbj1car.fsf@alter.siamese.dyndns.org>
+	 <20090824080429.GC12579@kernel.dk>
+	 <7veir1lh2c.fsf@alter.siamese.dyndns.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Mon, 24 Aug 2009 11:11:07 +0200
+Message-Id: <1251105067.7538.147.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen <haavard.skinnemoen@atmel.com> wrote:
-> Please pull
+On Mon, 2009-08-24 at 02:03 -0700, Junio C Hamano wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
 > 
->   git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git avr32-arch
+> > OK that's at least something, looking forward to being able to prune
+> > that argument from my scripts.
+> 
+> Ahahh.
+> 
+> An option everybody will want to pass but is prone to be forgotten and
+> hard to type from the command line is one thing, but if you are scripting
+> in order to reuse the script over and over, that is a separate story.  Is
+> losing an option from your script really the goal of this fuss?
+> 
+> In any case, you not need to wait for a new version nor a patch at all for
+> that goal.  You can simply add
+> 
+> [sendemail]
+> 	chainreplyto = no
+> 
+> to your .git/config (or $HOME/.gitconfig).  Both your script and your
+> command line invocation will default not to create deep threads with the
+> setting.
 
-Hmm...make that
+For me its about getting the default right, because lots of people
+simply use git-send-email without scrips, and often .gitconfig gets lost
+or simply doesn't get carried around the various development machines.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git master
-
-For some reason, git request-pull got it wrong...probably because I
-pushed out an additional patch to avr32-arch which didn't make it all
-the way to git.kernel.org before I generated the pull request.
-
-Haavard
+Also, it stop every new person mailing patches from having to be told to
+flip that setting.
