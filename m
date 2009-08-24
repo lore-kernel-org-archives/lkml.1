@@ -1,46 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751248AbZHXB4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751232AbZHXB5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751248AbZHXB4J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 23 Aug 2009 21:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbZHXB4H
+	id S1751232AbZHXB5a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 23 Aug 2009 21:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZHXB53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 23 Aug 2009 21:56:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60870
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751212AbZHXB4E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 23 Aug 2009 21:56:04 -0400
-Date: Sun, 23 Aug 2009 18:56:17 -0700 (PDT)
-Message-Id: <20090823.185617.36449822.davem@davemloft.net>
-To: jirislaby@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       acme@ghostprotocols.net
-Subject: Re: [PATCH 1/1] NET: llc, zero sockaddr_llc struct
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1250967535-30692-1-git-send-email-jirislaby@gmail.com>
-References: <1250967535-30692-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 23 Aug 2009 21:57:29 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:4301 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751137AbZHXB52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 23 Aug 2009 21:57:28 -0400
+Message-ID: <4A91F401.3010904@redhat.com>
+Date: Mon, 24 Aug 2009 09:59:29 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, nhorman@redhat.com, ebiederm@xmission.com,
+       andi@firstfloor.org, mingo@elte.hu, bernhard.walle@gmx.de,
+       fenghua.yu@intel.com, kamezawa.hiroyu@jp.fujitsu.com,
+       avorontsov@ru.mvista.com
+Subject: Re: [Patch 5/8] ia64: implement crashkernel=auto
+References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>	<20090821065729.4855.47860.sendpatchset@localhost.localdomain> <20090821172407.d3a5cd2b.akpm@linux-foundation.org>
+In-Reply-To: <20090821172407.d3a5cd2b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
-Date: Sat, 22 Aug 2009 20:58:55 +0200
+Andrew Morton wrote:
+> On Fri, 21 Aug 2009 02:55:04 -0400
+> Amerigo Wang <amwang@redhat.com> wrote:
+>
+>   
+>> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
+>> +#define ARCH_HAS_DEFAULT_CRASH_SIZE
+>> +static inline
+>> +unsigned long long arch_default_crash_size(unsigned long long total_size)
+>> +{
+>> +	if (total_size >= 4ULL<<30 && total_size < 12ULL<<30)
+>> +		return 1ULL<<28;
+>> +	else if (total_size >= 12ULL<<30 && total_size < 128ULL<<30)
+>> +		return 1ULL<<29;
+>> +	else if (total_size >= 128ULL<<30 && total_size < 256ULL<<30)
+>> +		return 3ULL<<28;
+>> +	else if (total_size >= 256ULL<<30 && total_size < 378ULL<<30)
+>> +		return 1ULL<<30;
+>> +	else if (total_size >= 318ULL<<30 && total_size < 512ULL<<30)
+>> +		return 3ULL<<29;
+>> +	else if (total_size >= 512ULL<<30 && total_size < 768ULL<<30)
+>> +		return 2ULL<<30;
+>> +	else if (total_size >= 768ULL<<30)
+>> +		return 3ULL<<30;
+>> +}
+>> +#include <asm-generic/kexec.h>
+>> +#endif
+>>     
+>
+> a) Why on earth is this inlined?
+>
+> b) Please consider making arch_default_crash_size() a __weak
+>    function.  You'll probably find the result to be pleasing.
+>   
 
-> sllc_arphrd member of sockaddr_llc might not be set. Zero sllc
-> before copying it to the above layers.
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Good idea!
 
-I know it seems arbitrary, but could you please memset() on the
-structure instead of using an empty initializer so that it's
-consistent with how all other ->getname() implementations deal with
-this issue?
+> c) If we can't use __weak then please don't add
+>    ARCH_HAS_DEFAULT_CRASH_SIZE.  Instead do this trick:
+>
+>
+> 	#ifndef arch_default_crash_size
+> 	static inline unsigned long long arch_default_crash_size(unsigned long long total_size)
+> 	{
+> 		...
+> 	}
+> 	#define arch_default_crash_size arch_default_crash_size
+> 	#endif
+>
+> 	because i) it's good to standardise on something and ii) one less
+> 	symbol gets added to the kernel.
+>   
 
-It's easier to audit that way.
+Yes, agree. I will try b) which seems to be better than c).
 
-Thanks.
+> d) why is asm-generic/kexec.h only included in asm/kexec.h if
+>    CONFIG_KEXEC_AUTO_RESERVE happened to be defined?  That makes no
+>    sense - there may be a multitude of reasons why asm/kexec.h wants
+>    to include asm-generic/kexec.h.
+>
+>   
+Hmm, yes? kernel/kexec.c includes linux/kexec.h which already includes 
+asm/kexec.h....
+
+
+
