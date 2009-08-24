@@ -1,63 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbZHXTxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZHXT5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbZHXTxg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 15:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbZHXTxe
+	id S1753425AbZHXT5g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 15:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbZHXT5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 15:53:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45056 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753252AbZHXTxe (ORCPT
+	Mon, 24 Aug 2009 15:57:33 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:42183 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753358AbZHXT5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 15:53:34 -0400
-Date: Mon, 24 Aug 2009 12:52:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Kevin Hilman <khilman@deeprootsystems.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Russell King <rmk@arm.linux.org.uk>,
-       Tony Lindgren <tony@atomide.com>, Nicolas Pitre <nico@cam.org>,
-       linux-kernel@vger.kernel.org, linux-arm@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: ARM subarch submissions for next merge window
-In-Reply-To: <877hwtnxdx.fsf@deeprootsystems.com>
-Message-ID: <alpine.LFD.2.01.0908241249200.3158@localhost.localdomain>
-References: <877hwtnxdx.fsf@deeprootsystems.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 24 Aug 2009 15:57:32 -0400
+Date: Mon, 24 Aug 2009 12:27:11 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       stern@owland.harvard.edu, akpm@linux-foundation.org, apw@canonical.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, peterz@infradead.org
+Subject: Re: [PATCH] Add kerneldoc for flush_scheduled_work()
+Message-Id: <20090824122711.33b0691e.randy.dunlap@oracle.com>
+In-Reply-To: <20090824190653.GA2197@cmpxchg.org>
+References: <13a78aa7-dd27-49d9-8164-d6e802bd4796@default>
+	<20090813145106.GA25333@cmpxchg.org>
+	<1250175853.3901.34.camel@mulgrave.site>
+	<4A843D66.1060407@xenotime.net>
+	<20090813180856.GB26020@cmpxchg.org>
+	<4A85ABBB.5060806@oracle.com>
+	<20090818090419.GA3730@cmpxchg.org>
+	<20090819222357.GA12821@cmpxchg.org>
+	<4A8C88F3.1000609@oracle.com>
+	<20090824190653.GA2197@cmpxchg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4A92F064.00D6:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 24 Aug 2009 12:06:54 -0700 (PDT) Johannes Weiner wrote:
 
-
-On Mon, 24 Aug 2009, Kevin Hilman wrote:
+> On Wed, Aug 19, 2009 at 04:21:23PM -0700, Randy Dunlap wrote:
+> > Johannes Weiner wrote:
+> > >> Yeah, it's the terminating **/ which matches $doc_cont.  I will try to
+> > >> send an updated version this evening.
+> > > 
+> > > I got completely rid of the extra re.  Just parse a non-empty content
+> > > line following the declaration purpose immediately as continuation.
+> > > 
+> > > It survives make htmldocs, the scsi_exit_devinfo() doc looks okay and
+> > > for stuff that had continuation lines before, it does what's expected
+> > > - e.g. for the doc of kernel/sched.c::init_sd_power_savings_stats().
+> > > 
+> > > It behaves differently for broken docs
+> > > (mm/page_alloc.c::calculate_zone_inactive_ratio e.g.), but that
+> > > shouldn't matter.
+> > 
+> > Right, no problem on that one (for which I sent Andrew a patch some
+> > time ago).
+> > 
+> > > I didn't find any other misbehaviour when checking random samples.
+> > 
+> > It's very close.  I only checked/compared one docbook: mac80211.
+> > There is some kind of paragraph end handling difference.
+> > 
+> > In processing include/net/mac80211.h, struct ieee80211_tx_info,
+> > without the patch, it ends with:
+> > 
+> > This structure is placed in skb->cb for three uses: (1) mac80211 TX control - mac80211 tells the driver what to do (2) driver internal use (if applicable) (3) TX status information - driver tells mac80211 what happened
+> > 
+> > The TX control's sta pointer is only valid during the ->tx call, it may be NULL.
+> > 
+> > and with the patch, those 2 paragraphs are run together:
+> > 
+> > This structure is placed in skb->cb for three uses: (1) mac80211 TX control - mac80211 tells the driver what to do (2) driver internal use (if applicable) (3) TX status information - driver tells mac80211 what happened The TX control's sta pointer is only valid during the ->tx call, it may be NULL.
 > 
-> After some discussions on linux-arm-kernel during the last merge
-> window, a suggestion from Alan Cox[1], and a willingness to try it
-> from Russell[2], some ARM subarch maintainers would like to push our
-> platform-specific code directly to you for the next merge window.
+> Yeah, I forgot to actually collect empty lines in the documentation
+> bodies when changing that conditional.  Stupid.  I fixed it in the
+> attached version.
+
+Thanks.  I had spent some time on it but I hadn't quite found the magical
+incantation to preserve the exact same output as without the patch, but your
+patch now does that.
+
+I'll add this to my kernel-doc quilt patch series.
+
+Oh, one question below...
+
+> ---
+> From: Johannes Weiner <hannes@cmpxchg.org>
+> Subject: kernel-doc: allow multi-line declaration purpose descriptions
 > 
-> Any changes that affect common ARM code will still be pushed via
-> Russell, only our platform-specific code will be submitted directly.
+> Allow the short description after symbol name and dash in a kernel-doc
+> comment to span multiple lines, e.g. like this:
 > 
-> Also our platform code is still posted and reviewed on
-> linux-arm-kernel as well as being included in linux-next. Only the
-> merge path will change slightly.
+> 	/**
+> 	 * unmap_mapping_range - unmap the portion of all mmaps in the
+> 	 *	specified address_space corresponding to the specified
+> 	 *	page range in the underlying file.
+> 	 * @mapping: the address space containing mmaps to be unmapped.
+> 	 * ...
+> 	 */
 > 
-> Any problems with this?
+> The short description ends with a parameter description, an empty line
+> or the end of the comment block.
+> 
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> ---
+> 
+> diff --git a/Documentation/kernel-doc-nano-HOWTO.txt b/Documentation/kernel-doc-nano-HOWTO.txt
+> index 4d04572..348b9e5 100644
+> --- a/Documentation/kernel-doc-nano-HOWTO.txt
+> +++ b/Documentation/kernel-doc-nano-HOWTO.txt
+> @@ -66,7 +66,9 @@ Example kernel-doc function comment:
+>   * The longer description can have multiple paragraphs.
+>   */
+>  
+> -The first line, with the short description, must be on a single line.
+> +The short description following the subject can span multiple lines
+> +and ends with an @argument description, an empty line or the end of
+> +the comment block.
+>  
+>  The @argument descriptions must begin on the very next line following
+>  this opening short function description line, with no intervening
+> diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+> index b52d340..d8b3641 100755
+> --- a/scripts/kernel-doc
+> +++ b/scripts/kernel-doc
+> @@ -1995,6 +1995,7 @@ sub process_file($) {
+>      my $identifier;
+>      my $func;
+>      my $descr;
+> +    my $in_purpose = 0;
+>      my $initial_section_counter = $section_counter;
+>  
+>      if (defined($ENV{'SRCTREE'})) {
+> @@ -2044,6 +2045,7 @@ sub process_file($) {
+>  		    $descr =~ s/\s*$//;
+>  		    $descr =~ s/\s+/ /;
+>  		    $declaration_purpose = xml_escape($descr);
+> +		    $in_purpose = 1;
+>  		} else {
+>  		    $declaration_purpose = "";
+>  		}
+> @@ -2090,6 +2092,7 @@ sub process_file($) {
+>  		}
+>  
+>  		$in_doc_sect = 1;
+> +		$in_purpose = 0;
+>  		$contents = $newcontents;
+>  		if ($contents ne "") {
+>  		    while ((substr($contents, 0, 1) eq " ") ||
+> @@ -2119,11 +2122,19 @@ sub process_file($) {
+>  	    } elsif (/$doc_content/) {
+>  		# miguel-style comment kludge, look for blank lines after
+>  		# @parameter line to signify start of description
+> -		if ($1 eq "" &&
+> -			($section =~ m/^@/ || $section eq $section_context)) {
+> -		    dump_section($file, $section, xml_escape($contents));
+> -		    $section = $section_default;
+> -		    $contents = "";
+> +		if ($1 eq "") {
+> +		    if ($section =~ m/^@/ || $section eq $section_context) {
+> +			dump_section($file, $section, xml_escape($contents));
+> +			$section = $section_default;
+> +			$contents = "";
+> +		    } else {
+> +			$contents .= "\n";
+> +		    }
+> +		    $in_purpose = 0;
+> +		} elsif ($in_purpose == 1) {
+> +		    # Continued declaration purpose
+> +		    chomp($declaration_purpose);
+> +		    $declaration_purpose .= " " . $1;
 
-I don't have any issues with it, as long as the subarch trees are clean 
-and clear.
+Why shouldn't this be:
+		    $declaration_purpose .= " " . xml_escape($1);
+?
 
-Part of that is the normal "git cleanliness" issue in general (ie I don't 
-want to see ugly back-merges of my random kernel-of-the-day or see that 
-something was rebased just five minutes ago and clearly had no testing), 
-but the other part is obviously that if there then ends up being 
-complaints where people end up stepping on each others toes, I would want 
-a top-level maintainer to step in.
 
-But I guess that as long as it's clearly just platform-specific files, 
-that won't be a problem.
+>  		} else {
+>  		    $contents .= $1 . "\n";
+>  		}
 
-		Linus
+
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
