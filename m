@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZHXIVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbZHXIVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751956AbZHXIVA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 04:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbZHXIU7
+	id S1751997AbZHXIVj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 04:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZHXIVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 04:20:59 -0400
-Received: from mga09.intel.com ([134.134.136.24]:42232 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751829AbZHXIU6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 04:20:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,264,1249282800"; 
-   d="scan'208";a="544151028"
-From: "Wang, Shane" <shane.wang@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <andi@firstfloor.org>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>
-Date: Mon, 24 Aug 2009 16:20:05 +0800
-Subject: RE: [PATCH] intel_txt: fix the build errors of intel_txt patch on
- non-X86 platforms
-Thread-Topic: [PATCH] intel_txt: fix the build errors of intel_txt patch on
- non-X86 platforms
-Thread-Index: AcoihBpVxMaOWNEVRG+wL0/wgDA7vgCDyh/g
-Message-ID: <037F493892196B458CD3E193E8EBAD4F01EC3ABB56@pdsmsx502.ccr.corp.intel.com>
-References: <4A4ACA66.2000706@intel.com> <20090817154055.GA12985@elte.hu>
- <20090817155348.GA2254@elte.hu>
- <037F493892196B458CD3E193E8EBAD4F01EC3AB3B2@pdsmsx502.ccr.corp.intel.com>
- <20090820161038.GA29994@basil.fritz.box> <4A8E9B3C.5070604@intel.com>
- <20090821135050.GA30346@elte.hu> <4A8EBBF6.3020505@intel.com>
- <20090821161204.GB17731@elte.hu> <4A8ED800.30901@zytor.com>
-In-Reply-To: <4A8ED800.30901@zytor.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 24 Aug 2009 04:21:38 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33934 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751731AbZHXIVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 04:21:38 -0400
+X-Authenticated: #2360897
+X-Provags-ID: V01U2FsdGVkX1+2rZtNGTi2sXug/n3ImMyvkforUH9a95JxcE1iYx
+	eaD7cnj83NLLU0
+Date: Mon, 24 Aug 2009 10:21:49 +0200
+From: Bernhard Walle <bernhard.walle@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Amerigo Wang <amwang@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org, nhorman@redhat.com,
+       ebiederm@xmission.com, andi@firstfloor.org, fenghua.yu@intel.com,
+       kamezawa.hiroyu@jp.fujitsu.com, avorontsov@ru.mvista.com
+Subject: Re: [Patch 5/8] ia64: implement crashkernel=auto
+Message-ID: <20090824082148.GA16457@mail1.bwalle.de>
+References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>
+ <20090821065729.4855.47860.sendpatchset@localhost.localdomain>
+ <20090821172407.d3a5cd2b.akpm@linux-foundation.org>
+ <20090822111816.GA12281@elte.hu>
+ <4A91F57D.10708@redhat.com>
+ <20090824074318.GB2424@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090824074318.GB2424@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.61
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> 
->> If then these should be dummy inlines - but in any case, do you
->> expect tboot to be used by non-x86 too?
->> 
+* Ingo Molnar <mingo@elte.hu> [2009-08-24 09:43]:
+> * Amerigo Wang <amwang@redhat.com> wrote:
+> >
+> > The reason that I kept 2ULL<<30 instead of 1ULL<<31 is that '1<<30' is  
+> > exactly 1G, so 2ULL<<30 can be easily read as 2G. ;)
 > 
-> It would have to be IA64 ... I can't ask Tony since he's out, but I
-> would assume it is x86-specific at this point.
-> 
-> 	-hpa
+> i have no trouble reading 1ULL<<31 as 2G ;-) OTOH, the logic and 
+> pattern of the comparisons (especially without the comment) looked 
+> odd at first sight, until i noticed this.
 
-Yes, to my knowledge, it is x86 at this point. TXT-SX is the server extension also for ia32 only.
+Why not just something like
 
-Shane
+    #define KBYTE(x)  ((x)*1024ULL)
+    #define MBYTE(x)  ((x)*1024ULL*1024)
+    #define GBYTE(x)  ((x)*1024ULL*1024*1024) 
+    #define TBYTE(x)  ((x)*1024ULL*1024*1024*1024)
 
+I find GBYTE(2) much easier to read than 1ULL<<31. Honestly, I would
+add a comment '/* 2G */' if I would write 1ULL<<31 in own code.
+
+But I'm of course not one of that super kernel hackers. ;-)
+
+
+Regards,
+Bernhard
