@@ -1,94 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZHXQHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbZHXQH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752775AbZHXQHq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 12:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZHXQHp
+	id S1752828AbZHXQH6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 12:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZHXQH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 12:07:45 -0400
-Received: from viefep15-int.chello.at ([62.179.121.35]:1305 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbZHXQHp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 12:07:45 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: perf_counters issue with enable_on_exec
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: eranian@gmail.com
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-In-Reply-To: <7c86c4470908240903m322e2d5ck7d200046b10141a3@mail.gmail.com>
-References: <7c86c4470908200649u290f2378n126442ea3a823540@mail.gmail.com>
-	 <1251121618.7538.262.camel@twins>
-	 <7c86c4470908240844u7450b13eicf4c4a466e29d701@mail.gmail.com>
-	 <7c86c4470908240903m322e2d5ck7d200046b10141a3@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 24 Aug 2009 18:06:55 +0200
-Message-Id: <1251130015.7538.310.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Aug 2009 12:07:58 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:35798 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752778AbZHXQH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 12:07:57 -0400
+Date: Mon, 24 Aug 2009 09:07:55 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/rcu] rcu: Consolidate sparse and lockdep declarations
+	in include/linux/rcupdate.h
+Message-ID: <20090824160755.GH6677@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <tip-bc33f24bdca8b6e97376e3a182ab69e6cdefa989@git.kernel.org> <20090823184202.GA20404@elte.hu> <20090823193356.GB6882@linux.vnet.ibm.com> <20090823225321.GA3976@linux.vnet.ibm.com> <20090824092836.GB25267@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090824092836.GB25267@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-24 at 18:03 +0200, stephane eranian wrote:
+On Mon, Aug 24, 2009 at 11:28:36AM +0200, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Sun, Aug 23, 2009 at 12:33:56PM -0700, Paul E. McKenney wrote:
+> > > On Sun, Aug 23, 2009 at 08:42:02PM +0200, Ingo Molnar wrote:
+> > > > 
+> > > > * tip-bot for Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > > 
+> > > > > Commit-ID:  bc33f24bdca8b6e97376e3a182ab69e6cdefa989
+> > > > > Gitweb:     http://git.kernel.org/tip/bc33f24bdca8b6e97376e3a182ab69e6cdefa989
+> > > > > Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > > > AuthorDate: Sat, 22 Aug 2009 13:56:47 -0700
+> > > > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > > > CommitDate: Sun, 23 Aug 2009 10:32:37 +0200
+> > > > > 
+> > > > > rcu: Consolidate sparse and lockdep declarations in include/linux/rcupdate.h
+> > > > 
+> > > > -tip testing found a spontaneous reboot crash, which i 
+> > > > bisected back to this commit:
+> > > > 
+> > > >   bc33f24bdca8b6e97376e3a182ab69e6cdefa989 is first bad commit
+> > > > 
+> > > > the reboot happens during the ftrace syscall tracepoints 
+> > > > self-test:
+> > > > 
+> > > > [   34.618832] Testing event sys_exit_set_robust_list: OK
+> > > > [   34.635511] Testing event sys_enter_get_robust_list: OK
+> > > > [   34.652164] Testing event sys_exit_get_robust_list: OK
+> > > > [   34.668844] Testing event sys_enter_futex: OK
+> > > > [   34.685495] Testing event sys_exit_futex: OK
+> > > > [   34.702170] Testing event lock_acquire: [instant reboot]
+> > > > 
+> > > > There's no log message - just a reboot - which signals some 
+> > > > severe crash - perhaps some locking related infinite 
+> > > > recursion or something like that?
+> > > 
+> > > Pretty impressive for having mostly moved RCU's lockdep-related
+> > > declarations from one file to another...  :-/
+> > > 
+> > > Looking into it, probably a typo on my part.
+> > 
+> > I rechecked this several times, and don't see how anything else 
+> > should have noticed this patch.  That said, that self-test is 
+> > rather amazing code, so...
+> 
+> What do you think about the infinite recursion bug that Lai 
+> Jiangshan's found in that patch? (sharp eyes really!) That might 
+> explain the crash -tip testing found.
 
-> >>  2) enable_on_exec on !leader counters is undefined
-> >
-> > then fail it.
+Indeed!!!
 
-Or make it work :-)
+My thought is to send you a temporary patch stack fixing that bug
+(and supplying a CPU-hotplug fix), allowing your testing to progress
+(but defeating bisection if using ftrace).
 
-> >>  3) there is something fishy non the less
-> >>
-> > True.
-> >
-> >>
-> >> 1. you fork() then create a counter group in both the parent and the
-> >> child without sync, then read the parent group. This obviously doesn't
-> >> do what is expected. See attached proglet for a better version.
-> >>
-> > I have modified the program based on your changes. See new version attached.
-> >
-> >> 2. enable_on_exec only works on leaders, Paul, was that intended?
-> >>
-> > All events in a group are scheduled together. If one event is not enabled
-> > in a group, then the group is not dispatched. Setting enable_on_exec
-> > just on leader makes sense. Then to enable the group on exec, you
-> > enabled all events but the leader. The enable_on_exec will enable
-> > the leader on exec and the group will be ready for dispatch. That's
-> > how it should work in my mind.
-> >
-> >
-> > As you indicated the issue is with the timing information and I think
-> > it is not related to enable_on_exec. It is more related to the fact
-> > that to enable a group with a single ioctl() you enable ALL BUT the
-> > leader. But that means that the time_enabled for the !leader is
-> > ticking. Thus scaling won't be as expected yet it is correct
-> > given what happens internally.
-> >
-> > I think there needs to be a distinction between 'enabled immediately
-> > but cannot run because group is not totally enabled' and 'cannot run
-> > because the group has been multiplexed out yet all could be dispatched
-> > because all events were dispatched'. In the former, it seems you don't
-> > want time_enabled to tick, while in the latter you do. In other words,
-> > time_enabled ticks for each event if the group is 'dispatch-able' (or
-> > runnable in your terminology) otherwise it does not. time_enabled reflects
-> > the fact that the group could run but did not have access to the PMU
-> > resource because of contention with other groups.
-> >
-> In other words, I think timing_enabled is measuring the wrong thing.
-> It should be instead called time_runnable and it should measure the
-> time during which the event is runnable, i.e, its group is runnable. That
-> means the event (group) could be dispatched if PMU was "free".
+Then I would create a new patch stack applying the fix to the bugs Lai
+Jiangshan found to commit bc33f24, rebasing, retesting, and suppling a
+this new stack to replace commit bc33f24 and later in tip/core/rcu.
 
-I tend to agree with you, but I'm hoping Paul will speak since he wrote
-both the time accounting and the enable_on_exec thing.
+Seem reasonable?
 
+							Thanx, Paul
