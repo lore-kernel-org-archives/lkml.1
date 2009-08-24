@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbZHXOPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbZHXO2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617AbZHXOPl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 10:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbZHXOPk
+	id S1752611AbZHXO2P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 10:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZHXO2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 10:15:40 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:59428 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752542AbZHXOPj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 10:15:39 -0400
-Date: Mon, 24 Aug 2009 23:15:39 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 05/12] update FTRACE_SYSCALL_MAX
-Message-ID: <20090824141539.GA19978@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Jason Baron <jbaron@redhat.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-	rostedt@goodmis.org, peterz@infradead.org,
-	mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-	mbligh@google.com, lizf@cn.fujitsu.com
-References: <cover.1249932670.git.jbaron@redhat.com> <7fca984182691041c0d139eccd080f82045f86f7.1249932670.git.jbaron@redhat.com> <20090811110023.GC4938@nowhere> <20090824134151.GB18974@linux-sh.org> <20090824140629.GA2656@redhat.com>
+	Mon, 24 Aug 2009 10:28:13 -0400
+Received: from ns1.coraid.com ([12.51.113.4]:52376 "EHLO coraid.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752482AbZHXO2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 10:28:13 -0400
+From: Ed Cashin <ecashin@coraid.com>
+X-Mailer: nedmail
+Date: Mon, 24 Aug 2009 10:27:13 -0400
+To: apw@canonical.com, ecashin@coraid.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/1] aoe: ensure we initialise the request_queue correctly
+Message-ID: <9ab0e087296715d764071d4d39542985@coraid.com>
+In-Reply-To: <1250872904-10993-1-git-send-email-apw@canonical.com>
+References: <1250872904-10993-1-git-send-email-apw@canonical.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824140629.GA2656@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 10:06:29AM -0400, Jason Baron wrote:
-> On Mon, Aug 24, 2009 at 10:41:52PM +0900, Paul Mundt wrote:
-> > I hope you can clarify what the meaning of this is supposed to be
-> > exactly. Is this number supposed to be the last usable syscall, or is it
-> > supposed to be the equivalent of NR_syscalls?
-> > 
+On Fri Aug 21 12:41:59 EDT 2009, apw@canonical.com wrote:
+> We have been seeing oopses in very recent kernels when using the AOE driver.
+> When attempting to mount remote devices we get a warning from the kobject
+> layer:
 > 
-> I am using as the equivalent of NR_syscalls.
+>   [ 2645.959090] kobject '<NULL>' (ffff880059ca22c0): tried to add
+> 	an uninitialized object, something is seriously wrong.
 > 
-NR_syscalls has always been the total number of system calls, not the
-last one.
+> Looking at the driver it seems to have always had an embedded request_queue
+> and it is this that is throwing the error.  It appears the intent is
+> tha these would be allocated and released using helpers, and the lack of
+> these leaves the object uninitialised and throws the error.  It is unclear
+> how this could ever have worked.
 
-> > Presently on SH we have this as NR_syscalls - 1, while on s390 I see it
-> > is treated as NR_syscalls directly. s390 opencodes the NR_syscalls
-> > directly and so presently blows up in -next due to a missing
-> > FTRACE_SYSCALL_MAX definition:
-> > 
-> > 	http://kisskb.ellerman.id.au/kisskb/buildresult/1120523/
-> > 
-> > I was in the process of fixing that up when I noticed this difference.
-> > x86 seems to also treat this as NR_syscalls - 1, but that looks to me
-> > like there is an off-by-1 in arch_init_ftrace_syscalls() causing the last
-> > syscall to be skipped?
-> 
-> I don't see how its used as 'NR_syscalls - 1' on x86,
-> arch_init_ftrace_syscalls() does:
-> 
->         for (i = 0; i < FTRACE_SYSCALL_MAX; i++) {
->                 meta = find_syscall_meta(psys_syscall_table[i]);
->                 syscalls_metadata[i] = meta;
->         }
-> 
-> So the last syscall should not be skipped.
-> 
+This aoe driver does not handle I/O requests but provides its own
+make_request function to blk_queue_make_request and handles bios
+instead.
 
-In today's -next:
+The reason I was interested in a git bisect is that I suspect that
+before nobody was interested in the request_queue in the aoe driver
+until recent changes to kobject code.  A couple people have indicated
+that they'd be doing such a git bisect, so if anybody has done that,
+please Cc me.
 
-#ifdef CONFIG_X86_64
-# define FTRACE_SYSCALL_MAX     299
-#else
-# define FTRACE_SYSCALL_MAX     337
-#endif
-
-unistd_32.h:
-
-#define __NR_reflinkat          337
-
-unistd_64.h:
-
-#define __NR_reflinkat          299
-
-The first syscall starts at 0, but I don't see how this last syscall is
-handled. If there were a __NR_syscalls 300 and 338 respectively, that
-would seem to do the right thing. Or am I missing something?
+-- 
+  Ed
