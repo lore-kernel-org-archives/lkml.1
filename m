@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbZHXVrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbZHXVuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753663AbZHXVrW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 17:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZHXVrU
+	id S1753733AbZHXVuH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 17:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbZHXVuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 17:47:20 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:11485 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752885AbZHXVrU (ORCPT
+	Mon, 24 Aug 2009 17:50:05 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:41055 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753646AbZHXVuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 17:47:20 -0400
-X-Trace: 248066021/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.101.200/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.101.200
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEAHSnkkpPRWXI/2dsb2JhbACBU9VohBoF
-X-IronPort-AV: E=Sophos;i="4.44,267,1249254000"; 
-   d="scan'208";a="248066021"
-Date: Mon, 24 Aug 2009 22:46:44 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Nitin Gupta <ngupta@vflare.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-mm-cc@laptop.org
-Subject: Re: [PATCH 1/4] compcache: xvmalloc memory allocator
-In-Reply-To: <4A930313.9070404@vflare.org>
-Message-ID: <Pine.LNX.4.64.0908242224530.10534@sister.anvils>
-References: <200908241007.47910.ngupta@vflare.org>
- <84144f020908241033l4af09e7h9caac47d8d9b7841@mail.gmail.com>
- <4A92EBB4.1070101@vflare.org> <Pine.LNX.4.64.0908242132320.8144@sister.anvils>
- <4A930313.9070404@vflare.org>
+	Mon, 24 Aug 2009 17:50:04 -0400
+Message-ID: <4A930AE0.2070007@euromail.se>
+Date: Mon, 24 Aug 2009 23:49:20 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: nicolas@boichat.ch, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hwmon: applesmc: restore keyboard backlight on resume
+References: <1250976832-9801-1-git-send-email-rydberg@euromail.se> <20090824140717.e7011b8c.akpm@linux-foundation.org>
+In-Reply-To: <20090824140717.e7011b8c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.196.134
+X-Scan-Result: No virus found in message 1MfhPo-0007sC-5B.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1MfhPo-0007sC-5B a5d643df28eaa78e43da949cb245504c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009, Nitin Gupta wrote:
-> On 08/25/2009 02:09 AM, Hugh Dickins wrote:
-> > On Tue, 25 Aug 2009, Nitin Gupta wrote:
-> > > On 08/24/2009 11:03 PM, Pekka Enberg wrote:
-> > > >
-> > > > What's the purpose of passing PFNs around? There's quite a lot of PFN
-> > > > to struct page conversion going on because of it. Wouldn't it make
-> > > > more sense to return (and pass) a pointer to struct page instead?
-> > >
-> > > PFNs are 32-bit on all archs
-> >
-> > Are you sure?  If it happens to be so for all machines built today,
-> > I think it can easily change tomorrow.  We consistently use unsigned long
-> > for pfn (there, now I've said that, I bet you'll find somewhere we don't!)
-> >
-> > x86_64 says MAX_PHYSMEM_BITS 46 and ia64 says MAX_PHYSMEM_BITS 50 and
-> > mm/sparse.c says
-> > unsigned long max_sparsemem_pfn = 1UL<<  (MAX_PHYSMEM_BITS-PAGE_SHIFT);
-> >
+Andrew Morton wrote:
+> On Sat, 22 Aug 2009 23:33:52 +0200
+> "Henrik Rydberg" <rydberg@euromail.se> wrote:
 > 
-> For PFN to exceed 32-bit we need to have physical memory > 16TB (2^32 * 4KB).
-> So, maybe I can simply add a check in ramzswap module load to make sure that
-> RAM is indeed < 16TB and then safely use 32-bit for PFN?
+>> On resume from suspend, the driver currently resets the logical
+>> state as if it was brought up from halt. This patch uses the
+>> dev_pm_ops.resume method to synchronize the hardware with the
+>> memorized logical state, bringing back the backlight to the level
+>> prior to suspend.
+> 
+> What are the runtime effects of this change?
 
-Others know much more about it, but I believe that with sparsemem you
-may be handling vast holes in physical memory: so a relatively small
-amount of physical memory might in part be mapped with gigantic pfns.
+The patch has zero impact on a running system, only suspend/resume
+behavior is affected.
 
-So if you go that route, I think you'd rather have to refuse pages
-with oversized pfns (or refuse configurations with any oversized pfns),
-than base it upon the quantity of physical memory in the machine.
+Precondition: Suspend computer with keyboard backlight brightness
+greater than zero.
 
-Seems ugly to me, as it did to Pekka; but I can understand that you're
-very much in the business of saving memory, so doubling the size of some
-of your tables (I may be oversimplifying) would be repugnant to you.
+Before patch: On resume, the backlight stays off.
 
-You could add a CONFIG option, rather like CONFIG_LBDAF, to switch on
-u64-sized pfns; but you'd still have to handle what happens when the
-pfn is too big to fit in u32 without that option; and if distros always
-switch the option on, to accomodate the larger machines, then there may
-have been no point to adding it.
+After patch: On resume, the backlight is set to the brightness prior to
+suspend.
 
-I'm undecided.
+There is one side-effect of the patch: the accelerometer no longer
+re-calibrates on resume, but keeps the calibration from before suspend.
+I consider this a good change, but it is after all a change.
 
-Hugh
+Henrik
+
