@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbZHXPhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbZHXPhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761AbZHXPhA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 11:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbZHXPg6
+	id S1752781AbZHXPhI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 11:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZHXPhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 11:36:58 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56588 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752690AbZHXPg5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 11:36:57 -0400
-Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
- cpumask on multi-node processors
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090820134604.GD29327@alberich.amd.com>
-References: <20090820131243.GO29327@alberich.amd.com>
-	 <20090820134604.GD29327@alberich.amd.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 24 Aug 2009 17:36:16 +0200
-Message-Id: <1251128176.7538.301.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 24 Aug 2009 11:37:06 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:52608 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752754AbZHXPg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 11:36:59 -0400
+Date: Mon, 24 Aug 2009 08:36:58 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+Subject: Re: [PATCH -tip] v3 Renamings to increase RCU clarity.
+Message-ID: <20090824153658.GD6677@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090727181401.GA14120@linux.vnet.ibm.com> <4A923EA5.2080903@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A923EA5.2080903@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
-> The correct mask that describes core-siblings of an processor
-> is topology_core_cpumask. See topology adapation patches, especially
-> http://marc.info/?l=linux-kernel&m=124964999608179
+On Mon, Aug 24, 2009 at 03:17:57PM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
+[ . . . ]
 
-argh, violence, murder kill.. this is the worst possible hack and you're
-extending it :/
-
-> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> ---
->  arch/x86/kernel/smpboot.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> > +static inline void rcu_read_lock_sched_notrace(void)
+> > +{
+> > +	preempt_disable_notrace();
+> > +}
 > 
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index f797214..f39bb2c 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -446,7 +446,7 @@ const struct cpumask *cpu_coregroup_mask(int cpu)
->  	 * And for power savings, we return cpu_core_map
->  	 */
->  	if (sched_mc_power_savings || sched_smt_power_savings)
-> -		return cpu_core_mask(cpu);
-> +		return topology_core_cpumask(cpu);
->  	else
->  		return c->llc_shared_map;
->  }
+> It need be marked "notrace". Sometimes a function marked "inline"
+> may not be inlined when it is compiled.
+> 
+> Lai.
+
+Good eyes, and thank you -very- much!!!  I doubt that I would have ever
+spotted this on my own, as I was just assuming that the compiler would
+see the preempt_disable_notrace() directly in all cases...
+
+							Thanx, Paul
