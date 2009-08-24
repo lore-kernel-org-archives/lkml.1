@@ -1,102 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZHXOBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbZHXOHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752593AbZHXOBa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 10:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbZHXOB0
+	id S1752595AbZHXOHy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 10:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZHXOHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 10:01:26 -0400
-Received: from daemonizer.de ([87.230.16.230]:49325 "EHLO daemonizer.de"
+	Mon, 24 Aug 2009 10:07:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:2806 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752451AbZHXOBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 10:01:25 -0400
-X-Greylist: delayed 2698 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Aug 2009 10:01:25 EDT
-From: Maximilian Engelhardt <maxi@daemonizer.de>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Logic for SNAT persistent handling introduced in 2.6.30 is inverted
-Date: Mon, 24 Aug 2009 15:16:12 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc6; KDE/4.2.4; i686; ; )
+	id S1752468AbZHXOHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 10:07:51 -0400
+Date: Mon, 24 Aug 2009 10:06:29 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Paul Mundt <lethal@linux-sh.org>, Frederic Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com
+Subject: Re: [PATCH 05/12] update FTRACE_SYSCALL_MAX
+Message-ID: <20090824140629.GA2656@redhat.com>
+References: <cover.1249932670.git.jbaron@redhat.com> <7fca984182691041c0d139eccd080f82045f86f7.1249932670.git.jbaron@redhat.com> <20090811110023.GC4938@nowhere> <20090824134151.GB18974@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart8693016.B4IW8bsRdp";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908241516.16544.maxi@daemonizer.de>
-X-Spam-Score: -4.0 (----)
-X-Spam-Report: No, hits=-4.0 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00 autolearn=ham version=3.2.3 
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.4 AWL AWL: From: address is in the auto white-list
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090824134151.GB18974@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart8693016.B4IW8bsRdp
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, Aug 24, 2009 at 10:41:52PM +0900, Paul Mundt wrote:
+> > On Mon, Aug 10, 2009 at 04:52:35PM -0400, Jason Baron wrote:
+> > > update FTRACE_SYSCALL_MAX to the current number of syscalls
+> > > 
+> > > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > > 
+> > > ---
+> > >  arch/x86/include/asm/ftrace.h |    4 ++--
+> > >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
+> > > index bd2c651..7113654 100644
+> > > --- a/arch/x86/include/asm/ftrace.h
+> > > +++ b/arch/x86/include/asm/ftrace.h
+> > > @@ -30,9 +30,9 @@
+> > >  
+> > >  /* FIXME: I don't want to stay hardcoded */
+> > >  #ifdef CONFIG_X86_64
+> > > -# define FTRACE_SYSCALL_MAX     296
+> > > +# define FTRACE_SYSCALL_MAX     299
+> > >  #else
+> > > -# define FTRACE_SYSCALL_MAX     333
+> > > +# define FTRACE_SYSCALL_MAX     337
+> > >  #endif
+> > 
+> > 
+> > I don't remember why we had to use a hardcoded number.
+> > Is there no way to keep being sync with the current number of
+> > syscalls? We dwant to avoid patching the kernel each time we
+> > have a new syscall :-)
+> > 
+> I hope you can clarify what the meaning of this is supposed to be
+> exactly. Is this number supposed to be the last usable syscall, or is it
+> supposed to be the equivalent of NR_syscalls?
+> 
 
-Kernel 2.6.30 introduced a patch [1] for the persistent option in the=20
-netfilter SNAT target. This is exactly what we need here so I had a quick l=
-ook=20
-at the code and noticed that the patch is wrong. The logic is simply invert=
-ed.
-The patch below fixes this.
-Also note that because of this the default behavior of the SNAT target has=
-=20
-changed since kernel 2.6.30 as it now ignores the destination IP in choosin=
-g=20
-the source IP for nating (which should only be the case if the persistent=20
-option is set).
+I am using as the equivalent of NR_syscalls.
 
-=2D-- net/ipv4/netfilter/nf_nat_core.c.orig       2009-08-24 14:44:00.00000=
-0000=20
-+0200
-+++ net/ipv4/netfilter/nf_nat_core.c    2009-08-24 14:44:43.000000000 +0200
-@@ -212,7 +212,7 @@ find_best_ips_proto(struct nf_conntrack_
-        maxip =3D ntohl(range->max_ip);
-        j =3D jhash_2words((__force u32)tuple->src.u3.ip,
-                         range->flags & IP_NAT_RANGE_PERSISTENT ?
-=2D                               (__force u32)tuple->dst.u3.ip : 0, 0);
-+                               0 : (__force u32)tuple->dst.u3.ip, 0);
-        j =3D ((u64)j * (maxip - minip + 1)) >> 32;
-        *var_ipp =3D htonl(minip + j);
- }
+> Presently on SH we have this as NR_syscalls - 1, while on s390 I see it
+> is treated as NR_syscalls directly. s390 opencodes the NR_syscalls
+> directly and so presently blows up in -next due to a missing
+> FTRACE_SYSCALL_MAX definition:
+> 
+> 	http://kisskb.ellerman.id.au/kisskb/buildresult/1120523/
+> 
+> I was in the process of fixing that up when I noticed this difference.
+> x86 seems to also treat this as NR_syscalls - 1, but that looks to me
+> like there is an off-by-1 in arch_init_ftrace_syscalls() causing the last
+> syscall to be skipped?
 
-Signed-off-by: Maximilian Engelhardt <maxi@daemonizer.de>
+I don't see how its used as 'NR_syscalls - 1' on x86,
+arch_init_ftrace_syscalls() does:
 
+        for (i = 0; i < FTRACE_SYSCALL_MAX; i++) {
+                meta = find_syscall_meta(psys_syscall_table[i]);
+                syscalls_metadata[i] = meta;
+        }
 
-Greetings,
-Maximilian Engelhardt
+So the last syscall should not be skipped.
 
-[1]=20
-http://git.eu.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dc=
-ommitdiff;h=3D98d500d66cb7940747b424b245fc6a51ecfbf005
+We should probably convert *all* the arches to be using NR_syscalls
+directly.
+
+thanks,
+
+-Jason
 
 
---nextPart8693016.B4IW8bsRdp
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iQIcBAABCgAGBQJKkpKcAAoJEIHqZH0kK9IVvL0QALs8a2z4o9DBhqVX7M+3GcaP
-Grt9b9u5c2iypxl1U2KZjfqlCxWtwEzU4WqWlaIo69SsUpA17Ymy657Ib3JQ5Ml0
-Gpvt12dvRnpNTLzWQjL79ihUEQ3tlYOT+FBabk+D2df5AlGeu3pnvGmR1V8RlcdW
-AGZTswx7/kpn/y1vtYW7FriaA4/WiHJZR3ooYIkTbrWSG0lrHbYHx95dAOs9sSdt
-8Sy+cSM0LDY1wARYlC7BIEcY/UnVlQPOuRyPBVelHCdv7Wm+0K5wwGy+yLyF43fF
-N53tgpfTA+BhtWIWB6uUQoJS+FumudMBl8G+4Sk4A5rnd0DM2qPud7eyQCNwhehD
-287C1ZMDO9N0H7FTx2qc337CIDL1kSMoimmgfhNJxA8SrVToRNH+OjOQuNx3/Esa
-ejYGW2jjY6AFG3d/5GAhBmryWpJAjZlaqCtOMOzMD/fMhpJvD26i/xhx0cStDz/a
-3JiDfLJ3G4TbE7xEHjS6TVFuh/zzMXz0zRLkvWckOwWo8QNRFoTL+q5m9EAt//Kl
-ZC+gTcz5/AoUQaROeuL7SM7CIyhxgXdit9RLG2CZ0I7x+RbPzzYyq5N75TuFec0o
-rA/lwia3ed/ENEMNP0wxX8k8ULCuY07fGybg5HHAZhJnXuUiadNibyGMrbMp4if1
-vOQuGLMM8+cCdgoQGs/f
-=jr5j
------END PGP SIGNATURE-----
-
---nextPart8693016.B4IW8bsRdp--
