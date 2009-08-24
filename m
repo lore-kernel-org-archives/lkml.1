@@ -1,111 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbZHXQEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZHXQHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbZHXQEJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 12:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZHXQED
+	id S1752775AbZHXQHq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 12:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZHXQHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 12:04:03 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:22534 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752703AbZHXQEB convert rfc822-to-8bit (ORCPT
+	Mon, 24 Aug 2009 12:07:45 -0400
+Received: from viefep15-int.chello.at ([62.179.121.35]:1305 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbZHXQHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 12:04:01 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Jens Axboe <jens.axboe@oracle.com>, Eric Dumazet <eric.dumazet@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date: Mon, 24 Aug 2009 16:03:59 +0000
-Subject: RE: [PATCH] cciss: memory leak in cciss_init_one()
-Thread-Topic: [PATCH] cciss: memory leak in cciss_init_one()
-Thread-Index: AcokkQ+7slNgN9blRH+O1koydUPRSQAQ10og
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A778869529DACD7@GVW0547EXC.americas.hpqcorp.net>
-References: <4A7961DE.1090702@gmail.com> <4A91058F.3050708@gmail.com>
- <20090824080115.GA12579@kernel.dk>
-In-Reply-To: <20090824080115.GA12579@kernel.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Mon, 24 Aug 2009 12:07:45 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: perf_counters issue with enable_on_exec
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: eranian@gmail.com
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+In-Reply-To: <7c86c4470908240903m322e2d5ck7d200046b10141a3@mail.gmail.com>
+References: <7c86c4470908200649u290f2378n126442ea3a823540@mail.gmail.com>
+	 <1251121618.7538.262.camel@twins>
+	 <7c86c4470908240844u7450b13eicf4c4a466e29d701@mail.gmail.com>
+	 <7c86c4470908240903m322e2d5ck7d200046b10141a3@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 24 Aug 2009 18:06:55 +0200
+Message-Id: <1251130015.7538.310.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Mon, 2009-08-24 at 18:03 +0200, stephane eranian wrote:
 
-> -----Original Message-----
-> From: Jens Axboe [mailto:jens.axboe@oracle.com] 
-> Sent: Monday, August 24, 2009 3:01 AM
-> To: Eric Dumazet
-> Cc: Andrew Morton; Miller, Mike (OS Dev); linux kernel; 
-> stable@kernel.org; FUJITA Tomonori
-> Subject: Re: [PATCH] cciss: memory leak in cciss_init_one()
-> 
-> On Sun, Aug 23 2009, Eric Dumazet wrote:
-> > Andrew, I originally sent this 18 days ago and got no reply 
-> yet, maybe 
-> > could you get the baby ?
-> 
-> I'll add it for 2.6.32.
-> 
+> >>  2) enable_on_exec on !leader counters is undefined
+> >
+> > then fail it.
 
-I guess I'm missing something. Where is the leak?
+Or make it work :-)
 
--- mikem
+> >>  3) there is something fishy non the less
+> >>
+> > True.
+> >
+> >>
+> >> 1. you fork() then create a counter group in both the parent and the
+> >> child without sync, then read the parent group. This obviously doesn't
+> >> do what is expected. See attached proglet for a better version.
+> >>
+> > I have modified the program based on your changes. See new version attached.
+> >
+> >> 2. enable_on_exec only works on leaders, Paul, was that intended?
+> >>
+> > All events in a group are scheduled together. If one event is not enabled
+> > in a group, then the group is not dispatched. Setting enable_on_exec
+> > just on leader makes sense. Then to enable the group on exec, you
+> > enabled all events but the leader. The enable_on_exec will enable
+> > the leader on exec and the group will be ready for dispatch. That's
+> > how it should work in my mind.
+> >
+> >
+> > As you indicated the issue is with the timing information and I think
+> > it is not related to enable_on_exec. It is more related to the fact
+> > that to enable a group with a single ioctl() you enable ALL BUT the
+> > leader. But that means that the time_enabled for the !leader is
+> > ticking. Thus scaling won't be as expected yet it is correct
+> > given what happens internally.
+> >
+> > I think there needs to be a distinction between 'enabled immediately
+> > but cannot run because group is not totally enabled' and 'cannot run
+> > because the group has been multiplexed out yet all could be dispatched
+> > because all events were dispatched'. In the former, it seems you don't
+> > want time_enabled to tick, while in the latter you do. In other words,
+> > time_enabled ticks for each event if the group is 'dispatch-able' (or
+> > runnable in your terminology) otherwise it does not. time_enabled reflects
+> > the fact that the group could run but did not have access to the PMU
+> > resource because of contention with other groups.
+> >
+> In other words, I think timing_enabled is measuring the wrong thing.
+> It should be instead called time_runnable and it should measure the
+> time during which the event is runnable, i.e, its group is runnable. That
+> means the event (group) could be dispatched if PMU was "free".
 
-> > 
-> > Thanks
-> > 
-> > [PATCH] cciss: memory leak in cciss_init_one()
-> > 
-> > commit 22bece00dc1f28dd3374c55e464c9f02eb642876
-> > (cciss: fix regression firmware not displayed in procfs) 
-> added a small 
-> > memory leak in cciss_init_one()
-> > 
-> > Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-> > ---
-> > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c index 
-> > a52cc7f..0589dfb 100644
-> > --- a/drivers/block/cciss.c
-> > +++ b/drivers/block/cciss.c
-> > @@ -3889,7 +3889,7 @@ static int __devinit 
-> cciss_init_one(struct pci_dev *pdev,
-> >  	int j = 0;
-> >  	int rc;
-> >  	int dac, return_code;
-> > -	InquiryData_struct *inq_buff = NULL;
-> > +	InquiryData_struct *inq_buff;
-> >  
-> >  	if (reset_devices) {
-> >  		/* Reset the controller with a PCI power-cycle 
-> */ @@ -4029,6 
-> > +4029,7 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
-> >  		printk(KERN_WARNING "cciss: unable to determine 
-> firmware"
-> >  			" version of controller\n");
-> >  	}
-> > +	kfree(inq_buff);
-> >  
-> >  	cciss_procinit(i);
-> >  
-> > @@ -4045,7 +4046,6 @@ static int __devinit 
-> cciss_init_one(struct pci_dev *pdev,
-> >  	return 1;
-> >  
-> >  clean4:
-> > -	kfree(inq_buff);
-> >  	kfree(hba[i]->cmd_pool_bits);
-> >  	if (hba[i]->cmd_pool)
-> >  		pci_free_consistent(hba[i]->pdev,
-> > 
-> 
-> --
-> Jens Axboe
-> 
-> 
+I tend to agree with you, but I'm hoping Paul will speak since he wrote
+both the time accounting and the enable_on_exec thing.
+
