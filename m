@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZHXSMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZHXSQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbZHXSMI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 14:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZHXSME
+	id S1752832AbZHXSQB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 14:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZHXSP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 14:12:04 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:24722 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753200AbZHXSMD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 14:12:03 -0400
-Message-ID: <4A92D7D4.7020807@vflare.org>
-Date: Mon, 24 Aug 2009 23:41:32 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 24 Aug 2009 14:15:59 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:59635 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751724AbZHXSP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 14:15:59 -0400
+Date: Mon, 24 Aug 2009 20:16:00 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org, htejun@gmail.com,
+       bzolnier@gmail.com, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
+Subject: Re: [PATCH 4/7] libata: use lazy workqueues for the pio task
+Message-ID: <20090824181600.GR12579@kernel.dk>
+References: <1251100616-28604-1-git-send-email-jens.axboe@oracle.com> <1251100616-28604-5-git-send-email-jens.axboe@oracle.com> <4A92C081.50207@garzik.org> <20090824164214.GO12579@kernel.dk> <4A92C500.4030109@garzik.org>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-mm-cc@laptop.org
-Subject: Re: [PATCH 1/4] compcache: xvmalloc memory allocator
-References: <200908241007.47910.ngupta@vflare.org>	 <84144f020908241033l4af09e7h9caac47d8d9b7841@mail.gmail.com>	 <4A92D35F.50604@vflare.org> <84144f020908241108o4d9d6e38wba7806977b8b6073@mail.gmail.com>
-In-Reply-To: <84144f020908241108o4d9d6e38wba7806977b8b6073@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A92C500.4030109@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/24/2009 11:38 PM, Pekka Enberg wrote:
-> Hi Nitin,
+On Mon, Aug 24 2009, Jeff Garzik wrote:
+> On 08/24/2009 12:42 PM, Jens Axboe wrote:
+>> On Mon, Aug 24 2009, Jeff Garzik wrote:
+>>> No objections to the code, operationally...
+>>>
+>>> But it is disappointing that the "1 thread on UP" problem is not solved
+>>> while changing this libata area.  Is there no way to specify a minimum
+>>> lazy-thread count?
+>>>
+>>> A key problem continues to be tying to the number of CPUs, which is
+>>> quite inappropriate for libata.
+>>
+>> We'll solve that next, the first problem is reducing the per-cpu
+>> threads. Lots of places use per-cpu workqueues because that is what is
+>> available, not necessarily because it's an appropriate choice. Like the
+>> ata_wq above, it's not even a good fit.
 >
-> On Mon, Aug 24, 2009 at 8:52 PM, Nitin Gupta<ngupta@vflare.org>  wrote:
->> I am okay with renaming it to rzmalloc and compiling it with ramzswap
->> instead of as separate module.
+> Agreed + sounds great.
 >
-> Is the name rzmalloc() too similar to kzalloc() which stands for
-> zeroing allocator, though? I think I suggested
-> ramzswap_alloc()/ramzswap_free() in the past to avoid confusion. I'd
-> rather go with that if we can't come up with a nice generic name that
-> stands for alloc_part_of_page_including_highmem().
->
+> Thanks -- both for hacking libata for this, and more generally, for  
+> attacking the too-many-kthreads problem!  :)  It's just sad how many  
+> unused workqueue threads hang about, on every modern Linux box.
 
-rzs_malloc()/rzs_free() ?
+It is, it's one of those problems that's gotten totally out of hand. A
+handful of wasted threads is easily ignored, but once you are safely
+into the three digits it's just too much.
 
-Nitin
+I took a quick look at converting libata to slow-work, and it's an easy
+fit (and would solve the UP problem too). The remaining piece is a
+slow_work_enqueue_delayed(), since we do use pio task queue with a small
+delay from one path.
+
+So I hope that we can get by with slow-work with a few tweaks here and
+there, and just retain workqueues for the true performance (or
+persistent) case. The lazy workqueues is still a nice addition I think,
+since they don't hang around forever when things go idle.
+
+-- 
+Jens Axboe
+
