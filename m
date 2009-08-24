@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751518AbZHXEie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751481AbZHXEi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751518AbZHXEie (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 00:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbZHXEid
+	id S1751481AbZHXEi3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 00:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZHXEi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 00:38:33 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:43719 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436AbZHXEi2 (ORCPT
+	Mon, 24 Aug 2009 00:38:27 -0400
+Received: from mail-px0-f196.google.com ([209.85.216.196]:43063 "EHLO
+	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467AbZHXEiX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 00:38:28 -0400
+	Mon, 24 Aug 2009 00:38:23 -0400
 From: Nitin Gupta <ngupta@vflare.org>
 Reply-To: ngupta@vflare.org
-To: akpm@linux-foundation.org
-Subject: [PATCH 4/4] compcache: documentation
-Date: Mon, 24 Aug 2009 10:08:02 +0530
+To: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk
+Subject: [PATCH 3/4] compcache: send callback when swap slot is freed
+Date: Mon, 24 Aug 2009 10:07:58 +0530
 User-Agent: KMail/1.11.4 (Linux/2.6.29.6-217.2.8.fc11.x86_64; KDE/4.2.4; x86_64; ; )
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-mm-cc@laptop.org
 MIME-Version: 1.0
@@ -22,85 +22,128 @@ Content-Disposition: inline
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908241008.02184.ngupta@vflare.org>
+Message-Id: <200908241007.58273.ngupta@vflare.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Short guide on how to setup and use ramzswap.
+Currently, we have "swap discard" mechanism which sends a discard bio request
+when we find a free cluster during scan_swap_map(). This callback can come a
+long time after swap slots are actually freed.
+
+This delay in callback is a great problem when (compressed) RAM [1] is used
+as a swap device. So, this change adds a callback which is called as
+soon as a swap slot becomes free. For above mentioned case of swapping
+over compressed RAM device, this is very useful since we can immediately
+free memory allocated for this swap page.
+
+This callback does not replace swap discard support. It is called with
+swap_lock held, so it is meant to trigger action that finishes quickly.
+However, swap discard is an I/O request and can be used for taking longer
+actions.
+
+It is preferred to use this callback for ramzswap case even if discard
+mechanism could be improved such that it can be called as often as required.
+This is because, allocation of 'bio'(s) is undesirable since ramzswap always
+operates under low memory conditions (its a swap device). Also, batching of
+discard bio requests is not optimal since stale data can accumulate very
+quickly in ramzswap devices, pushing system further into low memory state.
+
+Links:
+[1] http://compcache.googlecode.com/
 
 Signed-off-by: Nitin Gupta <ngupta@vflare.org>
 ---
 
- Documentation/blockdev/00-INDEX     |    2 +
- Documentation/blockdev/ramzswap.txt |   52 +++++++++++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+), 0 deletions(-)
+ include/linux/swap.h |    5 +++++
+ mm/swapfile.c        |   33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/blockdev/00-INDEX b/Documentation/blockdev/00-INDEX
-index c08df56..c1cb074 100644
---- a/Documentation/blockdev/00-INDEX
-+++ b/Documentation/blockdev/00-INDEX
-@@ -16,3 +16,5 @@ paride.txt
- 	- information about the parallel port IDE subsystem.
- ramdisk.txt
- 	- short guide on how to set up and use the RAM disk.
-+ramzswap.txt
-+	- short guide on how to setup compressed in-memory swap device.
-diff --git a/Documentation/blockdev/ramzswap.txt b/Documentation/blockdev/ramzswap.txt
-new file mode 100644
-index 0000000..463dd2d
---- /dev/null
-+++ b/Documentation/blockdev/ramzswap.txt
-@@ -0,0 +1,52 @@
-+ramzswap: Compressed RAM based swap device
-+-------------------------------------------
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 7c15334..64796fc 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -8,6 +8,7 @@
+ #include <linux/memcontrol.h>
+ #include <linux/sched.h>
+ #include <linux/node.h>
++#include <linux/blkdev.h>
+
+ #include <asm/atomic.h>
+ #include <asm/page.h>
+@@ -20,6 +21,8 @@ struct bio;
+ #define SWAP_FLAG_PRIO_MASK	0x7fff
+ #define SWAP_FLAG_PRIO_SHIFT	0
+
++typedef void (swap_free_notify_fn) (struct block_device *, unsigned long);
 +
-+Project home: http://compcache.googlecode.com/
+ static inline int current_is_kswapd(void)
+ {
+ 	return current->flags & PF_KSWAPD;
+@@ -155,6 +158,7 @@ struct swap_info_struct {
+ 	unsigned int max;
+ 	unsigned int inuse_pages;
+ 	unsigned int old_block_size;
++	swap_free_notify_fn *swap_free_notify_fn;
+ };
+
+ struct swap_list_t {
+@@ -295,6 +299,7 @@ extern sector_t swapdev_block(int, pgoff_t);
+ extern struct swap_info_struct *get_swap_info_struct(unsigned);
+ extern int reuse_swap_page(struct page *);
+ extern int try_to_free_swap(struct page *);
++extern void set_swap_free_notify(struct block_device *, swap_free_notify_fn *);
+ struct backing_dev_info;
+
+ /* linux/mm/thrash.c */
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 8ffdc0d..d75729a 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -552,6 +552,37 @@ out:
+ 	return NULL;
+ }
+
++/*
++ * Sets callback for event when swap_map[offset] == 0
++ * i.e. page at this swap offset is no longer used.
++ */
++void set_swap_free_notify(struct block_device *bdev,
++			swap_free_notify_fn *notify_fn)
++{
++	unsigned int i;
++	struct swap_info_struct *sis;
 +
-+* Introduction
++	spin_lock(&swap_lock);
++	for (i = 0; i <= nr_swapfiles; i++) {
++		sis = &swap_info[i];
++		if (!(sis->flags & SWP_USED))
++			continue;
++		if (sis->bdev == bdev)
++			break;
++	}
 +
-+It creates RAM based block devices which can be used (only) as swap disks.
-+Pages swapped to these devices are compressed and stored in memory itself.
-+See project home for use cases, performance numbers and a lot more.
++	/* swap device not found */
++	if (i > nr_swapfiles)
++		return;
 +
-+It consists of three modules:
-+ - xvmalloc.ko: memory allocator
-+ - ramzswap.ko: virtual block device driver
-+ - rzscontrol userspace utility: to control individual ramzswap devices
++	BUG_ON(!sis || sis->swap_free_notify_fn);
++	sis->swap_free_notify_fn = notify_fn;
++	spin_unlock(&swap_lock);
 +
-+* Usage
++	return;
++}
++EXPORT_SYMBOL_GPL(set_swap_free_notify);
 +
-+Following shows a typical sequence of steps for using ramzswap.
-+
-+1) Load Modules:
-+	modprobe ramzswap NUM_DEVICES=4
-+	This creates 4 (uninitialized) devices: /dev/ramzswap{0,1,2,3}
-+	(NUM_DEVICES parameter is optional. Default: 1)
-+
-+2) Initialize:
-+	Use rzscontrol utility to configure and initialize individual
-+	ramzswap devices. Example:
-+	rzscontrol /dev/ramzswap2 --init # uses default value of disksize_kb
-+
-+	*See rzscontrol manpage for more details and examples*
-+
-+3) Activate:
-+	swapon /dev/ramzswap2 # or any other initialized ramzswap device
-+
-+4) Stats:
-+	rzscontrol /dev/ramzswap2 --stats
-+
-+5) Deactivate:
-+	swapoff /dev/ramzswap2
-+
-+6) Reset:
-+	rzscontrol /dev/ramzswap2 --reset
-+	(This frees all the memory allocated for this device).
-+
-+
-+Please report any problems at:
-+ - Mailing list: linux-mm-cc at laptop dot org
-+ - Issue tracker: http://code.google.com/p/compcache/issues/list
-+
-+Nitin Gupta
-+ngupta@vflare.org
+ static int swap_entry_free(struct swap_info_struct *p,
+ 			   swp_entry_t ent, int cache)
+ {
+@@ -583,6 +614,8 @@ static int swap_entry_free(struct swap_info_struct *p,
+ 			swap_list.next = p - swap_info;
+ 		nr_swap_pages++;
+ 		p->inuse_pages--;
++		if (p->swap_free_notify_fn)
++			p->swap_free_notify_fn(p->bdev, offset);
+ 	}
+ 	if (!swap_count(count))
+ 		mem_cgroup_uncharge_swap(ent);
