@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbZHXUiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbZHXUjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753420AbZHXUiw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 16:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZHXUiv
+	id S1753458AbZHXUjf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 16:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZHXUje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 16:38:51 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:56779 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbZHXUiv (ORCPT
+	Mon, 24 Aug 2009 16:39:34 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:12325 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752660AbZHXUje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 16:38:51 -0400
-Subject: Re: [patch 2/4 -mm] flex_array: add flex_array_clear function
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0908241323360.5574@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0908211620410.28611@chino.kir.corp.google.com>
-	 <1251128488.22398.7113.camel@nimitz>
-	 <alpine.DEB.2.00.0908241323360.5574@chino.kir.corp.google.com>
-Content-Type: text/plain
-Date: Mon, 24 Aug 2009 13:38:40 -0700
-Message-Id: <1251146320.22398.8051.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 24 Aug 2009 16:39:34 -0400
+X-Trace: 251584883/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.38.113/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.38.113
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsIEAAeXkkpQKSZx/2dsb2JhbACBU9VXhBoF
+X-IronPort-AV: E=Sophos;i="4.44,267,1249254000"; 
+   d="scan'208";a="251584883"
+Date: Mon, 24 Aug 2009 21:39:02 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Nitin Gupta <ngupta@vflare.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mm-cc@laptop.org
+Subject: Re: [PATCH 1/4] compcache: xvmalloc memory allocator
+In-Reply-To: <4A92EBB4.1070101@vflare.org>
+Message-ID: <Pine.LNX.4.64.0908242132320.8144@sister.anvils>
+References: <200908241007.47910.ngupta@vflare.org>
+ <84144f020908241033l4af09e7h9caac47d8d9b7841@mail.gmail.com>
+ <4A92EBB4.1070101@vflare.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-24 at 13:29 -0700, David Rientjes wrote:
-> On Mon, 24 Aug 2009, Dave Hansen wrote:
+On Tue, 25 Aug 2009, Nitin Gupta wrote:
+> On 08/24/2009 11:03 PM, Pekka Enberg wrote:
+> >
+> > What's the purpose of passing PFNs around? There's quite a lot of PFN
+> > to struct page conversion going on because of it. Wouldn't it make
+> > more sense to return (and pass) a pointer to struct page instead?
 > 
-> > My only worry about this is that it's largely a copy-and-paste of
-> > flex_array_put().  If we had a function that just returned a pointer to
-> > 'dst', we could use that in both cases.  
-> > 
-> > Couldn't we implement the above with just:
-> > 
-> > int flex_array_clear(struct flex_array *fa, unsigned int element_nr)
-> > {
-> > 	return flex_array_put(fa, element_nr, &empty_zero_page);
-> > }
-> > 
-> 
-> Sure, if you never increase FLEX_ARRAY_PART_SIZE.  Otherwise, doing
-> 
-> static char zero_part[FLEX_ARRAY_PART_SIZE] = {
-> 	[0 ... FLEX_ARRAY_PART_SIZE - 1] = 0
-> };
-> 
-> and using flex_array_put(fa, element_nr, &zero_part) would work although 
-> you're trading off cleaner, yet not more efficient, code at the cost of 
-> FLEX_ARRAY_PART_SIZE wasted memory and memcpy() being slower than 
-> memset().
+> PFNs are 32-bit on all archs
 
-Yeah, that's true.  How about using the get() function?
+Are you sure?  If it happens to be so for all machines built today,
+I think it can easily change tomorrow.  We consistently use unsigned long
+for pfn (there, now I've said that, I bet you'll find somewhere we don't!)
 
-int flex_array_clear(struct flex_array *fa, unsigned int element_nr)
-{
-	void *element = flex_array_get(fa, element_nr);
-	memset(element, FLEX_ARRAY_FREE, fa->element_size);
-}
+x86_64 says MAX_PHYSMEM_BITS 46 and ia64 says MAX_PHYSMEM_BITS 50 and
+mm/sparse.c says
+unsigned long max_sparsemem_pfn = 1UL << (MAX_PHYSMEM_BITS-PAGE_SHIFT);
 
-It'll keep us from having to keep around a zero'd element. 
-
-But, I guess we could also do:
-
-	struct flex_array_part *zero_part = empty_zero_page;
-
-And use a BUILD_BUG_ON(FLEX_ARRAY_PART_SIZE > PAGE_SIZE).  But the whole
-point of this was to have elements that are smaller than PAGE_SIZE.
-Having that as a constraint doesn't seem too bad. :)
-
--- Dave
-
+Hugh
