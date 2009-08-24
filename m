@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZHXO6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbZHXO6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752770AbZHXO6h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 10:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZHXO6g
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1752755AbZHXO6g (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 24 Aug 2009 10:58:36 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34968 "EHLO mx2.suse.de"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbZHXO6e
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 24 Aug 2009 10:58:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34967 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752713AbZHXO6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 10:58:30 -0400
+	id S1752716AbZHXO6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 10:58:31 -0400
 From: Jan Kara <jack@suse.cz>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-ext4@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
-       Jan Kara <jack@suse.cz>
-Subject: [PATCH] ext3: Update Kconfig description of EXT3_DEFAULTS_TO_ORDERED
-Date: Mon, 24 Aug 2009 16:58:29 +0200
-Message-Id: <1251125910-2457-2-git-send-email-jack@suse.cz>
+Cc: linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>
+Subject: [PATCH] ext3: Improve error message that changing journaling mode on remount is not possible
+Date: Mon, 24 Aug 2009 16:58:30 +0200
+Message-Id: <1251125910-2457-3-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1251125910-2457-1-git-send-email-jack@suse.cz>
 References: <1251125910-2457-1-git-send-email-jack@suse.cz>
@@ -23,72 +22,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Theodore Ts'o <tytso@mit.edu>
+This patch makes the error message about changing journaling mode on remount
+more descriptive. Some people are going to hit this error now due to commit
+bbae8bcc49bc4d002221dab52c79a50a82e7cd1f if they configure a kernel to default
+to data=writeback mode. The problem happens if they have data=ordered set for
+the root filesystem in /etc/fstab but not in the kernel command line (and they
+don't use initrd). Their filesystem then gets mounted as data=writeback by
+kernel but then their boot fails because init scripts won't be able to remount
+the filesystem rw. Better error message will hopefully make it easier for them
+to find the error in their setup and bother us less with error reports :).
 
-The old description for this configuration option was perhaps not
-completely balanced in terms of describing the tradeoffs of using a
-default of data=writeback vs. data=ordered.  Despite the fact that old
-description very strongly recomended disabling this feature, all of
-the major distributions have elected to preserve the existing 'legacy'
-default, which is a strong hint that it perhaps wasn't telling the
-whole story.
-
-This revised description has been vetted by a number of ext3
-developers as being better at informing the user about the tradeoffs
-of enabling or disabling this configuration feature.
-
-Cc: linux-ext4@vger.kernel.org
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/ext3/Kconfig |   32 +++++++++++++++++---------------
- 1 files changed, 17 insertions(+), 15 deletions(-)
+ fs/ext3/super.c |   40 +++++++++++++++++++++++++++-------------
+ 1 files changed, 27 insertions(+), 13 deletions(-)
 
-diff --git a/fs/ext3/Kconfig b/fs/ext3/Kconfig
-index fb3c1a2..522b154 100644
---- a/fs/ext3/Kconfig
-+++ b/fs/ext3/Kconfig
-@@ -29,23 +29,25 @@ config EXT3_FS
- 	  module will be called ext3.
+diff --git a/fs/ext3/super.c b/fs/ext3/super.c
+index 524b349..a8d80a7 100644
+--- a/fs/ext3/super.c
++++ b/fs/ext3/super.c
+@@ -543,6 +543,19 @@ static inline void ext3_show_quota_options(struct seq_file *seq, struct super_bl
+ #endif
+ }
  
- config EXT3_DEFAULTS_TO_ORDERED
--	bool "Default to 'data=ordered' in ext3 (legacy option)"
-+	bool "Default to 'data=ordered' in ext3"
- 	depends on EXT3_FS
- 	help
--	  If a filesystem does not explicitly specify a data ordering
--	  mode, and the journal capability allowed it, ext3 used to
--	  historically default to 'data=ordered'.
--
--	  That was a rather unfortunate choice, because it leads to all
--	  kinds of latency problems, and the 'data=writeback' mode is more
--	  appropriate these days.
--
--	  You should probably always answer 'n' here, and if you really
--	  want to use 'data=ordered' mode, set it in the filesystem itself
--	  with 'tune2fs -o journal_data_ordered'.
--
--	  But if you really want to enable the legacy default, you can do
--	  so by answering 'y' to this question.
-+	  The journal mode options for ext3 have different tradeoffs
-+	  between when data is guaranteed to be on disk and
-+	  performance.	The use of "data=writeback" can cause
-+	  unwritten data to appear in files after an system crash or
-+	  power failure, which can be a security issue.	 However,
-+	  "data=ordered" mode can also result in major performance
-+	  problems, including seconds-long delays before an fsync()
-+	  call returns.	 For details, see:
++static char *data_mode_string(unsigned long mode)
++{
++	switch (mode) {
++	case EXT3_MOUNT_JOURNAL_DATA:
++		return "journal";
++	case EXT3_MOUNT_ORDERED_DATA:
++		return "ordered";
++	case EXT3_MOUNT_WRITEBACK_DATA:
++		return "writeback";
++	}
++	return "unknown";
++}
 +
-+	  http://ext4.wiki.kernel.org/index.php/Ext3_data_mode_tradeoffs
-+
-+	  If you have been historically happy with ext3's performance,
-+	  data=ordered mode will be a safe choice and you should
-+	  answer 'y' here.  If you understand the reliability and data
-+	  privacy issues of data=writeback and are willing to make
-+	  that trade off, answer 'n'.
+ /*
+  * Show an option if
+  *  - it's set to a non-default value OR
+@@ -616,13 +629,8 @@ static int ext3_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 	if (test_opt(sb, NOBH))
+ 		seq_puts(seq, ",nobh");
  
- config EXT3_FS_XATTR
- 	bool "Ext3 extended attributes"
+-	if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_JOURNAL_DATA)
+-		seq_puts(seq, ",data=journal");
+-	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_ORDERED_DATA)
+-		seq_puts(seq, ",data=ordered");
+-	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)
+-		seq_puts(seq, ",data=writeback");
+-
++	seq_printf(seq, ",data=%s", data_mode_string(sbi->s_mount_opt &
++						     EXT3_MOUNT_DATA_FLAGS));
+ 	if (test_opt(sb, DATA_ERR_ABORT))
+ 		seq_puts(seq, ",data_err=abort");
+ 
+@@ -1024,12 +1032,18 @@ static int parse_options (char *options, struct super_block *sb,
+ 		datacheck:
+ 			if (is_remount) {
+ 				if ((sbi->s_mount_opt & EXT3_MOUNT_DATA_FLAGS)
+-						!= data_opt) {
+-					printk(KERN_ERR
+-						"EXT3-fs: cannot change data "
+-						"mode on remount\n");
+-					return 0;
+-				}
++						== data_opt)
++					break;
++				printk(KERN_ERR
++					"EXT3-fs (device %s): Cannot change "
++					"data mode on remount. The filesystem "
++					"is mounted in data=%s mode and you "
++					"try to remount it in data=%s mode.\n",
++					sb->s_id,
++					data_mode_string(sbi->s_mount_opt &
++							EXT3_MOUNT_DATA_FLAGS),
++					data_mode_string(data_opt));
++				return 0;
+ 			} else {
+ 				sbi->s_mount_opt &= ~EXT3_MOUNT_DATA_FLAGS;
+ 				sbi->s_mount_opt |= data_opt;
 -- 
 1.6.0.2
 
