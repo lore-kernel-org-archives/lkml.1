@@ -1,216 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZHYWEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZHYWHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756253AbZHYWEg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 18:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbZHYWEf
+	id S1756249AbZHYWHz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 18:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZHYWHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 18:04:35 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:52166 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752672AbZHYWEe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 18:04:34 -0400
-Date: Wed, 26 Aug 2009 00:04:26 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090826000426.0332cbf4@skybase>
-In-Reply-To: <20090825183119.GC2448@Krystal>
-References: <20090825141547.GE6114@nowhere>
-	<20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
-	<20090825162004.GA25058@Krystal>
-	<20090825165912.GI6114@nowhere>
-	<20090825173107.GJ6114@nowhere>
-	<20090825183119.GC2448@Krystal>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Aug 2009 18:07:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45305 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754460AbZHYWHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 18:07:54 -0400
+Message-ID: <4A946082.9090809@kernel.org>
+Date: Tue, 25 Aug 2009 15:06:58 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Cyrill Gorcunov <gorcunov@openvz.org>
+Subject: [PATCH] x86: use hard_smp_processor_id to get apic id in identify_cpu
+ -v2
+References: <4A9391CD.5020804@kernel.org>
+In-Reply-To: <4A9391CD.5020804@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009 14:31:19 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> * Frederic Weisbecker (fweisbec@gmail.com) wrote:
-> > On Tue, Aug 25, 2009 at 06:59:14PM +0200, Frederic Weisbecker wrote:
-> > > On Tue, Aug 25, 2009 at 12:20:04PM -0400, Mathieu Desnoyers wrote:
-> > > > * Hendrik Brueckner (brueckner@linux.vnet.ibm.com) wrote:
-> > > > > On Tue, Aug 25, 2009 at 04:15:49PM +0200, Frederic Weisbecker wrote:
-> > > > > > On Tue, Aug 25, 2009 at 02:50:27PM +0200, Hendrik Brueckner wrote:
-> > > > > > > There are at least two scenarios where syscall_get_nr() can return -1:
-> > > > > > > 
-> > > > > > > 1. For example, ptrace stores an invalid syscall number, and thus,
-> > > > > > >    tracing code resets it.
-> > > > > > >    (see do_syscall_trace_enter in arch/s390/kernel/ptrace.c)
-> > > > > > > 
-> > > > > > > 2. The syscall_regfunc() (kernel/tracepoint.c) sets the TIF_SYSCALL_FTRACE
-> > > > > > >    (now: TIF_SYSCALL_TRACEPOINT) flag for all threads which includes
-> > > > > > >    kernel threads.
-> > > > > > >    However, the ftrace selftest triggers a kernel oops when testing syscall
-> > > > > > >    trace points:
-> > > > > > >       - The kernel thread is started as ususal (do_fork()),
-> > > > > > >       - tracing code sets TIF_SYSCALL_FTRACE,
-> > > > > > >       - the ret_from_fork() function is triggered and starts
-> > > > > > > 	ftrace_syscall_exit() with an invalid syscall number.
-> > > > > > 
-> > > > > > 
-> > > > > > 
-> > > > > > I wonder if there is any way to identify such situation...?
-> > > > > For the second case, it might be an option to avoid setting the
-> > > > > TIF_SYSCALL_FTRACE flag for kernel threads.
-> > > > > 
-> > > > > Kernel threads have task_struct->mm set to NULL.
-> > > > > (Thanks to Heiko for that hint ;-)
-> > > > > 
-> > > > > The idea is then to check the mm field in syscall_regfunc() and
-> > > > > set the flag accordingly.
-> > > > > 
-> > > > > However, I think the patch is an optional add-on becase checking
-> > > > > the syscall number is still required for case 1).
-> > > > > 
-> > > > > ---
-> > > > >  kernel/tracepoint.c |    4 +++-
-> > > > >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > > > > 
-> > > > > --- a/kernel/tracepoint.c
-> > > > > +++ b/kernel/tracepoint.c
-> > > > > @@ -593,7 +593,9 @@ void syscall_regfunc(void)
-> > > > >  	if (!sys_tracepoint_refcount) {
-> > > > >  		read_lock_irqsave(&tasklist_lock, flags);
-> > > > >  		do_each_thread(g, t) {
-> > > > > -			set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > > > > +			/* Skip kernel threads. */
-> > > > > +			if (t->mm)
-> > > > > +				set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > > > 
-> > > > Uh ? kernel threads can invoke a system call. There are rare places
-> > > > where kernel code actually invoke system calls. I don't see why we
-> > > > should not deal with them.
-> > > 
-> > > 
-> > > 
-> > > Yeah they do, but they don't use the sysenter path, they call the
-> > > syscall helpers directly, such as do_fork() or things like that.
-> > > 
-> > > The syscall tracepoints are set in the sysenter/sysexit path, then
-> > > it's no use to trace the kernel threads, it doesn't have any effect,
-> > > except random results in case of fork() calls, because we take
-> > > the ret_from_fork() path that also ends up to trace_sys_exit()
-> > > if the TIF_SYSCALL_TRACEPOINT thing is set, leading to such
-> > > asymetric tracing.
-> > > 
-> > > Kernel threads use syscalls toward wrappers such as create_thread().
-> > > So instead, statically defined tracepoints in create_thread() and such
-> > > other syscall wrappers for kernel threads seem more valuable, hmm?
-> > > 
-> > >  
-> > > > Moreover, the problem you face is more general: if we set the
-> > > > TIF_SYSCALL_FTRACE flag of a standard thread right in the middle of its
-> > > > system call, x86_64 will cause the syscall exit to execute by re-reading
-> > > > the thread flags and run a syscall trace exit.
-> > > 
-> > > 
-> > > Well, I don't think that's the problem. The issue here, if I understand
-> > > correctly, is that kernel threads don't take the sysenter path, then never hit
-> > > the trace_sys_enter() call. And usually they won't ever hit any
-> > > trace_sys_exit() calls except in the fork() case, because we take
-> > > the ret_from_fork() path, which lead to syscall exit tracing due
-> > > to the TIF flags set.
-> > > 
-> > > At this stage, the syscall number is supposed to be stored in orig_eax,
-> > > but because the kernel thread hasn't called fork() through a syscall and
-> > > has called do_fork() directly, the regs values have nothing that look
-> > > like syscall parameters.
-> > 
-> > 
-> > 
-> > I mean, I don't know how look like orig_eax at this stage.
-> > 
-> > Looking at arch/x86/kernel/process_32.c:copy_thread()
-> > 
-> > childregs = task_pt_regs(p);
-> > *childregs = *regs;
-> > childregs->ax = 0;
-> > childregs->sp = sp;
-> > 
-> > p->thread.sp = (unsigned long) childregs;
-> > p->thread.sp0 = (unsigned long) (childregs+1);
-> > 
-> > p->thread.ip = (unsigned long) ret_from_fork;
-> > 
-> > 
-> > sp will be the struct pt_regs * passed to syscall_trace_leave()
-> > later.
-> > 
-> > ax has the result of the fork syscall -> 0 for the child.
-> > What about orig_eax which has the syscall nr? It depends on the pareent
-> > and I don't know what it has at this stage.
-> > 
-> > I haven't seen crashes in x86 with kernel threads tracing, may be because
-> > orig_eax is set to a valid syscall nr (may be even fork nr).
-> > 
-> > Perhaps it's not the case in s390 ?
-> > 
-> > Anyway, tracing kernel threads syscalls only gives us the fork return,
-> > so it's something me may want to drop and trace higher level kernel
-> > thread syscall wrappers instead.
-> > 
-> > Moreover every kernel threads is created through a kthreadd fork if
-> > I'm not wrong, then it wouldn't be an accurate thing for us to trace the
-> > fork calls in kernel thread. Tracing higher level kernel thread managment
-> > sounds more interesting, we would then know who really created the thread,
-> > etc...
-> > 
-> 
-> (Well, I do not have time currently to look into the gory details
-> (sorry), but let's try to take a step back from the problem.)
-> 
-> The design proposal for this kthread behavior wrt syscalls is based on a
-> very specific and current kernel behavior, that may happen to change and
-> that I have actually seen proven incorrect. For instance, some
-> proprietary Linux driver does very odd things with system calls within
-> kernel threads, like invoking them with int 0x80.
 
-On s390 it is not allowed to execute the system call instruction svc
-from kernel code to execute a system call function. You need to call
-the system call function by name. The why is hidden in the critical
-section cleanup in entry.S. There is a good reason why the inline
-assemblies to execute an inline system call have been removed from
-the kernel code.
+and leave phys_proc_id to use initial apic id.
+
+otherwise, system with apci id lifting will have wrong apicid in
+/proc/cpuinfo
+
+-v2: update the one in detect_extended_topology too.
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/cpu/addon_cpuid_features.c |    4 ++--
+ arch/x86/kernel/cpu/common.c               |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/cpu/common.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/common.c
++++ linux-2.6/arch/x86/kernel/cpu/common.c
+@@ -715,7 +715,7 @@ static void __cpuinit generic_identify(s
+ 		c->initial_apicid = (cpuid_ebx(1) >> 24) & 0xFF;
+ #ifdef CONFIG_X86_32
+ # ifdef CONFIG_X86_HT
+-		c->apicid = apic->phys_pkg_id(c->initial_apicid, 0);
++		c->apicid = hard_smp_processor_id();
+ # else
+ 		c->apicid = c->initial_apicid;
+ # endif
+@@ -772,7 +772,7 @@ static void __cpuinit identify_cpu(struc
+ 	}
  
-> Yes, this is odd, but do we really want to tie the tracer that much to
-> the actual OS implementation specificities ?
-> 
-> That sounds like a recipe for endless breakages and missing bits of
-> instrumentation.
-> 
-> So my advice would be: if we want to trace the syscall entry/exit paths,
-> let's trace them for the _whole_ system, and find ways to make it work
-> for corner-cases rather than finding clever ways to diminish
-> instrumentation coverage.
-
-I guess that the real reason for the crash is hidden in the initialization
-of the pt_regs structure of the kernel thread.
-
-> Given the ret from fork example happens to be the first event fired
-> after the thread is created, we should be able to deal with this problem
-> by initializing the thread structure used by syscall exit tracing to an
-> initial "ret from fork" value.
-
-That is my best guess as well.
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+ #ifdef CONFIG_X86_64
+-	c->apicid = apic->phys_pkg_id(c->initial_apicid, 0);
++	c->apicid = hard_smp_processor_id();
+ #endif
+ 
+ 	/*
+Index: linux-2.6/arch/x86/kernel/cpu/addon_cpuid_features.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/addon_cpuid_features.c
++++ linux-2.6/arch/x86/kernel/cpu/addon_cpuid_features.c
+@@ -121,9 +121,9 @@ void __cpuinit detect_extended_topology(
+ 						 & core_select_mask;
+ 	c->phys_proc_id = apic->phys_pkg_id(c->initial_apicid, core_plus_mask_width);
+ 	/*
+-	 * Reinit the apicid, now that we have extended initial_apicid.
++	 * Reinit the apicid, now that we have extended apicid ?
+ 	 */
+-	c->apicid = apic->phys_pkg_id(c->initial_apicid, 0);
++	c->apicid = hard_smp_processor_id();
+ 
+ 	c->x86_max_cores = (core_level_siblings / smp_num_siblings);
+ 
