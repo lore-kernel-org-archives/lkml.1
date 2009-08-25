@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755718AbZHYSWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbZHYSW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755718AbZHYSWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbZHYSWT
+	id S1755747AbZHYSW1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZHYSWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:22:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44918 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755622AbZHYSWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:22:16 -0400
-Date: Tue, 25 Aug 2009 18:21:42 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, lethal@linux-sh.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, lethal@linux-sh.org,
-       mingo@elte.hu
-In-Reply-To: <20090825154025.GD6616@linux.vnet.ibm.com>
-References: <20090825154025.GD6616@linux.vnet.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Add #ifdef to suppress __rcu_offline_cpu() warning in !HOTPLUG_CPU builds
-Message-ID: <tip-c935a331c8f569c7903ed26a3994a70cbea1802e@git.kernel.org>
-Git-Commit-ID: c935a331c8f569c7903ed26a3994a70cbea1802e
-X-Mailer: tip-git-log-daemon
+	Tue, 25 Aug 2009 14:22:25 -0400
+Received: from slowhand.arndnet.de ([88.198.19.76]:56372 "EHLO mail.unitix.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755725AbZHYSWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:22:23 -0400
+Message-ID: <4A942BDD.70303@nets.rwth-aachen.de>
+Date: Tue, 25 Aug 2009 20:22:21 +0200
+From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 25 Aug 2009 18:21:43 +0000 (UTC)
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
+References: <4A9407B1.6020400@nets.rwth-aachen.de> <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com> <4A94161A.2020609@nets.rwth-aachen.de> <1251219129.4852.1.camel@penberg-laptop> <4A94242E.30309@nets.rwth-aachen.de> <1251223399.13451.5.camel@penberg-laptop>
+In-Reply-To: <1251223399.13451.5.camel@penberg-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c935a331c8f569c7903ed26a3994a70cbea1802e
-Gitweb:     http://git.kernel.org/tip/c935a331c8f569c7903ed26a3994a70cbea1802e
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Tue, 25 Aug 2009 08:40:25 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 25 Aug 2009 20:20:03 +0200
+Pekka Enberg wrote:
+> On Tue, 2009-08-25 at 19:49 +0200, Arnd Hannemann wrote:
+>> Hi Pekka,
+>>
+>> Pekka Enberg wrote:
+>>> On Tue, 2009-08-25 at 18:49 +0200, Arnd Hannemann wrote:
+>>>>> Thanks for doing the bisect! Can we also see your .config
+>>>>> also?
+>>>> Config for -rc7 is attached. My bisect configs were based on
+>>>> that
+>>> Thanks! While we wait for the Xen people, you can try the
+>>> following patch to see if we can narrow the bug down to
+>>> trap_init().
+>> Yes seems to be trap_init(). -rc7 with this patch applied boots up
+>> to the prompt.
+>
+> Thanks for testing! Ingo, what do you think of the following patch?
+> AFAICT, x86-32 is the only architecture playing with traps in
+> mem_init() so this should be the safest fix for 2.6.31.
 
-rcu: Add #ifdef to suppress __rcu_offline_cpu() warning in !HOTPLUG_CPU builds
+Hmm, -rc7 + this fix does not work for me :-/
+Still hangs before any output...
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: akpm@linux-foundation.org
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josht@linux.vnet.ibm.com
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-Cc: Paul Mundt <lethal@linux-sh.org>
-LKML-Reference: <20090825154025.GD6616@linux.vnet.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/rcutree.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 000b076..fee6316 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -84,7 +84,9 @@ extern long rcu_batches_completed_sched(void);
- static void cpu_quiet_msk(unsigned long mask, struct rcu_state *rsp,
- 			  struct rcu_node *rnp, unsigned long flags);
- static void cpu_quiet_msk_finish(struct rcu_state *rsp, unsigned long flags);
-+#ifdef CONFIG_HOTPLUG_CPU
- static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp);
-+#endif /* #ifdef CONFIG_HOTPLUG_CPU */
- static void __rcu_process_callbacks(struct rcu_state *rsp,
- 				    struct rcu_data *rdp);
- static void __call_rcu(struct rcu_head *head,
+Best regards,
+Arnd
