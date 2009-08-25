@@ -1,133 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbZHYOYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbZHYO2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755150AbZHYOYb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 10:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755076AbZHYOYa
+	id S1755101AbZHYO2G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 10:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbZHYO2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 10:24:30 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:40260 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755094AbZHYOY3 (ORCPT
+	Tue, 25 Aug 2009 10:28:06 -0400
+Received: from staff.task.gda.pl ([153.19.250.116]:4955 "EHLO
+	staff.task.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbZHYO2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 10:24:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Mr1LAcM5HRprMkrzY2Y0RPoGYZU8bCBZWVN41orHUo/iwmQi1SCL5ZJvKuqMkulzx9
-         7uCgzrbr8aDW4RbwUxuTfpJYWiYPbsbL2g+WEAi4AsABHASmdAUjPp3H+uuHGmNrg6ur
-         9I1bCNwjyuv5e7VKYCXYMUDBnnSEbX8jZA924=
-Date: Tue, 25 Aug 2009 16:24:27 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer
-	dereference at 0000000000000008
-Message-ID: <20090825142424.GF6114@nowhere>
-References: <m163cjhwa4.fsf@fess.ebiederm.org> <m1skfnggrb.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain> <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain> <alpine.LFD.2.01.0908241655370.3824@localhost.localdomain> <20090825033944.GA5227@nowhere> <alpine.LFD.2.01.0908242043280.3218@localhost.localdomain>
+	Tue, 25 Aug 2009 10:28:05 -0400
+Date: Tue, 25 Aug 2009 16:28:02 +0200 (CEST)
+From: Pawel Golaszewski <blues@gda.pl>
+X-X-Sender: blues@staff.task.gda.pl
+To: Peter Zijlstra <peterz@infradead.org>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: PROBLEM: oops
+In-Reply-To: <1251209734.7538.1160.camel@twins>
+Message-ID: <alpine.LNX.2.00.0908251625580.16876@fgnss.gnfx.tqn.cy>
+References: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy>  <1251209206.7538.1159.camel@twins>  <alpine.LNX.2.00.0908251608280.16876@fgnss.gnfx.tqn.cy> <1251209734.7538.1160.camel@twins>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0908242043280.3218@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: MULTIPART/MIXED; BOUNDARY="328824058-33275375-1251210482=:16876"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 09:10:38PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 25 Aug 2009, Frederic Weisbecker wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--328824058-33275375-1251210482=:16876
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2
+Content-Transfer-Encoding: 8BIT
+
+On Tue, 25 Aug 2009, Peter Zijlstra wrote:
+> > > > No matter which kernel I'm using (2.6.27 - 2.6.30) it crashes. 
+> > > > Works for few minutes and crashes. Even SysRq doesn't work. Dunno 
+> > > > how to trigger it on other machine than mine (I have two, both 
+> > > > affected). If more info is required - just ask.
+> > > > [...]
+> > > > [24483.211036] BUG: unable to handle kernel NULL pointer dereference at 00000058
+> > > > [24483.211144] IP: [<c081cf9a>] pick_next_task_fair+0x6a/0x100
+> > > > [24483.211247] Oops: 0000 [#1] SMP 
+> > > > [24483.211300] Modules linked in: netconsole configfs dm_mod softdog sch_sfq xfs raid10 uhci_hcd eepro100 ppdev parport_pc floppy parport ehci_hcd e100 piix i2c_piix4 thermal psmouse e1000 container ide_core usbcore mii button pcspkr serio_raw processor i2c_core sg evdev ext3 jbd mbcache scsi_wait_scan sd_mod crc_t10dif ata_piix libata dock aic7xxx sym53c8xx scsi_transport_spi scsi_mod raid1 md_mod
+> > > > [24483.211878] 
+> > > > [24483.211910] Pid: 1677, comm: md2_raid10 Not tainted (2.6.27.31-1 #1)
+> > > 
+> > > So you're saying .30 crashes at the exact same place?
 > > 
-> > Now that also makes the TTY_LDISC flag clearing unprotected by
-> > tty->ldisc_mutex.
+> > Well... I'm not able to catch anything on .30 No sign on netconsole, 
+> > black screen on monitor...
 > 
-> Yes.
-> 
-> > tty_set_ldisc() can play concurrently with these flags right?
-> 
-> .. but that shouldn't matter.
-> 
-> The actual bit-setting is "atomic" already - and any other atomicity is 
-> pretty much unattainable, because all the routines in question drop the 
-> lock they need to hold in order to make it really be reliably atomic.
-> 
-> > tty_ldisc_halt() could remain protected by the mutex, so that the
-> > flag is safely toggled. Once it is cleared, we can ensure no more
-> > user can ref it and the lock can be relaxed while the pending
-> > work is flushed.
-> 
-> That would make no difference at all. tty_set_ldisc() won't care about the 
-> flag (in fact, it will do its own tty_ldisc_halt()), and will be happy to 
-> replace the ldisc we just flushed with a new one regardless of whether it 
-> was halted before or not. And it will do tty_ldisc_enable() regardless of 
-> whether it was enabled or not before.
-> 
-> In fact, because tty_set_ldisc() itself had to release the ldisc_mutex 
-> (for the same reason), you have this issue regardless of whether you hold 
-> the lock in tty_hangup() or not: the two will always be able to get "mixed 
-> up", because they - by design - have to release that silly lock.
+> Could you share your .config?
 
+Sure, I forgot:
+http://www.blues.gda.pl/2.6.27.31.config.bz2
 
-
-Hmm, that's why I had a headache while trying to imagine every races in this
-place...
-
-
-
-> That's why I said I was unhappy about the tty layer locking - it really 
-> isn't very sane. Things like tty_set_ldisc() will drop the lock in the 
-> middle because of that crazy workqueue deadlock - exactly for the same 
-> reasons that tty_ldisc_hangup() will need to do that "wait for things to 
-> flush" without the lock held.
-> 
-> So I could have taken the ldisc_mutex, and then just dropped it 
-> temporarily while waiting for any workqueue entries, but as far as I can 
-> tell, it doesn't actually solve anything.
-
-
-Yeah, indeed.
-
-
-
-> I considered using the TTY_LDISC_CHANGING bit(*) there to protect against 
-> tty_set_ldisc(), and it may even be the right solution. But there's no way 
-> I'll do that kind of changes this late in the -rc series.
-> 
-> We also have the "TTY_HUPPED" bit that disables tty_set_ldisc(), but that 
-> is set too late by do_tty_hangup(), and so doesn't fix the problem either. 
-> Again, moving it earlier may be a solution, but again, it's not 
-> appropriate for this late in the -rc.
-
-
-Ok.
-
- 
-> Finally, the solution that is most likely the _real_ solution would be to 
-> just fix the locking. The whole "ldisc_mutex" seems dubious. It's not even 
-> a real lock - exactly because it's dropped - and we already really use 
-> that TTY_LDISC_CHANGING bit to do the _real_ locking. I don't think it 
-> needs to be a mutex at all. The locking is just very dubious. 
-> 
-> And that, least of all, is anything I'm willing to really do in -rc. 
-> 
-> Anyway, I'll happily be shown wrong. I think the (second) patch I sent out 
-> is an acceptable hack in the presense of the current locking, but as I 
-> said, I'm not exactly happy about it, because I do think the locking is 
-> broken.
-> 
-> 		Linus
-> 
-> (*) We already have that hacky open-coded "lock" using TTY_LDISC_CHANGING, 
-> which protects two different tty_set_ldisc()'s from screwing up each other 
-> when they drop the semaphore. It could be just separated out into a 
-> function of its own, and then the hangup code would/could/should be taught 
-> to use that logic.
-
-
-Ok, thanks.
-
+-- 
+pozdr.  Pawe³ Go³aszewski          jid:blues<at>jabber<dot>gda<dot>pl
+--------------------------------------------------------------------------
+If you think of MS-DOS as mono, and Windows as stereo, then Linux is Dolby
+Pro-Logic Surround Sound with Bass Boost and all the music is free.
+--328824058-33275375-1251210482=:16876--
