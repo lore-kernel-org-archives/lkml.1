@@ -1,101 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbZHYShx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbZHYSiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755651AbZHYShx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbZHYShw
+	id S1755877AbZHYSiR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbZHYSiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:37:52 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:34781 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755532AbZHYShv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:37:51 -0400
-Subject: Re: [PATCH -tip] Create rcutree plugins to handle hotplug CPU for
- multi-level trees
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
-In-Reply-To: <20090825182204.GA26736@linux.vnet.ibm.com>
-References: <20090825182204.GA26736@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 25 Aug 2009 11:38:03 -0700
-Message-Id: <1251225483.2706.4.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 25 Aug 2009 14:38:16 -0400
+Received: from slowhand.arndnet.de ([88.198.19.76]:41036 "EHLO mail.unitix.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755542AbZHYSiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:38:16 -0400
+Message-ID: <4A942F96.7000900@nets.rwth-aachen.de>
+Date: Tue, 25 Aug 2009 20:38:14 +0200
+From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
+References: <4A9407B1.6020400@nets.rwth-aachen.de> <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com> <4A94161A.2020609@nets.rwth-aachen.de> <1251219129.4852.1.camel@penberg-laptop> <4A94242E.30309@nets.rwth-aachen.de> <1251223399.13451.5.camel@penberg-laptop> <4A942BDD.70303@nets.rwth-aachen.de> <20090825182510.GA6903@elte.hu> <4A942DB9.3020209@goop.org>
+In-Reply-To: <4A942DB9.3020209@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 11:22 -0700, Paul E. McKenney wrote:
-> When offlining CPUs from a multi-level tree, there is the possibility
-> of offlining the last CPU from a given node when there are preempted
-> RCU read-side critical sections that started life on one of the CPUs on
-> that node.  In this case, the corresponding tasks will be enqueued via
-> the task_struct's rcu_node_entry list_head onto one of the rcu_node's
-> blocked_tasks[] lists.  These tasks need to be moved somewhere else
-> so that they will prevent the current grace period from ending.
-> That somewhere is the root rcu_node.
-> 
-> With this patch, TREE_PREEMPT_RCU passes moderate rcutorture testing
-> with aggressive CPU-hotplugging (no delay between inserting/removing
-> randomly selected CPU).
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Jeremy Fitzhardinge wrote:
+> On 08/25/09 11:25, Ingo Molnar wrote:
+>> * Arnd Hannemann <hannemann@nets.rwth-aachen.de> wrote:
+>>
+>>
+>>> Pekka Enberg wrote:
+>>>
+>>>> On Tue, 2009-08-25 at 19:49 +0200, Arnd Hannemann wrote:
+>>>>
+>>>>> Hi Pekka,
+>>>>>
+>>>>> Pekka Enberg wrote:
+>>>>>
+>>>>>> On Tue, 2009-08-25 at 18:49 +0200, Arnd Hannemann wrote:
+>>>>>>
+>>>>>>>> Thanks for doing the bisect! Can we also see your
+>>>>>>>> .config also?
+>>>>>>>>
+>>>>>>> Config for -rc7 is attached. My bisect configs were based
+>>>>>>> on that
+>>>>>>>
+>>>>>> Thanks! While we wait for the Xen people, you can try the
+>>>>>> following patch to see if we can narrow the bug down to
+>>>>>> trap_init().
+>>>>>>
+>>>>> Yes seems to be trap_init(). -rc7 with this patch applied
+>>>>> boots up to the prompt.
+>>>>>
+>>>> Thanks for testing! Ingo, what do you think of the following
+>>>> patch? AFAICT, x86-32 is the only architecture playing with
+>>>> traps in mem_init() so this should be the safest fix for
+>>>> 2.6.31.
+>>>>
+>>> Hmm, -rc7 + this fix does not work for me :-/ Still hangs before
+>>> any output...
+>>>
+>> does earlyprintk=vga tell you anything about precisely where it
+>> hangs?
+>>
+>
+> It's a Xen domain, so it should be earlyprintk=xen
+>
+> J
+>
+Here is the output with earlyprintk=xen and the second patch from pekka
+applied:
 
-Looks good.  One comment below.
+(early) [    0.000000] Initializing CPU#0
+(early) [    0.000000] Checking if this processor honours the WP bit
+even in supervisor mode...(early)
+(early) [    0.000000] BUG: unable to handle kernel (early) NULL pointer
+dereference(early)  at (null)
+(early) [    0.000000] IP:(early)  [<c1192993>]
+xen_evtchn_do_upcall+0xd3/0x160
+(early) [    0.000000] *pdpt = 0000000008386001 (early)
+(early) [    0.000000] Thread overran stack, or stack corrupted
+(early) [    0.000000] Oops: 0000 [#1] (early) SMP (early)
+(early) [    0.000000] last sysfs file:
+(early) [    0.000000] Modules linked in:(early)
+(early) [    0.000000]
+(early) [    0.000000] Pid: 0, comm: swapper Not tainted
+(2.6.31-rc7-pae-um #10)
+(early) [    0.000000] EIP: 0061:[<c1192993>] EFLAGS: 00010046 CPU: 0
+(early) [    0.000000] EIP is at xen_evtchn_do_upcall+0xd3/0x160
+(early) [    0.000000] EAX: 00000004 EBX: 00000000 ECX: 00000004 EDX:
+ffffffff
+(early) [    0.000000] ESI: fffffffe EDI: 00000000 EBP: 00000000 ESP:
+c1413e64
+(early) [    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: e021
+(early) [    0.000000] Process swapper (pid: 0, ti=c1412000
+task=c13d11a0 task.ti=c1412000)
+(early) [    0.000000] Stack:
+(early) [    0.000000]  f5793000(early)  c146d9f0(early) 
+c146d9f0(early)  00000000(early)  c1413e9c(early)  00000000(early) 
+00000000(early)  c3a01020(early)
+(early) [    0.000000] <0>(early)  00000000(early)  eec06067(early) 
+c000cff8(early)  00000000(early)  00000000(early)  c10086d7(early) 
+eec06067(early)  c000cff8(early)
+(early) [    0.000000] <0>(early)  f55ff000(early)  c000cff8(early) 
+00000000(early)  00000000(early)  c13d7d60(early)  c101e021(early) 
+c141e021(early)  c10100d8(early)
+(early) [    0.000000] Call Trace:
+(early) [    0.000000]  [<c10086d7>] ? xen_do_upcall+0x7/0xc
+(early) [    0.000000]  [<c101e021>] ? ptep_set_access_flags+0x1/0x80
+(early) [    0.000000]  [<c141e021>] ? find_e820_area_size+0x51/0x330
+(early)
 
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1208,7 +1208,7 @@ struct task_struct {
->  #ifdef CONFIG_TREE_PREEMPT_RCU
->  	int rcu_read_lock_nesting;
->  	char rcu_read_unlock_special;
-> -	int rcu_blocked_cpu;
-> +	void *rcu_blocked_node;
 
-This should use struct rcu_node *, not void *.  That would eliminate
-several casts in the changes below.  You can forward-declare struct
-rcu_node if you want to avoid including RCU headers in sched.h.
-
-> --- a/kernel/rcutree_plugin.h
-> +++ b/kernel/rcutree_plugin.h
-> @@ -92,7 +92,7 @@ static void rcu_preempt_qs(int cpu)
->  		rnp = rdp->mynode;
->  		spin_lock(&rnp->lock);
->  		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
-> -		t->rcu_blocked_cpu = cpu;
-> +		t->rcu_blocked_node = (void *)rnp;
-
-Regardless of whether you change the type in the structure, you never
-need to cast a pointer to type void *; any non-function pointer will
-become void * without complaint.
-
-> @@ -170,12 +170,21 @@ static void rcu_read_unlock_special(struct task_struct *t)
->  	if (special & RCU_READ_UNLOCK_BLOCKED) {
->  		t->rcu_read_unlock_special &= ~RCU_READ_UNLOCK_BLOCKED;
-> 
-> -		/* Remove this task from the list it blocked on. */
-> -		rnp = rcu_preempt_state.rda[t->rcu_blocked_cpu]->mynode;
-> -		spin_lock(&rnp->lock);
-> +		/*
-> +		 * Remove this task from the list it blocked on.  The
-> +		 * task can migrate while we acquire the lock, but at
-> +		 * most one time.  So at most two passes through loop.
-> +		 */
-> +		for (;;) {
-> +			rnp = (struct rcu_node *)t->rcu_blocked_node;
-> +			spin_lock(&rnp->lock);
-> +			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
-> +				break;
-> +			spin_unlock(&rnp->lock);
-> +		}
-
-Both of the casts of t->rcu_blocked_node can go away here, given the
-type change in the structure.
-
-- Josh Triplett
+Best regards,
+Arnd
 
