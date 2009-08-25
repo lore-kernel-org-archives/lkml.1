@@ -1,99 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932362AbZHYX2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbZHYX2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932362AbZHYX2W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932312AbZHYX2V
+	id S932378AbZHYX2m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932312AbZHYX2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:28:21 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35931 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932287AbZHYX2U convert rfc822-to-8bit (ORCPT
+	Tue, 25 Aug 2009 19:28:42 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:44375 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932315AbZHYX2l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:28:20 -0400
-From: Neil Brown <neilb@suse.de>
-To: Greg Freemyer <greg.freemyer@gmail.com>
-Date: Wed, 26 Aug 2009 09:28:50 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <19092.29618.98997.854784@notabene.brown>
-Cc: Pavel Machek <pavel@ucw.cz>, Goswin von Brederlow <goswin-v-b@web.de>,
-       Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com, tytso@mit.edu,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is 
-	possible
-In-Reply-To: message from Greg Freemyer on Monday August 24
-References: <20090312092114.GC6949@elf.ucw.cz>
-	<200903121413.04434.rob@landley.net>
-	<20090316122847.GI2405@elf.ucw.cz>
-	<200903161426.24904.rob@landley.net>
-	<20090323104525.GA17969@elf.ucw.cz>
-	<87ljqn82zc.fsf@frosties.localdomain>
-	<20090824093143.GD25591@elf.ucw.cz>
-	<87f94c370908240621n32ea310sd24196084c42107a@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	Tue, 25 Aug 2009 19:28:41 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AooFAEcKlEpMROOX/2dsb2JhbACBU9cmhBoF
+Date: Tue, 25 Aug 2009 19:28:40 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, peterz@infradead.org, jiayingz@google.com,
+       mbligh@google.com, lizf@cn.fujitsu.com, jistone@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
+Message-ID: <20090825232840.GA30362@Krystal>
+References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere> <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com> <20090825134005.GB2656@redhat.com> <20090825184734.GE2656@redhat.com> <20090825190415.GB8474@Krystal> <20090825205829.GG2656@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090825205829.GG2656@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 19:19:50 up 7 days, 10:09,  2 users,  load average: 0.37, 0.25,
+	0.25
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday August 24, greg.freemyer@gmail.com wrote:
-> > +Don't damage the old data on a failed write (ATOMIC-WRITES)
-> > +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> > +
-> > +Either whole sector is correctly written or nothing is written during
-> > +powerfail.
-> > +
-> > +       Because RAM tends to fail faster than rest of system during
-> > +       powerfail, special hw killing DMA transfers may be necessary;
-> > +       otherwise, disks may write garbage during powerfail.
-> > +       This may be quite common on generic PC machines.
-> > +
-> > +       Note that atomic write is very hard to guarantee for RAID-4/5/6,
-> > +       because it needs to write both changed data, and parity, to
-> > +       different disks. (But it will only really show up in degraded mode).
-> > +       UPS for RAID array should help.
+* Jason Baron (jbaron@redhat.com) wrote:
+> On Tue, Aug 25, 2009 at 03:04:15PM -0400, Mathieu Desnoyers wrote:
+> > * Jason Baron (jbaron@redhat.com) wrote:
+> > > On Tue, Aug 25, 2009 at 09:40:05AM -0400, Jason Baron wrote:
+> > > > > > On Mon, Aug 24, 2009 at 05:40:18PM -0400, Jason Baron wrote:
+> > > > > > > Add a dynamic definition of NR_syscalls for x86_64. This is used in the 
+> > > > > > > syscall events tracing code.
+> > > > > > > 
+> > > > > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > > > > > > 
+> > > > > > > ---
+> > > > > > >  include/linux/ftrace.h |    5 +++++
+> > > > > > >  1 files changed, 5 insertions(+), 0 deletions(-)
+> > > > > > > 
+> > > > > > > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> > > > > > > index dc3b132..3bd94ee 100644
+> > > > > > > --- a/include/linux/ftrace.h
+> > > > > > > +++ b/include/linux/ftrace.h
+> > > > > > > @@ -14,6 +14,11 @@
+> > > > > > >  
+> > > > > > >  #include <asm/ftrace.h>
+> > > > > > >  
+> > > > > > > +#ifdef CONFIG_X86_64
+> > > > > > > +#include <asm/asm-offsets.h>
+> > > > > > > +#define NR_syscalls (__NR_syscall_max + 1)
+> > > > > > > +#endif
+> > > > > > > +
+> > > > > > 
+> > > > > > 
+> > > > > > I'd rather see this in arch/x86/include/unistd_64.h, since
+> > > > > > NR_syscalls seems to be the defined in unistd.h in all archs.
+> > > > > > 
+> > > > > > That also makes a unified way to retrieve this number for
+> > > > > > other users.
+> > > > > > 
+> > > > > 
+> > > > > Yes, NR_syscalls should be included there.
+> > > > > 
+> > > > > -- Steve
+> > > > 
+> > > > right, for x86_64, unistd.h is included to generate __NR_syscall_max
+> > > > which is then used for NR_syscalls. So I did initially try it there, but
+> > > > there were dependency problems. I'll see what I can come up with...
+> > > > 
+> > > > thanks,
+> > > > 
+> > > > -Jason
+> > > 
+> > > ok, since unistd_64.h is used to generate offsets.c, which eventually
+> > > generates, asm/asm-offsets.h, which defines, __NR_syscall_max, we can't
+> > > just put #define of NR_syscalls in unistd_64.h. However, it seems the
+> > > only point in time that unistd_64.h can not depend upon __NR_syscall_max,
+> > > is before asm/asm-offsets.h is defined. Thus, the patch below passes in
+> > > a '-DCREATE_OFFSETS' during the creation of asm/asm-offsets.h, so that
+> > > we do not include it before it exists. The patch is hacky but works.
+> > > thoughts?
+> > 
+> > Ugh! My eyes hurt!
+> > 
 > 
-> Can someone clarify if this is true in raid-6 with just a single disk
-> failure?  I don't see why it would be.
+> sorry :)
+> 
+> > What you are doing here is to basically put back the hardcoded
+> > NR_syscalls rather that using the build infrastructure already in place.
+> > 
+> 
+> no. NR_syscalls is not hardcoded by this patch. Its defined in terms of
+> __NR_syscall_max which is dynamically generated by the kernel build.
+> 
+> > If my memory serves me well, unistd_64.h generates __NR_syscall_max
+> > automatically by being included multiples times. Can we generalize this
+> > and make the information generated available in an automaticaly
+> > generated header instead ? It is saved in ams-offsets.h currently as
+> > "__NR_syscall_max". We could also save it somewhere else meant to be
+> > included by C code.
+> > 
+> > Mathieu
+> > 
+> 
+> The request was to define NR_syscalls in unistd.h, since that is the
+> historical Linux location for it. Adding another automatically generated
+> header does not accomplish that. Even if I include that new file in
+> unistd.h, I'm still going to have a circular dependency, and require a
+> solution similar to what I've proposed.
+> 
 
-It does affect raid6 with a single drive missing.
+OK, it may not be pretty, but it makes sense. :)
 
-After an unclean shutdown you cannot trust any Parity block as it
-is possible that some of the blocks in the stripe have been updated,
-but others have not.  So you must assume that all parity blocks are
-wrong and update them.  If you have a missing disk you cannot do that.
+Thanks,
 
-To take a more concrete example, imagine a 5 device RAID6 with
-3 data blocks D0 D1 D2 as well a P and Q on some stripe.
-Suppose that we crashed while updating D0, which would have involved
-writing out D0, P and Q.
-On restart, suppose D2 is missing. It is possible that 0, 1, 2, or 3
-of D0, P and Q have been updated and the others not.
-We can try to recompute D2 from D0 D1 and P, from
-D0 P and Q or from D1, P and Q.
+Mathieu
 
-We could conceivably try each of those and if they all produce the
-same result we might be confident of it.
-If two produced the same result and the other was different we could
-use a voting process to choose the 'best'.  And in this particular
-case I think that would work.  If 0 or 3 had been updates, all would
-be the same.  If only 1 was updated, then the combinations that
-exclude it will match.  If 2 were updated, then the combinations that
-exclude the non-updated block will match.
+> thanks,
+> 
+> -Jason
+> 
 
-But if both D0 and D1 were being updated I think there would be too
-many combinations and it would be very possibly that all three
-computed values for D2 would be different.
-
-So yes: a singly degraded RAID6 cannot promise no data corruption
-after an unclean shutdown.  That is why "mdadm" will not assemble such
-an array unless you use "--force" to acknowledge that there has been a
-problem. 
-
-NeilBrown
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
