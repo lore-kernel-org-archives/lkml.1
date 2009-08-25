@@ -1,112 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753129AbZHYNaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZHYNb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753129AbZHYNaj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 09:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbZHYNai
+	id S1753343AbZHYNb4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 09:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZHYNbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 09:30:38 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:63678 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbZHYNah (ORCPT
+	Tue, 25 Aug 2009 09:31:55 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:27257 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbZHYNby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 09:30:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NrWeYgxpGlBn7KCMP9P2UIVXFafPmjTj8xzQaoOnjKEEtVM7Q6At0CfDAvMwmwKLLE
-         BnUfM0acyEj9Rc9V2+3LK/KEzkoo36EyOc9afrbpWgFDEX4v0D/QfGx4ANFDLKCjCwSd
-         KBc6sMGUiBUPqdc14UshzaV31dbGqNmbejAt8=
-Date: Tue, 25 Aug 2009 15:30:35 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Neil Horman <nhorman@tuxdriver.com>, Wei Yongjun <yjwei@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] trace_events: fix the include file dependencies
-Message-ID: <20090825133029.GB6114@nowhere>
-References: <4A937EF5.4040505@cn.fujitsu.com> <4A937F5E.3020802@cn.fujitsu.com>
+	Tue, 25 Aug 2009 09:31:54 -0400
+Message-ID: <4A93E7CA.3080300@hp.com>
+Date: Tue, 25 Aug 2009 09:31:54 -0400
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A937F5E.3020802@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Luo Chunbo <chunbo.luo@windriver.com>
+CC: Wei Yongjun <yjwei@cn.fujitsu.com>, davem@davemloft.net,
+       netdev@vger.kernel.org, linux-sctp@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] sctp: fix the check for path failure detection
+References: <1251106637-434-1-git-send-email-chunbo.luo@windriver.com>	 <4A93949B.2020404@cn.fujitsu.com> <1251188548.6498.28.camel@pek-cluo-desktop>
+In-Reply-To: <1251188548.6498.28.camel@pek-cluo-desktop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 02:06:22PM +0800, Xiao Guangrong wrote:
-> The TRACE_EVENT depend on the include/linux/tracepoint.h first
-> and include/trace/ftrace.h later, if we include the ftrace.h early,
-> It'll occur building error, like blow:
+Luo Chunbo wrote:
+> On Tue, 2009-08-25 at 15:36 +0800, Wei Yongjun wrote:
+>> Chunbo Luo wrote:
+>>> The transport error count should be incremented when an outstanding
+>>> HB is not acknowledged. And the path failure detection should be done
+>>> before sending out the HB.
+>>>   
+>>> Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
+>>> ---
+>>>  net/sctp/sm_sideeffect.c |    6 +++++-
+>>>  net/sctp/sm_statefuns.c  |    8 ++++----
+>>>  2 files changed, 9 insertions(+), 5 deletions(-)
+>>>
+>>> diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
+>>> index 86426aa..fbdf4de 100644
+>>> --- a/net/sctp/sm_sideeffect.c
+>>> +++ b/net/sctp/sm_sideeffect.c
+>>> @@ -446,7 +446,11 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
+>>>  	if (transport->state != SCTP_UNCONFIRMED)
+>>>  		asoc->overall_error_count++;
+>>>  
+>>> -	if (transport->state != SCTP_INACTIVE &&
+>>> +	/*
+>>> +	 * The transport error count is incremented when an outstanding HB
+>>> +	 * is not acknowledged. 
+>>> +	 */
+>>>   
+>> T3-rtx timer expires also need to increment error count.
 > 
-> Both define TRACE_EVENT in trace_a.h and trace_b.h, if we include
-> those in .c file, like this:
+> Yes, T3-rtx timer expires need to increment error count.
 > 
-> #define CREATE_TRACE_POINTS
-> include <trace/events/trace_a.h>
-> include <trace/events/trace_b.h>
+>>> +	if (transport->hb_sent && transport->state != SCTP_INACTIVE &&
+>>>  	    (transport->error_count++ >= transport->pathmaxrxt)) {
+>>>  		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
+>>>  					 " transport IP: port:%d failed.\n",
+>>> diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
+>>> index 7288192..7f77099 100644
+>>> --- a/net/sctp/sm_statefuns.c
+>>> +++ b/net/sctp/sm_statefuns.c
+>>> @@ -981,10 +981,6 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
+>>>  	 */
+>>>  
+>>>  	if (transport->param_flags & SPP_HB_ENABLE) {
+>>> -		if (SCTP_DISPOSITION_NOMEM ==
+>>> -				sctp_sf_heartbeat(ep, asoc, type, arg,
+>>> -						  commands))
+>>> -			return SCTP_DISPOSITION_NOMEM;
+>>>  		/* Set transport error counter and association error counter
+>>>  		 * when sending heartbeat.
+>>>  		 */
+>>> @@ -992,6 +988,10 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
+>>>  				SCTP_TRANSPORT(transport));
+>>>  		sctp_add_cmd_sf(commands, SCTP_CMD_TRANSPORT_HB_SENT,
+>>>  				SCTP_TRANSPORT(transport));
+>>> +		if (SCTP_DISPOSITION_NOMEM ==
+>>> +				sctp_sf_heartbeat(ep, asoc, type, arg,
+>>> +						  commands))
+>>> +			return SCTP_DISPOSITION_NOMEM;
+>>>  	}
+>>>  	sctp_add_cmd_sf(commands, SCTP_CMD_HB_TIMER_UPDATE,
+>>>  			SCTP_TRANSPORT(transport));
+>>>   
+>> How about this one:
 > 
-> There are can't work,  because the TRACE_EVENT has re-defined by
-> the previous .h file
+> It is ok to increment the error count. But the path failure detection
+> should be done before send HB. Otherwise, an extra HB chunk will be sent
+> out before the transport is marked DOWN . So the changes in
+> net/sctp/sm_statefuns.c is also needed.
+
+After running a few simulations with all the different patches from this thread,
+what we are really after was achieved by the original patch.  Looking back over
+the code history, it looks like this was try to implement the old text of
+section 8.3 (prior to errata that fixed it).
+
+We still have to send HB on an INACTIVE transport to see if it comes back, so
+that comment of my was entirely wrong.  Sorry, don't know what I was thinking at
+that time...
+
+So I'll take the original patch Luo submitted.
+
+Thanks
+-vlad
+
 > 
-> Reported-by: Wei Yongjun <yjwei@cn.fujitsu.com>
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> ---
->  include/linux/tracepoint.h   |    3 +--
->  include/trace/define_trace.h |    1 +
->  2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> index 5984ed0..8170985 100644
-> --- a/include/linux/tracepoint.h
-> +++ b/include/linux/tracepoint.h
-> @@ -180,6 +180,7 @@ static inline void tracepoint_synchronize_unregister(void)
->  }
->  
->  #define PARAMS(args...) args
-> +#endif
-
-
-Please add a comment to explain what your endifs are closing, that helps
-for reviews. Especially while walking on such complicated header files,
-it's a crutch.
-
-I guess this one closes _LINUX_TRACEPOINT_H, right?
-
-
->  
->  #ifndef TRACE_EVENT
->  /*
-> @@ -287,5 +288,3 @@ static inline void tracepoint_synchronize_unregister(void)
->  #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
->  	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
->  #endif
-> -
-> -#endif
-> diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
-> index 76e93bf..202cecd 100644
-> --- a/include/trace/define_trace.h
-> +++ b/include/trace/define_trace.h
-> @@ -52,6 +52,7 @@
->  #include <trace/ftrace.h>
->  #endif
->  
-> +#undef TRACE_EVENT
->  #undef TRACE_HEADER_MULTI_READ
->  
->  /* Only undef what we defined in this file */
-
-
-Well, hopefully we are not missing something subtle, but
-yeah that seems to solve the problem, for both CONFIG_EVENT_TRACING
-and !CONFIG_EVENT_TRACING cases.
-And that seems to also fit well whenever CREATE_TRACE_POINTS is
-defined or not.
-
-Other than the missing comment:
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-Thanks.
+> 
+>> diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
+>> index 86426aa..fb723dd 100644
+>> --- a/net/sctp/sm_sideeffect.c
+>> +++ b/net/sctp/sm_sideeffect.c
+>> @@ -447,7 +447,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
+>>  		asoc->overall_error_count++;
+>>  
+>>  	if (transport->state != SCTP_INACTIVE &&
+>> -	    (transport->error_count++ >= transport->pathmaxrxt)) {
+>> +	    (transport->error_count >= transport->pathmaxrxt)) {
+>>  		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
+>>  					 " transport IP: port:%d failed.\n",
+>>  					 asoc,
+>> @@ -468,6 +468,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
+>>  	 * that indicates that we have an outstanding HB.
+>>  	 */
+>>  	if (!is_hb || transport->hb_sent) {
+>> +		transport->error_count++;
+>>  		transport->last_rto = transport->rto;
+>>  		transport->rto = min((transport->rto * 2), transport->asoc->rto_max);
+>>  	}
+>>
+>>
+>>
+>>
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sctp" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
