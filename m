@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbZHYKxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbZHYK5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbZHYKxm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 06:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbZHYKxj
+	id S1754977AbZHYK5X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 06:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbZHYK5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 06:53:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34138 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754824AbZHYKxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 06:53:39 -0400
-Date: Tue, 25 Aug 2009 11:53:42 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alexey Korolev <akorolex@gmail.com>
-Cc: Eric Munson <linux-mm@mgebm.net>, Alexey Korolev <akorolev@infradead.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
-Message-ID: <20090825105341.GB21335@csn.ul.ie>
-References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org> <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com> <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com> <20090819100553.GE24809@csn.ul.ie> <202cde0e0908232314j4b90aa61pb4bcd0223ffbc087@mail.gmail.com>
+	Tue, 25 Aug 2009 06:57:21 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:48939 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754237AbZHYK5U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 06:57:20 -0400
+Date: Tue, 25 Aug 2009 06:57:07 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>, David Miller <davem@davemloft.net>,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] trace_events: fix napi's tracepoint
+Message-ID: <20090825105707.GA24710@hmsreliant.think-freely.org>
+References: <4A937EF5.4040505@cn.fujitsu.com> <4A93895F.4010708@cn.fujitsu.com> <20090825075816.GB857@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <202cde0e0908232314j4b90aa61pb4bcd0223ffbc087@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090825075816.GB857@elte.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -4.7 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 06:14:30PM +1200, Alexey Korolev wrote:
-> Mel,
+On Tue, Aug 25, 2009 at 09:58:16AM +0200, Ingo Molnar wrote:
 > 
-> > How about;
-> >
-> >        o Extend Eric's helper slightly to take a GFP mask that is
-> >          associated with the inode and used for allocations from
-> >          outside the hugepage pool
-> >        o A helper that returns the page at a given offset within
-> >          a hugetlbfs file for population before the page has been
-> >          faulted.
-> >
-> > I know this is a bit hand-wavy, but it would allow significant sharing
-> > of the existing code and remove much of the hugetlbfs-awareness from
-> > your current driver.
-> >
+> * Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
 > 
-> I'm trying to write the solution you have described. The question I
-> have is about extension of hugetlb_file_setup function.
-> Is it supposed to allocate memory in hugetlb_file_setup function? Or
-> it is supposed to have reservation only.
-
-It indirectly allocates. If there are sufficient hugepages in the static pool,
-then it's reservation-only. If dynamic hugepage pool resizing is enabled,
-it will allocate more hugepages if necessary and then reserve them.
-
-> If reservation only, then it is necessary to keep a gfp_mask for a
-> file somewhere. Would it be Ok to keep a gfp_mask for a file in
-> file->private_data?
+> > Currently, the napi's tracepoint works will is depend on
+> > "DECLARE_TRACE" definiens in include/trace/define_trace.h,
+> > like below:
+> > 
+> > #include <trace/events/skb.h>    // include define_trace.h
+> > #include <trace/events/napi.h>
+> > 
+> > there have error, if we remove "#include <trace/events/skb.h>"
+> > or include napi.h in the front of include skb.h, It should
+> > depend on the definiens in include/linux/tracepoint.h and we
+> > can remove the "DECLARE_TRACE" definiens in
+> > include/trace/define_trace.h, because "TRACE_EVENT" not use it
+> > 
+> > Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> > ---
+> >  include/trace/define_trace.h |    4 ----
+> >  net/core/net-traces.c        |    4 +++-
+> >  2 files changed, 3 insertions(+), 5 deletions(-)
+> 
+> This will collide with tracing bits in the networking tree. The 
+> skb-tracing plugin there should be turned into proper TRACE_EVENT() 
+> tracepoints.
+> 
+> Neil was away for some time but i think soon we should see some 
+> movement here.
+> 
+> 	Ingo
 > 
 
-I'm not seeing where this gfp mask is coming out of if you don't have zone
-limitations. GFP masks don't help you get contiguity beyond the hugepage
-boundary.
+Thank you Ingo, yes, I'm back from the beach now and will look at this shortly.
+I concur, we should just convert the napi_poll tracepoint to be defined via the
+TRACE_EVENT macro, same as the kfree_skb tracepoint.  Xaio would you like to
+take care of that, or shall I?
 
-If you did need the GFP mask, you could store it in hugetlbfs_inode_info
-as you'd expect all users of that inode to have the same GFP
-requirements, right?
+Best
+Neil
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
