@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZHYOAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbZHYOBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920AbZHYOAQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 10:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbZHYOAO
+	id S1754949AbZHYOBl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 10:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbZHYOBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 10:00:14 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:13684 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753860AbZHYOAM convert rfc822-to-8bit (ORCPT
+	Tue, 25 Aug 2009 10:01:40 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:49800 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754850AbZHYOBj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 10:00:12 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Tue, 25 Aug 2009 10:01:39 -0400
+Message-Id: <4A940AE502000078000119C5@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 25 Aug 2009 15:01:41 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <tglx@linutronix.de>, <mingo@redhat.com>, <linux-kernel@vger.kernel.org>,
+       <linux-tip-commits@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [tip:x86/urgent] x86: Fix build with older binutils
+	 andconsolidate linker script
+References: <4A8AEA1F0200007800010563@vpn.id2.novell.com>
+ <tip-ddc98b38b6320d5de2e3167673a06ec1a48e9d0e@git.kernel.org>
+ <20090825075029.GA857@elte.hu>
+ <4A9408FC02000078000119B1@vpn.id2.novell.com>
+ <20090825135651.GA22484@elte.hu>
+In-Reply-To: <20090825135651.GA22484@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] : eliminate code duplication in kernel/tracepoint.c
-Date: Tue, 25 Aug 2009 07:00:02 -0700
-Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501EA9047@exchange.ZeugmaSystems.local>
-In-Reply-To: <20090825063901.GB14286@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] : eliminate code duplication in kernel/tracepoint.c
-Thread-Index: AcolTtulvUsewwyOQPaaS3ZXnBir0AAPJ/uA
-References: <DDFD17CC94A9BD49A82147DDF7D545C501EA8FBB@exchange.ZeugmaSystems.local> <4A933C55.4090808@cn.fujitsu.com> <DDFD17CC94A9BD49A82147DDF7D545C501EA902E@exchange.ZeugmaSystems.local> <4A93760C.4020107@cn.fujitsu.com> <20090825063901.GB14286@elte.hu>
-From: "Anirban Sinha" <ASinha@zeugmasystems.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Li Zefan" <lizf@cn.fujitsu.com>
-Cc: <linux-kernel@vger.kernel.org>, "Oleg Nesterov" <oleg@tv-sign.ru>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->> I still think it's better not to remove this break. every "case"
->> should have a break or a return, expect for the falling throught
->> cases.
+>>> Ingo Molnar <mingo@elte.hu> 25.08.09 15:56 >>>
+>* Jan Beulich <JBeulich@novell.com> wrote:
+>> Sorry for having forgotten to do so before submitting the first 
+>> time (I know I had intended to).
 >
->Correct. That might seem like a superfluous statement, but when we
->add new cases it stays robust while with the missing break one can
->create an unintended fall-through codepath.
+>This happens. I'm still unsure whether we can do it in .31.0 or need 
+>to delay it to .31.1 via a -stable backport tag. One more problem 
+>with it and i think we'll need to delay it - it's just too large and 
+>changes too many aspects of the linker script.
 >
->	Ingo
+>Would it be possible to split it into two pieces: 'minimal fix' and 
+>'clean up' portions?
 
-Thanks a lot Li and Ingo for all the feedback. Final patch goes below:
+Besides being cumbersome, that would make it even larger, so I'd say
+that's not worth it.
 
->From f9826874841a5b15b553cfb6540d1ecfa6b55531 Mon Sep 17 00:00:00 2001
-From: Anirban Sinha <asinha@zeugmasystems.com>
-Date: Tue, 25 Aug 2009 06:50:54 -0700
-Subject: cleanup: eliminate code duplication in kernel/tracepoint.c
-
-
-Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/tracepoint.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 1ef5d3a..4840ab6 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -554,9 +554,6 @@ int tracepoint_module_notify(struct notifier_block
-*self,
- 
- 	switch (val) {
- 	case MODULE_STATE_COMING:
--		tracepoint_update_probe_range(mod->tracepoints,
--			mod->tracepoints + mod->num_tracepoints);
--		break;
- 	case MODULE_STATE_GOING:
- 		tracepoint_update_probe_range(mod->tracepoints,
- 			mod->tracepoints + mod->num_tracepoints);
--- 
-1.6.4
+Jan
 
