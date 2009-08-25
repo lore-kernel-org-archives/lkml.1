@@ -1,272 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZHYIMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZHYIPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754734AbZHYIMR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 04:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbZHYIMQ
+	id S1754747AbZHYIPO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 04:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZHYIPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 04:12:16 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49347 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754700AbZHYIMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 04:12:14 -0400
-Message-ID: <4A939D98.7020400@cn.fujitsu.com>
-Date: Tue, 25 Aug 2009 16:15:20 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 25 Aug 2009 04:15:12 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:56967 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754719AbZHYIPK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 04:15:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LzDTkWfv+RVgMEcp/RyZmSJFwpxUYgoYYXS2i0PXwbda0SCAjJwxyStK6ik+ksyzmz
+         XBGEbMr4jYft6DFwZeGuh7LhoB6lRDAEU1Qb9BiEcv066TpR6FsKNzpeSfcZbXiE+3+A
+         0+JwV9qFaEVQUx/aciVRfvDNuAWrhnTT+FEIM=
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] ftrace: Add timer-source of walltime for ftrace
-References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com> <4A939CDF.2000407@cn.fujitsu.com>
-In-Reply-To: <4A939CDF.2000407@cn.fujitsu.com>
+In-Reply-To: <1251143422-13905-1-git-send-email-Mario_Limonciello@Dell.com>
+References: <9b2b86520908220420p282c862fn9c44697db010a08d@mail.gmail.com>
+	 <1251143422-13905-1-git-send-email-Mario_Limonciello@Dell.com>
+Date: Tue, 25 Aug 2009 09:15:10 +0100
+Message-ID: <9b2b86520908250115r2281fd66w8536f4e3817ea8b9@mail.gmail.com>
+Subject: Re: [PATCH] compal-laptop: Replace sysfs support with rfkill support
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Mario Limonciello <Mario_Limonciello@dell.com>
+Cc: cezary.jackiewicz@gmail.com, linux-wireless@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can add a timer-source for ftrace to support wall-time display.
-It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
-http://lkml.org/lkml/2009/7/24/103
+On 8/24/09, Mario Limonciello <Mario_Limonciello@dell.com> wrote:
+> This drops the support for manually groking the files in sysfs
+> to turn on and off the WLAN and BT for Compal laptops in favor
+> of platform rfkill support.
+>
+> It has been combined into a single patch to not introduce regressions
+> in the process of simply adding rfkill support
 
-It need to applys on my patch of:
-[PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
+Ok, that looks better.
 
-We can get following output:
- # cd /mnt/debugfs/tracing/
- # cat trace_clock
- [local] global walltime
- # echo sched_switch > current_tracer
- # cat trace
- # tracer: sched_switch
- #
- #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
- #              | |       |          |         |
-             bash-3580  [000]  2916.188093:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000]  2916.188205:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000]  2916.188538:   3580:120:R   + [000]     5:115:S events/0
-             bash-3580  [000]  2916.188599:   3580:120:R ==> [000]     5:115:R events/0
-         events/0-5     [000]  2916.188669:      5:115:S ==> [000]  3580:120:R bash
- ...
- # echo walltime > trace_clock
- # cat trace
- # tracer: sched_switch
- #
- #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
- #              | |       |                        |         |
-             bash-3580  [000] 2009-08-24 18:03:16.500705:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
-             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S ==> [000]     5:115:R events/0
-         events/0-5     [000] 2009-08-24 18:03:16.500815:      5:115:R   + [000]  3578:120:S sshd
- ...
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- include/linux/trace_clock.h |    1 +
- kernel/trace/trace.c        |   24 ++++++++++++++++-----
- kernel/trace/trace.h        |    8 ++++++-
- kernel/trace/trace_clock.c  |   48 +++++++++++++++++++++++++++++++++++++++++++
- kernel/trace/trace_output.c |   21 +++++++++++++++---
- 5 files changed, 91 insertions(+), 11 deletions(-)
-
-diff --git a/include/linux/trace_clock.h b/include/linux/trace_clock.h
-index 7a81303..322707e 100644
---- a/include/linux/trace_clock.h
-+++ b/include/linux/trace_clock.h
-@@ -15,5 +15,6 @@
- extern u64 notrace trace_clock_local(void);
- extern u64 notrace trace_clock(void);
- extern u64 notrace trace_clock_global(void);
-+extern u64 notrace trace_clock_walltime(void);
- 
- #endif /* _LINUX_TRACE_CLOCK_H */
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 5af6f83..afb2c5a 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -334,9 +334,10 @@ static struct {
- } trace_clocks[] = {
- 	{ trace_clock_local,	"local" },
- 	{ trace_clock_global,	"global" },
-+	{ trace_clock_walltime,	"walltime" },
- };
- 
--int trace_clock_id;
-+enum TRACE_CLOCK_TYPE trace_clock_type = TRACE_CLOCK_LOCAL;
- 
- /*
-  * ftrace_max_lock is used to protect the swapping of buffers
-@@ -1432,8 +1433,17 @@ static void print_lat_help_header(struct seq_file *m)
- 
- static void print_func_help_header(struct seq_file *m)
- {
--	seq_puts(m, "#           TASK-PID    CPU#    TIMESTAMP  FUNCTION\n");
--	seq_puts(m, "#              | |       |          |         |\n");
-+	if (trace_clock_type == TRACE_CLOCK_WALLTIME) {
-+		seq_puts(m, "#           TASK-PID    CPU# "
-+			"          TIMESTAMP  FUNCTION\n");
-+		seq_puts(m, "#              | |       |   "
-+			"                     |         |\n");
-+	} else {
-+		seq_puts(m, "#           TASK-PID    CPU# "
-+			"   TIMESTAMP  FUNCTION\n");
-+		seq_puts(m, "#              | |       |   "
-+			"       |         |\n");
-+	}
- }
- 
- 
-@@ -3145,8 +3155,8 @@ static ssize_t tracing_clock_read(struct file *filp, char __user *ubuf,
- 	for (i = 0; i < ARRAY_SIZE(trace_clocks); i++)
- 		bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter,
- 			"%s%s%s%s", i ? " " : "",
--			i == trace_clock_id ? "[" : "", trace_clocks[i].name,
--			i == trace_clock_id ? "]" : "");
-+			i == trace_clock_type ? "[" : "", trace_clocks[i].name,
-+			i == trace_clock_type ? "]" : "");
- 	bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter, "\n");
- 
- 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, bufiter);
-@@ -3176,7 +3186,7 @@ static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
- 	if (i == ARRAY_SIZE(trace_clocks))
- 		return -EINVAL;
- 
--	trace_clock_id = i;
-+	trace_clock_type = i;
- 
- 	mutex_lock(&trace_types_lock);
- 
-@@ -3186,6 +3196,8 @@ static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
- 
- 	mutex_unlock(&trace_types_lock);
- 
-+	tracing_reset_online_cpus(&global_trace);
-+
- 	*fpos += cnt;
- 
- 	return cnt;
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 0545c2b..2ce01b9 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -586,7 +586,13 @@ trace_vprintk(unsigned long ip, const char *fmt, va_list args);
- 
- extern unsigned long trace_flags;
- 
--extern int trace_clock_id;
-+enum TRACE_CLOCK_TYPE {
-+	TRACE_CLOCK_LOCAL,
-+	TRACE_CLOCK_GLOBAL,
-+	TRACE_CLOCK_WALLTIME,
-+};
-+
-+extern enum TRACE_CLOCK_TYPE trace_clock_type;
- 
- /* Standard output formatting function used for function return traces */
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
-diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
-index b588fd8..2b23023 100644
---- a/kernel/trace/trace_clock.c
-+++ b/kernel/trace/trace_clock.c
-@@ -19,6 +19,7 @@
- #include <linux/sched.h>
- #include <linux/ktime.h>
- #include <linux/trace_clock.h>
-+#include <trace/events/xtime.h>
- 
- /*
-  * trace_clock_local(): the simplest and least coherent tracing clock.
-@@ -107,3 +108,50 @@ u64 notrace trace_clock_global(void)
- 
- 	return now;
- }
-+
-+/*
-+ * the number of nanoseconds from 1970-1-1 00:00:00 to
-+ * machine boots (trace_clock()==0)
-+ */
-+static u64 base_walltime;
-+
-+static void sync_base_walltime(struct timespec *ts, u64 traceclock)
-+{
-+	base_walltime = (u64)ts->tv_sec * NSEC_PER_SEC + ts->tv_nsec -
-+			traceclock;
-+}
-+
-+static void probe_gtod_update_xtime(struct timespec *xtime,
-+				    struct timespec *wall_to_monotonic)
-+{
-+	unsigned long flags;
-+	u64 traceclock;
-+
-+	local_irq_save(flags);
-+	traceclock = trace_clock();
-+	sync_base_walltime(xtime, traceclock);
-+	local_irq_restore(flags);
-+}
-+
-+static int __init walltime_init(void)
-+{
-+	unsigned long flags;
-+	struct timespec ts;
-+	u64 traceclock;
-+
-+	local_irq_save(flags);
-+	getnstimeofday(&ts);
-+	traceclock = trace_clock();
-+	sync_base_walltime(&ts, traceclock);
-+	local_irq_restore(flags);
-+
-+	register_trace_gtod_update_xtime(probe_gtod_update_xtime);
-+
-+	return 0;
-+}
-+device_initcall_sync(walltime_init);
-+
-+u64 notrace trace_clock_walltime(void)
-+{
-+	return base_walltime + trace_clock();
-+}
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index e0c2545..405e37d 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -501,15 +501,28 @@ int trace_print_context(struct trace_iterator *iter)
- {
- 	struct trace_seq *s = &iter->seq;
- 	struct trace_entry *entry = iter->ent;
--	unsigned long long t = ns2usecs(iter->ts);
--	unsigned long usec_rem = do_div(t, USEC_PER_SEC);
--	unsigned long secs = (unsigned long)t;
- 	char comm[TASK_COMM_LEN];
- 
- 	trace_find_cmdline(entry->pid, comm);
- 
--	return trace_seq_printf(s, "%16s-%-5d [%03d] %5lu.%06lu: ",
-+	if (trace_clock_type == TRACE_CLOCK_WALLTIME) {
-+		struct tm tm;
-+		u32 remainder;
-+		time_to_tm(div_u64_rem(iter->ts, NSEC_PER_SEC, &remainder),
-+				-sys_tz.tz_minuteswest * 60, &tm);
-+		return trace_seq_printf(s, "%16s-%-5d [%03d] "
-+				"%04ld-%02d-%02d %02d:%02d:%02d.%06llu: ",
-+				comm, entry->pid, iter->cpu,
-+				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-+				tm.tm_hour, tm.tm_min, tm.tm_sec,
-+				ns2usecs(remainder));
-+	} else {
-+		unsigned long long t = ns2usecs(iter->ts);
-+		unsigned long usec_rem = do_div(t, USEC_PER_SEC);
-+		unsigned long secs = (unsigned long)t;
-+		return trace_seq_printf(s, "%16s-%-5d [%03d] %5lu.%06lu: ",
- 				comm, entry->pid, iter->cpu, secs, usec_rem);
-+	}
- }
- 
- int trace_print_lat_context(struct trace_iterator *iter)
--- 
-1.5.5.3
-
+Thanks
+Alan
