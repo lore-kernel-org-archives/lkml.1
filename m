@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbZHYAdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbZHYAfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbZHYAdP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 20:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZHYAdO
+	id S1754030AbZHYAfo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 20:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZHYAfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 20:33:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41435 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753960AbZHYAdN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 20:33:13 -0400
-Date: Mon, 24 Aug 2009 20:33:13 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Dick Streefland <dick@streefland.net>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: linux-next: manual merge of the kconfig tree with the kbuild
- tree
-In-Reply-To: <20090825094427.b91e3329.sfr@canb.auug.org.au>
-Message-ID: <alpine.DEB.2.00.0908242032210.6710@gandalf.stny.rr.com>
-References: <20090824113226.b61cccc6.sfr@canb.auug.org.au> <20090824083433.GA6147@streefland.net> <alpine.DEB.2.00.0908241052420.7587@gandalf.stny.rr.com> <20090825094427.b91e3329.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 24 Aug 2009 20:35:44 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9998 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753749AbZHYAfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 20:35:43 -0400
+Message-ID: <4A9331AA.1090905@redhat.com>
+Date: Mon, 24 Aug 2009 20:34:50 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@ucw.cz>
+CC: Zan Lynx <zlynx@acm.org>, Ric Wheeler <rwheeler@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+References: <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <4A930EB9.8030903@redhat.com> <4A93129E.6080704@acm.org> <20090824224427.GI29763@elf.ucw.cz>
+In-Reply-To: <20090824224427.GI29763@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Machek wrote:
+> On Mon 2009-08-24 16:22:22, Zan Lynx wrote:
+>   
+>> Ric Wheeler wrote:
+>>     
+>>> Pavel Machek wrote:
+>>>       
+>>>> Degraded MD RAID5 does not work by design; whole stripe will be
+>>>> damaged on powerfail or reset or kernel bug, and ext3 can not cope
+>>>> with that kind of damage. [I don't see why statistics should be
+>>>> neccessary for that; the same way we don't need statistics to see that
+>>>> ext2 needs fsck after powerfail.]
+>>>>                                     Pavel
+>>>>   
+>>>>         
+>>> What you are describing is a double failure and RAID5 is not double  
+>>> failure tolerant regardless of the file system type....
+>>>       
+>> Are you sure he isn't talking about how RAID must write all the data  
+>> chunks to make a complete stripe and if there is a power-loss, some of  
+>> the chunks may be written and some may not?
+>>
+>> As I read Pavel's point he is saying that the incomplete write can be  
+>> detected by the incorrect parity chunk, but degraded RAID-5 has no  
+>> working parity chunk so the incomplete write would go undetected.
+>>     
+>
+> Yep.
+>
+>   
+>> I know this is a RAID failure mode. However, I actually thought this was  
+>> a problem even for a intact RAID-5. AFAIK, RAID-5 does not generally  
+>> read the complete stripe and perform verification unless that is  
+>> requested, because doing so would hurt performance and lose the entire  
+>> point of the RAID-5 rotating parity blocks.
+>>     
+>
+> Not sure; is not RAID expected to verify the array after unclean
+> shutdown?
+>
+> 									Pavel
+>   
+ Not usually - that would take multiple hours of verification, roughly 
+equivalent to doing a RAID rebuild since you have to read each sector of 
+every drive (although you would do this at full speed if the array was 
+offline, not throttled like we do with rebuilds).
 
-On Tue, 25 Aug 2009, Stephen Rothwell wrote:
+That is part of the thing that scrubbing can do.
 
-> Hi Steve,
-> 
-> On Mon, 24 Aug 2009 10:54:04 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
-> >
-> > On Mon, 24 Aug 2009, Dick Streefland wrote:
-> > 
-> > > My simplified script that you merged from the kbuild tree will also
-> > > extract config information from ELF files. So both patches from the
-> > > kconfig tree are not needed anymore.
-> > 
-> > OK what is the proper way to resolve this, before sending anything off to 
-> > Linus?  Should I pull in Dick's tree and resolve the conficts myself, and 
-> > let you repull? Or is something else recommended?
-> 
-> You could cherry-pick Dick's commit into your tree (and remove your
-> conflicting commits by rebasing). Or you could rebase your work on top of
-> Sam's kbuild tree (or merge Sam's tree) (but that would require Sam to
-> guarantee that his tree won't be rebased). Or you could do the rebase and
-> then just submit your tree to Sam for inclusion (instead of, or as well
-> as, it being included in linux-next directly).  Or you could keep going
-> the way you are and resolve the conflict once one of the trees has been
-> merged into Linus' tree.
-> 
-> For the moment, I can keep resolving the conflict.
+Note that once you find a bad bit of data, it is really useful to be 
+able to map that back into a humanly understandable object/repair 
+action. For example, map the bad data range back to metadata which would 
+translate into a fsck run or a list of impacted files or directories....
 
-Yeah, lets just keep it as is for the moment. When Sam's is accepted into 
-Linus's I'll rebase off of that. Assuming that Sam's will be accepted 
-rather quickly ;-)
-
--- Steve
+Ric
 
