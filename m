@@ -1,72 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbZHYXOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932342AbZHYX0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932330AbZHYXOW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932239AbZHYXOW
+	id S932342AbZHYX0L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbZHYX0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:14:22 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:47106 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932209AbZHYXOV (ORCPT
+	Tue, 25 Aug 2009 19:26:11 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59332 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932282AbZHYX0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:14:21 -0400
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: "David Xiao" <dxiao@broadcom.com>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
-Date: Wed, 26 Aug 2009 01:17:27 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30.3; KDE/4.3.0; x86_64; ; )
-Cc: "Steven Walter" <stevenrwalter@gmail.com>,
-       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       "Ben Dooks" <ben-linux@fluff.org>,
-       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
-       "Robin Holt" <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "v4l2_linux" <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <1251237768.8877.26.camel@david-laptop>
-In-Reply-To: <1251237768.8877.26.camel@david-laptop>
+	Tue, 25 Aug 2009 19:26:10 -0400
+Date: Wed, 26 Aug 2009 01:26:01 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090825232601.GF4300@elf.ucw.cz>
+References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <4A9468E8.607@redhat.com> <20090825225114.GE4300@elf.ucw.cz> <4A946DD1.8090906@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908260117.27180.laurent.pinchart@ideasonboard.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A946DD1.8090906@redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 26 August 2009 00:02:48 David Xiao wrote:
-> On Tue, 2009-08-25 at 05:53 -0700, Steven Walter wrote:
-> > On Thu, Aug 6, 2009 at 6:25 PM, Russell King - ARM
-> > Linux<linux@arm.linux.org.uk> wrote:
-> > [...]
-> >
-> > > As far as userspace DMA coherency, the only way you could do it with
-> > > current kernel APIs is by using get_user_pages(), creating a
-> > > scatterlist from those, and then passing it to dma_map_sg().  While the
-> > > device has ownership of the SG, userspace must _not_ touch the buffer
-> > > until after DMA has completed.
-> >
-> > [...]
-> >
-> > Would that work on a processor with VIVT caches?  It seems not.  In
-> > particular, dma_map_page uses page_address to get a virtual address to
-> > pass to map_single().  map_single() in turn uses this address to
-> > perform cache maintenance.  Since page_address() returns the kernel
-> > virtual address, I don't see how any cache-lines for the userspace
-> > virtual address would get invalidated (for the DMA_FROM_DEVICE case).
-> >
-> > If that's true, then what is the correct way to allow DMA to/from a
-> > userspace buffer with a VIVT cache?  If not true, what am I missing?
+
+>>> Basically, any file system (Linux, windows, OSX, etc) that writes into
+>>> the page cache will lose data when you hot unplug its storage. End of
+>>> story, don't do it!
+>>
+>> No, not ext3 on SATA disk with barriers on and proper use of
+>> fsync(). I actually tested that.
+>>
+>> Yes, I should be able to hotunplug SATA drives and expect the data
+>> that was fsync-ed to be there.
 >
-> page_address() is basically returning page->virtual, which records the
-> virtual/physical mapping for both user/kernel space; and what only
-> matters there is highmem or not.
+> You can and will lose data (even after fsync) with any type of storage at 
+> some rate. What you are missing here is that data loss needs to be 
+> measured in hard numbers - say percentage of installed boxes that have 
+> config X that lose data.
 
-I'm not sure to get it. Are you implying that a physical page will then be 
-mapped to the same address in all contexts (kernelspace and userspace 
-processes) ? Is that even possible ? And if not, how could page->virtual store 
-both the initial kernel map and all the userspace mappings ?
+I'm talking "by design" here.
 
+I will lose data even on SATA drive that is properly powered on if I
+wait 5 years.
+
+> I can promise you that hot unplugging and replugging a S-ATA drive will 
+> also lose you data if you are actively writing to it (ext2, 3, whatever).
+
+I can promise you that running S-ATA drive will also lose you data,
+even if you are not actively writing to it. Just wait 10 years; so
+what is your point?
+
+But ext3 is _designed_ to preserve fsynced data on SATA drive, while
+it is _not_ designed to preserve fsynced data on MD RAID5.
+
+Do you really think that's not a difference?
+
+>>>>> I don't object to making that general statement - "Don't hot unplug a
+>>>>> device with an active file system or actively used raw device" - but
+>>>>> would object to the overly general statement about ext3 not working on
+>>>>> flash, RAID5 not working, etc...
+>>>>
+>>>> You can object any way you want, but running ext3 on flash or MD RAID5
+>>>> is stupid:
+>>>>
+>>>> * ext2 would be faster
+>>>>
+>>>> * ext2 would provide better protection against powerfail.
+>>>
+>>> Not true in the slightest, you continue to ignore the ext2/3/4 developers
+>>> telling you that it will lose data.
+>>
+>> I know I will lose data. Both ext2 and ext3 will lose data on
+>> flashdisk. (That's what I'm trying to document). But... what is the
+>> benefit of ext3 journaling on MD RAID5? (On flash, ext3 at least
+>> protects you against kernel panic. MD RAID5 is in software, so... that
+>> additional protection is just not there).
+>
+> Faster recovery time on any normal kernel crash or power outage.  Data 
+> loss would be equivalent with or without the journal.
+
+No, because you'll actually repair the ext2 with fsck after the kernel
+crash or power outage. Data loss will not be equivalent; in particular
+you'll not lose data writen _after_ power outage to ext2.
+									Pavel
 -- 
-Laurent Pinchart
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
