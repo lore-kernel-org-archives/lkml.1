@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbZHYPin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbZHYPk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342AbZHYPin (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 11:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbZHYPim
+	id S1753202AbZHYPk2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 11:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZHYPk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 11:38:42 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:47755 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873AbZHYPim (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 11:38:42 -0400
-Date: Tue, 25 Aug 2009 17:38:26 +0200
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, lizf@cn.fujitsu.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 00/12] add syscall tracepoints V3 - s390 arch update
-Message-ID: <20090825153826.GF4639@cetus.boeblingen.de.ibm.com>
-Mail-Followup-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-	mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-	peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-	jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <cover.1249932670.git.jbaron@redhat.com> <20090825123111.GD4639@cetus.boeblingen.de.ibm.com> <20090825135228.GD6114@nowhere>
+	Tue, 25 Aug 2009 11:40:27 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:46005 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751020AbZHYPk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 11:40:26 -0400
+Date: Tue, 25 Aug 2009 08:40:25 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH -tip 0/2] Temporary RCU fixes for notrace and hotplug CPU
+Message-ID: <20090825154025.GD6616@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090824164112.GA13693@linux.vnet.ibm.com> <20090825065501.GA29162@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090825135228.GD6114@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090825065501.GA29162@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 03:52:32PM +0200, Frederic Weisbecker wrote:
-> On Tue, Aug 25, 2009 at 02:31:11PM +0200, Hendrik Brueckner wrote:
-> > This patch includes s390 arch updates for:
-> > - tracing: Map syscall name to number (syscall_name_to_nr())
-> > - tracing: Call arch_init_ftrace_syscalls at boot
-> > - tracing: add support traceopint ids (set_syscall_{enter,exit}_id())
-> > 
-> > The patch already uses "NR_syscalls" instead of FTRACE_SYSCALL_MAX.
-> > 
-> > The patch is based on today's linux-next (20090825).
-> > Since few of your patches already include s390 changes,
-> > I would appreciate if you could add the patch to your patch set.
-> > 
-> > If you have any remarks, please let me know. 
-> >   
-> > Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+On Tue, Aug 25, 2009 at 08:55:01AM +0200, Ingo Molnar wrote:
 > 
+> FYI, -tip testing found a new build warning on SH caused by the RCU 
+> tree (i suspect this warning triggers on other architectures as 
+> well):
 > 
-> Looks good at a first glance.
-Thanks
+> /home/mingo/tip/kernel/rcutree.c:88: warning: '__rcu_offline_cpu' 
+> declared 'static' but never defined
 
-> > +int syscall_name_to_nr(char *name)
-> > +{
-> > +	int i;
-> > +
-> > +	if (!syscalls_metadata)
-> > +		return -1;
-> > +	for (i = 0; i < NR_syscalls; i++)
-> > +		if (syscalls_metadata[i])
-> > +			if (!strcmp(syscalls_metadata[i]->name, name))
-> > +				return i;
-> > +	return -1;
-> > +}
-> > +void set_syscall_enter_id(int num, int id)
-> > +{
-> > +	syscalls_metadata[num]->enter_id = id;
-> > +}
-> > +
-> > +void set_syscall_exit_id(int num, int id)
-> > +{
-> > +	syscalls_metadata[num]->exit_id = id;
-> > +}
-> 
-> The three helpers above seem very common between archs, I guess
-> we can move them to the core: kernel/trace/trace_syscalls.c
-I think it is a good idea to move the helper routines to
-kernel/trace/trace_syscalls.c.
+<red face>
+
+> it's harmless, but since we are generally trying to fix all warnings 
+> and gravitate towards more and more -Werror subsystems, it would be 
+> nice to fix this.
+
+Indeed, and I have updated my build-output-check script to alert me to
+warning messages from my multiple-configuration test runs.  Please see
+below for patch.
+
+						Thanx, Paul
+
+------------------------------------------------------------------------
+
+Add #ifdef to suppress __rcu_offline_cpu() warning in !HOTPLUG_CPU builds
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ rcutree.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 000b076..fee6316 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -84,7 +84,9 @@ extern long rcu_batches_completed_sched(void);
+ static void cpu_quiet_msk(unsigned long mask, struct rcu_state *rsp,
+ 			  struct rcu_node *rnp, unsigned long flags);
+ static void cpu_quiet_msk_finish(struct rcu_state *rsp, unsigned long flags);
++#ifdef CONFIG_HOTPLUG_CPU
+ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp);
++#endif /* #ifdef CONFIG_HOTPLUG_CPU */
+ static void __rcu_process_callbacks(struct rcu_state *rsp,
+ 				    struct rcu_data *rdp);
+ static void __call_rcu(struct rcu_head *head,
