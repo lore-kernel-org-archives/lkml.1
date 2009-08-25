@@ -1,84 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755110AbZHYQZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZHYQ32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755110AbZHYQZu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 12:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbZHYQZt
+	id S1755259AbZHYQ32 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 12:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZHYQ32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 12:25:49 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:62047 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754875AbZHYQZs (ORCPT
+	Tue, 25 Aug 2009 12:29:28 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:53800 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755210AbZHYQ31 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 12:25:48 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AigFACink0pMROOX/2dsb2JhbACBU9ZZhBoF
-Date: Tue, 25 Aug 2009 12:25:49 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, josht@linux.vnet.ibm.com, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH -tip 0/2] Temporary RCU fixes for notrace and hotplug
-	CPU
-Message-ID: <20090825162549.GB25058@Krystal>
-References: <20090824164112.GA13693@linux.vnet.ibm.com> <20090825065501.GA29162@elte.hu> <20090825080047.GA16139@elte.hu> <20090825161208.GE6616@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090825161208.GE6616@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 12:22:14 up 7 days,  3:11,  2 users,  load average: 0.02, 0.19,
-	0.23
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 25 Aug 2009 12:29:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=uOqrL4Y7ai1VONbqPS0xXS4SOJDfyLIGDyTpaSqkZQuzXmiRw7E1Rd4cu9CVorJX4Q
+         ICvmizsurjAu3T4sYdPjDBKc5O7Hq3hk51azM6uZxANtdMqtO+YnBSFrptoQZevTnaDJ
+         YbGwUqJ2J245YoSIwQCP1LQq8rH+Ybqj4jA1U=
+MIME-Version: 1.0
+In-Reply-To: <4A9407B1.6020400@nets.rwth-aachen.de>
+References: <4A9407B1.6020400@nets.rwth-aachen.de>
+Date: Tue, 25 Aug 2009 19:29:27 +0300
+X-Google-Sender-Auth: 53ecd7b0f67adc4f
+Message-ID: <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com>
+Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, hannes@cmpxchg.org,
+       torvalds@linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+       xen-devel@lists.xensource.com, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Tue, Aug 25, 2009 at 10:00:47AM +0200, Ingo Molnar wrote:
-> > 
-> > btw., i'm still seeing crashes with the latest RCU bits:
-> > 
-> > [   20.621740] Testing event sys_enter_futex: OK
-> > [   20.629738] Testing event sys_exit_futex: OK
-> > [   20.637737] Testing event lock_acquire: [reboot]
-> > 
-> > Possibly due to infinite recursion as well. Config attached.
-> 
-> Color me confused...
-> 
-> Unless someone has a better idea, I will send in a patch that adds
-> "notrace" to every RCU API member used by any file in the kernel
-> that has "trace" in its name (excluding ptrace.c and rcutree_trace.c,
-> of course).  This list is as follows:
-> 
-> 	call_rcu()
-> 	call_rcu_sched()
-> 	rcu_read_lock()
-> 	rcu_read_unlock()
-> 
-> So, any better ideas?
+Hi Arnd,
 
-Tracers using RCU should use the _notrace() version of read_lock/unlock.
-I think the callers should be fixed rather than RCU.
+On Tue, Aug 25, 2009 at 6:48 PM, Arnd
+Hannemann<hannemann@nets.rwth-aachen.de> wrote:
+> current 2.6.31 fails to boot on our xen host (32bit pae).
+> Unfortunately it fails in a way that there is absolutely no output
+> on the console. Config is as 32bit guest.
+>
+> Git bisect gave the following:
+>
+> 83b519e8b9572c319c8e0c615ee5dd7272856090 is first bad commit
+> commit 83b519e8b9572c319c8e0c615ee5dd7272856090
+> Author: Pekka Enberg <penberg@cs.helsinki.fi>
+> Date:   Wed Jun 10 19:40:04 2009 +0300
+>
+>    slab: setup allocators earlier in the boot sequence
+>
+>    This patch makes kmalloc() available earlier in the boot sequence so we can get
+>    rid of some bootmem allocations. The bulk of the changes are due to
+>    kmem_cache_init() being called with interrupts disabled which requires some
+>    changes to allocator boostrap code.
+>
+>    Note: 32-bit x86 does WP protect test in mem_init() so we must setup traps
+>    before we call mem_init() during boot as reported by Ingo Molnar:
+>
+>      We have a hard crash in the WP-protect code:
+>
+>      [    0.000000] Checking if this processor honours the WP bit even in supervisor mode...BUG: Int 14: CR2 ffcff000
+>      [    0.000000]      EDI 00000188  ESI 00000ac7  EBP c17eaf9c  ESP c17eaf8c
+>      [    0.000000]      EBX 000014e0  EDX 0000000e  ECX 01856067  EAX 00000001
+>      [    0.000000]      err 00000003  EIP c10135b1   CS 00000060  flg 00010002
+>      [    0.000000] Stack: c17eafa8 c17fd410 c16747bc c17eafc4 c17fd7e5 000011fd f8616000 c18237cc
+>      [    0.000000]        00099800 c17bb000 c17eafec c17f1668 000001c5 c17f1322 c166e039 c1822bf0
+>      [    0.000000]        c166e033 c153a014 c18237cc 00020800 c17eaff8 c17f106a 00020800 01ba5003
+>      [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30-tip-02161-g7a74539-dirty #52203
+>      [    0.000000] Call Trace:
+>      [    0.000000]  [<c15357c2>] ? printk+0x14/0x16
+>      [    0.000000]  [<c10135b1>] ? do_test_wp_bit+0x19/0x23
+>      [    0.000000]  [<c17fd410>] ? test_wp_bit+0x26/0x64
+>      [    0.000000]  [<c17fd7e5>] ? mem_init+0x1ba/0x1d8
+>      [    0.000000]  [<c17f1668>] ? start_kernel+0x164/0x2f7
+>      [    0.000000]  [<c17f1322>] ? unknown_bootoption+0x0/0x19c
+>      [    0.000000]  [<c17f106a>] ? __init_begin+0x6a/0x6f
+>
+>    Acked-by: Johannes Weiner <hannes@cmpxchg.org>
+>    Acked-by Linus Torvalds <torvalds@linux-foundation.org>
+>    Cc: Christoph Lameter <cl@linux-foundation.org>
+>    Cc: Ingo Molnar <mingo@elte.hu>
+>    Cc: Matt Mackall <mpm@selenic.com>
+>    Cc: Nick Piggin <npiggin@suse.de>
+>    Cc: Yinghai Lu <yinghai@kernel.org>
+>    Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+>
+> However a
+> git revert 83b519e8b9572c319c8e0c615ee5dd7272856090
+> to verify that current git without that commit would work,
+> didn't succeed right away, so I was not able to test that.
 
-Tracepoints have been designed to use the _notrace variant on the
-instrumentation site. The core of tracepoint management use
-call_rcu_sched(), which can be traced without any problem.
+Thanks for doing the bisect! Can we also see your .config also?
 
-I have not followed the late tracing development as closely though, so
-errors might have crept in.
+I doubt this is a slab allocator initialization issue so I'm CC'ing
+some Xen folks. Jeremy, I don't know Xen well but on quick read, the
+only thing that I can see is that trap_init() is called before
+sched_init() now. I see Xen doing preempt_enable()/preempt_disable so
+maybe that's a problem now?
 
-Mathieu
-
-> 
-> 							Thanx, Paul
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+                                 Pekka
