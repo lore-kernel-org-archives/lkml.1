@@ -1,145 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbZHYSt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbZHYSvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755752AbZHYSt6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZHYSt6
+	id S1755930AbZHYSvi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbZHYSvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:49:58 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:44803 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755250AbZHYSt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:49:57 -0400
-Date: Tue, 25 Aug 2009 14:47:34 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com, jistone@redhat.com, tglx@linutronix.de,
-       hpa@zytor.com
-Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
-Message-ID: <20090825184734.GE2656@redhat.com>
-References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere> <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com> <20090825134005.GB2656@redhat.com>
+	Tue, 25 Aug 2009 14:51:37 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:2332 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755250AbZHYSvg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:51:36 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Subject: Re: INFO: possible circular locking dependency - kacpid  acpi_os_wait_events_complete
+Date: Tue, 25 Aug 2009 12:51:36 -0600
+User-Agent: KMail/1.9.10
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       len.brown@intel.com, linux-acpi@vger.kernel.org,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Zhang Rui <rui.zhang@intel.com>
+References: <c4e36d110908250110xe16720o977c8cf5c3386c4b@mail.gmail.com>
+In-Reply-To: <c4e36d110908250110xe16720o977c8cf5c3386c4b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090825134005.GB2656@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200908251251.37135.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 09:40:05AM -0400, Jason Baron wrote:
-> > > On Mon, Aug 24, 2009 at 05:40:18PM -0400, Jason Baron wrote:
-> > > > Add a dynamic definition of NR_syscalls for x86_64. This is used in the 
-> > > > syscall events tracing code.
-> > > > 
-> > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > > 
-> > > > ---
-> > > >  include/linux/ftrace.h |    5 +++++
-> > > >  1 files changed, 5 insertions(+), 0 deletions(-)
-> > > > 
-> > > > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> > > > index dc3b132..3bd94ee 100644
-> > > > --- a/include/linux/ftrace.h
-> > > > +++ b/include/linux/ftrace.h
-> > > > @@ -14,6 +14,11 @@
-> > > >  
-> > > >  #include <asm/ftrace.h>
-> > > >  
-> > > > +#ifdef CONFIG_X86_64
-> > > > +#include <asm/asm-offsets.h>
-> > > > +#define NR_syscalls (__NR_syscall_max + 1)
-> > > > +#endif
-> > > > +
-> > > 
-> > > 
-> > > I'd rather see this in arch/x86/include/unistd_64.h, since
-> > > NR_syscalls seems to be the defined in unistd.h in all archs.
-> > > 
-> > > That also makes a unified way to retrieve this number for
-> > > other users.
-> > > 
-> > 
-> > Yes, NR_syscalls should be included there.
-> > 
-> > -- Steve
+On Tuesday 25 August 2009 02:10:58 am Zdenek Kabelac wrote:
+> Now with 2.6.31-rc7 (3edf2fb9d80a46d6c32ba12547a42419845b4b76)
+>  I'm getting this  INFO trace - also I've noticed complete reset during resume
+> which could be eventually related to this ?
+
+What's the most recent kernel where this did not occur?  Is this
+a regression since 2.6.30?
+
+> My machine - T61, 4GB, C2D
+> I suspect that some resent  thinkpad-acpi changes.
+
+Do you have any evidence that points to thinkpad_acpi?  I looked
+at the recent changes there, and I don't see anything obviously
+related to kacpid or deferred work.
+
+I made a recent change to the kacpid workqueue (74b58208082).
+If it's convenient to revert that change and test, it'd be
+good to rule that out.
+
+Thanks for your report!
+
+Bjorn
+
+> ACPI: Preparing to enter system sleep state S3
+> Disabling non-boot CPUs ...
+> kvm: disabling virtualization on CPU1
+> CPU 1 is now offline
+> lockdep: fixing up alternatives.
+> SMP alternatives: switching to UP code
+> CPU0 attaching NULL sched-domain.
+> CPU1 attaching NULL sched-domain.
+> CPU0 attaching NULL sched-domain.
+> CPU1 is down
+> Extended CMOS year: 2000
+> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+> Back to C!
+> CPU0: Thermal monitoring handled by SMI
+> Extended CMOS year: 2000
+> Enabling non-boot CPUs ...
+> lockdep: fixing up alternatives.
+> SMP alternatives: switching to SMP code
+> Booting processor 1 APIC 0x1 ip 0x6000
+> Initializing CPU#1
+> Calibrating delay using timer specific routine.. 4390.86 BogoMIPS (lpj=7314990)
+> CPU: L1 I cache: 32K, L1 D cache: 32K
+> CPU: L2 cache: 4096K
+> CPU: Physical Processor ID: 0
+> CPU: Processor Core ID: 1
+> mce: CPU supports 6 MCE banks
+> CPU1: Thermal monitoring enabled (TM2)
+> x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
+> CPU1: Intel(R) Core(TM)2 Duo CPU     T7500  @ 2.20GHz stepping 0a
+> kvm: enabling virtualization on CPU1
+> CPU0 attaching NULL sched-domain.
+> Switched to high resolution mode on CPU 1
+> CPU0 attaching sched-domain:
+>  domain 0: span 0-1 level CPU
+>   groups: 0 1
+> CPU1 attaching sched-domain:
+>  domain 0: span 0-1 level CPU
+>   groups: 1 0
+> CPU1 is up
+> ACPI: Waking up from system sleep state S3
 > 
-> right, for x86_64, unistd.h is included to generate __NR_syscall_max
-> which is then used for NR_syscalls. So I did initially try it there, but
-> there were dependency problems. I'll see what I can come up with...
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.31-rc7-00015-ge740538 #18
+> -------------------------------------------------------
+> kacpi_hotplug/114 is trying to acquire lock:
+>  (kacpid){+.+.+.}, at: [<ffffffff81064df0>] flush_workqueue+0x0/0xc0
 > 
-> thanks,
+> but task is already holding lock:
+>  (&dpc->work){+.+.+.}, at: [<ffffffff81065183>] worker_thread+0x193/0x3f0
 > 
-> -Jason
-
-ok, since unistd_64.h is used to generate offsets.c, which eventually
-generates, asm/asm-offsets.h, which defines, __NR_syscall_max, we can't
-just put #define of NR_syscalls in unistd_64.h. However, it seems the
-only point in time that unistd_64.h can not depend upon __NR_syscall_max,
-is before asm/asm-offsets.h is defined. Thus, the patch below passes in
-a '-DCREATE_OFFSETS' during the creation of asm/asm-offsets.h, so that
-we do not include it before it exists. The patch is hacky but works.
-thoughts?
-
-Signed-off-by: Jason Baron <jbaron@redhat.com>
-
----
-
- Kbuild                           |    2 +-
- arch/x86/include/asm/unistd_64.h |    6 ++++++
- scripts/Makefile.build           |    4 ++++
- 3 files changed, 11 insertions(+), 1 deletions(-)
-
-
-diff --git a/Kbuild b/Kbuild
-index f056b4f..5f43d4d 100644
---- a/Kbuild
-+++ b/Kbuild
-@@ -78,7 +78,7 @@ endef
- arch/$(SRCARCH)/kernel/asm-offsets.s: arch/$(SRCARCH)/kernel/asm-offsets.c \
-                                       $(obj)/$(bounds-file) FORCE
- 	$(Q)mkdir -p $(dir $@)
--	$(call if_changed_dep,cc_s_c)
-+	$(call if_changed_dep,cc_s_c_define_offset)
- 
- $(obj)/$(offsets-file): arch/$(SRCARCH)/kernel/asm-offsets.s Kbuild
- 	$(call cmd,offsets)
-diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
-index 900e161..70c0c3d 100644
---- a/arch/x86/include/asm/unistd_64.h
-+++ b/arch/x86/include/asm/unistd_64.h
-@@ -688,6 +688,12 @@ __SYSCALL(__NR_perf_counter_open, sys_perf_counter_open)
- #endif	/* __NO_STUBS */
- 
- #ifdef __KERNEL__
-+
-+#ifndef CREATE_OFFSETS
-+#include <asm/asm-offsets.h>
-+#define NR_syscalls (__NR_syscall_max + 1)
-+#endif
-+
- /*
-  * "Conditional" syscalls
-  *
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 5c4b7a4..4177858 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -145,6 +145,10 @@ $(multi-objs-y:.o=.lst) : modname = $(modname-multi)
- quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
- cmd_cc_s_c       = $(CC) $(c_flags) -fverbose-asm -S -o $@ $<
- 
-+quiet_cmd_cc_s_c_define_offset = CC $(quiet_modtag)  $@
-+cmd_cc_s_c_define_offset       = $(CC) $(c_flags) -DCREATE_OFFSETS \
-+					-fverbose-asm -S -o $@ $<
-+
- $(obj)/%.s: $(src)/%.c FORCE
- 	$(call if_changed_dep,cc_s_c)
- 
-
-
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #1 (&dpc->work){+.+.+.}:
+>        [<ffffffff8107eeac>] __lock_acquire+0xc5c/0x1090
+>        [<ffffffff8107f37a>] lock_acquire+0x9a/0x180
+>        [<ffffffff810651ce>] worker_thread+0x1de/0x3f0
+>        [<ffffffff810690e6>] kthread+0xa6/0xb0
+>        [<ffffffff8100d2da>] child_rip+0xa/0x20
+>        [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> -> #0 (kacpid){+.+.+.}:
+>        [<ffffffff8107ef7f>] __lock_acquire+0xd2f/0x1090
+>        [<ffffffff8107f37a>] lock_acquire+0x9a/0x180
+>        [<ffffffff81064e4f>] flush_workqueue+0x5f/0xc0
+>        [<ffffffff81261524>] acpi_os_wait_events_complete+0x15/0x23
+>        [<ffffffff81261561>] acpi_os_execute_hp_deferred+0x2f/0x43
+>        [<ffffffff810651d4>] worker_thread+0x1e4/0x3f0
+>        [<ffffffff810690e6>] kthread+0xa6/0xb0
+>        [<ffffffff8100d2da>] child_rip+0xa/0x20
+>        [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> other info that might help us debug this:
+> 
+> 2 locks held by kacpi_hotplug/114:
+>  #0:  (kacpi_hotplug){+.+...}, at: [<ffffffff81065183>]
+> worker_thread+0x193/0x3f0
+>  #1:  (&dpc->work){+.+.+.}, at: [<ffffffff81065183>] worker_thread+0x193/0x3f0
+> 
+> stack backtrace:
+> Pid: 114, comm: kacpi_hotplug Not tainted 2.6.31-rc7-00015-ge740538 #18
+> Call Trace:
+>  [<ffffffff8107cf0d>] print_circular_bug_tail+0x9d/0xe0
+>  [<ffffffff8107ef7f>] __lock_acquire+0xd2f/0x1090
+>  [<ffffffff8107b5ff>] ? save_trace+0x3f/0xb0
+>  [<ffffffff8107f37a>] lock_acquire+0x9a/0x180
+>  [<ffffffff81064df0>] ? flush_workqueue+0x0/0xc0
+>  [<ffffffff81261532>] ? acpi_os_execute_hp_deferred+0x0/0x43
+>  [<ffffffff81064e4f>] flush_workqueue+0x5f/0xc0
+>  [<ffffffff81064df0>] ? flush_workqueue+0x0/0xc0
+>  [<ffffffff81261524>] acpi_os_wait_events_complete+0x15/0x23
+>  [<ffffffff81261561>] acpi_os_execute_hp_deferred+0x2f/0x43
+>  [<ffffffff810651d4>] worker_thread+0x1e4/0x3f0
+>  [<ffffffff81065183>] ? worker_thread+0x193/0x3f0
+>  [<ffffffff8107b2fe>] ? put_lock_stats+0xe/0x30
+>  [<ffffffff81069540>] ? autoremove_wake_function+0x0/0x40
+>  [<ffffffff81064ff0>] ? worker_thread+0x0/0x3f0
+>  [<ffffffff810690e6>] kthread+0xa6/0xb0
+>  [<ffffffff8100d2da>] child_rip+0xa/0x20
+>  [<ffffffff8100cc40>] ? restore_args+0x0/0x30
+>  [<ffffffff81069040>] ? kthread+0x0/0xb0
+>  [<ffffffff8100d2d0>] ? child_rip+0x0/0x20
+> ACPI: \_SB_.GDCK - docking
+> acpi IBM0079:00: parent device:00 should not be sleeping
+> pci 0000:00:02.0: restoring config space at offset 0x1 (was 0x900007,
+> writing 0x900403)
+> pci 0000:00:02.1: restoring config space at offset 0x1 (was 0x900000,
+> writing 0x900007)
+> uhci_hcd 0000:00:1a.0: restoring config space at offset 0x1 (was
+> 0x2800005, writing 0x2800001)
+> uhci_hcd 0000:00:1a.1: power state changed by ACPI to D0
+> uhci_hcd 0000:00:1a.1: restoring config space at offset 0x1 (was
+> 0x2800005, writing 0x2800001)
+> ehci_hcd 0000:00:1a.7: restoring config space at offset 0x1 (was
+> 0x2900106, writing 0x2900102)
+> ehci_hcd 0000:00:1a.7: PME# disabled
+> HDA Intel 0000:00:1b.0: restoring config space at offset 0x1 (was
+> 0x100106, writing 0x100102)
+> 
+> 
+> Zdenek
+> 
 
 
