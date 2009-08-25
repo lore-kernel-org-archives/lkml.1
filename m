@@ -1,195 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZHYRbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbZHYRgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbZHYRbN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 13:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbZHYRbM
+	id S1755462AbZHYRgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 13:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbZHYRgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 13:31:12 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:50921 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755365AbZHYRbL (ORCPT
+	Tue, 25 Aug 2009 13:36:35 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:1404 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750821AbZHYRgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 13:31:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Kqn8X1AIa9A4iOxBadlzMJtLdLILuZE2vhaqnIkHbLZTxAZzwtq3ACbBU/7DwMJqiB
-         RpiQYvfRT9UkYa/2mqABAj1cfLR8Gq6O1mvX/C8+iD+gMOG4N47JCJFivRSrV2xd6tRr
-         43ZNw7B/spwN8tP973griIwOH5qDnfrsRaT+c=
-Date: Tue, 25 Aug 2009 19:31:08 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090825173107.GJ6114@nowhere>
-References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090825162004.GA25058@Krystal> <20090825165912.GI6114@nowhere>
+	Tue, 25 Aug 2009 13:36:35 -0400
+X-Trace: 252032731/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.17.242/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.17.242
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigFAFy+k0pPRRHy/2dsb2JhbACBU9dngjWBZQU
+X-IronPort-AV: E=Sophos;i="4.44,273,1249254000"; 
+   d="scan'208";a="252032731"
+Date: Tue, 25 Aug 2009 18:35:56 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrea Arcangeli <aarcange@redhat.com>
+cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 9/12] ksm: fix oom deadlock
+In-Reply-To: <20090825145832.GP14722@random.random>
+Message-ID: <Pine.LNX.4.64.0908251738070.30372@sister.anvils>
+References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
+ <Pine.LNX.4.64.0908031317190.16754@sister.anvils> <20090825145832.GP14722@random.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825165912.GI6114@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 06:59:14PM +0200, Frederic Weisbecker wrote:
-> On Tue, Aug 25, 2009 at 12:20:04PM -0400, Mathieu Desnoyers wrote:
-> > * Hendrik Brueckner (brueckner@linux.vnet.ibm.com) wrote:
-> > > On Tue, Aug 25, 2009 at 04:15:49PM +0200, Frederic Weisbecker wrote:
-> > > > On Tue, Aug 25, 2009 at 02:50:27PM +0200, Hendrik Brueckner wrote:
-> > > > > There are at least two scenarios where syscall_get_nr() can return -1:
-> > > > > 
-> > > > > 1. For example, ptrace stores an invalid syscall number, and thus,
-> > > > >    tracing code resets it.
-> > > > >    (see do_syscall_trace_enter in arch/s390/kernel/ptrace.c)
-> > > > > 
-> > > > > 2. The syscall_regfunc() (kernel/tracepoint.c) sets the TIF_SYSCALL_FTRACE
-> > > > >    (now: TIF_SYSCALL_TRACEPOINT) flag for all threads which includes
-> > > > >    kernel threads.
-> > > > >    However, the ftrace selftest triggers a kernel oops when testing syscall
-> > > > >    trace points:
-> > > > >       - The kernel thread is started as ususal (do_fork()),
-> > > > >       - tracing code sets TIF_SYSCALL_FTRACE,
-> > > > >       - the ret_from_fork() function is triggered and starts
-> > > > > 	ftrace_syscall_exit() with an invalid syscall number.
-> > > > 
-> > > > 
-> > > > 
-> > > > I wonder if there is any way to identify such situation...?
-> > > For the second case, it might be an option to avoid setting the
-> > > TIF_SYSCALL_FTRACE flag for kernel threads.
-> > > 
-> > > Kernel threads have task_struct->mm set to NULL.
-> > > (Thanks to Heiko for that hint ;-)
-> > > 
-> > > The idea is then to check the mm field in syscall_regfunc() and
-> > > set the flag accordingly.
-> > > 
-> > > However, I think the patch is an optional add-on becase checking
-> > > the syscall number is still required for case 1).
-> > > 
-> > > ---
-> > >  kernel/tracepoint.c |    4 +++-
-> > >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > > 
-> > > --- a/kernel/tracepoint.c
-> > > +++ b/kernel/tracepoint.c
-> > > @@ -593,7 +593,9 @@ void syscall_regfunc(void)
-> > >  	if (!sys_tracepoint_refcount) {
-> > >  		read_lock_irqsave(&tasklist_lock, flags);
-> > >  		do_each_thread(g, t) {
-> > > -			set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > > +			/* Skip kernel threads. */
-> > > +			if (t->mm)
-> > > +				set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > 
-> > Uh ? kernel threads can invoke a system call. There are rare places
-> > where kernel code actually invoke system calls. I don't see why we
-> > should not deal with them.
+On Tue, 25 Aug 2009, Andrea Arcangeli wrote:
+> On Mon, Aug 03, 2009 at 01:18:16PM +0100, Hugh Dickins wrote:
+> > tables which have been freed for reuse; and even do_anonymous_page
+> > and __do_fault need to check they're not being called by break_ksm
+> > to reinstate a pte after zap_pte_range has zapped that page table.
 > 
-> 
-> 
-> Yeah they do, but they don't use the sysenter path, they call the
-> syscall helpers directly, such as do_fork() or things like that.
-> 
-> The syscall tracepoints are set in the sysenter/sysexit path, then
-> it's no use to trace the kernel threads, it doesn't have any effect,
-> except random results in case of fork() calls, because we take
-> the ret_from_fork() path that also ends up to trace_sys_exit()
-> if the TIF_SYSCALL_TRACEPOINT thing is set, leading to such
-> asymetric tracing.
-> 
-> Kernel threads use syscalls toward wrappers such as create_thread().
-> So instead, statically defined tracepoints in create_thread() and such
-> other syscall wrappers for kernel threads seem more valuable, hmm?
-> 
->  
-> > Moreover, the problem you face is more general: if we set the
-> > TIF_SYSCALL_FTRACE flag of a standard thread right in the middle of its
-> > system call, x86_64 will cause the syscall exit to execute by re-reading
-> > the thread flags and run a syscall trace exit.
-> 
-> 
-> Well, I don't think that's the problem. The issue here, if I understand
-> correctly, is that kernel threads don't take the sysenter path, then never hit
-> the trace_sys_enter() call. And usually they won't ever hit any
-> trace_sys_exit() calls except in the fork() case, because we take
-> the ret_from_fork() path, which lead to syscall exit tracing due
-> to the TIF flags set.
-> 
-> At this stage, the syscall number is supposed to be stored in orig_eax,
-> but because the kernel thread hasn't called fork() through a syscall and
-> has called do_fork() directly, the regs values have nothing that look
-> like syscall parameters.
+> This deadlocks exit_mmap in an infinite loop when there's some region
+> locked. mlock calls gup and pretends to page fault successfully if
+> there's a vma existing on the region, but it doesn't page fault
+> anymore because of the mm_count being 0 already, so follow_page fails
+> and gup retries the page fault forever.
 
+That's right.  Justin alerted me to this issue last night, and at first
+I was utterly mystified (and couldn't reproduce).  But a look at the
+.jpg in the Fedora bugzilla, and another look at KSM 9/12, brought
+me to the same conclusion that you've reached.
 
+The _right_ solution (without even knowing of this problem) is
+coincidentally being discussed currently in a different thread,
+"make munlock fast when mlock is canceled by sigkill".  It's just
+idiotic that munlock (in this case, munlocking pages on exit) should
+be trying to fault in pages, and that causes its own problems when
+mlock of a large area goes OOM and invokes the OOM killer on itself
+(the munlock hangs trying to fault in what the mlock failed to do:
+at this instant I forget whether that deadlocks the system, or
+causes the wrong processes to be killed - I've several other OOM
+fixes to make).
 
-I mean, I don't know how look like orig_eax at this stage.
+I have now made a patch with munlock_vma_pages_range() doing a
+follow_page() loop instead of faulting in; but I've not yet tested
+it properly, and it's rather mixed up with three other topics
+(a coredump GUP flag to __get_user_pages to govern the ZERO_PAGE
+shortcut, instead of confused guesses; reinstating do_anonymous
+ZERO_PAGE; cleaning away unnecessary GUP flags).  It's something
+that will need exposure in mmotm before going any further, whereas
+this ksm_test_exit() issue needs a safe fix quicker than that.
 
-Looking at arch/x86/kernel/process_32.c:copy_thread()
+I was pondering what to do when you wrote in.
 
-childregs = task_pt_regs(p);
-*childregs = *regs;
-childregs->ax = 0;
-childregs->sp = sp;
+> And generally I don't like to add those checks to page fault fast path.
 
-p->thread.sp = (unsigned long) childregs;
-p->thread.sp0 = (unsigned long) (childregs+1);
-
-p->thread.ip = (unsigned long) ret_from_fork;
-
-
-sp will be the struct pt_regs * passed to syscall_trace_leave()
-later.
-
-ax has the result of the fork syscall -> 0 for the child.
-What about orig_eax which has the syscall nr? It depends on the pareent
-and I don't know what it has at this stage.
-
-I haven't seen crashes in x86 with kernel threads tracing, may be because
-orig_eax is set to a valid syscall nr (may be even fork nr).
-
-Perhaps it's not the case in s390 ?
-
-Anyway, tracing kernel threads syscalls only gives us the fork return,
-so it's something me may want to drop and trace higher level kernel
-thread syscall wrappers instead.
-
-Moreover every kernel threads is created through a kthreadd fork if
-I'm not wrong, then it wouldn't be an accurate thing for us to trace the
-fork calls in kernel thread. Tracing higher level kernel thread managment
-sounds more interesting, we would then know who really created the thread,
-etc...
-
+I'd prefer not to have them too, but haven't yet worked out how to
+get along safely without them.
 
 > 
-> I guess we don't need to take the sys_enter tracing path to have a sane
-> orig_eax in the sys_exit tracing path (for non kernel threads).
-> Though I'm not sure about that, I should check to be sure.
->
-> > We could simply initialize the "saved system calls id" number to
-> > something like -1, so that if we happen to return from a syscall that
-> > did not get its id recorded at syscall entry, we know it because it's
-> > not initialized.
-> > 
-> > We would need to carefully put back the -1 value after clearing the
-> > thread flag when we stop tracing too (while still holding a mutex).
-> > 
-> > Mathieu
-> > 
-> > >  		} while_each_thread(g, t);
-> > >  		read_unlock_irqrestore(&tasklist_lock, flags);
-> > >  	}
-> > > 
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
+> Given we check mm_users == 0 (ksm_test_exit) after taking mmap_sem in
+> unmerge_and_remove_all_rmap_items, why do we actually need to care
+> that a page fault happens? We hold mmap_sem so we're guaranteed to see
+> mm_users == 0 and we won't ever break COW on that mm with mm_users ==
+> 0 so I think those troublesome checks from page fault can be simply
+> removed.
 
+break_ksm called from madvise(,,MADV_UNMERGEABLE) does have down_write
+of mmap_sem.  break_ksm called from "echo 2 >/sys/kernel/mm/ksm/run"
+has down_read of mmap_sem (taken in unmerge_and_remove_all_rmap_items).
+break_ksm called from any of ksmd's break_cows has down_read of mmap_sem.
+
+But the mmap_sem is not enough to exclude the mm exiting
+(until __ksm_exit does its little down_write,up_write dance):
+break_cow etc. do the ksm_test_exit check on mm_users before
+proceeding any further, but that's just not enough to prevent
+break_ksm's handle_pte_fault racing with exit_mmap - hence the
+ksm_test_exits in mm/memory.c, to stop ptes being instantiated
+after the final zap thinks it's wiped the pagetables.
+
+Let's look at your actual patch...
+
+Hugh
