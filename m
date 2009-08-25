@@ -1,119 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbZHYUWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZHYUW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbZHYUWJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 16:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbZHYUWI
+	id S1756154AbZHYUW0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 16:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbZHYUWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 16:22:08 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:44075 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752877AbZHYUWG (ORCPT
+	Tue, 25 Aug 2009 16:22:25 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:40351 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755693AbZHYUWY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 16:22:06 -0400
-Date: Wed, 26 Aug 2009 01:51:59 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 2/2] HW-BKPT: Allow kernel breakpoints to be modified
-	through a new API
-Message-ID: <20090825202159.GC1166@in.ibm.com>
-References: <20090825201310.268198183@linux.vnet.ibm.com>
+	Tue, 25 Aug 2009 16:22:24 -0400
+To: David Dillow <dave@thedillows.org>
+Cc: Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?utf-8?Q?B=C3=BCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+References: <200903041828.49972.m.bueker@berlin.de>
+	<1242001754.4093.12.camel@obelisk.thedillows.org>
+	<200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+	<1242077392.3716.15.camel@lap75545.ornl.gov>
+	<4A09DC3E.2080807@googlemail.com>
+	<1242268709.4979.7.camel@obelisk.thedillows.org>
+	<4A0C6504.8000704@googlemail.com>
+	<1242328457.32579.12.camel@lap75545.ornl.gov>
+	<4A0C7443.1010000@googlemail.com>
+	<1243042174.3580.23.camel@obelisk.thedillows.org>
+	<m1skfkrik2.fsf@fess.ebiederm.org>
+	<1250895567.23419.1.camel@obelisk.thedillows.org>
+	<1250897657.23419.5.camel@obelisk.thedillows.org>
+	<m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
+	<1250973787.3582.14.camel@obelisk.thedillows.org>
+	<m1r5v0ogvw.fsf@fess.ebiederm.org>
+	<1251169150.4023.11.camel@obelisk.thedillows.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 25 Aug 2009 13:22:15 -0700
+In-Reply-To: <1251169150.4023.11.camel@obelisk.thedillows.org> (David Dillow's message of "Mon\, 24 Aug 2009 22\:59\:10 -0400")
+Message-ID: <m1prajabk8.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=modify_kernel_hbp_02
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: dave@thedillows.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, romieu@fr.zoreil.com, mb@bu3sch.de, michael.riepe@googlemail.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce modify_kernel_hw_breakpoint() API that can quickly change the
-characteristics (such as address, length, type but not cpumask) of a
-kernel-space breakpoint without having to unregister first and then
-re-register it.
+David Dillow <dave@thedillows.org> writes:
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- include/asm-generic/hw_breakpoint.h |    2 +
- kernel/hw_breakpoint.c              |   49 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 51 insertions(+)
+> On Mon, 2009-08-24 at 17:51 -0700, Eric W. Biederman wrote:
+>> When I decode the bits in status they are TxOK, RxOK and TxDescUnavail so it looks
+>> there is some bidirectional communication going on.
+>> 
+>> Do we really want to loop when those bits are set?
+>
+> Maybe not when only those bits are set, but I worry that we would trade
+> one race for another where we stop getting interrupts from the card.
+>
+>> Perhaps we want to remove them from rtl_cfg_infos for the part?
+>
+> Then you'd never get an interrupt for them in the first place, I think.
+>
+> I'm not real happy with the interrupt handling in the driver; it makes a
+> certain amount of sense to split the MSI vs non-MSI interrupt cases out.
+> It also means another pass through re-auditing things against the vendor
+> driver. That's more work than I'm able to commit to at the moment.
+>
+> I've not been able to reproduce it locally on my r8169d, running for ~30
+> minutes straight at full speed. I've not tried running it in UP, though.
+> Perhaps I can do that tomorrow.
+>
+> Here's a possible patch to mask the NAPI events while we're running in
+> NAPI mode. I'm not sure it is going to help, since the intr_mask was
+> 0xffff when you hit the loop guard, so I left it in for now.
 
-Index: linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
-===================================================================
---- linux-2.6-tip.hbkpt.orig/include/asm-generic/hw_breakpoint.h
-+++ linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
-@@ -133,6 +133,8 @@ extern void unregister_user_hw_breakpoin
-  * Kernel breakpoints are not associated with any particular thread.
-  */
- extern int register_kernel_hw_breakpoint(struct hw_breakpoint *bp);
-+extern int modify_kernel_hw_breakpoint(struct hw_breakpoint *old_bp,
-+					struct hw_breakpoint *new_bp);
- extern void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp);
- 
- extern unsigned int hbp_kernel_pos;
-Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/kernel/hw_breakpoint.c
-+++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-@@ -362,6 +362,55 @@ err_ret:
- }
- EXPORT_SYMBOL_GPL(register_kernel_hw_breakpoint);
- 
-+/**
-+ * modify_kernel_hw_breakpoint - modify characteristics of a previously registered breakpoint request
-+ * @old_bp: pointer to the registered breakpoint structure
-+ * @new_bp: pointer to the breakpoint structure that replaces @old_bp
-+ *
-+ */
-+int modify_kernel_hw_breakpoint(struct hw_breakpoint *old_bp,
-+				   struct hw_breakpoint *new_bp)
-+{
-+	int i, rc;
-+	unsigned int cpu;
-+	const cpumask_t *new_cpumask = new_bp->cpumask;
-+
-+	/* Default to ALL CPUs if cpumask is not specified */
-+	if (!new_cpumask)
-+		new_cpumask = new_bp->cpumask = cpu_possible_mask;
-+	/*
-+	 * The user cannot modify the cpumask of the registered breakpoint
-+	 * It requires non-trivial amount of code and new data-structures to
-+	 * allow a change in cpumask value. The user must instead 'unregister'
-+	 * and re-register a new breakpoint if 'cpumask' should be changed
-+	 */
-+	if (!cpumask_equal(old_bp->cpumask, new_cpumask))
-+		return -EINVAL;
-+
-+	rc = arch_validate_hwbkpt_settings(new_bp, NULL);
-+	if (rc)
-+		return rc;
-+
-+	spin_lock_bh(&hw_breakpoint_lock);
-+	for_each_cpu(cpu, new_cpumask) {
-+		for (i = HBP_NUM-1; i >= hbp_kernel_pos; i--) {
-+			if (per_cpu(this_hbp_kernel[i], cpu) == old_bp) {
-+				per_cpu(this_hbp_kernel[i], cpu) = new_bp;
-+				break;
-+			}
-+		}
-+	}
-+
-+	if (cpumask_test_cpu(smp_processor_id(), new_cpumask))
-+		arch_update_kernel_hw_breakpoint(NULL);
-+	smp_call_function_many(new_cpumask,
-+				arch_update_kernel_hw_breakpoint, NULL, 1);
-+
-+	spin_unlock_bh(&hw_breakpoint_lock);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(modify_kernel_hw_breakpoint);
-+
- /* Removes breakpoint structure from the per-cpu breakpoint data-structure */
- static void remove_each_cpu_kernel_hbp(void *bp_param)
- {
+Interesting.
+
+If I understand this correctly the situation is that we have on the
+chip there is correct logic for a level triggered interrupt and that
+the msi logic sits on it and sends an event when the interrupt signal
+goes high, but when we acknowledge some bits but not all it does not
+send another interrupt.
+
+Baring playing games with what version of the card has working logic
+and which does not we seem to have to simple choices (if we don't want
+to loop possibly forever).
+- Don't use the msi logic on this card.
+- Move all of the logic into rtl8169_poll and only come out of NAPI
+  mode when we have caught up with all of the interrupt work.
+
+Is that how you understand the hardware issue you are trying to work
+around?
+
+Eric
 
