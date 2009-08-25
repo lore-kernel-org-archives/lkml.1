@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbZHYSPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbZHYSOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbZHYSPK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZHYSPJ
+	id S1755694AbZHYSOi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZHYSOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:15:09 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:49905 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755648AbZHYSPH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:15:07 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AigFADPEk0pMROOX/2dsb2JhbACBU9dShBoF
-Date: Tue, 25 Aug 2009 14:15:08 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090825181508.GB2448@Krystal>
-References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090825162004.GA25058@Krystal> <20090825170441.GD2656@redhat.com>
-Mime-Version: 1.0
+	Tue, 25 Aug 2009 14:14:37 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:45347 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755676AbZHYSOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:14:35 -0400
+Date: Tue, 25 Aug 2009 20:10:19 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 13/12] ksm: fix munlock during exit_mmap deadlock
+Message-ID: <20090825181019.GT14722@random.random>
+References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
+ <Pine.LNX.4.64.0908031317190.16754@sister.anvils>
+ <20090825145832.GP14722@random.random>
+ <20090825152217.GQ14722@random.random>
+ <Pine.LNX.4.64.0908251836050.30372@sister.anvils>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090825170441.GD2656@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 14:13:53 up 7 days,  5:03,  3 users,  load average: 0.18, 0.25,
-	0.26
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0908251836050.30372@sister.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jason Baron (jbaron@redhat.com) wrote:
-> On Tue, Aug 25, 2009 at 12:20:04PM -0400, Mathieu Desnoyers wrote:
-> > 
-> > Uh ? kernel threads can invoke a system call. There are rare places
-> > where kernel code actually invoke system calls. I don't see why we
-> > should not deal with them.
-> > 
-> > Moreover, the problem you face is more general: if we set the
-> > TIF_SYSCALL_FTRACE flag of a standard thread right in the middle of its
-> > system call, x86_64 will cause the syscall exit to execute by re-reading
-> > the thread flags and run a syscall trace exit.
-> > 
-> > We could simply initialize the "saved system calls id" number to
-> > something like -1, so that if we happen to return from a syscall that
-> > did not get its id recorded at syscall entry, we know it because it's
-> > not initialized.
-> > 
-> > We would need to carefully put back the -1 value after clearing the
-> > thread flag when we stop tracing too (while still holding a mutex).
-> > 
-> > Mathieu
-> > 
+On Tue, Aug 25, 2009 at 06:49:09PM +0100, Hugh Dickins wrote:
+> Sorry, I just don't get it.  How does down_read here help?
+> Perhaps you thought ksm.c had down_write of mmap_sem in all cases?
 > 
-> why can't we have a syscall exit that is unmatched? we calculate
-> the exit syscall number for the the pt_regs structure at exit, so we
-> don't need to match it up with an entry to know which syscall it is.
-> 
+> No, and I don't think we want to change its down_reads to down_writes.
 
-Are we certain that it will still be on the pt_regs at system call
-exit and not overwritten by the syscall return value ? For every arch ?
+Looking ksm.c it should have been down_write indeed...
 
-Mathieu
+> Nor do we want to change your down_read here to down_write, that will
+> just reintroduce the OOM deadlock that 9/12 was about solving.
 
-> thanks,
-> 
-> -Jason
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I'm not sure anymore I get what this fix is about... mm_users is
+allowed to go to 0. If mm_users is allowed to go to 0, it's up to ksm
+to check inside its inner loops that mm_users is 0 and bail
+out. Bailing out it will unblock exit so that exit_mmap can run. What
+exactly is the unfixable issue?
