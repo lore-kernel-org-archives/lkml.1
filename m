@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932515AbZHYXjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbZHYXi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932515AbZHYXjz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932546AbZHYXj2
+	id S932601AbZHYXi2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932562AbZHYXgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:39:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58661 "EHLO ogre.sisk.pl"
+	Tue, 25 Aug 2009 19:36:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58681 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932471AbZHYXf0 convert rfc822-to-8bit (ORCPT
+	id S932534AbZHYXgM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:35:26 -0400
+	Tue, 25 Aug 2009 19:36:12 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Tejun Heo" <tj@kernel.org>, "Tim Blechmann" <tim@klingt.org>
+       "Eric Paris" <eparis@parisplace.org>,
+       "Grant Wilson" <grant.wilson@zen.co.uk>
 References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
 In-Reply-To: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <_yaHeGjHEzG.A.lSH._sGlKB@chimera>
-Subject: [Bug #14013] hd don't show up
+Message-ID: <_yaHeGjHEzG.A.3kG.zsGlKB@chimera>
+Subject: [Bug #14058] Oops in fsnotify
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue, 25 Aug 2009 22:34:53 +0200 (CEST)
+Date: Tue, 25 Aug 2009 22:34:57 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,11 +36,10 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14013
-Subject		: hd don't show up
-Submitter	: Tim Blechmann <tim@klingt.org>
-Date		: 2009-08-14 8:26 (12 days old)
-References	: http://marc.info/?l=linux-kernel&m=125023842514480&w=4
-Handled-By	: Tejun Heo <tj@kernel.org>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14058
+Subject		: Oops in fsnotify
+Submitter	: Grant Wilson <grant.wilson@zen.co.uk>
+Date		: 2009-08-20 15:48 (6 days old)
+References	: http://marc.info/?l=linux-kernel&m=125078450923133&w=4
 
 
