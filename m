@@ -1,111 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbZHYBVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZHYB0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbZHYBVo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 21:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZHYBVm
+	id S1754058AbZHYB0f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 21:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbZHYB0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 21:21:42 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60547 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753825AbZHYBVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 21:21:42 -0400
-Message-ID: <4A933C55.4090808@cn.fujitsu.com>
-Date: Tue, 25 Aug 2009 09:20:21 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 24 Aug 2009 21:26:35 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:58961 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753700AbZHYB0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 21:26:34 -0400
+Date: Mon, 24 Aug 2009 18:26:32 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, shai@scalex86.org
+Subject: Re: [patch] x86: 2.6.31-rc7 crash due to buggy flat_phys_pkg_id
+Message-ID: <20090825012632.GB6842@localdomain>
+References: <20090824182659.GA6842@localdomain> <4A932809.1000103@kernel.org>
 MIME-Version: 1.0
-To: Anirban Sinha <ASinha@zeugmasystems.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH] : eliminate code duplication in kernel/tracepoint.c
-References: <DDFD17CC94A9BD49A82147DDF7D545C501EA8FBB@exchange.ZeugmaSystems.local>
-In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501EA8FBB@exchange.ZeugmaSystems.local>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A932809.1000103@kernel.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anirban Sinha wrote:
-> Hi Ingo:
-> 
-> I was going through the kernel tracepoints work. It's really impressive.
-> Congratulations! 
-> 
-> The following cleanup popped up immediately. May be you guys have
-> noticed it already.
-> 
+On Mon, Aug 24, 2009 at 04:53:45PM -0700, Yinghai Lu wrote:
+>Ravikiran G Thirumalai wrote:
+>> 
+>> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+>> Cc: Yinghai Lu <yinghai@kernel.org>
+>> 
+>> Index: linux-2.6.31-rc6/arch/x86/kernel/apic/apic_flat_64.c
+>> ===================================================================
+>> --- linux-2.6.31-rc6.orig/arch/x86/kernel/apic/apic_flat_64.c	2009-08-21 12:42:16.000000000 -0700
+>> +++ linux-2.6.31-rc6/arch/x86/kernel/apic/apic_flat_64.c	2009-08-21 14:12:21.654837472 -0700
+>> @@ -161,7 +161,8 @@ static int flat_apic_id_registered(void)
+>>  
+>>  static int flat_phys_pkg_id(int initial_apic_id, int index_msb)
+>>  {
+>> -	return initial_apic_id >> index_msb;
+>> +	return cpu_has_apic ? hard_smp_processor_id() >> index_msb :
+>> +	    initial_apic_id >> index_msb;
+>>  }
+>
+>it seems we should use initial apic id here.
+>
 
-Maybe, but no one else sent this patch. ;)
+Why?  The specs seem to indicate otherwise unless I am mistaken --
+Intel  systems programming guide, Vol 3A Part1, chapter 7 section
+7.5.5 - Identifying Logical Processors in a MP system:
+<quote>
+After the BIOS has completed the MP initialization protocol, each logical
+processor can be uniquely identified by its local APIC ID. Software can
+access these APIC IDs in either of the following ways
+</quote>
+phys_pkg_id() indicates that the logical package id is being looked up,
+so local apic id should be used here no?
+What am I missing?
 
-> Cheers,
-> 
-> Ani
-> 
-> 
->>From 2068b87b9635a66e5e86b8ff4182d96a6e969584 Mon Sep 17 00:00:00 2001
-> From: Anirban Sinha <asinha@zeugmasystems.com>
-> Date: Mon, 24 Aug 2009 15:52:20 -0700
-> Subject: Cleanup: eliminate code duplication in kernel/tracepoint.c
-> 
-> 
-> Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
 
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+>can you check which calling for vsmp cause the problem?
+>arch/x86/kernel/cpu/addon_cpuid_features.c:     c->cpu_core_id = apic->phys_pkg_id(c->initial_apicid, ht_mask_width)
+>arch/x86/kernel/cpu/addon_cpuid_features.c:     c->phys_proc_id = apic->phys_pkg_id(c->initial_apicid, core_plus_mask_width
+>);
+>arch/x86/kernel/cpu/addon_cpuid_features.c:     c->apicid = apic->phys_pkg_id(c->initial_apicid, 0);
 
-> ---
->  kernel/tracepoint.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-> index 1ef5d3a..4840ab6 100644
-> --- a/kernel/tracepoint.c
-> +++ b/kernel/tracepoint.c
-> @@ -554,9 +554,6 @@ int tracepoint_module_notify(struct notifier_block
-> *self,
-> 
->         switch (val) {
->         case MODULE_STATE_COMING:
-> -               tracepoint_update_probe_range(mod->tracepoints,
-> -                       mod->tracepoints + mod->num_tracepoints);
-> -               break;
->         case MODULE_STATE_GOING:
->                 tracepoint_update_probe_range(mod->tracepoints,
->                         mod->tracepoints + mod->num_tracepoints);
-> --
-> 1.6.4
-> 
-> 
->>From 5e09b156be90b936db9c1977abcc04b5cbb4bd4a Mon Sep 17 00:00:00 2001
-> From: Anirban Sinha <asinha@zeugmasystems.com>
-> Date: Mon, 24 Aug 2009 15:55:12 -0700
-> Subject: cleanup: remove redundant break statement.
-> 
-
-Oh, you should send 2 mails, one mail per patch.
-
-But removing the break won't gain us anything. Actually It's
-better to reserve the break.
-
-> 
-> Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
-> ---
->  kernel/tracepoint.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-> index 4840ab6..35eed9c 100644
-> --- a/kernel/tracepoint.c
-> +++ b/kernel/tracepoint.c
-> @@ -557,7 +557,6 @@ int tracepoint_module_notify(struct notifier_block
-> *self,
->         case MODULE_STATE_GOING:
->                 tracepoint_update_probe_range(mod->tracepoints,
->                         mod->tracepoints + mod->num_tracepoints);
-> -               break;
->         }
->         return 0;
->  }
-> --
-> 1.6.4
-> 
+The above are definitely problematic.  Anyplace that uses phys_pkg_id to get
+the unique pkg id of a logical processor will have problems.
