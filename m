@@ -1,173 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbZHYIil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZHYIlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752269AbZHYIil (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 04:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZHYIij
+	id S1752787AbZHYIlI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 04:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZHYIlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 04:38:39 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:3519 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751308AbZHYIii convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 04:38:38 -0400
-X-SpamScore: -16
-X-BigFish: VPS-16(z1857r34a4j8deiz1432R14c3L98dN936eM4015L655N13f4ja594izz1202hzzz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KOXC04-02-63G-02
-X-M-MSG: 
-Date: Tue, 25 Aug 2009 10:38:28 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Gautham Shenoy <ego@in.ibm.com>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [PATCH 8/15] sched: Add parameter sched_mn_power_savings to
-	control MN domain sched policy
-Message-ID: <20090825083828.GE20811@alberich.amd.com>
-References: <20090820131243.GO29327@alberich.amd.com> <20090820133914.GW29327@alberich.amd.com> <1251125778.7538.268.camel@twins> <20090825062432.GB20811@alberich.amd.com> <1251182496.7538.1055.camel@twins>
+	Tue, 25 Aug 2009 04:41:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56396 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751932AbZHYIlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 04:41:00 -0400
+Date: Tue, 25 Aug 2009 10:40:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: WARNING: kmemcheck: Caught 32-bit read from uninitialized
+	memory  (f6f6e1a4), by kmemleak's scan_block()
+Message-ID: <20090825084052.GE17692@elte.hu>
+References: <20090825071959.GA25877@elte.hu> <19f34abd0908250104y6e877545y485a2104c2b97cfd@mail.gmail.com> <1251187716.7261.2.camel@penberg-laptop> <1251188859.15678.6.camel@pc1117.cambridge.arm.com> <1251189105.7261.4.camel@penberg-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1251182496.7538.1055.camel@twins>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 25 Aug 2009 08:38:29.0421 (UTC) FILETIME=[6BCD2DD0:01CA255F]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1251189105.7261.4.camel@penberg-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 08:41:36AM +0200, Peter Zijlstra wrote:
-> On Tue, 2009-08-25 at 08:24 +0200, Andreas Herrmann wrote:
-> > On Mon, Aug 24, 2009 at 04:56:18PM +0200, Peter Zijlstra wrote:
-> > > On Thu, 2009-08-20 at 15:39 +0200, Andreas Herrmann wrote:
-> > > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > > > ---
+
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+
+> On Tue, 2009-08-25 at 09:27 +0100, Catalin Marinas wrote:
+> > On Tue, 2009-08-25 at 11:08 +0300, Pekka Enberg wrote:
+> > > On Tue, 2009-08-25 at 10:04 +0200, Vegard Nossum wrote:
+> > > > 2009/8/25 Ingo Molnar <mingo@elte.hu>:
+> > > > > FYI, -tip testing triggered the following kmemcheck warning in
+> > > > > kmemleak:
+> > > > >
+> > > > > PM: Adding info for No Bus:vcsa7
+> > > > > WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (f6f6e1a4)
+> > > > > d873f9f600000000c42ae4c1005c87f70000000070665f666978656400000000
+> > > > >  i i i i u u u u i i i i i i i i i i i i i i i i i i i i i u u u
+> > [...]
+> > > > Already the patch to make kmemcheck and kmemleak mutually exclusive is
+> > > > underway. It is not surprising that kmemleak is scanning uninitialized
+> > > > memory. But if you say that you have tried it before, it is strange
+> > > > that it didn't appear until now.
 > > > 
-> > > > +#ifdef CONFIG_SCHED_MN
-> > > > +	if (!err && mc_capable())
-> > > > +		err = sysfs_create_file(&cls->kset.kobj,
-> > > > +					&attr_sched_mn_power_savings.attr);
-> > > > +#endif
-> > > 
-> > > *sigh* another crappy sysfs file
-> > > 
-> > > Guys, can't we come up with anything better than sched_*_power_saving=n?
+> > > Why isn't it surprising? Yes, it's non-fatal for kmemleak to scan
+> > > uninitialized memory but we could be looking at non-initialized struct
+> > > member that's a bug waiting to happen elsewhere in the code (that
+> > > doesn't trigger often).
 > > 
-> > Thought this is a settled thing. At least there are already two
-> > such parameters. So using the existing convention is an obvious
-> > thing, no?
-> 
-> Well, yes its the obvious thing, but I'm questioning whether its the
-> best thing ;-)
-
-Ok.
-
-> > > This configuration space is _way_ too large, and now it gets even
-> > > crazier.
+> > It isn't surprising to me either. Kmemleak scans the memory periodically
+> > but it cannot know whether such memory was initialised or not to avoid
+> > scanning it. So I would expect such warnings if both kmemleak and
+> > kmemcheck are enabled. Scanning uninitialised memory is fine with
+> > kmemleak, it just increases the number of false negatives (with
+> > SLAB_DEBUG enabled, however, the allocated blocks are pre-initialised).
 > > 
-> > I don't fully agree.
-> > 
-> > Having one control interface for each domain level is just one
-> > approach. It gives the user full control of scheduling policies.
-> > It just might have to be properly documented.
-> > 
-> > In another mail Vaidy mentioned that
-> > 
-> >   "at some point we wanted to change the interface to
-> >    sched_power_savings=N and and set the flags according to system
-> >    topology".
-> > 
-> > But how you'll decide at which domain level you have to do power
-> > savings scheduling?
+> > So kmemleak and kmemcheck should be exclusive, unless there is a way for
+> > kmemleak to validate an address with kmemcheck before deciding whether
+> > to scan a memory block.
 > 
-> The user isn't interested in knowing about domains and cpu topology in
-> 99% of the cases, all they want is the machine not burning power like
-> there's no tomorrow.
+> It's possible. Look at the kmemcheck_shadow_lookup() and 
+> kmemcheck_shadow_test() calls in kmemcheck_read_strict(), for 
+> example.
 > 
-> Users (me including) have no interest exploring a 27-state power
-> configuration space in order to find out what works best for them, I'd
-> throw up my hands and not bother, really.
+> Vegard, what do you think? I think making kmemcheck and kmemleak 
+> play nice with each other is useful for people like Ingo who do 
+> automated testing.
 
-If we have only a single knob (with 0==performance, 1==power savings)
-then the arch-specific code must properly set the required SD flags
-after CPU/topology detection. Only this will allow the scheduler code
-to do the right thing.
+There's already a couple of exclusion rules in kmemcheck:
 
-Imagine you have following "virtual" CPU topology in a server
+menuconfig KMEMCHECK
+        bool "kmemcheck: trap use of uninitialized memory"
+        depends on DEBUG_KERNEL
+        depends on !X86_USE_3DNOW
+        depends on SLUB || SLAB
+        depends on !CC_OPTIMIZE_FOR_SIZE
+        depends on !FUNCTION_TRACER
 
-- more than one thread per core (sharing cache, FPU, whatsoever)
-- multiple cores per internal node (sharing cache, maybe same memory channels)
-- multiple internal nodes per socket
-- multiple sockets
+such type of Kconfig driven exclusion is usually a somewhat lame way 
+to express limitations in the software.
 
-For power savings scheduling you can choose one or more option from
+CC_OPTIMIZE_FOR_SIZE is an externality that cannot be eliminated, 
+but the others could be improved - and we should definitely not 
+extend the list of exclusions.
 
-(a) You might save power when first utilizing all threads of one core, but
-    degrade performance by not using other cores.
-
-(b) You might save power when first utilizing all cores of an internal node,
-    but you degrade performance by not using other internal nodes.
-
-(c) You might save power when first utilizing all internal nodes of one socket
-    before using another socket.
-
-With only a single knob, would you switch on (a) and (b) and (c)?
-Or do you decide to switch on only (c) because performance degradation
-is too high with (a) and (b)?
-
-One solution could be to have
-- two sysfs attributes:
-  * sched_power_domain, value=one of {SMT, MC, MN}
-  * sched_power_level, value=one of {0, 1, 2})
-- and an implicit rule that (a) implies (b) and (b) implies (c).
-- Note: this implies that its impossible to switch on only (a).
-
-> > Using sched_mn_power_savings=1 is quite different from
-> > sched_smt_power_savings=1. Probably, the most power you save if you
-> > switch on power saving scheduling on each domain level. I.e. first
-> > filling threads of one core, then filling all cores on one internal
-> > node, then filling all internal nodes of one socket.
-> > 
-> > But for performance reasons a user might just want to use power
-> > savings in the MN domain. How you'd allow the user to configure that
-> > with just one interface? Passing the domain level to
-> > sched_power_savings, e.g.  sched_power_savings=MC instead of the power
-> > saving level?
-> 
-> Sure its different, it reduces the configuration space, that gives less
-> choice, but does make it accessible.
-> 
-> Ask joe-admin what he prefers.
-> 
-> If you're really really worried people might miss the joy of fine tuning
-> their power scheduling, then we can provide a dual interface, one for
-> dumb people like me, and one for crazy people like you ;-)
-
-> > Besides that, don't we have to keep the user-interface stable, i.e.
-> > stick to sched_smt_power_savings and sched_mc_power_savings?
-> 
-> Don't ever defend crappy stuff with interface stability, that's just
-> lame ;-)
-
-Yep, I have no problem with changing interfaces if they are considered
-crappy.
-
-But we should have an approriate replacement.
-
-
-Thanks,
-
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+	Ingo
