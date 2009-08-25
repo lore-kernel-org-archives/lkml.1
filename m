@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbZHYVJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932243AbZHYVJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932234AbZHYVJL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 17:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbZHYVJK
+	id S932243AbZHYVJw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 17:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932139AbZHYVJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 17:09:10 -0400
-Received: from mail.lang.hm ([64.81.33.126]:58055 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932096AbZHYVJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 17:09:08 -0400
-Date: Tue, 25 Aug 2009 14:08:10 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Rob Landley <rob@landley.net>
-cc: Greg Freemyer <greg.freemyer@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-In-Reply-To: <200908251556.08065.rob@landley.net>
-Message-ID: <alpine.DEB.2.00.0908251406570.28411@asgard.lang.hm>
-References: <200903121413.04434.rob@landley.net> <20090824205209.GE29763@elf.ucw.cz> <87f94c370908241411r45079c5cx3fc737cf4c3f7d1e@mail.gmail.com> <200908251556.08065.rob@landley.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 25 Aug 2009 17:09:52 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:12489 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932127AbZHYVJv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 17:09:51 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -12.479
+Message-ID: <4A945317.5040501@tudelft.nl>
+Date: Tue, 25 Aug 2009 23:09:43 +0200
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <E.A.B.Piel@tudelft.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090815 Mandriva/2.0.0.22-4mdv2010.0 (2010.0) Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, raz ben yehuda <raziebe@gmail.com>,
+       riel@redhat.com, mingo@elte.hu,
+       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
+       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+References: <1250983671.5688.21.camel@raz>	 <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>	 <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>	 <1251021133.14003.172.camel@marge.simson.net>	 <alpine.DEB.1.10.0908251122020.26329@gentwo.org>	 <1251222993.7023.53.camel@marge.simson.net>	 <alpine.DEB.1.10.0908251402300.17963@gentwo.org> <1251227322.7538.1172.camel@twins>
+In-Reply-To: <1251227322.7538.1172.camel@twins>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009, Rob Landley wrote:
-
-> On Monday 24 August 2009 16:11:56 Greg Freemyer wrote:
->>> The papers show failures in "once a year" range. I have "twice a
->>> minute" failure scenario with flashdisks.
->>>
->>> Not sure how often "degraded raid5 breaks ext3 atomicity" would bite,
->>> but I bet it would be on "once a day" scale.
+Op 25-08-09 21:08, Peter Zijlstra schreef:
+> On Tue, 2009-08-25 at 14:03 -0400, Christoph Lameter wrote:
+>> On Tue, 25 Aug 2009, Mike Galbraith wrote:
 >>
->> I agree it should be documented, but the ext3 atomicity issue is only
->> an issue on unexpected shutdown while the array is degraded.  I surely
->> hope most people running raid5 are not seeing that level of unexpected
->> shutdown, let along in a degraded array,
->>
->> If they are, the atomicity issue pretty strongly says they should not
->> be using raid5 in that environment.  At least not for any filesystem I
->> know.  Having writes to LBA n corrupt LBA n+128 as an example is
->> pretty hard to design around from a fs perspective.
->
-> Right now, people think that a degraded raid 5 is equivalent to raid 0.  As
-> this thread demonstrates, in the power failure case it's _worse_, due to write
-> granularity being larger than the filesystem sector size.  (Just like flash.)
->
-> Knowing that, some people might choose to suspend writes to their raid until
-> it's finished recovery.  Perhaps they'll set up a system where a degraded raid
-> 5 gets remounted read only until recovery completes, and then writes go to a
-> new blank hot spare disk using all that volume snapshoting or unionfs stuff
-> people have been working on.  (The big boys already have hot spare disks
-> standing by on a lot of these systems, ready to power up and go without human
-> intervention.  Needing two for actual reliability isn't that big a deal.)
->
-> Or maybe the raid guys might want to tweak the recovery logic so it's not
-> entirely linear, but instead prioritizes dirty pages over clean ones.  So if
-> somebody dirties a page halfway through a degraded raid 5, skip ahead to
-> recover that chunk first to the new disk first (yes leaving holes, it's not that
-> hard to track), and _then_ let the write go through.
->
-> But unless people know the issue exists, they won't even start thinking about
-> ways to address it.
+>>> I asked the questions I did out of pure curiosity, and that curiosity
+>>> has been satisfied.  It's not that I find it useless or whatnot (or that
+>>> my opinion matters to anyone but me;).  I personally find the concept of
+>>> injecting an RTOS into a general purpose OS with no isolation to be
+>>> alien.  Intriguing, but very very alien.
+>> Well lets work on the isolation piece then. We could run a regular process
+>> on the RT cpu and switch back when OS services are needed?
+> 
+> Christoph, stop being silly, this offline scheduler thing won't happen,
+> full stop.
+> 
+> Its not a maintainable solution, it doesn't integrate with existing
+> kernel infrastructure, and its plain ugly.
+> 
+> If you want something work within Linux, don't build kernels in kernels
+> or other such ugly hacks.
+Hello,
 
-if you've got the drives available you should be running raid 6 not raid 5 
-so that you have to loose two drives before you loose your error checking.
+For the one interested in such approach, you can have a look at an now
+unmaintained project that we developed, ARTiS:
+http://www2.lifl.fr/west/artis/
 
-in my opinion that's a far better use of a drive than a hot spare.
+It allows several RT tasks to share a "RT" cpu, and if a task tries to
+"cheat" by calling a kernel function which disables the preemption or
+the interrupts, it is temporally migrated to another CPU. This is a
+working approach, with some good low latency results which can be seen
+in the papers on the website.
 
-David Lang
+See you,
+Eric
