@@ -1,119 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZHYGk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZHYGmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbZHYGk6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 02:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbZHYGk4
+	id S1754570AbZHYGmd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 02:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZHYGmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 02:40:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58495 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216AbZHYGkz (ORCPT
+	Tue, 25 Aug 2009 02:42:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55998 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776AbZHYGmc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 02:40:55 -0400
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+	Tue, 25 Aug 2009 02:42:32 -0400
+Subject: Re: [PATCH 8/15] sched: Add parameter sched_mn_power_savings to
+ control MN domain sched policy
 From: Peter Zijlstra <peterz@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A9385AA.508@cn.fujitsu.com>
-References: <4A9214E3.2070807@cn.fujitsu.com>
-	 <1251093660.7538.119.camel@twins> <4A923197.4040708@cn.fujitsu.com>
-	 <1251097012.7538.123.camel@twins>  <20090824092455.GA25267@elte.hu>
-	 <1251106058.7538.149.camel@twins>  <4A937505.5000209@cn.fujitsu.com>
-	 <1251181266.7538.1016.camel@twins>  <4A9385AA.508@cn.fujitsu.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Gautham Shenoy <ego@in.ibm.com>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+In-Reply-To: <20090825062432.GB20811@alberich.amd.com>
+References: <20090820131243.GO29327@alberich.amd.com>
+	 <20090820133914.GW29327@alberich.amd.com> <1251125778.7538.268.camel@twins>
+	 <20090825062432.GB20811@alberich.amd.com>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Tue, 25 Aug 2009 08:40:05 +0200
-Message-Id: <1251182405.7538.1050.camel@twins>
+Date: Tue, 25 Aug 2009 08:41:36 +0200
+Message-Id: <1251182496.7538.1055.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 14:33 +0800, Li Zefan wrote:
-> >>>>>>>> If the correspoding module is unloaded before ftrace_profile_disable()
-> >>>>>>>> is called, event->profile_disable() won't be called, which can
-> >>>>>>>> cause oops:
-> >>>>>>>>
-> >>>>>>>>   # insmod trace-events-sample.ko
-> >>>>>>>>   # perf record -f -a -e sample:foo_bar sleep 3 &
-> >>>>>>>>   # sleep 1
-> >>>>>>>>   # rmmod trace_events_sample
-> >>>>>>>>   # insmod trace-events-sample.ko
-> >>>>>>>>   OOPS!
-> >>>>>>>>
-> >>>>>>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> >>>>>>> Hrmm, feel fragile, why don't we check if all a modules tracepoints are
-> >>>>>>> unused on unload?
-> >>>>>>>
-> >>>>>> I don't think it's fragile. We are profiling via a module's
-> >>>>>> tracepoint, so we should pin the module, via module_get().
-> >>>>>> If event->profile_enable() has been calld, we should make
-> >>>>>> sure it's profile_disable() will be called.
-> >>>>> What I call fragile is that everyone registering a tracepoint 
-> >>>>> callback will now apparently need to worry about modules, _that_ 
-> >>>>> is fragile.
-> >>>>>
-> >>>>> Either make module unload look at tracepoint users, or place the 
-> >>>>> try_get_module() in the registration hooks so that regular users 
-> >>>>> don't need to worry about it.
-> >>>> The bug found by Li needs to be fixed obviously.
-> >>>>
-> >>>> I tend to agree with you that this does not appear to be the best 
-> >>>> place to do it: so you suggest to implicitly increase the module 
-> >>>> refcount on callback registr instead? (and releasing it when 
-> >>>> unregistering)
-> >>>>
-> >>>> Same end result, slightly cleaner place to bump the refcount.
-> >>> Yes, because the user of tracepoints should never need to care about
-> >>> modules.
-> >>>
-> >> I'm afraid it is not feasible to bump module refcnt implicitly
-> >> in tracepoint_probe_register().
-> >>
-> >> If a tracepoint is registered in module_init, and unregistered
-> >> in module_exit (see sample/tracepoints), the module is unloadable:
-> >>
-> >>  insmod
-> >>  ->call mod->init()
-> >>    ->trace_reg_foo()
-> >>      ->module_get()
-> >>
-> >>  rmmod
-> >>  ->check mod refcnt
-> >>  ->call mod->exit()
-> >>    ->trace_unreg_foo()
-> >>      ->module_put()
+On Tue, 2009-08-25 at 08:24 +0200, Andreas Herrmann wrote:
+> On Mon, Aug 24, 2009 at 04:56:18PM +0200, Peter Zijlstra wrote:
+> > On Thu, 2009-08-20 at 15:39 +0200, Andreas Herrmann wrote:
+> > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> > > ---
 > > 
-> > Not tracepoint_probe_{un,}register(), in {un,}register_trace_$call().
+> > > +#ifdef CONFIG_SCHED_MN
+> > > +	if (!err && mc_capable())
+> > > +		err = sysfs_create_file(&cls->kset.kobj,
+> > > +					&attr_sched_mn_power_savings.attr);
+> > > +#endif
 > > 
+> > *sigh* another crappy sysfs file
+> > 
+> > Guys, can't we come up with anything better than sched_*_power_saving=n?
 > 
-> Is there any difference?
+> Thought this is a settled thing. At least there are already two
+> such parameters. So using the existing convention is an obvious
+> thing, no?
+
+Well, yes its the obvious thing, but I'm questioning whether its the
+best thing ;-)
+
+> > This configuration space is _way_ too large, and now it gets even
+> > crazier.
 > 
-> 	static inline int register_trace_##name(void (*probe)(proto))	\
-> 	{								\
-> 		int ret;						\
-> 		void (*func)(void) = reg;				\
-> 									\
-> 		ret = tracepoint_probe_register(#name, (void *)probe);	\
-> 		if (func && !ret)					\
-> 			func();						\
-> 		return ret;						\
-> 	}
-
-Ah, my bad, I was thikning tracepoint_probe_register() was the thing
-that registered the tracepoint itself, not the callback.
-
-Ok, then what's the problem?, don't do modules that consume their own
-tracepoints, seems simple enough.
-
-> > Basically avoid module unload when a tracepoint from that module has
-> > registered callbacks.
+> I don't fully agree.
 > 
-> TRACE_EVENT() won't prevent this. Instead at module unload, a module
-> notifier callback will be called to unregistread those tracepoint callbacks.
+> Having one control interface for each domain level is just one
+> approach. It gives the user full control of scheduling policies.
+> It just might have to be properly documented.
+> 
+> In another mail Vaidy mentioned that
+> 
+>   "at some point we wanted to change the interface to
+>    sched_power_savings=N and and set the flags according to system
+>    topology".
+> 
+> But how you'll decide at which domain level you have to do power
+> savings scheduling?
 
-Ugh, that's disgusting. That means every single tracepoint user again
-needs to be aware of modules.
+The user isn't interested in knowing about domains and cpu topology in
+99% of the cases, all they want is the machine not burning power like
+there's no tomorrow.
+
+Users (me including) have no interest exploring a 27-state power
+configuration space in order to find out what works best for them, I'd
+throw up my hands and not bother, really.
+
+> Using sched_mn_power_savings=1 is quite different from
+> sched_smt_power_savings=1. Probably, the most power you save if you
+> switch on power saving scheduling on each domain level. I.e. first
+> filling threads of one core, then filling all cores on one internal
+> node, then filling all internal nodes of one socket.
+> 
+> But for performance reasons a user might just want to use power
+> savings in the MN domain. How you'd allow the user to configure that
+> with just one interface? Passing the domain level to
+> sched_power_savings, e.g.  sched_power_savings=MC instead of the power
+> saving level?
+
+Sure its different, it reduces the configuration space, that gives less
+choice, but does make it accessible.
+
+Ask joe-admin what he prefers.
+
+If you're really really worried people might miss the joy of fine tuning
+their power scheduling, then we can provide a dual interface, one for
+dumb people like me, and one for crazy people like you ;-)
+
+> Besides that, don't we have to keep the user-interface stable, i.e.
+> stick to sched_smt_power_savings and sched_mc_power_savings?
+
+Don't ever defend crappy stuff with interface stability, that's just
+lame ;-)
