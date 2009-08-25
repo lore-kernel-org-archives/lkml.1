@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbZHYPfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbZHYPin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755133AbZHYPfx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 11:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbZHYPfw
+	id S1752342AbZHYPin (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 11:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbZHYPim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 11:35:52 -0400
-Received: from mail.lang.hm ([64.81.33.126]:52542 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754476AbZHYPfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 11:35:51 -0400
-Date: Tue, 25 Aug 2009 08:34:46 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-In-Reply-To: <20090825093414.GB15563@elf.ucw.cz>
-Message-ID: <alpine.DEB.2.00.0908250829490.28411@asgard.lang.hm>
-References: <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz>
- <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <4A932B18.1020209@redhat.com> <20090825093414.GB15563@elf.ucw.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 25 Aug 2009 11:38:42 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:47755 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873AbZHYPim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 11:38:42 -0400
+Date: Tue, 25 Aug 2009 17:38:26 +0200
+From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+       mbligh@google.com, lizf@cn.fujitsu.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 00/12] add syscall tracepoints V3 - s390 arch update
+Message-ID: <20090825153826.GF4639@cetus.boeblingen.de.ibm.com>
+Mail-Followup-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+	mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+	peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+	jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
+References: <cover.1249932670.git.jbaron@redhat.com> <20090825123111.GD4639@cetus.boeblingen.de.ibm.com> <20090825135228.GD6114@nowhere>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090825135228.GD6114@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009, Pavel Machek wrote:
+On Tue, Aug 25, 2009 at 03:52:32PM +0200, Frederic Weisbecker wrote:
+> On Tue, Aug 25, 2009 at 02:31:11PM +0200, Hendrik Brueckner wrote:
+> > This patch includes s390 arch updates for:
+> > - tracing: Map syscall name to number (syscall_name_to_nr())
+> > - tracing: Call arch_init_ftrace_syscalls at boot
+> > - tracing: add support traceopint ids (set_syscall_{enter,exit}_id())
+> > 
+> > The patch already uses "NR_syscalls" instead of FTRACE_SYSCALL_MAX.
+> > 
+> > The patch is based on today's linux-next (20090825).
+> > Since few of your patches already include s390 changes,
+> > I would appreciate if you could add the patch to your patch set.
+> > 
+> > If you have any remarks, please let me know. 
+> >   
+> > Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+> 
+> 
+> Looks good at a first glance.
+Thanks
 
-> Hi!
->
->>>> If your concern is that with Linux MD, you could potentially lose an
->>>> entire stripe in RAID 5 mode, then you should say that explicitly; but
->>>> again, this isn't a filesystem specific cliam; it's true for all
->>>> filesystems.  I don't know of any file system that can survive having
->>>> a RAID stripe-shaped-hole blown into the middle of it due to a power
->>>> failure.
->>>>
->>>
->>> Again, ext2 handles that in a way user expects it.
->>>
->>> At least I was teached "ext2 needs fsck after powerfail; ext3 can
->>> handle powerfails just ok".
->>
->> So, would you be happy if ext3 fsck was always run on reboot (at least
->> for flash devices)?
->
-> For flash devices, MD Raid 5 and anything else that needs it; yes that
-> would make me happy ;-).
-
-the thing is that fsck would not fix the problem.
-
-it may (if the data lost was metadata) detect the problem and tell you how 
-many files you have lost, but if the data lost was all in a data file you 
-would not detect it with a fsck
-
-the only way you would detect the missing data is to read all the files on 
-the filesystem and detect that the data you are reading is wrong.
-
-but how can you tell if the data you are reading is wrong?
-
-on a flash drive, your read can return garbage, but how do you know that 
-garbage isn't the contents of the file?
-
-on a degraded raid5 array you have no way to test data integrity, so when 
-the missing drive is replaced, the rebuild algorithm will calculate the 
-appropriate data to make the parity calculations work out and write 
-garbage to that drive.
-
-David Lang
+> > +int syscall_name_to_nr(char *name)
+> > +{
+> > +	int i;
+> > +
+> > +	if (!syscalls_metadata)
+> > +		return -1;
+> > +	for (i = 0; i < NR_syscalls; i++)
+> > +		if (syscalls_metadata[i])
+> > +			if (!strcmp(syscalls_metadata[i]->name, name))
+> > +				return i;
+> > +	return -1;
+> > +}
+> > +void set_syscall_enter_id(int num, int id)
+> > +{
+> > +	syscalls_metadata[num]->enter_id = id;
+> > +}
+> > +
+> > +void set_syscall_exit_id(int num, int id)
+> > +{
+> > +	syscalls_metadata[num]->exit_id = id;
+> > +}
+> 
+> The three helpers above seem very common between archs, I guess
+> we can move them to the core: kernel/trace/trace_syscalls.c
+I think it is a good idea to move the helper routines to
+kernel/trace/trace_syscalls.c.
