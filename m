@@ -1,83 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZHYSE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZHYSGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbZHYSE5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbZHYSE4
+	id S1755603AbZHYSGF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbZHYSGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:04:56 -0400
-Received: from elasmtp-spurfowl.atl.sa.earthlink.net ([209.86.89.66]:57795
-	"EHLO elasmtp-spurfowl.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755594AbZHYSEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:04:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=Ysz1hjXqwwP5GRNfJi4SwpDQ/YEA9Z9s+H52PDoWdnOdaiiMx7B5Y5muHJz2PFpC;
-  h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <4A9427C7.8020009@earthlink.net>
-Date: Tue, 25 Aug 2009 11:04:55 -0700
-From: Jeff Shanab <jshanab@earthlink.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090714 SeaMonkey/1.1.17
+	Tue, 25 Aug 2009 14:06:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33363 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755558AbZHYSGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:06:03 -0400
+Date: Tue, 25 Aug 2009 20:05:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [GIT PULL] perfcounters fixes
+Message-ID: <20090825180558.GA32402@elte.hu>
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Starting a grad project that may change kernel VFS. Early 	research
- Re: Starting a grad project that may change kernel VFS. Early 	research
-References: <4A93428A.4070903@earthlink.net> <4A941F56.8060502@redhat.com>
-In-Reply-To: <4A941F56.8060502@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: 41b7b48e67ad7886d780f4a490ca6956abb457f1b4332f5249935be06fffbba42380a43fbc2326de350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 75.150.3.226
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Jeff Shanab wrote:
->
->> Updates start at the file and only work upwards back to root. How does
->> the hardlink get traversed?
->
-> A hard link is just a second directory entry linking to
-> the same inode.  There are no back links from inodes to
-> the directory entries that point to them and they are
-> essentially indistinguishable from files that are not
-> hardlinked.
->
-> Hard links have been done like this in pretty much every
-> Unix filesystem since the 1970's.
->
-Right :-( I need a workaround but I am not sure how the sementics should be.
+Linus,
 
-In my example where we have a directory structure like so, where file is
-the same.
+Please pull the latest perfcounters-fixes-for-linus git tree from:
 
-test/foo/bar/file
-test/bar/foo/file
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perfcounters-fixes-for-linus
 
-My example would result in the size showing up in each directory at the
-bar/file and foo/file level
-Then the two numbers are passed up to test and the test directory size
-would be wrong.
-There is no real way to handle this becasue the two files look the same
-to the filesystem.
+ Thanks,
 
-I can even remove the initial file without effecting the other. Is there
-a refcount I can take advantage of in the inode?
+	Ingo
 
-Even then, I can't decide what the semantic is.
-
-For example I could add a pie chart that changed with navigation into my
-gui file manager. This system would make that practical.
-How would I display this information usefully to the user. I suppose if
-they navigate into either subdir they see the file size, but somehow
-when they navigate up to the directory that holds subdirs that
-indirectly contain both of them, only 1 can be counted.  The problem is
-that the top level directory will not be able to see the inodes of the
-individual files, it is lost in the aggregate.
-
-Still thinking....
+------------------>
+Peter Zijlstra (2):
+      perf tools: Check perf.data owner
+      perf_counter: Fix typo in read() output generation
 
 
+ kernel/perf_counter.c         |    2 +-
+ tools/perf/builtin-annotate.c |    7 +++++++
+ tools/perf/builtin-report.c   |    7 +++++++
+ 3 files changed, 15 insertions(+), 1 deletions(-)
 
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 36f65e2..f274e19 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1791,7 +1791,7 @@ static int perf_counter_read_group(struct perf_counter *counter,
+ 	size += err;
+ 
+ 	list_for_each_entry(sub, &leader->sibling_list, list_entry) {
+-		err = perf_counter_read_entry(counter, read_format,
++		err = perf_counter_read_entry(sub, read_format,
+ 				buf + size);
+ 		if (err < 0)
+ 			return err;
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 343e7b1..5e17de9 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -31,6 +31,7 @@ static char		*vmlinux = "vmlinux";
+ static char		default_sort_order[] = "comm,symbol";
+ static char		*sort_order = default_sort_order;
+ 
++static int		force;
+ static int		input;
+ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+ 
+@@ -1334,6 +1335,11 @@ static int __cmd_annotate(void)
+ 		exit(-1);
+ 	}
+ 
++	if (!force && (stat.st_uid != geteuid())) {
++		fprintf(stderr, "file: %s not owned by current user\n", input_name);
++		exit(-1);
++	}
++
+ 	if (!stat.st_size) {
+ 		fprintf(stderr, "zero-sized file, nothing to do!\n");
+ 		exit(0);
+@@ -1439,6 +1445,7 @@ static const struct option options[] = {
+ 		    "input file name"),
+ 	OPT_STRING('s', "symbol", &sym_hist_filter, "symbol",
+ 		    "symbol to annotate"),
++	OPT_BOOLEAN('f', "force", &force, "don't complain, do it"),
+ 	OPT_BOOLEAN('v', "verbose", &verbose,
+ 		    "be more verbose (show symbol address, etc)"),
+ 	OPT_BOOLEAN('D', "dump-raw-trace", &dump_trace,
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index b53a60f..8b2ec88 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -38,6 +38,7 @@ static char		*dso_list_str, *comm_list_str, *sym_list_str,
+ static struct strlist	*dso_list, *comm_list, *sym_list;
+ static char		*field_sep;
+ 
++static int		force;
+ static int		input;
+ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+ 
+@@ -1856,6 +1857,11 @@ static int __cmd_report(void)
+ 		exit(-1);
+ 	}
+ 
++	if (!force && (stat.st_uid != geteuid())) {
++		fprintf(stderr, "file: %s not owned by current user\n", input_name);
++		exit(-1);
++	}
++
+ 	if (!stat.st_size) {
+ 		fprintf(stderr, "zero-sized file, nothing to do!\n");
+ 		exit(0);
+@@ -2064,6 +2070,7 @@ static const struct option options[] = {
+ 	OPT_BOOLEAN('D', "dump-raw-trace", &dump_trace,
+ 		    "dump raw trace in ASCII"),
+ 	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
++	OPT_BOOLEAN('f', "force", &force, "don't complain, do it"),
+ 	OPT_BOOLEAN('m', "modules", &modules,
+ 		    "load module symbols - WARNING: use only with -k and LIVE kernel"),
+ 	OPT_BOOLEAN('n', "show-nr-samples", &show_nr_samples,
