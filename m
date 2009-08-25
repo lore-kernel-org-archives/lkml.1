@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZHYNig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbZHYNje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbZHYNig (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 09:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbZHYNif
+	id S1753770AbZHYNje (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 09:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZHYNjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 09:38:35 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:55976 "EHLO mx1.redhat.com"
+	Tue, 25 Aug 2009 09:39:33 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:55653 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751007AbZHYNie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 09:38:34 -0400
-Message-ID: <4A93E908.6050908@redhat.com>
-Date: Tue, 25 Aug 2009 09:37:12 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1753149AbZHYNjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 09:39:32 -0400
+Date: Tue, 25 Aug 2009 09:37:16 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, fweisbec@gmail.com,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+       mbligh@google.com, lizf@cn.fujitsu.com, jistone@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [PATCH 1/4] add NR_syscalls define for x86
+Message-ID: <20090825133716.GA2656@redhat.com>
+References: <cover.1251146512.git.jbaron@redhat.com> <0f33c0f96d198fccc3ddd9ff7f5334ff5cb42706.1251146513.git.jbaron@redhat.com> <20090824220531.GA20832@linux-sh.org>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz>
-In-Reply-To: <20090825094244.GC15563@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090824220531.GA20832@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/25/2009 05:42 AM, Pavel Machek wrote:
-> On Mon 2009-08-24 20:08:42, Theodore Tso wrote:
->> On Tue, Aug 25, 2009 at 01:00:36AM +0200, Pavel Machek wrote:
->>> Then to answer your question... ext2. You expect to run fsck after
->>> unclean shutdown, and you expect to have to solve some problems with
->>> it. So the way ext2 deals with the flash media actually matches what
->>> the user expects. (*)
->>
->> But if the 256k hole is in data blocks, fsck won't find a problem,
->> even with ext2.
->
-> True.
->
->> And if the 256k hole is the inode table, you will *still* suffer
->> massive data loss.  Fsck will tell you how badly screwed you are, but
->> it doesn't "fix" the disk; most users don't consider questions of the
->> form "directory entry<precious-thesis-data>  points to trashed inode,
->> may I delete directory entry?" as being terribly helpful.  :-/
->
-> Well it will fix the disk in the end. And no, "directory entry
-> <precious-thesis-data>  points to trashed inode, may I delete directory
-> entry?" is not _terribly_ helpful, but it is slightly helpful and
-> people actually expect that from ext2.
->
->> Maybe this came as a surprise to you, but anyone who has used a
->> compact flash in a digital camera knows that you ***have*** to wait
->> until the led has gone out before trying to eject the flash card.  I
->> remember seeing all sorts of horror stories from professional
->> photographers about how they lost an important wedding's day worth of
->> pictures with the attendant commercial loss, on various digital
->> photography forums.  It tends to be the sort of mistake that digital
->> photographers only make once.
->
-> It actually comes as surprise to me. Actually yes and no. I know that
-> digital cameras use VFAT, so pulling CF card out of it may do bad
-> thing, unless I run fsck.vfat afterwards. If digital camera was using
-> ext3, I'd expect it to be safely pullable at any time.
->
-> Will IBM microdrive do any difference there?
->
-> Anyway, it was not known to me. Rather than claiming "everyone knows"
-> (when clearly very few people really understand all the details), can
-> we simply document that?
-> 									Pavel
+On Tue, Aug 25, 2009 at 07:05:32AM +0900, Paul Mundt wrote:
+> On Mon, Aug 24, 2009 at 05:40:14PM -0400, Jason Baron wrote:
+> > Add a NR_syscalls #define for x86. This is used in the syscall events tracing
+> > code. Todo: make it dynamic like x86_64
+> > 
+> > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > 
+> > 
+> > ---
+> >  arch/x86/include/asm/unistd_32.h |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+> > index 732a307..8deaada 100644
+> > --- a/arch/x86/include/asm/unistd_32.h
+> > +++ b/arch/x86/include/asm/unistd_32.h
+> > @@ -345,6 +345,8 @@
+> >  
+> >  #ifdef __KERNEL__
+> >  
+> > +#define NR_syscalls 337
+> > +
+> Syscalls start at 0 and end at 337, there are 338 syscalls, not 337.
+> Hence the off-by-1 that I initially reported. NR_syscalls is always the
+> last syscall + 1.
 
-I really think that the expectation that all OS's (windows, mac, even your ipod) 
-all teach you not to hot unplug a device with any file system. Users have an 
-"eject" or "safe unload" in windows, your iPod tells you not to power off or 
-disconnect, etc.
+right, as I explained in my 0/4 message, this patch is for the -tip tree,
+where 337 is correct, and needs to be adjusted for the -next tree to 338.
 
-I don't object to making that general statement - "Don't hot unplug a device 
-with an active file system or actively used raw device" - but would object to 
-the overly general statement about ext3 not working on flash, RAID5 not working, 
-etc...
+thanks,
 
-ric
-
-
+-Jason
 
