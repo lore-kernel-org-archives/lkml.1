@@ -1,111 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932623AbZHYXrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932678AbZHYXru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932623AbZHYXrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbZHYXrS
+	id S932678AbZHYXru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932413AbZHYXrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:47:18 -0400
-Received: from mail.lang.hm ([64.81.33.126]:51236 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932381AbZHYXrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:47:16 -0400
-Date: Tue, 25 Aug 2009 16:46:15 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-In-Reply-To: <20090825232601.GF4300@elf.ucw.cz>
-Message-ID: <alpine.DEB.2.00.0908251629250.28411@asgard.lang.hm>
-References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz>
- <4A9468E8.607@redhat.com> <20090825225114.GE4300@elf.ucw.cz> <4A946DD1.8090906@redhat.com> <20090825232601.GF4300@elf.ucw.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 25 Aug 2009 19:47:49 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:20974 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932408AbZHYXrt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 19:47:49 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] console_print: change the function api to make it have printk style interface
+Date: Tue, 25 Aug 2009 16:47:49 -0700
+Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501EA9241@exchange.ZeugmaSystems.local>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] console_print: change the function api to make it have printk style interface
+Thread-Index: Acol2vMDLJLKXOZeRaex6v/A5hDHCQAANitw
+From: "Anirban Sinha" <ASinha@zeugmasystems.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Pavel Machek wrote:
+Hi Folks:
 
->>>> Basically, any file system (Linux, windows, OSX, etc) that writes into
->>>> the page cache will lose data when you hot unplug its storage. End of
->>>> story, don't do it!
->>>
->>> No, not ext3 on SATA disk with barriers on and proper use of
->>> fsync(). I actually tested that.
->>>
->>> Yes, I should be able to hotunplug SATA drives and expect the data
->>> that was fsync-ed to be there.
->>
->> You can and will lose data (even after fsync) with any type of storage at
->> some rate. What you are missing here is that data loss needs to be
->> measured in hard numbers - say percentage of installed boxes that have
->> config X that lose data.
->
-> I'm talking "by design" here.
->
-> I will lose data even on SATA drive that is properly powered on if I
-> wait 5 years.
->
->> I can promise you that hot unplugging and replugging a S-ATA drive will
->> also lose you data if you are actively writing to it (ext2, 3, whatever).
->
-> I can promise you that running S-ATA drive will also lose you data,
-> even if you are not actively writing to it. Just wait 10 years; so
-> what is your point?
->
-> But ext3 is _designed_ to preserve fsynced data on SATA drive, while
-> it is _not_ designed to preserve fsynced data on MD RAID5.
+I bumped into this function in printk.c a while back. As I started using
+it, I wondered if we could enhance it with printk style interface that
+could make it somewhat more useful. 
 
-substatute 'degraded MD RAID 5' for 'MD RAID 5' and you have a point here. 
-although the language you are using is pretty harsh. you make it sound 
-like this is a problem with ext3 when the filesystem has nothing to do 
-with it. the problem is that a degraded raid 5 array can be corrupted by 
-an additional failure.
+One straightforward thing to do here would perhaps be to define this as
+a macro. Something like this:
 
-> Do you really think that's not a difference?
->
->>>>>> I don't object to making that general statement - "Don't hot unplug a
->>>>>> device with an active file system or actively used raw device" - but
->>>>>> would object to the overly general statement about ext3 not working on
->>>>>> flash, RAID5 not working, etc...
->>>>>
->>>>> You can object any way you want, but running ext3 on flash or MD RAID5
->>>>> is stupid:
->>>>>
->>>>> * ext2 would be faster
->>>>>
->>>>> * ext2 would provide better protection against powerfail.
->>>>
->>>> Not true in the slightest, you continue to ignore the ext2/3/4 developers
->>>> telling you that it will lose data.
->>>
->>> I know I will lose data. Both ext2 and ext3 will lose data on
->>> flashdisk. (That's what I'm trying to document). But... what is the
->>> benefit of ext3 journaling on MD RAID5? (On flash, ext3 at least
->>> protects you against kernel panic. MD RAID5 is in software, so... that
->>> additional protection is just not there).
->>
->> Faster recovery time on any normal kernel crash or power outage.  Data
->> loss would be equivalent with or without the journal.
->
-> No, because you'll actually repair the ext2 with fsck after the kernel
-> crash or power outage. Data loss will not be equivalent; in particular
-> you'll not lose data writen _after_ power outage to ext2.
+#define console_print(fmt,msg...) printk(KERN_EMERG fmt,##msg)
 
-by the way, while you are thinking about failures that can happen from a 
-failed write corrupting additional blocks, think about the nightmare that 
-can happen if those blocks are in the journal.
+However, there might be some important reason why this was not done. I
+do not know. 
+Anyway, keeping the existing code of using a proper C function and
+exporting the symbol, here's a patch that enhances the function to use
+prink style interface. To the best of my knowledge, I do not think it
+will break existing code that uses this function. I did a grep through
+the kernel code and didn't look like this call was used in lot of other
+places. I have also built the kernel locally with this change and looks
+like at least for mips, it does not break our build.
 
-the 'repair' of ext2 by a fsck is actually much less than you are thinking 
-that it is.
+CCing Linus for his opinion.
 
-David Lang
+Cheers,
+
+Ani
+
+
+Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
+---
+ drivers/char/serial167.c |    2 +-
+ include/linux/tty.h      |    2 +-
+ kernel/printk.c          |   14 ++++++++++++--
+ 3 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/char/serial167.c b/drivers/char/serial167.c
+index 51e7a46..029aa0d 100644
+--- a/drivers/char/serial167.c
++++ b/drivers/char/serial167.c
+@@ -171,7 +171,7 @@ static int startup(struct cyclades_port *);
+ static void cy_throttle(struct tty_struct *);
+ static void cy_unthrottle(struct tty_struct *);
+ static void config_setup(struct cyclades_port *);
+-extern void console_print(const char *);
++extern int console_print(const char *, ...);
+ #ifdef CYCLOM_SHOW_STATUS
+ static void show_status(int);
+ #endif
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index e8c6c91..eb3e4fe 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -519,7 +519,7 @@ extern int pcxe_open(struct tty_struct *tty, struct
+file *filp);
+ 
+ /* printk.c */
+ 
+-extern void console_print(const char *);
++extern int console_print(const char *, ...);
+ 
+ /* vt.c */
+ 
+diff --git a/kernel/printk.c b/kernel/printk.c
+index b4d97b5..729b0ff 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -1060,9 +1060,19 @@ void __sched console_conditional_schedule(void)
+ }
+ EXPORT_SYMBOL(console_conditional_schedule);
+ 
+-void console_print(const char *s)
++int console_print(const char *fmt, ...)
+ {
+-	printk(KERN_EMERG "%s", s);
++	va_list args;
++	int r;
++	char _fmt[1024] = KERN_EMERG;
++
++	strncat(_fmt, fmt,sizeof(_fmt)- sizeof(KERN_EMERG));
++
++	va_start(args, fmt);
++	r = vprintk(_fmt, args);
++	va_end(args);
++
++	return r;
+ }
+ EXPORT_SYMBOL(console_print);
+ 
+-- 
+1.6.4
+
