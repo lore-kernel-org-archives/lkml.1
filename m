@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbZHYSj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbZHYSmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755909AbZHYSj4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbZHYSjz
+	id S1755867AbZHYSmE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbZHYSmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:39:55 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38030 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755570AbZHYSjz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:39:55 -0400
-Date: Tue, 25 Aug 2009 19:39:56 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Mike Rapoport <mike@compulab.co.il>,
-       eric.y.miao@gmail.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] regulator: fix calculation of voltage range in
-	da9034_set_ldo12_voltage()
-Message-ID: <20090825183955.GA2724@opensource.wolfsonmicro.com>
-References: <4A93EA28.9050105@gmail.com>
+	Tue, 25 Aug 2009 14:42:03 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:56535 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755571AbZHYSmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:42:02 -0400
+Date: Tue, 25 Aug 2009 11:41:57 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH -tip 0/2] Temporary RCU fixes for notrace and hotplug CPU
+Message-ID: <20090825184157.GK6616@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090824164112.GA13693@linux.vnet.ibm.com> <20090825065501.GA29162@elte.hu> <20090825154025.GD6616@linux.vnet.ibm.com> <20090825181907.GC3277@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A93EA28.9050105@gmail.com>
-X-Cookie: You will contract a rare disease.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090825181907.GC3277@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 03:42:00PM +0200, Roel Kluin wrote:
-> For val to be greater than 7 or less than 20 is logically always true.
+On Tue, Aug 25, 2009 at 08:19:07PM +0200, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Tue, Aug 25, 2009 at 08:55:01AM +0200, Ingo Molnar wrote:
+> > > 
+> > > FYI, -tip testing found a new build warning on SH caused by the RCU 
+> > > tree (i suspect this warning triggers on other architectures as 
+> > > well):
+> > > 
+> > > /home/mingo/tip/kernel/rcutree.c:88: warning: '__rcu_offline_cpu' 
+> > > declared 'static' but never defined
+> > 
+> > <red face>
+> > 
+> > > it's harmless, but since we are generally trying to fix all warnings 
+> > > and gravitate towards more and more -Werror subsystems, it would be 
+> > > nice to fix this.
+> > 
+> > Indeed, and I have updated my build-output-check script to alert 
+> > me to warning messages from my multiple-configuration test runs.  
+> > Please see below for patch.
+> 
+> btw., you can unset CONFIG_ALLOW_WARNINGS in -tip kernels to turn 
+> build warnings into build failures - and those are harder to miss.
 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Thank you for the tip!!!
 
-Looks good to me but CCing in Eric and Mike just in case the intent of
-the code was something other than the new version.
-
-> diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
-> index b8b89ef..2d9bde5 100644
-> --- a/drivers/regulator/da903x.c
-> +++ b/drivers/regulator/da903x.c
-> @@ -278,7 +278,7 @@ static int da9034_set_ldo12_voltage(struct regulator_dev *rdev,
->  	}
->  
->  	val = (min_uV - info->min_uV + info->step_uV - 1) / info->step_uV;
-> -	val = (val > 7 || val < 20) ? 8 : val - 12;
-> +	val = (val > 7 && val < 20) ? 8 : val - 12;
->  	val <<= info->vol_shift;
->  	mask = ((1 << info->vol_nbits) - 1)  << info->vol_shift;
->  
+							Thanx, Paul
