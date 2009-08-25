@@ -1,140 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZHYJLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZHYJMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbZHYJLs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 05:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZHYJLr
+	id S1754656AbZHYJMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 05:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbZHYJM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 05:11:47 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54554 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752791AbZHYJLq (ORCPT
+	Tue, 25 Aug 2009 05:12:28 -0400
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:50023 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776AbZHYJM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 05:11:46 -0400
-Subject: Re: WARNING: kmemcheck: Caught 32-bit read from uninitialized
- memory  (f6f6e1a4), by kmemleak's scan_block()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Catalin Marinas <catalin.marinas@arm.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <19f34abd0908250203h52257f52v306545a3d8890577@mail.gmail.com>
-References: <20090825071959.GA25877@elte.hu>
-	 <19f34abd0908250104y6e877545y485a2104c2b97cfd@mail.gmail.com>
-	 <20090825083222.GC17692@elte.hu> <1251189914.7261.11.camel@penberg-laptop>
-	 <20090825084808.GA14003@elte.hu> <1251190466.7261.12.camel@penberg-laptop>
-	 <19f34abd0908250203h52257f52v306545a3d8890577@mail.gmail.com>
-Date: Tue, 25 Aug 2009 12:11:47 +0300
-Message-Id: <1251191507.26351.0.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Tue, 25 Aug 2009 05:12:27 -0400
+Date: Tue, 25 Aug 2009 14:42:02 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH v4 2/5] sched: Record the current active power savings
+	level
+Message-ID: <20090825091202.GA4268@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20090331104829.16414.11385.stgit@sofia.in.ibm.com> <20090331105022.16414.4304.stgit@sofia.in.ibm.com> <1251130165.7538.311.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251130165.7538.311.camel@twins>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 11:03 +0200, Vegard Nossum wrote:
-> I don't know so much about the kmemleak internals, but this I can say
-> about the kmemcheck part: According to your definition, an object is
-> initialized if all the bytes of an object are initialized.
+On Mon, Aug 24, 2009 at 06:09:25PM +0200, Peter Zijlstra wrote:
+> On Tue, 2009-03-31 at 16:20 +0530, Gautham R Shenoy wrote:
+> > The existing load balancer code is dependent on the sched_mc_power_savings
+> > variable. However, on multi-core + multi-threaded machines, these decisions
+> > need to be dependent on the values of both sched_mc_power_savings and
+> > sched_smt_power_savings.
+> > 
+> > Create a new variable named active_power_savings_level which is the
+> > maximum of the sched_mc_power_savings and sched_smt_power_savings.
+> > 
+> > Record this value in a read mostly global variable at the time when the user
+> > changes the value of sched_mc/smt_power_savings tunable, and use it for
+> > load-balancing decisions instead of computing it everytime.
 > 
-> Is it possible that because of this, if we have a partially
-> uninitialized object, kmemleak will not record the pointers found in
-> that object? If so, it might skip valid pointers, and deem an object
-> unreferenced. Which could make kmemleak give false-positives.
-> 
-> I think it would be better to ask kmemcheck on a per-pointer basis
-> (i.e. for each pointer-sized word in the object), whether it is
-> initialized or not.
+> OK, so why keep these variables separate at all?
 
-Yeah, makes sense.
+The power-savings load-balancing in the scheduler depends on two things.
+1) The domain at which we want to perform power-aware load balance.
 
-			Pekka
+2) The aggressiveness with which we want to perfomr power-aware
+load-balance.
 
-diff --git a/arch/x86/mm/kmemcheck/kmemcheck.c b/arch/x86/mm/kmemcheck/kmemcheck.c
-index 2c55ed0..528bf95 100644
---- a/arch/x86/mm/kmemcheck/kmemcheck.c
-+++ b/arch/x86/mm/kmemcheck/kmemcheck.c
-@@ -331,6 +331,20 @@ static void kmemcheck_read_strict(struct pt_regs *regs,
- 	kmemcheck_shadow_set(shadow, size);
- }
- 
-+bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
-+{
-+	enum kmemcheck_shadow status;
-+	void *shadow;
-+
-+	shadow = kmemcheck_shadow_lookup(addr);
-+	if (!shadow)
-+		return true;
-+
-+	status = kmemcheck_shadow_test(shadow, size);
-+
-+	return status == KMEMCHECK_SHADOW_INITIALIZED;
-+}
-+
- /* Access may cross page boundary */
- static void kmemcheck_read(struct pt_regs *regs,
- 	unsigned long addr, unsigned int size)
-diff --git a/include/linux/kmemcheck.h b/include/linux/kmemcheck.h
-index 47b39b7..dc2fd54 100644
---- a/include/linux/kmemcheck.h
-+++ b/include/linux/kmemcheck.h
-@@ -34,6 +34,8 @@ void kmemcheck_mark_initialized_pages(struct page *p, unsigned int n);
- int kmemcheck_show_addr(unsigned long address);
- int kmemcheck_hide_addr(unsigned long address);
- 
-+bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size);
-+
- #else
- #define kmemcheck_enabled 0
- 
-@@ -99,6 +101,11 @@ static inline void kmemcheck_mark_initialized_pages(struct page *p,
- {
- }
- 
-+static inline bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
-+{
-+	return true;
-+}
-+
- #endif /* CONFIG_KMEMCHECK */
- 
- /*
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 6debe0d..b075bf0 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -97,6 +97,7 @@
- #include <asm/processor.h>
- #include <asm/atomic.h>
- 
-+#include <linux/kmemcheck.h>
- #include <linux/kmemleak.h>
- 
- /*
-@@ -885,7 +886,8 @@ static void scan_block(void *_start, void *_end,
- 
- 	for (ptr = start; ptr < end; ptr++) {
- 		unsigned long flags;
--		unsigned long pointer = *ptr;
-+		unsigned long pointer;
-+
- 		struct kmemleak_object *object;
- 
- 		if (allow_resched)
-@@ -893,6 +895,13 @@ static void scan_block(void *_start, void *_end,
- 		if (scan_should_stop())
- 			break;
- 
-+		/* Don't scan uninitialized memory. */
-+		if (!kmemcheck_is_obj_initialized((unsigned long) ptr,
-+							sizeof(unsigned long)))
-+			continue;
-+
-+		pointer = *ptr;
-+
- 		object = find_and_get_object(pointer, 1);
- 		if (!object)
- 			continue;
+The variables were kept seperate for 1) since a non-zero value at
+sched_smt_power_savings would indicate that we want to perform
+power-aware load balancing at level SD_LV_MC and a non-zero value of
+sched_mc_power_savings would indicate that we want to perform
+power-aware load balancing at level SD_LV_CPU.
 
+However, if we can agree to do away with these multiple
+sched_*_power_savings sysfs variables, and come up with a single tunable
+with a reasonable set of values that can map to all relavent
+combinations of power-aware-load balancing at the different energy
+domains (cache-level, chip-level, node-level), then we can do away with
+these separate variables.
 
+-- 
+Thanks and Regards
+gautham
