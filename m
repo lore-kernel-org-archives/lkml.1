@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755086AbZHYOMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbZHYOOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755086AbZHYOMB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 10:12:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbZHYOMA
+	id S1755006AbZHYOOP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 10:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZHYOOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 10:12:00 -0400
-Received: from staff.task.gda.pl ([153.19.250.116]:2200 "EHLO
-	staff.task.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754329AbZHYOL7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 10:11:59 -0400
-Date: Tue, 25 Aug 2009 16:11:58 +0200 (CEST)
-From: Pawel Golaszewski <blues@gda.pl>
-X-X-Sender: blues@staff.task.gda.pl
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: PROBLEM: oops
-In-Reply-To: <1251209206.7538.1159.camel@twins>
-Message-ID: <alpine.LNX.2.00.0908251608280.16876@fgnss.gnfx.tqn.cy>
-References: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy> <1251209206.7538.1159.camel@twins>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Tue, 25 Aug 2009 10:14:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59350 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750759AbZHYOOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 10:14:14 -0400
+Date: Tue, 25 Aug 2009 16:14:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <JBeulich@novell.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       linux-tip-commits@vger.kernel.org, hpa@zytor.com
+Subject: Re: [tip:x86/urgent] x86: Fix build with older binutils
+	andconsolidate linker script
+Message-ID: <20090825141405.GA14879@elte.hu>
+References: <4A8AEA1F0200007800010563@vpn.id2.novell.com> <tip-ddc98b38b6320d5de2e3167673a06ec1a48e9d0e@git.kernel.org> <20090825075029.GA857@elte.hu> <4A9408FC02000078000119B1@vpn.id2.novell.com> <20090825135651.GA22484@elte.hu> <4A940AE502000078000119C5@vpn.id2.novell.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="328824058-619476268-1251209518=:16876"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A940AE502000078000119C5@vpn.id2.novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---328824058-619476268-1251209518=:16876
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+* Jan Beulich <JBeulich@novell.com> wrote:
 
-On Tue, 25 Aug 2009, Peter Zijlstra wrote:
-> > No matter which kernel I'm using (2.6.27 - 2.6.30) it crashes. Works for 
-> > few minutes and crashes. Even SysRq doesn't work.
-> > 
-> > Dunno how to trigger it on other machine than mine (I have two, both 
-> > affected). If more info is required - just ask.
-> > [...]
-> > [24483.211036] BUG: unable to handle kernel NULL pointer dereference at 00000058
-> > [24483.211144] IP: [<c081cf9a>] pick_next_task_fair+0x6a/0x100
-> > [24483.211247] Oops: 0000 [#1] SMP 
-> > [24483.211300] Modules linked in: netconsole configfs dm_mod softdog sch_sfq xfs raid10 uhci_hcd eepro100 ppdev parport_pc floppy parport ehci_hcd e100 piix i2c_piix4 thermal psmouse e1000 container ide_core usbcore mii button pcspkr serio_raw processor i2c_core sg evdev ext3 jbd mbcache scsi_wait_scan sd_mod crc_t10dif ata_piix libata dock aic7xxx sym53c8xx scsi_transport_spi scsi_mod raid1 md_mod
-> > [24483.211878] 
-> > [24483.211910] Pid: 1677, comm: md2_raid10 Not tainted (2.6.27.31-1 #1)
+> >>> Ingo Molnar <mingo@elte.hu> 25.08.09 15:56 >>>
+> >* Jan Beulich <JBeulich@novell.com> wrote:
+> >> Sorry for having forgotten to do so before submitting the first 
+> >> time (I know I had intended to).
+> >
+> >This happens. I'm still unsure whether we can do it in .31.0 or need 
+> >to delay it to .31.1 via a -stable backport tag. One more problem 
+> >with it and i think we'll need to delay it - it's just too large and 
+> >changes too many aspects of the linker script.
+> >
+> >Would it be possible to split it into two pieces: 'minimal fix' and 
+> >'clean up' portions?
 > 
-> So you're saying .30 crashes at the exact same place?
+> Besides being cumbersome, that would make it even larger, so I'd 
+> say that's not worth it.
 
-Well... I'm not able to catch anything on .30
-No sign on netconsole, black screen on monitor...
+I mean the two patches yield the same end result. The first one 
+(which is smaller, hopefully) gets committed to x86/urgent, the 
+second one (the cleanups and other non-essentials) gets pushed 
+upstream in .32.
 
--- 
-pozdr.  Paweł Gołaszewski          jid:blues<at>jabber<dot>gda<dot>pl
---------------------------------------------------------------------------
-If you think of MS-DOS as mono, and Windows as stereo, then Linux is Dolby
-Pro-Logic Surround Sound with Bass Boost and all the music is free.
---328824058-619476268-1251209518=:16876--
+	Ingo
