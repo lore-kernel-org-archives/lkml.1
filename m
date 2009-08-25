@@ -1,174 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZHYHhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbZHYHgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbZHYHhU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 03:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbZHYHhQ
+	id S1754525AbZHYHgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 03:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZHYHgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 03:37:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44855 "EHLO hera.kernel.org"
+	Tue, 25 Aug 2009 03:36:35 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:52532 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754640AbZHYHhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 03:37:13 -0400
-Date: Tue, 25 Aug 2009 07:36:40 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, eranian@googlemail.com, a.p.zijlstra@chello.nl,
-       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, eranian@googlemail.com,
-       a.p.zijlstra@chello.nl, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <19091.29664.342227.445006@drongo.ozlabs.ibm.com>
-References: <19091.29664.342227.445006@drongo.ozlabs.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf_counter: Start counting time enabled when group leader gets enabled
-Message-ID: <tip-fa289beca9de9119c7760bd984f3640da21bc94c@git.kernel.org>
-Git-Commit-ID: fa289beca9de9119c7760bd984f3640da21bc94c
-X-Mailer: tip-git-log-daemon
+	id S1753960AbZHYHgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 03:36:35 -0400
+Date: Tue, 25 Aug 2009 08:36:38 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stefan Huber <shuber2@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Meerwald <pmeerw@cosy.sbg.ac.at>,
+       James Morris <jmorris@namei.org>, William Irwin <wli@movementarian.org>,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] mm: fix hugetlb bug due to user_shm_unlock call
+Message-ID: <20090825073637.GA4427@csn.ul.ie>
+References: <alpine.LRH.2.00.0908241110420.21562@tundra.namei.org> <Pine.LNX.4.64.0908241258070.27704@sister.anvils> <4A929BF5.2050105@gmail.com> <Pine.LNX.4.64.0908241532470.9322@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 25 Aug 2009 07:36:41 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.64.0908241532470.9322@sister.anvils>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fa289beca9de9119c7760bd984f3640da21bc94c
-Gitweb:     http://git.kernel.org/tip/fa289beca9de9119c7760bd984f3640da21bc94c
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Tue, 25 Aug 2009 15:17:20 +1000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 25 Aug 2009 09:34:38 +0200
+On Mon, Aug 24, 2009 at 04:30:28PM +0100, Hugh Dickins wrote:
+> 2.6.30's commit 8a0bdec194c21c8fdef840989d0d7b742bb5d4bc removed
+> user_shm_lock() calls in hugetlb_file_setup() but left the
+> user_shm_unlock call in shm_destroy().
+> 
+> In detail:
+> Assume that can_do_hugetlb_shm() returns true and hence user_shm_lock()
+> is not called in hugetlb_file_setup(). However, user_shm_unlock() is
+> called in any case in shm_destroy() and in the following
+> atomic_dec_and_lock(&up->__count) in free_uid() is executed and if
+> up->__count gets zero, also cleanup_user_struct() is scheduled.
+> 
+> Note that sched_destroy_user() is empty if CONFIG_USER_SCHED is not set.
+> However, the ref counter up->__count gets unexpectedly non-positive and
+> the corresponding structs are freed even though there are live
+> references to them, resulting in a kernel oops after a lots of
+> shmget(SHM_HUGETLB)/shmctl(IPC_RMID) cycles and CONFIG_USER_SCHED set.
+> 
+> Hugh changed Stefan's suggested patch: can_do_hugetlb_shm() at the
+> time of shm_destroy() may give a different answer from at the time
+> of hugetlb_file_setup().  And fixed newseg()'s no_id error path,
+> which has missed user_shm_unlock() ever since it came in 2.6.9.
+> 
+> Reported-by: Stefan Huber <shuber2@gmail.com>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Tested-by: Stefan Huber <shuber2@gmail.com>
+> Cc: stable@kernel.org
 
-perf_counter: Start counting time enabled when group leader gets enabled
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
-Currently, if a group is created where the group leader is
-initially disabled but a non-leader member is initially
-enabled, and then the leader is subsequently enabled some time
-later, the time_enabled for the non-leader member will reflect
-the whole time since it was created, not just the time since
-the leader was enabled.
+Thanks Hugh.
 
-This is incorrect, because all of the members are effectively
-disabled while the leader is disabled, since none of the
-members can go on the PMU if the leader can't.
+> ---
+> Stefan, thanks a lot for reporting and testing and reporting back.
+> No need for you to retest, but in preparing to send this out, I've
+> noticed another error here, dating back to 2.6.9 (see comment above),
+> so added in the fix to that (rare case) too.
+> 
+>  fs/hugetlbfs/inode.c    |   20 ++++++++++++--------
+>  include/linux/hugetlb.h |    6 ++++--
+>  ipc/shm.c               |    8 +++++---
+>  3 files changed, 21 insertions(+), 13 deletions(-)
+> 
+> --- 2.6.31-rc7/fs/hugetlbfs/inode.c	2009-06-25 05:18:06.000000000 +0100
+> +++ linux/fs/hugetlbfs/inode.c	2009-08-24 12:32:01.000000000 +0100
+> @@ -935,26 +935,28 @@ static int can_do_hugetlb_shm(void)
+>  	return capable(CAP_IPC_LOCK) || in_group_p(sysctl_hugetlb_shm_group);
+>  }
+>  
+> -struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag)
+> +struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag,
+> +						struct user_struct **user)
+>  {
+>  	int error = -ENOMEM;
+> -	int unlock_shm = 0;
+>  	struct file *file;
+>  	struct inode *inode;
+>  	struct dentry *dentry, *root;
+>  	struct qstr quick_string;
+> -	struct user_struct *user = current_user();
+>  
+> +	*user = NULL;
+>  	if (!hugetlbfs_vfsmount)
+>  		return ERR_PTR(-ENOENT);
+>  
+>  	if (!can_do_hugetlb_shm()) {
+> -		if (user_shm_lock(size, user)) {
+> -			unlock_shm = 1;
+> +		*user = current_user();
+> +		if (user_shm_lock(size, *user)) {
+>  			WARN_ONCE(1,
+>  			  "Using mlock ulimits for SHM_HUGETLB deprecated\n");
+> -		} else
+> +		} else {
+> +			*user = NULL;
+>  			return ERR_PTR(-EPERM);
+> +		}
+>  	}
+>  
+>  	root = hugetlbfs_vfsmount->mnt_root;
+> @@ -996,8 +998,10 @@ out_inode:
+>  out_dentry:
+>  	dput(dentry);
+>  out_shm_unlock:
+> -	if (unlock_shm)
+> -		user_shm_unlock(size, user);
+> +	if (*user) {
+> +		user_shm_unlock(size, *user);
+> +		*user = NULL;
+> +	}
+>  	return ERR_PTR(error);
+>  }
+>  
+> --- 2.6.31-rc7/include/linux/hugetlb.h	2009-06-25 05:18:08.000000000 +0100
+> +++ linux/include/linux/hugetlb.h	2009-08-24 12:32:01.000000000 +0100
+> @@ -10,6 +10,7 @@
+>  #include <asm/tlbflush.h>
+>  
+>  struct ctl_table;
+> +struct user_struct;
+>  
+>  int PageHuge(struct page *page);
+>  
+> @@ -146,7 +147,8 @@ static inline struct hugetlbfs_sb_info *
+>  
+>  extern const struct file_operations hugetlbfs_file_operations;
+>  extern struct vm_operations_struct hugetlb_vm_ops;
+> -struct file *hugetlb_file_setup(const char *name, size_t, int);
+> +struct file *hugetlb_file_setup(const char *name, size_t size, int acct,
+> +						struct user_struct **user);
+>  int hugetlb_get_quota(struct address_space *mapping, long delta);
+>  void hugetlb_put_quota(struct address_space *mapping, long delta);
+>  
+> @@ -168,7 +170,7 @@ static inline void set_file_hugepages(st
+>  
+>  #define is_file_hugepages(file)			0
+>  #define set_file_hugepages(file)		BUG()
+> -#define hugetlb_file_setup(name,size,acctflag)	ERR_PTR(-ENOSYS)
+> +#define hugetlb_file_setup(name,size,acct,user)	ERR_PTR(-ENOSYS)
+>  
+>  #endif /* !CONFIG_HUGETLBFS */
+>  
+> --- 2.6.31-rc7/ipc/shm.c	2009-06-25 05:18:09.000000000 +0100
+> +++ linux/ipc/shm.c	2009-08-24 16:06:30.000000000 +0100
+> @@ -174,7 +174,7 @@ static void shm_destroy(struct ipc_names
+>  	shm_unlock(shp);
+>  	if (!is_file_hugepages(shp->shm_file))
+>  		shmem_lock(shp->shm_file, 0, shp->mlock_user);
+> -	else
+> +	else if (shp->mlock_user)
+>  		user_shm_unlock(shp->shm_file->f_path.dentry->d_inode->i_size,
+>  						shp->mlock_user);
+>  	fput (shp->shm_file);
+> @@ -369,8 +369,8 @@ static int newseg(struct ipc_namespace *
+>  		/* hugetlb_file_setup applies strict accounting */
+>  		if (shmflg & SHM_NORESERVE)
+>  			acctflag = VM_NORESERVE;
+> -		file = hugetlb_file_setup(name, size, acctflag);
+> -		shp->mlock_user = current_user();
+> +		file = hugetlb_file_setup(name, size, acctflag,
+> +							&shp->mlock_user);
+>  	} else {
+>  		/*
+>  		 * Do not allow no accounting for OVERCOMMIT_NEVER, even
+> @@ -410,6 +410,8 @@ static int newseg(struct ipc_namespace *
+>  	return error;
+>  
+>  no_id:
+> +	if (shp->mlock_user)	/* shmflg & SHM_HUGETLB case */
+> +		user_shm_unlock(size, shp->mlock_user);
+>  	fput(file);
+>  no_file:
+>  	security_shm_free(shp);
+> 
 
-Thus we have to update the ->tstamp_enabled for all the enabled
-group members when a group leader is enabled, so that the
-time_enabled computation only counts the time since the leader
-was enabled.
-
-Similarly, when disabling a group leader we have to update the
-time_enabled and time_running for all of the group members.
-
-Also, in update_counter_times, we have to treat a counter whose
-group leader is disabled as being disabled.
-
-Reported-by: Stephane Eranian <eranian@googlemail.com>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: <stable@kernel.org>
-LKML-Reference: <19091.29664.342227.445006@drongo.ozlabs.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/perf_counter.c |   43 ++++++++++++++++++++++++++++++-------------
- 1 files changed, 30 insertions(+), 13 deletions(-)
-
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index f274e19..06bf6a4 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -469,7 +469,8 @@ static void update_counter_times(struct perf_counter *counter)
- 	struct perf_counter_context *ctx = counter->ctx;
- 	u64 run_end;
- 
--	if (counter->state < PERF_COUNTER_STATE_INACTIVE)
-+	if (counter->state < PERF_COUNTER_STATE_INACTIVE ||
-+	    counter->group_leader->state < PERF_COUNTER_STATE_INACTIVE)
- 		return;
- 
- 	counter->total_time_enabled = ctx->time - counter->tstamp_enabled;
-@@ -518,7 +519,7 @@ static void __perf_counter_disable(void *info)
- 	 */
- 	if (counter->state >= PERF_COUNTER_STATE_INACTIVE) {
- 		update_context_time(ctx);
--		update_counter_times(counter);
-+		update_group_times(counter);
- 		if (counter == counter->group_leader)
- 			group_sched_out(counter, cpuctx, ctx);
- 		else
-@@ -573,7 +574,7 @@ static void perf_counter_disable(struct perf_counter *counter)
- 	 * in, so we can change the state safely.
- 	 */
- 	if (counter->state == PERF_COUNTER_STATE_INACTIVE) {
--		update_counter_times(counter);
-+		update_group_times(counter);
- 		counter->state = PERF_COUNTER_STATE_OFF;
- 	}
- 
-@@ -851,6 +852,27 @@ retry:
- }
- 
- /*
-+ * Put a counter into inactive state and update time fields.
-+ * Enabling the leader of a group effectively enables all
-+ * the group members that aren't explicitly disabled, so we
-+ * have to update their ->tstamp_enabled also.
-+ * Note: this works for group members as well as group leaders
-+ * since the non-leader members' sibling_lists will be empty.
-+ */
-+static void __perf_counter_mark_enabled(struct perf_counter *counter,
-+					struct perf_counter_context *ctx)
-+{
-+	struct perf_counter *sub;
-+
-+	counter->state = PERF_COUNTER_STATE_INACTIVE;
-+	counter->tstamp_enabled = ctx->time - counter->total_time_enabled;
-+	list_for_each_entry(sub, &counter->sibling_list, list_entry)
-+		if (sub->state >= PERF_COUNTER_STATE_INACTIVE)
-+			sub->tstamp_enabled =
-+				ctx->time - sub->total_time_enabled;
-+}
-+
-+/*
-  * Cross CPU call to enable a performance counter
-  */
- static void __perf_counter_enable(void *info)
-@@ -877,8 +899,7 @@ static void __perf_counter_enable(void *info)
- 
- 	if (counter->state >= PERF_COUNTER_STATE_INACTIVE)
- 		goto unlock;
--	counter->state = PERF_COUNTER_STATE_INACTIVE;
--	counter->tstamp_enabled = ctx->time - counter->total_time_enabled;
-+	__perf_counter_mark_enabled(counter, ctx);
- 
- 	/*
- 	 * If the counter is in a group and isn't the group leader,
-@@ -971,11 +992,9 @@ static void perf_counter_enable(struct perf_counter *counter)
- 	 * Since we have the lock this context can't be scheduled
- 	 * in, so we can change the state safely.
- 	 */
--	if (counter->state == PERF_COUNTER_STATE_OFF) {
--		counter->state = PERF_COUNTER_STATE_INACTIVE;
--		counter->tstamp_enabled =
--			ctx->time - counter->total_time_enabled;
--	}
-+	if (counter->state == PERF_COUNTER_STATE_OFF)
-+		__perf_counter_mark_enabled(counter, ctx);
-+
-  out:
- 	spin_unlock_irq(&ctx->lock);
- }
-@@ -1479,9 +1498,7 @@ static void perf_counter_enable_on_exec(struct task_struct *task)
- 		counter->attr.enable_on_exec = 0;
- 		if (counter->state >= PERF_COUNTER_STATE_INACTIVE)
- 			continue;
--		counter->state = PERF_COUNTER_STATE_INACTIVE;
--		counter->tstamp_enabled =
--			ctx->time - counter->total_time_enabled;
-+		__perf_counter_mark_enabled(counter, ctx);
- 		enabled = 1;
- 	}
- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
