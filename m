@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZHYKSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZHYKUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbZHYKSJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 06:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbZHYKSI
+	id S1754689AbZHYKUa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 06:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZHYKU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 06:18:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55446 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Aug 2009 06:20:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56005 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbZHYKSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 06:18:06 -0400
-Date: Tue, 25 Aug 2009 12:17:42 +0200
+	id S1752589AbZHYKU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 06:20:28 -0400
+Date: Tue, 25 Aug 2009 12:20:23 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, dwalker@fifo99.com,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:timers/core] timekeeping: Increase granularity of
-	read_persistent_clock()
-Message-ID: <20090825101742.GA26801@elte.hu>
-References: <20090822103252.GA32369@elte.hu> <20090822171540.1220f50d@skybase> <20090822153346.GA3313@elte.hu> <19088.47213.327897.703458@cargo.ozlabs.ibm.com> <20090823084740.GA7651@elte.hu> <19090.1800.521794.839576@cargo.ozlabs.ibm.com> <20090824082318.GD2424@elte.hu> <19091.24374.210127.155521@drongo.ozlabs.ibm.com> <20090825082612.GA17692@elte.hu> <19091.46451.893720.573893@cargo.ozlabs.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
+	cpumask on multi-node processors
+Message-ID: <20090825102023.GB26801@elte.hu>
+References: <20090820131243.GO29327@alberich.amd.com> <20090820134604.GD29327@alberich.amd.com> <1251128176.7538.301.camel@twins> <20090825093101.GJ20811@alberich.amd.com> <1251194143.7538.1128.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19091.46451.893720.573893@cargo.ozlabs.ibm.com>
+In-Reply-To: <1251194143.7538.1128.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,86 +34,59 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul Mackerras <paulus@samba.org> wrote:
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Ingo Molnar writes:
+> On Tue, 2009-08-25 at 11:31 +0200, Andreas Herrmann wrote:
+> > On Mon, Aug 24, 2009 at 05:36:16PM +0200, Peter Zijlstra wrote:
+> > > On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
+> > > > The correct mask that describes core-siblings of an processor
+> > > > is topology_core_cpumask. See topology adapation patches, especially
+> > > > http://marc.info/?l=linux-kernel&m=124964999608179
+> > > 
+> > > 
+> > > argh, violence, murder kill.. this is the worst possible hack and you're
+> > > extending it :/
+> > 
+> > So this is the third code area
+> > (besides sched_*_power_savings sysfs interface, and the __cpu_power fiddling)
+> > that is crap, mess, a hack.
+> > 
+> > Didn't know that I'd enter such a minefield when touching this code. ;-(
 > 
-> > If you suggest that each and every subsystem maintainer who 
-> > touches code that can be built on non-x86 architectures has to 
-> > cross-build to 20+ architectures to be able to push out a tree, 
-> > all the time, and has to rebase if this ever gets omitted, you 
-> > are really defying reality and are hurting Linux.
+> Yeah, you're lucky that way ;-) Its been creaking for a while, and I've
+> been making noises to the IBM people (who so far have been the main
+> source of power saving patches) to clean this up, but now you trod onto
+> all of it at once..
 > 
-> Nice straw man, but I never said or even suggested anything like 
-> that. :)
-
-... but what you say in essence amounts to that. Every change to a 
-file that is built on an architecture 'affects' that architecture so 
-your arguments can be repeated for that one. It's a slippery slope 
-built on a wrong premise.
-
-I can only repeat what i said because i did not see you really 
-counter the core of my argument (you snipped out much of my mail 
-that details this and only replied to the last paragraph):
-
->> I think there's a fundamental disconnect with reality here.
->> 
->> The thing is, as the maintainer of certain core kernel subsystems 
->> i _have to_ mirror and honor the system usage and hardware 
->> preferences of developers, testers and users. Those are 
->> predominantly x86 based currently. I cross-test to a lot of 
->> architectures because i'm nice but in practice it rarely matters.
->> 
->> (It goes beyond that btw: i try to test more common drivers 
->> within x86 too, etc.)
->> 
->> If you want to change that reality you can do it the old 
->> fashioned, fair way: build cool hardware, send more SDVs to 
->> kernel developers, make PowerPC more widely used, etc.
->> 
->> If i put more effort into testing what nobody uses i'd be doing a 
->> disservice to Linux - i'd disproportionately favor PowerPC just 
->> because you are a squeakier wheel.
->> 
->> I.e. please _earn_ your usage share, dont try to dicate it 
->> artificially ... It does not work the other way, you cannot force 
->> in the kernel space what PowerPC did not manage to achieve in the 
->> marketplace.
-
-We should be (and are) testing what matters and 22 architectures 
-must not be allowed to hold core kernel facilities hostage.
-
-( Plus, as i said the current tip of timers/core was problematic for 
-  other reasons as well, which amounts to a 'might need to be 
-  rebased'. )
-
-> I do think that it's reasonable to expect that a patch which 
-> touches the architecture-specific code for some architecture gets 
-> compiled for that architecture at least once before it gets set in 
-> stone.  As far as I can tell, this didn't happen in the case of 
-> Martin's patch that triggered this debate.
-
-I've seen similar arguments for patches that didnt touch any 
-architecture files but broke it via some other, less direct way.
-
-Say that patch also touches arch/xtensa/. Can you cross-build to 
-xtensa?
-
-> Patches which touch multiple architecture's arch-specific code 
-> should also get sent to the maintainers of the affected 
-> architectures and the linux-arch mailing list.  I don't recall 
-> seeing this patch on linux-arch, though I may have missed it (and 
-> anyway that would be Martin's responsibility not yours, but it 
-> does contribute to the sense of being blindsided).
+> > What would be your perferred solution for the
+> > core_cpumask/llc_shared_map stuff?  Another domain level to get rid of
+> > this function?
 > 
-> More generally - if you don't have the resources to do regular 
-> build testing for powerpc or other architectures, then publish a 
-> testing branch and we'll get kisskb 
-> (http://kisskb.ellerman.id.au/) to build a selection of configs 
-> and architectures automatically.
+> Right, I'd like to see everything exposed as domain levels.
+> 
+>  numa-cluster
+>  numa
+>  socket
+>  in-socket-numa
+>  multi-core
+>  shared-cache
+>  core
+>  threads
+> 
+> We currently have a fixed order of these things, but I think we 
+> should simply provide helpers for building the sd tree and let the 
+> arch code do that instead of exporting all these masks in a fixed 
+> order.
+> 
+> Once we get the arch domain tree, we do degenerate stuff to cull 
+> all the trivial domains and fold SD flags.
 
-Slowing down patches via buerocracy like that is not acceptable at 
-all. Make developers care more about your architecture via natural 
-means, not via buerocratic measures.
+Btw., to move this into the realm of possibility for .32, we can 
+start this by adding the framework and then crudely cutting off 
+these wrongly layered connections to the architecture code and doing 
+a clean core.
+
+We might regress but the fixes to those will be isolated and forward 
+looking.
 
 	Ingo
