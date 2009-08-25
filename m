@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932188AbZHYVy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbZHYV5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932188AbZHYVy6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 17:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbZHYVy5
+	id S932200AbZHYV5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 17:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756041AbZHYV5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 17:54:57 -0400
-Received: from emroute1.ornl.gov ([160.91.4.119]:60710 "EHLO emroute1.ornl.gov"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754460AbZHYVy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 17:54:56 -0400
-X-Greylist: delayed 500 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Aug 2009 17:54:56 EDT
-Date: Tue, 25 Aug 2009 17:54:56 -0400
-From: David Dillow <dave@thedillows.org>
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-In-reply-to: <m1ljl77exz.fsf@fess.ebiederm.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <1251237296.9607.42.camel@lap75545.ornl.gov>
-MIME-version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10)
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <200903041828.49972.m.bueker@berlin.de>
- <1242001754.4093.12.camel@obelisk.thedillows.org>
- <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
- <1242077392.3716.15.camel@lap75545.ornl.gov> <4A09DC3E.2080807@googlemail.com>
- <1242268709.4979.7.camel@obelisk.thedillows.org>
- <4A0C6504.8000704@googlemail.com>
- <1242328457.32579.12.camel@lap75545.ornl.gov>
- <4A0C7443.1010000@googlemail.com>
- <1243042174.3580.23.camel@obelisk.thedillows.org>
- <m1skfkrik2.fsf@fess.ebiederm.org>
- <1250895567.23419.1.camel@obelisk.thedillows.org>
- <1250897657.23419.5.camel@obelisk.thedillows.org>
- <m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
- <1250973787.3582.14.camel@obelisk.thedillows.org>
- <m1r5v0ogvw.fsf@fess.ebiederm.org>
- <1251169150.4023.11.camel@obelisk.thedillows.org>
- <m1ljl77exz.fsf@fess.ebiederm.org>
+	Tue, 25 Aug 2009 17:57:00 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:59580 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753181AbZHYV47 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 17:56:59 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 25 Aug 2009 14:57:01 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: "Michael S. Tsirkin" <mst@redhat.com>
+cc: Avi Kivity <avi@redhat.com>, gleb@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+In-Reply-To: <20090825072229.GA10608@redhat.com>
+Message-ID: <alpine.DEB.2.00.0908251456230.18518@makko.or.mcafeemobile.com>
+References: <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com>
+ <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com> <20090824214900.GA9899@redhat.com> <alpine.DEB.2.00.0908241508440.7951@makko.or.mcafeemobile.com> <20090825072229.GA10608@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 14:37 -0700, Eric W. Biederman wrote:
-> David Dillow <dave@thedillows.org> writes:
-> > Here's a possible patch to mask the NAPI events while we're running in
-> > NAPI mode. I'm not sure it is going to help, since the intr_mask was
-> > 0xffff when you hit the loop guard, so I left it in for now.
+On Tue, 25 Aug 2009, Michael S. Tsirkin wrote:
+
+> Yes, we don't want that. The best thing is to try to restate the problem
+> in a way that is generic, and then either solve or best use existing
+> solution. Right?
 > 
-> Ok.  I now get what your patch was trying to do and that does look like
-> a reasonable test.  
+> I thought I had that, but apparently not.  The reason I'm Cc-ing you is
+> not to try and spam you until you give up and accept the patch, it's
+> hoping that you see the pattern behind our usage, and help generalize
+> it.
 > 
-> I prefer:
-> while ((status != 0xffff) && (status & tp->intr_mask))
+> If I understand it correctly, you believe this is not possible and so
+> any solution will have to be in KVM? Or maybe I didn't state the problem
+> clearly enough and should restate it?
 
-I had thought of going that route first, but if you have any interrupt
-event sources set, you want to enter the loop at least once to clear
-them, otherwise you never see another MSI interrupt.
+Please do.
 
-If the masking is the way things play out, then I'd put it where I had
-it and put in a comment as to why it is there.
 
-> The presence of TxDescUnavail suggests as is usually the case
-> that the interrupt status bits are independent of which interrupts
-> are actually enabled to fire.
 
-Yes, but I seem to recall the MSI's edge detection being especially
-oddly done -- I did tests with various masks and using the ability to
-have it generate an interrupt on user demand, and IIRC it was handled
-before the mask was applied, so we really did care about the events that
-were active -- but I may misremember.
+- Davide
 
-> I will take a moment and give that a try.
-> 
-> I still like the idea of masking everything having poll do all
-> of the work and then unmasking everything.  That seems a little less
-> fragile to me.
 
-I wouldn't object if you did it, but I don't have time for it right now.
-And it may make Francois's life harder when he does his periodic sweep
-of the vendor driver, looking for differences.
