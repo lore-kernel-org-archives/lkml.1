@@ -1,117 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZHYJcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZHYJco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbZHYJcf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 05:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbZHYJce
+	id S1754812AbZHYJco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 05:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754799AbZHYJco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 05:32:34 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34208 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751050AbZHYJcd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 05:32:33 -0400
-Date: Tue, 25 Aug 2009 11:32:25 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090825093225.GA15563@elf.ucw.cz>
-References: <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <alpine.DEB.2.00.0908241655250.28411@asgard.lang.hm>
+	Tue, 25 Aug 2009 05:32:44 -0400
+Received: from sg2ehsobe003.messaging.microsoft.com ([207.46.51.77]:18447 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754798AbZHYJcl convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 05:32:41 -0400
+X-SpamScore: 2
+X-BigFish: VPS2(z34a4jz1432R98dN936eMa594izz1202hzz3198u327alz32i6bh203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KOXEHG-01-4SN-02
+X-M-MSG: 
+Date: Tue, 25 Aug 2009 11:31:01 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
+	cpumask on multi-node processors
+Message-ID: <20090825093101.GJ20811@alberich.amd.com>
+References: <20090820131243.GO29327@alberich.amd.com> <20090820134604.GD29327@alberich.amd.com> <1251128176.7538.301.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908241655250.28411@asgard.lang.hm>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1251128176.7538.301.camel@twins>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 25 Aug 2009 09:31:01.0639 (UTC) FILETIME=[C2AB7970:01CA2566]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Aug 24, 2009 at 05:36:16PM +0200, Peter Zijlstra wrote:
+> On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
+> > The correct mask that describes core-siblings of an processor
+> > is topology_core_cpumask. See topology adapation patches, especially
+> > http://marc.info/?l=linux-kernel&m=124964999608179
+> 
+> 
+> argh, violence, murder kill.. this is the worst possible hack and you're
+> extending it :/
 
->>> Sure --- but name **any** filesystem that can deal with the fact that
->>> 128k or 256k worth of data might disappear when you pull out the flash
->>> card while it is writing a single sector?
->>
->> First... I consider myself quite competent in the os level, yet I did
->> not realize what flash does and what that means for data
->> integrity. That means we need some documentation, or maybe we should
->> refuse to mount those devices r/w or something.
->>
->> Then to answer your question... ext2. You expect to run fsck after
->> unclean shutdown, and you expect to have to solve some problems with
->> it. So the way ext2 deals with the flash media actually matches what
->> the user expects. (*)
->
-> you loose data in ext2
+So this is the third code area
+(besides sched_*_power_savings sysfs interface, and the __cpu_power fiddling)
+that is crap, mess, a hack.
 
-Yes.
+Didn't know that I'd enter such a minefield when touching this code. ;-(
 
->> OTOH in ext3 case you expect consistent filesystem after unplug; and
->> you don't get that.
->
-> the problem is that people have been preaching that journaling 
-> filesystems eliminate all data loss for no cost (or at worst for minimal 
-> cost).
->
-> they don't, they never did.
->
-> they address one specific problem (metadata inconsistancy), but they do  
-> not address data loss, and never did (and for the most part the 
-> filesystem developers never claimed to)
+What would be your perferred solution for the
+core_cpumask/llc_shared_map stuff?  Another domain level to get rid of
+this function?
 
-Well, in case of flashcard and degraded MD Raid5, ext3 does _not_
-address metadata inconsistency problem. And that's why I'm trying to
-fix the documentation. Current ext3 documentation says:
+> > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> > ---
+> >  arch/x86/kernel/smpboot.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> > index f797214..f39bb2c 100644
+> > --- a/arch/x86/kernel/smpboot.c
+> > +++ b/arch/x86/kernel/smpboot.c
+> > @@ -446,7 +446,7 @@ const struct cpumask *cpu_coregroup_mask(int cpu)
+> >  	 * And for power savings, we return cpu_core_map
+> >  	 */
+> >  	if (sched_mc_power_savings || sched_smt_power_savings)
+> > -		return cpu_core_mask(cpu);
+> > +		return topology_core_cpumask(cpu);
+> >  	else
+> >  		return c->llc_shared_map;
+> >  }
+> 
 
-#Journaling Block Device layer
-#-----------------------------
-#The Journaling Block Device layer (JBD) isn't ext3 specific.  It was
-#designed
-#to add journaling capabilities to a block device.  The ext3 filesystem
-#code
-#will inform the JBD of modifications it is performing (called a
-#transaction).
-#The journal supports the transactions start and stop, and in case of a
-#crash,
-#the journal can replay the transactions to quickly put the partition
-#back into
-#a consistent state.
+Andreas
 
-There's no mention that this does not work on flash cards and degraded
-MD Raid5 arrays.
- 
-> people somehow have the expectation that ext3 does the data equivalent of 
-> solving world hunger, it doesn't, it never did, and it never claimed
-> to.
-
-It claims so, above.
-
-> personally I don't consider the two filesystems to be significantly  
-> different in terms of the data loss potential. I think people are more  
-> aware of the potentials with XFS than with ext3, but I believe that the  
-> risk of loss is really about the same (and pretty much for the same  
-> reasons)
-
-Ack here.
-
->> Again, ext2 handles that in a way user expects it.
->>
->> At least I was teached "ext2 needs fsck after powerfail; ext3 can
->> handle powerfails just ok".
->
-> you were teached wrong. the people making these claims for ext3 didn't  
-> understand what ext3 does and doesn't do.
-
-Cool. So... can we fix the documentation?
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
+
