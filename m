@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZHYW7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbZHYXA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932294AbZHYW7v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 18:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254AbZHYW7u
+	id S932306AbZHYXA3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932271AbZHYXA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 18:59:50 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62446 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932248AbZHYW7u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 18:59:50 -0400
-Date: Tue, 25 Aug 2009 18:59:49 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Neil Horman <nhorman@tuxdriver.com>, Wei Yongjun <yjwei@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] trace_events: fix the include file dependencies
-In-Reply-To: <20090825133029.GB6114@nowhere>
-Message-ID: <alpine.DEB.2.00.0908251856381.1763@gandalf.stny.rr.com>
-References: <4A937EF5.4040505@cn.fujitsu.com> <4A937F5E.3020802@cn.fujitsu.com> <20090825133029.GB6114@nowhere>
+	Tue, 25 Aug 2009 19:00:28 -0400
+Received: from mail.lang.hm ([64.81.33.126]:60316 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932254AbZHYXA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 19:00:27 -0400
+Date: Tue, 25 Aug 2009 15:59:26 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@ucw.cz>
+cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+In-Reply-To: <20090825224004.GD4300@elf.ucw.cz>
+Message-ID: <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm>
+References: <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz>
+ <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 26 Aug 2009, Pavel Machek wrote:
 
-On Tue, 25 Aug 2009, Frederic Weisbecker wrote:
+> On Tue 2009-08-25 15:33:08, david@lang.hm wrote:
+>> On Wed, 26 Aug 2009, Pavel Machek wrote:
+>>
+>>>> It seems that you are really hung up on whether or not the filesystem
+>>>> metadata is consistent after a power failure, when I'd argue that the
+>>>> problem with using storage devices that don't have good powerfail
+>>>> properties have much bigger problems (such as the potential for silent
+>>>> data corruption, or even if fsck will fix a trashed inode table with
+>>>> ext2, massive data loss).  So instead of your suggested patch, it
+>>>> might be better simply to have a file in Documentation/filesystems
+>>>> that states something along the lines of:
+>>>>
+>>>> "There are storage devices that high highly undesirable properties
+>>>> when they are disconnected or suffer power failures while writes are
+>>>> in progress; such devices include flash devices and software RAID 5/6
+>>>> arrays without journals,
+>>
+>> is it under all conditions, or only when you have already lost redundancy?
+>
+> I'd prefer not to specify.
 
-> On Tue, Aug 25, 2009 at 02:06:22PM +0800, Xiao Guangrong wrote:
-> > The TRACE_EVENT depend on the include/linux/tracepoint.h first
-> > and include/trace/ftrace.h later, if we include the ftrace.h early,
-> > It'll occur building error, like blow:
-> > 
-> > Both define TRACE_EVENT in trace_a.h and trace_b.h, if we include
-> > those in .c file, like this:
-> > 
-> > #define CREATE_TRACE_POINTS
-> > include <trace/events/trace_a.h>
-> > include <trace/events/trace_b.h>
-> > 
-> > There are can't work,  because the TRACE_EVENT has re-defined by
-> > the previous .h file
-> > 
-> > Reported-by: Wei Yongjun <yjwei@cn.fujitsu.com>
-> > Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> > ---
-> >  include/linux/tracepoint.h   |    3 +--
-> >  include/trace/define_trace.h |    1 +
-> >  2 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> > index 5984ed0..8170985 100644
-> > --- a/include/linux/tracepoint.h
-> > +++ b/include/linux/tracepoint.h
-> > @@ -180,6 +180,7 @@ static inline void tracepoint_synchronize_unregister(void)
-> >  }
-> >  
-> >  #define PARAMS(args...) args
-> > +#endif
-> 
-> 
-> Please add a comment to explain what your endifs are closing, that helps
-> for reviews. Especially while walking on such complicated header files,
-> it's a crutch.
-> 
-> I guess this one closes _LINUX_TRACEPOINT_H, right?
+you need to, otherwise you are claiming that all linux software raid 
+implementations will loose data on powerfail, which I don't think is the 
+case.
 
-This needs a lot more than a simple /* _LINUX_TRACEPOINT_H */ comment. It 
-needs a nice explanation to why this is happening. This is a global header 
-(located in include/linux), when it does something out of the norm, it 
-needs a nice comment to explain why.
+>> prior discussions make me think this was only if the redundancy is
+>> already lost.
+>
+> I'm not so sure now.
+>
+> Lets say you are writing to the (healthy) RAID5 and have a powerfail.
+>
+> So now data blocks do not correspond to the parity block. You don't
+> yet have the corruption, but you already have a problem.
+>
+> If you get a disk failing at this point, you'll get corruption.
 
-I'll pull this in and add a separate commit that adds the comment.
+it's the same combination of problems (non-redundant array and write lost 
+to powerfail/reboot), just in a different order.
 
-Thanks!
+reccomending a scrub of the raid after an unclean shutdown would make 
+sense, along with a warning that if you loose all redundancy before the 
+scrub is completed and there was a write failure in the unscrubbed portion 
+it could corrupt things.
 
--- Steve
+>> also, the talk about software RAID 5/6 arrays without journals will be
+>> confusing (after all, if you are using ext3/XFS/etc you are using a
+>> journal, aren't you?)
+>
+> Slightly confusing, yes. Should I just say "MD RAID 5" and avoid
+> talking about hardware RAID arrays, where that's really
+> manufacturer-specific?
 
+what about dm raid?
+
+I don't think you should talk about hardware raid cards.
+
+>> in addition, even with a single drive you will loose some data on power
+>> loss (unless you do sync mounts with disabled write caches), full data
+>> journaling can help protect you from this, but the default journaling
+>> just protects the metadata.
+>
+> "Data loss" here means "damaging data that were already fsynced". That
+> will not happen on single disk (with barriers on etc), but will happen
+> on RAID5 and flash.
+
+this definition of data loss wasn't clear prior to this. you need to 
+define this, and state that the reason that flash and raid arrays can 
+suffer from this is that both of them deal with blocks of storage larger 
+than the data block (eraseblock or raid stripe) and there are conditions 
+that can cause the loss of the entire eraseblock or raid stripe which can 
+affect data that was previously safe on disk (and if power had been lost 
+before the latest write, the prior data would still be safe)
+
+note that this doesn't nessasarily affect all flash disks. if the disk 
+doesn't replace the old block in the FTL until the data has all been 
+sucessfuly copies to the new eraseblock you don't have this problem.
+
+some (possibly all) cheap thumb drives don't do this, but I would expect 
+that the expensive SATA SSDs to do things in the right order.
+
+do this right and you are properly documenting a failure mode that most 
+people don't understand, but go too far and you are crying wolf.
+
+David Lang
