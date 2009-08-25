@@ -1,150 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbZHYJEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZHYJGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbZHYJEa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 05:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZHYJE2
+	id S1754290AbZHYJGA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 05:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZHYJF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 05:04:28 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:12086 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751682AbZHYJE1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 05:04:27 -0400
-X-Trace: 251809392/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.96.146/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.96.146
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtAEAK5Fk0pPRWCS/2dsb2JhbACBU9Q+gjWBZQU
-X-IronPort-AV: E=Sophos;i="4.44,271,1249254000"; 
-   d="scan'208";a="251809392"
-Date: Tue, 25 Aug 2009 10:03:30 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Hiroaki Wakabayashi <primulaelatior@gmail.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Ying Han <yinghan@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: Re: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
-In-Reply-To: <82e12e5f0908242146uad0f314hcbb02fcc999a1d32@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0908250947400.2872@sister.anvils>
-References: <82e12e5f0908220954p7019fb3dg15f9b99bb7e55a8c@mail.gmail.com> 
- <28c262360908231844o3df95b14v15b2d4424465f033@mail.gmail.com> 
- <20090824105139.c2ab8403.kamezawa.hiroyu@jp.fujitsu.com> 
- <2f11576a0908232113w71676aatf22eb6d431501fd0@mail.gmail.com>
- <82e12e5f0908242146uad0f314hcbb02fcc999a1d32@mail.gmail.com>
+	Tue, 25 Aug 2009 05:05:59 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:4504 "EHLO nef2.ens.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751682AbZHYJF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 05:05:58 -0400
+X-Greylist: delayed 944 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Aug 2009 05:05:56 EDT
+Date: Tue, 25 Aug 2009 10:50:13 +0200
+From: Nicolas George <nicolas.george@normalesup.org>
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: [cpufreq] Autoloading governors blocks
+Message-ID: <20090825085013.GA7577@phare.normalesup.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1536434056-1251191010=:2872"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="tKW2IUtsqtDRztdT"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Tue, 25 Aug 2009 10:50:13 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323584-1536434056-1251191010=:2872
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+--tKW2IUtsqtDRztdT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 25 Aug 2009, Hiroaki Wakabayashi wrote:
-> Thank you for reviews.
->=20
-> >>> > @@ -254,6 +254,7 @@ static inline void
-> >>> > mminit_validate_memmodel_limits(unsigned long *start_pfn,
-> >>> > =C2=A0#define GUP_FLAGS_FORCE =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A00x2
-> >>> > =C2=A0#define GUP_FLAGS_IGNORE_VMA_PERMISSIONS 0x4
-> >>> > =C2=A0#define GUP_FLAGS_IGNORE_SIGKILL =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-0x8
-> >>> > +#define GUP_FLAGS_ALLOW_NULL =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 0x10
-> >>> >
-> >>>
-> >>> I am worried about adding new flag whenever we need it.
+Hi.
 
-Indeed!  See my comments below.
+Yesterday, on a freshly-compiled 2.6.30.5 kernel, I noticed that changing to
+a governor that exists as a module but is not loaded causes the process that
+did the change to go to state D, along with any process later accessing the
+cpufreq nodes.
 
-> >>> But I think this case makes sense to me.
-> >>> In addition, I guess ZERO page can also use this flag.
-> >>>
-> >>> Kame. What do you think about it?
-> >>>
-> >> I do welcome this !
-> >> Then, I don't have to take care of mlock/munlock in ZERO_PAGE patch.
+The CPU is a Thurion64, working with powernow-k8. The kernel is configured
+with CONFIG_X86_64, CONFIG_PREEMPT, CONFIG_NO_HZ. The governor, at the time
+the problem happened, was ondemand.
 
-I _think_ there's nothing to do for it (the page->mapping checks suit
-the ZERO_PAGE); but I've not started testing my version, so may soon
-be proved wrong.
+The problem happened either when loading powersave or userspace. On the
+other hand, selecting a governor that is already loaded works fine, and
+trying to autoload a governor that does not exist fails normally.
 
-> >>
-> >> And without this patch, munlock() does copy-on-write just for unpinnin=
-g memory.
-> >> So, this patch shows some right direction, I think.
-> >>
-> >> One concern is flag name, ALLOW_NULL sounds not very good.
-> >>
-> >> =C2=A0GUP_FLAGS_NOFAULT ?
-> >>
-> >> I wonder we can remove a hack of FOLL_ANON for core-dump by this flag,=
- too.
+I do not have a lot of time to investigate, I hope this bug report may be
+useful.
 
-No, the considerations there a different (it can only point to a ZERO_PAGE
-where faulting would anyway present a page of zeroes); it should be dealt
-with by a coredump-specific flag, rather than sowing confusion elsewhere.
-As above, I've done that but not yet tested it.
+Regards,
 
-> >
-> > Yeah, GUP_FLAGS_NOFAULT is better.
->=20
-> Me too.
-> I will change this flag name.
->...=20
-> When I try to change __get_user_pages(), I got problem.
-> If remove NULLs from pages,
-> __mlock_vma_pages_range() cannot know how long __get_user_pages() readed.
-> So, I have to get the virtual address of the page from vma and page.
-> Because __mlock_vma_pages_range() have to call
-> __get_user_pages() many times with different `start' argument.
->=20
-> I try to use page_address_in_vma(), but it failed.
-> (page_address_in_vma() returned -EFAULT)
-> I cannot find way to solve this problem.
-> Are there good ideas?
-> Please give me some ideas.
+--=20
+  Nicolas George
 
-I agree that this munlock issue needs to be addressed: it's not just a
-matter of speedup, I hit it when testing what happens when mlock takes
-you to OOM - which is currently a hanging disaster because munlock'ing
-in the exiting OOM-killed process gets stuck trying to fault in all
-those pages that couldn't be locked in the first place.
+[34560.087058] INFO: task kondemand/0:5412 blocked for more than 120 second=
+s.
+[34560.087066] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables =
+this message.
+[34560.087073] kondemand/0   D 0000000000000000     0  5412      2
+[34560.087084]  ffffffff80586380 0000000000000046 0000000000000001 ffff8800=
+3c9fed30
+[34560.087094]  ffff88003c9fefd8 ffff88003c9fefd8 ffffffff80596700 ffffffff=
+80596f20
+[34560.087104]  ffff88003f853a00 ffff88003c9fed30 ffffffff805cbec0 ffffffff=
+a02f1b00
+[34560.087113] Call Trace:
+[34560.087150]  [<ffffffffa02f0590>] ? do_dbs_timer+0x0/0x320 [cpufreq_onde=
+mand]
+[34560.087162]  [<ffffffff804ad553>] ? schedule+0x13/0x40
+[34560.087172]  [<ffffffff804afa35>] ? __down_write_nested+0x85/0xe0
+[34560.087186]  [<ffffffff8040dab8>] ? lock_policy_rwsem_write+0x18/0x40
+[34560.087199]  [<ffffffffa02f05ff>] ? do_dbs_timer+0x6f/0x320 [cpufreq_ond=
+emand]
+[34560.087215]  [<ffffffffa02f0590>] ? do_dbs_timer+0x0/0x320 [cpufreq_onde=
+mand]
+[34560.087226]  [<ffffffff8024a8ac>] ? worker_thread+0x19c/0x2c0
+[34560.087234]  [<ffffffff8024eb50>] ? autoremove_wake_function+0x0/0x30
+[34560.087243]  [<ffffffff8024a710>] ? worker_thread+0x0/0x2c0
+[34560.087251]  [<ffffffff8024a710>] ? worker_thread+0x0/0x2c0
+[34560.087259]  [<ffffffff8024e5ae>] ? kthread+0x4e/0x90
+[34560.087267]  [<ffffffff8020cb6a>] ? child_rip+0xa/0x20
+[34560.087275]  [<ffffffff8024e560>] ? kthread+0x0/0x90
+[34560.087282]  [<ffffffff8020cb60>] ? child_rip+0x0/0x20
+[34560.087310] INFO: task cpufreq-set:25132 blocked for more than 120 secon=
+ds.
+[34560.087315] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables =
+this message.
+[34560.087320] cpufreq-set   D 0000000000000000     0 25132      1
+[34560.087329]  ffff880030d8c110 0000000000000082 0000000000000092 ffff8800=
+3d014d70
+[34560.087338]  ffff88003d015018 ffff88003d015018 ffff88003e467e48 7fffffff=
+ffffffff
+[34560.087348]  ffff88003e467bb8 7fffffffffffffff 7fffffffffffffff 00000000=
+00000000
+[34560.087357] Call Trace:
+[34560.087367]  [<ffffffff804ad553>] ? schedule+0x13/0x40
+[34560.087376]  [<ffffffff804adbd5>] ? schedule_timeout+0x175/0x1c0
+[34560.087385]  [<ffffffff80249d6d>] ? call_usermodehelper_exec+0x8d/0xd0
+[34560.087394]  [<ffffffff804ad95a>] ? wait_for_common+0x15a/0x1a0
+[34560.087404]  [<ffffffff80230190>] ? default_wake_function+0x0/0x10
+[34560.087413]  [<ffffffff80232884>] ? __wake_up+0x54/0xb0
+[34560.087425]  [<ffffffff8024adca>] ? __cancel_work_timer+0x16a/0x1d0
+[34560.087434]  [<ffffffff8024a520>] ? wq_barrier_func+0x0/0x10
+[34560.087448]  [<ffffffffa02f0951>] ? cpufreq_governor_dbs+0xa1/0x2bc [cpu=
+freq_ondemand]
+[34560.087458]  [<ffffffff8040c8c9>] ? __cpufreq_governor+0xc9/0x130
+[34560.087468]  [<ffffffff8040ca52>] ? __cpufreq_set_policy+0x122/0x180
+[34560.087477]  [<ffffffff8040d6ef>] ? store_scaling_governor+0xff/0x280
+[34560.087486]  [<ffffffff8040e1a0>] ? handle_update+0x0/0x10
+[34560.087498]  [<ffffffff8040e07b>] ? store+0x6b/0xa0
+[34560.087507]  [<ffffffff80302f3e>] ? sysfs_write_file+0xce/0x160
+[34560.087517]  [<ffffffff802ac9b9>] ? vfs_write+0xc9/0x170
+[34560.087526]  [<ffffffff802acb63>] ? sys_write+0x53/0xa0
+[34560.087534]  [<ffffffff8020bd68>] ? system_call_fastpath+0x16/0x1b
 
-I had intended to fix it by being more careful about splitting/merging
-vmas, noting how far the mlock had got, and munlocking just up to there.
-However, now that I've got in there, that looks wrong to me, given the
-traditional behaviour that mlock does its best, but pretends success
-to allow for later instantiation of the pages if necessary.
+--tKW2IUtsqtDRztdT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-You ask for ideas.  My main idea is that so far we have added
-GUP_FLAGS_IGNORE_VMA_PERMISSIONS (Kosaki-san, what was that about?
-                                  we already had the force flag),
-GUP_FLAGS_IGNORE_SIGKILL, and now you propose
-GUP_FLAGS_NOFAULT, all for the sole use of munlock.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-How about GUP_FLAGS_MUNLOCK, or more to the point, GUP_FLAGS_DONT_BE_GUP?
-By which I mean, don't all these added flags suggest that almost
-everything __get_user_pages() does is unsuited to the munlock case?
+iEYEARECAAYFAkqTpcUACgkQsGPZlzblTJO1zQCff00WLqJT7pp+DDc3n1vDZkGK
+hksAnjO9RpRHnY2g/Q6d4R3RUqwQIdc2
+=Lmdj
+-----END PGP SIGNATURE-----
 
-My advice (but I sure hate giving advice before I've tried it myself)
-is to put __mlock_vma_pages_range() back to handling just the mlock
-case, and do your own follow_page() loop in munlock_vma_pages_range().
-
-Hugh
---8323584-1536434056-1251191010=:2872--
+--tKW2IUtsqtDRztdT--
