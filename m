@@ -1,82 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbZHYVP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbZHYVQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756207AbZHYVP3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 17:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZHYVP2
+	id S932183AbZHYVQx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 17:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZHYVQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 17:15:28 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58247 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753920AbZHYVP1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 17:15:27 -0400
-Date: Tue, 25 Aug 2009 23:15:15 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090825211515.GA3688@elf.ucw.cz>
-References: <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com>
+	Tue, 25 Aug 2009 17:16:52 -0400
+Received: from smtp08.online.nl ([194.134.42.53]:53873 "EHLO smtp08.online.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755934AbZHYVQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 17:16:51 -0400
+X-Greylist: delayed 686 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Aug 2009 17:16:51 EDT
+Date: Tue, 25 Aug 2009 23:05:21 +0200 (CEST)
+From: "Robert M. Stockmann" <stock@stokkie.net>
+X-X-Sender: stock@dellie2.hardebol.nl
+To: techsupport@tyan.com, <linux-kernel@vger.kernel.org>
+cc: Linus Torvalds <torvalds@osdl.org>
+Subject: Thunder K8W S2885 V2.07 BIOS Upgrade
+Message-ID: <Pine.LNX.4.44.0908252234070.5313-100000@dellie2.hardebol.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A93E908.6050908@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Online-Scanned: by Cloudmark authority (on smtp08.online.nl)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->>> Maybe this came as a surprise to you, but anyone who has used a
->>> compact flash in a digital camera knows that you ***have*** to wait
->>> until the led has gone out before trying to eject the flash card.  I
->>> remember seeing all sorts of horror stories from professional
->>> photographers about how they lost an important wedding's day worth of
->>> pictures with the attendant commercial loss, on various digital
->>> photography forums.  It tends to be the sort of mistake that digital
->>> photographers only make once.
->>
->> It actually comes as surprise to me. Actually yes and no. I know that
->> digital cameras use VFAT, so pulling CF card out of it may do bad
->> thing, unless I run fsck.vfat afterwards. If digital camera was using
->> ext3, I'd expect it to be safely pullable at any time.
->>
->> Will IBM microdrive do any difference there?
->>
->> Anyway, it was not known to me. Rather than claiming "everyone knows"
->> (when clearly very few people really understand all the details), can
->> we simply document that?
->
-> I really think that the expectation that all OS's (windows, mac, even 
-> your ipod) all teach you not to hot unplug a device with any file system. 
-> Users have an "eject" or "safe unload" in windows, your iPod tells you 
-> not to power off or disconnect, etc.
+Hi,
 
-That was before journaling filesystems...
+I would like to mention that after i upgraded the BIOS of my 
+Thunder K8W (S2885) from V2.04 to V2.07 the Linux version Mandrake 
+10.1 x86_64 with kernel 2.6.15 has started to run with much greater 
+performance.
 
-> I don't object to making that general statement - "Don't hot unplug a 
-> device with an active file system or actively used raw device" - but 
-> would object to the overly general statement about ext3 not working on 
-> flash, RAID5 not working, etc...
+All these Opteron features like NUMA etc. seem finally have started 
+to work like expected!
 
-You can object any way you want, but running ext3 on flash or MD RAID5
-is stupid:
+The memory usage is way way down, where i 'only' have 2Gb RAM ECC 
+installed, leaving me an extra 14Gb RAM to go. Important is to 
+reverse the CPU options for the Opteron inside the Linux kernel 
+back to the Linux platform defaults like Linus Torvalds ships 
+these with his kernels inside arch/x86_64/defconfig :
 
-* ext2 would be faster
+#
+# Processor type and features
+#
+# CONFIG_MK8 is not set
+# CONFIG_MPSC is not set
+CONFIG_GENERIC_CPU=y
+CONFIG_X86_L1_CACHE_BYTES=128
+CONFIG_X86_L1_CACHE_SHIFT=7
+CONFIG_X86_TSC=y
+CONFIG_X86_GOOD_APIC=y
+# CONFIG_MICROCODE is not set
+CONFIG_X86_MSR=y
+CONFIG_X86_CPUID=y
+CONFIG_X86_HT=y
+CONFIG_X86_IO_APIC=y
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_MTRR=y
+CONFIG_SMP=y
+CONFIG_SCHED_SMT=y
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+CONFIG_PREEMPT_BKL=y
+CONFIG_NUMA=y
+CONFIG_K8_NUMA=y
+CONFIG_X86_64_ACPI_NUMA=y
+# CONFIG_NUMA_EMU is not set
+CONFIG_ARCH_DISCONTIGMEM_ENABLE=y
+CONFIG_ARCH_DISCONTIGMEM_DEFAULT=y
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_SELECT_MEMORY_MODEL=y
+# CONFIG_FLATMEM_MANUAL is not set
+CONFIG_DISCONTIGMEM_MANUAL=y
+# CONFIG_SPARSEMEM_MANUAL is not set
+CONFIG_DISCONTIGMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_NEED_MULTIPLE_NODES=y
+# CONFIG_SPARSEMEM_STATIC is not set
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
+CONFIG_NR_CPUS=32
+CONFIG_HOTPLUG_CPU=y
+CONFIG_HPET_TIMER=y
+CONFIG_X86_PM_TIMER=y
+CONFIG_HPET_EMULATE_RTC=y
+CONFIG_GART_IOMMU=y
+CONFIG_SWIOTLB=y
+CONFIG_X86_MCE=y
+CONFIG_X86_MCE_INTEL=y
+CONFIG_X86_MCE_AMD=y
+CONFIG_PHYSICAL_START=0x100000
+# CONFIG_KEXEC is not set
+CONFIG_SECCOMP=y
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_ISA_DMA_API=y
+CONFIG_GENERIC_PENDING_IRQ=y
 
-* ext2 would provide better protection against powerfail.
+If your BIOS team and developers keep such standards in good 
+practice, Tyan might become the sole system(s) supplier of 
+importance.
 
-"ext3 works on flash and MD RAID5, as long as you do not have
-powerfail" seems to be the accurate statement, and if you don't need
-to protect against powerfails, you can just use ext2.
-								Pavel
+Keep up the god work!
+Best regards,
+
+Robert
+PS. These git critters sure know how to store useful
+    information, after pppd kept dying with 
+
+	invalid operand: 0000 [1] SMP
+	skb_panic_over: text: ffffffff888df03b
+	  len:1 put: 1 head: ffff810038017800
+	  data: fff810130817800 tail: fff810130817801
+	  end: fff810030817e00  dev: <NULL>
+
+     on my x86_64 machine.
+   ( I'm sorry for still running on 2006 hardware and software,
+     but hey time fly's when your having fun!)
+
+http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=8243126c5e29030bf1a3fb75187a513966dcba62;hp=f09484ff87f677056ce631aa3d8e486861501b5
+
+   From: David S. Miller <davem@sunset.davemloft.net>
+   Date: Tue, 17 Jan 2006 10:54:21 +0000 (-0800)
+   Subject: [NET]: Make second arg to skb_reserved() signed.
+   X-Git-Tag: v2.6.16-rc2~367^2~7
+   X-Git-Url: http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git;a=commitdiff_plain;h=8243126c5e29030bf1a3fb75187a513966dcba62;hp=f09484ff87f677056ce631aa3d8e486861501b5
+   
+   [NET]: Make second arg to skb_reserved() signed.
+
+   Some subsystems, such as PPP, can send negative values
+   here.  It just happened to work correctly on 32-bit with
+   an unsigned value, but on 64-bit this explodes.
+   
+   Figured out by Paul Mackerras based upon several PPP crash
+   reports.
+   
+   Signed-off-by: David S. Miller <davem@davemloft.net>
+   ---
+   
+   diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+   index e5fd66c..ad7cc22 100644
+   --- a/include/linux/skbuff.h
+   +++ b/include/linux/skbuff.h
+   @@ -926,7 +926,7 @@ static inline int skb_tailroom(const struct sk_buff *skb)
+     *     Increase the headroom of an empty &sk_buff by reducing the tail
+     *     room. This is only allowed for an empty buffer.
+     */
+   -static inline void skb_reserve(struct sk_buff *skb, unsigned int len)
+   +static inline void skb_reserve(struct sk_buff *skb, int len)
+    {
+           skb->data += len;
+           skb->tail += len;
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Robert M. Stockmann - RHCE
+Network Engineer - UNIX/Linux Specialist
+crashrecovery.org  stock@stokkie.net
+
