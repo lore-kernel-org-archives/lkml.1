@@ -1,120 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbZHYVAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbZHYVAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932178AbZHYVAu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 17:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932132AbZHYVAq
+	id S932152AbZHYVAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 17:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbZHYU7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 17:00:46 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:12725 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932105AbZHYVAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 17:00:44 -0400
-Date: Tue, 25 Aug 2009 16:58:29 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, peterz@infradead.org, jiayingz@google.com,
-       mbligh@google.com, lizf@cn.fujitsu.com, jistone@redhat.com,
-       tglx@linutronix.de, hpa@zytor.com
-Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
-Message-ID: <20090825205829.GG2656@redhat.com>
-References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere> <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com> <20090825134005.GB2656@redhat.com> <20090825184734.GE2656@redhat.com> <20090825190415.GB8474@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825190415.GB8474@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 25 Aug 2009 16:59:37 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:60643 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756196AbZHYU7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 16:59:36 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: tiwai@suse.de
+Cc: perex@perex.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/4] SOUND: atiixp, use uninitialized_var(chip)
+Date: Tue, 25 Aug 2009 22:59:34 +0200
+Message-Id: <1251233977-5819-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 03:04:15PM -0400, Mathieu Desnoyers wrote:
-> * Jason Baron (jbaron@redhat.com) wrote:
-> > On Tue, Aug 25, 2009 at 09:40:05AM -0400, Jason Baron wrote:
-> > > > > On Mon, Aug 24, 2009 at 05:40:18PM -0400, Jason Baron wrote:
-> > > > > > Add a dynamic definition of NR_syscalls for x86_64. This is used in the 
-> > > > > > syscall events tracing code.
-> > > > > > 
-> > > > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > > > > 
-> > > > > > ---
-> > > > > >  include/linux/ftrace.h |    5 +++++
-> > > > > >  1 files changed, 5 insertions(+), 0 deletions(-)
-> > > > > > 
-> > > > > > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> > > > > > index dc3b132..3bd94ee 100644
-> > > > > > --- a/include/linux/ftrace.h
-> > > > > > +++ b/include/linux/ftrace.h
-> > > > > > @@ -14,6 +14,11 @@
-> > > > > >  
-> > > > > >  #include <asm/ftrace.h>
-> > > > > >  
-> > > > > > +#ifdef CONFIG_X86_64
-> > > > > > +#include <asm/asm-offsets.h>
-> > > > > > +#define NR_syscalls (__NR_syscall_max + 1)
-> > > > > > +#endif
-> > > > > > +
-> > > > > 
-> > > > > 
-> > > > > I'd rather see this in arch/x86/include/unistd_64.h, since
-> > > > > NR_syscalls seems to be the defined in unistd.h in all archs.
-> > > > > 
-> > > > > That also makes a unified way to retrieve this number for
-> > > > > other users.
-> > > > > 
-> > > > 
-> > > > Yes, NR_syscalls should be included there.
-> > > > 
-> > > > -- Steve
-> > > 
-> > > right, for x86_64, unistd.h is included to generate __NR_syscall_max
-> > > which is then used for NR_syscalls. So I did initially try it there, but
-> > > there were dependency problems. I'll see what I can come up with...
-> > > 
-> > > thanks,
-> > > 
-> > > -Jason
-> > 
-> > ok, since unistd_64.h is used to generate offsets.c, which eventually
-> > generates, asm/asm-offsets.h, which defines, __NR_syscall_max, we can't
-> > just put #define of NR_syscalls in unistd_64.h. However, it seems the
-> > only point in time that unistd_64.h can not depend upon __NR_syscall_max,
-> > is before asm/asm-offsets.h is defined. Thus, the patch below passes in
-> > a '-DCREATE_OFFSETS' during the creation of asm/asm-offsets.h, so that
-> > we do not include it before it exists. The patch is hacky but works.
-> > thoughts?
-> 
-> Ugh! My eyes hurt!
-> 
+To avoid wrong compiler warnings, use unitialized_var(chip) in
+snd_atiixp_probe's from atiixp and atiixp_modem drivers.
 
-sorry :)
+'chip' is unused when unset due to retval being nonzero.
 
-> What you are doing here is to basically put back the hardcoded
-> NR_syscalls rather that using the build infrastructure already in place.
-> 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Jaroslav Kysela <perex@perex.cz>
+---
+ sound/pci/atiixp.c       |    2 +-
+ sound/pci/atiixp_modem.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-no. NR_syscalls is not hardcoded by this patch. Its defined in terms of
-__NR_syscall_max which is dynamically generated by the kernel build.
-
-> If my memory serves me well, unistd_64.h generates __NR_syscall_max
-> automatically by being included multiples times. Can we generalize this
-> and make the information generated available in an automaticaly
-> generated header instead ? It is saved in ams-offsets.h currently as
-> "__NR_syscall_max". We could also save it somewhere else meant to be
-> included by C code.
-> 
-> Mathieu
-> 
-
-The request was to define NR_syscalls in unistd.h, since that is the
-historical Linux location for it. Adding another automatically generated
-header does not accomplish that. Even if I include that new file in
-unistd.h, I'm still going to have a circular dependency, and require a
-solution similar to what I've proposed.
-
-thanks,
-
--Jason
+diff --git a/sound/pci/atiixp.c b/sound/pci/atiixp.c
+index d6752df..436ffea 100644
+--- a/sound/pci/atiixp.c
++++ b/sound/pci/atiixp.c
+@@ -1648,7 +1648,7 @@ static int __devinit snd_atiixp_probe(struct pci_dev *pci,
+ 				     const struct pci_device_id *pci_id)
+ {
+ 	struct snd_card *card;
+-	struct atiixp *chip;
++	struct atiixp *uninitialized_var(chip);
+ 	int err;
+ 
+ 	err = snd_card_create(index, id, THIS_MODULE, 0, &card);
+diff --git a/sound/pci/atiixp_modem.c b/sound/pci/atiixp_modem.c
+index e7e147b..b6191f2 100644
+--- a/sound/pci/atiixp_modem.c
++++ b/sound/pci/atiixp_modem.c
+@@ -1285,7 +1285,7 @@ static int __devinit snd_atiixp_probe(struct pci_dev *pci,
+ 				      const struct pci_device_id *pci_id)
+ {
+ 	struct snd_card *card;
+-	struct atiixp_modem *chip;
++	struct atiixp_modem *uninitialized_var(chip);
+ 	int err;
+ 
+ 	err = snd_card_create(index, id, THIS_MODULE, 0, &card);
+-- 
+1.6.3.3
 
