@@ -1,90 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbZHYAfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbZHYAvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbZHYAfo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 20:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZHYAfo
+	id S1753985AbZHYAvY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 20:51:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbZHYAvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 20:35:44 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:9998 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753749AbZHYAfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 20:35:43 -0400
-Message-ID: <4A9331AA.1090905@redhat.com>
-Date: Mon, 24 Aug 2009 20:34:50 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 24 Aug 2009 20:51:24 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:39309 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753671AbZHYAvX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 20:51:23 -0400
+To: David Dillow <dave@thedillows.org>
+Cc: Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?utf-8?Q?B=C3=BCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+References: <200903041828.49972.m.bueker@berlin.de>
+	<1242001754.4093.12.camel@obelisk.thedillows.org>
+	<200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+	<1242077392.3716.15.camel@lap75545.ornl.gov>
+	<4A09DC3E.2080807@googlemail.com>
+	<1242268709.4979.7.camel@obelisk.thedillows.org>
+	<4A0C6504.8000704@googlemail.com>
+	<1242328457.32579.12.camel@lap75545.ornl.gov>
+	<4A0C7443.1010000@googlemail.com>
+	<1243042174.3580.23.camel@obelisk.thedillows.org>
+	<m1skfkrik2.fsf@fess.ebiederm.org>
+	<1250895567.23419.1.camel@obelisk.thedillows.org>
+	<1250897657.23419.5.camel@obelisk.thedillows.org>
+	<m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
+	<1250973787.3582.14.camel@obelisk.thedillows.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 24 Aug 2009 17:51:15 -0700
+In-Reply-To: <1250973787.3582.14.camel@obelisk.thedillows.org> (David Dillow's message of "Sat\, 22 Aug 2009 16\:43\:07 -0400")
+Message-ID: <m1r5v0ogvw.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Zan Lynx <zlynx@acm.org>, Ric Wheeler <rwheeler@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <4A930EB9.8030903@redhat.com> <4A93129E.6080704@acm.org> <20090824224427.GI29763@elf.ucw.cz>
-In-Reply-To: <20090824224427.GI29763@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: dave@thedillows.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, romieu@fr.zoreil.com, mb@bu3sch.de, michael.riepe@googlemail.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Mon 2009-08-24 16:22:22, Zan Lynx wrote:
->   
->> Ric Wheeler wrote:
->>     
->>> Pavel Machek wrote:
->>>       
->>>> Degraded MD RAID5 does not work by design; whole stripe will be
->>>> damaged on powerfail or reset or kernel bug, and ext3 can not cope
->>>> with that kind of damage. [I don't see why statistics should be
->>>> neccessary for that; the same way we don't need statistics to see that
->>>> ext2 needs fsck after powerfail.]
->>>>                                     Pavel
->>>>   
->>>>         
->>> What you are describing is a double failure and RAID5 is not double  
->>> failure tolerant regardless of the file system type....
->>>       
->> Are you sure he isn't talking about how RAID must write all the data  
->> chunks to make a complete stripe and if there is a power-loss, some of  
->> the chunks may be written and some may not?
->>
->> As I read Pavel's point he is saying that the incomplete write can be  
->> detected by the incorrect parity chunk, but degraded RAID-5 has no  
->> working parity chunk so the incomplete write would go undetected.
->>     
->
-> Yep.
->
->   
->> I know this is a RAID failure mode. However, I actually thought this was  
->> a problem even for a intact RAID-5. AFAIK, RAID-5 does not generally  
->> read the complete stripe and perform verification unless that is  
->> requested, because doing so would hurt performance and lose the entire  
->> point of the RAID-5 rotating parity blocks.
->>     
->
-> Not sure; is not RAID expected to verify the array after unclean
-> shutdown?
->
-> 									Pavel
->   
- Not usually - that would take multiple hours of verification, roughly 
-equivalent to doing a RAID rebuild since you have to read each sector of 
-every drive (although you would do this at full speed if the array was 
-offline, not throttled like we do with rebuilds).
+David Dillow <dave@thedillows.org> writes:
 
-That is part of the thing that scrubbing can do.
+> On Sat, 2009-08-22 at 05:07 -0700, Eric W. Biederman wrote:
+>> ebiederm@xmission.com (Eric W. Biederman) writes:
+>> 
+>> > David Dillow <dave@thedillows.org> writes:
+>> >
+>> >>
+>> >> Re-looking at the code, I'd guess that some IRQ status line is getting
+>> >> stuck high, but I don't see why -- we should acknowledge all outstanding
+>> >> interrupts each time through the loop, whether we care about them or
+>> >> not.
+>> >>
+>> >> Could reproduce a problem with the following patch applied, and send the
+>> >> full dmesg, please?
+>> >
+>> > Here is what I get.
+>> >
+>> > r8169 screaming irq status 00000085 mask 0000ffff event 0000803f napi 0000001d
+>> 
+>> And now that the machine has come out of it, that was followed by:
+>> Looks like the soft lockup did not manage to trigger in this case.
+>
+> I need some more context, please. What is the network load through this
+> NIC when you have the issues? Light, heavy? Can you give me more details
+> about the machine? A full dmesg from boot until this happens would help
+> quite a bit. At a minimum it would help answer which version of the chip
+> we're dealing with and what the machine it is in looks like.
+>
+> Can you reproduce this with pci=nomsi? I'm assuming it the chip running
+> in MSI mode.
+>
+> Also, can you reproduce it when booting UP (or maxcpus=1)? I'm thinking
+> about a race between rtl8169_interrupt() and rtl8169_poll(), but it
+> isn't jumping out at me.
+>
+> Also, I'm having connectivity troubles this weekend, so my response may
+> be spotty. :(
 
-Note that once you find a bad bit of data, it is really useful to be 
-able to map that back into a humanly understandable object/repair 
-action. For example, map the bad data range back to metadata which would 
-translate into a fsck run or a list of impacted files or directories....
+When I decode the bits in status they are TxOK, RxOK and TxDescUnavail so it looks
+there is some bidirectional communication going on.
 
-Ric
+Do we really want to loop when those bits are set?
+
+Perhaps we want to remove them from rtl_cfg_infos for the part?
+
+Eric
 
