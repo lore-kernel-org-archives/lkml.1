@@ -1,87 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZHYJIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZHYJL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754519AbZHYJIv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 05:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbZHYJIs
+	id S1754614AbZHYJL1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 05:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZHYJLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 05:08:48 -0400
-Received: from mail.windriver.com ([147.11.1.11]:51229 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751156AbZHYJIr (ORCPT
+	Tue, 25 Aug 2009 05:11:25 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47384 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752636AbZHYJLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 05:08:47 -0400
-From: Chunbo Luo <chunbo.luo@windriver.com>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-sctp@vger.kernel.org,
-       linux-kernel@vger.kernel.org, chunbo.luo@windriver.com,
-       yjwei@cn.fujitsu.com
-Subject: [PATCH v3] sctp: fix the check for path failure detection
-Date: Tue, 25 Aug 2009 17:07:59 +0800
-Message-Id: <1251191279-1764-1-git-send-email-chunbo.luo@windriver.com>
-X-Mailer: git-send-email 1.6.4
+	Tue, 25 Aug 2009 05:11:24 -0400
+Subject: Re: WARNING: kmemcheck: Caught 32-bit read from uninitialized
+	memory  (f6f6e1a4), by kmemleak's scan_block()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <19f34abd0908250203h52257f52v306545a3d8890577@mail.gmail.com>
+References: <20090825071959.GA25877@elte.hu>
+	 <19f34abd0908250104y6e877545y485a2104c2b97cfd@mail.gmail.com>
+	 <20090825083222.GC17692@elte.hu> <1251189914.7261.11.camel@penberg-laptop>
+	 <20090825084808.GA14003@elte.hu> <1251190466.7261.12.camel@penberg-laptop>
+	 <19f34abd0908250203h52257f52v306545a3d8890577@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 25 Aug 2009 10:11:18 +0100
+Message-Id: <1251191478.15678.14.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Aug 2009 09:11:19.0308 (UTC) FILETIME=[01F214C0:01CA2564]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The transport error count should be incremented when the the T3-rtx
-timer expires or an outstanding HB is not acknowledged. In order to
-avoid sending out an extra HB before marking the transport DOWN, the
-path failure detection should be done before sending out HB.
+On Tue, 2009-08-25 at 11:03 +0200, Vegard Nossum wrote:
+> 2009/8/25 Pekka Enberg <penberg@cs.helsinki.fi>:
+> > diff --git a/arch/x86/mm/kmemcheck/kmemcheck.c b/arch/x86/mm/kmemcheck/kmemcheck.c
+> > index 2c55ed0..528bf95 100644
+> > --- a/arch/x86/mm/kmemcheck/kmemcheck.c
+> > +++ b/arch/x86/mm/kmemcheck/kmemcheck.c
+> > @@ -331,6 +331,20 @@ static void kmemcheck_read_strict(struct pt_regs *regs,
+> >        kmemcheck_shadow_set(shadow, size);
+> >  }
+> >
+> > +bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
+> > +{
+> > +       enum kmemcheck_shadow status;
+> > +       void *shadow;
+> > +
+> > +       shadow = kmemcheck_shadow_lookup(addr);
+> > +       if (!shadow)
+> > +               return true;
+> > +
+> > +       status = kmemcheck_shadow_test(shadow, size);
+> > +
+> > +       return status == KMEMCHECK_SHADOW_INITIALIZED;
+> > +}
+[...]
+> I don't know so much about the kmemleak internals, but this I can say
+> about the kmemcheck part: According to your definition, an object is
+> initialized if all the bytes of an object are initialized.
+> 
+> Is it possible that because of this, if we have a partially
+> uninitialized object, kmemleak will not record the pointers found in
+> that object? If so, it might skip valid pointers, and deem an object
+> unreferenced. Which could make kmemleak give false-positives.
 
-Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
-Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
----
- net/sctp/sm_sideeffect.c |    3 ++-
- net/sctp/sm_statefuns.c  |    8 ++++----
- 2 files changed, 6 insertions(+), 5 deletions(-)
+Yes, that's possible.
 
-diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
-index 86426aa..fb723dd 100644
---- a/net/sctp/sm_sideeffect.c
-+++ b/net/sctp/sm_sideeffect.c
-@@ -447,7 +447,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
- 		asoc->overall_error_count++;
- 
- 	if (transport->state != SCTP_INACTIVE &&
--	    (transport->error_count++ >= transport->pathmaxrxt)) {
-+	    (transport->error_count >= transport->pathmaxrxt)) {
- 		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
- 					 " transport IP: port:%d failed.\n",
- 					 asoc,
-@@ -468,6 +468,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
- 	 * that indicates that we have an outstanding HB.
- 	 */
- 	if (!is_hb || transport->hb_sent) {
-+		transport->error_count++;
- 		transport->last_rto = transport->rto;
- 		transport->rto = min((transport->rto * 2), transport->asoc->rto_max);
- 	}
-diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
-index 7288192..7f77099 100644
---- a/net/sctp/sm_statefuns.c
-+++ b/net/sctp/sm_statefuns.c
-@@ -981,10 +981,6 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
- 	 */
- 
- 	if (transport->param_flags & SPP_HB_ENABLE) {
--		if (SCTP_DISPOSITION_NOMEM ==
--				sctp_sf_heartbeat(ep, asoc, type, arg,
--						  commands))
--			return SCTP_DISPOSITION_NOMEM;
- 		/* Set transport error counter and association error counter
- 		 * when sending heartbeat.
- 		 */
-@@ -992,6 +988,10 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
- 				SCTP_TRANSPORT(transport));
- 		sctp_add_cmd_sf(commands, SCTP_CMD_TRANSPORT_HB_SENT,
- 				SCTP_TRANSPORT(transport));
-+		if (SCTP_DISPOSITION_NOMEM ==
-+				sctp_sf_heartbeat(ep, asoc, type, arg,
-+						  commands))
-+			return SCTP_DISPOSITION_NOMEM;
- 	}
- 	sctp_add_cmd_sf(commands, SCTP_CMD_HB_TIMER_UPDATE,
- 			SCTP_TRANSPORT(transport));
+Does kmemcheck work on a page-range basis. If an object doesn't cross
+page boundaries, would it be considered fully initialised after writing
+a single location?
+
+> I think it would be better to ask kmemcheck on a per-pointer basis
+> (i.e. for each pointer-sized word in the object), whether it is
+> initialized or not.
+
+This should work but how expensive is this check?
+
 -- 
-1.6.4
+Catalin
 
