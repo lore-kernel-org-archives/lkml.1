@@ -1,183 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbZHYSvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbZHYSvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755930AbZHYSvi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbZHYSvh
+	id S1755964AbZHYSvx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbZHYSvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:51:37 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:2332 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755250AbZHYSvg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:51:36 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Subject: Re: INFO: possible circular locking dependency - kacpid  acpi_os_wait_events_complete
-Date: Tue, 25 Aug 2009 12:51:36 -0600
-User-Agent: KMail/1.9.10
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       len.brown@intel.com, linux-acpi@vger.kernel.org,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Zhang Rui <rui.zhang@intel.com>
-References: <c4e36d110908250110xe16720o977c8cf5c3386c4b@mail.gmail.com>
-In-Reply-To: <c4e36d110908250110xe16720o977c8cf5c3386c4b@mail.gmail.com>
+	Tue, 25 Aug 2009 14:51:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49541 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755584AbZHYSvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:51:52 -0400
+Message-ID: <4A943290.5080606@kernel.org>
+Date: Tue, 25 Aug 2009 11:50:56 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Ravikiran G Thirumalai <kiran@scalex86.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       shai@scalex86.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [patch] x86: 2.6.31-rc7 crash due to buggy flat_phys_pkg_id
+References: <20090824182659.GA6842@localdomain> <4A932809.1000103@kernel.org> <20090825012632.GB6842@localdomain> <4A9372A1.9090905@kernel.org> <20090825171716.GC6456@localdomain> <20090825181500.GB3277@elte.hu> <20090825183130.GA5806@lenovo>
+In-Reply-To: <20090825183130.GA5806@lenovo>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908251251.37135.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 25 August 2009 02:10:58 am Zdenek Kabelac wrote:
-> Now with 2.6.31-rc7 (3edf2fb9d80a46d6c32ba12547a42419845b4b76)
->  I'm getting this  INFO trace - also I've noticed complete reset during resume
-> which could be eventually related to this ?
+Cyrill Gorcunov wrote:
+> [Ingo Molnar - Tue, Aug 25, 2009 at 08:15:00PM +0200]
+> | 
+> | * Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+> | 
+> | > On Mon, Aug 24, 2009 at 10:12:01PM -0700, Yinghai Lu wrote:
+> | > >Ravikiran G Thirumalai wrote:
+> | > >> On Mon, Aug 24, 2009 at 04:53:45PM -0700, Yinghai Lu wrote:
+> | > >>> Ravikiran G Thirumalai wrote:
+> | > >>>> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> | > >>>> Cc: Yinghai Lu <yinghai@kernel.org>
+> | > >>>>
+> | > >>>
+> | > >> 
+> | > >> Why?  The specs seem to indicate otherwise unless I am mistaken --
+> | > >> Intel  systems programming guide, Vol 3A Part1, chapter 7 section
+> | > >> 7.5.5 - Identifying Logical Processors in a MP system:
+> | > >> <quote>
+> | > >> After the BIOS has completed the MP initialization protocol, each logical
+> | > >> processor can be uniquely identified by its local APIC ID. Software can
+> | > >> access these APIC IDs in either of the following ways
+> | > >> </quote>
+> | > >> phys_pkg_id() indicates that the logical package id is being looked up,
+> | > >> so local apic id should be used here no?
+> | > >> What am I missing?
+> | > >
+> | > >initial apic id : it can not changed, there is fixed mapping from that to physical processor id aka socket id / node id.
+> | > >
+> | > >apic id: could be changed by BIOS to any value. there is no good way to get phys_pkg_id from that.
+> | > >
+> | > 
+> | > But BIOS is supposed to change it to a sane value.  Until 2.6.30, 
+> | > local apic id has been used to get phys_pkg_id for the 'flat' 
+> | > apics!  What changed?  Was this changed for a BIOS bug?  Even the 
+> | > intel books seem to indicate local apic usage!
+> | 
+> | We should revert to the .30 behavior unless there's a good reason 
+> | (even in that case we'll solve the regression and do a workaround 
+> | for vSMP). Yinghai?
+> | 
+> | 	Ingo
+> 
+> I'm definitely not APIC expert but since I was partially involved
+> letme turn in.
+> 
+> Original commit which causes problem for vSMP seems to be due
+> to cpu_has_apic bit turned off (ie due to being manually disabled
+> or acpi table broken) so further read apic id will return plain
+> zero (we're talking about 64 bits now). So frnakly I don't understand
+> what is wrong with Ravikiran's patch. In case of apic disabled
+> initial apic value will be used anyway (which is latched but
+> actually may be changed, but it's not our case).
 
-What's the most recent kernel where this did not occur?  Is this
-a regression since 2.6.30?
+initial apic id and apic id could be different.
 
-> My machine - T61, 4GB, C2D
-> I suspect that some resent  thinkpad-acpi changes.
+and we should use initial apic id to get correct phys pkg id in case BIOS set crazy apic id.
 
-Do you have any evidence that points to thinkpad_acpi?  I looked
-at the recent changes there, and I don't see anything obviously
-related to kacpid or deferred work.
-
-I made a recent change to the kacpid workqueue (74b58208082).
-If it's convenient to revert that change and test, it'd be
-good to rule that out.
-
-Thanks for your report!
-
-Bjorn
-
-> ACPI: Preparing to enter system sleep state S3
-> Disabling non-boot CPUs ...
-> kvm: disabling virtualization on CPU1
-> CPU 1 is now offline
-> lockdep: fixing up alternatives.
-> SMP alternatives: switching to UP code
-> CPU0 attaching NULL sched-domain.
-> CPU1 attaching NULL sched-domain.
-> CPU0 attaching NULL sched-domain.
-> CPU1 is down
-> Extended CMOS year: 2000
-> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-> Back to C!
-> CPU0: Thermal monitoring handled by SMI
-> Extended CMOS year: 2000
-> Enabling non-boot CPUs ...
-> lockdep: fixing up alternatives.
-> SMP alternatives: switching to SMP code
-> Booting processor 1 APIC 0x1 ip 0x6000
-> Initializing CPU#1
-> Calibrating delay using timer specific routine.. 4390.86 BogoMIPS (lpj=7314990)
-> CPU: L1 I cache: 32K, L1 D cache: 32K
-> CPU: L2 cache: 4096K
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 1
-> mce: CPU supports 6 MCE banks
-> CPU1: Thermal monitoring enabled (TM2)
-> x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-> CPU1: Intel(R) Core(TM)2 Duo CPU     T7500  @ 2.20GHz stepping 0a
-> kvm: enabling virtualization on CPU1
-> CPU0 attaching NULL sched-domain.
-> Switched to high resolution mode on CPU 1
-> CPU0 attaching sched-domain:
->  domain 0: span 0-1 level CPU
->   groups: 0 1
-> CPU1 attaching sched-domain:
->  domain 0: span 0-1 level CPU
->   groups: 1 0
-> CPU1 is up
-> ACPI: Waking up from system sleep state S3
-> 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.31-rc7-00015-ge740538 #18
-> -------------------------------------------------------
-> kacpi_hotplug/114 is trying to acquire lock:
->  (kacpid){+.+.+.}, at: [<ffffffff81064df0>] flush_workqueue+0x0/0xc0
-> 
-> but task is already holding lock:
->  (&dpc->work){+.+.+.}, at: [<ffffffff81065183>] worker_thread+0x193/0x3f0
-> 
-> which lock already depends on the new lock.
-> 
-> 
-> the existing dependency chain (in reverse order) is:
-> 
-> -> #1 (&dpc->work){+.+.+.}:
->        [<ffffffff8107eeac>] __lock_acquire+0xc5c/0x1090
->        [<ffffffff8107f37a>] lock_acquire+0x9a/0x180
->        [<ffffffff810651ce>] worker_thread+0x1de/0x3f0
->        [<ffffffff810690e6>] kthread+0xa6/0xb0
->        [<ffffffff8100d2da>] child_rip+0xa/0x20
->        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> -> #0 (kacpid){+.+.+.}:
->        [<ffffffff8107ef7f>] __lock_acquire+0xd2f/0x1090
->        [<ffffffff8107f37a>] lock_acquire+0x9a/0x180
->        [<ffffffff81064e4f>] flush_workqueue+0x5f/0xc0
->        [<ffffffff81261524>] acpi_os_wait_events_complete+0x15/0x23
->        [<ffffffff81261561>] acpi_os_execute_hp_deferred+0x2f/0x43
->        [<ffffffff810651d4>] worker_thread+0x1e4/0x3f0
->        [<ffffffff810690e6>] kthread+0xa6/0xb0
->        [<ffffffff8100d2da>] child_rip+0xa/0x20
->        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> other info that might help us debug this:
-> 
-> 2 locks held by kacpi_hotplug/114:
->  #0:  (kacpi_hotplug){+.+...}, at: [<ffffffff81065183>]
-> worker_thread+0x193/0x3f0
->  #1:  (&dpc->work){+.+.+.}, at: [<ffffffff81065183>] worker_thread+0x193/0x3f0
-> 
-> stack backtrace:
-> Pid: 114, comm: kacpi_hotplug Not tainted 2.6.31-rc7-00015-ge740538 #18
-> Call Trace:
->  [<ffffffff8107cf0d>] print_circular_bug_tail+0x9d/0xe0
->  [<ffffffff8107ef7f>] __lock_acquire+0xd2f/0x1090
->  [<ffffffff8107b5ff>] ? save_trace+0x3f/0xb0
->  [<ffffffff8107f37a>] lock_acquire+0x9a/0x180
->  [<ffffffff81064df0>] ? flush_workqueue+0x0/0xc0
->  [<ffffffff81261532>] ? acpi_os_execute_hp_deferred+0x0/0x43
->  [<ffffffff81064e4f>] flush_workqueue+0x5f/0xc0
->  [<ffffffff81064df0>] ? flush_workqueue+0x0/0xc0
->  [<ffffffff81261524>] acpi_os_wait_events_complete+0x15/0x23
->  [<ffffffff81261561>] acpi_os_execute_hp_deferred+0x2f/0x43
->  [<ffffffff810651d4>] worker_thread+0x1e4/0x3f0
->  [<ffffffff81065183>] ? worker_thread+0x193/0x3f0
->  [<ffffffff8107b2fe>] ? put_lock_stats+0xe/0x30
->  [<ffffffff81069540>] ? autoremove_wake_function+0x0/0x40
->  [<ffffffff81064ff0>] ? worker_thread+0x0/0x3f0
->  [<ffffffff810690e6>] kthread+0xa6/0xb0
->  [<ffffffff8100d2da>] child_rip+0xa/0x20
->  [<ffffffff8100cc40>] ? restore_args+0x0/0x30
->  [<ffffffff81069040>] ? kthread+0x0/0xb0
->  [<ffffffff8100d2d0>] ? child_rip+0x0/0x20
-> ACPI: \_SB_.GDCK - docking
-> acpi IBM0079:00: parent device:00 should not be sleeping
-> pci 0000:00:02.0: restoring config space at offset 0x1 (was 0x900007,
-> writing 0x900403)
-> pci 0000:00:02.1: restoring config space at offset 0x1 (was 0x900000,
-> writing 0x900007)
-> uhci_hcd 0000:00:1a.0: restoring config space at offset 0x1 (was
-> 0x2800005, writing 0x2800001)
-> uhci_hcd 0000:00:1a.1: power state changed by ACPI to D0
-> uhci_hcd 0000:00:1a.1: restoring config space at offset 0x1 (was
-> 0x2800005, writing 0x2800001)
-> ehci_hcd 0000:00:1a.7: restoring config space at offset 0x1 (was
-> 0x2900106, writing 0x2900102)
-> ehci_hcd 0000:00:1a.7: PME# disabled
-> HDA Intel 0000:00:1b.0: restoring config space at offset 0x1 (was
-> 0x100106, writing 0x100102)
-> 
-> 
-> Zdenek
-> 
-
-
+YH
