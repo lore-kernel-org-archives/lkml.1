@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZHYX6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbZHYX6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752877AbZHYX6I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZHYX6H
+	id S1753920AbZHYX6x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbZHYX6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:58:07 -0400
-Received: from mail.lang.hm ([64.81.33.126]:35940 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751189AbZHYX6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:58:04 -0400
-Date: Tue, 25 Aug 2009 16:56:40 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-In-Reply-To: <20090825233701.GH4300@elf.ucw.cz>
-Message-ID: <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm>
-References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz>
- <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 25 Aug 2009 19:58:52 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:24509 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750821AbZHYX6w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 19:58:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=vJKJ4mH8My+V91N+W9d0CDzYZzzB90xEI8SZpHbD6Yp8A4jKYl8QuP7pE7qo0zwjMQ
+         un8WC2qahGdgcQ1iVdK+7gC4gEQnLFbz2xdHaA9UDPqdy57y3oXRixCTl2DaloZjQKyb
+         UbsfmBozGody5g7I9jlX8/Mo039IDMHEaFMkQ=
+Date: Tue, 25 Aug 2009 19:58:52 -0400
+From: Celejar <celejar@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: 541835@bugs.debian.org
+Subject: crypto configuration / dependencies broken
+Message-Id: <20090825195852.1dfacb6c.celejar@gmail.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Pavel Machek wrote:
+I'm having a pretty bizarre problem with my kernel crypto
+configuration.  I need support for a bog standard LUKS (aes /
+cbc-essiv:sha256) / cryptsetup installation, but even after I enable
+virtually everything in the crypto section of the kernel configs, cbc
+fails to load.  All the relevant modules are exist (dm-mod, dm-crypt,
+crypto_blkcipher, crypto_algapi, crypto_hash, aes_generic,
+sha256_generic), but even after modprobing / insmoding
+everything, /proc/crypto shows that aes and sha is there, but not cbc.
 
-> There are storage devices that high highly undesirable properties
-> when they are disconnected or suffer power failures while writes are
-> in progress; such devices include flash devices and MD RAID 4/5/6
-> arrays.
+The problem has been reproduced (using my kernel config) by Jonas
+Meurer, the Debian cryptsetup maintainer, so it's not just me ;).
+We've tried numerous different kernel versions in the .30 / .31 range.
 
-change this to say 'degraded MD RAID 4/5/6 arrays'
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=541835
 
-also find out if DM RAID 4/5/6 arrays suffer the same problem (I strongly 
-suspect that they do)
+Does this mean that something else somewhere in the kernel needs to be
+configured but isn't, and the necessary dependency isn't properly
+declared?
 
-then you need to add a note that if the array becomes degraded before a 
-scrub cycle happens previously hidden damage (that would have been 
-repaired by the scrub) can surface.
+My config is at:
+http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=45;filename=config-2.6.31-rc6-lizzie-00042-gb2add73;att=1;bug=541835
 
-> These devices have the property of potentially corrupting blocks being 
-> written at the time of the power failure,
+[I'm not subscribed to lkml; please cc me on responses]
 
-this is true of all devices
+Celejar
+-- 
+mailmin.sourceforge.net - remote access via secure (OpenPGP) email
+ssuds.sourceforge.net - A Simple Sudoku Solver and Generator
 
-> and worse yet, amplifying the region where blocks are corrupted such 
-> that additional sectors are also damaged during the power failure.
-
-re-word this something like
-
-In addition to the standard risk of corrupting the blocks being written at 
-the time of the power failure, additonal blocks (in the same flash 
-eraseblock or raid stripe) may also be corrupted.
-
-> Users who use such storage devices are well advised take
-> countermeasures, such as the use of Uninterruptible Power Supplies,
-> and making sure the flash device is not hot-unplugged while the device
-> is being used.  Regular backups when using these devices is also a
-> Very Good Idea.
->
-> Otherwise, file systems placed on these devices can suffer silent data
-> and file system corruption.  An forced use of fsck may detect metadata
-> corruption resulting in file system corruption, but will not suffice
-> to detect data corruption.
-
-David Lang
