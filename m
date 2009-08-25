@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbZHYGpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbZHYGpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbZHYGpI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 02:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbZHYGpH
+	id S1754608AbZHYGpc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 02:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZHYGpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 02:45:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50588 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754216AbZHYGpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 02:45:06 -0400
-Date: Tue, 25 Aug 2009 08:44:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] timekeeping: Fix up read_persistent_clock()
-	breakage on sh.
-Message-ID: <20090825064458.GC14286@elte.hu>
-References: <20090824223239.GB20832@linux-sh.org>
+	Tue, 25 Aug 2009 02:45:31 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38583 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754551AbZHYGpa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 02:45:30 -0400
+Message-ID: <4A93884E.3000403@zytor.com>
+Date: Mon, 24 Aug 2009 23:44:30 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824223239.GB20832@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
+       tglx@linutronix.de, borislav.petkov@amd.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
+ CPUID bit
+References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com> <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org> <20090816064132.GA16278@elte.hu> <20090816214934.GB7765@liondog.tnic> <4A8EDC02.8000508@zytor.com> <20090822163750.GA31631@liondog.tnic> <4A92F93F.8000502@zytor.com> <20090825055215.GA22595@liondog.tnic>
+In-Reply-To: <20090825055215.GA22595@liondog.tnic>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mundt <lethal@linux-sh.org> wrote:
-
-> The recent commit "timekeeping: Increase granularity of
-> read_persistent_clock()" introduced read_persistent_clock() rework which
-> inadvertently broke the sh conversion:
+On 08/24/2009 10:52 PM, Borislav Petkov wrote:
+> On Mon, Aug 24, 2009 at 01:34:07PM -0700, H. Peter Anvin wrote:
+>> Looks reasonable... although part of me wonders if having a pointer to
+>> an array containing the entire register file in and out is even better,
+>> of if I'm just overengineering at this point.
 > 
-> 	arch/sh/kernel/time.c:45: error: passing argument 1 of 'rtc_sh_get_time' from incompatible pointer type
-> 	distcc[13470] ERROR: compile arch/sh/kernel/time.c on sprygo/32 failed
-> 	make[2]: *** [arch/sh/kernel/time.o] Error 1
+> Hmm, let's have necessity determine that. I can only think of %edi being
+> used as an input reg to rd/wrmsr beside %ecx but it could be very well
+> that some other x86 hardware uses other regs too. Do we actually need
+> all regs or a two should suffice?
 > 
-> This trivial fix gets it working again.
-> 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> 
-> ---
-> 
->  arch/sh/kernel/time.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 
-applied, thanks Paul!
+Hard to know.  In theory we shouldn't need ESI and EDI either!
 
-I'm wondering, why did my cross-build of the SH defconfig in the 
-timer tree not catch this? All i get (and got) are these warnings:
+As I said, I wouldn't have worried about it at all if it wasn't for
+paravirt_ops turning these things into ABIs.
 
-/home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c: In function 'cpg_clk_init':
-/home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c:242: warning: 'arch_init_clk_ops' is deprecated (declared at /home/mingo/tip/arch/sh/include/asm/clock.h:58)
-/home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c: In function 'arch_clk_init':
-/home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c:256: warning: 'cpg_clk_init' is deprecated (declared at /home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c:237)
+	-hpa
 
-and time.o built without errors or warnings:
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-  CC      arch/sh/kernel/time.o
-
-	Ingo
