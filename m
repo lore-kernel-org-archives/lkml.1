@@ -1,105 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZHYQ32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZHYQoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbZHYQ32 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 12:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZHYQ32
+	id S1755220AbZHYQoh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 12:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbZHYQog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 12:29:28 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:53800 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755210AbZHYQ31 convert rfc822-to-8bit (ORCPT
+	Tue, 25 Aug 2009 12:44:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50519 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754789AbZHYQog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 12:29:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=uOqrL4Y7ai1VONbqPS0xXS4SOJDfyLIGDyTpaSqkZQuzXmiRw7E1Rd4cu9CVorJX4Q
-         ICvmizsurjAu3T4sYdPjDBKc5O7Hq3hk51azM6uZxANtdMqtO+YnBSFrptoQZevTnaDJ
-         YbGwUqJ2J245YoSIwQCP1LQq8rH+Ybqj4jA1U=
+	Tue, 25 Aug 2009 12:44:36 -0400
+Date: Tue, 25 Aug 2009 09:43:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Mikko C." <mikko.cal@gmail.com>
+cc: Eric Paris <eparis@redhat.com>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, zdenek.kabelac@gmail.com,
+       christoph.thielecke@gmx.de, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk, grant.wilson@zen.co.uk
+Subject: Re: [PATCH 2/3] inotify: do not BUG on idr entries at inotify
+ destruction
+In-Reply-To: <4A93CE2A.90509@gmail.com>
+Message-ID: <alpine.LFD.2.01.0908250931170.3218@localhost.localdomain>
+References: <20090824173524.14196.25992.stgit@paris.rdu.redhat.com>  <20090824173524.14196.25992.stgit@paris.rdu.redhat.com>  <20090824173812.14196.381.stgit@paris.rdu.redhat.com>  <200908242034.50885.elendil@planet.nl>  <1251140949.25096.16.camel@dhcp231-106.rdu.redhat.com>
+  <alpine.LFD.2.01.0908241220590.3158@localhost.localdomain> <1251146166.25096.22.camel@dhcp231-106.rdu.redhat.com> <4A93CE2A.90509@gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-In-Reply-To: <4A9407B1.6020400@nets.rwth-aachen.de>
-References: <4A9407B1.6020400@nets.rwth-aachen.de>
-Date: Tue, 25 Aug 2009 19:29:27 +0300
-X-Google-Sender-Auth: 53ecd7b0f67adc4f
-Message-ID: <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com>
-Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, hannes@cmpxchg.org,
-       torvalds@linux-foundation.org, Jeremy Fitzhardinge <jeremy@goop.org>,
-       xen-devel@lists.xensource.com, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arnd,
 
-On Tue, Aug 25, 2009 at 6:48 PM, Arnd
-Hannemann<hannemann@nets.rwth-aachen.de> wrote:
-> current 2.6.31 fails to boot on our xen host (32bit pae).
-> Unfortunately it fails in a way that there is absolutely no output
-> on the console. Config is as 32bit guest.
->
-> Git bisect gave the following:
->
-> 83b519e8b9572c319c8e0c615ee5dd7272856090 is first bad commit
-> commit 83b519e8b9572c319c8e0c615ee5dd7272856090
-> Author: Pekka Enberg <penberg@cs.helsinki.fi>
-> Date:   Wed Jun 10 19:40:04 2009 +0300
->
->    slab: setup allocators earlier in the boot sequence
->
->    This patch makes kmalloc() available earlier in the boot sequence so we can get
->    rid of some bootmem allocations. The bulk of the changes are due to
->    kmem_cache_init() being called with interrupts disabled which requires some
->    changes to allocator boostrap code.
->
->    Note: 32-bit x86 does WP protect test in mem_init() so we must setup traps
->    before we call mem_init() during boot as reported by Ingo Molnar:
->
->      We have a hard crash in the WP-protect code:
->
->      [    0.000000] Checking if this processor honours the WP bit even in supervisor mode...BUG: Int 14: CR2 ffcff000
->      [    0.000000]      EDI 00000188  ESI 00000ac7  EBP c17eaf9c  ESP c17eaf8c
->      [    0.000000]      EBX 000014e0  EDX 0000000e  ECX 01856067  EAX 00000001
->      [    0.000000]      err 00000003  EIP c10135b1   CS 00000060  flg 00010002
->      [    0.000000] Stack: c17eafa8 c17fd410 c16747bc c17eafc4 c17fd7e5 000011fd f8616000 c18237cc
->      [    0.000000]        00099800 c17bb000 c17eafec c17f1668 000001c5 c17f1322 c166e039 c1822bf0
->      [    0.000000]        c166e033 c153a014 c18237cc 00020800 c17eaff8 c17f106a 00020800 01ba5003
->      [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30-tip-02161-g7a74539-dirty #52203
->      [    0.000000] Call Trace:
->      [    0.000000]  [<c15357c2>] ? printk+0x14/0x16
->      [    0.000000]  [<c10135b1>] ? do_test_wp_bit+0x19/0x23
->      [    0.000000]  [<c17fd410>] ? test_wp_bit+0x26/0x64
->      [    0.000000]  [<c17fd7e5>] ? mem_init+0x1ba/0x1d8
->      [    0.000000]  [<c17f1668>] ? start_kernel+0x164/0x2f7
->      [    0.000000]  [<c17f1322>] ? unknown_bootoption+0x0/0x19c
->      [    0.000000]  [<c17f106a>] ? __init_begin+0x6a/0x6f
->
->    Acked-by: Johannes Weiner <hannes@cmpxchg.org>
->    Acked-by Linus Torvalds <torvalds@linux-foundation.org>
->    Cc: Christoph Lameter <cl@linux-foundation.org>
->    Cc: Ingo Molnar <mingo@elte.hu>
->    Cc: Matt Mackall <mpm@selenic.com>
->    Cc: Nick Piggin <npiggin@suse.de>
->    Cc: Yinghai Lu <yinghai@kernel.org>
->    Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
->
-> However a
-> git revert 83b519e8b9572c319c8e0c615ee5dd7272856090
-> to verify that current git without that commit would work,
-> didn't succeed right away, so I was not able to test that.
 
-Thanks for doing the bisect! Can we also see your .config also?
+On Tue, 25 Aug 2009, Mikko C. wrote:
+> 
+> I just got this with -rc7, but it doesn't look related to what I was having
+> before:
+> 
+> BUG: Bad page map in process kio_thumbnail  pte:ffff88006cc99128 pmd:6d3b1067
+> addr:00007f9d4e3a5000 vm_flags:08000070 anon_vma:(null)
+> mapping:ffff88007abe21a0 index:200
+> vma->vm_ops->fault: filemap_fault+0x0/0x460
+> vma->vm_file->f_op->mmap: ext4_file_mmap+0x0/0x80
+> Pid: 28022, comm: kio_thumbnail Not tainted 2.6.31-rc7 #1
+> Call Trace:
+>  [<ffffffff810afaf4>] ? print_bad_pte+0x1d4/0x2c0
+>  [<ffffffff810afc79>] ? vm_normal_page+0x99/0xa0
+>  [<ffffffff810b0c7d>] ? unmap_vmas+0x4cd/0x970
+>  [<ffffffff810b6c74>] ? exit_mmap+0x104/0x1d0
+>  [<ffffffff81043e0d>] ? mmput+0x4d/0x100
+>  [<ffffffff81048d81>] ? exit_mm+0x101/0x150
+>  [<ffffffff8104b240>] ? do_exit+0x6c0/0x750
+>  [<ffffffff8104b326>] ? do_group_exit+0x56/0xd0
+>  [<ffffffff8104b3c2>] ? sys_exit_group+0x22/0x40
+>  [<ffffffff8100b7eb>] ? system_call_fastpath+0x16/0x1b
+> Disabling lock debugging due to kernel taint
+> 
+> No lockups or anything.
 
-I doubt this is a slab allocator initialization issue so I'm CC'ing
-some Xen folks. Jeremy, I don't know Xen well but on quick read, the
-only thing that I can see is that trap_init() is called before
-sched_init() now. I see Xen doing preempt_enable()/preempt_disable so
-maybe that's a problem now?
+That looks like a memory corruption bug. Your page table entry is bad: 
+pte:ffff88006cc99128. It has the "special" bit set (one of the software 
+bits), in a mapping that should not have special pages.
 
-                                 Pekka
+But that pte entry is odd in other ways too - it's _PAGE_PROTNONE, which 
+is unusual (but not necessarily _wrong_) and _PAGE_BIT_ACCESSED. And it 
+has the high bits set, which is really not ok for a page table entry. The 
+PTE entry should look more like the pmd entry.
+
+So it looks like the pte has been overwritten by some bogus value, 
+presumably by a stale pointer. And it migth be related to your inotify 
+problems that way.
+
+		Linus
