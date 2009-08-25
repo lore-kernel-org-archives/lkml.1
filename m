@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZHYJGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZHYJIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552AbZHYJGH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 05:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbZHYJGG
+	id S1754519AbZHYJIv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 05:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbZHYJIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 05:06:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51598 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754407AbZHYJGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 05:06:04 -0400
-Date: Tue, 25 Aug 2009 11:05:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-Message-ID: <20090825090558.GC14003@elte.hu>
-References: <4A9214E3.2070807@cn.fujitsu.com> <1251093660.7538.119.camel@twins> <4A923197.4040708@cn.fujitsu.com> <1251097012.7538.123.camel@twins> <20090824092455.GA25267@elte.hu> <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com> <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com> <1251182405.7538.1050.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251182405.7538.1050.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 25 Aug 2009 05:08:48 -0400
+Received: from mail.windriver.com ([147.11.1.11]:51229 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751156AbZHYJIr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 05:08:47 -0400
+From: Chunbo Luo <chunbo.luo@windriver.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-sctp@vger.kernel.org,
+       linux-kernel@vger.kernel.org, chunbo.luo@windriver.com,
+       yjwei@cn.fujitsu.com
+Subject: [PATCH v3] sctp: fix the check for path failure detection
+Date: Tue, 25 Aug 2009 17:07:59 +0800
+Message-Id: <1251191279-1764-1-git-send-email-chunbo.luo@windriver.com>
+X-Mailer: git-send-email 1.6.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The transport error count should be incremented when the the T3-rtx
+timer expires or an outstanding HB is not acknowledged. In order to
+avoid sending out an extra HB before marking the transport DOWN, the
+path failure detection should be done before sending out HB.
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
+Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
+---
+ net/sctp/sm_sideeffect.c |    3 ++-
+ net/sctp/sm_statefuns.c  |    8 ++++----
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-> Ah, my bad, I was thikning tracepoint_probe_register() was the 
-> thing that registered the tracepoint itself, not the callback.
-> 
-> Ok, then what's the problem?, don't do modules that consume their 
-> own tracepoints, seems simple enough.
+diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
+index 86426aa..fb723dd 100644
+--- a/net/sctp/sm_sideeffect.c
++++ b/net/sctp/sm_sideeffect.c
+@@ -447,7 +447,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
+ 		asoc->overall_error_count++;
+ 
+ 	if (transport->state != SCTP_INACTIVE &&
+-	    (transport->error_count++ >= transport->pathmaxrxt)) {
++	    (transport->error_count >= transport->pathmaxrxt)) {
+ 		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
+ 					 " transport IP: port:%d failed.\n",
+ 					 asoc,
+@@ -468,6 +468,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
+ 	 * that indicates that we have an outstanding HB.
+ 	 */
+ 	if (!is_hb || transport->hb_sent) {
++		transport->error_count++;
+ 		transport->last_rto = transport->rto;
+ 		transport->rto = min((transport->rto * 2), transport->asoc->rto_max);
+ 	}
+diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
+index 7288192..7f77099 100644
+--- a/net/sctp/sm_statefuns.c
++++ b/net/sctp/sm_statefuns.c
+@@ -981,10 +981,6 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
+ 	 */
+ 
+ 	if (transport->param_flags & SPP_HB_ENABLE) {
+-		if (SCTP_DISPOSITION_NOMEM ==
+-				sctp_sf_heartbeat(ep, asoc, type, arg,
+-						  commands))
+-			return SCTP_DISPOSITION_NOMEM;
+ 		/* Set transport error counter and association error counter
+ 		 * when sending heartbeat.
+ 		 */
+@@ -992,6 +988,10 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
+ 				SCTP_TRANSPORT(transport));
+ 		sctp_add_cmd_sf(commands, SCTP_CMD_TRANSPORT_HB_SENT,
+ 				SCTP_TRANSPORT(transport));
++		if (SCTP_DISPOSITION_NOMEM ==
++				sctp_sf_heartbeat(ep, asoc, type, arg,
++						  commands))
++			return SCTP_DISPOSITION_NOMEM;
+ 	}
+ 	sctp_add_cmd_sf(commands, SCTP_CMD_HB_TIMER_UPDATE,
+ 			SCTP_TRANSPORT(transport));
+-- 
+1.6.4
 
-is this a reasonable restriction? I dont see any reason why the act 
-of defining and providing a tracepoint should be exclusive of the 
-ability to make use of it.
-
-	Ingo
