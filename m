@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756515AbZHZAIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbZHZAJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756515AbZHZAIt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756367AbZHZAIs
+	id S1756411AbZHZAJi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbZHZAJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:08:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58947 "EHLO ogre.sisk.pl"
+	Tue, 25 Aug 2009 20:09:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58933 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756323AbZHZAFD convert rfc822-to-8bit (ORCPT
+	id S1756229AbZHZAEx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:05:03 -0400
+	Tue, 25 Aug 2009 20:04:53 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Daniel Smolik" <marvin@mydatex.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
+       "Frans Pop" <elendil@planet.nl>
 References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
 In-Reply-To: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Cg6cQYLdUxG.A.wCC.H1GlKB@chimera>
-Subject: [Bug #13512] D43 on 2.6.30 doesn't suspend anymore
+Message-ID: <Cg6cQYLdUxG.A.TcC.r1GlKB@chimera>
+Subject: [Bug #13389] Warning 'Invalid throttling state, reset' gets displayed when it should not be
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue, 25 Aug 2009 23:05:03 +0200 (CEST)
+Date: Tue, 25 Aug 2009 23:05:01 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,9 +35,12 @@ introduced between 2.6.29 and 2.6.30.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13512
-Subject		: D43 on 2.6.30 doesn't suspend anymore
-Submitter	: Daniel Smolik <marvin@mydatex.cz>
-Date		: 2009-06-11 20:12 (76 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13389
+Subject		: Warning 'Invalid throttling state, reset' gets displayed when it should not be
+Submitter	: Frans Pop <elendil@planet.nl>
+Date		: 2009-05-26 15:24 (92 days old)
+Handled-By	: Frans Pop <elendil@planet.nl>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=21671
+		  http://bugzilla.kernel.org/attachment.cgi?id=21672
 
 
