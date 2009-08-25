@@ -1,93 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZHYUfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZHYUgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbZHYUfr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 16:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756131AbZHYUfr
+	id S1756176AbZHYUgi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 16:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbZHYUgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 16:35:47 -0400
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:33630 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756029AbZHYUfq (ORCPT
+	Tue, 25 Aug 2009 16:36:37 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:43855 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754644AbZHYUgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 16:35:46 -0400
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, raz ben yehuda <raziebe@gmail.com>,
-       riel@redhat.com, mingo@elte.hu,
-       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
-       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
-In-Reply-To: <4A943A00.9080609@nortel.com>
-References: <1250983671.5688.21.camel@raz>
-	 <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>
-	 <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>
-	 <1251021133.14003.172.camel@marge.simson.net>
-	 <alpine.DEB.1.10.0908251122020.26329@gentwo.org>
-	 <1251222993.7023.53.camel@marge.simson.net>
-	 <alpine.DEB.1.10.0908251402300.17963@gentwo.org>
-	 <1251227322.7538.1172.camel@twins>  <4A943A00.9080609@nortel.com>
-Content-Type: text/plain
-Date: Tue, 25 Aug 2009 13:35:44 -0700
-Message-Id: <1251232544.8208.18.camel@quadrophenia.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Tue, 25 Aug 2009 16:36:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=rXBw+tHmYh9KCHBTaMvz0MxikuhSba/h2qItF2mcJ5LNuAhpgR19lbObpt4riDUzcj
+         EMw1tjp6VpLDNEbGYzeB+HAF8R3iSvJv5zCEuU1gH7cHdUaMsu+3/S3REyjb7gMJRnVh
+         pmWStHjgNi93FsMCgUbi7cN2tWeFHmTtW5WUg=
+MIME-Version: 1.0
+Date: Wed, 26 Aug 2009 00:36:36 +0400
+Message-ID: <a872555b0908251336q2c4ee970qa12500d35d4e144e@mail.gmail.com>
+Subject: [PATCH] Remove multiple definitions of the to_dev() macro
+From: Denis Kirjanov <kirjanov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 13:22 -0600, Chris Friesen wrote:
-> On 08/25/2009 01:08 PM, Peter Zijlstra wrote:
-> 
-> > Christoph, stop being silly, this offline scheduler thing won't happen,
-> > full stop.
-> > 
-> > Its not a maintainable solution, it doesn't integrate with existing
-> > kernel infrastructure, and its plain ugly.
-> > 
-> > If you want something work within Linux, don't build kernels in kernels
-> > or other such ugly hacks.
-> 
-> Is it the whole concept of isolating one or more cpus from all normal
-> kernel tasks that you don't like, or just this particular implementation?
-> 
-> I ask because I know of at least one project that would have used this
-> capability had it been available.  As it stands they have to live with
-> the usual kernel threads running on the cpu that they're trying to
-> dedicate to their app.
-> 
+Remove multiple definitions of the to_dev() macro
 
-Its already possible to *almost* vacate a CPU except for a handful of
-kernel threads.
+Signed-off-by: Denis Kirjanov <kirjanov@gmail.com>
+---
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 7ecb193..6fd7d16 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -62,7 +62,6 @@ const char *dev_driver_string(const struct device *dev)
+ }
+ EXPORT_SYMBOL(dev_driver_string);
 
-There are various hacks being distributed which also offload / suppress
-timer and rcu activity from specific CPUs.
+-#define to_dev(obj) container_of(obj, struct device, kobj)
+ #define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
 
-Everything I have looked at has been hackish and racy, and no one using
-this is pusing any of it upstream.
+ static ssize_t dev_attr_show(struct kobject *kobj, struct attribute *attr,
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index 7376367..9493c88 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -21,8 +21,6 @@
+ #include <linux/firmware.h>
+ #include "base.h"
 
-OFFLINING solves the problem in a minimalist way, and only for tasks
-with very limited interaction with the Kernel.
+-#define to_dev(obj) container_of(obj, struct device, kobj)
+-
+ MODULE_AUTHOR("Manuel Estrada Sainz");
+ MODULE_DESCRIPTION("Multi purpose firmware loading support");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/net/bonding/bond_sysfs.c b/drivers/net/bonding/bond_sysfs.c
+index 55bf34f..7d4101a 100644
+--- a/drivers/net/bonding/bond_sysfs.c
++++ b/drivers/net/bonding/bond_sysfs.c
+@@ -38,7 +38,6 @@
 
-In contrast however, almost all tasks with such limited Kernel
-interaction should be able to do fine under PREEMPT_RT after some cpuset
-work.
+ #include "bonding.h"
 
-For those which absolutely cannot handle a handful of kernel threads
-sharing the CPU, the only option today is one or another form of
-hackery, and amongst those options, this would seem attractive by its
-mere simplicity.
+-#define to_dev(obj)	container_of(obj, struct device, kobj)
+ #define to_bond(cd)	((struct bonding *)(netdev_priv(to_net_dev(cd))))
 
-But complete CPU isolation for user-space tasks still eludes.
+ /*
+diff --git a/include/linux/device.h b/include/linux/device.h
+index aebb810..c2b4ac9 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -364,6 +364,7 @@ struct device_dma_parameters {
+ 	unsigned long segment_boundary_mask;
+ };
 
-Sven
++#define to_dev(obj) container_of(obj, struct device, kobj)
+ struct device {
+ 	struct device		*parent;
 
+diff --git a/net/bridge/br_sysfs_br.c b/net/bridge/br_sysfs_br.c
+index ee4820a..41ed613 100644
+--- a/net/bridge/br_sysfs_br.c
++++ b/net/bridge/br_sysfs_br.c
+@@ -18,10 +18,10 @@
+ #include <linux/rtnetlink.h>
+ #include <linux/spinlock.h>
+ #include <linux/times.h>
++#include <linux/device.h>
 
-> Chris
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ #include "br_private.h"
 
+-#define to_dev(obj)	container_of(obj, struct device, kobj)
+ #define to_bridge(cd)	((struct net_bridge *)netdev_priv(to_net_dev(cd)))
+
+ /*
