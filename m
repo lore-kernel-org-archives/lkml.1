@@ -1,99 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbZHYGV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbZHYGWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbZHYGV0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 02:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZHYGVZ
+	id S1754579AbZHYGWB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 02:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbZHYGV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 02:21:25 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37267 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754178AbZHYGVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 02:21:24 -0400
-Message-ID: <4A938348.2020306@redhat.com>
-Date: Tue, 25 Aug 2009 14:23:04 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
-MIME-Version: 1.0
-To: michael@ellerman.id.au
-CC: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 6/8] powerpc: add CONFIG_KEXEC_AUTO_RESERVE
-References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>	 <20090821065739.4855.19179.sendpatchset@localhost.localdomain> <1251121443.10645.56.camel@concordia>
-In-Reply-To: <1251121443.10645.56.camel@concordia>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 25 Aug 2009 02:21:59 -0400
+Received: from casper.infradead.org ([85.118.1.10]:57887 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754271AbZHYGV6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 02:21:58 -0400
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+From: Peter Zijlstra <peterz@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A937505.5000209@cn.fujitsu.com>
+References: <4A9214E3.2070807@cn.fujitsu.com>
+	 <1251093660.7538.119.camel@twins> <4A923197.4040708@cn.fujitsu.com>
+	 <1251097012.7538.123.camel@twins>  <20090824092455.GA25267@elte.hu>
+	 <1251106058.7538.149.camel@twins>  <4A937505.5000209@cn.fujitsu.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 25 Aug 2009 08:21:06 +0200
+Message-Id: <1251181266.7538.1016.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Ellerman wrote:
-> On Fri, 2009-08-21 at 02:55 -0400, Amerigo Wang wrote:
->   
->> Introduce a new config option KEXEC_AUTO_RESERVE for powerpc.
->>
->> Index: linux-2.6/arch/powerpc/Kconfig
->> ===================================================================
->> --- linux-2.6.orig/arch/powerpc/Kconfig
->> +++ linux-2.6/arch/powerpc/Kconfig
->> @@ -346,6 +346,17 @@ config KEXEC
->>  	  support.  As of this writing the exact hardware interface is
->>  	  strongly in flux, so no good recommendation can be made.
->>  
->> +config KEXEC_AUTO_RESERVE
->> +	bool "automatically reserve memory for kexec kernel"
->> +	depends on KEXEC
->> +	default y
->> +	---help---
->> +	  Automatically reserve memory for a kexec kernel, so that you don't
->> +	  need to specify numbers for the "crashkernel=X@Y" boot option,
->> +	  instead you can use "crashkernel=auto". To make this work, you need
->> +	  to have more than 4G memory. On PPC, 256M is reserved, 1/32 memory
->> +	  on PPC64, but it will not exceed 1T/32.
->>     
->
-> To be honest I don't see why this logic goes in the kernel. It seems to
-> me that it's policy how much memory you devote to the crash kernel vs
-> the production kernel. It depends on what kind of crash kernel you're
-> loading, a minimal UP dump kernel, or a full-featured SMP behemoth, An
-> it depends on how much memory you're willing to leave idle in the
-> off-chance you crash.
->   
+On Tue, 2009-08-25 at 13:22 +0800, Li Zefan wrote:
+> >>>>>> If the correspoding module is unloaded before ftrace_profile_disable()
+> >>>>>> is called, event->profile_disable() won't be called, which can
+> >>>>>> cause oops:
+> >>>>>>
+> >>>>>>   # insmod trace-events-sample.ko
+> >>>>>>   # perf record -f -a -e sample:foo_bar sleep 3 &
+> >>>>>>   # sleep 1
+> >>>>>>   # rmmod trace_events_sample
+> >>>>>>   # insmod trace-events-sample.ko
+> >>>>>>   OOPS!
+> >>>>>>
+> >>>>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> >>>>>
+> >>>>> Hrmm, feel fragile, why don't we check if all a modules tracepoints are
+> >>>>> unused on unload?
+> >>>>>
+> >>>> I don't think it's fragile. We are profiling via a module's
+> >>>> tracepoint, so we should pin the module, via module_get().
+> >>>> If event->profile_enable() has been calld, we should make
+> >>>> sure it's profile_disable() will be called.
+> >>> What I call fragile is that everyone registering a tracepoint 
+> >>> callback will now apparently need to worry about modules, _that_ 
+> >>> is fragile.
+> >>>
+> >>> Either make module unload look at tracepoint users, or place the 
+> >>> try_get_module() in the registration hooks so that regular users 
+> >>> don't need to worry about it.
+> >> The bug found by Li needs to be fixed obviously.
+> >>
+> >> I tend to agree with you that this does not appear to be the best 
+> >> place to do it: so you suggest to implicitly increase the module 
+> >> refcount on callback registr instead? (and releasing it when 
+> >> unregistering)
+> >>
+> >> Same end result, slightly cleaner place to bump the refcount.
+> > 
+> > Yes, because the user of tracepoints should never need to care about
+> > modules.
+> > 
+> 
+> I'm afraid it is not feasible to bump module refcnt implicitly
+> in tracepoint_probe_register().
+> 
+> If a tracepoint is registered in module_init, and unregistered
+> in module_exit (see sample/tracepoints), the module is unloadable:
+> 
+>  insmod
+>  ->call mod->init()
+>    ->trace_reg_foo()
+>      ->module_get()
+> 
+>  rmmod
+>  ->check mod refcnt
+>  ->call mod->exit()
+>    ->trace_unreg_foo()
+>      ->module_put()
 
-True, but since in the crash kernel, we have very little memory, so 
-probably loading a full-featured SMP kernel doesn't make much sense...
+Not tracepoint_probe_{un,}register(), in {un,}register_trace_$call().
 
-And in patch 1/8, I introduced a way to free the reserved memory at 
-run-time.
-
-> That aside, I don't see how this will be useful in practice, if it only
-> works for memory sizes over 4G? Or are we saying that people with less
-> than 4G don't need crash kernels? If we're not saying that, those users,
-> or those users' distros, still need to do some logic to work out if they
-> have < 4GB of memory and if so pick a crash kernel size. So why can't
-> they pick the size in the > 4GB case also?
->   
-
-No, we set 4G as a threshold because we only want this work when have 
-have enough memory which is defined as 4G currently... This can be 
-changed to arch-dependent, e.g. ppc. I am very open to this.
-
-
-> Also the numbers seem a bit arbitrary. 4GB ? 256M ? 1/32?  I don't think
-> we really want to be blowing 32GB on a crash kernel, even if we do have
-> 1T of RAM :)
->   
-
-Ah, maybe, to be honest, I am not familiar with ppc at all.
-
-Please feel free to suggest other numbers for ppc (or other algorithms 
-to reserve memory automatically for ppc).
-
-Thanks!
-
-
-
+Basically avoid module unload when a tracepoint from that module has
+registered callbacks.
