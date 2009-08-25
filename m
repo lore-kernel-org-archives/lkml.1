@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbZHYGpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZHYGpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbZHYGpc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 02:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZHYGpb
+	id S1754613AbZHYGpz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 02:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbZHYGpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 02:45:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38583 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754551AbZHYGpa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 02:45:30 -0400
-Message-ID: <4A93884E.3000403@zytor.com>
-Date: Mon, 24 Aug 2009 23:44:30 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 25 Aug 2009 02:45:54 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64303 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754273AbZHYGpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 02:45:54 -0400
+Message-ID: <4A938882.4090405@cn.fujitsu.com>
+Date: Tue, 25 Aug 2009 14:45:22 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-       tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
- CPUID bit
-References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com> <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org> <20090816064132.GA16278@elte.hu> <20090816214934.GB7765@liondog.tnic> <4A8EDC02.8000508@zytor.com> <20090822163750.GA31631@liondog.tnic> <4A92F93F.8000502@zytor.com> <20090825055215.GA22595@liondog.tnic>
-In-Reply-To: <20090825055215.GA22595@liondog.tnic>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Neil Horman <nhorman@tuxdriver.com>, Wei Yongjun <yjwei@cn.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] trace_evetns: fix napi's tracepoint
+References: <4A937EF5.4040505@cn.fujitsu.com>
+In-Reply-To: <4A937EF5.4040505@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/24/2009 10:52 PM, Borislav Petkov wrote:
-> On Mon, Aug 24, 2009 at 01:34:07PM -0700, H. Peter Anvin wrote:
->> Looks reasonable... although part of me wonders if having a pointer to
->> an array containing the entire register file in and out is even better,
->> of if I'm just overengineering at this point.
+
+
+Xiao Guangrong wrote:
+> Currently, the napi's tracepoint works will is depend on
+> "DECLARE_TRACE" definiens in include/trace/define_trace.h,
+> like below:
 > 
-> Hmm, let's have necessity determine that. I can only think of %edi being
-> used as an input reg to rd/wrmsr beside %ecx but it could be very well
-> that some other x86 hardware uses other regs too. Do we actually need
-> all regs or a two should suffice?
+> #include <trace/events/skb.h>    // include define_trace.h
+> #include <trace/events/napi.h>
 > 
+> there have error, if we remove "#include <trace/events/skb.h>"
+> or include napi.h in the front of include skb.h, It should
+> depend on the definiens in include/linux/tracepoint.h and we
+> can remove the "DECLARE_TRACE" definiens in
+> include/trace/define_trace.h, because "TRACE_EVENT" not use it
+> 
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 
-Hard to know.  In theory we shouldn't need ESI and EDI either!
-
-As I said, I wouldn't have worried about it at all if it wasn't for
-paravirt_ops turning these things into ABIs.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Sorry for forget to CC David Miller and netdev@vger.kernel.org, also
+mistype the title: trace_evetns -> trace_events, please ignore this mail
+and I'll resend it soon
