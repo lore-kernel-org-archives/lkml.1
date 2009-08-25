@@ -1,54 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZHYOxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbZHYOwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbZHYOxj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 10:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbZHYOxj
+	id S1755036AbZHYOwy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 10:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbZHYOwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 10:53:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46364 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754848AbZHYOxi (ORCPT
+	Tue, 25 Aug 2009 10:52:54 -0400
+Received: from mail-px0-f182.google.com ([209.85.216.182]:61686 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754329AbZHYOwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 10:53:38 -0400
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1251197235.7538.1142.camel@twins>
-References: <20090824092455.GA25267@elte.hu>
-	 <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>
-	 <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>
-	 <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu>
-	 <1251191546.7538.1118.camel@twins> <20090825102215.GC26801@elte.hu>
-	 <1251196359.7538.1133.camel@twins>  <20090825103907.GB28287@elte.hu>
-	 <1251197235.7538.1142.camel@twins>
-Content-Type: text/plain
+	Tue, 25 Aug 2009 10:52:53 -0400
+Message-ID: <4A93FAA5.5000001@vflare.org>
+Date: Tue, 25 Aug 2009 20:22:21 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mm-cc@laptop.org
+Subject: Re: [PATCH 1/4] compcache: xvmalloc memory allocator
+References: <200908241007.47910.ngupta@vflare.org> <84144f020908241033l4af09e7h9caac47d8d9b7841@mail.gmail.com> <4A92EBB4.1070101@vflare.org> <Pine.LNX.4.64.0908242132320.8144@sister.anvils> <4A930313.9070404@vflare.org> <Pine.LNX.4.64.0908242224530.10534@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0908242224530.10534@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 25 Aug 2009 16:52:43 +0200
-Message-Id: <1251211963.7538.1164.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 12:47 +0200, Peter Zijlstra wrote:
-> On Tue, 2009-08-25 at 12:39 +0200, Ingo Molnar wrote:
-> 
-> > > Do you really wish to burden every tracepoint user with the extra 
-> > > logic needed to deal with modules?
-> > 
-> > Not necessarily - i'm just outlining why i think that the 'dont 
-> > allow subsystems to utilize tracepoint callbacks' is a restriction 
-> > we should not live with voluntarily.
-> 
-> Well, unless someone has a bright idea that's what it comes down to. 
+On 08/25/2009 03:16 AM, Hugh Dickins wrote:
+> On Tue, 25 Aug 2009, Nitin Gupta wrote:
+>> On 08/25/2009 02:09 AM, Hugh Dickins wrote:
+>>> On Tue, 25 Aug 2009, Nitin Gupta wrote:
+>>>> On 08/24/2009 11:03 PM, Pekka Enberg wrote:
+>>>>>
+>>>>> What's the purpose of passing PFNs around? There's quite a lot of PFN
+>>>>> to struct page conversion going on because of it. Wouldn't it make
+>>>>> more sense to return (and pass) a pointer to struct page instead?
+>>>>
+>>>> PFNs are 32-bit on all archs
+>>>
+>>> Are you sure?  If it happens to be so for all machines built today,
+>>> I think it can easily change tomorrow.  We consistently use unsigned long
+>>> for pfn (there, now I've said that, I bet you'll find somewhere we don't!)
+>>>
+>>> x86_64 says MAX_PHYSMEM_BITS 46 and ia64 says MAX_PHYSMEM_BITS 50 and
+>>> mm/sparse.c says
+>>> unsigned long max_sparsemem_pfn = 1UL<<   (MAX_PHYSMEM_BITS-PAGE_SHIFT);
+>>>
+>>
+>> For PFN to exceed 32-bit we need to have physical memory>  16TB (2^32 * 4KB).
+>> So, maybe I can simply add a check in ramzswap module load to make sure that
+>> RAM is indeed<  16TB and then safely use 32-bit for PFN?
+>
+> Others know much more about it, but I believe that with sparsemem you
+> may be handling vast holes in physical memory: so a relatively small
+> amount of physical memory might in part be mapped with gigantic pfns.
+>
+> So if you go that route, I think you'd rather have to refuse pages
+> with oversized pfns (or refuse configurations with any oversized pfns),
+> than base it upon the quantity of physical memory in the machine.
+>
+> Seems ugly to me, as it did to Pekka; but I can understand that you're
+> very much in the business of saving memory, so doubling the size of some
+> of your tables (I may be oversimplifying) would be repugnant to you.
+>
+> You could add a CONFIG option, rather like CONFIG_LBDAF, to switch on
+> u64-sized pfns; but you'd still have to handle what happens when the
+> pfn is too big to fit in u32 without that option; and if distros always
+> switch the option on, to accomodate the larger machines, then there may
+> have been no point to adding it.
+>
 
-OK, I still think modules probing their own tracepoints its stupid [*],
-but what you could do is iterate the tracepoint's callback list and see
-if it has a callback outside of the module code section and then fail
-the unload.
+Thanks for these details.
 
-[*] in the really utterly fundamentally wrong stupid class.
+Now I understand that use of 32-bit PFN on 64-bit archs is unsafe. So,
+there is no option but to include extra bits for PFNs or use struct page.
+
+* Solution of ramzswap block device:
+
+Use 48 bit PFNs (32 + 8) and have a compile time error to make sure that
+that MAX_PHYSMEM_BITS is < 48 + PAGE_SHIFT. The ramzswap table can accommodate
+48-bits without any increase in table size.
+
+--- ramzswap_new.h	2009-08-25 20:10:38.054033804 +0530
++++ ramzswap.h	2009-08-25 20:09:28.386069100 +0530
+@@ -110,9 +110,9 @@
+
+  /* Indexed by page no. */
+  struct table {
+-	u32 pagenum_1;
++	u32 pagenum;
+  	u16 offset;
+-	u8 pagenum_2;
++	u8 count;	/* object ref count (not yet used) */
+  	u8 flags;
+  };
+
+
+(removal for 'count' field will hurt later when we implement
+memory defragmentation support).
+
+
+* Solution for allocator:
+
+Use struct page instead of PFN. This is better than always using 64-bit PFNs
+since we get rid of all casts. Use of 48-bit PFNs as above will create too
+much mess. However, use of struct page increases per-pool overhead by 4K on
+64-bit systems. This should be okay.
+
+
+Please let me know if you have any comments. I will make these changes in next
+revision.
+
+There is still some problem with memory allocator naming. Its no longer a
+separate module, the symbols are not exported and its now compiled with ramzswap
+block driver itself. So, I am hoping xv_malloc() does not causes any confusion
+with any existing name now. It really should not cause any confustion. I would
+love to retain this name for allocator.
+
+Thanks,
+Nitin
+
+
+
+
