@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZHYJsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbZHYJtH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbZHYJsb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 05:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbZHYJsa
+	id S1754857AbZHYJtH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 05:49:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbZHYJtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 05:48:30 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:52768 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbZHYJs3 (ORCPT
+	Tue, 25 Aug 2009 05:49:05 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:36555 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751682AbZHYJtD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 05:48:29 -0400
-Date: Tue, 25 Aug 2009 15:18:27 +0530
+	Tue, 25 Aug 2009 05:49:03 -0400
+Date: Tue, 25 Aug 2009 15:19:14 +0530
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
@@ -23,9 +23,9 @@ Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
        Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
        Mike Waychison <mikew@google.com>
-Subject: [RFC v1 PATCH 1/7] 1/7 sched: Rename sched_rt_period_mask() and
-	use it in CFS also
-Message-ID: <20090825094827.GQ3663@in.ibm.com>
+Subject: [RFC v1 PATCH 2/7] sched: Maintain aggregated tasks count in
+	cfs_rq at each hierarchy level
+Message-ID: <20090825094914.GR3663@in.ibm.com>
 Reply-To: bharata@linux.vnet.ibm.com
 References: <20090825094729.GP3663@in.ibm.com>
 MIME-Version: 1.0
@@ -37,90 +37,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched: Rename sched_rt_period_mask() and use it in CFS also.
+sched: Maintain aggregated tasks count in cfs_rq at each hierarchy level
 
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 
-sched_rt_period_mask() is needed in CFS also. Rename it to a generic name
-and move it to kernel/sched.c. No functionality change in this patch.
+This patch adds a counter to cfs_rq (->nr_tasks_running) to record the
+aggregated tasks count at each level in the task group hierarchy.
+This is needed by later hard limit patches where it is required to
+know how many tasks go off the rq when a throttled group entity
+is dequeued.
 
 Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- kernel/sched.c    |   23 +++++++++++++++++++++++
- kernel/sched_rt.c |   19 +------------------
- 2 files changed, 24 insertions(+), 18 deletions(-)
+ kernel/sched.c       |    4 ++++
+ kernel/sched_debug.c |    2 ++
+ kernel/sched_fair.c  |   23 +++++++++++++++++++++++
+ 3 files changed, 29 insertions(+)
 
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -1732,6 +1732,29 @@ static void cfs_rq_set_shares(struct cfs
+@@ -477,6 +477,10 @@ struct cfs_rq {
+ 	unsigned long rq_weight;
+ #endif
+ #endif
++	/*
++	 * Number of tasks at this heirarchy.
++	 */
++	unsigned long nr_tasks_running;
+ };
  
- static void calc_load_account_active(struct rq *this_rq);
+ /* Real-Time classes' related field in a runqueue: */
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -214,6 +214,8 @@ void print_cfs_rq(struct seq_file *m, in
+ #ifdef CONFIG_SMP
+ 	SEQ_printf(m, "  .%-30s: %lu\n", "shares", cfs_rq->shares);
+ #endif
++	SEQ_printf(m, "  .%-30s: %ld\n", "nr_tasks_running",
++			cfs_rq->nr_tasks_running);
+ 	print_cfs_group_stats(m, cpu, cfs_rq->tg);
+ #endif
+ }
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -243,6 +243,27 @@ find_matching_se(struct sched_entity **s
  
-+
-+#if defined(CONFIG_RT_GROUP_SCHED) || defined(CONFIG_FAIR_GROUP_SCHED)
-+
-+#ifdef CONFIG_SMP
-+static inline const struct cpumask *sched_bw_period_mask(void)
+ #endif	/* CONFIG_FAIR_GROUP_SCHED */
+ 
++static void add_cfs_rq_tasks_running(struct sched_entity *se,
++		unsigned long count)
 +{
-+	return cpu_rq(smp_processor_id())->rd->span;
-+}
-+#else /* !CONFIG_SMP */
-+static inline const struct cpumask *sched_bw_period_mask(void)
-+{
-+	return cpu_online_mask;
-+}
-+#endif /* CONFIG_SMP */
++	struct cfs_rq *cfs_rq;
 +
-+#else
-+static inline const struct cpumask *sched_bw_period_mask(void)
-+{
-+	return cpu_online_mask;
++	for_each_sched_entity(se) {
++		cfs_rq = cfs_rq_of(se);
++		cfs_rq->nr_tasks_running += count;
++	}
 +}
 +
-+#endif
++static void sub_cfs_rq_tasks_running(struct sched_entity *se,
++		unsigned long count)
++{
++	struct cfs_rq *cfs_rq;
 +
- #include "sched_stats.h"
- #include "sched_idletask.c"
- #include "sched_fair.c"
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -222,18 +222,6 @@ static int rt_se_boosted(struct sched_rt
- 	return p->prio != p->normal_prio;
++	for_each_sched_entity(se) {
++		cfs_rq = cfs_rq_of(se);
++		cfs_rq->nr_tasks_running -= count;
++	}
++}
+ 
+ /**************************************************************
+  * Scheduling class tree data structure manipulation methods:
+@@ -969,6 +990,7 @@ static void enqueue_task_fair(struct rq 
+ 		wakeup = 1;
+ 	}
+ 
++	add_cfs_rq_tasks_running(&p->se, 1);
+ 	hrtick_update(rq);
  }
  
--#ifdef CONFIG_SMP
--static inline const struct cpumask *sched_rt_period_mask(void)
--{
--	return cpu_rq(smp_processor_id())->rd->span;
--}
--#else
--static inline const struct cpumask *sched_rt_period_mask(void)
--{
--	return cpu_online_mask;
--}
--#endif
--
- static inline
- struct rt_rq *sched_rt_period_rt_rq(struct rt_bandwidth *rt_b, int cpu)
- {
-@@ -283,11 +271,6 @@ static inline int rt_rq_throttled(struct
- 	return rt_rq->rt_throttled;
+@@ -991,6 +1013,7 @@ static void dequeue_task_fair(struct rq 
+ 		sleep = 1;
+ 	}
+ 
++	sub_cfs_rq_tasks_running(&p->se, 1);
+ 	hrtick_update(rq);
  }
  
--static inline const struct cpumask *sched_rt_period_mask(void)
--{
--	return cpu_online_mask;
--}
--
- static inline
- struct rt_rq *sched_rt_period_rt_rq(struct rt_bandwidth *rt_b, int cpu)
- {
-@@ -505,7 +488,7 @@ static int do_sched_rt_period_timer(stru
- 	if (!rt_bandwidth_enabled() || rt_b->rt_runtime == RUNTIME_INF)
- 		return 1;
- 
--	span = sched_rt_period_mask();
-+	span = sched_bw_period_mask();
- 	for_each_cpu(i, span) {
- 		int enqueue = 0;
- 		struct rt_rq *rt_rq = sched_rt_period_rt_rq(rt_b, i);
