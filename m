@@ -1,63 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbZHYS71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbZHYS7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756003AbZHYS71 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932079AbZHYS7Z
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:59:25 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:24116 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755954AbZHYS7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S932071AbZHYS7V (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 25 Aug 2009 14:59:21 -0400
-Date: Tue, 25 Aug 2009 11:58:39 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, hch@lst.de,
-       linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [PATCH 05/17] ocfs2: Use __generic_file_aio_write instead of
- generic_file_aio_write_nolock
-Message-ID: <20090825185839.GB9812@mail.oracle.com>
-Mail-Followup-To: Jan Kara <jack@suse.cz>,
-	LKML <linux-kernel@vger.kernel.org>, hch@lst.de,
-	linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1250875447-15622-1-git-send-email-jack@suse.cz>
- <1250875447-15622-6-git-send-email-jack@suse.cz>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbZHYS7U
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 25 Aug 2009 14:59:20 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:28598 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755782AbZHYS7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:59:16 -0400
+X-Trace: 249183740/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.115.167/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.115.167
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigFAI/Rk0pQKXOn/2dsb2JhbACBU9dNhBoF
+X-IronPort-AV: E=Sophos;i="4.44,273,1249254000"; 
+   d="scan'208";a="249183740"
+Date: Tue, 25 Aug 2009 19:58:43 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrea Arcangeli <aarcange@redhat.com>
+cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 13/12] ksm: fix munlock during exit_mmap deadlock
+In-Reply-To: <20090825181019.GT14722@random.random>
+Message-ID: <Pine.LNX.4.64.0908251958170.5871@sister.anvils>
+References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
+ <Pine.LNX.4.64.0908031317190.16754@sister.anvils> <20090825145832.GP14722@random.random>
+ <20090825152217.GQ14722@random.random> <Pine.LNX.4.64.0908251836050.30372@sister.anvils>
+ <20090825181019.GT14722@random.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250875447-15622-6-git-send-email-jack@suse.cz>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4A94347E.00B7:SCFMA4539814,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 21, 2009 at 07:23:55PM +0200, Jan Kara wrote:
-> Use the new helper. We have to submit data pages ourselves in case of O_SYNC
-> write because __generic_file_aio_write does not do it for us. OCFS2 developpers
-> might think about moving the sync out of i_mutex which seems to be easily
-> possible but that's out of scope of this patch.
+On Tue, 25 Aug 2009, Andrea Arcangeli wrote:
+> On Tue, Aug 25, 2009 at 06:49:09PM +0100, Hugh Dickins wrote:
+> Looking ksm.c it should have been down_write indeed...
 > 
-> CC: ocfs2-devel@oss.oracle.com
-> CC: Joel Becker <joel.becker@oracle.com>
-> Signed-off-by: Jan Kara <jack@suse.cz>
-Acked-by: Joel Becker <joel.becker@oracle.com>
- 
+> > Nor do we want to change your down_read here to down_write, that will
+> > just reintroduce the OOM deadlock that 9/12 was about solving.
+> 
+> I'm not sure anymore I get what this fix is about...
 
--- 
+Yes, it's easy to drop one end of the string while picking up the other ;)
 
-"The real reason GNU ls is 8-bit-clean is so that they can
- start using ISO-8859-1 option characters."
-	- Christopher Davis (ckd@loiosh.kei.com)
+And it wouldn't be exactly the same deadlock, but similar.
+The original deadlock that 9/12 was about was:
+    There's a now-obvious deadlock in KSM's out-of-memory handling:
+    imagine ksmd or KSM_RUN_UNMERGE handling, holding ksm_thread_mutex,
+    trying to allocate a page to break KSM in an mm which becomes the
+    OOM victim (quite likely in the unmerge case): it's killed and goes
+    to exit, and hangs there waiting to acquire ksm_thread_mutex.
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Whereas with down_write(&mm->mmap_sem); up_write(&mm->mmap_sem)
+just before calling exit_mmap(), the deadlock comes on mmap_sem
+instead: the exiting OOM-killed task waiting there (for break_cow
+or the like to up_read mmap_sem), before it has freed any memory
+to allow break_cow etc. to proceed.
+
+> mm_users is
+> allowed to go to 0. If mm_users is allowed to go to 0, it's up to ksm
+> to check inside its inner loops that mm_users is 0 and bail
+> out. Bailing out it will unblock exit so that exit_mmap can run.
+
+Yes, but one of those checks that mm_users is 0 has to be lie below
+handle_mm_fault, because mm_users may go to 0 and exit_mmap proceed
+while one of handle_pte_fault's helpers is waiting to allocate a page
+(for example; but SMP could race anywhere).  Hence ksm_test_exit()s
+in mm/memory.c.
+
+(And as I remarked in the 9/12 comments, it's no use bumping up
+mm_users in break_ksm, say, though that would be a normal thing to
+do: that just ensures the memory we'd be waiting for cannot be freed.)
+
+> What exactly is the unfixable issue?
+
+Oh, there's no unfixable issue,
+just an issue we've not yet found the right fix for ;)
+
+The idea I'm currently playing with, would fix one of your objections
+but violate another, is to remove the ksm_test_exit()s from mm/memory.c,
+allow KSM to racily fault in too late, but observe mm_users 0 afterwards
+and zap it then.
+
+I agree with you that it seems _wrong_ for KSM to fault into an area
+being exited, which was why the ksm_test_exit()s; but the neatest
+answer might turn out to be to allow it to do so after all.
+
+Hugh
