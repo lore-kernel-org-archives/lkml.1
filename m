@@ -1,65 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbZHYT2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZHYTao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbZHYT2B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 15:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbZHYT2A
+	id S1756104AbZHYTao (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 15:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbZHYTao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 15:28:00 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:38970 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755896AbZHYT2A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 15:28:00 -0400
-Date: Tue, 25 Aug 2009 12:27:57 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       shai@scalex86.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch] x86: 2.6.31-rc7 crash due to buggy flat_phys_pkg_id
-Message-ID: <20090825192757.GE6456@localdomain>
-References: <20090824182659.GA6842@localdomain> <4A932809.1000103@kernel.org> <20090825012632.GB6842@localdomain> <4A9372A1.9090905@kernel.org> <20090825171716.GC6456@localdomain> <20090825181500.GB3277@elte.hu> <20090825183130.GA5806@lenovo> <4A943290.5080606@kernel.org>
+	Tue, 25 Aug 2009 15:30:44 -0400
+Received: from claw.goop.org ([74.207.240.146]:59213 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756065AbZHYTan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 15:30:43 -0400
+Message-ID: <4A943BE0.7070308@goop.org>
+Date: Tue, 25 Aug 2009 12:30:40 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A943290.5080606@kernel.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
+References: <4A9407B1.6020400@nets.rwth-aachen.de> <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com> <4A94161A.2020609@nets.rwth-aachen.de> <1251219129.4852.1.camel@penberg-laptop> <4A94242E.30309@nets.rwth-aachen.de> <1251223399.13451.5.camel@penberg-laptop> <4A942BDD.70303@nets.rwth-aachen.de> <20090825182510.GA6903@elte.hu> <4A942DB9.3020209@goop.org> <4A942F96.7000900@nets.rwth-aachen.de>
+In-Reply-To: <4A942F96.7000900@nets.rwth-aachen.de>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 11:50:56AM -0700, Yinghai Lu wrote:
->Cyrill Gorcunov wrote:
+On 08/25/09 11:38, Arnd Hannemann wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> On 08/25/09 11:25, Ingo Molnar wrote:
+>>     
+>>> * Arnd Hannemann <hannemann@nets.rwth-aachen.de> wrote:
+>>>
+>>>
+>>>       
+>>>> Pekka Enberg wrote:
+>>>>
+>>>>         
+>>>>> On Tue, 2009-08-25 at 19:49 +0200, Arnd Hannemann wrote:
+>>>>>
+>>>>>           
+>>>>>> Hi Pekka,
+>>>>>>
+>>>>>> Pekka Enberg wrote:
+>>>>>>
+>>>>>>             
+>>>>>>> On Tue, 2009-08-25 at 18:49 +0200, Arnd Hannemann wrote:
+>>>>>>>
+>>>>>>>               
+>>>>>>>>> Thanks for doing the bisect! Can we also see your
+>>>>>>>>> .config also?
+>>>>>>>>>
+>>>>>>>>>                   
+>>>>>>>> Config for -rc7 is attached. My bisect configs were based
+>>>>>>>> on that
+>>>>>>>>
+>>>>>>>>                 
+>>>>>>> Thanks! While we wait for the Xen people, you can try the
+>>>>>>> following patch to see if we can narrow the bug down to
+>>>>>>> trap_init().
+>>>>>>>
+>>>>>>>               
+>>>>>> Yes seems to be trap_init(). -rc7 with this patch applied
+>>>>>> boots up to the prompt.
+>>>>>>
+>>>>>>             
+>>>>> Thanks for testing! Ingo, what do you think of the following
+>>>>> patch? AFAICT, x86-32 is the only architecture playing with
+>>>>> traps in mem_init() so this should be the safest fix for
+>>>>> 2.6.31.
+>>>>>
+>>>>>           
+>>>> Hmm, -rc7 + this fix does not work for me :-/ Still hangs before
+>>>> any output...
+>>>>
+>>>>         
+>>> does earlyprintk=vga tell you anything about precisely where it
+>>> hangs?
+>>>
+>>>       
+>> It's a Xen domain, so it should be earlyprintk=xen
+>>
+>> J
+>>
+>>     
+> Here is the output with earlyprintk=xen and the second patch from pekka
+> applied:
 >
->initial apic id and apic id could be different.
->
->and we should use initial apic id to get correct phys pkg id in case BIOS set crazy apic id.
->
+> (early) [    0.000000] Initializing CPU#0
+> (early) [    0.000000] Checking if this processor honours the WP bit
+> even in supervisor mode...(early)
+> (early) [    0.000000] BUG: unable to handle kernel (early) NULL pointer
+> dereference(early)  at (null)
+> (early) [    0.000000] IP:(early)  [<c1192993>]
+> xen_evtchn_do_upcall+0xd3/0x160
+>   
 
-Is there a specific bug we are fixing here?  Again, this behavior was
-present from atleast 2.6.15-2.6.30 on 'flat' and older 'cluster' apics, and intel
-documentation suggests local apic be used.  Is there a specific bios bug
-that is being fixed?
+OK, that's the same problem I've seen; its trying to enable and delver
+interrupts before init_IRQ has been called, so the various allocated
+arrays aren't set up.
 
-(The BIOS is not supposed to set a crazy apic ID.  The BIOS is buggy in that
-case --  Quoting section 9.4.6 from Intel System programming guide vol 3A
-part 1:
-
-<quote>
-9.4.6 Local APIC ID
-At power up, system hardware assigns a unique APIC ID to each local APIC on
-the system bus (for Pentium 4 and Intel Xeon processors) or on the APIC bus
-(for P6 family and Pentium processors). The hardware assigned APIC ID is
-based on system topology and includes encoding for socket position and
-cluster information (see Figure 7-2).
-In MP systems, the local APIC ID is also used as a processor ID by the BIOS
-and the operating system....
-</quote>)
+Ingo, I'm assuming that interrupts aren't supposed to be enabled this early?
 
 Thanks,
-Kiran
+    J
+
+> (early) [    0.000000] *pdpt = 0000000008386001 (early)
+> (early) [    0.000000] Thread overran stack, or stack corrupted
+> (early) [    0.000000] Oops: 0000 [#1] (early) SMP (early)
+> (early) [    0.000000] last sysfs file:
+> (early) [    0.000000] Modules linked in:(early)
+> (early) [    0.000000]
+> (early) [    0.000000] Pid: 0, comm: swapper Not tainted
+> (2.6.31-rc7-pae-um #10)
+> (early) [    0.000000] EIP: 0061:[<c1192993>] EFLAGS: 00010046 CPU: 0
+> (early) [    0.000000] EIP is at xen_evtchn_do_upcall+0xd3/0x160
+> (early) [    0.000000] EAX: 00000004 EBX: 00000000 ECX: 00000004 EDX:
+> ffffffff
+> (early) [    0.000000] ESI: fffffffe EDI: 00000000 EBP: 00000000 ESP:
+> c1413e64
+> (early) [    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: e021
+> (early) [    0.000000] Process swapper (pid: 0, ti=c1412000
+> task=c13d11a0 task.ti=c1412000)
+> (early) [    0.000000] Stack:
+> (early) [    0.000000]  f5793000(early)  c146d9f0(early) 
+> c146d9f0(early)  00000000(early)  c1413e9c(early)  00000000(early) 
+> 00000000(early)  c3a01020(early)
+> (early) [    0.000000] <0>(early)  00000000(early)  eec06067(early) 
+> c000cff8(early)  00000000(early)  00000000(early)  c10086d7(early) 
+> eec06067(early)  c000cff8(early)
+> (early) [    0.000000] <0>(early)  f55ff000(early)  c000cff8(early) 
+> 00000000(early)  00000000(early)  c13d7d60(early)  c101e021(early) 
+> c141e021(early)  c10100d8(early)
+> (early) [    0.000000] Call Trace:
+> (early) [    0.000000]  [<c10086d7>] ? xen_do_upcall+0x7/0xc
+> (early) [    0.000000]  [<c101e021>] ? ptep_set_access_flags+0x1/0x80
+> (early) [    0.000000]  [<c141e021>] ? find_e820_area_size+0x51/0x330
+> (early)
+>
+>
+> Best regards,
+> Arnd
+>
+>   
+
