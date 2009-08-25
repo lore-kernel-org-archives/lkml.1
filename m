@@ -1,104 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbZHYUkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbZHYUqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbZHYUkw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 16:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZHYUkw
+	id S932097AbZHYUqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 16:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755677AbZHYUqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 16:40:52 -0400
-Received: from emroute4.ornl.gov ([160.91.86.27]:35738 "EHLO emroute4.ornl.gov"
+	Tue, 25 Aug 2009 16:46:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49466 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756109AbZHYUkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 16:40:51 -0400
-Date: Tue, 25 Aug 2009 16:40:48 -0400
-From: David Dillow <dave@thedillows.org>
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-In-reply-to: <m1prajabk8.fsf@fess.ebiederm.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <1251232848.9607.15.camel@lap75545.ornl.gov>
-MIME-version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10)
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <200903041828.49972.m.bueker@berlin.de>
- <1242001754.4093.12.camel@obelisk.thedillows.org>
- <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
- <1242077392.3716.15.camel@lap75545.ornl.gov> <4A09DC3E.2080807@googlemail.com>
- <1242268709.4979.7.camel@obelisk.thedillows.org>
- <4A0C6504.8000704@googlemail.com>
- <1242328457.32579.12.camel@lap75545.ornl.gov>
- <4A0C7443.1010000@googlemail.com>
- <1243042174.3580.23.camel@obelisk.thedillows.org>
- <m1skfkrik2.fsf@fess.ebiederm.org>
- <1250895567.23419.1.camel@obelisk.thedillows.org>
- <1250897657.23419.5.camel@obelisk.thedillows.org>
- <m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
- <1250973787.3582.14.camel@obelisk.thedillows.org>
- <m1r5v0ogvw.fsf@fess.ebiederm.org>
- <1251169150.4023.11.camel@obelisk.thedillows.org>
- <m1prajabk8.fsf@fess.ebiederm.org>
+	id S1755550AbZHYUqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 16:46:18 -0400
+Message-ID: <4A944D3C.5030100@kernel.org>
+Date: Tue, 25 Aug 2009 13:44:44 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+CC: Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, linux-kernel@vger.kernel.org,
+       shai@scalex86.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH] x86: fix vsmp booting with phys_pkg_id changing
+References: <20090825012632.GB6842@localdomain> <4A9372A1.9090905@kernel.org> <20090825171716.GC6456@localdomain> <20090825181500.GB3277@elte.hu> <20090825183130.GA5806@lenovo> <4A943290.5080606@kernel.org> <alpine.LFD.2.01.0908251155570.3218@localhost.localdomain> <20090825191231.GA22821@elte.hu> <4A9438D1.4030608@kernel.org> <20090825192416.GA6974@elte.hu> <20090825203640.GG6456@localdomain>
+In-Reply-To: <20090825203640.GG6456@localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 13:22 -0700, Eric W. Biederman wrote:
-> David Dillow <dave@thedillows.org> writes:
-> > I'm not real happy with the interrupt handling in the driver; it makes a
-> > certain amount of sense to split the MSI vs non-MSI interrupt cases out.
-> > It also means another pass through re-auditing things against the vendor
-> > driver. That's more work than I'm able to commit to at the moment.
-> >
-> > I've not been able to reproduce it locally on my r8169d, running for ~30
-> > minutes straight at full speed. I've not tried running it in UP, though.
-> > Perhaps I can do that tomorrow.
-> >
-> > Here's a possible patch to mask the NAPI events while we're running in
-> > NAPI mode. I'm not sure it is going to help, since the intr_mask was
-> > 0xffff when you hit the loop guard, so I left it in for now.
-> 
-> Interesting.
-> 
-> If I understand this correctly the situation is that we have on the
-> chip there is correct logic for a level triggered interrupt and that
-> the msi logic sits on it and sends an event when the interrupt signal
-> goes high, but when we acknowledge some bits but not all it does not
-> send another interrupt.
 
-Correct, we have to acknowledge all current outstanding event sources
-before we get another MSI interrupt. It looks like the MSI interrupt is
-triggered on the edge transition of a logical OR of all irq sources.
+2.6.31-rc7 does not boot on vSMPowered systems. 
 
-> Baring playing games with what version of the card has working logic
-> and which does not we seem to have to simple choices (if we don't want
-> to loop possibly forever).
-> - Don't use the msi logic on this card.
-> - Move all of the logic into rtl8169_poll and only come out of NAPI
->   mode when we have caught up with all of the interrupt work.
-> 
-> Is that how you understand the hardware issue you are trying to work
-> around?
+[    8.501108] CPU31: Thermal monitoring enabled (TM1)
+[    8.501127] CPU 31 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
+[    8.650254] CPU31: Intel(R) Xeon(R) CPU           E5540  @ 2.53GHz stepping 04
+[    8.710324] Brought up 32 CPUs
+[    8.713916] Total of 32 processors activated (162314.96 BogoMIPS).
+[    8.721489] ERROR: parent span is not a superset of domain->span
+[    8.727686] ERROR: domain->groups does not contain CPU0
+[    8.733091] ERROR: groups don't span domain->span
+[    8.737975] ERROR: domain->cpu_power not set
+[    8.742416]
 
-That's how I understood the issue I was working around with the
-problematic patch, but I thought I had covered both issues fairly well
-without having to split the handling any further -- we ACK all existing
-sources each pass through the loop, so we'll get a new interrupt on the
-unmasked events, but not on ones we've masked out for NAPI until NAPI
-completes and unmasks them.
+bisected to
+|
+| commit 2759c3287de27266e06f1f4e82cbd2d65f6a044c
+| x86: don't call read_apic_id if !cpu_has_apic
+|
 
-I'm curious how you managed to receive an packet between us clearing the
-all current sources and reading the current source list continuously for
-60+ seconds -- the loop is basically
+need to use apic id in phys_pkg_id for vsmp...
 
-status = get IRQ events from chip
-while (status) {
-	/* process events, start NAPI if needed */
-	clear current events from chip
-	status = get IRQ events from chip
-}
+Reported-and-Tested-by: Ravikiran Thirumalai <kiran@scalex86.org>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-That seems like a very small race window to consistently hit --
-especially for long enough to trigger soft lockups.
+---
+ arch/x86/kernel/apic/probe_64.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+Index: linux-2.6/arch/x86/kernel/apic/probe_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/probe_64.c
++++ linux-2.6/arch/x86/kernel/apic/probe_64.c
+@@ -44,6 +44,11 @@ static struct apic *apic_probe[] __initd
+ 	NULL,
+ };
+ 
++static int apicid_phys_pkg_id(int initial_apic_id, int index_msb)
++{
++	return hard_smp_processor_id() >> index_msb;
++}
++
+ /*
+  * Check the APIC IDs in bios_cpu_apicid and choose the APIC mode.
+  */
+@@ -69,6 +74,11 @@ void __init default_setup_apic_routing(v
+ 		printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+ 	}
+ 
++	if (is_vsmp_box()) {
++		/* need to update phys_pkg_id */
++		apic->phys_pkg_id = apicid_phys_pkg_id;
++	}
++
+ 	/*
+ 	 * Now that apic routing model is selected, configure the
+ 	 * fault handling for intr remapping.
