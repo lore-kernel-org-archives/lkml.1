@@ -1,269 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZHYSIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbZHYSLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbZHYSIs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbZHYSIr
+	id S1755664AbZHYSLm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbZHYSLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:08:47 -0400
-Received: from claw.goop.org ([74.207.240.146]:45686 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755577AbZHYSIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:08:46 -0400
-Message-ID: <4A9428AE.8020209@goop.org>
-Date: Tue, 25 Aug 2009 11:08:46 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Tue, 25 Aug 2009 14:11:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46952 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755645AbZHYSLj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:11:39 -0400
+Date: Tue, 25 Aug 2009 11:11:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: mailing54 <mailing54@plzk.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>, Eric Anholt <eric@anholt.net>
+Subject: Re: Linux 2.6.31-rc7
+In-Reply-To: <4A941E8B.8080902@plzk.org>
+Message-ID: <alpine.LFD.2.01.0908251057260.3218@localhost.localdomain>
+References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain> <4A941E8B.8080902@plzk.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
-References: <4A9407B1.6020400@nets.rwth-aachen.de>	 <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com>	 <4A94161A.2020609@nets.rwth-aachen.de>	 <1251219129.4852.1.camel@penberg-laptop>	 <4A94242E.30309@nets.rwth-aachen.de> <1251223399.13451.5.camel@penberg-laptop>
-In-Reply-To: <1251223399.13451.5.camel@penberg-laptop>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/25/09 11:03, Pekka Enberg wrote:
-> On Tue, 2009-08-25 at 19:49 +0200, Arnd Hannemann wrote:
->   
->> Hi Pekka,
->>
->> Pekka Enberg wrote:
->>     
->>> On Tue, 2009-08-25 at 18:49 +0200, Arnd Hannemann wrote:
->>>       
->>>>> Thanks for doing the bisect! Can we also see your .config also?
->>>>>           
->>>> Config for -rc7 is attached. My bisect configs were based on that
->>>>         
->>> Thanks! While we wait for the Xen people, you can try the following
->>> patch to see if we can narrow the bug down to trap_init().
->>>       
->> Yes seems to be trap_init().
->> -rc7 with this patch applied boots up to the prompt.
->>     
-> Thanks for testing! Ingo, what do you think of the following patch?
-> AFAICT, x86-32 is the only architecture playing with traps in mem_init()
-> so this should be the safest fix for 2.6.31.
->   
 
-Huh, interesting.  I wonder if this is the same as the problem I'd been
-chasing or separate...
 
-    J
+On Tue, 25 Aug 2009, mailing54 wrote:
+> 
+> Unlike rc6, this rc (rc7) does not boot correctly on my Macbook 2.1. I am
+> using amd64 kernel-debs provided by Ubuntu on
+> http://kernel.ubuntu.com/~kernel-ppa/mainline/.
+> 
+> During boot with rc7, I can unlock my encrypted volumes just fine. After that,
+> boot continues till suddenly screen goes black. I can not tell if the whole
+> thing hangs or just the screen dies, but I can tell that the only way to get
+> out of that limbo seems to be the power button. Again, everything seems to
+> work flawless with rc6 Ubuntu deb.
 
-> 			Pekka
->
-> >From b739e3c3baa6312664b4ea676bdf73df27fcecbc Mon Sep 17 00:00:00 2001
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> Date: Tue, 25 Aug 2009 20:55:25 +0300
-> Subject: [PATCH] x86: Move WP bit testing to trap_init()
->
-> Commit 83b519e8b9572c319c8e0c615ee5dd7272856090 ("slab: setup allocators
-> earlier in the boot sequence") moved trap_init() earlier in the boot
-> sequence to avoid a hard crash with 32-bit x86 in mem_init().
->
-> Unfortunately the change broke Xen so make trap_init() later and move
-> the WP bit test from mem_init() to trap_init().
->
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  arch/x86/kernel/traps.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++
->  arch/x86/mm/init_32.c   |   56 ----------------------------------------------
->  init/main.c             |    2 +-
->  3 files changed, 58 insertions(+), 57 deletions(-)
->
-> diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-> index 5204332..2084408 100644
-> --- a/arch/x86/kernel/traps.c
-> +++ b/arch/x86/kernel/traps.c
-> @@ -906,6 +906,60 @@ dotraplinkage void do_iret_error(struct pt_regs *regs, long error_code)
->  		return;
->  	do_trap(32, SIGILL, "iret exception", regs, error_code, &info);
->  }
-> +
-> +static noinline int do_test_wp_bit(void);
-> +
-> +/*
-> + * Test if the WP bit works in supervisor mode. It isn't supported on 386's
-> + * and also on some strange 486's. All 586+'s are OK. This used to involve
-> + * black magic jumps to work around some nasty CPU bugs, but fortunately the
-> + * switch to using exceptions got rid of all that.
-> + */
-> +static void __init test_wp_bit(void)
-> +{
-> +	printk(KERN_INFO
-> +  "Checking if this processor honours the WP bit even in supervisor mode...");
-> +
-> +	/* Any page-aligned address will do, the test is non-destructive */
-> +	__set_fixmap(FIX_WP_TEST, __pa(&swapper_pg_dir), PAGE_READONLY);
-> +	boot_cpu_data.wp_works_ok = do_test_wp_bit();
-> +	clear_fixmap(FIX_WP_TEST);
-> +
-> +	if (!boot_cpu_data.wp_works_ok) {
-> +		printk(KERN_CONT "No.\n");
-> +#ifdef CONFIG_X86_WP_WORKS_OK
-> +		panic(
-> +  "This kernel doesn't support CPU's with broken WP. Recompile it for a 386!");
-> +#endif
-> +	} else {
-> +		printk(KERN_CONT "Ok.\n");
-> +	}
-> +}
-> +
-> +/*
-> + * This function cannot be __init, since exceptions don't work in that
-> + * section.  Put this after the callers, so that it cannot be inlined.
-> + */
-> +static noinline int do_test_wp_bit(void)
-> +{
-> +	char tmp_reg;
-> +	int flag;
-> +
-> +	__asm__ __volatile__(
-> +		"	movb %0, %1	\n"
-> +		"1:	movb %1, %0	\n"
-> +		"	xorl %2, %2	\n"
-> +		"2:			\n"
-> +		_ASM_EXTABLE(1b,2b)
-> +		:"=m" (*(char *)fix_to_virt(FIX_WP_TEST)),
-> +		 "=q" (tmp_reg),
-> +		 "=r" (flag)
-> +		:"2" (1)
-> +		:"memory");
-> +
-> +	return flag;
-> +}
-> +
->  #endif
->  
->  void __init trap_init(void)
-> @@ -982,5 +1036,8 @@ void __init trap_init(void)
->  
->  #ifdef CONFIG_X86_32
->  	x86_quirk_trap_init();
-> +
-> +	if (boot_cpu_data.wp_works_ok < 0)
-> +		test_wp_bit();
->  #endif
->  }
-> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-> index 3cd7711..e22bb8a 100644
-> --- a/arch/x86/mm/init_32.c
-> +++ b/arch/x86/mm/init_32.c
-> @@ -54,8 +54,6 @@
->  
->  unsigned long highstart_pfn, highend_pfn;
->  
-> -static noinline int do_test_wp_bit(void);
-> -
->  bool __read_mostly __vmalloc_start_set = false;
->  
->  static __init void *alloc_low_page(void)
-> @@ -830,33 +828,6 @@ void __init paging_init(void)
->  	zone_sizes_init();
->  }
->  
-> -/*
-> - * Test if the WP bit works in supervisor mode. It isn't supported on 386's
-> - * and also on some strange 486's. All 586+'s are OK. This used to involve
-> - * black magic jumps to work around some nasty CPU bugs, but fortunately the
-> - * switch to using exceptions got rid of all that.
-> - */
-> -static void __init test_wp_bit(void)
-> -{
-> -	printk(KERN_INFO
-> -  "Checking if this processor honours the WP bit even in supervisor mode...");
-> -
-> -	/* Any page-aligned address will do, the test is non-destructive */
-> -	__set_fixmap(FIX_WP_TEST, __pa(&swapper_pg_dir), PAGE_READONLY);
-> -	boot_cpu_data.wp_works_ok = do_test_wp_bit();
-> -	clear_fixmap(FIX_WP_TEST);
-> -
-> -	if (!boot_cpu_data.wp_works_ok) {
-> -		printk(KERN_CONT "No.\n");
-> -#ifdef CONFIG_X86_WP_WORKS_OK
-> -		panic(
-> -  "This kernel doesn't support CPU's with broken WP. Recompile it for a 386!");
-> -#endif
-> -	} else {
-> -		printk(KERN_CONT "Ok.\n");
-> -	}
-> -}
-> -
->  static struct kcore_list kcore_mem, kcore_vmalloc;
->  
->  void __init mem_init(void)
-> @@ -956,9 +927,6 @@ void __init mem_init(void)
->  	BUG_ON(VMALLOC_START				>= VMALLOC_END);
->  	BUG_ON((unsigned long)high_memory		> VMALLOC_START);
->  
-> -	if (boot_cpu_data.wp_works_ok < 0)
-> -		test_wp_bit();
-> -
->  	save_pg_dir();
->  	zap_low_mappings(true);
->  }
-> @@ -975,30 +943,6 @@ int arch_add_memory(int nid, u64 start, u64 size)
->  }
->  #endif
->  
-> -/*
-> - * This function cannot be __init, since exceptions don't work in that
-> - * section.  Put this after the callers, so that it cannot be inlined.
-> - */
-> -static noinline int do_test_wp_bit(void)
-> -{
-> -	char tmp_reg;
-> -	int flag;
-> -
-> -	__asm__ __volatile__(
-> -		"	movb %0, %1	\n"
-> -		"1:	movb %1, %0	\n"
-> -		"	xorl %2, %2	\n"
-> -		"2:			\n"
-> -		_ASM_EXTABLE(1b,2b)
-> -		:"=m" (*(char *)fix_to_virt(FIX_WP_TEST)),
-> -		 "=q" (tmp_reg),
-> -		 "=r" (flag)
-> -		:"2" (1)
-> -		:"memory");
-> -
-> -	return flag;
-> -}
-> -
->  #ifdef CONFIG_DEBUG_RODATA
->  const int rodata_test_data = 0xC3;
->  EXPORT_SYMBOL_GPL(rodata_test_data);
-> diff --git a/init/main.c b/init/main.c
-> index 2d9d6bd..5c4dacb 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -603,7 +603,6 @@ asmlinkage void __init start_kernel(void)
->  	pidhash_init();
->  	vfs_caches_init_early();
->  	sort_main_extable();
-> -	trap_init();
->  	mm_init();
->  	/*
->  	 * Set up the scheduler prior starting any interrupts (such as the
-> @@ -621,6 +620,7 @@ asmlinkage void __init start_kernel(void)
->  				"enabled *very* early, fixing it\n");
->  		local_irq_disable();
->  	}
-> +	trap_init();
->  	rcu_init();
->  	/* init some links before init_ISA_irqs() */
->  	early_irq_init();
->   
+Are you using the same config? It sounds very much like your -rc7 problems 
+are due to the Intel KMS (kernel mode setting) driver, which I know has 
+had problems on at least Mac Mini's. And I wonder if the -rc6 kernel deb 
+used different config options and didn't enable KMS, for example. Because 
+I don't think anything actually changed in the KMS code itself between rc6 
+and rc7.
 
+That said, there were some generic EDID changes that could possibly affect 
+KMS, but looking at the dmesg, I don't think you had KMS enabled in -rc6, 
+and maybe you do in -rc7. I have no idea what configs those debian builds 
+use.
+
+			Linus
+
+---
+> Assuming that dmesg output of rc6 and rc7 should look kinda similar, I tried
+> to narrow the problem down to the following part in the output of rc6:
+> 
+> 
+> [   21.193733] cfg80211: Regulatory domain changed to country: AT
+> [   21.193737]     (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+> [   21.193740]     (2402000 KHz - 2482000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+> [   21.193742]     (5170000 KHz - 5250000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+> [   21.193745]     (5250000 KHz - 5330000 KHz @ 40000 KHz), (N/A, 2000 mBm)
+> [   21.193747]     (5490000 KHz - 5710000 KHz @ 40000 KHz), (N/A, 2700 mBm)
+> [   21.707177] lp: driver loaded but no devices found
+> [   21.913101] Adding 2097144k swap on /dev/mapper/vgencrypted-swap. Priority:-1 extents:1 across:2097144k
+> [   22.485747] EXT3 FS on dm-1, internal journal
+> [   23.482830] kjournald starting.  Commit interval 5 seconds
+> [   23.483105] EXT3 FS on sda4, internal journal
+> [   23.483109] EXT3-fs: mounted filesystem with writeback data mode.
+> [   23.628917] SGI XFS with ACLs, security attributes, realtime, large block/inode numbers, no debug enabled
+> [   23.630731] SGI XFS Quota Management subsystem
+> [   23.688751] XFS mounting filesystem dm-3
+> [   24.004942] Ending clean XFS mount for filesystem: dm-3
+> [   24.844066] HDA Intel 0000:00:1b.0: PCI INT A disabled
+> [   24.853007] HDA Intel 0000:00:1b.0: PCI INT A -> GSI 22 (level, low) -> IRQ22
+> [   24.853046] HDA Intel 0000:00:1b.0: setting latency timer to 64
+> [   24.920161] hda_codec: STAC922x, Apple subsys_id=106b2200
+> [   25.902474] ppdev: user-space parallel port driver
+> [   30.269237] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> [   30.543459] usb 5-1: usbfs: USBDEVFS_CONTROL failed cmd hid2hci rqt 64 rq 0 len 0 ret -84
+> [   30.555027] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
+> [   30.555030] Bluetooth: BNEP filters: protocol multicast
+> [   30.591724] Bridge firewalling registered
+> [   30.816130] usb 5-1: USB disconnect, address 2
+> [   31.116057] usb 5-1: new full speed USB device using uhci_hcd and address 3
+> [   31.309153] usb 5-1: configuration #1 chosen from 1 choice
+> [   31.337641] Bluetooth: Generic Bluetooth USB driver ver 0.5
+> [   31.338153] usbcore: registered new interface driver btusb
+> [   33.876059] [drm] Initialized drm 1.1.0 20060810
+> [   33.898991] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> [   33.898997] pci 0000:00:02.0: setting latency timer to 64
+> [   33.908179] [drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
+> [   34.129469] render error detected, EIR: 0x00000010
+> [   34.129475] page table error
+> [   34.129477]   PGTBL_ER: 0x00000102
+> [   34.129480] [drm:i915_handle_error] *ERROR* EIR stuck: 0x00000010, masking
+> [   34.129487] render error detected, EIR: 0x00000010
+> [   34.129489] page table error
+> [   34.129490]   PGTBL_ER: 0x00000102
+> [   34.408721] sky2 eth0: enabling interface
+> [   34.409131] ADDRCONF(NETDEV_UP): eth0: link is not ready
+> [   36.660303] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> 
+> 
+> 
+> (complete dmesg attached)
+> 
+> I think the problem must be somewhere in here because when booting rc7 (in
+> rescue mode), the last thing I can see before all goes black is the frequency
+> table shown in the first lines of the quoted section. (Also, there are
+> scary-looking errors near the end ;) )
+> 
+> 
+> /proc/version/
+> Linux version 2.6.31-020631rc6-generic (root@zinc) (gcc version 4.2.3 (Ubuntu
+> 4.2.3-2ubuntu7)) #020631rc6 SMP Fri Aug 14 09:04:48 UTC 2009
+> 
+> 
+> Please let me know what further info is needed.
+> 
+> Regards,
+> 
+> Tobias
+> 
