@@ -1,63 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbZHYX3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932395AbZHYXa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932383AbZHYX3o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932347AbZHYX3n
+	id S932395AbZHYXa2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932336AbZHYXa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:29:43 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40996 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932288AbZHYX3m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:29:42 -0400
-Date: Wed, 26 Aug 2009 01:29:35 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090825232934.GG4300@elf.ucw.cz>
-References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <4A9468E8.607@redhat.com> <20090825225114.GE4300@elf.ucw.cz> <alpine.DEB.2.00.0908251600280.28411@asgard.lang.hm>
+	Tue, 25 Aug 2009 19:30:27 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:36975 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932312AbZHYXa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 19:30:27 -0400
+Date: Tue, 25 Aug 2009 16:30:27 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Josh Triplett <josht@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+Subject: Re: [PATCH -tip] Create rcutree plugins to handle hotplug CPU for
+	multi-level trees
+Message-ID: <20090825233027.GO6616@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090825182204.GA26736@linux.vnet.ibm.com> <1251225483.2706.4.camel@josh-work.beaverton.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908251600280.28411@asgard.lang.hm>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1251225483.2706.4.camel@josh-work.beaverton.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 25, 2009 at 11:38:03AM -0700, Josh Triplett wrote:
+> On Tue, 2009-08-25 at 11:22 -0700, Paul E. McKenney wrote:
+> > When offlining CPUs from a multi-level tree, there is the possibility
+> > of offlining the last CPU from a given node when there are preempted
+> > RCU read-side critical sections that started life on one of the CPUs on
+> > that node.  In this case, the corresponding tasks will be enqueued via
+> > the task_struct's rcu_node_entry list_head onto one of the rcu_node's
+> > blocked_tasks[] lists.  These tasks need to be moved somewhere else
+> > so that they will prevent the current grace period from ending.
+> > That somewhere is the root rcu_node.
+> > 
+> > With this patch, TREE_PREEMPT_RCU passes moderate rcutorture testing
+> > with aggressive CPU-hotplugging (no delay between inserting/removing
+> > randomly selected CPU).
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> Looks good.  One comment below.
+> 
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -1208,7 +1208,7 @@ struct task_struct {
+> >  #ifdef CONFIG_TREE_PREEMPT_RCU
+> >  	int rcu_read_lock_nesting;
+> >  	char rcu_read_unlock_special;
+> > -	int rcu_blocked_cpu;
+> > +	void *rcu_blocked_node;
+> 
+> This should use struct rcu_node *, not void *.  That would eliminate
+> several casts in the changes below.  You can forward-declare struct
+> rcu_node if you want to avoid including RCU headers in sched.h.
 
->>>> "ext3 works on flash and MD RAID5, as long as you do not have
->>>> powerfail" seems to be the accurate statement, and if you don't need
->>>> to protect against powerfails, you can just use ext2.
->>>
->>> Strange how your personal preference is totally out of sync with the
->>> entire enterprise class user base.
->>
->> Perhaps noone told them MD RAID5 is dangerous? You see, that's exactly
->> what I'm trying to document here.
->
-> a MD raid array that's degraded to the point where there is no redundancy 
-> is dangerous, but I don't think that any of the enterprise users would be 
-> surprised.
->
-> I think they will be surprised that it's possible that a prior failed  
-> write that hasn't been scrubbed can cause data loss when the array later  
-> degrades.
+Good point -- it would be nice to avoid the casts.
 
-Cool, so Ted's "raid5 has highly undesirable properties" is actually
-pretty accurate. Some raid person should write more detailed README,
-I'd say...
-									Pavel
+> > --- a/kernel/rcutree_plugin.h
+> > +++ b/kernel/rcutree_plugin.h
+> > @@ -92,7 +92,7 @@ static void rcu_preempt_qs(int cpu)
+> >  		rnp = rdp->mynode;
+> >  		spin_lock(&rnp->lock);
+> >  		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
+> > -		t->rcu_blocked_cpu = cpu;
+> > +		t->rcu_blocked_node = (void *)rnp;
+> 
+> Regardless of whether you change the type in the structure, you never
+> need to cast a pointer to type void *; any non-function pointer will
+> become void * without complaint.
+> 
+> > @@ -170,12 +170,21 @@ static void rcu_read_unlock_special(struct task_struct *t)
+> >  	if (special & RCU_READ_UNLOCK_BLOCKED) {
+> >  		t->rcu_read_unlock_special &= ~RCU_READ_UNLOCK_BLOCKED;
+> > 
+> > -		/* Remove this task from the list it blocked on. */
+> > -		rnp = rcu_preempt_state.rda[t->rcu_blocked_cpu]->mynode;
+> > -		spin_lock(&rnp->lock);
+> > +		/*
+> > +		 * Remove this task from the list it blocked on.  The
+> > +		 * task can migrate while we acquire the lock, but at
+> > +		 * most one time.  So at most two passes through loop.
+> > +		 */
+> > +		for (;;) {
+> > +			rnp = (struct rcu_node *)t->rcu_blocked_node;
+> > +			spin_lock(&rnp->lock);
+> > +			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
+> > +				break;
+> > +			spin_unlock(&rnp->lock);
+> > +		}
+> 
+> Both of the casts of t->rcu_blocked_node can go away here, given the
+> type change in the structure.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Indeed.  Fixed, will submit early tomorrow.
+
+							Thanx, Paul
