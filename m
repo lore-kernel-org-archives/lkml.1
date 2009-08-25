@@ -1,117 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbZHYVoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZHYVqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932123AbZHYVoI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 17:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbZHYVoH
+	id S1755273AbZHYVqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 17:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbZHYVqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 17:44:07 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:45903 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751189AbZHYVoG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 17:44:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Q9r5QfBcW7HrwtHZqJ8dXu4Z1dxCzpJr+JqfoWwDufkRP6JfZuQpWNfwQkIpzbpa4y
-         vByOVABA7/xPDn3o4Y3oqeXFGqhztjQbrKcRvqOV/twuWAXZiw5GHhfexy7X4qqh26b1
-         nkJBVCc7pCNKnJGvmgpzHVtA6WoQQVM70NKsY=
-Date: Tue, 25 Aug 2009 23:44:04 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Josh Stone <jistone@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH v4 0/4] tracing: tweaks for generic syscall events
-Message-ID: <20090825214402.GH8215@nowhere>
-References: <1250917125-6174-1-git-send-email-jistone@redhat.com> <1251150194-1713-1-git-send-email-jistone@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251150194-1713-1-git-send-email-jistone@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 25 Aug 2009 17:46:37 -0400
+Received: from emroute3.ornl.gov ([160.91.4.110]:46914 "EHLO emroute3.ornl.gov"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751441AbZHYVqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 17:46:36 -0400
+Date: Tue, 25 Aug 2009 17:46:35 -0400
+From: David Dillow <dave@thedillows.org>
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+In-reply-to: <m1k50r8u4p.fsf@fess.ebiederm.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <1251236795.9607.34.camel@lap75545.ornl.gov>
+MIME-version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10)
+Content-type: text/plain
+Content-transfer-encoding: 7bit
+References: <200903041828.49972.m.bueker@berlin.de>
+ <1242001754.4093.12.camel@obelisk.thedillows.org>
+ <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+ <1242077392.3716.15.camel@lap75545.ornl.gov> <4A09DC3E.2080807@googlemail.com>
+ <1242268709.4979.7.camel@obelisk.thedillows.org>
+ <4A0C6504.8000704@googlemail.com>
+ <1242328457.32579.12.camel@lap75545.ornl.gov>
+ <4A0C7443.1010000@googlemail.com>
+ <1243042174.3580.23.camel@obelisk.thedillows.org>
+ <m1skfkrik2.fsf@fess.ebiederm.org>
+ <1250895567.23419.1.camel@obelisk.thedillows.org>
+ <1250897657.23419.5.camel@obelisk.thedillows.org>
+ <m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
+ <1250973787.3582.14.camel@obelisk.thedillows.org>
+ <m1r5v0ogvw.fsf@fess.ebiederm.org>
+ <1251169150.4023.11.camel@obelisk.thedillows.org>
+ <m1prajabk8.fsf@fess.ebiederm.org>
+ <1251232848.9607.15.camel@lap75545.ornl.gov> <m1k50r8u4p.fsf@fess.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 02:43:10PM -0700, Josh Stone wrote:
-> This patch series moves the callbacks for the syscall tracepoints to the
-> definition site, and adds generic TRACE_EVENTs which capture all syscall
-> arguments.
-> 
-> New in v3:
-> - Give the thread flag a more generic name: TIF_SYSCALL_TRACEPOINT.
-> - Move the regfuncs to arch-specific files, per Jason's suggestion.
-> - Change _WITH_CALLBACK to just _FN, per Ingo's suggestion.
-> 
-> New in v4:
-> - Give the config flag a more generic name: HAVE_SYSCALL_TRACEPOINTS.
-> - Undo the arch reorg of the regfuncs, but conditionalize on above.
+On Tue, 2009-08-25 at 14:24 -0700, Eric W. Biederman wrote:
+> David Dillow <dave@thedillows.org> writes:
+> > I'm curious how you managed to receive an packet between us clearing the
+> > all current sources and reading the current source list continuously for
+> > 60+ seconds -- the loop is basically
 > 
 > 
-> Sample trace output:
->         sendmail-974   [000] 55665.464492: sys_enter: NR 14 (1, 7fff60f3af40, 7fff60f3aec0, 8, 0, 7fb1b6a05161)
+> > status = get IRQ events from chip
+> > while (status) {
+> > 	/* process events, start NAPI if needed */
+> > 	clear current events from chip
+> > 	status = get IRQ events from chip
+> > }
+> >
+> > That seems like a very small race window to consistently hit --
+> > especially for long enough to trigger soft lockups.
 > 
->         sendmail-974   [000] 55665.464496: sys_exit: NR 14 = 0
-> 
->         sendmail-974   [000] 55665.464507: sys_enter: NR 23 (5, 7fff60f3b0d0, 0, 0, 7fff60f3b150, 7fff60f3ef01)
-> 
->             sshd-978   [000] 55667.845359: sys_exit: NR 23 = 1
-> 
->             sshd-978   [000] 55667.845373: sys_enter: NR 14 (0, 7fffc645ce90, 7fffc645cf10, 8, 0, 101010101010101)
-> 
->             sshd-978   [000] 55667.845381: sys_exit: NR 14 = 0
-> 
->             sshd-978   [000] 55667.845383: sys_enter: NR 14 (2, 7fffc645cf10, 0, 8, 0, 101010101010101)
-> 
->             sshd-978   [000] 55667.845386: sys_exit: NR 14 = 0
-> 
->             sshd-978   [000] 55667.845395: sys_enter: NR 0 (3, 7fffc6458f80, 4000, 1, 0, 0)
-> 
->             sshd-978   [000] 55667.845478: sys_exit: NR 0 = 48
-> 
-> 
-> Signed-off-by: Josh Stone <jistone@redhat.com>
-> Cc: Jason Baron <jbaron@redhat.com>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Li Zefan <lizf@cn.fujitsu.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Cc: Jiaying Zhang <jiayingz@google.com>
-> Cc: Martin Bligh <mbligh@google.com>
-> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-> Cc: Paul Mundt <lethal@linux-sh.org>
+> Interesting indeed.  When I hit the guard we had popped out of NAPI
+> mode while we were in the loop.  The only way to do that is if
+> poll and interrupt were running on different cpus.
+
+That is the normal case on an SMP machine, but again that race window
+should be fairly small as well -- from the __napi_schedule() to the
+acking of the interrupt source is only a few lines of code, most of
+which is in an error case that is skipped. Granted there may be a fair
+number of instructions there if debugging or tracing is on -- I've not
+checked -- but even then hitting that race consistently for 60+ seconds
+doesn't seem likely.
+
+Being out of NAPI in the guard may be a red herring -- it doesn't tell
+us how long you were out of NAPI when you hit it. If there's a stuck bit
+somewhere, then you could have been out of NAPI after the first cycle
+and we'd have no way to tell. You could add some variables to keep track
+of the status and mask values, and how long ago they changed to see.
+
+> I am a bit curious about TxDescUnavail.  Perhaps we had a temporary
+> memory shortage and that is what was screaming?  I don't think we do
+> anything at all with that state.
+
+TxDescUnavail is normal -- it means the chip finished sending everything
+we asked it to.
+
+> Perhaps the flaw here is simply not masking TxDescUnavail while we are
+> in NAPI mode?
+
+No, we never enable it on the chip, and it gets masked out when we
+decide if we want to go to NAPI mode -- it is not set in tp->napi_event:
+
+	if (status & tp->intr_mask & tp->napi_event) {
 
 
-Queued for .32, thanks!
-
-
-> ---
->  arch/s390/Kconfig                   |    2 +-
->  arch/s390/defconfig                 |    2 +-
->  arch/s390/include/asm/thread_info.h |    4 +-
->  arch/s390/kernel/entry.S            |    2 +-
->  arch/s390/kernel/entry64.S          |    2 +-
->  arch/s390/kernel/ptrace.c           |   12 +++---
->  arch/x86/Kconfig                    |    2 +-
->  arch/x86/configs/i386_defconfig     |    2 +-
->  arch/x86/configs/x86_64_defconfig   |    2 +-
->  arch/x86/include/asm/thread_info.h  |   13 +++---
->  arch/x86/kernel/ptrace.c            |   16 +++----
->  include/linux/tracepoint.h          |   46 +++++++++--------------
->  include/trace/define_trace.h        |    5 ++
->  include/trace/events/syscalls.h     |   70 +++++++++++++++++++++++++++++++++++
->  include/trace/ftrace.h              |    9 ++++
->  include/trace/syscall.h             |   17 --------
->  kernel/trace/Kconfig                |    4 +-
->  kernel/trace/trace_syscalls.c       |   17 ++++----
->  kernel/tracepoint.c                 |   20 ++++++----
-> 
 
