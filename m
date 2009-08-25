@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZHYUgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZHYUgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbZHYUgi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 16:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbZHYUgh
+	id S1756193AbZHYUgq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 16:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbZHYUgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 16:36:37 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:43855 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754644AbZHYUgg (ORCPT
+	Tue, 25 Aug 2009 16:36:44 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:47557 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756184AbZHYUgn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 16:36:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=rXBw+tHmYh9KCHBTaMvz0MxikuhSba/h2qItF2mcJ5LNuAhpgR19lbObpt4riDUzcj
-         EMw1tjp6VpLDNEbGYzeB+HAF8R3iSvJv5zCEuU1gH7cHdUaMsu+3/S3REyjb7gMJRnVh
-         pmWStHjgNi93FsMCgUbi7cN2tWeFHmTtW5WUg=
+	Tue, 25 Aug 2009 16:36:43 -0400
+Date: Tue, 25 Aug 2009 13:36:41 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, linux-kernel@vger.kernel.org,
+       shai@scalex86.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [patch] x86: 2.6.31-rc7 crash due to buggy flat_phys_pkg_id
+Message-ID: <20090825203640.GG6456@localdomain>
+References: <20090825012632.GB6842@localdomain> <4A9372A1.9090905@kernel.org> <20090825171716.GC6456@localdomain> <20090825181500.GB3277@elte.hu> <20090825183130.GA5806@lenovo> <4A943290.5080606@kernel.org> <alpine.LFD.2.01.0908251155570.3218@localhost.localdomain> <20090825191231.GA22821@elte.hu> <4A9438D1.4030608@kernel.org> <20090825192416.GA6974@elte.hu>
 MIME-Version: 1.0
-Date: Wed, 26 Aug 2009 00:36:36 +0400
-Message-ID: <a872555b0908251336q2c4ee970qa12500d35d4e144e@mail.gmail.com>
-Subject: [PATCH] Remove multiple definitions of the to_dev() macro
-From: Denis Kirjanov <kirjanov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090825192416.GA6974@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove multiple definitions of the to_dev() macro
+On Tue, Aug 25, 2009 at 09:24:16PM +0200, Ingo Molnar wrote:
+>> ...
+>> > Furthermore, commit 2759c3287 did not declare any side-effects and 
+>> > clearly causes a side-effect on vSMP which apparently has an 
+>> > overlapping set of initial APIC ids.
+>> > 
+>> > Ravikiran, your patch does not do a clear revert of this bit though. 
+>> > If you do a plain revert of the line above alone, does that fix the 
+>> > problem too?
+>> 
+>> how about patch phys_pkg_id for vsmp?
+>> 
+>> diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
+>> index f3b1037..65edc18 100644
+>> --- a/arch/x86/kernel/apic/probe_64.c
+>> +++ b/arch/x86/kernel/apic/probe_64.c
+>> @@ -44,6 +44,11 @@ static struct apic *apic_probe[] __initdata = {
+>>  	NULL,
+>>  };
+>>  
+>> +static int apicid_phys_pkg_id(int initial_apic_id, int index_msb)
+>> +{
+>> +	return hard_smp_processor_id() >> index_msb;
+>> +}
+>> +
+>>  /*
+>>   * Check the APIC IDs in bios_cpu_apicid and choose the APIC mode.
+>>   */
+>> @@ -69,6 +74,11 @@ void __init default_setup_apic_routing(void)
+>>  		printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+>>  	}
+>>  
+>> +	if (is_vsmp_box()) {
+>> +		/* need to update phys_pkg_id */
+>> +		apic->phys_pkg_id = apicid_phys_pkg_id;
+>> +	}
+>
+>Hm, this is rather tempting simply because it only affects vSMP 
+>systems and we are in late -rc's. Ravikiran, does Yinghai's patch 
+>solve the crash for you too?
+>
 
-Signed-off-by: Denis Kirjanov <kirjanov@gmail.com>
----
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 7ecb193..6fd7d16 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -62,7 +62,6 @@ const char *dev_driver_string(const struct device *dev)
- }
- EXPORT_SYMBOL(dev_driver_string);
+Yes it does.  Tested and confirmed.
 
--#define to_dev(obj) container_of(obj, struct device, kobj)
- #define to_dev_attr(_attr) container_of(_attr, struct device_attribute, attr)
-
- static ssize_t dev_attr_show(struct kobject *kobj, struct attribute *attr,
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 7376367..9493c88 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -21,8 +21,6 @@
- #include <linux/firmware.h>
- #include "base.h"
-
--#define to_dev(obj) container_of(obj, struct device, kobj)
--
- MODULE_AUTHOR("Manuel Estrada Sainz");
- MODULE_DESCRIPTION("Multi purpose firmware loading support");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/net/bonding/bond_sysfs.c b/drivers/net/bonding/bond_sysfs.c
-index 55bf34f..7d4101a 100644
---- a/drivers/net/bonding/bond_sysfs.c
-+++ b/drivers/net/bonding/bond_sysfs.c
-@@ -38,7 +38,6 @@
-
- #include "bonding.h"
-
--#define to_dev(obj)	container_of(obj, struct device, kobj)
- #define to_bond(cd)	((struct bonding *)(netdev_priv(to_net_dev(cd))))
-
- /*
-diff --git a/include/linux/device.h b/include/linux/device.h
-index aebb810..c2b4ac9 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -364,6 +364,7 @@ struct device_dma_parameters {
- 	unsigned long segment_boundary_mask;
- };
-
-+#define to_dev(obj) container_of(obj, struct device, kobj)
- struct device {
- 	struct device		*parent;
-
-diff --git a/net/bridge/br_sysfs_br.c b/net/bridge/br_sysfs_br.c
-index ee4820a..41ed613 100644
---- a/net/bridge/br_sysfs_br.c
-+++ b/net/bridge/br_sysfs_br.c
-@@ -18,10 +18,10 @@
- #include <linux/rtnetlink.h>
- #include <linux/spinlock.h>
- #include <linux/times.h>
-+#include <linux/device.h>
-
- #include "br_private.h"
-
--#define to_dev(obj)	container_of(obj, struct device, kobj)
- #define to_bridge(cd)	((struct net_bridge *)netdev_priv(to_net_dev(cd)))
-
- /*
+Thanks,
+Kiran
