@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbZHYNNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbZHYNNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752473AbZHYNNV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 09:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZHYNNU
+	id S1752840AbZHYNNb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 09:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbZHYNN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 09:13:20 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:57624 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbZHYNNU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 09:13:20 -0400
-Message-ID: <4A93E36C.8070502@gmail.com>
-Date: Tue, 25 Aug 2009 15:13:16 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 25 Aug 2009 09:13:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44478 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751256AbZHYNNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 09:13:25 -0400
+Date: Tue, 25 Aug 2009 15:13:25 +0200
+From: Jan Kara <jack@suse.cz>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Mark Fasheh <mfasheh@suse.com>, Jan Kara <jack@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [Ocfs2-devel] [PATCH 12/17] ocfs2: Update syncing after
+	splicing to match generic version
+Message-ID: <20090825131325.GE405@duck.novell.com>
+References: <1250875447-15622-1-git-send-email-jack@suse.cz> <1250875447-15622-13-git-send-email-jack@suse.cz> <20090824183543.GF2818@wotan.suse.de> <20090824184009.GC7698@mail.oracle.com>
 MIME-Version: 1.0
-To: Li_Xin2@emc.com
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: TCP keepalive timer problem
-References: <0939B589FC103041945B9F13274963E303B1A9D4@CORPUSMX90A.corp.emc.com>
-In-Reply-To: <0939B589FC103041945B9F13274963E303B1A9D4@CORPUSMX90A.corp.emc.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 25 Aug 2009 15:13:16 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090824184009.GC7698@mail.oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li_Xin2@emc.com a écrit :
-> Greetings,
+On Mon 24-08-09 11:40:09, Joel Becker wrote:
+> On Mon, Aug 24, 2009 at 11:35:43AM -0700, Mark Fasheh wrote:
+> > On Fri, Aug 21, 2009 at 07:24:02PM +0200, Jan Kara wrote:
+> > > Update ocfs2 specific splicing code to use generic syncing helper. The sync now
+> > > does not happen under rw_lock because generic_write_sync() acquires i_mutex
+> > > which ranks above rw_lock. That should not matter because standard fsync path
+> > > does not hold it either.
+> > 
+> > Thanks Jan,
+> > 
+> > Acked-by: Mark Fasheh <mfasheh@suse.com>
 > 
-> I found one problem in Linux TCP keepalive timer processing, after
-> searching on google, I found Daniel Stempel reported the same problem in
-> 2007 (http://lkml.indiana.edu/hypermail/linux/kernel/0702.2/1136.html),
-> but got no answer. So I have to reraise it.
-> 
-> Can anyone help answer this two-years long question?
-> 
->
+> <aol>Me too!</aol>
+> Acked-by: Joel Becker <joel.becker@oracle.com>
+  Thanks. BTW: There's also the patch
+ocfs2: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
+  in the series you might want to have a look at. Actually, I did a
+straightforward opencoding of generic_osync_inode() but if you agree it's
+a good thing to do, I can move the whole sync to the end of the function
+out of i_mutex because AFAICS there's no real reason why
+filemap_fdatawrite_range() or jbd2_journal_force_commit() should need any
+cluster lock or mutex. We probably only need to decide under those locks,
+whether we need to call jbd2_journal_force_commit() or not.
 
-You should explain your problem in detail, since Daniel one was probably different.
-
-He mentioned "(timeout is set to e.g. 30 seconds)" which is kind of nasty, given normal one is 7200
-
-If some packets are in flight, keepalive is not fired at all, since normal
-retransmits should take place (check tcp_retries2 sysctl).
-
-TCP Keepalive is only fired when no trafic occurred for a long time, only if 
-SO_KEEPALIVE socket option was enabled by application.
-
-tcp_retries2 (integer; default: 15)
-    The maximum number of times a TCP packet is retransmitted in established state
-before giving up. The default value is 15, which corresponds to a duration of
-approximately between 13 to 30 minutes, depending on the retransmission timeout.
-The RFC 1122 specified minimum limit of 100 seconds is typically deemed too short. 
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
