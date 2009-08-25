@@ -1,68 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932243AbZHYVJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbZHYVP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932243AbZHYVJw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 17:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932139AbZHYVJw
+	id S1756207AbZHYVP3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 17:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZHYVP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 17:09:52 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:12489 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932127AbZHYVJv (ORCPT
+	Tue, 25 Aug 2009 17:15:28 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58247 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753920AbZHYVP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 17:09:51 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -12.479
-Message-ID: <4A945317.5040501@tudelft.nl>
-Date: Tue, 25 Aug 2009 23:09:43 +0200
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <E.A.B.Piel@tudelft.nl>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090815 Mandriva/2.0.0.22-4mdv2010.0 (2010.0) Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
+	Tue, 25 Aug 2009 17:15:27 -0400
+Date: Tue, 25 Aug 2009 23:15:15 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090825211515.GA3688@elf.ucw.cz>
+References: <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, raz ben yehuda <raziebe@gmail.com>,
-       riel@redhat.com, mingo@elte.hu,
-       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
-       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-References: <1250983671.5688.21.camel@raz>	 <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>	 <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>	 <1251021133.14003.172.camel@marge.simson.net>	 <alpine.DEB.1.10.0908251122020.26329@gentwo.org>	 <1251222993.7023.53.camel@marge.simson.net>	 <alpine.DEB.1.10.0908251402300.17963@gentwo.org> <1251227322.7538.1172.camel@twins>
-In-Reply-To: <1251227322.7538.1172.camel@twins>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A93E908.6050908@redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 25-08-09 21:08, Peter Zijlstra schreef:
-> On Tue, 2009-08-25 at 14:03 -0400, Christoph Lameter wrote:
->> On Tue, 25 Aug 2009, Mike Galbraith wrote:
+
+>>> Maybe this came as a surprise to you, but anyone who has used a
+>>> compact flash in a digital camera knows that you ***have*** to wait
+>>> until the led has gone out before trying to eject the flash card.  I
+>>> remember seeing all sorts of horror stories from professional
+>>> photographers about how they lost an important wedding's day worth of
+>>> pictures with the attendant commercial loss, on various digital
+>>> photography forums.  It tends to be the sort of mistake that digital
+>>> photographers only make once.
 >>
->>> I asked the questions I did out of pure curiosity, and that curiosity
->>> has been satisfied.  It's not that I find it useless or whatnot (or that
->>> my opinion matters to anyone but me;).  I personally find the concept of
->>> injecting an RTOS into a general purpose OS with no isolation to be
->>> alien.  Intriguing, but very very alien.
->> Well lets work on the isolation piece then. We could run a regular process
->> on the RT cpu and switch back when OS services are needed?
-> 
-> Christoph, stop being silly, this offline scheduler thing won't happen,
-> full stop.
-> 
-> Its not a maintainable solution, it doesn't integrate with existing
-> kernel infrastructure, and its plain ugly.
-> 
-> If you want something work within Linux, don't build kernels in kernels
-> or other such ugly hacks.
-Hello,
+>> It actually comes as surprise to me. Actually yes and no. I know that
+>> digital cameras use VFAT, so pulling CF card out of it may do bad
+>> thing, unless I run fsck.vfat afterwards. If digital camera was using
+>> ext3, I'd expect it to be safely pullable at any time.
+>>
+>> Will IBM microdrive do any difference there?
+>>
+>> Anyway, it was not known to me. Rather than claiming "everyone knows"
+>> (when clearly very few people really understand all the details), can
+>> we simply document that?
+>
+> I really think that the expectation that all OS's (windows, mac, even 
+> your ipod) all teach you not to hot unplug a device with any file system. 
+> Users have an "eject" or "safe unload" in windows, your iPod tells you 
+> not to power off or disconnect, etc.
 
-For the one interested in such approach, you can have a look at an now
-unmaintained project that we developed, ARTiS:
-http://www2.lifl.fr/west/artis/
+That was before journaling filesystems...
 
-It allows several RT tasks to share a "RT" cpu, and if a task tries to
-"cheat" by calling a kernel function which disables the preemption or
-the interrupts, it is temporally migrated to another CPU. This is a
-working approach, with some good low latency results which can be seen
-in the papers on the website.
+> I don't object to making that general statement - "Don't hot unplug a 
+> device with an active file system or actively used raw device" - but 
+> would object to the overly general statement about ext3 not working on 
+> flash, RAID5 not working, etc...
 
-See you,
-Eric
+You can object any way you want, but running ext3 on flash or MD RAID5
+is stupid:
+
+* ext2 would be faster
+
+* ext2 would provide better protection against powerfail.
+
+"ext3 works on flash and MD RAID5, as long as you do not have
+powerfail" seems to be the accurate statement, and if you don't need
+to protect against powerfails, you can just use ext2.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
