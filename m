@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZHYTxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbZHYT64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbZHYTxt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 15:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089AbZHYTxs
+	id S1756069AbZHYT64 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 15:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZHYT6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 15:53:48 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:42305 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756085AbZHYTxr (ORCPT
+	Tue, 25 Aug 2009 15:58:55 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:52654 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873AbZHYT6z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 15:53:47 -0400
-Date: Tue, 25 Aug 2009 12:53:45 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       linux-kernel@vger.kernel.org, shai@scalex86.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch] x86: 2.6.31-rc7 crash due to buggy flat_phys_pkg_id
-Message-ID: <20090825195345.GF6456@localdomain>
-References: <20090824182659.GA6842@localdomain> <4A932809.1000103@kernel.org> <20090825012632.GB6842@localdomain> <4A9372A1.9090905@kernel.org> <20090825171716.GC6456@localdomain> <20090825181500.GB3277@elte.hu> <20090825183130.GA5806@lenovo> <4A943290.5080606@kernel.org> <alpine.LFD.2.01.0908251155570.3218@localhost.localdomain> <20090825191231.GA22821@elte.hu>
+	Tue, 25 Aug 2009 15:58:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=TFq+T8xUzxJbJQltRI8xzZoV4vqWVnmQ0XVZKXOaoqphfGrNFOs2Z0L7ySLwmIRzou
+         omu7l1d4AiMtcHiUdtVW/DUkxHe/MVVh6w5RNwoS+DBYIADJcIEB9umewq0lYupn2Crg
+         FXr6azhvIDmFXgnHoIT1YBO+uGu4sPmzCxoII=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825191231.GA22821@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+In-Reply-To: <4A94411E.708@goop.org>
+References: <1251227779-24347-1-git-send-email-penberg@cs.helsinki.fi>
+	 <4A943CBD.60808@goop.org> <1251229085.25686.2.camel@penberg-laptop>
+	 <4A94411E.708@goop.org>
+Date: Tue, 25 Aug 2009 22:58:55 +0300
+X-Google-Sender-Auth: 0fe2754f23808e79
+Message-ID: <84144f020908251258p71d5ad2fx7d31361c243a698e@mail.gmail.com>
+Subject: Re: [PATCH] x86: Execute WP test after interrupts are enabled
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       Brian Gerst <brgerst@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 09:12:31PM +0200, Ingo Molnar wrote:
+On Tue, Aug 25, 2009 at 10:53 PM, Jeremy Fitzhardinge<jeremy@goop.org> wrote:
+> On 08/25/09 12:38, Pekka Enberg wrote:
+>> On Tue, 2009-08-25 at 12:34 -0700, Jeremy Fitzhardinge wrote:
+>>
+>>> I don't think this is the real fix, and it seems a bit ugly.  I'm OK
+>>> with it as a workaround, but I think it will end up getting reverted if
+>>> applied.
+>>>
+>> Yeah, I'm fine with that. It's just that we're really late in the
+>> release cycle now so I'd like to keep the fix as simple as possible.
 >
->* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> Yeah, that's fine, but I think something like this would be simpler.
+> Arnd, could you test it please?
 >
+> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Date: Tue, 25 Aug 2009 12:47:17 -0700
+> Subject: [PATCH] xen: suppress WP test
 >
->Furthermore, commit 2759c3287 did not declare any side-effects and 
->clearly causes a side-effect on vSMP which apparently has an 
->overlapping set of initial APIC ids.
+> Xen always runs on CPUs which properly support WP enforcement in
+> privileged mode, so there's no need to test for it.
 >
->Ravikiran, your patch does not do a clear revert of this bit though. 
->If you do a plain revert of the line above alone, does that fix the 
->problem too?
+> This also works around a crash reported by Arnd Hannemann, though
+> I think its just a band-aid for that case.
 >
+> Reported-by: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+>
+> diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+> index 16d0d70..e5b903b 100644
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -1069,6 +1069,7 @@ asmlinkage void __init xen_start_kernel(void)
+>        /* set up basic CPUID stuff */
+>        cpu_detect(&new_cpu_data);
+>        new_cpu_data.hard_math = 1;
+> +       new_cpu_data.wp_works_ok = 1;
+>        new_cpu_data.x86_capability[0] = cpuid_edx(1);
+>  #endif
 
-Yes it does.  However, it probably reads local apic id when it shouldn't.
+Yeah, this is even better assuming it works. :-)
 
-I am right now trying out the other patch Yinghai posted (based on
-is_vsmp_box()), and report results in a few.
-
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
