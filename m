@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbZHYSOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbZHYSPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbZHYSOd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755519AbZHYSOc
+	id S1755703AbZHYSPK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbZHYSPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:14:32 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35763 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755513AbZHYSOc (ORCPT
+	Tue, 25 Aug 2009 14:15:09 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:49905 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755648AbZHYSPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:14:32 -0400
-Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4A94283C.6000405@goop.org>
-References: <4A9407B1.6020400@nets.rwth-aachen.de>
-	 <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com>
-	 <4A94161A.2020609@nets.rwth-aachen.de>
-	 <1251219129.4852.1.camel@penberg-laptop>  <4A94283C.6000405@goop.org>
-Date: Tue, 25 Aug 2009 21:14:32 +0300
-Message-Id: <1251224072.13451.10.camel@penberg-laptop>
+	Tue, 25 Aug 2009 14:15:07 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigFADPEk0pMROOX/2dsb2JhbACBU9dShBoF
+Date: Tue, 25 Aug 2009 14:15:08 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
+Message-ID: <20090825181508.GB2448@Krystal>
+References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090825162004.GA25058@Krystal> <20090825170441.GD2656@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+Content-Disposition: inline
+In-Reply-To: <20090825170441.GD2656@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 14:13:53 up 7 days,  5:03,  3 users,  load average: 0.18, 0.25,
+	0.26
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 11:06 -0700, Jeremy Fitzhardinge wrote:
-> On 08/25/09 09:52, Pekka Enberg wrote:
-> > Hi Arnd,
-> >
-> > On Tue, 2009-08-25 at 18:49 +0200, Arnd Hannemann wrote:
-> >   
-> >>> Thanks for doing the bisect! Can we also see your .config also?
-> >>>       
-> >> Config for -rc7 is attached. My bisect configs were based on that
-> >>     
-> > Thanks! While we wait for the Xen people, you can try the following
-> > patch to see if we can narrow the bug down to trap_init().
-> >   
+* Jason Baron (jbaron@redhat.com) wrote:
+> On Tue, Aug 25, 2009 at 12:20:04PM -0400, Mathieu Desnoyers wrote:
+> > 
+> > Uh ? kernel threads can invoke a system call. There are rare places
+> > where kernel code actually invoke system calls. I don't see why we
+> > should not deal with them.
+> > 
+> > Moreover, the problem you face is more general: if we set the
+> > TIF_SYSCALL_FTRACE flag of a standard thread right in the middle of its
+> > system call, x86_64 will cause the syscall exit to execute by re-reading
+> > the thread flags and run a syscall trace exit.
+> > 
+> > We could simply initialize the "saved system calls id" number to
+> > something like -1, so that if we happen to return from a syscall that
+> > did not get its id recorded at syscall entry, we know it because it's
+> > not initialized.
+> > 
+> > We would need to carefully put back the -1 value after clearing the
+> > thread flag when we stop tracing too (while still holding a mutex).
+> > 
+> > Mathieu
+> > 
 > 
-> I think there's a problem that the side-effect of this change is that
-> interrupt initialization comes later, and so the dynamically allocated
-> arrays are not set up when the first interrupt comes in.
+> why can't we have a syscall exit that is unmatched? we calculate
+> the exit syscall number for the the pt_regs structure at exit, so we
+> don't need to match it up with an entry to know which syscall it is.
+> 
 
-Which interrupt initialization is that? We call trap_init() _earlier_
-now.
+Are we certain that it will still be on the pt_regs at system call
+exit and not overwritten by the syscall return value ? For every arch ?
 
-> However, this particular change shouldn't have any effect on interrupts
-> being enabled early, right?
+Mathieu
 
-Yeah, interrupt enabling should not be affected.
+> thanks,
+> 
+> -Jason
 
-			Pekka
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
