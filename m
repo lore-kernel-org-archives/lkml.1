@@ -1,110 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbZHYEqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZHYFE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754423AbZHYEqV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 00:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZHYEqT
+	id S1754461AbZHYFE5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 01:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZHYFE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 00:46:19 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:57086 "EHLO
-	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbZHYEqS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 00:46:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=s0/t3lOzy45yKvkvUOog/3eVS1uZiKHffY5DV4BguI4bVMkRYWeSAMixroMGL/LFkq
-         2q/iDgn9xDMx1bZz7A2Vyx6rLowQxHiw7CXlKgc2G/2+da9o8gJUOvJPSkLTqXDojtF8
-         yjqgo+43VZKkRP34KSznrmeBqj+nwz2DmLkgs=
+	Tue, 25 Aug 2009 01:04:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57395 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751020AbZHYFEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 01:04:55 -0400
+Message-ID: <4A937093.2010109@kernel.org>
+Date: Mon, 24 Aug 2009 22:03:15 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-In-Reply-To: <2f11576a0908232113w71676aatf22eb6d431501fd0@mail.gmail.com>
-References: <82e12e5f0908220954p7019fb3dg15f9b99bb7e55a8c@mail.gmail.com>
-	 <28c262360908231844o3df95b14v15b2d4424465f033@mail.gmail.com>
-	 <20090824105139.c2ab8403.kamezawa.hiroyu@jp.fujitsu.com>
-	 <2f11576a0908232113w71676aatf22eb6d431501fd0@mail.gmail.com>
-Date: Tue, 25 Aug 2009 13:46:19 +0900
-Message-ID: <82e12e5f0908242146uad0f314hcbb02fcc999a1d32@mail.gmail.com>
-Subject: Re: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
-From: Hiroaki Wakabayashi <primulaelatior@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Ying Han <yinghan@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+CC: Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, shai@scalex86.org
+Subject: Re: [patch] x86: 2.6.31-rc7 crash due to buggy flat_phys_pkg_id
+References: <20090824182659.GA6842@localdomain> <4A932809.1000103@kernel.org> <4A932FD7.5030000@kernel.org> <20090825013801.GC6842@localdomain>
+In-Reply-To: <20090825013801.GC6842@localdomain>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for reviews.
-
->>> > @@ -254,6 +254,7 @@ static inline void
->>> > mminit_validate_memmodel_limits(unsigned long *start_pfn,
->>> >  #define GUP_FLAGS_FORCE                  0x2
->>> >  #define GUP_FLAGS_IGNORE_VMA_PERMISSIONS 0x4
->>> >  #define GUP_FLAGS_IGNORE_SIGKILL         0x8
->>> > +#define GUP_FLAGS_ALLOW_NULL             0x10
->>> >
->>>
->>> I am worried about adding new flag whenever we need it.
->>> But I think this case makes sense to me.
->>> In addition, I guess ZERO page can also use this flag.
->>>
->>> Kame. What do you think about it?
->>>
->> I do welcome this !
->> Then, I don't have to take care of mlock/munlock in ZERO_PAGE patch.
+Ravikiran G Thirumalai wrote:
+> On Mon, Aug 24, 2009 at 05:27:03PM -0700, Yinghai Lu wrote:
+>> Yinghai Lu wrote:
+>>> Ravikiran G Thirumalai wrote:
+>> can you check if this one fix your problem?
 >>
->> And without this patch, munlock() does copy-on-write just for unpinning memory.
->> So, this patch shows some right direction, I think.
+> 
+> Nope it doesn't :(
+
+then there is other path
+
+> 
+> 
+>> BTW: what does your /proc/cpuinfo print about apic id and initial apic id?
 >>
->> One concern is flag name, ALLOW_NULL sounds not very good.
->>
->>  GUP_FLAGS_NOFAULT ?
->>
->> I wonder we can remove a hack of FOLL_ANON for core-dump by this flag, too.
->
-> Yeah, GUP_FLAGS_NOFAULT is better.
+> 
+> Here's a sample cpuinfo from an older kernel (attached)
+> 
+> 
 
-Me too.
-I will change this flag name.
+why there is two lines cores?
 
-> Plus, this patch change __get_user_pages() return value meaning IOW.
-> after this patch, it can return following value,
->
->  return value: 3
->  pages[0]: hoge-page
->  pages[1]: null
->  pages[2]: fuga-page
->
-> but, it can be
->
->  return value: 2
->  pages[0]: hoge-page
->  pages[1]: fuga-page
->
-> no?
+also we should have initial apic id field...
 
-I did misunderstand mean of get_user_pages()'s return value.
-
-When I try to change __get_user_pages(), I got problem.
-If remove NULLs from pages,
-__mlock_vma_pages_range() cannot know how long __get_user_pages() readed.
-So, I have to get the virtual address of the page from vma and page.
-Because __mlock_vma_pages_range() have to call
-__get_user_pages() many times with different `start' argument.
-
-I try to use page_address_in_vma(), but it failed.
-(page_address_in_vma() returned -EFAULT)
-I cannot find way to solve this problem.
-Are there good ideas?
-Please give me some ideas.
-
-Thanks.
---
-Hiroaki Wakabayashi
+YH
