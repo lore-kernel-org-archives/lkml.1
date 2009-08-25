@@ -1,106 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbZHYPFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZHYPIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372AbZHYPFP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 11:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZHYPFM
+	id S1755437AbZHYPIa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 11:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbZHYPI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 11:05:12 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:60540 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755347AbZHYPFK (ORCPT
+	Tue, 25 Aug 2009 11:08:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33253 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755424AbZHYPI3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 11:05:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LF6JoRQwUPO1FmUmkYe5Dzg+F8O4KprCqPxaYJNyJEweX7N0qdwgNVVbP5QgV5LGed
-         s25T1kVB6+johCLAaKt5Azwizjt0zmae04rw+MvJt0UWe2KY/UijTslC+WIbSo0ZTAoR
-         hohizyX73cPeSlciCIc12kh89Z8XtvY42+Plk=
-Date: Tue, 25 Aug 2009 17:05:09 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer
-	dereference at 0000000000000008
-Message-ID: <20090825150506.GG6114@nowhere>
-References: <m163cjhwa4.fsf@fess.ebiederm.org> <m1skfnggrb.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain> <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain> <alpine.LFD.2.01.0908241655370.3824@localhost.localdomain> <20090825033944.GA5227@nowhere> <alpine.LFD.2.01.0908242043280.3218@localhost.localdomain> <alpine.LFD.2.01.0908242113540.3218@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0908242113540.3218@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 25 Aug 2009 11:08:29 -0400
+Subject: Re: PROBLEM: oops
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pawel Golaszewski <blues@gda.pl>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LNX.2.00.0908251701020.16876@fgnss.gnfx.tqn.cy>
+References: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy>
+	 <1251209206.7538.1159.camel@twins>
+	 <alpine.LNX.2.00.0908251608280.16876@fgnss.gnfx.tqn.cy>
+	 <1251209734.7538.1160.camel@twins>
+	 <alpine.LNX.2.00.0908251625580.16876@fgnss.gnfx.tqn.cy>
+	 <1251211483.7538.1162.camel@twins>
+	 <alpine.LNX.2.00.0908251701020.16876@fgnss.gnfx.tqn.cy>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 25 Aug 2009 17:07:39 +0200
+Message-Id: <1251212859.7538.1166.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 09:30:16PM -0700, Linus Torvalds wrote:
+On Tue, 2009-08-25 at 17:03 +0200, Pawel Golaszewski wrote:
+> On Tue, 25 Aug 2009, Peter Zijlstra wrote:
+> > > > > > > No matter which kernel I'm using (2.6.27 - 2.6.30) it crashes. 
+> > > > > > > Works for few minutes and crashes. Even SysRq doesn't work. Dunno 
+> > > > > > > how to trigger it on other machine than mine (I have two, both 
+> > > > > > > affected). If more info is required - just ask.
+> > > > > > > [...]
+> > > > > > > [24483.211036] BUG: unable to handle kernel NULL pointer dereference at 00000058
+> > > > > > > [24483.211144] IP: [<c081cf9a>] pick_next_task_fair+0x6a/0x100
+> > > > > > > [24483.211247] Oops: 0000 [#1] SMP 
+> > > > > > > [24483.211300] Modules linked in: netconsole configfs dm_mod softdog sch_sfq xfs raid10 uhci_hcd eepro100 ppdev parport_pc floppy parport ehci_hcd e100 piix i2c_piix4 thermal psmouse e1000 container ide_core usbcore mii button pcspkr serio_raw processor i2c_core sg evdev ext3 jbd mbcache scsi_wait_scan sd_mod crc_t10dif ata_piix libata dock aic7xxx sym53c8xx scsi_transport_spi scsi_mod raid1 md_mod
+> > > > > > > [24483.211878] 
+> > > > > > > [24483.211910] Pid: 1677, comm: md2_raid10 Not tainted (2.6.27.31-1 #1)
+> > > > > > So you're saying .30 crashes at the exact same place?
+> > > > > Well... I'm not able to catch anything on .30 No sign on 
+> > > > > netconsole, black screen on monitor...
+> > > > Could you share your .config?
+> > > Sure, I forgot: http://www.blues.gda.pl/2.6.27.31.config.bz2
+> > Right, are you actually using group scheduling?
 > 
+> Not, yet - I wanted to start using it...
 > 
-> On Mon, 24 Aug 2009, Linus Torvalds wrote:
+> > could you try to reproduce without that?
 > > 
-> > Anyway, I'll happily be shown wrong. I think the (second) patch I sent out 
-> > is an acceptable hack in the presense of the current locking, but as I 
-> > said, I'm not exactly happy about it, because I do think the locking is 
-> > broken.
+> > CONFIG_GROUP_SCHED=n
 > 
-> Btw, another solution to all this would be to just not have that 
-> ldisc_mutex deadlock due to do_tty_hangup -> tty_ldisc_hangup at all.
+> I'll try. 
 > 
-> The actual _flushing_ doesn't need the mutex - it's just that both 
-> flushing and hangup is done with workqueues.
+> Do you think it's source of a problem?
 
-
-
-Yeah, it would be sad, but having the flushing done in a dedicated workqueue
-would solve the need of relaxing the lock, because we would only wait
-for the pending flush works, not the hangup works.
-
-But it's sad to create a thread only for that.
-
- 
-> If we can avoid the deadlock by not having the (artificial) workqueue 
-> dependency, it would allow everybody to just hold on to the mutex over the 
-> whole sequence - and would obviate the need for that hacky 
-> TTY_LDISC_CHANGING bit thing in tty_set_ldisc.
-> 
-> In other words, the whole problem really comes in from the fact that 
-> do_tty_hangup() is called from "hangup_work", and the workqueues can get 
-> hung to the point where you can't then do the (totally _unrelated_) queue 
-> flushing.
-> 
-> Because flush_to_ldisc() itself - which is what we want to do - doesn't 
-> need that mutex or the workqueue at all. It could run from any context, 
-> afaik.
-> 
-> So if we were to turn it into just a timer (rather than a "delayed work"), 
-> then we'd not need to do that "flush_scheduled_work()" thing at all, and 
-> we wouldn't have that interaction with do_tty_hangup(). At which point we 
-> could again hold on to locks, because we wouldn't need to worry about the 
-> workqueues getting stuck on the mutex (that isn't even needed for the 
-> actual flushing part that we want to do!).
-
-
-
-Yeah, a simple timer would be better than a dedicated workqueue in that
-we don't need a whole thread for such small job.
-
-
-> 
-> So don't get me wrong - there are _multiple_ ways to solve this. But they 
-> are all pretty major surgery, changing "big" semantics. We could fix the 
-> locking, we could change how we flush, we could do all of those things. 
-> And I'd love to. But I think the almost-oneliner is the safest approach 
-> right now. It's certainly not perfect, but it's fairly minimal impact.
-> 
-> 		Linus
-
-
-Yep.
-I hope the progressive work Jens Axboe is doing on workqueues will drop
-their serialized nature which leads to such perpetual deadlocks.
-
+On these old (.27 is ancient) kernels it might well be. In any case its
+a good test to do, the cgroup code is significant in size and knowing on
+which side of that border to look helps.
