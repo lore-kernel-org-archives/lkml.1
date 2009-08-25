@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbZHYXLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbZHYXOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932309AbZHYXLK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932265AbZHYXLJ
+	id S932330AbZHYXOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932239AbZHYXOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:11:09 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:29326 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932221AbZHYXLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:11:08 -0400
-Message-ID: <4A946F79.3020103@redhat.com>
-Date: Tue, 25 Aug 2009 19:10:49 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Tue, 25 Aug 2009 19:14:22 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:47106 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932209AbZHYXOV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 19:14:21 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: "David Xiao" <dxiao@broadcom.com>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
+Date: Wed, 26 Aug 2009 01:17:27 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.30.3; KDE/4.3.0; x86_64; ; )
+Cc: "Steven Walter" <stevenrwalter@gmail.com>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       "Ben Dooks" <ben-linux@fluff.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Robin Holt" <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "v4l2_linux" <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <1251237768.8877.26.camel@david-laptop>
+In-Reply-To: <1251237768.8877.26.camel@david-laptop>
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <20090323104525.GA17969@elf.ucw.cz>	<87ljqn82zc.fsf@frosties.localdomain>	<20090824093143.GD25591@elf.ucw.cz>	<82k50tjw7u.fsf@mid.bfk.de>	<20090824130125.GG23677@mit.edu>	<20090824195159.GD29763@elf.ucw.cz>	<4A92F6FC.4060907@redhat.com>	<20090824205209.GE29763@elf.ucw.cz>	<4A930160.8060508@redhat.com>	<20090824212518.GF29763@elf.ucw.cz>	<20090824223915.GI17684@mit.edu> <19092.27809.480243.979274@notabene.brown>
-In-Reply-To: <19092.27809.480243.979274@notabene.brown>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908260117.27180.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/25/2009 06:58 PM, Neil Brown wrote:
-> On Monday August 24, tytso@mit.edu wrote:
->> On Mon, Aug 24, 2009 at 11:25:19PM +0200, Pavel Machek wrote:
->>>> I have to admit that I have not paid enough attention to this specifics
->>>> of your ext3 + flash card issue - is it the ftl stuff doing out of order
->>>> IO's?
->>>
->>> The problem is that flash cards destroy whole erase block on unplug,
->>> and ext3 can't cope with that.
->>
->> Sure --- but name **any** filesystem that can deal with the fact that
->> 128k or 256k worth of data might disappear when you pull out the flash
->> card while it is writing a single sector?
+On Wednesday 26 August 2009 00:02:48 David Xiao wrote:
+> On Tue, 2009-08-25 at 05:53 -0700, Steven Walter wrote:
+> > On Thu, Aug 6, 2009 at 6:25 PM, Russell King - ARM
+> > Linux<linux@arm.linux.org.uk> wrote:
+> > [...]
+> >
+> > > As far as userspace DMA coherency, the only way you could do it with
+> > > current kernel APIs is by using get_user_pages(), creating a
+> > > scatterlist from those, and then passing it to dma_map_sg().  While the
+> > > device has ownership of the SG, userspace must _not_ touch the buffer
+> > > until after DMA has completed.
+> >
+> > [...]
+> >
+> > Would that work on a processor with VIVT caches?  It seems not.  In
+> > particular, dma_map_page uses page_address to get a virtual address to
+> > pass to map_single().  map_single() in turn uses this address to
+> > perform cache maintenance.  Since page_address() returns the kernel
+> > virtual address, I don't see how any cache-lines for the userspace
+> > virtual address would get invalidated (for the DMA_FROM_DEVICE case).
+> >
+> > If that's true, then what is the correct way to allow DMA to/from a
+> > userspace buffer with a VIVT cache?  If not true, what am I missing?
 >
-> A Log structured filesystem could certainly be written to deal with
-> such a situation, providing by 'deal with' you mean 'only loses data
-> that has not yet been acknowledged to the application'.  Of course the
-> filesystem would need clear visibility into exactly how these blocks
-> are positioned.
->
-> I've been playing with just such a filesystem for some time (never
-> really finding enough time) with the goal of making it work over RAID5
-> with no data risk due to power loss.  One day it will be functional
-> enough for others to try....
->
-> It is entirely possible that NILFS could be made to meet that
-> requirement, but I haven't made time to explore NILFS so I cannot be
-> sure.
->
-> NeilBrown
->
+> page_address() is basically returning page->virtual, which records the
+> virtual/physical mapping for both user/kernel space; and what only
+> matters there is highmem or not.
 
-I am not sure that log structure will protect you from this scenario since once 
-you clean the log, the non-logged data is assumed to be correct.
+I'm not sure to get it. Are you implying that a physical page will then be 
+mapped to the same address in all contexts (kernelspace and userspace 
+processes) ? Is that even possible ? And if not, how could page->virtual store 
+both the initial kernel map and all the userspace mappings ?
 
-If your cheap flash storage device can nuke random regions of that clean 
-storage, you will lose data....
-
-ric
-
+-- 
+Laurent Pinchart
