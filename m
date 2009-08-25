@@ -1,166 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZHYILM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZHYIMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbZHYILM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 04:11:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZHYILL
+	id S1754734AbZHYIMR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 04:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbZHYIMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 04:11:11 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:63097 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754445AbZHYIK7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 04:10:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=n0tnFgoD2FyITrnBLi22l1zsrwbFwVsJRUWNZe37iRAZT2vzxjmkgk3+u4ZK7xDARG
-         xM4X6bSivXGBOeLkcBNx5nq4CDoPxvJrL6d91ra432ZnsbT1LIYG1quQWxQLNsBKTUbg
-         ELaltvEREXI2sET97Ra5+us2MlRNbNKovFm0M=
+	Tue, 25 Aug 2009 04:12:16 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49347 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754700AbZHYIMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 04:12:14 -0400
+Message-ID: <4A939D98.7020400@cn.fujitsu.com>
+Date: Tue, 25 Aug 2009 16:15:20 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Date: Tue, 25 Aug 2009 10:10:58 +0200
-Message-ID: <c4e36d110908250110xe16720o977c8cf5c3386c4b@mail.gmail.com>
-Subject: INFO: possible circular locking dependency - kacpid 
-	acpi_os_wait_events_complete
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: bjorn.helgaas@hp.com, len.brown@intel.com
+To: Steven Rostedt <rostedt@goodmis.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/3] ftrace: Add timer-source of walltime for ftrace
+References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com> <4A939CDF.2000407@cn.fujitsu.com>
+In-Reply-To: <4A939CDF.2000407@cn.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+We can add a timer-source for ftrace to support wall-time display.
+It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
+http://lkml.org/lkml/2009/7/24/103
 
-Now with 2.6.31-rc7 (3edf2fb9d80a46d6c32ba12547a42419845b4b76)
- I'm getting this  INFO trace - also I've noticed complete reset during resume
-which could be eventually related to this ?
+It need to applys on my patch of:
+[PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
 
-My machine - T61, 4GB, C2D
-I suspect that some resent  thinkpad-acpi changes.
+We can get following output:
+ # cd /mnt/debugfs/tracing/
+ # cat trace_clock
+ [local] global walltime
+ # echo sched_switch > current_tracer
+ # cat trace
+ # tracer: sched_switch
+ #
+ #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+ #              | |       |          |         |
+             bash-3580  [000]  2916.188093:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000]  2916.188205:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000]  2916.188538:   3580:120:R   + [000]     5:115:S events/0
+             bash-3580  [000]  2916.188599:   3580:120:R ==> [000]     5:115:R events/0
+         events/0-5     [000]  2916.188669:      5:115:S ==> [000]  3580:120:R bash
+ ...
+ # echo walltime > trace_clock
+ # cat trace
+ # tracer: sched_switch
+ #
+ #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
+ #              | |       |                        |         |
+             bash-3580  [000] 2009-08-24 18:03:16.500705:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
+             bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S ==> [000]     5:115:R events/0
+         events/0-5     [000] 2009-08-24 18:03:16.500815:      5:115:R   + [000]  3578:120:S sshd
+ ...
 
-ACPI: Preparing to enter system sleep state S3
-Disabling non-boot CPUs ...
-kvm: disabling virtualization on CPU1
-CPU 1 is now offline
-lockdep: fixing up alternatives.
-SMP alternatives: switching to UP code
-CPU0 attaching NULL sched-domain.
-CPU1 attaching NULL sched-domain.
-CPU0 attaching NULL sched-domain.
-CPU1 is down
-Extended CMOS year: 2000
-x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-Back to C!
-CPU0: Thermal monitoring handled by SMI
-Extended CMOS year: 2000
-Enabling non-boot CPUs ...
-lockdep: fixing up alternatives.
-SMP alternatives: switching to SMP code
-Booting processor 1 APIC 0x1 ip 0x6000
-Initializing CPU#1
-Calibrating delay using timer specific routine.. 4390.86 BogoMIPS (lpj=7314990)
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 4096K
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 1
-mce: CPU supports 6 MCE banks
-CPU1: Thermal monitoring enabled (TM2)
-x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-CPU1: Intel(R) Core(TM)2 Duo CPU     T7500  @ 2.20GHz stepping 0a
-kvm: enabling virtualization on CPU1
-CPU0 attaching NULL sched-domain.
-Switched to high resolution mode on CPU 1
-CPU0 attaching sched-domain:
- domain 0: span 0-1 level CPU
-  groups: 0 1
-CPU1 attaching sched-domain:
- domain 0: span 0-1 level CPU
-  groups: 1 0
-CPU1 is up
-ACPI: Waking up from system sleep state S3
+Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+---
+ include/linux/trace_clock.h |    1 +
+ kernel/trace/trace.c        |   24 ++++++++++++++++-----
+ kernel/trace/trace.h        |    8 ++++++-
+ kernel/trace/trace_clock.c  |   48 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_output.c |   21 +++++++++++++++---
+ 5 files changed, 91 insertions(+), 11 deletions(-)
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.31-rc7-00015-ge740538 #18
--------------------------------------------------------
-kacpi_hotplug/114 is trying to acquire lock:
- (kacpid){+.+.+.}, at: [<ffffffff81064df0>] flush_workqueue+0x0/0xc0
+diff --git a/include/linux/trace_clock.h b/include/linux/trace_clock.h
+index 7a81303..322707e 100644
+--- a/include/linux/trace_clock.h
++++ b/include/linux/trace_clock.h
+@@ -15,5 +15,6 @@
+ extern u64 notrace trace_clock_local(void);
+ extern u64 notrace trace_clock(void);
+ extern u64 notrace trace_clock_global(void);
++extern u64 notrace trace_clock_walltime(void);
+ 
+ #endif /* _LINUX_TRACE_CLOCK_H */
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 5af6f83..afb2c5a 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -334,9 +334,10 @@ static struct {
+ } trace_clocks[] = {
+ 	{ trace_clock_local,	"local" },
+ 	{ trace_clock_global,	"global" },
++	{ trace_clock_walltime,	"walltime" },
+ };
+ 
+-int trace_clock_id;
++enum TRACE_CLOCK_TYPE trace_clock_type = TRACE_CLOCK_LOCAL;
+ 
+ /*
+  * ftrace_max_lock is used to protect the swapping of buffers
+@@ -1432,8 +1433,17 @@ static void print_lat_help_header(struct seq_file *m)
+ 
+ static void print_func_help_header(struct seq_file *m)
+ {
+-	seq_puts(m, "#           TASK-PID    CPU#    TIMESTAMP  FUNCTION\n");
+-	seq_puts(m, "#              | |       |          |         |\n");
++	if (trace_clock_type == TRACE_CLOCK_WALLTIME) {
++		seq_puts(m, "#           TASK-PID    CPU# "
++			"          TIMESTAMP  FUNCTION\n");
++		seq_puts(m, "#              | |       |   "
++			"                     |         |\n");
++	} else {
++		seq_puts(m, "#           TASK-PID    CPU# "
++			"   TIMESTAMP  FUNCTION\n");
++		seq_puts(m, "#              | |       |   "
++			"       |         |\n");
++	}
+ }
+ 
+ 
+@@ -3145,8 +3155,8 @@ static ssize_t tracing_clock_read(struct file *filp, char __user *ubuf,
+ 	for (i = 0; i < ARRAY_SIZE(trace_clocks); i++)
+ 		bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter,
+ 			"%s%s%s%s", i ? " " : "",
+-			i == trace_clock_id ? "[" : "", trace_clocks[i].name,
+-			i == trace_clock_id ? "]" : "");
++			i == trace_clock_type ? "[" : "", trace_clocks[i].name,
++			i == trace_clock_type ? "]" : "");
+ 	bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter, "\n");
+ 
+ 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, bufiter);
+@@ -3176,7 +3186,7 @@ static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
+ 	if (i == ARRAY_SIZE(trace_clocks))
+ 		return -EINVAL;
+ 
+-	trace_clock_id = i;
++	trace_clock_type = i;
+ 
+ 	mutex_lock(&trace_types_lock);
+ 
+@@ -3186,6 +3196,8 @@ static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
+ 
+ 	mutex_unlock(&trace_types_lock);
+ 
++	tracing_reset_online_cpus(&global_trace);
++
+ 	*fpos += cnt;
+ 
+ 	return cnt;
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 0545c2b..2ce01b9 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -586,7 +586,13 @@ trace_vprintk(unsigned long ip, const char *fmt, va_list args);
+ 
+ extern unsigned long trace_flags;
+ 
+-extern int trace_clock_id;
++enum TRACE_CLOCK_TYPE {
++	TRACE_CLOCK_LOCAL,
++	TRACE_CLOCK_GLOBAL,
++	TRACE_CLOCK_WALLTIME,
++};
++
++extern enum TRACE_CLOCK_TYPE trace_clock_type;
+ 
+ /* Standard output formatting function used for function return traces */
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
+index b588fd8..2b23023 100644
+--- a/kernel/trace/trace_clock.c
++++ b/kernel/trace/trace_clock.c
+@@ -19,6 +19,7 @@
+ #include <linux/sched.h>
+ #include <linux/ktime.h>
+ #include <linux/trace_clock.h>
++#include <trace/events/xtime.h>
+ 
+ /*
+  * trace_clock_local(): the simplest and least coherent tracing clock.
+@@ -107,3 +108,50 @@ u64 notrace trace_clock_global(void)
+ 
+ 	return now;
+ }
++
++/*
++ * the number of nanoseconds from 1970-1-1 00:00:00 to
++ * machine boots (trace_clock()==0)
++ */
++static u64 base_walltime;
++
++static void sync_base_walltime(struct timespec *ts, u64 traceclock)
++{
++	base_walltime = (u64)ts->tv_sec * NSEC_PER_SEC + ts->tv_nsec -
++			traceclock;
++}
++
++static void probe_gtod_update_xtime(struct timespec *xtime,
++				    struct timespec *wall_to_monotonic)
++{
++	unsigned long flags;
++	u64 traceclock;
++
++	local_irq_save(flags);
++	traceclock = trace_clock();
++	sync_base_walltime(xtime, traceclock);
++	local_irq_restore(flags);
++}
++
++static int __init walltime_init(void)
++{
++	unsigned long flags;
++	struct timespec ts;
++	u64 traceclock;
++
++	local_irq_save(flags);
++	getnstimeofday(&ts);
++	traceclock = trace_clock();
++	sync_base_walltime(&ts, traceclock);
++	local_irq_restore(flags);
++
++	register_trace_gtod_update_xtime(probe_gtod_update_xtime);
++
++	return 0;
++}
++device_initcall_sync(walltime_init);
++
++u64 notrace trace_clock_walltime(void)
++{
++	return base_walltime + trace_clock();
++}
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index e0c2545..405e37d 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -501,15 +501,28 @@ int trace_print_context(struct trace_iterator *iter)
+ {
+ 	struct trace_seq *s = &iter->seq;
+ 	struct trace_entry *entry = iter->ent;
+-	unsigned long long t = ns2usecs(iter->ts);
+-	unsigned long usec_rem = do_div(t, USEC_PER_SEC);
+-	unsigned long secs = (unsigned long)t;
+ 	char comm[TASK_COMM_LEN];
+ 
+ 	trace_find_cmdline(entry->pid, comm);
+ 
+-	return trace_seq_printf(s, "%16s-%-5d [%03d] %5lu.%06lu: ",
++	if (trace_clock_type == TRACE_CLOCK_WALLTIME) {
++		struct tm tm;
++		u32 remainder;
++		time_to_tm(div_u64_rem(iter->ts, NSEC_PER_SEC, &remainder),
++				-sys_tz.tz_minuteswest * 60, &tm);
++		return trace_seq_printf(s, "%16s-%-5d [%03d] "
++				"%04ld-%02d-%02d %02d:%02d:%02d.%06llu: ",
++				comm, entry->pid, iter->cpu,
++				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
++				tm.tm_hour, tm.tm_min, tm.tm_sec,
++				ns2usecs(remainder));
++	} else {
++		unsigned long long t = ns2usecs(iter->ts);
++		unsigned long usec_rem = do_div(t, USEC_PER_SEC);
++		unsigned long secs = (unsigned long)t;
++		return trace_seq_printf(s, "%16s-%-5d [%03d] %5lu.%06lu: ",
+ 				comm, entry->pid, iter->cpu, secs, usec_rem);
++	}
+ }
+ 
+ int trace_print_lat_context(struct trace_iterator *iter)
+-- 
+1.5.5.3
 
-but task is already holding lock:
- (&dpc->work){+.+.+.}, at: [<ffffffff81065183>] worker_thread+0x193/0x3f0
-
-which lock already depends on the new lock.
-
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (&dpc->work){+.+.+.}:
-       [<ffffffff8107eeac>] __lock_acquire+0xc5c/0x1090
-       [<ffffffff8107f37a>] lock_acquire+0x9a/0x180
-       [<ffffffff810651ce>] worker_thread+0x1de/0x3f0
-       [<ffffffff810690e6>] kthread+0xa6/0xb0
-       [<ffffffff8100d2da>] child_rip+0xa/0x20
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
--> #0 (kacpid){+.+.+.}:
-       [<ffffffff8107ef7f>] __lock_acquire+0xd2f/0x1090
-       [<ffffffff8107f37a>] lock_acquire+0x9a/0x180
-       [<ffffffff81064e4f>] flush_workqueue+0x5f/0xc0
-       [<ffffffff81261524>] acpi_os_wait_events_complete+0x15/0x23
-       [<ffffffff81261561>] acpi_os_execute_hp_deferred+0x2f/0x43
-       [<ffffffff810651d4>] worker_thread+0x1e4/0x3f0
-       [<ffffffff810690e6>] kthread+0xa6/0xb0
-       [<ffffffff8100d2da>] child_rip+0xa/0x20
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
-other info that might help us debug this:
-
-2 locks held by kacpi_hotplug/114:
- #0:  (kacpi_hotplug){+.+...}, at: [<ffffffff81065183>]
-worker_thread+0x193/0x3f0
- #1:  (&dpc->work){+.+.+.}, at: [<ffffffff81065183>] worker_thread+0x193/0x3f0
-
-stack backtrace:
-Pid: 114, comm: kacpi_hotplug Not tainted 2.6.31-rc7-00015-ge740538 #18
-Call Trace:
- [<ffffffff8107cf0d>] print_circular_bug_tail+0x9d/0xe0
- [<ffffffff8107ef7f>] __lock_acquire+0xd2f/0x1090
- [<ffffffff8107b5ff>] ? save_trace+0x3f/0xb0
- [<ffffffff8107f37a>] lock_acquire+0x9a/0x180
- [<ffffffff81064df0>] ? flush_workqueue+0x0/0xc0
- [<ffffffff81261532>] ? acpi_os_execute_hp_deferred+0x0/0x43
- [<ffffffff81064e4f>] flush_workqueue+0x5f/0xc0
- [<ffffffff81064df0>] ? flush_workqueue+0x0/0xc0
- [<ffffffff81261524>] acpi_os_wait_events_complete+0x15/0x23
- [<ffffffff81261561>] acpi_os_execute_hp_deferred+0x2f/0x43
- [<ffffffff810651d4>] worker_thread+0x1e4/0x3f0
- [<ffffffff81065183>] ? worker_thread+0x193/0x3f0
- [<ffffffff8107b2fe>] ? put_lock_stats+0xe/0x30
- [<ffffffff81069540>] ? autoremove_wake_function+0x0/0x40
- [<ffffffff81064ff0>] ? worker_thread+0x0/0x3f0
- [<ffffffff810690e6>] kthread+0xa6/0xb0
- [<ffffffff8100d2da>] child_rip+0xa/0x20
- [<ffffffff8100cc40>] ? restore_args+0x0/0x30
- [<ffffffff81069040>] ? kthread+0x0/0xb0
- [<ffffffff8100d2d0>] ? child_rip+0x0/0x20
-ACPI: \_SB_.GDCK - docking
-acpi IBM0079:00: parent device:00 should not be sleeping
-pci 0000:00:02.0: restoring config space at offset 0x1 (was 0x900007,
-writing 0x900403)
-pci 0000:00:02.1: restoring config space at offset 0x1 (was 0x900000,
-writing 0x900007)
-uhci_hcd 0000:00:1a.0: restoring config space at offset 0x1 (was
-0x2800005, writing 0x2800001)
-uhci_hcd 0000:00:1a.1: power state changed by ACPI to D0
-uhci_hcd 0000:00:1a.1: restoring config space at offset 0x1 (was
-0x2800005, writing 0x2800001)
-ehci_hcd 0000:00:1a.7: restoring config space at offset 0x1 (was
-0x2900106, writing 0x2900102)
-ehci_hcd 0000:00:1a.7: PME# disabled
-HDA Intel 0000:00:1b.0: restoring config space at offset 0x1 (was
-0x100106, writing 0x100102)
-
-
-Zdenek
