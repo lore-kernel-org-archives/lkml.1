@@ -1,101 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbZHYVIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbZHYVJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932192AbZHYVIy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 17:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932127AbZHYVIx
+	id S932234AbZHYVJL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 17:09:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbZHYVJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 17:08:53 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:60630 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932085AbZHYVIw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 17:08:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cKxTnX7SEHHjMZTOFFUC969Zzw1c4DvrqB+WPU/fDfT3mvRjDKnCHByanZyyN0ntKN
-         91QzUYQyWIeEcLofKDd6DvaTu2ehZxkJq83Y+0jM7NOU+10pkalOknC4dtZJZ4UJGMCG
-         JrTv1ofFzDWAi17WfydJrBwrY2YPqjNrjCfRI=
-Date: Tue, 25 Aug 2009 23:08:50 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Josh Stone <jistone@redhat.com>,
-       linux-kernel@vger.kernel.org, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH v4 0/4] tracing: tweaks for generic syscall events
-Message-ID: <20090825210848.GD8215@nowhere>
-References: <1250917125-6174-1-git-send-email-jistone@redhat.com> <1251150194-1713-1-git-send-email-jistone@redhat.com> <20090824230509.GB5124@nowhere> <20090825102858.GB19941@elte.hu> <20090825134203.GC6114@nowhere> <20090825144122.GC2656@redhat.com>
+	Tue, 25 Aug 2009 17:09:10 -0400
+Received: from mail.lang.hm ([64.81.33.126]:58055 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932096AbZHYVJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 17:09:08 -0400
+Date: Tue, 25 Aug 2009 14:08:10 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Rob Landley <rob@landley.net>
+cc: Greg Freemyer <greg.freemyer@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+In-Reply-To: <200908251556.08065.rob@landley.net>
+Message-ID: <alpine.DEB.2.00.0908251406570.28411@asgard.lang.hm>
+References: <200903121413.04434.rob@landley.net> <20090824205209.GE29763@elf.ucw.cz> <87f94c370908241411r45079c5cx3fc737cf4c3f7d1e@mail.gmail.com> <200908251556.08065.rob@landley.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825144122.GC2656@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 10:41:22AM -0400, Jason Baron wrote:
-> right, the compat layer as well as the core kernel need additional
-> DEFINE_SYSCALL() macros to catch all the the syscalls. However, I think
-> the compat layer is a bit more involved in that it often makes use of
-> the core kernel syscalls, but the mapping between syscall number is
-> different. So, we need another array, or to augment the existing one, to
-> cover the compat syscalls. We also need to detect 32-bit processes in
-> the syscall entry path to determine which array to use, and we need to
-> grab the arguments differently. So there is a bunch of work here.
+On Tue, 25 Aug 2009, Rob Landley wrote:
 
+> On Monday 24 August 2009 16:11:56 Greg Freemyer wrote:
+>>> The papers show failures in "once a year" range. I have "twice a
+>>> minute" failure scenario with flashdisks.
+>>>
+>>> Not sure how often "degraded raid5 breaks ext3 atomicity" would bite,
+>>> but I bet it would be on "once a day" scale.
+>>
+>> I agree it should be documented, but the ext3 atomicity issue is only
+>> an issue on unexpected shutdown while the array is degraded.  I surely
+>> hope most people running raid5 are not seeing that level of unexpected
+>> shutdown, let along in a degraded array,
+>>
+>> If they are, the atomicity issue pretty strongly says they should not
+>> be using raid5 in that environment.  At least not for any filesystem I
+>> know.  Having writes to LBA n corrupt LBA n+128 as an example is
+>> pretty hard to design around from a fs perspective.
+>
+> Right now, people think that a degraded raid 5 is equivalent to raid 0.  As
+> this thread demonstrates, in the power failure case it's _worse_, due to write
+> granularity being larger than the filesystem sector size.  (Just like flash.)
+>
+> Knowing that, some people might choose to suspend writes to their raid until
+> it's finished recovery.  Perhaps they'll set up a system where a degraded raid
+> 5 gets remounted read only until recovery completes, and then writes go to a
+> new blank hot spare disk using all that volume snapshoting or unionfs stuff
+> people have been working on.  (The big boys already have hot spare disks
+> standing by on a lot of these systems, ready to power up and go without human
+> intervention.  Needing two for actual reliability isn't that big a deal.)
+>
+> Or maybe the raid guys might want to tweak the recovery logic so it's not
+> entirely linear, but instead prioritizes dirty pages over clean ones.  So if
+> somebody dirties a page halfway through a degraded raid 5, skip ahead to
+> recover that chunk first to the new disk first (yes leaving holes, it's not that
+> hard to track), and _then_ let the write go through.
+>
+> But unless people know the issue exists, they won't even start thinking about
+> ways to address it.
 
-Hmm, indeed we may need a parallel compat_syscall_table for the metadata
-and other kind of special treatements.
-I wonder how ptrace sort it out in syscall_trace_enter() to guess the
-origin of the syscall (ia32 or normal), since the table is not mapped
-with the same numbers.
+if you've got the drives available you should be running raid 6 not raid 5 
+so that you have to loose two drives before you loose your error checking.
 
- 
-> Also, we have the question of whether we need separate entries in the
-> events/syscalls directly for 32-bit process syscalls that call the same
-> 64-bit syscall interfaces. Should they be parsed as 64-bit argument
-> values event thought they are 32-bit? To reduce complexity, I would say
-> the 32-bit syscall entries should be the same as the 64-bit ones. That
-> said there will be a bunch of new "compat_sys*" etc. entries.
-> 
+in my opinion that's a far better use of a drive than a hot spare.
 
-
-We could probably re-route the compat syscall tracing to their
-homologuous 64 bits tracepoints, but one may want to only trace the
-compat_syscalls, use filters only on them, activate only some of them,
-etc...
-
-To do such routing, we could have a simple table that resolves
-a compat syscall number to its real 64 bits syscall number and we could
-then pass this number plus a flag that set its compat state in the ring
-buffer entry.
-That would avoid the need of using the DEFINE_SYSCALLx() in fs/compat.c
-
-But such ghost tracepoints would also complexify too much the filter
-processing, the individual tracepoints toggling, etc...
-So I think having real compat tracepoints would actually be more simple.
-
-We could still use shortcuts in userspace if we want to enable
-sys_enter_open and sys_enter_compat_open at the same time.
-
-Hmm?
-
-> > Is someone willing to cover them?
-> > 
-> 
-> I can take a stab at it.
-
-
-Thanks a lot!
-
-
-> thanks,
-> 
-> -Jason
-
+David Lang
