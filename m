@@ -1,94 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZHYK2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZHYK3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbZHYK2s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 06:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZHYK2q
+	id S1754884AbZHYK3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 06:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbZHYK3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 06:28:46 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:42391 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbZHYK2p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 06:28:45 -0400
-Date: Tue, 25 Aug 2009 15:58:37 +0530
-From: "M. Mohan Kumar" <mohan@in.ibm.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: michael@ellerman.id.au, linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 6/8] powerpc: add CONFIG_KEXEC_AUTO_RESERVE
-Message-ID: <20090825102837.GB14591@in.ibm.com>
-Reply-To: mohan@in.ibm.com
-References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain> <20090821065739.4855.19179.sendpatchset@localhost.localdomain> <1251121443.10645.56.camel@concordia> <4A938348.2020306@redhat.com>
+	Tue, 25 Aug 2009 06:29:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42129 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754080AbZHYK3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 06:29:18 -0400
+Date: Tue, 25 Aug 2009 12:28:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Josh Stone <jistone@redhat.com>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH v4 0/4] tracing: tweaks for generic syscall events
+Message-ID: <20090825102858.GB19941@elte.hu>
+References: <1250917125-6174-1-git-send-email-jistone@redhat.com> <1251150194-1713-1-git-send-email-jistone@redhat.com> <20090824230509.GB5124@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A938348.2020306@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090824230509.GB5124@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 02:23:04PM +0800, Amerigo Wang wrote:
-> Michael Ellerman wrote:
->> On Fri, 2009-08-21 at 02:55 -0400, Amerigo Wang wrote:
->>   
->>> Introduce a new config option KEXEC_AUTO_RESERVE for powerpc.
->>>
->>> Index: linux-2.6/arch/powerpc/Kconfig
->>> ===================================================================
->>> --- linux-2.6.orig/arch/powerpc/Kconfig
->>> +++ linux-2.6/arch/powerpc/Kconfig
->>> @@ -346,6 +346,17 @@ config KEXEC
->>>  	  support.  As of this writing the exact hardware interface is
->>>  	  strongly in flux, so no good recommendation can be made.
->>>  +config KEXEC_AUTO_RESERVE
->>> +	bool "automatically reserve memory for kexec kernel"
->>> +	depends on KEXEC
->>> +	default y
->>> +	---help---
->>> +	  Automatically reserve memory for a kexec kernel, so that you don't
->>> +	  need to specify numbers for the "crashkernel=X@Y" boot option,
->>> +	  instead you can use "crashkernel=auto". To make this work, you need
->>> +	  to have more than 4G memory. On PPC, 256M is reserved, 1/32 memory
->>> +	  on PPC64, but it will not exceed 1T/32.
->>>     
->>
->> To be honest I don't see why this logic goes in the kernel. It seems to
->> me that it's policy how much memory you devote to the crash kernel vs
->> the production kernel. It depends on what kind of crash kernel you're
->> loading, a minimal UP dump kernel, or a full-featured SMP behemoth, An
->> it depends on how much memory you're willing to leave idle in the
->> off-chance you crash.
->>   
->
-> True, but since in the crash kernel, we have very little memory, so  
-> probably loading a full-featured SMP kernel doesn't make much sense...
->
-> And in patch 1/8, I introduced a way to free the reserved memory at  
-> run-time.
->
->> That aside, I don't see how this will be useful in practice, if it only
->> works for memory sizes over 4G? Or are we saying that people with less
->> than 4G don't need crash kernels? If we're not saying that, those users,
->> or those users' distros, still need to do some logic to work out if they
->> have < 4GB of memory and if so pick a crash kernel size. So why can't
->> they pick the size in the > 4GB case also?
->>   
->
-> No, we set 4G as a threshold because we only want this work when have  
-> have enough memory which is defined as 4G currently... This can be  
-> changed to arch-dependent, e.g. ppc. I am very open to this.
->
 
-So the distro/admin have to use crashkernel=auto for machines having more
-than 4GB RAM and for machines with less than 4GB RAM they have to use the
-crashkernel=x@y (or extended crashkernel syntax)? IMHO it will be nice if
-crashkernel=auto could handle all of the situations.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Regards,
-M. Mohan Kumar
+> On Mon, Aug 24, 2009 at 02:43:10PM -0700, Josh Stone wrote:
+> > This patch series moves the callbacks for the syscall tracepoints to the
+> > definition site, and adds generic TRACE_EVENTs which capture all syscall
+> > arguments.
+> > 
+> > New in v3:
+> > - Give the thread flag a more generic name: TIF_SYSCALL_TRACEPOINT.
+> > - Move the regfuncs to arch-specific files, per Jason's suggestion.
+> > - Change _WITH_CALLBACK to just _FN, per Ingo's suggestion.
+> > 
+> > New in v4:
+> > - Give the config flag a more generic name: HAVE_SYSCALL_TRACEPOINTS.
+> > - Undo the arch reorg of the regfuncs, but conditionalize on above.
+> > 
+> > 
+> > Sample trace output:
+> >         sendmail-974   [000] 55665.464492: sys_enter: NR 14 (1, 7fff60f3af40, 7fff60f3aec0, 8, 0, 7fb1b6a05161)
+> > 
+> >         sendmail-974   [000] 55665.464496: sys_exit: NR 14 = 0
+> > 
+> >         sendmail-974   [000] 55665.464507: sys_enter: NR 23 (5, 7fff60f3b0d0, 0, 0, 7fff60f3b150, 7fff60f3ef01)
+> > 
+> >             sshd-978   [000] 55667.845359: sys_exit: NR 23 = 1
+> > 
+> >             sshd-978   [000] 55667.845373: sys_enter: NR 14 (0, 7fffc645ce90, 7fffc645cf10, 8, 0, 101010101010101)
+> > 
+> >             sshd-978   [000] 55667.845381: sys_exit: NR 14 = 0
+> > 
+> >             sshd-978   [000] 55667.845383: sys_enter: NR 14 (2, 7fffc645cf10, 0, 8, 0, 101010101010101)
+> > 
+> >             sshd-978   [000] 55667.845386: sys_exit: NR 14 = 0
+> > 
+> >             sshd-978   [000] 55667.845395: sys_enter: NR 0 (3, 7fffc6458f80, 4000, 1, 0, 0)
+> > 
+> >             sshd-978   [000] 55667.845478: sys_exit: NR 0 = 48
+> > 
+> > 
+> > Signed-off-by: Josh Stone <jistone@redhat.com>
+> > Cc: Jason Baron <jbaron@redhat.com>
+> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Li Zefan <lizf@cn.fujitsu.com>
+> > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > Cc: Jiaying Zhang <jiayingz@google.com>
+> > Cc: Martin Bligh <mbligh@google.com>
+> > Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > Cc: Paul Mundt <lethal@linux-sh.org>
+> 
+> 
+> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+How about compat syscalls? If we touch this code we better cover 
+them as well.
+
+	Ingo
