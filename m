@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbZHYSG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbZHYSHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755596AbZHYSG4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbZHYSG4
+	id S1755634AbZHYSHV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:07:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755618AbZHYSHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:06:56 -0400
-Received: from claw.goop.org ([74.207.240.146]:45670 "EHLO claw.goop.org"
+	Tue, 25 Aug 2009 14:07:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54245 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755459AbZHYSGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:06:55 -0400
-Message-ID: <4A94283C.6000405@goop.org>
-Date: Tue, 25 Aug 2009 11:06:52 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1755461AbZHYSHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:07:19 -0400
+Date: Tue, 25 Aug 2009 20:07:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] core kernel fix
+Message-ID: <20090825180713.GA477@elte.hu>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
-References: <4A9407B1.6020400@nets.rwth-aachen.de>	 <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com>	 <4A94161A.2020609@nets.rwth-aachen.de> <1251219129.4852.1.camel@penberg-laptop>
-In-Reply-To: <1251219129.4852.1.camel@penberg-laptop>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/25/09 09:52, Pekka Enberg wrote:
-> Hi Arnd,
->
-> On Tue, 2009-08-25 at 18:49 +0200, Arnd Hannemann wrote:
->   
->>> Thanks for doing the bisect! Can we also see your .config also?
->>>       
->> Config for -rc7 is attached. My bisect configs were based on that
->>     
-> Thanks! While we wait for the Xen people, you can try the following
-> patch to see if we can narrow the bug down to trap_init().
->   
+Linus,
 
-I think there's a problem that the side-effect of this change is that
-interrupt initialization comes later, and so the dynamically allocated
-arrays are not set up when the first interrupt comes in.
+Please pull the latest core-fixes-for-linus git tree from:
 
-However, this particular change shouldn't have any effect on interrupts
-being enabled early, right?
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
-I have a local workaround which simply reverts the arrays back to
-statically allocated, but it isn't very satisfactory (large memory hit,
-esp if you're not running Xen).
+ Thanks,
 
-    J
+	Ingo
+
+------------------>
+Kyle McMartin (1):
+      dma-debug: Fix check_unmap null pointer dereference
+
+
+ lib/dma-debug.c |   28 ++++++++++++++++------------
+ 1 files changed, 16 insertions(+), 12 deletions(-)
+
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 65b0d99..58a9f9f 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -156,9 +156,13 @@ static bool driver_filter(struct device *dev)
+ 		return true;
+ 
+ 	/* driver filter on and initialized */
+-	if (current_driver && dev->driver == current_driver)
++	if (current_driver && dev && dev->driver == current_driver)
+ 		return true;
+ 
++	/* driver filter on, but we can't filter on a NULL device... */
++	if (!dev)
++		return false;
++
+ 	if (current_driver || !current_driver_name[0])
+ 		return false;
+ 
+@@ -183,17 +187,17 @@ static bool driver_filter(struct device *dev)
+ 	return ret;
+ }
+ 
+-#define err_printk(dev, entry, format, arg...) do {		\
+-		error_count += 1;				\
+-		if (driver_filter(dev) &&			\
+-		    (show_all_errors || show_num_errors > 0)) {	\
+-			WARN(1, "%s %s: " format,		\
+-			     dev_driver_string(dev),		\
+-			     dev_name(dev) , ## arg);		\
+-			dump_entry_trace(entry);		\
+-		}						\
+-		if (!show_all_errors && show_num_errors > 0)	\
+-			show_num_errors -= 1;			\
++#define err_printk(dev, entry, format, arg...) do {			\
++		error_count += 1;					\
++		if (driver_filter(dev) &&				\
++		    (show_all_errors || show_num_errors > 0)) {		\
++			WARN(1, "%s %s: " format,			\
++			     dev ? dev_driver_string(dev) : "NULL",	\
++			     dev ? dev_name(dev) : "NULL", ## arg);	\
++			dump_entry_trace(entry);			\
++		}							\
++		if (!show_all_errors && show_num_errors > 0)		\
++			show_num_errors -= 1;				\
+ 	} while (0);
+ 
+ /*
