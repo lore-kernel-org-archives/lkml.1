@@ -1,104 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbZHYIwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZHYIy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbZHYIwZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 04:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZHYIwY
+	id S1753141AbZHYIy1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 04:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZHYIy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 04:52:24 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:10081
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751851AbZHYIwY convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 04:52:24 -0400
-X-SpamScore: -10
-X-BigFish: VPS-10(z46fm34a4jz1432R98dN936eMa594izz1202hzzz32i6bh203h43j65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-X-WSS-ID: 0KOXCMT-02-6J5-02
-X-M-MSG: 
-Date: Tue, 25 Aug 2009 10:51:24 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Gautham Shenoy <ego@in.ibm.com>,
-       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH 11/15] sched: Pass unlimited __cpu_power information to
-	upper domain level groups
-Message-ID: <20090825085124.GF20811@alberich.amd.com>
-References: <20090820131243.GO29327@alberich.amd.com> <20090820134155.GZ29327@alberich.amd.com> <1251127297.7538.291.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1251127297.7538.291.camel@twins>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 25 Aug 2009 08:51:25.0326 (UTC) FILETIME=[3A46E2E0:01CA2561]
-Content-Transfer-Encoding: 8BIT
+	Tue, 25 Aug 2009 04:54:26 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49221 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbZHYIy0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 04:54:26 -0400
+Subject: Re: WARNING: kmemcheck: Caught 32-bit read from uninitialized
+ memory (f6f6e1a4), by kmemleak's scan_block()
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090825084808.GA14003@elte.hu>
+References: <20090825071959.GA25877@elte.hu>
+	 <19f34abd0908250104y6e877545y485a2104c2b97cfd@mail.gmail.com>
+	 <20090825083222.GC17692@elte.hu> <1251189914.7261.11.camel@penberg-laptop>
+	 <20090825084808.GA14003@elte.hu>
+Date: Tue, 25 Aug 2009 11:54:26 +0300
+Message-Id: <1251190466.7261.12.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 05:21:37PM +0200, Peter Zijlstra wrote:
-> On Thu, 2009-08-20 at 15:41 +0200, Andreas Herrmann wrote:
-> > For performance reasons __cpu_power in a sched_group might be limited
-> > such that the group can handle only one task. To correctly calculate
-> > the capacity in upper domain level groups the unlimited power
-> > information is required. This patch stores unlimited __cpu_power
-> > information in sched_groups.orig_power and uses this when calculating
-> > __cpu_power in upper domain level groups.
+On Tue, 2009-08-25 at 10:48 +0200, Ingo Molnar wrote:
+> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 > 
-> OK, so this tries to fix the cpu_power wreckage?
-
-Not completely. Just (partially) for my MN domain needs.
-
-> ok, so let me try this with an example:
+> > On Tue, 2009-08-25 at 10:32 +0200, Ingo Molnar wrote:
+> > > > In any case, I don't think it is very productive to run them both 
+> > > > at the same time, simply because kmemcheck slows every memory 
+> > > > access down so much and scanning memory doesn't exactly help that. 
+> > > > It _could_ be useful to have them compiled into the same kernel, 
+> > > > though, e.g. a distro "-debug" kernel.
+> > > > 
+> > > > Maybe you can just add the "depends on !KMEMLEAK" to 
+> > > > CONFIG_KMEMCHECK in tip/out-of-tree for now?
+> > > 
+> > > i think it would be far more intelligent to annotate those accesses 
+> > > by kmemleak as 'trust me, dont check'. Willing to test such a patch.
+> > 
+> > I guess something like this totally untested patch should do it. 
+> > Vegard, Catalin?
 > 
-> Suppose we have a dual-core with shared cache and SMT
-> 
->   0-3     MC
-> 0-1 2-3   SMT
-> 
-> Then both levels fancy setting SHARED_RESOURCES and both levels end up
-> normalizing the cpu_power to 1, so when we unplug cpu 2, load-balancing
-> gets all screwy because the whole system doesn't get normalized
-> properly.
+> Looks good - but doesnt apply cleanly to -tip because i picked up a 
+> number of kmemleak patches into tip:out-of-tree for testing - so 
+> i'll leave it up for Vegard/Catalin to do a blessed version of it 
+> against the kmemleak tree - which i hope will apply fine to tip too
+> :)
 
-So normalization is broken already, right?
+I thik this should be fine for -tip.
 
-In case of sched_smt_power_savings we have 1024 as __cpu_power for
-each SMT sched_group. And at MC level we have always 2048 as long as
-we have two sched_groups in the SMT level.
+			Pekka
 
-> What you propose here is every time we muck with cpu_power we keep the
-> real stuff in orig_power and use that to compute the level above.
-
-Yes.
-
-> Except you don't use it in the load-balancer proper, so normalization is
-> still hosed.
-
-Yes, the normalization problem that you've mentioned is not fixed by that.
-But it might be advisable to fix it.
-
-> Its a creative solution, but I'd rather see cpu_power returned to a
-> straight sum of actual power to normalize the inter-cpu runqueue weights
-> and do the placement decision using something else.
-
-This means not to artificially restrict __cpu_power to 1024 for performance
-scheduling?
-
-Seconded.
-But I don't have an impromptu patch for this. ;-(
-
-
-Regards,
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+diff --git a/arch/x86/mm/kmemcheck/kmemcheck.c b/arch/x86/mm/kmemcheck/kmemcheck.c
+index 2c55ed0..528bf95 100644
+--- a/arch/x86/mm/kmemcheck/kmemcheck.c
++++ b/arch/x86/mm/kmemcheck/kmemcheck.c
+@@ -331,6 +331,20 @@ static void kmemcheck_read_strict(struct pt_regs *regs,
+ 	kmemcheck_shadow_set(shadow, size);
+ }
+ 
++bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
++{
++	enum kmemcheck_shadow status;
++	void *shadow;
++
++	shadow = kmemcheck_shadow_lookup(addr);
++	if (!shadow)
++		return true;
++
++	status = kmemcheck_shadow_test(shadow, size);
++
++	return status == KMEMCHECK_SHADOW_INITIALIZED;
++}
++
+ /* Access may cross page boundary */
+ static void kmemcheck_read(struct pt_regs *regs,
+ 	unsigned long addr, unsigned int size)
+diff --git a/include/linux/kmemcheck.h b/include/linux/kmemcheck.h
+index 47b39b7..dc2fd54 100644
+--- a/include/linux/kmemcheck.h
++++ b/include/linux/kmemcheck.h
+@@ -34,6 +34,8 @@ void kmemcheck_mark_initialized_pages(struct page *p, unsigned int n);
+ int kmemcheck_show_addr(unsigned long address);
+ int kmemcheck_hide_addr(unsigned long address);
+ 
++bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size);
++
+ #else
+ #define kmemcheck_enabled 0
+ 
+@@ -99,6 +101,11 @@ static inline void kmemcheck_mark_initialized_pages(struct page *p,
+ {
+ }
+ 
++static inline bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
++{
++	return true;
++}
++
+ #endif /* CONFIG_KMEMCHECK */
+ 
+ /*
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 6debe0d..73947e4 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -97,6 +97,7 @@
+ #include <asm/processor.h>
+ #include <asm/atomic.h>
+ 
++#include <linux/kmemcheck.h>
+ #include <linux/kmemleak.h>
+ 
+ /*
+@@ -951,6 +952,8 @@ static void scan_object(struct kmemleak_object *object)
+ 	if (!(object->flags & OBJECT_ALLOCATED))
+ 		/* already freed object */
+ 		goto out;
++	if (!kmemcheck_is_obj_initialized(object->pointer, object->size))
++		goto out;
+ 	if (hlist_empty(&object->area_list)) {
+ 		void *start = (void *)object->pointer;
+ 		void *end = (void *)(object->pointer + object->size);
 
 
