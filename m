@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZHYCdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZHYCdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbZHYCdI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 22:33:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZHYCdF
+	id S1754245AbZHYCdZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 22:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbZHYCdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 22:33:05 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:41395 "EHLO
+	Mon, 24 Aug 2009 22:33:03 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:48626 "EHLO
 	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754114AbZHYCdA (ORCPT
+	with ESMTP id S1754199AbZHYCc6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 22:33:00 -0400
+	Mon, 24 Aug 2009 22:32:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=mrF0hJV2q914jcwF9Z3MMtgf9Jk94kF2lJZNxS6TW6FcRYojVklReS5hoR2P9zCLgX
-         nwxb8DB+jKPoDYULK6A4DyQhRMDNZ9zbWD3lDwJE4YFzqSh8l2X49e4Vza4dhWeCJWTM
-         ovaCG8bJ0jaqZ4kyYYDaOzCIxDbkbtbn8WeeE=
+        b=fQCD/oY+HjQyQoS/xiAoapFDqTS50hZvQbWP96FVMhC3uYy2PGR7GGTbEellwAbLpM
+         5FDM/A1/ioI/vmAS7I4J7slzfM8sG2J2EnNIlgfMLn8Xs8uAETbjz8fKq+TaKVX59wk4
+         oMUb3IxwuBtXjoGord8oypczVj9u7iiZ7kUPA=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
@@ -33,9 +33,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Marcel Hilzinger <mhilzinger@linuxnewmedia.de>,
        Edward Shishkin <edward.shishkin@gmail.com>,
        Laurent Riffard <laurent.riffard@free.fr>
-Subject: [PATCH 4/4] kill-the-bkl/reiserfs: panic in case of lock imbalance
-Date: Tue, 25 Aug 2009 04:32:50 +0200
-Message-Id: <1251167570-5233-5-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 3/4] kill-the-bkl/reiserfs: fix recursive reiserfs write lock in reiserfs_commit_write()
+Date: Tue, 25 Aug 2009 04:32:49 +0200
+Message-Id: <1251167570-5233-4-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
 References: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
@@ -44,10 +44,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Until now, trying to unlock the reiserfs write lock whereas the current
-task doesn't hold it lead to a simple warning.
-We should actually warn and panic in this case to avoid the user datas
-to reach an unstable state.
+reiserfs_commit_write() is always called with the write lock held.
+Thus the current calls to reiserfs_write_lock() in this function are
+acquiring the lock recursively.
+We can safely drop them.
+
+This also solves further assumptions for this lock to be really
+released while calling reiserfs_write_unlock().
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Jeff Mahoney <jeffm@suse.com>
@@ -56,28 +59,63 @@ Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Alexander Beregalov <a.beregalov@gmail.com>
 Cc: Laurent Riffard <laurent.riffard@free.fr>
 ---
- fs/reiserfs/lock.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ fs/reiserfs/inode.c |   11 ++---------
+ 1 files changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/fs/reiserfs/lock.c b/fs/reiserfs/lock.c
-index cb1bba3..ee2cfc0 100644
---- a/fs/reiserfs/lock.c
-+++ b/fs/reiserfs/lock.c
-@@ -37,11 +37,10 @@ void reiserfs_write_unlock(struct super_block *s)
- 
- 	/*
- 	 * Are we unlocking without even holding the lock?
--	 * Such a situation could even raise a BUG() if we don't
--	 * want the data become corrupted
-+	 * Such a situation must raise a BUG() if we don't want
-+	 * to corrupt the data.
+diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
+index 853f4f6..965c8ea 100644
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -2795,7 +2795,6 @@ int reiserfs_commit_write(struct file *f, struct page *page,
  	 */
--	WARN_ONCE(sb_i->lock_owner != current,
--		  "Superblock write lock imbalance");
-+	BUG_ON(sb_i->lock_owner != current);
+ 	if (pos > inode->i_size) {
+ 		struct reiserfs_transaction_handle myth;
+-		reiserfs_write_lock(inode->i_sb);
+ 		/* If the file have grown beyond the border where it
+ 		   can have a tail, unmark it as needing a tail
+ 		   packing */
+@@ -2806,10 +2805,9 @@ int reiserfs_commit_write(struct file *f, struct page *page,
+ 			REISERFS_I(inode)->i_flags &= ~i_pack_on_close_mask;
  
- 	if (--sb_i->lock_depth == -1) {
- 		sb_i->lock_owner = NULL;
+ 		ret = journal_begin(&myth, inode->i_sb, 1);
+-		if (ret) {
+-			reiserfs_write_unlock(inode->i_sb);
++		if (ret)
+ 			goto journal_error;
+-		}
++
+ 		reiserfs_update_inode_transaction(inode);
+ 		inode->i_size = pos;
+ 		/*
+@@ -2821,16 +2819,13 @@ int reiserfs_commit_write(struct file *f, struct page *page,
+ 		reiserfs_update_sd(&myth, inode);
+ 		update_sd = 1;
+ 		ret = journal_end(&myth, inode->i_sb, 1);
+-		reiserfs_write_unlock(inode->i_sb);
+ 		if (ret)
+ 			goto journal_error;
+ 	}
+ 	if (th) {
+-		reiserfs_write_lock(inode->i_sb);
+ 		if (!update_sd)
+ 			mark_inode_dirty(inode);
+ 		ret = reiserfs_end_persistent_transaction(th);
+-		reiserfs_write_unlock(inode->i_sb);
+ 		if (ret)
+ 			goto out;
+ 	}
+@@ -2840,11 +2835,9 @@ int reiserfs_commit_write(struct file *f, struct page *page,
+ 
+       journal_error:
+ 	if (th) {
+-		reiserfs_write_lock(inode->i_sb);
+ 		if (!update_sd)
+ 			reiserfs_update_sd(th, inode);
+ 		ret = reiserfs_end_persistent_transaction(th);
+-		reiserfs_write_unlock(inode->i_sb);
+ 	}
+ 
+ 	return ret;
 -- 
 1.6.2.3
 
