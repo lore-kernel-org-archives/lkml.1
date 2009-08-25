@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZHYI0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZHYI1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbZHYI0d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 04:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZHYI0c
+	id S1754762AbZHYI1v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 04:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZHYI1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 04:26:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46191 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753181AbZHYI0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 04:26:30 -0400
-Date: Tue, 25 Aug 2009 10:26:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, dwalker@fifo99.com,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:timers/core] timekeeping: Increase granularity of
-	read_persistent_clock()
-Message-ID: <20090825082612.GA17692@elte.hu>
-References: <20090814134811.013873340@de.ibm.com> <tip-d4f587c67fc39e0030ddd718675e252e208da4d7@git.kernel.org> <20090822103252.GA32369@elte.hu> <20090822171540.1220f50d@skybase> <20090822153346.GA3313@elte.hu> <19088.47213.327897.703458@cargo.ozlabs.ibm.com> <20090823084740.GA7651@elte.hu> <19090.1800.521794.839576@cargo.ozlabs.ibm.com> <20090824082318.GD2424@elte.hu> <19091.24374.210127.155521@drongo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19091.24374.210127.155521@drongo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 25 Aug 2009 04:27:49 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:44868 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753947AbZHYI1s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 04:27:48 -0400
+Subject: Re: WARNING: kmemcheck: Caught 32-bit read from uninitialized
+	memory  (f6f6e1a4), by kmemleak's scan_block()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1251187716.7261.2.camel@penberg-laptop>
+References: <20090825071959.GA25877@elte.hu>
+	 <19f34abd0908250104y6e877545y485a2104c2b97cfd@mail.gmail.com>
+	 <1251187716.7261.2.camel@penberg-laptop>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 25 Aug 2009 09:27:39 +0100
+Message-Id: <1251188859.15678.6.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Aug 2009 08:27:40.0482 (UTC) FILETIME=[E900F220:01CA255D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> > I actually start regretting that i do rebases too frequently - 
-> > some people (not you really, but you gave me the perfect example 
-> > to reply to) want more and seem to think they are _entitled_ to 
-> > rebases and are entitled to backmerges. The thing is, rebases 
-> > are not free. They are risky and error-prone, and they destroy 
-> > Git history.
+On Tue, 2009-08-25 at 11:08 +0300, Pekka Enberg wrote:
+> On Tue, 2009-08-25 at 10:04 +0200, Vegard Nossum wrote:
+> > 2009/8/25 Ingo Molnar <mingo@elte.hu>:
+> > > FYI, -tip testing triggered the following kmemcheck warning in
+> > > kmemleak:
+> > >
+> > > PM: Adding info for No Bus:vcsa7
+> > > WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (f6f6e1a4)
+> > > d873f9f600000000c42ae4c1005c87f70000000070665f666978656400000000
+> > >  i i i i u u u u i i i i i i i i i i i i i i i i i i i i i u u u
+[...]
+> > Already the patch to make kmemcheck and kmemleak mutually exclusive is
+> > underway. It is not surprising that kmemleak is scanning uninitialized
+> > memory. But if you say that you have tried it before, it is strange
+> > that it didn't appear until now.
 > 
-> To be honest, I didn't think I was asking for a rebase of 
-> something which was already cast in stone, since I didn't think 
-> you would have cast a commit in stone before doing a build test on 
-> powerpc.
+> Why isn't it surprising? Yes, it's non-fatal for kmemleak to scan
+> uninitialized memory but we could be looking at non-initialized struct
+> member that's a bug waiting to happen elsewhere in the code (that
+> doesn't trigger often).
 
-I think there's a fundamental disconnect with reality here.
+It isn't surprising to me either. Kmemleak scans the memory periodically
+but it cannot know whether such memory was initialised or not to avoid
+scanning it. So I would expect such warnings if both kmemleak and
+kmemcheck are enabled. Scanning uninitialised memory is fine with
+kmemleak, it just increases the number of false negatives (with
+SLAB_DEBUG enabled, however, the allocated blocks are pre-initialised).
 
-The thing is, as the maintainer of certain core kernel subsystems i 
-_have to_ mirror and honor the system usage and hardware preferences 
-of developers, testers and users. Those are predominantly x86 based 
-currently. I cross-test to a lot of architectures because i'm nice 
-but in practice it rarely matters.
+So kmemleak and kmemcheck should be exclusive, unless there is a way for
+kmemleak to validate an address with kmemcheck before deciding whether
+to scan a memory block.
 
-(It goes beyond that btw: i try to test more common drivers within 
-x86 too, etc.)
+-- 
+Catalin
 
-If you want to change that reality you can do it the old fashioned, 
-fair way: build cool hardware, send more SDVs to kernel developers, 
-make PowerPC more widely used, etc.
-
-If i put more effort into testing what nobody uses i'd be doing a 
-disservice to Linux - i'd disproportionately favor PowerPC just 
-because you are a squeakier wheel.
-
-I.e. please _earn_ your usage share, dont try to dicate it 
-artificially ... It does not work the other way, you cannot force in 
-the kernel space what PowerPC did not manage to achieve in the 
-marketplace.
-
-If you suggest that each and every subsystem maintainer who touches 
-code that can be built on non-x86 architectures has to cross-build 
-to 20+ architectures to be able to push out a tree, all the time, 
-and has to rebase if this ever gets omitted, you are really defying 
-reality and are hurting Linux.
-
-	Ingo
