@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZHYBIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZHYBPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbZHYBIY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 21:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZHYBIU
+	id S1754084AbZHYBPG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 21:15:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZHYBPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 21:08:20 -0400
-Received: from mga14.intel.com ([143.182.124.37]:61119 "EHLO mga14.intel.com"
+	Mon, 24 Aug 2009 21:15:04 -0400
+Received: from mga09.intel.com ([134.134.136.24]:39037 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753997AbZHYBIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 21:08:19 -0400
+	id S1753960AbZHYBPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 21:15:02 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,268,1249282800"; 
-   d="scan'208";a="179688744"
-Date: Mon, 24 Aug 2009 18:08:15 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: tiago.vignatti@nokia.com
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dri-devel@lists.sf.net" <dri-devel@lists.sf.net>
-Subject: Re: [PATCH] vga: implements VGA arbitration on Linux
-Message-ID: <20090824180815.0b5493bc@jbarnes-g45>
-In-Reply-To: <20090816150936.GA18896@cachaca>
-References: <1249969927-884-1-git-send-email-airlied@gmail.com>
-	<20090811161746.7b8878aa@jbarnes-g45>
-	<20090811162103.1b2a65c9@jbarnes-g45>
-	<20090812073516.GB6453@cachaca>
-	<20090812090214.2f5d3c4a@jbarnes-g45>
-	<20090816150936.GA18896@cachaca>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+   d="scan'208";a="442376930"
+Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS
+	devices
+From: Zhang Rui <rui.zhang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <20090821115100.GA20681@elf.ucw.cz>
+References: <1249290657.2670.250.camel@rzhang-dt>
+	 <20090804132129.GH18974@elf.ucw.cz> <1249434170.2670.386.camel@rzhang-dt>
+	 <20090805161931.GA9749@elf.ucw.cz> <1249522879.2670.480.camel@rzhang-dt>
+	 <20090806071353.GB21847@elf.ucw.cz> <1249548430.2670.517.camel@rzhang-dt>
+	 <20090806095258.GA31370@elf.ucw.cz> <1250497963.5351.33.camel@rzhang-dt>
+	 <20090821115100.GA20681@elf.ucw.cz>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 25 Aug 2009 09:13:40 +0800
+Message-Id: <1251162820.3483.61.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Aug 2009 18:09:36 +0300
-Tiago Vignatti <tiago.vignatti@nokia.com> wrote:
-
-> On Wed, Aug 12, 2009 at 06:02:14PM +0200, Jesse Barnes wrote:
-> > On Wed, 12 Aug 2009 10:35:16 +0300
-> > "Vignatti Tiago (Nokia-D/Helsinki)" <tiago.vignatti@nokia.com>
-> > wrote:
-> > > Okay, I can handle this documentation pretty easy. 
-> > > 
-> > > But honestly I'm not sure we (or some future developer) will use
-> > > it. The header (include/linux/vgaarb.h) is already very nice
-> > > documented. So, tell me what do you think Jesse.
-> > 
-> > As long as it's still accurate we may as well include it.
+On Fri, 2009-08-21 at 19:51 +0800, Pavel Machek wrote:
+> Hi!
 > 
-> Here it comes attached. Please review, Jesse.
+> > > > Could you please look at the documentation about ALS sysfs class in the
+> > > > patch I sent out just now, and comment on that one please? thanks!
+> > > 
+> > > I did. The interface is too ugly to live.
+> > 
+> > Hi, Pavel,
+> > 
+> > I tried to convert the ALS sysfs I/F to two attributes only, i.e.
+> > illuminance and adjustment.
+> > But I found several potential problems.
+> > 1. the illuminance to display adjustment mappings can not be convert to
+> > a brightness level smoothly.
+> > for example,
+> > 	illuminance	adjustment
+> > 1	600		70
+> > 2	900		100
+> > 3	1500		120
+> > when the current illuminance is not one of the values listed in the
+> > mappings, e.g. 750, the ALS driver don't have enough knowledge to get
+> > the proper display adjustment, especially that a proper display
+> > adjustment would be easy to select a proper brightness level.
+> > We'd better leave this to user space, which is more flexible.
+> 
+> Well, what interpolation does ACPI specs suggest to do?
 
-Applied to my linux-next branch, thanks.  If you want the other updates
-you mentioned to land, you should send a patch for them as well.
+Well, the spec says that "Extrapolation of the values between
+these points is OS-specific", and it uses ﻿a piecewise linear
+approximation in an example.
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+>  Maybe it is
+> easier to have linear interpolation in the kernel than to have ugly
+> 20-file interface?
+
+yes. we can do that.
+refreshed patch will be sent out later.
+
+thanks,
+rui
+
+
