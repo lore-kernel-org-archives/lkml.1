@@ -1,111 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZHYLdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZHYLg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbZHYLdK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 07:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZHYLdI
+	id S1754645AbZHYLg2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 07:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbZHYLg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 07:33:08 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:43259 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752725AbZHYLdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 07:33:06 -0400
+	Tue, 25 Aug 2009 07:36:26 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38697 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754159AbZHYLg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 07:36:26 -0400
+Date: Tue, 25 Aug 2009 13:36:19 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Linux USB <linux-usb@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Purpose of parameter in sysfs binary read
+Message-ID: <20090825113619.GB1341@ucw.cz>
+References: <9f97a27ccc13bd63ce99be04018b6bde.squirrel@intranet.cs.nmsu.edu> <20090818151427.GA6295@kroah.com> <ead4b2f9b7e5b1a415d010c524812e3a.squirrel@intranet.cs.nmsu.edu> <20090819170501.1dbd29a8@lxorguk.ukuu.org.uk> <5ea7c6a46fa1e051d69a302fdc8961ac.squirrel@intranet.cs.nmsu.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19091.52205.222449.441072@cargo.ozlabs.ibm.com>
-Date: Tue, 25 Aug 2009 21:33:01 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, dwalker@fifo99.com,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:timers/core] timekeeping: Increase granularity of
-	read_persistent_clock()
-In-Reply-To: <20090825101742.GA26801@elte.hu>
-References: <20090822103252.GA32369@elte.hu>
-	<20090822171540.1220f50d@skybase>
-	<20090822153346.GA3313@elte.hu>
-	<19088.47213.327897.703458@cargo.ozlabs.ibm.com>
-	<20090823084740.GA7651@elte.hu>
-	<19090.1800.521794.839576@cargo.ozlabs.ibm.com>
-	<20090824082318.GD2424@elte.hu>
-	<19091.24374.210127.155521@drongo.ozlabs.ibm.com>
-	<20090825082612.GA17692@elte.hu>
-	<19091.46451.893720.573893@cargo.ozlabs.ibm.com>
-	<20090825101742.GA26801@elte.hu>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <5ea7c6a46fa1e051d69a302fdc8961ac.squirrel@intranet.cs.nmsu.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+Hi!
 
-> * Paul Mackerras <paulus@samba.org> wrote:
+> > If its a bitmap image why not register the device as a framebuffer ?
+> >
 > 
-> > Ingo Molnar writes:
-> > 
-> > > If you suggest that each and every subsystem maintainer who 
-> > > touches code that can be built on non-x86 architectures has to 
-> > > cross-build to 20+ architectures to be able to push out a tree, 
-> > > all the time, and has to rebase if this ever gets omitted, you 
-> > > are really defying reality and are hurting Linux.
-> > 
-> > Nice straw man, but I never said or even suggested anything like 
-> > that. :)
+> Would that preclude it also being registered as a HID? The primary purpose
+> of the device is to function as a keypad input.
 > 
-> ... but what you say in essence amounts to that. Every change to a 
-> file that is built on an architecture 'affects' that architecture so 
-> your arguments can be repeated for that one. It's a slippery slope 
-> built on a wrong premise.
-
-Not at all.  I'm saying that committing code, some of which has never
-ever been compiled on any architecture, is just sloppy.  It's basic
-good engineering practice to have at least compiled the code you're
-committing - at least once on at least one architecture.  It's like
-making changes inside #ifdef CONFIG_FOO but never testing with
-CONFIG_FOO turned on.  You'd complain, and rightly, if someone did
-that.
-
-> I can only repeat what i said because i did not see you really 
-> counter the core of my argument (you snipped out much of my mail 
-> that details this and only replied to the last paragraph):
-
-Well, though much of what you said is true, in the end it seems to
-boil down to saying that non-x86 architectures don't have any right to
-expect any degree of care or attention from you, because only x86 is
-important.  And of course you have a perfect right to pay attention to
-whatever you find interesting and ignore anything else, including
-difficulties that you cause along the way for other kernel developers.
-
-There doesn't seem to be any useful response to that.
-
-> Say that patch also touches arch/xtensa/. Can you cross-build to 
-> xtensa?
-
-Sure, I just ask Michael Ellerman to point kisskb at a tree with my
-proposed patch in it.
-
-> > Patches which touch multiple architecture's arch-specific code 
-> > should also get sent to the maintainers of the affected 
-> > architectures and the linux-arch mailing list.  I don't recall 
-> > seeing this patch on linux-arch, though I may have missed it (and 
-> > anyway that would be Martin's responsibility not yours, but it 
-> > does contribute to the sense of being blindsided).
-> > 
-> > More generally - if you don't have the resources to do regular 
-> > build testing for powerpc or other architectures, then publish a 
-> > testing branch and we'll get kisskb 
-> > (http://kisskb.ellerman.id.au/) to build a selection of configs 
-> > and architectures automatically.
+> But, in addition to sending keystroke output you can send a usb control
+> message to change the backlight color and an interrupt message to load a
+> bitmap as an image.
 > 
-> Slowing down patches via buerocracy like that is not acceptable at 
-> all. Make developers care more about your architecture via natural 
-> means, not via buerocratic measures.
+> The bitmap itself is simple, but requires a specific format. Byte 0 must
+> be 0x03 followed by 31 bytes of null. The low bit of byte 32 is x,y (0,0)
+> second high bit is (0,1)... with low bit of byte 33 being (1,0)...
 
-The "should" in what I said is just good manners, not bureaucracy.
+Sounds very much like auxdisplay things we already have in tree...
 
-The stuff about kisskb was an offer to help, not bureaucracy.
-No-one's forcing you to do anything.
-
-Paul.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
