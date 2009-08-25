@@ -1,86 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZHYGhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbZHYGjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbZHYGhy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 02:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZHYGhw
+	id S1754430AbZHYGjM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 02:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZHYGjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 02:37:52 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:33876 "EHLO mx1.redhat.com"
+	Tue, 25 Aug 2009 02:39:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42916 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753029AbZHYGhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 02:37:51 -0400
-Message-ID: <4A938698.40302@redhat.com>
-Date: Tue, 25 Aug 2009 14:37:12 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	id S1753128AbZHYGjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 02:39:08 -0400
+Date: Tue, 25 Aug 2009 08:39:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Anirban Sinha <ASinha@zeugmasystems.com>, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH] : eliminate code duplication in kernel/tracepoint.c
+Message-ID: <20090825063901.GB14286@elte.hu>
+References: <DDFD17CC94A9BD49A82147DDF7D545C501EA8FBB@exchange.ZeugmaSystems.local> <4A933C55.4090808@cn.fujitsu.com> <DDFD17CC94A9BD49A82147DDF7D545C501EA902E@exchange.ZeugmaSystems.local> <4A93760C.4020107@cn.fujitsu.com>
 MIME-Version: 1.0
-To: mohan@in.ibm.com
-CC: Michael Ellerman <michael@ellerman.id.au>, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 6/8] powerpc: add CONFIG_KEXEC_AUTO_RESERVE
-References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain> <20090821065739.4855.19179.sendpatchset@localhost.localdomain> <1251121443.10645.56.camel@concordia> <20090824144542.GB11956@in.ibm.com>
-In-Reply-To: <20090824144542.GB11956@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A93760C.4020107@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-M. Mohan Kumar wrote:
-> On Mon, Aug 24, 2009 at 11:44:03PM +1000, Michael Ellerman wrote:
->   
->> On Fri, 2009-08-21 at 02:55 -0400, Amerigo Wang wrote:
->>     
->>> Introduce a new config option KEXEC_AUTO_RESERVE for powerpc.
->>>
->>> Index: linux-2.6/arch/powerpc/Kconfig
->>> ===================================================================
->>> --- linux-2.6.orig/arch/powerpc/Kconfig
->>> +++ linux-2.6/arch/powerpc/Kconfig
->>> @@ -346,6 +346,17 @@ config KEXEC
->>>  	  support.  As of this writing the exact hardware interface is
->>>  	  strongly in flux, so no good recommendation can be made.
->>>  
->>> +config KEXEC_AUTO_RESERVE
->>> +	bool "automatically reserve memory for kexec kernel"
->>> +	depends on KEXEC
->>> +	default y
->>> +	---help---
->>> +	  Automatically reserve memory for a kexec kernel, so that you don't
->>> +	  need to specify numbers for the "crashkernel=X@Y" boot option,
->>> +	  instead you can use "crashkernel=auto". To make this work, you need
->>> +	  to have more than 4G memory. On PPC, 256M is reserved, 1/32 memory
->>> +	  on PPC64, but it will not exceed 1T/32.
->>>       
->> That aside, I don't see how this will be useful in practice, if it only
->> works for memory sizes over 4G? Or are we saying that people with less
->> than 4G don't need crash kernels? If we're not saying that, those users,
->> or those users' distros, still need to do some logic to work out if they
->> have < 4GB of memory and if so pick a crash kernel size. So why can't
->> they pick the size in the > 4GB case also?
->>     
->
-> True, I wanted to test the patch and when tested on a ppc64 machine which
-> has RAM less than 4GB, I have to modify arch_default_crash_size routine to
-> return 256MB (I didn't have a PPC64 machine with more than 4GB RAM handy).
-> So its better to consider machines with less than 4GB RAM also.
->   
 
-OK, how about 2G on ppc? Is it safe to reserve 256M when I have 2G?
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> PPC64 crashkernel base is always 32MB. So at least ppc64 code should have
-> its own arch_default_crash_base to return 32MB to avoid the kernel warning
-> message "Crash kernel location must be 0x2000000"
->   
-Hmm, good point, how about KDUMP_KERNELBASE? It looks fine for both ppc 
-and ppc64.
+> 11:57, Anirban Sinha wrote:
+> > OK, here's the modified patch:
+> > 
+> >>From 52cea59801ac5b772c49ae995f4df1940a0d88fa Mon Sep 17 00:00:00 2001
+> > From: Anirban Sinha <asinha@zeugmasystems.com>
+> > Date: Mon, 24 Aug 2009 20:52:35 -0700
+> > Subject: cleanup: eliminate code duplication in kernel/tracepoint.c
+> > 
+> > 
+> > Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
+> > ---
+> >  kernel/tracepoint.c |    4 ----
+> >  1 files changed, 0 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+> > index 1ef5d3a..35eed9c 100644
+> > --- a/kernel/tracepoint.c
+> > +++ b/kernel/tracepoint.c
+> > @@ -554,13 +554,9 @@ int tracepoint_module_notify(struct notifier_block
+> > *self,
+> >  
+> >  	switch (val) {
+> >  	case MODULE_STATE_COMING:
+> > -		tracepoint_update_probe_range(mod->tracepoints,
+> > -			mod->tracepoints + mod->num_tracepoints);
+> > -		break;
+> >  	case MODULE_STATE_GOING:
+> >  		tracepoint_update_probe_range(mod->tracepoints,
+> >  			mod->tracepoints + mod->num_tracepoints);
+> > -		break;
+> 
+> I still think it's better not to remove this break. every "case" 
+> should have a break or a return, expect for the falling throught 
+> cases.
 
-Thanks!
+Correct. That might seem like a superfluous statement, but when we 
+add new cases it stays robust while with the missing break one can 
+create an unintended fall-through codepath.
 
-
+	Ingo
