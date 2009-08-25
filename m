@@ -1,141 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbZHYX2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbZHYX3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932378AbZHYX2m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932312AbZHYX2m
+	id S932383AbZHYX3o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932347AbZHYX3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:28:42 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:44375 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932315AbZHYX2l (ORCPT
+	Tue, 25 Aug 2009 19:29:43 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40996 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932288AbZHYX3m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:28:41 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AooFAEcKlEpMROOX/2dsb2JhbACBU9cmhBoF
-Date: Tue, 25 Aug 2009 19:28:40 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, peterz@infradead.org, jiayingz@google.com,
-       mbligh@google.com, lizf@cn.fujitsu.com, jistone@redhat.com,
-       tglx@linutronix.de, hpa@zytor.com
-Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
-Message-ID: <20090825232840.GA30362@Krystal>
-References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere> <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com> <20090825134005.GB2656@redhat.com> <20090825184734.GE2656@redhat.com> <20090825190415.GB8474@Krystal> <20090825205829.GG2656@redhat.com>
-Mime-Version: 1.0
+	Tue, 25 Aug 2009 19:29:42 -0400
+Date: Wed, 26 Aug 2009 01:29:35 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: david@lang.hm
+Cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090825232934.GG4300@elf.ucw.cz>
+References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <4A9468E8.607@redhat.com> <20090825225114.GE4300@elf.ucw.cz> <alpine.DEB.2.00.0908251600280.28411@asgard.lang.hm>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090825205829.GG2656@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 19:19:50 up 7 days, 10:09,  2 users,  load average: 0.37, 0.25,
-	0.25
+In-Reply-To: <alpine.DEB.2.00.0908251600280.28411@asgard.lang.hm>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jason Baron (jbaron@redhat.com) wrote:
-> On Tue, Aug 25, 2009 at 03:04:15PM -0400, Mathieu Desnoyers wrote:
-> > * Jason Baron (jbaron@redhat.com) wrote:
-> > > On Tue, Aug 25, 2009 at 09:40:05AM -0400, Jason Baron wrote:
-> > > > > > On Mon, Aug 24, 2009 at 05:40:18PM -0400, Jason Baron wrote:
-> > > > > > > Add a dynamic definition of NR_syscalls for x86_64. This is used in the 
-> > > > > > > syscall events tracing code.
-> > > > > > > 
-> > > > > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > > > > > 
-> > > > > > > ---
-> > > > > > >  include/linux/ftrace.h |    5 +++++
-> > > > > > >  1 files changed, 5 insertions(+), 0 deletions(-)
-> > > > > > > 
-> > > > > > > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> > > > > > > index dc3b132..3bd94ee 100644
-> > > > > > > --- a/include/linux/ftrace.h
-> > > > > > > +++ b/include/linux/ftrace.h
-> > > > > > > @@ -14,6 +14,11 @@
-> > > > > > >  
-> > > > > > >  #include <asm/ftrace.h>
-> > > > > > >  
-> > > > > > > +#ifdef CONFIG_X86_64
-> > > > > > > +#include <asm/asm-offsets.h>
-> > > > > > > +#define NR_syscalls (__NR_syscall_max + 1)
-> > > > > > > +#endif
-> > > > > > > +
-> > > > > > 
-> > > > > > 
-> > > > > > I'd rather see this in arch/x86/include/unistd_64.h, since
-> > > > > > NR_syscalls seems to be the defined in unistd.h in all archs.
-> > > > > > 
-> > > > > > That also makes a unified way to retrieve this number for
-> > > > > > other users.
-> > > > > > 
-> > > > > 
-> > > > > Yes, NR_syscalls should be included there.
-> > > > > 
-> > > > > -- Steve
-> > > > 
-> > > > right, for x86_64, unistd.h is included to generate __NR_syscall_max
-> > > > which is then used for NR_syscalls. So I did initially try it there, but
-> > > > there were dependency problems. I'll see what I can come up with...
-> > > > 
-> > > > thanks,
-> > > > 
-> > > > -Jason
-> > > 
-> > > ok, since unistd_64.h is used to generate offsets.c, which eventually
-> > > generates, asm/asm-offsets.h, which defines, __NR_syscall_max, we can't
-> > > just put #define of NR_syscalls in unistd_64.h. However, it seems the
-> > > only point in time that unistd_64.h can not depend upon __NR_syscall_max,
-> > > is before asm/asm-offsets.h is defined. Thus, the patch below passes in
-> > > a '-DCREATE_OFFSETS' during the creation of asm/asm-offsets.h, so that
-> > > we do not include it before it exists. The patch is hacky but works.
-> > > thoughts?
-> > 
-> > Ugh! My eyes hurt!
-> > 
-> 
-> sorry :)
-> 
-> > What you are doing here is to basically put back the hardcoded
-> > NR_syscalls rather that using the build infrastructure already in place.
-> > 
-> 
-> no. NR_syscalls is not hardcoded by this patch. Its defined in terms of
-> __NR_syscall_max which is dynamically generated by the kernel build.
-> 
-> > If my memory serves me well, unistd_64.h generates __NR_syscall_max
-> > automatically by being included multiples times. Can we generalize this
-> > and make the information generated available in an automaticaly
-> > generated header instead ? It is saved in ams-offsets.h currently as
-> > "__NR_syscall_max". We could also save it somewhere else meant to be
-> > included by C code.
-> > 
-> > Mathieu
-> > 
-> 
-> The request was to define NR_syscalls in unistd.h, since that is the
-> historical Linux location for it. Adding another automatically generated
-> header does not accomplish that. Even if I include that new file in
-> unistd.h, I'm still going to have a circular dependency, and require a
-> solution similar to what I've proposed.
-> 
 
-OK, it may not be pretty, but it makes sense. :)
+>>>> "ext3 works on flash and MD RAID5, as long as you do not have
+>>>> powerfail" seems to be the accurate statement, and if you don't need
+>>>> to protect against powerfails, you can just use ext2.
+>>>
+>>> Strange how your personal preference is totally out of sync with the
+>>> entire enterprise class user base.
+>>
+>> Perhaps noone told them MD RAID5 is dangerous? You see, that's exactly
+>> what I'm trying to document here.
+>
+> a MD raid array that's degraded to the point where there is no redundancy 
+> is dangerous, but I don't think that any of the enterprise users would be 
+> surprised.
+>
+> I think they will be surprised that it's possible that a prior failed  
+> write that hasn't been scrubbed can cause data loss when the array later  
+> degrades.
 
-Thanks,
-
-Mathieu
-
-> thanks,
-> 
-> -Jason
-> 
+Cool, so Ted's "raid5 has highly undesirable properties" is actually
+pretty accurate. Some raid person should write more detailed README,
+I'd say...
+									Pavel
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
