@@ -1,143 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbZHYLvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbZHYMKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbZHYLvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 07:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbZHYLvU
+	id S1754754AbZHYMKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 08:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbZHYMKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 07:51:20 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51149 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750904AbZHYLvU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 07:51:20 -0400
-Date: Tue, 25 Aug 2009 13:51:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Hannes Eder <hannes@hanneseder.net>
-Subject: Re: [PATCH 4/7] checkpatch: make -f alias --file, add --help, more
-	verbose help message
-Message-ID: <20090825115110.GE1341@ucw.cz>
-References: <1250891170-8599-1-git-send-email-apw@canonical.com> <1250891170-8599-5-git-send-email-apw@canonical.com>
+	Tue, 25 Aug 2009 08:10:46 -0400
+Received: from ozlabs.org ([203.10.76.45]:36143 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752765AbZHYMKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 08:10:45 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: virtualization@lists.linux-foundation.org
+Subject: Re: [PATCHv4 2/2] vhost_net: a kernel-level virtio server
+Date: Tue, 25 Aug 2009 21:40:40 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com
+References: <cover.1250693417.git.mst@redhat.com> <20090819150309.GC4236@redhat.com>
+In-Reply-To: <20090819150309.GC4236@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1250891170-8599-5-git-send-email-apw@canonical.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200908252140.41295.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-08-21 22:46:07, Andy Whitcroft wrote:
-> From: Hannes Eder <hannes@hanneseder.net>
-> 
-> Impact:
->   - More verbose help/usage message.
->   - Make the option -f an alias for --file.
->   - On -h, --help, and --version display help message and exit(0).
->   - With no FILE(s) given, exit(1) with "no input files".
->   - On invalid options display help/usage and exit(1).
-> 
-> Based on a patch by Pavel Machek.
-> 
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+On Thu, 20 Aug 2009 12:33:09 am Michael S. Tsirkin wrote:
+> What it is: vhost net is a character device that can be used to reduce
+> the number of system calls involved in virtio networking.
+> Existing virtio net code is used in the guest without modification.
 
-Acked-by: Pavel Machek <pavel@suse.cz>
+...
 
-> Signed-off-by: Andy Whitcroft <apw@canonical.com>
+> +config VHOST_NET
+> +	tristate "Host kernel accelerator for virtio net"
+> +	depends on NET && EVENTFD
+> +	---help---
+> +	  This kernel module can be loaded in host kernel to accelerate
+> +	  guest networking with virtio_net. Not to be confused with virtio_net
+> +	  module itself which needs to be loaded in guest kernel.
+> +
+> +	  To compile this driver as a module, choose M here: the module will
+> +	  be called vhost_net.
+
+Just want to note that the patch explanation and the Kconfig help text are
+exceptional examples of reader-oriented text.  Nice!
+
+> +		/* Sanity check */
+> +		if (vq->iov->iov_len != sizeof(struct virtio_net_hdr)) {
+> +			vq_err(vq, "Unexpected header len for TX: "
+> +			       "%ld expected %zd\n", vq->iov->iov_len,
+> +			       sizeof(struct virtio_net_hdr));
+> +			break;
+> +		}
+
+OK, this check, which is in the qemu version, is *wrong*.  There should be
+no assumption on sg boundaries.  For example, the guest should be able to
+put the virtio_net_hdr in the front of the skbuf data if there is room.
+
+You should try to explicitly "consume" sizeof(struct virtio_net_hdr) of the
+iov, and if fail, do this message.  You can skip the out <= 1 test then,
+too.
+
+Anyway, I really prefer vq->iov[0]. to vq->iov-> here.
+
+> +		/* Sanity check */
+> +		if (vq->iov->iov_len != sizeof(struct virtio_net_hdr)) {
+> +			vq_err(vq, "Unexpected header len for RX: "
+> +			       "%ld expected %zd\n",
+> +			       vq->iov->iov_len, sizeof(struct virtio_net_hdr));
+> +			break;
+
+Here too.
+
+> +	u32 __user *featurep = argp;
+> +	int __user *fdp = argp;
+> +	u32 features;
+> +	int fd, r;
+> +	switch (ioctl) {
+> +	case VHOST_NET_SET_SOCKET:
+> +		r = get_user(fd, fdp);
+> +		if (r < 0)
+> +			return r;
+> +		return vhost_net_set_socket(n, fd);
+> +	case VHOST_GET_FEATURES:
+> +		/* No features for now */
+> +		features = 0;
+> +		return put_user(features, featurep);
+
+We may well get more than 32 feature bits, at least for virtio_net, which will
+force us to do some trickery in virtio_pci.  I'd like to avoid that here,
+though it's kind of ugly.  We'd need VHOST_GET_FEATURES (and ACK) to take a
+struct like:
+
+	u32 feature_size;
+	u32 features[];
+
+> +int vhost_net_init(void)
+
+static?
+
+> +void vhost_net_exit(void)
+
+static?
+
+> +/* Start polling a file. We add ourselves to file's wait queue. The user must
+> + * keep a reference to a file until after vhost_poll_stop is called. */
+
+I experienced minor confusion from the comments in this file.  Where you said
+"user" I think "caller".  No biggie though.
+
+> +	memory->nregions = 2;
+> +	memory->regions[0].guest_phys_addr = 1;
+> +	memory->regions[0].userspace_addr = 1;
+> +	memory->regions[0].memory_size = ~0ULL;
+> +	memory->regions[1].guest_phys_addr = 0;
+> +	memory->regions[1].userspace_addr = 0;
+> +	memory->regions[1].memory_size = 1;
+
+Not sure I understand why there are two regions to start?
+
+> +	case VHOST_SET_VRING_BASE:
+> +		r = copy_from_user(&s, argp, sizeof s);
+> +		if (r < 0)
+> +			break;
+> +		if (s.num > 0xffff) {
+> +			r = -EINVAL;
+> +			break;
+> +		}
+> +		vq->last_avail_idx = s.num;
+> +		break;
+> +	case VHOST_GET_VRING_BASE:
+> +		s.index = idx;
+> +		s.num = vq->last_avail_idx;
+> +		r = copy_to_user(argp, &s, sizeof s);
+> +		break;
+
+Ah, this is my fault.  I didn't expose the last_avail_idx in the ring
+because the other side doesn't need it; but without it the ring state is not
+fully observable from outside (no external save / restore!).
+
+I have a patch which published these indices (we have room), see:
+	http://ozlabs.org/~rusty/kernel/rr-2009-08-12-1/virtio:ring-publish-indices.patch
+
+Perhaps we should use that mechanism instead?  We don't actually have to
+offer the feature (we don't care about the guest state), but it's nice as
+documentation.  I've been waiting for an excuse to use that patch.
+
+> +long vhost_dev_ioctl(struct vhost_dev *d, unsigned int ioctl, unsigned long arg)
+> +{
+> +	void __user *argp = (void __user *)arg;
+> +	long r;
+> +
+> +	mutex_lock(&d->mutex);
+> +	if (ioctl == VHOST_SET_OWNER) {
+> +		r = vhost_dev_set_owner(d);
+> +		goto done;
+> +	}
+> +
+> +	r = vhost_dev_check_owner(d);
+
+You can do a VHOST_SET_OWNER without being the owner?  So really,
+the -EPERM from all the vhost_dev_check_owner() is not a security thing,
+but a "I don't think you mean to do that" thing?
+
+If so, a comment above it might help?
+
+> +static const struct vhost_memory_region *find_region(struct vhost_memory *mem,
+> +						     __u64 addr, __u32 len)
+> +{
+> +	struct vhost_memory_region *reg;
+> +	int i;
+> +	/* linear search is not brilliant, but we really have on the order of 6
+> +	 * regions in practice */
+
+Ah, you actually mean "this code has been carefully cache-optimized for the
+common case" :)
+
+> +/* FIXME: this does not handle a region that spans multiple
+> + * address/len pairs */
+> +int translate_desc(struct vhost_dev *dev, u64 addr, u32 len,
+> +		   struct iovec iov[], int iov_count, int iov_size,
+> +		   unsigned *num)
+> +{
+> +	const struct vhost_memory_region *reg;
+> +	struct vhost_memory *mem;
+> +	struct iovec *_iov;
+> +	u64 s = 0;
+> +	int ret = 0;
+
+Would this be neater if it returned the num iovecs used?  And offsetting
+iov in the caller, rather than passing iov_count?
+
+> +	/* If their number is silly, that's a fatal mistake. */
+> +	if (head >= vq->num) {
+> +		vq_err(vq, "Guest says index %u > %u is available",
+> +		       head, vq->num);
+> +		return vq->num;
+> +	}
+
+Not a fatal mistake in this code/
+
+> +	vq->inflight++;
+
+vq->inflight was a brain fart in the old lguest code.  See
+commit ebf9a5a99c1a464afe0b4dfa64416fc8b273bc5c.
+
+Also, see other fixes to the lguest launcher since then which might
+be relevant to this code:
+	lguest: get more serious about wmb() in example Launcher code
+	lguest: clean up length-used value in example launcher
+
+> +	/* If they don't want an interrupt, don't send one, unless empty. */
+> +	if ((flags & VRING_AVAIL_F_NO_INTERRUPT) && vq->inflight)
+> +		return;
+
+And I wouldn't support notify on empty at all, TBH.  It should
+definitely be conditional on the guest accepting the NOTIFY_ON_EMPTY
+feature.
+
+> +/* The virtqueue structure describes a queue attached to a device. */
+> +struct vhost_virtqueue {
+...
+> +} ____cacheline_aligned;
+
+Really?  I'd want to see numbers on this one.  False sharing vs. more cache
+utilization.
+
+> +#define vq_err(vq, fmt, ...) do {                                  \
+> +		printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__);       \
+> +		if ((vq)->error_ctx)                               \
+> +				eventfd_signal((vq)->error_ctx, 1);\
+> +	} while (0)
+
+Mmm... guests should not be able to create unlimited printks in the host.
+
+But really, nothing major to object to in here...
 
 Thanks!
-
-
-> ---
->  scripts/checkpatch.pl |   55 +++++++++++++++++++++++++++++++++++++-----------
->  1 files changed, 42 insertions(+), 13 deletions(-)
-> 
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index b6f267b..e3c6b49 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -28,6 +28,41 @@ my $mailback = 0;
->  my $summary_file = 0;
->  my $root;
->  my %debug;
-> +my $help = 0;
-> +
-> +sub help {
-> +	my ($exitcode) = @_;
-> +
-> +	print << "EOM";
-> +Usage: $P [OPTION]... [FILE]...
-> +Version: $V
-> +
-> +Options:
-> +  -q, --quiet                quiet
-> +  --no-tree                  run without a kernel tree
-> +  --no-signoff               do not check for 'Signed-off-by' line
-> +  --patch                    treat FILE as patchfile (default)
-> +  --emacs                    emacs compile window format
-> +  --terse                    one line per report
-> +  -f, --file                 treat FILE as regular source file
-> +  --subjective, --strict     enable more subjective tests
-> +  --root=PATH                PATH to the kernel tree root
-> +  --no-summary               suppress the per-file summary
-> +  --mailback                 only produce a report in case of warnings/errors
-> +  --summary-file             include the filename in summary
-> +  --debug KEY=[0|1]          turn on/off debugging of KEY, where KEY is one of
-> +                             'values', 'possible', 'type', and 'attr' (default
-> +                             is all off)
-> +  --test-only=WORD           report only warnings/errors containing WORD
-> +                             literally
-> +  -h, --help, --version      display this help and exit
-> +
-> +When FILE is - read standard input.
-> +EOM
-> +
-> +	exit($exitcode);
-> +}
-> +
->  GetOptions(
->  	'q|quiet+'	=> \$quiet,
->  	'tree!'		=> \$tree,
-> @@ -35,7 +70,7 @@ GetOptions(
->  	'patch!'	=> \$chk_patch,
->  	'emacs!'	=> \$emacs,
->  	'terse!'	=> \$terse,
-> -	'file!'		=> \$file,
-> +	'f|file!'	=> \$file,
->  	'subjective!'	=> \$check,
->  	'strict!'	=> \$check,
->  	'root=s'	=> \$root,
-> @@ -45,22 +80,16 @@ GetOptions(
->  
->  	'debug=s'	=> \%debug,
->  	'test-only=s'	=> \$tst_only,
-> -) or exit;
-> +	'h|help'	=> \$help,
-> +	'version'	=> \$help
-> +) or help(1);
-> +
-> +help(0) if ($help);
->  
->  my $exit = 0;
->  
->  if ($#ARGV < 0) {
-> -	print "usage: $P [options] patchfile\n";
-> -	print "version: $V\n";
-> -	print "options: -q               => quiet\n";
-> -	print "         --no-tree        => run without a kernel tree\n";
-> -	print "         --terse          => one line per report\n";
-> -	print "         --emacs          => emacs compile window format\n";
-> -	print "         --file           => check a source file\n";
-> -	print "         --strict         => enable more subjective tests\n";
-> -	print "         --root           => path to the kernel tree root\n";
-> -	print "         --no-summary     => suppress the per-file summary\n";
-> -	print "         --summary-file   => include the filename in summary\n";
-> +	print "$P: no input files\n";
->  	exit(1);
->  }
->  
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Rusty.
