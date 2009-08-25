@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZHYGHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZHYGJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbZHYGHL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 02:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZHYGHJ
+	id S1754553AbZHYGJd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 02:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbZHYGJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 02:07:09 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:13005 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754549AbZHYGHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 02:07:07 -0400
-Message-ID: <4A937FA4.6000907@redhat.com>
-Date: Tue, 25 Aug 2009 09:07:32 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Tue, 25 Aug 2009 02:09:32 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:63271 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753405AbZHYGJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 02:09:31 -0400
+Message-ID: <4A937FDE.4050506@ct.jp.nec.com>
+Date: Tue, 25 Aug 2009 15:08:30 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Haneef Syed <Haneef.Syed@lntinfotech.com>
-CC: kvm-owner@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Gleb Natapov <gleb@redhat.com>
-Subject: Re: IBM server-X3650 issue with kvm modules
-References: <OFB13FCF1E.D85554FA-ON6525761D.00201C5A-6525761D.002108B9@lntinfotech.com>
-In-Reply-To: <OFB13FCF1E.D85554FA-ON6525761D.00201C5A-6525761D.002108B9@lntinfotech.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@elte.hu>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       John Stultz <johnstul@us.ibm.com>, Daniel Walker <dwalker@fifo99.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -tip] timekeeping: fix getboottime() sets invalid value
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/25/2009 09:00 AM, Haneef Syed wrote:
-> when i run qemu utilities to install redhat or fedora guest on montavista
-> host running in ibm server, i found that there is vmwrite error occurs on
-> following
->
->    
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-You've already posted this before.  It's impossible for us to debug kvm 
-interactions with the montavista kernel.  Please take it up with 
-montavista's support.
+Don't use timespec_add_safe() with wall_to_monotonic, because wall_to_monotonic
+has negative values which will cause overflow in timespec_add_safe().
+That makes btime in /proc/stat invalid.
 
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ kernel/time/timekeeping.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 03cbeb3..fb0f46f 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -826,9 +826,11 @@ void update_wall_time(void)
+  */
+ void getboottime(struct timespec *ts)
+ {
+-	struct timespec boottime;
++	struct timespec boottime = {
++		.tv_sec = wall_to_monotonic.tv_sec + total_sleep_time.tv_sec,
++		.tv_nsec = wall_to_monotonic.tv_nsec + total_sleep_time.tv_nsec
++	};
+ 
+-	boottime = timespec_add_safe(wall_to_monotonic, total_sleep_time);
+ 	set_normalized_timespec(ts, -boottime.tv_sec, -boottime.tv_nsec);
+ }
+ 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+1.6.3.3
 
