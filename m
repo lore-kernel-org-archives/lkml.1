@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZHYS7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbZHYS71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbZHYS7N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755782AbZHYS7L
+	id S1756003AbZHYS71 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932079AbZHYS7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:59:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55606 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755737AbZHYS7K (ORCPT
+	Tue, 25 Aug 2009 14:59:25 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:24116 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755954AbZHYS7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:59:10 -0400
-Date: Tue, 25 Aug 2009 11:57:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       linux-kernel@vger.kernel.org, shai@scalex86.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch] x86: 2.6.31-rc7 crash due to buggy flat_phys_pkg_id
-In-Reply-To: <4A943290.5080606@kernel.org>
-Message-ID: <alpine.LFD.2.01.0908251155570.3218@localhost.localdomain>
-References: <20090824182659.GA6842@localdomain> <4A932809.1000103@kernel.org> <20090825012632.GB6842@localdomain> <4A9372A1.9090905@kernel.org> <20090825171716.GC6456@localdomain> <20090825181500.GB3277@elte.hu> <20090825183130.GA5806@lenovo>
- <4A943290.5080606@kernel.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 25 Aug 2009 14:59:21 -0400
+Date: Tue, 25 Aug 2009 11:58:39 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, hch@lst.de,
+       linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [PATCH 05/17] ocfs2: Use __generic_file_aio_write instead of
+ generic_file_aio_write_nolock
+Message-ID: <20090825185839.GB9812@mail.oracle.com>
+Mail-Followup-To: Jan Kara <jack@suse.cz>,
+	LKML <linux-kernel@vger.kernel.org>, hch@lst.de,
+	linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <1250875447-15622-1-git-send-email-jack@suse.cz>
+ <1250875447-15622-6-git-send-email-jack@suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1250875447-15622-6-git-send-email-jack@suse.cz>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4A94347E.00B7:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 25 Aug 2009, Yinghai Lu wrote:
+On Fri, Aug 21, 2009 at 07:23:55PM +0200, Jan Kara wrote:
+> Use the new helper. We have to submit data pages ourselves in case of O_SYNC
+> write because __generic_file_aio_write does not do it for us. OCFS2 developpers
+> might think about moving the sync out of i_mutex which seems to be easily
+> possible but that's out of scope of this patch.
 > 
-> initial apic id and apic id could be different.
-> 
-> and we should use initial apic id to get correct phys pkg id in case BIOS set crazy apic id.
+> CC: ocfs2-devel@oss.oracle.com
+> CC: Joel Becker <joel.becker@oracle.com>
+> Signed-off-by: Jan Kara <jack@suse.cz>
+Acked-by: Joel Becker <joel.becker@oracle.com>
+ 
 
-Yinghai - I think you missed Cyrills' point.  Let me repeat it:
+-- 
 
-	"cpu_has_apic bit turned off"
+"The real reason GNU ls is 8-bit-clean is so that they can
+ start using ISO-8859-1 option characters."
+	- Christopher Davis (ckd@loiosh.kei.com)
 
-there's no apic. No "initial apic id". No "phys pkg id". No nothing. 
-
-Discussions about "correct phys pkg id" are pointless.
-
-			Linus
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
