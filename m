@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbZHYH61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZHYH7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbZHYH61 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 03:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZHYH61
+	id S1754373AbZHYH7h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 03:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbZHYH7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 03:58:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59356 "EHLO mx2.mail.elte.hu"
+	Tue, 25 Aug 2009 03:59:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:34941 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750887AbZHYH60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 03:58:26 -0400
-Date: Tue, 25 Aug 2009 09:58:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Neil Horman <nhorman@tuxdriver.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Neil Horman <nhorman@tuxdriver.com>, Wei Yongjun <yjwei@cn.fujitsu.com>,
-       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] trace_events: fix napi's tracepoint
-Message-ID: <20090825075816.GB857@elte.hu>
-References: <4A937EF5.4040505@cn.fujitsu.com> <4A93895F.4010708@cn.fujitsu.com>
+	id S1750887AbZHYH7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 03:59:36 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+Date: Tue, 25 Aug 2009 17:29:32 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Roland McGrath <roland@redhat.com>, Helge Deller <deller@gmx.de>,
+       "linux-parisc" <linux-parisc@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4A89CC4D.5040801@gmx.de> <20090819013124.7539E4730F@magilla.sf.frob.com> <1250645916.18426.12.camel@mulgrave.site>
+In-Reply-To: <1250645916.18426.12.camel@mulgrave.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A93895F.4010708@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200908251729.32855.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
-
-> Currently, the napi's tracepoint works will is depend on
-> "DECLARE_TRACE" definiens in include/trace/define_trace.h,
-> like below:
+On Wed, 19 Aug 2009 11:08:36 am James Bottomley wrote:
+> On Tue, 2009-08-18 at 18:31 -0700, Roland McGrath wrote:
+> > > Actually, I think we do; the module loader is a runtime linker, after
+> > > all.  [...]
+> > 
+> > Indeed you do.  I've just read some of the parts of ld that normally
+> > address this issue for HPPA.  They don't run for ld -r.  So this is just
+> > another fine example of the lunacy of the ET_REL .ko madness that would be
+> > naturally avoided by a sensible tweaked ET_DYN scheme.
 > 
-> #include <trace/events/skb.h>    // include define_trace.h
-> #include <trace/events/napi.h>
-> 
-> there have error, if we remove "#include <trace/events/skb.h>"
-> or include napi.h in the front of include skb.h, It should
-> depend on the definiens in include/linux/tracepoint.h and we
-> can remove the "DECLARE_TRACE" definiens in
-> include/trace/define_trace.h, because "TRACE_EVENT" not use it
-> 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> ---
->  include/trace/define_trace.h |    4 ----
->  net/core/net-traces.c        |    4 +++-
->  2 files changed, 3 insertions(+), 5 deletions(-)
+> Using ET_DYN would have made our life easier when trying to code the
+> kernel module loader as well.  The basic problem is, of course, that
+> this is simple on an x86, so it didn't matter that much for the initial
+> implementation.  It just becomes less simple on anything else.
 
-This will collide with tracing bits in the networking tree. The 
-skb-tracing plugin there should be turned into proper TRACE_EVENT() 
-tracepoints.
+Actually, x86 was one of the archs which fucked us.  Richard Henderson and
+I *had* this, but ld -shared without -fPIC helpfully tells you "you're doing
+it wrong" on x86-64.
 
-Neil was away for some time but i think soon we should see some 
-movement here.
+There were other issues, ISTR MIPS was a showstopper.  Google finds the
+following summary I wrote when this stuff was fresher:
 
-	Ingo
+http://lkml.org/lkml/2003/1/12/271 :
+
+	While ET_DYN modules are a reasonably serious win for ia64 (and
+	probably hppa) (ie. -300 lines or so), they're a minor win for alpha
+	and ppc64 (-100 lines or so), and no real change for arm, i386, ppc,
+	sparc, and sparc64.  It's a lose for x86_64 (toolchain fixes, unless
+	they want to use -fPIC for modules), mips and mips64 (major toolchain
+	fixes, unless they want to use -fPIC for modules and stop using r28
+	for current inside modules).
+
+> >   But that battle was
+> > lost way, way back in the long, long ago, so long ago they were probably
+> > even still making HPPA machines then.
+
+This isn't quite true; userspace should handle ET_DYN fine (at least, it
+was supposed to).
+
+So you could change any arch to use that, but it's a fair refactor if we leave
+some archs behind.
+
+If anyone's really interested, I can dig out the bits I have...
+
+> So that leaves us stuck with the current implementation and still
+> needing a solution for the duplicate section names?
+
+If this is not a "don't do that" bug, we could try hacking around it in
+parisc's module_arch_frob_sections?
+
+Rusty.
