@@ -1,81 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbZHYXtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932715AbZHYXvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932704AbZHYXtn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932681AbZHYXtm
+	id S932715AbZHYXvG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:51:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932692AbZHYXvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:49:42 -0400
-Received: from mail.lang.hm ([64.81.33.126]:51254 "EHLO bifrost.lang.hm"
+	Tue, 25 Aug 2009 19:51:05 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40387 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932426AbZHYXtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:49:41 -0400
-Date: Tue, 25 Aug 2009 16:48:45 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Ric Wheeler <rwheeler@redhat.com>
-cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-In-Reply-To: <4A947682.2010204@redhat.com>
-Message-ID: <alpine.DEB.2.00.0908251647040.28411@asgard.lang.hm>
-References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz>
- <4A9468E8.607@redhat.com> <20090825225114.GE4300@elf.ucw.cz> <4A946DD1.8090906@redhat.com> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S932691AbZHYXvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 19:51:03 -0400
+Date: Tue, 25 Aug 2009 16:51:04 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+Subject: Re: [PATCH -tip] Create rcutree plugins to handle hotplug CPU for
+	multi-level trees
+Message-ID: <20090825235104.GP6616@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090825182204.GA26736@linux.vnet.ibm.com> <20090825184800.GD2448@Krystal>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090825184800.GD2448@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009, Ric Wheeler wrote:
+On Tue, Aug 25, 2009 at 02:48:00PM -0400, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > When offlining CPUs from a multi-level tree, there is the possibility
+> > of offlining the last CPU from a given node when there are preempted
+> > RCU read-side critical sections that started life on one of the CPUs on
+> > that node.  In this case, the corresponding tasks will be enqueued via
+> > the task_struct's rcu_node_entry list_head onto one of the rcu_node's
+> > blocked_tasks[] lists.  These tasks need to be moved somewhere else
+> > so that they will prevent the current grace period from ending.
+> > That somewhere is the root rcu_node.
+> > 
+> > With this patch, TREE_PREEMPT_RCU passes moderate rcutorture testing
+> > with aggressive CPU-hotplugging (no delay between inserting/removing
+> > randomly selected CPU).
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> [...]
+> >  /*
+> > + * Handle tasklist migration for case in which all CPUs covered by the
+> > + * specified rcu_node have gone offline.  Move them up to the root
+> > + * rcu_node.  The reason for not just moving them to the immediate
+> > + * parent is to remove the need for rcu_read_unlock_special() to
+> > + * make more than two attempts to acquire the target rcu_node's lock.
+> > + *
+> > + * The caller must hold rnp->lock with irqs disabled.
+> > + */
+> > +static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
+> > +				      struct rcu_node *rnp)
+> > +{
+> > +	int i;
+> > +	struct list_head *lp;
+> > +	struct list_head *lp_root;
+> > +	struct rcu_node *rnp_root = rcu_get_root(rsp);
+> > +	struct task_struct *tp;
+> > +
+> > +	if (rnp == rnp_root)
+> > +		return;  /* Shouldn't happen: at least one CPU online. */
+> > +
+> 
+> Hrm, is it "shouldn't happen" or "could be called, but we should not
+> move anything" ?
+> 
+> If it is really the former, we could put a WARN_ON_ONCE (or, more
+> aggressively, a BUG_ON) there and see when the caller is going crazy
+> rather than ignoring the error.
 
-> On 08/25/2009 07:26 PM, Pavel Machek wrote:
->> 
->>>>> Basically, any file system (Linux, windows, OSX, etc) that writes into
->>>>> the page cache will lose data when you hot unplug its storage. End of
->>>>> story, don't do it!
->>>> 
->>>> No, not ext3 on SATA disk with barriers on and proper use of
->>>> fsync(). I actually tested that.
->>>> 
->>>> Yes, I should be able to hotunplug SATA drives and expect the data
->>>> that was fsync-ed to be there.
->>> 
->>> You can and will lose data (even after fsync) with any type of storage at
->>> some rate. What you are missing here is that data loss needs to be
->>> measured in hard numbers - say percentage of installed boxes that have
->>> config X that lose data.
->> 
->> I'm talking "by design" here.
->> 
->> I will lose data even on SATA drive that is properly powered on if I
->> wait 5 years.
->> 
->
-> You are dead wrong.
->
-> For RAID5 arrays, you assume that you have a hard failure and a power outage 
-> before you can rebuild the RAID (order of hours at full tilt).
+The only way this could happen is if we managed to offline the last CPU.
+Which does raise the question as to exactly what would be executing
+this code, doesn't it?  ;-)
 
-and that the power outage causes a corrupted write.
+So, yes, WARN_ON_ONCE() seems reasonable here.  Or perhaps WARN_ONCE().
 
->>> I can promise you that hot unplugging and replugging a S-ATA drive will
->>> also lose you data if you are actively writing to it (ext2, 3, whatever).
->> 
->> I can promise you that running S-ATA drive will also lose you data,
->> even if you are not actively writing to it. Just wait 10 years; so
->> what is your point?
->
-> I lost a s-ata drive 24 hours after installing it in a new box. If I had MD5 
-> RAID5, I would not have lost any.
+I added a WARN_ONCE().  Will send patch later.
 
-me to, in fact just after I copied data from a raid array to it so that I 
-could rebuild the raid array differently :-(
+> > +	/*
+> > +	 * Move tasks up to root rcu_node.  Rely on the fact that the
+> > +	 * root rcu_node can be at most one ahead of the rest of the
+> > +	 * rcu_nodes in terms of gp_num value.
+> 
+> Do you gather the description of such constraints in a central place
+> somewhere around the code or design documentation in the kernel tree ?
+> I just want to point out that every clever assumption like this, which
+> is based on the constraints imposed by the current design, should be
+> easy to list in a year from now if we ever decide to move from tree to
+> hashed RCU (or whichever next step will be necessary then).
 
-David Lang
+Interesting point...  The LWN article doesn't get to this level of
+detail (http://lwn.net/Articles/305782/), and in any case struct
+rcu_node didn't have a gpnum when that article was written.
+
+For the moment, I added a comment to the ->gpnum field's comment.
+
+> I am just worried that migration helpers seems to be added to the design
+> as an afterthought, and therefore might make future evolution more
+> difficult.
+
+Ah!
+
+No, this limitation is inherent, at least for any rcu_node covering at
+least one online CPU.  The root rcu_node's ->gpnum field cannot advance
+until all subordinate nodes' ->gpnum fields have caught up, as this
+defines a grace period.
+
+As to the case of the rcu_node that has no online CPUs, such nodes had
+better not be able to have additional CPUs go offline, as the code is in
+no shape to tolerate negative numbers of online CPUs per node.  Nor do
+I plan to add support for this situation.  ;-)
+
+							Thanx, Paul
