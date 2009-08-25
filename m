@@ -1,100 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZHYVqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZHYVtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755273AbZHYVqh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 17:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbZHYVqh
+	id S1756042AbZHYVtn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 17:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZHYVtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 17:46:37 -0400
-Received: from emroute3.ornl.gov ([160.91.4.110]:46914 "EHLO emroute3.ornl.gov"
+	Tue, 25 Aug 2009 17:49:42 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:37094 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751441AbZHYVqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 17:46:36 -0400
-Date: Tue, 25 Aug 2009 17:46:35 -0400
-From: David Dillow <dave@thedillows.org>
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-In-reply-to: <m1k50r8u4p.fsf@fess.ebiederm.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <1251236795.9607.34.camel@lap75545.ornl.gov>
-MIME-version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10)
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <200903041828.49972.m.bueker@berlin.de>
- <1242001754.4093.12.camel@obelisk.thedillows.org>
- <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
- <1242077392.3716.15.camel@lap75545.ornl.gov> <4A09DC3E.2080807@googlemail.com>
- <1242268709.4979.7.camel@obelisk.thedillows.org>
- <4A0C6504.8000704@googlemail.com>
- <1242328457.32579.12.camel@lap75545.ornl.gov>
- <4A0C7443.1010000@googlemail.com>
- <1243042174.3580.23.camel@obelisk.thedillows.org>
- <m1skfkrik2.fsf@fess.ebiederm.org>
- <1250895567.23419.1.camel@obelisk.thedillows.org>
- <1250897657.23419.5.camel@obelisk.thedillows.org>
- <m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
- <1250973787.3582.14.camel@obelisk.thedillows.org>
- <m1r5v0ogvw.fsf@fess.ebiederm.org>
- <1251169150.4023.11.camel@obelisk.thedillows.org>
- <m1prajabk8.fsf@fess.ebiederm.org>
- <1251232848.9607.15.camel@lap75545.ornl.gov> <m1k50r8u4p.fsf@fess.ebiederm.org>
+	id S1751697AbZHYVtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 17:49:41 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: "Helge Deller" <deller@gmx.de>
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+Date: Tue, 25 Aug 2009 17:49:40 -0400
+User-Agent: KMail/1.12.0 (Linux/2.6.30.4; KDE/4.3.0; x86_64; ; )
+Cc: roland@redhat.com, James.Bottomley@hansenpartnership.com,
+       rusty@rustcorp.com.au, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, John David Anglin <dave.anglin@nrc.ca>
+References: <4A89CC4D.5040801@gmx.de> <20090820115122.123520@gmx.net> <20090820122537.29410@gmx.net>
+In-Reply-To: <20090820122537.29410@gmx.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1908013.TYp3mq9syD";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908251749.42647.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 14:24 -0700, Eric W. Biederman wrote:
-> David Dillow <dave@thedillows.org> writes:
-> > I'm curious how you managed to receive an packet between us clearing the
-> > all current sources and reading the current source list continuously for
-> > 60+ seconds -- the loop is basically
-> 
-> 
-> > status = get IRQ events from chip
-> > while (status) {
-> > 	/* process events, start NAPI if needed */
-> > 	clear current events from chip
-> > 	status = get IRQ events from chip
-> > }
-> >
-> > That seems like a very small race window to consistently hit --
-> > especially for long enough to trigger soft lockups.
-> 
-> Interesting indeed.  When I hit the guard we had popped out of NAPI
-> mode while we were in the loop.  The only way to do that is if
-> poll and interrupt were running on different cpus.
+--nextPart1908013.TYp3mq9syD
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-That is the normal case on an SMP machine, but again that race window
-should be fairly small as well -- from the __napi_schedule() to the
-acking of the interrupt source is only a few lines of code, most of
-which is in an error case that is skipped. Granted there may be a fair
-number of instructions there if debugging or tracing is on -- I've not
-checked -- but even then hitting that race consistently for 60+ seconds
-doesn't seem likely.
+On Thursday 20 August 2009 08:25:37 Helge Deller wrote:
+> The reason seems to be, that something in the newer gcc compilers changed
+> to generate multiple sections all named ".text" for the PCREL17
+> relocations. Older compilers named those sections ".text.1", ".text.2",
+> ".text.3" and so forth.
 
-Being out of NAPI in the guard may be a red herring -- it doesn't tell
-us how long you were out of NAPI when you hit it. If there's a stuck bit
-somewhere, then you could have been out of NAPI after the first cycle
-and we'd have no way to tell. You could add some variables to keep track
-of the status and mask values, and how long ago they changed to see.
+we saw this on Blackfin some time ago and it was tracked back to attribute =
+mismatches in
+assembly files:
+http://blackfin.uclinux.org/gf/tracker/3638
+http://blackfin.uclinux.org/gf/project/linux-kernel/scmsvn/?action=3Dbrowse=
+&path=3D/trunk/arch/blackfin/mach-
+common/entry.S&r1=3D3898&r2=3D3897&pathrev=3D3898
 
-> I am a bit curious about TxDescUnavail.  Perhaps we had a temporary
-> memory shortage and that is what was screaming?  I don't think we do
-> anything at all with that state.
+when `ld -r` ran, the sections named .text couldnt be combined due to diffe=
+rent attributes so ld just added the .#=20
+suffix for us
 
-TxDescUnavail is normal -- it means the chip finished sending everything
-we asked it to.
+if you have scanelf installed (from pax-utils), that might help track back =
+the source object ... `scanelf -qrk .text.1 ./`
+=2Dmike
 
-> Perhaps the flaw here is simply not masking TxDescUnavail while we are
-> in NAPI mode?
+--nextPart1908013.TYp3mq9syD
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-No, we never enable it on the chip, and it gets masked out when we
-decide if we want to go to NAPI mode -- it is not set in tp->napi_event:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
-	if (status & tp->intr_mask & tp->napi_event) {
+iQIcBAABAgAGBQJKlFx2AAoJEEFjO5/oN/WBMjkP/RTTDa+8jdxV2KveG3fCmwBa
+DGFpg8aN4ADgeATlkiNFZgh/c9WMs4aQAvt4o0kQ4vIcMMeBjwxn/CVFteRDpCBk
+4ToIzwohjcDJAurTSD/WXwNA2C0ekYAh2eIq5+N+lihZMAG6wic8OlkNdcBDYqO4
+vtD4UEV0TyyTxQJqn5BdJ/+T2Xt85NoJd4yzp6pD9lI3QQLsDCpn20wWsc1icBoe
+BxX4l98Xo/EN6ac5Tz8dMbt52OTpXwm2SqLHQnbkCTFv65rXwoh0h58TF8Oe5jz+
+J3ga/skXfYV4Pf+GK4PwuLjwM27JItmYeEzlDE4sMmxaHPpcUwAhoytoAn5LG+HD
+1lLVGnhMHdJE+s7JV4/fFGRvNjaD3v6Z5uUPsN0w1qaSU63eNKa1T4gCYAAhP5j2
+QXHstMHfUeHzeJ2bRPvvrND34rgOnlsV97899SZq0UdsbGkZB0RBtwpTBeCJ4g2K
+nifuK0MTNCwyufmpajfgmB3k9O3yqKNtLNuUvdLoYV7zhjLE9geAnP+Wvl7fMpMe
+MtqIyhYYMbemHfJwWncbZAsiyNbK9swlVm7s9Z1fp4dySMrJYkzc9HugYv1JVXB1
+A4/lK3pmj7OjvxJCzz0LMBQJte5I8NgP6pmnsEpxNntxEmBvi6wrO+GJ4gIEHmw+
+xNN6RfQ4Bdu4H/AfU1Mo
+=afY3
+-----END PGP SIGNATURE-----
 
-
-
+--nextPart1908013.TYp3mq9syD--
