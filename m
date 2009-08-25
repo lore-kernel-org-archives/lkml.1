@@ -1,100 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbZHYAK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZHYALy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026AbZHYAK6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 20:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZHYAKz
+	id S1754022AbZHYALy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 20:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZHYALx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 20:10:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52690 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753671AbZHYAKz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 20:10:55 -0400
-Date: Mon, 24 Aug 2009 17:09:08 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: linux-kernel@vger.kernel.org, x86@kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer dereference
- at 0000000000000008
-In-Reply-To: <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0908241655370.3824@localhost.localdomain>
-References: <m163cjhwa4.fsf@fess.ebiederm.org> <m1skfnggrb.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain> <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 24 Aug 2009 20:11:53 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44511 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753700AbZHYALw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 20:11:52 -0400
+Date: Tue, 25 Aug 2009 10:11:47 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: linux-next: origin tree build warning
+Message-Id: <20090825101147.fb929fcb.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__25_Aug_2009_10_11_47_+1000_5fYDC3ARW03IRdbG"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__25_Aug_2009_10_11_47_+1000_5fYDC3ARW03IRdbG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Dave,
 
-On Mon, 24 Aug 2009, Linus Torvalds wrote:
-> 
-> But I wanted to let people know that the patch is clearly not the "last 
-> word" on this. It's a useful thing to try, but we need something better.
+Today's linux-next build (x86_64 allmodconfig, gcc 4.4.0) produced these
+warnings:
 
-This may be better (this is a replacement for the previous patch).
+net/sched/sch_api.c: In function 'qdisc_watchdog':
+net/sched/sch_api.c:460: warning: initialization from incompatible pointer =
+type
+net/sched/sch_cbq.c: In function 'cbq_undelay':
+net/sched/sch_cbq.c:595: warning: initialization from incompatible pointer =
+type
 
-Instead of using 'cancel_delayed_work_sync()', it makes tty_ldisc_hangup() 
-do a 'flush_scheduled_work()' afterwards, like the other callers already 
-do.
+Introduced by commit ee5f9757ea17759e1ce5503bdae2b07e48e32af9
+("pkt_sched: Convert qdisc_watchdog to tasklet_hrtimer").
 
-And like 'tty_ldisc_release()' already does, it does this all before even 
-getting the ldisc_mutex, avoiding the deadlock.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I'm not 100% happy with this patch either, but my remaining unhappiness is 
-more with the tty locking in general that causes this all. I suspect this 
-patch in itself is not any worse than the other hacks we have.
+--Signature=_Tue__25_Aug_2009_10_11_47_+1000_5fYDC3ARW03IRdbG
+Content-Type: application/pgp-signature
 
-Oh, and in case you didn't guess - this is _STILL_ totally untested. It 
-compiles for me, but that's all I'm going to guarantee. I'm just looking 
-at the code (and getting pretty fed up with it ;)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-And as already mentioned: I doubt the deadlock on tty->ldisc_mutex is 
-anything that would be hit in practice. And even if it can be triggered, 
-the previous patch I sent out is still interesting in a "does it make the 
-problem go away" sense. Because if it doesn't (with or without a new 
-deadlock), then I'm looking at all the wrong places.
+iEYEARECAAYFAkqTLEMACgkQjjKRsyhoI8zhVQCgja2wHctWF+B3qYuGAVEIfNcA
+HTQAnA7Yu6Vn6fWPBVEHhb2qSf+G+uSK
+=ha/j
+-----END PGP SIGNATURE-----
 
-		Linus
-
----
- drivers/char/tty_ldisc.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-index 1733d34..f893d18 100644
---- a/drivers/char/tty_ldisc.c
-+++ b/drivers/char/tty_ldisc.c
-@@ -508,8 +508,9 @@ static void tty_ldisc_restore(struct tty_struct *tty, struct tty_ldisc *old)
-  *	be obtained while the delayed work queue halt ensures that no more
-  *	data is fed to the ldisc.
-  *
-- *	In order to wait for any existing references to complete see
-- *	tty_ldisc_wait_idle.
-+ *	You need to do a 'flush_scheduled_work()' (outside the ldisc_mutex
-+ *	in order to make sure any currently executing ldisc work is also
-+ *	flushed.
-  */
- 
- static int tty_ldisc_halt(struct tty_struct *tty)
-@@ -753,11 +754,14 @@ void tty_ldisc_hangup(struct tty_struct *tty)
- 	 * N_TTY.
- 	 */
- 	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
-+		/* Make sure the old ldisc is quiescent */
-+		tty_ldisc_halt(tty);
-+		flush_scheduled_work();
-+
- 		/* Avoid racing set_ldisc or tty_ldisc_release */
- 		mutex_lock(&tty->ldisc_mutex);
- 		if (tty->ldisc) {	/* Not yet closed */
- 			/* Switch back to N_TTY */
--			tty_ldisc_halt(tty);
- 			tty_ldisc_reinit(tty);
- 			/* At this point we have a closed ldisc and we want to
- 			   reopen it. We could defer this to the next open but
+--Signature=_Tue__25_Aug_2009_10_11_47_+1000_5fYDC3ARW03IRdbG--
