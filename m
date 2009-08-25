@@ -1,61 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754941AbZHYKsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbZHYKrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754941AbZHYKsL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 06:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbZHYKsI
+	id S1754928AbZHYKrc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 06:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbZHYKrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 06:48:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49218 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754793AbZHYKsH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 06:48:07 -0400
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090825103907.GB28287@elte.hu>
-References: <20090824092455.GA25267@elte.hu>
-	 <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>
-	 <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>
-	 <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu>
-	 <1251191546.7538.1118.camel@twins> <20090825102215.GC26801@elte.hu>
-	 <1251196359.7538.1133.camel@twins>  <20090825103907.GB28287@elte.hu>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 25 Aug 2009 12:47:15 +0200
-Message-Id: <1251197235.7538.1142.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 25 Aug 2009 06:47:31 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:42968 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754758AbZHYKra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 06:47:30 -0400
+Date: Tue, 25 Aug 2009 11:47:31 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Alexey Korolev <akorolex@gmail.com>
+Cc: Eric Munson <linux-mm@mgebm.net>, Alexey Korolev <akorolev@infradead.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
+Message-ID: <20090825104731.GA21335@csn.ul.ie>
+References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org> <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com> <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com> <20090819100553.GE24809@csn.ul.ie> <202cde0e0908200003w43b91ac3v8a149ec1ace45d6d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <202cde0e0908200003w43b91ac3v8a149ec1ace45d6d@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 12:39 +0200, Ingo Molnar wrote:
-
-> > Do you really wish to burden every tracepoint user with the extra 
-> > logic needed to deal with modules?
+On Thu, Aug 20, 2009 at 07:03:28PM +1200, Alexey Korolev wrote:
+> Mel,
 > 
-> Not necessarily - i'm just outlining why i think that the 'dont 
-> allow subsystems to utilize tracepoint callbacks' is a restriction 
-> we should not live with voluntarily.
+> >> User level applications process the data.
+> >> Device is using a master DMA to send data to the user buffer, buffer
+> >> size can be >1GB and performance is very important. (So huge pages
+> >> mapping really makes sense.)
+> >>
+> >
+> > Ok, so the DMA may be faster because you have to do less scatter/gather
+> > and can DMA in larger chunks and and reading from userspace may be faster
+> > because there is less translation overhead. Right?
+> >
+> Less translation overhead is important. Unfortunately not all devices
+> have scatter/gather
+> (our case) as having it increase h/w complexity a lot.
+> 
 
-Well, unless someone has a bright idea that's what it comes down to. And
-not having to care about modules when using tracepoint wins hands down
-for me.
+Ok.
 
-The issue seems rather simple:
+> >> In addition we have to mention that:
+> >> 1. It is hard for user to tell how much huge pages needs to be
+> >>    reserved by the driver.
+> >
+> > I think you have this problem either way. If the buffer is allocated and
+> > populated before mmap(), then the driver is going to have to guess how many
+> > pages it needs. If the DMA occurs as a result of mmap(), it's easier because
+> > you know the number of huge pages to be reserved at that point and you have
+> > the option of falling back to small pages if necessary.
+> >
+> >> 2. Devices add constrains on memory regions. For example it needs to
+> >>    be contiguous with in the physical address space. It is necessary to
+> >>   have ability to specify special gfp flags.
+> >
+> > The contiguity constraints are the same for huge pages. Do you mean there
+> > are zone restrictions? If so, the hugetlbfs_file_setup() function could be
+> > extended to specify a GFP mask that is used for the allocation of hugepages
+> > and associated with the hugetlbfs inode. Right now, there is a htlb_alloc_mask
+> > mask that is applied to some additional flags so htlb_alloc_mask would be
+> > the default mask unless otherwise specified.
+> >
+> Under contiguous I mean that we need several huge pages being
+> physically contiguous.
 
-Either we force everybody who uses a tracepoint to care about modules,
-be this by having to do try_get_module() themselves or by having to
-listen to some notifier and have their callback forcibly dropped on
-unload -- both suck IMO, suck very hard indeed.
+Why? One hugepage of default size will be one TLB entry. Each hugepage
+after that will be additional TLB entries so there is no savings on
+translation overhead.
 
-Or by having modules that use their own tracepoint be stuck, because
-once you block unlock when a tracepoint has callbacks, and it installed
-a callback on itself, its not going to go away.
+Getting contiguous pages beyond the hugepage boundary is not a matter
+for GFP flags.
 
-And since I don't care about modules at all and really wish they'd never
-been invented...
+> To obtain it we allocate pages till not find a contig. region
+> (success) or reach a boundary (fail).
+> So in our particular case approach based on getting pages from
+> hugetlbfs won't work
+> because memory region will not be contiguous.
+
+With a direct allocation of hugepages, there is no guarantee they will
+be contiguous either. If you need contiguity above hugepages (which in
+many cases will also be the largest page the buddy allocator can grant),
+you need something else.
+
+> However this approach will give an easy way to support hugetlb
+> mapping, it won't cause any complexity
+> in accounting. But it will be suitable for hardware with large amount
+> of sg regions only.
+> 
+> >
+> > How about;
+> >
+> >        o Extend Eric's helper slightly to take a GFP mask that is
+> >          associated with the inode and used for allocations from
+> >          outside the hugepage pool
+> >        o A helper that returns the page at a given offset within
+> >          a hugetlbfs file for population before the page has been
+> >          faulted.
+>
+> Do you mean get_user_pages call?
+> 
+
+If you're willing to call it directly, sure.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
