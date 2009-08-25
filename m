@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZHYCZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbZHYCcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbZHYCZf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 22:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZHYCZe
+	id S1754197AbZHYCcz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 22:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbZHYCcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 22:25:34 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:54170 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754018AbZHYCZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 22:25:34 -0400
-Date: Mon, 24 Aug 2009 19:25:32 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org
-Subject: Re: [PATCH -tip 1/2] Add "notrace" to RCU function headers used by
-	ftrace.
-Message-ID: <20090825022532.GD7355@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090824164112.GA13693@linux.vnet.ibm.com> <alpine.DEB.2.00.0908241938330.6710@gandalf.stny.rr.com> <20090825020221.GA7355@linux.vnet.ibm.com> <alpine.DEB.2.00.0908242210560.8804@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908242210560.8804@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 24 Aug 2009 22:32:54 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:41395 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753825AbZHYCcx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 22:32:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=RvPnkzotODMso/NQ8ZXu263WKO2G9ay2JPwUFcixtWUYq0C0vYDqCcz9gYhctgKIkh
+         gYiM8kZVhJbpuh2423Yymb9GCu45uBFYVhUhRin3kNSFfFRU5qXs0ZAU8SXLprR2Y67F
+         WY6nY03EN/MiWJ8ysh7Q/Jb5wznFsZsLkg/SU=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Chris Mason <chris.mason@oracle.com>, Roland Dreier <rdreier@cisco.com>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Jeff Mahoney <jeffm@suse.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrea Gelmini <andrea.gelmini@gmail.com>,
+       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Marcel Hilzinger <mhilzinger@linuxnewmedia.de>,
+       Edward Shishkin <edward.shishkin@gmail.com>,
+       Laurent Riffard <laurent.riffard@free.fr>
+Subject: [PATCH 0/4] kill-the-bkl/reiserfs: fix some lock dependency inversions
+Date: Tue, 25 Aug 2009 04:32:46 +0200
+Message-Id: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+To: LKML <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 10:11:40PM -0400, Steven Rostedt wrote:
-> 
-> On Mon, 24 Aug 2009, Paul E. McKenney wrote:
-> 
-> > On Mon, Aug 24, 2009 at 07:38:51PM -0400, Steven Rostedt wrote:
-> > > 
-> > > On Mon, 24 Aug 2009, Paul E. McKenney wrote:
-> > > 
-> > > > Both rcu_read_lock_sched_notrace() and rcu_read_unlock_sched_notrace()
-> > > > are used by ftrace, and thus need to be marked "notrace".  Unfortunately,
-> > > > my naive assumption that gcc would see the inner "notrace" does not hold.
-> > > > Kudos to Lai Jiangshan for noting this.
-> > > > 
-> > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > ---
-> > > >  include/linux/rcupdate.h |    4 ++--
-> > > >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > > > 
-> > > > diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> > > > index ec90fc3..8b4422c 100644
-> > > > --- a/include/linux/rcupdate.h
-> > > > +++ b/include/linux/rcupdate.h
-> > > > @@ -191,7 +191,7 @@ static inline void rcu_read_lock_sched(void)
-> > > >  	__acquire(RCU_SCHED);
-> > > >  	rcu_read_acquire();
-> > > >  }
-> > > > -static inline void rcu_read_lock_sched_notrace(void)
-> > > > +static inline notrace void rcu_read_lock_sched_notrace(void)
-> > > >  {
-> > > >  	preempt_disable_notrace();
-> > > >  	__acquire(RCU_SCHED);
-> > > > @@ -209,7 +209,7 @@ static inline void rcu_read_unlock_sched(void)
-> > > >  	__release(RCU_SCHED);
-> > > >  	preempt_enable();
-> > > >  }
-> > > > -static inline void rcu_read_unlock_sched_notrace(void)
-> > > > +static inline notrace void rcu_read_unlock_sched_notrace(void)
-> > > 
-> > > Funny, inlines should not be traced. Is gcc ignoring the inlines here?
-> > 
-> > Well, that was my line of thinking as well, until Lai Jiangshan set
-> > me straight.  Version 4.x of gcc apparently decides on a case-by-case
-> > basis.
-> 
-> Yeah, I've seen gcc do it, but when it does it to static inlines in header 
-> files, I just get a feeling to squinge.
+Hi,
 
-Especially when they are as short and simple as those particular
-functions were...
+This small set fixes some lock dependency inversions found in reiserfs
+xattr and mmap paths.
+I guess there are still some of them that I'll have to hunt, especially one
+reported by Laurent Riffard and another one introduced by the reiserfs_readdir
+path optimization (though I'm not sure about the latter, I have yet to find a
+way to reproduce it properly).
 
-							Thanx, Paul
+As usual, these patches can be found at:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
+	reiserfs/kill-bkl
+
+Thanks,
+Frederic.
+
+Frederic Weisbecker (4):
+  kill-the-bkl/reiserfs: fix "reiserfs lock" / "inode mutex" lock
+    inversion dependency
+  kill-the-bkl/reiserfs: fix recursive reiserfs lock in
+    reiserfs_mkdir()
+  kill-the-bkl/reiserfs: fix recursive reiserfs write lock in
+    reiserfs_commit_write()
+  kill-the-bkl/reiserfs: panic in case of lock imbalance
+
+ fs/reiserfs/inode.c |   11 ++---------
+ fs/reiserfs/lock.c  |    7 +++----
+ fs/reiserfs/namei.c |    7 ++++---
+ fs/reiserfs/xattr.c |    2 +-
+ 4 files changed, 10 insertions(+), 17 deletions(-)
+
+
