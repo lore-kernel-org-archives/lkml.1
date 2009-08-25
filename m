@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932342AbZHYX0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbZHYX0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932342AbZHYX0L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbZHYX0L
+	id S932368AbZHYX0Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932346AbZHYX0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:26:11 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59332 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932282AbZHYX0K (ORCPT
+	Tue, 25 Aug 2009 19:26:24 -0400
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:37208 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932344AbZHYX0V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:26:10 -0400
-Date: Wed, 26 Aug 2009 01:26:01 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090825232601.GF4300@elf.ucw.cz>
-References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <4A9468E8.607@redhat.com> <20090825225114.GE4300@elf.ucw.cz> <4A946DD1.8090906@redhat.com>
+	Tue, 25 Aug 2009 19:26:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=c3+De70XT90ytBK3Zqkx8AxTMUzxb3CrsssQV0EBo/bLb/js8V3xiUqTF8F+ojk8rF
+         aCh9Vf/4f8ttu3y7J5yr6dmlFpiHKrDnHqKFipqTCMftLeeZ4ibk9TdslJ/HZyl63ZvK
+         OqOgUWSYqJI0yYpd2x1VFtYx2C5iQ4Tf8M40I=
+Message-ID: <4A9472CC.2020508@lwfinger.net>
+Date: Tue, 25 Aug 2009 18:25:00 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A946DD1.8090906@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+Subject: Re: 2.6.31-rc6-git5: Reported regressions from 2.6.30
+References: <jCYznkTxcLB.A.EPH.eNIjKB@chimera> <4A8F12CE.9090601@lwfinger.net> <200908220002.03707.rjw@sisk.pl>
+In-Reply-To: <200908220002.03707.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->>> Basically, any file system (Linux, windows, OSX, etc) that writes into
->>> the page cache will lose data when you hot unplug its storage. End of
->>> story, don't do it!
+Rafael J. Wysocki wrote:
+> On Friday 21 August 2009, Larry Finger wrote:
+>> Rafael J. Wysocki wrote:
 >>
->> No, not ext3 on SATA disk with barriers on and proper use of
->> fsync(). I actually tested that.
+>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13960
+>>> Subject		: rtl8187 not connect to wifi
+>>> Submitter	: okias <d.okias@gmail.com>
+>>> Date		: 2009-08-10 19:16 (10 days old)
+>> The patch for this one was sent from Linville to DaveM earlier today,
+>> and should be sent to mainline in the near future.
 >>
->> Yes, I should be able to hotunplug SATA drives and expect the data
->> that was fsync-ed to be there.
->
-> You can and will lose data (even after fsync) with any type of storage at 
-> some rate. What you are missing here is that data loss needs to be 
-> measured in hard numbers - say percentage of installed boxes that have 
-> config X that lose data.
+>> AFAIK, the OP has not yet tested the patch, but I think I was able to
+>> reproduce the problem, and the patch did fit it for me.
+> 
+> Thanks for the update.
+> 
+> Can you please close the bug when the patch is merged?
 
-I'm talking "by design" here.
+The patch hit mainline as commit
+1a9937b7f07ab6e35515e32a7625f0ba50ab7670. The bug has been closed.
 
-I will lose data even on SATA drive that is properly powered on if I
-wait 5 years.
-
-> I can promise you that hot unplugging and replugging a S-ATA drive will 
-> also lose you data if you are actively writing to it (ext2, 3, whatever).
-
-I can promise you that running S-ATA drive will also lose you data,
-even if you are not actively writing to it. Just wait 10 years; so
-what is your point?
-
-But ext3 is _designed_ to preserve fsynced data on SATA drive, while
-it is _not_ designed to preserve fsynced data on MD RAID5.
-
-Do you really think that's not a difference?
-
->>>>> I don't object to making that general statement - "Don't hot unplug a
->>>>> device with an active file system or actively used raw device" - but
->>>>> would object to the overly general statement about ext3 not working on
->>>>> flash, RAID5 not working, etc...
->>>>
->>>> You can object any way you want, but running ext3 on flash or MD RAID5
->>>> is stupid:
->>>>
->>>> * ext2 would be faster
->>>>
->>>> * ext2 would provide better protection against powerfail.
->>>
->>> Not true in the slightest, you continue to ignore the ext2/3/4 developers
->>> telling you that it will lose data.
->>
->> I know I will lose data. Both ext2 and ext3 will lose data on
->> flashdisk. (That's what I'm trying to document). But... what is the
->> benefit of ext3 journaling on MD RAID5? (On flash, ext3 at least
->> protects you against kernel panic. MD RAID5 is in software, so... that
->> additional protection is just not there).
->
-> Faster recovery time on any normal kernel crash or power outage.  Data 
-> loss would be equivalent with or without the journal.
-
-No, because you'll actually repair the ext2 with fsck after the kernel
-crash or power outage. Data loss will not be equivalent; in particular
-you'll not lose data writen _after_ power outage to ext2.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Larry
