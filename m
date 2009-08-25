@@ -1,87 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbZHYLKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZHYLQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbZHYLKa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 07:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZHYLK3
+	id S1754080AbZHYLQg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 07:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbZHYLQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 07:10:29 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48510 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751680AbZHYLK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 07:10:29 -0400
-Date: Tue, 25 Aug 2009 12:10:32 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Alexey Korolev <akorolex@gmail.com>, Eric Munson <linux-mm@mgebm.net>,
-       Alexey Korolev <akorolev@infradead.org>, linux-mm@kvack.org,
+	Tue, 25 Aug 2009 07:16:34 -0400
+Received: from mail1.windriver.com ([147.11.1.7]:45551 "EHLO
+	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbZHYLQd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 07:16:33 -0400
+X-Greylist: delayed 9144 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Aug 2009 07:16:33 EDT
+Subject: Re: [PATCH v2] sctp: fix the check for path failure detection
+From: Luo Chunbo <chunbo.luo@windriver.com>
+To: Wei Yongjun <yjwei@cn.fujitsu.com>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-sctp@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
-Message-ID: <20090825111031.GD21335@csn.ul.ie>
-References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org> <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com> <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com> <20090819100553.GE24809@csn.ul.ie> <202cde0e0908200003w43b91ac3v8a149ec1ace45d6d@mail.gmail.com> <20090825104731.GA21335@csn.ul.ie> <1251198054.15197.40.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1251198054.15197.40.camel@pasglop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4A93949B.2020404@cn.fujitsu.com>
+References: <1251106637-434-1-git-send-email-chunbo.luo@windriver.com>
+	 <4A93949B.2020404@cn.fujitsu.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 25 Aug 2009 16:22:28 +0800
+Message-Id: <1251188548.6498.28.camel@pek-cluo-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-OriginalArrivalTime: 25 Aug 2009 08:43:15.0265 (UTC) FILETIME=[162D8310:01CA2560]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 09:00:54PM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-08-25 at 11:47 +0100, Mel Gorman wrote:
+On Tue, 2009-08-25 at 15:36 +0800, Wei Yongjun wrote:
+> Chunbo Luo wrote:
+> > The transport error count should be incremented when an outstanding
+> > HB is not acknowledged. And the path failure detection should be done
+> > before sending out the HB.
+> >   
+> > Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
+> > ---
+> >  net/sctp/sm_sideeffect.c |    6 +++++-
+> >  net/sctp/sm_statefuns.c  |    8 ++++----
+> >  2 files changed, 9 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
+> > index 86426aa..fbdf4de 100644
+> > --- a/net/sctp/sm_sideeffect.c
+> > +++ b/net/sctp/sm_sideeffect.c
+> > @@ -446,7 +446,11 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
+> >  	if (transport->state != SCTP_UNCONFIRMED)
+> >  		asoc->overall_error_count++;
+> >  
+> > -	if (transport->state != SCTP_INACTIVE &&
+> > +	/*
+> > +	 * The transport error count is incremented when an outstanding HB
+> > +	 * is not acknowledged. 
+> > +	 */
+> >   
 > 
-> > Why? One hugepage of default size will be one TLB entry. Each hugepage
-> > after that will be additional TLB entries so there is no savings on
-> > translation overhead.
-> > 
-> > Getting contiguous pages beyond the hugepage boundary is not a matter
-> > for GFP flags.
-> 
-> Note: This patch reminds me of something else I had on the backburner
-> for a while and never got a chance to actually implement...
-> 
-> There's various cases of drivers that could have good uses of hugetlb
-> mappings of device memory. For example, framebuffers.
-> 
+> T3-rtx timer expires also need to increment error count.
 
-Where is the buffer located? If it's in kernel space, than any contiguous
-allocation will be automatically backed by huge PTEs. As framebuffer allocation
-is probably happening early in boot, just calling alloc_pages() might do?
+Yes, T3-rtx timer expires need to increment error count.
 
-> I looked at it a while back and it occured to me (and Nick) that
-> ideally, we should split hugetlb and hugetlbfs.
 > 
-
-Yeah, you're not the first to come to that conclusion :)
-
-> Basically, on one side, we have the (mostly arch specific) populating
-> and walking of page tables with hugetlb translations, associated huge
-> VMAs, etc... 
+> > +	if (transport->hb_sent && transport->state != SCTP_INACTIVE &&
+> >  	    (transport->error_count++ >= transport->pathmaxrxt)) {
+> >  		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
+> >  					 " transport IP: port:%d failed.\n",
+> > diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
+> > index 7288192..7f77099 100644
+> > --- a/net/sctp/sm_statefuns.c
+> > +++ b/net/sctp/sm_statefuns.c
+> > @@ -981,10 +981,6 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
+> >  	 */
+> >  
+> >  	if (transport->param_flags & SPP_HB_ENABLE) {
+> > -		if (SCTP_DISPOSITION_NOMEM ==
+> > -				sctp_sf_heartbeat(ep, asoc, type, arg,
+> > -						  commands))
+> > -			return SCTP_DISPOSITION_NOMEM;
+> >  		/* Set transport error counter and association error counter
+> >  		 * when sending heartbeat.
+> >  		 */
+> > @@ -992,6 +988,10 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
+> >  				SCTP_TRANSPORT(transport));
+> >  		sctp_add_cmd_sf(commands, SCTP_CMD_TRANSPORT_HB_SENT,
+> >  				SCTP_TRANSPORT(transport));
+> > +		if (SCTP_DISPOSITION_NOMEM ==
+> > +				sctp_sf_heartbeat(ep, asoc, type, arg,
+> > +						  commands))
+> > +			return SCTP_DISPOSITION_NOMEM;
+> >  	}
+> >  	sctp_add_cmd_sf(commands, SCTP_CMD_HB_TIMER_UPDATE,
+> >  			SCTP_TRANSPORT(transport));
+> >   
 > 
-> On the other side, hugetlbfs is backing that with memory.
+> How about this one:
+
+It is ok to increment the error count. But the path failure detection
+should be done before send HB. Otherwise, an extra HB chunk will be sent
+out before the transport is marked DOWN . So the changes in
+net/sctp/sm_statefuns.c is also needed.
+
+
+
 > 
-> Ideally, the former would have some kind of "standard" ops that
-> hugetlbfs can hook into for the existing case (moving some stuff out of
-> the common data structure and splitting it in two),
-
-Adam Litke at one point posted a pagetable-abstraction that would have
-been the first step on a path like this. It hurt the normal fastpath
-though and was ultimately put aside.
-
-> allowing the driver
-> to instanciate hugetlb VMAs that are backed up by something else,
-> typically a simple mapping of IOs.
+> diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
+> index 86426aa..fb723dd 100644
+> --- a/net/sctp/sm_sideeffect.c
+> +++ b/net/sctp/sm_sideeffect.c
+> @@ -447,7 +447,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
+>  		asoc->overall_error_count++;
+>  
+>  	if (transport->state != SCTP_INACTIVE &&
+> -	    (transport->error_count++ >= transport->pathmaxrxt)) {
+> +	    (transport->error_count >= transport->pathmaxrxt)) {
+>  		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
+>  					 " transport IP: port:%d failed.\n",
+>  					 asoc,
+> @@ -468,6 +468,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
+>  	 * that indicates that we have an outstanding HB.
+>  	 */
+>  	if (!is_hb || transport->hb_sent) {
+> +		transport->error_count++;
+>  		transport->last_rto = transport->rto;
+>  		transport->rto = min((transport->rto * 2), transport->asoc->rto_max);
+>  	}
 > 
-> Anybody wants to do that or I keep it on my back burner until the time I
-> finally get to do it ? :-)
 > 
-
-It's the sort of thing that has been resisted in the past, largely
-because the only user at the time was about transparent hugepage
-promotion/demotion. It would need to be a really strong incentive to
-revive the effort.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> 
+> 
+> 
