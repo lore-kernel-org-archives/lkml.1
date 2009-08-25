@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZHYALy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZHYAR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbZHYALy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 20:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZHYALx
+	id S1754009AbZHYAR2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 20:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZHYAR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 20:11:53 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44511 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753700AbZHYALw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 20:11:52 -0400
-Date: Tue, 25 Aug 2009 10:11:47 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: linux-next: origin tree build warning
-Message-Id: <20090825101147.fb929fcb.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__25_Aug_2009_10_11_47_+1000_5fYDC3ARW03IRdbG"
+	Mon, 24 Aug 2009 20:17:28 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:57517 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753942AbZHYAR1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 20:17:27 -0400
+X-Greylist: delayed 488 seconds by postgrey-1.27 at vger.kernel.org; Mon, 24 Aug 2009 20:17:27 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RbdcSRD2xM3M7d53eDB5OPpcKNrGmVDHV3FpyzO61QTn8e8hkfTH8u98ADb8i2iblQ
+         dTcdA2Lo4zpYQcifFhbXeXdMzGqQx4QSPR4IG0HEekt+OdmgssS6xtO/slyAFnO5uNMX
+         9Y+PMW/5L2BY64GvAFGWGOcBO+1u9sPBuZtCo=
+MIME-Version: 1.0
+In-Reply-To: <20090810090508.69E02526EC9@mailhub.coreip.homeip.net>
+References: <ac71f2bb0908061315o1449e91dge1d5a63a2a4b986a@mail.gmail.com>
+	 <20090810090508.69E02526EC9@mailhub.coreip.homeip.net>
+Date: Mon, 24 Aug 2009 17:09:20 -0700
+Message-ID: <ac71f2bb0908241709i1afa2cedy62c3dc13982f4fb7@mail.gmail.com>
+Subject: Re: serio / atkbd / PS/2 Strangeness with Serial port adapter
+From: Matt Causey <matt.causey@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__25_Aug_2009_10_11_47_+1000_5fYDC3ARW03IRdbG
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Aug 10, 2009 at 1:34 AM, Dmitry
+Torokhov<dmitry.torokhov@gmail.com> wrote:
 
-Hi Dave,
+>> [  459.004227] drivers/input/serio/i8042.c: fe <- i8042 (interrupt, 1,
+>> 12, timeout) [445118]
+>> [20171.684870] drivers/input/serio/i8042.c: 0b <- i8042 (interrupt, 0,
+>> 1) [20162195]
+>>
+>> However - the atkbd driver does not pick the device up at all.
+>>
+>
+> Your device is steadely refusing to say that it is a keyboard - and so
+> atkbd driver does not bind to it.
+>
+>> So, I did find a workaround (which is NOT acceptable for this
+>> deployment).  Remember the PS/2 'wedge' I mentioned?  Well, it has an
+>> extra PS/2 port for your keyboard.  If I connect a PS/2 keyboard to
+>> that thing, suddenly my scanner starts working.
+>>
+>> We see some chatter from the controller driver, then one of these:
+>>
+>> [23811.805578] input: AT Translated Set 2 keyboard as
+>> /devices/platform/i8042/serio0/input/input6
+>>
+>
+> That happened because apparently the 'wedge' passes the inquirys to
+> the real keyboard and it answers propery.
+>
+> I think the "i8042.dumbkbd" kernel parameter will solve your issue.
+>
+> --
+> Dmitry
+>
 
-Today's linux-next build (x86_64 allmodconfig, gcc 4.4.0) produced these
-warnings:
+That's great.  I think it's the only option that I did not try.  ;-)
+Works great!
 
-net/sched/sch_api.c: In function 'qdisc_watchdog':
-net/sched/sch_api.c:460: warning: initialization from incompatible pointer =
-type
-net/sched/sch_cbq.c: In function 'cbq_undelay':
-net/sched/sch_cbq.c:595: warning: initialization from incompatible pointer =
-type
+In case it matters:
 
-Introduced by commit ee5f9757ea17759e1ce5503bdae2b07e48e32af9
-("pkt_sched: Convert qdisc_watchdog to tasklet_hrtimer").
+blah blah/ # dmesg | grep i8042
+[    0.000000] Kernel command line: initrd=ramdisk.gz
+video="vesafb:mtrr,ywrap,1024x768-32@85" i8042.dumbkbd
+BOOT_IMAGE=bzImage auto
+[   14.046511] serio: i8042 KBD port at 0x60,0x64 irq 1
+[   14.046578] serio: i8042 AUX port at 0x60,0x64 irq 12
+[   15.804210] input: AT Translated Set 2 keyboard as
+/devices/platform/i8042/serio0/input/input2
+blah blah/ #
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Looks like it just decides that there must be a keyboard there,
+whether or not there really is one.
 
---Signature=_Tue__25_Aug_2009_10_11_47_+1000_5fYDC3ARW03IRdbG
-Content-Type: application/pgp-signature
+Are there any downsides to using this kernel parameter?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Thanks!
 
-iEYEARECAAYFAkqTLEMACgkQjjKRsyhoI8zhVQCgja2wHctWF+B3qYuGAVEIfNcA
-HTQAnA7Yu6Vn6fWPBVEHhb2qSf+G+uSK
-=ha/j
------END PGP SIGNATURE-----
-
---Signature=_Tue__25_Aug_2009_10_11_47_+1000_5fYDC3ARW03IRdbG--
+--
+Matt
