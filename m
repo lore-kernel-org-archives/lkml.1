@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbZHYWvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932229AbZHYWyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756306AbZHYWvY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 18:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbZHYWvY
+	id S932229AbZHYWyr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 18:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932160AbZHYWyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 18:51:24 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51326 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753873AbZHYWvW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 18:51:22 -0400
-Date: Wed, 26 Aug 2009 00:51:14 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090825225114.GE4300@elf.ucw.cz>
-References: <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <4A9468E8.607@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A9468E8.607@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 25 Aug 2009 18:54:46 -0400
+Received: from mga14.intel.com ([143.182.124.37]:64527 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756277AbZHYWyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 18:54:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="180126392"
+Subject: Re: [PATCH] x86: use hard_smp_processor_id to get apic id in
+ identify_cpu -v2
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Cyrill Gorcunov <gorcunov@openvz.org>
+In-Reply-To: <4A946082.9090809@kernel.org>
+References: <4A9391CD.5020804@kernel.org>  <4A946082.9090809@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Tue, 25 Aug 2009 15:53:55 -0700
+Message-Id: <1251240835.2636.28.camel@sbs-t61>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-08-25 at 15:06 -0700, Yinghai Lu wrote:
+> 
+> and leave phys_proc_id to use initial apic id.
 
+No. We need to be consistent for both phys_proc_id and apicid
+computations.
 
->>> I really think that the expectation that all OS's (windows, mac, even
->>> your ipod) all teach you not to hot unplug a device with any file system.
->>> Users have an "eject" or "safe unload" in windows, your iPod tells you
->>> not to power off or disconnect, etc.
->>
->> That was before journaling filesystems...
->
-> Not true - that is true today with or without journals as we have 
-> discussed in great detail. Including specifically ext2.
->
-> Basically, any file system (Linux, windows, OSX, etc) that writes into 
-> the page cache will lose data when you hot unplug its storage. End of 
-> story, don't do it!
+i.e., if the bios changes the apic id's and those updated apic id's are
+not reflected in the initial apic id, then we need to use
+hard_smp_processor_id() for both phys_proc_id and apicid computations.
 
-No, not ext3 on SATA disk with barriers on and proper use of
-fsync(). I actually tested that.
+On the other platforms (default option) we need to use initial apic id
+(returned by cpuid).
 
-Yes, I should be able to hotunplug SATA drives and expect the data
-that was fsync-ed to be there.
+> -v2: update the one in detect_extended_topology too.
 
->>> I don't object to making that general statement - "Don't hot unplug a
->>> device with an active file system or actively used raw device" - but
->>> would object to the overly general statement about ext3 not working on
->>> flash, RAID5 not working, etc...
->>
->> You can object any way you want, but running ext3 on flash or MD RAID5
->> is stupid:
->>
->> * ext2 would be faster
->>
->> * ext2 would provide better protection against powerfail.
->
-> Not true in the slightest, you continue to ignore the ext2/3/4 developers 
-> telling you that it will lose data.
+This is not required. On these platforms, initial_apicid will be updated
+(along with the physical apicid) if there are any bios modifications.
 
-I know I will lose data. Both ext2 and ext3 will lose data on
-flashdisk. (That's what I'm trying to document). But... what is the
-benefit of ext3 journaling on MD RAID5? (On flash, ext3 at least
-protects you against kernel panic. MD RAID5 is in software, so... that
-additional protection is just not there).
+Instead of this patch, what we need to do is: Just like the vsmp change,
+we need to override the phys_pkg_id routine for the platforms where the
+bios will modify apic id's and where cpuid doesn't reflect the bios
+modification (for example IBM x445 system etc)
 
->> "ext3 works on flash and MD RAID5, as long as you do not have
->> powerfail" seems to be the accurate statement, and if you don't need
->> to protect against powerfails, you can just use ext2.
->
-> Strange how your personal preference is totally out of sync with the 
-> entire enterprise class user base.
+thanks,
+suresh
 
-Perhaps noone told them MD RAID5 is dangerous? You see, that's exactly
-what I'm trying to document here.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
