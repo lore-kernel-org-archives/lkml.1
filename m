@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbZHYW1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756305AbZHYW3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbZHYW1e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 18:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbZHYW1d
+	id S1756305AbZHYW3v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 18:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbZHYW3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 18:27:33 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40569 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756267AbZHYW1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 18:27:32 -0400
-Date: Wed, 26 Aug 2009 00:27:23 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: [patch] document that ext2 can't handle barriers
-Message-ID: <20090825222723.GC4300@elf.ucw.cz>
-References: <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu>
+	Tue, 25 Aug 2009 18:29:50 -0400
+Received: from claw.goop.org ([74.207.240.146]:57264 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756187AbZHYW3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 18:29:50 -0400
+Message-ID: <4A9465DE.2030709@goop.org>
+Date: Tue, 25 Aug 2009 15:29:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825161110.GP17684@mit.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: jeremy@xensource.com, chrisw@sous-sol.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ingo Molnar <mingo@redhat.com>
+Subject: Re: [PATCH 1/1] XEN: enlighten, use uninitialized_var(cx)
+References: <1251234044-6943-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1251234044-6943-1-git-send-email-jirislaby@gmail.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Document things ext2 expects from storage filesystems, and the fact
-that it can not handle barriers. Also remove jounaling description, as
-that's really ext3 material.
+On 08/25/09 14:00, Jiri Slaby wrote:
+> To avoid a wrong compiler warning, use unitialized_var(cx) in
+> xen_init_cpuid_mask.
+>
+> cx needn't be initialized for cpuid when ax is 1.
+>
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+> Cc: Chris Wright <chrisw@sous-sol.org>
+>   
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> ---
+>  arch/x86/xen/enlighten.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+> index e90540a..5ab75e2 100644
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -202,7 +202,7 @@ static void xen_cpuid(unsigned int *ax, unsigned int *bx,
+>  
+>  static __init void xen_init_cpuid_mask(void)
+>  {
+> -	unsigned int ax, bx, cx, dx;
+> +	unsigned int ax, bx, uninitialized_var(cx), dx;
+>  
+>  	cpuid_leaf1_edx_mask =
+>  		~((1 << X86_FEATURE_MCE)  |  /* disable MCE */
+>   
 
-diff --git a/Documentation/filesystems/ext2.txt b/Documentation/filesystems/ext2.txt
-index 67639f9..e300ca8 100644
---- a/Documentation/filesystems/ext2.txt
-+++ b/Documentation/filesystems/ext2.txt
-@@ -338,27 +339,17 @@ enough 4-character names to make up unique directory entries, so they
- have to be 8 character filenames, even then we are fairly close to
- running out of unique filenames.
- 
-+Requirements
-+============
-+
-+Ext2 expects disk/storage subsystem not to return write errors.
-+
-+It also needs write caching to be disabled for reliable fsync
-+operation; ext2 does not know how to issue barriers as of
-+2.6.31. hdparm -W0 disables it on SATA disks.
-+
- Journaling
------------
--
--A journaling extension to the ext2 code has been developed by Stephen
--Tweedie.  It avoids the risks of metadata corruption and the need to
--wait for e2fsck to complete after a crash, without requiring a change
--to the on-disk ext2 layout.  In a nutshell, the journal is a regular
--file which stores whole metadata (and optionally data) blocks that have
--been modified, prior to writing them into the filesystem.  This means
--it is possible to add a journal to an existing ext2 filesystem without
--the need for data conversion.
--
--When changes to the filesystem (e.g. a file is renamed) they are stored in
--a transaction in the journal and can either be complete or incomplete at
--the time of a crash.  If a transaction is complete at the time of a crash
--(or in the normal case where the system does not crash), then any blocks
--in that transaction are guaranteed to represent a valid filesystem state,
--and are copied into the filesystem.  If a transaction is incomplete at
--the time of the crash, then there is no guarantee of consistency for
--the blocks in that transaction so they are discarded (which means any
--filesystem changes they represent are also lost).
-+==========
- Check Documentation/filesystems/ext3.txt if you want to read more about
- ext3 and journaling.
- 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
