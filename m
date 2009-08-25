@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZHYPIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbZHYPZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbZHYPIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 11:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbZHYPI3
+	id S1754329AbZHYPZx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 11:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZHYPZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 11:08:29 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33253 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755424AbZHYPI3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 11:08:29 -0400
-Subject: Re: PROBLEM: oops
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pawel Golaszewski <blues@gda.pl>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LNX.2.00.0908251701020.16876@fgnss.gnfx.tqn.cy>
-References: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy>
-	 <1251209206.7538.1159.camel@twins>
-	 <alpine.LNX.2.00.0908251608280.16876@fgnss.gnfx.tqn.cy>
-	 <1251209734.7538.1160.camel@twins>
-	 <alpine.LNX.2.00.0908251625580.16876@fgnss.gnfx.tqn.cy>
-	 <1251211483.7538.1162.camel@twins>
-	 <alpine.LNX.2.00.0908251701020.16876@fgnss.gnfx.tqn.cy>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 25 Aug 2009 17:07:39 +0200
-Message-Id: <1251212859.7538.1166.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 25 Aug 2009 11:25:53 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:38966 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750787AbZHYPZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 11:25:52 -0400
+Date: Tue, 25 Aug 2009 17:22:17 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH 13/12] ksm: fix munlock during exit_mmap deadlock
+Message-ID: <20090825152217.GQ14722@random.random>
+References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
+ <Pine.LNX.4.64.0908031317190.16754@sister.anvils>
+ <20090825145832.GP14722@random.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090825145832.GP14722@random.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 17:03 +0200, Pawel Golaszewski wrote:
-> On Tue, 25 Aug 2009, Peter Zijlstra wrote:
-> > > > > > > No matter which kernel I'm using (2.6.27 - 2.6.30) it crashes. 
-> > > > > > > Works for few minutes and crashes. Even SysRq doesn't work. Dunno 
-> > > > > > > how to trigger it on other machine than mine (I have two, both 
-> > > > > > > affected). If more info is required - just ask.
-> > > > > > > [...]
-> > > > > > > [24483.211036] BUG: unable to handle kernel NULL pointer dereference at 00000058
-> > > > > > > [24483.211144] IP: [<c081cf9a>] pick_next_task_fair+0x6a/0x100
-> > > > > > > [24483.211247] Oops: 0000 [#1] SMP 
-> > > > > > > [24483.211300] Modules linked in: netconsole configfs dm_mod softdog sch_sfq xfs raid10 uhci_hcd eepro100 ppdev parport_pc floppy parport ehci_hcd e100 piix i2c_piix4 thermal psmouse e1000 container ide_core usbcore mii button pcspkr serio_raw processor i2c_core sg evdev ext3 jbd mbcache scsi_wait_scan sd_mod crc_t10dif ata_piix libata dock aic7xxx sym53c8xx scsi_transport_spi scsi_mod raid1 md_mod
-> > > > > > > [24483.211878] 
-> > > > > > > [24483.211910] Pid: 1677, comm: md2_raid10 Not tainted (2.6.27.31-1 #1)
-> > > > > > So you're saying .30 crashes at the exact same place?
-> > > > > Well... I'm not able to catch anything on .30 No sign on 
-> > > > > netconsole, black screen on monitor...
-> > > > Could you share your .config?
-> > > Sure, I forgot: http://www.blues.gda.pl/2.6.27.31.config.bz2
-> > Right, are you actually using group scheduling?
-> 
-> Not, yet - I wanted to start using it...
-> 
-> > could you try to reproduce without that?
-> > 
-> > CONFIG_GROUP_SCHED=n
-> 
-> I'll try. 
-> 
-> Do you think it's source of a problem?
+From: Andrea Arcangeli <aarcange@redhat.com>
 
-On these old (.27 is ancient) kernels it might well be. In any case its
-a good test to do, the cgroup code is significant in size and knowing on
-which side of that border to look helps.
+We can't stop page faults from happening during exit_mmap or munlock
+fails. The fundamental issue is the absolute lack of serialization
+after mm_users reaches 0. mmap_sem should be hot in the cache as we
+just released it a few nanoseconds before in exit_mm, we just need to
+take it one last time after mm_users is 0 to allow drivers to
+serialize safely against it so that taking mmap_sem and checking
+mm_users > 0 is enough for ksm to serialize against exit_mmap while
+still noticing when oom killer or something else wants to release all
+memory of the mm. When ksm notices it bails out and it allows memory
+to be released.
+
+Signed-off-by: Andrea Arcangeli <aarcange@redhat.com>
+---
+
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 9a16c21..f5af0d3 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -515,7 +515,18 @@ void mmput(struct mm_struct *mm)
+ 
+ 	if (atomic_dec_and_test(&mm->mm_users)) {
+ 		exit_aio(mm);
++
++		/*
++		 * Allow drivers tracking mm without pinning mm_users
++		 * (so that mm_users is allowed to reach 0 while they
++		 * do their tracking) to serialize against exit_mmap
++		 * by taking mmap_sem and checking mm_users is still >
++		 * 0 before working on the mm they're tracking.
++		 */
++		down_read(&mm->mmap_sem);
++		up_read(&mm->mmap_sem);
+ 		exit_mmap(mm);
++
+ 		set_mm_exe_file(mm, NULL);
+ 		if (!list_empty(&mm->mmlist)) {
+ 			spin_lock(&mmlist_lock);
+diff --git a/mm/memory.c b/mm/memory.c
+index 4a2c60d..025431e 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2603,7 +2603,7 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+ 
+ 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+-	if (!pte_none(*page_table) || ksm_test_exit(mm))
++	if (!pte_none(*page_table))
+ 		goto release;
+ 
+ 	inc_mm_counter(mm, anon_rss);
+@@ -2753,7 +2753,7 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	 * handle that later.
+ 	 */
+ 	/* Only go through if we didn't race with anybody else... */
+-	if (likely(pte_same(*page_table, orig_pte) && !ksm_test_exit(mm))) {
++	if (likely(pte_same(*page_table, orig_pte))) {
+ 		flush_icache_page(vma, page);
+ 		entry = mk_pte(page, vma->vm_page_prot);
+ 		if (flags & FAULT_FLAG_WRITE)
