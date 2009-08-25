@@ -1,149 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZHYNb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZHYNig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343AbZHYNb4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 09:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZHYNbz
+	id S1753463AbZHYNig (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 09:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbZHYNif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 09:31:55 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:27257 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbZHYNby (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 09:31:54 -0400
-Message-ID: <4A93E7CA.3080300@hp.com>
-Date: Tue, 25 Aug 2009 09:31:54 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 25 Aug 2009 09:38:35 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:55976 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751007AbZHYNie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 09:38:34 -0400
+Message-ID: <4A93E908.6050908@redhat.com>
+Date: Tue, 25 Aug 2009 09:37:12 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Luo Chunbo <chunbo.luo@windriver.com>
-CC: Wei Yongjun <yjwei@cn.fujitsu.com>, davem@davemloft.net,
-       netdev@vger.kernel.org, linux-sctp@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] sctp: fix the check for path failure detection
-References: <1251106637-434-1-git-send-email-chunbo.luo@windriver.com>	 <4A93949B.2020404@cn.fujitsu.com> <1251188548.6498.28.camel@pek-cluo-desktop>
-In-Reply-To: <1251188548.6498.28.camel@pek-cluo-desktop>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Pavel Machek <pavel@ucw.cz>
+CC: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+References: <82k50tjw7u.fsf@mid.bfk.de> <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz>
+In-Reply-To: <20090825094244.GC15563@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luo Chunbo wrote:
-> On Tue, 2009-08-25 at 15:36 +0800, Wei Yongjun wrote:
->> Chunbo Luo wrote:
->>> The transport error count should be incremented when an outstanding
->>> HB is not acknowledged. And the path failure detection should be done
->>> before sending out the HB.
->>>   
->>> Signed-off-by: Chunbo Luo <chunbo.luo@windriver.com>
->>> ---
->>>  net/sctp/sm_sideeffect.c |    6 +++++-
->>>  net/sctp/sm_statefuns.c  |    8 ++++----
->>>  2 files changed, 9 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
->>> index 86426aa..fbdf4de 100644
->>> --- a/net/sctp/sm_sideeffect.c
->>> +++ b/net/sctp/sm_sideeffect.c
->>> @@ -446,7 +446,11 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
->>>  	if (transport->state != SCTP_UNCONFIRMED)
->>>  		asoc->overall_error_count++;
->>>  
->>> -	if (transport->state != SCTP_INACTIVE &&
->>> +	/*
->>> +	 * The transport error count is incremented when an outstanding HB
->>> +	 * is not acknowledged. 
->>> +	 */
->>>   
->> T3-rtx timer expires also need to increment error count.
-> 
-> Yes, T3-rtx timer expires need to increment error count.
-> 
->>> +	if (transport->hb_sent && transport->state != SCTP_INACTIVE &&
->>>  	    (transport->error_count++ >= transport->pathmaxrxt)) {
->>>  		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
->>>  					 " transport IP: port:%d failed.\n",
->>> diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
->>> index 7288192..7f77099 100644
->>> --- a/net/sctp/sm_statefuns.c
->>> +++ b/net/sctp/sm_statefuns.c
->>> @@ -981,10 +981,6 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
->>>  	 */
->>>  
->>>  	if (transport->param_flags & SPP_HB_ENABLE) {
->>> -		if (SCTP_DISPOSITION_NOMEM ==
->>> -				sctp_sf_heartbeat(ep, asoc, type, arg,
->>> -						  commands))
->>> -			return SCTP_DISPOSITION_NOMEM;
->>>  		/* Set transport error counter and association error counter
->>>  		 * when sending heartbeat.
->>>  		 */
->>> @@ -992,6 +988,10 @@ sctp_disposition_t sctp_sf_sendbeat_8_3(const struct sctp_endpoint *ep,
->>>  				SCTP_TRANSPORT(transport));
->>>  		sctp_add_cmd_sf(commands, SCTP_CMD_TRANSPORT_HB_SENT,
->>>  				SCTP_TRANSPORT(transport));
->>> +		if (SCTP_DISPOSITION_NOMEM ==
->>> +				sctp_sf_heartbeat(ep, asoc, type, arg,
->>> +						  commands))
->>> +			return SCTP_DISPOSITION_NOMEM;
->>>  	}
->>>  	sctp_add_cmd_sf(commands, SCTP_CMD_HB_TIMER_UPDATE,
->>>  			SCTP_TRANSPORT(transport));
->>>   
->> How about this one:
-> 
-> It is ok to increment the error count. But the path failure detection
-> should be done before send HB. Otherwise, an extra HB chunk will be sent
-> out before the transport is marked DOWN . So the changes in
-> net/sctp/sm_statefuns.c is also needed.
-
-After running a few simulations with all the different patches from this thread,
-what we are really after was achieved by the original patch.  Looking back over
-the code history, it looks like this was try to implement the old text of
-section 8.3 (prior to errata that fixed it).
-
-We still have to send HB on an INACTIVE transport to see if it comes back, so
-that comment of my was entirely wrong.  Sorry, don't know what I was thinking at
-that time...
-
-So I'll take the original patch Luo submitted.
-
-Thanks
--vlad
-
-> 
-> 
-> 
->> diff --git a/net/sctp/sm_sideeffect.c b/net/sctp/sm_sideeffect.c
->> index 86426aa..fb723dd 100644
->> --- a/net/sctp/sm_sideeffect.c
->> +++ b/net/sctp/sm_sideeffect.c
->> @@ -447,7 +447,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
->>  		asoc->overall_error_count++;
->>  
->>  	if (transport->state != SCTP_INACTIVE &&
->> -	    (transport->error_count++ >= transport->pathmaxrxt)) {
->> +	    (transport->error_count >= transport->pathmaxrxt)) {
->>  		SCTP_DEBUG_PRINTK_IPADDR("transport_strike:association %p",
->>  					 " transport IP: port:%d failed.\n",
->>  					 asoc,
->> @@ -468,6 +468,7 @@ static void sctp_do_8_2_transport_strike(struct sctp_association *asoc,
->>  	 * that indicates that we have an outstanding HB.
->>  	 */
->>  	if (!is_hb || transport->hb_sent) {
->> +		transport->error_count++;
->>  		transport->last_rto = transport->rto;
->>  		transport->rto = min((transport->rto * 2), transport->asoc->rto_max);
->>  	}
+On 08/25/2009 05:42 AM, Pavel Machek wrote:
+> On Mon 2009-08-24 20:08:42, Theodore Tso wrote:
+>> On Tue, Aug 25, 2009 at 01:00:36AM +0200, Pavel Machek wrote:
+>>> Then to answer your question... ext2. You expect to run fsck after
+>>> unclean shutdown, and you expect to have to solve some problems with
+>>> it. So the way ext2 deals with the flash media actually matches what
+>>> the user expects. (*)
 >>
->>
->>
->>
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sctp" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+>> But if the 256k hole is in data blocks, fsck won't find a problem,
+>> even with ext2.
+>
+> True.
+>
+>> And if the 256k hole is the inode table, you will *still* suffer
+>> massive data loss.  Fsck will tell you how badly screwed you are, but
+>> it doesn't "fix" the disk; most users don't consider questions of the
+>> form "directory entry<precious-thesis-data>  points to trashed inode,
+>> may I delete directory entry?" as being terribly helpful.  :-/
+>
+> Well it will fix the disk in the end. And no, "directory entry
+> <precious-thesis-data>  points to trashed inode, may I delete directory
+> entry?" is not _terribly_ helpful, but it is slightly helpful and
+> people actually expect that from ext2.
+>
+>> Maybe this came as a surprise to you, but anyone who has used a
+>> compact flash in a digital camera knows that you ***have*** to wait
+>> until the led has gone out before trying to eject the flash card.  I
+>> remember seeing all sorts of horror stories from professional
+>> photographers about how they lost an important wedding's day worth of
+>> pictures with the attendant commercial loss, on various digital
+>> photography forums.  It tends to be the sort of mistake that digital
+>> photographers only make once.
+>
+> It actually comes as surprise to me. Actually yes and no. I know that
+> digital cameras use VFAT, so pulling CF card out of it may do bad
+> thing, unless I run fsck.vfat afterwards. If digital camera was using
+> ext3, I'd expect it to be safely pullable at any time.
+>
+> Will IBM microdrive do any difference there?
+>
+> Anyway, it was not known to me. Rather than claiming "everyone knows"
+> (when clearly very few people really understand all the details), can
+> we simply document that?
+> 									Pavel
+
+I really think that the expectation that all OS's (windows, mac, even your ipod) 
+all teach you not to hot unplug a device with any file system. Users have an 
+"eject" or "safe unload" in windows, your iPod tells you not to power off or 
+disconnect, etc.
+
+I don't object to making that general statement - "Don't hot unplug a device 
+with an active file system or actively used raw device" - but would object to 
+the overly general statement about ext3 not working on flash, RAID5 not working, 
+etc...
+
+ric
+
+
 
