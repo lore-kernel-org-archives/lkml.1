@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZHYGFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZHYGGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbZHYGFL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 02:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZHYGFK
+	id S1754539AbZHYGGB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 02:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZHYGGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 02:05:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59998 "EHLO song.cn.fujitsu.com"
+	Tue, 25 Aug 2009 02:06:00 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58859 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752419AbZHYGFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 02:05:09 -0400
-Message-ID: <4A937EF5.4040505@cn.fujitsu.com>
-Date: Tue, 25 Aug 2009 14:04:37 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1752439AbZHYGGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 02:06:00 -0400
+Message-ID: <4A937EFA.5050706@cn.fujitsu.com>
+Date: Tue, 25 Aug 2009 14:04:42 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Justin Mattock <justinmattock@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Neil Horman <nhorman@tuxdriver.com>, Wei Yongjun <yjwei@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] trace_evetns: fix napi's tracepoint
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: system gets stuck in a lock during boot
+References: <4A84345D.60506@gmail.com>	 <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com>	 <4A8B4607.6090303@gmail.com> <4A8B5113.20102@cn.fujitsu.com>	 <4A8FA2BD.4030707@gmail.com> <4A91FDED.9050801@cn.fujitsu.com>	 <1251093523.7538.118.camel@twins> <4A922F82.9080000@cn.fujitsu.com>	 <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com> <1251179444.7538.977.camel@twins>
+In-Reply-To: <1251179444.7538.977.camel@twins>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, the napi's tracepoint works will is depend on
-"DECLARE_TRACE" definiens in include/trace/define_trace.h,
-like below:
+Peter Zijlstra wrote:
+> On Mon, 2009-08-24 at 12:19 -0700, Justin Mattock wrote:
+> 
+>> O.K. I feel better, deleted
+>> my system, and threw in a minimal built system
+>> with only the bare essentials to boot.
+>> (just to make sure things are correct).
+>>
+>> unfortunately after building rc6 I'm still hitting
+>> this. really am not sure why this is happening.
+> 
+> Could you share your .config so we could have a try?
+> 
 
-#include <trace/events/skb.h>    // include define_trace.h
-#include <trace/events/napi.h>
+Justin sent his config in an earlier mail in this thread.
+But Steven didn't reproduce the bug with the config,
+neither me.
 
-there have error, if we remove "#include <trace/events/skb.h>"
-or include napi.h in the front of include skb.h, It should
-depend on the definiens in include/linux/tracepoint.h and we
-can remove the "DECLARE_TRACE" definiens in
-include/trace/define_trace.h, because "TRACE_EVENT" not use it
-
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- include/trace/define_trace.h |    4 ----
- net/core/net-traces.c        |    4 +++-
- 2 files changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
-index f7a7ae1..76e93bf 100644
---- a/include/trace/define_trace.h
-+++ b/include/trace/define_trace.h
-@@ -26,10 +26,6 @@
- #define TRACE_EVENT(name, proto, args, tstruct, assign, print)	\
- 	DEFINE_TRACE(name)
- 
--#undef DECLARE_TRACE
--#define DECLARE_TRACE(name, proto, args)	\
--	DEFINE_TRACE(name)
--
- #undef TRACE_INCLUDE
- #undef __TRACE_INCLUDE
- 
-diff --git a/net/core/net-traces.c b/net/core/net-traces.c
-index f1e982c..7eee0b7 100644
---- a/net/core/net-traces.c
-+++ b/net/core/net-traces.c
-@@ -22,10 +22,12 @@
- 
- #include <asm/unaligned.h>
- #include <asm/bitops.h>
-+#include <linux/tracepoint.h>
- 
- #define CREATE_TRACE_POINTS
- #include <trace/events/skb.h>
--#include <trace/events/napi.h>
-+
-+DEFINE_TRACE(napi_poll);
- 
- EXPORT_TRACEPOINT_SYMBOL_GPL(kfree_skb);
- 
--- 
-1.6.1.2
+And we don't receive another bug report regarding to this
+crash.
 
