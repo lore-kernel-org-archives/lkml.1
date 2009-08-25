@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932676AbZHYXlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932448AbZHYXpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932676AbZHYXlw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932435AbZHYXll
+	id S932448AbZHYXpF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932366AbZHYXpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:41:41 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58614 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932431AbZHYXeg convert rfc822-to-8bit (ORCPT
+	Tue, 25 Aug 2009 19:45:04 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47744 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932372AbZHYXpC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:34:36 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "=?utf-8?q?Bruno=20Pr=C3=A9mont?=" <bonbons@linux-vserver.org>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-In-Reply-To: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Tue, 25 Aug 2009 19:45:02 -0400
+Date: Wed, 26 Aug 2009 01:44:55 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Neil Brown <neilb@suse.de>
+Cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090825234454.GI4300@elf.ucw.cz>
+References: <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <19092.28371.793339.764701@notabene.brown>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <_yaHeGjHEzG.A.DM.UtGlKB@chimera>
-Subject: [Bug #13942] Troubles with AoE and uninitialized object
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue, 25 Aug 2009 22:34:49 +0200 (CEST)
+In-Reply-To: <19092.28371.793339.764701@notabene.brown>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
 
-The following bug entry is on the current list of known regressions
-from 2.6.30.  Please verify if it still should be listed and let me know
-(either way).
+> While I think it is, in principle, worth documenting this sort of
+> thing, there are an awful lot of fine details and distinctions that
+> would need to be considered.
 
+Ok, can you help? Having a piece of MD documentation explaining the
+"powerfail nukes entire stripe" and how current filesystems do not
+deal with that would be nice, along with description when exactly that
+happens.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13942
-Subject		: Troubles with AoE and uninitialized object
-Submitter	: Bruno Prémont <bonbons@linux-vserver.org>
-Date		: 2009-08-04 10:12 (22 days old)
-References	: http://marc.info/?l=linux-kernel&m=124938117104811&w=4
+It seems to need two events -- one failed disk and one powerfail. I
+knew that raid5 only protects against one failure, but I never
+realized that simple powerfail (or kernel crash) counts as a failure
+here, too.
 
+I guess it should go at the end of md.txt.... aha, it actually already
+talks about the issue a bit, in:
 
+#Boot time assembly of degraded/dirty arrays
+#-------------------------------------------
+#
+#If a raid5 or raid6 array is both dirty and degraded, it could have
+#undetectable data corruption.  This is because the fact that it is
+#'dirty' means that the parity cannot be trusted, and the fact that it
+#is degraded means that some datablocks are missing and cannot reliably
+#be reconstructed (due to no parity).
+
+(Actually... that's possibly what happened to friend of mine. One of
+disks in raid5 stopped responding and whole system just hanged
+up. Oops, two failures in one...)
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
