@@ -1,95 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZHYK2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZHYK2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbZHYK2Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 06:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZHYK2Q
+	id S1754860AbZHYK2s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 06:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZHYK2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 06:28:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45758 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752725AbZHYK2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 06:28:15 -0400
-Date: Tue, 25 Aug 2009 12:28:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
-	cpumask on multi-node processors
-Message-ID: <20090825102806.GA19941@elte.hu>
-References: <20090820131243.GO29327@alberich.amd.com> <20090820134604.GD29327@alberich.amd.com> <1251128176.7538.301.camel@twins> <20090825093101.GJ20811@alberich.amd.com> <1251194143.7538.1128.camel@twins> <20090825102409.GK20811@alberich.amd.com>
+	Tue, 25 Aug 2009 06:28:46 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:42391 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbZHYK2p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 06:28:45 -0400
+Date: Tue, 25 Aug 2009 15:58:37 +0530
+From: "M. Mohan Kumar" <mohan@in.ibm.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: michael@ellerman.id.au, linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 6/8] powerpc: add CONFIG_KEXEC_AUTO_RESERVE
+Message-ID: <20090825102837.GB14591@in.ibm.com>
+Reply-To: mohan@in.ibm.com
+References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain> <20090821065739.4855.19179.sendpatchset@localhost.localdomain> <1251121443.10645.56.camel@concordia> <4A938348.2020306@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090825102409.GK20811@alberich.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4A938348.2020306@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 25, 2009 at 02:23:04PM +0800, Amerigo Wang wrote:
+> Michael Ellerman wrote:
+>> On Fri, 2009-08-21 at 02:55 -0400, Amerigo Wang wrote:
+>>   
+>>> Introduce a new config option KEXEC_AUTO_RESERVE for powerpc.
+>>>
+>>> Index: linux-2.6/arch/powerpc/Kconfig
+>>> ===================================================================
+>>> --- linux-2.6.orig/arch/powerpc/Kconfig
+>>> +++ linux-2.6/arch/powerpc/Kconfig
+>>> @@ -346,6 +346,17 @@ config KEXEC
+>>>  	  support.  As of this writing the exact hardware interface is
+>>>  	  strongly in flux, so no good recommendation can be made.
+>>>  +config KEXEC_AUTO_RESERVE
+>>> +	bool "automatically reserve memory for kexec kernel"
+>>> +	depends on KEXEC
+>>> +	default y
+>>> +	---help---
+>>> +	  Automatically reserve memory for a kexec kernel, so that you don't
+>>> +	  need to specify numbers for the "crashkernel=X@Y" boot option,
+>>> +	  instead you can use "crashkernel=auto". To make this work, you need
+>>> +	  to have more than 4G memory. On PPC, 256M is reserved, 1/32 memory
+>>> +	  on PPC64, but it will not exceed 1T/32.
+>>>     
+>>
+>> To be honest I don't see why this logic goes in the kernel. It seems to
+>> me that it's policy how much memory you devote to the crash kernel vs
+>> the production kernel. It depends on what kind of crash kernel you're
+>> loading, a minimal UP dump kernel, or a full-featured SMP behemoth, An
+>> it depends on how much memory you're willing to leave idle in the
+>> off-chance you crash.
+>>   
+>
+> True, but since in the crash kernel, we have very little memory, so  
+> probably loading a full-featured SMP kernel doesn't make much sense...
+>
+> And in patch 1/8, I introduced a way to free the reserved memory at  
+> run-time.
+>
+>> That aside, I don't see how this will be useful in practice, if it only
+>> works for memory sizes over 4G? Or are we saying that people with less
+>> than 4G don't need crash kernels? If we're not saying that, those users,
+>> or those users' distros, still need to do some logic to work out if they
+>> have < 4GB of memory and if so pick a crash kernel size. So why can't
+>> they pick the size in the > 4GB case also?
+>>   
+>
+> No, we set 4G as a threshold because we only want this work when have  
+> have enough memory which is defined as 4G currently... This can be  
+> changed to arch-dependent, e.g. ppc. I am very open to this.
+>
 
-* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+So the distro/admin have to use crashkernel=auto for machines having more
+than 4GB RAM and for machines with less than 4GB RAM they have to use the
+crashkernel=x@y (or extended crashkernel syntax)? IMHO it will be nice if
+crashkernel=auto could handle all of the situations.
 
-> On Tue, Aug 25, 2009 at 11:55:43AM +0200, Peter Zijlstra wrote:
-> > On Tue, 2009-08-25 at 11:31 +0200, Andreas Herrmann wrote:
-> > > On Mon, Aug 24, 2009 at 05:36:16PM +0200, Peter Zijlstra wrote:
-> > > > On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
-> > > > > The correct mask that describes core-siblings of an processor
-> > > > > is topology_core_cpumask. See topology adapation patches, especially
-> > > > > http://marc.info/?l=linux-kernel&m=124964999608179
-> > > > 
-> > > > 
-> > > > argh, violence, murder kill.. this is the worst possible hack and you're
-> > > > extending it :/
-> > > 
-> > > So this is the third code area
-> > > (besides sched_*_power_savings sysfs interface, and the __cpu_power fiddling)
-> > > that is crap, mess, a hack.
-> > > 
-> > > Didn't know that I'd enter such a minefield when touching this code. ;-(
-> > 
-> > Yeah, you're lucky that way ;-) Its been creaking for a while, and I've
-> > been making noises to the IBM people (who so far have been the main
-> > source of power saving patches) to clean this up, but now you trod onto
-> > all of it at once..
-> > 
-> > > What would be your perferred solution for the
-> > > core_cpumask/llc_shared_map stuff?  Another domain level to get rid of
-> > > this function?
-> > 
-> > Right, I'd like to see everything exposed as domain levels.
-> > 
-> > 
-> > numa-cluster
-> > numa
-> > socket
-> > in-socket-numa
-> > multi-core
-> > shared-cache
-> > core
-> > threads
-> > 
-> > We currently have a fixed order of these things, but I think we should
-> > simply provide helpers for building the sd tree and let the arch code do
-> > that instead of exporting all these masks in a fixed order.
-> > 
-> > Once we get the arch domain tree, we do degenerate stuff to cull all the
-> > trivial domains and fold SD flags.
-> 
-> So any in-socket-numa is only going to haeppen with the 
-> arch-defined domain tree.
-> 
-> Now that this is settled you should throw away the 
-> __build_sched_domains cleanup patches that are in tip. They won't 
-> be of use when domain creation code is basically changed.
-
-I'd rather keep them - it gives a better/cleaner basis to develop 
-the new stuff.
-
-	Ingo
+Regards,
+M. Mohan Kumar
