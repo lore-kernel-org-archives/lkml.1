@@ -1,51 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbZHYWPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932197AbZHYWVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756281AbZHYWPB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 18:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbZHYWPA
+	id S932197AbZHYWVY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 18:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbZHYWVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 18:15:00 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:50643 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753873AbZHYWO7 (ORCPT
+	Tue, 25 Aug 2009 18:21:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60419 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756206AbZHYWVW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 18:14:59 -0400
-Date: Wed, 26 Aug 2009 00:19:03 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: David Dillow <dave@thedillows.org>,
-       Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
-       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-Message-ID: <20090825221903.GA13630@electric-eye.fr.zoreil.com>
-References: <1250895567.23419.1.camel@obelisk.thedillows.org> <1250897657.23419.5.camel@obelisk.thedillows.org> <m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org> <1250973787.3582.14.camel@obelisk.thedillows.org> <m1r5v0ogvw.fsf@fess.ebiederm.org> <1251169150.4023.11.camel@obelisk.thedillows.org> <m1prajabk8.fsf@fess.ebiederm.org> <1251232848.9607.15.camel@lap75545.ornl.gov> <m1k50r8u4p.fsf@fess.ebiederm.org>
+	Tue, 25 Aug 2009 18:21:22 -0400
+Date: Wed, 26 Aug 2009 00:21:12 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: [patch] document flash/RAID dangers
+Message-ID: <20090825222112.GB4300@elf.ucw.cz>
+References: <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1k50r8u4p.fsf@fess.ebiederm.org>
-X-Organisation: Land of Sunshine Inc.
+In-Reply-To: <20090825161110.GP17684@mit.edu>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman <ebiederm@xmission.com> :
-[...]
-> I am a bit curious about TxDescUnavail.  Perhaps we had a temporary
-> memory shortage and that is what was screaming?  I don't think we do
-> anything at all with that state.
+Hi!
 
-You are not alone, the driver completely ignores this bit.
+> It seems that you are really hung up on whether or not the filesystem
+> metadata is consistent after a power failure, when I'd argue that the
+> problem with using storage devices that don't have good powerfail
+> properties have much bigger problems (such as the potential for silent
+> data corruption, or even if fsck will fix a trashed inode table with
+> ext2, massive data loss).  So instead of your suggested patch, it
+> might be better simply to have a file in Documentation/filesystems
+> that states something along the lines of:
+> 
+> "There are storage devices that high highly undesirable properties
+> when they are disconnected or suffer power failures while writes are
+> in progress; such devices include flash devices and software RAID 5/6
+> arrays without journals, as well as hardware RAID 5/6 devices without
+> battery backups.  These devices have the property of potentially
+> corrupting blocks being written at the time of the power failure, and
+> worse yet, amplifying the region where blocks are corrupted such that
+> adjacent sectors are also damaged during the power failure.
 
-As far as I remember, the TxDescUnavail event mostly pops up when the
-driver makes an excessive use of TxPoll requests.
+In FTL case, damaged sectors are not neccessarily adjacent. Otherwise
+this looks okay and fair to me.
 
-> Perhaps the flaw here is simply not masking TxDescUnavail while we are
-> in NAPI mode ?
+> Users who use such storage devices are well advised take
+> countermeasures, such as the use of Uninterruptible Power Supplies,
+> and making sure the flash device is not hot-unplugged while the device
+> is being used.  Regular backups when using these devices is also a
+> Very Good Idea.
+> 
+> Otherwise, file systems placed on these devices can suffer silent data
+> and file system corruption.  An forced use of fsck may detect metadata
+> corruption resulting in file system corruption, but will not suffice
+> to detect data corruption."
 
-Yes, it is worth trying.
+Ok, would you be against adding:
+
+"Running non-journalled filesystem on these may be desirable, as
+journalling can not provide meaningful protection, anyway."
+
+> My big complaint is that you seem to think that ext3 some how let you
+> down, but I'd argue that the real issue is that the storage device let
+> you down.  Any journaling filesystem will have the properties that you
+> seem to be complaining about, so the fact that your patch only
+> documents this as assumptions made by ext2 and ext3 is unfair; it also
+> applies to xfs, jfs, reiserfs, reiser4, etc.  Further more, most
+> users
+
+Yes, it applies to all journalling filesystems; it is just that I was 
+clever/paranoid enough to avoid anything non-ext3.
+
+ext3 docs still says:
+# The journal supports the transactions start and stop, and in case of a
+# crash, the journal can replay the transactions to quickly put the
+# partition back into a consistent state.
+
+> are even more concerned about possibility of massive data loss and/or
+> silent data corruption.  So if your complaint that we don't have
+> documentation warning users about the potential pitfalls of using
+> storage devices with undesirable power fail properties, let's document
+> that as a shortcoming in those storage devices.
+
+Ok, works for me.
+
+---
+
+From: Theodore Tso <tytso@mit.edu>
+
+Document that many devices are too broken for filesystems to protect
+data in case of powerfail.
+
+Signed-of-by: Pavel Machek <pavel@ucw.cz> 
+
+diff --git a/Documentation/filesystems/dangers.txt b/Documentation/filesystems/dangers.txt
+new file mode 100644
+index 0000000..e1a46dd
+--- /dev/null
++++ b/Documentation/filesystems/dangers.txt
+@@ -0,0 +1,19 @@
++There are storage devices that high highly undesirable properties
++when they are disconnected or suffer power failures while writes are
++in progress; such devices include flash devices and software RAID 5/6
++arrays without journals, as well as hardware RAID 5/6 devices without
++battery backups.  These devices have the property of potentially
++corrupting blocks being written at the time of the power failure, and
++worse yet, amplifying the region where blocks are corrupted such that
++additional sectors are also damaged during the power failure.
++        
++Users who use such storage devices are well advised take
++countermeasures, such as the use of Uninterruptible Power Supplies,
++and making sure the flash device is not hot-unplugged while the device
++is being used.  Regular backups when using these devices is also a
++Very Good Idea.
++        
++Otherwise, file systems placed on these devices can suffer silent data
++and file system corruption.  An forced use of fsck may detect metadata
++corruption resulting in file system corruption, but will not suffice
++to detect data corruption.
+\ No newline at end of file
 
 -- 
-Ueimor
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
