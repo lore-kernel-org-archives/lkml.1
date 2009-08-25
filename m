@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZHYOfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZHYOgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbZHYOfo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 10:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbZHYOfo
+	id S1755177AbZHYOgO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 10:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbZHYOgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 10:35:44 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:51194 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755105AbZHYOfn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 10:35:43 -0400
-Message-Id: <4A9412DE0200007800011A07@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Tue, 25 Aug 2009 15:35:42 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <tglx@linutronix.de>, <mingo@redhat.com>, <linux-kernel@vger.kernel.org>,
-       <linux-tip-commits@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: [tip:x86/urgent] x86: Fix build with older
-	 binutilsandconsolidate linker script
-References: <4A8AEA1F0200007800010563@vpn.id2.novell.com>
- <tip-ddc98b38b6320d5de2e3167673a06ec1a48e9d0e@git.kernel.org>
- <20090825075029.GA857@elte.hu>
- <4A9408FC02000078000119B1@vpn.id2.novell.com>
- <20090825135651.GA22484@elte.hu>
- <4A940AE502000078000119C5@vpn.id2.novell.com>
- <20090825141405.GA14879@elte.hu>
-In-Reply-To: <20090825141405.GA14879@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 25 Aug 2009 10:36:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:49815 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755138AbZHYOgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 10:36:13 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH -stable] kthreads: fix kthread_create() vs kthread_stop() race
+Date: Wed, 26 Aug 2009 00:06:06 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: "Greg Kroah-Hartman" <gregkh@suse.de>,
+       Robert Peterson <rpeterso@redhat.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20090824104529.GA6899@redhat.com>
+In-Reply-To: <20090824104529.GA6899@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200908260006.07310.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Ingo Molnar <mingo@elte.hu> 25.08.09 16:14 >>>
->
->* Jan Beulich <JBeulich@novell.com> wrote:
->
->> >>> Ingo Molnar <mingo@elte.hu> 25.08.09 15:56 >>>
->> >Would it be possible to split it into two pieces: 'minimal fix' and 
->> >'clean up' portions?
->> 
->> Besides being cumbersome, that would make it even larger, so I'd 
->> say that's not worth it.
->
->I mean the two patches yield the same end result. The first one 
+On Mon, 24 Aug 2009 08:15:29 pm Oleg Nesterov wrote:
+> The bug should be "accidently" fixed by recent changes in 2.6.31,
+> all kernels <= 2.6.30 need the fix. The problem was never noticed before,
+> it was found because it causes mysterious failures with GFS mount/umount.
+> 
+> Credits to Robert Peterson. He blaimed kthread.c from the very beginning.
+> But, despite my promise, I forgot to inspect the old implementation until
+> he did a lot of testing and reminded me. This led to huge delay in fixing
+> this bug.
+> 
+> kthread_stop() does put_task_struct(k) before it clears kthread_stop_info.k.
+> This means another kthread_create() can re-use this task_struct, but the
+> new kthread can still see kthread_should_stop() == T and exit even without
+> calling threadfn().
+> 
+> Reported-by: Robert Peterson <rpeterso@redhat.com>
+> Tested-by: Robert Peterson <rpeterso@redhat.com>
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-I also understood it that way.
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
->(which is smaller, hopefully) gets committed to x86/urgent, the 
->second one (the cleanups and other non-essentials) gets pushed 
->upstream in .32.
-
-The cleanup part really isn't much more than what I described with
-"Once touching this code, also use the various data section helper
-macros from include/asm-generic/vmlinux.lds.h.", and if the first
-patch wouldn't use those macros, it would just grow and become
-even less readable.
-
-Jan
-
+Thanks, good catch!
+Rusty.
