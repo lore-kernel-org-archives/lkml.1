@@ -1,100 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZHYAKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbZHYAK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbZHYAKs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 20:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZHYAKq
+	id S1754026AbZHYAK6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 20:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZHYAKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 20:10:46 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:51869 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753875AbZHYAKp (ORCPT
+	Mon, 24 Aug 2009 20:10:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52690 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753671AbZHYAKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 20:10:45 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEABXHkkpMROOX/2dsb2JhbACBU9U8hBoF
-Date: Mon, 24 Aug 2009 20:10:43 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org
-Subject: Re: [PATCH -tip 1/2] Add "notrace" to RCU function headers used by
-	ftrace.
-Message-ID: <20090825001043.GA8252@Krystal>
-References: <20090824164112.GA13693@linux.vnet.ibm.com> <alpine.DEB.2.00.0908241938330.6710@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908241938330.6710@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 20:06:41 up 6 days, 10:56,  2 users,  load average: 0.31, 0.31,
-	0.23
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 24 Aug 2009 20:10:55 -0400
+Date: Mon, 24 Aug 2009 17:09:08 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: linux-kernel@vger.kernel.org, x86@kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer dereference
+ at 0000000000000008
+In-Reply-To: <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0908241655370.3824@localhost.localdomain>
+References: <m163cjhwa4.fsf@fess.ebiederm.org> <m1skfnggrb.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain> <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Mon, 24 Aug 2009, Paul E. McKenney wrote:
-> 
-> > Both rcu_read_lock_sched_notrace() and rcu_read_unlock_sched_notrace()
-> > are used by ftrace, and thus need to be marked "notrace".  Unfortunately,
-> > my naive assumption that gcc would see the inner "notrace" does not hold.
-> > Kudos to Lai Jiangshan for noting this.
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> >  include/linux/rcupdate.h |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> > index ec90fc3..8b4422c 100644
-> > --- a/include/linux/rcupdate.h
-> > +++ b/include/linux/rcupdate.h
-> > @@ -191,7 +191,7 @@ static inline void rcu_read_lock_sched(void)
-> >  	__acquire(RCU_SCHED);
-> >  	rcu_read_acquire();
-> >  }
-> > -static inline void rcu_read_lock_sched_notrace(void)
-> > +static inline notrace void rcu_read_lock_sched_notrace(void)
-> >  {
-> >  	preempt_disable_notrace();
-> >  	__acquire(RCU_SCHED);
-> > @@ -209,7 +209,7 @@ static inline void rcu_read_unlock_sched(void)
-> >  	__release(RCU_SCHED);
-> >  	preempt_enable();
-> >  }
-> > -static inline void rcu_read_unlock_sched_notrace(void)
-> > +static inline notrace void rcu_read_unlock_sched_notrace(void)
-> 
-> Funny, inlines should not be traced. Is gcc ignoring the inlines here?
-> 
 
-inline is just a hint. __attribute__((always_inline)) should be used to
-really really forbid gcc to generate any function call. So notrace is
-needed to make sure we do not trace such function call.
 
-It reminds me of the old mkraid option --really-really-force (or
-something like that). ;)
-
-Mathieu
-
-> -- Steve
+On Mon, 24 Aug 2009, Linus Torvalds wrote:
 > 
-> >  {
-> >  	rcu_read_release();
-> >  	__release(RCU_SCHED);
-> > -- 
-> > 1.5.2.5
-> > 
-> > 
+> But I wanted to let people know that the patch is clearly not the "last 
+> word" on this. It's a useful thing to try, but we need something better.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+This may be better (this is a replacement for the previous patch).
+
+Instead of using 'cancel_delayed_work_sync()', it makes tty_ldisc_hangup() 
+do a 'flush_scheduled_work()' afterwards, like the other callers already 
+do.
+
+And like 'tty_ldisc_release()' already does, it does this all before even 
+getting the ldisc_mutex, avoiding the deadlock.
+
+I'm not 100% happy with this patch either, but my remaining unhappiness is 
+more with the tty locking in general that causes this all. I suspect this 
+patch in itself is not any worse than the other hacks we have.
+
+Oh, and in case you didn't guess - this is _STILL_ totally untested. It 
+compiles for me, but that's all I'm going to guarantee. I'm just looking 
+at the code (and getting pretty fed up with it ;)
+
+And as already mentioned: I doubt the deadlock on tty->ldisc_mutex is 
+anything that would be hit in practice. And even if it can be triggered, 
+the previous patch I sent out is still interesting in a "does it make the 
+problem go away" sense. Because if it doesn't (with or without a new 
+deadlock), then I'm looking at all the wrong places.
+
+		Linus
+
+---
+ drivers/char/tty_ldisc.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
+index 1733d34..f893d18 100644
+--- a/drivers/char/tty_ldisc.c
++++ b/drivers/char/tty_ldisc.c
+@@ -508,8 +508,9 @@ static void tty_ldisc_restore(struct tty_struct *tty, struct tty_ldisc *old)
+  *	be obtained while the delayed work queue halt ensures that no more
+  *	data is fed to the ldisc.
+  *
+- *	In order to wait for any existing references to complete see
+- *	tty_ldisc_wait_idle.
++ *	You need to do a 'flush_scheduled_work()' (outside the ldisc_mutex
++ *	in order to make sure any currently executing ldisc work is also
++ *	flushed.
+  */
+ 
+ static int tty_ldisc_halt(struct tty_struct *tty)
+@@ -753,11 +754,14 @@ void tty_ldisc_hangup(struct tty_struct *tty)
+ 	 * N_TTY.
+ 	 */
+ 	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
++		/* Make sure the old ldisc is quiescent */
++		tty_ldisc_halt(tty);
++		flush_scheduled_work();
++
+ 		/* Avoid racing set_ldisc or tty_ldisc_release */
+ 		mutex_lock(&tty->ldisc_mutex);
+ 		if (tty->ldisc) {	/* Not yet closed */
+ 			/* Switch back to N_TTY */
+-			tty_ldisc_halt(tty);
+ 			tty_ldisc_reinit(tty);
+ 			/* At this point we have a closed ldisc and we want to
+ 			   reopen it. We could defer this to the next open but
