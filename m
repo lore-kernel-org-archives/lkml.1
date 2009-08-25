@@ -1,134 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZHYGRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbZHYGV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbZHYGRm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 02:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbZHYGRm
+	id S1754314AbZHYGV0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 02:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZHYGVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 02:17:42 -0400
-Received: from mga09.intel.com ([134.134.136.24]:54049 "EHLO mga09.intel.com"
+	Tue, 25 Aug 2009 02:21:25 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:37267 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754141AbZHYGRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 02:17:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,270,1249282800"; 
-   d="scan'208";a="544482317"
-Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer 
-	dereference at 0000000000000008
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Xiaotian Feng <xtfeng@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	id S1754178AbZHYGVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 02:21:24 -0400
+Message-ID: <4A938348.2020306@redhat.com>
+Date: Tue, 25 Aug 2009 14:23:04 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+MIME-Version: 1.0
+To: michael@ellerman.id.au
+CC: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <7b6bb4a50908242008w12037fd4gf823c7de71971009@mail.gmail.com>
-References: <m163cjhwa4.fsf@fess.ebiederm.org>
-	 <m1skfnggrb.fsf@fess.ebiederm.org>
-	 <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain>
-	 <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain>
-	 <alpine.LFD.2.01.0908241655370.3824@localhost.localdomain>
-	 <7b6bb4a50908242008w12037fd4gf823c7de71971009@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 25 Aug 2009 14:16:33 +0800
-Message-Id: <1251180994.2606.5.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 6/8] powerpc: add CONFIG_KEXEC_AUTO_RESERVE
+References: <20090821065637.4855.32234.sendpatchset@localhost.localdomain>	 <20090821065739.4855.19179.sendpatchset@localhost.localdomain> <1251121443.10645.56.camel@concordia>
+In-Reply-To: <1251121443.10645.56.camel@concordia>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 11:08 +0800, Xiaotian Feng wrote:
-> On Tue, Aug 25, 2009 at 8:09 AM, Linus
-> Torvalds<torvalds@linux-foundation.org> wrote:
-> >
-> >
-> > On Mon, 24 Aug 2009, Linus Torvalds wrote:
-> >>
-> >> But I wanted to let people know that the patch is clearly not the "last
-> >> word" on this. It's a useful thing to try, but we need something better.
-> >
-> > This may be better (this is a replacement for the previous patch).
-> >
-> > Instead of using 'cancel_delayed_work_sync()', it makes tty_ldisc_hangup()
-> > do a 'flush_scheduled_work()' afterwards, like the other callers already
-> > do.
-> >
-> > And like 'tty_ldisc_release()' already does, it does this all before even
-> > getting the ldisc_mutex, avoiding the deadlock.
-> >
-> > I'm not 100% happy with this patch either, but my remaining unhappiness is
-> > more with the tty locking in general that causes this all. I suspect this
-> > patch in itself is not any worse than the other hacks we have.
-> >
-> > Oh, and in case you didn't guess - this is _STILL_ totally untested. It
-> > compiles for me, but that's all I'm going to guarantee. I'm just looking
-> > at the code (and getting pretty fed up with it ;)
-> >
-> > And as already mentioned: I doubt the deadlock on tty->ldisc_mutex is
-> > anything that would be hit in practice. And even if it can be triggered,
-> > the previous patch I sent out is still interesting in a "does it make the
-> > problem go away" sense. Because if it doesn't (with or without a new
-> > deadlock), then I'm looking at all the wrong places.
-> 
-> I have run the test case for about 2 hours on my x86_64 machine, no
-> panic happens.
-I ran the test case and didn't hit the panic again. It seems the patch does work.
-But I'm still curious. On my stoakley machine, most panic happens at
-fn(data) in function run_timer_softirq=>__run_timers because the register which saves
-fn is equal to NULL. I added a fn==NULL checking just before fn(data), and found
-it's never equal to NULL which is quite different from the panic info.
+Michael Ellerman wrote:
+> On Fri, 2009-08-21 at 02:55 -0400, Amerigo Wang wrote:
+>   
+>> Introduce a new config option KEXEC_AUTO_RESERVE for powerpc.
+>>
+>> Index: linux-2.6/arch/powerpc/Kconfig
+>> ===================================================================
+>> --- linux-2.6.orig/arch/powerpc/Kconfig
+>> +++ linux-2.6/arch/powerpc/Kconfig
+>> @@ -346,6 +346,17 @@ config KEXEC
+>>  	  support.  As of this writing the exact hardware interface is
+>>  	  strongly in flux, so no good recommendation can be made.
+>>  
+>> +config KEXEC_AUTO_RESERVE
+>> +	bool "automatically reserve memory for kexec kernel"
+>> +	depends on KEXEC
+>> +	default y
+>> +	---help---
+>> +	  Automatically reserve memory for a kexec kernel, so that you don't
+>> +	  need to specify numbers for the "crashkernel=X@Y" boot option,
+>> +	  instead you can use "crashkernel=auto". To make this work, you need
+>> +	  to have more than 4G memory. On PPC, 256M is reserved, 1/32 memory
+>> +	  on PPC64, but it will not exceed 1T/32.
+>>     
+>
+> To be honest I don't see why this logic goes in the kernel. It seems to
+> me that it's policy how much memory you devote to the crash kernel vs
+> the production kernel. It depends on what kind of crash kernel you're
+> loading, a minimal UP dump kernel, or a full-featured SMP behemoth, An
+> it depends on how much memory you're willing to leave idle in the
+> off-chance you crash.
+>   
 
-> 
-> >
-> >                Linus
-> >
-> > ---
-> >  drivers/char/tty_ldisc.c |   10 +++++++---
-> >  1 files changed, 7 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-> > index 1733d34..f893d18 100644
-> > --- a/drivers/char/tty_ldisc.c
-> > +++ b/drivers/char/tty_ldisc.c
-> > @@ -508,8 +508,9 @@ static void tty_ldisc_restore(struct tty_struct *tty, struct tty_ldisc *old)
-> >  *     be obtained while the delayed work queue halt ensures that no more
-> >  *     data is fed to the ldisc.
-> >  *
-> > - *     In order to wait for any existing references to complete see
-> > - *     tty_ldisc_wait_idle.
-> > + *     You need to do a 'flush_scheduled_work()' (outside the ldisc_mutex
-> > + *     in order to make sure any currently executing ldisc work is also
-> > + *     flushed.
-> >  */
-> >
-> >  static int tty_ldisc_halt(struct tty_struct *tty)
-> > @@ -753,11 +754,14 @@ void tty_ldisc_hangup(struct tty_struct *tty)
-> >         * N_TTY.
-> >         */
-> >        if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
-> > +               /* Make sure the old ldisc is quiescent */
-> > +               tty_ldisc_halt(tty);
-> > +               flush_scheduled_work();
-> > +
-> >                /* Avoid racing set_ldisc or tty_ldisc_release */
-> >                mutex_lock(&tty->ldisc_mutex);
-> >                if (tty->ldisc) {       /* Not yet closed */
-> >                        /* Switch back to N_TTY */
-> > -                       tty_ldisc_halt(tty);
-> >                        tty_ldisc_reinit(tty);
-> >                        /* At this point we have a closed ldisc and we want to
-> >                           reopen it. We could defer this to the next open but
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+True, but since in the crash kernel, we have very little memory, so 
+probably loading a full-featured SMP kernel doesn't make much sense...
+
+And in patch 1/8, I introduced a way to free the reserved memory at 
+run-time.
+
+> That aside, I don't see how this will be useful in practice, if it only
+> works for memory sizes over 4G? Or are we saying that people with less
+> than 4G don't need crash kernels? If we're not saying that, those users,
+> or those users' distros, still need to do some logic to work out if they
+> have < 4GB of memory and if so pick a crash kernel size. So why can't
+> they pick the size in the > 4GB case also?
+>   
+
+No, we set 4G as a threshold because we only want this work when have 
+have enough memory which is defined as 4G currently... This can be 
+changed to arch-dependent, e.g. ppc. I am very open to this.
+
+
+> Also the numbers seem a bit arbitrary. 4GB ? 256M ? 1/32?  I don't think
+> we really want to be blowing 32GB on a crash kernel, even if we do have
+> 1T of RAM :)
+>   
+
+Ah, maybe, to be honest, I am not familiar with ppc at all.
+
+Please feel free to suggest other numbers for ppc (or other algorithms 
+to reserve memory automatically for ppc).
+
+Thanks!
+
+
 
