@@ -1,124 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbZHYHxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbZHYH61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbZHYHxN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 03:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbZHYHxM
+	id S1754121AbZHYH61 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 03:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZHYH61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 03:53:12 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:29046 "EHLO
-	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753967AbZHYHxL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 03:53:11 -0400
-X-SpamScore: -7
-X-BigFish: VPS-7(z1857r34a4j8deiz1432R98dN936eM1442J14e1Ia594izz1202hzzz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KOX9WE-01-1HZ-02
-X-M-MSG: 
-Date: Tue, 25 Aug 2009 09:52:56 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Peter Zijlstra <peterz@infradead.org>
-CC: svaidy@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Gautham Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir@amd.com,
-       "Singh <balbir"@linux.vnet.ibm
-Subject: Re: [PATCH 8/15] sched: Add parameter sched_mn_power_savings to
-	control MN domain sched policy
-Message-ID: <20090825075256.GC20811@alberich.amd.com>
-References: <20090820131243.GO29327@alberich.amd.com> <20090820133914.GW29327@alberich.amd.com> <1251125778.7538.268.camel@twins> <20090824153229.GL6474@dirshya.in.ibm.com> <1251128714.7538.308.camel@twins>
+	Tue, 25 Aug 2009 03:58:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59356 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750887AbZHYH60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 03:58:26 -0400
+Date: Tue, 25 Aug 2009 09:58:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Neil Horman <nhorman@tuxdriver.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Neil Horman <nhorman@tuxdriver.com>, Wei Yongjun <yjwei@cn.fujitsu.com>,
+       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] trace_events: fix napi's tracepoint
+Message-ID: <20090825075816.GB857@elte.hu>
+References: <4A937EF5.4040505@cn.fujitsu.com> <4A93895F.4010708@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1251128714.7538.308.camel@twins>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 25 Aug 2009 07:52:58.0324 (UTC) FILETIME=[0FF0D940:01CA2559]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4A93895F.4010708@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 05:45:14PM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-08-24 at 21:02 +0530, Vaidyanathan Srinivasan wrote:
-> > * Peter Zijlstra <peterz@infradead.org> [2009-08-24 16:56:18]:
-> > 
-> > > On Thu, 2009-08-20 at 15:39 +0200, Andreas Herrmann wrote:
-> > > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > > > ---
-> > > 
-> > > > +#ifdef CONFIG_SCHED_MN
-> > > > +	if (!err && mc_capable())
-> > > > +		err = sysfs_create_file(&cls->kset.kobj,
-> > > > +					&attr_sched_mn_power_savings.attr);
-> > > > +#endif
-> > > 
-> > > *sigh* another crappy sysfs file
-> > > 
-> > > Guys, can't we come up with anything better than sched_*_power_saving=n?
-> > > 
-> > > This configuration space is _way_ too large, and now it gets even
-> > > crazier.
-> > 
-> > Hi Peter and Andreas,
-> > 
-> > Actually we had sched_power_savings and related simplifications, but
-> > that did not really simplify the interface.
+
+* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+
+> Currently, the napi's tracepoint works will is depend on
+> "DECLARE_TRACE" definiens in include/trace/define_trace.h,
+> like below:
 > 
-> Well, I prefer a single sched_power knob that either goes on or off.
-
-IMHO all options that are selectable at the moment have to map to that
-single knob. One user might want to fill one socket for power savings
-but still want to balance tasks between the internal nodes. Another
-user wants to have highest possible power savings and likes to see all
-threads utilized before another core is used even if the FPU/cache or
-whatsoever are shared between threads on the same core.
-
-> A user really isn't interested in exploring a 3^3 configuration space
-> {PERF, POWER, POWER-WAKE-BALANCE} x {SMT, MC, MN} in order to find what
-> works best.
-
-Why not just give the average user some hints what he should select on
-his machine but still let power users decide themselves what best fits
-their purpose and provide means/knobs to select what they want?
-
-> > As for this mulit-node MN stuff, Gautham had posted a better solution
-> > to propagate the sched_mc flags without need for new sysfs file and
-> > related changes.
-
-> > Please take a look at: http://lkml.org/lkml/2009/3/31/137 and
-> > http://lkml.org/lkml/2009/3/31/142 which actually degenerates the
-> > domain.
+> #include <trace/events/skb.h>    // include define_trace.h
+> #include <trace/events/napi.h>
 > 
-> Ah, right, that got lost in my inbox :/ Let me go read those too.
+> there have error, if we remove "#include <trace/events/skb.h>"
+> or include napi.h in the front of include skb.h, It should
+> depend on the definiens in include/linux/tracepoint.h and we
+> can remove the "DECLARE_TRACE" definiens in
+> include/trace/define_trace.h, because "TRACE_EVENT" not use it
 > 
-> > However Andreas's requirement seem to indicate multiple nodes within
-> > a single socket.  I did not yet completely understand that topology.
-> > Some for of smart degeneration may save an additional tunable here.
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  include/trace/define_trace.h |    4 ----
+>  net/core/net-traces.c        |    4 +++-
+>  2 files changed, 3 insertions(+), 5 deletions(-)
 
-> Yes, apparently AMD is going to put multiple nodes in a single socket,
-> not sure how they do that, Andreas do these chips have multiple memory
-> busses?
+This will collide with tracing bits in the networking tree. The 
+skb-tracing plugin there should be turned into proper TRACE_EVENT() 
+tracepoints.
 
-In contrast to current AMD processors (supporting two DRAM channels
-per socket), Magny-Cours (new package type) has four DRAM channels.
+Neil was away for some time but i think soon we should see some 
+movement here.
 
-> I was thinking chips were pin constrained and wouldn't add a whole
-> second memory interface to the package, but what do I know...
-
-For the two new channels of a Magny-Cours processor of course
-additional pins are required.
-
-
-Regards,
-
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+	Ingo
