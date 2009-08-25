@@ -1,77 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZHYEbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbZHYEqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbZHYEbu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 00:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZHYEbs
+	id S1754423AbZHYEqV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 00:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZHYEqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 00:31:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47377 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753263AbZHYEbr (ORCPT
+	Tue, 25 Aug 2009 00:46:19 -0400
+Received: from mail-iw0-f204.google.com ([209.85.223.204]:57086 "EHLO
+	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752342AbZHYEqS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 00:31:47 -0400
-Date: Mon, 24 Aug 2009 21:30:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer dereference
- at 0000000000000008
-In-Reply-To: <alpine.LFD.2.01.0908242043280.3218@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0908242113540.3218@localhost.localdomain>
-References: <m163cjhwa4.fsf@fess.ebiederm.org> <m1skfnggrb.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain> <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain> <alpine.LFD.2.01.0908241655370.3824@localhost.localdomain>
- <20090825033944.GA5227@nowhere> <alpine.LFD.2.01.0908242043280.3218@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 25 Aug 2009 00:46:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=s0/t3lOzy45yKvkvUOog/3eVS1uZiKHffY5DV4BguI4bVMkRYWeSAMixroMGL/LFkq
+         2q/iDgn9xDMx1bZz7A2Vyx6rLowQxHiw7CXlKgc2G/2+da9o8gJUOvJPSkLTqXDojtF8
+         yjqgo+43VZKkRP34KSznrmeBqj+nwz2DmLkgs=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <2f11576a0908232113w71676aatf22eb6d431501fd0@mail.gmail.com>
+References: <82e12e5f0908220954p7019fb3dg15f9b99bb7e55a8c@mail.gmail.com>
+	 <28c262360908231844o3df95b14v15b2d4424465f033@mail.gmail.com>
+	 <20090824105139.c2ab8403.kamezawa.hiroyu@jp.fujitsu.com>
+	 <2f11576a0908232113w71676aatf22eb6d431501fd0@mail.gmail.com>
+Date: Tue, 25 Aug 2009 13:46:19 +0900
+Message-ID: <82e12e5f0908242146uad0f314hcbb02fcc999a1d32@mail.gmail.com>
+Subject: Re: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
+From: Hiroaki Wakabayashi <primulaelatior@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Ying Han <yinghan@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thank you for reviews.
 
+>>> > @@ -254,6 +254,7 @@ static inline void
+>>> > mminit_validate_memmodel_limits(unsigned long *start_pfn,
+>>> >  #define GUP_FLAGS_FORCE                  0x2
+>>> >  #define GUP_FLAGS_IGNORE_VMA_PERMISSIONS 0x4
+>>> >  #define GUP_FLAGS_IGNORE_SIGKILL         0x8
+>>> > +#define GUP_FLAGS_ALLOW_NULL             0x10
+>>> >
+>>>
+>>> I am worried about adding new flag whenever we need it.
+>>> But I think this case makes sense to me.
+>>> In addition, I guess ZERO page can also use this flag.
+>>>
+>>> Kame. What do you think about it?
+>>>
+>> I do welcome this !
+>> Then, I don't have to take care of mlock/munlock in ZERO_PAGE patch.
+>>
+>> And without this patch, munlock() does copy-on-write just for unpinning memory.
+>> So, this patch shows some right direction, I think.
+>>
+>> One concern is flag name, ALLOW_NULL sounds not very good.
+>>
+>>  GUP_FLAGS_NOFAULT ?
+>>
+>> I wonder we can remove a hack of FOLL_ANON for core-dump by this flag, too.
+>
+> Yeah, GUP_FLAGS_NOFAULT is better.
 
-On Mon, 24 Aug 2009, Linus Torvalds wrote:
-> 
-> Anyway, I'll happily be shown wrong. I think the (second) patch I sent out 
-> is an acceptable hack in the presense of the current locking, but as I 
-> said, I'm not exactly happy about it, because I do think the locking is 
-> broken.
+Me too.
+I will change this flag name.
 
-Btw, another solution to all this would be to just not have that 
-ldisc_mutex deadlock due to do_tty_hangup -> tty_ldisc_hangup at all.
+> Plus, this patch change __get_user_pages() return value meaning IOW.
+> after this patch, it can return following value,
+>
+>  return value: 3
+>  pages[0]: hoge-page
+>  pages[1]: null
+>  pages[2]: fuga-page
+>
+> but, it can be
+>
+>  return value: 2
+>  pages[0]: hoge-page
+>  pages[1]: fuga-page
+>
+> no?
 
-The actual _flushing_ doesn't need the mutex - it's just that both 
-flushing and hangup is done with workqueues.
+I did misunderstand mean of get_user_pages()'s return value.
 
-If we can avoid the deadlock by not having the (artificial) workqueue 
-dependency, it would allow everybody to just hold on to the mutex over the 
-whole sequence - and would obviate the need for that hacky 
-TTY_LDISC_CHANGING bit thing in tty_set_ldisc.
+When I try to change __get_user_pages(), I got problem.
+If remove NULLs from pages,
+__mlock_vma_pages_range() cannot know how long __get_user_pages() readed.
+So, I have to get the virtual address of the page from vma and page.
+Because __mlock_vma_pages_range() have to call
+__get_user_pages() many times with different `start' argument.
 
-In other words, the whole problem really comes in from the fact that 
-do_tty_hangup() is called from "hangup_work", and the workqueues can get 
-hung to the point where you can't then do the (totally _unrelated_) queue 
-flushing.
+I try to use page_address_in_vma(), but it failed.
+(page_address_in_vma() returned -EFAULT)
+I cannot find way to solve this problem.
+Are there good ideas?
+Please give me some ideas.
 
-Because flush_to_ldisc() itself - which is what we want to do - doesn't 
-need that mutex or the workqueue at all. It could run from any context, 
-afaik.
-
-So if we were to turn it into just a timer (rather than a "delayed work"), 
-then we'd not need to do that "flush_scheduled_work()" thing at all, and 
-we wouldn't have that interaction with do_tty_hangup(). At which point we 
-could again hold on to locks, because we wouldn't need to worry about the 
-workqueues getting stuck on the mutex (that isn't even needed for the 
-actual flushing part that we want to do!).
-
-So don't get me wrong - there are _multiple_ ways to solve this. But they 
-are all pretty major surgery, changing "big" semantics. We could fix the 
-locking, we could change how we flush, we could do all of those things. 
-And I'd love to. But I think the almost-oneliner is the safest approach 
-right now. It's certainly not perfect, but it's fairly minimal impact.
-
-		Linus
+Thanks.
+--
+Hiroaki Wakabayashi
