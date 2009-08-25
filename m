@@ -1,262 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbZHYTqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZHYTqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091AbZHYTqc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 15:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZHYTqc
+	id S1756138AbZHYTqz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 15:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZHYTqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 15:46:32 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:1566 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755845AbZHYTqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 15:46:31 -0400
-Date: Tue, 25 Aug 2009 21:45:30 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 13/12] ksm: fix munlock during exit_mmap deadlock
-Message-ID: <20090825194530.GU14722@random.random>
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
- <Pine.LNX.4.64.0908031317190.16754@sister.anvils>
- <20090825145832.GP14722@random.random>
- <20090825152217.GQ14722@random.random>
- <Pine.LNX.4.64.0908251836050.30372@sister.anvils>
- <20090825181019.GT14722@random.random>
- <Pine.LNX.4.64.0908251958170.5871@sister.anvils>
+	Tue, 25 Aug 2009 15:46:54 -0400
+Received: from hosting.visp.net.lb ([194.146.153.11]:40867 "EHLO
+	hosting.visp.net.lb" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755936AbZHYTqy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 15:46:54 -0400
+X-Greylist: delayed 362 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Aug 2009 15:46:53 EDT
+From: Denys Fedoryschenko <denys@visp.net.lb>
+Organization: VISP
+To: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: unable to handle kernel NULL pointer / tty / 2.6.31-rc7
+Date: Tue, 25 Aug 2009 22:37:54 +0300
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908251958170.5871@sister.anvils>
+Message-Id: <200908252237.54324.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 07:58:43PM +0100, Hugh Dickins wrote:
-> On Tue, 25 Aug 2009, Andrea Arcangeli wrote:
-> > On Tue, Aug 25, 2009 at 06:49:09PM +0100, Hugh Dickins wrote:
-> > Looking ksm.c it should have been down_write indeed...
-> > 
-> > > Nor do we want to change your down_read here to down_write, that will
-> > > just reintroduce the OOM deadlock that 9/12 was about solving.
-> > 
-> > I'm not sure anymore I get what this fix is about...
-> 
-> Yes, it's easy to drop one end of the string while picking up the other ;)
-> 
-> And it wouldn't be exactly the same deadlock, but similar.
-> The original deadlock that 9/12 was about was:
->     There's a now-obvious deadlock in KSM's out-of-memory handling:
->     imagine ksmd or KSM_RUN_UNMERGE handling, holding ksm_thread_mutex,
->     trying to allocate a page to break KSM in an mm which becomes the
->     OOM victim (quite likely in the unmerge case): it's killed and goes
->     to exit, and hangs there waiting to acquire ksm_thread_mutex.
+Kernel 2.6.31-rc7
+x86 , 32-bit
+gcc 4.4.1
 
-Yes I see that, that was before ksm was capable of noticing that it
-was looping indefinitely triggering COW (allocating memory) on a mm
-with mm_users == 0 selected by the OOM killer for release. Not true
-anymore after ksm_test_exit is introduced in the KSM inner paths... I
-mean that part of the fix is enough.
 
-> Whereas with down_write(&mm->mmap_sem); up_write(&mm->mmap_sem)
-> just before calling exit_mmap(), the deadlock comes on mmap_sem
-> instead: the exiting OOM-killed task waiting there (for break_cow
-> or the like to up_read mmap_sem), before it has freed any memory
-> to allow break_cow etc. to proceed.
+Happened on heavy network load, i don't know if it is related.
 
-The whole difference is that now KSM will notice that mm_users is
-already zero and it will release the mmap_sem promptly allowing
-exit_mmap to run...
+Here is part of remote syslog, notice failed dropbear ssh authentication.
+I guess if it is not fixed - it is critical to upcoming release, seems bug 
+triggered by ssh worm.
 
-> Yes, but one of those checks that mm_users is 0 has to be lie below
-> handle_mm_fault, because mm_users may go to 0 and exit_mmap proceed
-> while one of handle_pte_fault's helpers is waiting to allocate a page
-> (for example; but SMP could race anywhere).  Hence ksm_test_exit()s
-> in mm/memory.c.
+Aug 25 22:34:35 10.22.24.2 login[2099]: pam_radius_auth: DEBUG: 
+getservbyname(radius, udp) returned -1209037784.
+Aug 25 22:34:36 10.22.24.2 login[2099]: pam_unix(login:auth): authentication 
+failure; logname= uid=0 euid=0 tty=pts/0 ruser= rhost=  user=root
+Aug 25 22:34:37 10.22.24.2 ripd[1862]: rip_read: cannot find interface for 
+packet from 80.83.24.49 port 520
+Aug 25 22:34:41 10.22.24.2 ripd[1862]: Neighbor 10.22.22.2 doesnt have 
+connected interface!
+Aug 25 22:34:46 10.22.24.2 kernel: [22630.973706] BUG: unable to handle kernel 
+NULL pointer dereference at (null)
+Aug 25 22:34:46 10.22.24.2 kernel: [22630.973807] IP: [<c0251814>] 
+n_tty_read+0x3c6/0x5ad
 
-Hmm but you're trying here to perfect something that isn't needed to
-be perfected... and that is a generic issue that always happens with
-the OOM killer. I doesn't make any difference if it's KSM or the
-application that triggered a page fault on the MM. If mmap_sem is hold
-in read mode by a regular application page fault while OOM killer
-fires, the exit_mmap routine will not run until the page fault is
-complete. The SMP race anywhere is the reason the OOM killer has to
-stop a moment before killing a second task to give a chance to the
-task to run exit_mmap...
+Full BUG message
 
-> (And as I remarked in the 9/12 comments, it's no use bumping up
-> mm_users in break_ksm, say, though that would be a normal thing to
-> do: that just ensures the memory we'd be waiting for cannot be freed.)
 
-Yes, that would also prevent KSM to notice that the OOM killer
-selected the mm for release. Well unless we check against mm_users ==
-1, which only works as only as only ksm does that and no other driver
-similar to KSM ;) so it's not a real solution...
-
-> just an issue we've not yet found the right fix for ;)
-
-I think you already did the right fix in simply doing ksm_test_exit
-inside the KSM inner loops and adding as well a dummy
-down_write;up_write in the ksm_exit case where rmap_items exists on
-the mm_slot that is exiting. But there was no need of actually
-teaching the page faults to bail out to react immediately to the OOM
-killer (the task itself will not react immediately) and second
-ksm_exit with its serializing down_write should be moved back before
-exit_mmap and it will have the same effect of my previous patch with
-down_write (s/read/write) just before exit_mmap.
-
-> The idea I'm currently playing with, would fix one of your objections
-> but violate another, is to remove the ksm_test_exit()s from mm/memory.c,
-> allow KSM to racily fault in too late, but observe mm_users 0 afterwards
-> and zap it then.
-
-;)
-
-> I agree with you that it seems _wrong_ for KSM to fault into an area
-> being exited, which was why the ksm_test_exit()s; but the neatest
-> answer might turn out to be to allow it to do so after all.
-
-Hmm no... I think it's definitely asking for troubles, I would agree
-with you if an immediate reaction to OOM killer would actually provide
-any benefit, but I don't see the benefit, and this makes exit_mmap
-simpler, and it avoids messing with tlb_gather and putting a
-definitive stop on KSM before pagetables are freed.
-
-I did this new patch what you think? And any further change in the
-anti-oom-deadlock area if still needed, should reside on ksm.c.
-
---------
-From: Andrea Arcangeli <aarcange@redhat.com>
-
-Allowing page faults triggered by drivers tracking the mm during
-exit_mmap with mm_users already zero is asking for troubles. And we
-can't stop page faults from happening during exit_mmap or munlock fails
-(munlock also better stop triggering page faults with mm_users zero).
-
-ksm_exit if there are rmap_items still chained on this mm slot, will
-take mmap_sem write side so preventing ksm to keep working on a mm while
-exit_mmap runs. And ksm will bail out as soon as it notices that
-mm_users is already zero thanks to the ksm_test_exit checks. So that
-when a task is killed by OOM killer or the user, ksm will not
-indefinitely prevent it to run exit_mmap and release its memory. 
-
-Signed-off-by: Andrea Arcangeli <aarcange@redhat.com>
----
-
-diff --git a/include/linux/ksm.h b/include/linux/ksm.h
-index 2d64ff3..0e26de6 100644
---- a/include/linux/ksm.h
-+++ b/include/linux/ksm.h
-@@ -18,8 +18,7 @@ struct mmu_gather;
- int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
- 		unsigned long end, int advice, unsigned long *vm_flags);
- int __ksm_enter(struct mm_struct *mm);
--void __ksm_exit(struct mm_struct *mm,
--		struct mmu_gather **tlbp, unsigned long end);
-+void __ksm_exit(struct mm_struct *mm);
- 
- static inline int ksm_fork(struct mm_struct *mm, struct mm_struct *oldmm)
- {
-@@ -41,11 +40,10 @@ static inline bool ksm_test_exit(struct mm_struct *mm)
- 	return atomic_read(&mm->mm_users) == 0;
- }
- 
--static inline void ksm_exit(struct mm_struct *mm,
--			    struct mmu_gather **tlbp, unsigned long end)
-+static inline void ksm_exit(struct mm_struct *mm)
- {
- 	if (test_bit(MMF_VM_MERGEABLE, &mm->flags))
--		__ksm_exit(mm, tlbp, end);
-+		__ksm_exit(mm);
- }
- 
- /*
-@@ -86,8 +84,7 @@ static inline bool ksm_test_exit(struct mm_struct *mm)
- 	return 0;
- }
- 
--static inline void ksm_exit(struct mm_struct *mm,
--			    struct mmu_gather **tlbp, unsigned long end)
-+static inline void ksm_exit(struct mm_struct *mm)
- {
- }
- 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 9a16c21..6f93809 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -515,6 +515,7 @@ void mmput(struct mm_struct *mm)
- 
- 	if (atomic_dec_and_test(&mm->mm_users)) {
- 		exit_aio(mm);
-+		ksm_exit(mm);
- 		exit_mmap(mm);
- 		set_mm_exe_file(mm, NULL);
- 		if (!list_empty(&mm->mmlist)) {
-diff --git a/mm/ksm.c b/mm/ksm.c
-index d03627f..329ebe9 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -1428,8 +1428,7 @@ int __ksm_enter(struct mm_struct *mm)
- 	return 0;
- }
- 
--void __ksm_exit(struct mm_struct *mm,
--		struct mmu_gather **tlbp, unsigned long end)
-+void __ksm_exit(struct mm_struct *mm)
- {
- 	struct mm_slot *mm_slot;
- 	int easy_to_free = 0;
-@@ -1462,10 +1461,8 @@ void __ksm_exit(struct mm_struct *mm,
- 		clear_bit(MMF_VM_MERGEABLE, &mm->flags);
- 		mmdrop(mm);
- 	} else if (mm_slot) {
--		tlb_finish_mmu(*tlbp, 0, end);
- 		down_write(&mm->mmap_sem);
- 		up_write(&mm->mmap_sem);
--		*tlbp = tlb_gather_mmu(mm, 1);
- 	}
- }
- 
-diff --git a/mm/memory.c b/mm/memory.c
-index 4a2c60d..025431e 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2603,7 +2603,7 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
- 
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
--	if (!pte_none(*page_table) || ksm_test_exit(mm))
-+	if (!pte_none(*page_table))
- 		goto release;
- 
- 	inc_mm_counter(mm, anon_rss);
-@@ -2753,7 +2753,7 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	 * handle that later.
- 	 */
- 	/* Only go through if we didn't race with anybody else... */
--	if (likely(pte_same(*page_table, orig_pte) && !ksm_test_exit(mm))) {
-+	if (likely(pte_same(*page_table, orig_pte))) {
- 		flush_icache_page(vma, page);
- 		entry = mk_pte(page, vma->vm_page_prot);
- 		if (flags & FAULT_FLAG_WRITE)
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 1b0a709..f3f2a22 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -2111,13 +2111,6 @@ void exit_mmap(struct mm_struct *mm)
- 	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
- 	vm_unacct_memory(nr_accounted);
- 
--	/*
--	 * For KSM to handle OOM without deadlock when it's breaking COW in a
--	 * likely victim of the OOM killer, we must serialize with ksm_exit()
--	 * after freeing mm's pages but before freeing its page tables.
--	 */
--	ksm_exit(mm, &tlb, end);
--
- 	free_pgtables(tlb, vma, FIRST_USER_ADDRESS, 0);
- 	tlb_finish_mmu(tlb, 0, end);
- 
+ [22630.973706] BUG: unable to handle kernel NULL pointer dereference at 
+(null)
+ [22630.973807] IP: [<c0251814>] n_tty_read+0x3c6/0x5ad
+ [22630.973909] *pdpt = 0000000032327001 *pde = 0000000000000000
+ [22630.973927] Oops: 0000 [#1] SMP
+ [22630.973927] last sysfs file: /sys/devices/virtual/vc/vcsa3/dev
+ [22630.973927] Modules linked in: cls_u32 sch_htb tun nf_defrag_ipv4 xt_MARK 
+xt_mark xt_tcpudp rtc_cmos rtc_core rtc_lib iptable_mangle e1000e 
+iptable_filter ip_tables
+ [22630.973927]
+ [22630.973927] Pid: 2100, comm: login Not tainted 
+(2.6.31-rc7-build-0046-32bit #10)
+ [22630.973927] EIP: 0060:[<c0251814>] EFLAGS: 00010246 CPU: 2
+ [22630.973927] EIP is at n_tty_read+0x3c6/0x5ad
+ [22630.973927] EAX: 00000000 EBX: f23aa988 ECX: 00000002 EDX: 00000000
+ [22630.973927] ESI: f23aa800 EDI: 00000000 EBP: f64eef40 ESP: f64eeee0
+ [22630.973927]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+ [22630.973927] Process login (pid: 2100, ti=f64ee000 task=f6f3a0a0 
+task.ti=f64ee000)
+ [22630.973927] Stack:
+ [22630.973927]  bfd0ddac f3056200 f23aa91c f23aaba0 f23aabf8 00000000 
+00000000 00000000
+ [22630.973927] <0> 7fffffff 00000000 00000286 f23aa920 f23aa988 f23aa898 
+f23aa800 00000000
+ [22630.973927] <0> f6f3a0a0 c01293a4 f23aa920 f23aa920 bfd0ddac fffffffb 
+f23aa800 c025144e
+ [22630.973927] Call Trace:
+ [22630.973927]  [<c01293a4>] ? default_wake_function+0x0/0xd
+ [22630.973927]  [<c025144e>] ? n_tty_read+0x0/0x5ad
+ [22630.973927]  [<c024dfd6>] ? tty_read+0x62/0x99
+ [22630.973927]  [<c024df74>] ? tty_read+0x0/0x99
+ [22630.973927]  [<c0190dae>] ? vfs_read+0x87/0x110
+ [22630.973927]  [<c0190ed0>] ? sys_read+0x3b/0x60
+ [22630.973927]  [<c0102955>] ? syscall_call+0x7/0xb
+ [22630.973927] Code: 4c 01 00 00 10 0f 85 95 00 00 00 e9 ae 00 00 00 8b 86 80 
+01 00 00 8b 5d d0 f0 0f b3 03 19 ff 8b 96 78 01 00 00 8b 86 80 01 00 00 <0f> 
+be 04 02 89
+ [22630.973927] EIP: [<c0251814>] n_tty_read+0x3c6/0x5ad SS:ESP 0068:f64eeee0
+ [22630.973927] CR2: 0000000000000000
+ [22630.977423] ---[ end trace 688db8f89c0bcf7b ]---
+ [22630.977544] Kernel panic - not syncing: Fatal exception
+ [22630.977672] Pid: 2100, comm: login Tainted: G      D    
+2.6.31-rc7-build-0046-32bit #10
+ [22630.977842] Call Trace:
+ [22630.977965]  [<c02fac50>] ? printk+0xf/0x17
+ [22630.978080]  [<c02faba1>] panic+0x39/0xd9
+ [22630.978197]  [<c0105997>] oops_end+0x8b/0x9a
+ [22630.978305]  [<c0118f2d>] no_context+0x13d/0x147
+ [22630.978416]  [<c011904a>] __bad_area_nosemaphore+0x113/0x11b
+ [22630.978531]  [<c02fb622>] ? schedule+0x75d/0x7c7
+ [22630.978645]  [<c0119092>] bad_area+0x30/0x39
+ [22630.978757]  [<c0119318>] do_page_fault+0x16b/0x26f
+ [22630.978872]  [<c01191ad>] ? do_page_fault+0x0/0x26f
+ [22630.979007]  [<c02fcca6>] error_code+0x66/0x6c
+ [22630.979134]  [<c01191ad>] ? do_page_fault+0x0/0x26f
+ [22630.979258]  [<c0251814>] ? n_tty_read+0x3c6/0x5ad
+ [22630.979377]  [<c01293a4>] ? default_wake_function+0x0/0xd
+ [22630.979492]  [<c025144e>] ? n_tty_read+0x0/0x5ad
+ [22630.979605]  [<c024dfd6>] tty_read+0x62/0x99
+ [22630.979712]  [<c024df74>] ? tty_read+0x0/0x99
+ [22630.979820]  [<c0190dae>] vfs_read+0x87/0x110
+ [22630.979963]  [<c0190ed0>] sys_read+0x3b/0x60
