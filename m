@@ -1,99 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbZHYAvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZHYA5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753985AbZHYAvY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 20:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbZHYAvY
+	id S1754043AbZHYA5P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 20:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZHYA5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 20:51:24 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:39309 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753671AbZHYAvX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 20:51:23 -0400
-To: David Dillow <dave@thedillows.org>
-Cc: Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       Michael =?utf-8?Q?B=C3=BCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-References: <200903041828.49972.m.bueker@berlin.de>
-	<1242001754.4093.12.camel@obelisk.thedillows.org>
-	<200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
-	<1242077392.3716.15.camel@lap75545.ornl.gov>
-	<4A09DC3E.2080807@googlemail.com>
-	<1242268709.4979.7.camel@obelisk.thedillows.org>
-	<4A0C6504.8000704@googlemail.com>
-	<1242328457.32579.12.camel@lap75545.ornl.gov>
-	<4A0C7443.1010000@googlemail.com>
-	<1243042174.3580.23.camel@obelisk.thedillows.org>
-	<m1skfkrik2.fsf@fess.ebiederm.org>
-	<1250895567.23419.1.camel@obelisk.thedillows.org>
-	<1250897657.23419.5.camel@obelisk.thedillows.org>
-	<m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
-	<1250973787.3582.14.camel@obelisk.thedillows.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 24 Aug 2009 17:51:15 -0700
-In-Reply-To: <1250973787.3582.14.camel@obelisk.thedillows.org> (David Dillow's message of "Sat\, 22 Aug 2009 16\:43\:07 -0400")
-Message-ID: <m1r5v0ogvw.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: dave@thedillows.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, romieu@fr.zoreil.com, mb@bu3sch.de, michael.riepe@googlemail.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+	Mon, 24 Aug 2009 20:57:14 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42570 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753671AbZHYA5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 24 Aug 2009 20:57:13 -0400
+Date: Tue, 25 Aug 2009 10:57:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: linux-bluetooth@vger.kernel.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, netdev@vger.kernel.org
+Subject: Re: Fw: Build failure on linux-next master branch
+Message-Id: <20090825105711.b9d85e89.sfr@canb.auug.org.au>
+In-Reply-To: <1251157115.2950.85.camel@localhost.localdomain>
+References: <20090825093707.13bf8c49.sfr@canb.auug.org.au>
+	<1251157115.2950.85.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__25_Aug_2009_10_57_11_+1000_KwZTcKVfDjr623ED"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Dillow <dave@thedillows.org> writes:
+--Signature=_Tue__25_Aug_2009_10_57_11_+1000_KwZTcKVfDjr623ED
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Sat, 2009-08-22 at 05:07 -0700, Eric W. Biederman wrote:
->> ebiederm@xmission.com (Eric W. Biederman) writes:
->> 
->> > David Dillow <dave@thedillows.org> writes:
->> >
->> >>
->> >> Re-looking at the code, I'd guess that some IRQ status line is getting
->> >> stuck high, but I don't see why -- we should acknowledge all outstanding
->> >> interrupts each time through the loop, whether we care about them or
->> >> not.
->> >>
->> >> Could reproduce a problem with the following patch applied, and send the
->> >> full dmesg, please?
->> >
->> > Here is what I get.
->> >
->> > r8169 screaming irq status 00000085 mask 0000ffff event 0000803f napi 0000001d
->> 
->> And now that the machine has come out of it, that was followed by:
->> Looks like the soft lockup did not manage to trigger in this case.
+Hi Marcel,
+
+On Mon, 24 Aug 2009 16:38:35 -0700 Marcel Holtmann <marcel@holtmann.org> wr=
+ote:
 >
-> I need some more context, please. What is the network load through this
-> NIC when you have the issues? Light, heavy? Can you give me more details
-> about the machine? A full dmesg from boot until this happens would help
-> quite a bit. At a minimum it would help answer which version of the chip
-> we're dealing with and what the machine it is in looks like.
->
-> Can you reproduce this with pci=nomsi? I'm assuming it the chip running
-> in MSI mode.
->
-> Also, can you reproduce it when booting UP (or maxcpus=1)? I'm thinking
-> about a race between rtl8169_interrupt() and rtl8169_poll(), but it
-> isn't jumping out at me.
->
-> Also, I'm having connectivity troubles this weekend, so my response may
-> be spotty. :(
+> just pushed a fix from Randy to bluetooth-next-2.6 tree. The
+> CONFIG_L2CAP was missing a select CRC16.
 
-When I decode the bits in status they are TxOK, RxOK and TxDescUnavail so it looks
-there is some bidirectional communication going on.
+Thanks.
 
-Do we really want to loop when those bits are set?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Perhaps we want to remove them from rtl_cfg_infos for the part?
+--Signature=_Tue__25_Aug_2009_10_57_11_+1000_KwZTcKVfDjr623ED
+Content-Type: application/pgp-signature
 
-Eric
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkqTNucACgkQjjKRsyhoI8y+PQCfQKsHY2vAnRMLyZNfY8d1qOE/
+ZgcAn10sj6wuhACXwyIctocxkjFSAJ/G
+=xdXg
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__25_Aug_2009_10_57_11_+1000_KwZTcKVfDjr623ED--
