@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZHYX5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZHYX6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbZHYX5s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZHYX5r
+	id S1752877AbZHYX6I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZHYX6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:57:47 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39059 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753875AbZHYX5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:57:46 -0400
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX18AGrFK1hQAul+pPmEXjuFsZxVZvYpc4/mdGOLz4+
-	ZCuC2JnFC7cRy4
-From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #14031] dvb_usb_af9015: Oops on hotplugging
-Date: Wed, 26 Aug 2009 01:57:45 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc7-sidux-amd64; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.RvG.1sGlKB@chimera>
-In-Reply-To: <_yaHeGjHEzG.A.RvG.1sGlKB@chimera>
+	Tue, 25 Aug 2009 19:58:07 -0400
+Received: from mail.lang.hm ([64.81.33.126]:35940 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751189AbZHYX6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 19:58:04 -0400
+Date: Tue, 25 Aug 2009 16:56:40 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@ucw.cz>
+cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+In-Reply-To: <20090825233701.GH4300@elf.ucw.cz>
+Message-ID: <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm>
+References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz>
+ <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908260157.48560.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.49
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Wed, 26 Aug 2009, Pavel Machek wrote:
 
-On Wednesday 26 August 2009, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14031
-> Subject		: dvb_usb_af9015: Oops on hotplugging
-> Submitter	: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-> Date		: 2009-08-05 20:32 (21 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124949716608828&w=4
+> There are storage devices that high highly undesirable properties
+> when they are disconnected or suffer power failures while writes are
+> in progress; such devices include flash devices and MD RAID 4/5/6
+> arrays.
 
-This issue does not exist in 2.6.31-rc7(-git2) anymore. 
+change this to say 'degraded MD RAID 4/5/6 arrays'
 
-Unfortunately I've been away from my system and with limited testing 
-abilities recently, so I can't pinpoint the actual patch that fixed this 
-(it was not in the first DVB pull request following that report, but maybe 
-in the second or third), but it does work very well again. Thank you.
+also find out if DM RAID 4/5/6 arrays suffer the same problem (I strongly 
+suspect that they do)
 
-Regards
-	Stefan Lippers-Hollmann
+then you need to add a note that if the array becomes degraded before a 
+scrub cycle happens previously hidden damage (that would have been 
+repaired by the scrub) can surface.
 
-usb 1-6: new high speed USB device using ehci_hcd and address 4
-usb 1-6: New USB device found, idVendor=0ccd, idProduct=0069
-usb 1-6: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-usb 1-6: Product: Cinergy T USB XE Ver.2
-usb 1-6: Manufacturer: TerraTec
-usb 1-6: SerialNumber: 10012007
-usb 1-6: configuration #1 chosen from 1 choice
-dvb-usb: found a 'TerraTec Cinergy T USB XE' in cold state, will try to load a firmware
-usb 1-6: firmware: requesting dvb-usb-af9015.fw
-dvb-usb: downloading firmware from file 'dvb-usb-af9015.fw'
-dvb-usb: found a 'TerraTec Cinergy T USB XE' in warm state.
-dvb-usb: will pass the complete MPEG2 transport stream to the software demuxer.
-DVB: registering new adapter (TerraTec Cinergy T USB XE)
-af9013: firmware version:4.95.0
-DVB: registering adapter 0 frontend 0 (Afatech AF9013 DVB-T)...
-mc44s803: successfully identified (ID = 14)
-dvb-usb: TerraTec Cinergy T USB XE successfully initialized and connected.
-usbcore: registered new interface driver dvb_usb_af9015
+> These devices have the property of potentially corrupting blocks being 
+> written at the time of the power failure,
+
+this is true of all devices
+
+> and worse yet, amplifying the region where blocks are corrupted such 
+> that additional sectors are also damaged during the power failure.
+
+re-word this something like
+
+In addition to the standard risk of corrupting the blocks being written at 
+the time of the power failure, additonal blocks (in the same flash 
+eraseblock or raid stripe) may also be corrupted.
+
+> Users who use such storage devices are well advised take
+> countermeasures, such as the use of Uninterruptible Power Supplies,
+> and making sure the flash device is not hot-unplugged while the device
+> is being used.  Regular backups when using these devices is also a
+> Very Good Idea.
+>
+> Otherwise, file systems placed on these devices can suffer silent data
+> and file system corruption.  An forced use of fsck may detect metadata
+> corruption resulting in file system corruption, but will not suffice
+> to detect data corruption.
+
+David Lang
