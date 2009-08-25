@@ -1,152 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbZHYQ7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbZHYRDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbZHYQ7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 12:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755091AbZHYQ7S
+	id S1755357AbZHYRDn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 13:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbZHYRDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 12:59:18 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:7821 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754976AbZHYQ7R (ORCPT
+	Tue, 25 Aug 2009 13:03:42 -0400
+Received: from mail-px0-f182.google.com ([209.85.216.182]:35870 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755286AbZHYRDm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 12:59:17 -0400
+	Tue, 25 Aug 2009 13:03:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KcKGMT2p+myFa6YbZqfgVxER0v9sqTfmZMO5ZfZatftilEveFxZ9jhEuXyDLjl6ngR
-         VRnEMIfOl8JlJpca/X8GIHiUjFiR+5fCTBZep31Y3JbPnttkmAQYRlt14BmvDK7vAili
-         aaCr6ZRObLbG7rLuy8ExF5Ly9Fnq1dFqOb/wg=
-Date: Tue, 25 Aug 2009 18:59:14 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090825165912.GI6114@nowhere>
-References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090825162004.GA25058@Krystal>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=iAy+yyR6hCunEcmXcj6mGV0g6NGDtUUPn/NH6JHhVhUbEhOfS6YEKwovmV7Cvz2vaX
+         pzWaGf/PYT6QlmGQxgnW0dYsumaW/yp96mIQIdn1xKSdNOqrqcbfgogewBss65LWZJsN
+         KVdAbhc2oci47DPtGB06/syX/mbKLBdVO0RfI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825162004.GA25058@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200908241008.02184.ngupta@vflare.org>
+References: <200908241008.02184.ngupta@vflare.org>
+Date: Tue, 25 Aug 2009 22:33:43 +0530
+X-Google-Sender-Auth: cd309ace919e66d7
+Message-ID: <661de9470908251003y3db1fb3awb648f9340cd0beb4@mail.gmail.com>
+Subject: Re: [PATCH 4/4] compcache: documentation
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: ngupta@vflare.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-mm-cc@laptop.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 12:20:04PM -0400, Mathieu Desnoyers wrote:
-> * Hendrik Brueckner (brueckner@linux.vnet.ibm.com) wrote:
-> > On Tue, Aug 25, 2009 at 04:15:49PM +0200, Frederic Weisbecker wrote:
-> > > On Tue, Aug 25, 2009 at 02:50:27PM +0200, Hendrik Brueckner wrote:
-> > > > There are at least two scenarios where syscall_get_nr() can return -1:
-> > > > 
-> > > > 1. For example, ptrace stores an invalid syscall number, and thus,
-> > > >    tracing code resets it.
-> > > >    (see do_syscall_trace_enter in arch/s390/kernel/ptrace.c)
-> > > > 
-> > > > 2. The syscall_regfunc() (kernel/tracepoint.c) sets the TIF_SYSCALL_FTRACE
-> > > >    (now: TIF_SYSCALL_TRACEPOINT) flag for all threads which includes
-> > > >    kernel threads.
-> > > >    However, the ftrace selftest triggers a kernel oops when testing syscall
-> > > >    trace points:
-> > > >       - The kernel thread is started as ususal (do_fork()),
-> > > >       - tracing code sets TIF_SYSCALL_FTRACE,
-> > > >       - the ret_from_fork() function is triggered and starts
-> > > > 	ftrace_syscall_exit() with an invalid syscall number.
-> > > 
-> > > 
-> > > 
-> > > I wonder if there is any way to identify such situation...?
-> > For the second case, it might be an option to avoid setting the
-> > TIF_SYSCALL_FTRACE flag for kernel threads.
-> > 
-> > Kernel threads have task_struct->mm set to NULL.
-> > (Thanks to Heiko for that hint ;-)
-> > 
-> > The idea is then to check the mm field in syscall_regfunc() and
-> > set the flag accordingly.
-> > 
-> > However, I think the patch is an optional add-on becase checking
-> > the syscall number is still required for case 1).
-> > 
-> > ---
-> >  kernel/tracepoint.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > --- a/kernel/tracepoint.c
-> > +++ b/kernel/tracepoint.c
-> > @@ -593,7 +593,9 @@ void syscall_regfunc(void)
-> >  	if (!sys_tracepoint_refcount) {
-> >  		read_lock_irqsave(&tasklist_lock, flags);
-> >  		do_each_thread(g, t) {
-> > -			set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > +			/* Skip kernel threads. */
-> > +			if (t->mm)
-> > +				set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> 
-> Uh ? kernel threads can invoke a system call. There are rare places
-> where kernel code actually invoke system calls. I don't see why we
-> should not deal with them.
+On Mon, Aug 24, 2009 at 10:08 AM, Nitin Gupta<ngupta@vflare.org> wrote:
+> Short guide on how to setup and use ramzswap.
+>
+> Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+> ---
+>
+>  Documentation/blockdev/00-INDEX     |    2 +
+>  Documentation/blockdev/ramzswap.txt |   52 +++++++++++++++++++++++++++++++++++
+>  2 files changed, 54 insertions(+), 0 deletions(-)
+>
+> diff --git a/Documentation/blockdev/00-INDEX b/Documentation/blockdev/00-INDEX
+> index c08df56..c1cb074 100644
+> --- a/Documentation/blockdev/00-INDEX
+> +++ b/Documentation/blockdev/00-INDEX
+> @@ -16,3 +16,5 @@ paride.txt
+>        - information about the parallel port IDE subsystem.
+>  ramdisk.txt
+>        - short guide on how to set up and use the RAM disk.
+> +ramzswap.txt
+> +       - short guide on how to setup compressed in-memory swap device.
+> diff --git a/Documentation/blockdev/ramzswap.txt b/Documentation/blockdev/ramzswap.txt
+> new file mode 100644
+> index 0000000..463dd2d
+> --- /dev/null
+> +++ b/Documentation/blockdev/ramzswap.txt
+> @@ -0,0 +1,52 @@
+> +ramzswap: Compressed RAM based swap device
+> +-------------------------------------------
+> +
+> +Project home: http://compcache.googlecode.com/
+> +
+> +* Introduction
+> +
+> +It creates RAM based block devices which can be used (only) as swap disks.
+> +Pages swapped to these devices are compressed and stored in memory itself.
+> +See project home for use cases, performance numbers and a lot more.
+> +
+> +It consists of three modules:
+> + - xvmalloc.ko: memory allocator
 
+I've seen your case for a custom allocator, but why can't we
 
+1) Refactor slob and use it
+2) Do we care about the optimizations in SLUB w.r.t. scalability in
+your module? If so.. will xvmalloc meet those requirements?
 
-Yeah they do, but they don't use the sysenter path, they call the
-syscall helpers directly, such as do_fork() or things like that.
+> + - ramzswap.ko: virtual block device driver
+> + - rzscontrol userspace utility: to control individual ramzswap devices
+> +
+> +* Usage
+> +
+> +Following shows a typical sequence of steps for using ramzswap.
+> +
+> +1) Load Modules:
+> +       modprobe ramzswap NUM_DEVICES=4
+> +       This creates 4 (uninitialized) devices: /dev/ramzswap{0,1,2,3}
+> +       (NUM_DEVICES parameter is optional. Default: 1)
+> +
+> +2) Initialize:
+> +       Use rzscontrol utility to configure and initialize individual
+> +       ramzswap devices. Example:
+> +       rzscontrol /dev/ramzswap2 --init # uses default value of disksize_kb
+> +
+> +       *See rzscontrol manpage for more details and examples*
+> +
+> +3) Activate:
+> +       swapon /dev/ramzswap2 # or any other initialized ramzswap device
+> +
+> +4) Stats:
+> +       rzscontrol /dev/ramzswap2 --stats
+> +
+> +5) Deactivate:
+> +       swapoff /dev/ramzswap2
+> +
+> +6) Reset:
+> +       rzscontrol /dev/ramzswap2 --reset
+> +       (This frees all the memory allocated for this device).
 
-The syscall tracepoints are set in the sysenter/sysexit path, then
-it's no use to trace the kernel threads, it doesn't have any effect,
-except random results in case of fork() calls, because we take
-the ret_from_fork() path that also ends up to trace_sys_exit()
-if the TIF_SYSCALL_TRACEPOINT thing is set, leading to such
-asymetric tracing.
+What level of compression have you observed? Any speed trade-offs?
 
-Kernel threads use syscalls toward wrappers such as create_thread().
-So instead, statically defined tracepoints in create_thread() and such
-other syscall wrappers for kernel threads seem more valuable, hmm?
-
- 
-> Moreover, the problem you face is more general: if we set the
-> TIF_SYSCALL_FTRACE flag of a standard thread right in the middle of its
-> system call, x86_64 will cause the syscall exit to execute by re-reading
-> the thread flags and run a syscall trace exit.
-
-
-Well, I don't think that's the problem. The issue here, if I understand
-correctly, is that kernel threads don't take the sysenter path, then never hit
-the trace_sys_enter() call. And usually they won't ever hit any
-trace_sys_exit() calls except in the fork() case, because we take
-the ret_from_fork() path, which lead to syscall exit tracing due
-to the TIF flags set.
-
-At this stage, the syscall number is supposed to be stored in orig_eax,
-but because the kernel thread hasn't called fork() through a syscall and
-has called do_fork() directly, the regs values have nothing that look
-like syscall parameters.
-
-I guess we don't need to take the sys_enter tracing path to have a sane
-orig_eax in the sys_exit tracing path (for non kernel threads).
-Though I'm not sure about that, I should check to be sure.
-
-> We could simply initialize the "saved system calls id" number to
-> something like -1, so that if we happen to return from a syscall that
-> did not get its id recorded at syscall entry, we know it because it's
-> not initialized.
-> 
-> We would need to carefully put back the -1 value after clearing the
-> thread flag when we stop tracing too (while still holding a mutex).
-> 
-> Mathieu
-> 
-> >  		} while_each_thread(g, t);
-> >  		read_unlock_irqrestore(&tasklist_lock, flags);
-> >  	}
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-
+Balbir
