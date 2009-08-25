@@ -1,104 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbZHYJwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZHYJ4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbZHYJwq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 05:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbZHYJwo
+	id S1754834AbZHYJ4d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 05:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbZHYJ4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 05:52:44 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36355 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754776AbZHYJwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 05:52:43 -0400
-Date: Tue, 25 Aug 2009 15:23:03 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: [RFC v1 PATCH 7/7] sched: Hard limits documentation
-Message-ID: <20090825095303.GW3663@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090825094729.GP3663@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825094729.GP3663@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 25 Aug 2009 05:56:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47211 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118AbZHYJ4c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 05:56:32 -0400
+Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
+ cpumask on multi-node processors
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090825093101.GJ20811@alberich.amd.com>
+References: <20090820131243.GO29327@alberich.amd.com>
+	 <20090820134604.GD29327@alberich.amd.com> <1251128176.7538.301.camel@twins>
+	 <20090825093101.GJ20811@alberich.amd.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 25 Aug 2009 11:55:43 +0200
+Message-Id: <1251194143.7538.1128.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched: Hard limits documentation
+On Tue, 2009-08-25 at 11:31 +0200, Andreas Herrmann wrote:
+> On Mon, Aug 24, 2009 at 05:36:16PM +0200, Peter Zijlstra wrote:
+> > On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
+> > > The correct mask that describes core-siblings of an processor
+> > > is topology_core_cpumask. See topology adapation patches, especially
+> > > http://marc.info/?l=linux-kernel&m=124964999608179
+> > 
+> > 
+> > argh, violence, murder kill.. this is the worst possible hack and you're
+> > extending it :/
+> 
+> So this is the third code area
+> (besides sched_*_power_savings sysfs interface, and the __cpu_power fiddling)
+> that is crap, mess, a hack.
+> 
+> Didn't know that I'd enter such a minefield when touching this code. ;-(
 
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Yeah, you're lucky that way ;-) Its been creaking for a while, and I've
+been making noises to the IBM people (who so far have been the main
+source of power saving patches) to clean this up, but now you trod onto
+all of it at once..
 
-Documentation for hard limits feature.
+> What would be your perferred solution for the
+> core_cpumask/llc_shared_map stuff?  Another domain level to get rid of
+> this function?
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
----
- Documentation/scheduler/sched-cfs-hard-limits.txt |   52 ++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
- create mode 100644 Documentation/scheduler/sched-cfs-hard-limits.txt
+Right, I'd like to see everything exposed as domain levels.
 
---- /dev/null
-+++ b/Documentation/scheduler/sched-cfs-hard-limits.txt
-@@ -0,0 +1,52 @@
-+CPU HARD LIMITS FOR CFS GROUPS
-+==============================
-+
-+1. Overview
-+2. Interface
-+3. Examples
-+
-+1. Overview
-+-----------
-+
-+CFS is a proportional share scheduler which tries to divide the CPU time
-+proportionately between tasks or groups of tasks (task group/cgroup) depending
-+on the priority/weight of the task or shares assigned to groups of tasks.
-+In CFS, a task/task group can get more than its share of CPU if there are
-+enough idle CPU cycles available in the system, due to the work conserving
-+nature of the scheduler. However in certain scenarios (like pay-per-use),
-+it is desirable not to provide extra time to a group even in the presence
-+of idle CPU cycles. This is where hard limiting can be of use.
-+
-+Hard limits for task groups can be set by specifying how much CPU runtime a
-+group can consume within a given period. If the group consumes more CPU time
-+than the runtime in a given period, it gets throttled. None of the tasks of
-+the throttled group gets to run until the runtime of the group gets refreshed
-+at the beginning of the next period.
-+
-+2. Interface
-+------------
-+
-+Hard limit feature adds 3 cgroup files for CFS group scheduler:
-+
-+cfs_runtime_us: Hard limit for the group in microseconds.
-+
-+cfs_period_us: Time period in microseconds within which hard limits is
-+enforced.
-+
-+cfs_hard_limit: The control file to enable or disable hard limiting for the
-+group.
-+
-+A group gets created with default values for runtime and period and with
-+hard limit disabled. Each group can set its own values for runtime and period
-+independent of other groups in the system.
-+
-+3. Examples
-+-----------
-+
-+# mount -t cgroup -ocpu none /cgroups/
-+# cd /cgroups
-+# mkdir 1
-+# cd 1/
-+# echo 250000 > cfs_runtime_us /* set a 250ms runtime or limit */
-+# echo 500000 > cfs_period_us /* set a 500ms period */
-+# echo 1 > cfs_hard_limit /* enable hard limiting for group 1/ */
+
+numa-cluster
+numa
+socket
+in-socket-numa
+multi-core
+shared-cache
+core
+threads
+
+We currently have a fixed order of these things, but I think we should
+simply provide helpers for building the sd tree and let the arch code do
+that instead of exporting all these masks in a fixed order.
+
+Once we get the arch domain tree, we do degenerate stuff to cull all the
+trivial domains and fold SD flags.
