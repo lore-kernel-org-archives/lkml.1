@@ -1,110 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbZHYOhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZHYOhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755170AbZHYOhY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 10:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbZHYOhX
+	id S1755223AbZHYOhb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 10:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbZHYOha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 10:37:23 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:39301 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755096AbZHYOhW convert rfc822-to-8bit (ORCPT
+	Tue, 25 Aug 2009 10:37:30 -0400
+Received: from smurf.noris.de ([192.109.102.42]:39216 "EHLO
+	smurf.intern.smurf.noris.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755142AbZHYOhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 10:37:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=uqAM+Hl0lwIAGYOyuHzrPzfGW5+vmCu2hHB1pWD34hhe/8GSrCoRC8CUEN00/miD5s
-         /fPNR658YuHKX86AWwhQ8YuFtOenrNdkwscmSanyt2mwMWevtuqTtX57nnXTK64JBa0J
-         3mIDbsl0DX+TAT6YLeeIxZltKEoc3yIaa1Lic=
-MIME-Version: 1.0
-In-Reply-To: <4A936747.3080408@earthlink.net>
-References: <4A9346D2.6040108@earthlink.net> <3e8340490908242018m31ccb454x9b42af531b6f09ae@mail.gmail.com> 
-	<4A936747.3080408@earthlink.net>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Tue, 25 Aug 2009 10:37:03 -0400
-Message-ID: <3e8340490908250737l45940e35jdff514c6216fc8af@mail.gmail.com>
-Subject: Re: Starting a grad project that may change kernel VFS. Early 
-	research
-To: Jeff Shanab <jshanab@earthlink.net>
-Cc: linux-kernel@vger.kernel.org, tytso@mit.edu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 25 Aug 2009 10:37:23 -0400
+Subject: Re: [PATCH v2] scripts: add typdef removal tool
+From: Matthias Urlichs <matthias@urlichs.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Nicolas Palix <npalix@diku.dk>, linux-kernel@vger.kernel.org,
+       Yoann Padioleau <yoann.padioleau@gmail.com>,
+       Julia Lawall <julia@diku.dk>, devel@driverdev.osuosl.org,
+       Joe Perches <joe@perches.com>, Amerigo Wang <xiyou.wangcong@gmail.com>,
+       akpm@linux-foundation.org
+In-Reply-To: <4A918389.8050301@gmail.com>
+References: <1250228384-19823-1-git-send-email-lrodriguez@atheros.com>
+	 <20090817060203.GL5039@cr0.nay.redhat.com>
+	 <1251033773.10339.1105.camel@kiste>  <4A918389.8050301@gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-TT71uDqX7gznItjHXAc3"
+Organization: {M:U} IT Design
+Date: Tue, 25 Aug 2009 14:35:52 +0000
+Message-Id: <1251210952.10339.1331.camel@kiste>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-Smurf-Spam-Score: -2.6 (--)
+X-Smurf-Whitelist: +relay_from_hosts
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 12:23 AM, Jeff Shanab<jshanab@earthlink.net> wrote:
-> So does mv essentially become copy when between mounts?
 
-Yes, essentially.
+--=-TT71uDqX7gznItjHXAc3
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->>
->>> I need to look at the cashing and how we handle changes already.  Do we
->>> write things immediately all the time? Then why must I "sync" before
->>> unmount. hummmm
->>>
->>
->> You don't need to sync before umount. umount automatically syncs the
->> filesystem it's applied on after it's removed from the namespace, but
->> before the umount completes. Additionally, dirty buffers and pages are
->> written back automatically based on memory pressure and timeouts - see
->> /proc/sys/vm/dirty_* for the knobs for this.
->>
-> I know it now does the sync for you, but the fact a sync must be done
-> indicates there are buffers not written, correct?
+On Sun, 2009-08-23 at 19:59 +0200, Jiri Slaby wrote:
+> -type f excludes directories.
 
-Generally speaking the umount will actually make some buffers dirty
-when, eg, setting a 'filesystem is clean' flag. There may also be
-dirty buffers left over from prior activity.
+Yes, but -o binds more loosely.
 
->>>> In addition, how will you handle hard links?  An inode can have
->>>> multiple hard links in different directories, and there is no way to
->>>> find all of the directories which might contain a hard link to a
->>>> particular inode, short of doing a brute force search.  Hence if you
->>>> have a file living in src/linux/v2.6.29/README, and it is a hard link
->>>> to ~/hacker/linux/README, and a program appends data to the file
->>>> ~/hacker/linux/README, this would also change the result of running du
->>>> -s src/linux/v2.6.29; however, there's no way for your extension to
->>>> know that.
->>>>
->>
->> ^^^ don't skip this part, it's absolutely critical, the biggest
->> problem with your proposal, and you can't just handwave it away.
->>
-> I will sleep on the hard link issue. There must be an answer as DU must
-> handle this.
-> I can see where if I can't distinquish between which is the hard link
-> and which is not becasue they are implemented the same.
->
-> First think is to run an experiment in the morning
->
->    test/foo/bar/file
->    test/bar/foo/file
->    where file is the same file close to the disk block size.
->    does 'du -s in foo' + 'du -s in bar'  = 'du -s' in test?
+$ mkdir bar
+$ find . -type f -name foo -o -name bar
+bar
+$
 
-No. du -s in test will count 'file' only once, unless -l is passed.
+I like to pay attention to correct idioms. There is no problem in this
+case because there are no directories named *.h in the kernel tree =E2=80=
+=94 but
+people read code like that, and then apply it to situations where it
+_does_ matter.
 
->
->> One thing you may want to look into is the new fanotify API[1] - it
->> allows a userspace program to monitor and/or block certain filesystem
->> events of interest. You may be able to implement a prototype of your
->> space-usage-caching system in userspace this way without needing to
->> modify the kernel. Or implement it as a FUSE layered filesystem. In
->> the latter case you may be able to make a reverse index of sorts for
->> hardlink handling - but this carries with it quite a bit of overhead.
->>
-> FUSE is an option I was keeping open.
-> Since I can dedicate a mountpoint to a file system and mount and umount
-> it and load and unload a kernel module FUSE, seemed like extra work with
-> little benefit.
-> That does sound like a lot of overhead.
+--=-TT71uDqX7gznItjHXAc3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-It is additional overhead, but writing code for userspace is a lot
-easier as you do not need to deal with kernel locking and low-memory
-deadlock issues, and can use any userspace libraries you want. You
-also won't have to worry about crashing the system and having to
-reboot if you make a mistake. It's a good way to prove the concept is
-sound before proposing it in a more concrete form to filesystem
-developers.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkqT9sQACgkQ8+hUANcKr/ltGwCfal0BXzUpOWyEuHhJ+GV+TTFz
+HKQAoKeoClhQ8jKID0gkP+hKe8V9mG3t
+=zgwB
+-----END PGP SIGNATURE-----
+
+--=-TT71uDqX7gznItjHXAc3--
+
