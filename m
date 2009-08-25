@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbZHYK5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZHYLDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754977AbZHYK5X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 06:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbZHYK5V
+	id S1754776AbZHYLDW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 07:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbZHYLDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 06:57:21 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:48939 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754237AbZHYK5U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 06:57:20 -0400
-Date: Tue, 25 Aug 2009 06:57:07 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wei Yongjun <yjwei@cn.fujitsu.com>, David Miller <davem@davemloft.net>,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] trace_events: fix napi's tracepoint
-Message-ID: <20090825105707.GA24710@hmsreliant.think-freely.org>
-References: <4A937EF5.4040505@cn.fujitsu.com> <4A93895F.4010708@cn.fujitsu.com> <20090825075816.GB857@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825075816.GB857@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-Score: -4.7 (----)
+	Tue, 25 Aug 2009 07:03:21 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55052 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750811AbZHYLDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 07:03:20 -0400
+Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Alexey Korolev <akorolex@gmail.com>, Eric Munson <linux-mm@mgebm.net>,
+       Alexey Korolev <akorolev@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090825104731.GA21335@csn.ul.ie>
+References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org>
+	 <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com>
+	 <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com>
+	 <20090819100553.GE24809@csn.ul.ie>
+	 <202cde0e0908200003w43b91ac3v8a149ec1ace45d6d@mail.gmail.com>
+	 <20090825104731.GA21335@csn.ul.ie>
+Content-Type: text/plain
+Date: Tue, 25 Aug 2009 21:00:54 +1000
+Message-Id: <1251198054.15197.40.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 09:58:16AM +0200, Ingo Molnar wrote:
-> 
-> * Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
-> 
-> > Currently, the napi's tracepoint works will is depend on
-> > "DECLARE_TRACE" definiens in include/trace/define_trace.h,
-> > like below:
-> > 
-> > #include <trace/events/skb.h>    // include define_trace.h
-> > #include <trace/events/napi.h>
-> > 
-> > there have error, if we remove "#include <trace/events/skb.h>"
-> > or include napi.h in the front of include skb.h, It should
-> > depend on the definiens in include/linux/tracepoint.h and we
-> > can remove the "DECLARE_TRACE" definiens in
-> > include/trace/define_trace.h, because "TRACE_EVENT" not use it
-> > 
-> > Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> > ---
-> >  include/trace/define_trace.h |    4 ----
-> >  net/core/net-traces.c        |    4 +++-
-> >  2 files changed, 3 insertions(+), 5 deletions(-)
-> 
-> This will collide with tracing bits in the networking tree. The 
-> skb-tracing plugin there should be turned into proper TRACE_EVENT() 
-> tracepoints.
-> 
-> Neil was away for some time but i think soon we should see some 
-> movement here.
-> 
-> 	Ingo
-> 
+On Tue, 2009-08-25 at 11:47 +0100, Mel Gorman wrote:
 
-Thank you Ingo, yes, I'm back from the beach now and will look at this shortly.
-I concur, we should just convert the napi_poll tracepoint to be defined via the
-TRACE_EVENT macro, same as the kfree_skb tracepoint.  Xaio would you like to
-take care of that, or shall I?
+> Why? One hugepage of default size will be one TLB entry. Each hugepage
+> after that will be additional TLB entries so there is no savings on
+> translation overhead.
+> 
+> Getting contiguous pages beyond the hugepage boundary is not a matter
+> for GFP flags.
 
-Best
-Neil
+Note: This patch reminds me of something else I had on the backburner
+for a while and never got a chance to actually implement...
+
+There's various cases of drivers that could have good uses of hugetlb
+mappings of device memory. For example, framebuffers.
+
+I looked at it a while back and it occured to me (and Nick) that
+ideally, we should split hugetlb and hugetlbfs.
+
+Basically, on one side, we have the (mostly arch specific) populating
+and walking of page tables with hugetlb translations, associated huge
+VMAs, etc... 
+
+On the other side, hugetlbfs is backing that with memory.
+
+Ideally, the former would have some kind of "standard" ops that
+hugetlbfs can hook into for the existing case (moving some stuff out of
+the common data structure and splitting it in two), allowing the driver
+to instanciate hugetlb VMAs that are backed up by something else,
+typically a simple mapping of IOs.
+
+Anybody wants to do that or I keep it on my back burner until the time I
+finally get to do it ? :-)
+
+Cheers,
+Ben.
 
