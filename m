@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbZHZAKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZHZAEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756291AbZHZAKT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756280AbZHZAKP
+	id S1756081AbZHZAEo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbZHZAEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:10:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58919 "EHLO ogre.sisk.pl"
+	Tue, 25 Aug 2009 20:04:41 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58915 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755804AbZHZAEn convert rfc822-to-8bit (ORCPT
+	id S1755734AbZHZAEi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:04:43 -0400
+	Tue, 25 Aug 2009 20:04:38 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Rus" <harbour@sfinx.od.ua>
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Diego Calleja" <diegocg@gmail.com>
 References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
 In-Reply-To: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Cg6cQYLdUxG.A.AAC.D1GlKB@chimera>
-Subject: [Bug #13514] acer_wmi causes stack corruption
+Message-ID: <Cg6cQYLdUxG.A.JLC.c1GlKB@chimera>
+Subject: [Bug #13408] Performance regression in 2.6.30-rc7
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Tue, 25 Aug 2009 23:05:03 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +36,10 @@ introduced between 2.6.29 and 2.6.30.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13514
-Subject		: acer_wmi causes stack corruption
-Submitter	: Rus <harbour@sfinx.od.ua>
-Date		: 2009-06-12 08:13 (75 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13408
+Subject		: Performance regression in 2.6.30-rc7
+Submitter	: Diego Calleja <diegocg@gmail.com>
+Date		: 2009-05-30 18:51 (88 days old)
+References	: http://lkml.org/lkml/2009/5/30/146
 
 
