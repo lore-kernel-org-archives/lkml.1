@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZHYCdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZHYCha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbZHYCdn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 22:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbZHYCdl
+	id S1754203AbZHYCha (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 22:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZHYCh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 22:33:41 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:48626 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754100AbZHYCcz (ORCPT
+	Mon, 24 Aug 2009 22:37:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45794
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754034AbZHYCh3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 22:32:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=wS2YXC2tWMAfApt8z0syndw7BBgdN7yULyrc2yBh6GBAsws2Oe4paFVYDHVRLmq9uU
-         C2iVG0UxpKkL9GJB19CHR1dHQ23FC7szqRzW1mngSwgwxrdPAud5iDgHIW1VWILHFcy0
-         j1oWFfsB0c2jo8ZGeEiMdo4t5PHelcD0eFN6w=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Jeff Mahoney <jeffm@suse.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Bron Gondwana <brong@fastmail.fm>,
-       Reiserfs <reiserfs-devel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Andrea Gelmini <andrea.gelmini@gmail.com>,
-       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
-       Thomas Meyer <thomas@m3y3r.de>,
-       Alessio Igor Bogani <abogani@texware.it>,
-       Marcel Hilzinger <mhilzinger@linuxnewmedia.de>,
-       Edward Shishkin <edward.shishkin@gmail.com>,
-       Laurent Riffard <laurent.riffard@free.fr>
-Subject: [PATCH 1/4] kill-the-bkl/reiserfs: fix "reiserfs lock" / "inode mutex" lock inversion dependency
-Date: Tue, 25 Aug 2009 04:32:47 +0200
-Message-Id: <1251167570-5233-2-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
-References: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
+	Mon, 24 Aug 2009 22:37:29 -0400
+Date: Mon, 24 Aug 2009 19:37:41 -0700 (PDT)
+Message-Id: <20090824.193741.139024434.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: linux-next: origin tree build warning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090825101147.fb929fcb.sfr@canb.auug.org.au>
+References: <20090825101147.fb929fcb.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-reiserfs_xattr_init is called with the reiserfs write lock held, but
-if the ".reiserfs_priv" entry is not created, we take the superblock
-root directory inode mutex until .reiserfs_priv is created.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 25 Aug 2009 10:11:47 +1000
 
-This creates a lock dependency inversion against other sites such as
-reiserfs_file_release() which takes an inode mutex and the reiserfs
-lock after.
+> Today's linux-next build (x86_64 allmodconfig, gcc 4.4.0) produced these
+> warnings:
+> 
+> net/sched/sch_api.c: In function 'qdisc_watchdog':
+> net/sched/sch_api.c:460: warning: initialization from incompatible pointer type
+> net/sched/sch_cbq.c: In function 'cbq_undelay':
+> net/sched/sch_cbq.c:595: warning: initialization from incompatible pointer type
+> 
+> Introduced by commit ee5f9757ea17759e1ce5503bdae2b07e48e32af9
+> ("pkt_sched: Convert qdisc_watchdog to tasklet_hrtimer").
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jeff Mahoney <jeffm@suse.com>
-Cc: Chris Mason <chris.mason@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Laurent Riffard <laurent.riffard@free.fr>
+Thanks I just committed the following to clean that up.
+
+pkt_sched: Fix bogon in tasklet_hrtimer changes.
+
+Reported by Stephen Rothwell, luckily it's harmless:
+
+net/sched/sch_api.c: In function 'qdisc_watchdog':
+net/sched/sch_api.c:460: warning: initialization from incompatible pointer type
+net/sched/sch_cbq.c: In function 'cbq_undelay':
+net/sched/sch_cbq.c:595: warning: initialization from incompatible pointer type
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- fs/reiserfs/xattr.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ net/sched/sch_api.c |    2 +-
+ net/sched/sch_cbq.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/reiserfs/xattr.c b/fs/reiserfs/xattr.c
-index 59870a4..58aa8e7 100644
---- a/fs/reiserfs/xattr.c
-+++ b/fs/reiserfs/xattr.c
-@@ -1004,7 +1004,7 @@ int reiserfs_xattr_init(struct super_block *s, int mount_flags)
- 		goto error;
+diff --git a/net/sched/sch_api.c b/net/sched/sch_api.c
+index e1c2bf7..92e6f3a 100644
+--- a/net/sched/sch_api.c
++++ b/net/sched/sch_api.c
+@@ -458,7 +458,7 @@ EXPORT_SYMBOL(qdisc_warn_nonwc);
+ static enum hrtimer_restart qdisc_watchdog(struct hrtimer *timer)
+ {
+ 	struct qdisc_watchdog *wd = container_of(timer, struct qdisc_watchdog,
+-						 timer);
++						 timer.timer);
  
- 	if (!privroot->d_inode && !(mount_flags & MS_RDONLY)) {
--		mutex_lock(&s->s_root->d_inode->i_mutex);
-+		reiserfs_mutex_lock_safe(&s->s_root->d_inode->i_mutex, s);
- 		err = create_privroot(REISERFS_SB(s)->priv_root);
- 		mutex_unlock(&s->s_root->d_inode->i_mutex);
- 	}
+ 	wd->qdisc->flags &= ~TCQ_F_THROTTLED;
+ 	__netif_schedule(qdisc_root(wd->qdisc));
+diff --git a/net/sched/sch_cbq.c b/net/sched/sch_cbq.c
+index 81652d6..149b040 100644
+--- a/net/sched/sch_cbq.c
++++ b/net/sched/sch_cbq.c
+@@ -593,7 +593,7 @@ static psched_tdiff_t cbq_undelay_prio(struct cbq_sched_data *q, int prio,
+ static enum hrtimer_restart cbq_undelay(struct hrtimer *timer)
+ {
+ 	struct cbq_sched_data *q = container_of(timer, struct cbq_sched_data,
+-						delay_timer);
++						delay_timer.timer);
+ 	struct Qdisc *sch = q->watchdog.qdisc;
+ 	psched_time_t now;
+ 	psched_tdiff_t delay = 0;
 -- 
-1.6.2.3
+1.6.4.1
 
