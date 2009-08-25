@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbZHYO2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbZHYO3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755101AbZHYO2G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 10:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbZHYO2G
+	id S1755155AbZHYO3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 10:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbZHYO3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 10:28:06 -0400
-Received: from staff.task.gda.pl ([153.19.250.116]:4955 "EHLO
-	staff.task.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbZHYO2F (ORCPT
+	Tue, 25 Aug 2009 10:29:24 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:50215 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408AbZHYO3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 10:28:05 -0400
-Date: Tue, 25 Aug 2009 16:28:02 +0200 (CEST)
-From: Pawel Golaszewski <blues@gda.pl>
-X-X-Sender: blues@staff.task.gda.pl
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: PROBLEM: oops
-In-Reply-To: <1251209734.7538.1160.camel@twins>
-Message-ID: <alpine.LNX.2.00.0908251625580.16876@fgnss.gnfx.tqn.cy>
-References: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy>  <1251209206.7538.1159.camel@twins>  <alpine.LNX.2.00.0908251608280.16876@fgnss.gnfx.tqn.cy> <1251209734.7538.1160.camel@twins>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Tue, 25 Aug 2009 10:29:23 -0400
+To: "Paulraj\, Sandeep" <s-paulraj@ti.com>
+Cc: Pablo Bitton <pablo.bitton@gmail.com>,
+       "davinci-linux-open-source\@linux.davincidsp.com" 
+	<davinci-linux-open-source@linux.davincidsp.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Brownell <david-b@pacbell.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] SPI: DaVinci: Adding SPI driver for DaVinci
+References: <20090817172612.1dfa74a5.pablo.bitton@gmail.com>
+	<7448ec710908250504v1c5eb12fl109481a5d7716747@mail.gmail.com>
+	<87skfgdo84.fsf@deeprootsystems.com>
+	<0554BEF07D437848AF01B9C9B5F0BC5D7F2A15BD@dlee01.ent.ti.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Tue, 25 Aug 2009 17:29:21 +0300
+In-Reply-To: <0554BEF07D437848AF01B9C9B5F0BC5D7F2A15BD@dlee01.ent.ti.com> (Sandeep Paulraj's message of "Tue\, 25 Aug 2009 08\:56\:08 -0500")
+Message-ID: <87tyzwarwe.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="328824058-33275375-1251210482=:16876"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+"Paulraj, Sandeep" <s-paulraj@ti.com> writes:
 
---328824058-33275375-1251210482=:16876
-Content-Type: TEXT/PLAIN; charset=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
+> Kevin,
+>
+> Please see inline
+>
+>> 
+>> > The patch has received no comments so far (here and on spi-general-
+>> devel).
+>> >
+>> > Can someone test it on davinci's other that the DM6446 to see that
+>> support for
+>> > others has not broken?
+>> >
+>> > Kevin - Is there anything that keeps it from merging upstream to this
+>> tree?
+>> 
+>> Hi Pablo,
+>> 
+>> Sorry for the delay, I've been travelling and not able to watch
+>> DaVinci closely enough...
+>> 
+>> This driver should be merged via the SPI subsystem (maintained by
+>> David Brownell), not the Davinci core code which I maintain.
+>> 
+>> That being said, in my view, here's why this driver is not ready for
+>> upstream:
+>> 
+>> 1) The original driver from Sandeep that you based yours on was still
+>>    going through revisions.  The last review comments[1] from David
+>>    Brownell had not yet been addressed by Sandeep.  I hope that
+>>    Sandeep will have a chance to address the existing review comments
+>>    on his code, and then review yours.  However, you've made it
+>>    rather difficult to do that because...
+>
+> [Sandeep] There were a set of comments from David Brownell(which was
+> actually, thanks to him, in the from of a patch).  David did say
+> that the SPI support in that form was ready for an initial merge. I
+> tested it on DM355/Dm365 and Dm6467 and that driver(meant for the
+> initial merge) is in our ARAGO tree.  Afcourse we all agreed that
+> there are things to add in the SPI driver.  Also IIRC(and I am
+> willing to be corrected) David did say that he would send it
+> upstream when he got some time so I did not do it myself. The fact
+> that he maintains the SPI subsystem had a part to play in my
+> decision.
 
-On Tue, 25 Aug 2009, Peter Zijlstra wrote:
-> > > > No matter which kernel I'm using (2.6.27 - 2.6.30) it crashes. 
-> > > > Works for few minutes and crashes. Even SysRq doesn't work. Dunno 
-> > > > how to trigger it on other machine than mine (I have two, both 
-> > > > affected). If more info is required - just ask.
-> > > > [...]
-> > > > [24483.211036] BUG: unable to handle kernel NULL pointer dereference at 00000058
-> > > > [24483.211144] IP: [<c081cf9a>] pick_next_task_fair+0x6a/0x100
-> > > > [24483.211247] Oops: 0000 [#1] SMP 
-> > > > [24483.211300] Modules linked in: netconsole configfs dm_mod softdog sch_sfq xfs raid10 uhci_hcd eepro100 ppdev parport_pc floppy parport ehci_hcd e100 piix i2c_piix4 thermal psmouse e1000 container ide_core usbcore mii button pcspkr serio_raw processor i2c_core sg evdev ext3 jbd mbcache scsi_wait_scan sd_mod crc_t10dif ata_piix libata dock aic7xxx sym53c8xx scsi_transport_spi scsi_mod raid1 md_mod
-> > > > [24483.211878] 
-> > > > [24483.211910] Pid: 1677, comm: md2_raid10 Not tainted (2.6.27.31-1 #1)
-> > > 
-> > > So you're saying .30 crashes at the exact same place?
-> > 
-> > Well... I'm not able to catch anything on .30 No sign on netconsole, 
-> > black screen on monitor...
-> 
-> Could you share your .config?
+OK, I'll continue the original thread with some more questions on this
+topic.
 
-Sure, I forgot:
-http://www.blues.gda.pl/2.6.27.31.config.bz2
+>> 
+>> 2) You should have your patch apply on top of Sandeep's series, not
+>>    just absorb it.  That way we can clearly see what you are adding
+>>    and/or changing from Sandeeps original driver.  To make this part
+>>    easier, I created a 'temp/spi' branch of davinci git where I've
+>>    pushed the latest versions of the patches from Sandeep.  Any
+>>    additions/updates/fixes you have should be posted as patches
+>>    against that for easier discussion and review.
+>> 
+>> 3) As Sandeep did, you should keep the changes to the board/SoC code
+>>    (arch/arm/mach-davinci/*) as a separate patch from the driver code
+>>    (drivers/spi/*)
+>> 
+>> 4) this driver needs more testing
+>
+> [Sandeep] tested by TI test team on DM355 and DM365 and I have tested on DM6467.
 
--- 
-pozdr.  Pawe³ Go³aszewski          jid:blues<at>jabber<dot>gda<dot>pl
---------------------------------------------------------------------------
-If you think of MS-DOS as mono, and Windows as stereo, then Linux is Dolby
-Pro-Logic Surround Sound with Bass Boost and all the music is free.
---328824058-33275375-1251210482=:16876--
+Sandeep, your driver recieved sufficient testing.  The driver that I
+was saying needs more changes was this one proposed by Pablo.
+
+Kevin
