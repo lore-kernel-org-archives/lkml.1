@@ -1,72 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZHYTHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZHYTHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbZHYTHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 15:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbZHYTHa
+	id S1756049AbZHYTHx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 15:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbZHYTHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 15:07:30 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:36367 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755627AbZHYTH3 (ORCPT
+	Tue, 25 Aug 2009 15:07:52 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34331 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755893AbZHYTHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 15:07:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uO6UJWjfkeIKSslGwbbHieOtLapfRWteGqISafKIeoNLnNXFDEzECuPV5sMJpcLGve
-         JE7+wugSczm4zVQkUCAPGY57jdzCKZisW9AfNDqcIAE/m7DjhQ+5Jg6nFP6VgBldQkkG
-         73HLa1x8Bpwxjxm1+ARTJJO3tkB3swjlKUh5c=
-Date: Tue, 25 Aug 2009 22:59:11 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       shai@scalex86.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch] x86: 2.6.31-rc7 crash due to buggy flat_phys_pkg_id
-Message-ID: <20090825185911.GB5806@lenovo>
-References: <20090824182659.GA6842@localdomain> <4A932809.1000103@kernel.org> <20090825012632.GB6842@localdomain> <4A9372A1.9090905@kernel.org> <20090825171716.GC6456@localdomain> <20090825181500.GB3277@elte.hu> <20090825183130.GA5806@lenovo> <4A943290.5080606@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A943290.5080606@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 25 Aug 2009 15:07:51 -0400
+Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Cc: Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1251226720.13451.15.camel@penberg-laptop>
+References: <4A9407B1.6020400@nets.rwth-aachen.de>
+	 <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com>
+	 <4A94161A.2020609@nets.rwth-aachen.de>
+	 <1251219129.4852.1.camel@penberg-laptop>
+	 <4A94242E.30309@nets.rwth-aachen.de>
+	 <1251223399.13451.5.camel@penberg-laptop>
+	 <4A942BDD.70303@nets.rwth-aachen.de>
+	 <1251226720.13451.15.camel@penberg-laptop>
+Date: Tue, 25 Aug 2009 22:07:51 +0300
+Message-Id: <1251227271.13451.16.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Yinghai Lu - Tue, Aug 25, 2009 at 11:50:56AM -0700]
-...
-| > | We should revert to the .30 behavior unless there's a good reason 
-| > | (even in that case we'll solve the regression and do a workaround 
-| > | for vSMP). Yinghai?
-| > | 
-| > | 	Ingo
-| > 
-| > I'm definitely not APIC expert but since I was partially involved
-| > letme turn in.
-| > 
-| > Original commit which causes problem for vSMP seems to be due
-| > to cpu_has_apic bit turned off (ie due to being manually disabled
-| > or acpi table broken) so further read apic id will return plain
-| > zero (we're talking about 64 bits now). So frnakly I don't understand
-| > what is wrong with Ravikiran's patch. In case of apic disabled
-| > initial apic value will be used anyway (which is latched but
-| > actually may be changed, but it's not our case).
-| 
-| initial apic id and apic id could be different.
+On Tue, 2009-08-25 at 21:58 +0300, Pekka Enberg wrote:
+> On Tue, 2009-08-25 at 20:22 +0200, Arnd Hannemann wrote:
+> > Pekka Enberg wrote:
+> > > On Tue, 2009-08-25 at 19:49 +0200, Arnd Hannemann wrote:
+> > >> Hi Pekka,
+> > >>
+> > >> Pekka Enberg wrote:
+> > >>> On Tue, 2009-08-25 at 18:49 +0200, Arnd Hannemann wrote:
+> > >>>>> Thanks for doing the bisect! Can we also see your .config
+> > >>>>> also?
+> > >>>> Config for -rc7 is attached. My bisect configs were based on
+> > >>>> that
+> > >>> Thanks! While we wait for the Xen people, you can try the
+> > >>> following patch to see if we can narrow the bug down to
+> > >>> trap_init().
+> > >> Yes seems to be trap_init(). -rc7 with this patch applied boots up
+> > >> to the prompt.
+> > >
+> > > Thanks for testing! Ingo, what do you think of the following patch?
+> > > AFAICT, x86-32 is the only architecture playing with traps in
+> > > mem_init() so this should be the safest fix for 2.6.31.
+> > 
+> > Hmm, -rc7 + this fix does not work for me :-/
+> > Still hangs before any output...
+> 
+> Arnd, does this work for you?
 
-yes, I know. initial one is latched by pins though still
-could be changed (not always).
+Here's a version of the patch that actually compiles. :-)
 
-| 
-| and we should use initial apic id to get correct phys pkg id in case BIOS set crazy apic id.
+			Pekka
 
-indeed, as function name implies. Need more code reading...
-So (64 bits) at least generic_identify is not guilty since it uses initial
-one from scratch. Need more code reading...
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 13ffa5d..b6ff185 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -50,6 +50,7 @@ config X86
+ 	select HAVE_KERNEL_BZIP2
+ 	select HAVE_KERNEL_LZMA
+ 	select HAVE_ARCH_KMEMCHECK
++	select HAVE_ARCH_MEM_INIT_LATE if X86_32
+ 
+ config OUTPUT_FORMAT
+ 	string
+@@ -86,6 +87,10 @@ config STACKTRACE_SUPPORT
+ config HAVE_LATENCYTOP_SUPPORT
+ 	def_bool y
+ 
++config HAVE_ARCH_MEM_INIT_LATE
++	def_bool y
++	depends on X86_32
++
+ config FAST_CMPXCHG_LOCAL
+ 	bool
+ 	default y
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 3cd7711..488ed4b 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -956,13 +956,17 @@ void __init mem_init(void)
+ 	BUG_ON(VMALLOC_START				>= VMALLOC_END);
+ 	BUG_ON((unsigned long)high_memory		> VMALLOC_START);
+ 
+-	if (boot_cpu_data.wp_works_ok < 0)
+-		test_wp_bit();
+-
+ 	save_pg_dir();
+ 	zap_low_mappings(true);
+ }
+ 
++void __init mem_init_late(void)
++{
++	/* Interrupts are enabled at this point. */
++	if (boot_cpu_data.wp_works_ok < 0)
++		test_wp_bit();
++}
++
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ int arch_add_memory(int nid, u64 start, u64 size)
+ {
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 9a72cc7..eefcfbe 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1052,6 +1052,14 @@ extern void si_meminfo(struct sysinfo * val);
+ extern void si_meminfo_node(struct sysinfo *val, int nid);
+ extern int after_bootmem;
+ 
++#ifdef CONFIG_HAVE_ARCH_MEM_INIT_LATE
++extern void mem_init_late(void);
++#else
++static inline void mem_init_late(void)
++{
++}
++#endif
++
+ #ifdef CONFIG_NUMA
+ extern void setup_per_cpu_pageset(void);
+ #else
+diff --git a/init/main.c b/init/main.c
+index 2d9d6bd..45d8dbd 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -643,6 +643,7 @@ asmlinkage void __init start_kernel(void)
+ 	set_gfp_allowed_mask(__GFP_BITS_MASK);
+ 
+ 	kmem_cache_init_late();
++	mem_init_late();
+ 
+ 	/*
+ 	 * HACK ALERT! This is early. We're enabling the console before
 
-| 
-| YH
-| 
-	-- Cyrill
+
