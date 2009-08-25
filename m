@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbZHYOHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZHYOHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755047AbZHYOHA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 10:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZHYOG7
+	id S1755059AbZHYOHm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 10:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbZHYOHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 10:06:59 -0400
-Received: from bee.hiwaay.net ([216.180.54.11]:65437 "EHLO bee.hiwaay.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754997AbZHYOG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 10:06:59 -0400
-X-Greylist: delayed 599 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Aug 2009 10:06:59 EDT
-Date: Tue, 25 Aug 2009 08:57:00 -0500
-From: Chris Adams <cmadams@hiwaay.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
-Message-ID: <20090825135700.GA1552296@hiwaay.net>
-References: <ciPTu-7f2-47@gated-at.bofh.it> <clrhX-3R1-13@gated-at.bofh.it> <dcEc1-33Z-17@gated-at.bofh.it> <dcFUz-4yN-9@gated-at.bofh.it> <dcHtf-5XC-17@gated-at.bofh.it> <dcNSc-2DU-11@gated-at.bofh.it> <dcOl9-3aC-19@gated-at.bofh.it> <dcOOd-3qM-33@gated-at.bofh.it> <dcOXN-3M5-15@gated-at.bofh.it> <dcPhb-3W6-3@gated-at.bofh.it>
+	Tue, 25 Aug 2009 10:07:41 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52412 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755004AbZHYOHl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 10:07:41 -0400
+Subject: Re: PROBLEM: oops
+From: Peter Zijlstra <peterz@infradead.org>
+To: =?UTF-8?Q?Pawe=C5=82_Go=C5=82aszewski?= <blues@gda.pl>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy>
+References: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Tue, 25 Aug 2009 16:06:46 +0200
+Message-Id: <1251209206.7538.1159.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824223915.GI17684@mit.edu>
-User-Agent: Mutt/1.4i
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Once upon a time, Theodore Tso  <tytso@mit.edu> said:
->I'll note, BTW, that AIX uses a journal to protect against these sorts
->of problems with software raid; this also means that with AIX, you
->also don't have to rebuild a RAID 1 device after an unclean shutdown,
->like you have do with Linux MD.  This was on the EVMS's team
->development list to implement for Linux, but it got canned after LVM
->won out, lo those many years ago.
+On Tue, 2009-08-25 at 15:55 +0200, Paweł Gołaszewski wrote:
+> No matter which kernel I'm using (2.6.27 - 2.6.30) it crashes. Works for 
+> few minutes and crashes. Even SysRq doesn't work.
+> 
+> Dunno how to trigger it on other machine than mine (I have two, both 
+> affected). If more info is required - just ask.
+> [...]
+> [24483.211036] BUG: unable to handle kernel NULL pointer dereference at 00000058
+> [24483.211144] IP: [<c081cf9a>] pick_next_task_fair+0x6a/0x100
+> [24483.211247] Oops: 0000 [#1] SMP 
+> [24483.211300] Modules linked in: netconsole configfs dm_mod softdog sch_sfq xfs raid10 uhci_hcd eepro100 ppdev parport_pc floppy parport ehci_hcd e100 piix i2c_piix4 thermal psmouse e1000 container ide_core usbcore mii button pcspkr serio_raw processor i2c_core sg evdev ext3 jbd mbcache scsi_wait_scan sd_mod crc_t10dif ata_piix libata dock aic7xxx sym53c8xx scsi_transport_spi scsi_mod raid1 md_mod
+> [24483.211878] 
+> [24483.211910] Pid: 1677, comm: md2_raid10 Not tainted (2.6.27.31-1 #1)
 
-See mdadm(8) and look for "--bitmap".  It has a few issues (can't
-reshape an array with a bitmap for example; you have to remove the
-bitmap, reshape, and re-add the bitmap), but it is available.
--- 
-Chris Adams <cmadams@hiwaay.net>
-Systems and Network Administrator - HiWAAY Internet Services
-I don't speak for anybody but myself - that's enough trouble.
+So you're saying .30 crashes at the exact same place?
+
+
