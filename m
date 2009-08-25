@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbZHYRvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbZHYR4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755497AbZHYRvK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 13:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbZHYRvJ
+	id S1755528AbZHYR4i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 13:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZHYR4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 13:51:09 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:11791 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755452AbZHYRvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 13:51:08 -0400
-Date: Tue, 25 Aug 2009 19:47:30 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 9/12] ksm: fix oom deadlock
-Message-ID: <20090825174730.GR14722@random.random>
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
- <Pine.LNX.4.64.0908031317190.16754@sister.anvils>
- <20090825145832.GP14722@random.random>
- <Pine.LNX.4.64.0908251738070.30372@sister.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908251738070.30372@sister.anvils>
+	Tue, 25 Aug 2009 13:56:37 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60806 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755492AbZHYR4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 13:56:36 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18OJiYpw5YOps2VkOlmmWyDOafcZLHNMY5RqKZTqv
+	/81UavQnr+bXiX
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+From: Mike Galbraith <efault@gmx.de>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: raz ben yehuda <raziebe@gmail.com>, riel@redhat.com, mingo@elte.hu,
+       peterz@infradead.org, andrew motron <akpm@linux-foundation.org>,
+       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0908251122020.26329@gentwo.org>
+References: <1250983671.5688.21.camel@raz>
+	 <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>
+	 <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>
+	 <1251021133.14003.172.camel@marge.simson.net>
+	 <alpine.DEB.1.10.0908251122020.26329@gentwo.org>
+Content-Type: text/plain
+Date: Tue, 25 Aug 2009 19:56:33 +0200
+Message-Id: <1251222993.7023.53.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 06:35:56PM +0100, Hugh Dickins wrote:
-> "make munlock fast when mlock is canceled by sigkill".  It's just
-> idiotic that munlock (in this case, munlocking pages on exit) should
-> be trying to fault in pages, and that causes its own problems when
-
-I also pondered if to address the thing by fixing automatic munlock,
-but then I think the same way it's asking for troubles to cause page
-faults with mm_users == 0 in munlock, it's also asking for troubles to
-cause page faults with mm_users == 0 in ksm. So if munlock is wrong
-ksm was also wrong, and I tried to fix ksm not to do that, while
-leaving munlock fixage for later/others.. ;)
-
-> I have now made a patch with munlock_vma_pages_range() doing a
-> follow_page() loop instead of faulting in; but I've not yet tested
-
-That is a separate problem in my view.
-
-> I'd prefer not to have them too, but haven't yet worked out how to
-> get along safely without them.
-
-ok.
-
-> But the mmap_sem is not enough to exclude the mm exiting
-> (until __ksm_exit does its little down_write,up_write dance):
-> break_cow etc. do the ksm_test_exit check on mm_users before
-> proceeding any further, but that's just not enough to prevent
-> break_ksm's handle_pte_fault racing with exit_mmap - hence the
-> ksm_test_exits in mm/memory.c, to stop ptes being instantiated
-> after the final zap thinks it's wiped the pagetables.
+On Tue, 2009-08-25 at 11:23 -0400, Christoph Lameter wrote:
+> On Sun, 23 Aug 2009, Mike Galbraith wrote:
 > 
-> Let's look at your actual patch...
+> > The rest, I'll leave off replying to, we're kinda splitting hairs.  I
+> > don't see a big generic benefit to OFFSCHED or ilk, others do.
+> 
+> No we are not splitting hairs. OFFSCHED takes the OS noise (interrupts,
+> timers, RCU, cacheline stealing etc etc) out of certain processors. You
+> cannot run an undisturbed piece of software on the OS right now.
 
-I tried to work out how to get along safely without them, in short my
-patch makes mmap_sem + ksm_test_exit check on mm_users before
-proceeding any further "enough" (while still allowing ksm loop to bail
-out if mm_users suddenly reaches zero because of oom killer).
+I asked the questions I did out of pure curiosity, and that curiosity
+has been satisfied.  It's not that I find it useless or whatnot (or that
+my opinion matters to anyone but me;).  I personally find the concept of
+injecting an RTOS into a general purpose OS with no isolation to be
+alien.  Intriguing, but very very alien.
 
-Furthermore the mmap_sem is already guaranteed l1 hot and exclusive
-because we wrote to it a few nanoseconds before calling mmput (to be
-fair locked ops are not cheap but I'd rather add two locked op to the
-last exit syscall of a thread group than a new branch to every single
-page fault as there are tons more page faults than exit syscalls).
+	-Mike
+
