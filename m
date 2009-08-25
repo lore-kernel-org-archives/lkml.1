@@ -1,71 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbZHYSpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbZHYSsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbZHYSpX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbZHYSpW
+	id S1755916AbZHYSsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZHYSsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:45:22 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56894 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753875AbZHYSpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:45:21 -0400
-Date: Tue, 25 Aug 2009 20:45:20 +0200
-From: Jan Kara <jack@suse.cz>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Rob Landley <rob@landley.net>, jack@suse.cz,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com, tytso@mit.edu,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090825184520.GA24729@duck.novell.com>
-References: <20090312092114.GC6949@elf.ucw.cz> <87ljqn82zc.fsf@frosties.localdomain> <20090824093143.GD25591@elf.ucw.cz> <200908241611.10400.rob@landley.net> <20090824213312.GG29763@elf.ucw.cz>
-MIME-Version: 1.0
+	Tue, 25 Aug 2009 14:48:00 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:49527 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755347AbZHYSsA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:48:00 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigFABTKk0pMROOX/2dsb2JhbACBU9dGgiqBcAWCQg
+Date: Tue, 25 Aug 2009 14:48:00 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+Subject: Re: [PATCH -tip] Create rcutree plugins to handle hotplug CPU for
+	multi-level trees
+Message-ID: <20090825184800.GD2448@Krystal>
+References: <20090825182204.GA26736@linux.vnet.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090824213312.GG29763@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090825182204.GA26736@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 14:33:53 up 7 days,  5:23,  3 users,  load average: 0.63, 0.53,
+	0.37
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 24-08-09 23:33:12, Pavel Machek wrote:
-> On Mon 2009-08-24 16:11:08, Rob Landley wrote:
-> > On Monday 24 August 2009 04:31:43 Pavel Machek wrote:
-> > > Running journaling filesystem such as ext3 over flashdisk or degraded
-> > > RAID array is a bad idea: journaling guarantees no longer apply and
-> > > you will get data corruption on powerfail.
-> > >
-> > > We can't solve it easily, but we should certainly warn the users. I
-> > > actually lost data because I did not understand these limitations...
-> > >
-> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> > 
-> > Acked-by: Rob Landley <rob@landley.net>
-> > 
-> > With a couple comments:
-> > 
-> > > +* write caching is disabled. ext2 does not know how to issue barriers
-> > > +  as of 2.6.28. hdparm -W0 disables it on SATA disks.
-> > 
-> > It's coming up on 2.6.31, has it learned anything since or should that version 
-> > number be bumped?
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> When offlining CPUs from a multi-level tree, there is the possibility
+> of offlining the last CPU from a given node when there are preempted
+> RCU read-side critical sections that started life on one of the CPUs on
+> that node.  In this case, the corresponding tasks will be enqueued via
+> the task_struct's rcu_node_entry list_head onto one of the rcu_node's
+> blocked_tasks[] lists.  These tasks need to be moved somewhere else
+> so that they will prevent the current grace period from ending.
+> That somewhere is the root rcu_node.
 > 
-> Jan, did those "barrier for ext2" patches get merged? 
-  No, they did not. We were discussing how to be able to enable / disable
-sending barriers, someone told he'd implement it but it somehow never got
-beyond an initial attempt.
-  Actually, after recent sync cleanups (and when my O_SYNC cleanups get
-merged) it should be pretty easy because every filesystem now has ->fsync()
-and ->sync_fs() callback so we just have to add sending barriers to these
-two functions and implement possibility to set via sysfs that barriers on the
-block device should be ignored.
-  I've put it to my todo list but if someone else has time for this, I
-certainly would not mind :). It would be a nice beginner project...
+> With this patch, TREE_PREEMPT_RCU passes moderate rcutorture testing
+> with aggressive CPU-hotplugging (no delay between inserting/removing
+> randomly selected CPU).
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+[...]
+>  /*
+> + * Handle tasklist migration for case in which all CPUs covered by the
+> + * specified rcu_node have gone offline.  Move them up to the root
+> + * rcu_node.  The reason for not just moving them to the immediate
+> + * parent is to remove the need for rcu_read_unlock_special() to
+> + * make more than two attempts to acquire the target rcu_node's lock.
+> + *
+> + * The caller must hold rnp->lock with irqs disabled.
+> + */
+> +static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
+> +				      struct rcu_node *rnp)
+> +{
+> +	int i;
+> +	struct list_head *lp;
+> +	struct list_head *lp_root;
+> +	struct rcu_node *rnp_root = rcu_get_root(rsp);
+> +	struct task_struct *tp;
+> +
+> +	if (rnp == rnp_root)
+> +		return;  /* Shouldn't happen: at least one CPU online. */
+> +
 
-									Honza
+Hrm, is it "shouldn't happen" or "could be called, but we should not
+move anything" ?
+
+If it is really the former, we could put a WARN_ON_ONCE (or, more
+aggressively, a BUG_ON) there and see when the caller is going crazy
+rather than ignoring the error.
+
+> +	/*
+> +	 * Move tasks up to root rcu_node.  Rely on the fact that the
+> +	 * root rcu_node can be at most one ahead of the rest of the
+> +	 * rcu_nodes in terms of gp_num value.
+
+Do you gather the description of such constraints in a central place
+somewhere around the code or design documentation in the kernel tree ?
+I just want to point out that every clever assumption like this, which
+is based on the constraints imposed by the current design, should be
+easy to list in a year from now if we ever decide to move from tree to
+hashed RCU (or whichever next step will be necessary then).
+
+I am just worried that migration helpers seems to be added to the design
+as an afterthought, and therefore might make future evolution more
+difficult.
+
+Thanks,
+
+Mathieu
+
+>  This fact allows us to
+> +	 * move the blocked_tasks[] array directly, element by element.
+> +	 */
+> +	for (i = 0; i < 2; i++) {
+> +		lp = &rnp->blocked_tasks[i];
+> +		lp_root = &rnp_root->blocked_tasks[i];
+> +		while (!list_empty(lp)) {
+> +			tp = list_entry(lp->next, typeof(*tp), rcu_node_entry);
+> +			spin_lock(&rnp_root->lock); /* irqs already disabled */
+> +			list_del(&tp->rcu_node_entry);
+> +			tp->rcu_blocked_node = rnp_root;
+> +			list_add(&tp->rcu_node_entry, lp_root);
+> +			spin_unlock(&rnp_root->lock); /* irqs remain disabled */
+> +		}
+> +	}
+> +}
+> +
+> +/*
+>   * Do CPU-offline processing for preemptable RCU.
+>   */
+>  static void rcu_preempt_offline_cpu(int cpu)
+> @@ -410,6 +460,15 @@ static int rcu_preempted_readers(struct rcu_node *rnp)
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  
+>  /*
+> + * Because preemptable RCU does not exist, it never needs to migrate
+> + * tasks that were blocked within RCU read-side critical sections.
+> + */
+> +static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
+> +				      struct rcu_node *rnp)
+> +{
+> +}
+> +
+> +/*
+>   * Because preemptable RCU does not exist, it never needs CPU-offline
+>   * processing.
+>   */
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
