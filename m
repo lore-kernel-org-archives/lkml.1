@@ -1,154 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbZHYSgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbZHYShx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755826AbZHYSgS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZHYSgR
+	id S1755651AbZHYShx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbZHYShw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:36:17 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:37496 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755782AbZHYSgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:36:17 -0400
-Date: Tue, 25 Aug 2009 11:36:13 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, josht@linux.vnet.ibm.com, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Paul Mundt <lethal@linux-sh.org>
-Subject: [PATCH -tip] Re: [PATCH -tip 0/2] Temporary RCU fixes for notrace
-	and hotplug CPU
-Message-ID: <20090825183613.GJ6616@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090824164112.GA13693@linux.vnet.ibm.com> <20090825065501.GA29162@elte.hu> <20090825080047.GA16139@elte.hu> <20090825161208.GE6616@linux.vnet.ibm.com> <20090825162549.GB25058@Krystal> <20090825171136.GG6616@linux.vnet.ibm.com> <20090825180233.GA2448@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825180233.GA2448@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 25 Aug 2009 14:37:52 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:34781 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755532AbZHYShv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:37:51 -0400
+Subject: Re: [PATCH -tip] Create rcutree plugins to handle hotplug CPU for
+ multi-level trees
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+In-Reply-To: <20090825182204.GA26736@linux.vnet.ibm.com>
+References: <20090825182204.GA26736@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 25 Aug 2009 11:38:03 -0700
+Message-Id: <1251225483.2706.4.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 02:02:33PM -0400, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Tue, Aug 25, 2009 at 12:25:49PM -0400, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Tue, Aug 25, 2009 at 10:00:47AM +0200, Ingo Molnar wrote:
-> > > > > 
-> > > > > btw., i'm still seeing crashes with the latest RCU bits:
-> > > > > 
-> > > > > [   20.621740] Testing event sys_enter_futex: OK
-> > > > > [   20.629738] Testing event sys_exit_futex: OK
-> > > > > [   20.637737] Testing event lock_acquire: [reboot]
-> > > > > 
-> > > > > Possibly due to infinite recursion as well. Config attached.
-> > > > 
-> > > > Color me confused...
-> > > > 
-> > > > Unless someone has a better idea, I will send in a patch that adds
-> > > > "notrace" to every RCU API member used by any file in the kernel
-> > > > that has "trace" in its name (excluding ptrace.c and rcutree_trace.c,
-> > > > of course).  This list is as follows:
-> > > > 
-> > > > 	call_rcu()
-> > > > 	call_rcu_sched()
-> > > > 	rcu_read_lock()
-> > > > 	rcu_read_unlock()
-> > > > 
-> > > > So, any better ideas?
-> > > 
-> > > Tracers using RCU should use the _notrace() version of read_lock/unlock.
-> > > I think the callers should be fixed rather than RCU.
-> > > 
-> > > Tracepoints have been designed to use the _notrace variant on the
-> > > instrumentation site. The core of tracepoint management use
-> > > call_rcu_sched(), which can be traced without any problem.
-> > > 
-> > > I have not followed the late tracing development as closely though, so
-> > > errors might have crept in.
-> > 
-> > Or I might have inadvertently broken something in a non-obvious (to me,
-> > anyway) manner.
-> > 
-> > So, would you be willing to look at commit bc33f24bd in the -tip
-> > tree and see if there is anything I broke other than the now-fixed
-> > rcu_read_lock_sched_notrace() and rcu_read_unlock_sched_notrace()?
-> > And for that matter, whether my alleged fix for these two API members
-> > really does fix the problem (-tip commit 7c614d6461)?
-> > 
-> > The -tip tree is at:
-> > 
-> > 	git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-> > 
-> > And these patches are on the tip/core/rcu branch.
-> > 
+On Tue, 2009-08-25 at 11:22 -0700, Paul E. McKenney wrote:
+> When offlining CPUs from a multi-level tree, there is the possibility
+> of offlining the last CPU from a given node when there are preempted
+> RCU read-side critical sections that started life on one of the CPUs on
+> that node.  In this case, the corresponding tasks will be enqueued via
+> the task_struct's rcu_node_entry list_head onto one of the rcu_node's
+> blocked_tasks[] lists.  These tasks need to be moved somewhere else
+> so that they will prevent the current grace period from ending.
+> That somewhere is the root rcu_node.
 > 
-> sure, here we go:
+> With this patch, TREE_PREEMPT_RCU passes moderate rcutorture testing
+> with aggressive CPU-hotplugging (no delay between inserting/removing
+> randomly selected CPU).
 > 
->  static inline void rcu_read_lock_sched_notrace(void)
->  {
->         preempt_disable_notrace();
-> +       __acquire(RCU_SCHED);
-> +       rcu_read_acquire();
->  }
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+Looks good.  One comment below.
+
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1208,7 +1208,7 @@ struct task_struct {
+>  #ifdef CONFIG_TREE_PREEMPT_RCU
+>  	int rcu_read_lock_nesting;
+>  	char rcu_read_unlock_special;
+> -	int rcu_blocked_cpu;
+> +	void *rcu_blocked_node;
+
+This should use struct rcu_node *, not void *.  That would eliminate
+several casts in the changes below.  You can forward-declare struct
+rcu_node if you want to avoid including RCU headers in sched.h.
+
+> --- a/kernel/rcutree_plugin.h
+> +++ b/kernel/rcutree_plugin.h
+> @@ -92,7 +92,7 @@ static void rcu_preempt_qs(int cpu)
+>  		rnp = rdp->mynode;
+>  		spin_lock(&rnp->lock);
+>  		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
+> -		t->rcu_blocked_cpu = cpu;
+> +		t->rcu_blocked_node = (void *)rnp;
+
+Regardless of whether you change the type in the structure, you never
+need to cast a pointer to type void *; any non-function pointer will
+become void * without complaint.
+
+> @@ -170,12 +170,21 @@ static void rcu_read_unlock_special(struct task_struct *t)
+>  	if (special & RCU_READ_UNLOCK_BLOCKED) {
+>  		t->rcu_read_unlock_special &= ~RCU_READ_UNLOCK_BLOCKED;
 > 
-> and
-> 
-> 
->  static inline void rcu_read_unlock_sched_notrace(void)
->  {
-> +       rcu_read_release();
-> +       __release(RCU_SCHED);
->         preempt_enable_notrace();
->  }
-> 
-> will make those _notrace primitives call into lockdep. I don't think
-> this is correct, and this might be causing your problem.
-> 
-> rcu_read_acquire/release are calling lock_acquire/release, those should
-> be removed.
-> 
-> __acquire() simply seems to be defined to a gcc "context" attribute,
-> probably for the sparse checker. I think it should be safe to leave them
-> there.
+> -		/* Remove this task from the list it blocked on. */
+> -		rnp = rcu_preempt_state.rda[t->rcu_blocked_cpu]->mynode;
+> -		spin_lock(&rnp->lock);
+> +		/*
+> +		 * Remove this task from the list it blocked on.  The
+> +		 * task can migrate while we acquire the lock, but at
+> +		 * most one time.  So at most two passes through loop.
+> +		 */
+> +		for (;;) {
+> +			rnp = (struct rcu_node *)t->rcu_blocked_node;
+> +			spin_lock(&rnp->lock);
+> +			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
+> +				break;
+> +			spin_unlock(&rnp->lock);
+> +		}
 
-Thank you for looking this over, Mathieu!!!  Please see below for patch.
+Both of the casts of t->rcu_blocked_node can go away here, given the
+type change in the structure.
 
-							Thanx, Paul
+- Josh Triplett
 
-------------------------------------------------------------------------
-
-Remove lockdep annotations from RCU's _notrace() API members.
-
-The lockdep annotations rcu_read_acquire() and rcu_read_release()
-might lead to infinite looping if called from lockdep.  So this patch
-removes them.
-
-Suggested-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
- rcupdate.h |    2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 8b4422c..95e0615 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -195,7 +195,6 @@ static inline notrace void rcu_read_lock_sched_notrace(void)
- {
- 	preempt_disable_notrace();
- 	__acquire(RCU_SCHED);
--	rcu_read_acquire();
- }
- 
- /*
-@@ -211,7 +210,6 @@ static inline void rcu_read_unlock_sched(void)
- }
- static inline notrace void rcu_read_unlock_sched_notrace(void)
- {
--	rcu_read_release();
- 	__release(RCU_SCHED);
- 	preempt_enable_notrace();
- }
