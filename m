@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZHYCdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZHYCdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbZHYCdZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 24 Aug 2009 22:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbZHYCdD
+	id S1754207AbZHYCdn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 24 Aug 2009 22:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbZHYCdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 24 Aug 2009 22:33:03 -0400
+	Mon, 24 Aug 2009 22:33:41 -0400
 Received: from mail-bw0-f219.google.com ([209.85.218.219]:48626 "EHLO
 	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754199AbZHYCc6 (ORCPT
+	with ESMTP id S1754100AbZHYCcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 24 Aug 2009 22:32:58 -0400
+	Mon, 24 Aug 2009 22:32:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=fQCD/oY+HjQyQoS/xiAoapFDqTS50hZvQbWP96FVMhC3uYy2PGR7GGTbEellwAbLpM
-         5FDM/A1/ioI/vmAS7I4J7slzfM8sG2J2EnNIlgfMLn8Xs8uAETbjz8fKq+TaKVX59wk4
-         oMUb3IxwuBtXjoGord8oypczVj9u7iiZ7kUPA=
+        b=wS2YXC2tWMAfApt8z0syndw7BBgdN7yULyrc2yBh6GBAsws2Oe4paFVYDHVRLmq9uU
+         C2iVG0UxpKkL9GJB19CHR1dHQ23FC7szqRzW1mngSwgwxrdPAud5iDgHIW1VWILHFcy0
+         j1oWFfsB0c2jo8ZGeEiMdo4t5PHelcD0eFN6w=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
@@ -33,9 +33,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Marcel Hilzinger <mhilzinger@linuxnewmedia.de>,
        Edward Shishkin <edward.shishkin@gmail.com>,
        Laurent Riffard <laurent.riffard@free.fr>
-Subject: [PATCH 3/4] kill-the-bkl/reiserfs: fix recursive reiserfs write lock in reiserfs_commit_write()
-Date: Tue, 25 Aug 2009 04:32:49 +0200
-Message-Id: <1251167570-5233-4-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 1/4] kill-the-bkl/reiserfs: fix "reiserfs lock" / "inode mutex" lock inversion dependency
+Date: Tue, 25 Aug 2009 04:32:47 +0200
+Message-Id: <1251167570-5233-2-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
 References: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
@@ -44,13 +44,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-reiserfs_commit_write() is always called with the write lock held.
-Thus the current calls to reiserfs_write_lock() in this function are
-acquiring the lock recursively.
-We can safely drop them.
+reiserfs_xattr_init is called with the reiserfs write lock held, but
+if the ".reiserfs_priv" entry is not created, we take the superblock
+root directory inode mutex until .reiserfs_priv is created.
 
-This also solves further assumptions for this lock to be really
-released while calling reiserfs_write_unlock().
+This creates a lock dependency inversion against other sites such as
+reiserfs_file_release() which takes an inode mutex and the reiserfs
+lock after.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Jeff Mahoney <jeffm@suse.com>
@@ -59,63 +59,22 @@ Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Alexander Beregalov <a.beregalov@gmail.com>
 Cc: Laurent Riffard <laurent.riffard@free.fr>
 ---
- fs/reiserfs/inode.c |   11 ++---------
- 1 files changed, 2 insertions(+), 9 deletions(-)
+ fs/reiserfs/xattr.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
-index 853f4f6..965c8ea 100644
---- a/fs/reiserfs/inode.c
-+++ b/fs/reiserfs/inode.c
-@@ -2795,7 +2795,6 @@ int reiserfs_commit_write(struct file *f, struct page *page,
- 	 */
- 	if (pos > inode->i_size) {
- 		struct reiserfs_transaction_handle myth;
--		reiserfs_write_lock(inode->i_sb);
- 		/* If the file have grown beyond the border where it
- 		   can have a tail, unmark it as needing a tail
- 		   packing */
-@@ -2806,10 +2805,9 @@ int reiserfs_commit_write(struct file *f, struct page *page,
- 			REISERFS_I(inode)->i_flags &= ~i_pack_on_close_mask;
+diff --git a/fs/reiserfs/xattr.c b/fs/reiserfs/xattr.c
+index 59870a4..58aa8e7 100644
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -1004,7 +1004,7 @@ int reiserfs_xattr_init(struct super_block *s, int mount_flags)
+ 		goto error;
  
- 		ret = journal_begin(&myth, inode->i_sb, 1);
--		if (ret) {
--			reiserfs_write_unlock(inode->i_sb);
-+		if (ret)
- 			goto journal_error;
--		}
-+
- 		reiserfs_update_inode_transaction(inode);
- 		inode->i_size = pos;
- 		/*
-@@ -2821,16 +2819,13 @@ int reiserfs_commit_write(struct file *f, struct page *page,
- 		reiserfs_update_sd(&myth, inode);
- 		update_sd = 1;
- 		ret = journal_end(&myth, inode->i_sb, 1);
--		reiserfs_write_unlock(inode->i_sb);
- 		if (ret)
- 			goto journal_error;
+ 	if (!privroot->d_inode && !(mount_flags & MS_RDONLY)) {
+-		mutex_lock(&s->s_root->d_inode->i_mutex);
++		reiserfs_mutex_lock_safe(&s->s_root->d_inode->i_mutex, s);
+ 		err = create_privroot(REISERFS_SB(s)->priv_root);
+ 		mutex_unlock(&s->s_root->d_inode->i_mutex);
  	}
- 	if (th) {
--		reiserfs_write_lock(inode->i_sb);
- 		if (!update_sd)
- 			mark_inode_dirty(inode);
- 		ret = reiserfs_end_persistent_transaction(th);
--		reiserfs_write_unlock(inode->i_sb);
- 		if (ret)
- 			goto out;
- 	}
-@@ -2840,11 +2835,9 @@ int reiserfs_commit_write(struct file *f, struct page *page,
- 
-       journal_error:
- 	if (th) {
--		reiserfs_write_lock(inode->i_sb);
- 		if (!update_sd)
- 			reiserfs_update_sd(th, inode);
- 		ret = reiserfs_end_persistent_transaction(th);
--		reiserfs_write_unlock(inode->i_sb);
- 	}
- 
- 	return ret;
 -- 
 1.6.2.3
 
