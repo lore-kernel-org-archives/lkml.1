@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753734AbZHYE0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbZHYE0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753734AbZHYE0Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 00:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbZHYE0W
+	id S1754335AbZHYE0y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 00:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbZHYE0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 00:26:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:20439 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750766AbZHYE0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 00:26:21 -0400
-Message-ID: <4A936808.8050105@redhat.com>
-Date: Tue, 25 Aug 2009 07:26:48 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Tue, 25 Aug 2009 00:26:53 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:57017 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbZHYE0w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 00:26:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=PSgOt5CsfTGTZBwBVfa2iYwoYrg2eWH3u9rVuY9ZTnoN7usgIlExLmhtpKr1qeYwLt
+         kwZFq87Y6jl4FIRqSd6i+TTVUrIkC8/JWCxoMEURS7XV3Ko5fecSyEJC5Drp3bBIihuM
+         UgWtrM/GhW94pDDHgRVJLbjKEmKiAknYutJ5k=
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, gleb@redhat.com,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-References: <20090820155655.GA8764@redhat.com> <alpine.DEB.2.00.0908200916300.14844@makko.or.mcafeemobile.com> <4A8D8A28.2050004@redhat.com> <20090820175540.GA9232@redhat.com> <4A8D90BB.2030506@redhat.com> <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com> <4A92DC93.6030406@redhat.com> <alpine.DEB.2.00.0908241503150.7951@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.2.00.0908241503150.7951@makko.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <4A93033B.3050606@vflare.org>
+References: <200908241007.47910.ngupta@vflare.org>
+	 <84144f020908241033l4af09e7h9caac47d8d9b7841@mail.gmail.com>
+	 <4A92EBB4.1070101@vflare.org>
+	 <84144f020908241243y11f10e8eudc758b61527e0e9c@mail.gmail.com>
+	 <4A93033B.3050606@vflare.org>
+Date: Tue, 25 Aug 2009 07:26:53 +0300
+X-Google-Sender-Auth: add3a91f9cbe9283
+Message-ID: <84144f020908242126n5c7d93aah7305f4da64f6965@mail.gmail.com>
+Subject: Re: [PATCH 1/4] compcache: xvmalloc memory allocator
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: ngupta@vflare.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-mm-cc@laptop.org, hugh.dickins@tiscali.co.uk
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/25/2009 01:08 AM, Davide Libenzi wrote:
-> Is that really difficult to understand where I'm standing, leaving the KVM
-> hat off for a moment?
->    
+Hi Nitin,
 
-I understand it perfectly.  I take the same position with kvm.  I'm 
-providing more data in the hope that you'll change you mind, not trying 
-to flood you with email so you'll give up.
+On Tue, Aug 25, 2009 at 12:16 AM, Nitin Gupta<ngupta@vflare.org> wrote:
+> Now, if code cleanup is the aim rather that reducing the no. of conversions,
+> then I think use of PFNs is still preferred due to minor implementation
+> details mentioned above.
+>
+> So, I think the interface should be left in its current state.
 
-We can always create our eventfd-lookalike for kvm, but I'd rather not 
-do that (other options include a userspace proxy through existing 
-interfaces, it might even be better than changing eventfd if we decide 
-performance for level-triggered interrupts is not critical).
+I don't agree. For example, grow_pool() does xv_alloc_page() and
+immediately passes the PFN to get_ptr_atomic() which does conversion
+back to struct page. Passing PFNs around is not a good idea because
+it's very non-obvious, potentially broken (the 64-bit issue Hugh
+mentioned), and you lose type checking. The whole wrapper thing around
+kmap() (which is also duplicated in the actual driver) is a pretty
+clear indication that you're doing it the wrong way.
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+So again, _storing_ PFNs in internal data structures is probably a
+reasonable optimization (given the 64-bit issues are sorted out) but
+making the APIs work on them is not. It's much cleaner to have few
+places that do page_to_pfn() on stores and pass struct pages around.
 
+                        Pekka
