@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbZHYKdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZHYKfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbZHYKdg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 06:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZHYKde
+	id S1754910AbZHYKfx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 06:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbZHYKfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 06:33:34 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39804 "EHLO
+	Tue, 25 Aug 2009 06:35:52 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39815 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbZHYKde (ORCPT
+	with ESMTP id S1752547AbZHYKfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 06:33:34 -0400
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+	Tue, 25 Aug 2009 06:35:51 -0400
+Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
+ cpumask on multi-node processors
 From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090825102215.GC26801@elte.hu>
-References: <4A923197.4040708@cn.fujitsu.com>
-	 <1251097012.7538.123.camel@twins> <20090824092455.GA25267@elte.hu>
-	 <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>
-	 <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>
-	 <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu>
-	 <1251191546.7538.1118.camel@twins>  <20090825102215.GC26801@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090825102409.GK20811@alberich.amd.com>
+References: <20090820131243.GO29327@alberich.amd.com>
+	 <20090820134604.GD29327@alberich.amd.com> <1251128176.7538.301.camel@twins>
+	 <20090825093101.GJ20811@alberich.amd.com>
+	 <1251194143.7538.1128.camel@twins>
+	 <20090825102409.GK20811@alberich.amd.com>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Tue, 25 Aug 2009 12:32:39 +0200
-Message-Id: <1251196359.7538.1133.camel@twins>
+Date: Tue, 25 Aug 2009 12:35:02 +0200
+Message-Id: <1251196502.7538.1136.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 12:22 +0200, Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Tue, 2009-08-25 at 11:05 +0200, Ingo Molnar wrote:
-> > > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > > 
-> > > > Ah, my bad, I was thikning tracepoint_probe_register() was the 
-> > > > thing that registered the tracepoint itself, not the callback.
+On Tue, 2009-08-25 at 12:24 +0200, Andreas Herrmann wrote:
+> On Tue, Aug 25, 2009 at 11:55:43AM +0200, Peter Zijlstra wrote:
+> > On Tue, 2009-08-25 at 11:31 +0200, Andreas Herrmann wrote:
+> > > On Mon, Aug 24, 2009 at 05:36:16PM +0200, Peter Zijlstra wrote:
+> > > > On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
+> > > > > The correct mask that describes core-siblings of an processor
+> > > > > is topology_core_cpumask. See topology adapation patches, especially
+> > > > > http://marc.info/?l=linux-kernel&m=124964999608179
 > > > > 
-> > > > Ok, then what's the problem?, don't do modules that consume their 
-> > > > own tracepoints, seems simple enough.
+> > > > 
+> > > > argh, violence, murder kill.. this is the worst possible hack and you're
+> > > > extending it :/
 > > > 
-> > > is this a reasonable restriction? I dont see any reason why the 
-> > > act of defining and providing a tracepoint should be exclusive 
-> > > of the ability to make use of it.
+> > > So this is the third code area
+> > > (besides sched_*_power_savings sysfs interface, and the __cpu_power fiddling)
+> > > that is crap, mess, a hack.
+> > > 
+> > > Didn't know that I'd enter such a minefield when touching this code. ;-(
 > > 
-> > It doesn't make sense to me, you don't need your own tracepoints 
-> > because you generate the events yourself, you already have them.
+> > Yeah, you're lucky that way ;-) Its been creaking for a while, and I've
+> > been making noises to the IBM people (who so far have been the main
+> > source of power saving patches) to clean this up, but now you trod onto
+> > all of it at once..
+> > 
+> > > What would be your perferred solution for the
+> > > core_cpumask/llc_shared_map stuff?  Another domain level to get rid of
+> > > this function?
+> > 
+> > Right, I'd like to see everything exposed as domain levels.
+> > 
+> > 
+> > numa-cluster
+> > numa
+> > socket
+> > in-socket-numa
+> > multi-core
+> > shared-cache
+> > core
+> > threads
+> > 
+> > We currently have a fixed order of these things, but I think we should
+> > simply provide helpers for building the sd tree and let the arch code do
+> > that instead of exporting all these masks in a fixed order.
+> > 
+> > Once we get the arch domain tree, we do degenerate stuff to cull all the
+> > trivial domains and fold SD flags.
 > 
-> For a reasonable large subsystem/driver i can very well imagine this 
-> to happen: why should the subsystem add _another_ layer of callbacks 
-> if it can reuse the generic tracepoint code and register itself to 
-> those?
+> So any in-socket-numa is only going to haeppen with the arch-defined
+> domain tree.
 
-Then that subsystem would be non functioning when the kernel is build
-without tracepoints.
+Well, we could see what it takes to make this work without that. I mean,
+this is just how I'd like to see it end up, doesn't mean we cannot work
+on it from multiple angles at the same time.
 
-Nothing should rely on tracepoint being present, they are and should
-remain a debug feature, not a core hook thing.
+> Now that this is settled you should throw away the
+> __build_sched_domains cleanup patches that are in tip. They won't be
+> of use when domain creation code is basically changed.
 
-Do you really wish to burden every tracepoint user with the extra logic
-needed to deal with modules?
+I'm not sure that's needed, we can continue work on refactoring that.
+Small steps towards something better seems a better plan than a single
+large step.
 
 
