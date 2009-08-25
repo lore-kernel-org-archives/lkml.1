@@ -1,151 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbZHYSC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbZHYSDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563AbZHYSC4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZHYSCz
+	id S1755567AbZHYSDW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbZHYSDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:02:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49706 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755250AbZHYSCy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:02:54 -0400
-Date: Tue, 25 Aug 2009 20:02:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       =?unknown-8bit?B?RnLDqWTDqXJpYw==?= Weisbecker 
-	<fweisbec@gmail.com>
-Subject: [GIT PULL] tracing fixes
-Message-ID: <20090825180244.GA31307@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 25 Aug 2009 14:03:21 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44457 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755453AbZHYSDU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:03:20 -0400
+Subject: Re: [bisected] 2.6.31 regression: fails to boot as xen guest
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Cc: Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <4A94242E.30309@nets.rwth-aachen.de>
+References: <4A9407B1.6020400@nets.rwth-aachen.de>
+	 <84144f020908250929t7d4a74f1n4827de04e5c4c56a@mail.gmail.com>
+	 <4A94161A.2020609@nets.rwth-aachen.de>
+	 <1251219129.4852.1.camel@penberg-laptop>
+	 <4A94242E.30309@nets.rwth-aachen.de>
+Date: Tue, 25 Aug 2009 21:03:19 +0300
+Message-Id: <1251223399.13451.5.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Tue, 2009-08-25 at 19:49 +0200, Arnd Hannemann wrote:
+> Hi Pekka,
+> 
+> Pekka Enberg wrote:
+> > On Tue, 2009-08-25 at 18:49 +0200, Arnd Hannemann wrote:
+> >>> Thanks for doing the bisect! Can we also see your .config also?
+> >> Config for -rc7 is attached. My bisect configs were based on that
+> >
+> > Thanks! While we wait for the Xen people, you can try the following
+> > patch to see if we can narrow the bug down to trap_init().
+> 
+> Yes seems to be trap_init().
+> -rc7 with this patch applied boots up to the prompt.
 
-Please pull the latest tracing-fixes-for-linus git tree from:
+Thanks for testing! Ingo, what do you think of the following patch?
+AFAICT, x86-32 is the only architecture playing with traps in mem_init()
+so this should be the safest fix for 2.6.31.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
+			Pekka
 
- Thanks,
+>From b739e3c3baa6312664b4ea676bdf73df27fcecbc Mon Sep 17 00:00:00 2001
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+Date: Tue, 25 Aug 2009 20:55:25 +0300
+Subject: [PATCH] x86: Move WP bit testing to trap_init()
 
-	Ingo
+Commit 83b519e8b9572c319c8e0c615ee5dd7272856090 ("slab: setup allocators
+earlier in the boot sequence") moved trap_init() earlier in the boot
+sequence to avoid a hard crash with 32-bit x86 in mem_init().
 
------------------->
-Ingo Molnar (1):
-      tracing: Fix too large stack usage in do_one_initcall()
+Unfortunately the change broke Xen so make trap_init() later and move
+the WP bit test from mem_init() to trap_init().
 
-Jiri Olsa (1):
-      tracing: handle broken names in ftrace filter
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ arch/x86/kernel/traps.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/mm/init_32.c   |   56 ----------------------------------------------
+ init/main.c             |    2 +-
+ 3 files changed, 58 insertions(+), 57 deletions(-)
 
-Zhaolei (1):
-      ftrace: Unify effect of writing to trace_options and option/*
-
-
- init/main.c           |    7 ++++---
- kernel/trace/ftrace.c |   17 +++++++++++------
- kernel/trace/trace.c  |   12 ++----------
- 3 files changed, 17 insertions(+), 19 deletions(-)
-
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index 5204332..2084408 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -906,6 +906,60 @@ dotraplinkage void do_iret_error(struct pt_regs *regs, long error_code)
+ 		return;
+ 	do_trap(32, SIGILL, "iret exception", regs, error_code, &info);
+ }
++
++static noinline int do_test_wp_bit(void);
++
++/*
++ * Test if the WP bit works in supervisor mode. It isn't supported on 386's
++ * and also on some strange 486's. All 586+'s are OK. This used to involve
++ * black magic jumps to work around some nasty CPU bugs, but fortunately the
++ * switch to using exceptions got rid of all that.
++ */
++static void __init test_wp_bit(void)
++{
++	printk(KERN_INFO
++  "Checking if this processor honours the WP bit even in supervisor mode...");
++
++	/* Any page-aligned address will do, the test is non-destructive */
++	__set_fixmap(FIX_WP_TEST, __pa(&swapper_pg_dir), PAGE_READONLY);
++	boot_cpu_data.wp_works_ok = do_test_wp_bit();
++	clear_fixmap(FIX_WP_TEST);
++
++	if (!boot_cpu_data.wp_works_ok) {
++		printk(KERN_CONT "No.\n");
++#ifdef CONFIG_X86_WP_WORKS_OK
++		panic(
++  "This kernel doesn't support CPU's with broken WP. Recompile it for a 386!");
++#endif
++	} else {
++		printk(KERN_CONT "Ok.\n");
++	}
++}
++
++/*
++ * This function cannot be __init, since exceptions don't work in that
++ * section.  Put this after the callers, so that it cannot be inlined.
++ */
++static noinline int do_test_wp_bit(void)
++{
++	char tmp_reg;
++	int flag;
++
++	__asm__ __volatile__(
++		"	movb %0, %1	\n"
++		"1:	movb %1, %0	\n"
++		"	xorl %2, %2	\n"
++		"2:			\n"
++		_ASM_EXTABLE(1b,2b)
++		:"=m" (*(char *)fix_to_virt(FIX_WP_TEST)),
++		 "=q" (tmp_reg),
++		 "=r" (flag)
++		:"2" (1)
++		:"memory");
++
++	return flag;
++}
++
+ #endif
+ 
+ void __init trap_init(void)
+@@ -982,5 +1036,8 @@ void __init trap_init(void)
+ 
+ #ifdef CONFIG_X86_32
+ 	x86_quirk_trap_init();
++
++	if (boot_cpu_data.wp_works_ok < 0)
++		test_wp_bit();
+ #endif
+ }
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 3cd7711..e22bb8a 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -54,8 +54,6 @@
+ 
+ unsigned long highstart_pfn, highend_pfn;
+ 
+-static noinline int do_test_wp_bit(void);
+-
+ bool __read_mostly __vmalloc_start_set = false;
+ 
+ static __init void *alloc_low_page(void)
+@@ -830,33 +828,6 @@ void __init paging_init(void)
+ 	zone_sizes_init();
+ }
+ 
+-/*
+- * Test if the WP bit works in supervisor mode. It isn't supported on 386's
+- * and also on some strange 486's. All 586+'s are OK. This used to involve
+- * black magic jumps to work around some nasty CPU bugs, but fortunately the
+- * switch to using exceptions got rid of all that.
+- */
+-static void __init test_wp_bit(void)
+-{
+-	printk(KERN_INFO
+-  "Checking if this processor honours the WP bit even in supervisor mode...");
+-
+-	/* Any page-aligned address will do, the test is non-destructive */
+-	__set_fixmap(FIX_WP_TEST, __pa(&swapper_pg_dir), PAGE_READONLY);
+-	boot_cpu_data.wp_works_ok = do_test_wp_bit();
+-	clear_fixmap(FIX_WP_TEST);
+-
+-	if (!boot_cpu_data.wp_works_ok) {
+-		printk(KERN_CONT "No.\n");
+-#ifdef CONFIG_X86_WP_WORKS_OK
+-		panic(
+-  "This kernel doesn't support CPU's with broken WP. Recompile it for a 386!");
+-#endif
+-	} else {
+-		printk(KERN_CONT "Ok.\n");
+-	}
+-}
+-
+ static struct kcore_list kcore_mem, kcore_vmalloc;
+ 
+ void __init mem_init(void)
+@@ -956,9 +927,6 @@ void __init mem_init(void)
+ 	BUG_ON(VMALLOC_START				>= VMALLOC_END);
+ 	BUG_ON((unsigned long)high_memory		> VMALLOC_START);
+ 
+-	if (boot_cpu_data.wp_works_ok < 0)
+-		test_wp_bit();
+-
+ 	save_pg_dir();
+ 	zap_low_mappings(true);
+ }
+@@ -975,30 +943,6 @@ int arch_add_memory(int nid, u64 start, u64 size)
+ }
+ #endif
+ 
+-/*
+- * This function cannot be __init, since exceptions don't work in that
+- * section.  Put this after the callers, so that it cannot be inlined.
+- */
+-static noinline int do_test_wp_bit(void)
+-{
+-	char tmp_reg;
+-	int flag;
+-
+-	__asm__ __volatile__(
+-		"	movb %0, %1	\n"
+-		"1:	movb %1, %0	\n"
+-		"	xorl %2, %2	\n"
+-		"2:			\n"
+-		_ASM_EXTABLE(1b,2b)
+-		:"=m" (*(char *)fix_to_virt(FIX_WP_TEST)),
+-		 "=q" (tmp_reg),
+-		 "=r" (flag)
+-		:"2" (1)
+-		:"memory");
+-
+-	return flag;
+-}
+-
+ #ifdef CONFIG_DEBUG_RODATA
+ const int rodata_test_data = 0xC3;
+ EXPORT_SYMBOL_GPL(rodata_test_data);
 diff --git a/init/main.c b/init/main.c
-index 2c5ade7..98e679e 100644
+index 2d9d6bd..5c4dacb 100644
 --- a/init/main.c
 +++ b/init/main.c
-@@ -733,13 +733,14 @@ static void __init do_ctors(void)
- int initcall_debug;
- core_param(initcall_debug, initcall_debug, bool, 0644);
- 
-+static char msgbuf[64];
-+static struct boot_trace_call call;
-+static struct boot_trace_ret ret;
-+
- int do_one_initcall(initcall_t fn)
- {
- 	int count = preempt_count();
- 	ktime_t calltime, delta, rettime;
--	char msgbuf[64];
--	struct boot_trace_call call;
--	struct boot_trace_ret ret;
- 
- 	if (initcall_debug) {
- 		call.caller = task_pid_nr(current);
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 1e1d23c..25edd5c 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2278,7 +2278,11 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
- 	read++;
- 	cnt--;
- 
--	if (!(iter->flags & ~FTRACE_ITER_CONT)) {
-+	/*
-+	 * If the parser haven't finished with the last write,
-+	 * continue reading the user input without skipping spaces.
-+	 */
-+	if (!(iter->flags & FTRACE_ITER_CONT)) {
- 		/* skip white space */
- 		while (cnt && isspace(ch)) {
- 			ret = get_user(ch, ubuf++);
-@@ -2288,8 +2292,9 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
- 			cnt--;
- 		}
- 
-+		/* only spaces were written */
- 		if (isspace(ch)) {
--			file->f_pos += read;
-+			*ppos += read;
- 			ret = read;
- 			goto out;
- 		}
-@@ -2319,12 +2324,12 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
- 		if (ret)
- 			goto out;
- 		iter->buffer_idx = 0;
--	} else
-+	} else {
- 		iter->flags |= FTRACE_ITER_CONT;
-+		iter->buffer[iter->buffer_idx++] = ch;
-+	}
- 
--
--	file->f_pos += read;
--
-+	*ppos += read;
- 	ret = read;
-  out:
- 	mutex_unlock(&ftrace_regex_lock);
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index c22b40f..8c35839 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3896,17 +3896,9 @@ trace_options_core_write(struct file *filp, const char __user *ubuf, size_t cnt,
- 	if (ret < 0)
- 		return ret;
- 
--	switch (val) {
--	case 0:
--		trace_flags &= ~(1 << index);
--		break;
--	case 1:
--		trace_flags |= 1 << index;
--		break;
--
--	default:
-+	if (val != 0 && val != 1)
- 		return -EINVAL;
--	}
-+	set_tracer_flags(1 << index, val);
- 
- 	*ppos += cnt;
- 
+@@ -603,7 +603,6 @@ asmlinkage void __init start_kernel(void)
+ 	pidhash_init();
+ 	vfs_caches_init_early();
+ 	sort_main_extable();
+-	trap_init();
+ 	mm_init();
+ 	/*
+ 	 * Set up the scheduler prior starting any interrupts (such as the
+@@ -621,6 +620,7 @@ asmlinkage void __init start_kernel(void)
+ 				"enabled *very* early, fixing it\n");
+ 		local_irq_disable();
+ 	}
++	trap_init();
+ 	rcu_init();
+ 	/* init some links before init_ISA_irqs() */
+ 	early_irq_init();
+-- 
+1.5.6.3
+
+
+
