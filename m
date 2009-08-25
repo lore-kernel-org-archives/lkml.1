@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbZHYN5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZHYOAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbZHYN5s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 09:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbZHYN5s
+	id S1754920AbZHYOAQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 10:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbZHYOAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 09:57:48 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:41941 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752906AbZHYN5r (ORCPT
+	Tue, 25 Aug 2009 10:00:14 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:13684 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753860AbZHYOAM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 09:57:47 -0400
-Subject: Re: WARNING: kmemcheck: Caught 32-bit read from uninitialized
-	memory (f6f6e1a4), by kmemleak's scan_block()
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090825104311.GA10642@elte.hu>
-References: <1251189914.7261.11.camel@penberg-laptop>
-	 <20090825084808.GA14003@elte.hu> <1251190466.7261.12.camel@penberg-laptop>
-	 <19f34abd0908250203h52257f52v306545a3d8890577@mail.gmail.com>
-	 <1251191507.26351.0.camel@penberg-laptop>
-	 <1251192069.15678.21.camel@pc1117.cambridge.arm.com>
-	 <1251192415.26351.5.camel@penberg-laptop>
-	 <1251192534.15678.29.camel@pc1117.cambridge.arm.com>
-	 <84144f020908250231k30ff4e9do20856bd1291f418c@mail.gmail.com>
-	 <20090825093423.GA12935@elte.hu>  <20090825104311.GA10642@elte.hu>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 25 Aug 2009 14:57:38 +0100
-Message-Id: <1251208658.15678.45.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Aug 2009 13:57:39.0052 (UTC) FILETIME=[01DEFAC0:01CA258C]
+	Tue, 25 Aug 2009 10:00:12 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] : eliminate code duplication in kernel/tracepoint.c
+Date: Tue, 25 Aug 2009 07:00:02 -0700
+Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501EA9047@exchange.ZeugmaSystems.local>
+In-Reply-To: <20090825063901.GB14286@elte.hu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] : eliminate code duplication in kernel/tracepoint.c
+Thread-Index: AcolTtulvUsewwyOQPaaS3ZXnBir0AAPJ/uA
+References: <DDFD17CC94A9BD49A82147DDF7D545C501EA8FBB@exchange.ZeugmaSystems.local> <4A933C55.4090808@cn.fujitsu.com> <DDFD17CC94A9BD49A82147DDF7D545C501EA902E@exchange.ZeugmaSystems.local> <4A93760C.4020107@cn.fujitsu.com> <20090825063901.GB14286@elte.hu>
+From: "Anirban Sinha" <ASinha@zeugmasystems.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Li Zefan" <lizf@cn.fujitsu.com>
+Cc: <linux-kernel@vger.kernel.org>, "Oleg Nesterov" <oleg@tv-sign.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 12:43 +0200, Ingo Molnar wrote:
-> btw., i re-tested the original tree, and got the lockup/crash below.
-> 
-> 	Ingo
-> 
-> --------------->
-> EXT3 FS on sdb1, internal journal
-> EXT3-fs: mounted filesystem with writeback data mode.
-> BUG: soft lockup - CPU#0 stuck for 61s! [kmemleak:3080]
 
-Do you have the "Allow rescheduling during object scanning" patch? Apart
-from that, you may need another for not holding the tasklist_lock when
-scanning the task stacks - it is at the top of my kmemleak branch,
-together with a patch or informing kmemleak about thread stack
-allocations
-(http://www.linux-arm.org/git?p=linux-2.6.git;a=shortlog;h=refs/heads/kmemleak).
+>> I still think it's better not to remove this break. every "case"
+>> should have a break or a return, expect for the falling throught
+>> cases.
+>
+>Correct. That might seem like a superfluous statement, but when we
+>add new cases it stays robust while with the missing break one can
+>create an unintended fall-through codepath.
+>
+>	Ingo
 
-With these patches, I don't get any soft lockups on my system.
+Thanks a lot Li and Ingo for all the feedback. Final patch goes below:
 
+>From f9826874841a5b15b553cfb6540d1ecfa6b55531 Mon Sep 17 00:00:00 2001
+From: Anirban Sinha <asinha@zeugmasystems.com>
+Date: Tue, 25 Aug 2009 06:50:54 -0700
+Subject: cleanup: eliminate code duplication in kernel/tracepoint.c
+
+
+Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/tracepoint.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+index 1ef5d3a..4840ab6 100644
+--- a/kernel/tracepoint.c
++++ b/kernel/tracepoint.c
+@@ -554,9 +554,6 @@ int tracepoint_module_notify(struct notifier_block
+*self,
+ 
+ 	switch (val) {
+ 	case MODULE_STATE_COMING:
+-		tracepoint_update_probe_range(mod->tracepoints,
+-			mod->tracepoints + mod->num_tracepoints);
+-		break;
+ 	case MODULE_STATE_GOING:
+ 		tracepoint_update_probe_range(mod->tracepoints,
+ 			mod->tracepoints + mod->num_tracepoints);
 -- 
-Catalin
+1.6.4
 
