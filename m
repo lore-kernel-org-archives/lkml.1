@@ -1,111 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZHYGmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbZHYGpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbZHYGmd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 02:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZHYGmc
+	id S1754598AbZHYGpI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 02:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbZHYGpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 02:42:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55998 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752776AbZHYGmc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 02:42:32 -0400
-Subject: Re: [PATCH 8/15] sched: Add parameter sched_mn_power_savings to
- control MN domain sched policy
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Gautham Shenoy <ego@in.ibm.com>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-In-Reply-To: <20090825062432.GB20811@alberich.amd.com>
-References: <20090820131243.GO29327@alberich.amd.com>
-	 <20090820133914.GW29327@alberich.amd.com> <1251125778.7538.268.camel@twins>
-	 <20090825062432.GB20811@alberich.amd.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 25 Aug 2009 08:41:36 +0200
-Message-Id: <1251182496.7538.1055.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 25 Aug 2009 02:45:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50588 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754216AbZHYGpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 02:45:06 -0400
+Date: Tue, 25 Aug 2009 08:44:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mundt <lethal@linux-sh.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] timekeeping: Fix up read_persistent_clock()
+	breakage on sh.
+Message-ID: <20090825064458.GC14286@elte.hu>
+References: <20090824223239.GB20832@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090824223239.GB20832@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 08:24 +0200, Andreas Herrmann wrote:
-> On Mon, Aug 24, 2009 at 04:56:18PM +0200, Peter Zijlstra wrote:
-> > On Thu, 2009-08-20 at 15:39 +0200, Andreas Herrmann wrote:
-> > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > > ---
-> > 
-> > > +#ifdef CONFIG_SCHED_MN
-> > > +	if (!err && mc_capable())
-> > > +		err = sysfs_create_file(&cls->kset.kobj,
-> > > +					&attr_sched_mn_power_savings.attr);
-> > > +#endif
-> > 
-> > *sigh* another crappy sysfs file
-> > 
-> > Guys, can't we come up with anything better than sched_*_power_saving=n?
+
+* Paul Mundt <lethal@linux-sh.org> wrote:
+
+> The recent commit "timekeeping: Increase granularity of
+> read_persistent_clock()" introduced read_persistent_clock() rework which
+> inadvertently broke the sh conversion:
 > 
-> Thought this is a settled thing. At least there are already two
-> such parameters. So using the existing convention is an obvious
-> thing, no?
-
-Well, yes its the obvious thing, but I'm questioning whether its the
-best thing ;-)
-
-> > This configuration space is _way_ too large, and now it gets even
-> > crazier.
+> 	arch/sh/kernel/time.c:45: error: passing argument 1 of 'rtc_sh_get_time' from incompatible pointer type
+> 	distcc[13470] ERROR: compile arch/sh/kernel/time.c on sprygo/32 failed
+> 	make[2]: *** [arch/sh/kernel/time.o] Error 1
 > 
-> I don't fully agree.
+> This trivial fix gets it working again.
 > 
-> Having one control interface for each domain level is just one
-> approach. It gives the user full control of scheduling policies.
-> It just might have to be properly documented.
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
 > 
-> In another mail Vaidy mentioned that
+> ---
 > 
->   "at some point we wanted to change the interface to
->    sched_power_savings=N and and set the flags according to system
->    topology".
-> 
-> But how you'll decide at which domain level you have to do power
-> savings scheduling?
+>  arch/sh/kernel/time.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-The user isn't interested in knowing about domains and cpu topology in
-99% of the cases, all they want is the machine not burning power like
-there's no tomorrow.
+applied, thanks Paul!
 
-Users (me including) have no interest exploring a 27-state power
-configuration space in order to find out what works best for them, I'd
-throw up my hands and not bother, really.
+I'm wondering, why did my cross-build of the SH defconfig in the 
+timer tree not catch this? All i get (and got) are these warnings:
 
-> Using sched_mn_power_savings=1 is quite different from
-> sched_smt_power_savings=1. Probably, the most power you save if you
-> switch on power saving scheduling on each domain level. I.e. first
-> filling threads of one core, then filling all cores on one internal
-> node, then filling all internal nodes of one socket.
-> 
-> But for performance reasons a user might just want to use power
-> savings in the MN domain. How you'd allow the user to configure that
-> with just one interface? Passing the domain level to
-> sched_power_savings, e.g.  sched_power_savings=MC instead of the power
-> saving level?
+/home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c: In function 'cpg_clk_init':
+/home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c:242: warning: 'arch_init_clk_ops' is deprecated (declared at /home/mingo/tip/arch/sh/include/asm/clock.h:58)
+/home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c: In function 'arch_clk_init':
+/home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c:256: warning: 'cpg_clk_init' is deprecated (declared at /home/mingo/tip/arch/sh/kernel/cpu/clock-cpg.c:237)
 
-Sure its different, it reduces the configuration space, that gives less
-choice, but does make it accessible.
+and time.o built without errors or warnings:
 
-Ask joe-admin what he prefers.
+  CC      arch/sh/kernel/time.o
 
-If you're really really worried people might miss the joy of fine tuning
-their power scheduling, then we can provide a dual interface, one for
-dumb people like me, and one for crazy people like you ;-)
-
-> Besides that, don't we have to keep the user-interface stable, i.e.
-> stick to sched_smt_power_savings and sched_mc_power_savings?
-
-Don't ever defend crappy stuff with interface stability, that's just
-lame ;-)
+	Ingo
