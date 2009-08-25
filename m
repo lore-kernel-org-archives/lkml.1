@@ -1,21 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932405AbZHYXdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbZHYXds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932405AbZHYXdy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932349AbZHYXdx
+	id S932344AbZHYXds (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 19:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932227AbZHYXdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:33:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58602 "EHLO ogre.sisk.pl"
+	Tue, 25 Aug 2009 19:33:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58599 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932227AbZHYXdt convert rfc822-to-8bit (ORCPT
+	id S932209AbZHYXdq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:33:49 -0400
+	Tue, 25 Aug 2009 19:33:46 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Eric Anholt" <eric@anholt.net>,
-       "ling.ma@intel.com" <ling.ma@intel.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ma Ling" <ling.ma@intel.com>,
-       "Reinette Chatre" <reinette.chatre@intel.com>
+       "Jerome Marchand" <jmarchan@redhat.com>
 References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
 In-Reply-To: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -23,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <_yaHeGjHEzG.A.uy.EuGlKB@chimera>
-Subject: [Bug #13819] system freeze when switching to console
+Message-ID: <_yaHeGjHEzG.A.w0.KuGlKB@chimera>
+Subject: [Bug #13809] oprofile: possible circular locking dependency detected
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Tue, 25 Aug 2009 22:34:46 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,9 +35,9 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13819
-Subject		: system freeze when switching to console
-Submitter	: Reinette Chatre <reinette.chatre@intel.com>
-Date		: 2009-07-23 17:57 (34 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13809
+Subject		: oprofile: possible circular locking dependency detected
+Submitter	: Jerome Marchand <jmarchan@redhat.com>
+Date		: 2009-07-22 13:35 (35 days old)
 
 
