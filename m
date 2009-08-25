@@ -1,146 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751267AbZHYMuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751447AbZHYMx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751267AbZHYMuU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 08:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbZHYMuS
+	id S1751447AbZHYMx2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 08:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZHYMx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 08:50:18 -0400
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:44420 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbZHYMuR (ORCPT
+	Tue, 25 Aug 2009 08:53:26 -0400
+Received: from crmrmail.amdocs.com ([87.86.252.131]:58949 "EHLO
+	crmrmail.amdocs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbZHYMx0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 08:50:17 -0400
-Date: Tue, 25 Aug 2009 14:50:27 +0200
-From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090825125027.GE4639@cetus.boeblingen.de.ibm.com>
-Mail-Followup-To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-	Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-	fweisbec@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
-	rostedt@goodmis.org, peterz@infradead.org,
-	mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-	mbligh@google.com, lizf@cn.fujitsu.com,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <cover.1249932670.git.jbaron@redhat.com> <aa785a0431b72327d288ef9b921e824d7f494de2.1249932670.git.jbaron@redhat.com>
+	Tue, 25 Aug 2009 08:53:26 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aa785a0431b72327d288ef9b921e824d7f494de2.1249932670.git.jbaron@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: BUG: 2.6.30.1 pv_ops kernel boot failure - bisected
+Date: Tue, 25 Aug 2009 13:53:21 +0100
+Message-ID: <683099EDC3E36D40942EBF636EB88BF00701E3D6@batmail1.corp.amdocs.com>
+In-Reply-To: <20090825114233.GL20811@alberich.amd.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: BUG: 2.6.30.1 pv_ops kernel boot failure - bisected
+Thread-Index: AcoleUUII0b13MkCTSSsuajMC4AQBQAB1jzw
+References: <683099EDC3E36D40942EBF636EB88BF00701E35F@batmail1.corp.amdocs.com> <20090825114233.GL20811@alberich.amd.com>
+From: "James Dingwall" <james.dingwall@amdocs.com>
+To: "Andreas Herrmann" <andreas.herrmann3@amd.com>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 10, 2009 at 04:52:47PM -0400, Jason Baron wrote:
-> +void ftrace_syscall_enter(struct pt_regs *regs, long id)
->  {
->  	struct syscall_trace_enter *entry;
->  	struct syscall_metadata *sys_data;
-> @@ -150,6 +105,8 @@ void ftrace_syscall_enter(struct pt_regs *regs)
->  	int syscall_nr;
+
+> On Tue, Aug 25, 2009 at 12:04:54PM +0100, James Dingwall wrote:
+> >
+> > Hi,
+> >
+> > I have encountered what appears to be a bug when using the 2.6.30
+> stable
+> > series as a pv_ops kernel under Xen 3.4.1.  The problem appears to
+> have
+> > been introduced with the following commit (provided I bisected it
+> > correctly)
+> >
+> > commit bb9b409349f533a919b6b6d95698fbe6ff4aa209
+> > Author: Andreas Herrmann <andreas.herrmann3@amd.com>
+> > Date:   Mon Jun 8 15:55:09 2009 +0200
+> >
+> >     x86: Detect use of extended APIC ID for AMD CPUs
+> >
+> > When I try and boot the domU (xm create -c) I do not get any output.
+> > With this commit reverted I can boot 2.6.30.5 pv_ops without issue,
+> > output follows below.  The system is a dual Opteron 242.  If more
+> > details about the hardware or configuration are required to debug
+> this
+> > please let me know.  I'm willing to test any patches.
 > 
->  	syscall_nr = syscall_get_nr(current, regs);
-> +	if (!test_bit(syscall_nr, enabled_enter_syscalls))
-> +		return;
 > 
->  	sys_data = syscall_nr_to_meta(syscall_nr);
->  	if (!sys_data)
-
-> +void ftrace_syscall_exit(struct pt_regs *regs, long ret)
->  {
->  	struct syscall_trace_exit *entry;
->  	struct syscall_metadata *sys_data;
-> @@ -178,6 +135,8 @@ void ftrace_syscall_exit(struct pt_regs *regs)
->  	int syscall_nr;
+> So it seems that commit
 > 
->  	syscall_nr = syscall_get_nr(current, regs);
-> +	if (!test_bit(syscall_nr, enabled_exit_syscalls))
-> +		return;
-Most arch syscall_get_nr() implementations returns -1 if the syscall
-number is not valid.  Accessing the bit field without a check might
-result in a kernel oops (at least I saw it on s390 for ftrace selftest).
+>  commit 2cb078603abb612e3bcd428fb8122c3d39e08832
+>  Author: Jeremy Fitzhardinge <jeremy@goop.org>
+>  Date:   Wed Jul 22 09:59:35 2009 -0700
+> 
+>     x86, amd: Don't probe for extended APIC ID if APICs are disabled
+> 
+>     If we've logically disabled apics, don't probe the PCI space for
+> the
+>     AMD extended APIC ID.
+> 
+>     [ Impact: prevent boot crash under Xen. ]
+> 
+>     Signed-off-by: Jeremy Fitzhardinge
+<jeremy.fitzhardinge@citrix.com>
+>     Reported-by: Bastian Blank <bastian@waldi.eu.org>
+>     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> 
+> needs to be added to 2.6.30.y for proper boot under Xen.
+> James, can you test this please?
 
-Before this change, this problem did not occur, because the invalid
-syscall number (-1) caused syscall_nr_to_meta() to return NULL.
+Hi Andreas,
 
-There are at least two scenarios where syscall_get_nr() can return -1:
+That commit won't apply directly on top of 2.6.30.5 as the #ifdef which
+contains it is missing.  However, based on what you suggested I have the
+following patch below which resolves the problem for me.  Here's hoping
+it doesn't get munged by my mailer...
 
-1. For example, ptrace stores an invalid syscall number, and thus,
-   tracing code resets it.
-   (see do_syscall_trace_enter in arch/s390/kernel/ptrace.c)
+James
 
-2. The syscall_regfunc() (kernel/tracepoint.c) sets the TIF_SYSCALL_FTRACE
-   (now: TIF_SYSCALL_TRACEPOINT) flag for all threads which includes
-   kernel threads.
-   However, the ftrace selftest triggers a kernel oops when testing syscall
-   trace points:
-      - The kernel thread is started as ususal (do_fork()),
-      - tracing code sets TIF_SYSCALL_FTRACE,
-      - the ret_from_fork() function is triggered and starts
-	ftrace_syscall_exit() with an invalid syscall number.
+diff --git a/arch/x86/include/asm/cpufeature.h
+b/arch/x86/include/asm/cpufeature.h
+index bb83b1c..2f5ebf1 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -94,6 +94,7 @@
+ #define X86_FEATURE_TSC_RELIABLE (3*32+23) /* TSC is known to be
+reliable */
+ #define X86_FEATURE_NONSTOP_TSC        (3*32+24) /* TSC does not stop
+in C states */
+ #define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with
+monitor */
++#define X86_FEATURE_EXTD_APICID (3*32+26) /* has extended APICID (8
+bits) */
 
-To avoid these scenarios, I suggest to check the syscall_nr.
+ /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
+ #define X86_FEATURE_XMM3       (4*32+ 0) /* "pni" SSE-3 */
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index 0a9092f..61a592e 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -6,6 +6,7 @@
+ #include <asm/processor.h>
+ #include <asm/apic.h>
+ #include <asm/cpu.h>
++#include <asm/pci-direct.h>
 
-For instance, the ftrace selftest fails for s390 (with config option
-CONFIG_FTRACE_SYSCALLS set) and produces the following kernel oops.
+ #ifdef CONFIG_X86_64
+ # include <asm/numa_64.h>
+@@ -353,6 +354,15 @@ static void __cpuinit early_init_amd(struct
+cpuinfo_x86 *c)
+                    (c->x86_model == 8 && c->x86_mask >= 8))
+                        set_cpu_cap(c, X86_FEATURE_K6_MTRR);
+ #endif
++#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_PCI)
++       /* check CPU config space for extended APIC ID */
++       if (cpu_has_apic && c->x86 >= 0xf) {
++               unsigned int val;
++               val = read_pci_config(0, 24, 0, 0x68);
++               if ((val & ((1 << 17) | (1 << 18))) == ((1 << 17) | (1
+<< 18)))
++                       set_cpu_cap(c, X86_FEATURE_EXTD_APICID);
++       }
++#endif
+ }
 
-Unable to handle kernel pointer dereference at virtual kernel address 2000000000
+ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
 
-Oops: 0038 [#1] PREEMPT SMP
-Modules linked in:
-CPU: 0 Not tainted 2.6.31-rc6-next-20090819-dirty #18
-Process kthreadd (pid: 818, task: 000000003ea207e8, ksp: 000000003e813eb8)
-Krnl PSW : 0704100180000000 00000000000ea54c (ftrace_syscall_exit+0x58/0xdc)
-           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:1 PM:0 EA:3
-Krnl GPRS: 0000000000000000 00000000000e0000 ffffffffffffffff 20000000008c2650
-           0000000000000007 0000000000000000 0000000000000000 0000000000000000
-           0000000000000000 0000000000000000 ffffffffffffffff 000000003e813d78
-           000000003e813f58 0000000000505ba8 000000003e813e18 000000003e813d78
-Krnl Code: 00000000000ea540: e330d0000008       ag      %r3,0(%r13)
-           00000000000ea546: a7480007           lhi     %r4,7
-           00000000000ea54a: 1442               nr      %r4,%r2
-          >00000000000ea54c: e31030000090       llgc    %r1,0(%r3)
-           00000000000ea552: 5410d008           n       %r1,8(%r13)
-           00000000000ea556: 8a104000           sra     %r1,0(%r4)
-           00000000000ea55a: 5410d00c           n       %r1,12(%r13)
-           00000000000ea55e: 1211               ltr     %r1,%r1
-Call Trace:
-([<0000000000000000>] 0x0)
- [<000000000001fa22>] do_syscall_trace_exit+0x132/0x18c
- [<000000000002d0c4>] sysc_return+0x0/0x8
- [<000000000001c738>] kernel_thread_starter+0x0/0xc
-Last Breaking-Event-Address:
- [<00000000000ea51e>] ftrace_syscall_exit+0x2a/0xdc
 
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
----
- kernel/trace/trace_syscalls.c |    4 ++++
- 1 file changed, 4 insertions(+)
 
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -224,6 +224,8 @@ void ftrace_syscall_enter(struct pt_regs
- 	int syscall_nr;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
-+	if (syscall_nr < 0)
-+		return;
- 	if (!test_bit(syscall_nr, enabled_enter_syscalls))
- 		return;
- 
-@@ -254,6 +256,8 @@ void ftrace_syscall_exit(struct pt_regs 
- 	int syscall_nr;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
-+	if (syscall_nr < 0)
-+		return;
- 	if (!test_bit(syscall_nr, enabled_exit_syscalls))
- 		return;
- 
+This message and the information contained herein is proprietary and confidential and subject to the Amdocs policy statement,
+you may review at http://www.amdocs.com/email_disclaimer.asp
