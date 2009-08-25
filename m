@@ -1,88 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbZHYPsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbZHYP6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754793AbZHYPsn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 11:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZHYPsm
+	id S1754869AbZHYP6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 11:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZHYP6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 11:48:42 -0400
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:63446 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754055AbZHYPsm (ORCPT
+	Tue, 25 Aug 2009 11:58:17 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:34010 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754127AbZHYP6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 11:48:42 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=ISO-8859-15
-X-IronPort-AV: E=Sophos;i="4.44,273,1249250400";   d="scan'208";a="23636580"
-Message-id: <4A9407B1.6020400@nets.rwth-aachen.de>
-Date: Tue, 25 Aug 2009 17:48:01 +0200
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: penberg@cs.helsinki.fi, hannes@cmpxchg.org, torvalds@linux-foundation.org
-Subject: [bisected] 2.6.31 regression: fails to boot as xen guest
+	Tue, 25 Aug 2009 11:58:16 -0400
+Message-ID: <4A940A11.2040706@petalogix.com>
+Date: Tue, 25 Aug 2009 17:58:09 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       oberpar@linux.vnet.ibm.com,
+       "subrata@linux.vnet.ibm.com" <subrata@linux.vnet.ibm.com>
+Subject: Gcov and lcov
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi All,
 
-current 2.6.31 fails to boot on our xen host (32bit pae).
-Unfortunately it fails in a way that there is absolutely no output
-on the console. Config is as 32bit guest.
+I am trying to run gcov to see source code coverage.
 
-Git bisect gave the following:
+First of all there should be DEBUG_FS instead of DEBUG in documentation.
+diff --git a/Documentation/gcov.txt b/Documentation/gcov.txt
+index 40ec633..e7ca647 100644
+--- a/Documentation/gcov.txt
++++ b/Documentation/gcov.txt
+@@ -47,7 +47,7 @@ Possible uses:
+ 
+ Configure the kernel with:
+ 
+-        CONFIG_DEBUGFS=y
++        CONFIG_DEBUG_FS=y
+         CONFIG_GCOV_KERNEL=y
+ 
 
-83b519e8b9572c319c8e0c615ee5dd7272856090 is first bad commit
-commit 83b519e8b9572c319c8e0c615ee5dd7272856090
-Author: Pekka Enberg <penberg@cs.helsinki.fi>
-Date:   Wed Jun 10 19:40:04 2009 +0300
+I am missing any option to be possible to stop capture coveradge data.
+I am running in on Microblaze and it takes me a lot of time to grap all
+gcda data from debugfs.
 
-    slab: setup allocators earlier in the boot sequence
+I can't run gcov on Microblaze that's why I have to run option b in doc
+"gcov is run on the BUILD machine"
 
-    This patch makes kmalloc() available earlier in the boot sequence so we can get
-    rid of some bootmem allocations. The bulk of the changes are due to
-    kmem_cache_init() being called with interrupts disabled which requires some
-    changes to allocator boostrap code.
 
-    Note: 32-bit x86 does WP protect test in mem_init() so we must setup traps
-    before we call mem_init() during boot as reported by Ingo Molnar:
+I copied gcda to kernel source code and currently I am able to generate
+statistic for every file.
+That copy I have to do because I need to connect counters value with
+source file
 
-      We have a hard crash in the WP-protect code:
+[root@monstr linux-monstr_eu-commit]# mb-linux-gcov -o
+arch/microblaze/kernel/ heartbeat.c
+File 'arch/microblaze/kernel/heartbeat.c'
+Lines executed:100.00% of 24
+arch/microblaze/kernel/heartbeat.c:creating 'heartbeat.c.gcov'
 
-      [    0.000000] Checking if this processor honours the WP bit even in supervisor mode...BUG: Int 14: CR2 ffcff000
-      [    0.000000]      EDI 00000188  ESI 00000ac7  EBP c17eaf9c  ESP c17eaf8c
-      [    0.000000]      EBX 000014e0  EDX 0000000e  ECX 01856067  EAX 00000001
-      [    0.000000]      err 00000003  EIP c10135b1   CS 00000060  flg 00010002
-      [    0.000000] Stack: c17eafa8 c17fd410 c16747bc c17eafc4 c17fd7e5 000011fd f8616000 c18237cc
-      [    0.000000]        00099800 c17bb000 c17eafec c17f1668 000001c5 c17f1322 c166e039 c1822bf0
-      [    0.000000]        c166e033 c153a014 c18237cc 00020800 c17eaff8 c17f106a 00020800 01ba5003
-      [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30-tip-02161-g7a74539-dirty #52203
-      [    0.000000] Call Trace:
-      [    0.000000]  [<c15357c2>] ? printk+0x14/0x16
-      [    0.000000]  [<c10135b1>] ? do_test_wp_bit+0x19/0x23
-      [    0.000000]  [<c17fd410>] ? test_wp_bit+0x26/0x64
-      [    0.000000]  [<c17fd7e5>] ? mem_init+0x1ba/0x1d8
-      [    0.000000]  [<c17f1668>] ? start_kernel+0x164/0x2f7
-      [    0.000000]  [<c17f1322>] ? unknown_bootoption+0x0/0x19c
-      [    0.000000]  [<c17f106a>] ? __init_begin+0x6a/0x6f
+File
+'/home/projects/xils/_full/software/linux-monstr_eu-commit/arch/microblaze/include/asm/io.h'
+Lines executed:100.00% of 3
+/home/projects/xils/_full/software/linux-monstr_eu-commit/arch/microblaze/include/asm/io.h:creating
+'io.h.gcov'
 
-    Acked-by: Johannes Weiner <hannes@cmpxchg.org>
-    Acked-by Linus Torvalds <torvalds@linux-foundation.org>
-    Cc: Christoph Lameter <cl@linux-foundation.org>
-    Cc: Ingo Molnar <mingo@elte.hu>
-    Cc: Matt Mackall <mpm@selenic.com>
-    Cc: Nick Piggin <npiggin@suse.de>
-    Cc: Yinghai Lu <yinghai@kernel.org>
-    Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-However a
-git revert 83b519e8b9572c319c8e0c615ee5dd7272856090
-to verify that current git without that commit would work,
-didn't succeed right away, so I was not able to test that.
+And content of that file
 
-BTW: I only included Acked-by and Signed-off-by as Cc: and dropped
-the other Cc: mentioned in the commit, hope that was ok...
+[root@monstr linux-monstr_eu-commit]# cat heartbeat.c.gcov
+        -:    0:Source:arch/microblaze/kernel/heartbeat.c
+        -:    0:Graph:arch/microblaze/kernel/heartbeat.gcno
+        -:    0:Data:arch/microblaze/kernel/heartbeat.gcda
+        -:    0:Runs:0
+        -:    0:Programs:0
+        -:    1:/*
+        -:    2: * Copyright (C) 2007-2009 Michal Simek <monstr@monstr.eu>
+        -:    3: * Copyright (C) 2007-2009 PetaLogix
+        -:    4: * Copyright (C) 2006 Atmark Techno, Inc.
+        -:    5: *
+        -:    6: * This file is subject to the terms and conditions of
+the GNU General Public
+        -:    7: * License. See the file "COPYING" in the main directory
+of this archive
+        -:    8: * for more details.
+        -:    9: */
+        -:   10:
+        -:   11:#include <linux/sched.h>
+        -:   12:#include <linux/io.h>
+        -:   13:
+        -:   14:#include <asm/setup.h>
+        -:   15:#include <asm/page.h>
+        -:   16:#include <asm/prom.h>
+        -:   17:
+        -:   18:static unsigned int base_addr;
+        -:   19:
+        -:   20:void heartbeat(void)
+    69918:   21:{
+        -:   22:        static unsigned int cnt, period, dist;
+        -:   23:
+    69918:   24:        if (base_addr) {
+    71379:   25:                if (cnt == 0 || cnt == dist)
+     1461:   26:                        out_be32(base_addr, 1);
+    68457:   27:                else if (cnt == 7 || cnt == dist + 7)
+     1460:   28:                        out_be32(base_addr, 0);
+        -:   29:
+    69918:   30:                if (++cnt > period) {
+      730:   31:                        cnt = 0;
+        -:   32:                        /*
+        -:   33:                         * The hyperbolic function below
+modifies the heartbeat
+        -:   34:                         * period length in dependency of t
+....
 
-Best regards,
-Arnd
+
+
+Then I would like to use lcov and generate html sites. This could be
+possible but I haven't found
+a way how to do it.
+
+I used lcov --capture --directory . --output-file out
+
+There is this mishmash in version string
+/home/projects/xils/_full/software/linux-monstr_eu-commit/kernel/spinlock.gcno:version
+'401*', prefer '401p'
+/home/projects/xils/_full/software/linux-monstr_eu-commit/kernel/spinlock.gcda:version
+'401*', prefer version '401p'
+
+and then genhtml out which end with fault because my out file contain
+wrong patches where is part of path repeated.
+arch/microblaze/kernel/arch/microblaze/kernel
+
+It is a little bit mess but I hope that you understand what I mean. If
+not please let me know.
+Can you give me any hint how to do it?
+
+Thanks,
+Michal
+
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+
