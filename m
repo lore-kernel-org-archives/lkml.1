@@ -1,102 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbZHYStI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbZHYSt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbZHYStI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 14:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbZHYStH
+	id S1755752AbZHYSt6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 14:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZHYSt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 14:49:07 -0400
-Received: from outbound-mail-144.bluehost.com ([67.222.38.34]:40663 "HELO
-	outbound-mail-144.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754900AbZHYStG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 14:49:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=OWbS1ZdI37viftqzuoqDTpwKpKGVsCkWNuPa6Sc7+OMwPVY1l9xupacYAaBZz7gBLL+F94GzE0u4A1O5MAu6aG3TnXPxxvBxx38AScyubBf0T+8n9ph6CRz8yIcLznJz;
-Date: Tue, 25 Aug 2009 11:48:59 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH] pci/intr_remapping: allocate irq_iommu on node -v3
-Message-ID: <20090825114859.777be874@jbarnes-g45>
-In-Reply-To: <4A84C21A.4000705@kernel.org>
-References: <4A84C13E.5050606@kernel.org>
-	<4A84C190.1060005@kernel.org>
-	<4A84C21A.4000705@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Tue, 25 Aug 2009 14:49:58 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:44803 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755250AbZHYSt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 14:49:57 -0400
+Date: Tue, 25 Aug 2009 14:47:34 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com, jistone@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com
+Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
+Message-ID: <20090825184734.GE2656@redhat.com>
+References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere> <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com> <20090825134005.GB2656@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090825134005.GB2656@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo, I assume you took these two?
-
-Thanks,
-Jesse
-
-On Thu, 13 Aug 2009 18:47:06 -0700
-Yinghai Lu <yinghai@kernel.org> wrote:
-
+On Tue, Aug 25, 2009 at 09:40:05AM -0400, Jason Baron wrote:
+> > > On Mon, Aug 24, 2009 at 05:40:18PM -0400, Jason Baron wrote:
+> > > > Add a dynamic definition of NR_syscalls for x86_64. This is used in the 
+> > > > syscall events tracing code.
+> > > > 
+> > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > > > 
+> > > > ---
+> > > >  include/linux/ftrace.h |    5 +++++
+> > > >  1 files changed, 5 insertions(+), 0 deletions(-)
+> > > > 
+> > > > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> > > > index dc3b132..3bd94ee 100644
+> > > > --- a/include/linux/ftrace.h
+> > > > +++ b/include/linux/ftrace.h
+> > > > @@ -14,6 +14,11 @@
+> > > >  
+> > > >  #include <asm/ftrace.h>
+> > > >  
+> > > > +#ifdef CONFIG_X86_64
+> > > > +#include <asm/asm-offsets.h>
+> > > > +#define NR_syscalls (__NR_syscall_max + 1)
+> > > > +#endif
+> > > > +
+> > > 
+> > > 
+> > > I'd rather see this in arch/x86/include/unistd_64.h, since
+> > > NR_syscalls seems to be the defined in unistd.h in all archs.
+> > > 
+> > > That also makes a unified way to retrieve this number for
+> > > other users.
+> > > 
+> > 
+> > Yes, NR_syscalls should be included there.
+> > 
+> > -- Steve
 > 
-> make it use node from irq_desc.
-> v3: use irq_node
+> right, for x86_64, unistd.h is included to generate __NR_syscall_max
+> which is then used for NR_syscalls. So I did initially try it there, but
+> there were dependency problems. I'll see what I can come up with...
 > 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> thanks,
 > 
-> ---
->  drivers/pci/intr_remapping.c |   14 +++-----------
->  1 file changed, 3 insertions(+), 11 deletions(-)
-> 
-> Index: linux-2.6/drivers/pci/intr_remapping.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/intr_remapping.c
-> +++ linux-2.6/drivers/pci/intr_remapping.c
-> @@ -55,15 +55,12 @@ static struct irq_2_iommu *irq_2_iommu(u
->  	return desc->irq_2_iommu;
->  }
->  
-> -static struct irq_2_iommu *irq_2_iommu_alloc_node(unsigned int irq,
-> int node) +static struct irq_2_iommu *irq_2_iommu_alloc(unsigned int
-> irq) {
->  	struct irq_desc *desc;
->  	struct irq_2_iommu *irq_iommu;
->  
-> -	/*
-> -	 * alloc irq desc if not allocated already.
-> -	 */
-> -	desc = irq_to_desc_alloc_node(irq, node);
-> +	desc = irq_to_desc(irq);
->  	if (!desc) {
->  		printk(KERN_INFO "can not get irq_desc for %d\n",
-> irq); return NULL;
-> @@ -72,16 +69,11 @@ static struct irq_2_iommu *irq_2_iommu_a
->  	irq_iommu = desc->irq_2_iommu;
->  
->  	if (!irq_iommu)
-> -		desc->irq_2_iommu = get_one_free_irq_2_iommu(node);
-> +		desc->irq_2_iommu =
-> get_one_free_irq_2_iommu(irq_node(irq)); 
->  	return desc->irq_2_iommu;
->  }
->  
-> -static struct irq_2_iommu *irq_2_iommu_alloc(unsigned int irq)
-> -{
-> -	return irq_2_iommu_alloc_node(irq, cpu_to_node(boot_cpu_id));
-> -}
-> -
->  #else /* !CONFIG_SPARSE_IRQ */
->  
->  static struct irq_2_iommu irq_2_iommuX[NR_IRQS];
-> 
+> -Jason
+
+ok, since unistd_64.h is used to generate offsets.c, which eventually
+generates, asm/asm-offsets.h, which defines, __NR_syscall_max, we can't
+just put #define of NR_syscalls in unistd_64.h. However, it seems the
+only point in time that unistd_64.h can not depend upon __NR_syscall_max,
+is before asm/asm-offsets.h is defined. Thus, the patch below passes in
+a '-DCREATE_OFFSETS' during the creation of asm/asm-offsets.h, so that
+we do not include it before it exists. The patch is hacky but works.
+thoughts?
+
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+
+---
+
+ Kbuild                           |    2 +-
+ arch/x86/include/asm/unistd_64.h |    6 ++++++
+ scripts/Makefile.build           |    4 ++++
+ 3 files changed, 11 insertions(+), 1 deletions(-)
 
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+diff --git a/Kbuild b/Kbuild
+index f056b4f..5f43d4d 100644
+--- a/Kbuild
++++ b/Kbuild
+@@ -78,7 +78,7 @@ endef
+ arch/$(SRCARCH)/kernel/asm-offsets.s: arch/$(SRCARCH)/kernel/asm-offsets.c \
+                                       $(obj)/$(bounds-file) FORCE
+ 	$(Q)mkdir -p $(dir $@)
+-	$(call if_changed_dep,cc_s_c)
++	$(call if_changed_dep,cc_s_c_define_offset)
+ 
+ $(obj)/$(offsets-file): arch/$(SRCARCH)/kernel/asm-offsets.s Kbuild
+ 	$(call cmd,offsets)
+diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
+index 900e161..70c0c3d 100644
+--- a/arch/x86/include/asm/unistd_64.h
++++ b/arch/x86/include/asm/unistd_64.h
+@@ -688,6 +688,12 @@ __SYSCALL(__NR_perf_counter_open, sys_perf_counter_open)
+ #endif	/* __NO_STUBS */
+ 
+ #ifdef __KERNEL__
++
++#ifndef CREATE_OFFSETS
++#include <asm/asm-offsets.h>
++#define NR_syscalls (__NR_syscall_max + 1)
++#endif
++
+ /*
+  * "Conditional" syscalls
+  *
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 5c4b7a4..4177858 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -145,6 +145,10 @@ $(multi-objs-y:.o=.lst) : modname = $(modname-multi)
+ quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
+ cmd_cc_s_c       = $(CC) $(c_flags) -fverbose-asm -S -o $@ $<
+ 
++quiet_cmd_cc_s_c_define_offset = CC $(quiet_modtag)  $@
++cmd_cc_s_c_define_offset       = $(CC) $(c_flags) -DCREATE_OFFSETS \
++					-fverbose-asm -S -o $@ $<
++
+ $(obj)/%.s: $(src)/%.c FORCE
+ 	$(call if_changed_dep,cc_s_c)
+ 
+
+
+
+
