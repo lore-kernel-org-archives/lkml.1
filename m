@@ -1,68 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZHYLmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbZHYLmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbZHYLmj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 07:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbZHYLmi
+	id S1754726AbZHYLmy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 07:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbZHYLmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 07:42:38 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:40998 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750811AbZHYLmi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 07:42:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=JHOMjkT9AYUJPgyk2RNBtICcwoM2wkpf7Y+9R6WOUlhjK8dNsCZhaHjuB7WszEepgg
-         It98V6hjKET0En72y0JXBDFBtoGoiIGXOF+b0XHs3evEI0Q7725dnE8KQJrBu4cNDh4N
-         PMJyoDqTclKhT1xEXTMqwZ1iXEFClWztM4UZ0=
-Message-ID: <4A93CE2A.90509@gmail.com>
-Date: Tue, 25 Aug 2009 13:42:34 +0200
-From: "Mikko C." <mikko.cal@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; it; rv:1.9.1.1) Gecko/20090824 Thunderbird/3.0b3
+	Tue, 25 Aug 2009 07:42:53 -0400
+Received: from sg2ehsobe003.messaging.microsoft.com ([207.46.51.77]:59924 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752547AbZHYLmw convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 07:42:52 -0400
+X-SpamScore: -33
+X-BigFish: VPS-33(z21eWz1432R98dN936eM4015La4a4ka594izz1202hzzz32i203h6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KOXKJ1-01-1QV-02
+X-M-MSG: 
+Date: Tue, 25 Aug 2009 13:42:33 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: James Dingwall <james.dingwall@amdocs.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: BUG: 2.6.30.1 pv_ops kernel boot failure - bisected
+Message-ID: <20090825114233.GL20811@alberich.amd.com>
+References: <683099EDC3E36D40942EBF636EB88BF00701E35F@batmail1.corp.amdocs.com>
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       zdenek.kabelac@gmail.com, christoph.thielecke@gmx.de,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       grant.wilson@zen.co.uk
-Subject: Re: [PATCH 2/3] inotify: do not BUG on idr entries at inotify destruction
-References: <20090824173524.14196.25992.stgit@paris.rdu.redhat.com>	 <20090824173524.14196.25992.stgit@paris.rdu.redhat.com>	 <20090824173812.14196.381.stgit@paris.rdu.redhat.com>	 <200908242034.50885.elendil@planet.nl>	 <1251140949.25096.16.camel@dhcp231-106.rdu.redhat.com>	 <alpine.LFD.2.01.0908241220590.3158@localhost.localdomain> <1251146166.25096.22.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1251146166.25096.22.camel@dhcp231-106.rdu.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <683099EDC3E36D40942EBF636EB88BF00701E35F@batmail1.corp.amdocs.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 25 Aug 2009 11:42:33.0513 (UTC) FILETIME=[2297E190:01CA2579]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> On Mon, 24 Aug 2009, Eric Paris wrote:
->>>
->>> You suspect correctly.  :(  I'll fix in my tree before I request a
->>> pull....
+On Tue, Aug 25, 2009 at 12:04:54PM +0100, James Dingwall wrote:
+> 
+> Hi,
+> 
+> I have encountered what appears to be a bug when using the 2.6.30 stable
+> series as a pv_ops kernel under Xen 3.4.1.  The problem appears to have
+> been introduced with the following commit (provided I bisected it
+> correctly)
+> 
+> commit bb9b409349f533a919b6b6d95698fbe6ff4aa209
+> Author: Andreas Herrmann <andreas.herrmann3@amd.com>
+> Date:   Mon Jun 8 15:55:09 2009 +0200
+> 
+>     x86: Detect use of extended APIC ID for AMD CPUs
+> 
+> When I try and boot the domU (xm create -c) I do not get any output.
+> With this commit reverted I can boot 2.6.30.5 pv_ops without issue,
+> output follows below.  The system is a dual Opteron 242.  If more
+> details about the hardware or configuration are required to debug this
+> please let me know.  I'm willing to test any patches.
 
-I just got this with -rc7, but it doesn't look related to what I was 
-having before:
 
-BUG: Bad page map in process kio_thumbnail  pte:ffff88006cc99128 
-pmd:6d3b1067
-addr:00007f9d4e3a5000 vm_flags:08000070 anon_vma:(null) 
-mapping:ffff88007abe21a0 index:200
-vma->vm_ops->fault: filemap_fault+0x0/0x460
-vma->vm_file->f_op->mmap: ext4_file_mmap+0x0/0x80
-Pid: 28022, comm: kio_thumbnail Not tainted 2.6.31-rc7 #1
-Call Trace:
-  [<ffffffff810afaf4>] ? print_bad_pte+0x1d4/0x2c0
-  [<ffffffff810afc79>] ? vm_normal_page+0x99/0xa0
-  [<ffffffff810b0c7d>] ? unmap_vmas+0x4cd/0x970
-  [<ffffffff810b6c74>] ? exit_mmap+0x104/0x1d0
-  [<ffffffff81043e0d>] ? mmput+0x4d/0x100
-  [<ffffffff81048d81>] ? exit_mm+0x101/0x150
-  [<ffffffff8104b240>] ? do_exit+0x6c0/0x750
-  [<ffffffff8104b326>] ? do_group_exit+0x56/0xd0
-  [<ffffffff8104b3c2>] ? sys_exit_group+0x22/0x40
-  [<ffffffff8100b7eb>] ? system_call_fastpath+0x16/0x1b
-Disabling lock debugging due to kernel taint
+So it seems that commit
 
-No lockups or anything.
+ commit 2cb078603abb612e3bcd428fb8122c3d39e08832
+ Author: Jeremy Fitzhardinge <jeremy@goop.org>
+ Date:   Wed Jul 22 09:59:35 2009 -0700
+
+    x86, amd: Don't probe for extended APIC ID if APICs are disabled
+    
+    If we've logically disabled apics, don't probe the PCI space for the
+    AMD extended APIC ID.
+    
+    [ Impact: prevent boot crash under Xen. ]
+    
+    Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+    Reported-by: Bastian Blank <bastian@waldi.eu.org>
+    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+
+needs to be added to 2.6.30.y for proper boot under Xen.
+James, can you test this please?
+
+
+Thanks,
+
+Andreas
+
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
+
