@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751654AbZHZQPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbZHZQQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751654AbZHZQPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 12:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZHZQPr
+	id S1751737AbZHZQQO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 12:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbZHZQQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 12:15:47 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:49783 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751330AbZHZQPq (ORCPT
+	Wed, 26 Aug 2009 12:16:13 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:64530 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbZHZQQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 12:15:46 -0400
+	Wed, 26 Aug 2009 12:16:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OXKwvgbVd/exAaj5lZny9mvxsQD9aIer9+r9XFw+tqIdnWE/Rzkw7up1qYgHdJxsEr
-         ps1xa/rNSWFxFnR6BWax43GCw8AecIHpseOZegUVSr9TLexRFaal08N1bh9m0enj7Cey
-         vYH7MTgN7RW07cpAaHSIFwF4grk2MfuYfzJfk=
-Date: Wed, 26 Aug 2009 18:14:52 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090826161449.GB6304@nowhere>
-References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090826123550.GD6009@nowhere> <20090826125943.GA5946@osiris.boeblingen.de.ibm.com> <20090826133019.GE6009@nowhere> <20090826141052.GB5946@osiris.boeblingen.de.ibm.com> <20090826142732.GA6304@nowhere> <alpine.DEB.2.00.0908261042250.23885@gandalf.stny.rr.com>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=V9nlMT+RER3izMsTO1JbyDtsEXhayr3uJqVrBSseUMdY4w1PfUbrO7QfgcYi14E4vL
+         BtAwre3bo08/Jp9PZxbnJd2cxGcatgGimoILh6mUi1GEUcYY5Xb/JyRYt67RvDdyCu7J
+         4og9eUSSdGfFXuAtiKyrso2t90mZVWKpuiApQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908261042250.23885@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1251302598.18584.31.camel@twins>
+References: <1250983671.5688.21.camel@raz> <4A943A00.9080609@nortel.com>
+	 <1251264700.7538.1178.camel@twins> <1251282598.3514.20.camel@raz>
+	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
+	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>
+	 <1251300625.18584.18.camel@twins>
+	 <alpine.DEB.1.10.0908261136590.9933@gentwo.org>
+	 <1251302598.18584.31.camel@twins>
+Date: Wed, 26 Aug 2009 19:16:12 +0300
+X-Google-Sender-Auth: 22284ade6b29f158
+Message-ID: <84144f020908260916l34a21cai1abf7b2ca7ac93a3@mail.gmail.com>
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       raz ben yehuda <raziebe@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
+       riel@redhat.com, mingo@elte.hu,
+       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
+       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 10:43:01AM -0400, Steven Rostedt wrote:
-> 
-> On Wed, 26 Aug 2009, Frederic Weisbecker wrote:
-> > > 
-> > > Oh yes, you are right. kernel threads created with kernel_thread()
-> > > have t->mm != NULL if the forking process has an mm too.
-> > > 
-> > > There are very few callsites left which still use kernel_thread().
-> > > (the last one in s390 driver code will be gone after the next
-> > > merge window).
-> > > 
-> > > As far as I can there are only four callsites left
-> > > (excluding staging): jffs2 and three in net/bluetooth/*
-> > 
-> > 
-> > In that case, I'd suggest to pick the patch that checks for
-> > kernel threads while setting the TIF_FLAGS.
-> > 
-> > The check for invalid syscall numbers in another patch should be
-> > sufficient to not crash.
-> > 
-> > We might have rare inaccurate result because of the remaining
-> > buggy callsites but instead of working around on it, these
-> > should be fixed.
-> 
-> Well, do these (buggy threads) call syscalls?
-> 
-> -- Steve
-> 
+Hi Peter,
 
+On Wed, Aug 26, 2009 at 7:03 PM, Peter Zijlstra<peterz@infradead.org> wrote:
+> There needs to be some communication between the isolated and non
+> isolated part, otherwise what's the point. Even when you'd let it handle
+> say a network device as pure firewall, you'd need to configure the
+> thing, requiring interaction.
 
-That's not exactly what raises bugs because their syscalls
-won't be traced. The problem occurs when the freshly created
-kernel thread reaches ret_from_fork with its ->mm != NULL
+The use case Christoph described was an user-space number cruncher app
+that does some network I/O over RDMA IIRC. AFAICT, if he could isolate
+a physical CPU for the thing, there would be little or no
+communication with the non-isolated part. Yes, the setup sounds weird
+but it's a real workload although pretty damn specialized.
 
-It will take the trace_sys_exit() call and then will be traced
-as a normal user thread.
+On Wed, Aug 26, 2009 at 7:03 PM, Peter Zijlstra<peterz@infradead.org> wrote:
+>> > If you think the kernel is too fat and does superfluous things for your
+>> > needs, help trim it.
+>>
+>> Mind boogling nonsense. Please stop fantasizing and trolling.
+>
+> Oh, to lay down the crack-pipe and sod off.
 
+I guess I'll go for the magic mushrooms then.
 
+                        Pekka
