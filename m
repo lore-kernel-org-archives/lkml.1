@@ -1,123 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751623AbZHZH7D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbZHZH7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751623AbZHZH7D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:59:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZHZH7B
+	id S1752053AbZHZH7h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbZHZH7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:59:01 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:51456 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbZHZH7A (ORCPT
+	Wed, 26 Aug 2009 03:59:36 -0400
+Received: from newsmtp5.atmel.com ([204.2.163.5]:61328 "EHLO
+	sjogate2.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbZHZH7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:59:00 -0400
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: David Dillow <dave@thedillows.org>,
-       Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
-       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [PATCH] r8169: Reduce looping in the interrupt handler.
-References: <1250895567.23419.1.camel@obelisk.thedillows.org>
-	<1250897657.23419.5.camel@obelisk.thedillows.org>
-	<m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
-	<1250973787.3582.14.camel@obelisk.thedillows.org>
-	<m1r5v0ogvw.fsf@fess.ebiederm.org>
-	<1251169150.4023.11.camel@obelisk.thedillows.org>
-	<m1prajabk8.fsf@fess.ebiederm.org>
-	<1251232848.9607.15.camel@lap75545.ornl.gov>
-	<m1k50r8u4p.fsf@fess.ebiederm.org>
-	<20090825221903.GA13630@electric-eye.fr.zoreil.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 26 Aug 2009 00:58:56 -0700
-In-Reply-To: <20090825221903.GA13630@electric-eye.fr.zoreil.com> (Francois Romieu's message of "Wed\, 26 Aug 2009 00\:19\:03 +0200")
-Message-ID: <m1iqgbknun.fsf_-_@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 26 Aug 2009 03:59:36 -0400
+X-Greylist: delayed 2357 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 03:59:36 EDT
+Message-ID: <9E4512BFD9E74B73A1118E4B0EDE04E9@aeglos>
+From: "Ulf Samuelsson" <ulf.samuelsson@atmel.com>
+To: "Robert Emanuele" <rob@emanuele.us>,
+       <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+References: <9f53b4330908251727q1bc1accfk12a9a8d25407791@mail.gmail.com><0F5F73E36031FD46AD3F2E6948F0C0A00188E074@frimb01.corp.atmel.com> <9f53b4330908252124n168bd094k84f2691ec1a0a0ea@mail.gmail.com>
+Subject: Re: ARM Git Tree (at91sam9g45 patches)
+Date: Wed, 26 Aug 2009 08:43:23 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: romieu@fr.zoreil.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, mb@bu3sch.de, michael.riepe@googlemail.com, dave@thedillows.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5843
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+X-OriginalArrivalTime: 26 Aug 2009 06:57:39.0219 (UTC) FILETIME=[80035E30:01CA261A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have done my best to port those patches to 2.6.30.2.
+The result is available in the openembedded git.
+(www.openembedded.org)
+It is not available yet in the main development tree,
+you have to download the main git, and then
+use my private branch
+    origin/ulf/linux-2.6.30.2...
 
-As of 2.6.30 I have been observing soft lockups and netdev watchdog
-timeouts caused by looping in the r8169 interrupt handler.
+I generated some new stuff, for the SAM9G45 which has not been
+submitted anywhere, including Audio initialization of the SAM9G45.
+I have been able to play an MP3 file with my board.
 
-- Introduce a hard limit to the maximum number of times we will loop in
-  the interrupt handler, and print a message when we hit it.
+The boot cannot find /dev/fb0 right now.
+I suspect I have a flaky board.
+It had problems initializing the screen before,
+XWindows reported everything OK, but I only saw
+a black screen with some moving white screens
+indicating no sync.
+A power cycle a little later cause X11+Gnome to boot.
+At that time I did not have any touchscreen nor working USB
+so I had to way to pass the initial user configuration.
 
-- Break out of the loop if after looking none of the events in status
-  are events we expect to be delivered by an interrupt.
+Needs some investigating.
+Also added init code for the touchscreen, but this fails.
+No trace of this in the bootlog, and no /dev/input/touchscreen0
+available.
 
-With just the hard limit and message bits of my patch in my test case
-I get hit my limit of 10 loops 12 times.  After filtering by intr_mask
-and intr_event I don't get any warnings.
+I also put the same patches into the buildroot build system
+Again, you have to use a private branch.
 
-Any complaints from those who know the driver better than I?
+git://git.busybox.net/~ulf/git/atmel-2009-08-rc2
 
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
----
- drivers/net/r8169.c |   21 +++++++++++++++++++++
- 1 files changed, 21 insertions(+), 0 deletions(-)
+Another important fix is that the AT91bootstrap provides a
+working Rom Code Replacement.bin.
+The one that has been on the Atmel home page is (was) broken.
+I pointed this out last week so they may have changed it by now.
+It is a bad idea to program the ROM Code replacement into
+dataflash.
+Much better to program it into the EEPROM.
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 3b19e0c..2214945 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -61,6 +61,8 @@ static const int multicast_filter_limit = 32;
- /* MAC address length */
- #define MAC_ADDR_LEN	6
- 
-+#define MAX_INTR_LOOPS 10	/* Limit the msi acking loop from going crazy */
-+
- #define MAX_READ_REQUEST_SHIFT	12
- #define RX_FIFO_THRESH	7	/* 7 means NO threshold, Rx buffer level before first PCI xfer. */
- #define RX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
-@@ -3552,6 +3554,7 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
- 	void __iomem *ioaddr = tp->mmio_addr;
- 	int handled = 0;
- 	int status;
-+	int count = 0;
- 
- 	/* loop handling interrupts until we have no new ones or
- 	 * we hit a invalid/hotplug case.
-@@ -3560,6 +3563,17 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
- 	while (status && status != 0xffff) {
- 		handled = 1;
- 
-+		if (count++ >= MAX_INTR_LOOPS) {
-+			if (netif_msg_intr(tp) && net_ratelimit()) {
-+				printk(KERN_INFO " %s Screaming irq "
-+					"status %08x mask %08x event %08x "
-+					"napi %08x\n",
-+					dev->name, status, tp->intr_mask,
-+					tp->intr_event,	tp->napi_event);
-+			}
-+			break;
-+		}
-+
- 		/* Handle all of the error cases first. These will reset
- 		 * the chip, so just exit the loop.
- 		 */
-@@ -3609,6 +3623,13 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
- 		RTL_W16(IntrStatus,
- 			(status & RxFIFOOver) ? (status | RxOverflow) : status);
- 		status = RTL_R16(IntrStatus);
-+
-+		/* Ignore the parts of status that reflect more than
-+		 * the enabled interrupts.
-+		 */
-+		smp_rmb();
-+		if (!(status & tp->intr_mask & tp->intr_event))
-+			break;
- 	}
- 
- 	return IRQ_RETVAL(handled);
--- 
-1.6.2.5
+
+
+
+If anyone wants to try with other chips, beware.
+I have only tested with the SAM9263EK booting from dataflash
+and the SAM9G45EKES.
+
+
+
+Best Regards
+Ulf Samuelsson
+
+Subject: Re: ARM Git Tree (at91sam9g45 patches)
+
+
+Thank you for pointing me towards those patches.  I've been looking at
+those.  Some of the work I have is with the 2.6.29 and 2.6.30 kernel
+versions.  I was wondering if there were any trees or patchsets
+against those versions.
+
+Thanks,
+
+Rob
+
+On Tue, Aug 25, 2009 at 6:15 PM, Xu, Hong<Hong.Xu@atmel.com> wrote:
+> Hi Robert,
+> Actually Atmel has made experimental patch to support at91sam9g45-ekes 
+> board and will push the changes to the upstream tree in the near future. I 
+> suggest you have a look at
+> http://www.linux4sam.org/twiki/bin/view/Linux4SAM/LinuxKernel#Linux4SAM_Experimental_Patches
+>
+> BR,
+> Hong Xu
+>> -----Original Message-----
+>> From: linux-arm-kernel-bounces@lists.infradead.org
+>> [mailto:linux-arm-kernel-bounces@lists.infradead.org] On Behalf Of Robert
+>> Emanuele
+>> Sent: 2009?8?26? 8:27
+>> To: linux-arm-kernel@lists.infradead.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Subject: ARM Git Tree (at91sam9g45 patches)
+>>
+>> Greetings,
+>>
+>> I'm working with the Atmel at91sam9g45-ekes board which is new. I was
+>> wondering if there was a git tree with the current ARM patches that
+>> contains the at91sam9g45 code? Russell lists "Applied" patches at
+>> http://www.arm.linux.org.uk/developer/patches/ . Where are these
+>> applied to? If there isn't a tree, is there an elegant way to get the
+>> latest patch sets that I could apply to Linus's tree?
+>>
+>> Thank you,
+>>
+>> Rob
+>>
+>> _______________________________________________
+>> linux-arm-kernel mailing list
+>> linux-arm-kernel@lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
 
