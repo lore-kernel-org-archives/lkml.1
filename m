@@ -1,117 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752310AbZHZIQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbZHZIRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752310AbZHZIQo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 04:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZHZIQn
+	id S1753875AbZHZIRV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 04:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZHZIRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 04:16:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41062 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753243AbZHZIQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 04:16:38 -0400
-Date: Wed, 26 Aug 2009 08:15:59 GMT
-From: tip-bot for Yinghai Lu <yinghai@kernel.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, torvalds@linux-foundation.org, shai@scalex86.org,
-       gorcunov@gmail.com, kiran@scalex86.org, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, torvalds@linux-foundation.org, gorcunov@gmail.com,
-       shai@scalex86.org, kiran@scalex86.org, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A944D3C.5030100@kernel.org>
-References: <4A944D3C.5030100@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Fix vSMP boot crash
-Message-ID: <tip-295594e9cf6ae2efd73371777aa8feba0f87f42f@git.kernel.org>
-Git-Commit-ID: 295594e9cf6ae2efd73371777aa8feba0f87f42f
-X-Mailer: tip-git-log-daemon
+	Wed, 26 Aug 2009 04:17:20 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:57314 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751072AbZHZIRT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 04:17:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=jR/7VUdnMxpGBukIX4vN75hfXnHUXbmcO/+5gyynBoJBoUC+QFOoRnVrSNJUCfy+We
+         nWq7HrYjZaKlKxTOvjaKxLHkHeHOO1Cjawhei2TQazXhMAChkzWy2vL7sb65x4MWVj20
+         vaTNMkqvL4lhTEw/8xrr1yDblRjJcbWg60iNM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 26 Aug 2009 08:16:01 +0000 (UTC)
+In-Reply-To: <1251273755.16910.16.camel@marge.simson.net>
+References: <1250983671.5688.21.camel@raz> <1251021133.14003.172.camel@marge.simson.net> 
+	<alpine.DEB.1.10.0908251122020.26329@gentwo.org> <1251222993.7023.53.camel@marge.simson.net> 
+	<alpine.DEB.1.10.0908251402300.17963@gentwo.org> <1251227322.7538.1172.camel@twins> 
+	<4A943A00.9080609@nortel.com> <1251264700.7538.1178.camel@twins> 
+	<1251282598.3514.20.camel@raz> <1251273755.16910.16.camel@marge.simson.net>
+From: Raz <raziebe@gmail.com>
+Date: Wed, 26 Aug 2009 10:16:59 +0200
+Message-ID: <5d96567b0908260116w2e1bcffeqb67f92d89b34b2c@mail.gmail.com>
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+To: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Chris Friesen <cfriesen@nortel.com>,
+       Christoph Lameter <cl@linux-foundation.org>, riel@redhat.com,
+       mingo@elte.hu, andrew motron <akpm@linux-foundation.org>,
+       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  295594e9cf6ae2efd73371777aa8feba0f87f42f
-Gitweb:     http://git.kernel.org/tip/295594e9cf6ae2efd73371777aa8feba0f87f42f
-Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Tue, 25 Aug 2009 13:44:44 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 26 Aug 2009 10:13:17 +0200
+On Wed, Aug 26, 2009 at 10:02 AM, Mike Galbraith<efault@gmx.de> wrote:
+> On Wed, 2009-08-26 at 13:29 +0300, raz ben yehuda wrote:
+>
+>> OFFSCHED is bad name to my project. My project is called SOS = Service
+>> Oriented System.
+>> SOS, has nothing to do with Real time.
+>
+> ??
+>
+> The paper you pointed me at maintains it's very much about realtime.
+>
+> <quote>
+> This paper argues that OFFSCHED fits to the niche of Multiprocessors
+> real time systems by partitioning a system to two; the operating system
+> and OFFSCHED. OFFSHCED is a hybrid system. It is hybrid because it is
+> both real time and still a regular Linux server. Real time is mainly
+> achieved by the NMI characteristic and the CPU isolation. It is a hybrid
+> system because OFFSCHED scheduler interacts with the operating system.
+> </quote>
+>
+>        -Mike.
+>
+>
+Mike Hello
+Correct. OFFSCHED has a real time facet that puts it in the SMP real
+time system arena. it has other facets such as security and
+monitoring. If you take a look at OFFSCHED-RTOP and OFFSCHED-SECURED
+you will see that I can actually get information and change a system
+properties  (very pool implementation so far, i am a bit tired...)
+even if this kernel is not **accessible**.
 
-x86: Fix vSMP boot crash
-
-2.6.31-rc7 does not boot on vSMP systems:
-
-[    8.501108] CPU31: Thermal monitoring enabled (TM1)
-[    8.501127] CPU 31 MCA banks SHD:2 SHD:3 SHD:5 SHD:6 SHD:8
-[    8.650254] CPU31: Intel(R) Xeon(R) CPU           E5540  @ 2.53GHz stepping 04
-[    8.710324] Brought up 32 CPUs
-[    8.713916] Total of 32 processors activated (162314.96 BogoMIPS).
-[    8.721489] ERROR: parent span is not a superset of domain->span
-[    8.727686] ERROR: domain->groups does not contain CPU0
-[    8.733091] ERROR: groups don't span domain->span
-[    8.737975] ERROR: domain->cpu_power not set
-[    8.742416]
-
-Ravikiran Thirumalai bisected it to:
-
-| commit 2759c3287de27266e06f1f4e82cbd2d65f6a044c
-| x86: don't call read_apic_id if !cpu_has_apic
-
-The problem is that on vSMP systems the CPUID derived
-initial-APICIDs are overlapping - so we need to fall
-back on hard_smp_processor_id() which reads the local
-APIC.
-
-Both come from the hardware (influenced by firmware
-though) so it's a tough call which one to trust.
-
-Doing the quirk expresses the vSMP property properly
-and also does not affect other systems, so we go for
-this solution instead of a revert.
-
-Reported-and-Tested-by: Ravikiran Thirumalai <kiran@scalex86.org>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Shai Fultheim <shai@scalex86.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>
-LKML-Reference: <4A944D3C.5030100@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/apic/probe_64.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
-index bc3e880..fcec2f1 100644
---- a/arch/x86/kernel/apic/probe_64.c
-+++ b/arch/x86/kernel/apic/probe_64.c
-@@ -44,6 +44,11 @@ static struct apic *apic_probe[] __initdata = {
- 	NULL,
- };
- 
-+static int apicid_phys_pkg_id(int initial_apic_id, int index_msb)
-+{
-+	return hard_smp_processor_id() >> index_msb;
-+}
-+
- /*
-  * Check the APIC IDs in bios_cpu_apicid and choose the APIC mode.
-  */
-@@ -69,6 +74,11 @@ void __init default_setup_apic_routing(void)
- 		printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
- 	}
- 
-+	if (is_vsmp_box()) {
-+		/* need to update phys_pkg_id */
-+		apic->phys_pkg_id = apicid_phys_pkg_id;
-+	}
-+
- 	/*
- 	 * Now that apic routing model is selected, configure the
- 	 * fault handling for intr remapping.
+Raz
