@@ -1,103 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751485AbZHZPJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751492AbZHZPLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751485AbZHZPJW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 11:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZHZPJV
+	id S1751492AbZHZPLP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 11:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZHZPLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 11:09:21 -0400
-Received: from mail-ew0-f227.google.com ([209.85.219.227]:52155 "EHLO
-	mail-ew0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbZHZPJU convert rfc822-to-8bit (ORCPT
+	Wed, 26 Aug 2009 11:11:14 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:57868 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751142AbZHZPLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 11:09:20 -0400
-X-Greylist: delayed 137369 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 11:09:20 EDT
+	Wed, 26 Aug 2009 11:11:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=KG7lbzKtniD9lVVxh1LQqx/E9BZWcG4DjdtbRFDq3Q4BWNZb4YNaezeLpY1jFHas47
-         V94WfqxiRle/cJU3P5HONvKWF1VtvOUWI5m9Nay0Ci/0j79wugdj5KH5KVomNj0GYTZg
-         3Hpvqzt+zuD5OMDrFmUtM75tyP30LggbnA8Hg=
-MIME-Version: 1.0
-In-Reply-To: <4A9549F2.4080504@earthlink.net>
-References: <4A93428A.4070903@earthlink.net> <4A941F56.8060502@redhat.com> 
-	<4A9427C7.8020009@earthlink.net> <20090826013043.GB17684@mit.edu> 
-	<4A94BF9E.2010101@earthlink.net> <20090826130513.GM32712@mit.edu> 
-	<4A9549F2.4080504@earthlink.net>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Wed, 26 Aug 2009 11:09:01 -0400
-Message-ID: <3e8340490908260809q6ad4d535ice24cc29f7985a9a@mail.gmail.com>
-Subject: Re: Starting a grad project that may change kernel VFS. Early 
-	research Re: Starting a grad project that may change kernel VFS. Early 
-	research
-To: Jeff Shanab <jshanab@earthlink.net>
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=mhFiqPQSzsbLzIw/wFXSEil1l/UPDdbc9EyG2/D9RMW0zdWgo5H8FmMCpx6W3QOClc
+         jT2bFeOequISyAYNgcFXRPKKDkNSL9mDo+a3G7FM+2tmtHMk1i6hWKnmGUC5cT0JkFTs
+         nVVYv3xVKrtRUVQe8QX5pqSRpoi2l6TlvCup8=
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+From: raz ben yehuda <raziebe@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
+       riel@redhat.com, mingo@elte.hu,
+       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
+       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
+In-Reply-To: <84144f020908260806pb85ee72r7b7e32a07b921b59@mail.gmail.com>
+References: <1250983671.5688.21.camel@raz>
+	 <1251222993.7023.53.camel@marge.simson.net>
+	 <alpine.DEB.1.10.0908251402300.17963@gentwo.org>
+	 <1251227322.7538.1172.camel@twins> <4A943A00.9080609@nortel.com>
+	 <1251264700.7538.1178.camel@twins> <1251282598.3514.20.camel@raz>
+	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
+	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>
+	 <84144f020908260806pb85ee72r7b7e32a07b921b59@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 26 Aug 2009 18:11:09 +0300
+Message-Id: <1251299469.4791.10.camel@raz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 10:42 AM, Jeff Shanab<jshanab@earthlink.net> wrote:
+sos linux is at:
 
-> Admittedly I need to study up on how recovery works now, especially for
-> a journaled file system.
->
-> Perhaps there is a 3. A sort of Distributed write Ahead log stored in
-> the inode of the directory itself.
-> If the process is completed, it is removed adding a second write to the
-> dentry's inode. If not, the queued task is found during fsck and started
-> again. But this fails if the changes to an dentry's inode are just
-> sitting in the cache at time of crash. Is the journal a write through
-> cache system? Is there a reference you can recommend?, I have just been
-> googeling and reading some source code.
 
-With journalling filesystems, fsck will not be run in a crash, so a
-flag as you suggest is insufficient. Moreover, a fsck will traverse
-the entire filesystem, so it can (and must) just directly check that
-all size fields are correct.
+http://sos-linux.svn.sourceforge.net/viewvc/sos-linux/offsched/
 
-In a typical journalling filesystem such as ext3, prior to making any
-changes to the disk, it will write a copy of all changes it will make
-to a seperate log. Once these are committed to disk, they will be
-copied to their final locations in the real filesystem data and
-metadata. Other filesystems such as btrfs use the 'dancing trees'
-approach - where the new data is allocated into free space, and commit
-is done by changing some root pointers to make this new data be used.
+you will find the modules, once shot patches , split patches, and a
+Documentation folder. 
 
-You may want to take a look at
-http://olstrans.sourceforge.net/release/OLS2000-ext3/OLS2000-ext3.html
-for an overview of how ext3 in particular works.
 
->>
->> As far as knowing whether or not a copy will succeed, that depends on
->> whether the copy is going to be smart about preseving hard links, and
->> whether or not the copy will be copying symlinked files as real files.
->> So you can only give a very specialized answer assuming only one set
->> of copy options.
->>
->>                                               - Ted
->>
->>
-> I have a seemingly dumb question, but I need a good answer for it. What
-> good are hardlinks, Do we need them with the advent of symlinks? Are
-> they just a vestigial feature or is there a real use case where they are
-> preferred? I don't think I have any hard links on this machine, but of
-> course, how would I know? ;-) I know i have seen them used in some
-> chroot environments at work.
+On Wed, 2009-08-26 at 18:06 +0300, Pekka Enberg wrote:
+> On Wed, Aug 26, 2009 at 5:54 PM, raz ben yehuda<raziebe@gmail.com> wrote:
+> >> I have always been fascinated by the idea of controlling another cpu
+> >> from the main CPU.
+> >>
+> >> Usually these cpus are custom, run proprietary software, and have no
+> >> datasheet on their I/O interfaces.
+> >>
+> >> But, being able to turn an ordinary CPU into something like that seems
+> >> to be very nice.
+> >>
+> >> For example, It might help with profiling. Think about a program that
+> >> can run uninterrupted how much it wants.
+> >>
+> >> I might even be better, if the dedicated CPU would use a predefined
+> >> reserved memory range (I wish there was a way to actually lock it to
+> >> that range)
+> >>
+> >> On the other hand, I could see this as a jump platform for more
+> >> proprietary code, something like that: we use linux in out server
+> >> platform, but out "insert buzzword here" network stack pro+ can handle
+> >> 100% more load that linux does, and it runs on a dedicated core....
+> >>
+> >> In the other words, we might see 'firmwares' that take an entire cpu for
+> >> their usage.
+> >
+> > This is exactly what offsched (sos) is. you got it. SOS was partly inspired by the notion of a GPU.
+> 
+> So where are the patches? The URL in the original post returns 404...
 
-Run: find / -xdev -type f -and -not -links 1
-
-A typical debian installation contains a number of hardlinks,
-including some for identical timezones under different names, or for
-wine's wrapper scripts, or for gunzip and uncompress, or for various
-e2fstools, or many other examples.
-
-> I can see they allow du, for example, to give an accurate size of a
-> directory as it would be if copied to another drive, symlinks don't do
-> that AFAIK. In fact the copy is missing data. Guess I answered My own
-> question?
-
-I have no idea what you mean by this...
-Keep in mind du can dereference symlinks to get the size of the target
-(-L option).
