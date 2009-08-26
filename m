@@ -1,116 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbZHZDrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbZHZDry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbZHZDrI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 23:47:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbZHZDrH
+	id S1756682AbZHZDry (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 23:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbZHZDrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 23:47:07 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:33768 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756583AbZHZDrG (ORCPT
+	Tue, 25 Aug 2009 23:47:53 -0400
+Received: from mail-yw0-f183.google.com ([209.85.211.183]:63575 "EHLO
+	mail-yw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756583AbZHZDrx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 23:47:06 -0400
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: David Dillow <dave@thedillows.org>,
-       Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
-       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
-References: <1250895567.23419.1.camel@obelisk.thedillows.org>
-	<1250897657.23419.5.camel@obelisk.thedillows.org>
-	<m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
-	<1250973787.3582.14.camel@obelisk.thedillows.org>
-	<m1r5v0ogvw.fsf@fess.ebiederm.org>
-	<1251169150.4023.11.camel@obelisk.thedillows.org>
-	<m1prajabk8.fsf@fess.ebiederm.org>
-	<1251232848.9607.15.camel@lap75545.ornl.gov>
-	<m1k50r8u4p.fsf@fess.ebiederm.org>
-	<20090825221903.GA13630@electric-eye.fr.zoreil.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 25 Aug 2009 20:47:01 -0700
-In-Reply-To: <20090825221903.GA13630@electric-eye.fr.zoreil.com> (Francois Romieu's message of "Wed\, 26 Aug 2009 00\:19\:03 +0200")
-Message-ID: <m1prajme2y.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 25 Aug 2009 23:47:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=coLC+ycHQNSYRSci7n7gdqc3/GeKGSwgzIq3UQa5jE4US3rdEKO0oBwTFbc+l+ScKS
+         KCao9uy/CYdeKO11gaAzA3yjUUBtAB8pPM9ea2/o0odzOPKogqJDGOjO0YVAF11YXRFi
+         5PyaphciU8MsBNgzf8ucovA9zb8DrEsRwxbiU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: romieu@fr.zoreil.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, mb@bu3sch.de, michael.riepe@googlemail.com, dave@thedillows.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+In-Reply-To: <alpine.LFD.2.01.0908252027300.3218@localhost.localdomain>
+References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain>
+	 <4A941E8B.8080902@plzk.org>
+	 <alpine.LFD.2.01.0908251057260.3218@localhost.localdomain>
+	 <4A94599F.9020508@plzk.org>
+	 <alpine.LFD.2.01.0908251456530.3218@localhost.localdomain>
+	 <1251239637.26348.20.camel@gaiman.anholt.net>
+	 <20090826015127.GA1402@zhen-devel.sh.intel.com>
+	 <alpine.LFD.2.01.0908252027300.3218@localhost.localdomain>
+Date: Wed, 26 Aug 2009 13:47:54 +1000
+Message-ID: <21d7e9970908252047g6db2fb2aj69280efa5eebe681@mail.gmail.com>
+Subject: Re: Linux 2.6.31-rc7
+From: Dave Airlie <airlied@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>,
+       mailing54 <mailing54@plzk.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net,
+       Ma Ling <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Zhao, Yakui" <yakui.zhao@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francois Romieu <romieu@fr.zoreil.com> writes:
-
-> Eric W. Biederman <ebiederm@xmission.com> :
-> [...]
->> I am a bit curious about TxDescUnavail.  Perhaps we had a temporary
->> memory shortage and that is what was screaming?  I don't think we do
->> anything at all with that state.
+On Wed, Aug 26, 2009 at 1:33 PM, Linus
+Torvalds<torvalds@linux-foundation.org> wrote:
 >
-> You are not alone, the driver completely ignores this bit.
 >
-> As far as I remember, the TxDescUnavail event mostly pops up when the
-> driver makes an excessive use of TxPoll requests.
+> On Wed, 26 Aug 2009, Zhenyu Wang wrote:
+>>
+>> > In my experience, the BIOS setup doesn't reflect what outputs should be
+>> > used at runtime, and certainly not the correct configuration of the
+>> > enabled outputs.  For example, if we went to this, the giant monitor
+>> > attached to my laptop that I actually look at would go unused.
+>>
+>> yeah, normally VBIOS startup just needs or only can driver one pipe, so
+>> we don't have any pre knowledge except detect everything.
 >
->> Perhaps the flaw here is simply not masking TxDescUnavail while we are
->> in NAPI mode ?
+> Umm. What's your guys point, exactly?
 >
-> Yes, it is worth trying.
+> The fact is, as-is, YOU DETECT THE WRONG OUTPUTS!
+>
+> If you actually detected things _right_, none of this would be an issue.
+> But you don't. And you seem to have a really hard time even admitting
+> that. You try to re-detect things, and you SCREW UP.
 
-At first blush things seem better, but it isn't sufficient.
-I still have a problem with RxFIFOOver set.
-r8169 screaming irq status 00000040 mask 0000ffe2 event 0000803f napi 0000001d
+This isn't anything to do with redetection, and in the Mac case there isn't
+even a BIOS table that you can really rely on since Apple hard coded all
+this stuff into their EFI and Mac OSX drivers.
 
-The patch I ran is below.
+Now you probably get a video bios using Apples bios layer, but it also
+is most likely not telling anything close to the truth about the hw layout.
 
-Eric
+Just because the BIOS manages to light up an output in now way effects
+whether the driver can do the same.
 
----
- drivers/net/r8169.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+>
+>> we already have some mac relate bugs open, but please report on it so we
+>> do have people with hardware to try and response. We have recently got a
+>> MacBook, yakui is looking after the modesetting issue on it.
+>
+> Quite frankly, I've reported these things several times. I've been open to
+> try patches. Nothing has ever come out of it.
+>
+> I have a Mac Mini that I reported as broken over a month ago. I have a
+> Westemere I've reported as not doing any DDC probing - and that I have to
+> disable the LVDS probing on entirely in order to not make KMS set up the
+> display to go to a non-existent LVDS port.
+>
+> You claim that you "detect everything", but quite frankly, you don't. The
+> KMS code seems to assume that if it's a mobile chipset, it should have an
+> LVDS output - and whether anything is connected to that or not is totally
+> immaterial. There's clearly _zero_ "detection" going on.
+>
+> And the thing is, X seems to get it right, at least more often than KMS
+> does.
+>
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 3b19e0c..e144bc1 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -3552,6 +3552,7 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
- 	void __iomem *ioaddr = tp->mmio_addr;
- 	int handled = 0;
- 	int status;
-+	int count = 0;
- 
- 	/* loop handling interrupts until we have no new ones or
- 	 * we hit a invalid/hotplug case.
-@@ -3560,6 +3561,14 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
- 	while (status && status != 0xffff) {
- 		handled = 1;
- 
-+		if (count++ > 100) {                                                                                               
-+			printk_once("r8169 screaming irq status %08x "
-+				"mask %08x event %08x napi %08x\n",
-+				status, tp->intr_mask, tp->intr_event,
-+				tp->napi_event);
-+			break;
-+		}
-+
- 		/* Handle all of the error cases first. These will reset
- 		 * the chip, so just exit the loop.
- 		 */
-@@ -3609,6 +3618,9 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
- 		RTL_W16(IntrStatus,
- 			(status & RxFIFOOver) ? (status | RxOverflow) : status);
- 		status = RTL_R16(IntrStatus);
-+		if (status == 0xffff)
-+			break;
-+		status &= tp->intr_mask;
- 	}
- 
- 	return IRQ_RETVAL(handled);
--- 
-1.6.2.5
+I'm not sure why the mac-mini hack hasn't been merged I asked for it a
+few times,
+I'd rather the proper solution was merged but that seems to not have
+happened either.
 
+You have two special cases here,
+a) mac mini - apple hw, needs hacks to workaround the fact that they
+do something
+nobody else does with the hw and then don't tell you about it in the
+hw. the hack
+from userspace should have been ported to the kernel but I keep not seeing it.
+
+b) pre-production SDV hardware for a mobile chipset without LVDS,
+here's both pieces
+you get to keep them. LVDS isn't detectable on any hw, the sanity
+assumption so far
+are you have a mobile chipset you must have LVDS, you have an ACPI lid
+button you
+might have LVDS. You cannot reliably detect LVDS since DDC on LVDS panels isn't
+mandatory. most BIOSes have an LVDS table, guess what I'd bet your BIOS claims
+you have LVDS. So yes it nice you get free shiny hw but if it doesn't
+work, its not nice
+to give out about it.
+
+Dave.
