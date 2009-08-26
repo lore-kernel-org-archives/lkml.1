@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbZHZLZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbZHZL2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757359AbZHZLZq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 07:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbZHZLZq
+	id S1757319AbZHZL2Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 07:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbZHZL2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 07:25:46 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34958 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757282AbZHZLZo (ORCPT
+	Wed, 26 Aug 2009 07:28:23 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:48610 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757077AbZHZL2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 07:25:44 -0400
-Date: Wed, 26 Aug 2009 13:25:36 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-Message-ID: <20090826112535.GF26595@elf.ucw.cz>
-References: <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm> <20090826001206.GL4300@elf.ucw.cz> <4A94812C.5010803@redhat.com> <20090826004430.GR4300@elf.ucw.cz> <alpine.DEB.2.00.0908251817390.30426@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908251817390.30426@asgard.lang.hm>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 26 Aug 2009 07:28:22 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [v2 PATCH 2/2]: pseries: Implement Pseries Processor Idle idle
+ module.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+Cc: Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20090826111003.GC29759@linux.vnet.ibm.com>
+References: <20090826110721.GA29759@linux.vnet.ibm.com>
+	 <20090826111003.GC29759@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 26 Aug 2009 13:27:18 +0200
+Message-Id: <1251286038.1329.1.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-08-25 18:19:40, david@lang.hm wrote:
-> On Wed, 26 Aug 2009, Pavel Machek wrote:
->
->>>>>> THESE devices have the property of potentially corrupting blocks being
->>>>>> written at the time of the power failure,
->>>>>
->>>>> this is true of all devices
->>>>
->>>> Actually I don't think so. I believe SATA disks do not corrupt even
->>>> the sector they are writing to -- they just have big enough
->>>> capacitors. And yes I believe ext3 depends on that.
->>>
->>> Pavel, no S-ATA drive has capacitors to hold up during a power failure
->>> (or even enough power to destage their write cache). I know this from
->>> direct, personal knowledge having built RAID boxes at EMC for years. In
->>> fact, almost all RAID boxes require that the write cache be hardwired to
->>> off when used in their arrays.
->>
->> I never claimed they have enough power to flush entire cache -- read
->> the paragraph again. I do believe the disks have enough capacitors to
->> finish writing single sector, and I do believe ext3 depends on that.
->
-> keep in mind that in a powerfail situation the data being sent to the  
-> drive may be corrupt (the ram gets flaky while a DMA to the drive copies  
-> the bad data to the drive, which writes it before the power loss gets bad 
-> enough for the drive to decide there is a problem and shutdown)
->
-> you just plain cannot count on writes that are in flight when a powerfail 
-> happens to do predictable things, let alone what you consider sane or  
-> proper.
+On Wed, 2009-08-26 at 16:40 +0530, Arun R Bharadwaj wrote:
+> +void (*pm_idle)(void);
+> +EXPORT_SYMBOL_GPL(pm_idle);
 
->From what I see, this kind of failure is rather harder to reproduce
-than the software problems. And at least SGI machines were designed to
-avoid this...
+Seriously.. this caused plenty problems over on x86 and you're doing the
+exact same dumb thing?
 
-Anyway, I'd like to hear from ext3 people... what happens on read
-errors in journal? That's what you'd expect to see in situation above.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
