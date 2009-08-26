@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933032AbZHZNpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933040AbZHZNqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933032AbZHZNpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933019AbZHZNpm
+	id S933040AbZHZNqL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933019AbZHZNqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:45:42 -0400
-Received: from mail.lang.hm ([64.81.33.126]:42182 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933017AbZHZNpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:45:41 -0400
-Date: Wed, 26 Aug 2009 06:44:42 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Ric Wheeler <rwheeler@redhat.com>
-cc: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
+	Wed, 26 Aug 2009 09:46:10 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37814 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933018AbZHZNqK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 09:46:10 -0400
+Date: Wed, 26 Aug 2009 14:47:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Chris Adams <cmadams@hiwaay.net>
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
 Subject: Re: [patch] document flash/RAID dangers
-In-Reply-To: <4A95349E.7010101@redhat.com>
-Message-ID: <alpine.DEB.2.00.0908260643550.28411@asgard.lang.hm>
-References: <20090825233701.GH4300@elf.ucw.cz> <4A947839.4010601@redhat.com> <20090826000657.GK4300@elf.ucw.cz> <4A947E05.8070406@redhat.com> <20090826002045.GO4300@elf.ucw.cz> <4A9481BE.1030308@redhat.com> <20090826003803.GP4300@elf.ucw.cz>
- <4A9485A6.1010803@redhat.com> <20090826112121.GD26595@elf.ucw.cz> <4A952370.50603@redhat.com> <20090826124058.GK32712@mit.edu> <4A95349E.7010101@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Message-ID: <20090826144716.486a0d44@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090826134045.GA1516467@hiwaay.net>
+References: <dddMw-7Xt-57@gated-at.bofh.it>
+	<dddWc-83W-51@gated-at.bofh.it>
+	<ddefx-5R-37@gated-at.bofh.it>
+	<ddep7-bI-7@gated-at.bofh.it>
+	<ddeyR-iy-11@gated-at.bofh.it>
+	<ddeyR-iy-9@gated-at.bofh.it>
+	<ddeIu-n9-9@gated-at.bofh.it>
+	<ddeSb-th-29@gated-at.bofh.it>
+	<ddoRI-11a-39@gated-at.bofh.it>
+	<ddpkB-1jQ-1@gated-at.bofh.it>
+	<20090826134045.GA1516467@hiwaay.net>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Ric Wheeler wrote:
+> The issues being raised here are not specific to extX, MD RAID, or Linux
+> at all; they are problems with non-"enterprise-class" RAID setups.
+> There's a reason enterprise-class RAID costs a lot more money than the
+> card you can pick up at Fry's.
 
-> On 08/26/2009 08:40 AM, Theodore Tso wrote:
->> On Wed, Aug 26, 2009 at 07:58:40AM -0400, Ric Wheeler wrote:
->>>> Drive in raid 5 failed; hot spare was available (no idea about
->>>> UPS). System apparently locked up trying to talk to the failed drive,
->>>> or maybe admin just was not patient enough, so he just powercycled the
->>>> array. He lost the array.
->>>> 
->>>> So while most people will not agressively powercycle the RAID array,
->>>> drive failure still provokes little tested error paths, and getting
->>>> unclean shutdown is quite easy in such case.
->>> 
->>> Then what we need to document is do not power cycle an array during a
->>> rebuild, right?
->> 
->> Well, the softwar raid layer could be improved so that it implements
->> scrubbing by default (i.e., have the md package install a cron job to
->> implement a periodict scrub pass automatically).  The MD code could
->> also regularly check to make sure the hot spare is OK; the other
->> possibility is that hot spare, which hadn't been used in a long time,
->> had silently failed.
->
-> Actually, MD does this scan already (not automatically, but you can set up a 
-> simple cron job to kick off a periodic "check"). It is a delicate balance to 
-> get the frequency of the scrubbing correct.
+And you will still need backups ;)
 
-debian defaults to doing this once a month (first sunday of each month), 
-on some of my systems this scrub takes almost a week to complete.
+A long time ago I worked on a fault tolerant news server with dual
+alphaserver boxes and a shared disk array. A power system failure took
+out both the alpha boxes and the disk controllers and all the disks.
 
-David Lang
+Fortunately it was a news server so you just had to wait a week ..
+
+Alan
