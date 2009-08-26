@@ -1,239 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932700AbZHZMTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932770AbZHZMTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932700AbZHZMTF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 08:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932582AbZHZMTE
+	id S932770AbZHZMTW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 08:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932727AbZHZMTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 26 Aug 2009 08:19:22 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:38753 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932574AbZHZMTE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Aug 2009 08:19:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:46979 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932510AbZHZMTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 08:19:02 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: Page allocation failures in guest
-Date: Wed, 26 Aug 2009 21:48:58 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: Avi Kivity <avi@redhat.com>, Minchan Kim <minchan.kim@gmail.com>,
-       kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, netdev@vger.kernel.org
-References: <20090713115158.0a4892b0@mjolnir.ossman.eu> <200908261147.17838.rusty@rustcorp.com.au> <20090826065501.7ab677b9@mjolnir.ossman.eu>
-In-Reply-To: <20090826065501.7ab677b9@mjolnir.ossman.eu>
+Message-ID: <4A95282A.3020209@s5r6.in-berlin.de>
+Date: Wed, 26 Aug 2009 14:18:50 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.22) Gecko/20090605 SeaMonkey/1.1.17
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Jeff Shanab <jshanab@earthlink.net>
+CC: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Starting a grad project that may change kernel VFS. Early 	research
+ Re: Starting a grad project that may change kernel VFS. Early 	research
+References: <4A93428A.4070903@earthlink.net> <4A941F56.8060502@redhat.com> <4A9427C7.8020009@earthlink.net>
+In-Reply-To: <4A9427C7.8020009@earthlink.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908262148.59664.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009 02:25:01 pm Pierre Ossman wrote:
-> On Wed, 26 Aug 2009 11:47:17 +0930
-> Rusty Russell <rusty@rustcorp.com.au> wrote:
-> 
-> > On Fri, 14 Aug 2009 05:55:48 am Pierre Ossman wrote:
-> > > On Wed, 12 Aug 2009 15:01:52 +0930
-> > > Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > > > Subject: virtio: net refill on out-of-memory
-> > ... 
-> > > Patch applied. Now we wait. :)
-> > 
-> > Any results?
-> > 
-> 
-> It's been up for 12 days, so I'd say it works. But there is nothing in
-> dmesg, which suggests I haven't triggered the condition yet.
+Jeff Shanab wrote:
+> Rik van Riel wrote:
+>> Hard links have been done like this in pretty much every
+>> Unix filesystem since the 1970's.
+[...]
+> There is no real way to handle this becasue the two files look the same
+> to the filesystem.
 
-No, that's totally expected.  I wouldn't expect a GFP_ATOMIC order 0 alloc
-failure to be noted, and the patch doesn't add any printks.
+See above; it has been state of the art since the 70's.  With hardlinks
+or symlinks, a graph which represents the FS happens to contain loops.
+No rocket science involved.
 
-Dave, can you push this to Linus ASAP?
+[...]
+> How would I display this information usefully to the user.
 
-Thanks,
-Rusty.
-
-Subject: virtio: net refill on out-of-memory
-
-If we run out of memory, use keventd to fill the buffer.  There's a
-report of this happening: "Page allocation failures in guest",
-Message-ID: <20090713115158.0a4892b0@mjolnir.ossman.eu>
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/net/virtio_net.c |   61 +++++++++++++++++++++++++++++++++++------------
- 1 file changed, 46 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -71,6 +71,9 @@ struct virtnet_info
- 	struct sk_buff_head recv;
- 	struct sk_buff_head send;
- 
-+	/* Work struct for refilling if we run low on memory. */
-+	struct delayed_work refill;
-+
- 	/* Chain pages by the private ptr. */
- 	struct page *pages;
- };
-@@ -274,19 +277,22 @@ drop:
- 	dev_kfree_skb(skb);
- }
- 
--static void try_fill_recv_maxbufs(struct virtnet_info *vi)
-+static bool try_fill_recv_maxbufs(struct virtnet_info *vi, gfp_t gfp)
- {
- 	struct sk_buff *skb;
- 	struct scatterlist sg[2+MAX_SKB_FRAGS];
- 	int num, err, i;
-+	bool oom = false;
- 
- 	sg_init_table(sg, 2+MAX_SKB_FRAGS);
- 	for (;;) {
- 		struct virtio_net_hdr *hdr;
- 
- 		skb = netdev_alloc_skb(vi->dev, MAX_PACKET_LEN + NET_IP_ALIGN);
--		if (unlikely(!skb))
-+		if (unlikely(!skb)) {
-+			oom = true;
- 			break;
-+		}
- 
- 		skb_reserve(skb, NET_IP_ALIGN);
- 		skb_put(skb, MAX_PACKET_LEN);
-@@ -297,7 +303,7 @@ static void try_fill_recv_maxbufs(struct
- 		if (vi->big_packets) {
- 			for (i = 0; i < MAX_SKB_FRAGS; i++) {
- 				skb_frag_t *f = &skb_shinfo(skb)->frags[i];
--				f->page = get_a_page(vi, GFP_ATOMIC);
-+				f->page = get_a_page(vi, gfp);
- 				if (!f->page)
- 					break;
- 
-@@ -326,31 +332,35 @@ static void try_fill_recv_maxbufs(struct
- 	if (unlikely(vi->num > vi->max))
- 		vi->max = vi->num;
- 	vi->rvq->vq_ops->kick(vi->rvq);
-+	return !oom;
- }
- 
--static void try_fill_recv(struct virtnet_info *vi)
-+/* Returns false if we couldn't fill entirely (OOM). */
-+static bool try_fill_recv(struct virtnet_info *vi, gfp_t gfp)
- {
- 	struct sk_buff *skb;
- 	struct scatterlist sg[1];
- 	int err;
-+	bool oom = false;
- 
--	if (!vi->mergeable_rx_bufs) {
--		try_fill_recv_maxbufs(vi);
--		return;
--	}
-+	if (!vi->mergeable_rx_bufs)
-+		return try_fill_recv_maxbufs(vi, gfp);
- 
- 	for (;;) {
- 		skb_frag_t *f;
- 
- 		skb = netdev_alloc_skb(vi->dev, GOOD_COPY_LEN + NET_IP_ALIGN);
--		if (unlikely(!skb))
-+		if (unlikely(!skb)) {
-+			oom = true;
- 			break;
-+		}
- 
- 		skb_reserve(skb, NET_IP_ALIGN);
- 
- 		f = &skb_shinfo(skb)->frags[0];
--		f->page = get_a_page(vi, GFP_ATOMIC);
-+		f->page = get_a_page(vi, gfp);
- 		if (!f->page) {
-+			oom = true;
- 			kfree_skb(skb);
- 			break;
- 		}
-@@ -374,6 +384,7 @@ static void try_fill_recv(struct virtnet
- 	if (unlikely(vi->num > vi->max))
- 		vi->max = vi->num;
- 	vi->rvq->vq_ops->kick(vi->rvq);
-+	return !oom;
- }
- 
- static void skb_recv_done(struct virtqueue *rvq)
-@@ -386,6 +397,23 @@ static void skb_recv_done(struct virtque
- 	}
- }
- 
-+static void refill_work(struct work_struct *work)
-+{
-+	struct virtnet_info *vi;
-+	bool still_empty;
-+
-+	vi = container_of(work, struct virtnet_info, refill.work);
-+	napi_disable(&vi->napi);
-+	try_fill_recv(vi, GFP_KERNEL);
-+	still_empty = (vi->num == 0);
-+	napi_enable(&vi->napi);
-+
-+	/* In theory, this can happen: if we don't get any buffers in
-+	 * we will *never* try to fill again. */
-+	if (still_empty)
-+		schedule_delayed_work(&vi->refill, HZ/2);
-+}
-+
- static int virtnet_poll(struct napi_struct *napi, int budget)
- {
- 	struct virtnet_info *vi = container_of(napi, struct virtnet_info, napi);
-@@ -401,10 +429,10 @@ again:
- 		received++;
- 	}
- 
--	/* FIXME: If we oom and completely run out of inbufs, we need
--	 * to start a timer trying to fill more. */
--	if (vi->num < vi->max / 2)
--		try_fill_recv(vi);
-+	if (vi->num < vi->max / 2) {
-+		if (!try_fill_recv(vi, GFP_ATOMIC))
-+			schedule_delayed_work(&vi->refill, 0);
-+	}
- 
- 	/* Out of packets? */
- 	if (received < budget) {
-@@ -894,6 +922,7 @@ static int virtnet_probe(struct virtio_d
- 	vi->vdev = vdev;
- 	vdev->priv = vi;
- 	vi->pages = NULL;
-+	INIT_DELAYED_WORK(&vi->refill, refill_work);
- 
- 	/* If they give us a callback when all buffers are done, we don't need
- 	 * the timer. */
-@@ -942,7 +971,7 @@ static int virtnet_probe(struct virtio_d
- 	}
- 
- 	/* Last of all, set up some receive buffers. */
--	try_fill_recv(vi);
-+	try_fill_recv(vi, GFP_KERNEL);
- 
- 	/* If we didn't even get one input buffer, we're useless. */
- 	if (vi->num == 0) {
-@@ -959,6 +988,7 @@ static int virtnet_probe(struct virtio_d
- 
- unregister:
- 	unregister_netdev(dev);
-+	cancel_delayed_work_sync(&vi->refill);
- free_vqs:
- 	vdev->config->del_vqs(vdev);
- free:
-@@ -987,6 +1017,7 @@ static void virtnet_remove(struct virtio
- 	BUG_ON(vi->num != 0);
- 
- 	unregister_netdev(vi->dev);
-+	cancel_delayed_work_sync(&vi->refill);
- 
- 	vdev->config->del_vqs(vi->vdev);
- 
+Certain file managers display the overall size and the size on disk.
+The latter differs from the former due to
+  - on-disk format overhead,
+  - on-disk compression,
+  - hardlinks and symlinks.
+If the user copies the directory to another filesystem, the size on disk
+will generally change.
+-- 
+Stefan Richter
+-=====-==--= =--- ==-=-
+http://arcgraph.de/sr/
