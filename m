@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbZHZHY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbZHZH1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbZHZHY3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbZHZHY0
+	id S1757114AbZHZH1e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbZHZH1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:24:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46909 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757098AbZHZHYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:24:24 -0400
-Date: Wed, 26 Aug 2009 07:23:54 GMT
-From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, yjwei@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, yjwei@cn.fujitsu.com, tglx@linutronix.de,
-       xiaoguangrong@cn.fujitsu.com
-In-Reply-To: <4A937F5E.3020802@cn.fujitsu.com>
-References: <4A937F5E.3020802@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing/events: fix the include file dependencies
-Message-ID: <tip-5ac35daa9343936038a3c9c4f4d6d3fe6a2a7bd8@git.kernel.org>
-Git-Commit-ID: 5ac35daa9343936038a3c9c4f4d6d3fe6a2a7bd8
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 26 Aug 2009 07:23:57 +0000 (UTC)
+	Wed, 26 Aug 2009 03:27:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45531 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756965AbZHZH1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 03:27:33 -0400
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+From: Peter Zijlstra <peterz@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+In-Reply-To: <4A94DFF4.5030301@cn.fujitsu.com>
+References: <20090824092455.GA25267@elte.hu>
+	 <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>
+	 <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>
+	 <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu>
+	 <1251191546.7538.1118.camel@twins> <20090825102215.GC26801@elte.hu>
+	 <1251196359.7538.1133.camel@twins>  <20090825103907.GB28287@elte.hu>
+	 <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins>
+	 <4A94D3A8.1090902@cn.fujitsu.com>  <1251269207.7538.1217.camel@twins>
+	 <1251270092.7538.1226.camel@twins>  <4A94DFF4.5030301@cn.fujitsu.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Aug 2009 09:26:28 +0200
+Message-Id: <1251271588.7538.1235.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5ac35daa9343936038a3c9c4f4d6d3fe6a2a7bd8
-Gitweb:     http://git.kernel.org/tip/5ac35daa9343936038a3c9c4f4d6d3fe6a2a7bd8
-Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Tue, 25 Aug 2009 14:06:22 +0800
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Wed, 26 Aug 2009 00:32:09 -0400
+On Wed, 2009-08-26 at 15:10 +0800, Li Zefan wrote:
+> Peter Zijlstra wrote:
+> > On Wed, 2009-08-26 at 08:46 +0200, Peter Zijlstra wrote:
+> > 
+> >> Aahh, I see the bug, its only ftrace that knows about the module, not
+> >> tracepoints themselves, _that_ needs fixing.
+> > 
+> > You could possibly do something like:
+> > 
+> >  struct module *tp_mod = __module_address(&some_tp_symbol);
+> >  struct module *cb_mod = __module_text_address(func);
+> > 
+> >  if (tp_mod && tp_mod != cb_mod) {
+> > 	ret = try_get_module(tp_mod);
+> > 	if (ret)
+> > 		goto fail;
+> >  }
+> > 
+> > in register_trace_##name() or thereabout.
+> > 
+> 
+> Actually I tried it, but it didn't work. As I said, You can't find
+> any tp symbol when registering tp callback. The same example again:
+> 
+> 	In module bar, we have register_trace_foo()
+> 	In module foo, we have DEFINE_TRACE(foo) and trace_foo().
+> 
+> bar doesn't know any symbol of foo, so it can't bump foo's refcnt,
 
-tracing/events: fix the include file dependencies
+Well, clearly it knows about register_trace_foo() which itself knows at
+least one symbol that should be in module foo, right? How else could it
+register a callback in that module (if it were loaded)?
 
-The TRACE_EVENT depends on the include/linux/tracepoint.h first
-and include/trace/ftrace.h later, if we include the ftrace.h early,
-a building error will occur.
+It appears to use some intermediate code, in which case the intermediate
+code knows about foo, which too solves our problem.
 
-Both define TRACE_EVENT in trace_a.h and trace_b.h, if we include
-those in .c file, like this:
+> *Note: you can load module bar without loading module foo*
 
-#define CREATE_TRACE_POINTS
-include <trace/events/trace_a.h>
-include <trace/events/trace_b.h>
-
-The above will not work, because the TRACE_EVENT was re-defined by
-the previous .h file.
-
-Reported-by: Wei Yongjun <yjwei@cn.fujitsu.com>
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-LKML-Reference: <4A937F5E.3020802@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-
----
- include/linux/tracepoint.h   |    3 +--
- include/trace/define_trace.h |    1 +
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-index 5984ed0..8170985 100644
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -180,6 +180,7 @@ static inline void tracepoint_synchronize_unregister(void)
- }
- 
- #define PARAMS(args...) args
-+#endif
- 
- #ifndef TRACE_EVENT
- /*
-@@ -287,5 +288,3 @@ static inline void tracepoint_synchronize_unregister(void)
- #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
- 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
- #endif
--
--#endif
-diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
-index f7a7ae1..cd150b9 100644
---- a/include/trace/define_trace.h
-+++ b/include/trace/define_trace.h
-@@ -56,6 +56,7 @@
- #include <trace/ftrace.h>
- #endif
- 
-+#undef TRACE_EVENT
- #undef TRACE_HEADER_MULTI_READ
- 
- /* Only undef what we defined in this file */
+In which case the tracepoint registration fails, right?
