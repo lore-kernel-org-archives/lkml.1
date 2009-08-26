@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbZHZNhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbZHZNkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374AbZHZNhW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757304AbZHZNhV
+	id S1757380AbZHZNkr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZHZNkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:37:21 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:22590 "EHLO mx1.redhat.com"
+	Wed, 26 Aug 2009 09:40:46 -0400
+Received: from bee.hiwaay.net ([216.180.54.11]:39990 "EHLO bee.hiwaay.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756496AbZHZNhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:37:20 -0400
-Message-ID: <4A953AAD.2000707@redhat.com>
-Date: Wed, 26 Aug 2009 09:37:49 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.8.b3.fc12 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <20090825225114.GE4300@elf.ucw.cz> <4A946DD1.8090906@redhat.com> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu> <20090826011605.GS4300@elf.ucw.cz> <20090826025514.GE32712@mit.edu>
-In-Reply-To: <20090826025514.GE32712@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1757292AbZHZNkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 09:40:46 -0400
+Date: Wed, 26 Aug 2009 08:40:45 -0500
+From: Chris Adams <cmadams@hiwaay.net>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] document flash/RAID dangers
+Message-ID: <20090826134045.GA1516467@hiwaay.net>
+References: <dddMw-7Xt-57@gated-at.bofh.it> <dddWc-83W-51@gated-at.bofh.it> <ddefx-5R-37@gated-at.bofh.it> <ddep7-bI-7@gated-at.bofh.it> <ddeyR-iy-11@gated-at.bofh.it> <ddeyR-iy-9@gated-at.bofh.it> <ddeIu-n9-9@gated-at.bofh.it> <ddeSb-th-29@gated-at.bofh.it> <ddoRI-11a-39@gated-at.bofh.it> <ddpkB-1jQ-1@gated-at.bofh.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826124058.GK32712@mit.edu>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/25/2009 10:55 PM, Theodore Tso wrote:
-> On Wed, Aug 26, 2009 at 03:16:06AM +0200, Pavel Machek wrote:
->> Hi!
->>
->>> 3) Does that mean that you shouldn't use ext3 on RAID drives?  Of
->>> course not!  First of all, Ext3 still saves you against kernel panics
->>> and hangs caused by device driver bugs or other kernel hangs.  You
->>> will lose less data, and avoid needing to run a long and painful fsck
->>> after a forced reboot, compared to if you used ext2.  You are making
->>
->> Actually... ext3 + MD RAID5 will still have a problem on kernel
->> panic. MD RAID5 is implemented in software, so if kernel panics, you
->> can still get inconsistent data in your array.
->
-> Only if the MD RAID array is running in degraded mode (and again, if
-> the system is in this state for a long time, the bug is in the system
-> administrator).  And even then, it depends on how the kernel dies.  If
-> the system hangs due to some deadlock, or we get an OOPS that kills a
-> process while still holding some locks, and that leads to a deadlock,
-> it's likely the low-level MD driver can still complete the stripe
-> write, and no data will be lost.  If the kernel ties itself in knots
-> due to running out of memory, and the OOM handler is invoked, someone
-> hitting the reset button to force a reboot will also be fine.
->
-> If the RAID array is degraded, and we get an oops in interrupt
-> handler, such that the system is immediately halted --- then yes, data
-> could get lost.  But there are many system crashes where the software
-> RAID's ability to complete a stripe write would not be compromised.
->
->         	       	  	     	    	  	- Ted
+Once upon a time, Theodore Tso  <tytso@mit.edu> said:
+>Well, the softwar raid layer could be improved so that it implements
+>scrubbing by default (i.e., have the md package install a cron job to
+>implement a periodict scrub pass automatically).
 
-Just to add some real world data, Bianca Schroeder published a really good paper 
-that looks at failures in national labs which has actual measured disk failures:
+Fedora 11 added a cron job to kick off a RAID check for each Linux MD
+RAID array every week.  Combined with running mdmonitor, root will get
+an email on any failure.
 
-http://www.cs.cmu.edu/~bianca/fast07.pdf
+The other thing about this thread is that the only RAID implementation
+that is being discussed here is the MD RAID stack.  There are a lot of
+RAID implementations that have the same issues:
 
-Her numbers showed various rates of failures, but depending on the box, drive 
-type, etc, they lost between 1-6% of the install drives each year.
+- motherboard (aka "fake") RAID - In Linux this is typically mapped with
+  device mapper via dmraid; AFAIK there is not a tool to scrub (or even
+  monitor the status of and notify on failure) a Linux DM RAID setup.
 
-There is also a good paper from Google:
+- hardware RAID cards without battery backup - these have the exact same
+  issues because they cannot guarantee all writes complete, nor can they
+  keep track of incomplete writes across power failures
 
-http://labs.google.com/papers/disk_failures.html
+- hardware RAID cards _with_ battery backup but that don't periodically
+  test the battery and have a way to notify you of battery failure while
+  Linux is running
 
-Both of the above are largely linux boxes.
+The issues being raised here are not specific to extX, MD RAID, or Linux
+at all; they are problems with non-"enterprise-class" RAID setups.
+There's a reason enterprise-class RAID costs a lot more money than the
+card you can pick up at Fry's.
 
-And several other FAST papers on failures in commercial RAID boxes, most notably 
-by NetApp.
-
-If reading papers is not at the top of your list of things to do, just skim 
-through and look for the tables on disk failures, etc. which have great 
-measurements of what really failed in these systems...
-
-Ric
-
-
-
-
-
+There's no reason to document the design issues of general RAID
+implementations in the Linux kernel.
+-- 
+Chris Adams <cmadams@hiwaay.net>
+Systems and Network Administrator - HiWAAY Internet Services
+I don't speak for anybody but myself - that's enough trouble.
