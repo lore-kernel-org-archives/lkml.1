@@ -1,143 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZHZCZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbZHZCcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454AbZHZCZz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 22:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbZHZCZy
+	id S1756491AbZHZCcr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 22:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381AbZHZCcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 22:25:54 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58127 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755154AbZHZCZy (ORCPT
+	Tue, 25 Aug 2009 22:32:47 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56401 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756361AbZHZCcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 22:25:54 -0400
-Date: Tue, 25 Aug 2009 22:25:52 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jason Baron <jbaron@redhat.com>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
-       laijs@cn.fujitsu.com, peterz@infradead.org,
-       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
-       lizf@cn.fujitsu.com, jistone@redhat.com, tglx@linutronix.de,
-       hpa@zytor.com
-Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
-In-Reply-To: <20090825184734.GE2656@redhat.com>
-Message-ID: <alpine.DEB.2.00.0908252223310.28127@gandalf.stny.rr.com>
-References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere> <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com> <20090825134005.GB2656@redhat.com>
- <20090825184734.GE2656@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 25 Aug 2009 22:32:46 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Hiroaki Wakabayashi <primulaelatior@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Ying Han <yinghan@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+In-Reply-To: <Pine.LNX.4.64.0908250947400.2872@sister.anvils>
+References: <82e12e5f0908242146uad0f314hcbb02fcc999a1d32@mail.gmail.com> <Pine.LNX.4.64.0908250947400.2872@sister.anvils>
+Message-Id: <20090826113622.9A29.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 26 Aug 2009 11:32:43 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 25 Aug 2009, Jason Baron wrote:
-
-> On Tue, Aug 25, 2009 at 09:40:05AM -0400, Jason Baron wrote:
+> > > Yeah, GUP_FLAGS_NOFAULT is better.
 > > 
-> > right, for x86_64, unistd.h is included to generate __NR_syscall_max
-> > which is then used for NR_syscalls. So I did initially try it there, but
-> > there were dependency problems. I'll see what I can come up with...
+> > Me too.
+> > I will change this flag name.
+> >... 
+> > When I try to change __get_user_pages(), I got problem.
+> > If remove NULLs from pages,
+> > __mlock_vma_pages_range() cannot know how long __get_user_pages() readed.
+> > So, I have to get the virtual address of the page from vma and page.
+> > Because __mlock_vma_pages_range() have to call
+> > __get_user_pages() many times with different `start' argument.
 > > 
-> > thanks,
-> > 
-> > -Jason
+> > I try to use page_address_in_vma(), but it failed.
+> > (page_address_in_vma() returned -EFAULT)
+> > I cannot find way to solve this problem.
+> > Are there good ideas?
+> > Please give me some ideas.
 > 
-> ok, since unistd_64.h is used to generate offsets.c, which eventually
-> generates, asm/asm-offsets.h, which defines, __NR_syscall_max, we can't
-> just put #define of NR_syscalls in unistd_64.h. However, it seems the
+> I agree that this munlock issue needs to be addressed: it's not just a
+> matter of speedup, I hit it when testing what happens when mlock takes
+> you to OOM - which is currently a hanging disaster because munlock'ing
+> in the exiting OOM-killed process gets stuck trying to fault in all
+> those pages that couldn't be locked in the first place.
 
-Why not? A define is not a problem until it is used. Is something in 
-asm-offsets.c using NR_syscalls?
+I agree too.
 
-> only point in time that unistd_64.h can not depend upon __NR_syscall_max,
-> is before asm/asm-offsets.h is defined. Thus, the patch below passes in
-> a '-DCREATE_OFFSETS' during the creation of asm/asm-offsets.h, so that
-> we do not include it before it exists. The patch is hacky but works.
-> thoughts?
+
+> I had intended to fix it by being more careful about splitting/merging
+> vmas, noting how far the mlock had got, and munlocking just up to there.
+> However, now that I've got in there, that looks wrong to me, given the
+> traditional behaviour that mlock does its best, but pretends success
+> to allow for later instantiation of the pages if necessary.
 > 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> You ask for ideas.  My main idea is that so far we have added
+> GUP_FLAGS_IGNORE_VMA_PERMISSIONS (Kosaki-san, what was that about?
+>                                   we already had the force flag),
+
+MAY_WRITE and MAY_READ might be turned off at some special case.
+but munlock should turn off PG_mlock bit. otherwise the page never be reclaimed.
+This problem was explained by Lee about a year ago.
+
+However, To use follow_page() solove this issue and we will be able to
+remove this ugly flag.
+
+> GUP_FLAGS_IGNORE_SIGKILL, and now you propose
+> GUP_FLAGS_NOFAULT, all for the sole use of munlock.
 > 
-> ---
+> How about GUP_FLAGS_MUNLOCK, or more to the point, GUP_FLAGS_DONT_BE_GUP?
+> By which I mean, don't all these added flags suggest that almost
+> everything __get_user_pages() does is unsuited to the munlock case?
 > 
->  Kbuild                           |    2 +-
->  arch/x86/include/asm/unistd_64.h |    6 ++++++
->  scripts/Makefile.build           |    4 ++++
->  3 files changed, 11 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/Kbuild b/Kbuild
-> index f056b4f..5f43d4d 100644
-> --- a/Kbuild
-> +++ b/Kbuild
-> @@ -78,7 +78,7 @@ endef
->  arch/$(SRCARCH)/kernel/asm-offsets.s: arch/$(SRCARCH)/kernel/asm-offsets.c \
->                                        $(obj)/$(bounds-file) FORCE
->  	$(Q)mkdir -p $(dir $@)
-> -	$(call if_changed_dep,cc_s_c)
-> +	$(call if_changed_dep,cc_s_c_define_offset)
->  
->  $(obj)/$(offsets-file): arch/$(SRCARCH)/kernel/asm-offsets.s Kbuild
->  	$(call cmd,offsets)
-> diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
-> index 900e161..70c0c3d 100644
-> --- a/arch/x86/include/asm/unistd_64.h
-> +++ b/arch/x86/include/asm/unistd_64.h
-> @@ -688,6 +688,12 @@ __SYSCALL(__NR_perf_counter_open, sys_perf_counter_open)
->  #endif	/* __NO_STUBS */
->  
->  #ifdef __KERNEL__
-> +
-> +#ifndef CREATE_OFFSETS
-> +#include <asm/asm-offsets.h>
-> +#define NR_syscalls (__NR_syscall_max + 1)
-> +#endif
-> +
->  /*
->   * "Conditional" syscalls
->   *
-> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-> index 5c4b7a4..4177858 100644
-> --- a/scripts/Makefile.build
-> +++ b/scripts/Makefile.build
-> @@ -145,6 +145,10 @@ $(multi-objs-y:.o=.lst) : modname = $(modname-multi)
->  quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
->  cmd_cc_s_c       = $(CC) $(c_flags) -fverbose-asm -S -o $@ $<
->  
-> +quiet_cmd_cc_s_c_define_offset = CC $(quiet_modtag)  $@
-> +cmd_cc_s_c_define_offset       = $(CC) $(c_flags) -DCREATE_OFFSETS \
-> +					-fverbose-asm -S -o $@ $<
-> +
->  $(obj)/%.s: $(src)/%.c FORCE
->  	$(call if_changed_dep,cc_s_c)
+> My advice (but I sure hate giving advice before I've tried it myself)
+> is to put __mlock_vma_pages_range() back to handling just the mlock
+> case, and do your own follow_page() loop in munlock_vma_pages_range().
+
+Agreed. follow_page() is better.
 
 
-Ug, yuck yuck yuck. Sometimes "it works" is not good enough ;-)
-
-How about just adding in asm/unistd.h
-
- #ifdef __KERNEL__
- # ifdef CONFIG_X86_32
- #  include "unistd_32.h"
- # else
- #  include "unistd_64.h"
-+#  define NR_syscalls (__NR_syscall_max + 1)
- # endif
- #else
- # ifdef __i386__
- #  include "unistd_32.h"
- # else
- #  include "unistd_64.h"
- # endif
- #endif
-
-And if this is a problem because asm-offset_64.c includes asm/unistd.h, 
-then make it just include unistd_64.h.
-
-Or am I missing something?
-
--- Steve
 
 
