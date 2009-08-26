@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZHZVP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbZHZVTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbZHZVP5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 17:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZHZVP4
+	id S1753821AbZHZVTL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 17:19:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZHZVTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 17:15:56 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:50773 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753367AbZHZVP4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 17:15:56 -0400
-Message-ID: <4A95A5EE.90400@nortel.com>
-Date: Wed, 26 Aug 2009 15:15:26 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 26 Aug 2009 17:19:10 -0400
+Received: from lucidpixels.com ([75.144.35.66]:57365 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751403AbZHZVTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 17:19:10 -0400
+Date: Wed, 26 Aug 2009 17:19:11 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Christoph Hellwig <hch@infradead.org>
+cc: Nikanth Karthikesan <knikanth@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Kernel 2.6.30.4 loop(..?) regression (& with/2.6.31-rc6)
+In-Reply-To: <20090826180234.GC14019@infradead.org>
+Message-ID: <alpine.DEB.2.00.0908261717001.1594@p34.internal.lan>
+References: <alpine.DEB.2.00.0908220624440.30321@p34.internal.lan> <20090822142550.GA10003@infradead.org> <alpine.DEB.2.00.0908221044420.30321@p34.internal.lan> <20090822201558.GA17955@infradead.org> <alpine.DEB.2.00.0908221645440.20848@p34.internal.lan>
+ <20090822205502.GA18904@infradead.org> <alpine.DEB.2.00.0908221659030.23463@p34.internal.lan> <20090823224504.GA19942@infradead.org> <alpine.DEB.2.00.0908240704130.9427@p34.internal.lan> <alpine.DEB.2.00.0908260949550.9396@p34.internal.lan>
+ <20090826180234.GC14019@infradead.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Christoph Lameter <cl@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, raziebe@gmail.com, maximlevitsky@gmail.com,
-       efault@gmx.de, riel@redhat.com, wiseman@macs.biu.ac.il,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-References: <1251282598.3514.20.camel@raz>	<alpine.DEB.1.10.0908260943090.9924@gentwo.org>	<1251297910.1791.22.camel@maxim-laptop>	<1251298443.4791.7.camel@raz>	<1251300625.18584.18.camel@twins>	<alpine.DEB.1.10.0908261136590.9933@gentwo.org>	<1251302598.18584.31.camel@twins>	<alpine.DEB.1.10.0908261211340.9933@gentwo.org>	<20090826180407.GA13632@elte.hu>	<alpine.DEB.1.10.0908261509580.9933@gentwo.org>	<20090826193252.GA14721@elte.hu>	<alpine.DEB.1.10.0908261627110.5554@gentwo.org> <20090826135041.e6169d18.akpm@linux-foundation.org>
-In-Reply-To: <20090826135041.e6169d18.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Aug 2009 21:15:40.0278 (UTC) FILETIME=[5D1D9160:01CA2692]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/26/2009 02:50 PM, Andrew Morton wrote:
 
-> What problem?
-> 
-> All I've seen is "I want 100% access to a CPU".  That's not a problem
-> statement - it's an implementation.
-> 
-> What is the problem statement?
 
-I can only speak for myself...
+On Wed, 26 Aug 2009, Christoph Hellwig wrote:
 
-In our case the problem statement was that we had an inherently
-single-threaded emulator app that we wanted to push as hard as
-absolutely possible.
+> On Wed, Aug 26, 2009 at 09:50:27AM -0400, Justin Piszcz wrote:
+>> So far the uptime is 2 days, if it does not recur in the next 24-48
+>> hours, do you recommend I follow up with the linux-crypto folks about
+>> this?  It appears this could be the cause (no issues, as of yet).
+>
+> At this point it doesn't look crypto related anymore, but like some
+> bad interaction between layers once we add those fsync in the loop code.
+>
+> What filesystem does you loop image reside on?   Anything else special?
+For the root filesystem, on / type xfs (rw,noatime)
+For larger partitions (per the cryptoloop doc) the partition itself is 
+setup via cryptoloop and then XFS ontop of that.  Nothing special.
 
-We gave it as close to a whole cpu as we could using cpu and irq
-affinity and we used message queues in shared memory to allow another
-cpu to handle I/O.  In our case we still had kernel threads running on
-the app cpu, but if we'd had a straightforward way to avoid them we
-would have used it.
 
-Chris
+> Any way to trgiger it with just loop but not crypto, etc.
+Unfortunately not that I am aware of..  Would trying the kernel with the 
+patch removed and mounted with -o nobarrier help to show us anything, or?
+
+>
+> _______________________________________________
+> xfs mailing list
+> xfs@oss.sgi.com
+> http://oss.sgi.com/mailman/listinfo/xfs
+>
