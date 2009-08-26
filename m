@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbZHZAJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbZHZAMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbZHZAJz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbZHZAJx
+	id S1756095AbZHZAMQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbZHZAMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:09:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58926 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756097AbZHZAEr convert rfc822-to-8bit (ORCPT
+	Tue, 25 Aug 2009 20:12:15 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42510 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873AbZHZAMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:04:47 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Jan Scholz" <scholz@fias.uni-frankfurt.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
-In-Reply-To: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Tue, 25 Aug 2009 20:12:13 -0400
+Date: Wed, 26 Aug 2009 02:12:06 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: david@lang.hm
+Cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+Message-ID: <20090826001206.GL4300@elf.ucw.cz>
+References: <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <Cg6cQYLdUxG.A.2TC.e1GlKB@chimera>
-Subject: [Bug #13407] adb trackpad disappears after suspend to ram
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue, 25 Aug 2009 23:05:02 +0200 (CEST)
+In-Reply-To: <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.29 and 2.6.30.
+On Tue 2009-08-25 16:56:40, david@lang.hm wrote:
+> On Wed, 26 Aug 2009, Pavel Machek wrote:
+>
+>> There are storage devices that high highly undesirable properties
+>> when they are disconnected or suffer power failures while writes are
+>> in progress; such devices include flash devices and MD RAID 4/5/6
+>> arrays.
+>
+> change this to say 'degraded MD RAID 4/5/6 arrays'
+>
+> also find out if DM RAID 4/5/6 arrays suffer the same problem (I strongly 
+> suspect that they do)
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-be listed and let me know (either way).
+I changed it to say MD/DM.
 
+> then you need to add a note that if the array becomes degraded before a  
+> scrub cycle happens previously hidden damage (that would have been  
+> repaired by the scrub) can surface.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13407
-Subject		: adb trackpad disappears after suspend to ram
-Submitter	: Jan Scholz <scholz@fias.uni-frankfurt.de>
-Date		: 2009-05-28 7:59 (90 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7
-References	: http://marc.info/?l=linux-kernel&m=124349762314976&w=4
-Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+I'd prefer not to talk about scrubing and such details here. Better
+leave warning here and point to MD documentation.
 
+>> THESE devices have the property of potentially corrupting blocks being  
+>> written at the time of the power failure,
+>
+> this is true of all devices
 
+Actually I don't think so. I believe SATA disks do not corrupt even
+the sector they are writing to -- they just have big enough
+capacitors. And yes I believe ext3 depends on that.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
