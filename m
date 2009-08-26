@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbZHZNu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZHZNwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933007AbZHZNu1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbZHZNu0
+	id S1757413AbZHZNwD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbZHZNwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:50:26 -0400
-Received: from lucidpixels.com ([75.144.35.66]:36509 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756078AbZHZNu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:50:26 -0400
-Date: Wed, 26 Aug 2009 09:50:27 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Christoph Hellwig <hch@infradead.org>
-cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.30.4 XFS(..?) regression (& with/2.6.31-rc6)
-In-Reply-To: <alpine.DEB.2.00.0908240704130.9427@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0908260949550.9396@p34.internal.lan>
-References: <alpine.DEB.2.00.0908110624420.22426@p34.internal.lan> <20090816022331.GA2309@infradead.org> <alpine.DEB.2.00.0908171024380.12533@p34.internal.lan> <alpine.DEB.2.00.0908220624440.30321@p34.internal.lan> <20090822142550.GA10003@infradead.org>
- <alpine.DEB.2.00.0908221044420.30321@p34.internal.lan> <20090822201558.GA17955@infradead.org> <alpine.DEB.2.00.0908221645440.20848@p34.internal.lan> <20090822205502.GA18904@infradead.org> <alpine.DEB.2.00.0908221659030.23463@p34.internal.lan>
- <20090823224504.GA19942@infradead.org> <alpine.DEB.2.00.0908240704130.9427@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 26 Aug 2009 09:52:03 -0400
+Received: from mail-px0-f174.google.com ([209.85.216.174]:45643 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756078AbZHZNwC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 09:52:02 -0400
+X-Greylist: delayed 460 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 09:52:02 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=riyaAi3fscOdNe106aQI9aM5irs/YfRqD3Q4NNWHFfRWw4UuwGo9xW6Ww5oGG5e8Tt
+         kypcpicC//XxUNBftbMSLoi8+r8Ktiu9sl4gF383CKhcEx4e7+Lp5zzOKDS4uiQvI9HZ
+         JW2bkF+sPTGxuCUgbzg4onPFl1CK8qJQk66Fw=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Date: Wed, 26 Aug 2009 19:14:23 +0530
+Message-ID: <e42309110908260644y65d87fc2q54405ef95be0caaf@mail.gmail.com>
+Subject: sk_stream_wait_memory: Query
+From: Ravish Tayal <ravish.tayal@gmail.com>
+To: linux-arm@vger.kernel.org,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+In " tcp_sendmsg" function in 2 situation, tcp code attempts to jump
+to "wait_for_memory:
+" case when
+1. it fails to allocate to the new skb  [sk_stream_alloc_pskb failure]
+2. it fails to allocate new cache page.
+
+and invokes the sk_stream_wait_memory function.
+
+inside which it invokes the
+  sk_wait_event(sk, &current_timeo, sk_stream_memory_free(sk) &&
+vm_wait);
+
+in case if sk_stream_wait_memory is invoked due to skb allocation
+failure, it would busy loop and would not relinquish the control.
+[For non-preemptive kernel]
+
+Is it fair expectation, or even this case it should let it current
+task get scheduled and re try after timer expiry.
+
+regards
+Ravish Tayal
 
 
-On Mon, 24 Aug 2009, Justin Piszcz wrote:
-
->
->
-> On Sun, 23 Aug 2009, Christoph Hellwig wrote:
->
->> Ok, let's see where errors could happen then.
->> 
->> There are four theoretical possibilities:
->> 
->> (a) XFS
->> (b) loop driver
->> (c) crypto loop code
->> (d) block layer
->> 
->> Or combinations thereof.
->> 
->> I would take (a) and (d) as more unlikely as they tend to get used much
->> more and I would have heard more bug reports already.
->> 
->> The cryptoloop code hasn't changed at all since 2.6.29.
->> 
->> The loop code howver has a very interesting commit just after 2.6.39:
->> 
->> commit 68db1961bbf4e16c220ccec4a780e966bc1fece3
->> Author: Nikanth Karthikesan <knikanth@suse.de>
->> Date:   Tue Mar 24 12:29:54 2009 +0100
->>
->>    loop: support barrier writes
->> 
->> Can you try reverting this one (it cleanly reverse-applies against
->> 2.6.30 and current mainline) and see if that makes a difference?
->> 
->
-> Hello Christoph,
->
-> # patch -p1 -R < ../unpatch.patch
-> patching file drivers/block/loop.c
-> Hunk #1 succeeded at 473 (offset -1 lines).
-> Hunk #2 succeeded at 804 (offset -22 lines).
-> #
->
-> Patched, we'll see if the problem recurs.. thanks!
->
-> Justin.
->
-
-Hi Christoph,
-
-So far the uptime is 2 days, if it does not recur in the next 24-48 hours, 
-do you recommend I follow up with the linux-crypto folks about this?  It 
-appears this could be the cause (no issues, as of yet).
-
-Justin.
+in the case if linux kernel is configured as non-premeptive
