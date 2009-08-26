@@ -1,100 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZHZGtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbZHZGuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756943AbZHZGtW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 02:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756900AbZHZGtV
+	id S1756939AbZHZGuh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 02:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbZHZGug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 02:49:21 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39274 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbZHZGtV (ORCPT
+	Wed, 26 Aug 2009 02:50:36 -0400
+Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:38947
+	"EHLO mswedge2.sunplus.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754594AbZHZGuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 02:49:21 -0400
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <20090825194219.GA8215@nowhere>
-References: <20090825141547.GE6114@nowhere>
-	 <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
-	 <20090825162004.GA25058@Krystal> <20090825165912.GI6114@nowhere>
-	 <20090825173107.GJ6114@nowhere> <20090825183119.GC2448@Krystal>
-	 <20090825194219.GA8215@nowhere>
+	Wed, 26 Aug 2009 02:50:35 -0400
+Subject: Subject: [PATCH 32/33] score: create mm/ files extable.c fault.c
+From: Chen Liqin <liqin.chen@sunplusct.com>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, torvalds@linux-foundation.org
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Aug 2009 08:48:07 +0200
-Message-Id: <1251269287.7538.1218.camel@twins>
+Date: Wed, 26 Aug 2009 14:38:54 +0800
+Message-Id: <1251268734.3293.4.camel@ad3ser01>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 21:42 +0200, Frederic Weisbecker wrote:
-> On Tue, Aug 25, 2009 at 02:31:19PM -0400, Mathieu Desnoyers wrote:
-> > (Well, I do not have time currently to look into the gory details
-> > (sorry), but let's try to take a step back from the problem.)
-> > 
-> > The design proposal for this kthread behavior wrt syscalls is based on a
-> > very specific and current kernel behavior, that may happen to change and
-> > that I have actually seen proven incorrect. For instance, some
-> > proprietary Linux driver does very odd things with system calls within
-> > kernel threads, like invoking them with int 0x80.
-> > 
-> > Yes, this is odd, but do we really want to tie the tracer that much to
-> > the actual OS implementation specificities ?
-> 
-> 
-> I really can't see the point in doing this. I don't expect the kernel
-> behaviour to change soon and have explicit syscalls interrupts done
-> from it. It's not about a current kernel implementation fashion,
-> it's about kernel design sanity that is not likely to go backward.
-> 
-> Is it worth it to trace kernel threads, maintain their tracing
-> specificities (such as workarounds with ret_from_fork that implies)
-> just because we want to support tracing on some silly proprietary drivers?
-> 
-> 
-> > 
-> > That sounds like a recipe for endless breakages and missing bits of
-> > instrumentation.
-> >
-> > So my advice would be: if we want to trace the syscall entry/exit paths,
-> > let's trace them for the _whole_ system, and find ways to make it work
-> > for corner-cases rather than finding clever ways to diminish
-> > instrumentation coverage.
-> 
-> 
-> If developers of out of tree drivers want to implement buggy things
-> that would never be accepted after a minimal review here, and then instrument
-> their bugs, then I would suggest them to implement their own ad hoc instrumentation,
-> really :-/
-> 
-> What's the point in supporting out of tree bugs?
-> 
-> Well, the only advantage of doing this would be to support reverse engineering
-> in tiny and rare corner cases. Not that worth the effort.
-> 
->  
-> > Given the ret from fork example happens to be the first event fired
-> > after the thread is created, we should be able to deal with this problem
-> > by initializing the thread structure used by syscall exit tracing to an
-> > initial "ret from fork" value.
-> > 
-> > Mathieu
-> 
-> 
-> It means we have to support and check this corner case in every archs
-> that support syscall tracing, deal with crashes because we omitted it, etc...
-> 
-> For all the things I've explained above I don't think it's worth the effort.
-> 
-> But it's just my opinion...
+>From 9a983ba502045e6ed9ac8055f10717df9db100cb Mon Sep 17 00:00:00 2001
+From: Chen Liqin <liqin.chen@sunplusct.com>
+Date: Wed, 26 Aug 2009 10:05:12 +0800
+Subject: [PATCH 32/33] score: create mm/ files extable.c fault.c
 
-I fully agree, let out of tree people deal with their own crap.
+
+Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
+---
+ arch/score/mm/extable.c |   38 ++++++++
+ arch/score/mm/fault.c   |  235 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 273 insertions(+), 0 deletions(-)
+ create mode 100644 arch/score/mm/extable.c
+ create mode 100644 arch/score/mm/fault.c
+
+diff --git a/arch/score/mm/extable.c b/arch/score/mm/extable.c
+new file mode 100644
+index 0000000..01ff644
+--- /dev/null
++++ b/arch/score/mm/extable.c
+@@ -0,0 +1,38 @@
++/*
++ * arch/score/mm/extable.c
++ *
++ * Score Processor version.
++ *
++ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
++ *  Lennox Wu <lennox.wu@sunplusct.com>
++ *  Chen Liqin <liqin.chen@sunplusct.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#include <linux/module.h>
++
++int fixup_exception(struct pt_regs *regs)
++{
++	const struct exception_table_entry *fixup;
++
++	fixup = search_exception_tables(regs->cp0_epc);
++	if (fixup) {
++		regs->cp0_epc = fixup->fixup;
++		return 1;
++	}
++	return 0;
++}
+diff --git a/arch/score/mm/fault.c b/arch/score/mm/fault.c
+new file mode 100644
+index 0000000..47b600e
+--- /dev/null
++++ b/arch/score/mm/fault.c
+@@ -0,0 +1,235 @@
++/*
++ * arch/score/mm/fault.c
++ *
++ * Score Processor version.
++ *
++ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
++ *  Lennox Wu <lennox.wu@sunplusct.com>
++ *  Chen Liqin <liqin.chen@sunplusct.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#include <linux/errno.h>
++#include <linux/interrupt.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/mman.h>
++#include <linux/module.h>
++#include <linux/signal.h>
++#include <linux/sched.h>
++#include <linux/string.h>
++#include <linux/types.h>
++#include <linux/ptrace.h>
++
++/*
++ * This routine handles page faults.  It determines the address,
++ * and the problem, and then passes it off to one of the appropriate
++ * routines.
++ */
++asmlinkage void do_page_fault(struct pt_regs *regs, unsigned long write,
++				unsigned long address)
++{
++	struct vm_area_struct *vma = NULL;
++	struct task_struct *tsk = current;
++	struct mm_struct *mm = tsk->mm;
++	const int field = sizeof(unsigned long) * 2;
++	siginfo_t info;
++	int fault;
++
++	info.si_code = SEGV_MAPERR;
++
++	/*
++	* We fault-in kernel-space virtual memory on-demand. The
++	* 'reference' page table is init_mm.pgd.
++	*
++	* NOTE! We MUST NOT take any locks for this case. We may
++	* be in an interrupt or a critical region, and should
++	* only copy the information from the master page table,
++	* nothing more.
++	*/
++	if (unlikely(address >= VMALLOC_START && address <= VMALLOC_END))
++		goto vmalloc_fault;
++#ifdef MODULE_START
++	if (unlikely(address >= MODULE_START && address < MODULE_END))
++		goto vmalloc_fault;
++#endif
++
++	/*
++	* If we're in an interrupt or have no user
++	* context, we must not take the fault..
++	*/
++	if (in_atomic() || !mm)
++		goto bad_area_nosemaphore;
++
++	down_read(&mm->mmap_sem);
++	vma = find_vma(mm, address);
++	if (!vma)
++		goto bad_area;
++	if (vma->vm_start <= address)
++		goto good_area;
++	if (!(vma->vm_flags & VM_GROWSDOWN))
++		goto bad_area;
++	if (expand_stack(vma, address))
++		goto bad_area;
++	/*
++	* Ok, we have a good vm_area for this memory access, so
++	* we can handle it..
++	 */
++good_area:
++	info.si_code = SEGV_ACCERR;
++
++	if (write) {
++		if (!(vma->vm_flags & VM_WRITE))
++			goto bad_area;
++	} else {
++		if (!(vma->vm_flags & (VM_READ | VM_WRITE | VM_EXEC)))
++			goto bad_area;
++	}
++
++survive:
++	/*
++	* If for any reason at all we couldn't handle the fault,
++	* make sure we exit gracefully rather than endlessly redo
++	* the fault.
++	*/
++	fault = handle_mm_fault(mm, vma, address, write);
++	if (unlikely(fault & VM_FAULT_ERROR)) {
++		if (fault & VM_FAULT_OOM)
++			goto out_of_memory;
++		else if (fault & VM_FAULT_SIGBUS)
++			goto do_sigbus;
++		BUG();
++	}
++	if (fault & VM_FAULT_MAJOR)
++		tsk->maj_flt++;
++	else
++		tsk->min_flt++;
++
++	up_read(&mm->mmap_sem);
++	return;
++
++	/*
++	* Something tried to access memory that isn't in our memory map..
++	* Fix it, but check if it's kernel or user first..
++	 */
++bad_area:
++	up_read(&mm->mmap_sem);
++
++bad_area_nosemaphore:
++	/* User mode accesses just cause a SIGSEGV */
++	if (user_mode(regs)) {
++		tsk->thread.cp0_badvaddr = address;
++		tsk->thread.error_code = write;
++		info.si_signo = SIGSEGV;
++		info.si_errno = 0;
++		/* info.si_code has been set above */
++		info.si_addr = (void __user *) address;
++		force_sig_info(SIGSEGV, &info, tsk);
++		return;
++	}
++
++no_context:
++	/* Are we prepared to handle this kernel fault? */
++	if (fixup_exception(regs)) {
++		current->thread.cp0_baduaddr = address;
++		return;
++	}
++
++	/*
++	* Oops. The kernel tried to access some bad page. We'll have to
++	* terminate things with extreme prejudice.
++	*/
++	bust_spinlocks(1);
++
++	printk(KERN_ALERT "CPU %d Unable to handle kernel paging request at "
++			"virtual address %0*lx, epc == %0*lx, ra == %0*lx\n",
++			0, field, address, field, regs->cp0_epc,
++			field, regs->regs[3]);
++	die("Oops", regs);
++
++	/*
++	* We ran out of memory, or some other thing happened to us that made
++	* us unable to handle the page fault gracefully.
++	*/
++out_of_memory:
++	up_read(&mm->mmap_sem);
++	if (is_global_init(tsk)) {
++		yield();
++		down_read(&mm->mmap_sem);
++		goto survive;
++	}
++	printk("VM: killing process %s\n", tsk->comm);
++	if (user_mode(regs))
++		do_group_exit(SIGKILL);
++	goto no_context;
++
++do_sigbus:
++	up_read(&mm->mmap_sem);
++	/* Kernel mode? Handle exceptions or die */
++	if (!user_mode(regs))
++		goto no_context;
++	else
++	/*
++	* Send a sigbus, regardless of whether we were in kernel
++	* or user mode.
++	*/
++	tsk->thread.cp0_badvaddr = address;
++	info.si_signo = SIGBUS;
++	info.si_errno = 0;
++	info.si_code = BUS_ADRERR;
++	info.si_addr = (void __user *) address;
++	force_sig_info(SIGBUS, &info, tsk);
++	return;
++vmalloc_fault:
++	{
++		/*
++		* Synchronize this task's top level page-table
++		* with the 'reference' page table.
++		*
++		* Do _not_ use "tsk" here. We might be inside
++		* an interrupt in the middle of a task switch..
++		*/
++		int offset = __pgd_offset(address);
++		pgd_t *pgd, *pgd_k;
++		pud_t *pud, *pud_k;
++		pmd_t *pmd, *pmd_k;
++		pte_t *pte_k;
++
++		pgd = (pgd_t *) pgd_current + offset;
++		pgd_k = init_mm.pgd + offset;
++
++		if (!pgd_present(*pgd_k))
++			goto no_context;
++		set_pgd(pgd, *pgd_k);
++
++		pud = pud_offset(pgd, address);
++		pud_k = pud_offset(pgd_k, address);
++		if (!pud_present(*pud_k))
++			goto no_context;
++
++		pmd = pmd_offset(pud, address);
++		pmd_k = pmd_offset(pud_k, address);
++		if (!pmd_present(*pmd_k))
++			goto no_context;
++		set_pmd(pmd, *pmd_k);
++
++		pte_k = pte_offset_kernel(pmd_k, address);
++		if (!pte_present(*pte_k))
++			goto no_context;
++		return;
++	}
++}
+-- 
+1.6.2
+
+
+
