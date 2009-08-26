@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZHZVOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZHZVP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753811AbZHZVOK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 17:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZHZVOJ
+	id S1753834AbZHZVP5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 17:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZHZVP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 17:14:09 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:55833 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753710AbZHZVOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 17:14:08 -0400
-Date: Wed, 26 Aug 2009 23:14:00 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Izik Eidus <ieidus@redhat.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 13/12] ksm: fix munlock during exit_mmap deadlock
-Message-ID: <20090826211400.GE14722@random.random>
-References: <20090825145832.GP14722@random.random>
- <20090825152217.GQ14722@random.random>
- <Pine.LNX.4.64.0908251836050.30372@sister.anvils>
- <20090825181019.GT14722@random.random>
- <Pine.LNX.4.64.0908251958170.5871@sister.anvils>
- <20090825194530.GU14722@random.random>
- <Pine.LNX.4.64.0908261910530.15622@sister.anvils>
- <20090826194444.GB14722@random.random>
- <Pine.LNX.4.64.0908262048270.21188@sister.anvils>
- <4A95A10C.5040008@redhat.com>
+	Wed, 26 Aug 2009 17:15:56 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:50773 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753367AbZHZVP4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 17:15:56 -0400
+Message-ID: <4A95A5EE.90400@nortel.com>
+Date: Wed, 26 Aug 2009 15:15:26 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A95A10C.5040008@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Christoph Lameter <cl@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, raziebe@gmail.com, maximlevitsky@gmail.com,
+       efault@gmx.de, riel@redhat.com, wiseman@macs.biu.ac.il,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+References: <1251282598.3514.20.camel@raz>	<alpine.DEB.1.10.0908260943090.9924@gentwo.org>	<1251297910.1791.22.camel@maxim-laptop>	<1251298443.4791.7.camel@raz>	<1251300625.18584.18.camel@twins>	<alpine.DEB.1.10.0908261136590.9933@gentwo.org>	<1251302598.18584.31.camel@twins>	<alpine.DEB.1.10.0908261211340.9933@gentwo.org>	<20090826180407.GA13632@elte.hu>	<alpine.DEB.1.10.0908261509580.9933@gentwo.org>	<20090826193252.GA14721@elte.hu>	<alpine.DEB.1.10.0908261627110.5554@gentwo.org> <20090826135041.e6169d18.akpm@linux-foundation.org>
+In-Reply-To: <20090826135041.e6169d18.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Aug 2009 21:15:40.0278 (UTC) FILETIME=[5D1D9160:01CA2692]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 11:54:36PM +0300, Izik Eidus wrote:
-> But before getting into this, why is it so important to break the ksm 
-> pages when madvise(UNMERGEABLE) get called?
+On 08/26/2009 02:50 PM, Andrew Morton wrote:
 
-The moment ksm pages are swappable, there's no apparent reason why
-anybody should ask the kernel to break any ksm page if the application
-themselfs aren't writing to them in the first place (triggering
-copy-on-write in app context which already handles TIF_MEMDIE just
-fine).
+> What problem?
+> 
+> All I've seen is "I want 100% access to a CPU".  That's not a problem
+> statement - it's an implementation.
+> 
+> What is the problem statement?
 
-In oom deadlock terms madvise(UNMERGEABLE) is the only place that is
-100% fine at breaking KSM pages, because it runs with right tsk->mm
-and page allocation will notice TIF_MEMDIE set on tsk.
+I can only speak for myself...
 
-If we remove "echo 2" only remaining "unsafe" spot is the break_cow in
-kksmd context when memcmp fails and similar during the scan.
+In our case the problem statement was that we had an inherently
+single-threaded emulator app that we wanted to push as hard as
+absolutely possible.
 
-> When thinking about it, lets say I want to use ksm to scan 2 
-> applications and merged their STATIC identical data, and then i want to 
-> stop scanning them after i know ksm merged the pages, as soon as i will 
-> try to unregister this 2 applications ksm will unmerge the pages, so we 
-> dont allow such thing for the user (we can tell him ofcurse for such 
-> case to use normal way of sharing, so this isnt a really strong case for 
-> this)
+We gave it as close to a whole cpu as we could using cpu and irq
+affinity and we used message queues in shared memory to allow another
+cpu to handle I/O.  In our case we still had kernel threads running on
+the app cpu, but if we'd had a straightforward way to avoid them we
+would have used it.
 
-For the app it will be tricky to know when the pages are merged
-though, right now it could only wait a "while"... so I don't really
-see madvise(UNMERGEABLE) as useful regardless how we implement
-it... but then this goes beyond the scope of this bug because as said
-madvise(UNMERGEABLE) is the only place that breaks ksm pages as safe
-as regular write fault in oom context because of it running in the
-process context (not echo 2 or kksmd context).
+Chris
