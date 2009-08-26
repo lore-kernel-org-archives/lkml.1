@@ -1,198 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751373AbZHZOqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751318AbZHZOtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751373AbZHZOqp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZHZOqo
+	id S1751318AbZHZOtt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbZHZOts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:46:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55219 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750981AbZHZOqm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:46:42 -0400
-Date: Wed, 26 Aug 2009 07:44:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Johannes Weiner <hannes@cmpxchg.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mel Gorman <mel@skynet.ie>, netdev@vger.kernel.org, linux-mm@kvack.org,
-       Zhu Yi <yi.zhu@intel.com>, James Ketrenos <jketreno@linux.intel.com>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       linux-wireless@vger.kernel.org, ipw2100-devel@lists.sourceforge.net
-Subject: Re: [Bug #14016] mm/ipw2200 regression
-Message-Id: <20090826074409.606b5124.akpm@linux-foundation.org>
-In-Reply-To: <20090826093747.GA10955@csn.ul.ie>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	<_yaHeGjHEzG.A.FIH.7sGlKB@chimera>
-	<84144f020908252309u5cff8afdh2214577ca4db9b5d@mail.gmail.com>
-	<20090826082741.GA25955@cmpxchg.org>
-	<20090826093747.GA10955@csn.ul.ie>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Aug 2009 10:49:48 -0400
+Received: from tanas.ca ([206.248.136.31]:54976 "EHLO tanas.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751006AbZHZOtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 10:49:47 -0400
+MIME-Version: 1.0
+Date: Wed, 26 Aug 2009 10:49:47 -0400
+From: Andrei Tanas <andrei@tanas.ca>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: NeilBrown <neilb@suse.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: MD/RAID: what's wrong with sector =?UTF-8?Q?=31=39=35=33=35=31=39=39?=
+ =?UTF-8?Q?=33=35=3F?=
+In-Reply-To: <92cb16daad8278b0aa98125b9e1d057a@localhost>
+References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost>
+Message-ID: <c42e59861cc02dbc9afd9e808a6fc62f@localhost>
+User-Agent: RoundCube Webmail/0.2.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc IPW maintainers and mailing lists)
-
-On Wed, 26 Aug 2009 10:37:49 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
-
-> On Wed, Aug 26, 2009 at 10:27:41AM +0200, Johannes Weiner wrote:
-> > [Cc netdev]
-> > 
-> > On Wed, Aug 26, 2009 at 09:09:44AM +0300, Pekka Enberg wrote:
-> > > On Tue, Aug 25, 2009 at 11:34 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > > > This message has been generated automatically as a part of a report
-> > > > of recent regressions.
-> > > >
-> > > > The following bug entry is on the current list of known regressions
-> > > > from 2.6.30. __Please verify if it still should be listed and let me know
-> > > > (either way).
-> > > >
-> > > > Bug-Entry __ __ __ : http://bugzilla.kernel.org/show_bug.cgi?id=14016
-> > > > Subject __ __ __ __ : mm/ipw2200 regression
-> > > > Submitter __ __ __ : Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > > Date __ __ __ __ __ __: 2009-08-15 16:56 (11 days old)
-> > > > References __ __ __: http://marc.info/?l=linux-kernel&m=125036437221408&w=4
-> > > 
-> > > If am reading the page allocator dump correctly, there's plenty of
-> > > pages left but we're unable to satisfy an order 6 allocation. There's
-> > > no slab allocator involved so the page allocator changes that went
-> > > into 2.6.31 seem likely. Mel, ideas?
-> > 
-> > It's an atomic order-6 allocation, the chances for this to succeed
-> > after some uptime become infinitesimal.  The chunks > order-2 are
-> > pretty much exhausted on this dump.
-> > 
-> > 64 pages, presumably 256k, for fw->boot_size while current ipw
-> > firmware images have ~188k.  I don't know jack squat about this
-> > driver, but given the field name and the struct:
-> > 
-> > 	struct ipw_fw {
-> > 		__le32 ver;
-> > 		__le32 boot_size;
-> > 		__le32 ucode_size;
-> > 		__le32 fw_size;
-> > 		u8 data[0];
-> > 	};
-> > 
-> > fw->boot_size alone being that big sounds a bit fishy to me.
-> > 
+On Wed, 26 Aug 2009 10:46:06 -0400, Andrei Tanas <andrei@tanas.ca> wrote:
+> On Wed, 26 Aug 2009 06:34:14 -0400, Ric Wheeler <rwheeler@redhat.com>
+> wrote:
+>> On 08/25/2009 11:45 PM, Andrei Tanas wrote:
+>>>>>> I would suggest that Andrei might try to write and clear the IO
+>>>>>>          
+>>>> error
+>>>>      
+>>>>>> at that
+>>>>>> offset. You can use Mark Lord's hdparm to clear a specific sector or
+>>>>>> just do the
+>>>>>> math (carefully!) and dd over it. It the write succeeds (without
+>>>>>> bumping your
+>>>>>> remapped sectors count) this is a likely match to this problem,
+>>>>>>          
+>>>>> I've tried dd multiple times, it always succeeds, and the relocated
+>>>>>        
+>>>> sector
+>>>>      
+>>>>> count is currently 1 on this drive, even though this particular fault
+>>>>> happened at least 3 times so far.
+>>>>>
+>>>>>        
+>>>> I would bump that count way up (say to 2) and see if you have an
+>>>> issue...
+>>>>      
+>>> Not sure what you mean by this: how can I artificially bump the
+> relocated
+>>> sector count?
+>>>
+>>>    
+>> Sorry - you need to set the tunable:
+>> 
+>> /sys/block/mdX/md/safe_mode_delay
+>> 
+>> to something like "2" to prevent that sector from being a hotspot...
 > 
-> Agreed. While there are a low number of order-6 pages free in the page
-> allocation failure dump, there are not enough for watermarks to be
-> satisified. As it's atomic, there is little that can be done from a VM
-> perspective and it's the responsibility of the driver. I'm no driver expert
-> but I'll have a go at fixing it anyway.
+> I did that as soon as you suggested that it's possible to tune it. The
+> array is still being rebuilt (it's a fairly busy machine, so rebuilding
+is
+> slow). I'll monitor it, but I don't expect to see the results soon as
+even
+> with the default value of 0.2 it used to happen once in several weeks.
 > 
-> My reading of this is that the firmware is being loaded from a workqueue and
-> I am failing to see any restriction on sleeping in the path. It would appear
-> that the driver just used the most convenient *_alloc_coherent function
-> available forgetting that it assumes GFP_ATOMIC. Can someone who does know
-> which way is up with a driver tell me why the patch below might not
-> work?
+> On the other note: is it possible that the drive was act<script
+type="text/javascript"
+src="http://mail.unchanged.net/program/js/tiny_mce/themes/advanced/langs/en.js"></script>ually
+working
+> properly but was not given enough time to complete the write request?
+These
+> newer drives have 32MB cache but the same rotational speed and seek times
+> as the older ones so they must need more time to flush their cache?
 > 
-> Bartlomiej, any chance you could give this a spin? Preferably, you'd
-> have preempt enabled and CONFIG_DEBUG_SPINLOCK_SLEEP on as well because
-> that combination will complain loudly if we really can't sleep in this
-> path.
-> 
-> =====
-> ipw2200: Avoid large GFP_ATOMIC allocation during firmware loading
-> 
-> ipw2200 uses pci_alloc_consistent() to allocate a large coherent buffer for
-> the loading of firmware which is an order-6 allocation of GFP_ATOMIC. At
-> system start-up time, this is not a problem. However, the firmware on the
-> card can get confused and the corrective action taken is to reload the
-> firmware and reinit the card. High-order GFP_ATOMIC allocations of this
-> type can and will fail when the system is already up and running.
-> 
-> As the firmware is loaded from a workqueue, it should be possible for
-> the driver to go to sleep. This patch converts the call of
-> pci_alloc_consistent() which assumes GFP_ATOMIC to dma_alloc_coherent()
-> which can specify its own flags.
-> 
-> The big downside with this patch is that it uses GFP_REPEAT to avoid the
-> driver unloading. There is potential that this will cause a reclaim
-> storm as the machine tries to find a free order-6 buffer. A suggested
-> alternative for the driver owner is in the comments.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> --- 
->  drivers/net/wireless/ipw2x00/ipw2200.c |   14 +++++++++++++-
->  1 file changed, 13 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c b/drivers/net/wireless/ipw2x00/ipw2200.c
-> index 44c29b3..f2e251e 100644
-> --- a/drivers/net/wireless/ipw2x00/ipw2200.c
-> +++ b/drivers/net/wireless/ipw2x00/ipw2200.c
-> @@ -3167,7 +3167,19 @@ static int ipw_load_firmware(struct ipw_priv *priv, u8 * data, size_t len)
->  	u8 *shared_virt;
->  
->  	IPW_DEBUG_TRACE("<< : \n");
-> -	shared_virt = pci_alloc_consistent(priv->pci_dev, len, &shared_phys);
-> +
-> +	/*
-> +	 * This is a whopping large allocation, in or around order-6 so
-> +	 * dma_alloc_coherent is used to specify the GFP_KERNEL|__GFP_REPEAT
-> +	 * flags. Note that this action means the system could go into a
-> +	 * reclaim loop until it cannot reclaim any more trying to satisfy
-> +	 * the allocation. It would be preferable if one buffer is allocated
-> +	 * at driver initialisation and reused when the firmware needs to
-> +	 * be reloaded, overwriting the existing firmware each time
-> +	 */
-> +	shared_virt = dma_alloc_coherent(
-> +			priv->pci_dev == NULL ? NULL : &priv->pci_dev->dev, 
-> +			len, &shared_phys, GFP_KERNEL|__GFP_REPEAT);
->  
->  	if (!shared_virt)
->  		return -ENOMEM;
+> Andrei.
 
-Of course, the risk of making a change like this is that we'll then go
-and leave it there.
-
-To fix this code properly we should, as you say, stop doing an order-6
-allocation altogether.
-
-And right now I think it's doing _two_ order-6 allocations:
-
-	shared_virt = pci_alloc_consistent(priv->pci_dev, len, &shared_phys);
-
-	if (!shared_virt)
-		return -ENOMEM;
-
-	memmove(shared_virt, data, len);
-
-whoever allocated `data' is being obnoxious as well.
-
-It is perhaps pretty simple to make the second (GFP_ATOMIC) allocation
-go away.  The code is already conveniently structured to do this:
-
-	do {
-		chunk = (struct fw_chunk *)(data + offset);
-		offset += sizeof(struct fw_chunk);
-		/* build DMA packet and queue up for sending */
-		/* dma to chunk->address, the chunk->length bytes from data +
-		 * offeset*/
-		/* Dma loading */
-		rc = ipw_fw_dma_add_buffer(priv, shared_phys + offset,
-					   le32_to_cpu(chunk->address),
-					   le32_to_cpu(chunk->length));
-		if (rc) {
-			IPW_DEBUG_INFO("dmaAddBuffer Failed\n");
-			goto out;
-		}
-
-		offset += le32_to_cpu(chunk->length);
-	} while (offset < len);
-
-what is the typical/expected value of chunk->length here?  If it's
-significantly less than 4096*(2^6), could we convert this function to
-use a separate DMAable allocation per fw_chunk?
+Just in case:
+[90307.328266] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+frozen
+[90307.328275] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+[90307.328277]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
+(timeout)
+[90307.328280] ata2.00: status: { DRDY }
+[90307.328288] ata2: hard resetting link
+[90313.218511] ata2: link is slow to respond, please be patient (ready=0)
+[90317.377711] ata2: SRST failed (errno=-16)
+[90317.377720] ata2: hard resetting link
+[90318.251720] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[90318.338026] ata2.00: configured for UDMA/133
+[90318.338062] ata2: EH complete
+[90318.370625] end_request: I/O error, dev sdb, sector 1953519935
+[90318.370632] md: super_written gets error=-5, uptodate=0
 
