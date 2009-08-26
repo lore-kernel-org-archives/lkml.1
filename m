@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbZHZLiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbZHZLuD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbZHZLiL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 07:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756297AbZHZLiK
+	id S1756696AbZHZLuD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 07:50:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbZHZLuC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 07:38:10 -0400
-Received: from viefep15-int.chello.at ([62.179.121.35]:12645 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755940AbZHZLiJ (ORCPT
+	Wed, 26 Aug 2009 07:50:02 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:42308 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756523AbZHZLuA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 07:38:09 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [v2 PATCH 2/2]: pseries: Implement Pseries Processor Idle idle
- module.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: arun@linux.vnet.ibm.com
-Cc: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@lists.ozlabs.org,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20090826113217.GA14758@linux.vnet.ibm.com>
-References: <20090826110721.GA29759@linux.vnet.ibm.com>
-	 <20090826111003.GC29759@linux.vnet.ibm.com> <1251286038.1329.1.camel@twins>
-	 <20090826113217.GA14758@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 26 Aug 2009 13:37:05 +0200
-Message-Id: <1251286625.1329.6.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Aug 2009 07:50:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=o059QXWfJVRFuv2E0S5PO/RWFqZ37a0XOWVUj5U6PZZLxzpwePO4uCkdPnuD/idTHc
+         7MoVvoPAtf3AxEohXlI+fvLmlogCOaV8mNgubVEQdnPPA0kNXsX5JreIz73OQ9/o/c+T
+         U0dLX2BR8O2/YnLTqyQ/dSD3eKErNBvRltEsc=
+Date: Wed, 26 Aug 2009 13:49:57 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Patch 0/1] HW-BKPT: Allow per-cpu kernel-space Hardware
+	Breakpoint requests
+Message-ID: <20090826114954.GA6009@nowhere>
+References: <20090817124641.GA13354@in.ibm.com> <20090819161119.GA3633@in.ibm.com> <20090819173259.GF4972@nowhere> <20090820172719.GA16499@in.ibm.com> <20090821142811.GF11098@elte.hu> <20090826033637.GB6245@nowhere> <20090826091642.GB7743@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826091642.GB7743@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 17:02 +0530, Arun R Bharadwaj wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-26 13:27:18]:
+On Wed, Aug 26, 2009 at 11:16:42AM +0200, Ingo Molnar wrote:
 > 
-> > On Wed, 2009-08-26 at 16:40 +0530, Arun R Bharadwaj wrote:
-> > > +void (*pm_idle)(void);
-> > > +EXPORT_SYMBOL_GPL(pm_idle);
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > On Fri, Aug 21, 2009 at 04:28:11PM +0200, Ingo Molnar wrote:
+> > > 
+> > > * K.Prasad <prasad@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > > Providing those would let us build a pmu struct on top of this 
+> > > > > high level API, hopefully.
+> > > 
+> > > Note that there's a PMU struct already in 
+> > > arch/x86/kernel/cpu/perf_counter.c. Could debug-register ops be 
+> > > tacked on to it?
 > > 
-> > Seriously.. this caused plenty problems over on x86 and you're doing the
-> > exact same dumb thing?
+> > No, we don't need to build an arch level pmu since the BP api 
+> > already handles the arch abstraction (or well, it is planned to).
 > > 
+> > Instead, what we need is a core pmu that relies on the BP api. 
+> > Such pmu will be allocated dynamically while creating a hardware 
+> > breakpoint counter.
 > 
-> Hi Peter,
+> i'm not convinced at all we need all that layering of 
+> perfcounters->pmu->BP. Why not add BP support to the PMU abstraction 
+> and be done with it?
 > 
-> Cpuidle assumes pm_idle to be the default idle power management
-> function. So i should either do this, or change the stuff in cpuidle.c
-> so that it is more abstract.
+> That way we get hardware breakpoints via 'pinned, exclusive, per cpu 
+> hw-breakpoint counters' for example and kernel/hw-breakpoint.c can 
+> go away altogether.
+> 
+> kernel/perf_counter.c already handles scheduling, conflict 
+> resolution, enumeration, syscall exposure and more.
+> 
+> Hm?
 
-I would much prefer the latter, I've been telling the x86 power folks to
-fix this like forever, but they never seem to get around to it.
 
-They even tried adding a second such unmanaged function pointer for
-play-dead, instead of integrating everything into a single management
-interface.
+What you are suggesting is a complete refactoring of the breakpoint API
+on top of pmus.
+
+Well, that's possible and would factorize the scheduling, conflict and so
+on. So that's theoretically a good point and I hope we'll come to such
+centralization, that looks like my suggestion to Peter to share the
+perfcounter layer that handles the scheduling of hardware registers.
+
+But the pmu handling is currently not ready for that.
+For now it's completely tied to perfcounter, the pmu handling must
+become completely standalone wrt perfcounter because hardware
+breakpoint shouldn't depend on perfcounter.
+It couldn't even, because it is not only wanted for perfcounter but
+currently used by ptrace (and perhaps some other various users) and
+I can't imagine we need to open a perfcounter to use ptrace facilities.
+
+That said, I really agree with the concept, we could then drop the
+scheduling bindings for hardware breakpoints and use a centralized
+thing for that which would be the pmu.
+
+But:
+
+- the PMUs handling is not ready for that as I explained above
+- we still need the hardware breakpoint layer that decodes a breakpoint
+  request (address, length of the memory target, number of registers
+  limitation). This part is still a mandatory feature to build dynamic
+  PMU based breakpoints.
+
+Frederic.
 
