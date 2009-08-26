@@ -1,104 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbZHZOWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbZHZO1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbZHZOWq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141AbZHZOWq
+	id S1753086AbZHZO1k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZHZO1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:22:46 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:34492 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754821AbZHZOWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:22:45 -0400
-Subject: Re: PPC driver - generic bus width
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Alemao <xcarandiru@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <d970ff420908260625q2d34bc10p62241218f022b5c2@mail.gmail.com>
-References: <d970ff420908260625q2d34bc10p62241218f022b5c2@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-R7omrj8J5QJYbrTxDnX1"
-Date: Thu, 27 Aug 2009 00:22:45 +1000
-Message-Id: <1251296565.7492.7.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 26 Aug 2009 10:27:39 -0400
+Received: from mail-ew0-f227.google.com ([209.85.219.227]:50192 "EHLO
+	mail-ew0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbZHZO1i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 10:27:38 -0400
+X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 10:27:34 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DTinz+/5WAeiNXEv+TXwZKKViVAAvtjTcHTDps+teB8sojyf5VB801Xg/3uG6i3UNZ
+         It0akE121mcVn1KXFtlwFm9I05htZ+prpiZfAy5xN4hdrFaULJSTIly0k1x+8+nFWfcH
+         UjF+mr7ziyl/KFwYsBjjQ1ypMeLX7ObL9YE+s=
+Date: Wed, 26 Aug 2009 16:27:34 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+       mbligh@google.com, lizf@cn.fujitsu.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
+Message-ID: <20090826142732.GA6304@nowhere>
+References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090826123550.GD6009@nowhere> <20090826125943.GA5946@osiris.boeblingen.de.ibm.com> <20090826133019.GE6009@nowhere> <20090826141052.GB5946@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826141052.GB5946@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 26, 2009 at 04:10:52PM +0200, Heiko Carstens wrote:
+> On Wed, Aug 26, 2009 at 03:30:22PM +0200, Frederic Weisbecker wrote:
+> > On Wed, Aug 26, 2009 at 02:59:43PM +0200, Heiko Carstens wrote:
+> > > > Yeah, and as told before, syscalls tracing from kernel thread is
+> > > > an interesting point but we can't do it that way.
+> > > > 
+> > > > I'm queuing this patch for .32, but I need you Signed-off-by to apply it :)
+> > > 
+> > > That won't always work as pointed out in the other example:
+> > > - Process doing sys_init_module then scheduled away
+> > > - User enables syscall tracing -> TIF_SYSCALL_FTRACE gets set
+> > > - init function of the module gets called and is doing kernel_thread()
+> > >   (old API) -> kernel thread inherits TIF_SYSCALL_FTRACE.
+> > > 
+> > > I don't think that's what you want. You might want to clear the flag for
+> > > new processes during fork (only for kernel threads I would guess).
+> > > 
+> > > At least the current patch leaves a hole.
+> > 
+> > Ah, there are callsites that use kernel_thread() directly?
+> > Does it means that t->mm could be non NULL for such resulting
+> > kernel threads, in that case it would be hard to hook on
+> > do_fork() to check that.
+> 
+> Oh yes, you are right. kernel threads created with kernel_thread()
+> have t->mm != NULL if the forking process has an mm too.
+> 
+> There are very few callsites left which still use kernel_thread().
+> (the last one in s390 driver code will be gone after the next
+> merge window).
+> 
+> As far as I can there are only four callsites left
+> (excluding staging): jffs2 and three in net/bluetooth/*
 
---=-R7omrj8J5QJYbrTxDnX1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2009-08-26 at 10:25 -0300, Alemao wrote:
-> Hi all,
->=20
-> Im trying to develop a driver for my device, and its data bus can be 8, 1=
-6
-> or 32 bits. This information is passed through the device tree source.
-> My code is like this:
->=20
-> struct device_info_t {
-> 	void (*read)();
-> 	void (*write)();
-> };
->=20
-> static int __devinit device_probe()
-> {
-> 	prop =3D of_get_property(ofdev->node, "bus-width", &size);
->=20
-> 	device->bus_width =3D *prop;
->=20
-> 	switch (device->bus_width) {
-> 	case 8:
-> 		device->read  =3D in_8;
-> 		device->write =3D out_8;
-> 		break;
-> 	case 16:
-> 		device->read  =3D in_be16;
-> 		device->write =3D out_be16;
-> 		break;
-> 	case 32:
-> 		device->read  =3D in_be32;
-> 		device->write =3D out_be32;
-> 		break;
-> 	default:
-> 		break;
-> 	}
-> }
->=20
-> Can someone point me some driver that is doing something similar to the
-> ideia shown above?
->=20
-> Or what Im doing wrong in my code? Cause Im getting erros (warnings) like=
-:
->=20
-> cc1: warnings being treated as errors
-> drivers/dev_test.c:37: warning: function declaration isn't a prototype
-> drivers/dev_test.c:38: warning: function declaration isn't a prototype
-> drivers/dev_test.c: In function 'device_probe':
-> drivers/dev_test.c:113: warning: assignment from incompatible pointer
-> type
+In that case, I'd suggest to pick the patch that checks for
+kernel threads while setting the TIF_FLAGS.
 
-I'm not sure about the first two, you don't seem to have pasted all the
-source, and you haven't given the line numbers.
+The check for invalid syscall numbers in another patch should be
+sufficient to not crash.
 
-The 3rd is probably because the prototype for in_8 etc. doesn't match
-your structure.
-
-cheers
-
---=-R7omrj8J5QJYbrTxDnX1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkqVRTUACgkQdSjSd0sB4dJ88QCeKagn2D+/4kU4qf8u/g0Wsm8T
-nnIAnjWR0rqgFiO+T23O91XEc07kFQbI
-=/i3Y
------END PGP SIGNATURE-----
-
---=-R7omrj8J5QJYbrTxDnX1--
+We might have rare inaccurate result because of the remaining
+buggy callsites but instead of working around on it, these
+should be fixed.
 
