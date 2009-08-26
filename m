@@ -1,142 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751106AbZHZOmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751051AbZHZOm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751106AbZHZOmB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbZHZOmA
+	id S1751051AbZHZOm7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZHZOm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:42:00 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:58784 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbZHZOl7 (ORCPT
+	Wed, 26 Aug 2009 10:42:59 -0400
+Received: from elasmtp-mealy.atl.sa.earthlink.net ([209.86.89.69]:57676 "EHLO
+	elasmtp-mealy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750850AbZHZOm6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:41:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=RNaukTXr8r4a2Ys8AJajEehxlpra/tdv5HgsHVo0W3rkW9NPoTfES5zl0j7fiEy1+R
-         2ws3gUPSlvtm5BjgcdjyiVRZBwRXiZwmwZAVCGnrREmBQPcjtwark2Ca6I6GeKolzLb8
-         Vfy4Vs0oEBbITzy67RdrhqcU7e2Eo0ibnri6I=
-Message-ID: <4A9549E5.5020002@gmail.com>
-Date: Wed, 26 Aug 2009 07:42:45 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
+	Wed, 26 Aug 2009 10:42:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=UnATF/HR+HIk/HwbO/9V0YKrejTjYNXP+9+S4YxegTfuY81R+5A8gjOrxkPZ4j8B;
+  h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <4A9549F2.4080504@earthlink.net>
+Date: Wed, 26 Aug 2009 07:42:58 -0700
+From: Jeff Shanab <jshanab@earthlink.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090714 SeaMonkey/1.1.17
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-References: <4A8B5113.20102@cn.fujitsu.com> <4A8FA2BD.4030707@gmail.com> <4A91FDED.9050801@cn.fujitsu.com> <1251093523.7538.118.camel@twins> <4A922F82.9080000@cn.fujitsu.com> <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com> <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com> <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com> <20090826073351.GE23435@elte.hu>
-In-Reply-To: <20090826073351.GE23435@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Theodore Tso <tytso@mit.edu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Starting a grad project that may change kernel VFS. Early	research
+ Re: Starting a grad project that may change kernel VFS.	Early  research
+References: <4A93428A.4070903@earthlink.net> <4A941F56.8060502@redhat.com> <4A9427C7.8020009@earthlink.net> <20090826013043.GB17684@mit.edu> <4A94BF9E.2010101@earthlink.net> <20090826130513.GM32712@mit.edu>
+In-Reply-To: <20090826130513.GM32712@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: 41b7b48e67ad7886d780f4a490ca6956abb457f1b4332f52c23e672c9b8bef17e72c2849d2f6a354350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 75.150.3.226
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Justin P. Mattock<justinmattock@gmail.com>  wrote:
+Theodore Tso wrote:
+> On Tue, Aug 25, 2009 at 09:52:46PM -0700, Jeff Shanab wrote:
+>   
+>> True or false
+>> When we write a file we already write into it's inode and the
+>> directorie's inode.
+>>     
 >
->    
->> Ingo Molnar wrote:
->>      
->>> * Justin Mattock<justinmattock@gmail.com>   wrote:
->>>
->>>
->>>        
->>>> O.K. I feel better, deleted
->>>> my system, and threw in a minimal built system
->>>> with only the bare essentials to boot.
->>>> (just to make sure things are correct).
->>>>
->>>> unfortunately after building rc6 I'm still hitting
->>>> this. really am not sure why this is happening.
->>>>
->>>>          
->>> Could you please double-check the bisection result by doing this:
->>>
->>>    git revert af6af30c0f
->>>
->>> on the latest kernel and seeing whether that fixes the lockup?
->>>
->>> Bisections are very efficient and hence very sensitive as well to
->>> minimal errors. Just one small mistake near the end of a bisection
->>> can blame the wrong commit.
->>>
->>> So the best way to double-check such 100%-triggerable crashes is to
->>> do the revert. I tried the revert and it can be done fine here.
->>>
->>> [ _If_ that does not fix the bug then to save time you can
->>>      'backtrack' the bisection, instead of re-doing it completely.
->>>      I.e. you have your bisection log, re-check the final steps going
->>>      backwards. Once you find a discrepancy (i.e. a 'bad' point that
->>>      is 'good' or the other way around), redo the bisection log
->>>      commands up to that point and continue it up to the end. ]
->>>
->>> 	Ingo
->>>
->>>
->>>        
->> shoot, I did not see your post here. when looking at my bisect
->> log, I guess after a git bisect reset it clears?
->>
->> Anyways after git bisect had finished I looked manually at the
->> commits that it had generated the one which I had sent in a post
->> previously, and this one:
->>
->>   9424edc2da097c8589fcc24a72552d33e54be161
->>      
+> False; when we write into a file we need to update the inode's m_time
+> field, but we don't have to update the directory's inode.  So updating
+> the directory inode when you write into a file is already increasing
+> the overhead in terms of the file system metadata that will have to be
+> updated on an *extremely* common filesystem operation.
+>   
+oops, my bad. when I said "write a file" I meant "create the file" ie,
+for the first time.
+> In the case of hard links, where there are multiple directory entries
+> pointing to the same inode, we don't even have an efficient way of
+> knowing where the other "parent" directories are, and none of the
+> directory entries are "distinguished" in any way; you don't know which
+> directory entry was the "first" entry created, and in fact it may have
+> already been deleted.
 >
-> (this commit has no effect on your kernel image, at all.)
+>   
+Yeah, A Deal breaker at the moment. Maybe a "fix" to this is a
+pre-requisite for this idea.
+Or maybe a workaround in the accounting side of things.
+>   
+>> When we update a file we write into the inode and we had to load the
+>> dentry to get there.
+>>     
 >
->    
-yep. but it was worth a try.
->> at the time looking at the commit, I see this to be more of the
->> cause because of it being related to elf as so forth, but as soon
->> as I reverted this on rc6 made no difference.(the previous commit
->> fixes this for me, on a regular tar.ball as well as in git.
->>
->> I think at this point since this system is a fresh from scratch
->> build, I think something might be wrong that I'm doing (all the
->> CFLAGS, and such are in a previous post).
->>
->> At the moment I don't have a problem applying a patch to the
->> kernel for this. especially since I'm the only one that seems to
->> be hitting this, then if more and more reports of this happen then
->> we can go from there.
->>      
+> While a file is open for writing, the inode and the directory inode
+> used to gain access to the file are pinned via the dentry cache,
+> correct.
 >
-> What would be nice is to verify your bisection end result, i.e. do
-> what i suggested:
+> Note however, that we can't change the meaning of i_blocks for
+> directories without introducing serious compatibility problems;
+I have just gotten started on this and this is the first time i_blocks
+has come up.
+I need to look into the structures closer, but as I look at the VFS and
+web site explinations, it appears to be the c equivilent of the abstract
+interface. (not counting all the caching) So there are operation
+pointers that are called by the kernel to do things like, get the size.
+I thought this system  insulates us from the differences in individual
+file systems. It does look more and more that all the changes are going
+into the/a file system and not in the VFS.
+>  so if
+> you want to have a "size of everything under this directory", you will
+> need to allocate a new inode field; this means an filesystem-specific
+> on-disk change.
+>   
+Ok, I was afriad of that. While it would have been nice to have it at
+the VFS level so it works for all filesystems, it doesn't look like that
+is practical or possible.
+>   
+>> The main addition in this idea is the low prioirity task to walk the
+>> tree to root forcing adjustments along the way.
+>>     
 >
->    
-yeah I've done this on both kernels three to be exact, and all boot 
-after reverting
-Fix perf-tracepoint OOPS.
+> But it can't be low priority, or else the information will be horribly
+> out of date if the system crashes and the filesystem isn't cleanly
+> unmounted.  To solve this solution, you only have two choices.  (1)
+> Update all of the parent directories at the time of the file write,
+> and log these updates in the journal just as with all other metadata
+> updates, with the attendent increase in overhead and performance loss,
+> OR (2) force a limited fsck after each unclean reboot that walks the
+> directory tree to correctly update the subdirectory summary sizes.
+> Since you will need to walk the entire inode table to fix any broken
+> summary sizes, the time it will take to do this is roughly equivalent
+> to fsck Pass 1 and pass2 for ext2/3/4 filesystems (which is about 90%
+> of a full fsck).  Furthermore, it either needs to be done via the
+> filesystem is unmounted or mounted read-only, or you will need to add
+> a huge amount of complexity to deal with the fact that filesystem
+> might be getting modified while you are recalculating the summary
+> statistics.
+>   
 
-As for my system, I'm still convinced that I might be doing something 
-wrong over here.
+Admittedly I need to study up on how recovery works now, especially for
+a journaled file system.
 
->>> Could you please double-check the bisection result by doing this:
->>>
->>>    git revert af6af30c0f
->>>
->>> on the latest kernel and seeing whether that fixes the lockup?
->>>        
->
-> if this doesnt fix it on latest -git then this commit is not the
-> cause of the lockup.
->
-> 	Ingo
->
->    
-This commit(Fix perf-tracepoint OOPS.)does fix my stuckage, but I'm 
-left, as well as others asking
-the question of why.
-In any case I still think I'm setting something wrong with either gcc, 
-or something
-that might be causing this from userland.
+Perhaps there is a 3. A sort of Distributed write Ahead log stored in
+the inode of the directory itself.
+If the process is completed, it is removed adding a second write to the
+dentry's inode. If not, the queued task is found during fsck and started
+again. But this fails if the changes to an dentry's inode are just
+sitting in the cache at time of crash. Is the journal a write through
+cache system? Is there a reference you can recommend?, I have just been
+googeling and reading some source code.
 
-Justin P. Mattock
+When recovery is considered, The tasks will probably have to be idempotent.
+>
+> As far as knowing whether or not a copy will succeed, that depends on
+> whether the copy is going to be smart about preseving hard links, and
+> whether or not the copy will be copying symlinked files as real files.
+> So you can only give a very specialized answer assuming only one set
+> of copy options.
+>
+>    						- Ted
+>
+>   
+I have a seemingly dumb question, but I need a good answer for it. What
+good are hardlinks, Do we need them with the advent of symlinks? Are
+they just a vestigial feature or is there a real use case where they are
+preferred? I don't think I have any hard links on this machine, but of
+course, how would I know? ;-) I know i have seen them used in some
+chroot environments at work.
+I can see they allow du, for example, to give an accurate size of a
+directory as it would be if copied to another drive, symlinks don't do
+that AFAIK. In fact the copy is missing data. Guess I answered My own
+question?
+>   
+
