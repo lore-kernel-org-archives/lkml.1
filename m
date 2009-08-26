@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZHZCfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbZHZCjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbZHZCfb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 22:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756389AbZHZCfa
+	id S1756547AbZHZCjS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 22:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbZHZCjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 22:35:30 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47420 "EHLO
+	Tue, 25 Aug 2009 22:39:17 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:36895 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756381AbZHZCfa (ORCPT
+	with ESMTP id S1756436AbZHZCjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 22:35:30 -0400
-Date: Tue, 25 Aug 2009 22:35:30 -0400 (EDT)
+	Tue, 25 Aug 2009 22:39:17 -0400
+Date: Tue, 25 Aug 2009 22:39:17 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Zhaolei <zhaolei@cn.fujitsu.com>
 cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] ftrace: Move setting of clock-source out of
- options
-In-Reply-To: <4A939D08.6050604@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0908252233120.12897@gandalf.stny.rr.com>
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/3] ftrace: add tracepoint for xtime
+In-Reply-To: <4A939D4A.1020706@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0908252237220.12897@gandalf.stny.rr.com>
 References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com> <4A939CDF.2000407@cn.fujitsu.com>
- <4A939D08.6050604@cn.fujitsu.com>
+ <4A939D4A.1020706@cn.fujitsu.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,201 +31,143 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi,
+Thomas,
 
-I like the series and I'll pull it, but there's one thing that bothers me. 
-We should fix it too...
-
-
-On Tue, 25 Aug 2009, Zhaolei wrote:
-
-> There are many clock source for tracing system but we can only
-> enable/disable one bit by trace/options file.
-> We can move setting of clock-source out of options and add a separate
-> file for it:
->  # cat trace_clock
->  [local] global
->  # echo global > trace_clock
->  # cat trace_clock
->  local [global]
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  kernel/trace/trace.c |   92 ++++++++++++++++++++++++++++++++++++++++---------
->  kernel/trace/trace.h |    7 ++--
->  2 files changed, 79 insertions(+), 20 deletions(-)
-> 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index b7d873b..5af6f83 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -323,12 +323,21 @@ static const char *trace_options[] = {
->  	"printk-msg-only",
->  	"context-info",
->  	"latency-format",
-> -	"global-clock",
->  	"sleep-time",
->  	"graph-time",
->  	NULL
->  };
->  
-> +static struct {
-> +	u64 (*func)(void);
-> +	const char *name;
-> +} trace_clocks[] = {
-> +	{ trace_clock_local,	"local" },
-> +	{ trace_clock_global,	"global" },
-> +};
-> +
-> +int trace_clock_id;
-> +
->  /*
->   * ftrace_max_lock is used to protect the swapping of buffers
->   * when taking a max snapshot. The buffers themselves are
-> @@ -2159,22 +2168,6 @@ static void set_tracer_flags(unsigned int mask, int enabled)
->  		trace_flags |= mask;
->  	else
->  		trace_flags &= ~mask;
-> -
-> -	if (mask == TRACE_ITER_GLOBAL_CLK) {
-> -		u64 (*func)(void);
-> -
-> -		if (enabled)
-> -			func = trace_clock_global;
-> -		else
-> -			func = trace_clock_local;
-> -
-> -		mutex_lock(&trace_types_lock);
-> -		ring_buffer_set_clock(global_trace.buffer, func);
-> -
-> -		if (max_tr.buffer)
-> -			ring_buffer_set_clock(max_tr.buffer, func);
-> -		mutex_unlock(&trace_types_lock);
-> -	}
->  }
->  
->  static ssize_t
-> @@ -3142,6 +3135,62 @@ tracing_mark_write(struct file *filp, const char __user *ubuf,
->  	return cnt;
->  }
->  
-> +static ssize_t tracing_clock_read(struct file *filp, char __user *ubuf,
-> +				  size_t cnt, loff_t *ppos)
-> +{
-> +	char buf[64];
-
-What happens if we add more clocks. Our list can only be 64 bytes long. It 
-would be a good idea to change this to do something like the trace_options 
-uses. That is, it dynamically allocates buf, by figuring out how much it 
-needs. This should do that too.
+This patch touches time keeping work. Can I get your ACK on it, or if it 
+belongs to someone else, could you tell me who I need.
 
 Thanks,
 
 -- Steve
 
-> +	int bufiter = 0;
-> +	int i;
+
+On Tue, 25 Aug 2009, Zhaolei wrote:
+
+> From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> 
+> This patch can trace current xtime and wall_to_monotonic. Then user can
+> use ctime() to convert them to wall time which is easier to be understood,
+> especially for flight-recorder which need to get trace event from a kernel
+> dump file.
+> 
+> Example of ftrace output:
+>           <idle>-0     [000] 20118.489849: gtod_update_xtime: xtime=1243265589.999999824 wall_to_monotonic=3051713268.744158739
+>            <...>-4020  [001] 20118.489855: sys_open(filename: bf9e66e0, flags: 98800, mode: bf9e66e0)
+>            <...>-4020  [001] 20118.489873: sys_open -> 0xffffffec
+> 
+> ctime(1243265590) = date:Mon May 25 11:33:10 2009
+> So we can realize the task with pid 4020 open a file at
+> Mon May 25 11:33:10 2009
+> 
+> Changelog:
+> v1->v2: Rebased by Zhao Lei <zhaolei@cn.fujitsu.com>
+> 
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  include/trace/events/xtime.h |   38 ++++++++++++++++++++++++++++++++++++++
+>  kernel/time/ntp.c            |    4 ++++
+>  kernel/time/timekeeping.c    |    6 ++++++
+>  3 files changed, 48 insertions(+), 0 deletions(-)
+>  create mode 100644 include/trace/events/xtime.h
+> 
+> diff --git a/include/trace/events/xtime.h b/include/trace/events/xtime.h
+> new file mode 100644
+> index 0000000..398e679
+> --- /dev/null
+> +++ b/include/trace/events/xtime.h
+> @@ -0,0 +1,38 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM xtime
 > +
-> +	for (i = 0; i < ARRAY_SIZE(trace_clocks); i++)
-> +		bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter,
-> +			"%s%s%s%s", i ? " " : "",
-> +			i == trace_clock_id ? "[" : "", trace_clocks[i].name,
-> +			i == trace_clock_id ? "]" : "");
-> +	bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter, "\n");
+> +#if !defined(_TRACE_XTIME_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_XTIME_H
 > +
-> +	return simple_read_from_buffer(ubuf, cnt, ppos, buf, bufiter);
-> +}
+> +#include <linux/time.h>
+> +#include <linux/tracepoint.h>
 > +
-> +static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
-> +				   size_t cnt, loff_t *fpos)
-> +{
-> +	char buf[64];
-> +	const char *clockstr;
-> +	int i;
+> +TRACE_EVENT(gtod_update_xtime,
 > +
-> +	if (cnt >= sizeof(buf))
-> +		return -EINVAL;
+> +	TP_PROTO(struct timespec *xtime, struct timespec *wall_to_monotonic),
 > +
-> +	if (copy_from_user(&buf, ubuf, cnt))
-> +		return -EFAULT;
+> +	TP_ARGS(xtime, wall_to_monotonic),
 > +
-> +	buf[cnt] = 0;
+> +	TP_STRUCT__entry(
+> +		__field(	long,	xtime_sec		)
+> +		__field(	long,	xtime_nsec		)
+> +		__field(	long,	wall_to_monotonic_sec	)
+> +		__field(	long,	wall_to_monotonic_nsec	)
+> +	),
 > +
-> +	clockstr = strstrip(buf);
+> +	TP_fast_assign(
+> +		__entry->xtime_sec		= xtime->tv_sec;
+> +		__entry->xtime_nsec		= xtime->tv_nsec;
+> +		__entry->wall_to_monotonic_sec	= wall_to_monotonic->tv_sec;
+> +		__entry->wall_to_monotonic_nsec	= wall_to_monotonic->tv_nsec;
+> +	),
 > +
-> +	for (i = 0; i < ARRAY_SIZE(trace_clocks); i++) {
-> +		if (strcmp(trace_clocks[i].name, clockstr) == 0)
-> +			break;
-> +	}
-> +	if (i == ARRAY_SIZE(trace_clocks))
-> +		return -EINVAL;
+> +	TP_printk("xtime=%ld.%09ld wall_to_monotonic=%ld.%09ld",
+> +		  __entry->xtime_sec, __entry->xtime_nsec,
+> +		  __entry->wall_to_monotonic_sec, __entry->wall_to_monotonic_nsec)
+> +);
 > +
-> +	trace_clock_id = i;
+> +#endif /* _TRACE_XTIME_H */
 > +
-> +	mutex_lock(&trace_types_lock);
-> +
-> +	ring_buffer_set_clock(global_trace.buffer, trace_clocks[i].func);
-> +	if (max_tr.buffer)
-> +		ring_buffer_set_clock(max_tr.buffer, trace_clocks[i].func);
-> +
-> +	mutex_unlock(&trace_types_lock);
-> +
-> +	*fpos += cnt;
-> +
-> +	return cnt;
-> +}
-> +
->  static const struct file_operations tracing_max_lat_fops = {
->  	.open		= tracing_open_generic,
->  	.read		= tracing_max_lat_read,
-> @@ -3179,6 +3228,12 @@ static const struct file_operations tracing_mark_fops = {
->  	.write		= tracing_mark_write,
->  };
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
+> index 4800f93..fc2f13a 100644
+> --- a/kernel/time/ntp.c
+> +++ b/kernel/time/ntp.c
+> @@ -15,6 +15,8 @@
+>  #include <linux/time.h>
+>  #include <linux/mm.h>
 >  
-> +static const struct file_operations trace_clock_fops = {
-> +	.open		= tracing_open_generic,
-> +	.read		= tracing_clock_read,
-> +	.write		= tracing_clock_write,
-> +};
+> +#include <trace/events/xtime.h>
 > +
->  struct ftrace_buffer_info {
->  	struct trace_array	*tr;
->  	void			*spare;
-> @@ -3910,6 +3965,9 @@ static __init int tracer_init_debugfs(void)
->  	trace_create_file("saved_cmdlines", 0444, d_tracer,
->  			NULL, &tracing_saved_cmdlines_fops);
->  
-> +	trace_create_file("trace_clock", 0644, d_tracer, NULL,
-> +			  &trace_clock_fops);
-> +
->  #ifdef CONFIG_DYNAMIC_FTRACE
->  	trace_create_file("dyn_ftrace_total_info", 0444, d_tracer,
->  			&ftrace_update_tot_cnt, &tracing_dyn_info_fops);
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index 606073c..0545c2b 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -586,6 +586,8 @@ trace_vprintk(unsigned long ip, const char *fmt, va_list args);
->  
->  extern unsigned long trace_flags;
->  
-> +extern int trace_clock_id;
-> +
->  /* Standard output formatting function used for function return traces */
->  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
->  extern enum print_line_t print_graph_function(struct trace_iterator *iter);
-> @@ -674,9 +676,8 @@ enum trace_iterator_flags {
->  	TRACE_ITER_PRINTK_MSGONLY	= 0x10000,
->  	TRACE_ITER_CONTEXT_INFO		= 0x20000, /* Print pid/cpu/time */
->  	TRACE_ITER_LATENCY_FMT		= 0x40000,
-> -	TRACE_ITER_GLOBAL_CLK		= 0x80000,
-> -	TRACE_ITER_SLEEP_TIME		= 0x100000,
-> -	TRACE_ITER_GRAPH_TIME		= 0x200000,
-> +	TRACE_ITER_SLEEP_TIME		= 0x80000,
-> +	TRACE_ITER_GRAPH_TIME		= 0x100000,
->  };
->  
 >  /*
+>   * NTP timekeeping variables:
+>   */
+> @@ -218,6 +220,8 @@ static enum hrtimer_restart ntp_leap_second(struct hrtimer *timer)
+>  		break;
+>  	}
+>  
+> +	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
+> +
+>  	write_sequnlock(&xtime_lock);
+>  
+>  	return res;
+> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+> index 03cbeb3..2e57a87 100644
+> --- a/kernel/time/timekeeping.c
+> +++ b/kernel/time/timekeeping.c
+> @@ -20,6 +20,9 @@
+>  #include <linux/tick.h>
+>  #include <linux/stop_machine.h>
+>  
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/xtime.h>
+> +
+>  /* Structure holding internal timekeeping values. */
+>  struct timekeeper {
+>  	/* Current clocksource used for timekeeping. */
+> @@ -338,6 +341,8 @@ int do_settimeofday(struct timespec *tv)
+>  
+>  	update_vsyscall(&xtime, timekeeper.clock);
+>  
+> +	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
+> +
+>  	write_sequnlock_irqrestore(&xtime_lock, flags);
+>  
+>  	/* signal hrtimers about time change */
+> @@ -811,6 +816,7 @@ void update_wall_time(void)
+>  
+>  	/* check to see if there is a new clocksource to use */
+>  	update_vsyscall(&xtime, timekeeper.clock);
+> +	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
+>  }
+>  
+>  /**
 > -- 
 > 1.5.5.3
 > 
