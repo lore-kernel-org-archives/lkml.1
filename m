@@ -1,78 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbZHZTNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbZHZTNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751282AbZHZTNF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 15:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbZHZTNE
+	id S1751442AbZHZTNj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 15:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbZHZTNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 15:13:04 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:49565 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbZHZTND (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 15:13:03 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 26 Aug 2009 12:13:04 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Avi Kivity <avi@redhat.com>
-cc: "Michael S. Tsirkin" <mst@redhat.com>, gleb@redhat.com,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-In-Reply-To: <4A9585EC.2030505@redhat.com>
-Message-ID: <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com>
-References: <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com>
- <20090824214900.GA9899@redhat.com> <alpine.DEB.2.00.0908241508440.7951@makko.or.mcafeemobile.com> <20090825072229.GA10608@redhat.com> <alpine.DEB.2.00.0908251456230.18518@makko.or.mcafeemobile.com> <20090826102908.GA21523@redhat.com>
- <alpine.DEB.2.00.0908261040100.7780@makko.or.mcafeemobile.com> <4A9585EC.2030505@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 26 Aug 2009 15:13:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37735 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751091AbZHZTNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 15:13:38 -0400
+Date: Wed, 26 Aug 2009 19:13:07 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
+       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090826145126.GA5255@ghostprotocols.net>
+References: <20090826145126.GA5255@ghostprotocols.net>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perfcounters/core] perf top: Show RIP only in verbose mode
+Message-ID: <tip-7ced156bb8bb6363b6ed541871bf19a90273f910@git.kernel.org>
+Git-Commit-ID: 7ced156bb8bb6363b6ed541871bf19a90273f910
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 26 Aug 2009 19:13:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Avi Kivity wrote:
+Commit-ID:  7ced156bb8bb6363b6ed541871bf19a90273f910
+Gitweb:     http://git.kernel.org/tip/7ced156bb8bb6363b6ed541871bf19a90273f910
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Wed, 26 Aug 2009 11:51:26 -0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 26 Aug 2009 20:21:45 +0200
 
-> On 08/26/2009 08:45 PM, Davide Libenzi wrote:
-> > OK, if I get it correctly, there is one eventfd signaler (the device), and
-> > one eventfd reader (the hypervisor), right?
-> > Each hypervisor listens for multiple devices detecting state changes, and
-> > associating the eventfd "line" to the IRQ number by some configuration
-> > (ala PCI), right?
-> >    
-> 
-> Yes.  The PCI stuff happens in userspace, all the hypervisor sees is "this
-> eventfd is IRQ 10".  There may be multiple eventfds routed to one IRQ
-> (corresponding to a shared IRQ line).
+perf top: Show RIP only in verbose mode
 
-Ok, so why not using the eventfd counter as state?
-On the device side:
-
-void write_state(int sfd, int state) {
-	u64 cnt;
-
-	/* Clear the current state, sfd is in non-blocking mode */
-	read(sfd, &cnt, sizeof(cnt));
-	/* Writes new state */
-	cnt = 1 + !!state;
-	write(sfd, &cnt, sizeof(cnt));
-}
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20090826145126.GA5255@ghostprotocols.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-On the hypervisor side:
+---
+ tools/perf/builtin-top.c |   17 ++++++++++++-----
+ 1 files changed, 12 insertions(+), 5 deletions(-)
 
-int read_state(int sfd) {
-	u64 cnt;
-
-	read(sfd, &cnt, sizeof(cnt));
-	return state - 1;
-}
-
-
-
-
-- Davide
-
-
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 62b55ec..4002ccb 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -483,11 +483,16 @@ static void print_sym_table(void)
+ 	if (nr_counters == 1)
+ 		printf("             samples    pcnt");
+ 	else
+-		printf("  weight     samples    pcnt");
++		printf("   weight    samples    pcnt");
+ 
+-	printf("         RIP          kernel function\n"
+-	       	       "  ______     _______   _____   ________________   _______________\n\n"
+-	);
++	if (verbose)
++		printf("         RIP       ");
++	printf("   kernel function\n");
++	printf("   %s    _______   _____",
++	       nr_counters == 1 ? "      " : "______");
++	if (verbose)
++		printf("   ________________");
++	printf("   _______________\n\n");
+ 
+ 	for (nd = rb_first(&tmp); nd; nd = rb_next(nd)) {
+ 		struct symbol *sym;
+@@ -508,7 +513,9 @@ static void print_sym_table(void)
+ 			printf("%9.1f %10ld - ", syme->weight, syme->snap_count);
+ 
+ 		percent_color_fprintf(stdout, "%4.1f%%", pcnt);
+-		printf(" - %016llx : %s", sym->start, sym->name);
++		if (verbose)
++			printf(" - %016llx", sym->start);
++		printf(" : %s", sym->name);
+ 		if (sym->module)
+ 			printf("\t[%s]", sym->module->name);
+ 		printf("\n");
