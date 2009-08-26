@@ -1,109 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZHZCwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbZHZCxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbZHZCwX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 22:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbZHZCwW
+	id S1756592AbZHZCxy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 22:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbZHZCxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 22:52:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:59968 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbZHZCwW (ORCPT
+	Tue, 25 Aug 2009 22:53:54 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:41314 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756456AbZHZCxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 22:52:22 -0400
-Date: Tue, 25 Aug 2009 22:52:23 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/3] ftrace: Add timer-source of walltime for ftrace
-In-Reply-To: <4A939D98.7020400@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0908252250350.12897@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com> <4A939CDF.2000407@cn.fujitsu.com>
- <4A939D98.7020400@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 25 Aug 2009 22:53:52 -0400
+X-Sasl-enc: XjkvG5V/eIU1SelSGrSGSc1OSlvqYWREXTC2Ag9E7hjX 1251255234
+Date: Tue, 25 Aug 2009 23:53:52 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Pavel Machek <pavel@ucw.cz>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+Message-ID: <20090826025352.GD14047@khazad-dum.debian.net>
+References: <4A9468E8.607@redhat.com>
+ <20090825225114.GE4300@elf.ucw.cz>
+ <4A946DD1.8090906@redhat.com>
+ <20090825232601.GF4300@elf.ucw.cz>
+ <4A947682.2010204@redhat.com>
+ <20090825235359.GJ4300@elf.ucw.cz>
+ <4A947DA9.2080906@redhat.com>
+ <20090826001645.GN4300@elf.ucw.cz>
+ <4A948259.40007@redhat.com>
+ <20090826010018.GA17684@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826010018.GA17684@mit.edu>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 25 Aug 2009, Theodore Tso wrote:
+> a UPS to your system.  Provision your RAID array with hot spares, and
+> regularly scrub (read-test) your array so that failed drives can be
 
+Can we get a proper scrub function (full rewrite of all component
+disks), please?  Not every disk out there will stop a streaming read to
+rewrite weak sectors it happens to come across.
 
+> detected early.  Make sure you configure your MD setup so that you get
+> e-mail when a hard drive fails and the array starts running in
+> degraded mode, so you can replace the failed drive ASAP.
 
-On Tue, 25 Aug 2009, Zhaolei wrote:
+Debian got this right :-)
 
-> We can add a timer-source for ftrace to support wall-time display.
-> It is based on Steven Rostedt <rostedt@goodmis.org>'s suggestion in:
-> http://lkml.org/lkml/2009/7/24/103
-> 
-> It need to applys on my patch of:
-> [PATCH v4 1/2] Add function to convert between calendar time and broken-down time for universal use
-> 
-> We can get following output:
->  # cd /mnt/debugfs/tracing/
->  # cat trace_clock
->  [local] global walltime
->  # echo sched_switch > current_tracer
->  # cat trace
->  # tracer: sched_switch
->  #
->  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->  #              | |       |          |         |
->              bash-3580  [000]  2916.188093:   3580:120:S   + [000]  3580:120:S bash
->              bash-3580  [000]  2916.188205:   3580:120:S   + [000]  3580:120:S bash
->              bash-3580  [000]  2916.188538:   3580:120:R   + [000]     5:115:S events/0
->              bash-3580  [000]  2916.188599:   3580:120:R ==> [000]     5:115:R events/0
->          events/0-5     [000]  2916.188669:      5:115:S ==> [000]  3580:120:R bash
->  ...
->  # echo walltime > trace_clock
->  # cat trace
->  # tracer: sched_switch
->  #
->  #           TASK-PID    CPU#           TIMESTAMP  FUNCTION
->  #              | |       |                        |         |
->              bash-3580  [000] 2009-08-24 18:03:16.500705:   3580:120:S   + [000]  3580:120:S bash
->              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
->              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S   + [000]  3580:120:S bash
->              bash-3580  [000] 2009-08-24 18:03:16.500815:   3580:120:S ==> [000]     5:115:R events/0
->          events/0-5     [000] 2009-08-24 18:03:16.500815:      5:115:R   + [000]  3578:120:S sshd
->  ...
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-
-
-> +
-> +static int __init walltime_init(void)
-> +{
-> +	unsigned long flags;
-> +	struct timespec ts;
-> +	u64 traceclock;
-> +
-> +	local_irq_save(flags);
-> +	getnstimeofday(&ts);
-> +	traceclock = trace_clock();
-> +	sync_base_walltime(&ts, traceclock);
-> +	local_irq_restore(flags);
-> +
-> +	register_trace_gtod_update_xtime(probe_gtod_update_xtime);
-
-Because this patch depends on patch 2 that creates the "gtod_update_xtime" 
-trace point, I have to hold off on this one too. But the first patch is a 
-nice clean up regardless. I'll pull that one in.
-
-Thanks,
-
--- Steve
-
-
-> +
-> +	return 0;
-> +}
-> +device_initcall_sync(walltime_init);
-> +
-> +u64 notrace trace_clock_walltime(void)
-> +{
-> +	return base_walltime + trace_clock();
-> +}
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
