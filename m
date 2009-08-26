@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751460AbZHZEOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751570AbZHZEV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751460AbZHZEOi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 00:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbZHZEOh
+	id S1751570AbZHZEV0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 00:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZHZEV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 00:14:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59704 "EHLO
+	Wed, 26 Aug 2009 00:21:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41368 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750821AbZHZEOh (ORCPT
+	by vger.kernel.org with ESMTP id S1751235AbZHZEVZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 00:14:37 -0400
-Date: Tue, 25 Aug 2009 21:13:58 -0700 (PDT)
+	Wed, 26 Aug 2009 00:21:25 -0400
+Date: Tue, 25 Aug 2009 21:20:18 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: Dave Airlie <airlied@gmail.com>
-cc: Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>,
-       mailing54 <mailing54@plzk.org>,
+To: Zhenyu Wang <zhenyuw@linux.intel.com>
+cc: Eric Anholt <eric@anholt.net>, mailing54 <mailing54@plzk.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net,
        Ma Ling <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Zhao, Yakui" <yakui.zhao@intel.com>
+       "Zhao, Yakui" <yakui.zhao@intel.com>, Keith Packard <keithp@keithp.com>
 Subject: Re: Linux 2.6.31-rc7
-In-Reply-To: <21d7e9970908252047g6db2fb2aj69280efa5eebe681@mail.gmail.com>
-Message-ID: <alpine.LFD.2.01.0908252056170.3218@localhost.localdomain>
-References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain>  <4A941E8B.8080902@plzk.org>  <alpine.LFD.2.01.0908251057260.3218@localhost.localdomain>  <4A94599F.9020508@plzk.org>  <alpine.LFD.2.01.0908251456530.3218@localhost.localdomain> 
- <1251239637.26348.20.camel@gaiman.anholt.net>  <20090826015127.GA1402@zhen-devel.sh.intel.com>  <alpine.LFD.2.01.0908252027300.3218@localhost.localdomain> <21d7e9970908252047g6db2fb2aj69280efa5eebe681@mail.gmail.com>
+In-Reply-To: <20090826035840.GA16894@zhen-devel.sh.intel.com>
+Message-ID: <alpine.LFD.2.01.0908252114130.3218@localhost.localdomain>
+References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain> <4A941E8B.8080902@plzk.org> <alpine.LFD.2.01.0908251057260.3218@localhost.localdomain> <4A94599F.9020508@plzk.org> <alpine.LFD.2.01.0908251456530.3218@localhost.localdomain>
+ <1251239637.26348.20.camel@gaiman.anholt.net> <20090826015127.GA1402@zhen-devel.sh.intel.com> <alpine.LFD.2.01.0908252027300.3218@localhost.localdomain> <20090826035840.GA16894@zhen-devel.sh.intel.com>
 User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -34,107 +33,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 26 Aug 2009, Dave Airlie wrote:
-> >
-> > If you actually detected things _right_, none of this would be an issue.
-> > But you don't. And you seem to have a really hard time even admitting
-> > that. You try to re-detect things, and you SCREW UP.
+On Wed, 26 Aug 2009, Zhenyu Wang wrote:
 > 
-> This isn't anything to do with redetection, and in the Mac case there isn't
-> even a BIOS table that you can really rely on since Apple hard coded all
-> this stuff into their EFI and Mac OSX drivers.
+> We can't depend on any BIOS display config as you noted before our driver.
 
-That's really my point.
+But you do. You depend on the even _less_ reliable existence of a VBT 
+table.
 
-There _is_ one sort of detection you could do: look at the actual state of 
-the graphics chip.
+> And our driver does more flexible config than VBIOS does.
 
-In other words, exactly the case you mention: don't trust any BIOS tables 
-(they may not exist, and they _are_ broken in many cases) or silly EFI 
-information (I guarantee that any firmware info will eventually be buggy: 
-EFI is in no way going to be magically less buggy than BIOS tables have 
-been).
+If by "flexible" you mean "doesn't work in many more ways", then yes.
 
-So what's left? You can still look at how the chip was programmed. If it's 
-driving the VGA port, you can be pretty sure that there's a monitor 
-attached. Sure, there might be something _else_ attached too, and I'm not 
-saying that you cannot try to probe other things, but right now it seems 
-that KMS totally throws away a free - and fairly reliable - piece of 
-information. And replaces it with very unreliable information that 
-definitely doesn't work.
+I have never EVER found a BIOS that didn't output to at least _some_ 
+screen that is connected. That's fairly damn fundamental. Yet that is 
+exactly what KMS screws up on some hardware right now.
 
-I'm all for looking at many different places to find 'the truth', but I'm 
-very unhappy with KMS looks into BIOS tables, decides that there's a LVDS 
-panel attached (there isn't), and then disables the VGA port that drives 
-the monitor.
+Trust me, "flexible" is not the right word. 
 
-That doesn't help _anybody_. It just results in a black screen. And I 
-guarantee that this happens on several pieces of hardware, and no, it's 
-not all just "crap Apple and EFI". One of the pieces of hardware it 
-happens on is an Intel-only machine. Intel hardware, Intel firmware, Intel 
-motherboard, Intel _everything_. And yes, KMS decides to drive a 
-nonexistent LVDS display, rather than the one that the BIOS correctly 
-booted up with.
+> We know we have problem on Mac mini, this issue has been known for a while.
+> And Keith also posted patch at
+> 	http://lists.freedesktop.org/archives/intel-gfx/2009-June/002843.html
+> but I don't know the status of this now.
 
-> Just because the BIOS manages to light up an output in now way effects
-> whether the driver can do the same.
+And how about MacBook 2.1, which apparently also goes black?
 
-.. but if the BIOS drives one output, that should be a damn big hint that 
-you shouldn't then just randomly pick another one!
+And the Westmere thing? 
 
-It sure as hell is a bigger hint than the ones you're using right now. 
-Which is kind of my point here. Why are you arguing against a known bug? 
+> We've tried many ways to detect LVDS, but none is stable or actually work for
+> every chip. But now we have DMI quirks for some known no LVDS machine (including
+> Mac mini), and we detect through ACPI LID object for LVDS exist. 
 
-> I'm not sure why the mac-mini hack hasn't been merged I asked for it a
-> few times,
-> I'd rather the proper solution was merged but that seems to not have
-> happened either.
+And dammit, if you cannot detect it, then don't try.
 
-I want to repeat: it's not just Mac Mini. 
+You'd actually be better off not trying your random crud, and instead
+ - leave whatever connection the BIOS set up
+ - let the user _tell_ you about other ones.
 
-> You have two special cases here,
-> a) mac mini - apple hw, needs hacks to workaround the fact that they do 
-> something nobody else does with the hw and then don't tell you about it 
-> in the hw. the hack from userspace should have been ported to the kernel 
-> but I keep not seeing it.
+If you cannot reliably detect something, don't go off and use some random 
+number generator. And quite frankly, depending on BIOS tables _is_ a 
+random number generator. It may be that you just haven't learnt that yet, 
+but maybe you could work on ACPI for a while to see what I mean.
 
-The thing is, the BIOS _does_ report it to the hardware: you could just 
-read the hardware registers.
+Right now, there's not even any way to _override_ your incorrect guesses. 
 
-But no. Instead the Intel KMS code discards the hardware registers, and 
-reads the BIOS tables instead, finds a LVDS entry there, and uses that - 
-and disconnects the entry that _was_ driving the monitor.
-
-Really. Do you seriously believe that because you found some random tables 
-in the BIOS memory, it's more reliable than "oh, the BIOS set the hardware 
-up to drive the SVDO output"?
-
-That's what I find irritating. We _know_ BIOS tables are random crap. We 
-_know_ they are way less reliable than just asking the hardware where it 
-is. But KMS still trusts the VBT data more than the fact that the chip has 
-been programmed to output DVI/SVDO output.
-
-> b) pre-production SDV hardware for a mobile chipset without LVDS, here's 
-> both pieces you get to keep them. LVDS isn't detectable on any hw, the 
-> sanity assumption so far are you have a mobile chipset you must have 
-> LVDS, you have an ACPI lid button you might have LVDS.
-
-Again, you say that, but you have absolutely nothing to back it up with.
-
-Here's a counter-argument: we _know_ that it's not detectable whether 
-there's an LVDS panel is attached or not. So what should we do? Should we 
-turn off the VGA1 connection that we can see that the BIOS programmed, and 
-set things up for LVDS instead?
-
-That's f*cking _stupid_. Go ahead and program the LVDS panel *too*, but 
-don't turn off the SDVO (or whatever) output that was also active!
-
-And quite frankly, if the BIOS didn't turn on the panel, then maybe the 
-kernel shouldn't either. At least not until it gets a "lid open" event. So 
-even the "go ahead and program LVDS too" part is quite debatable.
-
-In other words: it would be a lot saner to just keep whatever output mode 
-that the machine booted with. Then, change it ONLY IF YOU DETECT SOMETHING 
-ACTUALLY CHANGING.
+So I can say "don't do mode-setting at all", but I can't say "use SVDO at 
+1680x1050". So my screen goes black. And I happen to be in the enviable 
+position of having known about the Mac Mini issues and the KMS thing - 
+think about what happens to people that just try a new distro kernel, and 
+suddenly there's nothing on the screen. 
 
 			Linus
