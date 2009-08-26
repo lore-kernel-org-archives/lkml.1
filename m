@@ -1,223 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbZHZHaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbZHZHbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757196AbZHZHaK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757107AbZHZHaJ
+	id S1757192AbZHZHbz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbZHZHby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:30:09 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:34382 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757166AbZHZHaH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:30:07 -0400
-To: raz ben yehuda <raziebe@gmail.com>
-Cc: riel@redhat.com, mingo@elte.hu, peterz@infradead.org,
-       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Subject:[ PATCH 001:003] OFFSCHED CORE
-References: <1250983786.5688.23.camel@raz>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 26 Aug 2009 00:29:58 -0700
-In-Reply-To: <1250983786.5688.23.camel@raz> (raz ben yehuda's message of "Sun\, 23 Aug 2009 02\:29\:46 +0300")
-Message-ID: <m163cbm3rd.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 26 Aug 2009 03:31:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40352 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757101AbZHZHbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 03:31:53 -0400
+Date: Wed, 26 Aug 2009 09:31:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH] pci/intr_remapping: allocate irq_iommu on node -v3
+Message-ID: <20090826073101.GD23435@elte.hu>
+References: <4A84C13E.5050606@kernel.org> <4A84C190.1060005@kernel.org> <4A84C21A.4000705@kernel.org> <20090825114859.777be874@jbarnes-g45>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: raziebe@gmail.com, linux-kernel@vger.kernel.org, wiseman@macs.biu.ac.il, peterz@infradead.org, mingo@elte.hu, riel@redhat.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <20090825114859.777be874@jbarnes-g45>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-raz ben yehuda <raziebe@gmail.com> writes:
 
-> 		OFFSCHED support.
->
-> . A callback invoked just before halting the processor.
-> . SMP alternative work-around. we do not run smp alternatives if we are
->    left with a single processor.
-> . A set of utilities used by the offsched driver.
+* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+> Ingo, I assume you took these two?
 
+not yet - was waiting on noises from you and David. So the series 
+looks good to you from a PCI perspective and i can add your 
+acked-by? Would go into the IRQ tree.
 
-Cpu hotunplug is mostly broken when it comes to irqs.
-Building on and extending broken code is just asking for trouble,
-especially for out of tree code.
-
-> process.c |  109 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> smpboot.c |   13 +++++--
-> 2 files changed, 118 insertions(+), 4 deletions(-)
->
-> Signed-off-by: raziebe@gmail.com
-> ---
-> diff -X 2.6.30-offsched/Documentation/dontdiff -urN tmp/linux-2.6.30/arch/x86/kernel/process.c 2.6.30-offsched/arch/x86/kernel/process.c
-> --- tmp/linux-2.6.30/arch/x86/kernel/process.c	2009-06-10 06:05:27.000000000 +0300
-> +++ 2.6.30-offsched/arch/x86/kernel/process.c	2009-08-21 22:02:44.000000000 +0300
-> @@ -613,3 +613,112 @@
->  }
->  early_param("idle", idle_setup);
->  
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +struct hotplug_cpu{
-> +	long flags;
-> +	void (*hotplug_cpu_dead)(void);
-> +};
-> +
-> +static long 	offsched_services;
-> +
-> +#define CPU_OFFSCHED		31
-> +#define CPU_OFFSCHED_KMEM	30
-> +#define SERVICE_TIMER		01
-> +#define SERVICE_NAPI		02
-> +
-> +DEFINE_PER_CPU(struct hotplug_cpu, offschedcpu);
-> +
-> +void unregister_offsched(int cpuid)
-> +{
-> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> +	cpu->hotplug_cpu_dead = NULL;
-> +	clear_bit(CPU_OFFSCHED, &cpu->flags);
-> +}
-> +EXPORT_SYMBOL_GPL(unregister_offsched);
-> +
-> +int is_offsched(int cpuid)
-> +{
-> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> +	return test_bit(CPU_OFFSCHED, &cpu->flags);
-> +}
-> +EXPORT_SYMBOL_GPL(is_offsched);
-> +
-> +int is_offsched_kmem(int cpuid)
-> +{
-> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> +	return test_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
-> +}
-> +EXPORT_SYMBOL_GPL(is_offsched_kmem);
-> +
-> +void set_offsched_kmem(int cpuid)
-> +{
-> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> +	set_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
-> +}
-> +EXPORT_SYMBOL_GPL(set_offsched_kmem);
-> +
-> +void unset_offsched_kmem(int cpuid)
-> +{
-> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> +	clear_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
-> +}
-> +EXPORT_SYMBOL_GPL(unset_offsched_kmem);
-> +
-> +int register_offsched(void (*offsched_callback)(void), int cpuid)
-> +{
-> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> +	if (is_offsched(cpuid))
-> +		return -1;
-> +	cpu->hotplug_cpu_dead = offsched_callback;
-> +	set_bit(CPU_OFFSCHED, &cpu->flags);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(register_offsched);
-> +
-> +void run_offsched(void)
-> +{
-> +	int cpuid = raw_smp_processor_id();
-> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> +	cpu->hotplug_cpu_dead();
-> +}
-> +
-> +int  offsched_is_napi_avail(void)
-> +{
-> +	return SERVICE_NAPI & offsched_services;
-> +}
-> +
-> +int (*offsched_rule)(void *);
-> +EXPORT_SYMBOL(offsched_rule);
-> +/*
-> +* if we a have filter than apply filter.
-> +* return 0 if packet should go to kernel
-> +* return 1 if packet should go to offsched.
-> +*/
-> +int offsched_pkt(void *s)
-> +{
-> +	if (offsched_rule)
-> +		return offsched_rule(s);
-> +	return 0;
-> +}
-> +
-> +void offsched_register_napi(void)
-> +{
-> +	offsched_services |= SERVICE_NAPI;
-> +}
-> +EXPORT_SYMBOL_GPL(offsched_register_napi);
-> +
-> +void offsched_unregister_napi(void)
-> +{
-> +	offsched_services &= ~SERVICE_NAPI;
-> +}
-> +EXPORT_SYMBOL_GPL(offsched_unregister_napi);
-> +
-> +/*
-> + * napi scheudule is called in offsched context.
-> +*/
-> +void offsched_napi_schedule(void *n)
-> +{
-> +
-> +}
-> +
-> +#endif
-> diff -X 2.6.30-offsched/Documentation/dontdiff -urN tmp/linux-2.6.30/arch/x86/kernel/smpboot.c 2.6.30-offsched/arch/x86/kernel/smpboot.c
-> --- tmp/linux-2.6.30/arch/x86/kernel/smpboot.c	2009-06-10 06:05:27.000000000 +0300
-> +++ 2.6.30-offsched/arch/x86/kernel/smpboot.c	2009-07-25 13:59:19.000000000 +0300
-> @@ -39,6 +39,8 @@
->   *	Glauber Costa		:	i386 and x86_64 integration
->   */
->  
-> +#define DEBUG
-> +
->  #include <linux/init.h>
->  #include <linux/smp.h>
->  #include <linux/module.h>
-> @@ -686,8 +688,8 @@
->  	};
->  
->  	INIT_WORK(&c_idle.work, do_fork_idle);
-> -
-> -	alternatives_smp_switch(1);
-> +	if (!is_offsched(cpu))
-> +		alternatives_smp_switch(1);
->  
->  	c_idle.idle = get_idle_for_cpu(cpu);
->  
-> @@ -1283,8 +1285,9 @@
->  	for (i = 0; i < 10; i++) {
->  		/* They ack this in play_dead by setting CPU_DEAD */
->  		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
-> -			printk(KERN_INFO "CPU %d is now offline\n", cpu);
-> -			if (1 == num_online_cpus())
-> +			printk(KERN_INFO "CPU %d is now offline %s\n", cpu,
-> +				is_offsched(cpu) ? "and OFFSCHED" : "");
-> +			if (1 == num_online_cpus() && !is_offsched(cpu))
->  				alternatives_smp_switch(0);
->  			return;
->  		}
-> @@ -1313,6 +1316,8 @@
->  void native_play_dead(void)
->  {
->  	play_dead_common();
-> +	if (is_offsched(raw_smp_processor_id()))
-> +		run_offsched();
->  	wbinvd_halt();
->  }
->  
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+	Ingo
