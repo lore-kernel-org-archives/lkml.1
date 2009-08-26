@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221AbZHZRWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbZHZRYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752221AbZHZRWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 13:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZHZRWW
+	id S1752292AbZHZRYz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 13:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbZHZRYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 13:22:22 -0400
-Received: from mms2.broadcom.com ([216.31.210.18]:2389 "EHLO mms2.broadcom.com"
+	Wed, 26 Aug 2009 13:24:54 -0400
+Received: from www.tglx.de ([62.245.132.106]:35075 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553AbZHZRWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 13:22:22 -0400
-X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was
- "Is get_user_pages() enough to prevent pages from being swapped out ?")
-From: "David Xiao" <dxiao@broadcom.com>
-To: "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>
-cc: "Steven Walter" <stevenrwalter@gmail.com>,
-       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       "Ben Dooks" <ben-linux@fluff.org>,
-       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
-       "Robin Holt" <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-In-Reply-To: <200908260117.27180.laurent.pinchart@ideasonboard.com>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
- <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com>
- <1251237768.8877.26.camel@david-laptop>
- <200908260117.27180.laurent.pinchart@ideasonboard.com>
-Date: Wed, 26 Aug 2009 10:22:11 -0700
-Message-ID: <1251307331.9535.16.camel@david-laptop>
+	id S1752107AbZHZRYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 13:24:53 -0400
+Date: Wed, 26 Aug 2009 19:23:46 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+Subject: [ANNOUNCE] 2.6.31-rc7-rt8
+In-Reply-To: <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
+ <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
+ <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+ <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-X-Mailer: Evolution 2.26.1
-X-WSS-ID: 668BB0CE3WW49018877-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 16:17 -0700, Laurent Pinchart wrote:
-> On Wednesday 26 August 2009 00:02:48 David Xiao wrote:
-> > On Tue, 2009-08-25 at 05:53 -0700, Steven Walter wrote:
-> > > On Thu, Aug 6, 2009 at 6:25 PM, Russell King - ARM
-> > > Linux<linux@arm.linux.org.uk> wrote:
-> > > [...]
-> > >
-> > > > As far as userspace DMA coherency, the only way you could do it with
-> > > > current kernel APIs is by using get_user_pages(), creating a
-> > > > scatterlist from those, and then passing it to dma_map_sg().  While the
-> > > > device has ownership of the SG, userspace must _not_ touch the buffer
-> > > > until after DMA has completed.
-> > >
-> > > [...]
-> > >
-> > > Would that work on a processor with VIVT caches?  It seems not.  In
-> > > particular, dma_map_page uses page_address to get a virtual address to
-> > > pass to map_single().  map_single() in turn uses this address to
-> > > perform cache maintenance.  Since page_address() returns the kernel
-> > > virtual address, I don't see how any cache-lines for the userspace
-> > > virtual address would get invalidated (for the DMA_FROM_DEVICE case).
-> > >
-> > > If that's true, then what is the correct way to allow DMA to/from a
-> > > userspace buffer with a VIVT cache?  If not true, what am I missing?
-> >
-> > page_address() is basically returning page->virtual, which records the
-> > virtual/physical mapping for both user/kernel space; and what only
-> > matters there is highmem or not.
-> 
-> I'm not sure to get it. Are you implying that a physical page will then be 
-> mapped to the same address in all contexts (kernelspace and userspace 
-> processes) ? Is that even possible ? And if not, how could page->virtual store 
-> both the initial kernel map and all the userspace mappings ?
-> 
-Sorry for the confusion, page_address() indeed only returns kernel
-virtual address; and in order to support VIVT cache maintenance for the
-user space mappings, the dma_map_sg/dma_map_page() functions or even the
-struct scatterlist do seem to have to be modified to pass in virtual
-address, I think.
+We are pleased to announce the next update to our new preempt-rt
+series.
+ 
+    - update to Linus' latest
+ 
+    - perf counter crash fix (peterz)
+    
+    - disabled MARKERS on RT. Code with no use(rs) which just causes
+      trouble.
 
-David
+    - edge irq forced threading fix. Fixes the IDE "interrupt lost"
+      reports
 
+Known issues:
+      - ARM highmem
+      - scheduler load balancing oddities. Peter is working on it.
 
+Download locations:
+ 
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+
+Git release branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
+  
+Git development branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+
+Gitweb:
+     http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
+
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.31-rc7-rt8 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.31-rc7.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rc7-rt8.bz2
+
+Enjoy !
+
+       tglx
