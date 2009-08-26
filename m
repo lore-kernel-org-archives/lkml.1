@@ -1,85 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbZHZRYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752350AbZHZR0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752292AbZHZRYz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 13:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbZHZRYy
+	id S1752350AbZHZR0K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 13:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZHZR0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 13:24:54 -0400
-Received: from www.tglx.de ([62.245.132.106]:35075 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752107AbZHZRYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 13:24:53 -0400
-Date: Wed, 26 Aug 2009 19:23:46 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
-Subject: [ANNOUNCE] 2.6.31-rc7-rt8
-In-Reply-To: <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
- <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
- <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
- <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 26 Aug 2009 13:26:07 -0400
+Received: from mail-px0-f174.google.com ([209.85.216.174]:54948 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752243AbZHZR0F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 13:26:05 -0400
+X-Greylist: delayed 347 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 13:26:05 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=H5LJpwPEc8BU2ABhfzFb0zVLfm8t64oza9bs8gtV/fk8hKjPRr+g0D8lNGudxTigO/
+         66bc/Gg3MZdJm4Tm27CTx2u0fIiogDEvV9hLu7NJZ5lcWMmcRXcMXRfSDCWxBNNcEp0S
+         zMIpc0BqW3CfxSrsQuyk1cuYgHjhay98JP2eA=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 26 Aug 2009 13:20:19 -0400
+Message-ID: <817ecb6f0908261020y2267218h8f435e8dc392f69a@mail.gmail.com>
+Subject: [PATCH V2] x86: NX protection for kernel data
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Cc: Arjan van de Ven <arjan@infradead.org>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
- 
-    - update to Linus' latest
- 
-    - perf counter crash fix (peterz)
-    
-    - disabled MARKERS on RT. Code with no use(rs) which just causes
-      trouble.
+This patch expands functionality of CONFIG_DEBUG_RODATA to set main
+(static) kernel data area as NX.
+The following steps are taken to achieve this:
+1. Linker script is adjusted so .text always starts and ends on a page boundary
+2. Linker script is adjusted so .rodata and .data always start and
+end on a page boundary
+3. void mark_nxdata_nx(void) added to init/main.c with actual
+functionality: NX is set for all
+pages from _etext through _end.
+4. mark_nxdata_nx() called from init_post(void) in init/main.c (after
+init has been released)
+5. free_init_pages() sets released memory NX in arch/x86/mm/init.c
 
-    - edge irq forced threading fix. Fixes the IDE "interrupt lost"
-      reports
+The patch have been developed for Linux 2.6.31-rc7 x86 by Siarhei Liakh
+<sliakh.lkml@gmail.com> and Xuxian Jiang <jiang@cs.ncsu.edu>.
 
-Known issues:
-      - ARM highmem
-      - scheduler load balancing oddities. Peter is working on it.
+V1:  initial patch for 2.6.30
+V2:  patch for 2.6.31-rc7
 
-Download locations:
- 
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
+---
 
-Git release branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
-  
-Git development branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+Signed-off-by: Siarhei Liakh <sliakh.lkml@gmail.com>
+Signed-off-by: Xuxian Jiang <jiang@cs.ncsu.edu>
 
-Gitweb:
-     http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 78d185d..1b036e3 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -43,7 +43,7 @@ jiffies_64 = jiffies;
 
-Information on the RT patch can be found at:
+ PHDRS {
+ 	text PT_LOAD FLAGS(5);          /* R_E */
+-	data PT_LOAD FLAGS(7);          /* RWE */
++	data PT_LOAD FLAGS(6);          /* RW_ */
+ #ifdef CONFIG_X86_64
+ 	user PT_LOAD FLAGS(7);          /* RWE */
+ 	data.init PT_LOAD FLAGS(7);     /* RWE */
+@@ -89,6 +89,8 @@ SECTIONS
+ 		IRQENTRY_TEXT
+ 		*(.fixup)
+ 		*(.gnu.warning)
++		/* .text should occupy whole number of pages */
++		. = ALIGN(PAGE_SIZE);
+ 		/* End of text section */
+ 		_etext = .;
+ 	} :text = 0x9090
+@@ -151,6 +153,8 @@ SECTIONS
+ 	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
+ 		*(.data.read_mostly)
 
-    http://rt.wiki.kernel.org/index.php/Main_Page
++		/* .data should occupy whole number of pages */
++		. = ALIGN(PAGE_SIZE);
+ 		/* End of data section */
+ 		_edata = .;
+ 	}
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index 0607119..da6da99 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -423,9 +423,10 @@ void free_init_pages(char *what, unsigned long
+begin, unsigned long end)
+ 	/*
+ 	 * We just marked the kernel text read only above, now that
+ 	 * we are going to free part of that, we need to make that
+-	 * writeable first.
++	 * writeable and non-executable first.
+ 	 */
+ 	set_memory_rw(begin, (end - begin) >> PAGE_SHIFT);
++	set_memory_nx(begin, (end - begin) >> PAGE_SHIFT);
 
-to build the 2.6.31-rc7-rt8 tree, the following patches should be
-applied:
+ 	printk(KERN_INFO "Freeing %s: %luk freed\n", what, (end - begin) >> 10);
 
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.31-rc7.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rc7-rt8.bz2
+diff --git a/init/main.c b/init/main.c
+index 2d9d6bd..a1a6248 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -7,6 +7,8 @@
+  *  Added initrd & change_root: Werner Almesberger & Hans Lermen, Feb '96
+  *  Moan early if gcc is old, avoiding bogus kernels - Paul Gortmaker, May '96
+  *  Simplified starting of init:  Michael A. Griffith <grif@acm.org>
++ *  Data NX protection by Siarhei Liakh <sliakh.lkml@gmail.com>
++ *  and Xuxian Jiang <jiang@cs.ncsu.edu>
+  */
 
-Enjoy !
+ #include <linux/types.h>
+@@ -91,6 +93,21 @@ extern void radix_tree_init(void);
+ extern void free_initmem(void);
+ #ifndef CONFIG_DEBUG_RODATA
+ static inline void mark_rodata_ro(void) { }
++static inline void mark_nxdata_nx(void) { }
++#else
++void mark_nxdata_nx(void)
++{
++	/*
++	 * When this called, init has already been executed and released,
++	 * so everything past _etext sould be NX.
++	 */
++	unsigned long start = PFN_ALIGN(_etext);
++	unsigned long size = PFN_ALIGN(_end) - start;
++
++	printk(KERN_INFO "NX-protecting the kernel data: %lx, %lu pages\n",
++		start, size >> PAGE_SHIFT);
++	set_pages_nx(virt_to_page(start), size >> PAGE_SHIFT);
++}
+ #endif
 
-       tglx
+ #ifdef CONFIG_TC
+@@ -839,6 +856,7 @@ static noinline int init_post(void)
+ 	free_initmem();
+ 	unlock_kernel();
+ 	mark_rodata_ro();
++	mark_nxdata_nx();
+ 	system_state = SYSTEM_RUNNING;
+ 	numa_default_policy();
