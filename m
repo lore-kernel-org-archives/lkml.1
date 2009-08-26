@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932856AbZHZCHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932872AbZHZCKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932856AbZHZCHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 22:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932779AbZHZCHW
+	id S932872AbZHZCKG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 22:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834AbZHZCKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 22:07:22 -0400
-Received: from newsmtp5.atmel.com ([204.2.163.5]:51192 "EHLO
-	sjogate2.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932727AbZHZCHV convert rfc822-to-8bit (ORCPT
+	Tue, 25 Aug 2009 22:10:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52019 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932814AbZHZCKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 22:07:21 -0400
-X-Greylist: delayed 1672 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Aug 2009 22:07:18 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 25 Aug 2009 22:10:04 -0400
+Date: Tue, 25 Aug 2009 22:10:05 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Mimi Zohar <zohar@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, eparis@redhat.com,
+       torvalds@linux-foundation.org
+Subject: [PATCH] allow disabling IMA at runtime
+Message-ID: <20090826021005.GD19494@bombadil.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: ARM Git Tree (at91sam9g45 patches)
-Date: Wed, 26 Aug 2009 03:15:26 +0200
-Message-ID: <0F5F73E36031FD46AD3F2E6948F0C0A00188E074@frimb01.corp.atmel.com>
-In-Reply-To: <9f53b4330908251727q1bc1accfk12a9a8d25407791@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: ARM Git Tree (at91sam9g45 patches)
-Thread-Index: Acol5Mh5rqJivFVSRu+DdmKpCxhcXgABTqzA
-References: <9f53b4330908251727q1bc1accfk12a9a8d25407791@mail.gmail.com>
-From: "Xu, Hong" <Hong.Xu@atmel.com>
-To: "Robert Emanuele" <rob@emanuele.us>
-Cc: <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 26 Aug 2009 01:15:28.0558 (UTC) FILETIME=[B2C91CE0:01CA25EA]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Robert,
-Actually Atmel has made experimental patch to support at91sam9g45-ekes board and will push the changes to the upstream tree in the near future. I suggest you have a look at
- http://www.linux4sam.org/twiki/bin/view/Linux4SAM/LinuxKernel#Linux4SAM_Experimental_Patches
+From: Kyle McMartin <kyle@redhat.com>
 
-BR,
-Hong Xu
-> -----Original Message-----
-> From: linux-arm-kernel-bounces@lists.infradead.org
-> [mailto:linux-arm-kernel-bounces@lists.infradead.org] On Behalf Of Robert
-> Emanuele
-> Sent: 2009?8?26? 8:27
-> To: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> Subject: ARM Git Tree (at91sam9g45 patches)
-> 
-> Greetings,
-> 
-> I'm working with the Atmel at91sam9g45-ekes board which is new.  I was
-> wondering if there was a git tree with the current ARM patches that
-> contains the at91sam9g45 code?  Russell lists "Applied" patches at
-> http://www.arm.linux.org.uk/developer/patches/ .  Where are these
-> applied to?  If there isn't a tree, is there an elegant way to get the
-> latest patch sets that I could apply to Linus's tree?
-> 
-> Thank you,
-> 
-> Rob
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Due to a memory leak in IMA that we're currently debugging in Fedora
+rawhide, it would be nice to be able to disable that support at runtime.
+Currently it's only able to be built in, and there's no toggle to avoid
+initializing it.
+
+Provide one, in order to enhance debuggability. If a user can reboot a
+machine and edit its command line, one can do a far sight worse things
+than disabling a security precaution.
+
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
+
+---
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 7936b80..0d1b1ed 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -926,6 +926,11 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	ihash_entries=	[KNL]
+ 			Set number of hash buckets for inode cache.
+ 
++	ima=		[IMA]
++			Format: { "0" | "1" }
++			0 -- disable IMA.
++			1 -- enable IMA. (default)
++
+ 	ima_audit=	[IMA]
+ 			Format: { "0" | "1" }
+ 			0 -- integrity auditing messages. (Default)
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+index 101c512..cc7603e 100644
+--- a/security/integrity/ima/ima_main.c
++++ b/security/integrity/ima/ima_main.c
+@@ -339,10 +339,27 @@ int ima_bprm_check(struct linux_binprm *bprm)
+ 	return 0;
+ }
+ 
++static int ima_disabled = 0;
++static int __init ima_enabled(char *str)
++{
++	unsigned long enabled;
++
++	if (!strict_strtoul(str, 0, &enabled))
++		ima_disabled = enabled ? 0 : 1;
++
++	return 1;
++}
++__setup("ima=", ima_enabled);
++
+ static int __init init_ima(void)
+ {
+ 	int error;
+ 
++	if (ima_disabled) {
++		pr_info("IMA disabled at user request.\n");
++		return 0;
++	}
++
+ 	ima_iintcache_init();
+ 	error = ima_init();
+ 	ima_initialized = 1;
