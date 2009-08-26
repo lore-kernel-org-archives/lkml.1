@@ -1,158 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbZHZHXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbZHZHXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbZHZHXf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757109AbZHZHXa
+	id S1757149AbZHZHXp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbZHZHXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:23:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46808 "EHLO hera.kernel.org"
+	Wed, 26 Aug 2009 03:23:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44670 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757061AbZHZHX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:23:28 -0400
-Date: Wed, 26 Aug 2009 07:23:04 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, lizf@cn.fujitsu.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <4A7B925E.9030605@cn.fujitsu.com>
-References: <4A7B925E.9030605@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing/filters: Add filter_type to struct ftrace_event_field
-Message-ID: <tip-aa38e9fc3ea804290efd3a39316d7f7e6c945800@git.kernel.org>
-Git-Commit-ID: aa38e9fc3ea804290efd3a39316d7f7e6c945800
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 26 Aug 2009 07:23:06 +0000 (UTC)
+	id S1757062AbZHZHXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 03:23:41 -0400
+Date: Wed, 26 Aug 2009 17:23:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for August 26
+Message-Id: <20090826172336.125b58c2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__26_Aug_2009_17_23_36_+1000_Jd37c=U/h+c5GA+6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  aa38e9fc3ea804290efd3a39316d7f7e6c945800
-Gitweb:     http://git.kernel.org/tip/aa38e9fc3ea804290efd3a39316d7f7e6c945800
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Fri, 7 Aug 2009 10:33:02 +0800
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Wed, 26 Aug 2009 00:32:06 -0400
+--Signature=_Wed__26_Aug_2009_17_23_36_+1000_Jd37c=U/h+c5GA+6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-tracing/filters: Add filter_type to struct ftrace_event_field
+Hi all,
 
-The type of a field is stored as a string in @type, and here
-we add @filter_type which is an enum value.
+Changes since 20090825:
 
-This prepares for later patches, so we can specifically assign
-different @filter_type for the same @type.
+This tree fails to build for powerpc allyesconfig (due to a TOC overflow
+problem in the final link).
 
-For example normally a "char *" field is treated as a ptr,
-but we may want it to be treated as a string when doing filting.
+The uwb tree gained a build failure for which I reverted a commit.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4A7B925E.9030605@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+----------------------------------------------------------------------------
 
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
----
- kernel/trace/trace.h               |    2 ++
- kernel/trace/trace_events.c        |    2 ++
- kernel/trace/trace_events_filter.c |   23 ++++++++++++++---------
- 3 files changed, 18 insertions(+), 9 deletions(-)
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 300ef78..64dda57 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -755,6 +755,7 @@ struct ftrace_event_field {
- 	struct list_head	link;
- 	char			*name;
- 	char			*type;
-+	int			filter_type;
- 	int			offset;
- 	int			size;
- 	int			is_signed;
-@@ -800,6 +801,7 @@ extern int apply_subsystem_event_filter(struct event_subsystem *system,
- 					char *filter_string);
- extern void print_subsystem_event_filter(struct event_subsystem *system,
- 					 struct trace_seq *s);
-+extern int filter_assign_type(const char *type);
- 
- static inline int
- filter_check_discard(struct ftrace_event_call *call, void *rec,
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 79d3520..5740e90 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -44,9 +44,11 @@ int trace_define_field(struct ftrace_event_call *call, const char *type,
- 	if (!field->type)
- 		goto err;
- 
-+	field->filter_type = filter_assign_type(type);
- 	field->offset = offset;
- 	field->size = size;
- 	field->is_signed = is_signed;
-+
- 	list_add(&field->link, &call->fields);
- 
- 	return 0;
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 490337a..22e6d82 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -476,11 +476,12 @@ static int filter_add_pred_fn(struct filter_parse_state *ps,
- }
- 
- enum {
--	FILTER_STATIC_STRING = 1,
--	FILTER_DYN_STRING
-+	FILTER_OTHER = 0,
-+	FILTER_STATIC_STRING,
-+	FILTER_DYN_STRING,
- };
- 
--static int is_string_field(const char *type)
-+int filter_assign_type(const char *type)
- {
- 	if (strstr(type, "__data_loc") && strstr(type, "char"))
- 		return FILTER_DYN_STRING;
-@@ -488,12 +489,18 @@ static int is_string_field(const char *type)
- 	if (strchr(type, '[') && strstr(type, "char"))
- 		return FILTER_STATIC_STRING;
- 
--	return 0;
-+	return FILTER_OTHER;
-+}
-+
-+static bool is_string_field(struct ftrace_event_field *field)
-+{
-+	return field->filter_type == FILTER_DYN_STRING ||
-+	       field->filter_type == FILTER_STATIC_STRING;
- }
- 
- static int is_legal_op(struct ftrace_event_field *field, int op)
- {
--	if (is_string_field(field->type) && (op != OP_EQ && op != OP_NE))
-+	if (is_string_field(field) && (op != OP_EQ && op != OP_NE))
- 		return 0;
- 
- 	return 1;
-@@ -550,7 +557,6 @@ static int filter_add_pred(struct filter_parse_state *ps,
- 	struct ftrace_event_field *field;
- 	filter_pred_fn_t fn;
- 	unsigned long long val;
--	int string_type;
- 	int ret;
- 
- 	pred->fn = filter_pred_none;
-@@ -578,9 +584,8 @@ static int filter_add_pred(struct filter_parse_state *ps,
- 		return -EINVAL;
- 	}
- 
--	string_type = is_string_field(field->type);
--	if (string_type) {
--		if (string_type == FILTER_STATIC_STRING)
-+	if (is_string_field(field)) {
-+		if (field->filter_type == FILTER_STATIC_STRING)
- 			fn = filter_pred_string;
- 		else
- 			fn = filter_pred_strloc;
+Below is a summary of the state of the merge.
+
+We are up to 141 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+CONFLICT (content): Merge conflict in net/sunrpc/cache.c
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_sync.h
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
+m.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+355.h
+CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
+644x.h
+Merging quota/for_next
+Merging kbuild/master
+Merging kconfig/for-next
+CONFLICT (content): Merge conflict in scripts/extract-ikconfig
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in include/linux/cpumask.h
+Merging mmc/next
+Merging input/next
+CONFLICT (content): Merge conflict in drivers/base/platform.c
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/regulator/Kconfig
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+CONFLICT (content): Merge conflict in drivers/char/agp/uninorth-agp.c
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in kernel/fork.c
+CONFLICT (content): Merge conflict in kernel/trace/trace.h
+Merging oprofile/for-next
+CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
+Merging edac-amd/for-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+CONFLICT (content): Merge conflict in include/linux/topology.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+Merging sfi/sfi-test
+CONFLICT (content): Merge conflict in arch/x86/include/asm/io_apic.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/acpi/boot.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/apic/io_apic.c
+CONFLICT (content): Merge conflict in drivers/acpi/internal.h
+CONFLICT (content): Merge conflict in drivers/acpi/tables.c
+CONFLICT (content): Merge conflict in include/linux/acpi.h
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/tty
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
+d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
+l/VirtualEthernetLinux.c left in tree.
+$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
+Merging scsi-post-merge/master
+[master 59a6613] Revert "uwb: avoid radio controller reset loops"
+
+--Signature=_Wed__26_Aug_2009_17_23_36_+1000_Jd37c=U/h+c5GA+6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqU4vgACgkQjjKRsyhoI8yShQCgtJ20XONIwHWdKotrAePL38CL
+casAnjFdsp/6zj6SfXI5EaHXjz/5hUVS
+=EBki
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__26_Aug_2009_17_23_36_+1000_Jd37c=U/h+c5GA+6--
