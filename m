@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbZHZGsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbZHZGso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756929AbZHZGsH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 02:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbZHZGsG
+	id S1756935AbZHZGso (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 02:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756900AbZHZGsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 02:48:06 -0400
-Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:38607
+	Wed, 26 Aug 2009 02:48:43 -0400
+Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:38707
 	"EHLO mswedge2.sunplus.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756918AbZHZGsA (ORCPT
+	by vger.kernel.org with ESMTP id S1756820AbZHZGsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 02:48:00 -0400
-Subject: Subject: [PATCH 30/33] score: create mm/ files Makefile pgtable.c
-	and tlb files
+	Wed, 26 Aug 2009 02:48:41 -0400
+Subject: Subject: [PATCH 31/33] score: create mm/ files init.c cache.c
 From: Chen Liqin <liqin.chen@sunplusct.com>
 To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Arnd Bergmann <arnd@arndb.de>, torvalds@linux-foundation.org
 Content-Type: text/plain
-Date: Wed, 26 Aug 2009 14:37:21 +0800
-Message-Id: <1251268641.3293.0.camel@ad3ser01>
+Date: Wed, 26 Aug 2009 14:37:59 +0800
+Message-Id: <1251268679.3293.2.camel@ad3ser01>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
@@ -25,44 +24,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 4fbde449c45846e4d74363c5a45eca2d06cd46ae Mon Sep 17 00:00:00 2001
+>From 75ba37513ce4b842c11c1d67dd8b32dd61ef240d Mon Sep 17 00:00:00 2001
 From: Chen Liqin <liqin.chen@sunplusct.com>
-Date: Wed, 26 Aug 2009 10:05:11 +0800
-Subject: [PATCH 30/33] score: create mm/ files Makefile pgtable.c and tlb files
+Date: Wed, 26 Aug 2009 10:05:12 +0800
+Subject: [PATCH 31/33] score: create mm/ files init.c cache.c
 
 
 Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
 ---
- arch/score/mm/Makefile    |    6 +
- arch/score/mm/pgtable.c   |   52 +++++++++
- arch/score/mm/tlb-miss.S  |  199 +++++++++++++++++++++++++++++++++++
- arch/score/mm/tlb-score.c |  251 +++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 508 insertions(+), 0 deletions(-)
- create mode 100644 arch/score/mm/Makefile
- create mode 100644 arch/score/mm/pgtable.c
- create mode 100644 arch/score/mm/tlb-miss.S
- create mode 100644 arch/score/mm/tlb-score.c
+ arch/score/mm/cache.c |  257 +++++++++++++++++++++++++++++++++++++++++++++++++
+ arch/score/mm/init.c  |  161 +++++++++++++++++++++++++++++++
+ 2 files changed, 418 insertions(+), 0 deletions(-)
+ create mode 100644 arch/score/mm/cache.c
+ create mode 100644 arch/score/mm/init.c
 
-diff --git a/arch/score/mm/Makefile b/arch/score/mm/Makefile
+diff --git a/arch/score/mm/cache.c b/arch/score/mm/cache.c
 new file mode 100644
-index 0000000..7b1e29b
+index 0000000..dbac9d9
 --- /dev/null
-+++ b/arch/score/mm/Makefile
-@@ -0,0 +1,6 @@
-+#
-+# Makefile for the Linux/SCORE-specific parts of the memory manager.
-+#
-+
-+obj-y += cache.o extable.o fault.o init.o \
-+	tlb-miss.o tlb-score.o pgtable.o
-diff --git a/arch/score/mm/pgtable.c b/arch/score/mm/pgtable.c
-new file mode 100644
-index 0000000..6408bb7
---- /dev/null
-+++ b/arch/score/mm/pgtable.c
-@@ -0,0 +1,52 @@
++++ b/arch/score/mm/cache.c
+@@ -0,0 +1,257 @@
 +/*
-+ * arch/score/mm/pgtable-32.c
++ * arch/score/mm/cache.c
 + *
 + * Score Processor version.
 + *
@@ -86,495 +69,405 @@ index 0000000..6408bb7
 + * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + */
 +
-+#include <linux/bootmem.h>
 +#include <linux/init.h>
-+#include <linux/pfn.h>
++#include <linux/linkage.h>
++#include <linux/kernel.h>
 +#include <linux/mm.h>
-+
-+void pgd_init(unsigned long page)
-+{
-+	unsigned long *p = (unsigned long *) page;
-+	int i;
-+
-+	for (i = 0; i < USER_PTRS_PER_PGD; i += 8) {
-+		p[i + 0] = (unsigned long) invalid_pte_table;
-+		p[i + 1] = (unsigned long) invalid_pte_table;
-+		p[i + 2] = (unsigned long) invalid_pte_table;
-+		p[i + 3] = (unsigned long) invalid_pte_table;
-+		p[i + 4] = (unsigned long) invalid_pte_table;
-+		p[i + 5] = (unsigned long) invalid_pte_table;
-+		p[i + 6] = (unsigned long) invalid_pte_table;
-+		p[i + 7] = (unsigned long) invalid_pte_table;
-+	}
-+}
-+
-+void __init pagetable_init(void)
-+{
-+	/* Initialize the entire pgd. */
-+	pgd_init((unsigned long)swapper_pg_dir);
-+}
-diff --git a/arch/score/mm/tlb-miss.S b/arch/score/mm/tlb-miss.S
-new file mode 100644
-index 0000000..f276519
---- /dev/null
-+++ b/arch/score/mm/tlb-miss.S
-@@ -0,0 +1,199 @@
-+/*
-+ * arch/score/mm/tlbex.S
-+ *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <asm/asmmacro.h>
-+#include <asm/pgtable-bits.h>
-+#include <asm/scoreregs.h>
-+
-+/*
-+* After this macro runs, the pte faulted on is
-+* in register PTE, a ptr into the table in which
-+* the pte belongs is in PTR.
-+*/
-+	.macro	load_pte, pte, ptr
-+	la	\ptr, pgd_current
-+	lw	\ptr, [\ptr, 0]
-+	mfcr	\pte, cr6
-+	srli	\pte, \pte, 22
-+	slli	\pte, \pte, 2
-+	add	\ptr, \ptr, \pte
-+	lw	\ptr, [\ptr, 0]
-+	mfcr	\pte, cr6
-+	srli	\pte, \pte, 10
-+	andi	\pte, 0xffc
-+	add	\ptr, \ptr, \pte
-+	lw	\pte, [\ptr, 0]
-+	.endm
-+
-+	.macro	pte_reload, ptr
-+	lw	\ptr, [\ptr, 0]
-+	mtcr	\ptr, cr12
-+	nop
-+	nop
-+	nop
-+	nop
-+	nop
-+	.endm
-+
-+	.macro do_fault, write
-+	SAVE_ALL
-+	mfcr	r6, cr6
-+	mv	r4, r0
-+	ldi	r5, \write
-+	la	r8, do_page_fault
-+	brl	r8
-+	j	ret_from_exception
-+	.endm
-+
-+	.macro	pte_writable, pte, ptr, label
-+	andi	\pte, 0x280
-+	cmpi.c	\pte, 0x280
-+	bne	\label
-+	lw	\pte, [\ptr, 0]		/*reload PTE*/
-+	.endm
-+
-+/*
-+ * Make PTE writable, update software status bits as well,
-+ * then store at PTR.
-+ */
-+	.macro	pte_makewrite, pte, ptr
-+	ori	\pte, 0x426
-+	sw	\pte, [\ptr, 0]
-+	.endm
-+
-+	.text
-+ENTRY(score7_FTLB_refill_Handler)
-+	la	r31, pgd_current	/* get pgd pointer */
-+	lw	r31, [r31, 0]		/* get the address of PGD */
-+	mfcr	r30, cr6
-+	srli	r30, r30, 22		/* PGDIR_SHIFT = 22*/
-+	slli	r30, r30, 2
-+	add	r31, r31, r30
-+	lw	r31, [r31, 0]		/* get the address of the start address of PTE table */
-+
-+	mfcr	r30, cr9
-+	andi	r30, 0xfff 		/* equivalent to get PET index and right shift 2 bits */
-+	add	r31, r31, r30
-+	lw	r30, [r31, 0]		/* load pte entry */
-+	mtcr	r30, cr12
-+	nop
-+	nop
-+	nop
-+	nop
-+	nop
-+	mtrtlb
-+	nop
-+	nop
-+	nop
-+	nop
-+	nop
-+	rte				/* 6 cycles to make sure tlb entry works */
-+
-+ENTRY(score7_KSEG_refill_Handler)
-+	la	r31, pgd_current	/* get pgd pointer */
-+	lw	r31, [r31, 0]		/* get the address of PGD */
-+	mfcr	r30, cr6
-+	srli	r30, r30, 22		/* PGDIR_SHIFT = 22 */
-+	slli	r30, r30, 2
-+	add	r31, r31, r30
-+	lw	r31, [r31, 0]		/* get the address of the start address of PTE table */
-+
-+	mfcr	r30, cr6		/* get Bad VPN */
-+	srli	r30, r30, 10
-+	andi	r30, 0xffc		/* PTE VPN mask (bit 11~2) */
-+
-+	add	r31, r31, r30
-+	lw	r30, [r31, 0]		/* load pte entry */
-+	mtcr	r30, cr12
-+	nop
-+	nop
-+	nop
-+	nop
-+	nop
-+	mtrtlb
-+	nop
-+	nop
-+	nop
-+	nop
-+	nop
-+	rte				/* 6 cycles to make sure tlb entry works */
-+
-+nopage_tlbl:
-+	do_fault	0		/* Read */
-+
-+ENTRY(handle_tlb_refill)
-+	load_pte	r30, r31
-+	pte_writable	r30, r31, handle_tlb_refill_nopage
-+	pte_makewrite	r30, r31	/* Access|Modify|Dirty|Valid */
-+	pte_reload	r31
-+	mtrtlb
-+	nop
-+	nop
-+	nop
-+	nop
-+	nop
-+	rte
-+handle_tlb_refill_nopage:
-+	do_fault	0		/* Read */
-+
-+ENTRY(handle_tlb_invaild)
-+	load_pte	r30, r31
-+	stlb				/* find faulting entry */
-+	pte_writable	r30, r31, handle_tlb_invaild_nopage
-+	pte_makewrite	r30, r31	/* Access|Modify|Dirty|Valid */
-+	pte_reload	r31
-+	mtptlb
-+	nop
-+	nop
-+	nop
-+	nop
-+	nop
-+	rte
-+handle_tlb_invaild_nopage:
-+	do_fault	0		/* Read */
-+
-+ENTRY(handle_mod)
-+	load_pte	r30, r31
-+	stlb				/* find faulting entry */
-+	andi	r30, _PAGE_WRITE	/* Writable? */
-+	cmpz.c	r30
-+	beq	nowrite_mod
-+	lw	r30, [r31, 0]		/* reload into r30 */
-+
-+	/* Present and writable bits set, set accessed and dirty bits. */
-+	pte_makewrite	r30, r31
-+
-+	/* Now reload the entry into the tlb. */
-+	pte_reload	r31
-+	mtptlb
-+	nop
-+	nop
-+	nop
-+	nop
-+	nop
-+	rte
-+
-+nowrite_mod:
-+	do_fault	1	/* Write */
-diff --git a/arch/score/mm/tlb-score.c b/arch/score/mm/tlb-score.c
-new file mode 100644
-index 0000000..4fa5aa5
---- /dev/null
-+++ b/arch/score/mm/tlb-score.c
-@@ -0,0 +1,251 @@
-+/*
-+ * arch/score/mm/tlb-score.c
-+ *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/highmem.h>
 +#include <linux/module.h>
++#include <linux/sched.h>
 +
-+#include <asm/irq.h>
 +#include <asm/mmu_context.h>
-+#include <asm/tlb.h>
-+
-+#define TLBSIZE 32
-+
-+unsigned long asid_cache = ASID_FIRST_VERSION;
-+EXPORT_SYMBOL(asid_cache);
-+
-+void local_flush_tlb_all(void)
-+{
-+	unsigned long flags;
-+	unsigned long old_ASID;
-+	int entry;
-+
-+	local_irq_save(flags);
-+	old_ASID = pevn_get() & ASID_MASK;
-+	pectx_set(0);			/* invalid */
-+	entry = tlblock_get();		/* skip locked entries*/
-+
-+	for (; entry < TLBSIZE; entry++) {
-+		tlbpt_set(entry);
-+		pevn_set(KSEG1);
-+		barrier();
-+		tlb_write_indexed();
-+	}
-+	pevn_set(old_ASID);
-+	local_irq_restore(flags);
-+}
 +
 +/*
-+ * If mm is currently active_mm, we can't really drop it. Instead,
-+ * we will get a new one for it.
-+ */
-+static inline void
-+drop_mmu_context(struct mm_struct *mm)
++Just flush entire Dcache!!
++You must ensure the page doesn't include instructions, because
++the function will not flush the Icache.
++The addr must be cache aligned.
++*/
++static void flush_data_cache_page(unsigned long addr)
 +{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	get_new_mmu_context(mm);
-+	pevn_set(mm->context & ASID_MASK);
-+	local_irq_restore(flags);
++	unsigned int i;
++	for (i = 0; i < (PAGE_SIZE / L1_CACHE_BYTES); i += L1_CACHE_BYTES) {
++		__asm__ __volatile__(
++		"cache 0x0e, [%0, 0]\n"
++		"cache 0x1a, [%0, 0]\n"
++		"nop\n"
++		: : "r" (addr));
++		addr += L1_CACHE_BYTES;
++	}
 +}
 +
-+void local_flush_tlb_mm(struct mm_struct *mm)
++/* called by update_mmu_cache. */
++void __update_cache(struct vm_area_struct *vma, unsigned long address,
++		pte_t pte)
 +{
-+	if (mm->context != 0)
-+		drop_mmu_context(mm);
++	struct page *page;
++	unsigned long pfn, addr;
++	int exec = (vma->vm_flags & VM_EXEC);
++
++	pfn = pte_pfn(pte);
++	if (unlikely(!pfn_valid(pfn)))
++		return;
++	page = pfn_to_page(pfn);
++	if (page_mapping(page) && test_bit(PG_arch_1, &page->flags)) {
++		addr = (unsigned long) page_address(page);
++		if (exec)
++			flush_data_cache_page(addr);
++		clear_bit(PG_arch_1, &page->flags);
++	}
 +}
 +
-+void local_flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
-+	unsigned long end)
++static inline void setup_protection_map(void)
++{
++	protection_map[0] = PAGE_NONE;
++	protection_map[1] = PAGE_READONLY;
++	protection_map[2] = PAGE_COPY;
++	protection_map[3] = PAGE_COPY;
++	protection_map[4] = PAGE_READONLY;
++	protection_map[5] = PAGE_READONLY;
++	protection_map[6] = PAGE_COPY;
++	protection_map[7] = PAGE_COPY;
++	protection_map[8] = PAGE_NONE;
++	protection_map[9] = PAGE_READONLY;
++	protection_map[10] = PAGE_SHARED;
++	protection_map[11] = PAGE_SHARED;
++	protection_map[12] = PAGE_READONLY;
++	protection_map[13] = PAGE_READONLY;
++	protection_map[14] = PAGE_SHARED;
++	protection_map[15] = PAGE_SHARED;
++}
++
++void __devinit cpu_cache_init(void)
++{
++	setup_protection_map();
++}
++
++void flush_icache_all(void)
++{
++	__asm__ __volatile__(
++	"la r8, flush_icache_all\n"
++	"cache 0x10, [r8, 0]\n"
++	"nop\nnop\nnop\nnop\nnop\nnop\n"
++	: : : "r8");
++}
++
++void flush_dcache_all(void)
++{
++	__asm__ __volatile__(
++	"la r8, flush_dcache_all\n"
++	"cache 0x1f, [r8, 0]\n"
++	"nop\nnop\nnop\nnop\nnop\nnop\n"
++	"cache 0x1a, [r8, 0]\n"
++	"nop\nnop\nnop\nnop\nnop\nnop\n"
++	: : : "r8");
++}
++
++void flush_cache_all(void)
++{
++	__asm__ __volatile__(
++	"la r8, flush_cache_all\n"
++	"cache 0x10, [r8, 0]\n"
++	"nop\nnop\nnop\nnop\nnop\nnop\n"
++	"cache 0x1f, [r8, 0]\n"
++	"nop\nnop\nnop\nnop\nnop\nnop\n"
++	"cache 0x1a, [r8, 0]\n"
++	"nop\nnop\nnop\nnop\nnop\nnop\n"
++	: : : "r8");
++}
++
++void flush_cache_mm(struct mm_struct *mm)
++{
++	if (!(mm->context))
++		return;
++	flush_cache_all();
++}
++
++/*if we flush a range precisely , the processing may be very long.
++We must check each page in the range whether present. If the page is present,
++we can flush the range in the page. Be careful, the range may be cross two
++page, a page is present and another is not present.
++*/
++/*
++The interface is provided in hopes that the port can find
++a suitably efficient method for removing multiple page
++sized regions from the cache.
++*/
++void flush_cache_range(struct vm_area_struct *vma,
++		unsigned long start, unsigned long end)
 +{
 +	struct mm_struct *mm = vma->vm_mm;
-+	unsigned long vma_mm_context = mm->context;
-+	if (mm->context != 0) {
-+		unsigned long flags;
-+		int size;
++	int exec = vma->vm_flags & VM_EXEC;
++	pgd_t *pgdp;
++	pud_t *pudp;
++	pmd_t *pmdp;
++	pte_t *ptep;
 +
-+		local_irq_save(flags);
-+		size = (end - start + (PAGE_SIZE - 1)) >> PAGE_SHIFT;
-+		if (size <= TLBSIZE) {
-+			int oldpid = pevn_get() & ASID_MASK;
-+			int newpid = vma_mm_context & ASID_MASK;
++	if (!(mm->context))
++		return;
 +
-+			start &= PAGE_MASK;
-+			end += (PAGE_SIZE - 1);
-+			end &= PAGE_MASK;
-+			while (start < end) {
-+				int idx;
++	pgdp = pgd_offset(mm, start);
++	pudp = pud_offset(pgdp, start);
++	pmdp = pmd_offset(pudp, start);
++	ptep = pte_offset(pmdp, start);
 +
-+				pevn_set(start | newpid);
-+				start += PAGE_SIZE;
-+				barrier();
-+				tlb_probe();
-+				idx = tlbpt_get();
-+				pectx_set(0);
-+				pevn_set(KSEG1);
-+				if (idx < 0)
-+					continue;
-+				tlb_write_indexed();
-+			}
-+			pevn_set(oldpid);
-+		} else {
-+			/* Bigger than TLBSIZE, get new ASID directly */
-+			get_new_mmu_context(mm);
-+			if (mm == current->active_mm)
-+				pevn_set(vma_mm_context & ASID_MASK);
++	while (start <= end) {
++		unsigned long tmpend;
++		pgdp = pgd_offset(mm, start);
++		pudp = pud_offset(pgdp, start);
++		pmdp = pmd_offset(pudp, start);
++		ptep = pte_offset(pmdp, start);
++
++		if (!(pte_val(*ptep) & _PAGE_PRESENT)) {
++			start = (start + PAGE_SIZE) & ~(PAGE_SIZE - 1);
++			continue;
 +		}
-+		local_irq_restore(flags);
++		tmpend = (start | (PAGE_SIZE-1)) > end ?
++				 end : (start | (PAGE_SIZE-1));
++
++		flush_dcache_range(start, tmpend);
++		if (exec)
++			flush_icache_range(start, tmpend);
++		start = (start + PAGE_SIZE) & ~(PAGE_SIZE - 1);
 +	}
 +}
 +
-+void local_flush_tlb_kernel_range(unsigned long start, unsigned long end)
++void flush_cache_page(struct vm_area_struct *vma,
++		unsigned long addr, unsigned long pfn)
 +{
-+	unsigned long flags;
-+	int size;
++	int exec = vma->vm_flags & VM_EXEC;
++	unsigned long kaddr = 0xa0000000 | (pfn << PAGE_SHIFT);
 +
-+	local_irq_save(flags);
-+	size = (end - start + (PAGE_SIZE - 1)) >> PAGE_SHIFT;
-+	if (size <= TLBSIZE) {
-+		int pid = pevn_get();
++	flush_dcache_range(kaddr, kaddr + PAGE_SIZE);
 +
-+		start &= PAGE_MASK;
-+		end += PAGE_SIZE - 1;
-+		end &= PAGE_MASK;
-+
-+		while (start < end) {
-+			long idx;
-+
-+			pevn_set(start);
-+			start += PAGE_SIZE;
-+			tlb_probe();
-+			idx = tlbpt_get();
-+			if (idx < 0)
-+				continue;
-+			pectx_set(0);
-+			pevn_set(KSEG1);
-+			barrier();
-+			tlb_write_indexed();
-+		}
-+		pevn_set(pid);
-+	} else {
-+		local_flush_tlb_all();
-+	}
-+
-+	local_irq_restore(flags);
++	if (exec)
++		flush_icache_range(kaddr, kaddr + PAGE_SIZE);
 +}
 +
-+void local_flush_tlb_page(struct vm_area_struct *vma, unsigned long page)
++void flush_cache_sigtramp(unsigned long addr)
 +{
-+	if (!vma || vma->vm_mm->context != 0) {
-+		unsigned long flags;
-+		int oldpid, newpid, idx;
-+		unsigned long vma_ASID = vma->vm_mm->context;
++	__asm__ __volatile__(
++	"cache 0x02, [%0, 0]\n"
++	"nop\nnop\nnop\nnop\nnop\n"
++	"cache 0x02, [%0, 0x4]\n"
++	"nop\nnop\nnop\nnop\nnop\n"
 +
-+		newpid = vma_ASID & ASID_MASK;
-+		page &= PAGE_MASK;
-+		local_irq_save(flags);
-+		oldpid = pevn_get() & ASID_MASK;
-+		pevn_set(page | newpid);
-+		barrier();
-+		tlb_probe();
-+		idx = tlbpt_get();
-+		pectx_set(0);
-+		pevn_set(KSEG1);
-+		if (idx < 0)		/* p_bit(31) - 1: miss, 0: hit*/
-+			goto finish;
-+		barrier();
-+		tlb_write_indexed();
-+finish:
-+		pevn_set(oldpid);
-+		local_irq_restore(flags);
-+	}
++	"cache 0x0d, [%0, 0]\n"
++	"nop\nnop\nnop\nnop\nnop\n"
++	"cache 0x0d, [%0, 0x4]\n"
++	"nop\nnop\nnop\nnop\nnop\n"
++
++	"cache 0x1a, [%0, 0]\n"
++	"nop\nnop\nnop\nnop\nnop\n"
++	: : "r" (addr));
 +}
 +
 +/*
-+ * This one is only used for pages with the global bit set so we don't care
-+ * much about the ASID.
-+ */
-+void local_flush_tlb_one(unsigned long page)
++1. WB and invalid a cache line of Dcache
++2. Drain Write Buffer
++the range must be smaller than PAGE_SIZE
++*/
++void flush_dcache_range(unsigned long start, unsigned long end)
 +{
-+	unsigned long flags;
-+	int oldpid, idx;
++	int size, i;
 +
-+	local_irq_save(flags);
-+	oldpid = pevn_get();
-+	page &= (PAGE_MASK << 1);
-+	pevn_set(page);
-+	barrier();
-+	tlb_probe();
-+	idx = tlbpt_get();
-+	pectx_set(0);
-+	if (idx >= 0) {
-+		/* Make sure all entries differ. */
-+		pevn_set(KSEG1);
-+		barrier();
-+		tlb_write_indexed();
++	start = start & ~(L1_CACHE_BYTES - 1);
++	end = end & ~(L1_CACHE_BYTES - 1);
++	size = end - start;
++	/* flush dcache to ram, and invalidate dcache lines. */
++	for (i = 0; i < size; i += L1_CACHE_BYTES) {
++		__asm__ __volatile__(
++		"cache 0x0e, [%0, 0]\n"
++		"nop\nnop\nnop\nnop\nnop\n"
++		"cache 0x1a, [%0, 0]\n"
++		"nop\nnop\nnop\nnop\nnop\n"
++		: : "r" (start));
++		start += L1_CACHE_BYTES;
 +	}
-+	pevn_set(oldpid);
-+	local_irq_restore(flags);
 +}
 +
-+void __update_tlb(struct vm_area_struct *vma, unsigned long address, pte_t pte)
++void flush_icache_range(unsigned long start, unsigned long end)
 +{
-+	unsigned long flags;
-+	int idx, pid;
++	int size, i;
++	start = start & ~(L1_CACHE_BYTES - 1);
++	end = end & ~(L1_CACHE_BYTES - 1);
 +
-+	/*
-+	 * Handle debugger faulting in for debugee.
-+	 */
-+	if (current->active_mm != vma->vm_mm)
-+		return;
++	size = end - start;
++	/* invalidate icache lines. */
++	for (i = 0; i < size; i += L1_CACHE_BYTES) {
++		__asm__ __volatile__(
++		"cache 0x02, [%0, 0]\n"
++		"nop\nnop\nnop\nnop\nnop\n"
++		: : "r" (start));
++		start += L1_CACHE_BYTES;
++	}
++}
+diff --git a/arch/score/mm/init.c b/arch/score/mm/init.c
+new file mode 100644
+index 0000000..4e3dcd0
+--- /dev/null
++++ b/arch/score/mm/init.c
+@@ -0,0 +1,161 @@
++/*
++ * arch/score/mm/init.c
++ *
++ * Score Processor version.
++ *
++ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
++ *  Lennox Wu <lennox.wu@sunplusct.com>
++ *  Chen Liqin <liqin.chen@sunplusct.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
 +
-+	pid = pevn_get() & ASID_MASK;
++#include <linux/errno.h>
++#include <linux/bootmem.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/mm.h>
++#include <linux/mman.h>
++#include <linux/pagemap.h>
++#include <linux/proc_fs.h>
++#include <linux/sched.h>
++#include <linux/initrd.h>
 +
-+	local_irq_save(flags);
-+	address &= PAGE_MASK;
-+	pevn_set(address | pid);
-+	barrier();
-+	tlb_probe();
-+	idx = tlbpt_get();
-+	pectx_set(pte_val(pte));
-+	pevn_set(address | pid);
-+	if (idx < 0)
-+		tlb_write_random();
++#include <asm/sections.h>
++#include <asm/tlb.h>
++
++DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
++
++unsigned long empty_zero_page;
++EXPORT_SYMBOL_GPL(empty_zero_page);
++
++static struct kcore_list kcore_mem, kcore_vmalloc;
++
++static unsigned long setup_zero_page(void)
++{
++	struct page *page;
++
++	empty_zero_page = __get_free_pages(GFP_KERNEL | __GFP_ZERO, 0);
++	if (!empty_zero_page)
++		panic("Oh boy, that early out of memory?");
++
++	page = virt_to_page((void *) empty_zero_page);
++	SetPageReserved(page);
++
++	return 1UL;
++}
++
++#ifndef CONFIG_NEED_MULTIPLE_NODES
++static int __init page_is_ram(unsigned long pagenr)
++{
++	if (pagenr >= min_low_pfn && pagenr < max_low_pfn)
++		return 1;
 +	else
-+		tlb_write_indexed();
-+
-+	pevn_set(pid);
-+	local_irq_restore(flags);
++		return 0;
 +}
 +
-+void __cpuinit tlb_init(void)
++void __init paging_init(void)
 +{
-+	tlblock_set(0);
-+	local_flush_tlb_all();
-+	memcpy((void *)(EXCEPTION_VECTOR_BASE_ADDR + 0x100),
-+			&score7_FTLB_refill_Handler, 0xFC);
-+	flush_icache_range(EXCEPTION_VECTOR_BASE_ADDR + 0x100,
-+			EXCEPTION_VECTOR_BASE_ADDR + 0x1FC);
++	unsigned long max_zone_pfns[MAX_NR_ZONES];
++	unsigned long lastpfn;
++
++	pagetable_init();
++	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
++	lastpfn = max_low_pfn;
++	free_area_init_nodes(max_zone_pfns);
 +}
++
++void __init mem_init(void)
++{
++	unsigned long codesize, reservedpages, datasize, initsize;
++	unsigned long tmp, ram = 0;
++
++	max_mapnr = max_low_pfn;
++	high_memory = (void *) __va(max_low_pfn << PAGE_SHIFT);
++	totalram_pages += free_all_bootmem();
++	totalram_pages -= setup_zero_page();	/* Setup zeroed pages. */
++	reservedpages = 0;
++
++	for (tmp = 0; tmp < max_low_pfn; tmp++)
++		if (page_is_ram(tmp)) {
++			ram++;
++			if (PageReserved(pfn_to_page(tmp)))
++				reservedpages++;
++		}
++
++	num_physpages = ram;
++	codesize = (unsigned long) &_etext - (unsigned long) &_text;
++	datasize = (unsigned long) &_edata - (unsigned long) &_etext;
++	initsize = (unsigned long) &__init_end - (unsigned long) &__init_begin;
++
++	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
++	kclist_add(&kcore_vmalloc, (void *) VMALLOC_START,
++			VMALLOC_END - VMALLOC_START);
++
++	printk(KERN_INFO "Memory: %luk/%luk available (%ldk kernel code, "
++			"%ldk reserved, %ldk data, %ldk init, %ldk highmem)\n",
++			(unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
++			ram << (PAGE_SHIFT-10), codesize >> 10,
++			reservedpages << (PAGE_SHIFT-10), datasize >> 10,
++			initsize >> 10,
++			(unsigned long) (totalhigh_pages << (PAGE_SHIFT-10)));
++}
++#endif /* !CONFIG_NEED_MULTIPLE_NODES */
++
++static void free_init_pages(const char *what, unsigned long begin, unsigned long end)
++{
++	unsigned long pfn;
++
++	for (pfn = PFN_UP(begin); pfn < PFN_DOWN(end); pfn++) {
++		struct page *page = pfn_to_page(pfn);
++		void *addr = phys_to_virt(PFN_PHYS(pfn));
++
++		ClearPageReserved(page);
++		init_page_count(page);
++		memset(addr, POISON_FREE_INITMEM, PAGE_SIZE);
++		__free_page(page);
++		totalram_pages++;
++	}
++	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
++}
++
++#ifdef CONFIG_BLK_DEV_INITRD
++void free_initrd_mem(unsigned long start, unsigned long end)
++{
++	free_init_pages("initrd memory",
++		virt_to_phys((void *) start),
++		virt_to_phys((void *) end));
++}
++#endif
++
++void __init_refok free_initmem(void)
++{
++	free_init_pages("unused kernel memory",
++	__pa(&__init_begin),
++	__pa(&__init_end));
++}
++
++unsigned long pgd_current;
++
++#define __page_aligned(order) __attribute__((__aligned__(PAGE_SIZE<<order)))
++
++/*
++ * gcc 3.3 and older have trouble determining that PTRS_PER_PGD and PGD_ORDER
++ * are constants.  So we use the variants from asm-offset.h until that gcc
++ * will officially be retired.
++ */
++pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned(PTE_ORDER);
++pte_t invalid_pte_table[PTRS_PER_PTE] __page_aligned(PTE_ORDER);
 -- 
 1.6.2
 
