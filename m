@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751663AbZHZTQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbZHZTQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751663AbZHZTQN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 15:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbZHZTQM
+	id S1751942AbZHZTQX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 15:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZHZTQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 15:16:12 -0400
-Received: from smtp4.ultrahosting.com ([74.213.175.253]:33354 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751023AbZHZTQL (ORCPT
+	Wed, 26 Aug 2009 15:16:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41973 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751229AbZHZTQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 15:16:11 -0400
-Date: Wed, 26 Aug 2009 15:15:49 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, raz ben yehuda <raziebe@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
-       riel@redhat.com, andrew motron <akpm@linux-foundation.org>,
-       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-In-Reply-To: <20090826180407.GA13632@elte.hu>
-Message-ID: <alpine.DEB.1.10.0908261509580.9933@gentwo.org>
-References: <4A943A00.9080609@nortel.com> <1251264700.7538.1178.camel@twins> <1251282598.3514.20.camel@raz> <alpine.DEB.1.10.0908260943090.9924@gentwo.org> <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz> <1251300625.18584.18.camel@twins>
- <alpine.DEB.1.10.0908261136590.9933@gentwo.org> <1251302598.18584.31.camel@twins> <alpine.DEB.1.10.0908261211340.9933@gentwo.org> <20090826180407.GA13632@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Aug 2009 15:16:21 -0400
+Date: Wed, 26 Aug 2009 12:16:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@intel.com,
+       rui.zhang@intel.com
+Subject: Re: [PATCH 1/2] ACPI processor: force throttling state when BIOS
+ returns incorrect value
+Message-Id: <20090826121619.2bc7e72b.akpm@linux-foundation.org>
+In-Reply-To: <200908171443.35622.elendil@planet.nl>
+References: <200908171443.35622.elendil@planet.nl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Ingo Molnar wrote:
+On Mon, 17 Aug 2009 14:43:34 +0200
+Frans Pop <elendil@planet.nl> wrote:
 
-> The thing is, you have cut out (and have not replied to) this
-> crutial bit of what Peter wrote:
->
-> > > The past year or so you've been whining about the tick latency,
-> > > and I've seen exactly _0_ patches from you slimming down the
-> > > work done in there, even though I pointed out some obvious
-> > > things that could be done.
->
-> ... which pretty much settles the issue as far as i'm concerned. If
-> you were truly interested in a constructive solution to lower
-> latencies in Linux you should have sent patches already for the low
-> hanging fruits Peter pointed out.
+> --- a/drivers/acpi/processor_throttling.c
+> +++ b/drivers/acpi/processor_throttling.c
+> @@ -62,7 +62,8 @@ struct throttling_tstate {
+>  #define THROTTLING_POSTCHANGE      (2)
+>  
+>  static int acpi_processor_get_throttling(struct acpi_processor *pr);
+> -int acpi_processor_set_throttling(struct acpi_processor *pr, int state);
+> +int acpi_processor_set_throttling(struct acpi_processor *pr,
+> +						int state, bool force);
+>  
 
-The noise latencies were already reduced in years earlier to the mininum
-(f.e. the work on slab queue cleaning). Certainly more could be done there
-but that misses the point.
+WARNING: externs should be avoided in .c files
+#74: FILE: drivers/acpi/processor_throttling.c:65:
++int acpi_processor_set_throttling(struct acpi_processor *pr,
 
-The point of the OFFLINE scheduler is to completely eliminate the
-OS disturbances by getting rid of *all* OS processing on some cpus.
+total: 0 errors, 1 warnings, 137 lines checked
 
-For some reason scheduler developers seem to be threatened by this idea
-and they go into bizarre lines of arguments to avoid the issue. Its simple
-and doable and the scheduler will still be there after we do this.
+checkpatch speaketh truth - there's already a declaration in
+acpi/processor.h anyway.
 
+I'll leave it alone though.  Cleaning up acpi code isn't on the agenda
+for today.
+
+Please integrate checkpatch into your patch preparation tools.  It
+finds stuff.
