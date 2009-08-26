@@ -1,138 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZHZD6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750911AbZHZED2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbZHZD6m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 23:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbZHZD6l
+	id S1750911AbZHZED2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 00:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbZHZED1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 23:58:41 -0400
-Received: from mga10.intel.com ([192.55.52.92]:20286 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756586AbZHZD6l (ORCPT
+	Wed, 26 Aug 2009 00:03:27 -0400
+Received: from mail-iw0-f204.google.com ([209.85.223.204]:43251 "EHLO
+	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbZHZED0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 23:58:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,276,1249282800"; 
-   d="asc'?scan'208";a="487430241"
-Date: Wed, 26 Aug 2009 11:58:40 +0800
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Eric Anholt <eric@anholt.net>, mailing54 <mailing54@plzk.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net,
-       Ma Ling <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Zhao, Yakui" <yakui.zhao@intel.com>, Keith Packard <keithp@keithp.com>
-Subject: Re: Linux 2.6.31-rc7
-Message-ID: <20090826035840.GA16894@zhen-devel.sh.intel.com>
-Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Eric Anholt <eric@anholt.net>, mailing54 <mailing54@plzk.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net,
-	Ma Ling <ling.ma@intel.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	"Zhao, Yakui" <yakui.zhao@intel.com>,
-	Keith Packard <keithp@keithp.com>
-References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain>
- <4A941E8B.8080902@plzk.org>
- <alpine.LFD.2.01.0908251057260.3218@localhost.localdomain>
- <4A94599F.9020508@plzk.org>
- <alpine.LFD.2.01.0908251456530.3218@localhost.localdomain>
- <1251239637.26348.20.camel@gaiman.anholt.net>
- <20090826015127.GA1402@zhen-devel.sh.intel.com>
- <alpine.LFD.2.01.0908252027300.3218@localhost.localdomain>
+	Wed, 26 Aug 2009 00:03:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=YWo+vmmMBvikRILj7fGaDoGfXvBEjl4YGxGD5yfURWQ4I69FAwBXtWOCLt+psC81BN
+         A0FJC7zeevqhwrsB05jhS/5D4FcCGrWgVFc66nudKvx4DnoKFa+Olc7YOQm2IN9K48Cw
+         XryVkX5tHsJxFhYruXsihXkao4ltSGCaMy+oc=
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="xHFwDpU9dbj6ez1V"
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0908252027300.3218@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Tue, 25 Aug 2009 21:03:08 -0700
+Message-ID: <43e72e890908252103j2332d8eat9e18fecb20a1fe58@mail.gmail.com>
+Subject: Initial work for ar9271
+To: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Cc: Christian Lamparter <chunkeey@web.de>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>, Greg KH <greg@kroah.com>,
+       Stephen Chen <Stephen.Chen@atheros.com>,
+       Zhifeng Cai <zhifeng.cai@atheros.com>,
+       Cliff Holden <Cliff.Holden@atheros.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Len Widra <Len.Widra@atheros.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Atheros ar9271 support work is underway with the initial hardware
+revision support already added on ath9k [1]. This driver shares a lot
+of the framework used by ar6k so there may be potential of sharing
+there. The final step of course is to add mac80211 support. ar9271
+will just be the first of a few generation of firmware based Atheros
+11n devices as such a different driver core will need to be written to
+support these devices, specifically for usb its important as we need
+to sleep during reads/writes, re-using ath9k as is may not quite do
+it. To help iron out the specifics we would like to work with the
+community on the rest of the driver. For now I've stuffed what I have
+with a clean history on a git repo. If you'd like to work on the
+driver I welcome patches:
 
---xHFwDpU9dbj6ez1V
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/ar9271.git
 
-On 2009.08.25 20:33:32 -0700, Linus Torvalds wrote:
-> On Wed, 26 Aug 2009, Zhenyu Wang wrote:
-> >
-> > > In my experience, the BIOS setup doesn't reflect what outputs should =
-be
-> > > used at runtime, and certainly not the correct configuration of the
-> > > enabled outputs.  For example, if we went to this, the giant monitor
-> > > attached to my laptop that I actually look at would go unused.
-> >=20
-> > yeah, normally VBIOS startup just needs or only can driver one pipe, so
-> > we don't have any pre knowledge except detect everything.
->=20
-> Umm. What's your guys point, exactly?
->=20
+You can get the ar9271.fw firmware here:
 
-We can't depend on any BIOS display config as you noted before our driver.
-And our driver does more flexible config than VBIOS does.
+git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/athfw2lnx.git
 
-> The fact is, as-is, YOU DETECT THE WRONG OUTPUTS!
->=20
-> If you actually detected things _right_, none of this would be an issue.=
-=20
-> But you don't. And you seem to have a really hard time even admitting=20
-> that. You try to re-detect things, and you SCREW UP.
->=20
+I encourage really interested developers to please send me a note as
+we would like to allocate sample cards for you.
 
-We know we have problem on Mac mini, this issue has been known for a while.
-And Keith also posted patch at
-	http://lists.freedesktop.org/archives/intel-gfx/2009-June/002843.html
-but I don't know the status of this now.
+Bare with me on the progress of the driver, this code is so new I
+haven't even tested if firmware loading works but I think it may. At
+least it compiles now.
 
-> > we already have some mac relate bugs open, but please report on it so we
-> > do have people with hardware to try and response. We have recently got a
-> > MacBook, yakui is looking after the modesetting issue on it.
->=20
-> Quite frankly, I've reported these things several times. I've been open t=
-o=20
-> try patches. Nothing has ever come out of it.=20
->=20
-> I have a Mac Mini that I reported as broken over a month ago. I have a=20
-> Westemere I've reported as not doing any DDC probing - and that I have to=
-=20
-> disable the LVDS probing on entirely in order to not make KMS set up the=
-=20
-> display to go to a non-existent LVDS port.
->=20
-> You claim that you "detect everything", but quite frankly, you don't. The=
-=20
-> KMS code seems to assume that if it's a mobile chipset, it should have an=
-=20
-> LVDS output - and whether anything is connected to that or not is totally=
-=20
-> immaterial. There's clearly _zero_ "detection" going on.
->=20
+I'm not yet sure if working with a separate repo or staging might be
+best here as the driver does not yet give STA functionality, the whole
+mac80211 driver part still remains to be developed. Lets play it by
+ear, I'll see if we can get a mailing list created in the meantime
+unless Greg doesn't mind me borrowing the driver project mailing list
+for that.
 
-We've tried many ways to detect LVDS, but none is stable or actually work f=
-or
-every chip. But now we have DMI quirks for some known no LVDS machine (incl=
-uding
-Mac mini), and we detect through ACPI LID object for LVDS exist.=20
+[1] http://marc.info/?l=linux-wireless&m=124935567308276&w=2
 
---=20
-Open Source Technology Center, Intel ltd.
-
-$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
-
---xHFwDpU9dbj6ez1V
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqUsvAACgkQsQQaM014GCfbsQCeIUDGBmfZCRttOZrrjaDlSVz6
-NmkAn3SJuXQWEVanImEoy/tWopqOnIDE
-=zeqU
------END PGP SIGNATURE-----
-
---xHFwDpU9dbj6ez1V--
+  Luis
