@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbZHZXQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbZHZXVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbZHZXQX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 19:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZHZXQW
+	id S1753841AbZHZXVM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 19:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbZHZXVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 19:16:22 -0400
-Received: from mail.qau.edu.pk ([121.52.146.212]:36109 "EHLO qau.edu.pk"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752193AbZHZXQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 19:16:22 -0400
-Message-ID: <4456.213.37.214.189.1251282934.squirrel@mail.qau.edu.pk>
-Date: Wed, 26 Aug 2009 15:35:34 +0500 (PKT)
-Subject: Lieber Freund!!!
-From: "Luther Zihiri" <redboathfinancia@aim.com>
-Reply-To: lutherzhiri@aim.com
-User-Agent: SquirrelMail/1.4.6
+	Wed, 26 Aug 2009 19:21:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55261 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753688AbZHZXVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 19:21:10 -0400
+Message-ID: <4A95C32D.5040605@kernel.org>
+Date: Wed, 26 Aug 2009 16:20:13 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-X-Priority: 3 (Normal)
-Importance: Normal
-X-NAIMIME-Disclaimer: 1
-X-NAIMIME-Modified: 1
-To: unlisted-recipients:; (no To-header on input)
+To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] irq: make sure irq_desc for legacy irq get correct node setting
+References: <20090826214323.GC25536@elte.hu>
+In-Reply-To: <20090826214323.GC25536@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n7QNGc16012176
-
-Lieber Freund!!!
-Ich vermute das diese E-Mail eine Ãœberraschung fÃ¼r Sie sein wird, aber esist wahr.Ich bin bei einer routinen ÃœberprÃ¼fung in meiner Bank (StandardBank von SÃ¼d Afrika) wo ich arbeite, auf einem Konto gestoÃŸen, was nichtin anspruch genommen worden ist, wo derzeit $12,500,000(zwÃ¶lfmillionenfÃ¼nfhundert US Dollar) gutgeschrieben sind.
-Dieses Konto gehÃ¶rte Herrn Manfred Becker, der ein Kunde in unsere Bankwar, der leider verstorben ist. Herr Becker war ein gebÃ¼rtigerDeutscher.Damit es mir mÃ¶glich ist dieses Geld $12,500,000 inanspruchzunehmen, benÃ¶tige ich die zusammenarbeit eines AuslÃ¤ndischen Partners wieSie,den ich als Verwandter und Erbe des verstorbenen Herrn Beckervorstellen kann,damit wir das Geld inanspruch nehmen kÃ¶nnen.
-FÃ¼r diese UnterstÃ¼tzung erhalten Sie 30% der Erbschaftsumme und dierestlichen 70% teile ich mir mit meinen zwei Arbeitskollegen, die mich beidieser Transaktion ebenfalls unterstÃ¼tzen.Wenn Sie interessiert sind,kÃ¶nnen Sie mir bitte eine E-Mail schicken, damit ich Ihnen mehr Detailszukommen lassen kann.
-Schicken Sie bitte Ihre Antwort auf diese E-Mail Adresse:(lutherzhiri@aim.com)
-Mit freundlichen GrÃ¼ÃŸen
-Herr Luther Zihiri.
 
 
-This is Virus Free Email Scanned by QAU's McAfee Virus Scanner""THIS COMMUNICATION MAY CONTAIN CONFIDENTIAL AND/OR OTHERWISE PROPRIETARY MATERIALand is thus for use only by the intended recipient. If you received this in error, please contact the sender and delete the e-mailand its attachments from all computers."www.qau.edu.pkÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+when there is no ram on node 0
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ kernel/irq/handle.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/irq/handle.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/handle.c
++++ linux-2.6/kernel/irq/handle.c
+@@ -161,7 +161,7 @@ int __init early_irq_init(void)
+ 
+ 	desc = irq_desc_legacy;
+ 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
+- 	node = first_online_node;
++	node = first_online_node;
+ 
+ 	/* allocate irq_desc_ptrs array based on nr_irqs */
+ 	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
+@@ -172,6 +172,9 @@ int __init early_irq_init(void)
+ 
+ 	for (i = 0; i < legacy_count; i++) {
+ 		desc[i].irq = i;
++#ifdef CONFIG_SMP
++		desc[i].node = node;
++#endif
+ 		desc[i].kstat_irqs = kstat_irqs_legacy + i * nr_cpu_ids;
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+ 		alloc_desc_masks(&desc[i], node, true);
