@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932770AbZHZMTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932728AbZHZMUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932770AbZHZMTW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 08:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932727AbZHZMTW
+	id S932728AbZHZMUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 08:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbZHZMUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 08:19:22 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:38753 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932574AbZHZMTE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 08:19:04 -0400
-Message-ID: <4A95282A.3020209@s5r6.in-berlin.de>
-Date: Wed, 26 Aug 2009 14:18:50 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.22) Gecko/20090605 SeaMonkey/1.1.17
+	Wed, 26 Aug 2009 08:20:36 -0400
+Received: from ozlabs.org ([203.10.76.45]:43509 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932572AbZHZMUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 08:20:35 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: kernel segv with 2.6.31-rc6 ?
+Date: Wed, 26 Aug 2009 21:50:34 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Helge Deller <deller@gmx.de>,
+       "linux-parisc" <linux-parisc@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <4A89CC4D.5040801@gmx.de> <200908251729.32855.rusty@rustcorp.com.au> <20090825192432.4D9CC411E3@magilla.sf.frob.com>
+In-Reply-To: <20090825192432.4D9CC411E3@magilla.sf.frob.com>
 MIME-Version: 1.0
-To: Jeff Shanab <jshanab@earthlink.net>
-CC: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Starting a grad project that may change kernel VFS. Early 	research
- Re: Starting a grad project that may change kernel VFS. Early 	research
-References: <4A93428A.4070903@earthlink.net> <4A941F56.8060502@redhat.com> <4A9427C7.8020009@earthlink.net>
-In-Reply-To: <4A9427C7.8020009@earthlink.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908262150.34616.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Shanab wrote:
-> Rik van Riel wrote:
->> Hard links have been done like this in pretty much every
->> Unix filesystem since the 1970's.
-[...]
-> There is no real way to handle this becasue the two files look the same
-> to the filesystem.
+On Wed, 26 Aug 2009 04:54:32 am Roland McGrath wrote:
+> > Actually, x86 was one of the archs which fucked us.  Richard Henderson and
+> > I *had* this, but ld -shared without -fPIC helpfully tells you "you're doing
+> > it wrong" on x86-64.
+> 
+> This complaint could easily be (have been) made optional.
 
-See above; it has been state of the art since the 70's.  With hardlinks
-or symlinks, a graph which represents the FS happens to contain loops.
-No rocket science involved.
+Yep, I even had a patch.  And meanwhile we could have lived with -fPIC modules
+with some loss of performance (I think).
 
-[...]
-> How would I display this information usefully to the user.
+But at some level the problems accumulate until you go "nice idea, let's go
+do something else" :)
 
-Certain file managers display the overall size and the size on disk.
-The latter differs from the former due to
-  - on-disk format overhead,
-  - on-disk compression,
-  - hardlinks and symlinks.
-If the user copies the directory to another filesystem, the size on disk
-will generally change.
--- 
-Stefan Richter
--=====-==--= =--- ==-=-
-http://arcgraph.de/sr/
+But don't let me discourage you!
+Rusty.
