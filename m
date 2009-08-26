@@ -1,65 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932682AbZHZAjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbZHZAjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932682AbZHZAjR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932155AbZHZAjR
+	id S932712AbZHZAjh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932155AbZHZAjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:39:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35315 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932148AbZHZAjQ (ORCPT
+	Tue, 25 Aug 2009 20:39:36 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54210 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932253AbZHZAje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:39:16 -0400
-Date: Tue, 25 Aug 2009 17:39:08 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Anirban Sinha <ASinha@zeugmasystems.com>
-cc: linux-kernel@vger.kernel.org
-Subject: RE: [PATCH] console_print: change the function api to make it have
- printk style interface
-In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501EA926D@exchange.ZeugmaSystems.local>
-Message-ID: <alpine.LFD.2.01.0908251730530.3218@localhost.localdomain>
-References: <DDFD17CC94A9BD49A82147DDF7D545C501EA9241@exchange.ZeugmaSystems.local> <alpine.LFD.2.01.0908251717230.3218@localhost.localdomain> <DDFD17CC94A9BD49A82147DDF7D545C501EA926D@exchange.ZeugmaSystems.local>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 25 Aug 2009 20:39:34 -0400
+Date: Wed, 26 Aug 2009 02:39:26 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: david@lang.hm
+Cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+Message-ID: <20090826003926.GQ4300@elf.ucw.cz>
+References: <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm> <20090826001206.GL4300@elf.ucw.cz> <alpine.DEB.2.00.0908251718141.28411@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0908251718141.28411@asgard.lang.hm>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 2009-08-25 17:20:13, david@lang.hm wrote:
+> On Wed, 26 Aug 2009, Pavel Machek wrote:
+>
+>> On Tue 2009-08-25 16:56:40, david@lang.hm wrote:
+>>> On Wed, 26 Aug 2009, Pavel Machek wrote:
+>>>
+>>>> There are storage devices that high highly undesirable properties
+>>>> when they are disconnected or suffer power failures while writes are
+>>>> in progress; such devices include flash devices and MD RAID 4/5/6
+>>>> arrays.
+>>>
+>>> change this to say 'degraded MD RAID 4/5/6 arrays'
+>>>
+>>> also find out if DM RAID 4/5/6 arrays suffer the same problem (I strongly
+>>> suspect that they do)
+>>
+>> I changed it to say MD/DM.
+>>
+>>> then you need to add a note that if the array becomes degraded before a
+>>> scrub cycle happens previously hidden damage (that would have been
+>>> repaired by the scrub) can surface.
+>>
+>> I'd prefer not to talk about scrubing and such details here. Better
+>> leave warning here and point to MD documentation.
+>
+> I disagree with that, the way you are wording this makes it sound as if  
+> raid isn't worth it. if you are going to say that raid is risky you need  
+> to properly specify when it is risky
 
+Ok, would this help? I don't really want to go to scrubbing details.
 
-On Tue, 25 Aug 2009, Anirban Sinha wrote:
-> 
-> Ah! Of course you are correct! Can we simply have a macro instead of a
-> full blown function instead? If that is not acceptable, I will think of
-> something else to get around it.
+(*) Degraded array or single disk failure "near" the powerfail is
+neccessary for this property of RAID arrays to bite.
 
-A macro is what others are generally doing.
+>>>> THESE devices have the property of potentially corrupting blocks being
+>>>> written at the time of the power failure,
+>>>
+>>> this is true of all devices
+>>
+>> Actually I don't think so. I believe SATA disks do not corrupt even
+>> the sector they are writing to -- they just have big enough
+>> capacitors. And yes I believe ext3 depends on that.
+>
+> you are incorrect on this.
+>
+> ext3 (like every other filesystem) just accepts the risk (zfs makes some  
+> attempt to detect such corruption)
 
-I'd suggest looking at "dev_printk()" as an example. Sure, it basically 
-requires that the first argument be a string constant (so that the 
-automatic concatenations of string constants in C does its job), so it's 
-not a _generic_ solution, but it's a very powerful and simple one.
-
-In other words, you'll likely have to change a few existing
-
-	console_print(data);
-
-to
-
-	console_print("%s", data);
-
-to make things work, but hey, not a big deal.
-
-That said, quite frankly, I suspect an even better solution would be to 
-just remove the whole 'console_print()' function entirely, and just make 
-people use 'printk()' or 'dev_printk()' instead. The only real valid 
-reason for that thing existing in the first place is likely the 
-_assembler_ interface of doing a printout of an ASCII string (see 
-arch/ia64/kernel/head.S).
-
-The other uses of 'console_print()' seem totally pointless, really. It's a 
-stupid legacy interface that shouldn't exist, I'm afraid.
-
-		Linus
+I'd like Ted to comment on this. He wrote the original document, and
+I'd prefer not to introduce mistakes.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
