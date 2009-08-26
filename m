@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932336AbZHZHCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbZHZHLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932336AbZHZHCi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbZHZHCi
+	id S1756926AbZHZHLI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbZHZHLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:02:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42410 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932166AbZHZHCh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:02:37 -0400
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-From: Peter Zijlstra <peterz@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <1251269207.7538.1217.camel@twins>
-References: <20090824092455.GA25267@elte.hu>
-	 <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>
-	 <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>
-	 <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu>
-	 <1251191546.7538.1118.camel@twins> <20090825102215.GC26801@elte.hu>
-	 <1251196359.7538.1133.camel@twins>  <20090825103907.GB28287@elte.hu>
-	 <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins>
-	 <4A94D3A8.1090902@cn.fujitsu.com>  <1251269207.7538.1217.camel@twins>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Aug 2009 09:01:32 +0200
-Message-Id: <1251270092.7538.1226.camel@twins>
+	Wed, 26 Aug 2009 03:11:06 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41516 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756819AbZHZHLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 03:11:04 -0400
+Date: Wed, 26 Aug 2009 17:10:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: uwb tree build failure
+Message-Id: <20090826171054.631ad39c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__26_Aug_2009_17_10_54_+1000_RS.QZplJ/XqCbH.3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 08:46 +0200, Peter Zijlstra wrote:
+--Signature=_Wed__26_Aug_2009_17_10_54_+1000_RS.QZplJ/XqCbH.3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Aahh, I see the bug, its only ftrace that knows about the module, not
-> tracepoints themselves, _that_ needs fixing.
+Hi David,
 
-You could possibly do something like:
+Today's linux-next build (powerpc allyesconfig) failed like this:
 
- struct module *tp_mod = __module_address(&some_tp_symbol);
- struct module *cb_mod = __module_text_address(func);
+drivers/uwb/reset.c: In function 'uwbd_msg_handle_reset':
+drivers/uwb/reset.c:334: error: implicit declaration of function 'msleep'
 
- if (tp_mod && tp_mod != cb_mod) {
-	ret = try_get_module(tp_mod);
-	if (ret)
-		goto fail;
- }
+Caused by commit ffefcfffee9deb283ab278b0e142807cf0c18d61 ("uwb: avoid
+radio controller reset loops") from the uwb tree.
 
-in register_trace_##name() or thereabout.
+I have reverted that commit for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__26_Aug_2009_17_10_54_+1000_RS.QZplJ/XqCbH.3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqU3/4ACgkQjjKRsyhoI8yydgCgiRLOOg0KL+9FY0vVQQOvBGcj
+2fMAn1Ft2zmBIVmnzIHKe+ROxfhuIec5
+=1+Wr
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__26_Aug_2009_17_10_54_+1000_RS.QZplJ/XqCbH.3--
