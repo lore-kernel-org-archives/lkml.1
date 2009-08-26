@@ -1,293 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbZHZLKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbZHZLLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757313AbZHZLKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 07:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757168AbZHZLKL
+	id S1757326AbZHZLLV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 07:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757168AbZHZLLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 07:10:11 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:57285 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756815AbZHZLKJ (ORCPT
+	Wed, 26 Aug 2009 07:11:20 -0400
+Received: from mail-iw0-f204.google.com ([209.85.223.204]:54714 "EHLO
+	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755378AbZHZLLT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 07:10:09 -0400
-Date: Wed, 26 Aug 2009 16:40:03 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [v2 PATCH 2/2]: pseries: Implement Pseries Processor Idle idle
-	module.
-Message-ID: <20090826111003.GC29759@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090826110721.GA29759@linux.vnet.ibm.com>
+	Wed, 26 Aug 2009 07:11:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=and+wxP8oPDA0F+r+96n4/Bklz9BqtX1LaygD2jO09hAxIY3bvoGwLaT08FJZvZVM1
+         wDWRVLE44u42P5dYKgJYi2hmPjuNgaJxmQolylMpDfhH+qVzQQ5oHbLFsFrUYI8Tm3rU
+         JRimHCtgkMPNujVxv1SBe8GF8xlzJJu6z+e/g=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090826110721.GA29759@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0908250947400.2872@sister.anvils>
+References: <82e12e5f0908220954p7019fb3dg15f9b99bb7e55a8c@mail.gmail.com>
+	 <28c262360908231844o3df95b14v15b2d4424465f033@mail.gmail.com>
+	 <20090824105139.c2ab8403.kamezawa.hiroyu@jp.fujitsu.com>
+	 <2f11576a0908232113w71676aatf22eb6d431501fd0@mail.gmail.com>
+	 <82e12e5f0908242146uad0f314hcbb02fcc999a1d32@mail.gmail.com>
+	 <Pine.LNX.4.64.0908250947400.2872@sister.anvils>
+Date: Wed, 26 Aug 2009 20:11:21 +0900
+Message-ID: <82e12e5f0908260411y4d211bf2v6242dd50b713c544@mail.gmail.com>
+Subject: Re: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
+From: Hiroaki Wakabayashi <primulaelatior@gmail.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Ying Han <yinghan@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-08-26 16:37:21]:
+Thank you for ideas and advices!
 
-This patch creates arch/powerpc/platforms/pseries/processor_idle.c,
-which implements the cpuidle infrastructure for pseries.
-It implements a pseries_cpuidle_loop() which would be the main idle loop
-called from cpu_idle(). It makes decision of entering either snooze or nap
-state based on the decision taken by the cpuidle governor.
+2009/8/25 Hugh Dickins <hugh.dickins@tiscali.co.uk>:
+> On Tue, 25 Aug 2009, Hiroaki Wakabayashi wrote:
+>> Thank you for reviews.
+>>
+>> >>> > @@ -254,6 +254,7 @@ static inline void
+>> >>> > mminit_validate_memmodel_limits(unsigned long *start_pfn,
+>> >>> >  #define GUP_FLAGS_FORCE                  0x2
+>> >>> >  #define GUP_FLAGS_IGNORE_VMA_PERMISSIONS 0x4
+>> >>> >  #define GUP_FLAGS_IGNORE_SIGKILL         0x8
+>> >>> > +#define GUP_FLAGS_ALLOW_NULL             0x10
+>> >>> >
+>> >>>
+>> >>> I am worried about adding new flag whenever we need it.
+>
+> Indeed!  See my comments below.
+>
+>> >>> But I think this case makes sense to me.
+>> >>> In addition, I guess ZERO page can also use this flag.
+>> >>>
+>> >>> Kame. What do you think about it?
+>> >>>
+>> >> I do welcome this !
+>> >> Then, I don't have to take care of mlock/munlock in ZERO_PAGE patch.
+>
+> I _think_ there's nothing to do for it (the page->mapping checks suit
+> the ZERO_PAGE); but I've not started testing my version, so may soon
+> be proved wrong.
+>
+>> >>
+>> >> And without this patch, munlock() does copy-on-write just for unpinning memory.
+>> >> So, this patch shows some right direction, I think.
+>> >>
+>> >> One concern is flag name, ALLOW_NULL sounds not very good.
+>> >>
+>> >>  GUP_FLAGS_NOFAULT ?
+>> >>
+>> >> I wonder we can remove a hack of FOLL_ANON for core-dump by this flag, too.
+>
+> No, the considerations there a different (it can only point to a ZERO_PAGE
+> where faulting would anyway present a page of zeroes); it should be dealt
+> with by a coredump-specific flag, rather than sowing confusion elsewhere.
+> As above, I've done that but not yet tested it.
+>
+>> >
+>> > Yeah, GUP_FLAGS_NOFAULT is better.
+>>
+>> Me too.
+>> I will change this flag name.
+>>...
+>> When I try to change __get_user_pages(), I got problem.
+>> If remove NULLs from pages,
+>> __mlock_vma_pages_range() cannot know how long __get_user_pages() readed.
+>> So, I have to get the virtual address of the page from vma and page.
+>> Because __mlock_vma_pages_range() have to call
+>> __get_user_pages() many times with different `start' argument.
+>>
+>> I try to use page_address_in_vma(), but it failed.
+>> (page_address_in_vma() returned -EFAULT)
+>> I cannot find way to solve this problem.
+>> Are there good ideas?
+>> Please give me some ideas.
+>
+> I agree that this munlock issue needs to be addressed: it's not just a
+> matter of speedup, I hit it when testing what happens when mlock takes
+> you to OOM - which is currently a hanging disaster because munlock'ing
+> in the exiting OOM-killed process gets stuck trying to fault in all
+> those pages that couldn't be locked in the first place.
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/processor_idle.c |  181 ++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/pseries.h        |   14 +
- arch/powerpc/platforms/pseries/setup.c          |    3 
- 4 files changed, 196 insertions(+), 3 deletions(-)
+I'm sorry, it too difficult for me to understand.
+I will learn and consider.
 
-Index: linux.trees.git/arch/powerpc/platforms/pseries/Makefile
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/Makefile
-+++ linux.trees.git/arch/powerpc/platforms/pseries/Makefile
-@@ -26,3 +26,4 @@ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst
- obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
- obj-$(CONFIG_CMM)		+= cmm.o
- obj-$(CONFIG_DTL)		+= dtl.o
-+obj-$(CONFIG_PSERIES_PROCESSOR_IDLE)	+= processor_idle.o
-Index: linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/pseries.h
-+++ linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
-@@ -10,6 +10,8 @@
- #ifndef _PSERIES_PSERIES_H
- #define _PSERIES_PSERIES_H
- 
-+#include <linux/cpuidle.h>
-+
- extern void __init fw_feature_init(const char *hypertas, unsigned long len);
- 
- struct pt_regs;
-@@ -40,4 +42,16 @@ extern unsigned long rtas_poweron_auto;
- 
- extern void find_udbg_vterm(void);
- 
-+DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
-+
-+#ifdef CONFIG_PSERIES_PROCESSOR_IDLE
-+struct pseries_processor_power {
-+	struct cpuidle_device dev;
-+	int count;
-+	int id;
-+};
-+
-+extern struct cpuidle_driver pseries_idle_driver;
-+#endif
-+
- #endif /* _PSERIES_PSERIES_H */
-Index: linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
-===================================================================
---- /dev/null
-+++ linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -0,0 +1,181 @@
-+/*
-+ *  processor_idle - idle state cpuidle driver.
-+ *  Adapted from drivers/acpi/processor_idle.c
-+ *
-+ *  Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-+ *
-+ *  Copyright (C) 2009 IBM Corporation.
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or (at
-+ *  your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/moduleparam.h>
-+#include <linux/cpuidle.h>
-+
-+#include <asm/paca.h>
-+#include <asm/reg.h>
-+#include <asm/machdep.h>
-+
-+#include "plpar_wrappers.h"
-+#include "pseries.h"
-+
-+MODULE_AUTHOR("Arun R Bharadwaj");
-+MODULE_DESCRIPTION("pSeries Idle State Driver");
-+MODULE_LICENSE("GPL");
-+
-+struct cpuidle_driver pseries_idle_driver = {
-+	.name =		"pseries_idle",
-+	.owner =	THIS_MODULE,
-+};
-+
-+void (*pm_idle)(void);
-+EXPORT_SYMBOL_GPL(pm_idle);
-+
-+DEFINE_PER_CPU(struct pseries_processor_power, power);
-+
-+#define IDLE_STATE_COUNT	2
-+
-+static int pseries_idle_init(struct pseries_processor_power *power)
-+{
-+	return cpuidle_register_device(&power->dev);
-+}
-+
-+static void snooze(void)
-+{
-+	local_irq_enable();
-+	set_thread_flag(TIF_POLLING_NRFLAG);
-+	while (!need_resched()) {
-+		ppc64_runlatch_off();
-+		HMT_low();
-+		HMT_very_low();
-+	}
-+	HMT_medium();
-+	clear_thread_flag(TIF_POLLING_NRFLAG);
-+	smp_mb();
-+	local_irq_disable();
-+}
-+
-+static void nap(void)
-+{
-+	ppc64_runlatch_off();
-+	HMT_medium();
-+	cede_processor();
-+}
-+
-+static int pseries_cpuidle_loop(struct cpuidle_device *dev,
-+				struct cpuidle_state *st)
-+{
-+	ktime_t t1, t2;
-+	s64 diff;
-+	int ret;
-+	unsigned long in_purr, out_purr;
-+
-+	get_lppaca()->idle = 1;
-+	get_lppaca()->donate_dedicated_cpu = 1;
-+	in_purr = mfspr(SPRN_PURR);
-+
-+	t1 = ktime_get();
-+
-+	if (strcmp(st->desc, "snooze") == 0)
-+		snooze();
-+	else
-+		nap();
-+
-+	t2 = ktime_get();
-+	diff = ktime_to_us(ktime_sub(t2, t1));
-+	if (diff > INT_MAX)
-+		diff = INT_MAX;
-+
-+	ret = (int) diff;
-+
-+	out_purr = mfspr(SPRN_PURR);
-+	get_lppaca()->wait_state_cycles += out_purr - in_purr;
-+	get_lppaca()->donate_dedicated_cpu = 0;
-+	get_lppaca()->idle = 0;
-+
-+	return ret;
-+}
-+
-+static int pseries_setup_cpuidle(struct pseries_processor_power *power)
-+{
-+	int i;
-+	struct cpuidle_state *state;
-+	struct cpuidle_device *dev = &power->dev;
-+
-+	dev->cpu = power->id;
-+
-+	dev->enabled = 0;
-+	for (i = 0; i < IDLE_STATE_COUNT; i++) {
-+		state = &dev->states[i];
-+
-+		snprintf(state->name, CPUIDLE_NAME_LEN, "IDLE%d", i);
-+		state->enter = pseries_cpuidle_loop;
-+
-+		switch (i) {
-+		case 0:
-+			strncpy(state->desc, "snooze", CPUIDLE_DESC_LEN);
-+			state->exit_latency = 0;
-+			state->target_residency = 0;
-+			break;
-+
-+		case 1:
-+			strncpy(state->desc, "nap", CPUIDLE_DESC_LEN);
-+			state->exit_latency = 1;
-+			state->target_residency =
-+					__get_cpu_var(smt_snooze_delay);
-+			break;
-+		}
-+	}
-+
-+	power->dev.state_count = i;
-+	return 0;
-+}
-+
-+static int pseries_get_power_info(struct pseries_processor_power *power,
-+				int cpu)
-+{
-+	power->id = cpu;
-+	power->count = IDLE_STATE_COUNT;
-+	return 0;
-+}
-+
-+static int __init pseries_processor_idle_init(void)
-+{
-+	int cpu;
-+	int result = cpuidle_register_driver(&pseries_idle_driver);
-+
-+	if (result < 0)
-+		return result;
-+
-+	printk(KERN_DEBUG "pSeries idle driver registered\n");
-+
-+	for_each_online_cpu(cpu) {
-+		pseries_get_power_info(&per_cpu(power, cpu), cpu);
-+		pseries_setup_cpuidle(&per_cpu(power, cpu));
-+		pseries_idle_init(&per_cpu(power, cpu));
-+	}
-+
-+	printk(KERN_DEBUG "Using cpuidle idle loop\n");
-+	ppc_md.power_save = pm_idle;
-+	return 0;
-+}
-+
-+late_initcall(pseries_processor_idle_init);
-Index: linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/setup.c
-+++ linux.trees.git/arch/powerpc/platforms/pseries/setup.c
-@@ -521,9 +521,6 @@ static int __init pSeries_probe(void)
- 	return 1;
- }
- 
--
--DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
--
- static void pseries_dedicated_idle_sleep(void)
- { 
- 	unsigned int cpu = smp_processor_id();
+> I had intended to fix it by being more careful about splitting/merging
+> vmas, noting how far the mlock had got, and munlocking just up to there.
+> However, now that I've got in there, that looks wrong to me, given the
+> traditional behaviour that mlock does its best, but pretends success
+> to allow for later instantiation of the pages if necessary.
+>
+> You ask for ideas.  My main idea is that so far we have added
+> GUP_FLAGS_IGNORE_VMA_PERMISSIONS (Kosaki-san, what was that about?
+>                                  we already had the force flag),
+> GUP_FLAGS_IGNORE_SIGKILL, and now you propose
+> GUP_FLAGS_NOFAULT, all for the sole use of munlock.
+>
+> How about GUP_FLAGS_MUNLOCK, or more to the point, GUP_FLAGS_DONT_BE_GUP?
+> By which I mean, don't all these added flags suggest that almost
+> everything __get_user_pages() does is unsuited to the munlock case?
+>
+> My advice (but I sure hate giving advice before I've tried it myself)
+> is to put __mlock_vma_pages_range() back to handling just the mlock
+> case, and do your own follow_page() loop in munlock_vma_pages_range().
+>
+> Hugh
+
+Me, too. I agree __get_user_pages() unsuited to the munlock.
+I let try to make follow_page() loop, and remove
+ GUP_FLAGS_IGNORE_VMA_PERMISSIONS and GUP_FLAGS_IGNORE_SIGKILL.
+
+Thanks!
+--
+Hiroaki Wakabayashi
