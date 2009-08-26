@@ -1,60 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbZHZQj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZHZQkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751955AbZHZQj6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 12:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZHZQj5
+	id S1752039AbZHZQkW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 12:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZHZQkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 12:39:57 -0400
-Received: from kroah.org ([198.145.64.141]:46882 "EHLO coco.kroah.org"
+	Wed, 26 Aug 2009 12:40:19 -0400
+Received: from kroah.org ([198.145.64.141]:46873 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbZHZQjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 12:39:55 -0400
-Date: Wed, 26 Aug 2009 09:32:22 -0700
+	id S1751708AbZHZQjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 12:39:53 -0400
+Date: Wed, 26 Aug 2009 09:18:27 -0700
 From: Greg KH <greg@kroah.com>
-To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
 Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org,
-       Soeren Sonnenburg <bugreports@nn7.de>,
        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       =?iso-8859-1?Q?J=E9r=E9mie?= Huchet <jeremie@lamah.info>
-Subject: Re: [Intel-gfx] [PATCH] Samsung laptop driver
-Message-ID: <20090826163222.GD22474@kroah.com>
+       Soeren Sonnenburg <bugreports@nn7.de>,
+       =?iso-8859-1?Q?J=E9r=E9mie?= Huchet <jeremie@lamah.info>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] Samsung laptop driver
+Message-ID: <20090826161827.GB22474@kroah.com>
 References: <20090821225925.GA27625@kroah.com>
- <20090822120701.78dc10d5@neptune.home>
+ <9b2b86520908220223v4bd58129sfcb22258896592b8@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090822120701.78dc10d5@neptune.home>
+In-Reply-To: <9b2b86520908220223v4bd58129sfcb22258896592b8@mail.gmail.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 22, 2009 at 12:07:01PM +0200, Bruno Prémont wrote:
-> On Fri, 21 August 2009 Greg KH <greg@kroah.com> wrote:
+On Sat, Aug 22, 2009 at 10:23:16AM +0100, Alan Jenkins wrote:
+> On 8/21/09, Greg KH <greg@kroah.com> wrote:
+> > Well, it turns out that for the Samsung laptops, we aren't supposed to
+> > be poking into the raw PCI config space to control the backlight,
+> > there's a SMI way to do it instead (Matthew, you were right.)
+> >
+> > So here's an updated version of the driver, with lots of debugging still
+> > left in it, that controls the backlight on a N130 through the "proper"
+> > way.
+> >
+> > It's bigger than the last driver, as I've added lots of documenation
+> > about this new interface.  I'm also working on adding wireless LED
+> > support, as well as maybe CPU temperature monitoring to the driver, as
+> > that can be controlled through this interface.
+> >
+> > Soeren and Jérémie, I took out support for both of your laptops, as I
+> > didn't know if it supported this type of interface.  Could you load the
+> > driver with the "force=1" parameter:
+> > 	modprobe samsung-laptop force=1
+> > and tell me what the kernel log shows for your laptop?  If it works,
+> > I'll add the DMI values back to the driver.
+> >
+> > Jesse, I don't know how this is going to play with your recently added
+> > backlight support for the i915 driver.  As you don't have control over
+> > the LEDs and other stuff that this driver is going to support, I think
+> > we need some way to keep the i915 driver from messing with the backlight
+> > values, don't you think?
+> >
+> > thanks,
+> >
+> > greg k-h
+> >
+> > --------------
+> >
+> >
 > > From: Greg Kroah-Hartman <gregkh@suse.de>
 > > Subject: Samsung laptop driver
-> > 
+> >
 > > This driver implements backlight controls for Samsung laptops that
 > > currently do not have ACPI support for this control.
-> > 
+> >
 > > It has been tested on the N130 laptop and properly works there.
-> > 
-> > Many thanks to Dmitry Torokhov <dmitry.torokhov@gmail.com> for
-> > cleanups and other suggestions on how to make the driver simpler.
+> >
+> > Many thanks to Dmitry Torokhov <dmitry.torokhov@gmail.com> for cleanups
+> > and other suggestions on how to make the driver simpler.
+> >
+> > Cc: Soeren Sonnenburg <bugreports@nn7.de>
+> > Cc: Jérémie Huchet <jeremie@lamah.info>
+> > Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >
+> > ---
+> >  drivers/platform/x86/Kconfig          |   12
+> >  drivers/platform/x86/Makefile         |    1
+> >  drivers/platform/x86/samsung-laptop.c |  420
+> > ++++++++++++++++++++++++++++++++++
+> >  3 files changed, 433 insertions(+)
 > 
-> Hm, that one fails to compile here:
->   CC [M]  drivers/platform/x86/samsung-laptop.o
-> /usr/src/linux-2.6/drivers/platform/x86/samsung-laptop.c: In function 'sabi_get_command':
-> /usr/src/linux-2.6/drivers/platform/x86/samsung-laptop.c:141: error: implicit declaration of function 'msleep'
-> make[5]: *** [drivers/platform/x86/samsung-laptop.o] Error 1
-> make[4]: *** [drivers/platform/x86] Error 2
-> make[3]: *** [drivers/platform] Error 2
-> make[2]: *** [drivers] Error 2
-> make[2]: *** Waiting for unfinished jobs....
+> > +static struct dmi_system_id __initdata samsung_dmi_table[] = {
+> > +	{
+> > +		.ident = "N120",
+> > +		.matches = {
+> > +			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
+> > +			DMI_MATCH(DMI_PRODUCT_NAME, "N120"),
+> > +			DMI_MATCH(DMI_BOARD_NAME, "N120"),
+> > +		},
+> > +		.callback = dmi_check_cb,
+> > +	},
+> > +	{
+> > +		.ident = "N130",
+> > +		.matches = {
+> > +			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
+> > +			DMI_MATCH(DMI_PRODUCT_NAME, "N130"),
+> > +			DMI_MATCH(DMI_BOARD_NAME, "N130"),
+> > +		},
+> > +		.callback = dmi_check_cb,
+> > +	},
+> > +	{ },
+> > +};
 > 
-> Missing a #include <linux/delay.h>?
+> ...
+> 
+> > +MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN120:*:rnN120:*");
+> > +MODULE_ALIAS("dmi:*:svnSAMSUNGELECTRONICSCO.,LTD.:pnN130:*:rnN130:*");
+> 
+> Can't you just use MODULE_DEVICE_TABLE(dmi, samsung_dmi_table)?
 
-Yes, I've added it now, thanks.
+Doh, I didn't realize that, nice.
+
+Hm, it seems not many others realize it either, it's only used by 2
+other drivers in the whole kernel.  Might be a good job for some janitor
+project to go and clean up...
+
+thanks,
 
 greg k-h
