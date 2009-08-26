@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZHZGXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbZHZGZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbZHZGXQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 02:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbZHZGXO
+	id S1752441AbZHZGZJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 02:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbZHZGZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 02:23:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50931 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751522AbZHZGXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 02:23:11 -0400
-Date: Wed, 26 Aug 2009 06:22:42 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090824175551.146070377@openvz.org>
-References: <20090824175551.146070377@openvz.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/setup] x86, e820: Guard against array overflowed in __e820_add_region()
-Message-ID: <tip-5051fd69773d2d044734b78516317a04d3774871@git.kernel.org>
-Git-Commit-ID: 5051fd69773d2d044734b78516317a04d3774871
-X-Mailer: tip-git-log-daemon
+	Wed, 26 Aug 2009 02:25:08 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:46460 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbZHZGZG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 02:25:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=NJPn7Wt8WrATMps2+KsyVl2jkRPvzj973CJ6T0E9ZSxwDtiX0RHHu4ShZA4i8tmCgo
+         1I5tKllO/+zno/KboTiVYYrZWarosCNOiuYxvZFUFJexq4lcsEwcR3mNsFBQLOfs+dnP
+         jris4cKH9W+25kLXWgA6i5sh8EoAJFQJV6qJc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 26 Aug 2009 06:22:45 +0000 (UTC)
+In-Reply-To: <Cg6cQYLdUxG.A.K-C.U2GlKB@chimera>
+References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
+	 <Cg6cQYLdUxG.A.K-C.U2GlKB@chimera>
+Date: Wed, 26 Aug 2009 09:25:07 +0300
+X-Google-Sender-Auth: a5ce47223708d5c4
+Message-ID: <84144f020908252325p88178f2yb0a76e033352b78d@mail.gmail.com>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       David Rientjes <rientjes@google.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5051fd69773d2d044734b78516317a04d3774871
-Gitweb:     http://git.kernel.org/tip/5051fd69773d2d044734b78516317a04d3774871
-Author:     Cyrill Gorcunov <gorcunov@openvz.org>
-AuthorDate: Mon, 24 Aug 2009 21:53:37 +0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 26 Aug 2009 08:17:47 +0200
+Hi Rafael,
 
-x86, e820: Guard against array overflowed in __e820_add_region()
+On Wed, Aug 26, 2009 at 12:05 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13319
+> Subject         : Page allocation failures with b43 and p54usb
+> Submitter       : Larry Finger <Larry.Finger@lwfinger.net>
+> Date            : 2009-04-29 21:01 (119 days old)
+> References      : http://marc.info/?l=linux-kernel&m=124103897101088&w=4
+>                  http://lkml.org/lkml/2009/6/7/136
+>                  http://lkml.org/lkml/2009/7/26/213
+> Handled-By      : Johannes Berg <johannes@sipsolutions.net>
+>                  David Rientjes <rientjes@google.com>
+> Patch           : http://patchwork.kernel.org/patch/37655/
 
-Better to be paranoid against unpredicted nr_map modifications.
+FYI, the fix (a new slub debugging option) is queued for 2.6.32 and we
+don't have plans to backport it to -stable because it depends on SLUB
+out-of-memory diagnostic patches and the problem doesn't affect
+production configs.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-LKML-Reference: <20090824175551.146070377@openvz.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/e820.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 7271fa3..2e5e0fa 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -115,7 +115,7 @@ static void __init __e820_add_region(struct e820map *e820x, u64 start, u64 size,
- {
- 	int x = e820x->nr_map;
- 
--	if (x == ARRAY_SIZE(e820x->map)) {
-+	if (x >= ARRAY_SIZE(e820x->map)) {
- 		printk(KERN_ERR "Ooops! Too many entries in the memory map!\n");
- 		return;
- 	}
+                                Pekka
