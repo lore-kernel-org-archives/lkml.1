@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753AbZHZSkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbZHZSl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752753AbZHZSkT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 14:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbZHZSkS
+	id S1752767AbZHZSl0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 14:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbZHZSlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 14:40:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43781 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752306AbZHZSkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 14:40:17 -0400
-Date: Wed, 26 Aug 2009 20:39:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/rcu] rcu: Remove lockdep annotations from RCU's
-	_notrace() API members
-Message-ID: <20090826183954.GE13632@elte.hu>
-References: <20090826015337.GA18904@linux.vnet.ibm.com> <tip-06e799764eb7c2e4640888d438c3524d756613e1@git.kernel.org> <20090826084938.GA5023@elte.hu> <20090826173318.GC6752@linux.vnet.ibm.com>
+	Wed, 26 Aug 2009 14:41:25 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48640 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752447AbZHZSlZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 14:41:25 -0400
+Date: Wed, 26 Aug 2009 14:41:16 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
+Message-ID: <20090826184116.GA20283@infradead.org>
+References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090825162004.GA25058@Krystal> <20090825165912.GI6114@nowhere> <20090825173107.GJ6114@nowhere> <20090825183119.GC2448@Krystal> <1251267669.7538.1195.camel@twins> <20090826170812.GC21456@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090826173318.GC6752@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090826170812.GC21456@Krystal>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 26, 2009 at 01:08:12PM -0400, Mathieu Desnoyers wrote:
+> Nah. And I start to feel comfortable with syscall entry/exit being only
+> be traced for userspace threads. But as I pointed out in a follow-up
+> email, the lack of sys_*() tracing for invocation from within the kernel
+> might be problematic. This is actually my main point.
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+We do not support system calls from kernelspace anymore.  All the
+macros to do real system calls are gone, and there are very very few
+places left calling sys_foo as normal function calls.
 
-> On Wed, Aug 26, 2009 at 10:49:38AM +0200, Ingo Molnar wrote:
-> > 
-> > * tip-bot for Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > Commit-ID:  06e799764eb7c2e4640888d438c3524d756613e1
-> > > Gitweb:     http://git.kernel.org/tip/06e799764eb7c2e4640888d438c3524d756613e1
-> > > Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > AuthorDate: Tue, 25 Aug 2009 18:53:37 -0700
-> > > Committer:  Ingo Molnar <mingo@elte.hu>
-> > > CommitDate: Wed, 26 Aug 2009 09:45:41 +0200
-> > > 
-> > > rcu: Remove lockdep annotations from RCU's _notrace() API members
-> > 
-> > I'm afraid this does not solve the problem either - the attached 
-> > config crashes too. Does it boot for you? It should boot fine on 
-> > most 64-bit x86 systems.
-> 
-> OK, got my hands on a 64-bit x86 system, building.  When I did 
-> "make oldconfig" on the attached config file, I ended up with the 
-> following diffs.  If there is some other command I should use, 
-> please let me know. Otherwise, will let you know how this goes.
+An how exactly is calling sys_foo as a normal function call different
+from calling do_foo or vfs_foo?
 
-Have you tried it on tip/master + tip/core/rcu? make oldconfig works 
-fine with that here.
-
-But ... here's something you wont like: just to make sure i sent you 
-the right config [i made mistakes there in the past] i picked a 
-64-bit system (a different one from the one that triggered the 
-crash), built the config with latest tip/master (80c161b, using gcc 
-4.3.2) plus tip/core/rcu (06e7997) git-merged in:
-
-  git checkout -b tmp tip/master
-  git merge tip/core/rcu
-
-and booted it - and that did not produce any lockups. So you might 
-not be able to reproduce it :-/ I've re-merged core/rcu into 
-tip/master, maybe my tests can find another config that reproduces 
-the crash better. Please disregard this bugreport until i've found 
-that one.
-
-	Ingo
