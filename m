@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756994AbZHZHLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZHZHML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756994AbZHZHLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbZHZHLS
+	id S1756971AbZHZHML (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbZHZHMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:11:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54147 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756940AbZHZHLP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:11:15 -0400
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>
-In-Reply-To: <20090825183119.GC2448@Krystal>
-References: <20090825141547.GE6114@nowhere>
-	 <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
-	 <20090825162004.GA25058@Krystal> <20090825165912.GI6114@nowhere>
-	 <20090825173107.GJ6114@nowhere>  <20090825183119.GC2448@Krystal>
-Content-Type: text/plain
+	Wed, 26 Aug 2009 03:12:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62357 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756851AbZHZHMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 03:12:10 -0400
+Message-ID: <4A94DFF4.5030301@cn.fujitsu.com>
+Date: Wed, 26 Aug 2009 15:10:44 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+References: <20090824092455.GA25267@elte.hu>	 <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>	 <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>	 <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu>	 <1251191546.7538.1118.camel@twins> <20090825102215.GC26801@elte.hu>	 <1251196359.7538.1133.camel@twins>  <20090825103907.GB28287@elte.hu>	 <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins>	 <4A94D3A8.1090902@cn.fujitsu.com>  <1251269207.7538.1217.camel@twins> <1251270092.7538.1226.camel@twins>
+In-Reply-To: <1251270092.7538.1226.camel@twins>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Aug 2009 09:10:02 +0200
-Message-Id: <1251270602.7538.1228.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 14:31 -0400, Mathieu Desnoyers wrote:
-> For instance, some
-> proprietary Linux driver does very odd things with system calls within
-> kernel threads, like invoking them with int 0x80.
+Peter Zijlstra wrote:
+> On Wed, 2009-08-26 at 08:46 +0200, Peter Zijlstra wrote:
+> 
+>> Aahh, I see the bug, its only ftrace that knows about the module, not
+>> tracepoints themselves, _that_ needs fixing.
+> 
+> You could possibly do something like:
+> 
+>  struct module *tp_mod = __module_address(&some_tp_symbol);
+>  struct module *cb_mod = __module_text_address(func);
+> 
+>  if (tp_mod && tp_mod != cb_mod) {
+> 	ret = try_get_module(tp_mod);
+> 	if (ret)
+> 		goto fail;
+>  }
+> 
+> in register_trace_##name() or thereabout.
+> 
 
-So who is going to send the x86 patch to make int 0x80 from kernel space
-panic the machine? :-)
+Actually I tried it, but it didn't work. As I said, You can't find
+any tp symbol when registering tp callback. The same example again:
+
+	In module bar, we have register_trace_foo()
+	In module foo, we have DEFINE_TRACE(foo) and trace_foo().
+
+bar doesn't know any symbol of foo, so it can't bump foo's refcnt,
+
+*Note: you can load module bar without loading module foo*
+
+
