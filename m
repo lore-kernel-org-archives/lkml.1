@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbZHZJqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbZHZJwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756654AbZHZJqG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 05:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbZHZJqF
+	id S1756717AbZHZJwM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 05:52:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbZHZJwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 05:46:05 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:39564 "EHLO atmel-es2.atmel.fr"
+	Wed, 26 Aug 2009 05:52:11 -0400
+Received: from cmpxchg.org ([85.214.51.133]:46877 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756489AbZHZJqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 05:46:04 -0400
-Message-ID: <4A95043C.9040807@atmel.com>
-Date: Wed, 26 Aug 2009 11:45:32 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-CC: Robert Emanuele <rob@emanuele.us>, linux-arm-kernel@lists.infradead.org,
-       linux-kernel@vger.kernel.org,
-       =?ISO-8859-1?Q?Eric_B=E9nard?= <eric@eukrea.com>,
-       "Samuelsson, Ulf" <ulf.samuelsson@atmel.com>
-Subject: Re: ARM Git Tree (at91sam9g45 patches)
-References: <9f53b4330908251727q1bc1accfk12a9a8d25407791@mail.gmail.com>	<4A9488FB.60603@eukrea.com> <4A94FDDD.205@atmel.com>
-In-Reply-To: <4A94FDDD.205@atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	id S1756678AbZHZJwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 05:52:10 -0400
+Date: Wed, 26 Aug 2009 11:51:18 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       netdev@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [Bug #14016] mm/ipw2200 regression
+Message-ID: <20090826095118.GA26280@cmpxchg.org>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.FIH.7sGlKB@chimera> <84144f020908252309u5cff8afdh2214577ca4db9b5d@mail.gmail.com> <20090826082741.GA25955@cmpxchg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826082741.GA25955@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, Aug 26, 2009 at 10:27:41AM +0200, Johannes Weiner wrote:
 
-I respond to myself...
-
-Nicolas Ferre :
-> Eric Bénard :
->> Hi Robert,
->>
->> Robert Emanuele wrote :
->>> I'm working with the Atmel at91sam9g45-ekes board which is new.  I was
->>> wondering if there was a git tree with the current ARM patches that
->>> contains the at91sam9g45 code?  Russell lists "Applied" patches at
->>> http://www.arm.linux.org.uk/developer/patches/ .  Where are these
->>> applied to?  If there isn't a tree, is there an elegant way to get the
->>> latest patch sets that I could apply to Linus's tree?
->>>
->> you will find the files that you can apply using git am here :
->> ftp://ftp.arm.linux.org.uk/pub/armlinux/kernel/git-cur/
+> 64 pages, presumably 256k, for fw->boot_size while current ipw
+> firmware images have ~188k.  I don't know jack squat about this
+> driver, but given the field name and the struct:
 > 
-> Yes, devel branch contains 9g45 patches.
+> 	struct ipw_fw {
+> 		__le32 ver;
+> 		__le32 boot_size;
+> 		__le32 ucode_size;
+> 		__le32 fw_size;
+> 		u8 data[0];
+> 	};
 > 
-> Another place where you can find quite all drivers that I submitted
-> during the past weeks is in the linux-next tree:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/next/linux-next.git;a=summary
-> 
-> FYI, I am building a patchset collecting all those submitted patches
-> against 2.6.30 + Andrew Victor -at91 patch.
-> It is not finished at the moment but I can send it in private.
+> fw->boot_size alone being that big sounds a bit fishy to me.
 
-In fact I baked an archive that stores a snapshot of my work:
-ftp://www.linux4sam.org/devel/linux/2630_lnx4sam_patchset-tmp_20090826.tgz
+Scrap that, I just noticed the second call to ipw_load_firmware() a
+few lines later... :)
 
-It is against vanilla 2.6.30
-+ -at91 patch (from: http://maxim.org.za/at91_26.html of course)
-
-Regards,
--- 
-Nicolas Ferre
-
+	Hannes 'when logic and proportion have fallen sloppy dead...'
