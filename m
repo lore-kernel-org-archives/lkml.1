@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbZHZGTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751659AbZHZGWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756743AbZHZGTh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 02:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbZHZGTh
+	id S1751659AbZHZGWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 02:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbZHZGWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 02:19:37 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63558 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750883AbZHZGTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 02:19:36 -0400
-Message-ID: <4A94D3A8.1090902@cn.fujitsu.com>
-Date: Wed, 26 Aug 2009 14:18:16 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-References: <20090824092455.GA25267@elte.hu>	 <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>	 <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>	 <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu>	 <1251191546.7538.1118.camel@twins> <20090825102215.GC26801@elte.hu>	 <1251196359.7538.1133.camel@twins>  <20090825103907.GB28287@elte.hu>	 <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins>
-In-Reply-To: <1251211963.7538.1164.camel@twins>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 26 Aug 2009 02:22:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52547 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbZHZGWW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 02:22:22 -0400
+Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <20090825183119.GC2448@Krystal>
+References: <20090825141547.GE6114@nowhere>
+	 <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
+	 <20090825162004.GA25058@Krystal> <20090825165912.GI6114@nowhere>
+	 <20090825173107.GJ6114@nowhere>  <20090825183119.GC2448@Krystal>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Aug 2009 08:21:09 +0200
+Message-Id: <1251267669.7538.1195.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: Mathieu
+On Tue, 2009-08-25 at 14:31 -0400, Mathieu Desnoyers wrote:
 
-Peter Zijlstra wrote:
-> On Tue, 2009-08-25 at 12:47 +0200, Peter Zijlstra wrote:
->> On Tue, 2009-08-25 at 12:39 +0200, Ingo Molnar wrote:
->>
->>>> Do you really wish to burden every tracepoint user with the extra 
->>>> logic needed to deal with modules?
->>> Not necessarily - i'm just outlining why i think that the 'dont 
->>> allow subsystems to utilize tracepoint callbacks' is a restriction 
->>> we should not live with voluntarily.
->> Well, unless someone has a bright idea that's what it comes down to. 
+> (Well, I do not have time currently to look into the gory details
+> (sorry), but let's try to take a step back from the problem.)
 > 
-> OK, I still think modules probing their own tracepoints its stupid [*],
-> but what you could do is iterate the tracepoint's callback list and see
-> if it has a callback outside of the module code section and then fail
-> the unload.
+> The design proposal for this kthread behavior wrt syscalls is based on a
+> very specific and current kernel behavior, that may happen to change and
+> that I have actually seen proven incorrect. For instance, some
+> proprietary Linux driver does very odd things with system calls within
+> kernel threads, like invoking them with int 0x80.
 > 
+> Yes, this is odd, but do we really want to tie the tracer that much to
+> the actual OS implementation specificities ?
+> 
+> That sounds like a recipe for endless breakages and missing bits of
+> instrumentation.
+> 
+> So my advice would be: if we want to trace the syscall entry/exit paths,
+> let's trace them for the _whole_ system, and find ways to make it work
+> for corner-cases rather than finding clever ways to diminish
+> instrumentation coverage.
+> 
+> Given the ret from fork example happens to be the first event fired
+> after the thread is created, we should be able to deal with this problem
+> by initializing the thread structure used by syscall exit tracing to an
+> initial "ret from fork" value.
 
-I don't think this can work, what if a new callback is registered after
-this check? Seems there's no syncronization to guarantee the result of
-the check can remain valid during module unload.
-
-And the other proposal that bumping module refcnt in register_tracepoint_xxx(),
-I found it hard to do so, because register() won't know where the
-tracepoint is. For example:
-
-   register_tracepoint_foo() is in module bar, while
-   DEFINE_TRACE(foo) and trace_foo() is in module foo.
-
-Note, you're allowed to load bar without foo.
-
-The simplest fix is the patch I sent, which you don't like. Maybe
-Mathieu, the auther of tracepoint, or some one else has some idea?
-
-> [*] in the really utterly fundamentally wrong stupid class.
-
+So you're saying we should let proprietary crap influence the design of
+the kernel in any way?
