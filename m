@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbZHZFAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZHZFAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756436AbZHZFAv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 01:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756289AbZHZFAu
+	id S1756620AbZHZFAx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 01:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756456AbZHZFAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 01:00:50 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41520 "EHLO
+	Wed, 26 Aug 2009 01:00:51 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40756 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754209AbZHZFAu (ORCPT
+	with ESMTP id S1755804AbZHZFAu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Aug 2009 01:00:50 -0400
-Message-Id: <20090826045945.201094161@goodmis.org>
+Message-Id: <20090826050050.522016187@goodmis.org>
+References: <20090826045945.201094161@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 26 Aug 2009 00:59:45 -0400
+Date: Wed, 26 Aug 2009 00:59:46 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 0/8] [GIT PULL] tracing: updates for 2.6.32
+Subject: [PATCH 1/8] tracing/sched: show CPU task wakes up on in trace event
+Content-Disposition: inline; filename=0001-tracing-sched-show-CPU-task-wakes-up-on-in-trace-eve.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <srostedt@redhat.com>
 
-Ingo,
+While debugging the scheduler push / pull algorithm, I found
+it very annoying that the sched wake up events did not show
+the CPU that the task was waking on. In order to analyze the
+scheduler, I needed that information.
 
-Please pull the latest tip/tracing/core tree, which can be found at:
+This patch adds recording of the CPU that a task is waking up
+on.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/core
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ include/trace/events/sched.h |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-
-Josh Triplett (1):
-      tracing: Add vim script to enable folding for function_graph traces
-
-Li Zefan (3):
-      tracing/filters: Add filter_type to struct ftrace_event_field
-      tracing/filters: Add __field_ext() to TRACE_EVENT
-      tracing/filters: Support filtering for char * strings
-
-Steven Rostedt (2):
-      tracing/sched: show CPU task wakes up on in trace event
-      tracing: add comments to explain TRACE_EVENT out of protection
-
-Xiao Guangrong (1):
-      tracing/events: fix the include file dependencies
-
-Zhaolei (1):
-      ftrace: Move setting of clock-source out of options
-
-----
- Documentation/trace/function-graph-fold.vim |   42 ++++++++++++
- include/linux/ftrace_event.h                |   10 +++-
- include/linux/tracepoint.h                  |   12 +++-
- include/trace/define_trace.h                |    1 +
- include/trace/events/sched.h                |   12 +++-
- include/trace/ftrace.h                      |   31 +++++++--
- kernel/trace/trace.c                        |   92 ++++++++++++++++++++++-----
- kernel/trace/trace.h                        |    9 ++-
- kernel/trace/trace_events.c                 |   11 +++-
- kernel/trace/trace_events_filter.c          |   47 ++++++++++----
- kernel/trace/trace_export.c                 |    8 ++-
- kernel/trace/trace_syscalls.c               |    6 +-
- 12 files changed, 226 insertions(+), 55 deletions(-)
+diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
+index 8949bb7..a581ef2 100644
+--- a/include/trace/events/sched.h
++++ b/include/trace/events/sched.h
+@@ -94,6 +94,7 @@ TRACE_EVENT(sched_wakeup,
+ 		__field(	pid_t,	pid			)
+ 		__field(	int,	prio			)
+ 		__field(	int,	success			)
++		__field(	int,	cpu			)
+ 	),
+ 
+ 	TP_fast_assign(
+@@ -101,11 +102,12 @@ TRACE_EVENT(sched_wakeup,
+ 		__entry->pid		= p->pid;
+ 		__entry->prio		= p->prio;
+ 		__entry->success	= success;
++		__entry->cpu		= task_cpu(p);
+ 	),
+ 
+-	TP_printk("task %s:%d [%d] success=%d",
++	TP_printk("task %s:%d [%d] success=%d [%03d]",
+ 		  __entry->comm, __entry->pid, __entry->prio,
+-		  __entry->success)
++		  __entry->success, __entry->cpu)
+ );
+ 
+ /*
+@@ -125,6 +127,7 @@ TRACE_EVENT(sched_wakeup_new,
+ 		__field(	pid_t,	pid			)
+ 		__field(	int,	prio			)
+ 		__field(	int,	success			)
++		__field(	int,	cpu			)
+ 	),
+ 
+ 	TP_fast_assign(
+@@ -132,11 +135,12 @@ TRACE_EVENT(sched_wakeup_new,
+ 		__entry->pid		= p->pid;
+ 		__entry->prio		= p->prio;
+ 		__entry->success	= success;
++		__entry->cpu		= task_cpu(p);
+ 	),
+ 
+-	TP_printk("task %s:%d [%d] success=%d",
++	TP_printk("task %s:%d [%d] success=%d [%03d]",
+ 		  __entry->comm, __entry->pid, __entry->prio,
+-		  __entry->success)
++		  __entry->success, __entry->cpu)
+ );
+ 
+ /*
+-- 
+1.6.3.3
 
 -- 
