@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932758AbZHZAtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZHZAvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932758AbZHZAtt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZHZAtt
+	id S1756048AbZHZAvD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:51:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZHZAvC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:49:49 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63495 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750821AbZHZAts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:49:48 -0400
-Message-ID: <4A94868C.4080801@cn.fujitsu.com>
-Date: Wed, 26 Aug 2009 08:49:16 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 25 Aug 2009 20:51:02 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9479 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754205AbZHZAvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 20:51:01 -0400
+Message-ID: <4A9486BB.4020301@redhat.com>
+Date: Tue, 25 Aug 2009 20:50:03 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wei Yongjun <yjwei@cn.fujitsu.com>, David Miller <davem@davemloft.net>,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] trace_events: fix napi's tracepoint
-References: <4A937EF5.4040505@cn.fujitsu.com> <4A93895F.4010708@cn.fujitsu.com> <20090825075816.GB857@elte.hu> <20090825105707.GA24710@hmsreliant.think-freely.org>
-In-Reply-To: <20090825105707.GA24710@hmsreliant.think-freely.org>
-Content-Type: text/plain; charset=UTF-8
+To: Pavel Machek <pavel@ucw.cz>
+CC: david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+References: <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm> <20090826001206.GL4300@elf.ucw.cz> <4A94812C.5010803@redhat.com> <20090826004430.GR4300@elf.ucw.cz>
+In-Reply-To: <20090826004430.GR4300@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Neil Horman wrote:
-> On Tue, Aug 25, 2009 at 09:58:16AM +0200, Ingo Molnar wrote:
->> * Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
->>
->> This will collide with tracing bits in the networking tree. The 
->> skb-tracing plugin there should be turned into proper TRACE_EVENT() 
->> tracepoints.
->>
->> Neil was away for some time but i think soon we should see some 
->> movement here.
->>
->> 	Ingo
->>
-> 
-> Thank you Ingo, yes, I'm back from the beach now and will look at this shortly.
-> I concur, we should just convert the napi_poll tracepoint to be defined via the
-> TRACE_EVENT macro, same as the kfree_skb tracepoint.  Xaio would you like to
-> take care of that, or shall I?
+On 08/25/2009 08:44 PM, Pavel Machek wrote:
 >
+>>>>> THESE devices have the property of potentially corrupting blocks being
+>>>>> written at the time of the power failure,
+>>>>
+>>>> this is true of all devices
+>>>
+>>> Actually I don't think so. I believe SATA disks do not corrupt even
+>>> the sector they are writing to -- they just have big enough
+>>> capacitors. And yes I believe ext3 depends on that.
+>>
+>> Pavel, no S-ATA drive has capacitors to hold up during a power failure
+>> (or even enough power to destage their write cache). I know this from
+>> direct, personal knowledge having built RAID boxes at EMC for years. In
+>> fact, almost all RAID boxes require that the write cache be hardwired to
+>> off when used in their arrays.
+>
+> I never claimed they have enough power to flush entire cache -- read
+> the paragraph again. I do believe the disks have enough capacitors to
+> finish writing single sector, and I do believe ext3 depends on that.
+>
+> 									Pavel
 
-Hi Neil,
+Some scary terms that drive people mention (and measure):
 
-I'm glad to do it.
+"high fly writes"
+"over powered seeks"
+"adjacent tack erasure"
 
-Actually, we should fix the include file dependencies first
-(the second patch in this patchset), else we can't include two
-TRACE_EVENT head files in net-traces.c
+If you do get a partial track written, the data integrity bits that the data is 
+embedded in will flag it as invalid and give you and IO error on the next read. 
+Note that the damage is not persistent, it will get repaired (in place) on the 
+next write to that sector.
 
-Steve will pull this patchset, so, I'll convert it after this
-patchset merged.
+Also it is worth noting that ext2/3/4 write file system "blocks" not single 
+sectors. Each ext3 IO is 8 distinct disk sector writes and those can span tracks 
+on a drive which require a seek which all consume power.
+
+On power loss, a disk will immediately park the heads...
+
+ric
+
