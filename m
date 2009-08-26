@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751309AbZHZO7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZHZPEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751309AbZHZO7c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbZHZO7b
+	id S1751353AbZHZPEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 11:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbZHZPEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:59:31 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:35603 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbZHZO7a (ORCPT
+	Wed, 26 Aug 2009 11:04:33 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:38580 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbZHZPEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:59:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=TBoi/Ovtmtpx6FPEL8OBfaStqY3NLxZ9dX5gm+x9/OCmzn2rFg732ZE5f+zZWv4PHx
-         /Y33oDKSYgpj6edR7PyKIXq26JWKXkBHUbV58TJ/GY/4p7DqCNvnrPUltXVEtbBRiPXs
-         6u7wJMnp5xYASogRLAPjWcTrzNmzAchUAVuaQ=
+	Wed, 26 Aug 2009 11:04:32 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 26 Aug 2009 08:04:32 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Will Brown <dr.hfuhruhurr@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PROBLEM: Epoll frequently fails to notify connects at connect 
+ bursts
+In-Reply-To: <8a1bd2320908260215w23d1f426x33f90e38ccc3fe2c@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0908260802520.6557@makko.or.mcafeemobile.com>
+References: <8a1bd2320908251748u324ae5e6g7015069180253db3@mail.gmail.com>  <alpine.DEB.2.00.0908251812450.18518@makko.or.mcafeemobile.com>  <alpine.DEB.2.00.0908251823470.18518@makko.or.mcafeemobile.com>
+ <8a1bd2320908260215w23d1f426x33f90e38ccc3fe2c@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-In-Reply-To: <200908261601.05734.ml_kernel@mortal-soul.de>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	 <_yaHeGjHEzG.A.2bH.CtGlKB@chimera>
-	 <84144f020908252317j202aa459u27c40eed34debd6@mail.gmail.com>
-	 <200908261601.05734.ml_kernel@mortal-soul.de>
-Date: Wed, 26 Aug 2009 17:59:30 +0300
-X-Google-Sender-Auth: 2a064fe2103a5aec
-Message-ID: <84144f020908260759q6554971dva6cc89a0ad9821b@mail.gmail.com>
-Subject: Re: [Bug #14011] Kernel paging request failed in kmem_cache_alloc
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Matthias Dahl <ml_kernel@mortal-soul.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Paris <eparis@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-1623378626-1251299073=:6557"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 5:01 PM, Matthias Dahl<ml_kernel@mortal-soul.de> wrote:
->> Can you reproduce the bug without the proprietary nvidia module that
->> seems to be loaded?
->
-> I am sorry but I forgot to test that and right now I am not very keen on
-> trying again since this is my primary machine and I had quite some fs
-> corruption (ext4 on md raid5 -> no barriers) the last times. :-( But this also
-> happened w/o Xorg ever being run during that session (though naturally the
-> nvidia kernel module was still loaded).
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Sure, I can understand that. The bug looks like regular slab
-corruption which could have been caused the nvidia blob. So I think
-the issue should be closed unless someone can reproduce it without the
-blob.
+--8323329-1623378626-1251299073=:6557
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-That said, sys_inotify_add_watch() also appears in the trace and
-there's been quite a few bug fixes in that area recently so I guess we
-should CC Eric Paris just in case the oops rings a bell to him.
+On Wed, 26 Aug 2009, Will Brown wrote:
 
-                        Pekka
+> On Wed, Aug 26, 2009 at 3:24 AM, Davide Libenzi<davidel@xmailserver.org> wrote:
+> > On Tue, 25 Aug 2009, Davide Libenzi wrote:
+> >
+> >> Multiple quasi-simultaneous events for the same fd are merged. This is why
+> >> on POLLIN on accepting sockets you want to do something like:
+> >>
+> >>       while ((afd = accept(sfd, ...)) != -1)
+> >>               add_client(afd);
+> >
+> > Of course, with  sfd  in non-blocking mode. Alternatively, you drop EPOLLET
+> > for the  sfd  socket.
+> >
+> 
+> Aha! Thank you immensely Davide. It cost me one week of frustration already.
+> 
+> 1. Where should I have picked up this gem of essential information? I
+> haven't seen it in the man-pages for either 'epoll' or 'accept'.
+> 
+> 2. Is it better to use a level-triggered listener socket, or to use
+> the accept-loop?
+
+EPOLLET can be more efficent, but it can also be a little more trickier to 
+grasp. LT mode maps more closely to poll/select, that makes it more 
+familiar to users.
+
+
+- Davide
+
+
+--8323329-1623378626-1251299073=:6557--
