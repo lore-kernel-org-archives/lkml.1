@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbZHYX6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbZHZACY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbZHYX6x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 19:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbZHYX6w
+	id S1755286AbZHZACY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZHZACY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 19:58:52 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:24509 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbZHYX6w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 19:58:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=vJKJ4mH8My+V91N+W9d0CDzYZzzB90xEI8SZpHbD6Yp8A4jKYl8QuP7pE7qo0zwjMQ
-         un8WC2qahGdgcQ1iVdK+7gC4gEQnLFbz2xdHaA9UDPqdy57y3oXRixCTl2DaloZjQKyb
-         UbsfmBozGody5g7I9jlX8/Mo039IDMHEaFMkQ=
-Date: Tue, 25 Aug 2009 19:58:52 -0400
-From: Celejar <celejar@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: 541835@bugs.debian.org
-Subject: crypto configuration / dependencies broken
-Message-Id: <20090825195852.1dfacb6c.celejar@gmail.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 25 Aug 2009 20:02:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58871 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752647AbZHZACX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 20:02:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
+Subject: Re: [Bug #14031] dvb_usb_af9015: Oops on hotplugging
+Date: Wed, 26 Aug 2009 02:03:16 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.RvG.1sGlKB@chimera> <200908260157.48560.s.L-H@gmx.de>
+In-Reply-To: <200908260157.48560.s.L-H@gmx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908260203.16548.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm having a pretty bizarre problem with my kernel crypto
-configuration.  I need support for a bog standard LUKS (aes /
-cbc-essiv:sha256) / cryptsetup installation, but even after I enable
-virtually everything in the crypto section of the kernel configs, cbc
-fails to load.  All the relevant modules are exist (dm-mod, dm-crypt,
-crypto_blkcipher, crypto_algapi, crypto_hash, aes_generic,
-sha256_generic), but even after modprobing / insmoding
-everything, /proc/crypto shows that aes and sha is there, but not cbc.
+On Wednesday 26 August 2009, Stefan Lippers-Hollmann wrote:
+> Hi
+> 
+> On Wednesday 26 August 2009, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14031
+> > Subject		: dvb_usb_af9015: Oops on hotplugging
+> > Submitter	: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+> > Date		: 2009-08-05 20:32 (21 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124949716608828&w=4
+> 
+> This issue does not exist in 2.6.31-rc7(-git2) anymore. 
+> 
+> Unfortunately I've been away from my system and with limited testing 
+> abilities recently, so I can't pinpoint the actual patch that fixed this 
+> (it was not in the first DVB pull request following that report, but maybe 
+> in the second or third), but it does work very well again. Thank you.
 
-The problem has been reproduced (using my kernel config) by Jonas
-Meurer, the Debian cryptsetup maintainer, so it's not just me ;).
-We've tried numerous different kernel versions in the .30 / .31 range.
+Thanks, bug closed.
 
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=541835
-
-Does this mean that something else somewhere in the kernel needs to be
-configured but isn't, and the necessary dependency isn't properly
-declared?
-
-My config is at:
-http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=45;filename=config-2.6.31-rc6-lizzie-00042-gb2add73;att=1;bug=541835
-
-[I'm not subscribed to lkml; please cc me on responses]
-
-Celejar
--- 
-mailmin.sourceforge.net - remote access via secure (OpenPGP) email
-ssuds.sourceforge.net - A Simple Sudoku Solver and Generator
-
+Rafael
