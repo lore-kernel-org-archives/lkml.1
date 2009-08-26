@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbZHZJ1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbZHZJ3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756486AbZHZJ1H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 05:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbZHZJ1G
+	id S1756497AbZHZJ3k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 05:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbZHZJ3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 05:27:06 -0400
-Received: from viefep13-int.chello.at ([62.179.121.33]:8775 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756289AbZHZJ1F (ORCPT
+	Wed, 26 Aug 2009 05:29:39 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:51338 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756351AbZHZJ3i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 05:27:05 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [tip:sched/core] sched: Avoid division by zero
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, jes@sgi.com, jens.axboe@oracle.com,
-       tglx@linutronix.de, mingo@elte.hu,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <4A94FD58.8060207@kernel.org>
-References: <1250855934.7538.30.camel@twins>
-	 <tip-a8af7246c114bfd939e539f9566b872c06f6225c@git.kernel.org>
-	 <1251227486.7538.1174.camel@twins>  <4A94FD58.8060207@kernel.org>
-Content-Type: text/plain
-Date: Wed, 26 Aug 2009 11:25:59 +0200
-Message-Id: <1251278759.1329.0.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 26 Aug 2009 05:29:38 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #13389] Warning 'Invalid throttling state, reset' gets displayed when it should not be
+Date: Wed, 26 Aug 2009 11:29:38 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera> <Cg6cQYLdUxG.A.TcC.r1GlKB@chimera>
+In-Reply-To: <Cg6cQYLdUxG.A.TcC.r1GlKB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908261129.39250.elendil@planet.nl>
+X-OriginalArrivalTime: 26 Aug 2009 09:29:40.0072 (UTC) FILETIME=[BC771680:01CA262F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 02:16 -0700, Yinghai Lu wrote:
-> Peter Zijlstra wrote:
-> > Yinghai, Balbir, Arjan,
-> > 
-> > Could you try the below to see if that fully does away with the /0 in
-> > the group scheduler thing?
-> 
-> yes this one fix the problem.
+On Tuesday 25 August 2009, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13389
+> Subject	: Warning 'Invalid throttling state, reset' gets displayed
+>		  when it should not be
+> Submitter	: Frans Pop <elendil@planet.nl> 
+> Date		: 2009-05-26 15:24 (92 days old)
+> Handled-By	: Frans Pop <elendil@planet.nl>
+> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=21671
+> 		  http://bugzilla.kernel.org/attachment.cgi?id=21672
 
-Awesome, I'll polish her up a bit and send it to Ingo.
+Still waiting for Len (or somebody) to pick them up.
 
-Thanks!
+Slightly improved versions of the patches (as also sent to the mailing 
+list recently) are at:
+- http://bugzilla.kernel.org/attachment.cgi?id=22857
+- http://bugzilla.kernel.org/attachment.cgi?id=22858
 
+Cheers,
+FJP
