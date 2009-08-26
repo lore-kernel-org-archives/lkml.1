@@ -1,98 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498AbZHZRpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbZHZRs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752498AbZHZRpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 13:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbZHZRpi
+	id S1752522AbZHZRs7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 13:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZHZRs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 13:45:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60841 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752058AbZHZRph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 13:45:37 -0400
-Message-ID: <4A957479.1060206@kernel.org>
-Date: Wed, 26 Aug 2009 10:44:25 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Wed, 26 Aug 2009 13:48:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:55097 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbZHZRs6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 13:48:58 -0400
+Date: Wed, 26 Aug 2009 13:48:57 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+In-Reply-To: <20090826164624.GA21456@Krystal>
+Message-ID: <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com>
+References: <20090825102215.GC26801@elte.hu> <1251196359.7538.1133.camel@twins> <20090825103907.GB28287@elte.hu> <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins> <4A94D3A8.1090902@cn.fujitsu.com> <1251269207.7538.1217.camel@twins>
+ <1251270092.7538.1226.camel@twins> <4A94DFF4.5030301@cn.fujitsu.com> <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com> <20090826164624.GA21456@Krystal>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: bugzilla-daemon@bugzilla.kernel.org,
-       Ricardo Jorge da Fonseca Marques Ferreira 
-	<storm@sys49152.net>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, cebbert@redhat.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 13940] iwlagn and sky2 stopped working, ACPI-related
-References: <bug-13940-13546@http.bugzilla.kernel.org/> <200908251555.n7PFt7Wt015763@demeter.kernel.org> <4A9425E4.40108@kernel.org>
-In-Reply-To: <4A9425E4.40108@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bugzilla-daemon@bugzilla.kernel.org wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=13940
-> 
-> 
-> 
-> 
-> 
-> --- Comment #12 from Ricardo Ferreira <bugzillas@sys49152.net>  2009-08-26 16:54:49 ---
-> Created an attachment (id=22864)
->  --> (http://bugzilla.kernel.org/attachment.cgi?id=22864)
-> dmesg of not wroking kernel booted with "debug pci=earlydump"
-> 
-> This is of the 2.6.31-rc6 kernel with neither the patch applied or the commit
-> reverted.
-> 
 
-[    0.000000] pci 0000:07:00.0 config space:
-[    0.000000]   00: ab 11 55 43 07 00 10 00 12 00 00 02 10 00 00 00
-[    0.000000]   10: 04 00 50 f4 00 00 00 00 01 30 00 00 00 00 00 00
-[    0.000000]   20: 00 00 00 00 00 00 00 00 00 00 00 00 79 11 50 ff
-[    0.000000]   30: 00 00 00 00 48 00 00 00 00 00 00 00 0b 01 00 00
-[    0.000000]   40: 00 00 b0 84 09 c0 a0 01 01 5c 03 fe 00 20 00 13
-[    0.000000]   50: 03 5c 00 80 00 00 00 00 00 00 04 00 05 c0 80 00
-[    0.000000]   60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   70: 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   80: 00 00 00 00 00 30 00 00 00 00 00 00 82 a8 e8 00
-[    0.000000]   90: 00 00 00 00 00 00 00 00 a0 25 26 00 00 00 00 00
-[    0.000000]   a0: f6 00 00 ff 40 00 08 01 0c 31 33 40 04 0a 10 44
-[    0.000000]   b0: 00 00 00 05 00 00 60 20 fa 00 00 00 00 00 00 00
-[    0.000000]   c0: 10 00 12 00 c0 8f 04 05 00 20 19 00 11 ac 07 00
-[    0.000000]   d0: 48 01 11 10 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   e0: 00 00 00 00 10 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000] pci 0000:08:00.0 config space:
-[    0.000000]   00: 86 80 32 42 06 00 10 00 00 00 80 02 10 00 00 00
-[    0.000000]   10: 04 00 60 f4 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   20: 00 00 00 00 00 00 00 00 00 00 00 00 86 80 01 12
-[    0.000000]   30: 00 00 00 00 c8 00 00 00 00 00 00 00 05 01 00 00
-[    0.000000]   40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   c0: 00 00 00 00 00 00 00 00 01 d0 23 c8 00 00 00 0d
-[    0.000000]   d0: 05 e0 80 00 00 00 00 00 00 00 00 00 00 00 00 00
-[    0.000000]   e0: 10 00 01 00 c0 8e 00 10 10 08 19 00 11 9c 06 00
-[    0.000000]   f0: 40 01 11 10 00 00 00 00 00 00 00 00 00 00 00 00
+This patch solves the problem that Li originally reported. If something 
+registers a trace point belonging to a module, then it ups the ref count 
+of the module. This prevents a process from registering a probe to a 
+tracepoint belonging to a module and then having the module disappear.
+
+Doing the example with perf in Li's original post, now errors on the 
+rmmod, with "ERROR: Module trace_events_sample is in use".
+
+Mathieu, can I have your acked-by on this?
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+index 0341f2e..055275b 100644
+--- a/include/linux/tracepoint.h
++++ b/include/linux/tracepoint.h
+@@ -109,8 +109,9 @@ struct tracepoint {
+ #define EXPORT_TRACEPOINT_SYMBOL(name)					\
+ 	EXPORT_SYMBOL(__tracepoint_##name)
+ 
+-extern void tracepoint_update_probe_range(struct tracepoint *begin,
+-	struct tracepoint *end);
++extern void tracepoint_update_probe_range(struct module *,
++					  struct tracepoint *begin,
++					  struct tracepoint *end);
+ 
+ #else /* !CONFIG_TRACEPOINTS */
+ #define DECLARE_TRACE_WITH_CALLBACK(name, proto, args, reg, unreg)	\
+diff --git a/kernel/module.c b/kernel/module.c
+index b182143..a8e69fa 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2974,7 +2974,7 @@ void module_update_tracepoints(void)
+ 	mutex_lock(&module_mutex);
+ 	list_for_each_entry(mod, &modules, list)
+ 		if (!mod->taints)
+-			tracepoint_update_probe_range(mod->tracepoints,
++			tracepoint_update_probe_range(mod, mod->tracepoints,
+ 				mod->tracepoints + mod->num_tracepoints);
+ 	mutex_unlock(&module_mutex);
+ }
+diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+index 06f165a..089e6f9 100644
+--- a/kernel/tracepoint.c
++++ b/kernel/tracepoint.c
+@@ -54,6 +54,7 @@ static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
+  */
+ struct tracepoint_entry {
+ 	struct hlist_node hlist;
++	struct module *mod;
+ 	void **funcs;
+ 	int refcount;	/* Number of times armed. 0 if disarmed. */
+ 	char name[0];
+@@ -221,6 +222,7 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
+ 	memcpy(&e->name[0], name, name_len);
+ 	e->funcs = NULL;
+ 	e->refcount = 0;
++	e->mod = NULL;	/* Will be assigned in tracepoint_update_probe_range */
+ 	hlist_add_head(&e->hlist, head);
+ 	return e;
+ }
+@@ -231,6 +233,8 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
+  */
+ static inline void remove_tracepoint(struct tracepoint_entry *e)
+ {
++	if (e->mod)
++		module_put(e->mod);
+ 	hlist_del(&e->hlist);
+ 	kfree(e);
+ }
+@@ -274,7 +278,8 @@ static void disable_tracepoint(struct tracepoint *elem)
+  * Updates the probe callback corresponding to a range of tracepoints.
+  */
+ void
+-tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
++tracepoint_update_probe_range(struct module *mod,
++			      struct tracepoint *begin, struct tracepoint *end)
+ {
+ 	struct tracepoint *iter;
+ 	struct tracepoint_entry *mark_entry;
+@@ -286,9 +291,15 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
+ 	for (iter = begin; iter < end; iter++) {
+ 		mark_entry = get_tracepoint(iter->name);
+ 		if (mark_entry) {
++			if (mod && !mark_entry->mod) {
++				if (!try_module_get(mod))
++					goto disable;
++				mark_entry->mod = mod;
++			}
+ 			set_tracepoint(&mark_entry, iter,
+ 					!!mark_entry->refcount);
+ 		} else {
++ disable:
+ 			disable_tracepoint(iter);
+ 		}
+ 	}
+@@ -301,7 +312,7 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
+ static void tracepoint_update_probes(void)
+ {
+ 	/* Core kernel tracepoints */
+-	tracepoint_update_probe_range(__start___tracepoints,
++	tracepoint_update_probe_range(NULL, __start___tracepoints,
+ 		__stop___tracepoints);
+ 	/* tracepoints in modules. */
+ 	module_update_tracepoints();
+@@ -556,7 +567,7 @@ int tracepoint_module_notify(struct notifier_block *self,
+ 	switch (val) {
+ 	case MODULE_STATE_COMING:
+ 	case MODULE_STATE_GOING:
+-		tracepoint_update_probe_range(mod->tracepoints,
++		tracepoint_update_probe_range(mod, mod->tracepoints,
+ 			mod->tracepoints + mod->num_tracepoints);
+ 		break;
+ 	}
 
 
-[    0.815933] pci 0000:07:00.0: reg 10 64bit mmio: [0x000000-0x003fff]
-[    0.815946] pci 0000:07:00.0: reg 18 io port: [0x00-0xff]
-[    0.816029] pci 0000:07:00.0: supports D1 D2
-[    0.816033] pci 0000:07:00.0: PME# supported from D0 D1 D2 D3hot D3cold
-[    0.816041] pci 0000:07:00.0: PME# disabled
-[    0.816223] pci 0000:08:00.0: reg 10 64bit mmio: [0x000000-0x001fff]
-[    0.816339] pci 0000:08:00.0: PME# supported from D0 D3hot D3cold
-[    0.816348] pci 0000:08:00.0: PME# disabled
-
-not sure it is caused by acpi or mmconf...
-
-please try to boot with pci=nommconf
-
-YH
