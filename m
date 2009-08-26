@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752047AbZHZQdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbZHZQdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752047AbZHZQdi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 12:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbZHZQdh
+	id S1752072AbZHZQdn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 12:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZHZQdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 12:33:37 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:62808 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750749AbZHZQdg (ORCPT
+	Wed, 26 Aug 2009 12:33:42 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:64565 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbZHZQdk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 12:33:36 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.31-rc7-git2: Reported regressions 2.6.29 -> 2.6.30
-Date: Wed, 26 Aug 2009 18:33:34 +0200
-User-Agent: KMail/1.9.9
-Cc: zajec5@gmail.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       protasnb@gmail.com, linux-acpi@vger.kernel.org,
-       kernel-testers@vger.kernel.org, torvalds@linux-foundation.org
-References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera> <b170af450908260147o60427997ne6b9872198893c41@mail.gmail.com> <b170af450908260147o60427997ne6b9872198893c41@mail.gmail.com> <20090826075337.4230d82c.akpm@linux-foundation.org>
-In-reply-To: <20090826075337.4230d82c.akpm@linux-foundation.org>
+	Wed, 26 Aug 2009 12:33:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=CM2+D3HrqYxSr8RQjh7i3zADe72xpxnlfudso8dRm2gtVmU9eGowjfCBPIoyGus8YR
+         HlvSOd1joX/pMWW+i39kvqBgKhzbffD9owJIkcxd+O3hovoIlgG/a0sT8iqNwR3rBLng
+         y0f+kAe77AYTAPy7iXxc9OUeIbQ+8Y+lDnAwA=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+In-Reply-To: <200908262002.06209@zigzag.lvk.cs.msu.su>
+References: <200908262002.06209@zigzag.lvk.cs.msu.su>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Wed, 26 Aug 2009 12:32:51 -0400
+Message-ID: <3e8340490908260932k3872d92am4a55593386c0cff@mail.gmail.com>
+Subject: Re: Suspend one thread and resume another in one system call ?
+To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+Cc: linux-kernel@vger.kernel.org, Stas Bezzubtsev <stas@lvk.cs.msu.su>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908261833.37310.elendil@planet.nl>
-X-OriginalArrivalTime: 26 Aug 2009 16:33:37.0495 (UTC) FILETIME=[F659CE70:01CA266A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Dropped unrelated CCs.)
+On Wed, Aug 26, 2009 at 12:02 PM, Nikita V. Youshchenko<yoush@cs.msu.su> wrote:
+> Hello.
+>
+> Consider a situation when:
+> - there is a set of threads,
+> - only one of those should be allowed to work at a time,
+> - there are "switch moments" when one thread should suspend, and other
+> (known) resume.
+>
+> "Classic" solutions like have each thread sleeping on a semaphore, and
+> making switch operation "sem_post(next_sem); sem_wait(my_sem)" cause two
+> syscalls per switch.
+>
+> Could anyone suggest a solution with only one kernel entry per switch -
+> running thread enters kernel and is de-scheduled, new thread resumes and
+> leaves kernel?
+>
+> Nikita
+>
+> P.S.
+> Since there are other threads in the same application working in the
+> parallel with the mentioned "exclusive set", user-space solutions like
+> libpth are not interesting.
 
-Andrew Morton wrote:
-> I'm not seeing any linux-acpi emails from Len since August 14.
-> 
-> So I merged this patch and shall send it along with
-> 
-> thermal_sys-check-get_temp-return-value.patch
-> acpi-dont-call-acpi_processor_init-if-acpi-is-disabled.patch
-
-Thanks for that Andrew. Could you please do the same for my patches in
-http://bugzilla.kernel.org/show_bug.cgi?id=13389 (or
-http://lkml.org/lkml/2009/8/17/169)?
-
-That BR is on the regression list for 2.6.30. The patches apply cleanly to 
-current mainline.
-
-Thanks,
-FJP
+If these threads are truly exclusive, just use ucontext.h's
+setcontext() to switch threads in userspace.
