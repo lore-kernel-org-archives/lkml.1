@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbZHZOMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbZHZONW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbZHZOMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756434AbZHZOMU
+	id S933020AbZHZONW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbZHZONV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:12:20 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:54270 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754558AbZHZOMT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:12:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uKIEOl3ujLFlg+03IKgMKwkGCNrMO0+pxEXrXn7mH8vCzH8pp6aLCtE7shZUcq/Tkq
-         5bz387+DFeQ1xh0NxpVr2Su9I6kbSVpg5/1nVV8+u8Twek2SyCk35Pj8XGqsZ91RjL1N
-         vZyu23xNyTYGeWTRC0baG06LZrOmgwpoT8i3o=
-MIME-Version: 1.0
-In-Reply-To: <200908251459.37106.bjorn.helgaas@hp.com>
-References: <c4e36d110908250110xe16720o977c8cf5c3386c4b@mail.gmail.com>
-	 <200908251251.37135.bjorn.helgaas@hp.com>
-	 <c4e36d110908251333p2da20276j650232cea8da4c1f@mail.gmail.com>
-	 <200908251459.37106.bjorn.helgaas@hp.com>
-Date: Wed, 26 Aug 2009 16:12:19 +0200
-Message-ID: <c4e36d110908260712u3aa0e27ft869049aa310a7386@mail.gmail.com>
-Subject: Re: INFO: possible circular locking dependency - kacpid 
-	acpi_os_wait_events_complete
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       len.brown@intel.com, linux-acpi@vger.kernel.org,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Zhang Rui <rui.zhang@intel.com>, Paul Martin <pm@debian.org>,
-       Vojtech Gondzala <vojtech.gondzala@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 26 Aug 2009 10:13:21 -0400
+Received: from mga03.intel.com ([143.182.124.21]:41624 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932443AbZHZONU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 10:13:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="180401452"
+Subject: Re: BUG: scheduling while atomic in acpi_ps_complete_op
+From: ykzhao <yakui.zhao@intel.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Brown, Len" <len.brown@intel.com>,
+       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
+In-Reply-To: <1251287895.2270.25.camel@dhcp231-106.rdu.redhat.com>
+References: <1250873707.2168.38.camel@dhcp231-106.rdu.redhat.com>
+	 <4A8EFFB2.4040100@suse.de>
+	 <1250886352.2168.83.camel@dhcp231-106.rdu.redhat.com>
+	 <4A8F1081.3020803@suse.de>
+	 <1251124609.2359.25.camel@dhcp231-106.rdu.redhat.com>
+	 <1251248426.3623.47.camel@localhost.localdomain>
+	 <1251287895.2270.25.camel@dhcp231-106.rdu.redhat.com>
+Content-Type: text/plain; charset=utf-8
+Organization: Intel Open Source Technology Center
+Date: Wed, 26 Aug 2009 22:13:04 +0800
+Message-Id: <1251295984.3623.83.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/25 Bjorn Helgaas <bjorn.helgaas@hp.com>:
-> On Tuesday 25 August 2009 02:33:30 pm you wrote:
->> 2009/8/25 Bjorn Helgaas <bjorn.helgaas@hp.com>:
->> > On Tuesday 25 August 2009 02:10:58 am Zdenek Kabelac wrote:
->> >> Now with 2.6.31-rc7 (3edf2fb9d80a46d6c32ba12547a42419845b4b76)
->> >>  I'm getting this  INFO trace - also I've noticed complete reset during resume
->> >> which could be eventually related to this
->> > Do you have any evidence that points to thinkpad_acpi?  I looked
->> > at the recent changes there, and I don't see anything obviously
->> > related to kacpid or deferred work.
->> >
->>
->> Well I've never seen this INFO trace before - also I'm not sure I
->> could reliable retest it - might be coincidence of suspend out of port
->> replicator and resume while being attached on it - however I do this
->> relatively often and I start to see this after I' started to use -rc7
->> kernel.
->>
->> My guess is purely based on the fact that commit touching functions
->> from INFO trace was recently merged to main tree.
->>
->> If there will be some time I could try to make few tests for suspend
->> resume - but I hope the trace would be enough for analysis.
->
+On Wed, 2009-08-26 at 19:58 +0800, Eric Paris wrote:
+> On Wed, 2009-08-26 at 09:00 +0800, ykzhao wrote:
+> > On Mon, 2009-08-24 at 22:36 +0800, Eric Paris wrote:
+> > > On Sat, 2009-08-22 at 01:24 +0400, Alexey Starikovskiy wrote:
+> > > > Eric Paris Ð¿Ð¸ÑˆÐµÑ‚:
+> 
+> > > It does stop my slew of warnings.  Not sure it completely fixes my
+> > > problems though....
+> > Will you please add the boot option of initcall_debug and attach the
+> > output of dmesg?
+> > It will be helpful if you can attach the output of acpidump.
+> > Thanks.
+Hi
+	Will you please confirm whether this issue happens on the 2.6.31-rc6
+kernel?
+	If there is no such issue, will you please revert the following commit
+and see whether the issue still exists?
+   >commit 74b5820808215f65b70b05a099d6d3c969b82689
+Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Date:   Wed Jul 29 15:54:25 2009 -0600
 
-Well definitelly I do not have a reliable test case to
-deterministically trigger this INFO trace, but I think from the trace
-it looks like  the acpi_os_wait_events_complete calls flush_workqueue
-which again calls acpi_os_execute_hp_deferred which again tries to
-invoke flush_workqueue - so is that correct ?
+    ACPI: bind workqueues to CPU 0 to avoid SMI corruption
 
-(__acpi_os_execute looks somewhat cryptic in selection what would be called)
+      In this commit it will schedule to other kernel thread and switch
+to task 0 again.
 
-This is the stack traceback cut from my first post:
+Thanks.
+    Yakui.    
+> 
+> Here is booting a kernel without the change.  I don't see acpidump
+> packaged in fedora.  Do you have a pointer to the source or maybe a
+> static binary?  I'll look myself later in the afternoon.
+> 
+> -Eric
 
- [<ffffffff81064df0>] ? flush_workqueue+0x0/0xc0
- [<ffffffff81261532>] ? acpi_os_execute_hp_deferred+0x0/0x43
- [<ffffffff81064e4f>] flush_workqueue+0x5f/0xc0
- [<ffffffff81064df0>] ? flush_workqueue+0x0/0xc0
- [<ffffffff81261524>] acpi_os_wait_events_complete+0x15/0x23
- [<ffffffff81261561>] acpi_os_execute_hp_deferred+0x2f/0x43
- [<ffffffff810651d4>] worker_thread+0x1e4/0x3f0
-
-So it looks like this issue is releated to commit:
-c02256be79a1a3557332ac51e653d574a2a7d2b5
-
-Hopefully the author would be able to fix this ?
-
-Zdenek
