@@ -1,109 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932880AbZHZM14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932890AbZHZM23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932880AbZHZM14 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 08:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbZHZM14
+	id S932890AbZHZM23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 08:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932811AbZHZM21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 08:27:56 -0400
-Received: from mtagate7.de.ibm.com ([195.212.17.167]:32798 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932624AbZHZM1z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 08:27:55 -0400
-Message-ID: <4A952A25.40208@linux.vnet.ibm.com>
-Date: Wed, 26 Aug 2009 14:27:17 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 26 Aug 2009 08:28:27 -0400
+Received: from THUNK.ORG ([69.25.196.29]:39266 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932697AbZHZM20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 08:28:26 -0400
+Date: Wed, 26 Aug 2009 08:28:13 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090826122813.GI32712@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
+	Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
+	Florian Weimer <fweimer@bfk.de>,
+	Goswin von Brederlow <goswin-v-b@web.de>,
+	Rob Landley <rob@landley.net>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+	linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <4A932B18.1020209@redhat.com> <20090825093414.GB15563@elf.ucw.cz> <4A94ACDF.30405@redhat.com> <20090826111751.GC26595@elf.ucw.cz>
 MIME-Version: 1.0
-To: michal.simek@petalogix.com
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "subrata@linux.vnet.ibm.com" <subrata@linux.vnet.ibm.com>
-Subject: Re: Gcov and lcov
-References: <4A940A11.2040706@petalogix.com>
-In-Reply-To: <4A940A11.2040706@petalogix.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826111751.GC26595@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Michal Simek wrote:
-> First of all there should be DEBUG_FS instead of DEBUG in documentation.
-> diff --git a/Documentation/gcov.txt b/Documentation/gcov.txt
-> index 40ec633..e7ca647 100644
-> --- a/Documentation/gcov.txt
-> +++ b/Documentation/gcov.txt
-> @@ -47,7 +47,7 @@ Possible uses:
+On Wed, Aug 26, 2009 at 01:17:52PM +0200, Pavel Machek wrote:
+> > Metadata takes up such a small part of the disk that fscking
+> > it and finding it to be OK is absolutely no guarantee that
+> > the data on the filesystem has not been horribly mangled.
+> >
+> > Personally, what I care about is my data.
+> >
+> > The metadata is just a way to get to my data, while the data
+> > is actually important.
 > 
->  Configure the kernel with:
-> 
-> -        CONFIG_DEBUGFS=y
-> +        CONFIG_DEBUG_FS=y
->          CONFIG_GCOV_KERNEL=y
+> Personally, I care about metadata consistency, and ext3 documentation
+> suggests that journal protects its integrity. Except that it does not
+> on broken storage devices, and you still need to run fsck there.
 
-Thanks for pointing this out. This was reported before and will be fixed 
-in a future kernel release.
+Caring about metadata consistency and not data is just weird, I'm
+sorry.  I can't imagine anyone who actually *cares* about what they
+have stored, whether it's digital photographs of child taking a first
+step, or their thesis research, caring about more about the metadata
+than the data.  Giving advice that pretends that most users have that
+priority is Just Wrong.
 
-> I am missing any option to be possible to stop capture coveradge data.
+That's why what we should document is that people should avoid broken
+storage devices, and advice on how to use RAID properly.  At the end
+of the day, getting people to switch from ext2 to ext3 on some
+misguided notion that this way, they'll know when their metadata is
+safe (at least in the power failure case; but not the system hangs and
+you have to reboot case), and getting them to ignore the question of
+why are they using a broken storage device in the first place, is
+Documentation malpractice.
 
-There is currently no way to turn gcov-based profiling off during run-time.
-
-> I am running in on Microblaze and it takes me a lot of time to grap all
-> gcda data from debugfs.
-
-If you don't need coverage data for all of the kernel source, you can 
-turn off option CONFIG_GCOV_PROFILE_ALL and only enable profiling for 
-those directories or files which are of interest to you. This should 
-greatly reduce the number of files that you need to copy and also the 
-overall kernel-slowdown.
-
-See the help text for configuration option CONFIG_GCOV_KERNEL for a 
-description of how to turn profiling on for single directories or files.
-
-> Then I would like to use lcov and generate html sites. This could be
-> possible but I haven't found
-> a way how to do it.
-> 
-> I used lcov --capture --directory . --output-file out
-> 
-> There is this mishmash in version string
-> /home/projects/xils/_full/software/linux-monstr_eu-commit/kernel/spinlock.gcno:version
-> '401*', prefer '401p'
-> /home/projects/xils/_full/software/linux-monstr_eu-commit/kernel/spinlock.gcda:version
-> '401*', prefer version '401p'
-> 
-> and then genhtml out which end with fault because my out file contain
-> wrong patches where is part of path repeated.
-> arch/microblaze/kernel/arch/microblaze/kernel
-
-The warning messages you are seeing indicate that the version of gcov 
-used for analyzing and the version of gcc used for compiling differ. You 
-need to specify the correct gcov tool binary (the one that comes with 
-the compiler used to compile the kernel) by using lcov's --gcov-tool option.
-
-Also current lcov releases only contain support for the gcov-kernel 
-infrastructure as provided by the external gcov-kernel patch. I added 
-support for the new upstream infrastructure to the CVS version[*] of lcov.
-
-Using the CVS version, you can do the following:
-
-On the test machine:
-	lcov -c --to-package coveragedata
-
-This will create a file coveragedata which includes all .gcda files. 
-Copy this file to the build machine and do:
-	lcov -c --from-package coveragedata -o data.info
-
-This will allow you to do the actual analysis of coverage data on the 
-build machine. See the man page for lcov for a detailed description of 
-this approach.
-
-
-Regards,
-   Peter Oberparleiter
-
-[*] See http://ltp.sourceforge.net/coverage/lcov.php for instructions on 
-how to obtain the CVS version of lcov
-
+						- Ted
