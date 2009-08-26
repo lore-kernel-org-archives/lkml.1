@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbZHZWuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbZHZXQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbZHZWuS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 18:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZHZWuR
+	id S1753545AbZHZXQX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 19:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZHZXQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 18:50:17 -0400
-Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:36576 "EHLO
-	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754183AbZHZWuR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 18:50:17 -0400
-Date: Thu, 27 Aug 2009 00:50:18 +0200
-From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
-To: linux-kernel@vger.kernel.org
-Subject: Re: ksoftirqd/0 using 100% of CPU0 (Intel Atom N270, 2.6.30 kernel)
-Message-ID: <20090826225018.GA15586@hardeman.nu>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20090826223415.GA27242@hardeman.nu>
+	Wed, 26 Aug 2009 19:16:22 -0400
+Received: from mail.qau.edu.pk ([121.52.146.212]:36109 "EHLO qau.edu.pk"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752193AbZHZXQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 19:16:22 -0400
+Message-ID: <4456.213.37.214.189.1251282934.squirrel@mail.qau.edu.pk>
+Date: Wed, 26 Aug 2009 15:35:34 +0500 (PKT)
+Subject: Lieber Freund!!!
+From: "Luther Zihiri" <redboathfinancia@aim.com>
+Reply-To: lutherzhiri@aim.com
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090826223415.GA27242@hardeman.nu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+  charset="utf-8"
+X-Priority: 3 (Normal)
+Importance: Normal
+X-NAIMIME-Disclaimer: 1
+X-NAIMIME-Modified: 1
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n7QNGc16012176
 
-On Thu, Aug 27, 2009 at 12:34:15AM +0200, David Härdeman wrote:
-> I recently bought a QNAP TS-439 Pro Turbo NAS which uses an Intel Atom  
-> N270 processor. Hardware specs are here:
-> http://www.qnap.com/pro_detail_hardware.asp?p_id=110
->
-> Installed Debian Lenny with a backported 2.6.30 kernel. The problem is  
-> that ksoftirq/0 takes up 100% of CPU core 0 as shown by top:
+Lieber Freund!!!
+Ich vermute das diese E-Mail eine Ãœberraschung fÃ¼r Sie sein wird, aber esist wahr.Ich bin bei einer routinen ÃœberprÃ¼fung in meiner Bank (StandardBank von SÃ¼d Afrika) wo ich arbeite, auf einem Konto gestoÃŸen, was nichtin anspruch genommen worden ist, wo derzeit $12,500,000(zwÃ¶lfmillionenfÃ¼nfhundert US Dollar) gutgeschrieben sind.
+Dieses Konto gehÃ¶rte Herrn Manfred Becker, der ein Kunde in unsere Bankwar, der leider verstorben ist. Herr Becker war ein gebÃ¼rtigerDeutscher.Damit es mir mÃ¶glich ist dieses Geld $12,500,000 inanspruchzunehmen, benÃ¶tige ich die zusammenarbeit eines AuslÃ¤ndischen Partners wieSie,den ich als Verwandter und Erbe des verstorbenen Herrn Beckervorstellen kann,damit wir das Geld inanspruch nehmen kÃ¶nnen.
+FÃ¼r diese UnterstÃ¼tzung erhalten Sie 30% der Erbschaftsumme und dierestlichen 70% teile ich mir mit meinen zwei Arbeitskollegen, die mich beidieser Transaktion ebenfalls unterstÃ¼tzen.Wenn Sie interessiert sind,kÃ¶nnen Sie mir bitte eine E-Mail schicken, damit ich Ihnen mehr Detailszukommen lassen kann.
+Schicken Sie bitte Ihre Antwort auf diese E-Mail Adresse:(lutherzhiri@aim.com)
+Mit freundlichen GrÃ¼ÃŸen
+Herr Luther Zihiri.
 
-Nevermind, problem went away by updating to latest 2.6.30.x kernel using 
-Debian backports :)
 
--- 
-David Härdeman
+This is Virus Free Email Scanned by QAU's McAfee Virus Scanner""THIS COMMUNICATION MAY CONTAIN CONFIDENTIAL AND/OR OTHERWISE PROPRIETARY MATERIALand is thus for use only by the intended recipient. If you received this in error, please contact the sender and delete the e-mailand its attachments from all computers."www.qau.edu.pkÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
