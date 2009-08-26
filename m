@@ -1,161 +1,394 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932747AbZHZArD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932751AbZHZAs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932747AbZHZArD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932720AbZHZArD
+	id S932751AbZHZAs5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932720AbZHZAs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:47:03 -0400
-Received: from newpeace.netnation.com ([204.174.223.7]:44587 "EHLO
-	peace.netnation.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932698AbZHZArB (ORCPT
+	Tue, 25 Aug 2009 20:48:56 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:58781 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932236AbZHZAsz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:47:01 -0400
-Date: Tue, 25 Aug 2009 17:46:58 -0700
-From: Simon Kirby <sim@hostway.ca>
-To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: [2.6.30.4] XFS-related BUG and hang via shrink_icache_memory
-Message-ID: <20090826004658.GA30929@hostway.ca>
+	Tue, 25 Aug 2009 20:48:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=t63UW71jN6k5gZiH4O2byDbPw88TG1Gkagldq9qUabE0jhiNNB4nIP3Ud/Au7DvvWY
+         6kQ0eyIXLNAjG/Z0kecmqOvsI+1W3DWN4RW05KmVPvvRBcMAw7mK/evBXwe92WRebhHj
+         X5Fou+yTs8XBViS2Ivy3G1fyguYNeC/fyVxlw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Date: Wed, 26 Aug 2009 02:48:55 +0200
+Message-ID: <8a1bd2320908251748u324ae5e6g7015069180253db3@mail.gmail.com>
+Subject: PROBLEM: Epoll frequently fails to notify connects at connect bursts
+From: Will Brown <dr.hfuhruhurr@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On an NFS storage server, we started using some XFS filesystems along
-with many other EXT3 (on LVM on AOE).  The following bug has occurred
-twice, with the machine hanging immediately after (console full of
-scrolling oopses or bugs -- haven't seen it myself -- after this):
+PLEASE CC: ME ON ANY REPLIES, thank you.
 
-Aug 25 16:16:15 nas03 kernel: kernel BUG at lib/radix-tree.c:485!
-Aug 25 16:16:15 nas03 kernel: CPU 1 
-Aug 25 16:16:15 nas03 kernel: Pid: 417, comm: kswapd0 Not tainted 2.6.30.4-hw #1 PowerEdge 1950
-Aug 25 16:16:15 nas03 kernel: RIP: 0010:[<ffffffff8046b4f2>]  [<ffffffff8046b4f2>] radix_tree_tag_set+0xa2/0xb0
-Aug 25 16:16:15 nas03 kernel: RSP: 0018:ffff88022fb1dc78  EFLAGS: 00010246
-Aug 25 16:16:15 nas03 kernel: RAX: 000000000000001e RBX: 0000000000000000 RCX: ffff8801d2f855c8
-Aug 25 16:16:15 nas03 kernel: RDX: 0000000000000000 RSI: 000000000000009e RDI: ffff88022c704530
-Aug 25 16:16:15 nas03 kernel: RBP: ffff88022fb1dc80 R08: 000000000000001e R09: 0000000000000000
-Aug 25 16:16:15 nas03 kernel: R10: 0000000000000000 R11: 0000000000000001 R12: ffff8801385a6180
-Aug 25 16:16:15 nas03 kernel: R13: ffff88022cb56800 R14: 000000000000000f R15: 0000000000000080
-Aug 25 16:16:15 nas03 kernel: FS:  0000000000000000(0000) GS:ffff88002804d000(0000) knlGS:0000000000000000
-Aug 25 16:16:15 nas03 kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-Aug 25 16:16:15 nas03 kernel: CR2: 00007f759ae1dae0 CR3: 0000000000201000 CR4: 00000000000006e0
-Aug 25 16:16:15 nas03 kernel:  ffff88022c7044f0 ffff88022fb1dcb0 ffffffff80439198 ffff88022fb1dcc0
-Aug 25 16:16:15 nas03 kernel:  ffff8801385a6180 ffff8801385a6300 ffff88022fb1dd60 ffff88022fb1dcd0
-Aug 25 16:16:15 nas03 kernel:  ffffffff80429cbb ffff88022fb1dce0 ffff8801385a6300 ffff88022fb1dcf0
-Aug 25 16:16:15 nas03 kernel: Call Trace:
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff80439198>] xfs_inode_set_reclaim_tag+0x78/0xa0
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff80429cbb>] xfs_reclaim+0x5b/0xb0
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff80437ce8>] xfs_fs_destroy_inode+0x38/0x60
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff802c6e0e>] destroy_inode+0x2e/0x50
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff802c7206>] dispose_list+0x96/0x110
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff802c743e>] shrink_icache_memory+0x1be/0x2b0
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff80290d25>] shrink_slab+0x125/0x180
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff802915d9>] kswapd+0x3c9/0x5c0
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff8028ee80>] ? isolate_pages_global+0x0/0x290
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff80702e11>] ? thread_return+0x3f/0x63e
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff80256790>] ? autoremove_wake_function+0x0/0x40
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff80291210>] ? kswapd+0x0/0x5c0
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff8095c140>] ? early_idt_handler+0x0/0x71
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff8025637a>] kthread+0x5a/0x90
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff8020ce0a>] child_rip+0xa/0x20
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff8095c140>] ? early_idt_handler+0x0/0x71
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff80256320>] ? kthread+0x0/0x90
-Aug 25 16:16:15 nas03 kernel:  [<ffffffff8020ce00>] ? child_rip+0x0/0x20
-Aug 25 16:16:15 nas03 kernel: Code: 4d 85 d2 74 26 41 ff cb 75 c4 4d 85 d2 74 16 8b 47 04 8d 4b 15 ba 01 00 00 00 d3 e2 85 c2 75 05 09 d0 89 47 04 5b c9 4c 89 d0 c3 <0f> 0b eb fe 0f 0b eb fe 66 66 90 66 66 90 55 48 89 e5 41 57 41 
+*** 1. Epoll frequently fails to notify connects at connect bursts
 
+*** 2. Sometimes, when several connects come in quickly, epoll
+establishes tcp connections (according to 'netstat') but then fails to
+notify the application by returning from epoll_wait(). In those cases
+a subsequent connection or an EPOLLIN or EPOLLOUT event can cause a
+return from epoll_wait(), which then causes the previously ignored
+connection to be reported. But then the more recent event is not
+notified, the whole sequence lags and everything gets out of whack.
+The problems can easily be reproduced on my Ubuntu machine which runs
+a kernel version 2.6.28 using supplied test program. I also have a
+Ubuntu hosted in VMWare running a 2.6.27 version kernel, which appears
+to NOT have the same problem.
 
->>RIP; ffffffff8046b4f2 <radix_tree_tag_set+a2/b0>   <=====
+*** 3. Keywords: epoll
 
->>RCX; ffff8801d2f855c8 <phys_startup_64+ffff8801d2d855c8/ffffffff80000000>
->>RDI; ffff88022c704530 <phys_startup_64+ffff88022c504530/ffffffff80000000>
->>RBP; ffff88022fb1dc80 <phys_startup_64+ffff88022f91dc80/ffffffff80000000>
->>R12; ffff8801385a6180 <phys_startup_64+ffff8801383a6180/ffffffff80000000>
->>R13; ffff88022cb56800 <phys_startup_64+ffff88022c956800/ffffffff80000000>
+*** 4.1 Kernel version:
+Linux version 2.6.28-15-generic (buildd@palmer) (gcc version 4.3.3
+(Ubuntu 4.3.3-5ubuntu4) ) #49-Ubuntu SMP Tue Aug 18 18:40:08 UTC 2009
 
-Trace; ffffffff80439198 <xfs_inode_set_reclaim_tag+78/a0>
-Trace; ffffffff80429cbb <xfs_reclaim+5b/b0>
-Trace; ffffffff80437ce8 <xfs_fs_destroy_inode+38/60>
-Trace; ffffffff802c6e0e <destroy_inode+2e/50>
-Trace; ffffffff802c7206 <dispose_list+96/110>
-Trace; ffffffff802c743e <shrink_icache_memory+1be/2b0>
-Trace; ffffffff80290d25 <shrink_slab+125/180>
-Trace; ffffffff802915d9 <kswapd+3c9/5c0>
-Trace; ffffffff8028ee80 <isolate_pages_global+0/290>
-Trace; ffffffff80702e11 <thread_return+3f/63e>
-Trace; ffffffff80256790 <autoremove_wake_function+0/40>
-Trace; ffffffff80291210 <kswapd+0/5c0>
-Trace; ffffffff8095c140 <early_idt_handler+0/71>
-Trace; ffffffff8025637a <kthread+5a/90>
-Trace; ffffffff8020ce0a <child_rip+a/20>
-Trace; ffffffff8095c140 <early_idt_handler+0/71>
-Trace; ffffffff80256320 <kthread+0/90>
-Trace; ffffffff8020ce00 <child_rip+0/20>
+*** 5. Most recent working kernel
+A 2.6.27 version kernel running in Ubuntu on VMWare seems to be working fine:
+Linux version 2.6.27-11-generic (buildd@rothera) (gcc version 4.3.2
+(Ubuntu 4.3.2-1ubuntu11) ) #1 SMP Thu Jan 29 19:24:39 UTC 2009
 
-Code;  ffffffff8046b4c7 <radix_tree_tag_set+77/b0>
-0000000000000000 <_RIP>:
-Code;  ffffffff8046b4c7 <radix_tree_tag_set+77/b0>
-   0:   4d 85 d2                  test   %r10,%r10
-Code;  ffffffff8046b4ca <radix_tree_tag_set+7a/b0>
-   3:   74 26                     je     2b <_RIP+0x2b>
-Code;  ffffffff8046b4cc <radix_tree_tag_set+7c/b0>
-   5:   41 ff cb                  dec    %r11d
-Code;  ffffffff8046b4cf <radix_tree_tag_set+7f/b0>
-   8:   75 c4                     jne    ffffffffffffffce <_RIP+0xffffffffffffffce>
-Code;  ffffffff8046b4d1 <radix_tree_tag_set+81/b0>
-   a:   4d 85 d2                  test   %r10,%r10
-Code;  ffffffff8046b4d4 <radix_tree_tag_set+84/b0>
-   d:   74 16                     je     25 <_RIP+0x25>
-Code;  ffffffff8046b4d6 <radix_tree_tag_set+86/b0>
-   f:   8b 47 04                  mov    0x4(%rdi),%eax
-Code;  ffffffff8046b4d9 <radix_tree_tag_set+89/b0>
-  12:   8d 4b 15                  lea    0x15(%rbx),%ecx
-Code;  ffffffff8046b4dc <radix_tree_tag_set+8c/b0>
-  15:   ba 01 00 00 00            mov    $0x1,%edx
-Code;  ffffffff8046b4e1 <radix_tree_tag_set+91/b0>
-  1a:   d3 e2                     shl    %cl,%edx
-Code;  ffffffff8046b4e3 <radix_tree_tag_set+93/b0>
-  1c:   85 c2                     test   %eax,%edx
-Code;  ffffffff8046b4e5 <radix_tree_tag_set+95/b0>
-  1e:   75 05                     jne    25 <_RIP+0x25>
-Code;  ffffffff8046b4e7 <radix_tree_tag_set+97/b0>
-  20:   09 d0                     or     %edx,%eax
-Code;  ffffffff8046b4e9 <radix_tree_tag_set+99/b0>
-  22:   89 47 04                  mov    %eax,0x4(%rdi)
-Code;  ffffffff8046b4ec <radix_tree_tag_set+9c/b0>
-  25:   5b                        pop    %rbx
-Code;  ffffffff8046b4ed <radix_tree_tag_set+9d/b0>
-  26:   c9                        leaveq 
-Code;  ffffffff8046b4ee <radix_tree_tag_set+9e/b0>
-  27:   4c 89 d0                  mov    %r10,%rax
-Code;  ffffffff8046b4f1 <radix_tree_tag_set+a1/b0>
-  2a:   c3                        retq   
-Code;  ffffffff8046b4f2 <radix_tree_tag_set+a2/b0>   <=====
-  2b:   0f 0b                     ud2a      <=====
-Code;  ffffffff8046b4f4 <radix_tree_tag_set+a4/b0>
-  2d:   eb fe                     jmp    2d <_RIP+0x2d>
-Code;  ffffffff8046b4f6 <radix_tree_tag_set+a6/b0>
-  2f:   0f 0b                     ud2a   
-Code;  ffffffff8046b4f8 <radix_tree_tag_set+a8/b0>
-  31:   eb fe                     jmp    31 <_RIP+0x31>
-Code;  ffffffff8046b4fa <radix_tree_tag_set+aa/b0>
-  33:   66 66 90                  xchg   %ax,%ax
-Code;  ffffffff8046b4fd <radix_tree_tag_set+ad/b0>
-  36:   66 66 90                  xchg   %ax,%ax
-Code;  ffffffff8046b500 <radix_tree_delete+0/270>
-  39:   55                        push   %rbp
-Code;  ffffffff8046b501 <radix_tree_delete+1/270>
-  3a:   48 89 e5                  mov    %rsp,%rbp
-Code;  ffffffff8046b504 <radix_tree_delete+4/270>
-  3d:   41 57                     push   %r15
-Code;  ffffffff8046b506 <radix_tree_delete+6/270>
-  3f:   41                        rex.B
+*** 7. How to reproduce the problem.
+In my broken environment the problem is easily (almost always)
+reproduced by simply making a number of independent connects issuing
+this compound statement
+nc localhost 4712 & \
+nc localhost 4712 & \
+nc localhost 4712 & \
+nc localhost 4712 &
 
-This is stock 2.6.30.4, x86_64, serving files over NFS.  Perhaps
-something in the shrink_icache_memory path (which happens to get hit a
-lot with our particular load patterns) isn't safe with XFS? 
+In fact, if I try a few times, two 'nc' invocations suffice, but the
+chance of triggering the problem increases with the number of
+connects. Using four 'nc' invocations the problem occurs about 50
+percent of the time. When issuing ten or more the problem appears
+almost always. Issuing them one by one on the command line will not
+trigger the problem, it has to be done in a rapid sequence.
 
-I'm a bit low on sleep so I'm sure I'm missing some info.  Please ask. :)
+An example of a "hang"
 
-Simon-
+First issue the multiple connect statement and watch the jobs get created
+
+$ nc localhost 4712 & nc localhost 4712 & nc localhost 4712 & nc
+localhost 4712 &
+[1] 4142
+[2] 4143
+[3] 4144
+[4] 4145
+
+To these connects, the test program this time responds that 3 connects
+were made (not 4); they were accepted and assigned to sockets 5, 6,
+and 7:
+----------------------------
+Listening for connections
+Epoll returns 1
+Events: 0x1
+EPOLLIN(1): Accepted connection and assigned socket 5
+Epoll returns 1
+Events: 0x1
+EPOLLIN(1): Accepted connection and assigned socket 6
+Epoll returns 1
+Events: 0x1
+EPOLLIN(1): Accepted connection and assigned socket 7
+----------------------------
+
+However, netstat reports four (pairs of) established connections
+
+$ netstat | grep 4712
+tcp        0      0 localhost:53481         localhost:4712          ESTABLISHED
+tcp        0      0 localhost:53484         localhost:4712          ESTABLISHED
+tcp        0      0 localhost:4712          localhost:53482         ESTABLISHED
+tcp        0      0 localhost:4712          localhost:53481         ESTABLISHED
+tcp        0      0 localhost:53482         localhost:4712          ESTABLISHED
+tcp        0      0 localhost:4712          localhost:53483         ESTABLISHED
+tcp        0      0 localhost:53483         localhost:4712          ESTABLISHED
+tcp        0      0 localhost:4712          localhost:53484         ESTABLISHED
+
+The test program is appended at the end of this message.
+
+*** 8.1 ver_linux output:
+
+Linux B17845-1 2.6.28-15-generic #49-Ubuntu SMP Tue Aug 18 18:40:08
+UTC 2009 i686 GNU/Linux
+
+Gnu C                  4.3.3
+Gnu make               3.81
+binutils               2.19.1
+util-linux             2.14.2
+mount                  support
+module-init-tools      3.7-pre9
+e2fsprogs              1.41.4
+reiserfsprogs          3.6.19
+Linux C Library        2.9
+Dynamic linker (ldd)   2.9
+Procps                 3.2.7
+Net-tools              1.60
+Kbd                    1.14.1
+Sh-utils               6.10
+Modules Loaded         authenc esp4 xfrm4_mode_tunnel video output
+input_polldev deflate zlib_deflate ctr twofish twofish_common camellia
+serpent blowfish des_generic cbc aes_i586 aes_generic xcbc rmd160
+sha256_generic sha1_generic crypto_null af_key lp iTCO_wdt
+iTCO_vendor_support i3000_edac ppdev edac_core serio_raw shpchp
+parport_pc parport pcspkr e1000e floppy fbcon tileblit font bitblit
+softcursor
+
+*** 8.2 /proc/cpuinfo:
+
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
+stepping	: 6
+cpu MHz		: 1862.137
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+apicid		: 0
+initial apicid	: 0
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
+constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx est
+tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
+bogomips	: 3724.27
+clflush size	: 64
+power management:
+
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
+stepping	: 6
+cpu MHz		: 1862.137
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 1
+cpu cores	: 2
+apicid		: 1
+initial apicid	: 1
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm
+constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl vmx est
+tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
+bogomips	: 3724.23
+clflush size	: 64
+power management:
+
+*** 8.3 /proc/modules:
+
+authenc 13696 2 - Live 0xf80f2000
+esp4 14208 2 - Live 0xf80e2000
+xfrm4_mode_tunnel 10368 4 - Live 0xf80d3000
+video 25360 0 - Live 0xf80c1000
+output 11008 1 video, Live 0xf80ae000
+input_polldev 11912 0 - Live 0xf8090000
+deflate 10880 0 - Live 0xf803e000
+zlib_deflate 28312 1 deflate, Live 0xf802f000
+ctr 12160 0 - Live 0xf801e000
+twofish 15104 0 - Live 0xf800f000
+twofish_common 22016 1 twofish, Live 0xf8000000
+camellia 26752 0 - Live 0xf7feb000
+serpent 27264 0 - Live 0xf7fd5000
+blowfish 16256 0 - Live 0xf7fba000
+des_generic 24832 2 - Live 0xf7fa7000
+cbc 11648 2 - Live 0xf7f95000
+aes_i586 15744 0 - Live 0xf7f77000
+aes_generic 35880 1 aes_i586, Live 0xf7f61000
+xcbc 12808 0 - Live 0xf7f4f000
+rmd160 18944 0 - Live 0xf7f3f000
+sha256_generic 20352 0 - Live 0xf7f1f000
+sha1_generic 10368 0 - Live 0xf7f01000
+crypto_null 11008 0 - Live 0xf7d70000
+af_key 35860 2 - Live 0xf7d34000
+lp 17156 0 - Live 0xf7cb4000
+iTCO_wdt 19108 0 - Live 0xf7cc8000
+iTCO_vendor_support 11652 1 iTCO_wdt, Live 0xf7c5f000
+i3000_edac 12808 0 - Live 0xf7c71000
+ppdev 15620 0 - Live 0xf7c46000
+edac_core 47404 3 i3000_edac, Live 0xf7d74000
+serio_raw 13444 0 - Live 0xf7d2e000
+shpchp 40212 0 - Live 0xf7d22000
+parport_pc 40100 1 - Live 0xf7c94000
+parport 42220 3 lp,ppdev,parport_pc, Live 0xf7c87000
+pcspkr 10496 0 - Live 0xf7c3a000
+e1000e 121136 0 - Live 0xf7cdd000
+floppy 64324 0 - Live 0xf7ca2000
+fbcon 46112 0 - Live 0xf7c79000
+tileblit 10752 1 fbcon, Live 0xf7c65000
+font 16384 1 fbcon, Live 0xf7c59000
+bitblit 13824 1 fbcon, Live 0xf7c4c000
+softcursor 9984 1 bitblit, Live 0xf7c41000
+
+*** X. TEST code
+
+(Simply compile with gcc and run ./a.out)
+
+/**** Test program *************************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/epoll.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+int main(int argc, char **argv)
+{
+    /**
+    * Set up a listener socket
+    */
+
+    int listener = socket(PF_INET, SOCK_STREAM, 0);
+    if (listener < 0) {
+        perror("socket");
+        exit(EXIT_FAILURE);
+    }
+
+    /**
+    * Make listener non-blocking
+    */
+
+    int rc = fcntl(listener, F_GETFL);
+    if (rc < 0) {
+        perror("fcntl(F_GETFL)");
+        exit(EXIT_FAILURE);
+    }
+    rc = fcntl(listener, F_SETFL, rc | O_NONBLOCK);
+    if (rc < 0) {
+        perror("fcntl(F_SETFL)");
+        exit(EXIT_FAILURE);
+    }
+
+    /**
+    * Bind listener to port 4712
+    */
+
+    struct sockaddr_in sa;
+    socklen_t size_sa = sizeof sa;
+    memset(&sa, 0, size_sa);
+
+    sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);    /* Listen on
+localhost only */
+    sa.sin_port = htons(4712);          /* Using specified port */
+    if (bind(listener, (struct sockaddr *) &sa, size_sa) < 0) {
+        perror("bind");
+        exit(EXIT_FAILURE);
+    }
+
+    /**
+    * Create epoll file descriptor.
+    * Explain this size value 20 ...
+    */
+
+    int epollfd = epoll_create(20);
+    if (epollfd < 0) {
+        perror("epoll_create");
+        exit(EXIT_FAILURE);
+    }
+
+    /**
+    * Add listener to epoll set, trigger by incoming data (EDGE mode)
+    */
+
+    struct epoll_event event_config;
+    event_config.events = EPOLLET | EPOLLIN;
+    event_config.data.ptr = NULL;
+    rc = epoll_ctl(epollfd, EPOLL_CTL_ADD, listener, &event_config);
+    if (rc < 0) {
+        perror("epoll_ctl");
+        exit(EXIT_FAILURE);
+    }
+
+    /**
+    * Start listening, queue length 20
+    */
+
+    if (listen(listener, 20) < 0) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Listening for connections\n");
+
+    struct epoll_event event_list[50];
+    struct epoll_event *ev;
+
+    while (1) {
+        rc = epoll_wait(epollfd, event_list, 50, -1);
+        if (rc < 0) {
+            perror("epoll_wait rc<0");
+            exit(EXIT_FAILURE);
+        }
+        printf("Epoll returns %d\n", rc);
+
+        int i;
+        for (i = 0; i < rc; i++) {
+            ev = event_list + i;
+
+            printf("Events: 0x%x\n",  ev->events);
+
+            if (ev->events &   EPOLLHUP) {
+                printf("EPOLLHUP: ");
+                ev->events &= ~EPOLLHUP;
+            }
+
+            if (ev->events &   EPOLLIN) {
+                printf("EPOLLIN(1): ");
+                ev->events &= ~EPOLLIN;
+
+                struct sockaddr_in sa;
+                socklen_t size_sa = sizeof sa;
+                memset(&sa, 0, size_sa);
+
+                int connection_sock = accept(listener, (struct
+sockaddr *) &sa, &size_sa);
+                if (connection_sock < 0) {
+                    perror("accept");
+                    exit(EXIT_FAILURE);
+                }
+
+                printf("Accepted connection and assigned socket %d\n",
+connection_sock);
+            }
+
+            if (ev->events &   EPOLLOUT) {
+                printf("EPOLLOUT(4): ");
+                ev->events &= ~EPOLLOUT;
+            }
+
+            if (ev->events) {
+                printf("*** Other events");
+            }
+        }
+    }
+}
