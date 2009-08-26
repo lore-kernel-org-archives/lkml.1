@@ -1,99 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZHZKFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932201AbZHZKKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbZHZKFS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 06:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZHZKFS
+	id S932201AbZHZKKR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 06:10:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756758AbZHZKKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 06:05:18 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59408 "EHLO gir.skynet.ie"
+	Wed, 26 Aug 2009 06:10:16 -0400
+Received: from mga03.intel.com ([143.182.124.21]:53560 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755339AbZHZKFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 06:05:17 -0400
-Date: Wed, 26 Aug 2009 11:05:19 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Alexey Korolev <akorolex@gmail.com>, Eric Munson <linux-mm@mgebm.net>,
-       Alexey Korolev <akorolev@infradead.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
-Message-ID: <20090826100518.GC10955@csn.ul.ie>
-References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org> <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com> <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com> <20090819100553.GE24809@csn.ul.ie> <202cde0e0908200003w43b91ac3v8a149ec1ace45d6d@mail.gmail.com> <20090825104731.GA21335@csn.ul.ie> <1251198054.15197.40.camel@pasglop> <20090825111031.GD21335@csn.ul.ie> <1251280685.1379.67.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1251280685.1379.67.camel@pasglop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1756688AbZHZKKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 06:10:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="180324887"
+Subject: Re: Linux 2.6.31-rc7
+From: ykzhao <yakui.zhao@intel.com>
+To: mailing54 <mailing54@plzk.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Eric Anholt <eric@anholt.net>, mailing54 <mailing54@plzk.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
+       "Ma, Ling" <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Keith Packard <keithp@keithp.com>
+In-Reply-To: <20090826035840.GA16894@zhen-devel.sh.intel.com>
+References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain>
+	 <4A941E8B.8080902@plzk.org>
+	 <alpine.LFD.2.01.0908251057260.3218@localhost.localdomain>
+	 <4A94599F.9020508@plzk.org>
+	 <alpine.LFD.2.01.0908251456530.3218@localhost.localdomain>
+	 <1251239637.26348.20.camel@gaiman.anholt.net>
+	 <20090826015127.GA1402@zhen-devel.sh.intel.com>
+	 <alpine.LFD.2.01.0908252027300.3218@localhost.localdomain>
+	 <20090826035840.GA16894@zhen-devel.sh.intel.com>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Wed, 26 Aug 2009 18:09:58 +0800
+Message-Id: <1251281398.3623.76.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 07:58:05PM +1000, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-08-25 at 12:10 +0100, Mel Gorman wrote:
-> > On Tue, Aug 25, 2009 at 09:00:54PM +1000, Benjamin Herrenschmidt wrote:
-> > > On Tue, 2009-08-25 at 11:47 +0100, Mel Gorman wrote:
+On Wed, 2009-08-26 at 11:58 +0800, Zhenyu Wang wrote:
+Hi
+    From the config file it seems that the CONFIG_FRAMEBUFFER_CONSOLE is
+set as m.
+    Will you please set it to y and see whether the black screen
+happens?
+  
+Thanks.
+   Yakui
+> On 2009.08.25 20:33:32 -0700, Linus Torvalds wrote:
+> > On Wed, 26 Aug 2009, Zhenyu Wang wrote:
+> > >
+> > > > In my experience, the BIOS setup doesn't reflect what outputs should be
+> > > > used at runtime, and certainly not the correct configuration of the
+> > > > enabled outputs.  For example, if we went to this, the giant monitor
+> > > > attached to my laptop that I actually look at would go unused.
 > > > 
-> > > > Why? One hugepage of default size will be one TLB entry. Each hugepage
-> > > > after that will be additional TLB entries so there is no savings on
-> > > > translation overhead.
-> > > > 
-> > > > Getting contiguous pages beyond the hugepage boundary is not a matter
-> > > > for GFP flags.
-> > > 
-> > > Note: This patch reminds me of something else I had on the backburner
-> > > for a while and never got a chance to actually implement...
-> > > 
-> > > There's various cases of drivers that could have good uses of hugetlb
-> > > mappings of device memory. For example, framebuffers.
-> > > 
+> > > yeah, normally VBIOS startup just needs or only can driver one pipe, so
+> > > we don't have any pre knowledge except detect everything.
 > > 
-> > Where is the buffer located? If it's in kernel space, than any contiguous
-> > allocation will be automatically backed by huge PTEs. As framebuffer allocation
-> > is probably happening early in boot, just calling alloc_pages() might do?
+> > Umm. What's your guys point, exactly?
+> > 
 > 
-> It's not a memory buffer, it's MMIO space (device memory, off your PCI
-> bus for example).
+> We can't depend on any BIOS display config as you noted before our driver.
+> And our driver does more flexible config than VBIOS does.
 > 
-
-Ah right, so you just want to set up huge PTEs within the MMIO space?
-
-> > Adam Litke at one point posted a pagetable-abstraction that would have
-> > been the first step on a path like this. It hurt the normal fastpath
-> > though and was ultimately put aside.
+> > The fact is, as-is, YOU DETECT THE WRONG OUTPUTS!
+> > 
+> > If you actually detected things _right_, none of this would be an issue. 
+> > But you don't. And you seem to have a really hard time even admitting 
+> > that. You try to re-detect things, and you SCREW UP.
+> > 
 > 
-> Which is why I think we should stick to just splitting hugetlb which
-> will not affect the normal path at all. Normal path for normal page,
-> HUGETLB VMAs for other sizes, whether they are backed with memory or by
-> anything else.
+> We know we have problem on Mac mini, this issue has been known for a while.
+> And Keith also posted patch at
+> 	http://lists.freedesktop.org/archives/intel-gfx/2009-June/002843.html
+> but I don't know the status of this now.
 > 
-
-Yeah, in this case I see why you want a hugetlbfs VMA, a huge-pte-backed VMA
-and everything else. They are treated differently. I don't think it's exactly
-what is required in the thread there though because there is a RAM-backed
-buffer. For that, hugetlbfs still makes sense just to ensure the reservations
-exist so that faults do not spuriously fail.  MMIO doesn't care because the
-physical backing exists and is vaguely similar to MAP_SHARED.
-
-> > It's the sort of thing that has been resisted in the past, largely
-> > because the only user at the time was about transparent hugepage
-> > promotion/demotion. It would need to be a really strong incentive to
-> > revive the effort.
+> > > we already have some mac relate bugs open, but please report on it so we
+> > > do have people with hardware to try and response. We have recently got a
+> > > MacBook, yakui is looking after the modesetting issue on it.
+> > 
+> > Quite frankly, I've reported these things several times. I've been open to 
+> > try patches. Nothing has ever come out of it. 
+> > 
+> > I have a Mac Mini that I reported as broken over a month ago. I have a 
+> > Westemere I've reported as not doing any DDC probing - and that I have to 
+> > disable the LVDS probing on entirely in order to not make KMS set up the 
+> > display to go to a non-existent LVDS port.
+> > 
+> > You claim that you "detect everything", but quite frankly, you don't. The 
+> > KMS code seems to assume that if it's a mobile chipset, it should have an 
+> > LVDS output - and whether anything is connected to that or not is totally 
+> > immaterial. There's clearly _zero_ "detection" going on.
+> > 
 > 
-> Why ? I'm not proposing to hack the normal path. Just splitting
-> hugetlbfs in two which is reasonably easy to do, to allow drivers who
-> map large chunks of MMIO space to use larger page sizes.
-> 
-
-That is a bit more reasonable. It would help the case of MMIO for sure.
-
-> This is the case of pretty much any discrete video card, a chunk of
-> RDMA-style devices, and possibly more.
-> 
-> It's a reasonably simple change that has 0 effect on the non-hugetlb
-> path. I think I'll just have to bite the bullet and send a demo patch
-> when I'm no longer bogged down :-)
+> We've tried many ways to detect LVDS, but none is stable or actually work for
+> every chip. But now we have DMI quirks for some known no LVDS machine (including
+> Mac mini), and we detect through ACPI LID object for LVDS exist. 
 > 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
