@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751208AbZHZOpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751252AbZHZOqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751208AbZHZOpp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbZHZOpn
+	id S1751252AbZHZOqK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbZHZOqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:45:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48379 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbZHZOpm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:45:42 -0400
-Subject: [RFC][PATCH -rt] sched: fully ignore RT tasks for CFS
- load-balancing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Aug 2009 16:44:35 +0200
-Message-Id: <1251297875.18584.5.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 26 Aug 2009 10:46:09 -0400
+Received: from tanas.ca ([206.248.136.31]:54932 "EHLO tanas.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750848AbZHZOqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 10:46:07 -0400
+MIME-Version: 1.0
+Date: Wed, 26 Aug 2009 10:46:06 -0400
+From: Andrei Tanas <andrei@tanas.ca>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: NeilBrown <neilb@suse.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: MD/RAID: what's wrong with sector =?UTF-8?Q?=31=39=35=33=35=31=39=39?=
+ =?UTF-8?Q?=33=35=3F?=
+In-Reply-To: <4A950FA6.4020408@redhat.com>
+References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com>
+Message-ID: <92cb16daad8278b0aa98125b9e1d057a@localhost>
+User-Agent: RoundCube Webmail/0.2.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since -rt runs IRQs and SoftIRQs as RT tasks and load-balancing is done
-from softirq context, there is always at least one RT task (and very
-likely multiple) running when we balance.
+On Wed, 26 Aug 2009 06:34:14 -0400, Ric Wheeler <rwheeler@redhat.com>
+wrote:
+> On 08/25/2009 11:45 PM, Andrei Tanas wrote:
+>>>>> I would suggest that Andrei might try to write and clear the IO
+>>>>>          
+>>> error
+>>>      
+>>>>> at that
+>>>>> offset. You can use Mark Lord's hdparm to clear a specific sector or
+>>>>> just do the
+>>>>> math (carefully!) and dd over it. It the write succeeds (without
+>>>>> bumping your
+>>>>> remapped sectors count) this is a likely match to this problem,
+>>>>>          
+>>>> I've tried dd multiple times, it always succeeds, and the relocated
+>>>>        
+>>> sector
+>>>      
+>>>> count is currently 1 on this drive, even though this particular fault
+>>>> happened at least 3 times so far.
+>>>>
+>>>>        
+>>> I would bump that count way up (say to 2) and see if you have an
+>>> issue...
+>>>      
+>> Not sure what you mean by this: how can I artificially bump the
+relocated
+>> sector count?
+>>
+>>    
+> Sorry - you need to set the tunable:
+> 
+> /sys/block/mdX/md/safe_mode_delay
+> 
+> to something like "2" to prevent that sector from being a hotspot...
 
-The current (and totally broken) interaction between RT tasks and CFS
-load-balancing makes it so that we'll try to evacuate a significant
-amount of tasks due to RT tasks being runnable.
+I did that as soon as you suggested that it's possible to tune it. The
+array is still being rebuilt (it's a fairly busy machine, so rebuilding is
+slow). I'll monitor it, but I don't expect to see the results soon as even
+with the default value of 0.2 it used to happen once in several weeks.
 
-Solve this in another broken way by not accounting RT tasks at all.
+On the other note: is it possible that the drive was actually working
+properly but was not given enough time to complete the write request? These
+newer drives have 32MB cache but the same rotational speed and seek times
+as the older ones so they must need more time to flush their cache?
 
-This will likely break another class of cases, but until we can properly
-fix this, we might as well do this.
-
-Chucked-on-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched_rt.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index adcbc68..385d31f 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -926,8 +926,6 @@ static void enqueue_task_rt(struct rq *rq, struct
-task_struct *p, int wakeup)
- 
- 	if (!task_current(rq, p) && p->rt.nr_cpus_allowed > 1)
- 		enqueue_pushable_task(rq, p);
--
--	inc_cpu_load(rq, p->se.load.weight);
- }
- 
- static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int
-sleep)
-@@ -942,8 +940,6 @@ static void dequeue_task_rt(struct rq *rq, struct
-task_struct *p, int sleep)
- 	dequeue_rt_entity(rt_se);
- 
- 	dequeue_pushable_task(rq, p);
--
--	dec_cpu_load(rq, p->se.load.weight);
- }
- 
- /*
+Andrei.
 
