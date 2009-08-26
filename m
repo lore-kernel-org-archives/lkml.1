@@ -1,77 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbZHZAVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932460AbZHZAVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932265AbZHZAVV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbZHZAVU
+	id S932460AbZHZAVb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:21:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932375AbZHZAVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:21:20 -0400
-Received: from mail.lang.hm ([64.81.33.126]:43565 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754123AbZHZAVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:21:19 -0400
-Date: Tue, 25 Aug 2009 17:20:13 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-In-Reply-To: <20090826001206.GL4300@elf.ucw.cz>
-Message-ID: <alpine.DEB.2.00.0908251718141.28411@asgard.lang.hm>
-References: <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz>
- <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm> <20090826001206.GL4300@elf.ucw.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 25 Aug 2009 20:21:30 -0400
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:54475 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932366AbZHZAV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 20:21:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=VjoyeZDAJ4hG0eAf2ToWCJJwUJm0rjRRKb0uHSKT6D5sm2CZdZriyzS60fbV/j/f5/
+         sYv49429T2J9YVIwXvOM0pGI06B5CFned1Ww0Qo/y9aaFBjyh6ETn8NxDuo/pMI4XlK9
+         ADwtU/oostvAM3SQTCZ/aKKmE5cmeG2zoU1dE=
+Message-ID: <4A94803A.5060408@gmail.com>
+Date: Tue, 25 Aug 2009 17:22:18 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+References: <alpine.DEB.2.00.0908181926410.28398@gandalf.stny.rr.com> <4A8B4607.6090303@gmail.com> <4A8B5113.20102@cn.fujitsu.com> <4A8FA2BD.4030707@gmail.com> <4A91FDED.9050801@cn.fujitsu.com> <1251093523.7538.118.camel@twins> <4A922F82.9080000@cn.fujitsu.com> <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com> <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com> <20090825085919.GB14003@elte.hu>
+In-Reply-To: <20090825085919.GB14003@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Pavel Machek wrote:
-
-> On Tue 2009-08-25 16:56:40, david@lang.hm wrote:
->> On Wed, 26 Aug 2009, Pavel Machek wrote:
->>
->>> There are storage devices that high highly undesirable properties
->>> when they are disconnected or suffer power failures while writes are
->>> in progress; such devices include flash devices and MD RAID 4/5/6
->>> arrays.
->>
->> change this to say 'degraded MD RAID 4/5/6 arrays'
->>
->> also find out if DM RAID 4/5/6 arrays suffer the same problem (I strongly
->> suspect that they do)
+Ingo Molnar wrote:
+> * Justin Mattock<justinmattock@gmail.com>  wrote:
 >
-> I changed it to say MD/DM.
->
->> then you need to add a note that if the array becomes degraded before a
->> scrub cycle happens previously hidden damage (that would have been
->> repaired by the scrub) can surface.
->
-> I'd prefer not to talk about scrubing and such details here. Better
-> leave warning here and point to MD documentation.
-
-I disagree with that, the way you are wording this makes it sound as if 
-raid isn't worth it. if you are going to say that raid is risky you need 
-to properly specify when it is risky
-
->>> THESE devices have the property of potentially corrupting blocks being
->>> written at the time of the power failure,
+>    
+>> O.K. I feel better, deleted
+>> my system, and threw in a minimal built system
+>> with only the bare essentials to boot.
+>> (just to make sure things are correct).
 >>
->> this is true of all devices
+>> unfortunately after building rc6 I'm still hitting
+>> this. really am not sure why this is happening.
+>>      
 >
-> Actually I don't think so. I believe SATA disks do not corrupt even
-> the sector they are writing to -- they just have big enough
-> capacitors. And yes I believe ext3 depends on that.
+> Could you please double-check the bisection result by doing this:
+>
+>   git revert af6af30c0f
+>
+> on the latest kernel and seeing whether that fixes the lockup?
+>
+> Bisections are very efficient and hence very sensitive as well to
+> minimal errors. Just one small mistake near the end of a bisection
+> can blame the wrong commit.
+>
+> So the best way to double-check such 100%-triggerable crashes is to
+> do the revert. I tried the revert and it can be done fine here.
+>
+> [ _If_ that does not fix the bug then to save time you can
+>     'backtrack' the bisection, instead of re-doing it completely.
+>     I.e. you have your bisection log, re-check the final steps going
+>     backwards. Once you find a discrepancy (i.e. a 'bad' point that
+>     is 'good' or the other way around), redo the bisection log
+>     commands up to that point and continue it up to the end. ]
+>
+> 	Ingo
+>
+>    
+shoot, I did not see your post here.
+when looking at my bisect log, I guess after a
+git bisect reset it clears?
 
-you are incorrect on this.
+Anyways after git bisect had finished
+I looked manually at the commits that it
+had generated
+the one which I had sent in a post previously, and
+this one:
+  9424edc2da097c8589fcc24a72552d33e54be161
 
-ext3 (like every other filesystem) just accepts the risk (zfs makes some 
-attempt to detect such corruption)
+at the time looking at the commit, I see this to be
+more of the cause because of  it being related to elf as so forth,
+but as soon as I reverted this on rc6
+made no difference.(the previous commit fixes this for
+me, on a regular tar.ball as well as in git.
 
-David Lang
+I think at this point since this system is a fresh from scratch
+build,  I think something might be wrong that I'm doing
+(all the CFLAGS, and such are in a previous post).
+
+At the moment I don't have a problem applying a patch
+to the kernel for this. especially since I'm the only one that seems
+to be hitting this, then if more and more reports of this happen
+then we can go from there.
+
+Justin P. Mattock
+
