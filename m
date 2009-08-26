@@ -1,127 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbZHZKBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZHZKFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbZHZKBy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 06:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbZHZKBx
+	id S1756731AbZHZKFS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 06:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZHZKFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 06:01:53 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:58965 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756518AbZHZKBx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 06:01:53 -0400
-Date: Wed, 26 Aug 2009 15:31:18 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 9/15] sched: Check sched_mn_power_savings when setting
-	flags for CPU and MN domains
-Message-ID: <20090826100118.GB22064@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20090820131243.GO29327@alberich.amd.com> <20090820134013.GX29327@alberich.amd.com>
+	Wed, 26 Aug 2009 06:05:18 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:59408 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755339AbZHZKFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 06:05:17 -0400
+Date: Wed, 26 Aug 2009 11:05:19 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Alexey Korolev <akorolex@gmail.com>, Eric Munson <linux-mm@mgebm.net>,
+       Alexey Korolev <akorolev@infradead.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
+Message-ID: <20090826100518.GC10955@csn.ul.ie>
+References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org> <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com> <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com> <20090819100553.GE24809@csn.ul.ie> <202cde0e0908200003w43b91ac3v8a149ec1ace45d6d@mail.gmail.com> <20090825104731.GA21335@csn.ul.ie> <1251198054.15197.40.camel@pasglop> <20090825111031.GD21335@csn.ul.ie> <1251280685.1379.67.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090820134013.GX29327@alberich.amd.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1251280685.1379.67.camel@pasglop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 03:40:13PM +0200, Andreas Herrmann wrote:
+On Wed, Aug 26, 2009 at 07:58:05PM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2009-08-25 at 12:10 +0100, Mel Gorman wrote:
+> > On Tue, Aug 25, 2009 at 09:00:54PM +1000, Benjamin Herrenschmidt wrote:
+> > > On Tue, 2009-08-25 at 11:47 +0100, Mel Gorman wrote:
+> > > 
+> > > > Why? One hugepage of default size will be one TLB entry. Each hugepage
+> > > > after that will be additional TLB entries so there is no savings on
+> > > > translation overhead.
+> > > > 
+> > > > Getting contiguous pages beyond the hugepage boundary is not a matter
+> > > > for GFP flags.
+> > > 
+> > > Note: This patch reminds me of something else I had on the backburner
+> > > for a while and never got a chance to actually implement...
+> > > 
+> > > There's various cases of drivers that could have good uses of hugetlb
+> > > mappings of device memory. For example, framebuffers.
+> > > 
+> > 
+> > Where is the buffer located? If it's in kernel space, than any contiguous
+> > allocation will be automatically backed by huge PTEs. As framebuffer allocation
+> > is probably happening early in boot, just calling alloc_pages() might do?
 > 
-> Use new function sd_balance_for_mn_power() and adapt
-> sd_balance_for_package_power() and sd_power_saving_flags() for correct
-> setting of flags SD_POWERSAVINGS_BALANCE and SD_BALANCE_NEWIDLE in CPU
-> and MN domains.
+> It's not a memory buffer, it's MMIO space (device memory, off your PCI
+> bus for example).
 > 
-> Furthermore add flag SD_SHARE_PKG_RESOURCES to MN domain.
-> Rational: a multi-node processor most likely shares package resources
-> (on Magny-Cours the package constitues a "voltage domain").
-> 
-> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> ---
->  arch/x86/include/asm/topology.h |    3 ++-
->  include/linux/sched.h           |   14 ++++++++++++--
->  2 files changed, 14 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-> index 6d7d133..4a520b8 100644
-> --- a/arch/x86/include/asm/topology.h
-> +++ b/arch/x86/include/asm/topology.h
-> @@ -198,7 +198,8 @@ static inline void setup_node_to_cpumask_map(void) { }
->  				| SD_BALANCE_EXEC	\
->  				| SD_WAKE_AFFINE	\
->  				| SD_WAKE_BALANCE	\
-> -				| sd_balance_for_package_power()\
-> +				| SD_SHARE_PKG_RESOURCES\
-> +				| sd_balance_for_mn_power()\
->  				| sd_power_saving_flags(),\
->  	.last_balance		= jiffies,		\
->  	.balance_interval	= 1,			\
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 5755643..c53bdd8 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -844,9 +844,18 @@ static inline int sd_balance_for_mc_power(void)
->  	return 0;
->  }
-> 
-> +static inline int sd_balance_for_mn_power(void)
-> +{
-> +	if (sched_mc_power_savings || sched_smt_power_savings)
-> +		return SD_POWERSAVINGS_BALANCE;
-> +
-> +	return 0;
 
-This again implies that if SD_POWERSAVINGS_BALANCE is set at any level,
-it must also be set at it's parent.
+Ah right, so you just want to set up huge PTEs within the MMIO space?
 
-With this constraint, there can only be 4 combinations.
-0) SD_POWERSAVINGS_BALANCE not set.
-1) SD_POWERSAVINGS_BALANCE set at SD_LV_CPU.
-2) SD_POWERSAVINGS_BALANCE set at SD_LV_MN and SD_LV_CPU
-3) SD_POWERSAVINGS_BALANCE set at SD_LV_MC, SD_LV_MN and SD_LV_CPU.
+> > Adam Litke at one point posted a pagetable-abstraction that would have
+> > been the first step on a path like this. It hurt the normal fastpath
+> > though and was ultimately put aside.
+> 
+> Which is why I think we should stick to just splitting hugetlb which
+> will not affect the normal path at all. Normal path for normal page,
+> HUGETLB VMAs for other sizes, whether they are backed with memory or by
+> anything else.
+> 
 
-If we could independently decide the aggressiveness of consolidation
-(i.e, 1 or 2), We can do away with these multiple sysfs variables have
-have a single tunable.
+Yeah, in this case I see why you want a hugetlbfs VMA, a huge-pte-backed VMA
+and everything else. They are treated differently. I don't think it's exactly
+what is required in the thread there though because there is a RAM-backed
+buffer. For that, hugetlbfs still makes sense just to ensure the reservations
+exist so that faults do not spuriously fail.  MMIO doesn't care because the
+physical backing exists and is vaguely similar to MAP_SHARED.
 
-Does this make sense ?
+> > It's the sort of thing that has been resisted in the past, largely
+> > because the only user at the time was about transparent hugepage
+> > promotion/demotion. It would need to be a really strong incentive to
+> > revive the effort.
+> 
+> Why ? I'm not proposing to hack the normal path. Just splitting
+> hugetlbfs in two which is reasonably easy to do, to allow drivers who
+> map large chunks of MMIO space to use larger page sizes.
+> 
 
-> +
->  static inline int sd_balance_for_package_power(void)
->  {
-> -	if (sched_mc_power_savings | sched_smt_power_savings)
-> +	if (sched_mn_power_savings || sched_mc_power_savings ||
-> +	    sched_smt_power_savings)
->  		return SD_POWERSAVINGS_BALANCE;
+That is a bit more reasonable. It would help the case of MMIO for sure.
+
+> This is the case of pretty much any discrete video card, a chunk of
+> RDMA-style devices, and possibly more.
 > 
->  	return 0;
-> @@ -860,7 +869,8 @@ static inline int sd_balance_for_package_power(void)
-> 
->  static inline int sd_power_saving_flags(void)
->  {
-> -	if (sched_mc_power_savings | sched_smt_power_savings)
-> +	if (sched_mn_power_savings || sched_mc_power_savings ||
-> +	    sched_smt_power_savings)
->  		return SD_BALANCE_NEWIDLE;
-> 
->  	return 0;
-> -- 
-> 1.6.0.4
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> It's a reasonably simple change that has 0 effect on the non-hugetlb
+> path. I think I'll just have to bite the bullet and send a demo patch
+> when I'm no longer bogged down :-)
 > 
 
 -- 
-Thanks and Regards
-gautham
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
