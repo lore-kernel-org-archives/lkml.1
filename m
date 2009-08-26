@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZHZDpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZHZDqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbZHZDpB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 23:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756629AbZHZDpB
+	id S1756665AbZHZDqV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 23:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbZHZDqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 23:45:01 -0400
-Received: from tanas.ca ([206.248.136.31]:53026 "EHLO tanas.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756621AbZHZDpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 23:45:00 -0400
-From: "Andrei Tanas" <andrei@tanas.ca>
-To: "'Ric Wheeler'" <rwheeler@redhat.com>
-Cc: "'NeilBrown'" <neilb@suse.de>, <linux-kernel@vger.kernel.org>
-References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com>
-In-Reply-To: <4A94A0E6.4020401@redhat.com>
-Subject: RE: MD/RAID: what's wrong with sector 1953519935?
-Date: Tue, 25 Aug 2009 23:45:06 -0400
-Message-ID: <005401ca25ff$9ac91cc0$d05b5640$@ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Tue, 25 Aug 2009 23:46:21 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58936 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756566AbZHZDqU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 23:46:20 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 26 Aug 2009 12:44:30 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-08-24-16-24 uploaded
+Message-Id: <20090826124430.2c52bf5e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090825203623.4798f287.akpm@linux-foundation.org>
+References: <200908242328.n7ONSUHI022326@imap1.linux-foundation.org>
+	<20090826121508.a2b8bbcb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090825203623.4798f287.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acol9tNCukGElqDIRIW4sMtGahjP7gACKuNw
-Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> I would suggest that Andrei might try to write and clear the IO
-> error
-> >> at that
-> >> offset. You can use Mark Lord's hdparm to clear a specific sector or
-> >> just do the
-> >> math (carefully!) and dd over it. It the write succeeds (without
-> >> bumping your
-> >> remapped sectors count) this is a likely match to this problem,
-> >
-> > I've tried dd multiple times, it always succeeds, and the relocated
-> sector
-> > count is currently 1 on this drive, even though this particular fault
-> > happened at least 3 times so far.
-> >
-> 
-> I would bump that count way up (say to 2) and see if you have an
-> issue...
+On Tue, 25 Aug 2009 20:36:23 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Not sure what you mean by this: how can I artificially bump the relocated
-sector count?
+> On Wed, 26 Aug 2009 12:15:08 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > On Mon, 24 Aug 2009 16:28:30 -0700
+> > akpm@linux-foundation.org wrote:
+> > 
+> > > The mm-of-the-moment snapshot 2009-08-24-16-24 has been uploaded to
+> > > 
+> > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > 
+> > > and will soon be available at
+> > > 
+> > >    git://git.zen-sources.org/zen/mmotm.git
+> > > 
+> > 
+> > Just FYI. maybe my diff option of quilt is bad..but
+> > 
+> > I need to remove this line in linux-next.patch's comment (line 19075)
+> > 
+> >     You do not NEED to hold the req_lock since
+> > ->  107a7ca67f9fffd0c0c94018f5a1f61a0afe7bf8 (2005-03-15).   
+> >     Since the drbd_pp_lock is not spin_lock_irqsave anymore, you MUST NOT
+> 
+> That's probably patch(1) trying to be clever and failing.
+> 
+> Make sure you're using `patch -u'?
+> 
+Sorry, I found my .quiltrc disappeared....
+Maybe I did something wrong.
+
+Regards,
+-Kame
+
 
