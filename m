@@ -1,39 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZHZFeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZHZFlD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbZHZFeo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 01:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbZHZFen
+	id S1756745AbZHZFlD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 01:41:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbZHZFlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 01:34:43 -0400
-Received: from kroah.org ([198.145.64.141]:36076 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756394AbZHZFem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 01:34:42 -0400
-Date: Tue, 25 Aug 2009 22:26:47 -0700
-From: Greg KH <greg@kroah.com>
-To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-Cc: linux-usb@vger.kernel.org, gustavo@padovan.org, smurf@smurf.noris.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] usb: remove unused variable
-Message-ID: <20090826052647.GB18777@kroah.com>
-References: <1251068150-15001-1-git-send-email-gustavo@las.ic.unicamp.br>
+	Wed, 26 Aug 2009 01:41:02 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55212 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756659AbZHZFlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 01:41:01 -0400
+Message-ID: <4A94CACD.6020309@cn.fujitsu.com>
+Date: Wed, 26 Aug 2009 13:40:29 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251068150-15001-1-git-send-email-gustavo@las.ic.unicamp.br>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Neil Horman <nhorman@tuxdriver.com>, Wei Yongjun <yjwei@cn.fujitsu.com>,
+       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] trace_events: fix napi's tracepoint
+References: <4A937EF5.4040505@cn.fujitsu.com> <4A93895F.4010708@cn.fujitsu.com> <4A94C612.60200@cn.fujitsu.com>
+In-Reply-To: <4A94C612.60200@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 23, 2009 at 07:55:50PM -0300, Gustavo F. Padovan wrote:
-> struct usb_serial *serial is not used.
+
+
+Xiao Guangrong wrote:
 > 
-> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+> Xiao Guangrong wrote:
+>> Currently, the napi's tracepoint works will is depend on
+>> "DECLARE_TRACE" definiens in include/trace/define_trace.h,
+>> like below:
+>>
+>> #include <trace/events/skb.h>    // include define_trace.h
+>> #include <trace/events/napi.h>
+>>
+>> there have error, if we remove "#include <trace/events/skb.h>"
+>> or include napi.h in the front of include skb.h, It should
+>> depend on the definiens in include/linux/tracepoint.h and we
+>> can remove the "DECLARE_TRACE" definiens in
+>> include/trace/define_trace.h, because "TRACE_EVENT" not use it
+>>
+>> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> 
+> Hi Steven,
+> 
+> I'm sorry, please pull this patch too, because 
+> "[PATCH 7/8] tracing/events: fix the include file dependencies" 
+> is based on this patch, else will occur building error.
+> 
 
-What kernel version is this patch against?  I think this is already
-fixed in linux-next, right?
+Sorry again, I say the wrong words, it not has building error, just
+not complete fix the bug which I mention it in the changelog of
+"[PATCH 7/8] tracing/events: fix the include file dependencies", that
+is we can't include more TRACE_EVENT head file in .c file all the same,
+like below:
 
-thanks,
+Both define TRACE_EVENT in trace_a.h and trace_b.h, if we include
+those in .c file, like this:
 
-greg k-h
+#define CREATE_TRACE_POINTS
+include <trace/events/trace_a.h>  // re-define DECLARE_TRACE
+
+include <trace/events/trace_b.h>  // use the DECLARE_TRACE definition
+				  // that re-define by trace_a.h
+
+Thanks,
+Xiao
+
+
