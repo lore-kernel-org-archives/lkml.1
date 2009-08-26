@@ -1,97 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbZHZCcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZHZCfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756491AbZHZCcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 22:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381AbZHZCcr
+	id S1756511AbZHZCfb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 22:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756389AbZHZCfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 22:32:47 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56401 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756361AbZHZCcq (ORCPT
+	Tue, 25 Aug 2009 22:35:30 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47420 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756381AbZHZCfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 22:32:46 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Hiroaki Wakabayashi <primulaelatior@gmail.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Ying Han <yinghan@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-In-Reply-To: <Pine.LNX.4.64.0908250947400.2872@sister.anvils>
-References: <82e12e5f0908242146uad0f314hcbb02fcc999a1d32@mail.gmail.com> <Pine.LNX.4.64.0908250947400.2872@sister.anvils>
-Message-Id: <20090826113622.9A29.A69D9226@jp.fujitsu.com>
+	Tue, 25 Aug 2009 22:35:30 -0400
+Date: Tue, 25 Aug 2009 22:35:30 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] ftrace: Move setting of clock-source out of
+ options
+In-Reply-To: <4A939D08.6050604@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0908252233120.12897@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com> <4A939CDF.2000407@cn.fujitsu.com>
+ <4A939D08.6050604@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 26 Aug 2009 11:32:43 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Yeah, GUP_FLAGS_NOFAULT is better.
-> > 
-> > Me too.
-> > I will change this flag name.
-> >... 
-> > When I try to change __get_user_pages(), I got problem.
-> > If remove NULLs from pages,
-> > __mlock_vma_pages_range() cannot know how long __get_user_pages() readed.
-> > So, I have to get the virtual address of the page from vma and page.
-> > Because __mlock_vma_pages_range() have to call
-> > __get_user_pages() many times with different `start' argument.
-> > 
-> > I try to use page_address_in_vma(), but it failed.
-> > (page_address_in_vma() returned -EFAULT)
-> > I cannot find way to solve this problem.
-> > Are there good ideas?
-> > Please give me some ideas.
+
+Hi,
+
+I like the series and I'll pull it, but there's one thing that bothers me. 
+We should fix it too...
+
+
+On Tue, 25 Aug 2009, Zhaolei wrote:
+
+> There are many clock source for tracing system but we can only
+> enable/disable one bit by trace/options file.
+> We can move setting of clock-source out of options and add a separate
+> file for it:
+>  # cat trace_clock
+>  [local] global
+>  # echo global > trace_clock
+>  # cat trace_clock
+>  local [global]
 > 
-> I agree that this munlock issue needs to be addressed: it's not just a
-> matter of speedup, I hit it when testing what happens when mlock takes
-> you to OOM - which is currently a hanging disaster because munlock'ing
-> in the exiting OOM-killed process gets stuck trying to fault in all
-> those pages that couldn't be locked in the first place.
-
-I agree too.
-
-
-> I had intended to fix it by being more careful about splitting/merging
-> vmas, noting how far the mlock had got, and munlocking just up to there.
-> However, now that I've got in there, that looks wrong to me, given the
-> traditional behaviour that mlock does its best, but pretends success
-> to allow for later instantiation of the pages if necessary.
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> ---
+>  kernel/trace/trace.c |   92 ++++++++++++++++++++++++++++++++++++++++---------
+>  kernel/trace/trace.h |    7 ++--
+>  2 files changed, 79 insertions(+), 20 deletions(-)
 > 
-> You ask for ideas.  My main idea is that so far we have added
-> GUP_FLAGS_IGNORE_VMA_PERMISSIONS (Kosaki-san, what was that about?
->                                   we already had the force flag),
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index b7d873b..5af6f83 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -323,12 +323,21 @@ static const char *trace_options[] = {
+>  	"printk-msg-only",
+>  	"context-info",
+>  	"latency-format",
+> -	"global-clock",
+>  	"sleep-time",
+>  	"graph-time",
+>  	NULL
+>  };
+>  
+> +static struct {
+> +	u64 (*func)(void);
+> +	const char *name;
+> +} trace_clocks[] = {
+> +	{ trace_clock_local,	"local" },
+> +	{ trace_clock_global,	"global" },
+> +};
+> +
+> +int trace_clock_id;
+> +
+>  /*
+>   * ftrace_max_lock is used to protect the swapping of buffers
+>   * when taking a max snapshot. The buffers themselves are
+> @@ -2159,22 +2168,6 @@ static void set_tracer_flags(unsigned int mask, int enabled)
+>  		trace_flags |= mask;
+>  	else
+>  		trace_flags &= ~mask;
+> -
+> -	if (mask == TRACE_ITER_GLOBAL_CLK) {
+> -		u64 (*func)(void);
+> -
+> -		if (enabled)
+> -			func = trace_clock_global;
+> -		else
+> -			func = trace_clock_local;
+> -
+> -		mutex_lock(&trace_types_lock);
+> -		ring_buffer_set_clock(global_trace.buffer, func);
+> -
+> -		if (max_tr.buffer)
+> -			ring_buffer_set_clock(max_tr.buffer, func);
+> -		mutex_unlock(&trace_types_lock);
+> -	}
+>  }
+>  
+>  static ssize_t
+> @@ -3142,6 +3135,62 @@ tracing_mark_write(struct file *filp, const char __user *ubuf,
+>  	return cnt;
+>  }
+>  
+> +static ssize_t tracing_clock_read(struct file *filp, char __user *ubuf,
+> +				  size_t cnt, loff_t *ppos)
+> +{
+> +	char buf[64];
 
-MAY_WRITE and MAY_READ might be turned off at some special case.
-but munlock should turn off PG_mlock bit. otherwise the page never be reclaimed.
-This problem was explained by Lee about a year ago.
+What happens if we add more clocks. Our list can only be 64 bytes long. It 
+would be a good idea to change this to do something like the trace_options 
+uses. That is, it dynamically allocates buf, by figuring out how much it 
+needs. This should do that too.
 
-However, To use follow_page() solove this issue and we will be able to
-remove this ugly flag.
+Thanks,
 
-> GUP_FLAGS_IGNORE_SIGKILL, and now you propose
-> GUP_FLAGS_NOFAULT, all for the sole use of munlock.
+-- Steve
+
+> +	int bufiter = 0;
+> +	int i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(trace_clocks); i++)
+> +		bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter,
+> +			"%s%s%s%s", i ? " " : "",
+> +			i == trace_clock_id ? "[" : "", trace_clocks[i].name,
+> +			i == trace_clock_id ? "]" : "");
+> +	bufiter += snprintf(buf + bufiter, sizeof(buf) - bufiter, "\n");
+> +
+> +	return simple_read_from_buffer(ubuf, cnt, ppos, buf, bufiter);
+> +}
+> +
+> +static ssize_t tracing_clock_write(struct file *filp, const char __user *ubuf,
+> +				   size_t cnt, loff_t *fpos)
+> +{
+> +	char buf[64];
+> +	const char *clockstr;
+> +	int i;
+> +
+> +	if (cnt >= sizeof(buf))
+> +		return -EINVAL;
+> +
+> +	if (copy_from_user(&buf, ubuf, cnt))
+> +		return -EFAULT;
+> +
+> +	buf[cnt] = 0;
+> +
+> +	clockstr = strstrip(buf);
+> +
+> +	for (i = 0; i < ARRAY_SIZE(trace_clocks); i++) {
+> +		if (strcmp(trace_clocks[i].name, clockstr) == 0)
+> +			break;
+> +	}
+> +	if (i == ARRAY_SIZE(trace_clocks))
+> +		return -EINVAL;
+> +
+> +	trace_clock_id = i;
+> +
+> +	mutex_lock(&trace_types_lock);
+> +
+> +	ring_buffer_set_clock(global_trace.buffer, trace_clocks[i].func);
+> +	if (max_tr.buffer)
+> +		ring_buffer_set_clock(max_tr.buffer, trace_clocks[i].func);
+> +
+> +	mutex_unlock(&trace_types_lock);
+> +
+> +	*fpos += cnt;
+> +
+> +	return cnt;
+> +}
+> +
+>  static const struct file_operations tracing_max_lat_fops = {
+>  	.open		= tracing_open_generic,
+>  	.read		= tracing_max_lat_read,
+> @@ -3179,6 +3228,12 @@ static const struct file_operations tracing_mark_fops = {
+>  	.write		= tracing_mark_write,
+>  };
+>  
+> +static const struct file_operations trace_clock_fops = {
+> +	.open		= tracing_open_generic,
+> +	.read		= tracing_clock_read,
+> +	.write		= tracing_clock_write,
+> +};
+> +
+>  struct ftrace_buffer_info {
+>  	struct trace_array	*tr;
+>  	void			*spare;
+> @@ -3910,6 +3965,9 @@ static __init int tracer_init_debugfs(void)
+>  	trace_create_file("saved_cmdlines", 0444, d_tracer,
+>  			NULL, &tracing_saved_cmdlines_fops);
+>  
+> +	trace_create_file("trace_clock", 0644, d_tracer, NULL,
+> +			  &trace_clock_fops);
+> +
+>  #ifdef CONFIG_DYNAMIC_FTRACE
+>  	trace_create_file("dyn_ftrace_total_info", 0444, d_tracer,
+>  			&ftrace_update_tot_cnt, &tracing_dyn_info_fops);
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 606073c..0545c2b 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -586,6 +586,8 @@ trace_vprintk(unsigned long ip, const char *fmt, va_list args);
+>  
+>  extern unsigned long trace_flags;
+>  
+> +extern int trace_clock_id;
+> +
+>  /* Standard output formatting function used for function return traces */
+>  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+>  extern enum print_line_t print_graph_function(struct trace_iterator *iter);
+> @@ -674,9 +676,8 @@ enum trace_iterator_flags {
+>  	TRACE_ITER_PRINTK_MSGONLY	= 0x10000,
+>  	TRACE_ITER_CONTEXT_INFO		= 0x20000, /* Print pid/cpu/time */
+>  	TRACE_ITER_LATENCY_FMT		= 0x40000,
+> -	TRACE_ITER_GLOBAL_CLK		= 0x80000,
+> -	TRACE_ITER_SLEEP_TIME		= 0x100000,
+> -	TRACE_ITER_GRAPH_TIME		= 0x200000,
+> +	TRACE_ITER_SLEEP_TIME		= 0x80000,
+> +	TRACE_ITER_GRAPH_TIME		= 0x100000,
+>  };
+>  
+>  /*
+> -- 
+> 1.5.5.3
 > 
-> How about GUP_FLAGS_MUNLOCK, or more to the point, GUP_FLAGS_DONT_BE_GUP?
-> By which I mean, don't all these added flags suggest that almost
-> everything __get_user_pages() does is unsuited to the munlock case?
 > 
-> My advice (but I sure hate giving advice before I've tried it myself)
-> is to put __mlock_vma_pages_range() back to handling just the mlock
-> case, and do your own follow_page() loop in munlock_vma_pages_range().
-
-Agreed. follow_page() is better.
-
-
-
-
