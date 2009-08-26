@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbZHZDnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZHZDpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756655AbZHZDnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 23:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbZHZDnT
+	id S1756661AbZHZDpB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 23:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756629AbZHZDpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 23:43:19 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:55034 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751697AbZHZDnT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 23:43:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:content-type
-         :content-transfer-encoding;
-        b=pXTkbn9ELCzQLFALV1bqm1M1sREvtdYbGby2Rqp2yHVQzdtdwQau774L19OjxkPleM
-         Q7guqswSwk2juycJB4V8WwRk0/RXwqnPQqK++3KGhiv+fmv8PwghFA5FFpL/JemhLARa
-         jOOtoMW/O32bWn5pKUwhoTKafvkTRVc4aL/aw=
+	Tue, 25 Aug 2009 23:45:01 -0400
+Received: from tanas.ca ([206.248.136.31]:53026 "EHLO tanas.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756621AbZHZDpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 23:45:00 -0400
+From: "Andrei Tanas" <andrei@tanas.ca>
+To: "'Ric Wheeler'" <rwheeler@redhat.com>
+Cc: "'NeilBrown'" <neilb@suse.de>, <linux-kernel@vger.kernel.org>
+References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com>
+In-Reply-To: <4A94A0E6.4020401@redhat.com>
+Subject: RE: MD/RAID: what's wrong with sector 1953519935?
+Date: Tue, 25 Aug 2009 23:45:06 -0400
+Message-ID: <005401ca25ff$9ac91cc0$d05b5640$@ca>
 MIME-Version: 1.0
-From: Patrick <skibler@gmail.com>
-Date: Tue, 25 Aug 2009 23:43:00 -0400
-Message-ID: <85977ef90908252043x78afff40k8c79b3fd88be65cb@mail.gmail.com>
-Subject: Boot hang after io scheduler registration
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Acol9tNCukGElqDIRIW4sMtGahjP7gACKuNw
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://lkml.indiana.edu/hypermail/linux/kernel/0812.3/00547.html
+> >> I would suggest that Andrei might try to write and clear the IO
+> error
+> >> at that
+> >> offset. You can use Mark Lord's hdparm to clear a specific sector or
+> >> just do the
+> >> math (carefully!) and dd over it. It the write succeeds (without
+> >> bumping your
+> >> remapped sectors count) this is a likely match to this problem,
+> >
+> > I've tried dd multiple times, it always succeeds, and the relocated
+> sector
+> > count is currently 1 on this drive, even though this particular fault
+> > happened at least 3 times so far.
+> >
+> 
+> I would bump that count way up (say to 2) and see if you have an
+> issue...
 
-The above archived post mimics my problem exactly, unfortunately it
-offers no solution. I have added initcall_debug to my boot string and
-I have transcribed the output below.
+Not sure what you mean by this: how can I artificially bump the relocated
+sector count?
 
-I have an Intel Core 2 Quad Q6600 cpu on an Asus P5K SE (Intel P35
-chipset) motherboard. I built a 64-bit kernel yesterday (08/24/09)
-from the git source, it reports itself as 2.6.31-rc7.
-
-Please note that if I boot with the noapic and nolapic options, the
-system will boot normally, but the kernel will only report a single
-cpu/core (cat /proc/cpuinfo, top, etc). The trouble happens with
-ubuntu 9.04 kernel, the latest weekly gentoo live cd, and the current
-arch linux core install cd.
-
-calling  aes_init+0x0/0xc @ 1
-initcall aes_init+0x0/0xc returned 0 after 61 usecs
-calling  deflate_mod_init+0x0/0xc @ 1
-initcall deflate_mod_init+0x0/0xc returned 0 after 224 usecs
-calling  krng_mod_init+0x0/0xc @ 1
-alg: No test for stdrng (krng)
-initcall krng_mod_init+0x0/0xc returned 0 after 134 usecs
-calling  proc_genhd_init+0x0/0x3f @ 1
-initcall proc_genhd_init+0x0/0x3f returned 0 after 2 usecs
-calling  noop_init+0x0/0x17 @ 1
-io scheduler noop registered
-initcall noop_init+0x0/0x17 returned 0 after 123 usecs
-calling  as_init+0x0/0x17 @ 1
-io scheduler anticipatory registered
-initcall as_init+0x0/0x17 returned 0 after 116 usecs
-calling  deadline_init+0x0/0x18 @ 1
-io scheduler deadline registered (default)
-initcall deadline_init+0x0/0x18 returned 0 after 118 usecs
-calling  cfq_init+0x0/0xb0 @ 1
-io scheduler cfq registered
-initcall cfq_init+0x0/0xb0 returned 0 after 138 usecs
-calling  percpu_counter_startup+0x0/0x2d @ 1
-initcall percpu_counter_startup+0x0/0x2d returned 0 after 0 usecs
-calling  pci_init+0x0/0x38 @ 1
-_
