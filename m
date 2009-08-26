@@ -1,77 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbZHZMlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932947AbZHZMuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932951AbZHZMlN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 08:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932901AbZHZMlN
+	id S932947AbZHZMuG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 08:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932901AbZHZMuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 08:41:13 -0400
-Received: from THUNK.ORG ([69.25.196.29]:35753 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932850AbZHZMlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 08:41:11 -0400
-Date: Wed, 26 Aug 2009 08:40:58 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Pavel Machek <pavel@ucw.cz>, david@lang.hm,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-Message-ID: <20090826124058.GK32712@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Ric Wheeler <rwheeler@redhat.com>, Pavel Machek <pavel@ucw.cz>,
-	david@lang.hm, Florian Weimer <fweimer@bfk.de>,
-	Goswin von Brederlow <goswin-v-b@web.de>,
-	Rob Landley <rob@landley.net>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-	linux-ext4@vger.kernel.org, corbet@lwn.net
-References: <20090825233701.GH4300@elf.ucw.cz> <4A947839.4010601@redhat.com> <20090826000657.GK4300@elf.ucw.cz> <4A947E05.8070406@redhat.com> <20090826002045.GO4300@elf.ucw.cz> <4A9481BE.1030308@redhat.com> <20090826003803.GP4300@elf.ucw.cz> <4A9485A6.1010803@redhat.com> <20090826112121.GD26595@elf.ucw.cz> <4A952370.50603@redhat.com>
+	Wed, 26 Aug 2009 08:50:05 -0400
+Received: from tomts52-srv.bellnexxia.net ([209.226.175.177]:49282 "EHLO
+	tomts52-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932843AbZHZMuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 08:50:04 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkW8AFzIlErR4q/5/2dsb2JhbACBM4pnhA+KFKwphlokGopsghQGgWsFggSGGIJa
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [200.65.129.2]
+From: <clin7393@bellnet.ca>
+Reply-To: mrchao_wei@yahoo.com.hk
+To: <equire@chao.com>
+Subject: Greetings!!!
+Date: Wed, 26 Aug 2009 8:49:54 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A952370.50603@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090826125005.BYAU23730.tomts52-srv.bellnexxia.net@toip53-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 07:58:40AM -0400, Ric Wheeler wrote:
->> Drive in raid 5 failed; hot spare was available (no idea about
->> UPS). System apparently locked up trying to talk to the failed drive,
->> or maybe admin just was not patient enough, so he just powercycled the
->> array. He lost the array.
->>
->> So while most people will not agressively powercycle the RAID array,
->> drive failure still provokes little tested error paths, and getting
->> unclean shutdown is quite easy in such case.
->
-> Then what we need to document is do not power cycle an array during a  
-> rebuild, right?
+ I am MR CHAO WEI,bank of china ,I have a business of(us$18,600.000.00) for you in my bank. information email mrchao.wei@ymail.com
 
-Well, the softwar raid layer could be improved so that it implements
-scrubbing by default (i.e., have the md package install a cron job to
-implement a periodict scrub pass automatically).  The MD code could
-also regularly check to make sure the hot spare is OK; the other
-possibility is that hot spare, which hadn't been used in a long time,
-had silently failed.
-
-> In the end, there are cascading failures that will defeat any data  
-> protection scheme, but that does not mean that the value of that scheme  
-> is zero. We need to be get more people to use RAID (including MD5) and  
-> try to enhance it as we go. Just using a single disk is not a good 
-> thing...
-
-Yep; the solution is to improve the storage devices.  It is *not* to
-encourage people to think RAID is not worth it, or that somehow ext2
-is better than ext3 because it runs fsck's all the time at boot up.
-That's just crazy talk.
-
-						- Ted
