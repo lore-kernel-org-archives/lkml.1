@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZHZUkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbZHZUrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753468AbZHZUkv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 16:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbZHZUku
+	id S1753488AbZHZUrr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 16:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZHZUrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 16:40:50 -0400
-Received: from smtp4.ultrahosting.com ([74.213.175.253]:34540 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751074AbZHZUku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 16:40:50 -0400
-Date: Wed, 26 Aug 2009 16:40:09 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, raz ben yehuda <raziebe@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
-       riel@redhat.com, andrew motron <akpm@linux-foundation.org>,
-       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-In-Reply-To: <20090826193252.GA14721@elte.hu>
-Message-ID: <alpine.DEB.1.10.0908261627110.5554@gentwo.org>
-References: <1251282598.3514.20.camel@raz> <alpine.DEB.1.10.0908260943090.9924@gentwo.org> <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz> <1251300625.18584.18.camel@twins> <alpine.DEB.1.10.0908261136590.9933@gentwo.org>
- <1251302598.18584.31.camel@twins> <alpine.DEB.1.10.0908261211340.9933@gentwo.org> <20090826180407.GA13632@elte.hu> <alpine.DEB.1.10.0908261509580.9933@gentwo.org> <20090826193252.GA14721@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 26 Aug 2009 16:47:47 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:56390 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752788AbZHZUrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 16:47:46 -0400
+Message-ID: <4A95A10C.5040008@redhat.com>
+Date: Wed, 26 Aug 2009 23:54:36 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 13/12] ksm: fix munlock during exit_mmap deadlock
+References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils> <Pine.LNX.4.64.0908031317190.16754@sister.anvils> <20090825145832.GP14722@random.random> <20090825152217.GQ14722@random.random> <Pine.LNX.4.64.0908251836050.30372@sister.anvils> <20090825181019.GT14722@random.random> <Pine.LNX.4.64.0908251958170.5871@sister.anvils> <20090825194530.GU14722@random.random> <Pine.LNX.4.64.0908261910530.15622@sister.anvils> <20090826194444.GB14722@random.random> <Pine.LNX.4.64.0908262048270.21188@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0908262048270.21188@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Ingo Molnar wrote:
+Hugh Dickins wrote:
+> On Wed, 26 Aug 2009, Andrea Arcangeli wrote:
+>   
+>> All is left to address is to teach page_alloc.c that the mm is going
+>> away in a second patch. That might also help when it's aio triggering
+>> gup page allocations or other kernel threads with use_mm just like ksm
+>> and the oom killer selected those "mm" for release.
+>>
+>> Having ksm using use_mm before triggering the handle_mm_fault (so
+>> tsk->mm points to the mm of the task) and adding a MMF_MEMDIE to
+>> mm->flags checked by page_alloc would work just fine and should solve
+>> the double task killed... but then I'm unsure.. this is just the first
+>> idea I had.
+>>     
+>
+> Yes, I began to have thoughts along those lines too as I was writing
+> my reply.  It is a different angle on the problem, I hadn't looked at
+> it that way before, and it does seem worth pursuing.  MMF_MEMDIE, yes,
+> that might be useful.  But KSM_RUN_UNMERGE wouldn't be able to use_mm
+> since it's coming from a normal user process - perhaps it should be a
+> kill-me-first like swapoff via PF_SWAPOFF.
+>
+> Hugh
+>   
+About the KSM case:
+The oom should work on problomatic processes, such that allocate big 
+amount of memory.
+But then as we now plane it to be, what might be a just fine application 
+that used ksm and told it to stop merge it pages, might be what 
+considered "bad application that need to be killed"
 
-> ( If you on the other hand were approaching this issue with
->   pragmatism and with intellectual honesty, if you were at the end
->   of a string of patches that gradually improved latencies but
->   couldnt get them below a certain threshold, and if scheduler
->   developers couldnt give you any ideas what else to improve, and
->   _then_ suggested some other solution, you might have a point.
->   You are far away from being able to claim that. )
+Is this what we really want?
 
-Intellectual honesty? Wish I would be seeing it. So far there is not even
-the uptake required on your side to discuss the problem.
+But before getting into this, why is it so important to break the ksm 
+pages when madvise(UNMERGEABLE) get called?
 
-There is no threshold. HPC and other industries want processors as
-a whole with all their abilities. They will squeeze the last bit of
-performance out of them.
-
-> to have sharp teeth nor any apparent poison fangs) - i simply concur
-> with the reasons Peter listed that it is a technically inferior
-> solution.
-
-Ok so you are saying that the reduction of OS latencies will make the
-processor completely available and have no disturbances like OFFLINE scheduling?
-
-Peter has not given a solution to the problem. Nor have you.
-
+When thinking about it, lets say I want to use ksm to scan 2 
+applications and merged their STATIC identical data, and then i want to 
+stop scanning them after i know ksm merged the pages, as soon as i will 
+try to unregister this 2 applications ksm will unmerge the pages, so we 
+dont allow such thing for the user (we can tell him ofcurse for such 
+case to use normal way of sharing, so this isnt a really strong case for 
+this)
