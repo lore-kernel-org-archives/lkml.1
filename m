@@ -1,117 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbZHZH3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbZHZHaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757181AbZHZH3t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbZHZH3t
+	id S1757196AbZHZHaK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757107AbZHZHaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:29:49 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:50198 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757101AbZHZH3r (ORCPT
+	Wed, 26 Aug 2009 03:30:09 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:34382 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757166AbZHZHaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:29:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=BbxFps5ubQh/o/ZH5Z3MCWHeeWgq/QcWN+zkKibo59PYlETPbdbmXoBr91KUx5v8Hs
-         g5ag686ckel1wFWkdL21H+BCZ3C8YbrfmL0uAPe7P69oBPTnNr5joWF+4YkdPMkBFy2/
-         YwKjpQ8HWkM7I+SFanTZpGF38wRszh6bx6BXc=
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-From: raz ben yehuda <raziebe@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Chris Friesen <cfriesen@nortel.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, riel@redhat.com, mingo@elte.hu,
-       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
-       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
-In-Reply-To: <1251264700.7538.1178.camel@twins>
-References: <1250983671.5688.21.camel@raz>
-	 <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>
-	 <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>
-	 <1251021133.14003.172.camel@marge.simson.net>
-	 <alpine.DEB.1.10.0908251122020.26329@gentwo.org>
-	 <1251222993.7023.53.camel@marge.simson.net>
-	 <alpine.DEB.1.10.0908251402300.17963@gentwo.org>
-	 <1251227322.7538.1172.camel@twins>  <4A943A00.9080609@nortel.com>
-	 <1251264700.7538.1178.camel@twins>
-Content-Type: text/plain
-Date: Wed, 26 Aug 2009 13:29:58 +0300
-Message-Id: <1251282598.3514.20.camel@raz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Aug 2009 03:30:07 -0400
+To: raz ben yehuda <raziebe@gmail.com>
+Cc: riel@redhat.com, mingo@elte.hu, peterz@infradead.org,
+       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Subject:[ PATCH 001:003] OFFSCHED CORE
+References: <1250983786.5688.23.camel@raz>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 26 Aug 2009 00:29:58 -0700
+In-Reply-To: <1250983786.5688.23.camel@raz> (raz ben yehuda's message of "Sun\, 23 Aug 2009 02\:29\:46 +0300")
+Message-ID: <m163cbm3rd.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: raziebe@gmail.com, linux-kernel@vger.kernel.org, wiseman@macs.biu.ac.il, peterz@infradead.org, mingo@elte.hu, riel@redhat.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+raz ben yehuda <raziebe@gmail.com> writes:
 
-On Wed, 2009-08-26 at 07:31 +0200, Peter Zijlstra wrote:
-> On Tue, 2009-08-25 at 13:22 -0600, Chris Friesen wrote:
-> > On 08/25/2009 01:08 PM, Peter Zijlstra wrote:
-> > 
-> > > Christoph, stop being silly, this offline scheduler thing won't happen,
-> > > full stop.
-> > > 
-> > > Its not a maintainable solution, it doesn't integrate with existing
-> > > kernel infrastructure, and its plain ugly.
-> > > 
-> > > If you want something work within Linux, don't build kernels in kernels
-> > > or other such ugly hacks.
-> > 
-> > Is it the whole concept of isolating one or more cpus from all normal
-> > kernel tasks that you don't like, or just this particular implementation?
-> > 
-> > I ask because I know of at least one project that would have used this
-> > capability had it been available.  As it stands they have to live with
-> > the usual kernel threads running on the cpu that they're trying to
-> > dedicate to their app.
-> 
-> Its the simple fact of going around the kernel instead of using the
-> kernel.
-> 
-> Going around the kernel doesn't benefit anybody, least of all Linux.
-> 
-> So its the concept of running stuff on a CPU outside of Linux that I
-> don't like. I mean, if you want that, go ahead and run RTLinux, RTAI,
-> L4-Linux etc.. lots of special non-Linux hypervisor/exo-kernel like
-> things around for you to run things outside Linux with.
-Hello Peter, Hello All.
-First , It a pleasure seeing that you take interest in OFFSCHED. 
-So thank you. 
+> 		OFFSCHED support.
+>
+> . A callback invoked just before halting the processor.
+> . SMP alternative work-around. we do not run smp alternatives if we are
+>    left with a single processor.
+> . A set of utilities used by the offsched driver.
 
-To my opinion this a matter of defining what a system is. Queuing theory
-teaches us that a system is defined to be everything within the boundary
-of the computer, this includes, peripherals, processors, RAM , operating
-system, the distribution and so on.  
-The kernel is merely a part of the SYSTEM, it is not THE SYSTEM; and it
-is not a blasphemy to bypass it.The kernel is not the goal and it is not
-sacred. 
-OFFSCHED is bad name to my project. My project is called SOS = Service
-Oriented System.
-SOS, has nothing to do with Real time. SOS is about arranging the
-processors to serve the SYSTEM the best way we can; if the kernel
-disturbs the service, put it a side I say. 
-
-How will the kernel is going to handle 32 processors machines ?  These
-numbers are no longer a science-fiction.
-
-What i am suggesting is merely a different approach of how to handle
-multiple core systems. instead of thinking in processes, threads and so
-on i am thinking in services. Why not take  a processor and define this
-processor to do just firewalling ? encryption ? routing ? transmission ?
-video processing... and so on... 
-
-Raz
+Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
 
+Cpu hotunplug is mostly broken when it comes to irqs.
+Building on and extending broken code is just asking for trouble,
+especially for out of tree code.
 
- 
- 
-
-
-
-
-
-
-
+> process.c |  109 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> smpboot.c |   13 +++++--
+> 2 files changed, 118 insertions(+), 4 deletions(-)
+>
+> Signed-off-by: raziebe@gmail.com
+> ---
+> diff -X 2.6.30-offsched/Documentation/dontdiff -urN tmp/linux-2.6.30/arch/x86/kernel/process.c 2.6.30-offsched/arch/x86/kernel/process.c
+> --- tmp/linux-2.6.30/arch/x86/kernel/process.c	2009-06-10 06:05:27.000000000 +0300
+> +++ 2.6.30-offsched/arch/x86/kernel/process.c	2009-08-21 22:02:44.000000000 +0300
+> @@ -613,3 +613,112 @@
+>  }
+>  early_param("idle", idle_setup);
+>  
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +struct hotplug_cpu{
+> +	long flags;
+> +	void (*hotplug_cpu_dead)(void);
+> +};
+> +
+> +static long 	offsched_services;
+> +
+> +#define CPU_OFFSCHED		31
+> +#define CPU_OFFSCHED_KMEM	30
+> +#define SERVICE_TIMER		01
+> +#define SERVICE_NAPI		02
+> +
+> +DEFINE_PER_CPU(struct hotplug_cpu, offschedcpu);
+> +
+> +void unregister_offsched(int cpuid)
+> +{
+> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
+> +	cpu->hotplug_cpu_dead = NULL;
+> +	clear_bit(CPU_OFFSCHED, &cpu->flags);
+> +}
+> +EXPORT_SYMBOL_GPL(unregister_offsched);
+> +
+> +int is_offsched(int cpuid)
+> +{
+> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
+> +	return test_bit(CPU_OFFSCHED, &cpu->flags);
+> +}
+> +EXPORT_SYMBOL_GPL(is_offsched);
+> +
+> +int is_offsched_kmem(int cpuid)
+> +{
+> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
+> +	return test_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
+> +}
+> +EXPORT_SYMBOL_GPL(is_offsched_kmem);
+> +
+> +void set_offsched_kmem(int cpuid)
+> +{
+> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
+> +	set_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
+> +}
+> +EXPORT_SYMBOL_GPL(set_offsched_kmem);
+> +
+> +void unset_offsched_kmem(int cpuid)
+> +{
+> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
+> +	clear_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
+> +}
+> +EXPORT_SYMBOL_GPL(unset_offsched_kmem);
+> +
+> +int register_offsched(void (*offsched_callback)(void), int cpuid)
+> +{
+> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
+> +	if (is_offsched(cpuid))
+> +		return -1;
+> +	cpu->hotplug_cpu_dead = offsched_callback;
+> +	set_bit(CPU_OFFSCHED, &cpu->flags);
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(register_offsched);
+> +
+> +void run_offsched(void)
+> +{
+> +	int cpuid = raw_smp_processor_id();
+> +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
+> +	cpu->hotplug_cpu_dead();
+> +}
+> +
+> +int  offsched_is_napi_avail(void)
+> +{
+> +	return SERVICE_NAPI & offsched_services;
+> +}
+> +
+> +int (*offsched_rule)(void *);
+> +EXPORT_SYMBOL(offsched_rule);
+> +/*
+> +* if we a have filter than apply filter.
+> +* return 0 if packet should go to kernel
+> +* return 1 if packet should go to offsched.
+> +*/
+> +int offsched_pkt(void *s)
+> +{
+> +	if (offsched_rule)
+> +		return offsched_rule(s);
+> +	return 0;
+> +}
+> +
+> +void offsched_register_napi(void)
+> +{
+> +	offsched_services |= SERVICE_NAPI;
+> +}
+> +EXPORT_SYMBOL_GPL(offsched_register_napi);
+> +
+> +void offsched_unregister_napi(void)
+> +{
+> +	offsched_services &= ~SERVICE_NAPI;
+> +}
+> +EXPORT_SYMBOL_GPL(offsched_unregister_napi);
+> +
+> +/*
+> + * napi scheudule is called in offsched context.
+> +*/
+> +void offsched_napi_schedule(void *n)
+> +{
+> +
+> +}
+> +
+> +#endif
+> diff -X 2.6.30-offsched/Documentation/dontdiff -urN tmp/linux-2.6.30/arch/x86/kernel/smpboot.c 2.6.30-offsched/arch/x86/kernel/smpboot.c
+> --- tmp/linux-2.6.30/arch/x86/kernel/smpboot.c	2009-06-10 06:05:27.000000000 +0300
+> +++ 2.6.30-offsched/arch/x86/kernel/smpboot.c	2009-07-25 13:59:19.000000000 +0300
+> @@ -39,6 +39,8 @@
+>   *	Glauber Costa		:	i386 and x86_64 integration
+>   */
+>  
+> +#define DEBUG
+> +
+>  #include <linux/init.h>
+>  #include <linux/smp.h>
+>  #include <linux/module.h>
+> @@ -686,8 +688,8 @@
+>  	};
+>  
+>  	INIT_WORK(&c_idle.work, do_fork_idle);
+> -
+> -	alternatives_smp_switch(1);
+> +	if (!is_offsched(cpu))
+> +		alternatives_smp_switch(1);
+>  
+>  	c_idle.idle = get_idle_for_cpu(cpu);
+>  
+> @@ -1283,8 +1285,9 @@
+>  	for (i = 0; i < 10; i++) {
+>  		/* They ack this in play_dead by setting CPU_DEAD */
+>  		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
+> -			printk(KERN_INFO "CPU %d is now offline\n", cpu);
+> -			if (1 == num_online_cpus())
+> +			printk(KERN_INFO "CPU %d is now offline %s\n", cpu,
+> +				is_offsched(cpu) ? "and OFFSCHED" : "");
+> +			if (1 == num_online_cpus() && !is_offsched(cpu))
+>  				alternatives_smp_switch(0);
+>  			return;
+>  		}
+> @@ -1313,6 +1316,8 @@
+>  void native_play_dead(void)
+>  {
+>  	play_dead_common();
+> +	if (is_offsched(raw_smp_processor_id()))
+> +		run_offsched();
+>  	wbinvd_halt();
+>  }
+>  
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
