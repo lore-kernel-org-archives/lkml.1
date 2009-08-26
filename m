@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbZHZONW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbZHZOPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020AbZHZONW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbZHZONV
+	id S1757479AbZHZOPA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757420AbZHZOO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:13:21 -0400
-Received: from mga03.intel.com ([143.182.124.21]:41624 "EHLO mga03.intel.com"
+	Wed, 26 Aug 2009 10:14:59 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:53115 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932443AbZHZONU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:13:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="180401452"
-Subject: Re: BUG: scheduling while atomic in acpi_ps_complete_op
-From: ykzhao <yakui.zhao@intel.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Brown, Len" <len.brown@intel.com>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
-In-Reply-To: <1251287895.2270.25.camel@dhcp231-106.rdu.redhat.com>
-References: <1250873707.2168.38.camel@dhcp231-106.rdu.redhat.com>
-	 <4A8EFFB2.4040100@suse.de>
-	 <1250886352.2168.83.camel@dhcp231-106.rdu.redhat.com>
-	 <4A8F1081.3020803@suse.de>
-	 <1251124609.2359.25.camel@dhcp231-106.rdu.redhat.com>
-	 <1251248426.3623.47.camel@localhost.localdomain>
-	 <1251287895.2270.25.camel@dhcp231-106.rdu.redhat.com>
-Content-Type: text/plain; charset=utf-8
-Organization: Intel Open Source Technology Center
-Date: Wed, 26 Aug 2009 22:13:04 +0800
-Message-Id: <1251295984.3623.83.camel@localhost.localdomain>
+	id S1757275AbZHZOO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 10:14:59 -0400
+Date: Wed, 26 Aug 2009 16:18:05 +0200
+From: Michal Schmidt <mschmidt@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [Bug #14059] DomU crashes during xenfb initialization
+Message-ID: <20090826161805.2697d932@leela>
+In-Reply-To: <Cg6cQYLdUxG.A.XNB.5zGlKB@chimera>
+References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
+	<Cg6cQYLdUxG.A.XNB.5zGlKB@chimera>
+Organization: Red Hat
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 19:58 +0800, Eric Paris wrote:
-> On Wed, 2009-08-26 at 09:00 +0800, ykzhao wrote:
-> > On Mon, 2009-08-24 at 22:36 +0800, Eric Paris wrote:
-> > > On Sat, 2009-08-22 at 01:24 +0400, Alexey Starikovskiy wrote:
-> > > > Eric Paris пишет:
+Dne Tue, 25 Aug 2009 23:05:07 +0200 (CEST) Rafael J. Wysocki napsal:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
 > 
-> > > It does stop my slew of warnings.  Not sure it completely fixes my
-> > > problems though....
-> > Will you please add the boot option of initcall_debug and attach the
-> > output of dmesg?
-> > It will be helpful if you can attach the output of acpidump.
-> > Thanks.
-Hi
-	Will you please confirm whether this issue happens on the 2.6.31-rc6
-kernel?
-	If there is no such issue, will you please revert the following commit
-and see whether the issue still exists?
-   >commit 74b5820808215f65b70b05a099d6d3c969b82689
-Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Date:   Wed Jul 29 15:54:25 2009 -0600
-
-    ACPI: bind workqueues to CPU 0 to avoid SMI corruption
-
-      In this commit it will schedule to other kernel thread and switch
-to task 0 again.
-
-Thanks.
-    Yakui.    
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still
+> should be listed and let me know (either way).
 > 
-> Here is booting a kernel without the change.  I don't see acpidump
-> packaged in fedora.  Do you have a pointer to the source or maybe a
-> static binary?  I'll look myself later in the afternoon.
 > 
-> -Eric
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14059
+> Subject	: DomU crashes during xenfb initialization
+> Submitter	: Michal Schmidt <mschmidt@redhat.com>
+> Date		: 2009-08-21 10:40 (5 days old)
+> References	:
+> http://marc.info/?l=linux-kernel&m=125085108431360&w=4
+> Handled-By	: Michal Schmidt <mschmidt@redhat.com>
+> Patch		: http://patchwork.kernel.org/patch/43107/
 
+The patch is not in mainline yet, it's only in Jeremy's git tree.
+Michal
