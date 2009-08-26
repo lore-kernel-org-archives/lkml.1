@@ -1,148 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbZHZLLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbZHZLMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757326AbZHZLLV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 07:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757168AbZHZLLU
+	id S1757344AbZHZLMS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 07:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932084AbZHZLMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 07:11:20 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:54714 "EHLO
-	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755378AbZHZLLT convert rfc822-to-8bit (ORCPT
+	Wed, 26 Aug 2009 07:12:18 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54726 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757108AbZHZLMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 07:11:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=and+wxP8oPDA0F+r+96n4/Bklz9BqtX1LaygD2jO09hAxIY3bvoGwLaT08FJZvZVM1
-         wDWRVLE44u42P5dYKgJYi2hmPjuNgaJxmQolylMpDfhH+qVzQQ5oHbLFsFrUYI8Tm3rU
-         JRimHCtgkMPNujVxv1SBe8GF8xlzJJu6z+e/g=
+	Wed, 26 Aug 2009 07:12:17 -0400
+Date: Wed, 26 Aug 2009 13:12:08 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090826111208.GA26595@elf.ucw.cz>
+References: <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu> <4A948C94.7040103@redhat.com> <20090826025849.GF32712@mit.edu> <4A9510D2.1090704@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0908250947400.2872@sister.anvils>
-References: <82e12e5f0908220954p7019fb3dg15f9b99bb7e55a8c@mail.gmail.com>
-	 <28c262360908231844o3df95b14v15b2d4424465f033@mail.gmail.com>
-	 <20090824105139.c2ab8403.kamezawa.hiroyu@jp.fujitsu.com>
-	 <2f11576a0908232113w71676aatf22eb6d431501fd0@mail.gmail.com>
-	 <82e12e5f0908242146uad0f314hcbb02fcc999a1d32@mail.gmail.com>
-	 <Pine.LNX.4.64.0908250947400.2872@sister.anvils>
-Date: Wed, 26 Aug 2009 20:11:21 +0900
-Message-ID: <82e12e5f0908260411y4d211bf2v6242dd50b713c544@mail.gmail.com>
-Subject: Re: [PATCH] mm: make munlock fast when mlock is canceled by sigkill
-From: Hiroaki Wakabayashi <primulaelatior@gmail.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Ying Han <yinghan@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9510D2.1090704@redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for ideas and advices!
-
-2009/8/25 Hugh Dickins <hugh.dickins@tiscali.co.uk>:
-> On Tue, 25 Aug 2009, Hiroaki Wakabayashi wrote:
->> Thank you for reviews.
+On Wed 2009-08-26 06:39:14, Ric Wheeler wrote:
+> On 08/25/2009 10:58 PM, Theodore Tso wrote:
+>> On Tue, Aug 25, 2009 at 09:15:00PM -0400, Ric Wheeler wrote:
+>>    
+>>> I agree with the whole write up outside of the above - degraded RAID
+>>> does meet this requirement unless you have a second (or third, counting
+>>> the split write) failure during the rebuild.
+>>>      
+>> The argument is that if the degraded RAID array is running in this
+>> state for a long time, and the power fails while the software RAID is
+>> in the middle of writing out a stripe, such that the stripe isn't
+>> completely written out, we could lose all of the data in that stripe.
 >>
->> >>> > @@ -254,6 +254,7 @@ static inline void
->> >>> > mminit_validate_memmodel_limits(unsigned long *start_pfn,
->> >>> >  #define GUP_FLAGS_FORCE                  0x2
->> >>> >  #define GUP_FLAGS_IGNORE_VMA_PERMISSIONS 0x4
->> >>> >  #define GUP_FLAGS_IGNORE_SIGKILL         0x8
->> >>> > +#define GUP_FLAGS_ALLOW_NULL             0x10
->> >>> >
->> >>>
->> >>> I am worried about adding new flag whenever we need it.
+>> In other words, a power failure in the middle of writing out a stripe
+>> in a degraded RAID array counts as a second failure.
+>>    To me, this isn't a particularly interesting or newsworthy point,
+>> since a competent system administrator who cares about his data and/or
+>> his hardware will (a) have a UPS, and (b) be running with a hot spare
+>> and/or will imediately replace a failed drive in a RAID array.
 >
-> Indeed!  See my comments below.
->
->> >>> But I think this case makes sense to me.
->> >>> In addition, I guess ZERO page can also use this flag.
->> >>>
->> >>> Kame. What do you think about it?
->> >>>
->> >> I do welcome this !
->> >> Then, I don't have to take care of mlock/munlock in ZERO_PAGE patch.
->
-> I _think_ there's nothing to do for it (the page->mapping checks suit
-> the ZERO_PAGE); but I've not started testing my version, so may soon
-> be proved wrong.
->
->> >>
->> >> And without this patch, munlock() does copy-on-write just for unpinning memory.
->> >> So, this patch shows some right direction, I think.
->> >>
->> >> One concern is flag name, ALLOW_NULL sounds not very good.
->> >>
->> >>  GUP_FLAGS_NOFAULT ?
->> >>
->> >> I wonder we can remove a hack of FOLL_ANON for core-dump by this flag, too.
->
-> No, the considerations there a different (it can only point to a ZERO_PAGE
-> where faulting would anyway present a page of zeroes); it should be dealt
-> with by a coredump-specific flag, rather than sowing confusion elsewhere.
-> As above, I've done that but not yet tested it.
->
->> >
->> > Yeah, GUP_FLAGS_NOFAULT is better.
->>
->> Me too.
->> I will change this flag name.
->>...
->> When I try to change __get_user_pages(), I got problem.
->> If remove NULLs from pages,
->> __mlock_vma_pages_range() cannot know how long __get_user_pages() readed.
->> So, I have to get the virtual address of the page from vma and page.
->> Because __mlock_vma_pages_range() have to call
->> __get_user_pages() many times with different `start' argument.
->>
->> I try to use page_address_in_vma(), but it failed.
->> (page_address_in_vma() returned -EFAULT)
->> I cannot find way to solve this problem.
->> Are there good ideas?
->> Please give me some ideas.
->
-> I agree that this munlock issue needs to be addressed: it's not just a
-> matter of speedup, I hit it when testing what happens when mlock takes
-> you to OOM - which is currently a hanging disaster because munlock'ing
-> in the exiting OOM-killed process gets stuck trying to fault in all
-> those pages that couldn't be locked in the first place.
+> I agree that this is not an interesting (or likely) scenario, certainly  
+> when compared to the much more frequent failures that RAID will protect  
+> against which is why I object to the document as Pavel suggested. It  
+> will steer people away from using RAID and directly increase their  
+> chances of losing their data if they use just a single disk.
 
-I'm sorry, it too difficult for me to understand.
-I will learn and consider.
+So instead of fixing or at least documenting known software deficiency
+in Linux MD stack, you'll try to surpress that information so that
+people use more of raid5 setups?
 
-> I had intended to fix it by being more careful about splitting/merging
-> vmas, noting how far the mlock had got, and munlocking just up to there.
-> However, now that I've got in there, that looks wrong to me, given the
-> traditional behaviour that mlock does its best, but pretends success
-> to allow for later instantiation of the pages if necessary.
->
-> You ask for ideas.  My main idea is that so far we have added
-> GUP_FLAGS_IGNORE_VMA_PERMISSIONS (Kosaki-san, what was that about?
->                                  we already had the force flag),
-> GUP_FLAGS_IGNORE_SIGKILL, and now you propose
-> GUP_FLAGS_NOFAULT, all for the sole use of munlock.
->
-> How about GUP_FLAGS_MUNLOCK, or more to the point, GUP_FLAGS_DONT_BE_GUP?
-> By which I mean, don't all these added flags suggest that almost
-> everything __get_user_pages() does is unsuited to the munlock case?
->
-> My advice (but I sure hate giving advice before I've tried it myself)
-> is to put __mlock_vma_pages_range() back to handling just the mlock
-> case, and do your own follow_page() loop in munlock_vma_pages_range().
->
-> Hugh
-
-Me, too. I agree __get_user_pages() unsuited to the munlock.
-I let try to make follow_page() loop, and remove
- GUP_FLAGS_IGNORE_VMA_PERMISSIONS and GUP_FLAGS_IGNORE_SIGKILL.
-
-Thanks!
---
-Hiroaki Wakabayashi
+Perhaps the better documentation will push them to RAID1, or maybe
+make them buy an UPS?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
