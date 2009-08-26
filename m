@@ -1,61 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbZHZAMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbZHZANo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756531AbZHZAMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755670AbZHZAMw
+	id S1756538AbZHZANo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756238AbZHZANn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:12:52 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:35503 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755594AbZHZAMv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:12:51 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
- <Cg6cQYLdUxG.A.lOD.82GlKB@chimera>
-Message-id: <CA50EE78-9582-4F7B-84EA-40CACBDC5D0E@binarystorm.net>
-From: David Hill <hilld@binarystorm.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-In-reply-to: <Cg6cQYLdUxG.A.lOD.82GlKB@chimera>
-X-Mailer: iPhone Mail (7A400)
-Subject: Re: [Bug #13219] Intel 440GX: Since kernel 2.6.30-rc1,
- computers hangs randomly but not with kernel <= 2.6.29.6
-Date: Tue, 25 Aug 2009 20:12:54 -0400
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
+	Tue, 25 Aug 2009 20:13:43 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:10053 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755617AbZHZANm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 20:13:42 -0400
+Message-ID: <4A947E05.8070406@redhat.com>
+Date: Tue, 25 Aug 2009 20:12:53 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+References: <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <4A947839.4010601@redhat.com> <20090826000657.GK4300@elf.ucw.cz>
+In-Reply-To: <20090826000657.GK4300@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems to be fixed in 2.6.31-rc7
+On 08/25/2009 08:06 PM, Pavel Machek wrote:
+> On Tue 2009-08-25 19:48:09, Ric Wheeler wrote:
+>>
+>>> ---
+>>> There are storage devices that high highly undesirable properties
+>>> when they are disconnected or suffer power failures while writes are
+>>> in progress; such devices include flash devices and MD RAID 4/5/6
+>>> arrays.  These devices have the property of potentially
+>>> corrupting blocks being written at the time of the power failure, and
+>>> worse yet, amplifying the region where blocks are corrupted such that
+>>> additional sectors are also damaged during the power failure.
+>>
+>> I would strike the entire mention of MD devices since it is your
+>> assertion, not a proven fact. You will cause more data loss from common
+>
+> That actually is a fact. That's how MD RAID 5 is designed. And btw
+> those are originaly Ted's words.
+>
 
-David Hill
+Ted did not design MD RAID5.
 
-On 2009-08-25, at 17:05, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>> events (single sector errors, complete drive failure) by steering people
+>> away from more reliable storage configurations because of a really rare
+>> edge case (power failure during split write to two raid members while
+>> doing a RAID rebuild).
+>
+> I'm not sure what's rare about power failures. Unlike single sector
+> errors, my machine actually has a button that produces exactly that
+> event. Running degraded raid5 arrays for extended periods may be
+> slightly unusual configuration, but I suspect people should just do
+> that for testing. (And from the discussion, people seem to think that
+> degraded raid5 is equivalent to raid0).
 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
+Power failures after a full drive failure with a split write during a rebuild?
+
 >
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still  
-> should
-> be listed and let me know (either way).
+>>> Otherwise, file systems placed on these devices can suffer silent data
+>>> and file system corruption.  An forced use of fsck may detect metadata
+>>> corruption resulting in file system corruption, but will not suffice
+>>> to detect data corruption.
+>>>
+>>
+>> This is very misleading. All storage "can" have silent data loss, you are
+>> making a statement without specifics about frequency.
 >
+> substitute with "can (by design)"?
+
+By Pavel's unproven casual observation?
+
 >
-> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13219
-> Subject        : Intel 440GX: Since kernel 2.6.30-rc1, computers  
-> hangs randomly but not with kernel <= 2.6.29.6
-> Submitter    : David Hill <hilld@binarystorm.net>
-> Date        : 2009-05-01 16:57 (117 days old)
+> Now, if you can suggest useful version of that document meeting your
+> criteria?
 >
->
->
->
-> -- 
-> This message has been scanned for viruses and
-> dangerous content by MailScanner, and is
-> believed to be clean.
->
->
+> 								Pavel
+
