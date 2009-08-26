@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752015AbZHZQZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752022AbZHZQ0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752015AbZHZQZo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 12:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbZHZQZo
+	id S1752022AbZHZQ0K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 12:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZHZQ0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 12:25:44 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:46988 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751717AbZHZQZn (ORCPT
+	Wed, 26 Aug 2009 12:26:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:60119 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbZHZQ0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 12:25:43 -0400
-Date: Wed, 26 Aug 2009 17:25:37 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 5/6] thermal: Only set passive_delay for forced passive
-	cooling
-Message-ID: <20090826162537.GC15868@srcf.ucam.org>
-References: <1251303445-25317-1-git-send-email-elendil@planet.nl> <1251303445-25317-6-git-send-email-elendil@planet.nl>
+	Wed, 26 Aug 2009 12:26:08 -0400
+Message-ID: <4A95602A.5040109@vflare.org>
+Date: Wed, 26 Aug 2009 21:47:46 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251303445-25317-6-git-send-email-elendil@planet.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mm-cc@laptop.org
+Subject: Re: [PATCH 1/4] compcache: xvmalloc memory allocator
+References: <200908241007.47910.ngupta@vflare.org> <84144f020908241033l4af09e7h9caac47d8d9b7841@mail.gmail.com> <4A92EBB4.1070101@vflare.org> <Pine.LNX.4.64.0908242132320.8144@sister.anvils> <4A930313.9070404@vflare.org> <Pine.LNX.4.64.0908242224530.10534@sister.anvils> <4A93FAA5.5000001@vflare.org> <4A94358C.6060708@vflare.org> <alpine.DEB.1.10.0908261209240.9933@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0908261209240.9933@gentwo.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 06:17:24PM +0200, Frans Pop wrote:
-> Setting polling_delay is useless as passive_delay has priority,
-> so the value shown in proc isn't the actual polling delay. It
-> also gives the impression to the user that he can change the
-> polling interval through proc, while in fact he can't.
-> 
-> Also, unset passive_delay when the forced passive trip point is
-> unbound to allow polling to be disabled.
-> 
-> Signed-off-by: Frans Pop <elendil@planet.nl>
-> Cc: Matthew Garrett <mjg@redhat.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
+On 08/26/2009 09:40 PM, Christoph Lameter wrote:
+> On Wed, 26 Aug 2009, Nitin Gupta wrote:
+>
+>> I went crazy. I meant 40 bits for PFN -- not 48. This 40-bit PFN should be
+>> sufficient for all archs. For archs where 40 + PAGE_SHIFT<  MAX_PHYSMEM_BITS
+>> ramzswap will just issue a compiler error.
+>
+> How about restricting the xvmalloc memory allocator to 32 bit? If I
+> understand correctly xvmalloc main use in on 32 bit in order to be
+> able to use HIGHMEM?
+>
+>
 
-I'll look over this - I seem to remember having some reason to set that, 
-but it escapes me now.
+I have just replaced all PFN usage with struct page in xvmalloc.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+The main use of xvmalloc is not just the use of HIGHMEM -- its just one
+of the things. Other reasons are:
+  - O(1) alloc/free
+  - Low fragmentation
+  - Allocates 0-order pages to expand pools
+
+Following gives more information:
+http://code.google.com/p/compcache/wiki/xvMalloc
+http://code.google.com/p/compcache/wiki/xvMallocPerformance
+
+Thanks,
+Nitin
