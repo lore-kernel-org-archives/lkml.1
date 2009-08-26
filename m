@@ -1,108 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbZHZFBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbZHZFAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbZHZFBv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 01:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbZHZFAx
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756555AbZHZFAx (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 26 Aug 2009 01:00:53 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41529 "EHLO
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbZHZFAw
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 26 Aug 2009 01:00:52 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:58576 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755934AbZHZFAu (ORCPT
+	with ESMTP id S1755918AbZHZFAu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Aug 2009 01:00:50 -0400
-Message-Id: <20090826050050.893406395@goodmis.org>
+Message-Id: <20090826050051.249714382@goodmis.org>
 References: <20090826045945.201094161@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 26 Aug 2009 00:59:47 -0400
+Date: Wed, 26 Aug 2009 00:59:48 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Josh Triplett <josh@joshtriplett.org>
-Subject: [PATCH 2/8] tracing: Add vim script to enable folding for function_graph traces
-Content-Disposition: inline; filename=0002-tracing-Add-vim-script-to-enable-folding-for-functio.patch
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH 3/8] tracing/filters: Add filter_type to struct ftrace_event_field
+Content-Disposition: inline; filename=0003-tracing-filters-Add-filter_type-to-struct-ftrace_eve.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Josh Triplett <josh@joshtriplett.org>
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-function_graph traces look like nested function calls, complete with
-braces denoting the start and end of functions.  function-graph-fold.vim
-teaches vim how to fold these functions, to make it more convenient to
-browse them.
+The type of a field is stored as a string in @type, and here
+we add @filter_type which is an enum value.
 
-To use, :source function-graph-fold.vim while viewing a function_graph
-trace, or use "view -S function-graph-fold.vim some-trace" to load it
-from the command-line together with a trace.  You can then use the usual
-vim fold commands, such as "za", to open and close nested functions.
-While closed, a fold will show the total time taken for a call, as would
-normally appear on the line with the closing brace.  Folded functions
-will not include finish_task_switch(), so folding should remain
-relatively sane even through a context switch.
+This prepares for later patches, so we can specifically assign
+different @filter_type for the same @type.
 
-Note that this will almost certainly only work well with a single-CPU
-trace (e.g. trace-cmd report --cpu 1).  It also takes some time to run
-(a few seconds for a large trace on my laptop).  Nevertheless, I found
-it very handy to get an overview of a trace and then drill down on
-problematic calls.
+For example normally a "char *" field is treated as a ptr,
+but we may want it to be treated as a string when doing filting.
 
-Signed-off-by: Josh Triplett <josh@joshtriplett.org>
-LKML-Reference: <20090806145701.GB7661@feather>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <4A7B925E.9030605@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- Documentation/trace/function-graph-fold.vim |   42 +++++++++++++++++++++++++++
- 1 files changed, 42 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/trace/function-graph-fold.vim
+ kernel/trace/trace.h               |    2 ++
+ kernel/trace/trace_events.c        |    2 ++
+ kernel/trace/trace_events_filter.c |   23 ++++++++++++++---------
+ 3 files changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/trace/function-graph-fold.vim b/Documentation/trace/function-graph-fold.vim
-new file mode 100644
-index 0000000..0544b50
---- /dev/null
-+++ b/Documentation/trace/function-graph-fold.vim
-@@ -0,0 +1,42 @@
-+" Enable folding for ftrace function_graph traces.
-+"
-+" To use, :source this file while viewing a function_graph trace, or use vim's
-+" -S option to load from the command-line together with a trace.  You can then
-+" use the usual vim fold commands, such as "za", to open and close nested
-+" functions.  While closed, a fold will show the total time taken for a call,
-+" as would normally appear on the line with the closing brace.  Folded
-+" functions will not include finish_task_switch(), so folding should remain
-+" relatively sane even through a context switch.
-+"
-+" Note that this will almost certainly only work well with a
-+" single-CPU trace (e.g. trace-cmd report --cpu 1).
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 300ef78..64dda57 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -755,6 +755,7 @@ struct ftrace_event_field {
+ 	struct list_head	link;
+ 	char			*name;
+ 	char			*type;
++	int			filter_type;
+ 	int			offset;
+ 	int			size;
+ 	int			is_signed;
+@@ -800,6 +801,7 @@ extern int apply_subsystem_event_filter(struct event_subsystem *system,
+ 					char *filter_string);
+ extern void print_subsystem_event_filter(struct event_subsystem *system,
+ 					 struct trace_seq *s);
++extern int filter_assign_type(const char *type);
+ 
+ static inline int
+ filter_check_discard(struct ftrace_event_call *call, void *rec,
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 79d3520..5740e90 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -44,9 +44,11 @@ int trace_define_field(struct ftrace_event_call *call, const char *type,
+ 	if (!field->type)
+ 		goto err;
+ 
++	field->filter_type = filter_assign_type(type);
+ 	field->offset = offset;
+ 	field->size = size;
+ 	field->is_signed = is_signed;
 +
-+function! FunctionGraphFoldExpr(lnum)
-+  let line = getline(a:lnum)
-+  if line[-1:] == '{'
-+    if line =~ 'finish_task_switch() {$'
-+      return '>1'
-+    endif
-+    return 'a1'
-+  elseif line[-1:] == '}'
-+    return 's1'
-+  else
-+    return '='
-+  endif
-+endfunction
+ 	list_add(&field->link, &call->fields);
+ 
+ 	return 0;
+diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+index 490337a..22e6d82 100644
+--- a/kernel/trace/trace_events_filter.c
++++ b/kernel/trace/trace_events_filter.c
+@@ -476,11 +476,12 @@ static int filter_add_pred_fn(struct filter_parse_state *ps,
+ }
+ 
+ enum {
+-	FILTER_STATIC_STRING = 1,
+-	FILTER_DYN_STRING
++	FILTER_OTHER = 0,
++	FILTER_STATIC_STRING,
++	FILTER_DYN_STRING,
+ };
+ 
+-static int is_string_field(const char *type)
++int filter_assign_type(const char *type)
+ {
+ 	if (strstr(type, "__data_loc") && strstr(type, "char"))
+ 		return FILTER_DYN_STRING;
+@@ -488,12 +489,18 @@ static int is_string_field(const char *type)
+ 	if (strchr(type, '[') && strstr(type, "char"))
+ 		return FILTER_STATIC_STRING;
+ 
+-	return 0;
++	return FILTER_OTHER;
++}
 +
-+function! FunctionGraphFoldText()
-+  let s = split(getline(v:foldstart), '|', 1)
-+  if getline(v:foldend+1) =~ 'finish_task_switch() {$'
-+    let s[2] = ' task switch  '
-+  else
-+    let e = split(getline(v:foldend), '|', 1)
-+    let s[2] = e[2]
-+  endif
-+  return join(s, '|')
-+endfunction
-+
-+setlocal foldexpr=FunctionGraphFoldExpr(v:lnum)
-+setlocal foldtext=FunctionGraphFoldText()
-+setlocal foldcolumn=12
-+setlocal foldmethod=expr
++static bool is_string_field(struct ftrace_event_field *field)
++{
++	return field->filter_type == FILTER_DYN_STRING ||
++	       field->filter_type == FILTER_STATIC_STRING;
+ }
+ 
+ static int is_legal_op(struct ftrace_event_field *field, int op)
+ {
+-	if (is_string_field(field->type) && (op != OP_EQ && op != OP_NE))
++	if (is_string_field(field) && (op != OP_EQ && op != OP_NE))
+ 		return 0;
+ 
+ 	return 1;
+@@ -550,7 +557,6 @@ static int filter_add_pred(struct filter_parse_state *ps,
+ 	struct ftrace_event_field *field;
+ 	filter_pred_fn_t fn;
+ 	unsigned long long val;
+-	int string_type;
+ 	int ret;
+ 
+ 	pred->fn = filter_pred_none;
+@@ -578,9 +584,8 @@ static int filter_add_pred(struct filter_parse_state *ps,
+ 		return -EINVAL;
+ 	}
+ 
+-	string_type = is_string_field(field->type);
+-	if (string_type) {
+-		if (string_type == FILTER_STATIC_STRING)
++	if (is_string_field(field)) {
++		if (field->filter_type == FILTER_STATIC_STRING)
+ 			fn = filter_pred_string;
+ 		else
+ 			fn = filter_pred_strloc;
 -- 
 1.6.3.3
 
