@@ -1,90 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751511AbZHZPbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751470AbZHZPit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751511AbZHZPbt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 11:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZHZPbs
+	id S1751470AbZHZPit (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 11:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZHZPis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 11:31:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43933 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbZHZPbr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 11:31:47 -0400
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-From: Peter Zijlstra <peterz@infradead.org>
-To: raz ben yehuda <raziebe@gmail.com>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
-       riel@redhat.com, mingo@elte.hu,
-       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
-       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
-In-Reply-To: <1251298443.4791.7.camel@raz>
-References: <1250983671.5688.21.camel@raz>
-	 <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>
-	 <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>
-	 <1251021133.14003.172.camel@marge.simson.net>
-	 <alpine.DEB.1.10.0908251122020.26329@gentwo.org>
-	 <1251222993.7023.53.camel@marge.simson.net>
-	 <alpine.DEB.1.10.0908251402300.17963@gentwo.org>
-	 <1251227322.7538.1172.camel@twins>  <4A943A00.9080609@nortel.com>
-	 <1251264700.7538.1178.camel@twins> <1251282598.3514.20.camel@raz>
-	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
-	 <1251297910.1791.22.camel@maxim-laptop>  <1251298443.4791.7.camel@raz>
-Content-Type: text/plain
+	Wed, 26 Aug 2009 11:38:48 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57674 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbZHZPis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 11:38:48 -0400
+Message-ID: <4A95573A.6090404@redhat.com>
+Date: Wed, 26 Aug 2009 11:39:38 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.8.b3.fc12 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Andrei Tanas <andrei@tanas.ca>
+CC: NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       linux-ide-owner@vger.kernel.org
+Subject: Re: MD/RAID: what's wrong with sector 1953519935?
+References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost>
+In-Reply-To: <92cb16daad8278b0aa98125b9e1d057a@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Aug 2009 17:30:25 +0200
-Message-Id: <1251300625.18584.18.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 17:54 +0300, raz ben yehuda wrote:
-> This is exactly what offsched (sos) is. you got it. SOS was partly
-> inspired by the notion of a GPU. 
+On 08/26/2009 10:46 AM, Andrei Tanas wrote:
+> On Wed, 26 Aug 2009 06:34:14 -0400, Ric Wheeler<rwheeler@redhat.com>
+> wrote:
+>> On 08/25/2009 11:45 PM, Andrei Tanas wrote:
+>>>>>> I would suggest that Andrei might try to write and clear the IO
+>>>>>>
+>>>> error
+>>>>
+>>>>>> at that
+>>>>>> offset. You can use Mark Lord's hdparm to clear a specific sector or
+>>>>>> just do the
+>>>>>> math (carefully!) and dd over it. It the write succeeds (without
+>>>>>> bumping your
+>>>>>> remapped sectors count) this is a likely match to this problem,
+>>>>>>
+>>>>> I've tried dd multiple times, it always succeeds, and the relocated
+>>>>>
+>>>> sector
+>>>>
+>>>>> count is currently 1 on this drive, even though this particular fault
+>>>>> happened at least 3 times so far.
+>>>>>
+>>>>>
+>>>> I would bump that count way up (say to 2) and see if you have an
+>>>> issue...
+>>>>
+>>> Not sure what you mean by this: how can I artificially bump the
+> relocated
+>>> sector count?
+>>>
+>>>
+>> Sorry - you need to set the tunable:
+>>
+>> /sys/block/mdX/md/safe_mode_delay
+>>
+>> to something like "2" to prevent that sector from being a hotspot...
+>
+> I did that as soon as you suggested that it's possible to tune it. The
+> array is still being rebuilt (it's a fairly busy machine, so rebuilding is
+> slow). I'll monitor it, but I don't expect to see the results soon as even
+> with the default value of 0.2 it used to happen once in several weeks.
+>
+> On the other note: is it possible that the drive was actually working
+> properly but was not given enough time to complete the write request? These
+> newer drives have 32MB cache but the same rotational speed and seek times
+> as the older ones so they must need more time to flush their cache?
+>
+> Andrei.
+>
 
-It is not, GPUs and other paired chips form a hybrid system. Linux is
-known to run on one or more of such chips and communicate through
-whatever means these chips have.
+Timeouts on IO requests are pretty large, usually drives won't fail an IO unless 
+there is a real problem but I will add the linux-ide list to this response so 
+they can weigh in.
 
-But what you propose here is hard partitioning a homogeneous system,
-totally different.
+I suspect that the error was real, but might be this "repairable" type of 
+adjacent track issue I mentioned before. Interesting to note that just following 
+the error, you see that it was indeed the super block that did not get updated...
 
-> Processors are to become more and more redundant and Linux as an
-> evolutionary system must use it. why not offload raid5 write engine ?
-> why not encrypt in a different processor ?
+The error you referenced was:
 
-Why waste a whole cpu for something that could be done by part of one?
+90307.328266] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+frozen
+[90307.328275] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+[90307.328277]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
+(timeout)
+[90307.328280] ata2.00: status: { DRDY }
+[90307.328288] ata2: hard resetting link
+[90313.218511] ata2: link is slow to respond, please be patient (ready=0)
+[90317.377711] ata2: SRST failed (errno=-16)
+[90317.377720] ata2: hard resetting link
+[90318.251720] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+[90318.338026] ata2.00: configured for UDMA/133
+[90318.338062] ata2: EH complete
+[90318.370625] end_request: I/O error, dev sdb, sector 1953519935
+[90318.370632] md: super_written gets error=-5, uptodate=0
 
-> Also , having so many processors in a single OS means a bug prone
-> system , with endless contention points when two or more OS processors
-> interacts. 
 
-You're bound to have interaction between the core os and these
-partitions you want, non of it different from how threads in the kernel
-would interact, other than that you're going to re-invent everything
-already present in the kernel.
-
-> let's make things simpler.
-
-You don't, you make things more complex by introducing duplicate
-functionality.
-
-What's more, you burden the user with having to configure such a system,
-and make choices on having to give up parts of his system, nothing like
-that should be needed on a homogeneous system.
-
-Work spend on trimming fat of of the core kernel helps everybody, even
-users not otherwise interested in things like giving up a whole cpu for
-some odd purpose.
-
-There is no reason something could be done more efficiently on a
-dedicated CPU than not when you assume a homogeneous system (which is
-all Linux supports in the single image sense).
-
-If you think the kernel is too fat and does superfluous things for your
-needs, help trim it.
-
+Ric
 
