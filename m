@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbZHZTFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZHZTIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752933AbZHZTFy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 15:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbZHZTFx
+	id S1752926AbZHZTIp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 15:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZHZTIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 15:05:53 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41776 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752897AbZHZTFx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 15:05:53 -0400
-Subject: Re: [RFC][PATCH -rt] sched: fully ignore RT tasks for CFS
- load-balancing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A958480.3070207@us.ibm.com>
-References: <1251297875.18584.5.camel@twins>  <4A958480.3070207@us.ibm.com>
-Content-Type: text/plain
+	Wed, 26 Aug 2009 15:08:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57467 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752837AbZHZTIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 15:08:44 -0400
+Message-ID: <4A9587FE.20503@kernel.org>
+Date: Wed, 26 Aug 2009 12:07:42 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Cyrill Gorcunov <gorcunov@openvz.org>
+Subject: Re: [PATCH] x86: use hard_smp_processor_id to get apic id in identify_cpu
+ -v2
+References: <4A9391CD.5020804@kernel.org>  <4A946082.9090809@kernel.org>	 <1251240835.2636.28.camel@sbs-t61>  <4A948C88.9060403@kernel.org> <1251308988.2787.39.camel@sbs-t61.sc.intel.com>
+In-Reply-To: <1251308988.2787.39.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Aug 2009 21:04:45 +0200
-Message-Id: <1251313485.18584.33.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 11:52 -0700, Darren Hart wrote:
-> Peter Zijlstra wrote:
-> > Since -rt runs IRQs and SoftIRQs as RT tasks and load-balancing is done
-> > from softirq context, there is always at least one RT task (and very
-> > likely multiple) running when we balance.
-> > 
-> > The current (and totally broken) interaction between RT tasks and CFS
-> > load-balancing makes it so that we'll try to evacuate a significant
-> > amount of tasks due to RT tasks being runnable.
-> > 
-> > Solve this in another broken way by not accounting RT tasks at all.
-> > 
-> > This will likely break another class of cases, but until we can properly
-> > fix this, we might as well do this.
+Suresh Siddha wrote:
 > 
-> Peter,
+> In short, on all the platforms we want to use initial apic id for apicid
+> and phys_proc_id. And only on the required platforms like x445, vsmp,
+> some AMD platforms, we can have their own mechanisms.
 > 
-> Do we know why this became a problem lately?  I don't recall seeing load 
-> balancing issues like this way back around 2.6.21 or 22 when CFS was 
-> released.  Is the cpu_load stuff fairly recent?
+>> 3. for vsmp, and x445, do you want to have c->apicid to have real apic id or the same as initial apic_id?
+> 
+> On these platforms, c->apicid should be based on their real apic id.
+> 
+>> this patch is trying to make c->apicid to have real apic_id.
+> 
+> Can you please modify the patch so that we can have exceptions for
+> needed platforms only?
+> 
 
-The earlier problem solved by the previous patch was caused by tglx
-tinkering with the cpu_load computation.
+please check this one
 
-This particular problem I'm not sure about, afaict it should have been
-present a long long time.
+[PATCH] x86: use hard_smp_processor_id to get apic id for amd k8 cpus
+
+otherwise, system with apci id lifting will have wrong apicid in
+/proc/cpuinfo
+
+and use that in srat_detect_node
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/cpu/amd.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/arch/x86/kernel/cpu/amd.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
++++ linux-2.6/arch/x86/kernel/cpu/amd.c
+@@ -277,7 +277,7 @@ static void __cpuinit srat_detect_node(s
+ #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
+ 	int cpu = smp_processor_id();
+ 	int node;
+-	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
++	unsigned apicid = c->apicid;
+ 
+ 	node = c->phys_proc_id;
+ 	if (apicid_to_node[apicid] != NUMA_NO_NODE)
+@@ -437,6 +437,9 @@ static void __cpuinit init_amd(struct cp
+ 	}
+ 	if (c->x86 == 0x10 || c->x86 == 0x11)
+ 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
++
++	/* get apicid instead of initial apic id from cpuid */
++	c->apicid = hard_smp_processor_id();
+ #else
+ 
+ 	/*
