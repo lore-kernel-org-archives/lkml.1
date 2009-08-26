@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbZHZGRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbZHZGTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756814AbZHZGRL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 02:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbZHZGRK
+	id S1756743AbZHZGTh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 02:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbZHZGTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 02:17:10 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:34661 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753766AbZHZGRJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 02:17:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Ef7x0bz75urN7ViivGD3bvEUATx1b32qxAKFG/AlIvgNulqS7yTflC++56YK+3MtSj
-         bZQnQg6Qku0Xl1d+nS5LkFsawoXLSxSr9lpWcEjggBXqVWgWYS5dpE3ogU+830yIOQII
-         KQe3PC2iR09Lcyp1EAwqbkvVbjkA1jFBry368=
+	Wed, 26 Aug 2009 02:19:37 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63558 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750883AbZHZGTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 02:19:36 -0400
+Message-ID: <4A94D3A8.1090902@cn.fujitsu.com>
+Date: Wed, 26 Aug 2009 14:18:16 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <_yaHeGjHEzG.A.2bH.CtGlKB@chimera>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	 <_yaHeGjHEzG.A.2bH.CtGlKB@chimera>
-Date: Wed, 26 Aug 2009 09:17:09 +0300
-X-Google-Sender-Auth: ff684b46a2adb930
-Message-ID: <84144f020908252317j202aa459u27c40eed34debd6@mail.gmail.com>
-Subject: Re: [Bug #14011] Kernel paging request failed in kmem_cache_alloc
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Matthias Dahl <ml_kernel@mortal-soul.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+References: <20090824092455.GA25267@elte.hu>	 <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>	 <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>	 <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu>	 <1251191546.7538.1118.camel@twins> <20090825102215.GC26801@elte.hu>	 <1251196359.7538.1133.camel@twins>  <20090825103907.GB28287@elte.hu>	 <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins>
+In-Reply-To: <1251211963.7538.1164.camel@twins>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthias,
+CC: Mathieu
 
-On Tue, Aug 25, 2009 at 11:34 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14011
-> Subject         : Kernel paging request failed in kmem_cache_alloc
-> Submitter       : Matthias Dahl <ml_kernel@mortal-soul.de>
-> Date            : 2009-08-10 22:26 (16 days old)
-> References      : http://marc.info/?l=linux-kernel&m=124993603825082&w=4
+Peter Zijlstra wrote:
+> On Tue, 2009-08-25 at 12:47 +0200, Peter Zijlstra wrote:
+>> On Tue, 2009-08-25 at 12:39 +0200, Ingo Molnar wrote:
+>>
+>>>> Do you really wish to burden every tracepoint user with the extra 
+>>>> logic needed to deal with modules?
+>>> Not necessarily - i'm just outlining why i think that the 'dont 
+>>> allow subsystems to utilize tracepoint callbacks' is a restriction 
+>>> we should not live with voluntarily.
+>> Well, unless someone has a bright idea that's what it comes down to. 
+> 
+> OK, I still think modules probing their own tracepoints its stupid [*],
+> but what you could do is iterate the tracepoint's callback list and see
+> if it has a callback outside of the module code section and then fail
+> the unload.
+> 
 
-Can you reproduce the bug without the proprietary nvidia module that
-seems to be loaded?
+I don't think this can work, what if a new callback is registered after
+this check? Seems there's no syncronization to guarantee the result of
+the check can remain valid during module unload.
 
-                                        Pekka
+And the other proposal that bumping module refcnt in register_tracepoint_xxx(),
+I found it hard to do so, because register() won't know where the
+tracepoint is. For example:
+
+   register_tracepoint_foo() is in module bar, while
+   DEFINE_TRACE(foo) and trace_foo() is in module foo.
+
+Note, you're allowed to load bar without foo.
+
+The simplest fix is the patch I sent, which you don't like. Maybe
+Mathieu, the auther of tracepoint, or some one else has some idea?
+
+> [*] in the really utterly fundamentally wrong stupid class.
+
