@@ -1,79 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbZHZNxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbZHZN4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757418AbZHZNxr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbZHZNxr
+	id S1757425AbZHZN4S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbZHZN4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:53:47 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:13658 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757384AbZHZNxq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JsRWFmm/5D2AOvhf86ORkYnT7eXKywkiz7+F6DgSx/vIu9olMGMFWbJjk2wwrG3f9g
-         Lng7j1yAXiyN8/rNSTzrATp1So2CEYk9B7qyNNq0Ed9t2WidMSu2JSHZiIOYFL5Frgdk
-         u33OnZBtnFUSJMfldkTRge3upK3oNNICA0XGQ=
-Date: Wed, 26 Aug 2009 15:53:35 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, jiayingz@google.com,
-       mbligh@google.com, lizf@cn.fujitsu.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090826135331.GF6009@nowhere>
-References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090826123550.GD6009@nowhere> <20090826125943.GA5946@osiris.boeblingen.de.ibm.com> <20090826133019.GE6009@nowhere> <alpine.DEB.2.00.0908260944540.27786@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908260944540.27786@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 26 Aug 2009 09:56:17 -0400
+Received: from smtp.knology.net ([24.214.63.101]:38912 "EHLO smtp.knology.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757397AbZHZN4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 09:56:16 -0400
+Subject: Re: [PATCH] r8169: Reduce looping in the interrupt handler.
+From: David Dillow <dave@thedillows.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Francois Romieu <romieu@fr.zoreil.com>,
+       Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
+       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <m1iqgbknun.fsf_-_@fess.ebiederm.org>
+References: <1250895567.23419.1.camel@obelisk.thedillows.org>
+	 <1250897657.23419.5.camel@obelisk.thedillows.org>
+	 <m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
+	 <1250973787.3582.14.camel@obelisk.thedillows.org>
+	 <m1r5v0ogvw.fsf@fess.ebiederm.org>
+	 <1251169150.4023.11.camel@obelisk.thedillows.org>
+	 <m1prajabk8.fsf@fess.ebiederm.org>
+	 <1251232848.9607.15.camel@lap75545.ornl.gov>
+	 <m1k50r8u4p.fsf@fess.ebiederm.org>
+	 <20090825221903.GA13630@electric-eye.fr.zoreil.com>
+	 <m1iqgbknun.fsf_-_@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Wed, 26 Aug 2009 09:56:14 -0400
+Message-Id: <1251294974.14241.9.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 09:48:48AM -0400, Steven Rostedt wrote:
+On Wed, 2009-08-26 at 00:58 -0700, Eric W. Biederman wrote:
+> As of 2.6.30 I have been observing soft lockups and netdev watchdog
+> timeouts caused by looping in the r8169 interrupt handler.
 > 
-> On Wed, 26 Aug 2009, Frederic Weisbecker wrote:
-> > > 
-> > > That won't always work as pointed out in the other example:
-> > > - Process doing sys_init_module then scheduled away
-> > > - User enables syscall tracing -> TIF_SYSCALL_FTRACE gets set
-> > > - init function of the module gets called and is doing kernel_thread()
-> > >   (old API) -> kernel thread inherits TIF_SYSCALL_FTRACE.
-> > > 
-> > > I don't think that's what you want. You might want to clear the flag for
-> > > new processes during fork (only for kernel threads I would guess).
-> > > 
-> > > At least the current patch leaves a hole.
-> > 
-> > 
-> > Ah, there are callsites that use kernel_thread() directly?
-> > Does it means that t->mm could be non NULL for such resulting
-> > kernel threads, in that case it would be hard to hook on
-> > do_fork() to check that.
+> - Introduce a hard limit to the maximum number of times we will loop in
+>   the interrupt handler, and print a message when we hit it.
 > 
-> All kernel threads have a NULL t->mm. Since do_fork is called by kthreadd 
-> and not by kthread_create, the caller of do_fork will also have a
-> t->mm = NULL.
+> - Break out of the loop if after looking none of the events in status
+>   are events we expect to be delivered by an interrupt.
 > 
-> -- Steve
+> With just the hard limit and message bits of my patch in my test case
+> I get hit my limit of 10 loops 12 times.  After filtering by intr_mask
+> and intr_event I don't get any warnings.
 > 
+> Any complaints from those who know the driver better than I?
 
-Yeah, that's the case with kthread_create() creation fashion,
-but what if you create a kernel thread using the low level
-kernel_thread() directly (ie: without relaying on kthreadd queue)?
+Have you tried this under a sustained heavy transmit load? I think you
+may have reintroduced the problem the original patch was trying to
+prevent -- wedging the MSI interrupt by not ACKing all outstanding
+interrupt sources, masked or otherwise. I'll try to test this out on the
+machine where I've seen the problem consistently, but it may be this
+weekend.
 
-Especially in Heiko example, it seems to be a duplication of user
-task.
+> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+> index 3b19e0c..2214945 100644
+> --- a/drivers/net/r8169.c
+> +++ b/drivers/net/r8169.c
 
-I wonder what obvious think I'm missing here...
+> +
+> +		/* Ignore the parts of status that reflect more than
+> +		 * the enabled interrupts.
+> +		 */
+> +		smp_rmb();
+> +		if (!(status & tp->intr_mask & tp->intr_event))
+> +			break;
+>  	}
+
+This looks like an odd construct, since we're just about to go back the
+while condition up top -- why not just mask it here and let the loop
+handle it naturally?
+
 
