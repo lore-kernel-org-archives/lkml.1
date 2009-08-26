@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZHZTIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbZHZTLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbZHZTIp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 15:08:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZHZTIp
+	id S1752600AbZHZTLG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 15:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbZHZTLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 15:08:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57467 "EHLO hera.kernel.org"
+	Wed, 26 Aug 2009 15:11:05 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:33715 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752837AbZHZTIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 15:08:44 -0400
-Message-ID: <4A9587FE.20503@kernel.org>
-Date: Wed, 26 Aug 2009 12:07:42 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1750903AbZHZTLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 15:11:04 -0400
+Date: Wed, 26 Aug 2009 12:11:05 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/rcu] rcu: Remove lockdep annotations from RCU's
+	_notrace() API members
+Message-ID: <20090826191105.GD6752@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090826015337.GA18904@linux.vnet.ibm.com> <tip-06e799764eb7c2e4640888d438c3524d756613e1@git.kernel.org> <20090826084938.GA5023@elte.hu> <20090826173318.GC6752@linux.vnet.ibm.com> <20090826183954.GE13632@elte.hu>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: Re: [PATCH] x86: use hard_smp_processor_id to get apic id in identify_cpu
- -v2
-References: <4A9391CD.5020804@kernel.org>  <4A946082.9090809@kernel.org>	 <1251240835.2636.28.camel@sbs-t61>  <4A948C88.9060403@kernel.org> <1251308988.2787.39.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1251308988.2787.39.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826183954.GE13632@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
+On Wed, Aug 26, 2009 at 08:39:54PM +0200, Ingo Molnar wrote:
 > 
-> In short, on all the platforms we want to use initial apic id for apicid
-> and phys_proc_id. And only on the required platforms like x445, vsmp,
-> some AMD platforms, we can have their own mechanisms.
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 > 
->> 3. for vsmp, and x445, do you want to have c->apicid to have real apic id or the same as initial apic_id?
+> > On Wed, Aug 26, 2009 at 10:49:38AM +0200, Ingo Molnar wrote:
+> > > 
+> > > * tip-bot for Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > Commit-ID:  06e799764eb7c2e4640888d438c3524d756613e1
+> > > > Gitweb:     http://git.kernel.org/tip/06e799764eb7c2e4640888d438c3524d756613e1
+> > > > Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > > AuthorDate: Tue, 25 Aug 2009 18:53:37 -0700
+> > > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > > CommitDate: Wed, 26 Aug 2009 09:45:41 +0200
+> > > > 
+> > > > rcu: Remove lockdep annotations from RCU's _notrace() API members
+> > > 
+> > > I'm afraid this does not solve the problem either - the attached 
+> > > config crashes too. Does it boot for you? It should boot fine on 
+> > > most 64-bit x86 systems.
+> > 
+> > OK, got my hands on a 64-bit x86 system, building.  When I did 
+> > "make oldconfig" on the attached config file, I ended up with the 
+> > following diffs.  If there is some other command I should use, 
+> > please let me know. Otherwise, will let you know how this goes.
 > 
-> On these platforms, c->apicid should be based on their real apic id.
+> Have you tried it on tip/master + tip/core/rcu? make oldconfig works 
+> fine with that here.
+
+Ah!!!  I have been running just tip/core/rcu.
+
+> But ... here's something you wont like: just to make sure i sent you 
+> the right config [i made mistakes there in the past] i picked a 
+> 64-bit system (a different one from the one that triggered the 
+> crash), built the config with latest tip/master (80c161b, using gcc 
+> 4.3.2) plus tip/core/rcu (06e7997) git-merged in:
 > 
->> this patch is trying to make c->apicid to have real apic_id.
+>   git checkout -b tmp tip/master
+>   git merge tip/core/rcu
 > 
-> Can you please modify the patch so that we can have exceptions for
-> needed platforms only?
-> 
+> and booted it - and that did not produce any lockups. So you might 
+> not be able to reproduce it :-/ I've re-merged core/rcu into 
+> tip/master, maybe my tests can find another config that reproduces 
+> the crash better. Please disregard this bugreport until i've found 
+> that one.
 
-please check this one
+OK, I will give the x86_64 machine back and go back to making a
+synchronize_rcu_expedited() that is integrated tightly into the tree-rcu
+algorithm.  Looks to be pretty small and simple -- but then they always
+do before you start debugging them...  ;-)
 
-[PATCH] x86: use hard_smp_processor_id to get apic id for amd k8 cpus
-
-otherwise, system with apci id lifting will have wrong apicid in
-/proc/cpuinfo
-
-and use that in srat_detect_node
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/kernel/cpu/amd.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/arch/x86/kernel/cpu/amd.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
-+++ linux-2.6/arch/x86/kernel/cpu/amd.c
-@@ -277,7 +277,7 @@ static void __cpuinit srat_detect_node(s
- #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
- 	int cpu = smp_processor_id();
- 	int node;
--	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
-+	unsigned apicid = c->apicid;
- 
- 	node = c->phys_proc_id;
- 	if (apicid_to_node[apicid] != NUMA_NO_NODE)
-@@ -437,6 +437,9 @@ static void __cpuinit init_amd(struct cp
- 	}
- 	if (c->x86 == 0x10 || c->x86 == 0x11)
- 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
-+
-+	/* get apicid instead of initial apic id from cpuid */
-+	c->apicid = hard_smp_processor_id();
- #else
- 
- 	/*
+							Thanx, Paul
