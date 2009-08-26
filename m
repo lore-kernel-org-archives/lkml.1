@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750911AbZHZED2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751107AbZHZEIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750911AbZHZED2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 00:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbZHZED1
+	id S1751107AbZHZEIc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 00:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbZHZEIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 00:03:27 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:43251 "EHLO
-	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbZHZED0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 00:03:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=YWo+vmmMBvikRILj7fGaDoGfXvBEjl4YGxGD5yfURWQ4I69FAwBXtWOCLt+psC81BN
-         A0FJC7zeevqhwrsB05jhS/5D4FcCGrWgVFc66nudKvx4DnoKFa+Olc7YOQm2IN9K48Cw
-         XryVkX5tHsJxFhYruXsihXkao4ltSGCaMy+oc=
+	Wed, 26 Aug 2009 00:08:31 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:47801 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750701AbZHZEIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 00:08:30 -0400
+Message-ID: <4A94B529.1080308@redhat.com>
+Date: Wed, 26 Aug 2009 00:08:09 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Tue, 25 Aug 2009 21:03:08 -0700
-Message-ID: <43e72e890908252103j2332d8eat9e18fecb20a1fe58@mail.gmail.com>
-Subject: Initial work for ar9271
-To: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Cc: Christian Lamparter <chunkeey@web.de>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>, Greg KH <greg@kroah.com>,
-       Stephen Chen <Stephen.Chen@atheros.com>,
-       Zhifeng Cai <zhifeng.cai@atheros.com>,
-       Cliff Holden <Cliff.Holden@atheros.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Len Widra <Len.Widra@atheros.com>
-Content-Type: text/plain; charset=UTF-8
+To: Pavel Machek <pavel@ucw.cz>
+CC: Neil Brown <neilb@suse.de>, Ric Wheeler <rwheeler@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+References: <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <19092.28371.793339.764701@notabene.brown> <20090825234454.GI4300@elf.ucw.cz>
+In-Reply-To: <20090825234454.GI4300@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Atheros ar9271 support work is underway with the initial hardware
-revision support already added on ath9k [1]. This driver shares a lot
-of the framework used by ar6k so there may be potential of sharing
-there. The final step of course is to add mac80211 support. ar9271
-will just be the first of a few generation of firmware based Atheros
-11n devices as such a different driver core will need to be written to
-support these devices, specifically for usb its important as we need
-to sleep during reads/writes, re-using ath9k as is may not quite do
-it. To help iron out the specifics we would like to work with the
-community on the rest of the driver. For now I've stuffed what I have
-with a clean history on a git repo. If you'd like to work on the
-driver I welcome patches:
+Pavel Machek wrote:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/ar9271.git
+> Ok, can you help? Having a piece of MD documentation explaining the
+> "powerfail nukes entire stripe" and how current filesystems do not
+> deal with that would be nice, along with description when exactly that
+> happens.
 
-You can get the ar9271.fw firmware here:
+Except of course for the inconvenient detail that a power
+failure on a degraded RAID 5 array does *NOT* nuke the
+entire stripe.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/athfw2lnx.git
+A 5-disk RAID 5 array will have 4 data blocks and 1 parity
+block in each stripe.  A degraded array will have either
+4 data blocks or 3 data blocks and 1 parity block in the
+stripe.
 
-I encourage really interested developers to please send me a note as
-we would like to allocate sample cards for you.
+If we are dealing with a parity-less stripe, we cannot
+lose any data due to RAID 5, because each of the 4 data
+blocks has a disk block available.  We could still lose
+a data write due to a power failure, but this could also
+happen with the RAID 5 array still intact.
 
-Bare with me on the progress of the driver, this code is so new I
-haven't even tested if firmware loading works but I think it may. At
-least it compiles now.
+If we are dealing with a 3-data, 1-parity stripe, then
+3 of the 4 data blocks have an available disk block and
+will not be lost (if they make it to disk).  The only
+block that maintains on all 3 data blocks and the parity
+block being correct is the block that does not currently
+have a disk to be written to.
 
-I'm not yet sure if working with a separate repo or staging might be
-best here as the driver does not yet give STA functionality, the whole
-mac80211 driver part still remains to be developed. Lets play it by
-ear, I'll see if we can get a mailing list created in the meantime
-unless Greg doesn't mind me borrowing the driver project mailing list
-for that.
+In short, if a stripe is not written completely on a
+degraded RAID 5 array, you can lose:
+1) the blocks that were not written (duh)
+2) the block that doesn't have a disk
 
-[1] http://marc.info/?l=linux-wireless&m=124935567308276&w=2
+The first part of this loss is also true in a non-degraded
+RAID 5 array.  The fact that the array is degraded really
+does not add much additional data loss here and you certainly
+will not lose the entire stripe like you suggest.
 
-  Luis
+-- 
+All rights reversed.
