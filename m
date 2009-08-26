@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbZHZEfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbZHZEts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbZHZEfP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 00:35:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZHZEfP
+	id S1753649AbZHZEts (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 00:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZHZEtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 00:35:15 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:64907 "EHLO
-	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbZHZEfN convert rfc822-to-8bit (ORCPT
+	Wed, 26 Aug 2009 00:49:47 -0400
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:57359 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbZHZEtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 00:35:13 -0400
+	Wed, 26 Aug 2009 00:49:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=UjgovbZWCZA4V9zXoBkTojJ5LnfYpUnraxwenszow9mopA0ZnwL8eOI5zrL7PA0BvO
-         3KvgT6+Uy02aJ9iHBAREUiBAXCR72sE+wSeoMcBXHMBrFsI+4ve6dsyCPFa1b2gXCdv0
-         VILMFspE/SOsnlxq3EsUrfyXmQIKZk91C0DFQ=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NtB+z/fOLT8odIUCuMlhCEI3M8yKRxIgfO29fEJp+FXT8/7lfF1Zf3ChCSfnHclCYU
+         RpAXCfRs9MO88Msp09wUgmtB25HZQssAS1CcGLCaCnrL4yDDprSb5r1hyeNrUCdbGcWB
+         WknUyXJRxPKJu/8BLwJB7QEbfLbgb/LnBJ3Aw=
+Date: Wed, 26 Aug 2009 12:52:00 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: akpm@linux-foundation.org, xiyou.wangcong@gmail.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: mmotm 2009-08-24-16-24 uploaded
+Message-ID: <20090826045200.GA4332@cr0.nay.redhat.com>
+References: <200908242328.n7ONSUHI022326@imap1.linux-foundation.org> <20090825190247.f7353bc8.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <1251261111.3463.15.camel@Joe-Laptop.home>
-References: <43e72e890908252103j2332d8eat9e18fecb20a1fe58@mail.gmail.com> 
-	<1251261111.3463.15.camel@Joe-Laptop.home>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Tue, 25 Aug 2009 21:34:55 -0700
-Message-ID: <43e72e890908252134s5139ba6by5248d4661a1596bb@mail.gmail.com>
-Subject: Re: Initial work for ar9271
-To: Joe Perches <joe@perches.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Christian Lamparter <chunkeey@web.de>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>, Greg KH <greg@kroah.com>,
-       Stephen Chen <Stephen.Chen@atheros.com>,
-       Zhifeng Cai <zhifeng.cai@atheros.com>,
-       Cliff Holden <Cliff.Holden@atheros.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Len Widra <Len.Widra@atheros.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090825190247.f7353bc8.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 9:31 PM, Joe Perches<joe@perches.com> wrote:
-> On Tue, 2009-08-25 at 21:03 -0700, Luis R. Rodriguez wrote:
->> If you'd like to work on the
->> driver I welcome patches:
->>
->> git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/ar9271.git
+On Tue, Aug 25, 2009 at 07:02:47PM +0900, KAMEZAWA Hiroyuki wrote:
+>On Mon, 24 Aug 2009 16:28:30 -0700
+>akpm@linux-foundation.org wrote:
 >
-> I think this style ugly because it's non kernel standard.
-
-Yup! Hence initial release.
-
-> int func(args)
-> {
->        do {
->                [ linear code ...]
->                if (err) {
->                        errorcode = ;
->                        break;
->                }
->                [ more linear code ...]
->        } while (0);
+>> kcore-use-usual-list-for-kclist.patch
+>> kcore-add-kclist-type.patch
+>> kcore-register-vmalloc-area-in-generic-way.patch
+>> kcore-register-text-area-in-generic-way.patch
+>> walk-system-ram-range.patch
+>> kcore-use-registerd-physmem-information.patch
+>> kcore-use-registerd-physmem-information-fix.patch
+>> kcore-use-registerd-physmem-information-checkpatch-fixes.patch
+>> kcore-use-registerd-physmem-information-define-node__pfn-for-non-numa-builds.patch
+>> kcore-use-registerd-physmem-information-fix2.patch
 >
->        if (errorcode) {
->                handle()...
->                return some_err;
->        }
->
->        return 0;
-> }
->
-> It's a bit too much like a try/throw/catch block.
+>These patches are reported to break bisection.
+>If dropped, I'll remake.
 
-So I gladly welcome every type of patch. Nuke nuke nuke.
+Confused... what is "break bisection"? :-/
 
-> Are patches accepted to convert it to the more
-> commonly used kernel style using gotos?
+But these patches were sent via two patchsets, since they
+are aimed to fix one problem, IMO it's better to hold them
+in one patch set, maybe this can solve some dependence
+problem...
 
-Absolutely. Tons of things here have to be removed / ported / etc.
-There is even kernel_thread() calls!
-
-  Luis
