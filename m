@@ -1,94 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbZHZRFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165AbZHZRIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752178AbZHZRFW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 13:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZHZRFV
+	id S1752165AbZHZRIO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 13:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZHZRIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 13:05:21 -0400
-Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:63553 "EHLO
-	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752109AbZHZRFV (ORCPT
+	Wed, 26 Aug 2009 13:08:13 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:38488 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751923AbZHZRIM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 13:05:21 -0400
-Subject: Re: [RFC PATCH] mm: balance_dirty_pages. reduce calls to
- global_page_state to reduce cache references
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: a.p.zijlstra@chello.nl, akpm@linux-foundation.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-In-Reply-To: <E1MfuU8-00088Q-Ta@pomaz-ex.szeredi.hu>
-References: <1250855961.2226.94.camel@castor>
-	 <1250863494.7538.49.camel@twins>  <E1MfuU8-00088Q-Ta@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Wed, 26 Aug 2009 18:05:19 +0100
-Message-Id: <1251306319.2290.6.camel@castor>
+	Wed, 26 Aug 2009 13:08:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Au4EAGcHlUpMROOX/2dsb2JhbACBU9dWhBoF
+Date: Wed, 26 Aug 2009 13:08:12 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
+Message-ID: <20090826170812.GC21456@Krystal>
+References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090825162004.GA25058@Krystal> <20090825165912.GI6114@nowhere> <20090825173107.GJ6114@nowhere> <20090825183119.GC2448@Krystal> <1251267669.7538.1195.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1251267669.7538.1195.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 13:05:34 up 8 days,  3:55,  2 users,  load average: 0.78, 0.37,
+	0.32
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-25 at 13:46 +0200, Miklos Szeredi wrote:
-> On Fri, 21 Aug 2009, Peter Zijlstra wrote:
-> > > I have tried to retain the existing behavior as much as possible, but
-> > > have added NR_WRITEBACK_TEMP to nr_writeback. This counter was used in
-> > > clip_bdi_dirty_limit but not in balance_dirty_pages, grep suggests this
-> > > is only used by FUSE but I haven't done any testing on that. It does
-> > > seem logical to count all the WRITEBACK pages when making the throttling
-> > > decisions so this change should be more correct ;)
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Tue, 2009-08-25 at 14:31 -0400, Mathieu Desnoyers wrote:
+> 
+> > (Well, I do not have time currently to look into the gory details
+> > (sorry), but let's try to take a step back from the problem.)
 > > 
-> > Right, the NR_WRITEBACK_TEMP thing is a FUSE feature, its used in
-> > writable mmap() support for FUSE things.
+> > The design proposal for this kthread behavior wrt syscalls is based on a
+> > very specific and current kernel behavior, that may happen to change and
+> > that I have actually seen proven incorrect. For instance, some
+> > proprietary Linux driver does very odd things with system calls within
+> > kernel threads, like invoking them with int 0x80.
 > > 
-> > I must admit to forgetting the exact semantics of the things, maybe
-> > Miklos can remind us.
+> > Yes, this is odd, but do we really want to tie the tracer that much to
+> > the actual OS implementation specificities ?
+> > 
+> > That sounds like a recipe for endless breakages and missing bits of
+> > instrumentation.
+> > 
+> > So my advice would be: if we want to trace the syscall entry/exit paths,
+> > let's trace them for the _whole_ system, and find ways to make it work
+> > for corner-cases rather than finding clever ways to diminish
+> > instrumentation coverage.
+> > 
+> > Given the ret from fork example happens to be the first event fired
+> > after the thread is created, we should be able to deal with this problem
+> > by initializing the thread structure used by syscall exit tracing to an
+> > initial "ret from fork" value.
 > 
-> I'll try: fuse is special because it needs writeback to be "very
-> asynchronous".  What I mean by this is that writing a dirty page may
-> block indefinitely and that shouldn't hold up unrelated filesystem or
-> memory operations.
-> 
-> To satisfy this, fuse copies contents of dirty pages over to
-> "temporary pages" and queues the write request with this temporary
-> page, not the original page-cache page.
-> 
-> This has two effects:
-> 
->  - the page-cache page does not remain in "writeback" state but is
->    cleaned immediately
-> 
->  - the NR_WRITEBACK counter is not incremented for the duration of the
->    writeback
-> 
-> The first one is important because vmscan and page migration do
-> wait_on_page_writeback() in some circumstances, which would block on
-> fuse writebacks.
-> 
-> The second one is important because vmscan will throttle writeout if
-> the NR_WRITEBACK counter goes over the dirty threshold
-> (throttle_vm_writeout).  There were long discussions about this one,
-> but in the end no one could surely tell how this works and why it is
-> important.  But NR_WRITEBACK_TEMP must not be counted there, otherwise
-> the page scanning can deadlock with fuse filesystems.
-> 
-> About balance_dirty_pages() I'm not quite sure.  By a similar logic we
-> don't want NR_WRITEBACK_TEMP pages to contribute to throttling
-> unrelated filesytem writebacks.  That might (through recursion via a
-> userspace filesystem) lead to a deadlock.
-> 
-> So my recommendation is that we should retain the old behavior.
-> 
-> Thanks,
-> Miklos
+> So you're saying we should let proprietary crap influence the design of
+> the kernel in any way?
 
-Thanks for the explanation.
+Nah. And I start to feel comfortable with syscall entry/exit being only
+be traced for userspace threads. But as I pointed out in a follow-up
+email, the lack of sys_*() tracing for invocation from within the kernel
+might be problematic. This is actually my main point.
 
-The old behavior was to use NR_WRITEBACK_TEMP to clip the bdi
-thresholds.
-Should we continue to do this or just ignore NR_WRIEBACK_TEMP completely
-in balance_dirty_pages ?
+Mathieu
 
-regards
-Richard
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
