@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbZHZNF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbZHZNKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932973AbZHZNF0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932962AbZHZNFZ
+	id S932980AbZHZNKu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932965AbZHZNKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:05:25 -0400
-Received: from pan.madism.org ([88.191.52.104]:57218 "EHLO hermes.madism.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932941AbZHZNFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:05:25 -0400
-From: Pierre Habouzit <pierre.habouzit@intersec.com>
-To: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] perf tools: do not complain if root is owning perf.data
-Date: Wed, 26 Aug 2009 15:05:26 +0200
-Message-Id: <1251291926-27174-1-git-send-email-pierre.habouzit@intersec.com>
-X-Mailer: git-send-email 1.5.6.5
+	Wed, 26 Aug 2009 09:10:49 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33292 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932919AbZHZNKs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 09:10:48 -0400
+Date: Wed, 26 Aug 2009 15:10:28 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: david@lang.hm
+Cc: Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net, jack@suse.cz
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090826131028.GB1370@ucw.cz>
+References: <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <4A932B18.1020209@redhat.com> <20090825093414.GB15563@elf.ucw.cz> <4A94ACDF.30405@redhat.com> <20090826111751.GC26595@elf.ucw.cz> <alpine.DEB.2.00.0908260428310.30426@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0908260428310.30426@asgard.lang.hm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This improves patch fa6963b24 so that perf.data stuff that has been dumped
-as root can be read (annotate/report) by a user without the use of the
---force.
 
-Rationale is that root has plenty of ways to screw us (usually) that do
-not require twisted schemes involving specially crafting a perf.data.
+>>> The metadata is just a way to get to my data, while the data
+>>> is actually important.
+>>
+>> Personally, I care about metadata consistency, and ext3 documentation
+>> suggests that journal protects its integrity. Except that it does not
+>> on broken storage devices, and you still need to run fsck there.
+>
+> as the ext3 authors have stated many times over the years, you still need 
+> to run fsck periodicly anyway.
 
-Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
----
- tools/perf/builtin-annotate.c |    4 ++--
- tools/perf/builtin-report.c   |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 5e17de9..5010952 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -1335,8 +1335,8 @@ static int __cmd_annotate(void)
- 		exit(-1);
- 	}
- 
--	if (!force && (stat.st_uid != geteuid())) {
--		fprintf(stderr, "file: %s not owned by current user\n", input_name);
-+	if (!force && stat.st_uid && (stat.st_uid != geteuid())) {
-+		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
- 		exit(-1);
- 	}
- 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 8b2ec88..b8a75f6 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -1857,8 +1857,8 @@ static int __cmd_report(void)
- 		exit(-1);
- 	}
- 
--	if (!force && (stat.st_uid != geteuid())) {
--		fprintf(stderr, "file: %s not owned by current user\n", input_name);
-+	if (!force && stat.st_uid && (stat.st_uid != geteuid())) {
-+		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
- 		exit(-1);
- 	}
- 
+Where is that documented? I very much agree with that, but when suse10
+switched periodic fsck off, I could not find any docs to show that it
+is bad idea.
+								Pavel
 -- 
-1.6.4.1.331.gda1d56
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
