@@ -1,90 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932080AbZHZI4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbZHZJHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932080AbZHZI4g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 04:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbZHZI4f
+	id S1756315AbZHZJHE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 05:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZHZJHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 04:56:35 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:36800 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752554AbZHZI4e (ORCPT
+	Wed, 26 Aug 2009 05:07:03 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:40882 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753266AbZHZJHB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 04:56:34 -0400
-Date: Wed, 26 Aug 2009 10:56:09 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Arch <linux-arch@vger.kernel.org>,
-       Jason Baron <jbaron@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Paul Mundt <lethal@linux-sh.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [GIT PULL] tracing/syscall for 2.6.32
-Message-ID: <20090826085609.GA31202@osiris.boeblingen.de.ibm.com>
-References: <1251250742-6458-1-git-send-email-fweisbec@gmail.com>
- <20090826063436.GB13577@elte.hu>
+	Wed, 26 Aug 2009 05:07:01 -0400
+To: Eric Paris <eparis@redhat.com>
+CC: <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: v2.6.31-rc6 inotify not reporting deleted files
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 26 Aug 2009 02:06:58 -0700
+Message-ID: <m1skffj64t.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090826063436.GB13577@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: eparis@redhat.com, rjw@sisk.pl, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 08:34:36AM +0200, Ingo Molnar wrote:
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > Hi Ingo,
-> > 
-> > Please pull the latest syscall tracing patches from:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
-> > 	tracing/core
-> > 
-> > The tree gathers fixes, renamings and adds a new pair of tracepoints
-> > for generic sysenter/sysexit tracing.
-> > 
-> > Some other patches are pending, beeing discussed. So there are probably
-> > more to come soon.
-> > 
-> > Josh Stone (4):
-> >       tracing: Rename FTRACE_SYSCALLS for tracepoints
-> >       tracing: Make syscall tracepoints conditional
-> >       tracing: Move tracepoint callbacks from declaration to definition
-> >       tracing: Create generic syscall TRACE_EVENTs
-> > 
-> >  arch/s390/Kconfig                   |    2 +-
-> >  arch/s390/defconfig                 |    2 +-
-> >  arch/s390/include/asm/thread_info.h |    4 +-
-> >  arch/s390/kernel/entry.S            |    2 +-
-> >  arch/s390/kernel/entry64.S          |    2 +-
-> >  arch/s390/kernel/ptrace.c           |   12 +++---
-> >  arch/x86/Kconfig                    |    2 +-
-> >  arch/x86/configs/i386_defconfig     |    2 +-
-> >  arch/x86/configs/x86_64_defconfig   |    2 +-
-> >  arch/x86/include/asm/thread_info.h  |   13 +++---
-> >  arch/x86/kernel/ptrace.c            |   16 +++----
-> >  include/linux/tracepoint.h          |   46 +++++++++--------------
-> >  include/trace/define_trace.h        |    5 ++
-> >  include/trace/events/syscalls.h     |   70 +++++++++++++++++++++++++++++++++++
-> >  include/trace/ftrace.h              |    9 ++++
-> >  include/trace/syscall.h             |   17 --------
-> >  kernel/trace/Kconfig                |    4 +-
-> >  kernel/trace/trace_syscalls.c       |   17 ++++----
-> >  kernel/tracepoint.c                 |   20 ++++++----
-> >  19 files changed, 154 insertions(+), 93 deletions(-)
-> >  create mode 100644 include/trace/events/syscalls.h
-> 
-> Pulled, thanks!
-> 
-> Heiko, Martin, do the S390 bits look good to you? I have build 
-> tested the S390 defconfig - it built fine beyond to pre-existing 
-> warnings:
 
-Yes, looks ok to me.
+I don't have a small test case yet, but I have an application that
+uses inotify and watches a file and takes action when that file has been
+deleted.  Running that application on 2.6.31-rc6 the application is
+no longer seeing the file being deleted.
 
-Thanks!
+With luck a word to the wise is all that is required for you to reproduce
+this.  Otherwise I will spend some time tomorrow making a small reproducer.
+
+Eric
+
+
