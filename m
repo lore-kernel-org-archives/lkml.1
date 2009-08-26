@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751422AbZHZTXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbZHZTcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751422AbZHZTXA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 15:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZHZTW5
+	id S1751748AbZHZTcE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 15:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZHZTcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 15:22:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:2828 "EHLO mx1.redhat.com"
+	Wed, 26 Aug 2009 15:32:03 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:14346 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750716AbZHZTW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 15:22:56 -0400
-Message-ID: <4A958BA0.2000801@redhat.com>
-Date: Wed, 26 Aug 2009 22:23:12 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1751238AbZHZTcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 15:32:02 -0400
+Date: Wed, 26 Aug 2009 20:32:02 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: Mike Snitzer <snitzer@redhat.com>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: dm snapshot: implement .iterate_devices
+Message-ID: <20090826193202.GI643@agk-dp.fab.redhat.com>
+Mail-Followup-To: Mike Snitzer <snitzer@redhat.com>, dm-devel@redhat.com,
+	linux-kernel@vger.kernel.org
+References: <1251007867-13004-1-git-send-email-snitzer@redhat.com> <20090826145045.GH643@agk-dp.fab.redhat.com> <20090826181908.GB26018@redhat.com>
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: alacrityvm-devel@lists.sourceforge.net,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
-Subject: Re: AlacrityVM benchmark numbers updated
-References: <4A948962.7090909@gmail.com> <4A950B75.5020409@redhat.com> <4A95822D.9060207@gmail.com>
-In-Reply-To: <4A95822D.9060207@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826181908.GB26018@redhat.com>
+Organization: Red Hat UK Ltd. Registered in England and Wales, number
+	03798903. Registered Office: Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 1TE.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/26/2009 09:42 PM, Gregory Haskins wrote:
-> Actually, I have already look at this and it does indeed seem better to
-> use switch_mm+gupf() over gup() by quite a large margin.  You could then
-> couple that with your DMA-engine idea to potentially gain even more
-> benefits (though probably not for networking since most NICs have their
-> own DMA engine anyway).
->
->    
+On Wed, Aug 26, 2009 at 02:19:08PM -0400, Mike Snitzer wrote:
+> I'll work on a proper solution for snapshot_iterate_devices() and get
+> that to you ASAP.
+ 
+So let's push this patch as-is for 2.6.31 as it clearly fixes one problem,
+and determine the right way of handling the characteristics of the 'cow'
+device in a supplementary patch.
 
-For tx, we'll just go copyless once we plumb the destructors properly.  
-But for rx on a shared interface it is impossible to avoid the copy.  
-You can only choose if you want it done by the cpu or a local dma engine.
-
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Alasdair
 
