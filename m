@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbZHZE0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbZHZEbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752418AbZHZE0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 00:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZHZE0U
+	id S1753056AbZHZEbx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 00:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZHZEbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 00:26:20 -0400
-Received: from kroah.org ([198.145.64.141]:56570 "EHLO coco.kroah.org"
+	Wed, 26 Aug 2009 00:31:52 -0400
+Received: from mail.perches.com ([173.55.12.10]:1384 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751776AbZHZE0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 00:26:19 -0400
-Date: Tue, 25 Aug 2009 21:24:12 -0700
-From: Greg KH <greg@kroah.com>
+	id S1751062AbZHZEbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 00:31:51 -0400
+Subject: Re: Initial work for ar9271
+From: Joe Perches <joe@perches.com>
 To: "Luis R. Rodriguez" <mcgrof@gmail.com>
 Cc: linux-wireless <linux-wireless@vger.kernel.org>,
        linux-kernel@vger.kernel.org, Christian Lamparter <chunkeey@web.de>,
        Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
+       "John W. Linville" <linville@tuxdriver.com>, Greg KH <greg@kroah.com>,
        Stephen Chen <Stephen.Chen@atheros.com>,
        Zhifeng Cai <zhifeng.cai@atheros.com>,
        Cliff Holden <Cliff.Holden@atheros.com>,
        Christoph Hellwig <hch@infradead.org>,
        Len Widra <Len.Widra@atheros.com>
-Subject: Re: Initial work for ar9271
-Message-ID: <20090826042412.GA26690@kroah.com>
-References: <43e72e890908252103j2332d8eat9e18fecb20a1fe58@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <43e72e890908252103j2332d8eat9e18fecb20a1fe58@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+References: <43e72e890908252103j2332d8eat9e18fecb20a1fe58@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 25 Aug 2009 21:31:50 -0700
+Message-Id: <1251261111.3463.15.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 09:03:08PM -0700, Luis R. Rodriguez wrote:
-> I'm not yet sure if working with a separate repo or staging might be
-> best here as the driver does not yet give STA functionality, the whole
-> mac80211 driver part still remains to be developed. Lets play it by
-> ear, I'll see if we can get a mailing list created in the meantime
-> unless Greg doesn't mind me borrowing the driver project mailing list
-> for that.
+On Tue, 2009-08-25 at 21:03 -0700, Luis R. Rodriguez wrote:
+> If you'd like to work on the
+> driver I welcome patches:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/ar9271.git
 
-Not at all, feel free to use it for something like this.
+I think this style ugly because it's non kernel standard.
 
-thanks for asking,
+int func(args)
+{
+	do {
+		[ linear code ...]
+		if (err) {
+			errorcode = ;
+			break;
+		}
+		[ more linear code ...]
+	} while (0);
 
-greg k-h
+	if (errorcode) {
+		handle()...
+		return some_err;
+	}
+
+	return 0;
+}
+
+It's a bit too much like a try/throw/catch block.
+
+Are patches accepted to convert it to the more
+commonly used kernel style using gotos?
+
+
