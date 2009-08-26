@@ -1,35 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932864AbZHZMZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932874AbZHZM0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932864AbZHZMZk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 08:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbZHZMZk
+	id S932874AbZHZM0p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 08:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932624AbZHZM0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 08:25:40 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54339 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932305AbZHZMZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 08:25:39 -0400
-X-Greylist: delayed 1418 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 08:25:39 EDT
-To: clement.lecigne@netasq.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] 8 bytes kernel memory disclosure in AppleTalk getsockname.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20090826111247.GA79673@clem1.netasq.com>
-In-Reply-To: <20090826111247.GA79673@clem1.netasq.com>
-Message-Id: <200908262101.DBJ57868.OHOFFVLQOtMFSJ@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Wed, 26 Aug 2009 21:01:56 +0900
-Mime-Version: 1.0
+	Wed, 26 Aug 2009 08:26:45 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:56594 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932572AbZHZM0o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 08:26:44 -0400
+Date: Wed, 26 Aug 2009 13:26:43 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Will Brown <dr.hfuhruhurr@gmail.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PROBLEM: Epoll frequently fails to notify connects at connect
+	bursts
+Message-ID: <20090826122641.GA29299@sirena.org.uk>
+References: <8a1bd2320908251748u324ae5e6g7015069180253db3@mail.gmail.com> <alpine.DEB.2.00.0908251812450.18518@makko.or.mcafeemobile.com> <alpine.DEB.2.00.0908251823470.18518@makko.or.mcafeemobile.com> <8a1bd2320908260215w23d1f426x33f90e38ccc3fe2c@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8a1bd2320908260215w23d1f426x33f90e38ccc3fe2c@mail.gmail.com>
+X-Cookie: Them as has, gets.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clement LECIGNE wrote:
-> Here is a patch that zero the whole sockaddr_at structure before
-> processing it. It should fix this bug.
+On Wed, Aug 26, 2009 at 11:15:10AM +0200, Will Brown wrote:
+> On Wed, Aug 26, 2009 at 3:24 AM, Davide Libenzi<davidel@xmailserver.org> wrote:
 
-Same kind of bug at http://lkml.org/lkml/2006/7/25/51 .
-I wonder why not zero'ing sockaddr at the caller rather than
-zero'ing at individual ->getname(). Doing so will save some lines.
+> >> Multiple quasi-simultaneous events for the same fd are merged. This is why
+> >> on POLLIN on accepting sockets you want to do something like:
+
+> Aha! Thank you immensely Davide. It cost me one week of frustration already.
+
+> 1. Where should I have picked up this gem of essential information? I
+> haven't seen it in the man-pages for either 'epoll' or 'accept'.
+
+It should be covered in the "Level-Triggered and Edge-Triggered" section
+of the epoll() manual page - the particular case of accept() isn't
+covered but the general idea is the same.
