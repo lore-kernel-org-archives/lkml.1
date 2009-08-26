@@ -1,211 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbZHZVsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbZHZV5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbZHZVsY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 17:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbZHZVsX
+	id S1754023AbZHZV5O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 17:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZHZV5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 17:48:23 -0400
-Received: from mail.perches.com ([173.55.12.10]:1399 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753469AbZHZVsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 17:48:23 -0400
-Subject: [PATCH] scripts/get_maintainer.pl: Add maintainers in order listed
- in matched section
-From: Joe Perches <joe@perches.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Ben Hutchings <bhutchings@solarflare.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-net-drivers@solarflare.com
-In-Reply-To: <cover.1249525834.git.joe@perches.com>
-References: <cover.1249525834.git.joe@perches.com>
-Content-Type: text/plain
-Date: Wed, 26 Aug 2009 14:48:23 -0700
-Message-Id: <1251323303.13026.40.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.90 
+	Wed, 26 Aug 2009 17:57:12 -0400
+Received: from mail-px0-f174.google.com ([209.85.216.174]:52179 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753968AbZHZV5L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 17:57:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=pApxjhuYojMUQysw+mcVysnRzQuXsJzTEFo1SwLt7yjITWVDRMMDp++oTMxz7Z9JMt
+         tcDOm/hW6WDxUa/Pu1DXMK0rNQ5F88U192NZxBw8nEzL8rW9WMjcH8Dw6BLVdlvaVlyJ
+         Fna/qbqptEX94Qx+6Xn/8K0A1eUPFGQuqy/tQ=
+Message-ID: <4A95AFEB.10809@gmail.com>
+Date: Wed, 26 Aug 2009 14:58:03 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #14012] latest git fried my x86_64 imac
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.NXH.BtGlKB@chimera> <4A9481B9.3070607@gmail.com> <200908262306.38464.rjw@sisk.pl>
+In-Reply-To: <200908262306.38464.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is on top of patches that are already queued in mm.
+Rafael J. Wysocki wrote:
+> On Wednesday 26 August 2009, Justin P. Mattock wrote:
+>    
+>> Rafael J. Wysocki wrote:
+>>      
+>>> This message has been generated automatically as a part of a report
+>>> of recent regressions.
+>>>
+>>> The following bug entry is on the current list of known regressions
+>>> from 2.6.30.  Please verify if it still should be listed and let me know
+>>> (either way).
+>>>
+>>>
+>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14012
+>>> Subject		: latest git fried my x86_64 imac
+>>> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
+>>> Date		: 2009-08-13 07:20 (13 days old)
+>>> References	: http://marc.info/?l=linux-kernel&m=125014080427090&w=4
+>>>
+>>>
+>>>
+>>>
+>>>        
+>> if I revert this commit:
+>> af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+>> I can get a normal bootup.
+>>      
+>
+> Hm, that's
+>
+> commit af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+> Author: Peter Zijlstra<peterz@infradead.org>
+> Date:   Wed Aug 5 20:41:04 2009 +0200
+>
+>      ftrace: Fix perf-tracepoint OOPS
+>
+> I wonder what happens if you compile out ftrace?
+>
+>    
+>> As for this  bug, it seems I'm the only
+>> hitting this. The system is a fresh LFS build
+>> x86_64.
+>> In regards to keeping this open
+>> not sure, I don't have a problem with closing this
+>> and taking the blame as something I did during my build
+>> of the system, then if this becomes more frequent
+>> then open a new bug.
+>>      
+>
+> OK, I'll close it for now.
+>
+> Thanks,
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>    
+Ill give that a try and see.
 
-Previous behavior was "bottom-up" in each section from the pattern "F:"
-entry that matched.  Now information is entered into the various lists
-in the "as entered" order for each matched section.
-
-This also allows the F: entry to be put anywhere in a section, not just
-as the last entries in the section.
-
-And a couple of improvements:
-
-Don't alphabetically sort before outputting the matched scm, status,
-subsystem and web sections.
-
-Ignore content after a single email address so these entries are acceptable
-M:	name <address> whatever other comment
-
-And a fix:
-
-Make an M: entry without a name again use the name from an immediately
-preceding P: line if it exists.
-
-Signed-off-by: Joe Perches <joe@perches.com>
----
- scripts/get_maintainer.pl |   70 ++++++++++++++++++++++++++++++++++----------
- 1 files changed, 54 insertions(+), 16 deletions(-)
-
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index b8d1223..b54db05 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -313,22 +313,22 @@ if ($email || $email_list) {
- }
- 
- if ($scm) {
--    @scm = sort_and_uniq(@scm);
-+    @scm = uniq(@scm);
-     output(@scm);
- }
- 
- if ($status) {
--    @status = sort_and_uniq(@status);
-+    @status = uniq(@status);
-     output(@status);
- }
- 
- if ($subsystem) {
--    @subsystem = sort_and_uniq(@subsystem);
-+    @subsystem = uniq(@subsystem);
-     output(@subsystem);
- }
- 
- if ($web) {
--    @web = sort_and_uniq(@web);
-+    @web = uniq(@web);
-     output(@web);
- }
- 
-@@ -442,7 +442,7 @@ sub parse_email {
- 	$address = $2;
-     } elsif ($formatted_email =~ /^\s*<(.+\@\S*)>.*$/) {
- 	$address = $1;
--    } elsif ($formatted_email =~ /^(.+\@\S*)$/) {
-+    } elsif ($formatted_email =~ /^(.+\@\S*).*$/) {
- 	$address = $1;
-     }
- 
-@@ -485,12 +485,46 @@ sub format_email {
-     return $formatted_email;
- }
- 
--sub add_categories {
-+sub find_starting_index {
-+
-+    my ($index) = @_;
-+
-+    while ($index > 0) {
-+	my $tv = $typevalue[$index];
-+	if (!($tv =~ m/^(\C):\s*(.*)/)) {
-+	    last;
-+	}
-+	$index--;
-+    }
-+
-+    return $index;
-+}
-+
-+sub find_ending_index {
-     my ($index) = @_;
- 
--    $index = $index - 1;
--    while ($index >= 0) {
-+    while ($index < @typevalue) {
- 	my $tv = $typevalue[$index];
-+	if (!($tv =~ m/^(\C):\s*(.*)/)) {
-+	    last;
-+	}
-+	$index++;
-+    }
-+
-+    return $index;
-+}
-+
-+sub add_categories {
-+    my ($index) = @_;
-+
-+    my $i;
-+    my $start = find_starting_index($index);
-+    my $end = find_ending_index($index);
-+
-+    push(@subsystem, $typevalue[$start]);
-+
-+    for ($i = $start + 1; $i < $end; $i++) {
-+	my $tv = $typevalue[$i];
- 	if ($tv =~ m/^(\C):\s*(.*)/) {
- 	    my $ptype = $1;
- 	    my $pvalue = $2;
-@@ -513,11 +547,12 @@ sub add_categories {
- 	    } elsif ($ptype eq "M") {
- 		my ($name, $address) = parse_email($pvalue);
- 		if ($name eq "") {
--		    if ($index >= 0) {
--			my $tv = $typevalue[$index - 1];
-+		    if ($i > 0) {
-+			my $tv = $typevalue[$i - 1];
- 			if ($tv =~ m/^(\C):\s*(.*)/) {
- 			    if ($1 eq "P") {
- 				$name = $2;
-+				$pvalue = format_email($name, $address);
- 			    }
- 			}
- 		    }
-@@ -532,11 +567,6 @@ sub add_categories {
- 	    } elsif ($ptype eq "S") {
- 		push(@status, $pvalue);
- 	    }
--
--	    $index--;
--	} else {
--	    push(@subsystem,$tv);
--	    $index = -1;
- 	}
-     }
- }
-@@ -559,6 +589,10 @@ sub push_email_address {
- 
-     my ($name, $address) = parse_email($line);
- 
-+    if ($address eq "") {
-+	return 0;
-+    }
-+
-     if (!$email_remove_duplicates) {
- 	push(@email_to, format_email($name, $address));
-     } elsif (!email_inuse($name, $address)) {
-@@ -566,6 +600,8 @@ sub push_email_address {
- 	$email_hash_name{$name}++;
- 	$email_hash_address{$address}++;
-     }
-+
-+    return 1;
- }
-  
- sub push_email_addresses {
-@@ -581,7 +617,9 @@ sub push_email_addresses {
- 	    push_email_address($entry);
- 	}
-     } else {
--	warn("Invalid MAINTAINERS address: '" . $address . "'\n");
-+	if (!push_email_address($address)) {
-+	    warn("Invalid MAINTAINERS address: '" . $address . "'\n");
-+	}
-     }
- }
- 
--- 
-1.6.3.1.10.g659a0.dirty
-
-
-
+Justin P. Mattock
