@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbZHZG2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbZHZG3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986AbZHZG2V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 02:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbZHZG2U
+	id S1754486AbZHZG3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 02:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbZHZG3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 02:28:20 -0400
-Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:52548
+	Wed, 26 Aug 2009 02:29:17 -0400
+Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:52651
 	"EHLO mswedge2.sunplus.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752525AbZHZG2T (ORCPT
+	by vger.kernel.org with ESMTP id S1751375AbZHZG3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 02:28:19 -0400
-Subject: Subject: [PATCH 11/33] score: create head files hardirq.h hw_irq.h
-	irq.h irqflags.h irq_regs.h
+	Wed, 26 Aug 2009 02:29:16 -0400
+Subject: Subject: [PATCH 12/33] score: create head files mman.h mmu.h
+	mmu_context.h
 From: Chen Liqin <liqin.chen@sunplusct.com>
 To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Arnd Bergmann <arnd@arndb.de>, torvalds@linux-foundation.org
 Content-Type: text/plain
-Date: Wed, 26 Aug 2009 14:17:48 +0800
-Message-Id: <1251267468.3073.14.camel@ad3ser01>
+Date: Wed, 26 Aug 2009 14:18:53 +0800
+Message-Id: <1251267533.3073.17.camel@ad3ser01>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
 Content-Transfer-Encoding: 7bit
@@ -25,211 +25,165 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From f305766cc791c2e727aa80be85af6df5cf707dd0 Mon Sep 17 00:00:00 2001
+>From ea8c2b7695927955321995364b681f69f0ce9a0a Mon Sep 17 00:00:00 2001
 From: Chen Liqin <liqin.chen@sunplusct.com>
 Date: Wed, 26 Aug 2009 10:05:01 +0800
-Subject: [PATCH 11/33] score: create head files hardirq.h hw_irq.h irq.h irqflags.h irq_regs.h
+Subject: [PATCH 12/33] score: create head files mman.h mmu.h mmu_context.h
 
 
 Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
 ---
- arch/score/include/asm/hardirq.h  |    6 ++
- arch/score/include/asm/hw_irq.h   |    4 ++
- arch/score/include/asm/irq.h      |   25 +++++++++
- arch/score/include/asm/irq_regs.h |   11 ++++
- arch/score/include/asm/irqflags.h |  109 +++++++++++++++++++++++++++++++++++++
- 5 files changed, 155 insertions(+), 0 deletions(-)
- create mode 100644 arch/score/include/asm/hardirq.h
- create mode 100644 arch/score/include/asm/hw_irq.h
- create mode 100644 arch/score/include/asm/irq.h
- create mode 100644 arch/score/include/asm/irq_regs.h
- create mode 100644 arch/score/include/asm/irqflags.h
+ arch/score/include/asm/mman.h        |    6 ++
+ arch/score/include/asm/mmu.h         |    6 ++
+ arch/score/include/asm/mmu_context.h |  113 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 125 insertions(+), 0 deletions(-)
+ create mode 100644 arch/score/include/asm/mman.h
+ create mode 100644 arch/score/include/asm/mmu.h
+ create mode 100644 arch/score/include/asm/mmu_context.h
 
-diff --git a/arch/score/include/asm/hardirq.h b/arch/score/include/asm/hardirq.h
+diff --git a/arch/score/include/asm/mman.h b/arch/score/include/asm/mman.h
 new file mode 100644
-index 0000000..dc932c5
+index 0000000..84d85dd
 --- /dev/null
-+++ b/arch/score/include/asm/hardirq.h
++++ b/arch/score/include/asm/mman.h
 @@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_HARDIRQ_H
-+#define _ASM_SCORE_HARDIRQ_H
++#ifndef _ASM_SCORE_MMAN_H
++#define _ASM_SCORE_MMAN_H
 +
-+#include <asm-generic/hardirq.h>
++#include <asm-generic/mman.h>
 +
-+#endif /* _ASM_SCORE_HARDIRQ_H */
-diff --git a/arch/score/include/asm/hw_irq.h b/arch/score/include/asm/hw_irq.h
++#endif /* _ASM_SCORE_MMAN_H */
+diff --git a/arch/score/include/asm/mmu.h b/arch/score/include/asm/mmu.h
 new file mode 100644
-index 0000000..4caafb2
+index 0000000..676828e
 --- /dev/null
-+++ b/arch/score/include/asm/hw_irq.h
-@@ -0,0 +1,4 @@
-+#ifndef _ASM_SCORE_HW_IRQ_H
-+#define _ASM_SCORE_HW_IRQ_H
++++ b/arch/score/include/asm/mmu.h
+@@ -0,0 +1,6 @@
++#ifndef _ASM_SCORE_MMU_H
++#define _ASM_SCORE_MMU_H
 +
-+#endif /* _ASM_SCORE_HW_IRQ_H */
-diff --git a/arch/score/include/asm/irq.h b/arch/score/include/asm/irq.h
++typedef unsigned long mm_context_t;
++
++#endif /* _ASM_SCORE_MMU_H */
+diff --git a/arch/score/include/asm/mmu_context.h b/arch/score/include/asm/mmu_context.h
 new file mode 100644
-index 0000000..c883f3d
+index 0000000..2644577
 --- /dev/null
-+++ b/arch/score/include/asm/irq.h
-@@ -0,0 +1,25 @@
-+#ifndef _ASM_SCORE_IRQ_H
-+#define _ASM_SCORE_IRQ_H
++++ b/arch/score/include/asm/mmu_context.h
+@@ -0,0 +1,113 @@
++#ifndef _ASM_SCORE_MMU_CONTEXT_H
++#define _ASM_SCORE_MMU_CONTEXT_H
 +
-+#define EXCEPTION_VECTOR_BASE_ADDR	0xa0000000
-+#define VECTOR_ADDRESS_OFFSET_MODE4	0
-+#define VECTOR_ADDRESS_OFFSET_MODE16	1
++#include <linux/errno.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <asm-generic/mm_hooks.h>
 +
-+#define DEBUG_VECTOR_SIZE		(0x4)
-+#define DEBUG_VECTOR_BASE_ADDR		((EXCEPTION_VECTOR_BASE_ADDR) + 0x1fc)
++#include <asm/cacheflush.h>
++#include <asm/tlbflush.h>
++#include <asm/scoreregs.h>
 +
-+#define GENERAL_VECTOR_SIZE		(0x10)
-+#define GENERAL_VECTOR_BASE_ADDR	((EXCEPTION_VECTOR_BASE_ADDR) + 0x200)
++/*
++ * For the fast tlb miss handlers, we keep a per cpu array of pointers
++ * to the current pgd for each processor. Also, the proc. id is stuffed
++ * into the context register.
++ */
++extern unsigned long asid_cache;
++extern unsigned long pgd_current;
 +
-+#define NR_IRQS				64
-+#define IRQ_VECTOR_SIZE			(0x10)
-+#define IRQ_VECTOR_BASE_ADDR		((EXCEPTION_VECTOR_BASE_ADDR) + 0x210)
-+#define IRQ_VECTOR_END_ADDR		((EXCEPTION_VECTOR_BASE_ADDR) + 0x5f0)
++#define TLBMISS_HANDLER_SETUP_PGD(pgd) (pgd_current = (unsigned long)(pgd))
 +
-+#define irq_canonicalize(irq)	(irq)
++#define TLBMISS_HANDLER_SETUP()				\
++do {							\
++	write_c0_context(0);				\
++	TLBMISS_HANDLER_SETUP_PGD(swapper_pg_dir)	\
++} while (0)
 +
-+#define IRQ_TIMER (7)		/* Timer IRQ number of SPCT6600 */
++/*
++ * All unused by hardware upper bits will be considered
++ * as a software asid extension.
++ */
++#define ASID_VERSION_MASK	0xfffff000
++#define ASID_FIRST_VERSION	0x1000
 +
-+extern void interrupt_exception_vector(void);
++/* PEVN    --------- VPN ---------- --ASID--- -NA- */
++/* binary: 0000 0000 0000 0000 0000 0000 0001 0000 */
++/* binary: 0000 0000 0000 0000 0000 1111 1111 0000 */
++#define ASID_INC	0x10
++#define ASID_MASK	0xff0
 +
-+#endif /* _ASM_SCORE_IRQ_H */
-diff --git a/arch/score/include/asm/irq_regs.h b/arch/score/include/asm/irq_regs.h
-new file mode 100644
-index 0000000..b8e881c
---- /dev/null
-+++ b/arch/score/include/asm/irq_regs.h
-@@ -0,0 +1,11 @@
-+#ifndef _ASM_SCORE_IRQ_REGS_H
-+#define _ASM_SCORE_IRQ_REGS_H
++static inline void enter_lazy_tlb(struct mm_struct *mm,
++				struct task_struct *tsk)
++{}
 +
-+#include <linux/thread_info.h>
-+
-+static inline struct pt_regs *get_irq_regs(void)
++static inline void
++get_new_mmu_context(struct mm_struct *mm)
 +{
-+	return current_thread_info()->regs;
++	unsigned long asid = asid_cache + ASID_INC;
++
++	if (!(asid & ASID_MASK)) {
++		local_flush_tlb_all();		/* start new asid cycle */
++		if (!asid)			/* fix version if needed */
++			asid = ASID_FIRST_VERSION;
++	}
++
++	mm->context = asid;
++	asid_cache = asid;
 +}
 +
-+#endif /* _ASM_SCORE_IRQ_REGS_H */
-diff --git a/arch/score/include/asm/irqflags.h b/arch/score/include/asm/irqflags.h
-new file mode 100644
-index 0000000..690a6ca
---- /dev/null
-+++ b/arch/score/include/asm/irqflags.h
-@@ -0,0 +1,109 @@
-+#ifndef _ASM_SCORE_IRQFLAGS_H
-+#define _ASM_SCORE_IRQFLAGS_H
-+
-+#ifndef __ASSEMBLY__
-+
-+#define raw_local_irq_save(x)			\
-+{						\
-+	__asm__ __volatile__(			\
-+		"mfcr	r8, cr0;"		\
-+		"li	r9, 0xfffffffe;"	\
-+		"nop;"				\
-+		"mv	%0, r8;"		\
-+		"and	r8, r8, r9;"		\
-+		"mtcr	r8, cr0;"		\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		: "=r" (x)			\
-+		:				\
-+		: "r8", "r9"			\
-+		);				\
-+}
-+
-+#define raw_local_irq_restore(x)		\
-+{						\
-+	__asm__ __volatile__(			\
-+		"mfcr	r8, cr0;"		\
-+		"ldi	r9, 0x1;"		\
-+		"and	%0, %0, r9;"		\
-+		"or	r8, r8, %0;"		\
-+		"mtcr	r8, cr0;"		\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		:				\
-+		: "r"(x)			\
-+		: "r8", "r9"			\
-+		);				\
-+}
-+
-+#define raw_local_irq_enable(void)		\
-+{						\
-+	__asm__ __volatile__(			\
-+		"mfcr\tr8,cr0;"			\
-+		"nop;"				\
-+		"nop;"				\
-+		"ori\tr8,0x1;"			\
-+		"mtcr\tr8,cr0;"			\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		:				\
-+		:				\
-+		: "r8");			\
-+}
-+
-+#define raw_local_irq_disable(void)		\
-+{						\
-+	__asm__ __volatile__(			\
-+		"mfcr\tr8,cr0;"			\
-+		"nop;"				\
-+		"nop;"				\
-+		"srli\tr8,r8,1;"		\
-+		"slli\tr8,r8,1;"		\
-+		"mtcr\tr8,cr0;"			\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		:				\
-+		:				\
-+		: "r8");			\
-+}
-+
-+#define raw_local_save_flags(x)			\
-+{						\
-+	__asm__ __volatile__(			\
-+		"mfcr	r8, cr0;"		\
-+		"nop;"				\
-+		"nop;"				\
-+		"mv	%0, r8;"		\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"nop;"				\
-+		"ldi	r9, 0x1;"		\
-+		"and	%0, %0, r9;"		\
-+		: "=r" (x)			\
-+		:				\
-+		: "r8", "r9"			\
-+		);				\
-+}
-+
-+static inline int raw_irqs_disabled_flags(unsigned long flags)
++/*
++ * Initialize the context related info for a new mm_struct
++ * instance.
++ */
++static inline int
++init_new_context(struct task_struct *tsk, struct mm_struct *mm)
 +{
-+	return !(flags & 1);
++	mm->context = 0;
++	return 0;
 +}
 +
-+#endif
++static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
++			struct task_struct *tsk)
++{
++	unsigned long flags;
 +
-+#endif /* _ASM_SCORE_IRQFLAGS_H */
++	local_irq_save(flags);
++	if ((next->context ^ asid_cache) & ASID_VERSION_MASK)
++		get_new_mmu_context(next);
++
++	pevn_set(next->context);
++	TLBMISS_HANDLER_SETUP_PGD(next->pgd);
++	local_irq_restore(flags);
++}
++
++/*
++ * Destroy context related info for an mm_struct that is about
++ * to be put to rest.
++ */
++static inline void destroy_context(struct mm_struct *mm)
++{}
++
++static inline void
++deactivate_mm(struct task_struct *task, struct mm_struct *mm)
++{}
++
++/*
++ * After we have set current->mm to a new value, this activates
++ * the context for the new mm so we see the new mappings.
++ */
++static inline void
++activate_mm(struct mm_struct *prev, struct mm_struct *next)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	get_new_mmu_context(next);
++	pevn_set(next->context);
++	TLBMISS_HANDLER_SETUP_PGD(next->pgd);
++	local_irq_restore(flags);
++}
++
++#endif /* _ASM_SCORE_MMU_CONTEXT_H */
 -- 
 1.6.2
 
