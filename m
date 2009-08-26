@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbZHZA1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbZHZA2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbZHZA1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbZHZA1x
+	id S932546AbZHZA2p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbZHZA2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:27:53 -0400
-Received: from mail-pz0-f194.google.com ([209.85.222.194]:52087 "EHLO
-	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756067AbZHZA1w (ORCPT
+	Tue, 25 Aug 2009 20:28:45 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:16170 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755542AbZHZA2o convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:27:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Oe31ETBvKVVqmS0r5a4S+ROIXXKPpHawAn0BhTW/7pG0tKd1zefJaU7CSfoBYFZXB6
-         1bFi8OHIm291hgkemEsm19EL2sQQE6rAuDcavgEiOQXC3t3iBKZ9z3Hxqdvwvfb39Npr
-         ggdA2Qv2OdfsW4TYngtqUfxCQIXwxbm4Wafw0=
-Message-ID: <4A9481B9.3070607@gmail.com>
-Date: Tue, 25 Aug 2009 17:28:41 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
+	Tue, 25 Aug 2009 20:28:44 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #14012] latest git fried my x86_64 imac
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.NXH.BtGlKB@chimera>
-In-Reply-To: <_yaHeGjHEzG.A.NXH.BtGlKB@chimera>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+x-cr-hashedpuzzle: ALHE Apkn Awsq DiXH D7y7 FGk6 G/2+ HI5K IHJ/ M4HE T6m6 VoKK WUZZ WrS0 W+uy XiKa;2;bABpAG4AdQB4AC0AawBlAHIAbgBlAGwAQAB2AGcAZQByAC4AawBlAHIAbgBlAGwALgBvAHIAZwA7AHQAbwByAHYAYQBsAGQAcwBAAGwAaQBuAHUAeAAtAGYAbwB1AG4AZABhAHQAaQBvAG4ALgBvAHIAZwA=;Sosha1_v1;7;{C3CCA6FB-EB20-4251-8280-7C771AF6EA88};YQBzAGkAbgBoAGEAQAB6AGUAdQBnAG0AYQBzAHkAcwB0AGUAbQBzAC4AYwBvAG0A;Wed, 26 Aug 2009 00:28:31 GMT;UgBFADoAIABbAFAAQQBUAEMASABdACAAYwBvAG4AcwBvAGwAZQBfAHAAcgBpAG4AdAA6ACAAYwBoAGEAbgBnAGUAIAB0AGgAZQAgAGYAdQBuAGMAdABpAG8AbgAgAGEAcABpACAAdABvACAAbQBhAGsAZQAgAGkAdAAgAGgAYQB2AGUAIABwAHIAaQBuAHQAawAgAHMAdAB5AGwAZQAgAGkAbgB0AGUAcgBmAGEAYwBlAA==
+Content-class: urn:content-classes:message
+Subject: RE: [PATCH] console_print: change the function api to make it have printk style interface
+Date: Tue, 25 Aug 2009 17:28:31 -0700
+x-cr-puzzleid: {C3CCA6FB-EB20-4251-8280-7C771AF6EA88}
+Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501EA926D@exchange.ZeugmaSystems.local>
+In-Reply-To: <alpine.LFD.2.01.0908251717230.3218@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] console_print: change the function api to make it have printk style interface
+Thread-Index: Acol4uveRpIIjaPcSbGbppIoASuVUgAAQu9Q
+References: <DDFD17CC94A9BD49A82147DDF7D545C501EA9241@exchange.ZeugmaSystems.local> <alpine.LFD.2.01.0908251717230.3218@localhost.localdomain>
+From: "Anirban Sinha" <ASinha@zeugmasystems.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
 >
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14012
-> Subject		: latest git fried my x86_64 imac
-> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
-> Date		: 2009-08-13 07:20 (13 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125014080427090&w=4
->
->
->
->    
-if I revert this commit:
-af6af30c0fcd77e621638e53ef8b176bca8bd3b4
-I can get a normal bootup.
+>Don't do this. That's a 1kB stack frame right there. You'll overflow
+the
+>stack very quickly.
 
-As for this  bug, it seems I'm the only
-hitting this. The system is a fresh LFS build
-x86_64.
-In regards to keeping this open
-not sure, I don't have a problem with closing this
-and taking the blame as something I did during my build
-of the system, then if this becomes more frequent
-then open a new bug.
+Ah! Of course you are correct! Can we simply have a macro instead of a
+full blown function instead? If that is not acceptable, I will think of
+something else to get around it.
 
-Justin P. Mattock
+Ani
+
+
