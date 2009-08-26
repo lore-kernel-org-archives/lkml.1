@@ -1,79 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbZHZBB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbZHZBGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932800AbZHZBB1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 21:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932497AbZHZBB0
+	id S1756098AbZHZBGW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 21:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932778AbZHZBGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 21:01:26 -0400
-Received: from mail-qy0-f173.google.com ([209.85.221.173]:60413 "EHLO
-	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932375AbZHZBBY (ORCPT
+	Tue, 25 Aug 2009 21:06:21 -0400
+Received: from 30.mail-out.ovh.net ([213.186.62.213]:33797 "HELO
+	30.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932564AbZHZBGV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 21:01:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type;
-        b=HKI0WrUcDPROpaqRK9sOItsMWZiHnf3CznYcRPsjEY4q7kAs5wzB6Wdd8rAW5Hq83Q
-         hbsinY5tyhzBKMzZe6hMETZIdYgiBvDH/YJc+ImxGYyUVM9jgEsFLVgUxV6FfK6rEadX
-         YLJQ5A2mRkHwcRBbpu1oXww3uszpHf5EaOQ4Q=
-Message-ID: <4A948962.7090909@gmail.com>
-Date: Tue, 25 Aug 2009 21:01:22 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 25 Aug 2009 21:06:21 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Aug 2009 21:06:20 EDT
+Message-ID: <4A9488FB.60603@eukrea.com>
+Date: Wed, 26 Aug 2009 02:59:39 +0200
+From: =?ISO-8859-1?Q?Eric_B=E9nard?= <eric@eukrea.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: alacrityvm-devel@lists.sourceforge.net
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
-Subject: AlacrityVM benchmark numbers updated
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBAF2F37F4D27E7A7E6AA6204"
+To: Robert Emanuele <rob@emanuele.us>
+CC: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: ARM Git Tree (at91sam9g45 patches)
+References: <9f53b4330908251727q1bc1accfk12a9a8d25407791@mail.gmail.com>
+In-Reply-To: <9f53b4330908251727q1bc1accfk12a9a8d25407791@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 9914956054954618310
+X-Ovh-Remote: 82.228.175.43 (tal33-2-82-228-175-43.fbx.proxad.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|U 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBAF2F37F4D27E7A7E6AA6204
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Robert,
 
-We are pleased to announce the availability of the latest networking
-benchmark numbers for AlacrityVM.  We've made several tweaks to the
-original v0.1 release to improve performance.  The most notable is a
-switch from get_user_pages to switch_mm+copy_[to/from]_user thanks to a
-review suggestion from Michael Tsirkin (as well as his patch to
-implement it).
+Robert Emanuele wrote :
+> I'm working with the Atmel at91sam9g45-ekes board which is new.  I was
+> wondering if there was a git tree with the current ARM patches that
+> contains the at91sam9g45 code?  Russell lists "Applied" patches at
+> http://www.arm.linux.org.uk/developer/patches/ .  Where are these
+> applied to?  If there isn't a tree, is there an elegant way to get the
+> latest patch sets that I could apply to Linus's tree?
+> 
+you will find the files that you can apply using git am here :
+ftp://ftp.arm.linux.org.uk/pub/armlinux/kernel/git-cur/
 
-This change alone accounted for freeing up an additional 1.2Gbps, which
-is over 25% improvement from v0.1.  The previous numbers were 4560Gbps
-before the change, and 5708Gbps after (for 1500mtu over 10GE).  This
-moves us ever closer to the goal of native performance under virtualizati=
-on.
-
-These changes will be incorporated into the upcoming v0.2 release.  For
-more details, please visit our project wiki:
-
-http://developer.novell.com/wiki/index.php/AlacrityVM
-
-Kind Regards,
--Greg
-
-
---------------enigBAF2F37F4D27E7A7E6AA6204
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqUiWIACgkQP5K2CMvXmqF9BwCdFTp8kstaf1ZPUuYdn3KnC1dH
-XOYAnihscqZ86aDpLrA7yZ7gMYo3jjfP
-=apF0
------END PGP SIGNATURE-----
-
---------------enigBAF2F37F4D27E7A7E6AA6204--
+Eric
