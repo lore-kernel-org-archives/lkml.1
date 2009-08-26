@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932738AbZHZOhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750905AbZHZOj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932738AbZHZOhN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932173AbZHZOhM
+	id S1750905AbZHZOj1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbZHZOj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:37:12 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:59045 "EHLO
+	Wed, 26 Aug 2009 10:39:27 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51883 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932104AbZHZOhK (ORCPT
+	with ESMTP id S1750739AbZHZOj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:37:10 -0400
-Date: Wed, 26 Aug 2009 10:37:11 -0400 (EDT)
+	Wed, 26 Aug 2009 10:39:26 -0400
+Date: Wed, 26 Aug 2009 10:39:26 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-In-Reply-To: <4A94DFF4.5030301@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com>
-References: <20090824092455.GA25267@elte.hu>  <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>  <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>  <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu> 
- <1251191546.7538.1118.camel@twins> <20090825102215.GC26801@elte.hu>  <1251196359.7538.1133.camel@twins>  <20090825103907.GB28287@elte.hu>  <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins>  <4A94D3A8.1090902@cn.fujitsu.com> 
- <1251269207.7538.1217.camel@twins> <1251270092.7538.1226.camel@twins> <4A94DFF4.5030301@cn.fujitsu.com>
+To: Jason Baron <jbaron@redhat.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com, jistone@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com
+Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
+In-Reply-To: <20090826135854.GA2658@redhat.com>
+Message-ID: <alpine.DEB.2.00.0908261038250.23885@gandalf.stny.rr.com>
+References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere> <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com> <20090825134005.GB2656@redhat.com>
+ <20090825184734.GE2656@redhat.com> <alpine.DEB.2.00.0908252223310.28127@gandalf.stny.rr.com> <20090826135854.GA2658@redhat.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,125 +33,110 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 26 Aug 2009, Li Zefan wrote:
-
-> Peter Zijlstra wrote:
-> > On Wed, 2009-08-26 at 08:46 +0200, Peter Zijlstra wrote:
+On Wed, 26 Aug 2009, Jason Baron wrote:
+> > > diff --git a/Kbuild b/Kbuild
+> > > index f056b4f..5f43d4d 100644
+> > > --- a/Kbuild
+> > > +++ b/Kbuild
+> > > @@ -78,7 +78,7 @@ endef
+> > >  arch/$(SRCARCH)/kernel/asm-offsets.s: arch/$(SRCARCH)/kernel/asm-offsets.c \
+> > >                                        $(obj)/$(bounds-file) FORCE
+> > >  	$(Q)mkdir -p $(dir $@)
+> > > -	$(call if_changed_dep,cc_s_c)
+> > > +	$(call if_changed_dep,cc_s_c_define_offset)
+> > >  
+> > >  $(obj)/$(offsets-file): arch/$(SRCARCH)/kernel/asm-offsets.s Kbuild
+> > >  	$(call cmd,offsets)
+> > > diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
+> > > index 900e161..70c0c3d 100644
+> > > --- a/arch/x86/include/asm/unistd_64.h
+> > > +++ b/arch/x86/include/asm/unistd_64.h
+> > > @@ -688,6 +688,12 @@ __SYSCALL(__NR_perf_counter_open, sys_perf_counter_open)
+> > >  #endif	/* __NO_STUBS */
+> > >  
+> > >  #ifdef __KERNEL__
+> > > +
+> > > +#ifndef CREATE_OFFSETS
+> > > +#include <asm/asm-offsets.h>
+> > > +#define NR_syscalls (__NR_syscall_max + 1)
+> > > +#endif
+> > > +
+> > >  /*
+> > >   * "Conditional" syscalls
+> > >   *
+> > > diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+> > > index 5c4b7a4..4177858 100644
+> > > --- a/scripts/Makefile.build
+> > > +++ b/scripts/Makefile.build
+> > > @@ -145,6 +145,10 @@ $(multi-objs-y:.o=.lst) : modname = $(modname-multi)
+> > >  quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
+> > >  cmd_cc_s_c       = $(CC) $(c_flags) -fverbose-asm -S -o $@ $<
+> > >  
+> > > +quiet_cmd_cc_s_c_define_offset = CC $(quiet_modtag)  $@
+> > > +cmd_cc_s_c_define_offset       = $(CC) $(c_flags) -DCREATE_OFFSETS \
+> > > +					-fverbose-asm -S -o $@ $<
+> > > +
+> > >  $(obj)/%.s: $(src)/%.c FORCE
+> > >  	$(call if_changed_dep,cc_s_c)
 > > 
-> >> Aahh, I see the bug, its only ftrace that knows about the module, not
-> >> tracepoints themselves, _that_ needs fixing.
 > > 
-> > You could possibly do something like:
+> > Ug, yuck yuck yuck. Sometimes "it works" is not good enough ;-)
 > > 
-> >  struct module *tp_mod = __module_address(&some_tp_symbol);
-> >  struct module *cb_mod = __module_text_address(func);
+> > How about just adding in asm/unistd.h
 > > 
-> >  if (tp_mod && tp_mod != cb_mod) {
-> > 	ret = try_get_module(tp_mod);
-> > 	if (ret)
-> > 		goto fail;
-> >  }
+> >  #ifdef __KERNEL__
+> >  # ifdef CONFIG_X86_32
+> >  #  include "unistd_32.h"
+> >  # else
+> >  #  include "unistd_64.h"
+> > +#  define NR_syscalls (__NR_syscall_max + 1)
+> >  # endif
+> >  #else
+> >  # ifdef __i386__
+> >  #  include "unistd_32.h"
+> >  # else
+> >  #  include "unistd_64.h"
+> >  # endif
+> >  #endif
 > > 
-> > in register_trace_##name() or thereabout.
+> > And if this is a problem because asm-offset_64.c includes asm/unistd.h, 
+> > then make it just include unistd_64.h.
+> > 
+> > Or am I missing something?
+> > 
+> > -- Steve
+> > 
 > > 
 > 
-> Actually I tried it, but it didn't work. As I said, You can't find
-> any tp symbol when registering tp callback. The same example again:
+> ok, so using the above patch gives me:
 > 
-> 	In module bar, we have register_trace_foo()
-> 	In module foo, we have DEFINE_TRACE(foo) and trace_foo().
+>   CC      arch/x86/kernel/ftrace.o
+> arch/x86/kernel/ftrace.c: In function ?syscall_nr_to_meta?:
+> arch/x86/kernel/ftrace.c:497:35: error: ?__NR_syscall_max? undeclared
+> (first use in this function)
+> arch/x86/kernel/ftrace.c:497:35: error: (Each undeclared identifier is
+> reported only once
+> arch/x86/kernel/ftrace.c:497:35: error: for each function it appears
+> in.)
+> arch/x86/kernel/ftrace.c: In function ?syscall_name_to_nr?:
+> arch/x86/kernel/ftrace.c:510:19: error: ?__NR_syscall_max? undeclared
+> (first use in this function)
+> arch/x86/kernel/ftrace.c: In function ?arch_init_ftrace_syscalls?:
+> arch/x86/kernel/ftrace.c:536:7: error: ?__NR_syscall_max? undeclared
+> (first use in this function)
+> make[2]: *** [arch/x86/kernel/ftrace.o] Error 1
+> make[1]: *** [arch/x86/kernel] Error 2
+> make: *** [arch/x86] Error 2
 > 
-> bar doesn't know any symbol of foo, so it can't bump foo's refcnt,
 > 
-> *Note: you can load module bar without loading module foo*
+> That is the the first time, I encounter a 'NR_syscalls' usage, we error, b/c
+> unistd.h does not include 'asm/asm-offsets.h'. If I add an #include of
+> 'asm/asm-offsets.h' to ftrace.c the compile is fine. But the point of
+> this was to the 'NR_syscalls' definition just from the unistd.h file...
+> I'll see if I can come up with a simpler patch.
 
-WTF!!!!
-
-We can register a trace point that is defined in another module without 
-having that module?? How is that possible? That looks totally busted, and 
-that is not a case that I think we need to worry about, except to prevent 
-it from ever happening.
-
-As for ref counts, would something like this work?
-
- (untested)
+Then add the asm/asm-offests.h to the x86_64 define in unistd.h and have 
+the asm-offset_64.c only include the unistd_64.h file. Would that work?
 
 -- Steve
 
-diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-index 0341f2e..055275b 100644
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -109,8 +109,9 @@ struct tracepoint {
- #define EXPORT_TRACEPOINT_SYMBOL(name)					\
- 	EXPORT_SYMBOL(__tracepoint_##name)
- 
--extern void tracepoint_update_probe_range(struct tracepoint *begin,
--	struct tracepoint *end);
-+extern void tracepoint_update_probe_range(struct module *,
-+					  struct tracepoint *begin,
-+					  struct tracepoint *end);
- 
- #else /* !CONFIG_TRACEPOINTS */
- #define DECLARE_TRACE_WITH_CALLBACK(name, proto, args, reg, unreg)	\
-diff --git a/kernel/module.c b/kernel/module.c
-index b182143..a8e69fa 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2974,7 +2974,7 @@ void module_update_tracepoints(void)
- 	mutex_lock(&module_mutex);
- 	list_for_each_entry(mod, &modules, list)
- 		if (!mod->taints)
--			tracepoint_update_probe_range(mod->tracepoints,
-+			tracepoint_update_probe_range(mod, mod->tracepoints,
- 				mod->tracepoints + mod->num_tracepoints);
- 	mutex_unlock(&module_mutex);
- }
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 06f165a..b150255 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -274,7 +274,8 @@ static void disable_tracepoint(struct tracepoint *elem)
-  * Updates the probe callback corresponding to a range of tracepoints.
-  */
- void
--tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
-+tracepoint_update_probe_range(struct module *mod,
-+			      struct tracepoint *begin, struct tracepoint *end)
- {
- 	struct tracepoint *iter;
- 	struct tracepoint_entry *mark_entry;
-@@ -286,9 +287,15 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
- 	for (iter = begin; iter < end; iter++) {
- 		mark_entry = get_tracepoint(iter->name);
- 		if (mark_entry) {
-+			if (mod) {
-+				if (!try_module_get(mod))
-+					continue;
-+			}
- 			set_tracepoint(&mark_entry, iter,
- 					!!mark_entry->refcount);
- 		} else {
-+			if (mod)
-+				module_put(mod);
- 			disable_tracepoint(iter);
- 		}
- 	}
-@@ -301,7 +308,7 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
- static void tracepoint_update_probes(void)
- {
- 	/* Core kernel tracepoints */
--	tracepoint_update_probe_range(__start___tracepoints,
-+	tracepoint_update_probe_range(NULL, __start___tracepoints,
- 		__stop___tracepoints);
- 	/* tracepoints in modules. */
- 	module_update_tracepoints();
-@@ -556,7 +563,7 @@ int tracepoint_module_notify(struct notifier_block *self,
- 	switch (val) {
- 	case MODULE_STATE_COMING:
- 	case MODULE_STATE_GOING:
--		tracepoint_update_probe_range(mod->tracepoints,
-+		tracepoint_update_probe_range(mod, mod->tracepoints,
- 			mod->tracepoints + mod->num_tracepoints);
- 		break;
- 	}
