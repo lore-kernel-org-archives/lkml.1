@@ -1,144 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbZHZJht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbZHZJnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756634AbZHZJht (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 05:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZHZJhs
+	id S1756591AbZHZJnO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 05:43:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZHZJnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 05:37:48 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:54921 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756460AbZHZJhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 05:37:47 -0400
-Date: Wed, 26 Aug 2009 10:37:49 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       netdev@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [Bug #14016] mm/ipw2200 regression
-Message-ID: <20090826093747.GA10955@csn.ul.ie>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.FIH.7sGlKB@chimera> <84144f020908252309u5cff8afdh2214577ca4db9b5d@mail.gmail.com> <20090826082741.GA25955@cmpxchg.org>
+	Wed, 26 Aug 2009 05:43:13 -0400
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:23037 "EHLO
+	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752021AbZHZJnM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 05:43:12 -0400
+X-SpamScore: -39
+X-BigFish: VPS-39(z21eWz1102K1432R98dN936eM148cMa4a4ka594izz1202hzzz32i6bh203h61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KOZ9NO-02-33U-02
+X-M-MSG: 
+Date: Wed, 26 Aug 2009 11:42:38 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: James Dingwall <james.dingwall@amdocs.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: BUG: 2.6.30.1 pv_ops kernel boot failure - bisected
+Message-ID: <20090826094238.GB8347@alberich.amd.com>
+References: <683099EDC3E36D40942EBF636EB88BF00701E35F@batmail1.corp.amdocs.com> <20090825114233.GL20811@alberich.amd.com> <683099EDC3E36D40942EBF636EB88BF00701E3FA@batmail1.corp.amdocs.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090826082741.GA25955@cmpxchg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <683099EDC3E36D40942EBF636EB88BF00701E3FA@batmail1.corp.amdocs.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 26 Aug 2009 09:42:38.0757 (UTC) FILETIME=[8C98FD50:01CA2631]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 10:27:41AM +0200, Johannes Weiner wrote:
-> [Cc netdev]
+On Tue, Aug 25, 2009 at 02:06:32PM +0100, James Dingwall wrote:
 > 
-> On Wed, Aug 26, 2009 at 09:09:44AM +0300, Pekka Enberg wrote:
-> > On Tue, Aug 25, 2009 at 11:34 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
+> > > On Tue, Aug 25, 2009 at 12:04:54PM +0100, James Dingwall wrote:
+> > > >
+> > > > Hi,
+> > > >
+> > > > I have encountered what appears to be a bug when using the 2.6.30
+> > > stable
+> > > > series as a pv_ops kernel under Xen 3.4.1.  The problem appears to
+> > > have
+> > > > been introduced with the following commit (provided I bisected it
+> > > > correctly)
+> > > >
+> > > > commit bb9b409349f533a919b6b6d95698fbe6ff4aa209
+> > > > Author: Andreas Herrmann <andreas.herrmann3@amd.com>
+> > > > Date:   Mon Jun 8 15:55:09 2009 +0200
+> > > >
+> > > >     x86: Detect use of extended APIC ID for AMD CPUs
+> > > >
+> > > > When I try and boot the domU (xm create -c) I do not get any
+> > output.
+> > > > With this commit reverted I can boot 2.6.30.5 pv_ops without
+> issue,
+> > > > output follows below.  The system is a dual Opteron 242.  If more
+> > > > details about the hardware or configuration are required to debug
+> > > this
+> > > > please let me know.  I'm willing to test any patches.
 > > >
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.30.  Please verify if it still should be listed and let me know
-> > > (either way).
 > > >
-> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14016
-> > > Subject         : mm/ipw2200 regression
-> > > Submitter       : Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > Date            : 2009-08-15 16:56 (11 days old)
-> > > References      : http://marc.info/?l=linux-kernel&m=125036437221408&w=4
+> > > So it seems that commit
+> > >
+> > >  commit 2cb078603abb612e3bcd428fb8122c3d39e08832
+> > >  Author: Jeremy Fitzhardinge <jeremy@goop.org>
+> > >  Date:   Wed Jul 22 09:59:35 2009 -0700
+> > >
+> > >     x86, amd: Don't probe for extended APIC ID if APICs are disabled
+> > >
+> > >     If we've logically disabled apics, don't probe the PCI space for
+> > > the
+> > >     AMD extended APIC ID.
+> > >
+> > >     [ Impact: prevent boot crash under Xen. ]
+> > >
+> > >     Signed-off-by: Jeremy Fitzhardinge
+> > <jeremy.fitzhardinge@citrix.com>
+> > >     Reported-by: Bastian Blank <bastian@waldi.eu.org>
+> > >     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> > >
+> > > needs to be added to 2.6.30.y for proper boot under Xen.
+> > > James, can you test this please?
 > > 
-> > If am reading the page allocator dump correctly, there's plenty of
-> > pages left but we're unable to satisfy an order 6 allocation. There's
-> > no slab allocator involved so the page allocator changes that went
-> > into 2.6.31 seem likely. Mel, ideas?
+> > Hi Andreas,
+> > 
+> > That commit won't apply directly on top of 2.6.30.5 as the #ifdef
+> which
+> > contains it is missing.  However, based on what you suggested I have
+> > the following patch below which resolves the problem for me.  Here's
+> > hoping it doesn't get munged by my mailer...
+> > 
+> > James
+> > 
+> > diff --git a/arch/x86/include/asm/cpufeature.h
+> > b/arch/x86/include/asm/cpufeature.h
+> > index bb83b1c..2f5ebf1 100644
+> > --- a/arch/x86/include/asm/cpufeature.h
+> > +++ b/arch/x86/include/asm/cpufeature.h
+> > @@ -94,6 +94,7 @@
+> >  #define X86_FEATURE_TSC_RELIABLE (3*32+23) /* TSC is known to be
+> > reliable */
+> >  #define X86_FEATURE_NONSTOP_TSC        (3*32+24) /* TSC does not stop
+> > in C states */
+> >  #define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with
+> > monitor */
+> > +#define X86_FEATURE_EXTD_APICID (3*32+26) /* has extended APICID (8
+> > bits) */
+> > 
+> >  /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4
+> */
+> >  #define X86_FEATURE_XMM3       (4*32+ 0) /* "pni" SSE-3 */
+> > diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+> > index 0a9092f..61a592e 100644
+> > --- a/arch/x86/kernel/cpu/amd.c
+> > +++ b/arch/x86/kernel/cpu/amd.c
+> > @@ -6,6 +6,7 @@
+> >  #include <asm/processor.h>
+> >  #include <asm/apic.h>
+> >  #include <asm/cpu.h>
+> > +#include <asm/pci-direct.h>
+> > 
+> >  #ifdef CONFIG_X86_64
+> >  # include <asm/numa_64.h>
+> > @@ -353,6 +354,15 @@ static void __cpuinit early_init_amd(struct
+> > cpuinfo_x86 *c)
+> >                     (c->x86_model == 8 && c->x86_mask >= 8))
+> >                         set_cpu_cap(c, X86_FEATURE_K6_MTRR);
+> >  #endif
+> > +#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_PCI)
+> > +       /* check CPU config space for extended APIC ID */
+> > +       if (cpu_has_apic && c->x86 >= 0xf) {
+> > +               unsigned int val;
+> > +               val = read_pci_config(0, 24, 0, 0x68);
+> > +               if ((val & ((1 << 17) | (1 << 18))) == ((1 << 17) | (1
+> > << 18)))
+> > +                       set_cpu_cap(c, X86_FEATURE_EXTD_APICID);
+> > +       }
+> > +#endif
+> >  }
+> > 
+> >  static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+> > 
 > 
-> It's an atomic order-6 allocation, the chances for this to succeed
-> after some uptime become infinitesimal.  The chunks > order-2 are
-> pretty much exhausted on this dump.
-> 
-> 64 pages, presumably 256k, for fw->boot_size while current ipw
-> firmware images have ~188k.  I don't know jack squat about this
-> driver, but given the field name and the struct:
-> 
-> 	struct ipw_fw {
-> 		__le32 ver;
-> 		__le32 boot_size;
-> 		__le32 ucode_size;
-> 		__le32 fw_size;
-> 		u8 data[0];
-> 	};
-> 
-> fw->boot_size alone being that big sounds a bit fishy to me.
+> Ok - my mistake.  I'm a unfamiliar with git so after I reverted the
+> commit I was testing I thought that a reset would take it back to the
+> unmodified 2.6.30.5 release.  In fact the commit
+> 2cb078603abb612e3bcd428fb8122c3d39e08832 does apply directly on top of
+> this and solves the problem.
 > 
 
-Agreed. While there are a low number of order-6 pages free in the page
-allocation failure dump, there are not enough for watermarks to be
-satisified. As it's atomic, there is little that can be done from a VM
-perspective and it's the responsibility of the driver. I'm no driver expert
-but I'll have a go at fixing it anyway.
+So this commit should be integrated in 2.6.30 stable tree.
+Will take care of this soon.
 
-My reading of this is that the firmware is being loaded from a workqueue and
-I am failing to see any restriction on sleeping in the path. It would appear
-that the driver just used the most convenient *_alloc_coherent function
-available forgetting that it assumes GFP_ATOMIC. Can someone who does know
-which way is up with a driver tell me why the patch below might not
-work?
+Thanks for testing.
 
-Bartlomiej, any chance you could give this a spin? Preferably, you'd
-have preempt enabled and CONFIG_DEBUG_SPINLOCK_SLEEP on as well because
-that combination will complain loudly if we really can't sleep in this
-path.
 
-=====
-ipw2200: Avoid large GFP_ATOMIC allocation during firmware loading
+Regards,
 
-ipw2200 uses pci_alloc_consistent() to allocate a large coherent buffer for
-the loading of firmware which is an order-6 allocation of GFP_ATOMIC. At
-system start-up time, this is not a problem. However, the firmware on the
-card can get confused and the corrective action taken is to reload the
-firmware and reinit the card. High-order GFP_ATOMIC allocations of this
-type can and will fail when the system is already up and running.
+Andreas
 
-As the firmware is loaded from a workqueue, it should be possible for
-the driver to go to sleep. This patch converts the call of
-pci_alloc_consistent() which assumes GFP_ATOMIC to dma_alloc_coherent()
-which can specify its own flags.
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
-The big downside with this patch is that it uses GFP_REPEAT to avoid the
-driver unloading. There is potential that this will cause a reclaim
-storm as the machine tries to find a free order-6 buffer. A suggested
-alternative for the driver owner is in the comments.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- drivers/net/wireless/ipw2x00/ipw2200.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c b/drivers/net/wireless/ipw2x00/ipw2200.c
-index 44c29b3..f2e251e 100644
---- a/drivers/net/wireless/ipw2x00/ipw2200.c
-+++ b/drivers/net/wireless/ipw2x00/ipw2200.c
-@@ -3167,7 +3167,19 @@ static int ipw_load_firmware(struct ipw_priv *priv, u8 * data, size_t len)
- 	u8 *shared_virt;
- 
- 	IPW_DEBUG_TRACE("<< : \n");
--	shared_virt = pci_alloc_consistent(priv->pci_dev, len, &shared_phys);
-+
-+	/*
-+	 * This is a whopping large allocation, in or around order-6 so
-+	 * dma_alloc_coherent is used to specify the GFP_KERNEL|__GFP_REPEAT
-+	 * flags. Note that this action means the system could go into a
-+	 * reclaim loop until it cannot reclaim any more trying to satisfy
-+	 * the allocation. It would be preferable if one buffer is allocated
-+	 * at driver initialisation and reused when the firmware needs to
-+	 * be reloaded, overwriting the existing firmware each time
-+	 */
-+	shared_virt = dma_alloc_coherent(
-+			priv->pci_dev == NULL ? NULL : &priv->pci_dev->dev, 
-+			len, &shared_phys, GFP_KERNEL|__GFP_REPEAT);
- 
- 	if (!shared_virt)
- 		return -ENOMEM;
 
