@@ -1,55 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbZHZUMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbZHZUNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281AbZHZUMN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 16:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbZHZUMN
+	id S1753287AbZHZUNk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 16:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZHZUNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 16:12:13 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:41948 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbZHZUMM (ORCPT
+	Wed, 26 Aug 2009 16:13:39 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:53267 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753155AbZHZUNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 16:12:12 -0400
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: v2.6.31-rc6 inotify not reporting deleted files
-References: <m1skffj64t.fsf@fess.ebiederm.org>
-	<1251299483.2308.32.camel@dhcp231-106.rdu.redhat.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 26 Aug 2009 13:12:08 -0700
-In-Reply-To: <1251299483.2308.32.camel@dhcp231-106.rdu.redhat.com> (Eric Paris's message of "Wed\, 26 Aug 2009 11\:11\:23 -0400")
-Message-ID: <m1eiqy5o87.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 26 Aug 2009 16:13:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=f9oXOq3/dwzH1lkuALSKz9m7yZSPdrljMA3obCw6ZzszgJt5qjng3ivrd9kMgqxbIN
+         ee9CtK5VihZlm48LjEYYqmAODoAgjwMj7YCWl4tFVzhYnSApMLQSgkSyDWzDwofThDnW
+         xvVtFSVBZ27gzcwG4B9+1vDNL2PJRNcmOD+ZY=
+Date: Thu, 27 Aug 2009 00:13:30 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] kill-the-bkl/reiserfs: fix some lock dependency
+	inversions
+Message-ID: <20090826201330.GA18761@orion>
+References: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: eparis@redhat.com, rjw@sisk.pl, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <1251167570-5233-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris <eparis@redhat.com> writes:
+On Tue, Aug 25, 2009 at 04:32:46AM +0200, Frederic Weisbecker wrote:
+> Hi,
+> 
+> This small set fixes some lock dependency inversions found in reiserfs
+> xattr and mmap paths.
+> I guess there are still some of them that I'll have to hunt, especially one
+> reported by Laurent Riffard and another one introduced by the reiserfs_readdir
+> path optimization (though I'm not sure about the latter, I have yet to find a
+> way to reproduce it properly).
+> 
+> As usual, these patches can be found at:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
+> 	reiserfs/kill-bkl
 
-> On Wed, 2009-08-26 at 02:06 -0700, Eric W. Biederman wrote:
->> I don't have a small test case yet, but I have an application that
->> uses inotify and watches a file and takes action when that file has been
->> deleted.  Running that application on 2.6.31-rc6 the application is
->> no longer seeing the file being deleted.
->
-> Are you dealing with hard linked files?
+Hi,
+possible circular locking dependency detected
 
-I shouldn't be.  When I skimmed through everything last night it
-looked like add a watch for create/delete/modify.  Wait.
+Is it false positive?
 
-File created (see it) file deleted (miss it).
+REISERFS (device sda1): found reiserfs format "3.6" with standard journal
+REISERFS (device sda1): using ordered data mode
+REISERFS (device sda1): journal params: device sda1, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
+REISERFS (device sda1): checking transaction log (sda1)
+REISERFS debug (device sda1): journal-1153: found in header: first_unflushed_offset 6766, last_flushed_trans_id 1836992
+REISERFS debug (device sda1): journal-1206: Starting replay from offset 7889824857987694, trans_id 18
+REISERFS debug (device sda1): journal-1299: Setting newest_mount_id to 229
+REISERFS (device sda1): Using r5 hash to sort names
+VFS: Mounted root (reiserfs filesystem) readonly on device 8:1.
 
-I will go verify I can cook up a reproducer, on my box where it
-has been failing consistently.
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.31-rc7-00135-g9399a4c #5
+-------------------------------------------------------
+init.sh/599 is trying to acquire lock:
+ (&mm->mmap_sem){++++++}, at: [<c1071056>] might_fault+0x46/0xa0
 
-Eric
+but task is already holding lock:
+ (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c10ff20e>] reiserfs_write_lock+0x1e/0x30
 
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&REISERFS_SB(s)->lock){+.+.+.}:
+       [<c104dd18>] __lock_acquire+0xd28/0x1390
+       [<c104e3ef>] lock_acquire+0x6f/0x90
+       [<c133af96>] __mutex_lock_common+0x46/0x310
+       [<c133b318>] mutex_lock_nested+0x38/0x40
+       [<c10ff1ce>] reiserfs_write_lock_once+0x1e/0x40
+       [<c10db74c>] reiserfs_get_block+0x5c/0x1440
+       [<c10ae7a0>] do_mpage_readpage+0x120/0x4b0
+       [<c10aec2f>] mpage_readpages+0x9f/0xe0
+       [<c10d8c39>] reiserfs_readpages+0x19/0x20
+       [<c10671f5>] __do_page_cache_readahead+0x195/0x210
+       [<c1067291>] ra_submit+0x21/0x30
+       [<c1061229>] filemap_fault+0x2e9/0x380
+       [<c1072f08>] __do_fault+0x38/0x3b0
+       [<c1073b5d>] handle_mm_fault+0xcd/0x550
+       [<c101ad63>] do_page_fault+0xf3/0x240
+       [<c133cd53>] error_code+0x63/0x68
+       [<c10baa74>] padzero+0x24/0x40
+       [<c10bc062>] load_elf_binary+0x632/0x1480
+       [<c108aafa>] search_binary_handler+0x8a/0x270
+       [<c108cb15>] do_execve+0x215/0x2a0
+       [<c1001658>] sys_execve+0x28/0x60
+       [<c1002d99>] syscall_call+0x7/0xb
+       [<ffffffff>] 0xffffffff
+
+-> #0 (&mm->mmap_sem){++++++}:
+       [<c104dd99>] __lock_acquire+0xda9/0x1390
+       [<c104e3ef>] lock_acquire+0x6f/0x90
+       [<c1071087>] might_fault+0x77/0xa0
+       [<c11c1886>] copy_to_user+0x36/0x130
+       [<c1093c29>] filldir64+0xa9/0xf0
+       [<c10deda1>] reiserfs_readdir_dentry+0x4a1/0x7b0
+       [<c10df0c7>] reiserfs_readdir+0x17/0x20
+       [<c1093eb5>] vfs_readdir+0x85/0xa0
+       [<c1093f34>] sys_getdents64+0x64/0xb0
+       [<c1002d18>] sysenter_do_call+0x12/0x36
+       [<ffffffff>] 0xffffffff
+
+other info that might help us debug this:
+
+2 locks held by init.sh/599:
+ #0:  (&sb->s_type->i_mutex_key#4){+.+.+.}, at: [<c1093e82>] vfs_readdir+0x52/0xa0
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c10ff20e>] reiserfs_write_lock+0x1e/0x30
+
+stack backtrace:
+Pid: 599, comm: init.sh Not tainted 2.6.31-rc7-00135-g9399a4c #5
+Call Trace:
+ [<c133a11a>] ? printk+0x18/0x1e
+ [<c104bfdd>] print_circular_bug_tail+0x8d/0xd0
+ [<c104dd99>] __lock_acquire+0xda9/0x1390
+ [<c104e3ef>] lock_acquire+0x6f/0x90
+ [<c1071056>] ? might_fault+0x46/0xa0
+ [<c1071087>] might_fault+0x77/0xa0
+ [<c1071056>] ? might_fault+0x46/0xa0
+ [<c11c1886>] copy_to_user+0x36/0x130
+ [<c1093c29>] filldir64+0xa9/0xf0
+ [<c10ff20e>] ? reiserfs_write_lock+0x1e/0x30
+ [<c10deda1>] reiserfs_readdir_dentry+0x4a1/0x7b0
+ [<c1093b80>] ? filldir64+0x0/0xf0
+ [<c104d453>] ? __lock_acquire+0x463/0x1390
+ [<c104c62e>] ? trace_hardirqs_on_caller+0x7e/0x170
+ [<c1093b80>] ? filldir64+0x0/0xf0
+ [<c133b153>] ? __mutex_lock_common+0x203/0x310
+ [<c1093b80>] ? filldir64+0x0/0xf0
+ [<c10df0c7>] reiserfs_readdir+0x17/0x20
+ [<c1093eb5>] vfs_readdir+0x85/0xa0
+ [<c1093f34>] sys_getdents64+0x64/0xb0
+ [<c1002d18>] sysenter_do_call+0x12/0x36
