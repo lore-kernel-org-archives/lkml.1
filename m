@@ -1,199 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZHZSSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbZHZSTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666AbZHZSSA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 14:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbZHZSR7
+	id S1752687AbZHZSTK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 14:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZHZSTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 14:17:59 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:44930 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752545AbZHZSR6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 14:17:58 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Au4EAIcUlUpMROOX/2dsb2JhbACBU9dyhBoF
-Date: Wed, 26 Aug 2009 14:17:58 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-Message-ID: <20090826181758.GA30248@Krystal>
-References: <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins> <4A94D3A8.1090902@cn.fujitsu.com> <1251269207.7538.1217.camel@twins> <1251270092.7538.1226.camel@twins> <4A94DFF4.5030301@cn.fujitsu.com> <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com> <20090826164624.GA21456@Krystal> <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com> <20090826180114.GA29130@Krystal>
-Mime-Version: 1.0
+	Wed, 26 Aug 2009 14:19:09 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1762 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752638AbZHZSTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 14:19:08 -0400
+Date: Wed, 26 Aug 2009 14:19:08 -0400
+From: Mike Snitzer <snitzer@redhat.com>
+To: Alasdair G Kergon <agk@redhat.com>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: dm snapshot: implement .iterate_devices
+Message-ID: <20090826181908.GB26018@redhat.com>
+References: <1251007867-13004-1-git-send-email-snitzer@redhat.com> <20090826145045.GH643@agk-dp.fab.redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090826180114.GA29130@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 14:11:15 up 8 days,  5:00,  2 users,  load average: 0.72, 0.56,
-	0.38
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090826145045.GH643@agk-dp.fab.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > 
-> > This patch solves the problem that Li originally reported. If something 
-> > registers a trace point belonging to a module, then it ups the ref count 
-> > of the module. This prevents a process from registering a probe to a 
-> > tracepoint belonging to a module and then having the module disappear.
-> > 
-> > Doing the example with perf in Li's original post, now errors on the 
-> > rmmod, with "ERROR: Module trace_events_sample is in use".
-> > 
-> > Mathieu, can I have your acked-by on this?
-> > 
-> 
-> Sorry, it looks buggy.
-> 
-> It does not deal with the fact that tracepoints with the same name and
-> arguments can be present in more than one module, or in a combination of
-> kernel core and modules.
-> 
-> The struct tracepoint_entry is specific to a a tracepoint name, used for
-> registration, but is eventually tied to all tracepoint instrumentation
-> instances for this tracepoint name.
-> 
+On Wed, Aug 26 2009 at 10:50am -0400,
+Alasdair G Kergon <agk@redhat.com> wrote:
 
-Looking at the original post:
-http://lkml.org/lkml/2009/8/24/5
-
-the problem seems to be caused by the fact that the
-trace_event_profile.c keeps some knowledge of modules in internal data
-structures, but does not get notified of module unloads. Why don't we
-fix that instead ?
-
-A quick glance at it seems to indicate that it lazily discovers new
-modules when the tracepoints are hit. Using module load/unload notifiers
-would be more appropriate. Or maybe adding a notifier call to
-tracepoint.c, calling notification callbacks for probe modules which
-need to know when the connected tracepoints are changing
-(when they are connected/disconnected) would probably be even more
-appropriate. As a result, it would remove the dynamic verification cost
-implied by lazy data structure lookup and check each time the probe is
-fired.
-
-Mathieu
-
-> Mathieu
+> On Sun, Aug 23, 2009 at 02:11:07AM -0400, Mike Snitzer wrote:
+> > This patch implements .iterate_devices for the origin and snapshot
+> > targets.  dm-snapshot's lack of .iterate_devices resulted in the
+> > inability to properly establish queue_limits for both targets.  
+> > With 4K sector drives: an unfortunate side-effect of not establishing
+> > proper limits in either targets' DM device was that IO to the devices
+> > would fail even though both had been created without error.
+> > Commit af4874e03ed82f050d5872d8c39ce64bf16b5c38 should have implemented
+> > .iterate_devices for dm-snap.c's origin and snapshot targets.
+>  
+> > +static int snapshot_iterate_devices(struct dm_target *ti,
+> > +				    iterate_devices_callout_fn fn, void *data)
+> > +{
+> > +	struct dm_snapshot *snap = ti->private;
+> > +
+> > +	return fn(ti, snap->origin, 0, ti->len, data);
+> > +}
 > 
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > 
-> > diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-> > index 0341f2e..055275b 100644
-> > --- a/include/linux/tracepoint.h
-> > +++ b/include/linux/tracepoint.h
-> > @@ -109,8 +109,9 @@ struct tracepoint {
-> >  #define EXPORT_TRACEPOINT_SYMBOL(name)					\
-> >  	EXPORT_SYMBOL(__tracepoint_##name)
-> >  
-> > -extern void tracepoint_update_probe_range(struct tracepoint *begin,
-> > -	struct tracepoint *end);
-> > +extern void tracepoint_update_probe_range(struct module *,
-> > +					  struct tracepoint *begin,
-> > +					  struct tracepoint *end);
-> >  
-> >  #else /* !CONFIG_TRACEPOINTS */
-> >  #define DECLARE_TRACE_WITH_CALLBACK(name, proto, args, reg, unreg)	\
-> > diff --git a/kernel/module.c b/kernel/module.c
-> > index b182143..a8e69fa 100644
-> > --- a/kernel/module.c
-> > +++ b/kernel/module.c
-> > @@ -2974,7 +2974,7 @@ void module_update_tracepoints(void)
-> >  	mutex_lock(&module_mutex);
-> >  	list_for_each_entry(mod, &modules, list)
-> >  		if (!mod->taints)
-> > -			tracepoint_update_probe_range(mod->tracepoints,
-> > +			tracepoint_update_probe_range(mod, mod->tracepoints,
-> >  				mod->tracepoints + mod->num_tracepoints);
-> >  	mutex_unlock(&module_mutex);
-> >  }
-> > diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-> > index 06f165a..089e6f9 100644
-> > --- a/kernel/tracepoint.c
-> > +++ b/kernel/tracepoint.c
-> > @@ -54,6 +54,7 @@ static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
-> >   */
-> >  struct tracepoint_entry {
-> >  	struct hlist_node hlist;
-> > +	struct module *mod;
-> >  	void **funcs;
-> >  	int refcount;	/* Number of times armed. 0 if disarmed. */
-> >  	char name[0];
-> > @@ -221,6 +222,7 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
-> >  	memcpy(&e->name[0], name, name_len);
-> >  	e->funcs = NULL;
-> >  	e->refcount = 0;
-> > +	e->mod = NULL;	/* Will be assigned in tracepoint_update_probe_range */
-> >  	hlist_add_head(&e->hlist, head);
-> >  	return e;
-> >  }
-> > @@ -231,6 +233,8 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
-> >   */
-> >  static inline void remove_tracepoint(struct tracepoint_entry *e)
-> >  {
-> > +	if (e->mod)
-> > +		module_put(e->mod);
-> >  	hlist_del(&e->hlist);
-> >  	kfree(e);
-> >  }
-> > @@ -274,7 +278,8 @@ static void disable_tracepoint(struct tracepoint *elem)
-> >   * Updates the probe callback corresponding to a range of tracepoints.
-> >   */
-> >  void
-> > -tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
-> > +tracepoint_update_probe_range(struct module *mod,
-> > +			      struct tracepoint *begin, struct tracepoint *end)
-> >  {
-> >  	struct tracepoint *iter;
-> >  	struct tracepoint_entry *mark_entry;
-> > @@ -286,9 +291,15 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
-> >  	for (iter = begin; iter < end; iter++) {
-> >  		mark_entry = get_tracepoint(iter->name);
-> >  		if (mark_entry) {
-> > +			if (mod && !mark_entry->mod) {
-> > +				if (!try_module_get(mod))
-> > +					goto disable;
-> > +				mark_entry->mod = mod;
-> > +			}
-> >  			set_tracepoint(&mark_entry, iter,
-> >  					!!mark_entry->refcount);
-> >  		} else {
-> > + disable:
-> >  			disable_tracepoint(iter);
-> >  		}
-> >  	}
-> > @@ -301,7 +312,7 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
-> >  static void tracepoint_update_probes(void)
-> >  {
-> >  	/* Core kernel tracepoints */
-> > -	tracepoint_update_probe_range(__start___tracepoints,
-> > +	tracepoint_update_probe_range(NULL, __start___tracepoints,
-> >  		__stop___tracepoints);
-> >  	/* tracepoints in modules. */
-> >  	module_update_tracepoints();
-> > @@ -556,7 +567,7 @@ int tracepoint_module_notify(struct notifier_block *self,
-> >  	switch (val) {
-> >  	case MODULE_STATE_COMING:
-> >  	case MODULE_STATE_GOING:
-> > -		tracepoint_update_probe_range(mod->tracepoints,
-> > +		tracepoint_update_probe_range(mod, mod->tracepoints,
-> >  			mod->tracepoints + mod->num_tracepoints);
-> >  		break;
-> >  	}
-> > 
-> > 
+> > +static int origin_iterate_devices(struct dm_target *ti,
+> > +				  iterate_devices_callout_fn fn, void *data)
+> > +{
+> > +	struct dm_dev *dev = ti->private;
+> > +
+> > +	return fn(ti, dev, 0, ti->len, data);
+> > +}
 > 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> Why are these both seemingly the same?  Is one sufficient?
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+One is not sufficient.  If snapshot_iterate_devices() isn't provided the
+snapshot fails IO on 4K drives; e.g. an ext3 mount in my test case:
+sd 13:0:0:0: [sdc] Bad block number requested
+EXT3-fs: unable to read superblock
+
+> And where are the characteristics of the 'cow' device taken into account?
+
+As we discussed, the snapshot_iterate_devices() needs more intelligence.
+
+For now the current snapshot_iterate_devices() is a means to establish
+more reasonable limits based on the origin.  So in my 4K drive case it
+was a means to an end but it was naively incomplete.  One _could_ have a
+cow with different logical_block_size, etc. (e.g. 512B origin + 4K cow).
+So stacking the cow limits is clearly needed.
+
+I'll work on a proper solution for snapshot_iterate_devices() and get
+that to you ASAP.
+
+Thanks for the review.
+
+Mike
