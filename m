@@ -1,76 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751107AbZHZEIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZHZEJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751107AbZHZEIc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 00:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbZHZEIb
+	id S1751218AbZHZEJx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 00:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbZHZEJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 00:08:31 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:47801 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750701AbZHZEIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 00:08:30 -0400
-Message-ID: <4A94B529.1080308@redhat.com>
-Date: Wed, 26 Aug 2009 00:08:09 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Wed, 26 Aug 2009 00:09:52 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:47074 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbZHZEJv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 00:09:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=L9p3iQ0kEuWidusffaySII0Fj9vvGZExVMB1Gi/YqEoHldRWuQ2aMQm8jMCCE0THNd
+         KQKPtmDJdE3B1LF/so1DCWMYYaXvOqDjpp+DVbsk5Isan1dRz+XQmvYnaJFgywQ8Bg+V
+         6OjMS8oQ0CAtnni1uASa0MlfrzW32uUFgcVFQ=
+Date: Wed, 26 Aug 2009 06:09:19 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Patch 2/2] HW-BKPT: Allow kernel breakpoints to be modified
+	through a new API
+Message-ID: <20090826040917.GC6245@nowhere>
+References: <20090825201310.268198183@linux.vnet.ibm.com> <20090825202159.GC1166@in.ibm.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Neil Brown <neilb@suse.de>, Ric Wheeler <rwheeler@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <19092.28371.793339.764701@notabene.brown> <20090825234454.GI4300@elf.ucw.cz>
-In-Reply-To: <20090825234454.GI4300@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090825202159.GC1166@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+On Wed, Aug 26, 2009 at 01:51:59AM +0530, K.Prasad wrote:
+> Introduce modify_kernel_hw_breakpoint() API that can quickly change the
+> characteristics (such as address, length, type but not cpumask) of a
+> kernel-space breakpoint without having to unregister first and then
+> re-register it.
+> 
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 
-> Ok, can you help? Having a piece of MD documentation explaining the
-> "powerfail nukes entire stripe" and how current filesystems do not
-> deal with that would be nice, along with description when exactly that
-> happens.
 
-Except of course for the inconvenient detail that a power
-failure on a degraded RAID 5 array does *NOT* nuke the
-entire stripe.
+Hmm... You will hate me but... While looking more closely
+at the pmu management in perf, I realize I've made a mistake by requesting
+this functionnality.
 
-A 5-disk RAID 5 array will have 4 data blocks and 1 parity
-block in each stripe.  A degraded array will have either
-4 data blocks or 3 data blocks and 1 parity block in the
-stripe.
+struct pmu are built of some callbacks, especially enable() and disable().
+These callbacks are called by perf when a task/group is sched in/out.
 
-If we are dealing with a parity-less stripe, we cannot
-lose any data due to RAID 5, because each of the 4 data
-blocks has a disk block available.  We could still lose
-a data write due to a power failure, but this could also
-happen with the RAID 5 array still intact.
+The breakpoint API then doesn't need to be able to live-modify breakpoint
+properties.
+Instead, what we need is a way to disarm/rearm a bp without actually unregister
+it (we don't want to lose its slot until it gets rearmed).
 
-If we are dealing with a 3-data, 1-parity stripe, then
-3 of the 4 data blocks have an available disk block and
-will not be lost (if they make it to disk).  The only
-block that maintains on all 3 data blocks and the parity
-block being correct is the block that does not currently
-have a disk to be written to.
+So eventually we need two callbacks: 
 
-In short, if a stripe is not written completely on a
-degraded RAID 5 array, you can lose:
-1) the blocks that were not written (duh)
-2) the block that doesn't have a disk
+- disable_kernel_breakpoint() that just disarm the breakpoint in the
+  hardware level without unregistering it in the software level.
+  When a profiled task group is sched out, the counter becomes
+  inactive, waiting to be sched in later, that's why the bp
+  must still be registered at this time (but inactive).
 
-The first part of this loss is also true in a non-degraded
-RAID 5 array.  The fact that the array is degraded really
-does not add much additional data loss here and you certainly
-will not lose the entire stripe like you suggest.
+- enable_kernel_breakpoint() that rearms it
 
--- 
-All rights reversed.
+Your first patch that handles the per cpu breakpoints + these two callbacks
+are the only thing we need for the perf integration.
+
+Once we get that, it's up to perf to handle the enable/disable for
+its own needs. Of course we already have the per task breakpoints
+that could handle that, but it looks easier and better to let perf
+decide whenever it needs the pmu to be bound or not.
+
+So, I'm sorry but we won't need this one patch (but we still need
+the first). And you can also forget about the breakpoint inheritance
+across clone() calls, hardware register rewrite on schedule() only while
+switching to separate task groups (although that could enhance/optimize
+this API).
+These things are already handled by perf.
+
+I should have looked more closely into the PMUs before requesting
+you this patch. My bad...
+
+Thanks,
+Frederic.
+
+> ---
+>  include/asm-generic/hw_breakpoint.h |    2 +
+>  kernel/hw_breakpoint.c              |   49 ++++++++++++++++++++++++++++++++++++
+>  2 files changed, 51 insertions(+)
+> 
+> Index: linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
+> ===================================================================
+> --- linux-2.6-tip.hbkpt.orig/include/asm-generic/hw_breakpoint.h
+> +++ linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
+> @@ -133,6 +133,8 @@ extern void unregister_user_hw_breakpoin
+>   * Kernel breakpoints are not associated with any particular thread.
+>   */
+>  extern int register_kernel_hw_breakpoint(struct hw_breakpoint *bp);
+> +extern int modify_kernel_hw_breakpoint(struct hw_breakpoint *old_bp,
+> +					struct hw_breakpoint *new_bp);
+>  extern void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp);
+>  
+>  extern unsigned int hbp_kernel_pos;
+> Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
+> ===================================================================
+> --- linux-2.6-tip.hbkpt.orig/kernel/hw_breakpoint.c
+> +++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
+> @@ -362,6 +362,55 @@ err_ret:
+>  }
+>  EXPORT_SYMBOL_GPL(register_kernel_hw_breakpoint);
+>  
+> +/**
+> + * modify_kernel_hw_breakpoint - modify characteristics of a previously registered breakpoint request
+> + * @old_bp: pointer to the registered breakpoint structure
+> + * @new_bp: pointer to the breakpoint structure that replaces @old_bp
+> + *
+> + */
+> +int modify_kernel_hw_breakpoint(struct hw_breakpoint *old_bp,
+> +				   struct hw_breakpoint *new_bp)
+> +{
+> +	int i, rc;
+> +	unsigned int cpu;
+> +	const cpumask_t *new_cpumask = new_bp->cpumask;
+> +
+> +	/* Default to ALL CPUs if cpumask is not specified */
+> +	if (!new_cpumask)
+> +		new_cpumask = new_bp->cpumask = cpu_possible_mask;
+> +	/*
+> +	 * The user cannot modify the cpumask of the registered breakpoint
+> +	 * It requires non-trivial amount of code and new data-structures to
+> +	 * allow a change in cpumask value. The user must instead 'unregister'
+> +	 * and re-register a new breakpoint if 'cpumask' should be changed
+> +	 */
+> +	if (!cpumask_equal(old_bp->cpumask, new_cpumask))
+> +		return -EINVAL;
+> +
+> +	rc = arch_validate_hwbkpt_settings(new_bp, NULL);
+> +	if (rc)
+> +		return rc;
+> +
+> +	spin_lock_bh(&hw_breakpoint_lock);
+> +	for_each_cpu(cpu, new_cpumask) {
+> +		for (i = HBP_NUM-1; i >= hbp_kernel_pos; i--) {
+> +			if (per_cpu(this_hbp_kernel[i], cpu) == old_bp) {
+> +				per_cpu(this_hbp_kernel[i], cpu) = new_bp;
+> +				break;
+> +			}
+> +		}
+> +	}
+> +
+> +	if (cpumask_test_cpu(smp_processor_id(), new_cpumask))
+> +		arch_update_kernel_hw_breakpoint(NULL);
+> +	smp_call_function_many(new_cpumask,
+> +				arch_update_kernel_hw_breakpoint, NULL, 1);
+> +
+> +	spin_unlock_bh(&hw_breakpoint_lock);
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(modify_kernel_hw_breakpoint);
+> +
+>  /* Removes breakpoint structure from the per-cpu breakpoint data-structure */
+>  static void remove_each_cpu_kernel_hbp(void *bp_param)
+>  {
+> 
+
