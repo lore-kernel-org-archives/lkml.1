@@ -1,89 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbZHZAjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbZHZAlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932712AbZHZAjh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932155AbZHZAjg
+	id S1756385AbZHZAlJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbZHZAlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:39:36 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54210 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932253AbZHZAje (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:39:34 -0400
-Date: Wed, 26 Aug 2009 02:39:26 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-Message-ID: <20090826003926.GQ4300@elf.ucw.cz>
-References: <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm> <20090826001206.GL4300@elf.ucw.cz> <alpine.DEB.2.00.0908251718141.28411@asgard.lang.hm>
+	Tue, 25 Aug 2009 20:41:08 -0400
+Received: from tanas.ca ([206.248.136.31]:59432 "EHLO tanas.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753820AbZHZAlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 20:41:08 -0400
+X-Greylist: delayed 499 seconds by postgrey-1.27 at vger.kernel.org; Tue, 25 Aug 2009 20:41:07 EDT
+From: "Andrei Tanas" <andrei@tanas.ca>
+To: <linux-kernel@vger.kernel.org>
+Subject: MD/RAID: what's wrong with sector 1953519935?
+Date: Tue, 25 Aug 2009 20:32:55 -0400
+Message-ID: <004e01ca25e4$c11a54e0$434efea0$@ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908251718141.28411@asgard.lang.hm>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Acol5MDdF7h3SZ+MRYuR08/yBXESKQ==
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-08-25 17:20:13, david@lang.hm wrote:
-> On Wed, 26 Aug 2009, Pavel Machek wrote:
->
->> On Tue 2009-08-25 16:56:40, david@lang.hm wrote:
->>> On Wed, 26 Aug 2009, Pavel Machek wrote:
->>>
->>>> There are storage devices that high highly undesirable properties
->>>> when they are disconnected or suffer power failures while writes are
->>>> in progress; such devices include flash devices and MD RAID 4/5/6
->>>> arrays.
->>>
->>> change this to say 'degraded MD RAID 4/5/6 arrays'
->>>
->>> also find out if DM RAID 4/5/6 arrays suffer the same problem (I strongly
->>> suspect that they do)
->>
->> I changed it to say MD/DM.
->>
->>> then you need to add a note that if the array becomes degraded before a
->>> scrub cycle happens previously hidden damage (that would have been
->>> repaired by the scrub) can surface.
->>
->> I'd prefer not to talk about scrubing and such details here. Better
->> leave warning here and point to MD documentation.
->
-> I disagree with that, the way you are wording this makes it sound as if  
-> raid isn't worth it. if you are going to say that raid is risky you need  
-> to properly specify when it is risky
+Hello,
 
-Ok, would this help? I don't really want to go to scrubbing details.
+I'm using two ST31000528AS drives in RAID1 array using MD. I've had several
+failures occur over a period of few months (see logs below). I've RMA'd the
+drive, but then got curious why an otherwise normal drive locks up while
+trying to write the same sector once a month or so, but does not report
+having bad sectors, doesn't fail any tests, and does just fine if I do
+dd if=/dev/urandom of=/dev/sdb bs=512 seek=1953519935 count=1
+however many times I try.
+I then tried Googling for this number (1953519935) and found that it comes
+up quite a few times and most of the time (or always) in context of md/raid.
+So my question is: is it just a coincidence (doesn't seem to be likely for a
+number this big), or is it possible that when sent to hard drive, it gets
+interpreted like some command and sends the drive into some unpredictable
+state?
 
-(*) Degraded array or single disk failure "near" the powerfail is
-neccessary for this property of RAID arrays to bite.
+I will gladly provide any additional info that might be necessary.
 
->>>> THESE devices have the property of potentially corrupting blocks being
->>>> written at the time of the power failure,
->>>
->>> this is true of all devices
->>
->> Actually I don't think so. I believe SATA disks do not corrupt even
->> the sector they are writing to -- they just have big enough
->> capacitors. And yes I believe ext3 depends on that.
->
-> you are incorrect on this.
->
-> ext3 (like every other filesystem) just accepts the risk (zfs makes some  
-> attempt to detect such corruption)
 
-I'd like Ted to comment on this. He wrote the original document, and
-I'd prefer not to introduce mistakes.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+#smartctl -i /dev/sdb
+=== START OF INFORMATION SECTION ===
+Device Model:     ST31000528AS
+Serial Number:    6VP01LNL
+Firmware Version: CC34
+User Capacity:    1,000,204,886,016 bytes
+Device is:        Not in smartctl database [for details use: -P showall]
+ATA Version is:   8
+ATA Standard is:  ATA-8-ACS revision 4
+Local Time is:    Thu Aug 20 10:52:31 2009 EDT
+SMART support is: Available - device has SMART capability.
+SMART support is: Enabled
+
+----------------------------------------------------
+Jul 27 19:02:31 srv kernel: [901292.247428] ata2.00: exception Emask 0x0
+SAct 0x0 SErr 0x0 action 0x6 frozen
+Jul 27 19:02:31 srv kernel: [901292.247492] ata2.00: cmd
+ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+Jul 27 19:02:31 srv kernel: [901292.247494]          res
+40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jul 27 19:02:31 srv kernel: [901292.247500] ata2.00: status: { DRDY }
+Jul 27 19:02:31 srv kernel: [901292.247512] ata2: hard resetting link
+Jul 27 19:02:33 srv kernel: [901294.090746] ata2: SRST failed (errno=-19)
+Jul 27 19:02:33 srv kernel: [901294.101922] ata2: SATA link up 3.0 Gbps
+(SStatus 123 SControl 300)
+Jul 27 19:02:33 srv kernel: [901294.101938] ata2.00: failed to IDENTIFY (I/O
+error, err_mask=0x40)
+Jul 27 19:02:33 srv kernel: [901294.101943] ata2.00: revalidation failed
+(errno=-5)
+Jul 27 19:02:38 srv kernel: [901299.100347] ata2: hard resetting link
+Jul 27 19:02:38 srv kernel: [901299.974103] ata2: SATA link up 3.0 Gbps
+(SStatus 123 SControl 300)
+Jul 27 19:02:39 srv kernel: [901300.105734] ata2.00: configured for UDMA/133
+Jul 27 19:02:39 srv kernel: [901300.105776] ata2: EH complete
+Jul 27 19:02:39 srv kernel: [901300.137059] end_request: I/O error, dev sdb,
+sector 1953519935
+Jul 27 19:02:39 srv kernel: [901300.137069] md: super_written gets error=-5,
+uptodate=0
+Jul 27 19:02:39 srv kernel: [901300.137077] raid1: Disk failure on sdb1,
+disabling device.
+Jul 27 19:02:39 srv kernel: [901300.137079] raid1: Operation continuing on 1
+devices.
+Jul 27 19:02:39 srv kernel: [901300.208812] RAID1 conf printout:
+Jul 27 19:02:39 srv kernel: [901300.208820]  --- wd:1 rd:2
+Jul 27 19:02:39 srv kernel: [901300.208826]  disk 0, wo:0, o:1, dev:sda1
+Jul 27 19:02:39 srv kernel: [901300.208830]  disk 1, wo:1, o:0, dev:sdb1
+Jul 27 19:02:39 srv kernel: [901300.217392] RAID1 conf printout:
+Jul 27 19:02:39 srv kernel: [901300.217399]  --- wd:1 rd:2
+Jul 27 19:02:39 srv kernel: [901300.217404]  disk 0, wo:0, o:1, dev:sda1
+
+Aug 20 00:15:36 srv kernel: [90307.328266] ata2.00: exception Emask 0x0 SAct
+0x0 SErr 0x0 action 0x6 frozen
+Aug 20 00:15:36 srv kernel: [90307.328275] ata2.00: cmd
+ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+Aug 20 00:15:36 srv kernel: [90307.328277]          res
+40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+Aug 20 00:15:36 srv kernel: [90307.328280] ata2.00: status: { DRDY }
+Aug 20 00:15:36 srv kernel: [90307.328288] ata2: hard resetting link
+Aug 20 00:15:47 srv kernel: [90313.218511] ata2: link is slow to respond,
+please be patient (ready=0)
+Aug 20 00:15:47 srv kernel: [90317.377711] ata2: SRST failed (errno=-16)
+Aug 20 00:15:47 srv kernel: [90317.377720] ata2: hard resetting link
+Aug 20 00:15:47 srv kernel: [90318.251720] ata2: SATA link up 3.0 Gbps
+(SStatus 123 SControl 300)
+Aug 20 00:15:47 srv kernel: [90318.338026] ata2.00: configured for UDMA/133
+Aug 20 00:15:47 srv kernel: [90318.338062] ata2: EH complete
+Aug 20 00:15:47 srv kernel: [90318.370625] end_request: I/O error, dev sdb,
+sector 1953519935
+Aug 20 00:15:47 srv kernel: [90318.370632] md: super_written gets error=-5,
+uptodate=0
+Aug 20 00:15:47 srv kernel: [90318.370636] raid1: Disk failure on sdb1,
+disabling device.
+Aug 20 00:15:47 srv kernel: [90318.370637] raid1: Operation continuing on 1
+devices.
+Aug 20 00:15:47 srv kernel: [90318.396403] RAID1 conf printout:
+Aug 20 00:15:47 srv kernel: [90318.396408]  --- wd:1 rd:2
+Aug 20 00:15:47 srv kernel: [90318.396410]  disk 0, wo:0, o:1, dev:sda1
+Aug 20 00:15:47 srv kernel: [90318.396413]  disk 1, wo:1, o:0, dev:sdb1
+Aug 20 00:15:47 srv kernel: [90318.429178] RAID1 conf printout:
+Aug 20 00:15:47 srv kernel: [90318.429185]  --- wd:1 rd:2
+Aug 20 00:15:47 srv kernel: [90318.429189]  disk 0, wo:0, o:1, dev:sda1
+
