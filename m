@@ -1,101 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbZHZSCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbZHZSDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752580AbZHZSCw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 14:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbZHZSCv
+	id S1752245AbZHZSDP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 14:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbZHZSDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 14:02:51 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:37211 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752564AbZHZSCu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 14:02:50 -0400
-Date: Wed, 26 Aug 2009 23:32:45 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Patch 0/1] HW-BKPT: Allow per-cpu kernel-space Hardware
-	Breakpoint requests
-Message-ID: <20090826180245.GA4438@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090817124641.GA13354@in.ibm.com> <20090819161119.GA3633@in.ibm.com> <20090819173259.GF4972@nowhere> <20090820172719.GA16499@in.ibm.com> <20090821142811.GF11098@elte.hu> <20090826033637.GB6245@nowhere> <20090826091642.GB7743@elte.hu> <20090826114954.GA6009@nowhere>
+	Wed, 26 Aug 2009 14:03:14 -0400
+Received: from thunk.org ([69.25.196.29]:38500 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752434AbZHZSDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 14:03:11 -0400
+Date: Wed, 26 Aug 2009 14:02:48 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: david@lang.hm
+Cc: Pavel Machek <pavel@ucw.cz>, Rik van Riel <riel@redhat.com>,
+       Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net, jack@suse.cz
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090826180248.GB6997@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, david@lang.hm,
+	Pavel Machek <pavel@ucw.cz>, Rik van Riel <riel@redhat.com>,
+	Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
+	Goswin von Brederlow <goswin-v-b@web.de>,
+	Rob Landley <rob@landley.net>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+	linux-ext4@vger.kernel.org, corbet@lwn.net, jack@suse.cz
+References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <4A932B18.1020209@redhat.com> <20090825093414.GB15563@elf.ucw.cz> <4A94ACDF.30405@redhat.com> <20090826111751.GC26595@elf.ucw.cz> <alpine.DEB.2.00.0908260428310.30426@asgard.lang.hm> <20090826131028.GB1370@ucw.cz> <alpine.DEB.2.00.0908260642560.28411@asgard.lang.hm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090826114954.GA6009@nowhere>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <alpine.DEB.2.00.0908260642560.28411@asgard.lang.hm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 01:49:57PM +0200, Frederic Weisbecker wrote:
-> On Wed, Aug 26, 2009 at 11:16:42AM +0200, Ingo Molnar wrote:
-> > 
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > On Fri, Aug 21, 2009 at 04:28:11PM +0200, Ingo Molnar wrote:
-> > > > 
-> > > > * K.Prasad <prasad@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > > Providing those would let us build a pmu struct on top of this 
-> > > > > > high level API, hopefully.
-> > > > 
-> > > > Note that there's a PMU struct already in 
-> > > > arch/x86/kernel/cpu/perf_counter.c. Could debug-register ops be 
-> > > > tacked on to it?
-> > > 
-> > > No, we don't need to build an arch level pmu since the BP api 
-> > > already handles the arch abstraction (or well, it is planned to).
-> > > 
-> > > Instead, what we need is a core pmu that relies on the BP api. 
-> > > Such pmu will be allocated dynamically while creating a hardware 
-> > > breakpoint counter.
-> > 
-> > i'm not convinced at all we need all that layering of 
-> > perfcounters->pmu->BP. Why not add BP support to the PMU abstraction 
-> > and be done with it?
-> > 
-> > That way we get hardware breakpoints via 'pinned, exclusive, per cpu 
-> > hw-breakpoint counters' for example and kernel/hw-breakpoint.c can 
-> > go away altogether.
-> > 
-> > kernel/perf_counter.c already handles scheduling, conflict 
-> > resolution, enumeration, syscall exposure and more.
-> > 
-> > Hm?
-> 
-> 
-> What you are suggesting is a complete refactoring of the breakpoint API
-> on top of pmus.
-> 
-> Well, that's possible and would factorize the scheduling, conflict and so
-> on. So that's theoretically a good point and I hope we'll come to such
-> centralization, that looks like my suggestion to Peter to share the
-> perfcounter layer that handles the scheduling of hardware registers.
-> 
-> But the pmu handling is currently not ready for that.
+On Wed, Aug 26, 2009 at 06:43:24AM -0700, david@lang.hm wrote:
+>>>
+>>> as the ext3 authors have stated many times over the years, you still need
+>>> to run fsck periodicly anyway.
+>>
+>> Where is that documented?
+>
+> linux-kernel mailing list archives.
 
-I am not sure if pmus can handle, (or want to handle) all the intricacies
-involved with the hw-breakpoint layer and let the other in-kernel users of
-hw-breakpoint such as ptrace and ftrace (at the moment) operate over it.
+Probably from some 6-8 years ago, in e-mail postings that I made.  My
+argument has always been that PC-class hardware is crap, and it's a
+Really Good Idea to periodically check the metadata because corruption
+there can end up causing massive data loss.  The main problem is that
+doing it at reboot time really hurt system availability, and "after 20
+reboots (plus or minus)" resulted in fsck checks at wildly varying
+intervals depending on how often people reboot.
 
-The hw-breakpoint infrastructure has now grown to address nearly all
-requirements of perf-tools (barring the facility to schedule
-over-committed breakpoint requests, and a pending enable/disable
-feature) while its interoperability allows co-existence of other users.
+What I've been recommending for some time is that people use LVM, and
+run fsck on a snapshot every week or two, at some convenient time when
+the system load is at a minimum.  There is an e2croncheck script in
+the e2fsprogs sources, in the contrib directory; it's short enough
+that I'll attach here here.
 
-Given that there are multiple users of hw-breakpoint and that it is a
-contended resource (with diversity in breakpoint characteristics)
-wouldn't it be best to leave its management in a layer well below all
-its users (including perf/pmu)?
+Is it *necessary*?  In a world where hardware is perfect, no.  In a
+world where people don't bother buying ECC memory because it's 10%
+more expensive, and PC builders use the cheapest possible parts --- I
+think it's a really good idea.
 
-That, in my opinion, would help the hw-breakpoint infrastructure evolve
-continuously to help the users exploit the debug registers better.
+						- Ted
 
-Thanks,
-K.Prasad
+P.S.  Patches so that this shell script takes a config file, and/or
+parses /etc/fstab to automatically figure out which filesystems should
+be checked, are greatly appreciated.  Getting distro's to start
+including this in their e2fsprogs packaging scripts would also be
+greatly appreciated.
+
+#!/bin/sh
+#
+# e2croncheck -- run e2fsck automatically out of /etc/cron.weekly
+#
+# This script is intended to be run by the system administrator 
+# periodically from the command line, or to be run once a week
+# or so by the cron daemon to check a mounted filesystem (normally
+# the root filesystem, but it could be used to check other filesystems
+# that are always mounted when the system is booted).
+#
+# Make sure you customize "VG" so it is your LVM volume group name, 
+# "VOLUME" so it is the name of the filesystem's logical volume, 
+# and "EMAIL" to be your e-mail address
+#
+# Written by Theodore Ts'o, Copyright 2007, 2008, 2009.
+#
+# This file may be redistributed under the terms of the 
+# GNU Public License, version 2.
+#
+
+VG=ssd
+VOLUME=root
+SNAPSIZE=100m
+EMAIL=sysadmin@example.com
+
+TMPFILE=`mktemp -t e2fsck.log.XXXXXXXXXX`
+
+OPTS="-Fttv -C0"
+#OPTS="-Fttv -E fragcheck"
+
+set -e
+START="$(date +'%Y%m%d%H%M%S')"
+lvcreate -s -L ${SNAPSIZE} -n "${VOLUME}-snap" "${VG}/${VOLUME}"
+if nice logsave -as $TMPFILE e2fsck -p $OPTS "/dev/${VG}/${VOLUME}-snap" && \
+   nice logsave -as $TMPFILE e2fsck -fy $OPTS "/dev/${VG}/${VOLUME}-snap" ; then
+  echo 'Background scrubbing succeeded!'
+  tune2fs -C 0 -T "${START}" "/dev/${VG}/${VOLUME}"
+else
+  echo 'Background scrubbing failed! Reboot to fsck soon!'
+  tune2fs -C 16000 -T "19000101" "/dev/${VG}/${VOLUME}"
+  if test -n "$RPT-EMAIL"; then 
+    mail -s "E2fsck of /dev/${VG}/${VOLUME} failed!" $EMAIL < $TMPFILE
+  fi
+fi
+lvremove -f "${VG}/${VOLUME}-snap"
+rm $TMPFILE
 
