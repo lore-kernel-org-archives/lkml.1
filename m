@@ -1,123 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbZHZBv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932853AbZHZBxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932829AbZHZBv2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 21:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932631AbZHZBv2
+	id S932853AbZHZBxh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 21:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932780AbZHZBxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 21:51:28 -0400
-Received: from mga05.intel.com ([192.55.52.89]:10480 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932564AbZHZBv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 21:51:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,276,1249282800"; 
-   d="asc'?scan'208";a="487400852"
-Date: Wed, 26 Aug 2009 09:51:27 +0800
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
-To: Eric Anholt <eric@anholt.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       mailing54 <mailing54@plzk.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net,
-       Ma Ling <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Zhao, Yakui" <yakui.zhao@intel.com>
-Subject: Re: Linux 2.6.31-rc7
-Message-ID: <20090826015127.GA1402@zhen-devel.sh.intel.com>
-Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
-Mail-Followup-To: Eric Anholt <eric@anholt.net>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	mailing54 <mailing54@plzk.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net,
-	Ma Ling <ling.ma@intel.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	"Zhao, Yakui" <yakui.zhao@intel.com>
-References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain>
- <4A941E8B.8080902@plzk.org>
- <alpine.LFD.2.01.0908251057260.3218@localhost.localdomain>
- <4A94599F.9020508@plzk.org>
- <alpine.LFD.2.01.0908251456530.3218@localhost.localdomain>
- <1251239637.26348.20.camel@gaiman.anholt.net>
+	Tue, 25 Aug 2009 21:53:37 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:34672 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932631AbZHZBxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 21:53:36 -0400
+Date: Tue, 25 Aug 2009 18:53:37 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+Subject: [PATCH -tip] Remove lockdep annotations from RCU's _notrace() API
+	members
+Message-ID: <20090826015337.GA18904@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1251239637.26348.20.camel@gaiman.anholt.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The lockdep annotations rcu_read_acquire() and rcu_read_release()
+might lead to infinite looping if called from lockdep.  So this patch
+removes them.  Formal repost of http://lkml.org/lkml/2009/8/25/309
+on the strength of Lai Jiangshan's review.
 
---9jxsPFA5p3P2qPhR
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Suggested-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Suggested-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-On 2009.08.25 15:33:57 -0700, Eric Anholt wrote:
-> > However, the problem remains that KMS gets the output wrong, in ways th=
-at=20
-> > clearly X does not. Eric - it's clearly not just Mac Mini and my=20
-> > experimental machine that have problems, but also a Macbook 2.1.
-> >=20
-> > I wonder why the Intel KMS logic doesn't look at which output was drive=
-n=20
-> > before it got invoked. Instead, it seems to want to try to detect=20
-> > everything from scratch, even though we should be able to assume that i=
-f=20
-> > you boot from BIOS (or EFI, for that matter), the current state of the=
-=20
-> > graphics pipeline is likely meaningful.
->=20
-> In my experience, the BIOS setup doesn't reflect what outputs should be
-> used at runtime, and certainly not the correct configuration of the
-> enabled outputs.  For example, if we went to this, the giant monitor
-> attached to my laptop that I actually look at would go unused.
->=20
+ rcupdate.h |    2 --
+ 1 file changed, 2 deletions(-)
 
-yeah, normally VBIOS startup just needs or only can driver one pipe, so
-we don't have any pre knowledge except detect everything.
-
-> > And clearly distros are trying to enable this. Which means that this is=
-=20
-> > getting way more important to solve.
->=20
-> Yes, please open a bug on bugs.freedesktop.org and set severity=3Dcritical
-> -- the people working on modesetting should pick it up and take a look
-> at it.
->=20
-
-we already have some mac relate bugs open, but please report on it so we
-do have people with hardware to try and response. We have recently got a
-MacBook, yakui is looking after the modesetting issue on it.
-
-> For some of the DDC bugs, David M=FCller has an interesting-looking patch
-> to parse the BIOS's tables describing what DDC pin is used for VGA on
-> 852, though it looks like it should be usable on much more.  I was
-> hoping the modesetting guys would review it and ack, but no response so
-> far.
->=20
-
-We should also have floating patch on that, hope we'll prepare and cleanup
-the patches for mac soon.
-
---=20
-Open Source Technology Center, Intel ltd.
-
-$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
-
---9jxsPFA5p3P2qPhR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqUlR8ACgkQsQQaM014GCffJgCfcgnfPENM0IkRpSXCfTVo+Bxn
-FxUAnR1ZitnM0CtYgz+abtb5e0QPCP2u
-=yd9F
------END PGP SIGNATURE-----
-
---9jxsPFA5p3P2qPhR--
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 8b4422c..95e0615 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -195,7 +195,6 @@ static inline notrace void rcu_read_lock_sched_notrace(void)
+ {
+ 	preempt_disable_notrace();
+ 	__acquire(RCU_SCHED);
+-	rcu_read_acquire();
+ }
+ 
+ /*
+@@ -211,7 +210,6 @@ static inline void rcu_read_unlock_sched(void)
+ }
+ static inline notrace void rcu_read_unlock_sched_notrace(void)
+ {
+-	rcu_read_release();
+ 	__release(RCU_SCHED);
+ 	preempt_enable_notrace();
+ }
