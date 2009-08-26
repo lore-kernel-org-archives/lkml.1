@@ -1,146 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbZHZSMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZHZSSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752609AbZHZSMo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 14:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZHZSMo
+	id S1752666AbZHZSSA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 14:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbZHZSR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 14:12:44 -0400
-Received: from tanas.ca ([206.248.136.31]:37941 "EHLO tanas.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752558AbZHZSMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 14:12:43 -0400
-MIME-Version: 1.0
-Date: Wed, 26 Aug 2009 14:12:42 -0400
-From: Andrei Tanas <andrei@tanas.ca>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: NeilBrown <neilb@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linux-ide@vger.kernel.org>
-Subject: Re: MD/RAID: what's wrong with sector =?UTF-8?Q?=31=39=35=33=35=31=39=39?=
- =?UTF-8?Q?=33=35=3F?=
-In-Reply-To: <4A95573A.6090404@redhat.com>
-References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com>
-Message-ID: <1571f45804875514762f60c0097171e6@localhost>
-User-Agent: RoundCube Webmail/0.2.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+	Wed, 26 Aug 2009 14:17:59 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:44930 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752545AbZHZSR6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 14:17:58 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Au4EAIcUlUpMROOX/2dsb2JhbACBU9dyhBoF
+Date: Wed, 26 Aug 2009 14:17:58 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+Message-ID: <20090826181758.GA30248@Krystal>
+References: <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins> <4A94D3A8.1090902@cn.fujitsu.com> <1251269207.7538.1217.camel@twins> <1251270092.7538.1226.camel@twins> <4A94DFF4.5030301@cn.fujitsu.com> <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com> <20090826164624.GA21456@Krystal> <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com> <20090826180114.GA29130@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090826180114.GA29130@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 14:11:15 up 8 days,  5:00,  2 users,  load average: 0.72, 0.56,
+	0.38
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009 11:39:38 -0400, Ric Wheeler <rwheeler@redhat.com>
-wrote:
-> On 08/26/2009 10:46 AM, Andrei Tanas wrote:
->> On Wed, 26 Aug 2009 06:34:14 -0400, Ric Wheeler<rwheeler@redhat.com>
->> wrote:
->>> On 08/25/2009 11:45 PM, Andrei Tanas wrote:
->>>>>>> I would suggest that Andrei might try to write and clear the IO
->>>>> error
->>>>>>> at that
->>>>>>> offset. You can use Mark Lord's hdparm to clear a specific sector
-or
->>>>>>> just do the
->>>>>>> math (carefully!) and dd over it. It the write succeeds (without
->>>>>>> bumping your
->>>>>>> remapped sectors count) this is a likely match to this problem,
->>>>>>>
->>>>>> I've tried dd multiple times, it always succeeds, and the relocated
->>>>> sector
->>>>>> count is currently 1 on this drive, even though this particular
-fault
->>>>>> happened at least 3 times so far.
->>>>>>
->>>>>>
-
->>>  you need to set the tunable:
->>>
->>> /sys/block/mdX/md/safe_mode_delay
->>>
->>> to something like "2" to prevent that sector from being a hotspot...
->>
->> I did that as soon as you suggested that it's possible to tune it. The
->> array is still being rebuilt (it's a fairly busy machine, so rebuilding
->> is
->> slow). I'll monitor it, but I don't expect to see the results soon as
->> even
->> with the default value of 0.2 it used to happen once in several weeks.
->>
->> On the other note: is it possible that the drive was actually working
->> properly but was not given enough time to complete the write request?
->> These
->> newer drives have 32MB cache but the same rotational speed and seek
-times
->> as the older ones so they must need more time to flush their cache?
->>
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > 
+> > This patch solves the problem that Li originally reported. If something 
+> > registers a trace point belonging to a module, then it ups the ref count 
+> > of the module. This prevents a process from registering a probe to a 
+> > tracepoint belonging to a module and then having the module disappear.
+> > 
+> > Doing the example with perf in Li's original post, now errors on the 
+> > rmmod, with "ERROR: Module trace_events_sample is in use".
+> > 
+> > Mathieu, can I have your acked-by on this?
+> > 
 > 
-> Timeouts on IO requests are pretty large, usually drives won't fail an IO
-> unless 
-> there is a real problem but I will add the linux-ide list to this
-response
-> so 
-> they can weigh in.
+> Sorry, it looks buggy.
 > 
-> I suspect that the error was real, but might be this "repairable" type of
+> It does not deal with the fact that tracepoints with the same name and
+> arguments can be present in more than one module, or in a combination of
+> kernel core and modules.
+> 
+> The struct tracepoint_entry is specific to a a tracepoint name, used for
+> registration, but is eventually tied to all tracepoint instrumentation
+> instances for this tracepoint name.
+> 
 
-> adjacent track issue I mentioned before. Interesting to note that just
-> following 
-> the error, you see that it was indeed the super block that did not get
-> updated...
+Looking at the original post:
+http://lkml.org/lkml/2009/8/24/5
 
-The relevant portions of the log file are below (two independent events,
-there is nothing related to ata before the "exception" message):
+the problem seems to be caused by the fact that the
+trace_event_profile.c keeps some knowledge of modules in internal data
+structures, but does not get notified of module unloads. Why don't we
+fix that instead ?
 
-[901292.247428] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
-frozen
-[901292.247492] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-[901292.247494]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
-(timeout)
-[901292.247500] ata2.00: status: { DRDY }
-[901292.247512] ata2: hard resetting link
-[901294.090746] ata2: SRST failed (errno=-19)
-[901294.101922] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[901294.101938] ata2.00: failed to IDENTIFY (I/O error, err_mask=0x40)
-[901294.101943] ata2.00: revalidation failed (errno=-5)
-[901299.100347] ata2: hard resetting link
-[901299.974103] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[901300.105734] ata2.00: configured for UDMA/133
-[901300.105776] ata2: EH complete
-[901300.137059] end_request: I/O error, dev sdb, sector 1953519935
-[901300.137069] md: super_written gets error=-5, uptodate=0
-[901300.137077] raid1: Disk failure on sdb1, disabling device.
-[901300.137079] raid1: Operation continuing on 1 devices.
+A quick glance at it seems to indicate that it lazily discovers new
+modules when the tracepoints are hit. Using module load/unload notifiers
+would be more appropriate. Or maybe adding a notifier call to
+tracepoint.c, calling notification callbacks for probe modules which
+need to know when the connected tracepoints are changing
+(when they are connected/disconnected) would probably be even more
+appropriate. As a result, it would remove the dynamic verification cost
+implied by lazy data structure lookup and check each time the probe is
+fired.
 
-[90307.328266] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
-frozen
-[90307.328275] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-[90307.328277]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
-(timeout)
-[90307.328280] ata2.00: status: { DRDY }
-[90307.328288] ata2: hard resetting link
-[90313.218511] ata2: link is slow to respond, please be patient (ready=0)
-[90317.377711] ata2: SRST failed (errno=-16)
-[90317.377720] ata2: hard resetting link
-[90318.251720] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[90318.338026] ata2.00: configured for UDMA/133
-[90318.338062] ata2: EH complete
-[90318.370625] end_request: I/O error, dev sdb, sector 1953519935
-[90318.370632] md: super_written gets error=-5, uptodate=0
-[90318.370636] raid1: Disk failure on sdb1, disabling device.
-[90318.370637] raid1: Operation continuing on 1 devices.
+Mathieu
 
-And here's the story for linux-ide from the earlier messages:
-> I'm using two ST31000528AS drives in RAID1 array using MD. I've had
-several
-> failures occur over a period of few months (see logs below). I've RMA'd
-the
-> drive, but then got curious why an otherwise normal drive locks up while
-> trying to write the same sector once a month or so, but does not report
-> having bad sectors, doesn't fail any tests, and does just fine if I do
-> dd if=/dev/urandom of=/dev/sdb bs=512 seek=1953519935 count=1
-> however many times I try.
-> I then tried Googling for this number (1953519935) and found that it
-comes
-> up quite a few times and most of the time (or always) in context of
-> md/raid.
+> Mathieu
+> 
+> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> > 
+> > diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+> > index 0341f2e..055275b 100644
+> > --- a/include/linux/tracepoint.h
+> > +++ b/include/linux/tracepoint.h
+> > @@ -109,8 +109,9 @@ struct tracepoint {
+> >  #define EXPORT_TRACEPOINT_SYMBOL(name)					\
+> >  	EXPORT_SYMBOL(__tracepoint_##name)
+> >  
+> > -extern void tracepoint_update_probe_range(struct tracepoint *begin,
+> > -	struct tracepoint *end);
+> > +extern void tracepoint_update_probe_range(struct module *,
+> > +					  struct tracepoint *begin,
+> > +					  struct tracepoint *end);
+> >  
+> >  #else /* !CONFIG_TRACEPOINTS */
+> >  #define DECLARE_TRACE_WITH_CALLBACK(name, proto, args, reg, unreg)	\
+> > diff --git a/kernel/module.c b/kernel/module.c
+> > index b182143..a8e69fa 100644
+> > --- a/kernel/module.c
+> > +++ b/kernel/module.c
+> > @@ -2974,7 +2974,7 @@ void module_update_tracepoints(void)
+> >  	mutex_lock(&module_mutex);
+> >  	list_for_each_entry(mod, &modules, list)
+> >  		if (!mod->taints)
+> > -			tracepoint_update_probe_range(mod->tracepoints,
+> > +			tracepoint_update_probe_range(mod, mod->tracepoints,
+> >  				mod->tracepoints + mod->num_tracepoints);
+> >  	mutex_unlock(&module_mutex);
+> >  }
+> > diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+> > index 06f165a..089e6f9 100644
+> > --- a/kernel/tracepoint.c
+> > +++ b/kernel/tracepoint.c
+> > @@ -54,6 +54,7 @@ static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
+> >   */
+> >  struct tracepoint_entry {
+> >  	struct hlist_node hlist;
+> > +	struct module *mod;
+> >  	void **funcs;
+> >  	int refcount;	/* Number of times armed. 0 if disarmed. */
+> >  	char name[0];
+> > @@ -221,6 +222,7 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
+> >  	memcpy(&e->name[0], name, name_len);
+> >  	e->funcs = NULL;
+> >  	e->refcount = 0;
+> > +	e->mod = NULL;	/* Will be assigned in tracepoint_update_probe_range */
+> >  	hlist_add_head(&e->hlist, head);
+> >  	return e;
+> >  }
+> > @@ -231,6 +233,8 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
+> >   */
+> >  static inline void remove_tracepoint(struct tracepoint_entry *e)
+> >  {
+> > +	if (e->mod)
+> > +		module_put(e->mod);
+> >  	hlist_del(&e->hlist);
+> >  	kfree(e);
+> >  }
+> > @@ -274,7 +278,8 @@ static void disable_tracepoint(struct tracepoint *elem)
+> >   * Updates the probe callback corresponding to a range of tracepoints.
+> >   */
+> >  void
+> > -tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
+> > +tracepoint_update_probe_range(struct module *mod,
+> > +			      struct tracepoint *begin, struct tracepoint *end)
+> >  {
+> >  	struct tracepoint *iter;
+> >  	struct tracepoint_entry *mark_entry;
+> > @@ -286,9 +291,15 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
+> >  	for (iter = begin; iter < end; iter++) {
+> >  		mark_entry = get_tracepoint(iter->name);
+> >  		if (mark_entry) {
+> > +			if (mod && !mark_entry->mod) {
+> > +				if (!try_module_get(mod))
+> > +					goto disable;
+> > +				mark_entry->mod = mod;
+> > +			}
+> >  			set_tracepoint(&mark_entry, iter,
+> >  					!!mark_entry->refcount);
+> >  		} else {
+> > + disable:
+> >  			disable_tracepoint(iter);
+> >  		}
+> >  	}
+> > @@ -301,7 +312,7 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
+> >  static void tracepoint_update_probes(void)
+> >  {
+> >  	/* Core kernel tracepoints */
+> > -	tracepoint_update_probe_range(__start___tracepoints,
+> > +	tracepoint_update_probe_range(NULL, __start___tracepoints,
+> >  		__stop___tracepoints);
+> >  	/* tracepoints in modules. */
+> >  	module_update_tracepoints();
+> > @@ -556,7 +567,7 @@ int tracepoint_module_notify(struct notifier_block *self,
+> >  	switch (val) {
+> >  	case MODULE_STATE_COMING:
+> >  	case MODULE_STATE_GOING:
+> > -		tracepoint_update_probe_range(mod->tracepoints,
+> > +		tracepoint_update_probe_range(mod, mod->tracepoints,
+> >  			mod->tracepoints + mod->num_tracepoints);
+> >  		break;
+> >  	}
+> > 
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 
-Regards,
-Andrei.
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
