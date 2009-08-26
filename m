@@ -1,169 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbZHZKfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932554AbZHZKdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757276AbZHZKfX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 06:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbZHZKdp
+	id S932554AbZHZKdi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 06:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757198AbZHZKdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 06:33:45 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:46795 "EHLO mx1.redhat.com"
+	Wed, 26 Aug 2009 06:33:31 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:3056 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757067AbZHZKaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 06:30:13 -0400
+	id S1757113AbZHZKaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 06:30:14 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 19/47] KVM: SVM: consolidate nested_svm_exit_handled
-Date: Wed, 26 Aug 2009 13:29:41 +0300
-Message-Id: <1251282609-12835-20-git-send-email-avi@redhat.com>
+Subject: [PATCH 41/47] KVM: Add __KERNEL__ guards to exported headers
+Date: Wed, 26 Aug 2009 13:30:03 +0300
+Message-Id: <1251282609-12835-42-git-send-email-avi@redhat.com>
 In-Reply-To: <1251282609-12835-1-git-send-email-avi@redhat.com>
 References: <1251282609-12835-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joerg Roedel <joerg.roedel@amd.com>
-
-When caching guest intercepts there is no need anymore for the
-nested_svm_exit_handled_real function. So move its code into
-nested_svm_exit_handled.
-
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Acked-by: Alexander Graf <agraf@suse.de>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/svm.c |  109 +++++++++++++++++++++++----------------------------
- 1 files changed, 49 insertions(+), 60 deletions(-)
+ arch/ia64/include/asm/kvm_para.h |    4 ++++
+ arch/s390/include/asm/kvm_para.h |    4 ++++
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 4426c63..bdd73fd 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1456,15 +1456,58 @@ static int nested_svm_do(struct vcpu_svm *svm,
- 	return retval;
- }
+diff --git a/arch/ia64/include/asm/kvm_para.h b/arch/ia64/include/asm/kvm_para.h
+index 0d6d8ca..1588aee 100644
+--- a/arch/ia64/include/asm/kvm_para.h
++++ b/arch/ia64/include/asm/kvm_para.h
+@@ -19,9 +19,13 @@
+  *
+  */
  
--static int nested_svm_exit_handled_real(struct vcpu_svm *svm,
--					void *arg1,
--					void *arg2,
--					void *opaque)
-+static int nested_svm_exit_handled_msr(struct vcpu_svm *svm,
-+				       void *arg1, void *arg2,
-+				       void *opaque)
-+{
-+	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
-+	u8 *msrpm = (u8 *)arg2;
-+	u32 t0, t1;
-+	u32 msr = svm->vcpu.arch.regs[VCPU_REGS_RCX];
-+	u32 param = svm->vmcb->control.exit_info_1 & 1;
++#ifdef __KERNEL__
 +
-+	if (!(nested_vmcb->control.intercept & (1ULL << INTERCEPT_MSR_PROT)))
-+		return 0;
-+
-+	switch (msr) {
-+	case 0 ... 0x1fff:
-+		t0 = (msr * 2) % 8;
-+		t1 = msr / 8;
-+		break;
-+	case 0xc0000000 ... 0xc0001fff:
-+		t0 = (8192 + msr - 0xc0000000) * 2;
-+		t1 = (t0 / 8);
-+		t0 %= 8;
-+		break;
-+	case 0xc0010000 ... 0xc0011fff:
-+		t0 = (16384 + msr - 0xc0010000) * 2;
-+		t1 = (t0 / 8);
-+		t0 %= 8;
-+		break;
-+	default:
-+		return 1;
-+		break;
-+	}
-+	if (msrpm[t1] & ((1 << param) << t0))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override)
+ static inline unsigned int kvm_arch_para_features(void)
  {
--	bool kvm_overrides = *(bool *)opaque;
- 	u32 exit_code = svm->vmcb->control.exit_code;
- 
--	if (kvm_overrides) {
-+	switch (svm->vmcb->control.exit_code) {
-+	case SVM_EXIT_MSR:
-+		return nested_svm_do(svm, svm->nested.vmcb,
-+				     svm->nested.vmcb_msrpm, NULL,
-+				     nested_svm_exit_handled_msr);
-+	default:
-+		break;
-+	}
-+
-+	if (kvm_override) {
- 		switch (exit_code) {
- 		case SVM_EXIT_INTR:
- 		case SVM_EXIT_NMI:
-@@ -1526,60 +1569,6 @@ static int nested_svm_exit_handled_real(struct vcpu_svm *svm,
  	return 0;
  }
  
--static int nested_svm_exit_handled_msr(struct vcpu_svm *svm,
--				       void *arg1, void *arg2,
--				       void *opaque)
--{
--	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
--	u8 *msrpm = (u8 *)arg2;
--        u32 t0, t1;
--	u32 msr = svm->vcpu.arch.regs[VCPU_REGS_RCX];
--	u32 param = svm->vmcb->control.exit_info_1 & 1;
--
--	if (!(nested_vmcb->control.intercept & (1ULL << INTERCEPT_MSR_PROT)))
--		return 0;
--
--	switch(msr) {
--	case 0 ... 0x1fff:
--		t0 = (msr * 2) % 8;
--		t1 = msr / 8;
--		break;
--	case 0xc0000000 ... 0xc0001fff:
--		t0 = (8192 + msr - 0xc0000000) * 2;
--		t1 = (t0 / 8);
--		t0 %= 8;
--		break;
--	case 0xc0010000 ... 0xc0011fff:
--		t0 = (16384 + msr - 0xc0010000) * 2;
--		t1 = (t0 / 8);
--		t0 %= 8;
--		break;
--	default:
--		return 1;
--		break;
--	}
--	if (msrpm[t1] & ((1 << param) << t0))
--		return 1;
--
--	return 0;
--}
--
--static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override)
--{
--	bool k = kvm_override;
--
--	switch (svm->vmcb->control.exit_code) {
--	case SVM_EXIT_MSR:
--		return nested_svm_do(svm, svm->nested.vmcb,
--				     svm->nested.vmcb_msrpm, NULL,
--				     nested_svm_exit_handled_msr);
--	default: break;
--	}
--
--	return nested_svm_do(svm, svm->nested.vmcb, 0, &k,
--			     nested_svm_exit_handled_real);
--}
--
- static inline void copy_vmcb_control_area(struct vmcb *dst_vmcb, struct vmcb *from_vmcb)
- {
- 	struct vmcb_control_area *dst  = &dst_vmcb->control;
+ #endif
++
++#endif
+diff --git a/arch/s390/include/asm/kvm_para.h b/arch/s390/include/asm/kvm_para.h
+index 2c50379..6964db2 100644
+--- a/arch/s390/include/asm/kvm_para.h
++++ b/arch/s390/include/asm/kvm_para.h
+@@ -13,6 +13,8 @@
+ #ifndef __S390_KVM_PARA_H
+ #define __S390_KVM_PARA_H
+ 
++#ifdef __KERNEL__
++
+ /*
+  * Hypercalls for KVM on s390. The calling convention is similar to the
+  * s390 ABI, so we use R2-R6 for parameters 1-5. In addition we use R1
+@@ -147,4 +149,6 @@ static inline unsigned int kvm_arch_para_features(void)
+ 	return 0;
+ }
+ 
++#endif
++
+ #endif /* __S390_KVM_PARA_H */
 -- 
 1.6.4.1
 
