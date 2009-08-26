@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbZHZFAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbZHZFAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbZHZFAB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 01:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755733AbZHZFAA
+	id S1756436AbZHZFAv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 01:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756289AbZHZFAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 01:00:00 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:50818 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754209AbZHZFAA (ORCPT
+	Wed, 26 Aug 2009 01:00:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41520 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754209AbZHZFAu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 01:00:00 -0400
-Message-ID: <4A94C151.8020900@oss.ntt.co.jp>
-Date: Wed, 26 Aug 2009 14:00:01 +0900
-From: =?UTF-8?B?RmVybmFuZG8gTHVpcyBWw6F6cXVleiBDYW8=?= 
-	<fernando@oss.ntt.co.jp>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
-MIME-Version: 1.0
-To: t-sato@yk.jp.nec.com, m-hamaguchi@ys.jp.nec.com
-CC: Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Sandeen <sandeen@redhat.com>
-Subject: [RFC, PATCH] filesystem freeze: fix sys_umount induced perpetual
- freeze
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Aug 2009 01:00:50 -0400
+Message-Id: <20090826045945.201094161@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 26 Aug 2009 00:59:45 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/8] [GIT PULL] tracing: updates for 2.6.32
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current locking scheme for filesystem freeze avoids races between
-freeze_bdev() and do_umount() by taking the s_umount semaphore.
 
-If freeze_bdev() wins the race the process that invoked sys_umount
-will sleep until thaw_bdev releases the semaphore. Unfortunately, this
-will never happen because thaw_bdev bails out early the
-bd_fsfreeze_count check having failed (the count is 0).
+Ingo,
 
-The problem is that the block_device that ioctl_fsthaw() passes to
-thaw_bdev() is not the one that we freezed because before sleeping in
-deactivate_super() do_umount() released the dentry (dput()) and freed
-the vfs mount (free_vfsmnt()).
+Please pull the latest tip/tracing/core tree, which can be found at:
 
-This patch works around this issue by checking the freeze level in
-do_umount().
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/core
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
 
-diff -urNp linux-2.6.31-rc7-orig/fs/namespace.c linux-2.6.31-rc7/fs/namespace.c
---- linux-2.6.31-rc7-orig/fs/namespace.c	2009-08-25 16:39:46.000000000 +0900
-+++ linux-2.6.31-rc7/fs/namespace.c	2009-08-26 11:30:10.000000000 +0900
-@@ -1033,6 +1033,8 @@ static int do_umount(struct vfsmount *mn
-  	if (retval)
-  		return retval;
+Josh Triplett (1):
+      tracing: Add vim script to enable folding for function_graph traces
 
-+	vfs_check_frozen(sb, SB_FREEZE_WRITE);
-+
-  	/*
-  	 * Allow userspace to request a mountpoint be expired rather than
-  	 * unmounting unconditionally. Unmount only happens if:
+Li Zefan (3):
+      tracing/filters: Add filter_type to struct ftrace_event_field
+      tracing/filters: Add __field_ext() to TRACE_EVENT
+      tracing/filters: Support filtering for char * strings
+
+Steven Rostedt (2):
+      tracing/sched: show CPU task wakes up on in trace event
+      tracing: add comments to explain TRACE_EVENT out of protection
+
+Xiao Guangrong (1):
+      tracing/events: fix the include file dependencies
+
+Zhaolei (1):
+      ftrace: Move setting of clock-source out of options
+
+----
+ Documentation/trace/function-graph-fold.vim |   42 ++++++++++++
+ include/linux/ftrace_event.h                |   10 +++-
+ include/linux/tracepoint.h                  |   12 +++-
+ include/trace/define_trace.h                |    1 +
+ include/trace/events/sched.h                |   12 +++-
+ include/trace/ftrace.h                      |   31 +++++++--
+ kernel/trace/trace.c                        |   92 ++++++++++++++++++++++-----
+ kernel/trace/trace.h                        |    9 ++-
+ kernel/trace/trace_events.c                 |   11 +++-
+ kernel/trace/trace_events_filter.c          |   47 ++++++++++----
+ kernel/trace/trace_export.c                 |    8 ++-
+ kernel/trace/trace_syscalls.c               |    6 +-
+ 12 files changed, 226 insertions(+), 55 deletions(-)
+
+-- 
