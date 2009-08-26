@@ -1,74 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbZHZIRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZHZI1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753875AbZHZIRV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 04:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZHZIRU
+	id S1754172AbZHZI1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 04:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZHZI1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 04:17:20 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:57314 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751072AbZHZIRT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 04:17:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=jR/7VUdnMxpGBukIX4vN75hfXnHUXbmcO/+5gyynBoJBoUC+QFOoRnVrSNJUCfy+We
-         nWq7HrYjZaKlKxTOvjaKxLHkHeHOO1Cjawhei2TQazXhMAChkzWy2vL7sb65x4MWVj20
-         vaTNMkqvL4lhTEw/8xrr1yDblRjJcbWg60iNM=
+	Wed, 26 Aug 2009 04:27:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52569 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752021AbZHZI1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 04:27:18 -0400
+Date: Wed, 26 Aug 2009 10:27:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [kmemcheck] WARNING: kmemcheck: Caught 32-bit read from
+	uninitialized memory, in sock_init_data()
+Message-ID: <20090826082709.GA11057@elte.hu>
+References: <20090826055659.GA6066@elte.hu> <19f34abd0908260013n4e701796j90fb2b1ab74495de@mail.gmail.com> <4A94ED74.6000200@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1251273755.16910.16.camel@marge.simson.net>
-References: <1250983671.5688.21.camel@raz> <1251021133.14003.172.camel@marge.simson.net> 
-	<alpine.DEB.1.10.0908251122020.26329@gentwo.org> <1251222993.7023.53.camel@marge.simson.net> 
-	<alpine.DEB.1.10.0908251402300.17963@gentwo.org> <1251227322.7538.1172.camel@twins> 
-	<4A943A00.9080609@nortel.com> <1251264700.7538.1178.camel@twins> 
-	<1251282598.3514.20.camel@raz> <1251273755.16910.16.camel@marge.simson.net>
-From: Raz <raziebe@gmail.com>
-Date: Wed, 26 Aug 2009 10:16:59 +0200
-Message-ID: <5d96567b0908260116w2e1bcffeqb67f92d89b34b2c@mail.gmail.com>
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Chris Friesen <cfriesen@nortel.com>,
-       Christoph Lameter <cl@linux-foundation.org>, riel@redhat.com,
-       mingo@elte.hu, andrew motron <akpm@linux-foundation.org>,
-       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A94ED74.6000200@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 10:02 AM, Mike Galbraith<efault@gmx.de> wrote:
-> On Wed, 2009-08-26 at 13:29 +0300, raz ben yehuda wrote:
->
->> OFFSCHED is bad name to my project. My project is called SOS = Service
->> Oriented System.
->> SOS, has nothing to do with Real time.
->
-> ??
->
-> The paper you pointed me at maintains it's very much about realtime.
->
-> <quote>
-> This paper argues that OFFSCHED fits to the niche of Multiprocessors
-> real time systems by partitioning a system to two; the operating system
-> and OFFSCHED. OFFSHCED is a hybrid system. It is hybrid because it is
-> both real time and still a regular Linux server. Real time is mainly
-> achieved by the NMI characteristic and the CPU isolation. It is a hybrid
-> system because OFFSCHED scheduler interacts with the operating system.
-> </quote>
->
->        -Mike.
->
->
-Mike Hello
-Correct. OFFSCHED has a real time facet that puts it in the SMP real
-time system arena. it has other facets such as security and
-monitoring. If you take a look at OFFSCHED-RTOP and OFFSCHED-SECURED
-you will see that I can actually get information and change a system
-properties  (very pool implementation so far, i am a bit tired...)
-even if this kernel is not **accessible**.
 
-Raz
+* Eric Dumazet <eric.dumazet@gmail.com> wrote:
+
+> Vegard Nossum a ??crit :
+> > 2009/8/26 Ingo Molnar <mingo@elte.hu>:
+> >> -tip testing found another kmemcheck warning:
+> >>
+> >> calling  netlink_proto_init+0x0/0x1b0 @ 1
+> >> NET: Registered protocol family 16
+> >> initcall netlink_proto_init+0x0/0x1b0 returned 0 after 39062 usecs
+> >> calling  olpc_init+0x0/0x110 @ 1
+> >> WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (f5c38304)
+> >> 0100000002000000000000000000000000000000ad4eaddeffffffffffffffff
+> >>  i i i i i i u u i i i i i i i i i i i i i i i i i i i i i i i i
+> >>         ^
+> >>
+> >> Pid: 1, comm: swapper Not tainted (2.6.31-rc7-tip-01170-gaaea9cf-dirty #24) P4DC6
+> >> EIP: 0060:[<c15c8ab1>] EFLAGS: 00010286 CPU: 0
+> >> EIP is at sock_init_data+0xe1/0x220
+> >> EAX: 0001b000 EBX: f606196c ECX: 00000000 EDX: c1a148d2
+> >> ESI: f6061800 EDI: f5c38300 EBP: f606ef0c ESP: c1ceb9ac
+> >>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> >> CR0: 8005003b CR2: f60a8108 CR3: 01a61000 CR4: 000006f0
+> >> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+> >> DR6: ffff4ff0 DR7: 00000400
+> >>  [<c15fac15>] __netlink_create+0x35/0xa0
+> >>  [<c15fd01a>] netlink_kernel_create+0x5a/0x180
+> >>  [<c15df55e>] rtnetlink_net_init+0x1e/0x50
+> >>  [<c15d130a>] register_pernet_operations+0x6a/0xf0
+> >>  [<c15d14fe>] register_pernet_subsys+0x1e/0x30
+> >>  [<c1b3d84c>] rtnetlink_init+0x4c/0x100
+> >>  [<c1b3e105>] netlink_proto_init+0x105/0x1b0
+> >>  [<c1001037>] do_one_initcall+0x27/0x170
+> >>  [<c1afea97>] kernel_init+0x157/0x210
+> >>  [<c10039a7>] kernel_thread_helper+0x7/0x10
+> >>  [<ffffffff>] 0xffffffff
+> >> initcall olpc_init+0x0/0x110 returned 0 after 0 usecs
+> >> calling  bdi_class_init+0x0/0x40 @ 1
+> >>
+> >> config attached.
+> > 
+> > Thanks. AFAICT, it's this one:
+> > 
+> > 1816 void sock_init_data(struct socket *sock, struct sock *sk)
+> > 1817 {
+> > ...
+> > 1835         sock_set_flag(sk, SOCK_ZAPPED);
+> 
+> Are you sure it is not the 16 bit padding in 'struct sock', after 'type' field ?
+> 
+> struct socket {
+> 	socket_state        state;
+> 	short           type;
+> // here, a 16 bits hole
+> 	unsigned long       flags;
+> 
+> the warning is strange since I suspect it happens here :
+> 
+>     if (sock) {
+> <<>>	sk->sk_type =   sock->type; // here, kmemcheck warning while reading sock->type
+> 	sk->sk_sleep    =   &sock->wait;
+> 	sock->sk    =   sk;
+> 
+> and sock->type is a 16 bit field, correctly initialized (with value = 2)
+> (Yes the hole, right after, is not initialized)
+> 
+> WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (f5c38304)
+> 0100000002000000000000000000000000000000ad4eaddeffffffffffffffff
+>  i i i i i i u u i i i i i i i i i i i i i i i i i i i i i i i i
+
+if so then we could perhaps annotate that by initializing it to zero 
+on kmemcheck only. (or initialize it unconditionally if possible - 
+that's generally the cleanest, 16-bit accesses arent cheap on all 
+platforms)
+
+	Ingo
