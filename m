@@ -1,92 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751442AbZHZTNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751589AbZHZTNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751442AbZHZTNj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 15:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbZHZTNi
+	id S1751589AbZHZTNx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 15:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbZHZTNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 15:13:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37735 "EHLO hera.kernel.org"
+	Wed, 26 Aug 2009 15:13:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37744 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751091AbZHZTNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 15:13:38 -0400
-Date: Wed, 26 Aug 2009 19:13:07 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090826145126.GA5255@ghostprotocols.net>
-References: <20090826145126.GA5255@ghostprotocols.net>
+	id S1751132AbZHZTNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 15:13:51 -0400
+Date: Wed, 26 Aug 2009 19:13:19 GMT
+From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, gorcunov@openvz.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, yinghai@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090826171324.GC4548@lenovo>
+References: <20090826171324.GC4548@lenovo>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf top: Show RIP only in verbose mode
-Message-ID: <tip-7ced156bb8bb6363b6ed541871bf19a90273f910@git.kernel.org>
-Git-Commit-ID: 7ced156bb8bb6363b6ed541871bf19a90273f910
+Subject: [tip:x86/apic] x86, apic: Slim down stack usage in early_init_lapic_mapping()
+Message-ID: <tip-d3a247bfb2c26f5b67367d58af7ad8c2efbbc6c1@git.kernel.org>
+Git-Commit-ID: d3a247bfb2c26f5b67367d58af7ad8c2efbbc6c1
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 26 Aug 2009 19:13:07 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 26 Aug 2009 19:13:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7ced156bb8bb6363b6ed541871bf19a90273f910
-Gitweb:     http://git.kernel.org/tip/7ced156bb8bb6363b6ed541871bf19a90273f910
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Wed, 26 Aug 2009 11:51:26 -0300
+Commit-ID:  d3a247bfb2c26f5b67367d58af7ad8c2efbbc6c1
+Gitweb:     http://git.kernel.org/tip/d3a247bfb2c26f5b67367d58af7ad8c2efbbc6c1
+Author:     Cyrill Gorcunov <gorcunov@openvz.org>
+AuthorDate: Wed, 26 Aug 2009 21:13:24 +0400
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 26 Aug 2009 20:21:45 +0200
+CommitDate: Wed, 26 Aug 2009 20:26:23 +0200
 
-perf top: Show RIP only in verbose mode
+x86, apic: Slim down stack usage in early_init_lapic_mapping()
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <20090826145126.GA5255@ghostprotocols.net>
+As far as I see there is no external poking of mp_lapic_addr in
+this procedure which could lead to unpredited changes and
+require local storage unit for it. Lets use it plain forward.
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <20090826171324.GC4548@lenovo>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-top.c |   17 ++++++++++++-----
- 1 files changed, 12 insertions(+), 5 deletions(-)
+ arch/x86/kernel/apic/apic.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index 62b55ec..4002ccb 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -483,11 +483,16 @@ static void print_sym_table(void)
- 	if (nr_counters == 1)
- 		printf("             samples    pcnt");
- 	else
--		printf("  weight     samples    pcnt");
-+		printf("   weight    samples    pcnt");
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 3fc3a6c..159740d 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1562,8 +1562,6 @@ no_apic:
+ #ifdef CONFIG_X86_64
+ void __init early_init_lapic_mapping(void)
+ {
+-	unsigned long phys_addr;
+-
+ 	/*
+ 	 * If no local APIC can be found then go out
+ 	 * : it means there is no mpatable and MADT
+@@ -1571,11 +1569,9 @@ void __init early_init_lapic_mapping(void)
+ 	if (!smp_found_config)
+ 		return;
  
--	printf("         RIP          kernel function\n"
--	       	       "  ______     _______   _____   ________________   _______________\n\n"
--	);
-+	if (verbose)
-+		printf("         RIP       ");
-+	printf("   kernel function\n");
-+	printf("   %s    _______   _____",
-+	       nr_counters == 1 ? "      " : "______");
-+	if (verbose)
-+		printf("   ________________");
-+	printf("   _______________\n\n");
+-	phys_addr = mp_lapic_addr;
+-
+-	set_fixmap_nocache(FIX_APIC_BASE, phys_addr);
++	set_fixmap_nocache(FIX_APIC_BASE, mp_lapic_addr);
+ 	apic_printk(APIC_VERBOSE, "mapped APIC to %16lx (%16lx)\n",
+-		    APIC_BASE, phys_addr);
++		    APIC_BASE, mp_lapic_addr);
  
- 	for (nd = rb_first(&tmp); nd; nd = rb_next(nd)) {
- 		struct symbol *sym;
-@@ -508,7 +513,9 @@ static void print_sym_table(void)
- 			printf("%9.1f %10ld - ", syme->weight, syme->snap_count);
- 
- 		percent_color_fprintf(stdout, "%4.1f%%", pcnt);
--		printf(" - %016llx : %s", sym->start, sym->name);
-+		if (verbose)
-+			printf(" - %016llx", sym->start);
-+		printf(" : %s", sym->name);
- 		if (sym->module)
- 			printf("\t[%s]", sym->module->name);
- 		printf("\n");
+ 	/*
+ 	 * Fetch the APIC ID of the BSP in case we have a
