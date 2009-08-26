@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933040AbZHZNqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbZHZNr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933040AbZHZNqL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933019AbZHZNqK
+	id S1757400AbZHZNr3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932970AbZHZNr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:46:10 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37814 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933018AbZHZNqK (ORCPT
+	Wed, 26 Aug 2009 09:47:29 -0400
+Received: from smtp4.ultrahosting.com ([74.213.175.253]:47000 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757361AbZHZNr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:46:10 -0400
-Date: Wed, 26 Aug 2009 14:47:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chris Adams <cmadams@hiwaay.net>
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] document flash/RAID dangers
-Message-ID: <20090826144716.486a0d44@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090826134045.GA1516467@hiwaay.net>
-References: <dddMw-7Xt-57@gated-at.bofh.it>
-	<dddWc-83W-51@gated-at.bofh.it>
-	<ddefx-5R-37@gated-at.bofh.it>
-	<ddep7-bI-7@gated-at.bofh.it>
-	<ddeyR-iy-11@gated-at.bofh.it>
-	<ddeyR-iy-9@gated-at.bofh.it>
-	<ddeIu-n9-9@gated-at.bofh.it>
-	<ddeSb-th-29@gated-at.bofh.it>
-	<ddoRI-11a-39@gated-at.bofh.it>
-	<ddpkB-1jQ-1@gated-at.bofh.it>
-	<20090826134045.GA1516467@hiwaay.net>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Aug 2009 09:47:28 -0400
+Date: Wed, 26 Aug 2009 09:47:15 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: raz ben yehuda <raziebe@gmail.com>
+cc: Peter Zijlstra <peterz@infradead.org>, Chris Friesen <cfriesen@nortel.com>,
+       Mike Galbraith <efault@gmx.de>, riel@redhat.com, mingo@elte.hu,
+       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
+       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+In-Reply-To: <1251282598.3514.20.camel@raz>
+Message-ID: <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
+References: <1250983671.5688.21.camel@raz>  <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>  <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>  <1251021133.14003.172.camel@marge.simson.net> 
+ <alpine.DEB.1.10.0908251122020.26329@gentwo.org>  <1251222993.7023.53.camel@marge.simson.net>  <alpine.DEB.1.10.0908251402300.17963@gentwo.org>  <1251227322.7538.1172.camel@twins>  <4A943A00.9080609@nortel.com>  <1251264700.7538.1178.camel@twins>
+ <1251282598.3514.20.camel@raz>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The issues being raised here are not specific to extX, MD RAID, or Linux
-> at all; they are problems with non-"enterprise-class" RAID setups.
-> There's a reason enterprise-class RAID costs a lot more money than the
-> card you can pick up at Fry's.
+On Wed, 26 Aug 2009, raz ben yehuda wrote:
 
-And you will still need backups ;)
+> How will the kernel is going to handle 32 processors machines ?  These
+> numbers are no longer a science-fiction.
 
-A long time ago I worked on a fault tolerant news server with dual
-alphaserver boxes and a shared disk array. A power system failure took
-out both the alpha boxes and the disk controllers and all the disks.
+The kernel is already running on 4096 processor machines. Dont worry about
+that.
 
-Fortunately it was a news server so you just had to wait a week ..
+> What i am suggesting is merely a different approach of how to handle
+> multiple core systems. instead of thinking in processes, threads and so
+> on i am thinking in services. Why not take  a processor and define this
+> processor to do just firewalling ? encryption ? routing ? transmission ?
+> video processing... and so on...
 
-Alan
+I think that is a valuable avenue to explore. What we do so far is
+treating each processor equally. Dedicating a processor has benefits in
+terms of cache hotness and limits OS noise.
+
+Most of the large processor configurations already partition the system
+using cpusets in order to limit the disturbance by OS processing. A set of
+cpus is used for OS activities and system daemons are put into that set.
+But what can be done is limited because the OS threads as well as
+interrupt and timer processing etc cannot currently be moved. The ideas
+that you are proposing are particularly usedful for applications that
+require low latencies and cannot tolerate OS noise easily (Infiniband MPI
+base jobs f.e.)
+
+
