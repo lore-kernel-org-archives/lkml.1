@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932823AbZHZBUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbZHZBYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932823AbZHZBUo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 21:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932779AbZHZBUm
+	id S932803AbZHZBYr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 21:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932727AbZHZBYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 21:20:42 -0400
-Received: from mail.lang.hm ([64.81.33.126]:33153 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932749AbZHZBUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 21:20:41 -0400
-Date: Tue, 25 Aug 2009 18:19:40 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-In-Reply-To: <20090826004430.GR4300@elf.ucw.cz>
-Message-ID: <alpine.DEB.2.00.0908251817390.30426@asgard.lang.hm>
-References: <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm>
- <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm> <20090826001206.GL4300@elf.ucw.cz> <4A94812C.5010803@redhat.com> <20090826004430.GR4300@elf.ucw.cz>
+	Tue, 25 Aug 2009 21:24:47 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:47976 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932084AbZHZBYq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 21:24:46 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 25 Aug 2009 18:24:47 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Will Brown <dr.hfuhruhurr@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PROBLEM: Epoll frequently fails to notify connects at connect
+ bursts
+In-Reply-To: <alpine.DEB.2.00.0908251812450.18518@makko.or.mcafeemobile.com>
+Message-ID: <alpine.DEB.2.00.0908251823470.18518@makko.or.mcafeemobile.com>
+References: <8a1bd2320908251748u324ae5e6g7015069180253db3@mail.gmail.com> <alpine.DEB.2.00.0908251812450.18518@makko.or.mcafeemobile.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Pavel Machek wrote:
+On Tue, 25 Aug 2009, Davide Libenzi wrote:
 
->>>>> THESE devices have the property of potentially corrupting blocks being
->>>>> written at the time of the power failure,
->>>>
->>>> this is true of all devices
->>>
->>> Actually I don't think so. I believe SATA disks do not corrupt even
->>> the sector they are writing to -- they just have big enough
->>> capacitors. And yes I believe ext3 depends on that.
->>
->> Pavel, no S-ATA drive has capacitors to hold up during a power failure
->> (or even enough power to destage their write cache). I know this from
->> direct, personal knowledge having built RAID boxes at EMC for years. In
->> fact, almost all RAID boxes require that the write cache be hardwired to
->> off when used in their arrays.
->
-> I never claimed they have enough power to flush entire cache -- read
-> the paragraph again. I do believe the disks have enough capacitors to
-> finish writing single sector, and I do believe ext3 depends on that.
+> On Wed, 26 Aug 2009, Will Brown wrote:
+> 
+> > PLEASE CC: ME ON ANY REPLIES, thank you.
+> > 
+> > *** 1. Epoll frequently fails to notify connects at connect bursts
+> > 
+> > *** 2. Sometimes, when several connects come in quickly, epoll
+> > establishes tcp connections (according to 'netstat') but then fails to
+> > notify the application by returning from epoll_wait(). In those cases
+> > a subsequent connection or an EPOLLIN or EPOLLOUT event can cause a
+> > return from epoll_wait(), which then causes the previously ignored
+> > connection to be reported. But then the more recent event is not
+> > notified, the whole sequence lags and everything gets out of whack.
+> > The problems can easily be reproduced on my Ubuntu machine which runs
+> > a kernel version 2.6.28 using supplied test program. I also have a
+> > Ubuntu hosted in VMWare running a 2.6.27 version kernel, which appears
+> > to NOT have the same problem.
+> 
+> Multiple quasi-simultaneous events for the same fd are merged. This is why 
+> on POLLIN on accepting sockets you want to do something like:
+> 
+> 	while ((afd = accept(sfd, ...)) != -1)
+> 		add_client(afd);
 
-keep in mind that in a powerfail situation the data being sent to the 
-drive may be corrupt (the ram gets flaky while a DMA to the drive copies 
-the bad data to the drive, which writes it before the power loss gets bad 
-enough for the drive to decide there is a problem and shutdown)
+Of course, with  sfd  in non-blocking mode. Alternatively, you drop EPOLLET 
+for the  sfd  socket.
 
-you just plain cannot count on writes that are in flight when a powerfail 
-happens to do predictable things, let alone what you consider sane or 
-proper.
 
-David Lang
+- Davide
+
+
