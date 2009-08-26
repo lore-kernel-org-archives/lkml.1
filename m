@@ -1,73 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932921AbZHZMf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932933AbZHZMgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932921AbZHZMf7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 08:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932799AbZHZMf6
+	id S932933AbZHZMgD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 08:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932799AbZHZMgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 08:35:58 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:37803 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932697AbZHZMf6 (ORCPT
+	Wed, 26 Aug 2009 08:36:01 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:48175 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932909AbZHZMf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 08:35:58 -0400
-Message-ID: <4A952C2D.2010807@gmail.com>
-Date: Wed, 26 Aug 2009 14:35:57 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 26 Aug 2009 08:35:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TPcdTp5D+n+5bYYCxsJDJyYGoHJr6fiouJF6TikRBn74AiYEyLPyuQElSLvfpoJB6r
+         ncb0iPHxH9HXZgXOfle8GvSgBlTkiXy8z3QQ5u64ZlMfPHRytABSHjJBwooR47CzoC5q
+         Fzy/h8iihXaT/jhfbnOcJb5u7cHRASTrKUTO4=
+Date: Wed, 26 Aug 2009 14:35:52 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+       mbligh@google.com, lizf@cn.fujitsu.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
+Message-ID: <20090826123550.GD6009@nowhere>
+References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Clement LECIGNE <clement.lecigne@netasq.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] 8 bytes kernel memory disclosure in AppleTalk getsockname.
-References: <20090826111247.GA79673@clem1.netasq.com>
-In-Reply-To: <20090826111247.GA79673@clem1.netasq.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 26 Aug 2009 14:35:57 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clement LECIGNE a écrit :
-> Hi,
+On Tue, Aug 25, 2009 at 06:02:37PM +0200, Hendrik Brueckner wrote:
+> On Tue, Aug 25, 2009 at 04:15:49PM +0200, Frederic Weisbecker wrote:
+> > On Tue, Aug 25, 2009 at 02:50:27PM +0200, Hendrik Brueckner wrote:
+> > > There are at least two scenarios where syscall_get_nr() can return -1:
+> > > 
+> > > 1. For example, ptrace stores an invalid syscall number, and thus,
+> > >    tracing code resets it.
+> > >    (see do_syscall_trace_enter in arch/s390/kernel/ptrace.c)
+> > > 
+> > > 2. The syscall_regfunc() (kernel/tracepoint.c) sets the TIF_SYSCALL_FTRACE
+> > >    (now: TIF_SYSCALL_TRACEPOINT) flag for all threads which includes
+> > >    kernel threads.
+> > >    However, the ftrace selftest triggers a kernel oops when testing syscall
+> > >    trace points:
+> > >       - The kernel thread is started as ususal (do_fork()),
+> > >       - tracing code sets TIF_SYSCALL_FTRACE,
+> > >       - the ret_from_fork() function is triggered and starts
+> > > 	ftrace_syscall_exit() with an invalid syscall number.
+> > 
+> > 
+> > 
+> > I wonder if there is any way to identify such situation...?
+> For the second case, it might be an option to avoid setting the
+> TIF_SYSCALL_FTRACE flag for kernel threads.
 > 
-> In function atalk_getname(), sockaddr_at is returned in userland without
-> zero'ing the "char sat_zero[8]" field. This bug allows user to display 8
-> bytes leaked from the kernel stack.
+> Kernel threads have task_struct->mm set to NULL.
+> (Thanks to Heiko for that hint ;-)
 > 
-> Here is a patch that zero the whole sockaddr_at structure before
-> processing it. It should fix this bug.
+> The idea is then to check the mm field in syscall_regfunc() and
+> set the flag accordingly.
 > 
-> Signed-off-by: Clément Lecigne <clement.lecigne@netasq.com>
-> --- linux/net/appletalk/ddp.c	2009-08-26 11:35:59.000000000 +0200
-> +++ linux/net/appletalk/ddp.c	2009-08-26 11:36:30.000000000 +0200
-> @@ -1241,6 +1241,8 @@ static int atalk_getname(struct socket *
->  		if (atalk_autobind(sk) < 0)
->  			return -ENOBUFS;
->  
-> +	memset(&sat, 0, sizeof(struct sockaddr_at));
-> +
->  	*uaddr_len = sizeof(struct sockaddr_at);
->  
->  	if (peer) {
+> However, I think the patch is an optional add-on becase checking
+> the syscall number is still required for case 1).
 > 
-Hi Clement
+> ---
+>  kernel/tracepoint.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> --- a/kernel/tracepoint.c
+> +++ b/kernel/tracepoint.c
+> @@ -593,7 +593,9 @@ void syscall_regfunc(void)
+>  	if (!sys_tracepoint_refcount) {
+>  		read_lock_irqsave(&tasklist_lock, flags);
+>  		do_each_thread(g, t) {
+> -			set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
+> +			/* Skip kernel threads. */
+> +			if (t->mm)
+> +				set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
+>  		} while_each_thread(g, t);
+>  		read_unlock_irqrestore(&tasklist_lock, flags);
+>  	}
+> 
 
-Well, I submitted same patch some weeks ago and I just checked that
-it was already in Linus tree.
 
-author	Eric Dumazet <eric.dumazet@gmail.com>
-	Thu, 6 Aug 2009 02:27:43 +0000 (02:27 +0000)
-committer	David S. Miller <davem@davemloft.net>
-	Thu, 6 Aug 2009 20:08:45 +0000 (13:08 -0700)
-commit	3d392475c873c10c10d6d96b94d092a34ebd4791
+Yeah, and as told before, syscalls tracing from kernel thread is
+an interesting point but we can't do it that way.
 
-appletalk: fix atalk_getname() leak
+I'm queuing this patch for .32, but I need you Signed-off-by to apply it :)
 
-atalk_getname() can leak 8 bytes of kernel memory to user
+Thanks.
 
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-
-Dont worry, it'll be included in upcoming 2.6.31 kernel,
-and backported to previous ones as well.
