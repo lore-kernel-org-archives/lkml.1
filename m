@@ -1,96 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZHZJhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbZHZJht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756587AbZHZJhR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 05:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbZHZJhQ
+	id S1756634AbZHZJht (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 05:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZHZJhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 05:37:16 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36837 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756350AbZHZJhP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 05:37:15 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [mmotm][PATCH 4/4] oom: fix oom_adjust_write() input sanity check
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Menage <menage@google.com>, David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <20090826182634.3968.A69D9226@jp.fujitsu.com>
-References: <20090826182634.3968.A69D9226@jp.fujitsu.com>
-Message-Id: <20090826183626.3974.A69D9226@jp.fujitsu.com>
+	Wed, 26 Aug 2009 05:37:48 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:54921 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756460AbZHZJhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 05:37:47 -0400
+Date: Wed, 26 Aug 2009 10:37:49 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       netdev@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [Bug #14016] mm/ipw2200 regression
+Message-ID: <20090826093747.GA10955@csn.ul.ie>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.FIH.7sGlKB@chimera> <84144f020908252309u5cff8afdh2214577ca4db9b5d@mail.gmail.com> <20090826082741.GA25955@cmpxchg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 26 Aug 2009 18:37:12 +0900 (JST)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090826082741.GA25955@cmpxchg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton pointed out oom_adjust_write() has very strange EIO
-and new line handling. this patch fixes it.
+On Wed, Aug 26, 2009 at 10:27:41AM +0200, Johannes Weiner wrote:
+> [Cc netdev]
+> 
+> On Wed, Aug 26, 2009 at 09:09:44AM +0300, Pekka Enberg wrote:
+> > On Tue, Aug 25, 2009 at 11:34 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.30.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > >
+> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14016
+> > > Subject         : mm/ipw2200 regression
+> > > Submitter       : Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > > Date            : 2009-08-15 16:56 (11 days old)
+> > > References      : http://marc.info/?l=linux-kernel&m=125036437221408&w=4
+> > 
+> > If am reading the page allocator dump correctly, there's plenty of
+> > pages left but we're unable to satisfy an order 6 allocation. There's
+> > no slab allocator involved so the page allocator changes that went
+> > into 2.6.31 seem likely. Mel, ideas?
+> 
+> It's an atomic order-6 allocation, the chances for this to succeed
+> after some uptime become infinitesimal.  The chunks > order-2 are
+> pretty much exhausted on this dump.
+> 
+> 64 pages, presumably 256k, for fw->boot_size while current ipw
+> firmware images have ~188k.  I don't know jack squat about this
+> driver, but given the field name and the struct:
+> 
+> 	struct ipw_fw {
+> 		__le32 ver;
+> 		__le32 boot_size;
+> 		__le32 ucode_size;
+> 		__le32 fw_size;
+> 		u8 data[0];
+> 	};
+> 
+> fw->boot_size alone being that big sounds a bit fishy to me.
+> 
 
-Cc: Paul Menage <menage@google.com>
-Cc: David Rientjes <rientjes@google.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- fs/proc/base.c |   18 ++++++++++--------
- 1 files changed, 10 insertions(+), 8 deletions(-)
+Agreed. While there are a low number of order-6 pages free in the page
+allocation failure dump, there are not enough for watermarks to be
+satisified. As it's atomic, there is little that can be done from a VM
+perspective and it's the responsibility of the driver. I'm no driver expert
+but I'll have a go at fixing it anyway.
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 0c1757c..ea71cae 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1022,21 +1022,24 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
- 				size_t count, loff_t *ppos)
- {
- 	struct task_struct *task;
--	char buffer[PROC_NUMBUF], *end;
--	int oom_adjust;
-+	char buffer[PROC_NUMBUF];
-+	long oom_adjust;
- 	unsigned long flags;
-+	int err;
+My reading of this is that the firmware is being loaded from a workqueue and
+I am failing to see any restriction on sleeping in the path. It would appear
+that the driver just used the most convenient *_alloc_coherent function
+available forgetting that it assumes GFP_ATOMIC. Can someone who does know
+which way is up with a driver tell me why the patch below might not
+work?
+
+Bartlomiej, any chance you could give this a spin? Preferably, you'd
+have preempt enabled and CONFIG_DEBUG_SPINLOCK_SLEEP on as well because
+that combination will complain loudly if we really can't sleep in this
+path.
+
+=====
+ipw2200: Avoid large GFP_ATOMIC allocation during firmware loading
+
+ipw2200 uses pci_alloc_consistent() to allocate a large coherent buffer for
+the loading of firmware which is an order-6 allocation of GFP_ATOMIC. At
+system start-up time, this is not a problem. However, the firmware on the
+card can get confused and the corrective action taken is to reload the
+firmware and reinit the card. High-order GFP_ATOMIC allocations of this
+type can and will fail when the system is already up and running.
+
+As the firmware is loaded from a workqueue, it should be possible for
+the driver to go to sleep. This patch converts the call of
+pci_alloc_consistent() which assumes GFP_ATOMIC to dma_alloc_coherent()
+which can specify its own flags.
+
+The big downside with this patch is that it uses GFP_REPEAT to avoid the
+driver unloading. There is potential that this will cause a reclaim
+storm as the machine tries to find a free order-6 buffer. A suggested
+alternative for the driver owner is in the comments.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ drivers/net/wireless/ipw2x00/ipw2200.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c b/drivers/net/wireless/ipw2x00/ipw2200.c
+index 44c29b3..f2e251e 100644
+--- a/drivers/net/wireless/ipw2x00/ipw2200.c
++++ b/drivers/net/wireless/ipw2x00/ipw2200.c
+@@ -3167,7 +3167,19 @@ static int ipw_load_firmware(struct ipw_priv *priv, u8 * data, size_t len)
+ 	u8 *shared_virt;
  
- 	memset(buffer, 0, sizeof(buffer));
- 	if (count > sizeof(buffer) - 1)
- 		count = sizeof(buffer) - 1;
- 	if (copy_from_user(buffer, buf, count))
- 		return -EFAULT;
--	oom_adjust = simple_strtol(buffer, &end, 0);
+ 	IPW_DEBUG_TRACE("<< : \n");
+-	shared_virt = pci_alloc_consistent(priv->pci_dev, len, &shared_phys);
 +
-+	err = strict_strtol(strstrip(buffer), 0, &oom_adjust);
-+	if (err)
-+		return -EINVAL;
- 	if ((oom_adjust < OOM_ADJUST_MIN || oom_adjust > OOM_ADJUST_MAX) &&
- 	     oom_adjust != OOM_DISABLE)
- 		return -EINVAL;
--	if (*end == '\n')
--		end++;
-+
- 	task = get_proc_task(file->f_path.dentry->d_inode);
- 	if (!task)
- 		return -ESRCH;
-@@ -1055,9 +1058,8 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
++	/*
++	 * This is a whopping large allocation, in or around order-6 so
++	 * dma_alloc_coherent is used to specify the GFP_KERNEL|__GFP_REPEAT
++	 * flags. Note that this action means the system could go into a
++	 * reclaim loop until it cannot reclaim any more trying to satisfy
++	 * the allocation. It would be preferable if one buffer is allocated
++	 * at driver initialisation and reused when the firmware needs to
++	 * be reloaded, overwriting the existing firmware each time
++	 */
++	shared_virt = dma_alloc_coherent(
++			priv->pci_dev == NULL ? NULL : &priv->pci_dev->dev, 
++			len, &shared_phys, GFP_KERNEL|__GFP_REPEAT);
  
- 	unlock_task_sighand(task, &flags);
- 	put_task_struct(task);
--	if (end - buffer == 0)
--		return -EIO;
--	return end - buffer;
-+
-+	return count;
- }
- 
- static const struct file_operations proc_oom_adjust_operations = {
--- 
-1.6.2.5
-
-
+ 	if (!shared_virt)
+ 		return -ENOMEM;
 
