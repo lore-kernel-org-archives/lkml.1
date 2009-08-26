@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZHZWB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbZHZWKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbZHZWB6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 18:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbZHZWB5
+	id S1754092AbZHZWKw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 18:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZHZWKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 18:01:57 -0400
-Received: from static-76-164-182-57.apid.com ([76.164.182.57]:60758 "EHLO
-	waltsputer.localdomain" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754008AbZHZWB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 18:01:56 -0400
-Date: Wed, 26 Aug 2009 17:01:51 -0500 (CDT)
-From: Walt Holman <walt@holmansrus.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Krzysztof Halasa <khc@pm.waw.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-ID: <775912665.01251324111901.JavaMail.root@mail.holmansrus.com>
-In-Reply-To: <200908262312.04000.rjw@sisk.pl>
-Subject: Re: [Bug #14057] Strange network timeouts w/ e100
+	Wed, 26 Aug 2009 18:10:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33381 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753898AbZHZWKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 18:10:51 -0400
+Date: Thu, 27 Aug 2009 00:10:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/rcu] rcu: Remove lockdep annotations from RCU's
+	_notrace() API members
+Message-ID: <20090826221034.GA31586@elte.hu>
+References: <20090826015337.GA18904@linux.vnet.ibm.com> <tip-06e799764eb7c2e4640888d438c3524d756613e1@git.kernel.org> <20090826084938.GA5023@elte.hu> <20090826173318.GC6752@linux.vnet.ibm.com> <20090826183954.GE13632@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [192.168.0.1]
-X-Mailer: Zimbra 6.0.0_RC1_1684.UBUNTU8_64 (ZimbraWebClient - [unknown] (Linux)/6.0.0_RC1_1684.UBUNTU8_64)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826183954.GE13632@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
------ "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Wednesday 26 August 2009, Walt Holman wrote:
-> > 
-> > ----- "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > This message has been generated automatically as a part of a
-> report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known
-> regressions
-> > > from 2.6.30.  Please verify if it still should be listed and let
-> me
-> > > know
-> > > (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14057
-> > > Subject		: Strange network timeouts w/ e100
-> > > Submitter	: Walt Holman <walt@holmansrus.com>
-> > > Date		: 2009-08-20 0:21 (6 days old)
-> > > References	:
-> http://marc.info/?l=linux-kernel&m=125072831831443&w=4
-> > > Handled-By	: Krzysztof Halasa <khc@pm.waw.pl>
-> > 
-> > Hi Rafael,
-> 
-> Hi,
-> 
-> > Krzysztof has a patch which has corrected this issue for me. 
-> Thanks,
-> 
-> Thanks for the update.
-> 
-> Do you have a pointer to the patch, please?
-> 
-> Rafael
+> and booted it - and that did not produce any lockups. So you might 
+> not be able to reproduce it :-/ I've re-merged core/rcu into 
+> tip/master, maybe my tests can find another config that reproduces 
+> the crash better. Please disregard this bugreport until i've found 
+> that one.
 
-Yes, it's referenced in:
+it's in iteration #300 now and still no crash - so i think we can 
+disregard this. This means the lockup got fixed for good :)
 
-http://marc.info/?l=linux-netdev&m=125104144706982&w=2
-
-Which was for 2.6.30.5  The same patch still applies on 2.6.31-rc7 with offset and that's actually where I tested it.  That resolved the timeouts for me.  I believe Krzysztof was going to get a patch in to -stable as well as for .31-rc before final.
-
--Walt
-
+	Ingo
