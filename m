@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbZHZNLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932987AbZHZNVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932998AbZHZNLF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:11:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932986AbZHZNLE
+	id S932987AbZHZNVM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbZHZNVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:11:04 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:65349 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932985AbZHZNLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:11:02 -0400
-Message-ID: <4A95349E.7010101@redhat.com>
-Date: Wed, 26 Aug 2009 09:11:58 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.8.b3.fc12 Thunderbird/3.0b3
+	Wed, 26 Aug 2009 09:21:11 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55026 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756485AbZHZNVK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 09:21:10 -0400
+Date: Wed, 26 Aug 2009 15:20:48 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Greg KH <gregkh@suse.de>
+Subject: Re: [RFC][PATCH 0/7] PM: Asynchronous suspend and resume (updated)
+Message-ID: <20090826132048.GC1505@ucw.cz>
+References: <200908170215.21173.rjw@sisk.pl> <Pine.LNX.4.44L0.0908180954210.2995-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>, david@lang.hm,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-References: <20090825233701.GH4300@elf.ucw.cz> <4A947839.4010601@redhat.com> <20090826000657.GK4300@elf.ucw.cz> <4A947E05.8070406@redhat.com> <20090826002045.GO4300@elf.ucw.cz> <4A9481BE.1030308@redhat.com> <20090826003803.GP4300@elf.ucw.cz> <4A9485A6.1010803@redhat.com> <20090826112121.GD26595@elf.ucw.cz> <4A952370.50603@redhat.com> <20090826124058.GK32712@mit.edu>
-In-Reply-To: <20090826124058.GK32712@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0908180954210.2995-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/26/2009 08:40 AM, Theodore Tso wrote:
-> On Wed, Aug 26, 2009 at 07:58:40AM -0400, Ric Wheeler wrote:
->>> Drive in raid 5 failed; hot spare was available (no idea about
->>> UPS). System apparently locked up trying to talk to the failed drive,
->>> or maybe admin just was not patient enough, so he just powercycled the
->>> array. He lost the array.
->>>
->>> So while most people will not agressively powercycle the RAID array,
->>> drive failure still provokes little tested error paths, and getting
->>> unclean shutdown is quite easy in such case.
->>
->> Then what we need to document is do not power cycle an array during a
->> rebuild, right?
->
-> Well, the softwar raid layer could be improved so that it implements
-> scrubbing by default (i.e., have the md package install a cron job to
-> implement a periodict scrub pass automatically).  The MD code could
-> also regularly check to make sure the hot spare is OK; the other
-> possibility is that hot spare, which hadn't been used in a long time,
-> had silently failed.
+Hi!
 
-Actually, MD does this scan already (not automatically, but you can set up a 
-simple cron job to kick off a periodic "check"). It is a delicate balance to get 
-the frequency of the scrubbing correct.
+> > * Added [2/7] adding a framework for representing PM link (idea described
+> >   in the patch message).
+> > 
+> > * [3/7] is the async resume patch (idea described in the patch message).
+> > 
+> > * [4/7] is the async suspend patch.
+> > 
+> > * [5/7] - [7/7] set async_suspend for devices in a few selected subsystems.
+> > 
+> > The patches have been tested on HP nx6325.
+> > 
+> > Comments welcome.
+> 
+> I'm not sure about the design of these things.  How much do we care 
+> about wasting memory?  Your scheme allocates six pointers for every 
+> dependency, plus four pointers for every device.  It's possible to 
+> reduce this considerably, especially if the parent-child dependencies 
+> aren't stored explicitly.
 
-On one hand, you want to make sure that you detect errors in a timely fashion, 
-certainly detection of single sector errors before you might develop a second 
-sector level error on another drive.
+I'd say that this level of memory waste is perfectly acceptable...
 
-On the other hand, running scans/scrubs continually impacts the performance of 
-your real workload and can potentially impact your components' life span by 
-subjecting them to a heavy workload.
+							Pavel
 
-Rule of thumb seems from my experience is that most people settle in with a scan 
-once a week or two (done at a throttled rate).
 
->
->> In the end, there are cascading failures that will defeat any data
->> protection scheme, but that does not mean that the value of that scheme
->> is zero. We need to be get more people to use RAID (including MD5) and
->> try to enhance it as we go. Just using a single disk is not a good
->> thing...
->
-> Yep; the solution is to improve the storage devices.  It is *not* to
-> encourage people to think RAID is not worth it, or that somehow ext2
-> is better than ext3 because it runs fsck's all the time at boot up.
-> That's just crazy talk.
->
-> 						- Ted
-
-Agreed....
-
-ric
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
