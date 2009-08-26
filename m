@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZHZUPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbZHZU1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbZHZUPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 16:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZHZUPt
+	id S1753396AbZHZU1k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 16:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZHZU1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 16:15:49 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:53157 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753266AbZHZUPs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 16:15:48 -0400
-Date: Wed, 26 Aug 2009 13:15:45 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Borislav Petkov <petkovbb@googlemail.com>
-cc: mmi@superbash.de, LKML <linux-kernel@vger.kernel.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>, r.marek@assembler.cz
-Subject: Re: AMD K10 temp.module ready since months, but missing in
- kernel...
-In-Reply-To: <20090821104533.GA3872@liondog.tnic>
-Message-ID: <alpine.DEB.2.01.0908261314300.5744@bogon.housecafe.de>
-References: <20090821001322.470bb177@p4laptop> <20090821104533.GA3872@liondog.tnic>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+	Wed, 26 Aug 2009 16:27:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35954 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753313AbZHZU1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 16:27:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "linux-pm" <linux-pm@lists.linux-foundation.org>
+Subject: [PATCH 6/6] PM: Allow serio input devices to suspend/resume asynchronously
+Date: Wed, 26 Aug 2009 22:24:19 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <200908262217.19609.rjw@sisk.pl>
+In-Reply-To: <200908262217.19609.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX199N4NmNRdpKkDJnCXLvuUX053fLBw9V/QW2cC
- M1psLCsw/iZUJAy7T69hbbfC7TlX+LJLPI2VA/CMmmAABxcpaE
- iiQKfd0qG/vPgj4ghf7YA==
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908262224.19110.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Aug 2009 at 12:45, Borislav Petkov wrote:
-> On Fri, Aug 21, 2009 at 12:13:22AM +0200, mmi wrote:
-> > Hello out there,
-> > 
-> > i found the code to read temperature of AMD K10 (Phenom) processors a
-> > couple of months ago in the net (GPL). I use it since January now and i
-> > wonder, why it's not in the kernel till now.
-> > 
-> > It's from the same author, who wrote k8temp.c (which is in kernel).
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-MMI, do you mean this:
-http://linux.derkeiler.com/Newsgroups/alt.os.linux/2008-08/msg00398.html
+Set async_suspend for all serio input devices, so that they can be
+suspended and resumed asynchronously with other devices they don't
+depend on in a known way (i.e. devices which are not their parents
+or children and to which they are not connected via struct pm_link
+objects).
 
-...or which code are you referring to?
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/input/serio/serio.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Christian.
--- 
-BOFH excuse #12:
+Index: linux-2.6/drivers/input/serio/serio.c
+===================================================================
+--- linux-2.6.orig/drivers/input/serio/serio.c
++++ linux-2.6/drivers/input/serio/serio.c
+@@ -576,6 +576,7 @@ static void serio_add_port(struct serio 
+ 			printk(KERN_ERR
+ 				"serio: sysfs_create_group() failed for %s (%s), error: %d\n",
+ 				serio->phys, serio->name, error);
++		device_enable_async_suspend(&serio->dev, true);
+ 	}
+ }
+ 
 
-dry joints on cable plug
