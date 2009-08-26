@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZHZPEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751409AbZHZPGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751353AbZHZPEe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 11:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbZHZPEd
+	id S1751409AbZHZPGW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 11:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZHZPGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 11:04:33 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:38580 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbZHZPEc (ORCPT
+	Wed, 26 Aug 2009 11:06:22 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:49368 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161AbZHZPGV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 11:04:32 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 26 Aug 2009 08:04:32 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Will Brown <dr.hfuhruhurr@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: Epoll frequently fails to notify connects at connect 
- bursts
-In-Reply-To: <8a1bd2320908260215w23d1f426x33f90e38ccc3fe2c@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0908260802520.6557@makko.or.mcafeemobile.com>
-References: <8a1bd2320908251748u324ae5e6g7015069180253db3@mail.gmail.com>  <alpine.DEB.2.00.0908251812450.18518@makko.or.mcafeemobile.com>  <alpine.DEB.2.00.0908251823470.18518@makko.or.mcafeemobile.com>
- <8a1bd2320908260215w23d1f426x33f90e38ccc3fe2c@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 26 Aug 2009 11:06:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=OcAEgQkKOEp1mCrQySpOUlefDFeD8ZuEfNp8a2NXKkYmyAUODfez9D7ZTHMPi2zTqO
+         /SF88HKtNtkFO/v+cM6ORuZpn5Za819iqvr8JTBU/y61xCGc9EEBZizHaiRy8aiESEth
+         awUymY3kf8h1GsiytEEho9tlvZdeULkex4uWY=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-1623378626-1251299073=:6557"
+In-Reply-To: <1251298443.4791.7.camel@raz>
+References: <1250983671.5688.21.camel@raz>
+	 <1251222993.7023.53.camel@marge.simson.net>
+	 <alpine.DEB.1.10.0908251402300.17963@gentwo.org>
+	 <1251227322.7538.1172.camel@twins> <4A943A00.9080609@nortel.com>
+	 <1251264700.7538.1178.camel@twins> <1251282598.3514.20.camel@raz>
+	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
+	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>
+Date: Wed, 26 Aug 2009 18:06:21 +0300
+X-Google-Sender-Auth: 4a4bac8d4668a8d1
+Message-ID: <84144f020908260806pb85ee72r7b7e32a07b921b59@mail.gmail.com>
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: raz ben yehuda <raziebe@gmail.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
+       riel@redhat.com, mingo@elte.hu,
+       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
+       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, Aug 26, 2009 at 5:54 PM, raz ben yehuda<raziebe@gmail.com> wrote:
+>> I have always been fascinated by the idea of controlling another cpu
+>> from the main CPU.
+>>
+>> Usually these cpus are custom, run proprietary software, and have no
+>> datasheet on their I/O interfaces.
+>>
+>> But, being able to turn an ordinary CPU into something like that seems
+>> to be very nice.
+>>
+>> For example, It might help with profiling. Think about a program that
+>> can run uninterrupted how much it wants.
+>>
+>> I might even be better, if the dedicated CPU would use a predefined
+>> reserved memory range (I wish there was a way to actually lock it to
+>> that range)
+>>
+>> On the other hand, I could see this as a jump platform for more
+>> proprietary code, something like that: we use linux in out server
+>> platform, but out "insert buzzword here" network stack pro+ can handle
+>> 100% more load that linux does, and it runs on a dedicated core....
+>>
+>> In the other words, we might see 'firmwares' that take an entire cpu for
+>> their usage.
+>
+> This is exactly what offsched (sos) is. you got it. SOS was partly inspired by the notion of a GPU.
 
---8323329-1623378626-1251299073=:6557
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Wed, 26 Aug 2009, Will Brown wrote:
-
-> On Wed, Aug 26, 2009 at 3:24 AM, Davide Libenzi<davidel@xmailserver.org> wrote:
-> > On Tue, 25 Aug 2009, Davide Libenzi wrote:
-> >
-> >> Multiple quasi-simultaneous events for the same fd are merged. This is why
-> >> on POLLIN on accepting sockets you want to do something like:
-> >>
-> >>       while ((afd = accept(sfd, ...)) != -1)
-> >>               add_client(afd);
-> >
-> > Of course, with  sfd  in non-blocking mode. Alternatively, you drop EPOLLET
-> > for the  sfd  socket.
-> >
-> 
-> Aha! Thank you immensely Davide. It cost me one week of frustration already.
-> 
-> 1. Where should I have picked up this gem of essential information? I
-> haven't seen it in the man-pages for either 'epoll' or 'accept'.
-> 
-> 2. Is it better to use a level-triggered listener socket, or to use
-> the accept-loop?
-
-EPOLLET can be more efficent, but it can also be a little more trickier to 
-grasp. LT mode maps more closely to poll/select, that makes it more 
-familiar to users.
-
-
-- Davide
-
-
---8323329-1623378626-1251299073=:6557--
+So where are the patches? The URL in the original post returns 404...
