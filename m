@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751912AbZHZQR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751777AbZHZQSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751912AbZHZQR4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 12:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZHZQR1
+	id S1751777AbZHZQSU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 12:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZHZQRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 12:17:27 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:51592 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751539AbZHZQRZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 26 Aug 2009 12:17:25 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:60672 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751420AbZHZQRY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 12:17:24 -0400
 From: Frans Pop <elendil@planet.nl>
 To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Frans Pop <elendil@planet.nl>, Matthew Garrett <mjg@redhat.com>,
-       Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 4/6] thermal: add sanity check for the passive attribute
-Date: Wed, 26 Aug 2009 18:17:23 +0200
-Message-Id: <1251303445-25317-5-git-send-email-elendil@planet.nl>
+Cc: Frans Pop <elendil@planet.nl>, Zhang Rui <rui.zhang@intel.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: [PATCH 3/6] acpi: thermal: display forced passive trip points in proc
+Date: Wed, 26 Aug 2009 18:17:22 +0200
+Message-Id: <1251303445-25317-4-git-send-email-elendil@planet.nl>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1251303445-25317-1-git-send-email-elendil@planet.nl>
 References: <1251303445-25317-1-git-send-email-elendil@planet.nl>
-X-OriginalArrivalTime: 26 Aug 2009 16:17:25.0990 (UTC) FILETIME=[B349E860:01CA2668]
+X-OriginalArrivalTime: 26 Aug 2009 16:17:26.0247 (UTC) FILETIME=[B3711F70:01CA2668]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Values below 40000 milli-celsius (limit is somewhat arbitrary)
-don't make sense and can cause the system to go into a thermal
-heart attack: the actual temperature will always be lower and
-thus the system will be throttled down to its lowest setting.
+Users can force passive cooling for a thermal zone that does not
+have _PSV defined in ACPI by setting the passive attribute in sysfs.
+It's useful to display such trip points in /proc/acpi/thermal_zone.
 
-For values below 1000 an additional problem is that they would
-show as 0 in /proc/acpi/thermal/TZx/trip_points:passive.
+.../TZ1/cooling_mode:<setting not supported>
+.../TZ1/polling_frequency:polling frequency:       10 seconds
+.../TZ1/state:state:                   ok
+.../TZ1/temperature:temperature:             53 C
+.../TZ1/trip_points:critical (S5):           110 C
+.../TZ1/trip_points:passive (forced):        95 C
 
-cat passive
-0
-echo -n 90000 >passive
-cat passive
-90000
-echo -n 30000 >passive
-bash: echo: write error: Invalid argument
+And if not set (passive is 0):
+.../TZ1/trip_points:passive (forced):<not set>
 
 Signed-off-by: Frans Pop <elendil@planet.nl>
-Cc: Matthew Garrett <mjg@redhat.com>
 Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 2a036eb..09d5c88 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -206,6 +206,7 @@ passive
- 	point for the zone. Activation is done by polling with an interval
- 	of 1 second.
- 	Unit: millidegrees Celsius
-+	Minimum value: 40000
- 	RW, Optional
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 564ea14..a4e507b 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -1050,6 +1050,13 @@ static int acpi_thermal_trip_seq_show(struct seq_file *seq, void *offset)
+ 				   acpi_device_bid(device));
+ 		}
+ 		seq_puts(seq, "\n");
++	} else {
++		seq_printf(seq, "passive (forced):");
++		if (tz->thermal_zone->forced_passive)
++			seq_printf(seq, "        %i C\n",
++				   tz->thermal_zone->forced_passive / 1000);
++		else
++			seq_printf(seq, "<not set>\n");
+ 	}
  
- *****************************
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 0a69672..2d13d0d 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -225,6 +225,12 @@ passive_store(struct device *dev, struct device_attribute *attr,
- 	if (!sscanf(buf, "%d\n", &state))
- 		return -EINVAL;
- 
-+	/* sanity check: values below 40000 millicelcius don't make sense
-+	 * and can cause the system to go into a thermal heart attack
-+	 */
-+	if (state && state < 40000)
-+		return -EINVAL;
-+
- 	if (state && !tz->forced_passive) {
- 		mutex_lock(&thermal_list_lock);
- 		list_for_each_entry(cdev, &thermal_cdev_list, node) {
+ 	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE; i++) {
