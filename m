@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbZHZJSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbZHZJS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756388AbZHZJSV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 05:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbZHZJSU
+	id S1756414AbZHZJS5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 05:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756289AbZHZJS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 05:18:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53245 "EHLO hera.kernel.org"
+	Wed, 26 Aug 2009 05:18:56 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:41631 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755073AbZHZJSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 05:18:20 -0400
-Message-ID: <4A94FD58.8060207@kernel.org>
-Date: Wed, 26 Aug 2009 02:16:08 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1756273AbZHZJSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 05:18:55 -0400
+Message-ID: <4A94FDDD.205@atmel.com>
+Date: Wed, 26 Aug 2009 11:18:21 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, jes@sgi.com, jens.axboe@oracle.com,
-       tglx@linutronix.de, mingo@elte.hu,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:sched/core] sched: Avoid division by zero
-References: <1250855934.7538.30.camel@twins>	 <tip-a8af7246c114bfd939e539f9566b872c06f6225c@git.kernel.org> <1251227486.7538.1174.camel@twins>
-In-Reply-To: <1251227486.7538.1174.camel@twins>
+To: Robert Emanuele <rob@emanuele.us>
+CC: =?ISO-8859-1?Q?Eric_B=E9nard?= <eric@eukrea.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       "Samuelsson, Ulf" <ulf.samuelsson@atmel.com>
+Subject: Re: ARM Git Tree (at91sam9g45 patches)
+References: <9f53b4330908251727q1bc1accfk12a9a8d25407791@mail.gmail.com> <4A9488FB.60603@eukrea.com>
+In-Reply-To: <4A9488FB.60603@eukrea.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Yinghai, Balbir, Arjan,
+Eric Bénard :
+> Hi Robert,
 > 
-> Could you try the below to see if that fully does away with the /0 in
-> the group scheduler thing?
+> Robert Emanuele wrote :
+>> I'm working with the Atmel at91sam9g45-ekes board which is new.  I was
+>> wondering if there was a git tree with the current ARM patches that
+>> contains the at91sam9g45 code?  Russell lists "Applied" patches at
+>> http://www.arm.linux.org.uk/developer/patches/ .  Where are these
+>> applied to?  If there isn't a tree, is there an elegant way to get the
+>> latest patch sets that I could apply to Linus's tree?
+>>
+> you will find the files that you can apply using git am here :
+> ftp://ftp.arm.linux.org.uk/pub/armlinux/kernel/git-cur/
 
-yes this one fix the problem.
+Yes, devel branch contains 9g45 patches.
 
-YH
+Another place where you can find quite all drivers that I submitted
+during the past weeks is in the linux-next tree:
+
+http://git.kernel.org/?p=linux/kernel/git/next/linux-next.git;a=summary
+
+FYI, I am building a patchset collecting all those submitted patches
+against 2.6.30 + Andrew Victor -at91 patch.
+It is not finished at the moment but I can send it in private.
+
+I am in contact with Ulf and others for OE and Buildroot inclusion.
+
+This patchset will be available in linux4sam.org in a few weeks.
+
+Best regards,
+-- 
+Nicolas Ferre
+
