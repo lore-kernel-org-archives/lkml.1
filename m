@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbZHZAQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZHZARc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbZHZAQz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbZHZAQy
+	id S1756564AbZHZARc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbZHZARb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:16:54 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36574 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756481AbZHZAQx (ORCPT
+	Tue, 25 Aug 2009 20:17:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51021 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756541AbZHZARa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:16:53 -0400
-Date: Wed, 26 Aug 2009 02:16:46 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090826001645.GN4300@elf.ucw.cz>
-References: <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <4A9468E8.607@redhat.com> <20090825225114.GE4300@elf.ucw.cz> <4A946DD1.8090906@redhat.com> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com>
+	Tue, 25 Aug 2009 20:17:30 -0400
+Date: Tue, 25 Aug 2009 17:16:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [Bug #14030] Kernel NULL pointer dereference at 0000000000000008,
+ pty-related
+In-Reply-To: <_yaHeGjHEzG.A.D2G.3sGlKB@chimera>
+Message-ID: <alpine.LFD.2.01.0908251716050.3218@localhost.localdomain>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.D2G.3sGlKB@chimera>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A947DA9.2080906@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-08-25 20:11:21, Ric Wheeler wrote:
-> On 08/25/2009 07:53 PM, Pavel Machek wrote:
->>> Why don't you hold all of your most precious data on that single S-ATA
->>> drive for five year on one box and put a second copy on a small RAID5
->>> with ext3 for the same period?
->>>
->>> Repeat experiment until you get up to something like google scale or the
->>> other papers on failures in national labs in the US and then we can have
->>> an informed discussion.
->>
->> I'm not interested in discussing statistics with you. I'd rather discuss
->> fsync() and storage design issues.
->>
->> ext3 is designed to work on single SATA disks, and it is not designed
->> to work on flash cards/degraded MD RAID5s, as Ted acknowledged.
->
-> You are simply incorrect, Ted did not say that ext3 does not work
-> with MD raid5.
 
-http://lkml.org/lkml/2009/8/25/312
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+On Tue, 25 Aug 2009, Rafael J. Wysocki wrote:
+
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14030
+> Subject		: Kernel NULL pointer dereference at 0000000000000008, pty-related
+> Submitter	: Eric W. Biederman <ebiederm@xmission.com>
+> Date		: 2009-08-20 5:46 (6 days old)
+> References	: http://marc.info/?l=linux-kernel&m=125074724623423&w=4
+> Handled-By	: Linus Torvalds <torvalds@linux-foundation.org>
+> Patch		: http://patchwork.kernel.org/patch/43679/
+
+This is now committed as 5c58ceff103d8a654f24769bb1baaf84a841b0cc. 
+
+		Linus
+
