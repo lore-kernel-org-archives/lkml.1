@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932834AbZHZKl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932844AbZHZKmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932834AbZHZKl1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 06:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932794AbZHZKlY
+	id S932844AbZHZKmg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 06:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932700AbZHZKmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 06:41:24 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49468 "EHLO mx1.redhat.com"
+	Wed, 26 Aug 2009 06:42:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:36564 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932802AbZHZKlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 06:41:19 -0400
-Message-ID: <4A95114F.8020107@redhat.com>
-Date: Wed, 26 Aug 2009 13:41:19 +0300
+	id S1756798AbZHZKaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 06:30:11 -0400
 From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Davide Libenzi <davidel@xmailserver.org>, gleb@redhat.com,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-References: <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com> <20090824214900.GA9899@redhat.com> <alpine.DEB.2.00.0908241508440.7951@makko.or.mcafeemobile.com> <20090825072229.GA10608@redhat.com> <alpine.DEB.2.00.0908251456230.18518@makko.or.mcafeemobile.com> <20090826102908.GA21523@redhat.com>
-In-Reply-To: <20090826102908.GA21523@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 11/47] x86: Export kmap_atomic_to_page()
+Date: Wed, 26 Aug 2009 13:29:33 +0300
+Message-Id: <1251282609-12835-12-git-send-email-avi@redhat.com>
+In-Reply-To: <1251282609-12835-1-git-send-email-avi@redhat.com>
+References: <1251282609-12835-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/26/2009 01:29 PM, Michael S. Tsirkin wrote:
-> How we wanted to solve it with EFD_STATE: Share a separate eventfd
-> between each device and the hypervisor.  device sets state to either 0
-> or 1.  hypervisor polls all eventfds, reads interrupt line on changes,
-> calculates the interrupt level and updates guest.
->
-> Alternative solution: shared memory where each device writes interrupt
-> line value. This makes setup more complex (need to share around much more
-> than just an fd), and makes access from interrupt impossible unless we
-> lock the memory (and locking userspace memory introduces yet another set
-> of issues).
->    
+Needed by KVM.
 
-For completeness:
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/mm/highmem_32.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-If the device is implemented in the same process as the hypervisor, an 
-eventfd isn't really needed, as there is an ioctl which performs the 
-same operation.
-
-An important class of device implementations is real devices that are 
-assigned to a guest.  We would like to forward the interrupt directly 
-from the host interrupt handler to qemu.  Currently, we have a 
-kvm-specific interrupt handler that forwards the interrupt using 
-kvm-specific interfaces.  We would like to use a generic interrupt 
-handler implemented by uio, so we want a generic interrupt transfer 
-mechanism.
-
-uio already supports edge-triggered interrupts using an eventfd-like 
-mechanism.  So it makes sense to extend uio to support real eventfds, 
-and to make it also support level-triggered interrupts.
-
-We can work around the lack of state eventfd by having userspace wait on 
-whatever mechanism uio uses to make the interrupt state visible, and 
-then use the ioctl mentioned above to inform the hypervisor of this 
-state.  But it's faster and nicer to give both components an eventfd and 
-let them communicate directly.
-
+diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+index 2112ed5..572f47c 100644
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -104,6 +104,7 @@ EXPORT_SYMBOL(kunmap);
+ EXPORT_SYMBOL(kmap_atomic);
+ EXPORT_SYMBOL(kunmap_atomic);
+ EXPORT_SYMBOL(kmap_atomic_prot);
++EXPORT_SYMBOL(kmap_atomic_to_page);
+ 
+ void __init set_highmem_pages_init(void)
+ {
 -- 
-error compiling committee.c: too many arguments to function
+1.6.4.1
 
