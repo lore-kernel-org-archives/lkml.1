@@ -1,171 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbZHZAw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932775AbZHZAxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932765AbZHZAw1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbZHZAw0
+	id S932775AbZHZAxN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbZHZAxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:52:26 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37387 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750821AbZHZAwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:52:25 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "Andrei Tanas" <andrei@tanas.ca>
-Date: Wed, 26 Aug 2009 10:50:18 +1000 (EST)
-Message-ID: <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>
-In-Reply-To: <004e01ca25e4$c11a54e0$434efea0$@ca>
-References: <004e01ca25e4$c11a54e0$434efea0$@ca>
-Subject: Re: MD/RAID: what's wrong with sector 1953519935?
-Cc: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.15
+	Tue, 25 Aug 2009 20:53:12 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56394 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S932736AbZHZAxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 20:53:11 -0400
+Message-ID: <4A948780.6030005@cn.fujitsu.com>
+Date: Wed, 26 Aug 2009 08:53:20 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: paulmck@linux.vnet.ibm.com
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH -tip] Re: [PATCH -tip 0/2] Temporary RCU fixes for notrace
+ and hotplug CPU
+References: <20090824164112.GA13693@linux.vnet.ibm.com> <20090825065501.GA29162@elte.hu> <20090825080047.GA16139@elte.hu> <20090825161208.GE6616@linux.vnet.ibm.com> <20090825162549.GB25058@Krystal> <20090825171136.GG6616@linux.vnet.ibm.com> <20090825180233.GA2448@Krystal> <20090825183613.GJ6616@linux.vnet.ibm.com>
+In-Reply-To: <20090825183613.GJ6616@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, August 26, 2009 10:32 am, Andrei Tanas wrote:
-> Hello,
->
-> I'm using two ST31000528AS drives in RAID1 array using MD. I've had
-> several
-> failures occur over a period of few months (see logs below). I've RMA'd
-> the
-> drive, but then got curious why an otherwise normal drive locks up while
-> trying to write the same sector once a month or so, but does not report
-> having bad sectors, doesn't fail any tests, and does just fine if I do
-> dd if=/dev/urandom of=/dev/sdb bs=512 seek=1953519935 count=1
-> however many times I try.
-> I then tried Googling for this number (1953519935) and found that it comes
-> up quite a few times and most of the time (or always) in context of
-> md/raid.
-> So my question is: is it just a coincidence (doesn't seem to be likely for
-> a
-> number this big), or is it possible that when sent to hard drive, it gets
-> interpreted like some command and sends the drive into some unpredictable
-> state?
+Paul E. McKenney wrote:
+> On Tue, Aug 25, 2009 at 02:02:33PM -0400, Mathieu Desnoyers wrote:
+>> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+>>> On Tue, Aug 25, 2009 at 12:25:49PM -0400, Mathieu Desnoyers wrote:
+>>>> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+>>>>> On Tue, Aug 25, 2009 at 10:00:47AM +0200, Ingo Molnar wrote:
+>>>>>> btw., i'm still seeing crashes with the latest RCU bits:
+>>>>>>
+>>>>>> [   20.621740] Testing event sys_enter_futex: OK
+>>>>>> [   20.629738] Testing event sys_exit_futex: OK
+>>>>>> [   20.637737] Testing event lock_acquire: [reboot]
+>>>>>>
+>>>>>> Possibly due to infinite recursion as well. Config attached.
+>>>>> Color me confused...
+>>>>>
+>>>>> Unless someone has a better idea, I will send in a patch that adds
+>>>>> "notrace" to every RCU API member used by any file in the kernel
+>>>>> that has "trace" in its name (excluding ptrace.c and rcutree_trace.c,
+>>>>> of course).  This list is as follows:
+>>>>>
+>>>>> 	call_rcu()
+>>>>> 	call_rcu_sched()
+>>>>> 	rcu_read_lock()
+>>>>> 	rcu_read_unlock()
+>>>>>
+>>>>> So, any better ideas?
+>>>> Tracers using RCU should use the _notrace() version of read_lock/unlock.
+>>>> I think the callers should be fixed rather than RCU.
+>>>>
+>>>> Tracepoints have been designed to use the _notrace variant on the
+>>>> instrumentation site. The core of tracepoint management use
+>>>> call_rcu_sched(), which can be traced without any problem.
+>>>>
+>>>> I have not followed the late tracing development as closely though, so
+>>>> errors might have crept in.
+>>> Or I might have inadvertently broken something in a non-obvious (to me,
+>>> anyway) manner.
+>>>
+>>> So, would you be willing to look at commit bc33f24bd in the -tip
+>>> tree and see if there is anything I broke other than the now-fixed
+>>> rcu_read_lock_sched_notrace() and rcu_read_unlock_sched_notrace()?
+>>> And for that matter, whether my alleged fix for these two API members
+>>> really does fix the problem (-tip commit 7c614d6461)?
+>>>
+>>> The -tip tree is at:
+>>>
+>>> 	git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+>>>
+>>> And these patches are on the tip/core/rcu branch.
+>>>
+>> sure, here we go:
+>>
+>>  static inline void rcu_read_lock_sched_notrace(void)
+>>  {
+>>         preempt_disable_notrace();
+>> +       __acquire(RCU_SCHED);
+>> +       rcu_read_acquire();
+>>  }
+>>
+>> and
+>>
+>>
+>>  static inline void rcu_read_unlock_sched_notrace(void)
+>>  {
+>> +       rcu_read_release();
+>> +       __release(RCU_SCHED);
+>>         preempt_enable_notrace();
+>>  }
+>>
+>> will make those _notrace primitives call into lockdep. I don't think
+>> this is correct, and this might be causing your problem.
+>>
+>> rcu_read_acquire/release are calling lock_acquire/release, those should
+>> be removed.
+>>
+>> __acquire() simply seems to be defined to a gcc "context" attribute,
+>> probably for the sparse checker. I think it should be safe to leave them
+>> there.
+> 
+> Thank you for looking this over, Mathieu!!!  Please see below for patch.
+> 
+> 							Thanx, Paul
+> 
+> ------------------------------------------------------------------------
+> 
+> Remove lockdep annotations from RCU's _notrace() API members.
+> 
+> The lockdep annotations rcu_read_acquire() and rcu_read_release()
+> might lead to infinite looping if called from lockdep.  So this patch
+> removes them.
+> 
+> Suggested-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+>  rcupdate.h |    2 --
+>  1 file changed, 2 deletions(-)
+> 
+> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> index 8b4422c..95e0615 100644
+> --- a/include/linux/rcupdate.h
+> +++ b/include/linux/rcupdate.h
+> @@ -195,7 +195,6 @@ static inline notrace void rcu_read_lock_sched_notrace(void)
+>  {
+>  	preempt_disable_notrace();
+>  	__acquire(RCU_SCHED);
+> -	rcu_read_acquire();
+>  }
+>  
+>  /*
+> @@ -211,7 +210,6 @@ static inline void rcu_read_unlock_sched(void)
+>  }
+>  static inline notrace void rcu_read_unlock_sched_notrace(void)
+>  {
+> -	rcu_read_release();
+>  	__release(RCU_SCHED);
+>  	preempt_enable_notrace();
+>  }
+> 
+> 
 
-All 1TB drives are exactly the same size.
-If you create a single partition (e.g. sdb1) on such a device, and that
-partition starts at sector 63 (which is common), and create an md
-array using that partition, then the superblock will always be at the
-address you quote.
-The superblock is probably updated more often than any other block in
-the array, so there is probably an increased likelyhood of an error
-being reported against that sector.
 
-So it is not just a coincidence.
-Whether there is some deeper underlying problem though, I cannot say.
-Google only claims 68 matches for that number which doesn't seem
-big enough to be significant.
+I remembered I have suggested this ...
 
-NeilBrown
+Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 
+Lai Jiangshan wrote:
+> 
+>>  {
+>>  	preempt_disable_notrace();
+>> +	__acquire(RCU_SCHED);
+>> +	rcu_read_acquire();
+>>  }
+>>  
+> 
+> It may cause infinity recursion.
+> rcu_read_acquire() calls rcu_read_lock_sched_notrace()
+> before current->lockdep_recursion is set to 1 when tracing in on,
+> thus infinity recursion occurs.
+> 
+> Lai
+> 
 
-
->
-> I will gladly provide any additional info that might be necessary.
->
->
-> #smartctl -i /dev/sdb
-> === START OF INFORMATION SECTION ===
-> Device Model:     ST31000528AS
-> Serial Number:    6VP01LNL
-> Firmware Version: CC34
-> User Capacity:    1,000,204,886,016 bytes
-> Device is:        Not in smartctl database [for details use: -P showall]
-> ATA Version is:   8
-> ATA Standard is:  ATA-8-ACS revision 4
-> Local Time is:    Thu Aug 20 10:52:31 2009 EDT
-> SMART support is: Available - device has SMART capability.
-> SMART support is: Enabled
->
-> ----------------------------------------------------
-> Jul 27 19:02:31 srv kernel: [901292.247428] ata2.00: exception Emask 0x0
-> SAct 0x0 SErr 0x0 action 0x6 frozen
-> Jul 27 19:02:31 srv kernel: [901292.247492] ata2.00: cmd
-> ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-> Jul 27 19:02:31 srv kernel: [901292.247494]          res
-> 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-> Jul 27 19:02:31 srv kernel: [901292.247500] ata2.00: status: { DRDY }
-> Jul 27 19:02:31 srv kernel: [901292.247512] ata2: hard resetting link
-> Jul 27 19:02:33 srv kernel: [901294.090746] ata2: SRST failed (errno=-19)
-> Jul 27 19:02:33 srv kernel: [901294.101922] ata2: SATA link up 3.0 Gbps
-> (SStatus 123 SControl 300)
-> Jul 27 19:02:33 srv kernel: [901294.101938] ata2.00: failed to IDENTIFY
-> (I/O
-> error, err_mask=0x40)
-> Jul 27 19:02:33 srv kernel: [901294.101943] ata2.00: revalidation failed
-> (errno=-5)
-> Jul 27 19:02:38 srv kernel: [901299.100347] ata2: hard resetting link
-> Jul 27 19:02:38 srv kernel: [901299.974103] ata2: SATA link up 3.0 Gbps
-> (SStatus 123 SControl 300)
-> Jul 27 19:02:39 srv kernel: [901300.105734] ata2.00: configured for
-> UDMA/133
-> Jul 27 19:02:39 srv kernel: [901300.105776] ata2: EH complete
-> Jul 27 19:02:39 srv kernel: [901300.137059] end_request: I/O error, dev
-> sdb,
-> sector 1953519935
-> Jul 27 19:02:39 srv kernel: [901300.137069] md: super_written gets
-> error=-5,
-> uptodate=0
-> Jul 27 19:02:39 srv kernel: [901300.137077] raid1: Disk failure on sdb1,
-> disabling device.
-> Jul 27 19:02:39 srv kernel: [901300.137079] raid1: Operation continuing on
-> 1
-> devices.
-> Jul 27 19:02:39 srv kernel: [901300.208812] RAID1 conf printout:
-> Jul 27 19:02:39 srv kernel: [901300.208820]  --- wd:1 rd:2
-> Jul 27 19:02:39 srv kernel: [901300.208826]  disk 0, wo:0, o:1, dev:sda1
-> Jul 27 19:02:39 srv kernel: [901300.208830]  disk 1, wo:1, o:0, dev:sdb1
-> Jul 27 19:02:39 srv kernel: [901300.217392] RAID1 conf printout:
-> Jul 27 19:02:39 srv kernel: [901300.217399]  --- wd:1 rd:2
-> Jul 27 19:02:39 srv kernel: [901300.217404]  disk 0, wo:0, o:1, dev:sda1
->
-> Aug 20 00:15:36 srv kernel: [90307.328266] ata2.00: exception Emask 0x0
-> SAct
-> 0x0 SErr 0x0 action 0x6 frozen
-> Aug 20 00:15:36 srv kernel: [90307.328275] ata2.00: cmd
-> ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-> Aug 20 00:15:36 srv kernel: [90307.328277]          res
-> 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-> Aug 20 00:15:36 srv kernel: [90307.328280] ata2.00: status: { DRDY }
-> Aug 20 00:15:36 srv kernel: [90307.328288] ata2: hard resetting link
-> Aug 20 00:15:47 srv kernel: [90313.218511] ata2: link is slow to respond,
-> please be patient (ready=0)
-> Aug 20 00:15:47 srv kernel: [90317.377711] ata2: SRST failed (errno=-16)
-> Aug 20 00:15:47 srv kernel: [90317.377720] ata2: hard resetting link
-> Aug 20 00:15:47 srv kernel: [90318.251720] ata2: SATA link up 3.0 Gbps
-> (SStatus 123 SControl 300)
-> Aug 20 00:15:47 srv kernel: [90318.338026] ata2.00: configured for
-> UDMA/133
-> Aug 20 00:15:47 srv kernel: [90318.338062] ata2: EH complete
-> Aug 20 00:15:47 srv kernel: [90318.370625] end_request: I/O error, dev
-> sdb,
-> sector 1953519935
-> Aug 20 00:15:47 srv kernel: [90318.370632] md: super_written gets
-> error=-5,
-> uptodate=0
-> Aug 20 00:15:47 srv kernel: [90318.370636] raid1: Disk failure on sdb1,
-> disabling device.
-> Aug 20 00:15:47 srv kernel: [90318.370637] raid1: Operation continuing on
-> 1
-> devices.
-> Aug 20 00:15:47 srv kernel: [90318.396403] RAID1 conf printout:
-> Aug 20 00:15:47 srv kernel: [90318.396408]  --- wd:1 rd:2
-> Aug 20 00:15:47 srv kernel: [90318.396410]  disk 0, wo:0, o:1, dev:sda1
-> Aug 20 00:15:47 srv kernel: [90318.396413]  disk 1, wo:1, o:0, dev:sdb1
-> Aug 20 00:15:47 srv kernel: [90318.429178] RAID1 conf printout:
-> Aug 20 00:15:47 srv kernel: [90318.429185]  --- wd:1 rd:2
-> Aug 20 00:15:47 srv kernel: [90318.429189]  disk 0, wo:0, o:1, dev:sda1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
 
