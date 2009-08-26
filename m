@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757093AbZHZKaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbZHZKiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757093AbZHZKaN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 06:30:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756784AbZHZKaL
+	id S932736AbZHZKiz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 06:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932690AbZHZKin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 06:30:11 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:6910 "EHLO mx1.redhat.com"
+	Wed, 26 Aug 2009 06:38:43 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:34880 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756333AbZHZKaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 06:30:09 -0400
+	id S1757038AbZHZKaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 06:30:12 -0400
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/47] KVM: MMU: fix bogus alloc_mmu_pages assignment
-Date: Wed, 26 Aug 2009 13:29:25 +0300
-Message-Id: <1251282609-12835-4-git-send-email-avi@redhat.com>
+Subject: [PATCH 14/47] KVM: SVM: optimize nested vmrun
+Date: Wed, 26 Aug 2009 13:29:36 +0300
+Message-Id: <1251282609-12835-15-git-send-email-avi@redhat.com>
 In-Reply-To: <1251282609-12835-1-git-send-email-avi@redhat.com>
 References: <1251282609-12835-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcelo Tosatti <mtosatti@redhat.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-Remove the bogus n_free_mmu_pages assignment from alloc_mmu_pages.
+Only copy the necessary parts of the vmcb save area on vmrun and save
+precious time.
 
-It breaks accounting of mmu pages, since n_free_mmu_pages is modified
-but the real number of pages remains the same.
-
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Acked-by: Alexander Graf <agraf@suse.de>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/mmu.c |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
+ arch/x86/kvm/svm.c |   28 +++++++++++++++++++++-------
+ 1 files changed, 21 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 28be35c..6f38178 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -2786,14 +2786,6 @@ static int alloc_mmu_pages(struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 2f5f223..f11f880 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1681,6 +1681,7 @@ static int nested_svm_vmrun(struct vcpu_svm *svm, void *arg1,
+ {
+ 	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
+ 	struct vmcb *hsave = svm->hsave;
++	struct vmcb *vmcb = svm->vmcb;
  
- 	ASSERT(vcpu);
+ 	/* nested_vmcb is our indicator if nested SVM is activated */
+ 	svm->nested_vmcb = svm->vmcb->save.rax;
+@@ -1691,12 +1692,25 @@ static int nested_svm_vmrun(struct vcpu_svm *svm, void *arg1,
  
--	spin_lock(&vcpu->kvm->mmu_lock);
--	if (vcpu->kvm->arch.n_requested_mmu_pages)
--		vcpu->kvm->arch.n_free_mmu_pages =
--					vcpu->kvm->arch.n_requested_mmu_pages;
--	else
--		vcpu->kvm->arch.n_free_mmu_pages =
--					vcpu->kvm->arch.n_alloc_mmu_pages;
--	spin_unlock(&vcpu->kvm->mmu_lock);
- 	/*
- 	 * When emulating 32-bit mode, cr3 is only 32 bits even on x86_64.
- 	 * Therefore we need to allocate shadow page tables in the first
+ 	/* Save the old vmcb, so we don't need to pick what we save, but
+ 	   can restore everything when a VMEXIT occurs */
+-	memcpy(hsave, svm->vmcb, sizeof(struct vmcb));
+-	/* We need to remember the original CR3 in the SPT case */
+-	if (!npt_enabled)
+-		hsave->save.cr3 = svm->vcpu.arch.cr3;
+-	hsave->save.cr4 = svm->vcpu.arch.cr4;
+-	hsave->save.rip = svm->next_rip;
++	hsave->save.es     = vmcb->save.es;
++	hsave->save.cs     = vmcb->save.cs;
++	hsave->save.ss     = vmcb->save.ss;
++	hsave->save.ds     = vmcb->save.ds;
++	hsave->save.gdtr   = vmcb->save.gdtr;
++	hsave->save.idtr   = vmcb->save.idtr;
++	hsave->save.efer   = svm->vcpu.arch.shadow_efer;
++	hsave->save.cr0    = svm->vcpu.arch.cr0;
++	hsave->save.cr4    = svm->vcpu.arch.cr4;
++	hsave->save.rflags = vmcb->save.rflags;
++	hsave->save.rip    = svm->next_rip;
++	hsave->save.rsp    = vmcb->save.rsp;
++	hsave->save.rax    = vmcb->save.rax;
++	if (npt_enabled)
++		hsave->save.cr3    = vmcb->save.cr3;
++	else
++		hsave->save.cr3    = svm->vcpu.arch.cr3;
++
++	hsave->control = vmcb->control;
+ 
+ 	if (svm->vmcb->save.rflags & X86_EFLAGS_IF)
+ 		svm->vcpu.arch.hflags |= HF_HIF_MASK;
+@@ -1721,7 +1735,7 @@ static int nested_svm_vmrun(struct vcpu_svm *svm, void *arg1,
+ 		kvm_set_cr3(&svm->vcpu, nested_vmcb->save.cr3);
+ 		kvm_mmu_reset_context(&svm->vcpu);
+ 	}
+-	svm->vmcb->save.cr2 = nested_vmcb->save.cr2;
++	svm->vmcb->save.cr2 = svm->vcpu.arch.cr2 = nested_vmcb->save.cr2;
+ 	kvm_register_write(&svm->vcpu, VCPU_REGS_RAX, nested_vmcb->save.rax);
+ 	kvm_register_write(&svm->vcpu, VCPU_REGS_RSP, nested_vmcb->save.rsp);
+ 	kvm_register_write(&svm->vcpu, VCPU_REGS_RIP, nested_vmcb->save.rip);
 -- 
 1.6.4.1
 
