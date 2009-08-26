@@ -1,57 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbZHZMGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757210AbZHZMHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756987AbZHZMGs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 08:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756905AbZHZMGr
+	id S1757210AbZHZMHX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 08:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756934AbZHZMHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 08:06:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:59640 "EHLO ozlabs.org"
+	Wed, 26 Aug 2009 08:07:22 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:53106 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756368AbZHZMGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 08:06:47 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] virtio-blk: set QUEUE_ORDERED_DRAIN by default
-Date: Wed, 26 Aug 2009 21:36:46 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: borntraeger@de.ibm.com, linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-References: <20090820205616.GA5503@lst.de> <200908252341.38356.rusty@rustcorp.com.au> <20090825141608.GA32658@lst.de>
-In-Reply-To: <20090825141608.GA32658@lst.de>
+	id S1756922AbZHZMHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 08:07:20 -0400
+In-Reply-To: <20090826021005.GD19494@bombadil.infradead.org>
+References: <20090826021005.GD19494@bombadil.infradead.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: eparis@redhat.com, Kyle McMartin <kyle@infradead.org>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       David Safford <David_Safford@watson.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908262136.46570.rusty@rustcorp.com.au>
+Subject: Re: [PATCH] allow disabling IMA at runtime
+X-KeepSent: 49FE725E:CE343CE0-8525761E:0041C9AD;
+ type=4; name=$KeepSent
+X-Mailer: Lotus Notes Release 8.5 December 05, 2008
+Message-ID: <OF49FE725E.CE343CE0-ON8525761E.0041C9AD-8525761E.00429749@us.ibm.com>
+From: Mimi Zohar <zohar@us.ibm.com>
+Date: Wed, 26 Aug 2009 08:07:21 -0400
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.5|December 05, 2008) at
+ 08/26/2009 08:07:21,
+	Serialize complete at 08/26/2009 08:07:21
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009 11:46:08 pm Christoph Hellwig wrote:
-> On Tue, Aug 25, 2009 at 11:41:37PM +0930, Rusty Russell wrote:
-> > On Fri, 21 Aug 2009 06:26:16 am Christoph Hellwig wrote:
-> > > Currently virtio-blk doesn't set any QUEUE_ORDERED_ flag by default, which
-> > > means it does not allow filesystems to use barriers.  But the typical use
-> > > case for virtio-blk is to use a backed that uses synchronous I/O
-> > 
-> > Really?  Does qemu open with O_SYNC?
-> > 
-> > I'm definitely no block expert, but this seems strange...
-> > Rusty.
+Kyle McMartin <kyle@infradead.org> wrote on 08/25/2009 10:10:05 PM:
+
+> From: Kyle McMartin <kyle@redhat.com>
 > 
-> Qemu can open it various ways, but the only one that is fully safe
-> is O_SYNC (cache=writethrough).
+> Due to a memory leak in IMA that we're currently debugging in Fedora
+> rawhide, it would be nice to be able to disable that support at runtime.
+> Currently it's only able to be built in, and there's no toggle to avoid
+> initializing it.
+> 
+> Provide one, in order to enhance debuggability. If a user can reboot a
+> machine and edit its command line, one can do a far sight worse things
+> than disabling a security precaution.
+> 
+> Signed-off-by: Kyle McMartin <kyle@redhat.com>
 
-(Rusty goes away and reads the qemu man page).
+Have you tried using Eric's patch
+"IMA: Minimal IMA policy and boot param for TCB IMA policy"
+(commit 5789ba3bd0a3cd20df5980ebf03358f2eb44fd67), which introduced
+the ima_tcb=1 command line option?  It wasn't backported to 2.6.30.
 
-	By default, if no explicit caching is specified for a qcow2 disk image,
-	cache=writeback will be used.
+Mimi
 
-Are you claiming qcow2 is unusual?  I can believe snapshot is less common,
-though I use it all the time.
+> ---
+> diff --git a/Documentation/kernel-parameters.txt 
+b/Documentation/kernel-parameters.txt
+> index 7936b80..0d1b1ed 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -926,6 +926,11 @@ and is between 256 and 4096 characters. It is 
+defined in the file
+>     ihash_entries=   [KNL]
+>           Set number of hash buckets for inode cache.
+> 
+> +   ima=      [IMA]
+> +         Format: { "0" | "1" }
+> +         0 -- disable IMA.
+> +         1 -- enable IMA. (default)
+> +
+>     ima_audit=   [IMA]
+>           Format: { "0" | "1" }
+>           0 -- integrity auditing messages. (Default)
+> diff --git a/security/integrity/ima/ima_main.c 
+b/security/integrity/ima/ima_main.c
+> index 101c512..cc7603e 100644
+> --- a/security/integrity/ima/ima_main.c
+> +++ b/security/integrity/ima/ima_main.c
+> @@ -339,10 +339,27 @@ int ima_bprm_check(struct linux_binprm *bprm)
+>     return 0;
+>  }
+> 
+> +static int ima_disabled = 0;
+> +static int __init ima_enabled(char *str)
+> +{
+> +   unsigned long enabled;
+> +
+> +   if (!strict_strtoul(str, 0, &enabled))
+> +      ima_disabled = enabled ? 0 : 1;
+> +
+> +   return 1;
+> +}
+> +__setup("ima=", ima_enabled);
+> +
+>  static int __init init_ima(void)
+>  {
+>     int error;
+> 
+> +   if (ima_disabled) {
+> +      pr_info("IMA disabled at user request.\n");
+> +      return 0;
+> +   }
+> +
+>     ima_iintcache_init();
+>     error = ima_init();
+>     ima_initialized = 1;
 
-You'd normally have to add a feature for something like this.  I don't
-think this is different.
-
-Sorry,
-Rusty.
