@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932642AbZHZA1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbZHZA1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932642AbZHZA1i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932489AbZHZA1h
+	id S1756588AbZHZA1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbZHZA1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:27:37 -0400
-Received: from mail.lang.hm ([64.81.33.126]:42358 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932241AbZHZA1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:27:36 -0400
-Date: Tue, 25 Aug 2009 17:26:11 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-In-Reply-To: <20090826002045.GO4300@elf.ucw.cz>
-Message-ID: <alpine.DEB.2.00.0908251721170.28411@asgard.lang.hm>
-References: <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm>
- <20090825233701.GH4300@elf.ucw.cz> <4A947839.4010601@redhat.com> <20090826000657.GK4300@elf.ucw.cz> <4A947E05.8070406@redhat.com> <20090826002045.GO4300@elf.ucw.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 25 Aug 2009 20:27:53 -0400
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:52087 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756067AbZHZA1w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 20:27:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Oe31ETBvKVVqmS0r5a4S+ROIXXKPpHawAn0BhTW/7pG0tKd1zefJaU7CSfoBYFZXB6
+         1bFi8OHIm291hgkemEsm19EL2sQQE6rAuDcavgEiOQXC3t3iBKZ9z3Hxqdvwvfb39Npr
+         ggdA2Qv2OdfsW4TYngtqUfxCQIXwxbm4Wafw0=
+Message-ID: <4A9481B9.3070607@gmail.com>
+Date: Tue, 25 Aug 2009 17:28:41 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14012] latest git fried my x86_64 imac
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.NXH.BtGlKB@chimera>
+In-Reply-To: <_yaHeGjHEzG.A.NXH.BtGlKB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Pavel Machek wrote:
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14012
+> Subject		: latest git fried my x86_64 imac
+> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
+> Date		: 2009-08-13 07:20 (13 days old)
+> References	: http://marc.info/?l=linux-kernel&m=125014080427090&w=4
+>
+>
+>
+>    
+if I revert this commit:
+af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+I can get a normal bootup.
 
->>>>> ---
->>>>> There are storage devices that high highly undesirable properties
->>>>> when they are disconnected or suffer power failures while writes are
->>>>> in progress; such devices include flash devices and MD RAID 4/5/6
->>>>> arrays.  These devices have the property of potentially
->>>>> corrupting blocks being written at the time of the power failure, and
->>>>> worse yet, amplifying the region where blocks are corrupted such that
->>>>> additional sectors are also damaged during the power failure.
->>>>
->>>> I would strike the entire mention of MD devices since it is your
->>>> assertion, not a proven fact. You will cause more data loss from common
->>>
->>> That actually is a fact. That's how MD RAID 5 is designed. And btw
->>> those are originaly Ted's words.
->>
->> Ted did not design MD RAID5.
->
-> So what? He clearly knows how it works.
->
-> Instead of arguing he's wrong, will you simply label everything as
-> unproven?
->
->>>> events (single sector errors, complete drive failure) by steering people
->>>> away from more reliable storage configurations because of a really rare
->>>> edge case (power failure during split write to two raid members while
->>>> doing a RAID rebuild).
->>>
->>> I'm not sure what's rare about power failures. Unlike single sector
->>> errors, my machine actually has a button that produces exactly that
->>> event. Running degraded raid5 arrays for extended periods may be
->>> slightly unusual configuration, but I suspect people should just do
->>> that for testing. (And from the discussion, people seem to think that
->>> degraded raid5 is equivalent to raid0).
->>
->> Power failures after a full drive failure with a split write during a rebuild?
->
-> Look, I don't need full drive failure for this to happen. I can just
-> remove one disk from array. I don't need power failure, I can just
-> press the power button. I don't even need to rebuild anything, I can
-> just write to degraded array.
->
-> Given that all events are under my control, statistics make little
-> sense here.
+As for this  bug, it seems I'm the only
+hitting this. The system is a fresh LFS build
+x86_64.
+In regards to keeping this open
+not sure, I don't have a problem with closing this
+and taking the blame as something I did during my build
+of the system, then if this becomes more frequent
+then open a new bug.
 
-if you are intentionally causing several low-probability things to happen 
-at once you increase the risk of corruption
-
-note that you also need a write to take place, and be interrupted in just 
-the right way.
-
-David Lang
+Justin P. Mattock
