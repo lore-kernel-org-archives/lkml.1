@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbZHZSWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbZHZSZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbZHZSWj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 14:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbZHZSWh
+	id S1752724AbZHZSZG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 14:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZHZSZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 14:22:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52953 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbZHZSWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 14:22:37 -0400
-Date: Wed, 26 Aug 2009 14:22:36 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Kara <jack@suse.cz>
-Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>, Felix Blyakher <felixb@sgi.com>,
-       xfs@oss.sgi.com, Anton Altaparmakov <aia21@cantab.net>,
-       linux-ntfs-dev@lists.sourceforge.net,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-ext4@vger.kernel.org, tytso@mit.edu
-Subject: Re: [PATCH 07/17] vfs: Introduce new helpers for syncing after
-	writing to O_SYNC file or IS_SYNC inode
-Message-ID: <20090826182236.GA1290@infradead.org>
-References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-8-git-send-email-jack@suse.cz> <20090819162638.GE6150@infradead.org> <20090820121531.GC16486@duck.novell.com> <20090820162729.GA24659@infradead.org>
+	Wed, 26 Aug 2009 14:25:06 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39540 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752619AbZHZSZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 14:25:04 -0400
+Date: Wed, 26 Aug 2009 20:24:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pierre Habouzit <pierre.habouzit@intersec.com>
+Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf tools: do not complain if root is owning perf.data
+Message-ID: <20090826182459.GD13632@elte.hu>
+References: <1251291926-27174-1-git-send-email-pierre.habouzit@intersec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090820162729.GA24659@infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1251291926-27174-1-git-send-email-pierre.habouzit@intersec.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 20, 2009 at 12:27:29PM -0400, Christoph Hellwig wrote:
-> Maybe you can help brain storming, but I still can't see any way in that
-> the
+
+* Pierre Habouzit <pierre.habouzit@intersec.com> wrote:
+
+> This improves patch fa6963b24 so that perf.data stuff that has 
+> been dumped as root can be read (annotate/report) by a user 
+> without the use of the --force.
 > 
->   - write data
->   - write inode
->   - wait for data
+> Rationale is that root has plenty of ways to screw us (usually) 
+> that do not require twisted schemes involving specially crafting a 
+> perf.data.
 > 
-> actually is a benefit in terms of semantics (I agree that it could be
-> faster in theory, but even that is debatable with todays seek latencies
-> in disks)
+> Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
+> ---
+>  tools/perf/builtin-annotate.c |    4 ++--
+>  tools/perf/builtin-report.c   |    4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
 
-Btw, another reason why our current default is actively harmful:
+Ok, this makes sense - but i think we should do this in .32 only, 
+with a Cc: <stable@kernel.org> backport tag for .31.1.
 
-	barriers
+Mind doing it against the latest perfcounters tree, which can be 
+found in -tip:
 
-With volatile write caches we do have to flush the disk write cache in
-->fsync, either implicitly by a metadata operation, or explicitly if
-only data changed.  Unless the filesystems waits itself for the data
-to hit the disk like XFS or btrfs will be issue the cache flush
-potentially before the data write has actually reached the disk cache.
+  http://people.redhat.com/mingo/tip.git/README
+
+your current version does not apply cleanly as the surrounding code 
+has changed a bit already.
+
+Thanks,
+
+	Ingo
