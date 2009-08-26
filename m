@@ -1,232 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751102AbZHZHuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751623AbZHZH7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751102AbZHZHuz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbZHZHuz
+	id S1751623AbZHZH7D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:59:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZHZH7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:50:55 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:51711 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbZHZHuy (ORCPT
+	Wed, 26 Aug 2009 03:59:01 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:51456 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbZHZH7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:50:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=aMGvzdwbPursT7OKnnlk78WRR2jr57HAZY76Zwt4xyVRCMgJlhHbTJ8ZkLo2IGuuEf
-         LprabUDcNDVb6B0T8Q2IZpSurDhDxN28r2Xve7Ra6I12Geh0+uOK9PEnpDEDLFtNaTnC
-         RIkZZi5pvyVajkStJ36ScYUnVKKhCw4RZAKD0=
-Subject: Re: Subject:[ PATCH 001:003] OFFSCHED CORE
-From: raz ben yehuda <raziebe@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: riel@redhat.com, mingo@elte.hu, peterz@infradead.org,
-       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <m163cbm3rd.fsf@fess.ebiederm.org>
-References: <1250983786.5688.23.camel@raz>
-	 <m163cbm3rd.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Date: Wed, 26 Aug 2009 13:51:04 +0300
-Message-Id: <1251283864.3514.25.camel@raz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Aug 2009 03:59:00 -0400
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: David Dillow <dave@thedillows.org>,
+       Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
+       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH] r8169: Reduce looping in the interrupt handler.
+References: <1250895567.23419.1.camel@obelisk.thedillows.org>
+	<1250897657.23419.5.camel@obelisk.thedillows.org>
+	<m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
+	<1250973787.3582.14.camel@obelisk.thedillows.org>
+	<m1r5v0ogvw.fsf@fess.ebiederm.org>
+	<1251169150.4023.11.camel@obelisk.thedillows.org>
+	<m1prajabk8.fsf@fess.ebiederm.org>
+	<1251232848.9607.15.camel@lap75545.ornl.gov>
+	<m1k50r8u4p.fsf@fess.ebiederm.org>
+	<20090825221903.GA13630@electric-eye.fr.zoreil.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 26 Aug 2009 00:58:56 -0700
+In-Reply-To: <20090825221903.GA13630@electric-eye.fr.zoreil.com> (Francois Romieu's message of "Wed\, 26 Aug 2009 00\:19\:03 +0200")
+Message-ID: <m1iqgbknun.fsf_-_@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: romieu@fr.zoreil.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, mb@bu3sch.de, michael.riepe@googlemail.com, dave@thedillows.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2009-08-26 at 00:29 -0700, Eric W. Biederman wrote:
-> raz ben yehuda <raziebe@gmail.com> writes:
-> 
-> > 		OFFSCHED support.
-> >
-> > . A callback invoked just before halting the processor.
-> > . SMP alternative work-around. we do not run smp alternatives if we are
-> >    left with a single processor.
-> > . A set of utilities used by the offsched driver.
-> 
-> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-> 
-> 
-> Cpu hotunplug is mostly broken when it comes to irqs.
-> Building on and extending broken code is just asking for trouble,
-> especially for out of tree code.
-I have this code for 4 years. The least of my problems was the
-hot-unplugging. as for the tree, I will use git. much depends if the
-patch is excepted. you say - i do. 
+As of 2.6.30 I have been observing soft lockups and netdev watchdog
+timeouts caused by looping in the r8169 interrupt handler.
 
-> > process.c |  109 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> > smpboot.c |   13 +++++--
-> > 2 files changed, 118 insertions(+), 4 deletions(-)
-> >
-> > Signed-off-by: raziebe@gmail.com
-> > ---
-> > diff -X 2.6.30-offsched/Documentation/dontdiff -urN tmp/linux-2.6.30/arch/x86/kernel/process.c 2.6.30-offsched/arch/x86/kernel/process.c
-> > --- tmp/linux-2.6.30/arch/x86/kernel/process.c	2009-06-10 06:05:27.000000000 +0300
-> > +++ 2.6.30-offsched/arch/x86/kernel/process.c	2009-08-21 22:02:44.000000000 +0300
-> > @@ -613,3 +613,112 @@
-> >  }
-> >  early_param("idle", idle_setup);
-> >  
-> > +#ifdef CONFIG_HOTPLUG_CPU
-> > +struct hotplug_cpu{
-> > +	long flags;
-> > +	void (*hotplug_cpu_dead)(void);
-> > +};
-> > +
-> > +static long 	offsched_services;
-> > +
-> > +#define CPU_OFFSCHED		31
-> > +#define CPU_OFFSCHED_KMEM	30
-> > +#define SERVICE_TIMER		01
-> > +#define SERVICE_NAPI		02
-> > +
-> > +DEFINE_PER_CPU(struct hotplug_cpu, offschedcpu);
-> > +
-> > +void unregister_offsched(int cpuid)
-> > +{
-> > +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> > +	cpu->hotplug_cpu_dead = NULL;
-> > +	clear_bit(CPU_OFFSCHED, &cpu->flags);
-> > +}
-> > +EXPORT_SYMBOL_GPL(unregister_offsched);
-> > +
-> > +int is_offsched(int cpuid)
-> > +{
-> > +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> > +	return test_bit(CPU_OFFSCHED, &cpu->flags);
-> > +}
-> > +EXPORT_SYMBOL_GPL(is_offsched);
-> > +
-> > +int is_offsched_kmem(int cpuid)
-> > +{
-> > +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> > +	return test_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
-> > +}
-> > +EXPORT_SYMBOL_GPL(is_offsched_kmem);
-> > +
-> > +void set_offsched_kmem(int cpuid)
-> > +{
-> > +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> > +	set_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
-> > +}
-> > +EXPORT_SYMBOL_GPL(set_offsched_kmem);
-> > +
-> > +void unset_offsched_kmem(int cpuid)
-> > +{
-> > +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> > +	clear_bit(CPU_OFFSCHED_KMEM, &cpu->flags);
-> > +}
-> > +EXPORT_SYMBOL_GPL(unset_offsched_kmem);
-> > +
-> > +int register_offsched(void (*offsched_callback)(void), int cpuid)
-> > +{
-> > +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> > +	if (is_offsched(cpuid))
-> > +		return -1;
-> > +	cpu->hotplug_cpu_dead = offsched_callback;
-> > +	set_bit(CPU_OFFSCHED, &cpu->flags);
-> > +	return 0;
-> > +}
-> > +EXPORT_SYMBOL_GPL(register_offsched);
-> > +
-> > +void run_offsched(void)
-> > +{
-> > +	int cpuid = raw_smp_processor_id();
-> > +	struct hotplug_cpu *cpu = &per_cpu(offschedcpu, cpuid);
-> > +	cpu->hotplug_cpu_dead();
-> > +}
-> > +
-> > +int  offsched_is_napi_avail(void)
-> > +{
-> > +	return SERVICE_NAPI & offsched_services;
-> > +}
-> > +
-> > +int (*offsched_rule)(void *);
-> > +EXPORT_SYMBOL(offsched_rule);
-> > +/*
-> > +* if we a have filter than apply filter.
-> > +* return 0 if packet should go to kernel
-> > +* return 1 if packet should go to offsched.
-> > +*/
-> > +int offsched_pkt(void *s)
-> > +{
-> > +	if (offsched_rule)
-> > +		return offsched_rule(s);
-> > +	return 0;
-> > +}
-> > +
-> > +void offsched_register_napi(void)
-> > +{
-> > +	offsched_services |= SERVICE_NAPI;
-> > +}
-> > +EXPORT_SYMBOL_GPL(offsched_register_napi);
-> > +
-> > +void offsched_unregister_napi(void)
-> > +{
-> > +	offsched_services &= ~SERVICE_NAPI;
-> > +}
-> > +EXPORT_SYMBOL_GPL(offsched_unregister_napi);
-> > +
-> > +/*
-> > + * napi scheudule is called in offsched context.
-> > +*/
-> > +void offsched_napi_schedule(void *n)
-> > +{
-> > +
-> > +}
-> > +
-> > +#endif
-> > diff -X 2.6.30-offsched/Documentation/dontdiff -urN tmp/linux-2.6.30/arch/x86/kernel/smpboot.c 2.6.30-offsched/arch/x86/kernel/smpboot.c
-> > --- tmp/linux-2.6.30/arch/x86/kernel/smpboot.c	2009-06-10 06:05:27.000000000 +0300
-> > +++ 2.6.30-offsched/arch/x86/kernel/smpboot.c	2009-07-25 13:59:19.000000000 +0300
-> > @@ -39,6 +39,8 @@
-> >   *	Glauber Costa		:	i386 and x86_64 integration
-> >   */
-> >  
-> > +#define DEBUG
-> > +
-> >  #include <linux/init.h>
-> >  #include <linux/smp.h>
-> >  #include <linux/module.h>
-> > @@ -686,8 +688,8 @@
-> >  	};
-> >  
-> >  	INIT_WORK(&c_idle.work, do_fork_idle);
-> > -
-> > -	alternatives_smp_switch(1);
-> > +	if (!is_offsched(cpu))
-> > +		alternatives_smp_switch(1);
-> >  
-> >  	c_idle.idle = get_idle_for_cpu(cpu);
-> >  
-> > @@ -1283,8 +1285,9 @@
-> >  	for (i = 0; i < 10; i++) {
-> >  		/* They ack this in play_dead by setting CPU_DEAD */
-> >  		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
-> > -			printk(KERN_INFO "CPU %d is now offline\n", cpu);
-> > -			if (1 == num_online_cpus())
-> > +			printk(KERN_INFO "CPU %d is now offline %s\n", cpu,
-> > +				is_offsched(cpu) ? "and OFFSCHED" : "");
-> > +			if (1 == num_online_cpus() && !is_offsched(cpu))
-> >  				alternatives_smp_switch(0);
-> >  			return;
-> >  		}
-> > @@ -1313,6 +1316,8 @@
-> >  void native_play_dead(void)
-> >  {
-> >  	play_dead_common();
-> > +	if (is_offsched(raw_smp_processor_id()))
-> > +		run_offsched();
-> >  	wbinvd_halt();
-> >  }
-> >  
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
+- Introduce a hard limit to the maximum number of times we will loop in
+  the interrupt handler, and print a message when we hit it.
+
+- Break out of the loop if after looking none of the events in status
+  are events we expect to be delivered by an interrupt.
+
+With just the hard limit and message bits of my patch in my test case
+I get hit my limit of 10 loops 12 times.  After filtering by intr_mask
+and intr_event I don't get any warnings.
+
+Any complaints from those who know the driver better than I?
+
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+---
+ drivers/net/r8169.c |   21 +++++++++++++++++++++
+ 1 files changed, 21 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 3b19e0c..2214945 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -61,6 +61,8 @@ static const int multicast_filter_limit = 32;
+ /* MAC address length */
+ #define MAC_ADDR_LEN	6
+ 
++#define MAX_INTR_LOOPS 10	/* Limit the msi acking loop from going crazy */
++
+ #define MAX_READ_REQUEST_SHIFT	12
+ #define RX_FIFO_THRESH	7	/* 7 means NO threshold, Rx buffer level before first PCI xfer. */
+ #define RX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
+@@ -3552,6 +3554,7 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 	int handled = 0;
+ 	int status;
++	int count = 0;
+ 
+ 	/* loop handling interrupts until we have no new ones or
+ 	 * we hit a invalid/hotplug case.
+@@ -3560,6 +3563,17 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+ 	while (status && status != 0xffff) {
+ 		handled = 1;
+ 
++		if (count++ >= MAX_INTR_LOOPS) {
++			if (netif_msg_intr(tp) && net_ratelimit()) {
++				printk(KERN_INFO " %s Screaming irq "
++					"status %08x mask %08x event %08x "
++					"napi %08x\n",
++					dev->name, status, tp->intr_mask,
++					tp->intr_event,	tp->napi_event);
++			}
++			break;
++		}
++
+ 		/* Handle all of the error cases first. These will reset
+ 		 * the chip, so just exit the loop.
+ 		 */
+@@ -3609,6 +3623,13 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+ 		RTL_W16(IntrStatus,
+ 			(status & RxFIFOOver) ? (status | RxOverflow) : status);
+ 		status = RTL_R16(IntrStatus);
++
++		/* Ignore the parts of status that reflect more than
++		 * the enabled interrupts.
++		 */
++		smp_rmb();
++		if (!(status & tp->intr_mask & tp->intr_event))
++			break;
+ 	}
+ 
+ 	return IRQ_RETVAL(handled);
+-- 
+1.6.2.5
 
