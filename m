@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbZHZVFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753652AbZHZVIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658AbZHZVFn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 17:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZHZVFn
+	id S1753652AbZHZVIm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 17:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbZHZVIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 17:05:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36246 "EHLO ogre.sisk.pl"
+	Wed, 26 Aug 2009 17:08:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46727 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbZHZVFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 17:05:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [Bug #14012] latest git fried my x86_64 imac
-Date: Wed, 26 Aug 2009 23:06:38 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.NXH.BtGlKB@chimera> <4A9481B9.3070607@gmail.com>
-In-Reply-To: <4A9481B9.3070607@gmail.com>
+	id S1751548AbZHZVIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 17:08:41 -0400
+Date: Wed, 26 Aug 2009 23:08:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, raz ben yehuda <raziebe@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
+       riel@redhat.com, andrew motron <akpm@linux-foundation.org>,
+       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+Message-ID: <20090826210812.GA22765@elte.hu>
+References: <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz> <1251300625.18584.18.camel@twins> <alpine.DEB.1.10.0908261136590.9933@gentwo.org> <1251302598.18584.31.camel@twins> <alpine.DEB.1.10.0908261211340.9933@gentwo.org> <20090826180407.GA13632@elte.hu> <alpine.DEB.1.10.0908261509580.9933@gentwo.org> <20090826193252.GA14721@elte.hu> <alpine.DEB.1.10.0908261627110.5554@gentwo.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908262306.38464.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0908261627110.5554@gentwo.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 26 August 2009, Justin P. Mattock wrote:
-> Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.30.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14012
-> > Subject		: latest git fried my x86_64 imac
-> > Submitter	: Justin P. Mattock<justinmattock@gmail.com>
-> > Date		: 2009-08-13 07:20 (13 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125014080427090&w=4
-> >
-> >
-> >
-> >    
-> if I revert this commit:
-> af6af30c0fcd77e621638e53ef8b176bca8bd3b4
-> I can get a normal bootup.
 
-Hm, that's
+* Christoph Lameter <cl@linux-foundation.org> wrote:
 
-commit af6af30c0fcd77e621638e53ef8b176bca8bd3b4
-Author: Peter Zijlstra <peterz@infradead.org>
-Date:   Wed Aug 5 20:41:04 2009 +0200
+> > to have sharp teeth nor any apparent poison fangs) - i simply 
+> > concur with the reasons Peter listed that it is a technically 
+> > inferior solution.
+> 
+> Ok so you are saying that the reduction of OS latencies will make 
+> the processor completely available and have no disturbances like 
+> OFFLINE scheduling?
 
-    ftrace: Fix perf-tracepoint OOPS
+I'm saying that your lack of trying to reduce even low-hanging-fruit 
+latency sources that were pointed out to you fundamentally destroys 
+your credibility in claiming that they are unfixable for all 
+practical purposes.
 
-I wonder what happens if you compile out ftrace?
+Or, to come up with a car analogy: it's a bit as if at a repair shop 
+you complained that your car has a scratch on its cooler grid that 
+annoys you, and you insisted that it be outfitted with a new diesel 
+engine which needs no cooler grid (throwing away the nice Hemi block 
+it has currently) - and ignored the mechanic's opinion that he loves 
+the Hemi and that to him the scratch looks very much like bird-sh*t 
+and that a proper car wash might do the trick too ;-)
 
-> As for this  bug, it seems I'm the only
-> hitting this. The system is a fresh LFS build
-> x86_64.
-> In regards to keeping this open
-> not sure, I don't have a problem with closing this
-> and taking the blame as something I did during my build
-> of the system, then if this becomes more frequent
-> then open a new bug.
+> Peter has not given a solution to the problem. Nor have you.
 
-OK, I'll close it for now.
+What do you mean by 'has given a solution' - a patch?
 
-Thanks,
-Rafael
+Peter mentioned a few things that you can try to reduce the 
+worst-case latency of the timer tick.
+
+Peter also implemented the hr-tick solution (CONFIG_SCHED_HRTICK) - 
+it's mostly upstream but disabled because it had problems - if you 
+are interested in improving this area you can fix and complete it.
+
+That would benefit ordinary Linux users too, not just rare isolation 
+apps.
+
+	Ingo
