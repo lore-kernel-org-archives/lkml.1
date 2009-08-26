@@ -1,201 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbZHZUFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbZHZUGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753187AbZHZUFv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 16:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZHZUFu
+	id S1753250AbZHZUGF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 16:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZHZUGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 16:05:50 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:1610 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752994AbZHZUFt convert rfc822-to-8bit (ORCPT
+	Wed, 26 Aug 2009 16:06:04 -0400
+Received: from mail-pz0-f192.google.com ([209.85.222.192]:45629 "EHLO
+	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753207AbZHZUGC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 16:05:49 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 26 Aug 2009 16:06:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=kE8hyYU4Njn8ArA0dZvSnJY3EL8E558Z8PjmifpTtXlvbGZr81lOtSsyWjEu0C5fyd
+         BIa46kDjjSe3Q+VLicLhnLOInipoYEm0mQbgULHN+hKffT33t0bsAU7DeLLFUZDDlD9H
+         0SMHul5vgB0FEEbHuVBmGXu5OPoj03d/FiucU=
+Message-ID: <4A9595A5.9060809@gmail.com>
+Date: Wed, 26 Aug 2009 16:05:57 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] console_print: change the function api to make it have printk style interface
-Date: Wed, 26 Aug 2009 13:05:49 -0700
-Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501EA93B4@exchange.ZeugmaSystems.local>
-In-Reply-To: <20090825172640.af8b9f58.randy.dunlap@oracle.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] console_print: change the function api to make it have printk style interface
-Thread-Index: Acol61Wv9pzeGLJmRyKT+GOTgBg5pwAnEHXQ
-References: <DDFD17CC94A9BD49A82147DDF7D545C501EA9241@exchange.ZeugmaSystems.local> <20090825172640.af8b9f58.randy.dunlap@oracle.com>
-From: "Anirban Sinha" <ASinha@zeugmasystems.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Cc: <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
+To: Avi Kivity <avi@redhat.com>
+CC: alacrityvm-devel@lists.sourceforge.net,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
+Subject: Re: AlacrityVM benchmark numbers updated
+References: <4A948962.7090909@gmail.com> <4A950B75.5020409@redhat.com> <4A95822D.9060207@gmail.com> <4A958BA0.2000801@redhat.com>
+In-Reply-To: <4A958BA0.2000801@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig8FC4678BFD16BC9A0DD9C085"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
->Make that prototype be like printk, with the __attribute__ ((format
->(printf, 1, 2))):
->
->
->int printk(const char * fmt, ...)
->	__attribute__ ((format (printf, 1, 2)));
->
->
->
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig8FC4678BFD16BC9A0DD9C085
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Thanks Randy. These are all very nice comments on the patch. However, I
-do think that having a full blown C function is a overkill for such a
-thing (except for the case which Linus has already pointed out - use
-from assembly code). At the very least we should make it a macro if we
-at all decide to keep the interface. I am also completely ok to remove
-the interface altogether. The arcs that need that sort of function can
-then implement an appropriate version (macro vs proper C function)
-locally for it's use.
+Avi Kivity wrote:
+> On 08/26/2009 09:42 PM, Gregory Haskins wrote:
+>> Actually, I have already look at this and it does indeed seem better t=
+o
+>> use switch_mm+gupf() over gup() by quite a large margin.  You could th=
+en
+>> couple that with your DMA-engine idea to potentially gain even more
+>> benefits (though probably not for networking since most NICs have thei=
+r
+>> own DMA engine anyway).
+>>
+>>   =20
+>=20
+> For tx, we'll just go copyless once we plumb the destructors properly. =
 
-Since Linus has already agreed for the later, I will post a patch here
-to remove the function. I am not very certain as to what we should do
-about the only one single case of its genuine use - call from
-ia64/head.S. What I have done is one solution. Please feel free to
-debate/disagree.
+> But for rx on a shared interface it is impossible to avoid the copy.=20
+> You can only choose if you want it done by the cpu or a local dma engin=
+e.
+>=20
+>=20
 
-Cheers,
+Yep, agree on both counts.
 
-Ani
+-Greg
 
 
-Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
----
-arch/ia64/kernel/head.S    |    1 +
-arch/ia64/kernel/head.h    |    1 +
-arch/ia64/kernel/process.c |    7 +++++++
-drivers/char/serial167.c   |    5 ++---
-include/linux/dtlk.h       |    6 +++---
-include/linux/tty.h        |    4 ----
-kernel/printk.c            |    6 ------
-7 files changed, 14 insertions(+), 16 deletions(-)
+--------------enig8FC4678BFD16BC9A0DD9C085
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
-index 23f846d..e6c5c3d 100644
---- a/arch/ia64/kernel/head.S
-+++ b/arch/ia64/kernel/head.S
-@@ -34,6 +34,7 @@
- #include <asm/mca_asm.h>
- #include <linux/init.h>
- #include <linux/linkage.h>
-+#include "head.h"
- 
- #ifdef CONFIG_HOTPLUG_CPU
- #define SAL_PSR_BITS_TO_SET				\
-diff --git a/arch/ia64/kernel/head.h b/arch/ia64/kernel/head.h
-new file mode 100644
-index 0000000..2e2ac68
---- /dev/null
-+++ b/arch/ia64/kernel/head.h
-@@ -0,0 +1 @@
-+extern void console_print(const char *s);
-diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
-index 5d7c0e5..c2bb591 100644
---- a/arch/ia64/kernel/process.c
-+++ b/arch/ia64/kernel/process.c
-@@ -161,6 +161,13 @@ show_regs (struct pt_regs *regs)
- 		show_stack(NULL, NULL);
- }
- 
-+/* local support for deprecated console_print */
-+void 
-+console_print(const char *s)
-+{
-+	printk(KERN_EMERG "%s", s);
-+}
-+
- void
- do_notify_resume_user(sigset_t *unused, struct sigscratch *scr, long
-in_syscall)
- {
-diff --git a/drivers/char/serial167.c b/drivers/char/serial167.c
-index 51e7a46..5942a9d 100644
---- a/drivers/char/serial167.c
-+++ b/drivers/char/serial167.c
-@@ -171,7 +171,6 @@ static int startup(struct cyclades_port *);
- static void cy_throttle(struct tty_struct *);
- static void cy_unthrottle(struct tty_struct *);
- static void config_setup(struct cyclades_port *);
--extern void console_print(const char *);
- #ifdef CYCLOM_SHOW_STATUS
- static void show_status(int);
- #endif
-@@ -245,7 +244,7 @@ void SP(char *data)
- {
- 	unsigned long flags;
- 	local_irq_save(flags);
--	console_print(data);
-+	printk(KERN_EMERG "%s", data);
- 	local_irq_restore(flags);
- }
- 
-@@ -255,7 +254,7 @@ void CP(char data)
- 	unsigned long flags;
- 	local_irq_save(flags);
- 	scrn[0] = data;
--	console_print(scrn);
-+	printk(KERN_EMERG "%c", scrn);
- 	local_irq_restore(flags);
- }				/* CP */
- 
-diff --git a/include/linux/dtlk.h b/include/linux/dtlk.h
-index 2896d90..4f93c45 100644
---- a/include/linux/dtlk.h
-+++ b/include/linux/dtlk.h
-@@ -4,15 +4,15 @@
- 	{ \
- 	  if(dtlk_trace) \
- 	  { \
--	    console_print(text); \
--	    console_print("\n"); \
-+	    printk(KERN_EMERG "%s", text);	\
-+	    printk(KERN_EMERG "\n");		\
- 	  } \
- 	}
- 
- #define TRACE_CHR(chr) \
- 	{ \
- 	  if(dtlk_trace) \
--	    console_print(chr); \
-+	    printk(KERN_EMERG "%c", chr); \
- 	} \
- 
- #endif
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index e8c6c91..ba191e3 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -517,10 +517,6 @@ extern void serial_console_init(void);
- 
- extern int pcxe_open(struct tty_struct *tty, struct file *filp);
- 
--/* printk.c */
--
--extern void console_print(const char *);
--
- /* vt.c */
- 
- extern int vt_ioctl(struct tty_struct *tty, struct file *file,
-diff --git a/kernel/printk.c b/kernel/printk.c
-index b4d97b5..32e15ce 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -1060,12 +1060,6 @@ void __sched console_conditional_schedule(void)
- }
- EXPORT_SYMBOL(console_conditional_schedule);
- 
--void console_print(const char *s)
--{
--	printk(KERN_EMERG "%s", s);
--}
--EXPORT_SYMBOL(console_print);
--
- void console_unblank(void)
- {
- 	struct console *c;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
+iEYEARECAAYFAkqVlaUACgkQP5K2CMvXmqHoFwCfek8O5cudY+AaXCFINZG7xkl+
+7KQAniST0CkgR/J/DWuiquv3L0y3x+oo
+=YzEV
+-----END PGP SIGNATURE-----
+
+--------------enig8FC4678BFD16BC9A0DD9C085--
