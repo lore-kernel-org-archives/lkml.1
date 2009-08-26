@@ -1,71 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbZHZStL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbZHZSxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752843AbZHZStL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 14:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZHZStL
+	id S1752833AbZHZSxD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 14:53:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbZHZSxC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 14:49:11 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:5403 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752586AbZHZStK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 14:49:10 -0400
-Subject: Re: BUG: scheduling while atomic in acpi_ps_complete_op
-From: Eric Paris <eparis@redhat.com>
-To: ykzhao <yakui.zhao@intel.com>
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Brown, Len" <len.brown@intel.com>,
-       "vegard.nossum@gmail.com" <vegard.nossum@gmail.com>
-In-Reply-To: <1251295984.3623.83.camel@localhost.localdomain>
-References: <1250873707.2168.38.camel@dhcp231-106.rdu.redhat.com>
-	 <4A8EFFB2.4040100@suse.de>
-	 <1250886352.2168.83.camel@dhcp231-106.rdu.redhat.com>
-	 <4A8F1081.3020803@suse.de>
-	 <1251124609.2359.25.camel@dhcp231-106.rdu.redhat.com>
-	 <1251248426.3623.47.camel@localhost.localdomain>
-	 <1251287895.2270.25.camel@dhcp231-106.rdu.redhat.com>
-	 <1251295984.3623.83.camel@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 26 Aug 2009 14:48:50 -0400
-Message-Id: <1251312530.2280.1.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	Wed, 26 Aug 2009 14:53:02 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:34439 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbZHZSxA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 14:53:00 -0400
+Message-ID: <4A958480.3070207@us.ibm.com>
+Date: Wed, 26 Aug 2009 11:52:48 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH -rt] sched: fully ignore RT tasks for CFS load-balancing
+References: <1251297875.18584.5.camel@twins>
+In-Reply-To: <1251297875.18584.5.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 22:13 +0800, ykzhao wrote:
-> On Wed, 2009-08-26 at 19:58 +0800, Eric Paris wrote:
-> > On Wed, 2009-08-26 at 09:00 +0800, ykzhao wrote:
-> > > On Mon, 2009-08-24 at 22:36 +0800, Eric Paris wrote:
-> > > > On Sat, 2009-08-22 at 01:24 +0400, Alexey Starikovskiy wrote:
-> > > > > Eric Paris пишет:
-> > 
-> > > > It does stop my slew of warnings.  Not sure it completely fixes my
-> > > > problems though....
-> > > Will you please add the boot option of initcall_debug and attach the
-> > > output of dmesg?
-> > > It will be helpful if you can attach the output of acpidump.
-> > > Thanks.
-> Hi
-> 	Will you please confirm whether this issue happens on the 2.6.31-rc6
-> kernel?
+Peter Zijlstra wrote:
+> Since -rt runs IRQs and SoftIRQs as RT tasks and load-balancing is done
+> from softirq context, there is always at least one RT task (and very
+> likely multiple) running when we balance.
+> 
+> The current (and totally broken) interaction between RT tasks and CFS
+> load-balancing makes it so that we'll try to evacuate a significant
+> amount of tasks due to RT tasks being runnable.
+> 
+> Solve this in another broken way by not accounting RT tasks at all.
+> 
+> This will likely break another class of cases, but until we can properly
+> fix this, we might as well do this.
 
-I just went back to a -rc7 kernel (but a largely different .config) and
-it did not happen.
+Peter,
 
-> 	If there is no such issue, will you please revert the following commit
-> and see whether the issue still exists?
->    >commit 74b5820808215f65b70b05a099d6d3c969b82689
+Do we know why this became a problem lately?  I don't recall seeing load 
+balancing issues like this way back around 2.6.21 or 22 when CFS was 
+released.  Is the cpu_load stuff fairly recent?
 
-I reverted
-74b5820808215f65b70b05a099d6d3c969b82689 and
-773c0ef52ae8dd375b877c51bc6e8d03fb0b59b7
+--
+Darren
 
-but still see the same problem.  I will try to build a -rc7 kernel with
-a similar config for a fair comparison.  If it works, I'll start a git
-bisect.
+> 
+> Chucked-on-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  kernel/sched_rt.c |    4 ----
+>  1 files changed, 0 insertions(+), 4 deletions(-)
+> 
+> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+> index adcbc68..385d31f 100644
+> --- a/kernel/sched_rt.c
+> +++ b/kernel/sched_rt.c
+> @@ -926,8 +926,6 @@ static void enqueue_task_rt(struct rq *rq, struct
+> task_struct *p, int wakeup)
+> 
+>  	if (!task_current(rq, p) && p->rt.nr_cpus_allowed > 1)
+>  		enqueue_pushable_task(rq, p);
+> -
+> -	inc_cpu_load(rq, p->se.load.weight);
+>  }
+> 
+>  static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int
+> sleep)
+> @@ -942,8 +940,6 @@ static void dequeue_task_rt(struct rq *rq, struct
+> task_struct *p, int sleep)
+>  	dequeue_rt_entity(rt_se);
+> 
+>  	dequeue_pushable_task(rq, p);
+> -
+> -	dec_cpu_load(rq, p->se.load.weight);
+>  }
+> 
+>  /*
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
--Eric
 
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
