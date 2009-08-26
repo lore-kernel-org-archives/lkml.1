@@ -1,43 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZHZAFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbZHZAHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbZHZAFb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbZHZAF0
+	id S1756512AbZHZAHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbZHZAHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:05:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58967 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756354AbZHZAFY convert rfc822-to-8bit (ORCPT
+	Tue, 25 Aug 2009 20:07:08 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35533 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755954AbZHZAHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:05:24 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "=?utf-8?q?Maciek=20J=C3=B3ziewicz?=" <mjoziew@gmail.com>
-References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
-In-Reply-To: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Tue, 25 Aug 2009 20:07:05 -0400
+Date: Wed, 26 Aug 2009 02:06:57 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+Message-ID: <20090826000657.GK4300@elf.ucw.cz>
+References: <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <4A947839.4010601@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <Cg6cQYLdUxG.A.XvB.X0GlKB@chimera>
-Subject: [Bug #13694] i915 phantom TV
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue, 25 Aug 2009 23:05:05 +0200 (CEST)
+In-Reply-To: <4A947839.4010601@redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.29 and 2.6.30.
+On Tue 2009-08-25 19:48:09, Ric Wheeler wrote:
+>
+>> ---
+>> There are storage devices that high highly undesirable properties
+>> when they are disconnected or suffer power failures while writes are
+>> in progress; such devices include flash devices and MD RAID 4/5/6
+>> arrays.  These devices have the property of potentially
+>> corrupting blocks being written at the time of the power failure, and
+>> worse yet, amplifying the region where blocks are corrupted such that
+>> additional sectors are also damaged during the power failure.
+>
+> I would strike the entire mention of MD devices since it is your 
+> assertion, not a proven fact. You will cause more data loss from common 
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-be listed and let me know (either way).
+That actually is a fact. That's how MD RAID 5 is designed. And btw
+those are originaly Ted's words.
 
+> events (single sector errors, complete drive failure) by steering people 
+> away from more reliable storage configurations because of a really rare 
+> edge case (power failure during split write to two raid members while 
+> doing a RAID rebuild).
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13694
-Subject		: i915 phantom TV
-Submitter	: Maciek Józiewicz <mjoziew@gmail.com>
-Date		: 2009-07-02 12:26 (55 days old)
+I'm not sure what's rare about power failures. Unlike single sector
+errors, my machine actually has a button that produces exactly that
+event. Running degraded raid5 arrays for extended periods may be
+slightly unusual configuration, but I suspect people should just do
+that for testing. (And from the discussion, people seem to think that
+degraded raid5 is equivalent to raid0).
 
+>> Otherwise, file systems placed on these devices can suffer silent data
+>> and file system corruption.  An forced use of fsck may detect metadata
+>> corruption resulting in file system corruption, but will not suffice
+>> to detect data corruption.
+>>
+>
+> This is very misleading. All storage "can" have silent data loss, you are 
+> making a statement without specifics about frequency.
 
+substitute with "can (by design)"?
+
+Now, if you can suggest useful version of that document meeting your
+criteria?
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
