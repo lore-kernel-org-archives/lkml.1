@@ -1,78 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbZHZH1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbZHZH2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757114AbZHZH1e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbZHZH1d
+	id S1757145AbZHZH2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757100AbZHZH2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:27:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45531 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756965AbZHZH1d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:27:33 -0400
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-From: Peter Zijlstra <peterz@infradead.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <4A94DFF4.5030301@cn.fujitsu.com>
-References: <20090824092455.GA25267@elte.hu>
-	 <1251106058.7538.149.camel@twins> <4A937505.5000209@cn.fujitsu.com>
-	 <1251181266.7538.1016.camel@twins> <4A9385AA.508@cn.fujitsu.com>
-	 <1251182405.7538.1050.camel@twins> <20090825090558.GC14003@elte.hu>
-	 <1251191546.7538.1118.camel@twins> <20090825102215.GC26801@elte.hu>
-	 <1251196359.7538.1133.camel@twins>  <20090825103907.GB28287@elte.hu>
-	 <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins>
-	 <4A94D3A8.1090902@cn.fujitsu.com>  <1251269207.7538.1217.camel@twins>
-	 <1251270092.7538.1226.camel@twins>  <4A94DFF4.5030301@cn.fujitsu.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 26 Aug 2009 09:26:28 +0200
-Message-Id: <1251271588.7538.1235.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 26 Aug 2009 03:28:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46066 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757090AbZHZH2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 03:28:34 -0400
+Date: Wed, 26 Aug 2009 09:28:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
+Message-ID: <20090826072808.GC23435@elte.hu>
+References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090825162004.GA25058@Krystal> <20090825165912.GI6114@nowhere> <20090825173107.GJ6114@nowhere> <20090825183119.GC2448@Krystal> <20090825194219.GA8215@nowhere> <20090825195111.GB13712@Krystal> <20090826001902.GC9953@nowhere> <20090826004248.GA5793@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826004248.GA5793@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 15:10 +0800, Li Zefan wrote:
-> Peter Zijlstra wrote:
-> > On Wed, 2009-08-26 at 08:46 +0200, Peter Zijlstra wrote:
+
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> * Frederic Weisbecker (fweisbec@gmail.com) wrote:
+> > On Tue, Aug 25, 2009 at 03:51:11PM -0400, Mathieu Desnoyers wrote:
+> > > * Frederic Weisbecker (fweisbec@gmail.com) wrote:
+> > > > On Tue, Aug 25, 2009 at 02:31:19PM -0400, Mathieu Desnoyers wrote:
+> > > > > (Well, I do not have time currently to look into the gory details
+> > > > > (sorry), but let's try to take a step back from the problem.)
+> > > > > 
+> > > > > The design proposal for this kthread behavior wrt syscalls is based on a
+> > > > > very specific and current kernel behavior, that may happen to change and
+> > > > > that I have actually seen proven incorrect. For instance, some
+> > > > > proprietary Linux driver does very odd things with system calls within
+> > > > > kernel threads, like invoking them with int 0x80.
+> > > > > 
+> > > > > Yes, this is odd, but do we really want to tie the tracer that much to
+> > > > > the actual OS implementation specificities ?
+> > > > 
+> > > > 
+> > > > I really can't see the point in doing this. I don't expect the kernel
+> > > > behaviour to change soon and have explicit syscalls interrupts done
+> > > > from it. It's not about a current kernel implementation fashion,
+> > > > it's about kernel design sanity that is not likely to go backward.
+> > > > 
+> > > > Is it worth it to trace kernel threads, maintain their tracing
+> > > > specificities (such as workarounds with ret_from_fork that implies)
+> > > > just because we want to support tracing on some silly proprietary drivers?
+> > > > 
+> > > > 
+> > > > > 
+> > > > > That sounds like a recipe for endless breakages and missing bits of
+> > > > > instrumentation.
+> > > > >
+> > > > > So my advice would be: if we want to trace the syscall entry/exit paths,
+> > > > > let's trace them for the _whole_ system, and find ways to make it work
+> > > > > for corner-cases rather than finding clever ways to diminish
+> > > > > instrumentation coverage.
+> > > > 
+> > > > 
+> > > > If developers of out of tree drivers want to implement buggy things
+> > > > that would never be accepted after a minimal review here, and then instrument
+> > > > their bugs, then I would suggest them to implement their own ad hoc instrumentation,
+> > > > really :-/
+> > > > 
+> > > > What's the point in supporting out of tree bugs?
+> > > > 
+> > > > Well, the only advantage of doing this would be to support reverse engineering
+> > > > in tiny and rare corner cases. Not that worth the effort.
+> > > > 
+> > > >  
+> > > > > Given the ret from fork example happens to be the first event fired
+> > > > > after the thread is created, we should be able to deal with this problem
+> > > > > by initializing the thread structure used by syscall exit tracing to an
+> > > > > initial "ret from fork" value.
+> > > > > 
+> > > > > Mathieu
+> > > > 
+> > > > 
+> > > > It means we have to support and check this corner case in every archs
+> > > > that support syscall tracing, deal with crashes because we omitted it, etc...
+> > > > 
+> > > > For all the things I've explained above I don't think it's worth the effort.
+> > > > 
+> > > > But it's just my opinion...
+> > > > 
+> > > 
+> > > Then we might want to explicitly require that calls to sys_*() system
+> > > calls made from within the kernel pass through another instrumentation
+> > > mechanism. IMHO, that would make sense. It would cover both system calls
+> > > made from kernel threads and system calls made from within a system call
+> > > or trap.
+> > > 
+> > > Mathieu
 > > 
-> >> Aahh, I see the bug, its only ftrace that knows about the module, not
-> >> tracepoints themselves, _that_ needs fixing.
 > > 
-> > You could possibly do something like:
+> > Well, we can't really set a tracepoint per sys_*() function. Or more
+> > precisely we already have them, automagically generated and relying on
+> > sysenter ptrace path.
 > > 
-> >  struct module *tp_mod = __module_address(&some_tp_symbol);
-> >  struct module *cb_mod = __module_text_address(func);
+> > But if we want to check which syscalls are called from kernel threads, we have:
 > > 
-> >  if (tp_mod && tp_mod != cb_mod) {
-> > 	ret = try_get_module(tp_mod);
-> > 	if (ret)
-> > 		goto fail;
-> >  }
+> > - kthread() -> do_exit()
 > > 
-> > in register_trace_##name() or thereabout.
 > > 
+> > The entry point of every kernel threads (except "kthreadd") is
+> > kthread(). It calls do_exit() in the end.
+> > 
+> > If we want to trace the exit of a kernel thread, we can put
+> > a tracepoint there instead of do_exit() which results would
+> > be intermixed with sys_exit() tracing.
+> > 
+> > 
+> > - kthreadd :: create_kthread() -> kernel_thread() -> do_fork()
+> > 
+> > 
+> > A creation of a thread is the result of the kthreadd thread fork().
+> > If we want to trace the creation of kernel threads, we can again do that
+> > in the upper level: kernel_thread().
+> > 
+> > But does that inform us about who created the thread? All we would see
+> > is kthreadd that forks. This is a very poor information compared
+> > to a userspace fork() that tells us who really created the new process.
+> > 
+> > Instead what we want is probably to trace kthread_create() which inserts the
+> > job of a thread creation in the kthreadd thread, so that we know
+> > _who_ asked for this thread creation (process that requested it and callsite).
+> > And that's much more rich in information.
+> > 
+> > Well, you can even climb in an upper layer and look if this is a workqueue,
+> > a kernel/async.c thread, a slow work, etc...
+> > 
+> > 
+> > - kernel_execve() -> sys_execve()
+> > 
+> > We can execute user apps from kernel through call_usermodehelper().
+> > And we can trace kernel_execve() or again in an upper layer
+> > like call_usermodehelper()
+> > 
+> > - ... I guess there are other examples
+> > 
+> > The kernel calls syscalls through wrappers, and tracing these 
+> > wrappers, depending of the desired level of informations we want 
+> > (choose your layer), are much more verbose / rich in 
+> > informations.
 > 
-> Actually I tried it, but it didn't work. As I said, You can't find
-> any tp symbol when registering tp callback. The same example again:
-> 
-> 	In module bar, we have register_trace_foo()
-> 	In module foo, we have DEFINE_TRACE(foo) and trace_foo().
-> 
-> bar doesn't know any symbol of foo, so it can't bump foo's refcnt,
+> What you describe looks a lot like the approach I use in the LTTng 
+> tree. Actually, the main point I am trying to make here is: if we 
+> rely only on tracing at the syscall entry/exit level for, say, 
+> monitoring all uses of e.g. sys_open(), we might be caught 
+> offguard by internal sys_open() uses within the kernel.
 
-Well, clearly it knows about register_trace_foo() which itself knows at
-least one symbol that should be in module foo, right? How else could it
-register a callback in that module (if it were loaded)?
+There's a lot of 'internal' file opening going on within the kernel 
+that ptrace does not notice - see all the filp_open() calls.
 
-It appears to use some intermediate code, in which case the intermediate
-code knows about foo, which too solves our problem.
+Lets worry about this only if it's a true issue.
 
-> *Note: you can load module bar without loading module foo*
-
-In which case the tracepoint registration fails, right?
+	Ingo
