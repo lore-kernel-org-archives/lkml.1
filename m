@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbZHZEVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZHZEYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751833AbZHZEVy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 00:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZHZEVy
+	id S1752087AbZHZEYG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 00:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbZHZEYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 00:21:54 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:52191 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbZHZEVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 00:21:52 -0400
-Message-ID: <4A94B82A.30905@redhat.com>
-Date: Wed, 26 Aug 2009 00:20:58 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Wed, 26 Aug 2009 00:24:06 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:60495 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbZHZEYE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 00:24:04 -0400
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: david@lang.hm, Theodore Tso <tytso@mit.edu>,
-       Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-References: <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz>
-In-Reply-To: <20090825224004.GD4300@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Originating-IP: [67.185.128.239]
+In-Reply-To: <0F5F73E36031FD46AD3F2E6948F0C0A00188E074@frimb01.corp.atmel.com>
+References: <9f53b4330908251727q1bc1accfk12a9a8d25407791@mail.gmail.com>
+	 <0F5F73E36031FD46AD3F2E6948F0C0A00188E074@frimb01.corp.atmel.com>
+Date: Tue, 25 Aug 2009 21:24:05 -0700
+Message-ID: <9f53b4330908252124n168bd094k84f2691ec1a0a0ea@mail.gmail.com>
+Subject: Re: ARM Git Tree (at91sam9g45 patches)
+From: Robert Emanuele <rob@emanuele.us>
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+Thank you for pointing me towards those patches.  I've been looking at
+those.  Some of the work I have is with the 2.6.29 and 2.6.30 kernel
+versions.  I was wondering if there were any trees or patchsets
+against those versions.
 
-> Lets say you are writing to the (healthy) RAID5 and have a powerfail.
-> 
-> So now data blocks do not correspond to the parity block. You don't
-> yet have the corruption, but you already have a problem.
-> 
-> If you get a disk failing at this point, you'll get corruption.
+Thanks,
 
-Not necessarily.  Say you wrote out the entire stripe
-in a 5 disk RAID 5 array, but only 3 data blocks and
-the parity block got written out before power failure.
+Rob
 
-If the disk with the 4th (unwritten) data block were
-to fail and get taken out of the RAID 5 array, the
-degradation of the array could actually undo your data
-corruption.
-
-With RAID 5 and incomplete writes, you just don't know.
-
-This kind of thing could go wrong at any level in the
-system, with any kind of RAID 5 setup.
-
-Of course, on a single disk system without RAID you can
-still get incomplete writes, for the exact same reasons.
-
-RAID 5 does not make things worse.  It will protect your
-data against certain failure modes, but not against others.
-
-With or without RAID, you still need to make backups.
-
--- 
-All rights reversed.
+On Tue, Aug 25, 2009 at 6:15 PM, Xu, Hong<Hong.Xu@atmel.com> wrote:
+> Hi Robert,
+> Actually Atmel has made experimental patch to support at91sam9g45-ekes board and will push the changes to the upstream tree in the near future. I suggest you have a look at
+>  http://www.linux4sam.org/twiki/bin/view/Linux4SAM/LinuxKernel#Linux4SAM_Experimental_Patches
+>
+> BR,
+> Hong Xu
+>> -----Original Message-----
+>> From: linux-arm-kernel-bounces@lists.infradead.org
+>> [mailto:linux-arm-kernel-bounces@lists.infradead.org] On Behalf Of Robert
+>> Emanuele
+>> Sent: 2009?8?26? 8:27
+>> To: linux-arm-kernel@lists.infradead.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Subject: ARM Git Tree (at91sam9g45 patches)
+>>
+>> Greetings,
+>>
+>> I'm working with the Atmel at91sam9g45-ekes board which is new.  I was
+>> wondering if there was a git tree with the current ARM patches that
+>> contains the at91sam9g45 code?  Russell lists "Applied" patches at
+>> http://www.arm.linux.org.uk/developer/patches/ .  Where are these
+>> applied to?  If there isn't a tree, is there an elegant way to get the
+>> latest patch sets that I could apply to Linus's tree?
+>>
+>> Thank you,
+>>
+>> Rob
+>>
+>> _______________________________________________
+>> linux-arm-kernel mailing list
+>> linux-arm-kernel@lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>
