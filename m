@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbZHZBYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932784AbZHZB0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932803AbZHZBYr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 21:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932727AbZHZBYr
+	id S932784AbZHZB0O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 21:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932497AbZHZB0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 21:24:47 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:47976 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932084AbZHZBYq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 21:24:46 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 25 Aug 2009 18:24:47 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Will Brown <dr.hfuhruhurr@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: Epoll frequently fails to notify connects at connect
- bursts
-In-Reply-To: <alpine.DEB.2.00.0908251812450.18518@makko.or.mcafeemobile.com>
-Message-ID: <alpine.DEB.2.00.0908251823470.18518@makko.or.mcafeemobile.com>
-References: <8a1bd2320908251748u324ae5e6g7015069180253db3@mail.gmail.com> <alpine.DEB.2.00.0908251812450.18518@makko.or.mcafeemobile.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 25 Aug 2009 21:26:13 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38695 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932477AbZHZB0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 21:26:13 -0400
+From: "NeilBrown" <neilb@suse.de>
+To: "Ric Wheeler" <rwheeler@redhat.com>
+Date: Wed, 26 Aug 2009 11:24:05 +1000 (EST)
+Message-ID: <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name>
+In-Reply-To: <4A948A82.4080901@redhat.com>
+References: <004e01ca25e4$c11a54e0$434efea0$@ca>
+    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>
+    <4A948A82.4080901@redhat.com>
+Subject: Re: MD/RAID: what's wrong with sector 1953519935?
+Cc: "Andrei Tanas" <andrei@tanas.ca>, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009, Davide Libenzi wrote:
+On Wed, August 26, 2009 11:06 am, Ric Wheeler wrote:
+> On 08/25/2009 08:50 PM, NeilBrown wrote:
 
-> On Wed, 26 Aug 2009, Will Brown wrote:
-> 
-> > PLEASE CC: ME ON ANY REPLIES, thank you.
-> > 
-> > *** 1. Epoll frequently fails to notify connects at connect bursts
-> > 
-> > *** 2. Sometimes, when several connects come in quickly, epoll
-> > establishes tcp connections (according to 'netstat') but then fails to
-> > notify the application by returning from epoll_wait(). In those cases
-> > a subsequent connection or an EPOLLIN or EPOLLOUT event can cause a
-> > return from epoll_wait(), which then causes the previously ignored
-> > connection to be reported. But then the more recent event is not
-> > notified, the whole sequence lags and everything gets out of whack.
-> > The problems can easily be reproduced on my Ubuntu machine which runs
-> > a kernel version 2.6.28 using supplied test program. I also have a
-> > Ubuntu hosted in VMWare running a 2.6.27 version kernel, which appears
-> > to NOT have the same problem.
-> 
-> Multiple quasi-simultaneous events for the same fd are merged. This is why 
-> on POLLIN on accepting sockets you want to do something like:
-> 
-> 	while ((afd = accept(sfd, ...)) != -1)
-> 		add_client(afd);
+>> All 1TB drives are exactly the same size.
+>> If you create a single partition (e.g. sdb1) on such a device, and that
+>> partition starts at sector 63 (which is common), and create an md
+>> array using that partition, then the superblock will always be at the
+>> address you quote.
+>> The superblock is probably updated more often than any other block in
+>> the array, so there is probably an increased likelyhood of an error
+>> being reported against that sector.
+>>
+>> So it is not just a coincidence.
+>> Whether there is some deeper underlying problem though, I cannot say.
+>> Google only claims 68 matches for that number which doesn't seem
+>> big enough to be significant.
+>>
+>> NeilBrown
+>>
+>>
+>
+> Neil,
+>
+> One thing that can happen is when we have a hot spot (like the super
+> block) on high capacity drives is that the frequent write degrade the
+> data in adjacent tracks.  Some drives have firmware that watches for
+> this and rewrites adjacent tracks, but it is also a good idea to avoid
+> too frequent updates.
 
-Of course, with  sfd  in non-blocking mode. Alternatively, you drop EPOLLET 
-for the  sfd  socket.
+Yet another detail to worry about.... :-(
 
+>
+> Didn't you have a tunable to decrease this update frequency?
 
-- Davide
+/sys/block/mdX/md/safe_mode_delay
+is a time in seconds (Default 0.200) between when the last write to
+the array completes and when the superblock is marked as clean.
+Depending on the actual rate of writes to the array, the superblock
+can be updated as much as twice in this time (once to mark dirty,
+once to mark clean).
 
+Increasing the number can decrease the update frequency of the superblock,
+but the exact effect on update frequency is very load-dependant.
+
+Obviously a write-intent-bitmap, which is rarely more that a few
+sectors, can also see lots of updates, and it is harder to tune
+that (you have to set things up when you create the bitmap).
+
+NeilBrown
 
