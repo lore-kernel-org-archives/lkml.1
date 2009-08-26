@@ -1,57 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZHZKQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbZHZKRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbZHZKQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 06:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756881AbZHZKQj
+	id S1757029AbZHZKRh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 06:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbZHZKRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 06:16:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:6042 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756847AbZHZKQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 06:16:37 -0400
-Message-ID: <4A950B75.5020409@redhat.com>
-Date: Wed, 26 Aug 2009 13:16:21 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Wed, 26 Aug 2009 06:17:36 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38260 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756619AbZHZKRg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 06:17:36 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [PATCH mmotm] mm: introduce page_lru_base_type fix
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>,
+       Minchan Kim <minchan.kim@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0908261050080.18633@sister.anvils>
+References: <Pine.LNX.4.64.0908261050080.18633@sister.anvils>
+Message-Id: <20090826190233.3977.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: alacrityvm-devel@lists.sourceforge.net,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org
-Subject: Re: AlacrityVM benchmark numbers updated
-References: <4A948962.7090909@gmail.com>
-In-Reply-To: <4A948962.7090909@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 26 Aug 2009 19:17:35 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/26/2009 04:01 AM, Gregory Haskins wrote:
-> We are pleased to announce the availability of the latest networking
-> benchmark numbers for AlacrityVM.  We've made several tweaks to the
-> original v0.1 release to improve performance.  The most notable is a
-> switch from get_user_pages to switch_mm+copy_[to/from]_user thanks to a
-> review suggestion from Michael Tsirkin (as well as his patch to
-> implement it).
->
-> This change alone accounted for freeing up an additional 1.2Gbps, which
-> is over 25% improvement from v0.1.  The previous numbers were 4560Gbps
-> before the change, and 5708Gbps after (for 1500mtu over 10GE).  This
-> moves us ever closer to the goal of native performance under virtualization.
->    
+> My usual tmpfs swapping loads on recent mmotms have oddly
+> aroused the OOM killer after an hour or two.  Bisection led to
+> mm-return-boolean-from-page_is_file_cache.patch, but really it's
+> the prior mm-introduce-page_lru_base_type.patch that's at fault.
+> 
+> It converted page_lru() to use page_lru_base_type(), but forgot
+> to convert del_page_from_lru() - which then decremented the wrong
+> stats once page_is_file_cache() was changed to a boolean.
+> 
+> Fix that, move page_lru_base_type() before del_page_from_lru(),
+> and mark it "inline" like the other mm_inline.h functions.
+> 
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-Interesting, it's good to see that copy_*_user() works so well.  Note 
-that there's a possible optimization that goes in the opposite direction 
-- keep using get_user_pages(), but use the dma engine API to perform the 
-actual copy.  I expect that it will only be a win when using tso to 
-transfer full pages.  Large pages may also help.
+I'm sorry vmscan related patch bother you.
+this is definitely right fix, thak you.
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Copyless tx also wants get_user_pages().  It makes sense to check if 
-switch_mm() + get_user_pages_fast() gives better performance than 
-get_user_pages().
 
--- 
-error compiling committee.c: too many arguments to function
+> ---
+> 
+>  include/linux/mm_inline.h |   34 +++++++++++++++++-----------------
+>  1 file changed, 17 insertions(+), 17 deletions(-)
+> 
+> --- mmotm/include/linux/mm_inline.h	2009-08-21 12:12:42.000000000 +0100
+> +++ linux/include/linux/mm_inline.h	2009-08-26 00:39:38.000000000 +0100
+> @@ -35,42 +35,42 @@ del_page_from_lru_list(struct zone *zone
+>  	mem_cgroup_del_lru_list(page, l);
+>  }
+>  
+> +/**
+> + * page_lru_base_type - which LRU list type should a page be on?
+> + * @page: the page to test
+> + *
+> + * Used for LRU list index arithmetic.
+> + *
+> + * Returns the base LRU type - file or anon - @page should be on.
+> + */
+> +static inline enum lru_list page_lru_base_type(struct page *page)
+> +{
+> +	if (page_is_file_cache(page))
+> +		return LRU_INACTIVE_FILE;
+> +	return LRU_INACTIVE_ANON;
+> +}
+> +
+>  static inline void
+>  del_page_from_lru(struct zone *zone, struct page *page)
+>  {
+> -	enum lru_list l = LRU_BASE;
+> +	enum lru_list l;
+>  
+>  	list_del(&page->lru);
+>  	if (PageUnevictable(page)) {
+>  		__ClearPageUnevictable(page);
+>  		l = LRU_UNEVICTABLE;
+>  	} else {
+> +		l = page_lru_base_type(page);
+>  		if (PageActive(page)) {
+>  			__ClearPageActive(page);
+>  			l += LRU_ACTIVE;
+>  		}
+> -		l += page_is_file_cache(page);
+>  	}
+>  	__dec_zone_state(zone, NR_LRU_BASE + l);
+>  	mem_cgroup_del_lru_list(page, l);
+>  }
+>  
+>  /**
+> - * page_lru_base_type - which LRU list type should a page be on?
+> - * @page: the page to test
+> - *
+> - * Used for LRU list index arithmetic.
+> - *
+> - * Returns the base LRU type - file or anon - @page should be on.
+> - */
+> -static enum lru_list page_lru_base_type(struct page *page)
+> -{
+> -	if (page_is_file_cache(page))
+> -		return LRU_INACTIVE_FILE;
+> -	return LRU_INACTIVE_ANON;
+> -}
+> -
+> -/**
+>   * page_lru - which LRU list should a page be on?
+>   * @page: the page to test
+>   *
+
+
 
