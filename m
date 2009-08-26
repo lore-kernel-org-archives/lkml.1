@@ -1,110 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751198AbZHZOpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751208AbZHZOpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751198AbZHZOpT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZHZOpS
+	id S1751208AbZHZOpp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbZHZOpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:45:18 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:36894 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbZHZOpP (ORCPT
+	Wed, 26 Aug 2009 10:45:43 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48379 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbZHZOpm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:45:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=VgBUuNaLhTkrzXvY0PUs70ZpsW5Snx0Zt/tn2NfT0JVybfR+e0pF0CHaPyMksw7h7c
-         N5fc+qkgAXvk+B+/DX3zol5EzxalD1YQcxmGiH76hio5s0CHq9+xQpUqYcelSg0h2p3I
-         KHlXUSMyLnusTAdzKquXA1H8Ycs49cu8hH3eM=
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: raz ben yehuda <raziebe@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
-       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
-       riel@redhat.com, mingo@elte.hu,
-       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
-       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
-References: <1250983671.5688.21.camel@raz>
-	 <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>
-	 <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>
-	 <1251021133.14003.172.camel@marge.simson.net>
-	 <alpine.DEB.1.10.0908251122020.26329@gentwo.org>
-	 <1251222993.7023.53.camel@marge.simson.net>
-	 <alpine.DEB.1.10.0908251402300.17963@gentwo.org>
-	 <1251227322.7538.1172.camel@twins>  <4A943A00.9080609@nortel.com>
-	 <1251264700.7538.1178.camel@twins> <1251282598.3514.20.camel@raz>
-	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
+	Wed, 26 Aug 2009 10:45:42 -0400
+Subject: [RFC][PATCH -rt] sched: fully ignore RT tasks for CFS
+ load-balancing
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 26 Aug 2009 17:45:10 +0300
-Message-Id: <1251297910.1791.22.camel@maxim-laptop>
+Content-Transfer-Encoding: 7bit
+Date: Wed, 26 Aug 2009 16:44:35 +0200
+Message-Id: <1251297875.18584.5.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 09:47 -0400, Christoph Lameter wrote:
-> On Wed, 26 Aug 2009, raz ben yehuda wrote:
-> 
-> > How will the kernel is going to handle 32 processors machines ?  These
-> > numbers are no longer a science-fiction.
-> 
-> The kernel is already running on 4096 processor machines. Dont worry about
-> that.
-> 
-> > What i am suggesting is merely a different approach of how to handle
-> > multiple core systems. instead of thinking in processes, threads and so
-> > on i am thinking in services. Why not take  a processor and define this
-> > processor to do just firewalling ? encryption ? routing ? transmission ?
-> > video processing... and so on...
-> 
-> I think that is a valuable avenue to explore. What we do so far is
-> treating each processor equally. Dedicating a processor has benefits in
-> terms of cache hotness and limits OS noise.
-> 
-> Most of the large processor configurations already partition the system
-> using cpusets in order to limit the disturbance by OS processing. A set of
-> cpus is used for OS activities and system daemons are put into that set.
-> But what can be done is limited because the OS threads as well as
-> interrupt and timer processing etc cannot currently be moved. The ideas
-> that you are proposing are particularly usedful for applications that
-> require low latencies and cannot tolerate OS noise easily (Infiniband MPI
-> base jobs f.e.)
+Since -rt runs IRQs and SoftIRQs as RT tasks and load-balancing is done
+from softirq context, there is always at least one RT task (and very
+likely multiple) running when we balance.
 
-My 0.2 cents:
+The current (and totally broken) interaction between RT tasks and CFS
+load-balancing makes it so that we'll try to evacuate a significant
+amount of tasks due to RT tasks being runnable.
 
-I have always been fascinated by the idea of controlling another cpu
-from the main CPU.
+Solve this in another broken way by not accounting RT tasks at all.
 
-Usually these cpus are custom, run proprietary software, and have no
-datasheet on their I/O interfaces.
+This will likely break another class of cases, but until we can properly
+fix this, we might as well do this.
 
-But, being able to turn an ordinary CPU into something like that seems
-to be very nice.
+Chucked-on-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched_rt.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-For example, It might help with profiling. Think about a program that
-can run uninterrupted how much it wants.
-
-I might even be better, if the dedicated CPU would use a predefined
-reserved memory range (I wish there was a way to actually lock it to
-that range)
-
-On the other hand, I could see this as a jump platform for more
-proprietary code, something like that: we use linux in out server
-platform, but out "insert buzzword here" network stack pro+ can handle
-100% more load that linux does, and it runs on a dedicated core....
-
-In the other words, we might see 'firmwares' that take an entire cpu for
-their usage.
-
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index adcbc68..385d31f 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -926,8 +926,6 @@ static void enqueue_task_rt(struct rq *rq, struct
+task_struct *p, int wakeup)
+ 
+ 	if (!task_current(rq, p) && p->rt.nr_cpus_allowed > 1)
+ 		enqueue_pushable_task(rq, p);
+-
+-	inc_cpu_load(rq, p->se.load.weight);
+ }
+ 
+ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int
+sleep)
+@@ -942,8 +940,6 @@ static void dequeue_task_rt(struct rq *rq, struct
+task_struct *p, int sleep)
+ 	dequeue_rt_entity(rt_se);
+ 
+ 	dequeue_pushable_task(rq, p);
+-
+-	dec_cpu_load(rq, p->se.load.weight);
+ }
+ 
+ /*
 
