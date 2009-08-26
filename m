@@ -1,59 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZHZNwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbZHZNwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbZHZNwD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbZHZNwD
+	id S933012AbZHZNwc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbZHZNwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:52:03 -0400
-Received: from mail-px0-f174.google.com ([209.85.216.174]:45643 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756078AbZHZNwC (ORCPT
+	Wed, 26 Aug 2009 09:52:32 -0400
+Received: from tomts27.bellnexxia.net ([209.226.175.101]:39021 "EHLO
+	tomts27-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757354AbZHZNwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:52:02 -0400
-X-Greylist: delayed 460 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 09:52:02 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=riyaAi3fscOdNe106aQI9aM5irs/YfRqD3Q4NNWHFfRWw4UuwGo9xW6Ww5oGG5e8Tt
-         kypcpicC//XxUNBftbMSLoi8+r8Ktiu9sl4gF383CKhcEx4e7+Lp5zzOKDS4uiQvI9HZ
-         JW2bkF+sPTGxuCUgbzg4onPFl1CK8qJQk66Fw=
+	Wed, 26 Aug 2009 09:52:31 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhN/AODalErR4q/5/2dsb2JhbACMGoQPvWYgGYplhAUFiBw
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [200.65.129.2]
+From: <clin7393@bellnet.ca>
+Reply-To: unitednations.funds@live.com
+To: <contact@decado.net>
+Subject: United Nations
+Date: Wed, 26 Aug 2009 9:52:18 -0400
 MIME-Version: 1.0
-Date: Wed, 26 Aug 2009 19:14:23 +0530
-Message-ID: <e42309110908260644y65d87fc2q54405ef95be0caaf@mail.gmail.com>
-Subject: sk_stream_wait_memory: Query
-From: Ravish Tayal <ravish.tayal@gmail.com>
-To: linux-arm@vger.kernel.org,
-       Kernel development list <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090826135232.FMVT273.tomts27-srv.bellnexxia.net@toip35-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+United Nations has awarded a prize donation of 950,500.00USD Email.Provide your information to Dr Extrada E:mail: u_cashgrant1@yahoo.com.hk
+Tel:44:7011148748
+Sincerely,
+Mrs. Ban Ki-moon
 
-In " tcp_sendmsg" function in 2 situation, tcp code attempts to jump
-to "wait_for_memory:
-" case when
-1. it fails to allocate to the new skb  [sk_stream_alloc_pskb failure]
-2. it fails to allocate new cache page.
-
-and invokes the sk_stream_wait_memory function.
-
-inside which it invokes the
-  sk_wait_event(sk, &current_timeo, sk_stream_memory_free(sk) &&
-vm_wait);
-
-in case if sk_stream_wait_memory is invoked due to skb allocation
-failure, it would busy loop and would not relinquish the control.
-[For non-preemptive kernel]
-
-Is it fair expectation, or even this case it should let it current
-task get scheduled and re try after timer expiry.
-
-regards
-Ravish Tayal
-
-
-in the case if linux kernel is configured as non-premeptive
