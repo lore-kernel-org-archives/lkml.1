@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbZHZTlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZHZTlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbZHZTlF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 15:41:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbZHZTlE
+	id S1752961AbZHZTlk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 15:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZHZTlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 15:41:04 -0400
-Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:55481 "EHLO
-	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751308AbZHZTlD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 15:41:03 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] ACPI processor: force throttling state when BIOS returns incorrect value
-Date: Wed, 26 Aug 2009 21:41:02 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, lenb@intel.com,
-       rui.zhang@intel.com
-References: <200908171443.35622.elendil@planet.nl> <20090826121619.2bc7e72b.akpm@linux-foundation.org>
-In-Reply-To: <20090826121619.2bc7e72b.akpm@linux-foundation.org>
+	Wed, 26 Aug 2009 15:41:39 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8696 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751169AbZHZTlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 15:41:39 -0400
+Message-ID: <4A95900D.9090201@redhat.com>
+Date: Wed, 26 Aug 2009 22:42:05 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, gleb@redhat.com,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+References: <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com> <20090824214900.GA9899@redhat.com> <alpine.DEB.2.00.0908241508440.7951@makko.or.mcafeemobile.com> <20090825072229.GA10608@redhat.com> <alpine.DEB.2.00.0908251456230.18518@makko.or.mcafeemobile.com> <20090826102908.GA21523@redhat.com> <alpine.DEB.2.00.0908261040100.7780@makko.or.mcafeemobile.com> <4A9585EC.2030505@redhat.com> <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908262141.04546.elendil@planet.nl>
-X-OriginalArrivalTime: 26 Aug 2009 19:41:05.0232 (UTC) FILETIME=[26864500:01CA2685]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for picking up the patch Andrew.
-
-On Wednesday 26 August 2009, Andrew Morton wrote:
-> On Mon, 17 Aug 2009 14:43:34 +0200 Frans Pop <elendil@planet.nl> wrote:
-> > --- a/drivers/acpi/processor_throttling.c
-> > +++ b/drivers/acpi/processor_throttling.c
-> > @@ -62,7 +62,8 @@ struct throttling_tstate {
-> >  #define THROTTLING_POSTCHANGE      (2)
-> >
-> >  static int acpi_processor_get_throttling(struct acpi_processor *pr);
-> > -int acpi_processor_set_throttling(struct acpi_processor *pr, int state);
-> > +int acpi_processor_set_throttling(struct acpi_processor *pr, 
-> > +						int state, bool force);
+On 08/26/2009 10:13 PM, Davide Libenzi wrote:
+> Ok, so why not using the eventfd counter as state?
+> On the device side:
 >
-> WARNING: externs should be avoided in .c files
-> #74: FILE: drivers/acpi/processor_throttling.c:65:
-> +int acpi_processor_set_throttling(struct acpi_processor *pr,
+> void write_state(int sfd, int state) {
+> 	u64 cnt;
 >
-> checkpatch speaketh truth - there's already a declaration in
-> acpi/processor.h anyway.
+> 	/* Clear the current state, sfd is in non-blocking mode */
+> 	read(sfd,&cnt, sizeof(cnt));
+> 	/* Writes new state */
+> 	cnt = 1 + !!state;
+> 	write(sfd,&cnt, sizeof(cnt));
+> }
 >
-> I'll leave it alone though.  Cleaning up acpi code isn't on the agenda
-> for today.
+>
+> On the hypervisor side:
+>
+> int read_state(int sfd) {
+> 	u64 cnt;
+>
+> 	read(sfd,&cnt, sizeof(cnt));
+> 	return state - 1;
+> }
+>
+>    
 
-Yeah, but it wasn't an error introduced by my patch, so I chose to
-ignore it in order to keep my change straightforward.
-The whole file gives:
-   total: 6 errors, 15 warnings, 1326 lines checked
+Hadn't though of read+write as set.  While the 1+ is a little ugly, it's 
+workable.
 
-I really did not want to get into that, although this is the only
-error of that type. You also have to allow for my limited C skills :-/
+I see no kernel equivalent to read(), but that's easily done.
 
-> Please integrate checkpatch into your patch preparation tools.  It
-> finds stuff.
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-I do run checkpatch frequently, but I don't yet have enough volume
-that I have my own a toolset for preparing patches. I do have a
-nice one for building kernels though, so who knows :-)
-
-Cheers,
-FJP
