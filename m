@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbZHZVdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbZHZVeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbZHZVdF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 17:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbZHZVdE
+	id S1753911AbZHZVeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 17:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbZHZVeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 17:33:04 -0400
-Received: from mail-px0-f174.google.com ([209.85.216.174]:55570 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753743AbZHZVdC (ORCPT
+	Wed, 26 Aug 2009 17:34:18 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:51026 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753482AbZHZVeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 17:33:02 -0400
-X-Greylist: delayed 389 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 17:33:01 EDT
+	Wed, 26 Aug 2009 17:34:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type:content-transfer-encoding;
-        b=upBLTjamxIKXvo8SM5CrXXsBpxMvKu/4KYKfKsXFgyDgb+jt5cRqtADZJyQ07W3ZX2
-         o2jyDC2QDduK65XQ73+2Bu9PEd3qm6R+XkPC9EudW4V3SJKLaHbqsSj5RTQH24UONPV6
-         Zh+jojhn5mTwYlramlgP7r2oJYkT1MgpvEHYg=
-MIME-Version: 1.0
-Date: Wed, 26 Aug 2009 23:26:33 +0200
-X-Google-Sender-Auth: f1efd97ce07deef6
-Message-ID: <10f740e80908261426w4c37f960ma9ff1206a65618d4@mail.gmail.com>
-Subject: [git pull] m68k updates for 2.6.31 (was: Re: [git pull] m68knommu 
-	arch fixes)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=oRCoo8QFQD6fZ+fhXic/F6O6gTrAput4qbnQxirG8hvH/VRNXviCH11EZCImIV4RzL
+         HTAFb/yUT/tiMgdbOZvYdjXtnZhmfjlmMiYevJi8D03ipDSGppal3D4wvErES6hURPIM
+         o6iikAKq7nWss+8oBK/5dv2uq6/p1k29dZgdA=
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+From: raz ben yehuda <raziebe@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, cfriesen@nortel.com,
+       efault@gmx.de, riel@redhat.com, wiseman@macs.biu.ac.il,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <20090826135041.e6169d18.akpm@linux-foundation.org>
+References: <1251282598.3514.20.camel@raz>
+	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
+	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>
+	 <1251300625.18584.18.camel@twins>
+	 <alpine.DEB.1.10.0908261136590.9933@gentwo.org>
+	 <1251302598.18584.31.camel@twins>
+	 <alpine.DEB.1.10.0908261211340.9933@gentwo.org>
+	 <20090826180407.GA13632@elte.hu>
+	 <alpine.DEB.1.10.0908261509580.9933@gentwo.org>
+	 <20090826193252.GA14721@elte.hu>
+	 <alpine.DEB.1.10.0908261627110.5554@gentwo.org>
+	 <20090826135041.e6169d18.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 27 Aug 2009 00:34:13 +0300
+Message-Id: <1251322453.3882.44.camel@raz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-On Fri, Jun 12, 2009 at 08:22, Geert Uytterhoeven<geert@linux-m68k.org> wrote:
-> Probably I won't have time to handle and submit any m68k patches
-> during this merge window,
-> so if anyone needs anything to be in 2.6.31, it would be nice if
-> somebody else could take care of
-> it.
+On Wed, 2009-08-26 at 13:50 -0700, Andrew Morton wrote:
+> On Wed, 26 Aug 2009 16:40:09 -0400 (EDT)
+> Christoph Lameter <cl@linux-foundation.org> wrote:
+> 
+> > Peter has not given a solution to the problem. Nor have you.
+> 
+> What problem?
+> 
+> All I've seen is "I want 100% access to a CPU".  That's not a problem
+> statement - it's an implementation.
+> 
+> What is the problem statement?
+> 
+> 
+> My take on these patches: the kernel gives userspace unmediated access
+> to memory resources if it wants that.  The kernel gives userspace
+> unmediated access to IO devices if it wants that.  But for some reason
+> people freak out at the thought of providing unmediated access to CPU
+> resources.
+> 
+> Don't get all religious about this.  If the change is clean,
+> maintainable and useful then there's no reason to not merge it.
+thank you Mr Morton. thank you !!!
 
-Here is the most critical stuff. Thanks for pulling!
 
-The following changes since commit f415c413f458837bd0c27086b79aca889f9435e4:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/net-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/geert/linux-m68k.git#for-linus
-
-Alexey Dobriyan (1):
-      m68k: Fix redefinition of pgprot_noncached
-
-Andrew Morton (1):
-      arch/m68k/include/asm/motorola_pgalloc.h: fix kunmap arg
-
-Geert Uytterhoeven (1):
-      m68k,m68knommu: Wire up rt_tgsigqueueinfo and perf_counter_open
-
-Roel Kluin (2):
-      m68k: count can reach 51, not 50
-      m68k: cnt reaches -1, not 0
-
- arch/m68k/amiga/config.c                 |    6 ++++--
- arch/m68k/include/asm/motorola_pgalloc.h |   10 ++++------
- arch/m68k/include/asm/pgtable_mm.h       |    3 +--
- arch/m68k/include/asm/unistd.h           |    4 +++-
- arch/m68k/kernel/entry.S                 |    2 ++
- arch/m68knommu/kernel/syscalltable.S     |    2 ++
- drivers/macintosh/via-maciisi.c          |    2 +-
- 7 files changed, 17 insertions(+), 12 deletions(-)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
