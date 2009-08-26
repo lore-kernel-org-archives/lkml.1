@@ -1,113 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbZHZQVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751950AbZHZQVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751898AbZHZQVc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 12:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZHZQVb
+	id S1751950AbZHZQVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 12:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZHZQVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 12:21:31 -0400
-Received: from smtp4.ultrahosting.com ([74.213.175.253]:36017 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751763AbZHZQVb (ORCPT
+	Wed, 26 Aug 2009 12:21:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34432 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbZHZQVi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 12:21:31 -0400
-Date: Wed, 26 Aug 2009 12:20:45 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Peter Zijlstra <peterz@infradead.org>
-cc: raz ben yehuda <raziebe@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
-       riel@redhat.com, mingo@elte.hu,
-       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
-       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-In-Reply-To: <1251302598.18584.31.camel@twins>
-Message-ID: <alpine.DEB.1.10.0908261211340.9933@gentwo.org>
-References: <1250983671.5688.21.camel@raz>  <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>  <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>  <1251021133.14003.172.camel@marge.simson.net> 
- <alpine.DEB.1.10.0908251122020.26329@gentwo.org>  <1251222993.7023.53.camel@marge.simson.net>  <alpine.DEB.1.10.0908251402300.17963@gentwo.org>  <1251227322.7538.1172.camel@twins>  <4A943A00.9080609@nortel.com>  <1251264700.7538.1178.camel@twins>
- <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop>  <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org>
- <1251302598.18584.31.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 26 Aug 2009 12:21:38 -0400
+Date: Wed, 26 Aug 2009 12:21:36 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jason Baron <jbaron@redhat.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com, jistone@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com
+Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
+In-Reply-To: <20090826160910.GB2658@redhat.com>
+Message-ID: <alpine.DEB.2.00.0908261220490.24316@gandalf.stny.rr.com>
+References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere> <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com> <20090825134005.GB2656@redhat.com>
+ <20090825184734.GE2656@redhat.com> <alpine.DEB.2.00.0908252223310.28127@gandalf.stny.rr.com> <20090826135854.GA2658@redhat.com> <alpine.DEB.2.00.0908261038250.23885@gandalf.stny.rr.com> <20090826160910.GB2658@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Peter Zijlstra wrote:
 
-> On Wed, 2009-08-26 at 11:41 -0400, Christoph Lameter wrote:
-> > On Wed, 26 Aug 2009, Peter Zijlstra wrote:
-> >
-> > > Why waste a whole cpu for something that could be done by part of one?
-> >
-> > Because of latency and performance requirements
->
-> Latency is the only one, and yes people have been using hacks like this,
-> I've also earlier mentioned RTAI, RTLinux and L4-Linux which basically
-> do the same thing.
->
-> The problem is, that its not linux, you cannot run something on a these
-> off-cores and use the same functionality as linux, if you could it'd not
-> be offline.
+On Wed, 26 Aug 2009, Jason Baron wrote:
 
-Right. We discussed this. Why are you repeating the same old arguments?
+> On Wed, Aug 26, 2009 at 10:39:26AM -0400, Steven Rostedt wrote:
+> > On Wed, 26 Aug 2009, Jason Baron wrote:
+> > > > > diff --git a/Kbuild b/Kbuild
+> > > > > index f056b4f..5f43d4d 100644
+> > > > > --- a/Kbuild
+> > > > > +++ b/Kbuild
+> > > > > @@ -78,7 +78,7 @@ endef
+> > > > >  arch/$(SRCARCH)/kernel/asm-offsets.s: arch/$(SRCARCH)/kernel/asm-offsets.c \
+> > > > >                                        $(obj)/$(bounds-file) FORCE
+> > > > >  	$(Q)mkdir -p $(dir $@)
+> > > > > -	$(call if_changed_dep,cc_s_c)
+> > > > > +	$(call if_changed_dep,cc_s_c_define_offset)
+> > > > >  
+> > > > >  $(obj)/$(offsets-file): arch/$(SRCARCH)/kernel/asm-offsets.s Kbuild
+> > > > >  	$(call cmd,offsets)
+> > > > > diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
+> > > > > index 900e161..70c0c3d 100644
+> > > > > --- a/arch/x86/include/asm/unistd_64.h
+> > > > > +++ b/arch/x86/include/asm/unistd_64.h
+> > > > > @@ -688,6 +688,12 @@ __SYSCALL(__NR_perf_counter_open, sys_perf_counter_open)
+> > > > >  #endif	/* __NO_STUBS */
+> > > > >  
+> > > > >  #ifdef __KERNEL__
+> > > > > +
+> > > > > +#ifndef CREATE_OFFSETS
+> > > > > +#include <asm/asm-offsets.h>
+> > > > > +#define NR_syscalls (__NR_syscall_max + 1)
+> > > > > +#endif
+> > > > > +
+> > > > >  /*
+> > > > >   * "Conditional" syscalls
+> > > > >   *
+> > > > > diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+> > > > > index 5c4b7a4..4177858 100644
+> > > > > --- a/scripts/Makefile.build
+> > > > > +++ b/scripts/Makefile.build
+> > > > > @@ -145,6 +145,10 @@ $(multi-objs-y:.o=.lst) : modname = $(modname-multi)
+> > > > >  quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
+> > > > >  cmd_cc_s_c       = $(CC) $(c_flags) -fverbose-asm -S -o $@ $<
+> > > > >  
+> > > > > +quiet_cmd_cc_s_c_define_offset = CC $(quiet_modtag)  $@
+> > > > > +cmd_cc_s_c_define_offset       = $(CC) $(c_flags) -DCREATE_OFFSETS \
+> > > > > +					-fverbose-asm -S -o $@ $<
+> > > > > +
+> > > > >  $(obj)/%.s: $(src)/%.c FORCE
+> > > > >  	$(call if_changed_dep,cc_s_c)
+> > > > 
+> > > > 
+> > > > Ug, yuck yuck yuck. Sometimes "it works" is not good enough ;-)
+> > > > 
+> > > > How about just adding in asm/unistd.h
+> > > > 
+> > > >  #ifdef __KERNEL__
+> > > >  # ifdef CONFIG_X86_32
+> > > >  #  include "unistd_32.h"
+> > > >  # else
+> > > >  #  include "unistd_64.h"
+> > > > +#  define NR_syscalls (__NR_syscall_max + 1)
+> > > >  # endif
+> > > >  #else
+> > > >  # ifdef __i386__
+> > > >  #  include "unistd_32.h"
+> > > >  # else
+> > > >  #  include "unistd_64.h"
+> > > >  # endif
+> > > >  #endif
+> > > > 
+> > > > And if this is a problem because asm-offset_64.c includes asm/unistd.h, 
+> > > > then make it just include unistd_64.h.
+> > > > 
+> > > > Or am I missing something?
+> > > > 
+> > > > -- Steve
+> > > > 
+> > > > 
+> > > 
+> > > ok, so using the above patch gives me:
+> > > 
+> > >   CC      arch/x86/kernel/ftrace.o
+> > > arch/x86/kernel/ftrace.c: In function ?syscall_nr_to_meta?:
+> > > arch/x86/kernel/ftrace.c:497:35: error: ?__NR_syscall_max? undeclared
+> > > (first use in this function)
+> > > arch/x86/kernel/ftrace.c:497:35: error: (Each undeclared identifier is
+> > > reported only once
+> > > arch/x86/kernel/ftrace.c:497:35: error: for each function it appears
+> > > in.)
+> > > arch/x86/kernel/ftrace.c: In function ?syscall_name_to_nr?:
+> > > arch/x86/kernel/ftrace.c:510:19: error: ?__NR_syscall_max? undeclared
+> > > (first use in this function)
+> > > arch/x86/kernel/ftrace.c: In function ?arch_init_ftrace_syscalls?:
+> > > arch/x86/kernel/ftrace.c:536:7: error: ?__NR_syscall_max? undeclared
+> > > (first use in this function)
+> > > make[2]: *** [arch/x86/kernel/ftrace.o] Error 1
+> > > make[1]: *** [arch/x86/kernel] Error 2
+> > > make: *** [arch/x86] Error 2
+> > > 
+> > > 
+> > > That is the the first time, I encounter a 'NR_syscalls' usage, we error, b/c
+> > > unistd.h does not include 'asm/asm-offsets.h'. If I add an #include of
+> > > 'asm/asm-offsets.h' to ftrace.c the compile is fine. But the point of
+> > > this was to the 'NR_syscalls' definition just from the unistd.h file...
+> > > I'll see if I can come up with a simpler patch.
+> > 
+> > Then add the asm/asm-offests.h to the x86_64 define in unistd.h and have 
+> > the asm-offset_64.c only include the unistd_64.h file. Would that work?
+> > 
+> > -- Steve
+> > 
+> 
+> doesn't quite work, b/c the top of asm-offsets_64.c has a bunch of
+> includes, such as:  <linux/sched.h>, which in turn include unistd.h at
+> a point in time where asm/asm-offests.h does not exist.
+> 
+> However, a much simpler version of the previous patch I posted does do
+> the trick, below. I hope this version is more palatable?
+> 
+> thanks,
+> 
+> -Jason
+> 
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> 
+> diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
+> index 900e161..b9f3c60 100644
+> --- a/arch/x86/include/asm/unistd_64.h
+> +++ b/arch/x86/include/asm/unistd_64.h
+> @@ -688,6 +688,12 @@ __SYSCALL(__NR_perf_counter_open, sys_perf_counter_open)
+>  #endif	/* __NO_STUBS */
+>  
+>  #ifdef __KERNEL__
+> +
+> +#ifndef COMPILE_OFFSETS
+> +#include <asm/asm-offsets.h>
+> +#define NR_syscalls (__NR_syscall_max + 1)
+> +#endif
+> +
+>  /*
+>   * "Conditional" syscalls
+>   *
+> diff --git a/arch/x86/kernel/asm-offsets_64.c b/arch/x86/kernel/asm-offsets_64.c
+> index 898ecc4..4a6aeed 100644
+> --- a/arch/x86/kernel/asm-offsets_64.c
+> +++ b/arch/x86/kernel/asm-offsets_64.c
+> @@ -3,6 +3,7 @@
+>   * This code generates raw asm output which is post-processed to extract
+>   * and format the required data.
+>   */
+> +#define COMPILE_OFFSETS
+>  
+>  #include <linux/crypto.h>
+>  #include <linux/sched.h> 
 
-> Carving out cpus just doesn't work in the long run (see below for more),
-> it adds configuration burdens on people and it would duplicate
-> functionality (below), or it provides it in a (near) useless manner.
+This is MUCH more acceptable.
 
-Its pretty simple. Just isolate the cpu, forbid the OS to run anything on
-it. Allow a user space process to change its affinity to the isolated cpu.
-Should the process be so stupid as to ask the OS for services then just
-switch it back to a regular processor. Interaction is still possible via
-shared memory communication as well as memory mapped devices.
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-> If you hack up special cases like this, then only your one use-case gets
-> better and the rest doesn't, or it might actually get worse, because it
-> got less attention.
+Thanks!
 
-What special case? This is a generic mechanism.
+-- Steve
 
-> > The kernel interactions can be done while running on another (not
-> > isolated) cpu.
->
-> There needs to be some communication between the isolated and non
-> isolated part, otherwise what's the point. Even when you'd let it handle
-> say a network device as pure firewall, you'd need to configure the
-> thing, requiring interaction.
-
-Shared memory, memory mapped devices?
-
-> Interaction of any sorts gets serialization requirements, and from there
-> on things tend to grow.
-
-Yes and there are mechanism that provide the serialization without OS
-services.
-
-> > The functionality does not exist. This is about new features.
->
-> It is not, he is proposing to use these cores for:
->
->  - network stuff, we already have that
->  - raid5 stuff, we already have that
->  - other stuff we already have
-
-Right. I also want to use it for network stuff. Infiniband which support
-memory mapped registers and stuff. Its generic not special as you state.
-
-> Then there is the issue of what happens when a single core isn't
-> sufficient for the given task, then you'd need to split up, again
-> creating more interaction.
-
-Well yes you need to create synchronization methods that do not require OS
-interaction.
-
-> > > If you think the kernel is too fat and does superfluous things for your
-> > > needs, help trim it.
-> >
-> > Mind boogling nonsense. Please stop fantasizing and trolling.
->
-> Oh, to lay down the crack-pipe and sod off.
-
-Dont have one here. Whats a sod off?
