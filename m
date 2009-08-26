@@ -1,103 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932959AbZHZNAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbZHZNF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932959AbZHZNAo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932919AbZHZNAn
+	id S932973AbZHZNF0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932962AbZHZNFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:00:43 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:55598 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932585AbZHZNAm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:00:42 -0400
-Date: Wed, 26 Aug 2009 14:59:43 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, lizf@cn.fujitsu.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090826125943.GA5946@osiris.boeblingen.de.ibm.com>
-References: <20090825141547.GE6114@nowhere>
- <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
- <20090826123550.GD6009@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090826123550.GD6009@nowhere>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 26 Aug 2009 09:05:25 -0400
+Received: from pan.madism.org ([88.191.52.104]:57218 "EHLO hermes.madism.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932941AbZHZNFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 09:05:25 -0400
+From: Pierre Habouzit <pierre.habouzit@intersec.com>
+To: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] perf tools: do not complain if root is owning perf.data
+Date: Wed, 26 Aug 2009 15:05:26 +0200
+Message-Id: <1251291926-27174-1-git-send-email-pierre.habouzit@intersec.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 02:35:52PM +0200, Frederic Weisbecker wrote:
-> On Tue, Aug 25, 2009 at 06:02:37PM +0200, Hendrik Brueckner wrote:
-> > On Tue, Aug 25, 2009 at 04:15:49PM +0200, Frederic Weisbecker wrote:
-> > > On Tue, Aug 25, 2009 at 02:50:27PM +0200, Hendrik Brueckner wrote:
-> > > > There are at least two scenarios where syscall_get_nr() can return -1:
-> > > > 
-> > > > 1. For example, ptrace stores an invalid syscall number, and thus,
-> > > >    tracing code resets it.
-> > > >    (see do_syscall_trace_enter in arch/s390/kernel/ptrace.c)
-> > > > 
-> > > > 2. The syscall_regfunc() (kernel/tracepoint.c) sets the TIF_SYSCALL_FTRACE
-> > > >    (now: TIF_SYSCALL_TRACEPOINT) flag for all threads which includes
-> > > >    kernel threads.
-> > > >    However, the ftrace selftest triggers a kernel oops when testing syscall
-> > > >    trace points:
-> > > >       - The kernel thread is started as ususal (do_fork()),
-> > > >       - tracing code sets TIF_SYSCALL_FTRACE,
-> > > >       - the ret_from_fork() function is triggered and starts
-> > > > 	ftrace_syscall_exit() with an invalid syscall number.
-> > > 
-> > > 
-> > > 
-> > > I wonder if there is any way to identify such situation...?
-> > For the second case, it might be an option to avoid setting the
-> > TIF_SYSCALL_FTRACE flag for kernel threads.
-> > 
-> > Kernel threads have task_struct->mm set to NULL.
-> > (Thanks to Heiko for that hint ;-)
-> > 
-> > The idea is then to check the mm field in syscall_regfunc() and
-> > set the flag accordingly.
-> > 
-> > However, I think the patch is an optional add-on becase checking
-> > the syscall number is still required for case 1).
-> > 
-> > ---
-> >  kernel/tracepoint.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > --- a/kernel/tracepoint.c
-> > +++ b/kernel/tracepoint.c
-> > @@ -593,7 +593,9 @@ void syscall_regfunc(void)
-> >  	if (!sys_tracepoint_refcount) {
-> >  		read_lock_irqsave(&tasklist_lock, flags);
-> >  		do_each_thread(g, t) {
-> > -			set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > +			/* Skip kernel threads. */
-> > +			if (t->mm)
-> > +				set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> >  		} while_each_thread(g, t);
-> >  		read_unlock_irqrestore(&tasklist_lock, flags);
-> >  	}
-> 
-> Yeah, and as told before, syscalls tracing from kernel thread is
-> an interesting point but we can't do it that way.
-> 
-> I'm queuing this patch for .32, but I need you Signed-off-by to apply it :)
+This improves patch fa6963b24 so that perf.data stuff that has been dumped
+as root can be read (annotate/report) by a user without the use of the
+--force.
 
-That won't always work as pointed out in the other example:
-- Process doing sys_init_module then scheduled away
-- User enables syscall tracing -> TIF_SYSCALL_FTRACE gets set
-- init function of the module gets called and is doing kernel_thread()
-  (old API) -> kernel thread inherits TIF_SYSCALL_FTRACE.
+Rationale is that root has plenty of ways to screw us (usually) that do
+not require twisted schemes involving specially crafting a perf.data.
 
-I don't think that's what you want. You might want to clear the flag for
-new processes during fork (only for kernel threads I would guess).
+Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
+---
+ tools/perf/builtin-annotate.c |    4 ++--
+ tools/perf/builtin-report.c   |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-At least the current patch leaves a hole.
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 5e17de9..5010952 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -1335,8 +1335,8 @@ static int __cmd_annotate(void)
+ 		exit(-1);
+ 	}
+ 
+-	if (!force && (stat.st_uid != geteuid())) {
+-		fprintf(stderr, "file: %s not owned by current user\n", input_name);
++	if (!force && stat.st_uid && (stat.st_uid != geteuid())) {
++		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
+ 		exit(-1);
+ 	}
+ 
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 8b2ec88..b8a75f6 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -1857,8 +1857,8 @@ static int __cmd_report(void)
+ 		exit(-1);
+ 	}
+ 
+-	if (!force && (stat.st_uid != geteuid())) {
+-		fprintf(stderr, "file: %s not owned by current user\n", input_name);
++	if (!force && stat.st_uid && (stat.st_uid != geteuid())) {
++		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
+ 		exit(-1);
+ 	}
+ 
+-- 
+1.6.4.1.331.gda1d56
+
