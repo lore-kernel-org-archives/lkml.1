@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbZHZOKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZHZOLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757468AbZHZOKy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757411AbZHZOKx
+	id S1757482AbZHZOLN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbZHZOLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:10:53 -0400
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:49356 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757449AbZHZOKw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:10:52 -0400
-Date: Wed, 26 Aug 2009 16:10:52 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, lizf@cn.fujitsu.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090826141052.GB5946@osiris.boeblingen.de.ibm.com>
-References: <20090825141547.GE6114@nowhere>
- <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
- <20090826123550.GD6009@nowhere>
- <20090826125943.GA5946@osiris.boeblingen.de.ibm.com>
- <20090826133019.GE6009@nowhere>
-MIME-Version: 1.0
+	Wed, 26 Aug 2009 10:11:12 -0400
+Received: from bee.hiwaay.net ([216.180.54.11]:41814 "EHLO bee.hiwaay.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757445AbZHZOLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 10:11:11 -0400
+Date: Wed, 26 Aug 2009 09:11:03 -0500
+From: Chris Adams <cmadams@hiwaay.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] document flash/RAID dangers
+Message-ID: <20090826141103.GA1497509@hiwaay.net>
+References: <ddefx-5R-37@gated-at.bofh.it> <ddep7-bI-7@gated-at.bofh.it> <ddeyR-iy-11@gated-at.bofh.it> <ddeyR-iy-9@gated-at.bofh.it> <ddeIu-n9-9@gated-at.bofh.it> <ddeSb-th-29@gated-at.bofh.it> <ddoRI-11a-39@gated-at.bofh.it> <ddpkB-1jQ-1@gated-at.bofh.it> <20090826134045.GA1516467@hiwaay.net> <20090826144716.486a0d44@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090826133019.GE6009@nowhere>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090826144716.486a0d44@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 03:30:22PM +0200, Frederic Weisbecker wrote:
-> On Wed, Aug 26, 2009 at 02:59:43PM +0200, Heiko Carstens wrote:
-> > > Yeah, and as told before, syscalls tracing from kernel thread is
-> > > an interesting point but we can't do it that way.
-> > > 
-> > > I'm queuing this patch for .32, but I need you Signed-off-by to apply it :)
-> > 
-> > That won't always work as pointed out in the other example:
-> > - Process doing sys_init_module then scheduled away
-> > - User enables syscall tracing -> TIF_SYSCALL_FTRACE gets set
-> > - init function of the module gets called and is doing kernel_thread()
-> >   (old API) -> kernel thread inherits TIF_SYSCALL_FTRACE.
-> > 
-> > I don't think that's what you want. You might want to clear the flag for
-> > new processes during fork (only for kernel threads I would guess).
-> > 
-> > At least the current patch leaves a hole.
+Once upon a time, Alan Cox <alan@lxorguk.ukuu.org.uk> said:
+> > The issues being raised here are not specific to extX, MD RAID, or Linux
+> > at all; they are problems with non-"enterprise-class" RAID setups.
+> > There's a reason enterprise-class RAID costs a lot more money than the
+> > card you can pick up at Fry's.
 > 
-> Ah, there are callsites that use kernel_thread() directly?
-> Does it means that t->mm could be non NULL for such resulting
-> kernel threads, in that case it would be hard to hook on
-> do_fork() to check that.
+> And you will still need backups ;)
 
-Oh yes, you are right. kernel threads created with kernel_thread()
-have t->mm != NULL if the forking process has an mm too.
+Yep.  RAID (of any class) != fail safe.
 
-There are very few callsites left which still use kernel_thread().
-(the last one in s390 driver code will be gone after the next
-merge window).
+> A long time ago I worked on a fault tolerant news server with dual
+> alphaserver boxes and a shared disk array. A power system failure took
+> out both the alpha boxes and the disk controllers and all the disks.
 
-As far as I can there are only four callsites left
-(excluding staging): jffs2 and three in net/bluetooth/*
+Hey, that's not funny!  I'm typing this on a dual AlphaServer cluster
+with a shared disk array (with dual battery backup even), and we had a
+power failure at the NOC yesterday (that then tripped a breaker,
+although it was between the generator and the UPS, so nothing went
+down).
+
+No matter how redundant you make things, a "no single point of failure"
+setup still can fail, often in "interesting" ways that nobody
+anticipated.
+
+-- 
+Chris Adams <cmadams@hiwaay.net>
+Systems and Network Administrator - HiWAAY Internet Services
+I don't speak for anybody but myself - that's enough trouble.
