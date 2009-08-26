@@ -1,173 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZHZEJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751460AbZHZEOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751218AbZHZEJx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 00:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbZHZEJw
+	id S1751460AbZHZEOi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 00:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbZHZEOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 00:09:52 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:47074 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbZHZEJv (ORCPT
+	Wed, 26 Aug 2009 00:14:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59704 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750821AbZHZEOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 00:09:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=L9p3iQ0kEuWidusffaySII0Fj9vvGZExVMB1Gi/YqEoHldRWuQ2aMQm8jMCCE0THNd
-         KQKPtmDJdE3B1LF/so1DCWMYYaXvOqDjpp+DVbsk5Isan1dRz+XQmvYnaJFgywQ8Bg+V
-         6OjMS8oQ0CAtnni1uASa0MlfrzW32uUFgcVFQ=
-Date: Wed, 26 Aug 2009 06:09:19 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Patch 2/2] HW-BKPT: Allow kernel breakpoints to be modified
-	through a new API
-Message-ID: <20090826040917.GC6245@nowhere>
-References: <20090825201310.268198183@linux.vnet.ibm.com> <20090825202159.GC1166@in.ibm.com>
+	Wed, 26 Aug 2009 00:14:37 -0400
+Date: Tue, 25 Aug 2009 21:13:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dave Airlie <airlied@gmail.com>
+cc: Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>,
+       mailing54 <mailing54@plzk.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net,
+       Ma Ling <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Zhao, Yakui" <yakui.zhao@intel.com>
+Subject: Re: Linux 2.6.31-rc7
+In-Reply-To: <21d7e9970908252047g6db2fb2aj69280efa5eebe681@mail.gmail.com>
+Message-ID: <alpine.LFD.2.01.0908252056170.3218@localhost.localdomain>
+References: <alpine.LFD.2.01.0908211810390.3158@localhost.localdomain>  <4A941E8B.8080902@plzk.org>  <alpine.LFD.2.01.0908251057260.3218@localhost.localdomain>  <4A94599F.9020508@plzk.org>  <alpine.LFD.2.01.0908251456530.3218@localhost.localdomain> 
+ <1251239637.26348.20.camel@gaiman.anholt.net>  <20090826015127.GA1402@zhen-devel.sh.intel.com>  <alpine.LFD.2.01.0908252027300.3218@localhost.localdomain> <21d7e9970908252047g6db2fb2aj69280efa5eebe681@mail.gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090825202159.GC1166@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 01:51:59AM +0530, K.Prasad wrote:
-> Introduce modify_kernel_hw_breakpoint() API that can quickly change the
-> characteristics (such as address, length, type but not cpumask) of a
-> kernel-space breakpoint without having to unregister first and then
-> re-register it.
+
+
+On Wed, 26 Aug 2009, Dave Airlie wrote:
+> >
+> > If you actually detected things _right_, none of this would be an issue.
+> > But you don't. And you seem to have a really hard time even admitting
+> > that. You try to re-detect things, and you SCREW UP.
 > 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> This isn't anything to do with redetection, and in the Mac case there isn't
+> even a BIOS table that you can really rely on since Apple hard coded all
+> this stuff into their EFI and Mac OSX drivers.
 
+That's really my point.
 
-Hmm... You will hate me but... While looking more closely
-at the pmu management in perf, I realize I've made a mistake by requesting
-this functionnality.
+There _is_ one sort of detection you could do: look at the actual state of 
+the graphics chip.
 
-struct pmu are built of some callbacks, especially enable() and disable().
-These callbacks are called by perf when a task/group is sched in/out.
+In other words, exactly the case you mention: don't trust any BIOS tables 
+(they may not exist, and they _are_ broken in many cases) or silly EFI 
+information (I guarantee that any firmware info will eventually be buggy: 
+EFI is in no way going to be magically less buggy than BIOS tables have 
+been).
 
-The breakpoint API then doesn't need to be able to live-modify breakpoint
-properties.
-Instead, what we need is a way to disarm/rearm a bp without actually unregister
-it (we don't want to lose its slot until it gets rearmed).
+So what's left? You can still look at how the chip was programmed. If it's 
+driving the VGA port, you can be pretty sure that there's a monitor 
+attached. Sure, there might be something _else_ attached too, and I'm not 
+saying that you cannot try to probe other things, but right now it seems 
+that KMS totally throws away a free - and fairly reliable - piece of 
+information. And replaces it with very unreliable information that 
+definitely doesn't work.
 
-So eventually we need two callbacks: 
+I'm all for looking at many different places to find 'the truth', but I'm 
+very unhappy with KMS looks into BIOS tables, decides that there's a LVDS 
+panel attached (there isn't), and then disables the VGA port that drives 
+the monitor.
 
-- disable_kernel_breakpoint() that just disarm the breakpoint in the
-  hardware level without unregistering it in the software level.
-  When a profiled task group is sched out, the counter becomes
-  inactive, waiting to be sched in later, that's why the bp
-  must still be registered at this time (but inactive).
+That doesn't help _anybody_. It just results in a black screen. And I 
+guarantee that this happens on several pieces of hardware, and no, it's 
+not all just "crap Apple and EFI". One of the pieces of hardware it 
+happens on is an Intel-only machine. Intel hardware, Intel firmware, Intel 
+motherboard, Intel _everything_. And yes, KMS decides to drive a 
+nonexistent LVDS display, rather than the one that the BIOS correctly 
+booted up with.
 
-- enable_kernel_breakpoint() that rearms it
+> Just because the BIOS manages to light up an output in now way effects
+> whether the driver can do the same.
 
-Your first patch that handles the per cpu breakpoints + these two callbacks
-are the only thing we need for the perf integration.
+.. but if the BIOS drives one output, that should be a damn big hint that 
+you shouldn't then just randomly pick another one!
 
-Once we get that, it's up to perf to handle the enable/disable for
-its own needs. Of course we already have the per task breakpoints
-that could handle that, but it looks easier and better to let perf
-decide whenever it needs the pmu to be bound or not.
+It sure as hell is a bigger hint than the ones you're using right now. 
+Which is kind of my point here. Why are you arguing against a known bug? 
 
-So, I'm sorry but we won't need this one patch (but we still need
-the first). And you can also forget about the breakpoint inheritance
-across clone() calls, hardware register rewrite on schedule() only while
-switching to separate task groups (although that could enhance/optimize
-this API).
-These things are already handled by perf.
+> I'm not sure why the mac-mini hack hasn't been merged I asked for it a
+> few times,
+> I'd rather the proper solution was merged but that seems to not have
+> happened either.
 
-I should have looked more closely into the PMUs before requesting
-you this patch. My bad...
+I want to repeat: it's not just Mac Mini. 
 
-Thanks,
-Frederic.
+> You have two special cases here,
+> a) mac mini - apple hw, needs hacks to workaround the fact that they do 
+> something nobody else does with the hw and then don't tell you about it 
+> in the hw. the hack from userspace should have been ported to the kernel 
+> but I keep not seeing it.
 
-> ---
->  include/asm-generic/hw_breakpoint.h |    2 +
->  kernel/hw_breakpoint.c              |   49 ++++++++++++++++++++++++++++++++++++
->  2 files changed, 51 insertions(+)
-> 
-> Index: linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/include/asm-generic/hw_breakpoint.h
-> +++ linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
-> @@ -133,6 +133,8 @@ extern void unregister_user_hw_breakpoin
->   * Kernel breakpoints are not associated with any particular thread.
->   */
->  extern int register_kernel_hw_breakpoint(struct hw_breakpoint *bp);
-> +extern int modify_kernel_hw_breakpoint(struct hw_breakpoint *old_bp,
-> +					struct hw_breakpoint *new_bp);
->  extern void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp);
->  
->  extern unsigned int hbp_kernel_pos;
-> Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-> ===================================================================
-> --- linux-2.6-tip.hbkpt.orig/kernel/hw_breakpoint.c
-> +++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-> @@ -362,6 +362,55 @@ err_ret:
->  }
->  EXPORT_SYMBOL_GPL(register_kernel_hw_breakpoint);
->  
-> +/**
-> + * modify_kernel_hw_breakpoint - modify characteristics of a previously registered breakpoint request
-> + * @old_bp: pointer to the registered breakpoint structure
-> + * @new_bp: pointer to the breakpoint structure that replaces @old_bp
-> + *
-> + */
-> +int modify_kernel_hw_breakpoint(struct hw_breakpoint *old_bp,
-> +				   struct hw_breakpoint *new_bp)
-> +{
-> +	int i, rc;
-> +	unsigned int cpu;
-> +	const cpumask_t *new_cpumask = new_bp->cpumask;
-> +
-> +	/* Default to ALL CPUs if cpumask is not specified */
-> +	if (!new_cpumask)
-> +		new_cpumask = new_bp->cpumask = cpu_possible_mask;
-> +	/*
-> +	 * The user cannot modify the cpumask of the registered breakpoint
-> +	 * It requires non-trivial amount of code and new data-structures to
-> +	 * allow a change in cpumask value. The user must instead 'unregister'
-> +	 * and re-register a new breakpoint if 'cpumask' should be changed
-> +	 */
-> +	if (!cpumask_equal(old_bp->cpumask, new_cpumask))
-> +		return -EINVAL;
-> +
-> +	rc = arch_validate_hwbkpt_settings(new_bp, NULL);
-> +	if (rc)
-> +		return rc;
-> +
-> +	spin_lock_bh(&hw_breakpoint_lock);
-> +	for_each_cpu(cpu, new_cpumask) {
-> +		for (i = HBP_NUM-1; i >= hbp_kernel_pos; i--) {
-> +			if (per_cpu(this_hbp_kernel[i], cpu) == old_bp) {
-> +				per_cpu(this_hbp_kernel[i], cpu) = new_bp;
-> +				break;
-> +			}
-> +		}
-> +	}
-> +
-> +	if (cpumask_test_cpu(smp_processor_id(), new_cpumask))
-> +		arch_update_kernel_hw_breakpoint(NULL);
-> +	smp_call_function_many(new_cpumask,
-> +				arch_update_kernel_hw_breakpoint, NULL, 1);
-> +
-> +	spin_unlock_bh(&hw_breakpoint_lock);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(modify_kernel_hw_breakpoint);
-> +
->  /* Removes breakpoint structure from the per-cpu breakpoint data-structure */
->  static void remove_each_cpu_kernel_hbp(void *bp_param)
->  {
-> 
+The thing is, the BIOS _does_ report it to the hardware: you could just 
+read the hardware registers.
 
+But no. Instead the Intel KMS code discards the hardware registers, and 
+reads the BIOS tables instead, finds a LVDS entry there, and uses that - 
+and disconnects the entry that _was_ driving the monitor.
+
+Really. Do you seriously believe that because you found some random tables 
+in the BIOS memory, it's more reliable than "oh, the BIOS set the hardware 
+up to drive the SVDO output"?
+
+That's what I find irritating. We _know_ BIOS tables are random crap. We 
+_know_ they are way less reliable than just asking the hardware where it 
+is. But KMS still trusts the VBT data more than the fact that the chip has 
+been programmed to output DVI/SVDO output.
+
+> b) pre-production SDV hardware for a mobile chipset without LVDS, here's 
+> both pieces you get to keep them. LVDS isn't detectable on any hw, the 
+> sanity assumption so far are you have a mobile chipset you must have 
+> LVDS, you have an ACPI lid button you might have LVDS.
+
+Again, you say that, but you have absolutely nothing to back it up with.
+
+Here's a counter-argument: we _know_ that it's not detectable whether 
+there's an LVDS panel is attached or not. So what should we do? Should we 
+turn off the VGA1 connection that we can see that the BIOS programmed, and 
+set things up for LVDS instead?
+
+That's f*cking _stupid_. Go ahead and program the LVDS panel *too*, but 
+don't turn off the SDVO (or whatever) output that was also active!
+
+And quite frankly, if the BIOS didn't turn on the panel, then maybe the 
+kernel shouldn't either. At least not until it gets a "lid open" event. So 
+even the "go ahead and program LVDS too" part is quite debatable.
+
+In other words: it would be a lot saner to just keep whatever output mode 
+that the machine booted with. Then, change it ONLY IF YOU DETECT SOMETHING 
+ACTUALLY CHANGING.
+
+			Linus
