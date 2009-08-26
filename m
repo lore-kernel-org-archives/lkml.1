@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751379AbZHZOut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751391AbZHZOvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751379AbZHZOut (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbZHZOus
+	id S1751391AbZHZOvh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZHZOvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:50:48 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:40528 "EHLO mx1.redhat.com"
+	Wed, 26 Aug 2009 10:51:36 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:26520 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750831AbZHZOur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:50:47 -0400
-Date: Wed, 26 Aug 2009 15:50:45 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Mike Snitzer <snitzer@redhat.com>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] [PATCH] dm snapshot: implement .iterate_devices
-Message-ID: <20090826145045.GH643@agk-dp.fab.redhat.com>
-Mail-Followup-To: Mike Snitzer <snitzer@redhat.com>, dm-devel@redhat.com,
-	linux-kernel@vger.kernel.org
-References: <1251007867-13004-1-git-send-email-snitzer@redhat.com>
+	id S1750756AbZHZOvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 10:51:35 -0400
+Date: Wed, 26 Aug 2009 11:51:26 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] perf top: Show RIP only in verbose mode
+Message-ID: <20090826145126.GA5255@ghostprotocols.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1251007867-13004-1-git-send-email-snitzer@redhat.com>
-Organization: Red Hat UK Ltd. Registered in England and Wales, number
-	03798903. Registered Office: Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 1TE.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 23, 2009 at 02:11:07AM -0400, Mike Snitzer wrote:
-> This patch implements .iterate_devices for the origin and snapshot
-> targets.  dm-snapshot's lack of .iterate_devices resulted in the
-> inability to properly establish queue_limits for both targets.  
-> With 4K sector drives: an unfortunate side-effect of not establishing
-> proper limits in either targets' DM device was that IO to the devices
-> would fail even though both had been created without error.
-> Commit af4874e03ed82f050d5872d8c39ce64bf16b5c38 should have implemented
-> .iterate_devices for dm-snap.c's origin and snapshot targets.
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-top.c |   17 ++++++++++++-----
+ 1 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 62b55ec..4002ccb 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -483,11 +483,16 @@ static void print_sym_table(void)
+ 	if (nr_counters == 1)
+ 		printf("             samples    pcnt");
+ 	else
+-		printf("  weight     samples    pcnt");
++		printf("   weight    samples    pcnt");
  
-> +static int snapshot_iterate_devices(struct dm_target *ti,
-> +				    iterate_devices_callout_fn fn, void *data)
-> +{
-> +	struct dm_snapshot *snap = ti->private;
-> +
-> +	return fn(ti, snap->origin, 0, ti->len, data);
-> +}
+-	printf("         RIP          kernel function\n"
+-	       	       "  ______     _______   _____   ________________   _______________\n\n"
+-	);
++	if (verbose)
++		printf("         RIP       ");
++	printf("   kernel function\n");
++	printf("   %s    _______   _____",
++	       nr_counters == 1 ? "      " : "______");
++	if (verbose)
++		printf("   ________________");
++	printf("   _______________\n\n");
+ 
+ 	for (nd = rb_first(&tmp); nd; nd = rb_next(nd)) {
+ 		struct symbol *sym;
+@@ -508,7 +513,9 @@ static void print_sym_table(void)
+ 			printf("%9.1f %10ld - ", syme->weight, syme->snap_count);
+ 
+ 		percent_color_fprintf(stdout, "%4.1f%%", pcnt);
+-		printf(" - %016llx : %s", sym->start, sym->name);
++		if (verbose)
++			printf(" - %016llx", sym->start);
++		printf(" : %s", sym->name);
+ 		if (sym->module)
+ 			printf("\t[%s]", sym->module->name);
+ 		printf("\n");
+-- 
+1.6.2.5
 
-> +static int origin_iterate_devices(struct dm_target *ti,
-> +				  iterate_devices_callout_fn fn, void *data)
-> +{
-> +	struct dm_dev *dev = ti->private;
-> +
-> +	return fn(ti, dev, 0, ti->len, data);
-> +}
-
-Why are these both seemingly the same?  Is one sufficient?
-And where are the characteristics of the 'cow' device taken into account?
-
-Alasdair
 
