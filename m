@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932796AbZHZBR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbZHZBSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932796AbZHZBR3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 21:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932650AbZHZBR3
+	id S932812AbZHZBSE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 21:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932737AbZHZBSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 21:17:29 -0400
-Received: from mail-yw0-f183.google.com ([209.85.211.183]:36526 "EHLO
-	mail-yw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932469AbZHZBR2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 21:17:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=o5DaTDMEWZLjWGDnQHhTMe1X7VgRIy6YRaEZX4wE3cJlPN7DfjLVNmqKPwgqk5WvGE
-         0JNxTeSb5NHLsh8z6Uv+H9s5p2e/ODFzDYg0n0m064Qwfnuy8MT5brkXuW9Utq2LNR54
-         Kzip9HT1VAuQFczjSnDlqIvzzlekXem7iSm9U=
+	Tue, 25 Aug 2009 21:18:03 -0400
+Received: from mail.lang.hm ([64.81.33.126]:33138 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932650AbZHZBSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 21:18:01 -0400
+Date: Tue, 25 Aug 2009 18:17:02 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@ucw.cz>
+cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+In-Reply-To: <20090826003926.GQ4300@elf.ucw.cz>
+Message-ID: <alpine.DEB.2.00.0908251816300.30426@asgard.lang.hm>
+References: <20090825094244.GC15563@elf.ucw.cz> <20090825161110.GP17684@mit.edu> <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm>
+ <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm> <20090826001206.GL4300@elf.ucw.cz> <alpine.DEB.2.00.0908251718141.28411@asgard.lang.hm> <20090826003926.GQ4300@elf.ucw.cz>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Date: Tue, 25 Aug 2009 18:17:28 -0700
-Message-ID: <4746469c0908251817u225609bax66ea27261a1ef038@mail.gmail.com>
-Subject: expresscard hotplug not working
-From: Mike Mohr <akihana@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 26 Aug 2009, Pavel Machek wrote:
 
-I think I'm having a similar problem to the fellow listed here:
+> On Tue 2009-08-25 17:20:13, david@lang.hm wrote:
+>> On Wed, 26 Aug 2009, Pavel Machek wrote:
+>>
+>>> On Tue 2009-08-25 16:56:40, david@lang.hm wrote:
+>>>> On Wed, 26 Aug 2009, Pavel Machek wrote:
+>>>>
+>>>>> There are storage devices that high highly undesirable properties
+>>>>> when they are disconnected or suffer power failures while writes are
+>>>>> in progress; such devices include flash devices and MD RAID 4/5/6
+>>>>> arrays.
+>>>>
+>>>> change this to say 'degraded MD RAID 4/5/6 arrays'
+>>>>
+>>>> also find out if DM RAID 4/5/6 arrays suffer the same problem (I strongly
+>>>> suspect that they do)
+>>>
+>>> I changed it to say MD/DM.
+>>>
+>>>> then you need to add a note that if the array becomes degraded before a
+>>>> scrub cycle happens previously hidden damage (that would have been
+>>>> repaired by the scrub) can surface.
+>>>
+>>> I'd prefer not to talk about scrubing and such details here. Better
+>>> leave warning here and point to MD documentation.
+>>
+>> I disagree with that, the way you are wording this makes it sound as if
+>> raid isn't worth it. if you are going to say that raid is risky you need
+>> to properly specify when it is risky
+>
+> Ok, would this help? I don't really want to go to scrubbing details.
+>
+> (*) Degraded array or single disk failure "near" the powerfail is
+> neccessary for this property of RAID arrays to bite.
 
-http://kerneltrap.org/mailarchive/linux-kernel/2007/10/16/344543
+that sounds reasonable
 
-The only difference is that no card will work at all unless it is
-inserted before system power is turned on.  If the card is removed
-while the system is running it stops working and will never return to
-life unless the system is rebooted with the card in the slot.
-
-My kernel is configured exactly as this page describes:
-
-http://www.gentoo-wiki.info/ExpressCard
-
-However, I do not receive anything in dmesg except the reports of the
-driver being unloaded and/or loaded.  Attempts to insert the card
-after the machine is up elicit no kernel messages.  I'm thinking there
-may be a missing PCI ID somewhere in the pciehp/pci_hotplug driver(s),
-but I could well be mistaken.
-
-Can anyone offer me a suggestion or two?
-
-Thanks,
-Michael
+David Lang
