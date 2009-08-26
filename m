@@ -1,80 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbZHZCWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZHZCZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756410AbZHZCWN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 22:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbZHZCWM
+	id S1756454AbZHZCZz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 22:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbZHZCZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 22:22:12 -0400
-Received: from tanas.ca ([206.248.136.31]:45451 "EHLO tanas.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755954AbZHZCWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 22:22:12 -0400
-From: "Andrei Tanas" <andrei@tanas.ca>
-To: "'Ric Wheeler'" <rwheeler@redhat.com>, "'NeilBrown'" <neilb@suse.de>
-Cc: <linux-kernel@vger.kernel.org>
-References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com>
-In-Reply-To: <4A94905F.7050705@redhat.com>
-Subject: RE: MD/RAID: what's wrong with sector 1953519935?
-Date: Tue, 25 Aug 2009 22:22:17 -0400
-Message-ID: <005101ca25f4$09006830$1b013890$@ca>
+	Tue, 25 Aug 2009 22:25:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58127 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755154AbZHZCZy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 22:25:54 -0400
+Date: Tue, 25 Aug 2009 22:25:52 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jason Baron <jbaron@redhat.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, lethal@linux-sh.org, mingo@elte.hu,
+       laijs@cn.fujitsu.com, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       lizf@cn.fujitsu.com, jistone@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com
+Subject: Re: [PATCH 2/4] Add NR_syscalls for x86_64
+In-Reply-To: <20090825184734.GE2656@redhat.com>
+Message-ID: <alpine.DEB.2.00.0908252223310.28127@gandalf.stny.rr.com>
+References: <cover.1251146512.git.jbaron@redhat.com> <233dfaa6fadd5aa2fa7ac8511ed9ab98a5f2619c.1251146513.git.jbaron@redhat.com> <20090824221447.GA5124@nowhere> <alpine.DEB.2.00.0908241843450.32241@gandalf.stny.rr.com> <20090825134005.GB2656@redhat.com>
+ <20090825184734.GE2656@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Acol7QVOS7tMloZ8ReurC1COiojHMAABVxlg
-Content-Language: en-ca
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> One thing that can happen is when we have a hot spot (like the super
-> >> block) on high capacity drives is that the frequent write degrade
-> the
-> >> data in adjacent tracks.  Some drives have firmware that watches for
-> >> this and rewrites adjacent tracks, but it is also a good idea to
-> avoid
-> >> too frequent updates.
-> >
-> > Yet another detail to worry about.... :-(
-> 
-> it never ends :-)
-> 
-> >
-> >>
-> >> Didn't you have a tunable to decrease this update frequency?
-> >
-> > /sys/block/mdX/md/safe_mode_delay
-> > is a time in seconds (Default 0.200) between when the last write to
-> > the array completes and when the superblock is marked as clean.
-> > Depending on the actual rate of writes to the array, the superblock
-> > can be updated as much as twice in this time (once to mark dirty,
-> > once to mark clean).
-> >
-> > Increasing the number can decrease the update frequency of the
-> superblock,
-> > but the exact effect on update frequency is very load-dependant.
-> >
-> > Obviously a write-intent-bitmap, which is rarely more that a few
-> > sectors, can also see lots of updates, and it is harder to tune
-> > that (you have to set things up when you create the bitmap).
-> >
-> > NeilBrown
-> >
-> 
-> We did see issues in practice with adjacent sectors with some drives,
-> so this
-> one is worth tuning down.
-> 
-> I would suggest that Andrei might try to write and clear the IO error
-> at that
-> offset. You can use Mark Lord's hdparm to clear a specific sector or
-> just do the
-> math (carefully!) and dd over it. It the write succeeds (without
-> bumping your
-> remapped sectors count) this is a likely match to this problem,
 
-I've tried dd multiple times, it always succeeds, and the relocated sector
-count is currently 1 on this drive, even though this particular fault
-happened at least 3 times so far.
+On Tue, 25 Aug 2009, Jason Baron wrote:
+
+> On Tue, Aug 25, 2009 at 09:40:05AM -0400, Jason Baron wrote:
+> > 
+> > right, for x86_64, unistd.h is included to generate __NR_syscall_max
+> > which is then used for NR_syscalls. So I did initially try it there, but
+> > there were dependency problems. I'll see what I can come up with...
+> > 
+> > thanks,
+> > 
+> > -Jason
+> 
+> ok, since unistd_64.h is used to generate offsets.c, which eventually
+> generates, asm/asm-offsets.h, which defines, __NR_syscall_max, we can't
+> just put #define of NR_syscalls in unistd_64.h. However, it seems the
+
+Why not? A define is not a problem until it is used. Is something in 
+asm-offsets.c using NR_syscalls?
+
+> only point in time that unistd_64.h can not depend upon __NR_syscall_max,
+> is before asm/asm-offsets.h is defined. Thus, the patch below passes in
+> a '-DCREATE_OFFSETS' during the creation of asm/asm-offsets.h, so that
+> we do not include it before it exists. The patch is hacky but works.
+> thoughts?
+> 
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> 
+> ---
+> 
+>  Kbuild                           |    2 +-
+>  arch/x86/include/asm/unistd_64.h |    6 ++++++
+>  scripts/Makefile.build           |    4 ++++
+>  3 files changed, 11 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/Kbuild b/Kbuild
+> index f056b4f..5f43d4d 100644
+> --- a/Kbuild
+> +++ b/Kbuild
+> @@ -78,7 +78,7 @@ endef
+>  arch/$(SRCARCH)/kernel/asm-offsets.s: arch/$(SRCARCH)/kernel/asm-offsets.c \
+>                                        $(obj)/$(bounds-file) FORCE
+>  	$(Q)mkdir -p $(dir $@)
+> -	$(call if_changed_dep,cc_s_c)
+> +	$(call if_changed_dep,cc_s_c_define_offset)
+>  
+>  $(obj)/$(offsets-file): arch/$(SRCARCH)/kernel/asm-offsets.s Kbuild
+>  	$(call cmd,offsets)
+> diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
+> index 900e161..70c0c3d 100644
+> --- a/arch/x86/include/asm/unistd_64.h
+> +++ b/arch/x86/include/asm/unistd_64.h
+> @@ -688,6 +688,12 @@ __SYSCALL(__NR_perf_counter_open, sys_perf_counter_open)
+>  #endif	/* __NO_STUBS */
+>  
+>  #ifdef __KERNEL__
+> +
+> +#ifndef CREATE_OFFSETS
+> +#include <asm/asm-offsets.h>
+> +#define NR_syscalls (__NR_syscall_max + 1)
+> +#endif
+> +
+>  /*
+>   * "Conditional" syscalls
+>   *
+> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+> index 5c4b7a4..4177858 100644
+> --- a/scripts/Makefile.build
+> +++ b/scripts/Makefile.build
+> @@ -145,6 +145,10 @@ $(multi-objs-y:.o=.lst) : modname = $(modname-multi)
+>  quiet_cmd_cc_s_c = CC $(quiet_modtag)  $@
+>  cmd_cc_s_c       = $(CC) $(c_flags) -fverbose-asm -S -o $@ $<
+>  
+> +quiet_cmd_cc_s_c_define_offset = CC $(quiet_modtag)  $@
+> +cmd_cc_s_c_define_offset       = $(CC) $(c_flags) -DCREATE_OFFSETS \
+> +					-fverbose-asm -S -o $@ $<
+> +
+>  $(obj)/%.s: $(src)/%.c FORCE
+>  	$(call if_changed_dep,cc_s_c)
+
+
+Ug, yuck yuck yuck. Sometimes "it works" is not good enough ;-)
+
+How about just adding in asm/unistd.h
+
+ #ifdef __KERNEL__
+ # ifdef CONFIG_X86_32
+ #  include "unistd_32.h"
+ # else
+ #  include "unistd_64.h"
++#  define NR_syscalls (__NR_syscall_max + 1)
+ # endif
+ #else
+ # ifdef __i386__
+ #  include "unistd_32.h"
+ # else
+ #  include "unistd_64.h"
+ # endif
+ #endif
+
+And if this is a problem because asm-offset_64.c includes asm/unistd.h, 
+then make it just include unistd_64.h.
+
+Or am I missing something?
+
+-- Steve
+
 
