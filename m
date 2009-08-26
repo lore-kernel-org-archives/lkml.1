@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbZHZLal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbZHZLcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757372AbZHZLal (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 07:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbZHZLak
+	id S932458AbZHZLcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 07:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757298AbZHZLcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 07:30:40 -0400
-Received: from mail.lang.hm ([64.81.33.126]:48854 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756773AbZHZLaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 07:30:39 -0400
-Date: Wed, 26 Aug 2009 04:29:42 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-In-Reply-To: <20090826111751.GC26595@elf.ucw.cz>
-Message-ID: <alpine.DEB.2.00.0908260428310.30426@asgard.lang.hm>
-References: <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz>
- <4A932B18.1020209@redhat.com> <20090825093414.GB15563@elf.ucw.cz> <4A94ACDF.30405@redhat.com> <20090826111751.GC26595@elf.ucw.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 26 Aug 2009 07:32:21 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:44896 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757118AbZHZLcV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 07:32:21 -0400
+Date: Wed, 26 Aug 2009 17:02:17 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v2 PATCH 2/2]: pseries: Implement Pseries Processor Idle idle
+	module.
+Message-ID: <20090826113217.GA14758@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090826110721.GA29759@linux.vnet.ibm.com> <20090826111003.GC29759@linux.vnet.ibm.com> <1251286038.1329.1.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1251286038.1329.1.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Pavel Machek wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-26 13:27:18]:
 
-> On Tue 2009-08-25 23:32:47, Rik van Riel wrote:
->> Pavel Machek wrote:
->>
->>>> So, would you be happy if ext3 fsck was always run on reboot (at
->>>> least  for flash devices)?
->>>
->>> For flash devices, MD Raid 5 and anything else that needs it; yes that
->>> would make me happy ;-).
->>
->> Sorry, but that just shows your naivete.
->>
->> Metadata takes up such a small part of the disk that fscking
->> it and finding it to be OK is absolutely no guarantee that
->> the data on the filesystem has not been horribly mangled.
->>
->> Personally, what I care about is my data.
->>
->> The metadata is just a way to get to my data, while the data
->> is actually important.
->
-> Personally, I care about metadata consistency, and ext3 documentation
-> suggests that journal protects its integrity. Except that it does not
-> on broken storage devices, and you still need to run fsck there.
+> On Wed, 2009-08-26 at 16:40 +0530, Arun R Bharadwaj wrote:
+> > +void (*pm_idle)(void);
+> > +EXPORT_SYMBOL_GPL(pm_idle);
+> 
+> Seriously.. this caused plenty problems over on x86 and you're doing the
+> exact same dumb thing?
+> 
 
-as the ext3 authors have stated many times over the years, you still need 
-to run fsck periodicly anyway.
+Hi Peter,
 
-what the journal gives you is a reasonable chance of skipping it when the 
-system crashes and you want to get it back up ASAP.
+Cpuidle assumes pm_idle to be the default idle power management
+function. So i should either do this, or change the stuff in cpuidle.c
+so that it is more abstract.
 
-David Lang
-
-> How do you protect your data is another question, but ext3
-> documentation does not claim journal to protect them, so that's up to
-> the user I guess.
-> 									Pavel
->
+--arun
