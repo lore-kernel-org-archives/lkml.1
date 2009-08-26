@@ -1,178 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbZHZH2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbZHZH3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757145AbZHZH2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 03:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757100AbZHZH2e
+	id S1757181AbZHZH3t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 03:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbZHZH3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 03:28:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46066 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757090AbZHZH2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 03:28:34 -0400
-Date: Wed, 26 Aug 2009 09:28:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       jiayingz@google.com, mbligh@google.com, lizf@cn.fujitsu.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
-Message-ID: <20090826072808.GC23435@elte.hu>
-References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090825162004.GA25058@Krystal> <20090825165912.GI6114@nowhere> <20090825173107.GJ6114@nowhere> <20090825183119.GC2448@Krystal> <20090825194219.GA8215@nowhere> <20090825195111.GB13712@Krystal> <20090826001902.GC9953@nowhere> <20090826004248.GA5793@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090826004248.GA5793@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 26 Aug 2009 03:29:49 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:50198 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757101AbZHZH3r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 03:29:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=BbxFps5ubQh/o/ZH5Z3MCWHeeWgq/QcWN+zkKibo59PYlETPbdbmXoBr91KUx5v8Hs
+         g5ag686ckel1wFWkdL21H+BCZ3C8YbrfmL0uAPe7P69oBPTnNr5joWF+4YkdPMkBFy2/
+         YwKjpQ8HWkM7I+SFanTZpGF38wRszh6bx6BXc=
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+From: raz ben yehuda <raziebe@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Chris Friesen <cfriesen@nortel.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, riel@redhat.com, mingo@elte.hu,
+       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
+       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
+In-Reply-To: <1251264700.7538.1178.camel@twins>
+References: <1250983671.5688.21.camel@raz>
+	 <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>
+	 <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>
+	 <1251021133.14003.172.camel@marge.simson.net>
+	 <alpine.DEB.1.10.0908251122020.26329@gentwo.org>
+	 <1251222993.7023.53.camel@marge.simson.net>
+	 <alpine.DEB.1.10.0908251402300.17963@gentwo.org>
+	 <1251227322.7538.1172.camel@twins>  <4A943A00.9080609@nortel.com>
+	 <1251264700.7538.1178.camel@twins>
+Content-Type: text/plain
+Date: Wed, 26 Aug 2009 13:29:58 +0300
+Message-Id: <1251282598.3514.20.camel@raz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> * Frederic Weisbecker (fweisbec@gmail.com) wrote:
-> > On Tue, Aug 25, 2009 at 03:51:11PM -0400, Mathieu Desnoyers wrote:
-> > > * Frederic Weisbecker (fweisbec@gmail.com) wrote:
-> > > > On Tue, Aug 25, 2009 at 02:31:19PM -0400, Mathieu Desnoyers wrote:
-> > > > > (Well, I do not have time currently to look into the gory details
-> > > > > (sorry), but let's try to take a step back from the problem.)
-> > > > > 
-> > > > > The design proposal for this kthread behavior wrt syscalls is based on a
-> > > > > very specific and current kernel behavior, that may happen to change and
-> > > > > that I have actually seen proven incorrect. For instance, some
-> > > > > proprietary Linux driver does very odd things with system calls within
-> > > > > kernel threads, like invoking them with int 0x80.
-> > > > > 
-> > > > > Yes, this is odd, but do we really want to tie the tracer that much to
-> > > > > the actual OS implementation specificities ?
-> > > > 
-> > > > 
-> > > > I really can't see the point in doing this. I don't expect the kernel
-> > > > behaviour to change soon and have explicit syscalls interrupts done
-> > > > from it. It's not about a current kernel implementation fashion,
-> > > > it's about kernel design sanity that is not likely to go backward.
-> > > > 
-> > > > Is it worth it to trace kernel threads, maintain their tracing
-> > > > specificities (such as workarounds with ret_from_fork that implies)
-> > > > just because we want to support tracing on some silly proprietary drivers?
-> > > > 
-> > > > 
-> > > > > 
-> > > > > That sounds like a recipe for endless breakages and missing bits of
-> > > > > instrumentation.
-> > > > >
-> > > > > So my advice would be: if we want to trace the syscall entry/exit paths,
-> > > > > let's trace them for the _whole_ system, and find ways to make it work
-> > > > > for corner-cases rather than finding clever ways to diminish
-> > > > > instrumentation coverage.
-> > > > 
-> > > > 
-> > > > If developers of out of tree drivers want to implement buggy things
-> > > > that would never be accepted after a minimal review here, and then instrument
-> > > > their bugs, then I would suggest them to implement their own ad hoc instrumentation,
-> > > > really :-/
-> > > > 
-> > > > What's the point in supporting out of tree bugs?
-> > > > 
-> > > > Well, the only advantage of doing this would be to support reverse engineering
-> > > > in tiny and rare corner cases. Not that worth the effort.
-> > > > 
-> > > >  
-> > > > > Given the ret from fork example happens to be the first event fired
-> > > > > after the thread is created, we should be able to deal with this problem
-> > > > > by initializing the thread structure used by syscall exit tracing to an
-> > > > > initial "ret from fork" value.
-> > > > > 
-> > > > > Mathieu
-> > > > 
-> > > > 
-> > > > It means we have to support and check this corner case in every archs
-> > > > that support syscall tracing, deal with crashes because we omitted it, etc...
-> > > > 
-> > > > For all the things I've explained above I don't think it's worth the effort.
-> > > > 
-> > > > But it's just my opinion...
-> > > > 
+On Wed, 2009-08-26 at 07:31 +0200, Peter Zijlstra wrote:
+> On Tue, 2009-08-25 at 13:22 -0600, Chris Friesen wrote:
+> > On 08/25/2009 01:08 PM, Peter Zijlstra wrote:
+> > 
+> > > Christoph, stop being silly, this offline scheduler thing won't happen,
+> > > full stop.
 > > > 
-> > > Then we might want to explicitly require that calls to sys_*() system
-> > > calls made from within the kernel pass through another instrumentation
-> > > mechanism. IMHO, that would make sense. It would cover both system calls
-> > > made from kernel threads and system calls made from within a system call
-> > > or trap.
+> > > Its not a maintainable solution, it doesn't integrate with existing
+> > > kernel infrastructure, and its plain ugly.
 > > > 
-> > > Mathieu
+> > > If you want something work within Linux, don't build kernels in kernels
+> > > or other such ugly hacks.
 > > 
+> > Is it the whole concept of isolating one or more cpus from all normal
+> > kernel tasks that you don't like, or just this particular implementation?
 > > 
-> > Well, we can't really set a tracepoint per sys_*() function. Or more
-> > precisely we already have them, automagically generated and relying on
-> > sysenter ptrace path.
-> > 
-> > But if we want to check which syscalls are called from kernel threads, we have:
-> > 
-> > - kthread() -> do_exit()
-> > 
-> > 
-> > The entry point of every kernel threads (except "kthreadd") is
-> > kthread(). It calls do_exit() in the end.
-> > 
-> > If we want to trace the exit of a kernel thread, we can put
-> > a tracepoint there instead of do_exit() which results would
-> > be intermixed with sys_exit() tracing.
-> > 
-> > 
-> > - kthreadd :: create_kthread() -> kernel_thread() -> do_fork()
-> > 
-> > 
-> > A creation of a thread is the result of the kthreadd thread fork().
-> > If we want to trace the creation of kernel threads, we can again do that
-> > in the upper level: kernel_thread().
-> > 
-> > But does that inform us about who created the thread? All we would see
-> > is kthreadd that forks. This is a very poor information compared
-> > to a userspace fork() that tells us who really created the new process.
-> > 
-> > Instead what we want is probably to trace kthread_create() which inserts the
-> > job of a thread creation in the kthreadd thread, so that we know
-> > _who_ asked for this thread creation (process that requested it and callsite).
-> > And that's much more rich in information.
-> > 
-> > Well, you can even climb in an upper layer and look if this is a workqueue,
-> > a kernel/async.c thread, a slow work, etc...
-> > 
-> > 
-> > - kernel_execve() -> sys_execve()
-> > 
-> > We can execute user apps from kernel through call_usermodehelper().
-> > And we can trace kernel_execve() or again in an upper layer
-> > like call_usermodehelper()
-> > 
-> > - ... I guess there are other examples
-> > 
-> > The kernel calls syscalls through wrappers, and tracing these 
-> > wrappers, depending of the desired level of informations we want 
-> > (choose your layer), are much more verbose / rich in 
-> > informations.
+> > I ask because I know of at least one project that would have used this
+> > capability had it been available.  As it stands they have to live with
+> > the usual kernel threads running on the cpu that they're trying to
+> > dedicate to their app.
 > 
-> What you describe looks a lot like the approach I use in the LTTng 
-> tree. Actually, the main point I am trying to make here is: if we 
-> rely only on tracing at the syscall entry/exit level for, say, 
-> monitoring all uses of e.g. sys_open(), we might be caught 
-> offguard by internal sys_open() uses within the kernel.
+> Its the simple fact of going around the kernel instead of using the
+> kernel.
+> 
+> Going around the kernel doesn't benefit anybody, least of all Linux.
+> 
+> So its the concept of running stuff on a CPU outside of Linux that I
+> don't like. I mean, if you want that, go ahead and run RTLinux, RTAI,
+> L4-Linux etc.. lots of special non-Linux hypervisor/exo-kernel like
+> things around for you to run things outside Linux with.
+Hello Peter, Hello All.
+First , It a pleasure seeing that you take interest in OFFSCHED. 
+So thank you. 
 
-There's a lot of 'internal' file opening going on within the kernel 
-that ptrace does not notice - see all the filp_open() calls.
+To my opinion this a matter of defining what a system is. Queuing theory
+teaches us that a system is defined to be everything within the boundary
+of the computer, this includes, peripherals, processors, RAM , operating
+system, the distribution and so on.  
+The kernel is merely a part of the SYSTEM, it is not THE SYSTEM; and it
+is not a blasphemy to bypass it.The kernel is not the goal and it is not
+sacred. 
+OFFSCHED is bad name to my project. My project is called SOS = Service
+Oriented System.
+SOS, has nothing to do with Real time. SOS is about arranging the
+processors to serve the SYSTEM the best way we can; if the kernel
+disturbs the service, put it a side I say. 
 
-Lets worry about this only if it's a true issue.
+How will the kernel is going to handle 32 processors machines ?  These
+numbers are no longer a science-fiction.
 
-	Ingo
+What i am suggesting is merely a different approach of how to handle
+multiple core systems. instead of thinking in processes, threads and so
+on i am thinking in services. Why not take  a processor and define this
+processor to do just firewalling ? encryption ? routing ? transmission ?
+video processing... and so on... 
+
+Raz
+
+
+
+ 
+ 
+
+
+
+
+
+
+
