@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbZHZOK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbZHZOKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757456AbZHZOK1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 10:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757439AbZHZOK0
+	id S1757468AbZHZOKy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 10:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757411AbZHZOKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 10:10:26 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:18176 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757391AbZHZOKZ (ORCPT
+	Wed, 26 Aug 2009 10:10:53 -0400
+Received: from mtagate4.de.ibm.com ([195.212.17.164]:49356 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757449AbZHZOKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 10:10:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=nEwDv46RD8oy8vhizL5J56gyip32xnA+b850AMUOJDtA60OUaDBhhsnS9EHGCixTlU
-         +/Fu4huKgTPsxCfcJDZ6Mb1LCsgURpfkNxvYFwTb4jOTehC4szhk42tqU049bzzpZT3M
-         VMRfbu6M5Lk9056FKqp70s7xdHzM44KFr4RV0=
-Message-ID: <4A95437C.2060707@gmail.com>
-Date: Wed, 26 Aug 2009 16:15:24 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 26 Aug 2009 10:10:52 -0400
+Date: Wed, 26 Aug 2009 16:10:52 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+       mbligh@google.com, lizf@cn.fujitsu.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
+Message-ID: <20090826141052.GB5946@osiris.boeblingen.de.ibm.com>
+References: <20090825141547.GE6114@nowhere>
+ <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
+ <20090826123550.GD6009@nowhere>
+ <20090826125943.GA5946@osiris.boeblingen.de.ibm.com>
+ <20090826133019.GE6009@nowhere>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 05/47] KVM: VMX: Optimize vmx_get_cpl()
-References: <1251282609-12835-1-git-send-email-avi@redhat.com> <1251282609-12835-6-git-send-email-avi@redhat.com>
-In-Reply-To: <1251282609-12835-6-git-send-email-avi@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826133019.GE6009@nowhere>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 26-08-09 12:29, Avi Kivity schreef:
-> Instead of calling vmx_get_segment() (which reads a whole bunch of
-> vmcs fields), read only the cs selector which contains the cpl.
+On Wed, Aug 26, 2009 at 03:30:22PM +0200, Frederic Weisbecker wrote:
+> On Wed, Aug 26, 2009 at 02:59:43PM +0200, Heiko Carstens wrote:
+> > > Yeah, and as told before, syscalls tracing from kernel thread is
+> > > an interesting point but we can't do it that way.
+> > > 
+> > > I'm queuing this patch for .32, but I need you Signed-off-by to apply it :)
+> > 
+> > That won't always work as pointed out in the other example:
+> > - Process doing sys_init_module then scheduled away
+> > - User enables syscall tracing -> TIF_SYSCALL_FTRACE gets set
+> > - init function of the module gets called and is doing kernel_thread()
+> >   (old API) -> kernel thread inherits TIF_SYSCALL_FTRACE.
+> > 
+> > I don't think that's what you want. You might want to clear the flag for
+> > new processes during fork (only for kernel threads I would guess).
+> > 
+> > At least the current patch leaves a hole.
 > 
-> Signed-off-by: Avi Kivity <avi@redhat.com>
+> Ah, there are callsites that use kernel_thread() directly?
+> Does it means that t->mm could be non NULL for such resulting
+> kernel threads, in that case it would be hard to hook on
+> do_fork() to check that.
 
-Can't we also optimise cs_ss_rpl_check()? (Please review, untested.)
+Oh yes, you are right. kernel threads created with kernel_thread()
+have t->mm != NULL if the forking process has an mm too.
 
-------------- >8 ---------------------- 8< --------------------
-Instead of calling vmx_get_segment() (which reads a whole bunch of
-vmcs fields), read only the cs/ss selectors which contains the rpls.
+There are very few callsites left which still use kernel_thread().
+(the last one in s390 driver code will be gone after the next
+merge window).
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 29f9129..5d8512a 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -1932,13 +1932,8 @@ static bool ldtr_valid(struct kvm_vcpu *vcpu)
- 
- static bool cs_ss_rpl_check(struct kvm_vcpu *vcpu)
- {
--	struct kvm_segment cs, ss;
--
--	vmx_get_segment(vcpu, &cs, VCPU_SREG_CS);
--	vmx_get_segment(vcpu, &ss, VCPU_SREG_SS);
--
--	return ((cs.selector & SELECTOR_RPL_MASK) ==
--		 (ss.selector & SELECTOR_RPL_MASK));
-+	return ((vmcs_read16(GUEST_CS_SELECTOR) & SELECTOR_RPL_MASK) ==
-+		 (vmcs_read16(GUEST_SS_SELECTOR) & SELECTOR_RPL_MASK));
- }
- 
- /*
+As far as I can there are only four callsites left
+(excluding staging): jffs2 and three in net/bluetooth/*
