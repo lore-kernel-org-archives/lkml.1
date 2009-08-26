@@ -1,68 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZHZDqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbZHZDrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665AbZHZDqV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 23:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbZHZDqV
+	id S1756675AbZHZDrI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 23:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbZHZDrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 23:46:21 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58936 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756566AbZHZDqU (ORCPT
+	Tue, 25 Aug 2009 23:47:07 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:33768 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756583AbZHZDrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 23:46:20 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 26 Aug 2009 12:44:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-08-24-16-24 uploaded
-Message-Id: <20090826124430.2c52bf5e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090825203623.4798f287.akpm@linux-foundation.org>
-References: <200908242328.n7ONSUHI022326@imap1.linux-foundation.org>
-	<20090826121508.a2b8bbcb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090825203623.4798f287.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 25 Aug 2009 23:47:06 -0400
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: David Dillow <dave@thedillows.org>,
+       Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
+       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.30-rc4] r8169: avoid losing MSI interrupts
+References: <1250895567.23419.1.camel@obelisk.thedillows.org>
+	<1250897657.23419.5.camel@obelisk.thedillows.org>
+	<m1iqggf4rf.fsf@fess.ebiederm.org> <m18whcf3w2.fsf@fess.ebiederm.org>
+	<1250973787.3582.14.camel@obelisk.thedillows.org>
+	<m1r5v0ogvw.fsf@fess.ebiederm.org>
+	<1251169150.4023.11.camel@obelisk.thedillows.org>
+	<m1prajabk8.fsf@fess.ebiederm.org>
+	<1251232848.9607.15.camel@lap75545.ornl.gov>
+	<m1k50r8u4p.fsf@fess.ebiederm.org>
+	<20090825221903.GA13630@electric-eye.fr.zoreil.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 25 Aug 2009 20:47:01 -0700
+In-Reply-To: <20090825221903.GA13630@electric-eye.fr.zoreil.com> (Francois Romieu's message of "Wed\, 26 Aug 2009 00\:19\:03 +0200")
+Message-ID: <m1prajme2y.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: romieu@fr.zoreil.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, mb@bu3sch.de, michael.riepe@googlemail.com, dave@thedillows.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009 20:36:23 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Francois Romieu <romieu@fr.zoreil.com> writes:
 
-> On Wed, 26 Aug 2009 12:15:08 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > On Mon, 24 Aug 2009 16:28:30 -0700
-> > akpm@linux-foundation.org wrote:
-> > 
-> > > The mm-of-the-moment snapshot 2009-08-24-16-24 has been uploaded to
-> > > 
-> > >    http://userweb.kernel.org/~akpm/mmotm/
-> > > 
-> > > and will soon be available at
-> > > 
-> > >    git://git.zen-sources.org/zen/mmotm.git
-> > > 
-> > 
-> > Just FYI. maybe my diff option of quilt is bad..but
-> > 
-> > I need to remove this line in linux-next.patch's comment (line 19075)
-> > 
-> >     You do not NEED to hold the req_lock since
-> > ->  107a7ca67f9fffd0c0c94018f5a1f61a0afe7bf8 (2005-03-15).   
-> >     Since the drbd_pp_lock is not spin_lock_irqsave anymore, you MUST NOT
-> 
-> That's probably patch(1) trying to be clever and failing.
-> 
-> Make sure you're using `patch -u'?
-> 
-Sorry, I found my .quiltrc disappeared....
-Maybe I did something wrong.
+> Eric W. Biederman <ebiederm@xmission.com> :
+> [...]
+>> I am a bit curious about TxDescUnavail.  Perhaps we had a temporary
+>> memory shortage and that is what was screaming?  I don't think we do
+>> anything at all with that state.
+>
+> You are not alone, the driver completely ignores this bit.
+>
+> As far as I remember, the TxDescUnavail event mostly pops up when the
+> driver makes an excessive use of TxPoll requests.
+>
+>> Perhaps the flaw here is simply not masking TxDescUnavail while we are
+>> in NAPI mode ?
+>
+> Yes, it is worth trying.
 
-Regards,
--Kame
+At first blush things seem better, but it isn't sufficient.
+I still have a problem with RxFIFOOver set.
+r8169 screaming irq status 00000040 mask 0000ffe2 event 0000803f napi 0000001d
 
+The patch I ran is below.
+
+Eric
+
+---
+ drivers/net/r8169.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 3b19e0c..e144bc1 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -3552,6 +3552,7 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 	int handled = 0;
+ 	int status;
++	int count = 0;
+ 
+ 	/* loop handling interrupts until we have no new ones or
+ 	 * we hit a invalid/hotplug case.
+@@ -3560,6 +3561,14 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+ 	while (status && status != 0xffff) {
+ 		handled = 1;
+ 
++		if (count++ > 100) {                                                                                               
++			printk_once("r8169 screaming irq status %08x "
++				"mask %08x event %08x napi %08x\n",
++				status, tp->intr_mask, tp->intr_event,
++				tp->napi_event);
++			break;
++		}
++
+ 		/* Handle all of the error cases first. These will reset
+ 		 * the chip, so just exit the loop.
+ 		 */
+@@ -3609,6 +3618,9 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+ 		RTL_W16(IntrStatus,
+ 			(status & RxFIFOOver) ? (status | RxOverflow) : status);
+ 		status = RTL_R16(IntrStatus);
++		if (status == 0xffff)
++			break;
++		status &= tp->intr_mask;
+ 	}
+ 
+ 	return IRQ_RETVAL(handled);
+-- 
+1.6.2.5
 
