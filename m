@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757362AbZHZNbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbZHZNhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757362AbZHZNbl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZHZNbk
+	id S1757374AbZHZNhW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757304AbZHZNhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:31:40 -0400
-Received: from mail-gx0-f205.google.com ([209.85.217.205]:55931 "EHLO
-	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757220AbZHZNbi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:31:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ImdKNZnj18WeSbFrK3oCfd/lwZW2p8nWyJULDm50Y/ihh+hrfcjUvouvkL+y+s5nu1
-         vRWbPIysTVrmXZ3gHByIqshH/K9nOCHVlKhF/kdurE7osFeyb2JXxS/mgWWBuWcTTTlx
-         fbeDQvTpSfPdb7Rt83SRZYKDWkAUokCBdBy18=
+	Wed, 26 Aug 2009 09:37:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:22590 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756496AbZHZNhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 09:37:20 -0400
+Message-ID: <4A953AAD.2000707@redhat.com>
+Date: Wed, 26 Aug 2009 09:37:49 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.8.b3.fc12 Thunderbird/3.0b3
 MIME-Version: 1.0
-Date: Wed, 26 Aug 2009 10:25:47 -0300
-Message-ID: <d970ff420908260625q2d34bc10p62241218f022b5c2@mail.gmail.com>
-Subject: PPC driver - generic bus width
-From: Alemao <xcarandiru@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+References: <20090825225114.GE4300@elf.ucw.cz> <4A946DD1.8090906@redhat.com> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu> <20090826011605.GS4300@elf.ucw.cz> <20090826025514.GE32712@mit.edu>
+In-Reply-To: <20090826025514.GE32712@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On 08/25/2009 10:55 PM, Theodore Tso wrote:
+> On Wed, Aug 26, 2009 at 03:16:06AM +0200, Pavel Machek wrote:
+>> Hi!
+>>
+>>> 3) Does that mean that you shouldn't use ext3 on RAID drives?  Of
+>>> course not!  First of all, Ext3 still saves you against kernel panics
+>>> and hangs caused by device driver bugs or other kernel hangs.  You
+>>> will lose less data, and avoid needing to run a long and painful fsck
+>>> after a forced reboot, compared to if you used ext2.  You are making
+>>
+>> Actually... ext3 + MD RAID5 will still have a problem on kernel
+>> panic. MD RAID5 is implemented in software, so if kernel panics, you
+>> can still get inconsistent data in your array.
+>
+> Only if the MD RAID array is running in degraded mode (and again, if
+> the system is in this state for a long time, the bug is in the system
+> administrator).  And even then, it depends on how the kernel dies.  If
+> the system hangs due to some deadlock, or we get an OOPS that kills a
+> process while still holding some locks, and that leads to a deadlock,
+> it's likely the low-level MD driver can still complete the stripe
+> write, and no data will be lost.  If the kernel ties itself in knots
+> due to running out of memory, and the OOM handler is invoked, someone
+> hitting the reset button to force a reboot will also be fine.
+>
+> If the RAID array is degraded, and we get an oops in interrupt
+> handler, such that the system is immediately halted --- then yes, data
+> could get lost.  But there are many system crashes where the software
+> RAID's ability to complete a stripe write would not be compromised.
+>
+>         	       	  	     	    	  	- Ted
 
-Im trying to develop a driver for my device, and its data bus can be 8, 16
-or 32 bits. This information is passed through the device tree source.
-My code is like this:
+Just to add some real world data, Bianca Schroeder published a really good paper 
+that looks at failures in national labs which has actual measured disk failures:
 
-struct device_info_t {
-	void (*read)();
-	void (*write)();
-};
+http://www.cs.cmu.edu/~bianca/fast07.pdf
 
-static int __devinit device_probe()
-{
-	prop = of_get_property(ofdev->node, "bus-width", &size);
+Her numbers showed various rates of failures, but depending on the box, drive 
+type, etc, they lost between 1-6% of the install drives each year.
 
-	device->bus_width = *prop;
+There is also a good paper from Google:
 
-	switch (device->bus_width) {
-	case 8:
-		device->read  = in_8;
-		device->write = out_8;
-		break;
-	case 16:
-		device->read  = in_be16;
-		device->write = out_be16;
-		break;
-	case 32:
-		device->read  = in_be32;
-		device->write = out_be32;
-		break;
-	default:
-		break;
-	}
-}
+http://labs.google.com/papers/disk_failures.html
 
-Can someone point me some driver that is doing something similar to the
-ideia shown above?
+Both of the above are largely linux boxes.
 
-Or what Im doing wrong in my code? Cause Im getting erros (warnings) like:
+And several other FAST papers on failures in commercial RAID boxes, most notably 
+by NetApp.
 
-cc1: warnings being treated as errors
-drivers/dev_test.c:37: warning: function declaration isn't a prototype
-drivers/dev_test.c:38: warning: function declaration isn't a prototype
-drivers/dev_test.c: In function 'device_probe':
-drivers/dev_test.c:113: warning: assignment from incompatible pointer
-type
+If reading papers is not at the top of your list of things to do, just skim 
+through and look for the tables on disk failures, etc. which have great 
+measurements of what really failed in these systems...
 
-PS: Im using a MPC8349, linux kernel 2.6.26
+Ric
 
-Cheers,
 
---
-Alemao
+
+
+
