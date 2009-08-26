@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbZHZNr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbZHZNsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757400AbZHZNr3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 09:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932970AbZHZNr3
+	id S1757407AbZHZNsv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 09:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbZHZNsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 09:47:29 -0400
-Received: from smtp4.ultrahosting.com ([74.213.175.253]:47000 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757361AbZHZNr2 (ORCPT
+	Wed, 26 Aug 2009 09:48:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:58379 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757388AbZHZNst (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 09:47:28 -0400
-Date: Wed, 26 Aug 2009 09:47:15 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: raz ben yehuda <raziebe@gmail.com>
-cc: Peter Zijlstra <peterz@infradead.org>, Chris Friesen <cfriesen@nortel.com>,
-       Mike Galbraith <efault@gmx.de>, riel@redhat.com, mingo@elte.hu,
-       andrew motron <akpm@linux-foundation.org>, wiseman@macs.biu.ac.il,
-       lkml <linux-kernel@vger.kernel.org>, linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-In-Reply-To: <1251282598.3514.20.camel@raz>
-Message-ID: <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
-References: <1250983671.5688.21.camel@raz>  <1251004897.7043.70.camel@marge.simson.net> <1251018551.3810.35.camel@raz>  <1251012621.14003.71.camel@marge.simson.net> <1251025557.3810.65.camel@raz>  <1251021133.14003.172.camel@marge.simson.net> 
- <alpine.DEB.1.10.0908251122020.26329@gentwo.org>  <1251222993.7023.53.camel@marge.simson.net>  <alpine.DEB.1.10.0908251402300.17963@gentwo.org>  <1251227322.7538.1172.camel@twins>  <4A943A00.9080609@nortel.com>  <1251264700.7538.1178.camel@twins>
- <1251282598.3514.20.camel@raz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 26 Aug 2009 09:48:49 -0400
+Date: Wed, 26 Aug 2009 09:48:48 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, jiayingz@google.com,
+       mbligh@google.com, lizf@cn.fujitsu.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH 08/12] add trace events for each syscall entry/exit
+In-Reply-To: <20090826133019.GE6009@nowhere>
+Message-ID: <alpine.DEB.2.00.0908260944540.27786@gandalf.stny.rr.com>
+References: <20090825141547.GE6114@nowhere> <20090825160237.GG4639@cetus.boeblingen.de.ibm.com> <20090826123550.GD6009@nowhere> <20090826125943.GA5946@osiris.boeblingen.de.ibm.com> <20090826133019.GE6009@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, raz ben yehuda wrote:
 
-> How will the kernel is going to handle 32 processors machines ?  These
-> numbers are no longer a science-fiction.
+On Wed, 26 Aug 2009, Frederic Weisbecker wrote:
+> > 
+> > That won't always work as pointed out in the other example:
+> > - Process doing sys_init_module then scheduled away
+> > - User enables syscall tracing -> TIF_SYSCALL_FTRACE gets set
+> > - init function of the module gets called and is doing kernel_thread()
+> >   (old API) -> kernel thread inherits TIF_SYSCALL_FTRACE.
+> > 
+> > I don't think that's what you want. You might want to clear the flag for
+> > new processes during fork (only for kernel threads I would guess).
+> > 
+> > At least the current patch leaves a hole.
+> 
+> 
+> Ah, there are callsites that use kernel_thread() directly?
+> Does it means that t->mm could be non NULL for such resulting
+> kernel threads, in that case it would be hard to hook on
+> do_fork() to check that.
 
-The kernel is already running on 4096 processor machines. Dont worry about
-that.
+All kernel threads have a NULL t->mm. Since do_fork is called by kthreadd 
+and not by kthread_create, the caller of do_fork will also have a
+t->mm = NULL.
 
-> What i am suggesting is merely a different approach of how to handle
-> multiple core systems. instead of thinking in processes, threads and so
-> on i am thinking in services. Why not take  a processor and define this
-> processor to do just firewalling ? encryption ? routing ? transmission ?
-> video processing... and so on...
-
-I think that is a valuable avenue to explore. What we do so far is
-treating each processor equally. Dedicating a processor has benefits in
-terms of cache hotness and limits OS noise.
-
-Most of the large processor configurations already partition the system
-using cpusets in order to limit the disturbance by OS processing. A set of
-cpus is used for OS activities and system daemons are put into that set.
-But what can be done is limited because the OS threads as well as
-interrupt and timer processing etc cannot currently be moved. The ideas
-that you are proposing are particularly usedful for applications that
-require low latencies and cannot tolerate OS noise easily (Infiniband MPI
-base jobs f.e.)
-
+-- Steve
 
