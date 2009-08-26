@@ -1,87 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932742AbZHZAqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932747AbZHZArD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932742AbZHZAqO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 25 Aug 2009 20:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932698AbZHZAqO
+	id S932747AbZHZArD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 25 Aug 2009 20:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932720AbZHZArD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 25 Aug 2009 20:46:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:48460 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932271AbZHZAqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 25 Aug 2009 20:46:13 -0400
-Message-ID: <4A9485A6.1010803@redhat.com>
-Date: Tue, 25 Aug 2009 20:45:26 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Tue, 25 Aug 2009 20:47:03 -0400
+Received: from newpeace.netnation.com ([204.174.223.7]:44587 "EHLO
+	peace.netnation.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932698AbZHZArB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 25 Aug 2009 20:47:01 -0400
+Date: Tue, 25 Aug 2009 17:46:58 -0700
+From: Simon Kirby <sim@hostway.ca>
+To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: [2.6.30.4] XFS-related BUG and hang via shrink_icache_memory
+Message-ID: <20090826004658.GA30929@hostway.ca>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: david@lang.hm, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-References: <20090825222112.GB4300@elf.ucw.cz> <alpine.DEB.2.00.0908251526290.28411@asgard.lang.hm> <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <4A947839.4010601@redhat.com> <20090826000657.GK4300@elf.ucw.cz> <4A947E05.8070406@redhat.com> <20090826002045.GO4300@elf.ucw.cz> <4A9481BE.1030308@redhat.com> <20090826003803.GP4300@elf.ucw.cz>
-In-Reply-To: <20090826003803.GP4300@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/25/2009 08:38 PM, Pavel Machek wrote:
->>>>> I'm not sure what's rare about power failures. Unlike single sector
->>>>> errors, my machine actually has a button that produces exactly that
->>>>> event. Running degraded raid5 arrays for extended periods may be
->>>>> slightly unusual configuration, but I suspect people should just do
->>>>> that for testing. (And from the discussion, people seem to think that
->>>>> degraded raid5 is equivalent to raid0).
->>>>
->>>> Power failures after a full drive failure with a split write during a rebuild?
->>>
->>> Look, I don't need full drive failure for this to happen. I can just
->>> remove one disk from array. I don't need power failure, I can just
->>> press the power button. I don't even need to rebuild anything, I can
->>> just write to degraded array.
->>>
->>> Given that all events are under my control, statistics make little
->>> sense here.
->>
->> You are deliberately causing a double failure - pressing the power button
->> after pulling a drive is exactly that scenario.
->
-> Exactly. And now I'm trying to get that documented, so that people
-> don't do it and still expect their fs to be consistent.
+On an NFS storage server, we started using some XFS filesystems along
+with many other EXT3 (on LVM on AOE).  The following bug has occurred
+twice, with the machine hanging immediately after (console full of
+scrolling oopses or bugs -- haven't seen it myself -- after this):
 
-The problem I have is that the way you word it steers people away from RAID5 and 
-better data integrity. Your intentions are good, but your text is going to do 
-considerable harm.
-
-Most people don't intentionally drop power (or have a power failure) during RAID 
-rebuilds....
-
->
->> Pull your single (non-MD5) disk out while writing (hot unplug from the
->> S-ATA side, leaving power on) and run some tests to verify your
->> assertions...
->
-> I actually did that some time ago with pulling SATA disk (I actually
-> pulled both SATA *and* power -- that was the way hotplug envelope
-> worked; that's more harsh test than what you suggest, so that should
-> be ok). Write test was fsync heavy, with logging to separate drive,
-> checking that all the data where fsync succeeded are indeed
-> accessible. I uncovered few bugs in ext* that jack fixed, I uncovered
-> some libata weirdness that is not yet fixed AFAIK, but with all the
-> patches applied I could not break that single SATA disk.
-> 									Pavel
+Aug 25 16:16:15 nas03 kernel: kernel BUG at lib/radix-tree.c:485!
+Aug 25 16:16:15 nas03 kernel: CPU 1 
+Aug 25 16:16:15 nas03 kernel: Pid: 417, comm: kswapd0 Not tainted 2.6.30.4-hw #1 PowerEdge 1950
+Aug 25 16:16:15 nas03 kernel: RIP: 0010:[<ffffffff8046b4f2>]  [<ffffffff8046b4f2>] radix_tree_tag_set+0xa2/0xb0
+Aug 25 16:16:15 nas03 kernel: RSP: 0018:ffff88022fb1dc78  EFLAGS: 00010246
+Aug 25 16:16:15 nas03 kernel: RAX: 000000000000001e RBX: 0000000000000000 RCX: ffff8801d2f855c8
+Aug 25 16:16:15 nas03 kernel: RDX: 0000000000000000 RSI: 000000000000009e RDI: ffff88022c704530
+Aug 25 16:16:15 nas03 kernel: RBP: ffff88022fb1dc80 R08: 000000000000001e R09: 0000000000000000
+Aug 25 16:16:15 nas03 kernel: R10: 0000000000000000 R11: 0000000000000001 R12: ffff8801385a6180
+Aug 25 16:16:15 nas03 kernel: R13: ffff88022cb56800 R14: 000000000000000f R15: 0000000000000080
+Aug 25 16:16:15 nas03 kernel: FS:  0000000000000000(0000) GS:ffff88002804d000(0000) knlGS:0000000000000000
+Aug 25 16:16:15 nas03 kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+Aug 25 16:16:15 nas03 kernel: CR2: 00007f759ae1dae0 CR3: 0000000000201000 CR4: 00000000000006e0
+Aug 25 16:16:15 nas03 kernel:  ffff88022c7044f0 ffff88022fb1dcb0 ffffffff80439198 ffff88022fb1dcc0
+Aug 25 16:16:15 nas03 kernel:  ffff8801385a6180 ffff8801385a6300 ffff88022fb1dd60 ffff88022fb1dcd0
+Aug 25 16:16:15 nas03 kernel:  ffffffff80429cbb ffff88022fb1dce0 ffff8801385a6300 ffff88022fb1dcf0
+Aug 25 16:16:15 nas03 kernel: Call Trace:
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff80439198>] xfs_inode_set_reclaim_tag+0x78/0xa0
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff80429cbb>] xfs_reclaim+0x5b/0xb0
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff80437ce8>] xfs_fs_destroy_inode+0x38/0x60
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff802c6e0e>] destroy_inode+0x2e/0x50
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff802c7206>] dispose_list+0x96/0x110
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff802c743e>] shrink_icache_memory+0x1be/0x2b0
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff80290d25>] shrink_slab+0x125/0x180
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff802915d9>] kswapd+0x3c9/0x5c0
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff8028ee80>] ? isolate_pages_global+0x0/0x290
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff80702e11>] ? thread_return+0x3f/0x63e
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff80256790>] ? autoremove_wake_function+0x0/0x40
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff80291210>] ? kswapd+0x0/0x5c0
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff8095c140>] ? early_idt_handler+0x0/0x71
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff8025637a>] kthread+0x5a/0x90
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff8020ce0a>] child_rip+0xa/0x20
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff8095c140>] ? early_idt_handler+0x0/0x71
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff80256320>] ? kthread+0x0/0x90
+Aug 25 16:16:15 nas03 kernel:  [<ffffffff8020ce00>] ? child_rip+0x0/0x20
+Aug 25 16:16:15 nas03 kernel: Code: 4d 85 d2 74 26 41 ff cb 75 c4 4d 85 d2 74 16 8b 47 04 8d 4b 15 ba 01 00 00 00 d3 e2 85 c2 75 05 09 d0 89 47 04 5b c9 4c 89 d0 c3 <0f> 0b eb fe 0f 0b eb fe 66 66 90 66 66 90 55 48 89 e5 41 57 41 
 
 
-Fsync heavy workloads with working barriers will tend to keep the write cache 
-pretty empty (two barrier flushes per fsync) so this is not too surprising.
+>>RIP; ffffffff8046b4f2 <radix_tree_tag_set+a2/b0>   <=====
 
-Drive behaviour depends on a lot of things though - how the firmware prioritizes 
-writes over reads, etc.
+>>RCX; ffff8801d2f855c8 <phys_startup_64+ffff8801d2d855c8/ffffffff80000000>
+>>RDI; ffff88022c704530 <phys_startup_64+ffff88022c504530/ffffffff80000000>
+>>RBP; ffff88022fb1dc80 <phys_startup_64+ffff88022f91dc80/ffffffff80000000>
+>>R12; ffff8801385a6180 <phys_startup_64+ffff8801383a6180/ffffffff80000000>
+>>R13; ffff88022cb56800 <phys_startup_64+ffff88022c956800/ffffffff80000000>
 
-ric
+Trace; ffffffff80439198 <xfs_inode_set_reclaim_tag+78/a0>
+Trace; ffffffff80429cbb <xfs_reclaim+5b/b0>
+Trace; ffffffff80437ce8 <xfs_fs_destroy_inode+38/60>
+Trace; ffffffff802c6e0e <destroy_inode+2e/50>
+Trace; ffffffff802c7206 <dispose_list+96/110>
+Trace; ffffffff802c743e <shrink_icache_memory+1be/2b0>
+Trace; ffffffff80290d25 <shrink_slab+125/180>
+Trace; ffffffff802915d9 <kswapd+3c9/5c0>
+Trace; ffffffff8028ee80 <isolate_pages_global+0/290>
+Trace; ffffffff80702e11 <thread_return+3f/63e>
+Trace; ffffffff80256790 <autoremove_wake_function+0/40>
+Trace; ffffffff80291210 <kswapd+0/5c0>
+Trace; ffffffff8095c140 <early_idt_handler+0/71>
+Trace; ffffffff8025637a <kthread+5a/90>
+Trace; ffffffff8020ce0a <child_rip+a/20>
+Trace; ffffffff8095c140 <early_idt_handler+0/71>
+Trace; ffffffff80256320 <kthread+0/90>
+Trace; ffffffff8020ce00 <child_rip+0/20>
+
+Code;  ffffffff8046b4c7 <radix_tree_tag_set+77/b0>
+0000000000000000 <_RIP>:
+Code;  ffffffff8046b4c7 <radix_tree_tag_set+77/b0>
+   0:   4d 85 d2                  test   %r10,%r10
+Code;  ffffffff8046b4ca <radix_tree_tag_set+7a/b0>
+   3:   74 26                     je     2b <_RIP+0x2b>
+Code;  ffffffff8046b4cc <radix_tree_tag_set+7c/b0>
+   5:   41 ff cb                  dec    %r11d
+Code;  ffffffff8046b4cf <radix_tree_tag_set+7f/b0>
+   8:   75 c4                     jne    ffffffffffffffce <_RIP+0xffffffffffffffce>
+Code;  ffffffff8046b4d1 <radix_tree_tag_set+81/b0>
+   a:   4d 85 d2                  test   %r10,%r10
+Code;  ffffffff8046b4d4 <radix_tree_tag_set+84/b0>
+   d:   74 16                     je     25 <_RIP+0x25>
+Code;  ffffffff8046b4d6 <radix_tree_tag_set+86/b0>
+   f:   8b 47 04                  mov    0x4(%rdi),%eax
+Code;  ffffffff8046b4d9 <radix_tree_tag_set+89/b0>
+  12:   8d 4b 15                  lea    0x15(%rbx),%ecx
+Code;  ffffffff8046b4dc <radix_tree_tag_set+8c/b0>
+  15:   ba 01 00 00 00            mov    $0x1,%edx
+Code;  ffffffff8046b4e1 <radix_tree_tag_set+91/b0>
+  1a:   d3 e2                     shl    %cl,%edx
+Code;  ffffffff8046b4e3 <radix_tree_tag_set+93/b0>
+  1c:   85 c2                     test   %eax,%edx
+Code;  ffffffff8046b4e5 <radix_tree_tag_set+95/b0>
+  1e:   75 05                     jne    25 <_RIP+0x25>
+Code;  ffffffff8046b4e7 <radix_tree_tag_set+97/b0>
+  20:   09 d0                     or     %edx,%eax
+Code;  ffffffff8046b4e9 <radix_tree_tag_set+99/b0>
+  22:   89 47 04                  mov    %eax,0x4(%rdi)
+Code;  ffffffff8046b4ec <radix_tree_tag_set+9c/b0>
+  25:   5b                        pop    %rbx
+Code;  ffffffff8046b4ed <radix_tree_tag_set+9d/b0>
+  26:   c9                        leaveq 
+Code;  ffffffff8046b4ee <radix_tree_tag_set+9e/b0>
+  27:   4c 89 d0                  mov    %r10,%rax
+Code;  ffffffff8046b4f1 <radix_tree_tag_set+a1/b0>
+  2a:   c3                        retq   
+Code;  ffffffff8046b4f2 <radix_tree_tag_set+a2/b0>   <=====
+  2b:   0f 0b                     ud2a      <=====
+Code;  ffffffff8046b4f4 <radix_tree_tag_set+a4/b0>
+  2d:   eb fe                     jmp    2d <_RIP+0x2d>
+Code;  ffffffff8046b4f6 <radix_tree_tag_set+a6/b0>
+  2f:   0f 0b                     ud2a   
+Code;  ffffffff8046b4f8 <radix_tree_tag_set+a8/b0>
+  31:   eb fe                     jmp    31 <_RIP+0x31>
+Code;  ffffffff8046b4fa <radix_tree_tag_set+aa/b0>
+  33:   66 66 90                  xchg   %ax,%ax
+Code;  ffffffff8046b4fd <radix_tree_tag_set+ad/b0>
+  36:   66 66 90                  xchg   %ax,%ax
+Code;  ffffffff8046b500 <radix_tree_delete+0/270>
+  39:   55                        push   %rbp
+Code;  ffffffff8046b501 <radix_tree_delete+1/270>
+  3a:   48 89 e5                  mov    %rsp,%rbp
+Code;  ffffffff8046b504 <radix_tree_delete+4/270>
+  3d:   41 57                     push   %r15
+Code;  ffffffff8046b506 <radix_tree_delete+6/270>
+  3f:   41                        rex.B
+
+This is stock 2.6.30.4, x86_64, serving files over NFS.  Perhaps
+something in the shrink_icache_memory path (which happens to get hit a
+lot with our particular load patterns) isn't safe with XFS? 
+
+I'm a bit low on sleep so I'm sure I'm missing some info.  Please ask. :)
+
+Simon-
