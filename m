@@ -1,148 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbZHZRs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbZHZRuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbZHZRs7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 13:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZHZRs7
+	id S1752532AbZHZRuk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 13:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbZHZRuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 13:48:59 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:55097 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752278AbZHZRs6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 13:48:58 -0400
-Date: Wed, 26 Aug 2009 13:48:57 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-In-Reply-To: <20090826164624.GA21456@Krystal>
-Message-ID: <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com>
-References: <20090825102215.GC26801@elte.hu> <1251196359.7538.1133.camel@twins> <20090825103907.GB28287@elte.hu> <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins> <4A94D3A8.1090902@cn.fujitsu.com> <1251269207.7538.1217.camel@twins>
- <1251270092.7538.1226.camel@twins> <4A94DFF4.5030301@cn.fujitsu.com> <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com> <20090826164624.GA21456@Krystal>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Aug 2009 13:50:39 -0400
+Received: from mga02.intel.com ([134.134.136.20]:30873 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750950AbZHZRui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 13:50:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,280,1249282800"; 
+   d="scan'208";a="442971782"
+Subject: Re: [PATCH] x86: use hard_smp_processor_id to get apic id in
+ identify_cpu -v2
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Cyrill Gorcunov <gorcunov@openvz.org>
+In-Reply-To: <4A948C88.9060403@kernel.org>
+References: <4A9391CD.5020804@kernel.org>  <4A946082.9090809@kernel.org>
+	 <1251240835.2636.28.camel@sbs-t61>  <4A948C88.9060403@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Wed, 26 Aug 2009 10:49:48 -0700
+Message-Id: <1251308988.2787.39.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-08-25 at 18:14 -0700, Yinghai Lu wrote:
+> Suresh Siddha wrote:
+> > On Tue, 2009-08-25 at 15:06 -0700, Yinghai Lu wrote:
+> >> and leave phys_proc_id to use initial apic id.
+> > 
+> > No. We need to be consistent for both phys_proc_id and apicid
+> > computations.
+> > 
+> > i.e., if the bios changes the apic id's and those updated apic id's are
+> > not reflected in the initial apic id, then we need to use
+> > hard_smp_processor_id() for both phys_proc_id and apicid computations.
+> 
+> then you may get wrong phys_proc_id for amd system with apic id lifting.
 
-This patch solves the problem that Li originally reported. If something 
-registers a trace point belonging to a module, then it ups the ref count 
-of the module. This prevents a process from registering a probe to a 
-tracepoint belonging to a module and then having the module disappear.
+Then we should add an exception for AMD systems too. And not change
+generic code.
 
-Doing the example with perf in Li's original post, now errors on the 
-rmmod, with "ERROR: Module trace_events_sample is in use".
+> A: phys_pkg_id:
+> Default option:
+> use cpu id to get initial apic id, and then use initial apic id to get phys_pkg_id.
+> 
+> exception:
+> vsmp: need to use apic id to get phys_pkg_id, and apic id and initial apic id is not consistent. 
+> 
+> for AMD system with apic id lifting, initial apic id and apic is not consistent. but we should
+> use initial apic id to get phys_pkg_id. and that is consistent to Default option.
+> 
+> B: c->apicid for real apic id?
+> we already have c->initial_apicid, and c->apicid.
+> 1. for amd system with apicid lifting, should use hard_smp_processor_id to get c->apicid.
+> 2. for intel system (other than vsmp, and x445), c->apicid c->initial_apicid is the same, so could use hard_smp_processor_id
 
-Mathieu, can I have your acked-by on this?
+On the platforms which don't support cpuid leaf 0xb, apicid and initial
+apicid might be potentially different if the bios changes the apicid.
+And we don't want to depend on the bios to get the things correct. So
+where it is not needed, we don't want to depend on the
+hard_smp_processor_id() for topology detection.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+In short, on all the platforms we want to use initial apic id for apicid
+and phys_proc_id. And only on the required platforms like x445, vsmp,
+some AMD platforms, we can have their own mechanisms.
 
-diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-index 0341f2e..055275b 100644
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -109,8 +109,9 @@ struct tracepoint {
- #define EXPORT_TRACEPOINT_SYMBOL(name)					\
- 	EXPORT_SYMBOL(__tracepoint_##name)
- 
--extern void tracepoint_update_probe_range(struct tracepoint *begin,
--	struct tracepoint *end);
-+extern void tracepoint_update_probe_range(struct module *,
-+					  struct tracepoint *begin,
-+					  struct tracepoint *end);
- 
- #else /* !CONFIG_TRACEPOINTS */
- #define DECLARE_TRACE_WITH_CALLBACK(name, proto, args, reg, unreg)	\
-diff --git a/kernel/module.c b/kernel/module.c
-index b182143..a8e69fa 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2974,7 +2974,7 @@ void module_update_tracepoints(void)
- 	mutex_lock(&module_mutex);
- 	list_for_each_entry(mod, &modules, list)
- 		if (!mod->taints)
--			tracepoint_update_probe_range(mod->tracepoints,
-+			tracepoint_update_probe_range(mod, mod->tracepoints,
- 				mod->tracepoints + mod->num_tracepoints);
- 	mutex_unlock(&module_mutex);
- }
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 06f165a..089e6f9 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -54,6 +54,7 @@ static struct hlist_head tracepoint_table[TRACEPOINT_TABLE_SIZE];
-  */
- struct tracepoint_entry {
- 	struct hlist_node hlist;
-+	struct module *mod;
- 	void **funcs;
- 	int refcount;	/* Number of times armed. 0 if disarmed. */
- 	char name[0];
-@@ -221,6 +222,7 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
- 	memcpy(&e->name[0], name, name_len);
- 	e->funcs = NULL;
- 	e->refcount = 0;
-+	e->mod = NULL;	/* Will be assigned in tracepoint_update_probe_range */
- 	hlist_add_head(&e->hlist, head);
- 	return e;
- }
-@@ -231,6 +233,8 @@ static struct tracepoint_entry *add_tracepoint(const char *name)
-  */
- static inline void remove_tracepoint(struct tracepoint_entry *e)
- {
-+	if (e->mod)
-+		module_put(e->mod);
- 	hlist_del(&e->hlist);
- 	kfree(e);
- }
-@@ -274,7 +278,8 @@ static void disable_tracepoint(struct tracepoint *elem)
-  * Updates the probe callback corresponding to a range of tracepoints.
-  */
- void
--tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
-+tracepoint_update_probe_range(struct module *mod,
-+			      struct tracepoint *begin, struct tracepoint *end)
- {
- 	struct tracepoint *iter;
- 	struct tracepoint_entry *mark_entry;
-@@ -286,9 +291,15 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
- 	for (iter = begin; iter < end; iter++) {
- 		mark_entry = get_tracepoint(iter->name);
- 		if (mark_entry) {
-+			if (mod && !mark_entry->mod) {
-+				if (!try_module_get(mod))
-+					goto disable;
-+				mark_entry->mod = mod;
-+			}
- 			set_tracepoint(&mark_entry, iter,
- 					!!mark_entry->refcount);
- 		} else {
-+ disable:
- 			disable_tracepoint(iter);
- 		}
- 	}
-@@ -301,7 +312,7 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
- static void tracepoint_update_probes(void)
- {
- 	/* Core kernel tracepoints */
--	tracepoint_update_probe_range(__start___tracepoints,
-+	tracepoint_update_probe_range(NULL, __start___tracepoints,
- 		__stop___tracepoints);
- 	/* tracepoints in modules. */
- 	module_update_tracepoints();
-@@ -556,7 +567,7 @@ int tracepoint_module_notify(struct notifier_block *self,
- 	switch (val) {
- 	case MODULE_STATE_COMING:
- 	case MODULE_STATE_GOING:
--		tracepoint_update_probe_range(mod->tracepoints,
-+		tracepoint_update_probe_range(mod, mod->tracepoints,
- 			mod->tracepoints + mod->num_tracepoints);
- 		break;
- 	}
+> 3. for vsmp, and x445, do you want to have c->apicid to have real apic id or the same as initial apic_id?
 
+On these platforms, c->apicid should be based on their real apic id.
+
+> 
+> this patch is trying to make c->apicid to have real apic_id.
+
+Can you please modify the patch so that we can have exceptions for
+needed platforms only?
+
+thanks,
+suresh
 
