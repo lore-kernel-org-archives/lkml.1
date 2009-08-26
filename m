@@ -1,139 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbZHZVcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbZHZVdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbZHZVcP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 17:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZHZVcO
+	id S1753884AbZHZVdF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 17:33:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbZHZVdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 17:32:14 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:64077 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753400AbZHZVcN (ORCPT
+	Wed, 26 Aug 2009 17:33:04 -0400
+Received: from mail-px0-f174.google.com ([209.85.216.174]:55570 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753743AbZHZVdC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 17:32:13 -0400
+	Wed, 26 Aug 2009 17:33:02 -0400
+X-Greylist: delayed 389 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 17:33:01 EDT
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=FjaIz//ATGlPZ0oNHlnruSeuyUQS+7slrbnyjHM5MOM6nZmzz+TYZnA4/L2otxUFCg
-         zA5rT+7fdt2Avxe/ZEPgDmy+Ats8cjraJMy+6AGWRykH4uRjco3rzSpDOfr5DqeW5qbe
-         vzwUHqMMSh22cnSpz6j7NgjdlqfUcR8tzJ5EM=
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-From: raz ben yehuda <raziebe@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Chris Friesen <cfriesen@nortel.com>, Mike Galbraith <efault@gmx.de>,
-       riel@redhat.com, andrew motron <akpm@linux-foundation.org>,
-       wiseman@macs.biu.ac.il, lkml <linux-kernel@vger.kernel.org>,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <20090826193252.GA14721@elte.hu>
-References: <1251282598.3514.20.camel@raz>
-	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
-	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>
-	 <1251300625.18584.18.camel@twins>
-	 <alpine.DEB.1.10.0908261136590.9933@gentwo.org>
-	 <1251302598.18584.31.camel@twins>
-	 <alpine.DEB.1.10.0908261211340.9933@gentwo.org>
-	 <20090826180407.GA13632@elte.hu>
-	 <alpine.DEB.1.10.0908261509580.9933@gentwo.org>
-	 <20090826193252.GA14721@elte.hu>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 00:32:09 +0300
-Message-Id: <1251322329.3882.42.camel@raz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        b=upBLTjamxIKXvo8SM5CrXXsBpxMvKu/4KYKfKsXFgyDgb+jt5cRqtADZJyQ07W3ZX2
+         o2jyDC2QDduK65XQ73+2Bu9PEd3qm6R+XkPC9EudW4V3SJKLaHbqsSj5RTQH24UONPV6
+         Zh+jojhn5mTwYlramlgP7r2oJYkT1MgpvEHYg=
+MIME-Version: 1.0
+Date: Wed, 26 Aug 2009 23:26:33 +0200
+X-Google-Sender-Auth: f1efd97ce07deef6
+Message-ID: <10f740e80908261426w4c37f960ma9ff1206a65618d4@mail.gmail.com>
+Subject: [git pull] m68k updates for 2.6.31 (was: Re: [git pull] m68knommu 
+	arch fixes)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Hello 
-First thank you for your interest.
+Hi Linus,
 
-OFFSCHED is a variant of a proprietary software. it is 4 years old.It is
-stable. and.. well...this thing works .And it is so simple. SO VERY VERY
-SIMPLE. ONCE YOU GO OFFLINE YOU NEVER LOOK BACK. 
+On Fri, Jun 12, 2009 at 08:22, Geert Uytterhoeven<geert@linux-m68k.org> wrote:
+> Probably I won't have time to handle and submit any m68k patches
+> during this merge window,
+> so if anyone needs anything to be in 2.6.31, it would be nice if
+> somebody else could take care of
+> it.
 
-OFFSCHED has a full access to many kernel facilities. My software
-transmits packets, encrypt packets, and reaches network throughput
-traffic ( 25Gbs), same as pktgen while saturating its 8 SSD disks.
+Here is the most critical stuff. Thanks for pulling!
 
-My software take statistics of an offloaded processor usage, and unlike
-OS processors, since I have a full control of the processor, the usage
-is growing quite linearly. there are no bursts of CPU usage. it remains
-stable of X% usage even when I transmit 25Gbps.
+The following changes since commit f415c413f458837bd0c27086b79aca889f9435e4:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
-OFFSCHED __oldest__ patch was 4 lines. this how it started. 4 lines of
-patch and My 2.6.18-8.el5 kernel is suddenly a hard real time kernel.
-Today, I patch this kernel, build only a bzImage, throw this 2MB bzImage
-on a server running regular centos/redhat distribution, and caboom, I
-have a real time server in god-know-where. I do not mess with any
-driver, i do not mess with initrd. I just fix 4 lines. that all.
+are available in the git repository at:
 
-OFFSCHED is not just for real time. It can monitor the kernel, protect
-it and do whatever come to mind. please see OFFSCHED-RTOP.pdf. 
+  git://git.kernel.org/pub/scm/linux/kernel/git/geert/linux-m68k.git#for-linus
 
-thank you
-raz
+Alexey Dobriyan (1):
+      m68k: Fix redefinition of pgprot_noncached
 
- 
-On Wed, 2009-08-26 at 21:32 +0200, Ingo aMolnar wrote:
-> * Christoph Lameter <cl@linux-foundation.org> wrote:
-> 
-> > On Wed, 26 Aug 2009, Ingo Molnar wrote:
-> > 
-> > > The thing is, you have cut out (and have not replied to) this
-> > > crutial bit of what Peter wrote:
-> > >
-> > > > > The past year or so you've been whining about the tick latency,
-> > > > > and I've seen exactly _0_ patches from you slimming down the
-> > > > > work done in there, even though I pointed out some obvious
-> > > > > things that could be done.
-> > >
-> > > ... which pretty much settles the issue as far as i'm concerned. 
-> > > If you were truly interested in a constructive solution to lower 
-> > > latencies in Linux you should have sent patches already for the 
-> > > low hanging fruits Peter pointed out.
-> > 
-> > The noise latencies were already reduced in years earlier to the 
-> > mininum (f.e. the work on slab queue cleaning). Certainly more 
-> > could be done there but that misses the point.
-> 
-> Peter suggested various improvements to the timer tick related 
-> latencies _you_ were complaining about earlier this year. Those 
-> latencies sure were not addressed 'years earlier'.
-> 
-> If you are unwilling to reduce the very latencies you apparently 
-> cared and complained about then you dont have much real standing to 
-> complain now.
-> 
-> ( If you on the other hand were approaching this issue with 
->   pragmatism and with intellectual honesty, if you were at the end 
->   of a string of patches that gradually improved latencies but 
->   couldnt get them below a certain threshold, and if scheduler 
->   developers couldnt give you any ideas what else to improve, and 
->   _then_ suggested some other solution, you might have a point.
->   You are far away from being able to claim that. )
-> 
-> Really, it's a straightforward application of Occam's Razor to the 
-> scheduler. We go for the simplest solution first, and try to help 
-> more people first, before going for some specialist hack.
-> 
-> > The point of the OFFLINE scheduler is to completely eliminate the 
-> > OS disturbances by getting rid of *all* OS processing on some 
-> > cpus.
-> > 
-> > For some reason scheduler developers seem to be threatened by this 
-> > idea and they go into bizarre lines of arguments to avoid the 
-> > issue. Its simple and doable and the scheduler will still be there 
-> > after we do this.
-> 
-> If you meant to include me in that summary categorization, i dont 
-> feel 'threatened' by any such patches (why would i? They dont seem 
-> to have sharp teeth nor any apparent poison fangs) - i simply concur 
-> with the reasons Peter listed that it is a technically inferior 
-> solution.
-> 
-> 	Ingo
+Andrew Morton (1):
+      arch/m68k/include/asm/motorola_pgalloc.h: fix kunmap arg
 
+Geert Uytterhoeven (1):
+      m68k,m68knommu: Wire up rt_tgsigqueueinfo and perf_counter_open
+
+Roel Kluin (2):
+      m68k: count can reach 51, not 50
+      m68k: cnt reaches -1, not 0
+
+ arch/m68k/amiga/config.c                 |    6 ++++--
+ arch/m68k/include/asm/motorola_pgalloc.h |   10 ++++------
+ arch/m68k/include/asm/pgtable_mm.h       |    3 +--
+ arch/m68k/include/asm/unistd.h           |    4 +++-
+ arch/m68k/kernel/entry.S                 |    2 ++
+ arch/m68knommu/kernel/syscalltable.S     |    2 ++
+ drivers/macintosh/via-maciisi.c          |    2 +-
+ 7 files changed, 17 insertions(+), 12 deletions(-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
