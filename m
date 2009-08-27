@@ -1,53 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZH0Mwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbZH0Myo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752543AbZH0Mwg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 08:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZH0Mwf
+	id S1752562AbZH0Myo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 08:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZH0Myo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 08:52:35 -0400
-Received: from rtr.ca ([76.10.145.34]:49232 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750833AbZH0Mwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 08:52:35 -0400
-Message-ID: <4A96819D.7060708@rtr.ca>
-Date: Thu, 27 Aug 2009 08:52:45 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Mike Mohr <akihana@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: expresscard hotplug not working
-References: <4746469c0908251817u225609bax66ea27261a1ef038@mail.gmail.com>
-In-Reply-To: <4746469c0908251817u225609bax66ea27261a1ef038@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 27 Aug 2009 08:54:44 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:8708 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065AbZH0Myn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 08:54:43 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
+ cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+Cc: Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20090827115354.GC24986@linux.vnet.ibm.com>
+References: <20090827114908.GA24986@linux.vnet.ibm.com>
+	 <20090827115354.GC24986@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 27 Aug 2009 14:53:27 +0200
+Message-Id: <1251377607.18584.96.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Mohr wrote:
-> Hi,
+On Thu, 2009-08-27 at 17:23 +0530, Arun R Bharadwaj wrote:
+> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-08-27 17:19:08]:
 > 
-> I think I'm having a similar problem to the fellow listed here:
+> Cpuidle infrastructure assumes pm_idle as the default idle routine.
+> But, ppc_md.power_save is the default idle callback in case of pSeries.
 > 
-> http://kerneltrap.org/mailarchive/linux-kernel/2007/10/16/344543
+> So, create a more generic, architecture independent cpuidle_pm_idle
+> function pointer in driver/cpuidle/cpuidle.c and allow the idle routines
+> of architectures to be set to cpuidle_pm_idle.
 > 
-> The only difference is that no card will work at all unless it is
-> inserted before system power is turned on.  If the card is removed
-> while the system is running it stops working and will never return to
-> life unless the system is rebooted with the card in the slot.
-..
+> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle.c |   12 +++++++-----
+>  include/linux/cpuidle.h   |    7 +++++++
+>  2 files changed, 14 insertions(+), 5 deletions(-)
+> 
+> Index: linux.trees.git/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
+> +++ linux.trees.git/drivers/cpuidle/cpuidle.c
+> @@ -25,6 +25,7 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
+>  DEFINE_MUTEX(cpuidle_lock);
+>  LIST_HEAD(cpuidle_detected_devices);
+>  static void (*pm_idle_old)(void);
+> +void (*cpuidle_pm_idle)(void);
+>  
+>  static int enabled_devices;
+>  
+> @@ -98,10 +99,10 @@ static void cpuidle_idle_call(void)
+>   */
+>  void cpuidle_install_idle_handler(void)
+>  {
+> -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+> +	if (enabled_devices && (cpuidle_pm_idle != cpuidle_idle_call)) {
+>  		/* Make sure all changes finished before we switch to new idle */
+>  		smp_wmb();
+> -		pm_idle = cpuidle_idle_call;
+> +		cpuidle_pm_idle = cpuidle_idle_call;
+>  	}
+>  }
+>  
+> @@ -110,8 +111,9 @@ void cpuidle_install_idle_handler(void)
+>   */
+>  void cpuidle_uninstall_idle_handler(void)
+>  {
+> -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+> -		pm_idle = pm_idle_old;
+> +	if (enabled_devices && pm_idle_old &&
+> +			(cpuidle_pm_idle != pm_idle_old)) {
+> +		cpuidle_pm_idle = pm_idle_old;
+>  		cpuidle_kick_cpus();
+>  	}
+>  }
+> @@ -382,7 +384,7 @@ static int __init cpuidle_init(void)
+>  {
+>  	int ret;
+>  
+> -	pm_idle_old = pm_idle;
+> +	pm_idle_old = cpuidle_pm_idle;
+>  
+>  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+>  	if (ret)
+> Index: linux.trees.git/include/linux/cpuidle.h
+> ===================================================================
+> --- linux.trees.git.orig/include/linux/cpuidle.h
+> +++ linux.trees.git/include/linux/cpuidle.h
+> @@ -188,4 +188,11 @@ static inline void cpuidle_unregister_go
+>  #define CPUIDLE_DRIVER_STATE_START	0
+>  #endif
+>  
+> +/*
+> + * Idle callback used by cpuidle to call the cpuidle_idle_call().
+> + * Platform drivers can use this to register to cpuidle's idle loop.
+> + */
+> +
+> +extern void (*cpuidle_pm_idle)(void);
+> +
+>  #endif /* _LINUX_CPUIDLE_H */
 
-It's probably the b0rked PCIe hotplug support.
-The driver is way too strict about things at times,
-and as a result it doesn't work "out of the box" on
-a huge number of Dell notebooks (and possibly others).
 
-Just create a file called /etc/modprobe.d/pciehp,
-and stick this one line into it:
+I'm not quite seeing how this makes anything any better. Not we have 3
+function pointers, where 1 should suffice.
 
-   options pciehp pciehp_force=1
+/me wonders what's wrong with something like:
 
-See if that works.
+struct idle_func_desc {
+	int		 power;
+	int		 latency;
+	void		 (*idle)(void);
+	struct list_head list;
+};
+
+static void spin_idle(void)
+{
+	for (;;)
+		cpu_relax();
+}
+
+static idle_func_desc default_idle_func = {
+	power = 0, 	   /* doesn't safe any power */
+	latency = INT_MAX, /* has max latency */
+	idle = spin_idle,
+	list = INIT_LIST_HEAD(default_idle_func.list),
+};
+
+void (*idle_func)(void);
+static struct list_head idle_func_list;
+
+static void pick_idle_func(void)
+{
+	struct idle_func_desc *desc, *idle = &default_idle_desc;
+
+	list_for_each_entry(desc, &idle_func_list, list) {
+		if (desc->power < idle->power)
+			continue;
+		if (desc->latency > target_latency);
+			continue;
+		idle = desc;
+	}
+
+	pm_idle = idle->idle;
+}
+
+void register_idle_func(struct idle_func_desc *desc)
+{
+	WARN_ON_ONCE(!list_empty(&desc->list));
+
+	list_add_tail(&idle_func_list, &desc->list);
+	pick_idle_func();
+}
+
+void unregister_idle_func(struct idle_func_desc *desc)
+{
+	WARN_ON_ONCE(list_empty(&desc->list));
+
+	list_del_init(&desc->list);
+	if (idle_func == desc->idle) 
+		pick_idle_func();
+}
 
