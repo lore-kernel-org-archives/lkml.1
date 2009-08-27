@@ -1,58 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751508AbZH0ORS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751977AbZH0OSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751508AbZH0ORS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 10:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZH0ORR
+	id S1751977AbZH0OSd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 10:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZH0OSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 10:17:17 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:40380 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbZH0ORR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 10:17:17 -0400
-Message-ID: <4A969566.3070606@gmail.com>
-Date: Thu, 27 Aug 2009 16:17:10 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 27 Aug 2009 10:18:32 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40876 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751248AbZH0OSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 10:18:31 -0400
+Date: Thu, 27 Aug 2009 15:18:34 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Eric B Munson <ebmunson@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, linux-man@vger.kernel.org,
+       mtk.manpages@gmail.com, randy.dunlap@oracle.com
+Subject: Re: [PATCH 1/3] hugetlbfs: Allow the creation of files suitable
+	for MAP_PRIVATE on the vfs internal mount
+Message-ID: <20090827141834.GF21183@csn.ul.ie>
+References: <cover.1251282769.git.ebmunson@us.ibm.com> <1c66a9e98a73d61c611e5cf09b276e954965046e.1251282769.git.ebmunson@us.ibm.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Li_Xin2@emc.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: TCP keepalive timer problem
-References: <0939B589FC103041945B9F13274963E303B1A9D4@CORPUSMX90A.corp.emc.com>	<4A93E36C.8070502@gmail.com>	<0939B589FC103041945B9F13274963E303B1AD89@CORPUSMX90A.corp.emc.com>	<4A967FCE.3000807@gmail.com> <87skfdl6qt.fsf@basil.nowhere.org>
-In-Reply-To: <87skfdl6qt.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 27 Aug 2009 16:17:10 +0200 (CEST)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1c66a9e98a73d61c611e5cf09b276e954965046e.1251282769.git.ebmunson@us.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen a écrit :
-> Eric Dumazet <eric.dumazet@gmail.com> writes:
->> Now, 7200 seconds might be inappropriate for special needs, and considering
->> there is no way to change tcp_retries2 for a given socket (only choice being the global
->> tcp_retries2 setting), I would vote for a change in our stack, to *relax* RFC,
->> and get smaller keepalive timers if possible.
+On Wed, Aug 26, 2009 at 11:44:51AM +0100, Eric B Munson wrote:
+> There are two means of creating mappings backed by huge pages:
 > 
-> I think the better fix would be to just to only do that when
-> tcp_retries2 > keep alive time. So keep the existing behaviour
-> with default keep alive, but switch when the user defined
-> a very short keep alive.
+>         1. mmap() a file created on hugetlbfs
+>         2. Use shm which creates a file on an internal mount which essentially
+>            maps it MAP_SHARED
+> 
+> The internal mount is only used for shared mappings but there is very
+> little that stops it being used for private mappings. This patch extends
+> hugetlbfs_file_setup() to deal with the creation of files that will be
+> mapped MAP_PRIVATE on the internal hugetlbfs mount. This extended API is
+> used in a subsequent patch to implement the MAP_HUGETLB mmap() flag.
 > 
 
-tcp_retries2 is a number of retries, its difficult to derive a time from it.
+Hi Eric,
 
-Also, it's not clear what behavior you are refering to.
-Imagine we can be smart and compute tcp_retries2_time (in jiffies) from tcp_retries2
-If keepalive_timer fires and we have packets in flight, what heuristic do you suggest ?
+I ran these patches through a series of small tests and I have just one
+concern with the changes made to can_do_hugetlb_shm(). If that returns false
+because of MAP_HUGETLB, we then proceed to call user_shm_lock(). I think your
+intention might have been something like the following patch on top of yours?
 
-if (tp->packets_out || tcp_send_head(sk))
-	if (tcp_retries2_time < keepalive_time_when(tp))
-		goto resched;
-elapsed = tcp_time_stamp - tp->rcv_tstamp;
-...
+For what it's worth, once this was applied, I didn't spot any other
+problems, run-time or otherwise.
 
-What would be the gain ?
-Arming timer exactly every keepalive_time_when(tp)
-instead of keepalive_time_when(tp) - (tcp_time_stamp - tp->rcv_tstamp) ?
+=====
+hugetlbfs: Do not call user_shm_lock() for MAP_HUGETLB
+
+The patch
+hugetlbfs-allow-the-creation-of-files-suitable-for-map_private-on-the-vfs-internal-mount.patch
+alters can_do_hugetlb_shm() to check if a file is being created for shared
+memory or mmap(). If this returns false, we then unconditionally call
+user_shm_lock() triggering a warning. This block should never be entered
+for MAP_HUGETLB. This patch partially reverts the problem and fixes the check.
+
+This patch should be considered a fix to
+hugetlbfs-allow-the-creation-of-files-suitable-for-map_private-on-the-vfs-internal-mount.patch.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ fs/hugetlbfs/inode.c |   12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+index 49d2bf9..c944cc1 100644
+--- a/fs/hugetlbfs/inode.c
++++ b/fs/hugetlbfs/inode.c
+@@ -910,15 +910,9 @@ static struct file_system_type hugetlbfs_fs_type = {
+ 
+ static struct vfsmount *hugetlbfs_vfsmount;
+ 
+-static int can_do_hugetlb_shm(int creat_flags)
++static int can_do_hugetlb_shm(void)
+ {
+-	if (creat_flags != HUGETLB_SHMFS_INODE)
+-		return 0;
+-	if (capable(CAP_IPC_LOCK))
+-		return 1;
+-	if (in_group_p(sysctl_hugetlb_shm_group))
+-		return 1;
+-	return 0;
++	return capable(CAP_IPC_LOCK) || in_group_p(sysctl_hugetlb_shm_group);
+ }
+ 
+ struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag,
+@@ -934,7 +928,7 @@ struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag,
+ 	if (!hugetlbfs_vfsmount)
+ 		return ERR_PTR(-ENOENT);
+ 
+-	if (!can_do_hugetlb_shm(creat_flags)) {
++	if (creat_flags == HUGETLB_SHMFS_INODE && !can_do_hugetlb_shm()) {
+ 		*user = current_user();
+ 		if (user_shm_lock(size, *user)) {
+ 			WARN_ONCE(1,
+
 
