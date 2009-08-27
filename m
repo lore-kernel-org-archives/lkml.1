@@ -1,139 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbZH0OjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbZH0OjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771AbZH0OjI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 10:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbZH0OjH
+	id S1752794AbZH0OjU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 10:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZH0OjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 10:39:07 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:43853 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751027AbZH0OjD (ORCPT
+	Thu, 27 Aug 2009 10:39:18 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:41684 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbZH0OjN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 10:39:03 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvQEAM80lkpMROOX/2dsb2JhbACBU8cyCI9QgkQIgU0F
-Date: Thu, 27 Aug 2009 10:39:02 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-Message-ID: <20090827143902.GA3552@Krystal>
-References: <1251270092.7538.1226.camel@twins> <4A94DFF4.5030301@cn.fujitsu.com> <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com> <20090826164624.GA21456@Krystal> <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com> <20090826180114.GA29130@Krystal> <20090826181758.GA30248@Krystal> <alpine.DEB.2.00.0908261544590.11291@gandalf.stny.rr.com> <4A95E737.5080805@cn.fujitsu.com> <alpine.DEB.2.00.0908262209460.18923@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908262209460.18923@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:38:00 up 9 days,  1:27,  2 users,  load average: 0.23, 0.33,
-	0.26
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 27 Aug 2009 10:39:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OV8rd/uVlqmCsjqdOZefX1N3TUPNgXITqUxBsv0PU4PnT5kjMjYK8g4FtXwIrNP67U
+         w5RqGTvimlpTupV6/mEQjkc/55yTEgjsGuWGpcTphe1NjFVkkDrQd+xH1cIAkQewpSjW
+         5soHgxem/X5vuQIVhgN6xZKnAtz9pDtSHPIM8=
+MIME-Version: 1.0
+In-Reply-To: <4A95D677.2020807@kernel.org>
+References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>
+	 <20090802095523.e08166e3.rdunlap@xenotime.net>
+	 <a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com>
+	 <20090802193045.c3f3195c.rdunlap@xenotime.net>
+	 <4A766F39.7090903@kernel.org> <4A95D677.2020807@kernel.org>
+Date: Thu, 27 Aug 2009 22:39:13 +0800
+Message-ID: <a8e1da0908270739sbab4821x6ec402a72587a337@mail.gmail.com>
+Subject: Re: mm/-next release on kernel.org web page?
+From: Dave Young <hidave.darkstar@gmail.com>
+To: "J.H." <warthog9@kernel.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, webmaster@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, stable@kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Thu, 27 Aug 2009, Li Zefan wrote:
-> 
-> > > Peter is correct that he should not need to worry about modules, he 
-> > > doesn't build kernels with them ;-)
-> > > 
-> > > Here's another patch that moves the module ref count administration to the 
-> > > trace events themselves. This should satisfy both you and Peter.
-> > > 
-> > 
-> > In fact I had this patch in my mind, but I thought Peter insist
-> > on fixing it in tracepoint. So I'm fine with this. :)
-> 
-> Tracepoints I consider a more low level API. Using them takes more hand 
-> work and the user needs to know what they are doing and thus, must take 
-> into account modules.
-> 
-> This code is automatic, and a much higher level API. The user shoud not 
-> need to worry about modules, thus the protection belongs here.
-> 
-> If we try to make it so a module can not have register itself, then that 
-> will just complicate the TRACE_EVENT macros even more. And those are 
-> complex enough.
-> 
-> > 
-> > > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > > 
-> > > diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> > > index 1b1f742..3f7c5dc 100644
-> > > --- a/include/trace/ftrace.h
-> > > +++ b/include/trace/ftrace.h
-> > > @@ -390,6 +390,20 @@ static inline int ftrace_get_offsets_##call(				\
-> > >   *
-> > >   */
-> > >  
-> > > +#ifdef MODULE
-> > > +# define event_trace_up_ref()					\
-> > > +	do {							\
-> > > +		if (!try_module_get(THIS_MODULE)) {		\
-> > > +			atomic_dec(&event_call->profile_count);	\
-> > > +			return -1;				\
-> > 
-> > Should return -1 or -errno like -ENOENT?
-> 
-> Thanks, I was being lazy and really did not know what to have it return. 
-> I'll commit it with a -ENOENT.
-> 
+On Thu, Aug 27, 2009 at 8:42 AM, J.H.<warthog9@kernel.org> wrote:
+> J.H. wrote:
+>>
+>> Randy Dunlap wrote:
+>>>
+>>> On Mon, 3 Aug 2009 10:08:40 +0800 Dave Young wrote:
+>>>
+>>>> On Mon, Aug 3, 2009 at 12:55 AM, Randy Dunlap<rdunlap@xenotime.net>
+>>>> wrote:
+>>>>>
+>>>>> On Sun, 2 Aug 2009 15:56:20 +0800 Dave Young wrote:
+>>>>>
+>>>>>> Hi,
+>>>>>>
+>>>>>> The last mm patchset is 2.6.28-rc2-mm1. We can not download -mm
+>>>>>> patchset from kernel.org web page since the -next tree born.
+>>>>>>
+>>>>>> Could you consider put mmtom release there just like before? And even
+>>>>>> -next tree patchset? It will be more convenient for users who test
+>>>>>> kernel just by downloading from web. Now it's impossible for them to
+>>>>>> test these patchsets because they normally do not subscribe to lkml.
+>>>>>
+>>>>> from www.kernel.org:
+>>>>> For comments about the web pages, please send mail to
+>>>>> webmaster@kernel.org.
+>>>>>
+>>>>> also from www.kernel.org:
+>>>>> Please don't use finger.kernel.org for any sort of automatic
+>>>>> monitoring. The number of automatic bots hitting this port is causing the
+>>>>> finger daemon to shut down more often than not. The same information is
+>>>>> available from http://www.kernel.org/kdist/finger_banner.
+>>>>>
+>>>>> and of course the finger_banner file is not up to date.
+>>>>>
+>>>>> You may consider using my
+>>>>> http://www.xenotime.net/linux/scripts/kcurrent script.
+>>>>> Its output (today) is:
+>>>>>
+>>>>> The latest stable version of the Linux kernel is:           2.6.30.4
+>>>>> The latest prepatch for the stable Linux kernel tree is:    2.6.31-rc5
+>>>>> The latest 2.4 version of the Linux kernel is:              2.4.37.4
+>>>>> The latest 2.2 version of the Linux kernel is:              2.2.26
+>>>>> The latest prepatch for the 2.2 Linux kernel tree is:       2.2.27-rc2
+>>>>> The latest -mm patch to the stable Linux kernels is:
+>>>>>  2.6.28-rc2-mm1
+>>>>> mmotm-2009-0730-0501 ... applies to: 2.6.31-rc4
+>>>>> next-20090731 ... applies to: v2.6.31-rc4
+>>>>
+>>>> Thanks randy. Very helpful. But I still have same question. Normal
+>>>> users need a more convenient and straightforward  way to get what they
+>>>> want.  It will be better that we put them on www.kernel.org main page,
+>>>> not only the version info but also the download link.
+>>>>
+>>>> At least for me when I started my kernel hacking some years ago I
+>>>> always download kernel from www.kernel.org main page. I'm not sure
+>>>> whether others people do same thing. Current -next and mmtom are more
+>>>> like for us to do internal testing.
+>>>
+>>> Oh, I agree with you, but webmaster@kernel.org seems to be ignoring these
+>>> emails (this is the third such one in the last 3-4 months).
+>>
+>> In fact we have been responding to these inquiries both to the public ones
+>> we have gotten (what we get added to on LKML), and to the private inquires,
+>> the latest one from LKML being a bit more than a week ago:
+>>
+>> http://lkml.org/lkml/2009/7/24/334
+>>
+>> We have been well aware of the problem for quite some time, the code base
+>> has rotted horribly, and the way kernel trees are placed in the hierarchy
+>> has changed from any reasonable assumption that was made many years ago when
+>> the code was first put together.  We (meaning me) are, literally, in the
+>> middle of revamping this code, however it's basically a complete re-write of
+>> the code base at this point.
+>>
+>> And in the last few weeks we've been dealing with quite a lot on top of
+>> trying to make forward progress on this code base, like the Bind DNS
+>> vulnerabilities, OSCon, Linux Symposium and the plethora of other things
+>> that need doing.  Really, we aren't ignoring the problem, there's just one
+>> of me and a lot to do and I'm plugging away at it all.  Please be patient,
+>> I'm trying to get it done and up and running.  Until then *PLEASE* bear with
+>> us while we get through everything.
+>>
+>> - John 'Warthog9' Hawley
+>>
+>
+>
+> Not to reply to myself, but I've pushed out an update that should
+> incorporate the expected trees now, this does eliminate the 2.2 and all but
+> the last 2.4 tree (2.4.37.5), but does include all of the stable 2.6.x
+> trees, the snapshots and linux-next.  Frontpage, finger and rss should all
+> be showing the new information universally.  I'll probably tweak things a
+> bit more (layout and such for the rss & html) but the kernels should now be
+> listed as people expect.
 
-Looks good. Just don't forget to eventually add the "synchronize" calls
-between tracepoint unregistration and the removal of their module. There
-is a race condition in the way you do it currently.
+Thanks for your work.
 
-Thanks,
+Is it possible to add latest mmotm link?
+Just link to andrew's broken-out.tar.gz with the stamp name?
 
-Mathieu
+>
+> - John 'Warthog9' Hawley
+> Chief Kernel.org Administrator
+>
 
-> -- Steve
-> 
-> > 
-> > > +		}						\
-> > > +	} while (0)
-> > > +# define event_trace_down_ref() module_put(THIS_MODULE)
-> > > +#else
-> > > +# define event_trace_up_ref() do { } while (0)
-> > > +# define event_trace_down_ref() do { } while (0)
-> > > +#endif
-> > > +		
-> > >  #undef TRACE_EVENT
-> > >  #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
-> > >  									\
-> > > @@ -399,16 +413,20 @@ static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
-> > >  {									\
-> > >  	int ret = 0;							\
-> > >  									\
-> > > -	if (!atomic_inc_return(&event_call->profile_count))		\
-> > > +	if (!atomic_inc_return(&event_call->profile_count)) {		\
-> > > +		event_trace_up_ref();					\
-> > >  		ret = register_trace_##call(ftrace_profile_##call);	\
-> > > +	}								\
-> > >  									\
-> > >  	return ret;							\
-> > >  }									\
-> > >  									\
-> > >  static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
-> > >  {									\
-> > > -	if (atomic_add_negative(-1, &event_call->profile_count))	\
-> > > +	if (atomic_add_negative(-1, &event_call->profile_count)) {	\
-> > >  		unregister_trace_##call(ftrace_profile_##call);		\
-> > > +		event_trace_down_ref();					\
-> > > +	}								\
-> > >  }
-> > >  
-> > >  #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
-> > > 
-> > > 
-> > 
+
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Regards
+dave
