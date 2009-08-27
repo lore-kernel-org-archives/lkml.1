@@ -1,76 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbZH0EfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbZH0EjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751891AbZH0EfA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 00:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZH0Ee6
+	id S1751981AbZH0EjF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 00:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZH0EjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 00:34:58 -0400
-Received: from 60-248-182-106.HINET-IP.hinet.net ([60.248.182.106]:43082 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbZH0Ee6 (ORCPT
+	Thu, 27 Aug 2009 00:39:04 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39938 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZH0EjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 00:34:58 -0400
-X-Greylist: delayed 2220 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Aug 2009 00:34:55 EDT
-Subject: Re: [GIT PULL, v4] S+core architecture (arch/score) support
-From: Chen Liqin <liqin.chen@sunplusct.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <200908261931.52645.arnd@arndb.de>
-References: <1251266324.16454.10.camel@ad3ser01>
-	 <200908261931.52645.arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 11:28:59 +0800
-Message-Id: <1251343739.23810.24.camel@ad3ser01>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27.rhel4.6) 
+	Thu, 27 Aug 2009 00:39:03 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] vmscan: move PGDEACTIVATE modification to shrink_active_list()
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20090827133727.398B.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 27 Aug 2009 13:39:01 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-26 at 19:31 +0200, Arnd Bergmann wrote:
-> On Wednesday 26 August 2009, Chen Liqin (Gmail) wrote:
-> 
-> Hi Liqin,
-> 
-> Similarly, the split of your patches is good for review, but it
-> is useless to have 33 commits in your changelog with just the
-> file names listed in the history text.
+Pgmoved accounting in move_active_pages_to_lru() doesn't make any sense.
+it can be calculated in irq enabled area.
 
-I will remove these changelog from repository.
+This patch move #-of-deactivating-pages calcution to shrink_active_list().
+Fortunatelly, it also kill one branch.
 
-> 
-> What is missing OTOH is a description of changes you made since
-> the last version you posted, which would be needed to help
-> people that have already reviewed your code before.
-> Also, you have dropped the descriptions of changes that I
-> contributed, committing the changed files as your own. If you
-> see a need to do that next time, please ask before you do it,
-> or find a way to keep the original commit logs.
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ mm/vmscan.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-How can I add old commit logs to our repository?
-Or add people's contribute to the log?
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 848689a..9618170 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1270,7 +1270,6 @@ static void move_active_pages_to_lru(struct zone *zone,
+ 				     struct list_head *list,
+ 				     enum lru_list lru)
+ {
+-	unsigned long pgmoved = 0;
+ 	struct pagevec pvec;
+ 	struct page *page;
+ 
+@@ -1284,7 +1283,6 @@ static void move_active_pages_to_lru(struct zone *zone,
+ 
+ 		list_move(&page->lru, &zone->lru[lru].list);
+ 		mem_cgroup_add_lru_list(page, lru);
+-		pgmoved++;
+ 
+ 		if (!pagevec_add(&pvec, page) || list_empty(list)) {
+ 			spin_unlock_irq(&zone->lru_lock);
+@@ -1294,9 +1292,6 @@ static void move_active_pages_to_lru(struct zone *zone,
+ 			spin_lock_irq(&zone->lru_lock);
+ 		}
+ 	}
+-	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+-	if (!is_active_lru(lru))
+-		__count_vm_events(PGDEACTIVATE, pgmoved);
+ }
+ 
+ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+@@ -1311,6 +1306,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+ 	struct page *page;
+ 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+ 	unsigned long nr_rotated = 0;
++	unsigned long nr_deactivated = 0;
+ 
+ 	lru_add_drain();
+ 	spin_lock_irq(&zone->lru_lock);
+@@ -1365,12 +1361,18 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+ 
+ 		ClearPageActive(page);	/* we are de-activating */
+ 		list_add(&page->lru, &l_inactive);
++		nr_deactivated++;
+ 	}
+ 
+ 	/*
+ 	 * Move pages back to the lru list.
+ 	 */
+ 	spin_lock_irq(&zone->lru_lock);
++	move_active_pages_to_lru(zone, &l_active,
++						LRU_ACTIVE + file * LRU_FILE);
++	move_active_pages_to_lru(zone, &l_inactive,
++						LRU_BASE   + file * LRU_FILE);
++
+ 	/*
+ 	 * Count referenced pages from currently used mappings as rotated,
+ 	 * even though only some of them are actually re-activated.  This
+@@ -1378,12 +1380,10 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+ 	 * get_scan_ratio.
+ 	 */
+ 	reclaim_stat->recent_rotated[file] += nr_rotated;
+-
+-	move_active_pages_to_lru(zone, &l_active,
+-						LRU_ACTIVE + file * LRU_FILE);
+-	move_active_pages_to_lru(zone, &l_inactive,
+-						LRU_BASE   + file * LRU_FILE);
++	__count_vm_events(PGDEACTIVATE, nr_deactivated);
+ 	__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, -nr_taken);
++	__mod_zone_page_state(zone, LRU_ACTIVE + file * LRU_FILE, nr_rotated);
++	__mod_zone_page_state(zone, LRU_BASE + file * LRU_FILE, nr_deactivated);
+ 	spin_unlock_irq(&zone->lru_lock);
+ }
+ 
+-- 
+1.6.2.5
 
-> What is the status of the port now? Do you have a working glibc
-> and LTP test results, or are do you still need to fix more
-> bugs that got introduced in the 2.6.30 port?
 
-In fact, we still need define 
-__ARCH_WANT_SYSCALL_NO_AT,
-__ARCH_WANT_SYSCALL_NO_FLAGS,
-__ARCH_WANT_SYSCALL_OFF_T,
-__ARCH_WANT_SYSCALL_DEPRECATED
-to make linux/score running, glibc and applictions 
-need old syscall API.
-And now it's really have some problems
-in syscall interface part.
-
-But if we use our old syscall interface replace the new one,
-score platform will run well.
-I am a little confused, whether or not I should commit
-score code use new or old syscall part?
-
-Best Regards
-Liqin
 
