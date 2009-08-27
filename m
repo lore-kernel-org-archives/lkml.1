@@ -1,226 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbZH0Vhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbZH0ViQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753267AbZH0Vhw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 17:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbZH0Vhw
+	id S1753275AbZH0ViQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 17:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbZH0ViP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 17:37:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53072 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753228AbZH0Vht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 17:37:49 -0400
-Date: Thu, 27 Aug 2009 21:37:29 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       dwmw2@infradead.org, venkatesh.pallipadi@intel.com,
-       jbarnes@virtuousgeek.org, suresh.b.siddha@intel.com,
-       fenlason@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       dwmw2@infradead.org, venkatesh.pallipadi@intel.com,
-       jbarnes@virtuousgeek.org, suresh.b.siddha@intel.com,
-       fenlason@redhat.com, tglx@linutronix.de
-In-Reply-To: <20090804190729.630510000@intel.com>
-References: <20090804190729.630510000@intel.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/hpet] x86: arch specific support for remapping HPET MSIs
-Message-ID: <tip-c8bc6f3c806f1fcbfdbf0b1ff6c52dba59192d3b@git.kernel.org>
-Git-Commit-ID: c8bc6f3c806f1fcbfdbf0b1ff6c52dba59192d3b
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 27 Aug 2009 21:37:30 +0000 (UTC)
+	Thu, 27 Aug 2009 17:38:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35921 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753219AbZH0ViN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 17:38:13 -0400
+Date: Thu, 27 Aug 2009 14:36:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: elendil@planet.nl, zajec5@gmail.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-acpi@vger.kernel.org, kernel-testers@vger.kernel.org,
+       torvalds@linux-foundation.org, rui.zhang@intel.com, lenb@kernel.org,
+       sfr@canb.auug.org.au
+Subject: Re: 2.6.31-rc7-git2: Reported regressions 2.6.29 -> 2.6.30
+Message-Id: <20090827143653.52308d6d.akpm@linux-foundation.org>
+In-Reply-To: <200908272023.21288.rusty@rustcorp.com.au>
+References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
+	<200908261833.37310.elendil@planet.nl>
+	<20090826123647.e60d9555.akpm@linux-foundation.org>
+	<200908272023.21288.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c8bc6f3c806f1fcbfdbf0b1ff6c52dba59192d3b
-Gitweb:     http://git.kernel.org/tip/c8bc6f3c806f1fcbfdbf0b1ff6c52dba59192d3b
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Tue, 4 Aug 2009 12:07:09 -0700
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Thu, 27 Aug 2009 23:33:20 +0200
+On Thu, 27 Aug 2009 20:23:20 +0930
+Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-x86: arch specific support for remapping HPET MSIs
+> > My linux-next repair job:
+> 
+> OK, I've dropped these from my tree entirely to avoid more problems.
+> 
+> Can you take them?  They're not really at home in my tree.
+> 
+> arch-x86-kernel-acpi-cstatec-avoid-using-work_on_cpu.patch
+> misc:work_on_cpu-acpi.patch
+> misc:work_on_cpu-acpi-fix.patch
+> misc:work_on_cpu-dcdbas.patch
+> 
+> You can fetch them from http://ozlabs.org/~rusty/kernel/rr-latest/
+> 
+> (You'll want to rename the last three something sane...)
 
-x86 arch support for remapping HPET MSI's by associating the HPET timer block
-with the interrupt-remapping HW unit and setting up appropriate irq_chip
+Those patches are already in today's linux-next so I can't carry them.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Jay Fenlason <fenlason@redhat.com>
-LKML-Reference: <20090804190729.630510000@intel.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Please email them over in the traditional fashion once that situation
+has sorted itself out?
 
-
----
- arch/x86/include/asm/hpet.h    |    5 ++-
- arch/x86/kernel/acpi/boot.c    |    1 +
- arch/x86/kernel/apic/io_apic.c |   49 +++++++++++++++++++++++++++++++++------
- arch/x86/kernel/hpet.c         |    3 +-
- 4 files changed, 47 insertions(+), 11 deletions(-)
-
-diff --git a/arch/x86/include/asm/hpet.h b/arch/x86/include/asm/hpet.h
-index 65847c5..5d89fd2 100644
---- a/arch/x86/include/asm/hpet.h
-+++ b/arch/x86/include/asm/hpet.h
-@@ -65,6 +65,7 @@
- /* hpet memory map physical address */
- extern unsigned long hpet_address;
- extern unsigned long force_hpet_address;
-+extern u8 hpet_blockid;
- extern int hpet_force_user;
- extern int is_hpet_enabled(void);
- extern int hpet_enable(void);
-@@ -78,9 +79,9 @@ extern void hpet_msi_write(unsigned int irq, struct msi_msg *msg);
- extern void hpet_msi_read(unsigned int irq, struct msi_msg *msg);
- 
- #ifdef CONFIG_PCI_MSI
--extern int arch_setup_hpet_msi(unsigned int irq);
-+extern int arch_setup_hpet_msi(unsigned int irq, unsigned int id);
- #else
--static inline int arch_setup_hpet_msi(unsigned int irq)
-+static inline int arch_setup_hpet_msi(unsigned int irq, unsigned int id)
- {
- 	return -EINVAL;
- }
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 6b8ca3a..eae642b 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -624,6 +624,7 @@ static int __init acpi_parse_hpet(struct acpi_table_header *table)
- 	}
- 
- 	hpet_address = hpet_tbl->address.address;
-+	hpet_blockid = hpet_tbl->sequence;
- 
- 	/*
- 	 * Some broken BIOSes advertise HPET at 0x0. We really do not
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index d2ed6c5..d9c6f14 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3254,7 +3254,8 @@ void destroy_irq(unsigned int irq)
-  * MSI message composition
-  */
- #ifdef CONFIG_PCI_MSI
--static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_msg *msg)
-+static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq,
-+			   struct msi_msg *msg, u8 hpet_id)
- {
- 	struct irq_cfg *cfg;
- 	int err;
-@@ -3288,7 +3289,10 @@ static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_ms
- 		irte.dest_id = IRTE_DEST(dest);
- 
- 		/* Set source-id of interrupt request */
--		set_msi_sid(&irte, pdev);
-+		if (pdev)
-+			set_msi_sid(&irte, pdev);
-+		else
-+			set_hpet_sid(&irte, hpet_id);
- 
- 		modify_irte(irq, &irte);
- 
-@@ -3453,7 +3457,7 @@ static int setup_msi_irq(struct pci_dev *dev, struct msi_desc *msidesc, int irq)
- 	int ret;
- 	struct msi_msg msg;
- 
--	ret = msi_compose_msg(dev, irq, &msg);
-+	ret = msi_compose_msg(dev, irq, &msg, -1);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -3586,7 +3590,7 @@ int arch_setup_dmar_msi(unsigned int irq)
- 	int ret;
- 	struct msi_msg msg;
- 
--	ret = msi_compose_msg(NULL, irq, &msg);
-+	ret = msi_compose_msg(NULL, irq, &msg, -1);
- 	if (ret < 0)
- 		return ret;
- 	dmar_msi_write(irq, &msg);
-@@ -3626,6 +3630,19 @@ static int hpet_msi_set_affinity(unsigned int irq, const struct cpumask *mask)
- 
- #endif /* CONFIG_SMP */
- 
-+static struct irq_chip ir_hpet_msi_type = {
-+	.name = "IR-HPET_MSI",
-+	.unmask = hpet_msi_unmask,
-+	.mask = hpet_msi_mask,
-+#ifdef CONFIG_INTR_REMAP
-+	.ack = ir_ack_apic_edge,
-+#ifdef CONFIG_SMP
-+	.set_affinity = ir_set_msi_irq_affinity,
-+#endif
-+#endif
-+	.retrigger = ioapic_retrigger_irq,
-+};
-+
- static struct irq_chip hpet_msi_type = {
- 	.name = "HPET_MSI",
- 	.unmask = hpet_msi_unmask,
-@@ -3637,20 +3654,36 @@ static struct irq_chip hpet_msi_type = {
- 	.retrigger = ioapic_retrigger_irq,
- };
- 
--int arch_setup_hpet_msi(unsigned int irq)
-+int arch_setup_hpet_msi(unsigned int irq, unsigned int id)
- {
- 	int ret;
- 	struct msi_msg msg;
- 	struct irq_desc *desc = irq_to_desc(irq);
- 
--	ret = msi_compose_msg(NULL, irq, &msg);
-+	if (intr_remapping_enabled) {
-+		struct intel_iommu *iommu = map_hpet_to_ir(id);
-+		int index;
-+
-+		if (!iommu)
-+			return -1;
-+
-+		index = alloc_irte(iommu, irq, 1);
-+		if (index < 0)
-+			return -1;
-+	}
-+
-+	ret = msi_compose_msg(NULL, irq, &msg, id);
- 	if (ret < 0)
- 		return ret;
- 
- 	hpet_msi_write(irq, &msg);
- 	desc->status |= IRQ_MOVE_PCNTXT;
--	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
--		"edge");
-+	if (irq_remapped(irq))
-+		set_irq_chip_and_handler_name(irq, &ir_hpet_msi_type,
-+					      handle_edge_irq, "edge");
-+	else
-+		set_irq_chip_and_handler_name(irq, &hpet_msi_type,
-+					      handle_edge_irq, "edge");
- 
- 	return 0;
- }
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index ba575f0..7f024ff 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -33,6 +33,7 @@
-  * HPET address is set in acpi/boot.c, when an ACPI entry exists
-  */
- unsigned long				hpet_address;
-+u8					hpet_blockid; /* OS timer block num */
- #ifdef CONFIG_PCI_MSI
- static unsigned long			hpet_num_timers;
- #endif
-@@ -467,7 +468,7 @@ static int hpet_msi_next_event(unsigned long delta,
- 
- static int hpet_setup_msi_irq(unsigned int irq)
- {
--	if (arch_setup_hpet_msi(irq)) {
-+	if (arch_setup_hpet_msi(irq, hpet_blockid)) {
- 		destroy_irq(irq);
- 		return -EINVAL;
- 	}
