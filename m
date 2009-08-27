@@ -1,50 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbZH0DMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751525AbZH0DQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751467AbZH0DMl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 23:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbZH0DMl
+	id S1751525AbZH0DQY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 23:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZH0DQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 23:12:41 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47399 "EHLO gate.crashing.org"
+	Wed, 26 Aug 2009 23:16:22 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:15486 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750886AbZH0DMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 23:12:40 -0400
-Subject: Re: [PATCH -v2 0/7] powerpc: use asm-generic/dma-mapping-common.h
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.orga,
-       beckyb@kernel.crashing.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090813085505.GA10671@elte.hu>
-References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	 <1250142522.3587.110.camel@pasglop>
-	 <20090813160625B.fujita.tomonori@lab.ntt.co.jp>
-	 <20090813074131.GH12143@elte.hu> <1250150981.3587.157.camel@pasglop>
-	 <20090813085505.GA10671@elte.hu>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 13:12:15 +1000
-Message-Id: <1251342735.20467.2.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S1750829AbZH0DQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 23:16:22 -0400
+Date: Wed, 26 Aug 2009 23:15:33 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       Neil Horman <nhorman@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
+       Michael Ellerman <michael@ellerman.id.au>,
+       Amerigo Wang <amwang@redhat.com>, "M. Mohan Kumar" <mohan@in.ibm.com>,
+       akpm@linux-foundation.org, bernhard.walle@gmx.de,
+       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Message-Id: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
+Subject: [Patch 0/8] V5 Implement crashkernel=auto
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-13 at 10:55 +0200, Ingo Molnar wrote:
+V4 -> V5:
+ - Rename the global functions, as suggested by Andrew.
+ - Save some macros, as suggested by Andrew.
+ - Change the high threshold, from 32G to 4G.
+ - Change the low threshold on ppc, suggested by ppc developers.
+ - Make the mm part as a seperate function, suggest by Eric.
+ - Make the IA64 code more readable.
+ - Reorder the patchset again, since review from mm people is done.
 
-> Ok! We could also stage it a bit (one or two weeks) in a separate 
-> branch and allow a rebase, should you find any bugs during testing?
+V3 -> V4:
+ - Reorder the patches.
+ - Really free the reserved memory, instead of remapping it.
+   (Thanks to KAMEZAWA Hiroyuki!)
+ - Release the reserved memory resource when the size is 0.
+ - Use strict_strtoul() instead of simple_strtoul().
 
-Allright so after various delays and sidetracking on my side, the
-patches have been in my -test branch for long enough, I'm happy for them
-to go in either way now.
+V2 -> V3:
+ - Use more clever way to calculate reserved memory size, especially for IA64.
+ - Add that patch that implements shrinking reserved memory
 
-I'm going to take them out of powerpc test for now and not put them in
-my -next right away until I'm sure I have the right source to pull, at
-which point I can just put from tip iommu.
+V1 -> V2:
+ - Use include/asm-generic/kexec.h, suggested by Neil.
+ - Rename a local variable, suggested by Fenghua.
+ - Fix some style problems found by checkpatch.pl.
+ - Unify the Kconfig docs.
 
-Cheers,
-Ben.
+This series of patch implements automatically reserved memory for crashkernel,
+by introducing a new boot option "crashkernel=auto". This idea is from Neil.
 
+In case of breaking user-space applications, it modifies this boot option after
+it decides how much memory should be reserved.
+
+On different arch, the threshold and reserved memory size is different. Please
+refer patch 7/8 which contains an update for the documentation.
+
+Patch 8/8 implements shrinking reserved memory at run-time, which is useful
+when more than enough memory is reserved automatically.
+
+This patchset _is_ already tested on x86_64, IA64 and ppc64.
+
+Cc: Neil Horman <nhorman@redhat.com>
+Cc: M. Mohan Kumar <mohan@in.ibm.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Bernhard Walle <bernhard.walle@gmx.de>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: WANG Cong <amwang@redhat.com>
+
+---
+ Documentation/kdump/kdump.txt    |   29 +++++++++
+ arch/ia64/Kconfig                |   14 ++++
+ arch/ia64/include/asm/kexec.h    |   44 +++++++++++++
+ arch/powerpc/Kconfig             |   11 +++
+ arch/powerpc/include/asm/kexec.h |   39 ++++++++++++
+ arch/x86/Kconfig                 |   13 ++++
+ arch/x86/include/asm/kexec.h     |    1 
+ include/asm-generic/kexec.h      |   16 +++++
+ include/linux/kexec.h            |    2 
+ kernel/kexec.c                   |  124 +++++++++++++++++++++++++++++++++++++++
+ kernel/ksysfs.c                  |   21 ++++++
+ 11 files changed, 314 insertions(+)
 
