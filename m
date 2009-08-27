@@ -1,121 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751508AbZH0KZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751109AbZH0KdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751508AbZH0KZU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 06:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZH0KZT
+	id S1751109AbZH0KdY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 06:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbZH0KdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 06:25:19 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:5390 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbZH0KZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 06:25:17 -0400
-Message-ID: <4A965F3A.5070007@redhat.com>
-Date: Thu, 27 Aug 2009 18:26:02 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
-MIME-Version: 1.0
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'Anton Vorontsov'" <avorontsov@ru.mvista.com>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
-       "'Neil Horman'" <nhorman@redhat.com>,
-       "'Eric W. Biederman'" <ebiederm@xmission.com>,
-       "'kamezawa.hiroyu@jp.fujitsu.com'" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "'Andi Kleen'" <andi@firstfloor.org>,
-       "'Michael Ellerman'" <michael@ellerman.id.au>,
-       "'M. Mohan Kumar'" <mohan@in.ibm.com>,
-       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
-       "'bernhard.walle@gmx.de'" <bernhard.walle@gmx.de>,
-       "'Ingo Molnar'" <mingo@elte.hu>
-Subject: Re: [Patch 4/8] ia64: implement crashkernel=auto
-References: <20090827031800.4534.94868.sendpatchset@localhost.localdomain> <20090827031848.4534.40440.sendpatchset@localhost.localdomain> <A6AD88C3F2289247BE726C37303E1EB8B949E358@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B949E358@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 27 Aug 2009 06:33:24 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56528 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbZH0KdX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 06:33:23 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 27 Aug 2009 19:31:33 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-08-24-16-24 uploaded
+Message-Id: <20090827193133.b7eed4a9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090827100846.GA6462@redhat.com>
+References: <200908242328.n7ONSUHI022326@imap1.linux-foundation.org>
+	<20090827144453.25f1161b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090827160532.d6386722.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090827093441.GA3451@redhat.com>
+	<20090827184303.500ac1f0.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090827100846.GA6462@redhat.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yu, Fenghua wrote:
->> Since in patch 2/8 we already implement the generic part, this will
->> add the rest part for ia64.
->>
->> Signed-off-by: WANG Cong <amwang@redhat.com>
->> Cc: Fenghua Yu <fenghua.yu@intel.com>
->> Cc: Tony Luck <tony.luck@intel.com>
->>
->> ---
->>
->> Index: linux-2.6/arch/ia64/include/asm/kexec.h
->> ===================================================================
->> --- linux-2.6.orig/arch/ia64/include/asm/kexec.h
->> +++ linux-2.6/arch/ia64/include/asm/kexec.h
->> @@ -1,6 +1,7 @@
->> #ifndef _ASM_IA64_KEXEC_H
->> #define _ASM_IA64_KEXEC_H
->>
->> +#include <asm-generic/kexec.h>
->>
->> /* Maximum physical address we can use pages from */
->> #define KEXEC_SOURCE_MEMORY_LIMIT (-1UL)
->> @@ -19,6 +20,49 @@
->>                 flush_icache_range(page_addr, page_addr + PAGE_SIZE); \
->>         } while(0)
->>
->> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
->> +#define MBYTES(n) ((n)*1024*1024ULL)
->> +#define GBYTES(n) ((n)*1024*1024*1024ULL)
->> +/*
->> +       Memory size     Reserved memory
->> +       ===========     ===============
->> +       [4G, 12G)       256M
->> +       [12G, 128G)     512M
->> +       [128G, 256G)    768M
->> +       [256G, 378G)    1024M
->> +       [378G, 512G)    1536M
->> +       [512G, 768G)    2048M
->> +       [768G, )        3072M
->> + */
->> +static inline
->> +unsigned long long arch_default_crash_size(unsigned long long total_size)
->> +{
->>     
->
-> This function shouldn't be inlined (Andrew commented this before). You might remove inline and add __init for this function. 
->
->   
+On Thu, 27 Aug 2009 12:08:46 +0200
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-Yeah, seems I missed Andrew's comment... :-/ I will update it.
+> On 08/27, KAMEZAWA Hiroyuki wrote:
+> >
+> > On Thu, 27 Aug 2009 11:34:41 +0200
+> > Oleg Nesterov <oleg@redhat.com> wrote:
+> >
+> > > On 08/27, KAMEZAWA Hiroyuki wrote:
+> > > >
+> > > > On Thu, 27 Aug 2009 14:44:53 +0900
+> > > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > >
+> > > > >
+> > > > > In the newest mmotom, my S14nfslock hangs up. (x86-64/Fedora10)
+> > > > >
+> > > > > On Mon, 24 Aug 2009 16:28:30 -0700
+> > > > > akpm@linux-foundation.org wrote:
+> > > > >
+> > > > > > ptrace-__ptrace_detach-do-__wake_up_parent-if-we-reap-the-tracee.patch
+> > > > > > do_wait-wakeup-optimization-shift-security_task_wait-from-eligible_child-to-wait_consider_task.patch
+> > > > >
+> > > > > bisected. following 2 patches for filtering SIGCHLD cause hang (for my environ).
+> > > > >
+> > > > > > do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup.patch
+> > > > > > do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup-selinux_bprm_committed_creds-use-__wake_up_parent.patch
+> > >
+> > > Confused. Which patch causes the hang? They should be applied in reverse order,
+> > >
+> > > 	do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup-selinux_bprm_committed_creds-use-__wake_up_parent.patch
+> > > 	do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup.patch
+> > >
+> > > > removed S14nfslockd from rc5.d and check it by strace
+> > > > ==
+> > > >  2712] fstat(6, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
+> > > > [pid  2712] mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fc6f263c000
+> > > > [pid  2712] dup(6)                      = 7
+> > > > [pid  2712] write(6, "2712\n"..., 5)    = 5
+> > > > [pid  2712] close(6)                    = 0
+> > > > [pid  2712] munmap(0x7fc6f263c000, 4096) = 0
+> > > > [pid  2712] clone(Process 2713 attached
+> > > > child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fc6f2625780) = 2713
+> > > > [pid  2712] wait4(2713, Process 2712 suspended
+> > > >  <unfinished ...>
+> > > > ==
+> > > > When process 2713 exits, process 2712 don't wake up.
+> > >
+> > > Hmm, very strange. How can I reproduce?
+> > >
+> > Sorry, I don't know.
+> >
+> > But exited process's, but not caught, p->exit_signal was -1. (confirmed by printk)
+> > (details in another mail)
+> 
+> Ah, I didn't notice "Process 2713 attached" above, I guess you did strace -f.
+> 
+> The child was reaped by strace, because
+> 
+> > Name:   rpc.statd
+> > State:  S (sleeping)
+> > ...
+> > SigIgn: 0000000000011000
+> 
+> indeed, SIGCHLD is ignored.
+> 
+> OK, I seem to understand what happens. Could you try the patch below?
+> 
 
->> +	unsigned long long ret;
->> +
->> +	if (total_size >= GBYTES(4) && total_size < GBYTES(12))
->> +		ret = MBYTES(256);
->> +	else if (total_size >= GBYTES(12) && total_size < GBYTES(128))
->> +		ret = MBYTES(512);
->> +	else if (total_size >= GBYTES(128) && total_size < GBYTES(256))
->> +		ret = MBYTES(768);
->> +	else if (total_size >= GBYTES(256) && total_size < GBYTES(378))
->> +		ret = MBYTES(1024);
->> +	else if (total_size >= GBYTES(318) && total_size < GBYTES(512))
->> +		ret = MBYTES(1536);
->> +	else if (total_size >= GBYTES(512) && total_size < GBYTES(768))
->> +		ret = MBYTES(2048);
->> +	else
->> +		ret = MBYTES(3072);
->> +	if (!ia64_platform_is("sn2") && !ia64_platform_is("uv"))
->> +		if (ret > GBYTES(4))
->> +			ret = ret / GBYTES(4) * MBYTES(256);
->>     
->
-> This code doesn't make sense to me. What you really want is following code, right?
-> +		if (total_size > GBYTES(4))
-> +			ret = total_size / GBYTES(4) * MBYTEST(256)
->
->   
-Nope. Check check_crashkernel_memory().
+worked.
+IMHO, it's necessary to "wake up parent with -ECHILD if all children dies"
+if rpc.statd is not buggy. 
 
-Thanks.
+Thanks,
+-Kame
 
+
+
+> Oleg.
+> 
+> --- a/kernel/exit.c
+> +++ b/kernel/exit.c
+> @@ -1564,9 +1564,6 @@ static int child_wait_callback(wait_queu
+>  						child_wait);
+>  	struct task_struct *p = key;
+>  
+> -	if (!eligible_child(wo, p))
+> -		return 0;
+> -
+>  	if ((wo->wo_flags & __WNOTHREAD) && wait->private != p->parent)
+>  		return 0;
+>  
+> 
+> 
 
