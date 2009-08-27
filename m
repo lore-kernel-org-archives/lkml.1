@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751710AbZH0T0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbZH0T2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751710AbZH0T0g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 15:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZH0T0e
+	id S1751958AbZH0T2l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 15:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZH0T2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 15:26:34 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34663 "EHLO mail.dvmed.net"
+	Thu, 27 Aug 2009 15:28:39 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:42263 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751168AbZH0T0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 15:26:33 -0400
-Message-ID: <4A96DDE0.9090306@garzik.org>
-Date: Thu, 27 Aug 2009 15:26:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1751658AbZH0T2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 15:28:38 -0400
+Message-ID: <4A96DFFF.1040501@redhat.com>
+Date: Thu, 27 Aug 2009 22:35:27 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-CC: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, chris.mason@oracle.com, tytso@mit.edu,
-       adilger@sun.com, swhiteho@redhat.com, konishi.ryusuke@lab.ntt.co.jp,
-       mfasheh@suse.com, joel.becker@oracle.com
-Subject: Re: notes on volatile write caches vs fdatasync
-References: <20090827011624.GA10405@lst.de> <20090827130252.GC14240@duck.novell.com> <20090827184948.GA1367@lst.de>
-In-Reply-To: <20090827184948.GA1367@lst.de>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 13/12] ksm: fix munlock during exit_mmap deadlock
+References: <20090825145832.GP14722@random.random> <20090825152217.GQ14722@random.random> <Pine.LNX.4.64.0908251836050.30372@sister.anvils> <20090825181019.GT14722@random.random> <Pine.LNX.4.64.0908251958170.5871@sister.anvils> <20090825194530.GU14722@random.random> <Pine.LNX.4.64.0908261910530.15622@sister.anvils> <20090826194444.GB14722@random.random> <Pine.LNX.4.64.0908262048270.21188@sister.anvils> <4A95A10C.5040008@redhat.com> <20090826211400.GE14722@random.random> <4A95AE06.305@redhat.com> <Pine.LNX.4.64.0908271958330.1973@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0908271958330.1973@sister.anvils>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/27/2009 02:49 PM, Christoph Hellwig wrote:
-> On Thu, Aug 27, 2009 at 03:02:52PM +0200, Jan Kara wrote:
->>    I've noticed this as well when we were tracking some problems Pavel
->> Machek found with his USB stick. I even wrote a patch at the time
->>    http://osdir.com/ml/linux-ext4/2009-01/msg00015.html
->> but it somehow died out. Now, the situation should be simpler with
->> fsync paths cleaned up... BTW: People wanted this to be configurable per
->> block device which probably makes sence...
+Hugh Dickins wrote:
 >
-> Yeah, that patch is pretty ugly.  We need to do these cache flushes
-> in ->fsync (and ->sync_fs if any filesystem really doesn't guarantee to
-> issue  transaction there after data has been written).  Adding it
-> to simple_fsync too sounds good to me.
+> It may be that MADV_UNMERGEABLE isn't really needed (I think I even
+> admitted once that probably nobody would use it other than we testing
+> it).  Yet I hesitate to rip it out: somehow it still seems right to
+> have it in there.  Why did you have unregistering in the /dev/ksm KSM?
+>   
 
-Agreed.  That was the direction I was heading with my patch[1].  Last 
-feedback I got on that was needing to add a knob to optionally disable 
-this new cache-flush behavior.
+It was more to give possiblaty to applications save cpu cycles of ksmd 
+so it wont continue to scan memory regions that don`t need ksm anymore,
+As you said if someone will ever use it?, have no idea...
 
-	Jeff
+>   
+> I didn't seem idiotic to me, but I hadn't realized the ksmd timelapse
+> uncertainty Andrea points out.  Well, I'm not keen to change the way
+> it's working at present, but I do think you're right to question all
+> these aspects of unmerging.
+>   
 
+Yes lets keep it like that, UNMERGEABLE sound anyway like something that 
+going to break the pages..., we can always add later STOPMERGE as a call 
+that tell ksm to stop merge the pages but not break the shared pages...
 
+> Hugh
+>   
 
-[1] http://lkml.org/lkml/2009/3/27/366
