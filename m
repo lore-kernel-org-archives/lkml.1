@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752600AbZH0M5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZH0NAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752600AbZH0M5p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 08:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbZH0M5p
+	id S1752623AbZH0NAQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 09:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZH0NAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 08:57:45 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:64337 "EHLO mx1.redhat.com"
+	Thu, 27 Aug 2009 09:00:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59880 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750753AbZH0M5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 08:57:44 -0400
-Subject: Re: [PATCH] allow disabling IMA at runtime
-From: Eric Paris <eparis@redhat.com>
-To: David Safford <david.safford@gmail.com>
-Cc: zohar@us.ibm.com, Kyle McMartin <kyle@mcmartin.ca>,
-       "'David Safford'" <safford@us.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <a788e9ca0908270530s50a7e7fdu5c48299403b80d9b@mail.gmail.com>
-References: <a788e9ca0908270530s50a7e7fdu5c48299403b80d9b@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 08:57:29 -0400
-Message-Id: <1251377849.2280.21.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
+	id S1752579AbZH0NAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 09:00:14 -0400
+Message-ID: <4A96830F.9040805@kernel.org>
+Date: Thu, 27 Aug 2009 21:58:55 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, jeff@garzik.org, dhowells@redhat.com
+Subject: Re: [PATCH 0/3] Convert libata pio task to slow-work
+References: <1251364122-9592-1-git-send-email-jens.axboe@oracle.com> <4A967DD7.20603@kernel.org> <20090827124927.GJ12579@kernel.dk>
+In-Reply-To: <20090827124927.GJ12579@kernel.dk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 27 Aug 2009 12:58:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-27 at 08:30 -0400, David Safford wrote:
-> >Hey Mimi, I was going to get in touch with you today, I don't really
-> >think this patch is necessary.  Kyle hacked it together because it was a
-> >quick and dirty 'fix' for a memory leak that he didn't want to hunt down
-> >and he knows I won't let him compile IMA out *smile*.  Intended to try
-> >to track it down this morning, but I'm getting swamped already, maybe
-> >you can try to figure out what's going on before I get a chance to come
-> >back to it this afternoon?
-> >
-> >nfs_inode_cache       34     34   1824   17    8 : tunables    0    0    0 : slabdata      2      2      0
-> >fuse_inode            22     22   1472   22    8 : tunables    0    0    0 : slabdata      1      1      0
-> >rpc_inode_cache       40     40   1600   20    8 : tunables    0    0    0 : slabdata      2      2      0
-> >btrfs_inode_cache  10622  10668   2328   14    8 : tunables    0    0    0 : slabdata    762    762      0
-> >iint_cache        369714 369720    312   26    2 : tunables    0    0    0 : slabdata  14220  14220      0
-> >mqueue_inode_cache     19     19   1664   19    8 : tunables    0    0    0 : slabdata      1      1      0
-> >isofs_inode_cache      0      0   1288   25    8 : tunables    0    0    0 : slabdata      0      0      0
-> >hugetlbfs_inode_cache     24     24   1312   24    8 : tunables    0    0    0 : slabdata      1      1      0
-> >ext4_inode_cache       0      0   1864   17    8 : tunables    0    0    0 : slabdata      0      0      0
-> >ext3_inode_cache      19     19   1656   19    8 : tunables    0    0    0 : slabdata      1      1      0
-> >inotify_inode_mark_entry    253    255    240   17    1 : tunables    0    0    0 : slabdata     15     15      0
-> >shmem_inode_cache   2740   3003   1560   21    8 : tunables    0    0    0 : slabdata    143    143      0
-> >sock_inode_cache     902    920   1408   23    8 : tunables    0    0    0 : slabdata     40     40      0
-> >proc_inode_cache    3060   3075   1288   25    8 : tunables    0    0    0 : slabdata    123    123      0
-> >inode_cache         9943  10192   1240   26    8 : tunables    0    0    0 : slabdata    392    392      0
-> >selinux_inode_security  27237  27838    264   31    2 : tunables    0    0    0 : slabdata    898    898      0
-> >
-> >So the iint_cache is a LOT larger than all of the inode caches put
-> >together.  This is a 2.6.31-0.167.rc6.git6.fc12.x86_64 kernel without
-> >any kernel options.
-> >
-> >-Eric
-> >
+Hello, Jens.
+
+Jens Axboe wrote:
+>> It would be nice if merging of this series and the lazy work can be
+>> held a bit but there's no harm in merging either.  If the concurrency
+>> managed workqueue turns out to be a good idea, we can replace it then.
 > 
-> Sorry about the delay - we had a major fiber cut in Hawthorne yesterday.
-> I'm running 2.6.30.4, and here are my numbers, which look more reasonable.
-> I'm guessing there may be a IMA free imbalance in btrfs, which we have
-> not really tested. Are you getting imbalance messages?
+> It can wait, what you describe above sounds really cool and would
+> hopefully allow us to get rid of all workqueues (provided it scales well
+> and doesn't fall down on cache line contention with many different
+> instances pounding on it).
 
-I think I found it.
-http://git.kernel.org/?p=linux/kernel/git/jmorris/security-testing-2.6.git;a=commitdiff;h=53a7197aff20e341487fca8575275056fe1c63e5
+Almost all operations are per-cpu so cache lines shouldn't bounce too
+much.  The only part I worry about is the part which checks whether a
+work is currently executing on the current cpu which currently is
+implemeted as a hash table.  The hash table is only 16 pointers long
+and will be mostly empty so hopefully it doesn't add any significant
+overhead.
 
-thanks!
+> Care to post it? I know you don't think it's perfect yet, but it would
+> make a lot more sense to throw effort into this rather than waste time
+> on partial solutions.
 
--Eric
+I have this printed out code with full of red markings from proof
+reading and flush implementation is mostly broken.  Please give me a
+couple of days.  I'll post a rough unsplit version which at least
+compiles with the planned changes applied by the end of the week.  :-)
 
+Thanks.
+
+-- 
+tejun
