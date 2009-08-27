@@ -1,84 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751765AbZH1Jsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbZH1Jyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751765AbZH1Jsy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 05:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZH1Jsx
+	id S1751739AbZH1Jyp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 05:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZH1Jyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 05:48:53 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:36165 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751264AbZH1Jsx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 05:48:53 -0400
-Message-ID: <4A97A7FD.1000202@in.ibm.com>
-Date: Fri, 28 Aug 2009 15:18:45 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 28 Aug 2009 05:54:44 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:40339 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751274AbZH1Jyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 05:54:44 -0400
+X-Greylist: delayed 5232 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Aug 2009 05:54:43 EDT
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Fix compat_sys_utimensat 
-Content-Type: multipart/mixed;
- boundary="------------050005020803010602060000"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19094.58486.867940.103340@pilspetsen.it.uu.se>
+Date: Thu, 27 Aug 2009 21:54:30 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Mikael Pettersson" <mikpe@it.uu.se>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
+In-Reply-To: <_yaHeGjHEzG.A.tMH.9sGlKB@chimera>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<_yaHeGjHEzG.A.tMH.9sGlKB@chimera>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050005020803010602060000
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 25 Aug 2009 22:34:53 +0200 (CEST), Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14015
+> Subject		: pty regressed again, breaking expect and gcc's testsuite
+> Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+> Date		: 2009-08-14 23:41 (12 days old)
+> References	: http://marc.info/?l=3Dlinux-kernel&m=3D125029329805643&w=3D4
 
-
-Hi,
-
-The compat_utimensat syscall does not ignore tv_sec field when tv_nsec 
-is set to UTIME_OMIT/UTIME_NOW and returns -EINVAL.
-
-This problem was revealed with the utimensat_tests from LTP.
-
-The utimensat() syscall works fine.
-
-Attaching a patch for the issue. The patch has been tested and verified 
-to fix the issue.
-
-Please apply.
-
-Thanks,
-
-Suzuki
-
---------------050005020803010602060000
-Content-Type: text/plain;
- name="fix-compat-utimensat-syscall.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fix-compat-utimensat-syscall.diff"
-
-Compat utimensat() returns EINVAL when the tv_nsec is one of UTIME_OMIT or UTIME_NOW and
-the tv_sec is set to non-zero. As per man pages, the tv_sec field should be ignored.
-
-The sys_utimensat() works fine in this case.
-
-Signed-off-by: Suzuki K P <suzuki@in.ibm.com>
-
-Index: linux-2.6.31-rc7/fs/compat.c
-===================================================================
---- linux-2.6.31-rc7.orig/fs/compat.c	2009-08-22 06:30:46.000000000 +0530
-+++ linux-2.6.31-rc7/fs/compat.c	2009-08-28 14:14:32.781364904 +0530
-@@ -100,13 +100,6 @@
- 		    get_compat_timespec(&tv[1], &t[1]))
- 			return -EFAULT;
- 
--		if ((tv[0].tv_nsec == UTIME_OMIT || tv[0].tv_nsec == UTIME_NOW)
--		    && tv[0].tv_sec != 0)
--			return -EINVAL;
--		if ((tv[1].tv_nsec == UTIME_OMIT || tv[1].tv_nsec == UTIME_NOW)
--		    && tv[1].tv_sec != 0)
--			return -EINVAL;
--
- 		if (tv[0].tv_nsec == UTIME_OMIT && tv[1].tv_nsec == UTIME_OMIT)
- 			return 0;
- 	}
-
---------------050005020803010602060000--
+Not fixed. With 2.6.31-rc7 I'm still seeing repeatable testsuite
+failures on powerpc64. Reverting to 2.6.30 makes the failures go away.
