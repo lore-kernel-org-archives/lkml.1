@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751380AbZH0HHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751413AbZH0HNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751380AbZH0HHb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 03:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZH0HHb
+	id S1751413AbZH0HNs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 03:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZH0HNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 03:07:31 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48133 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbZH0HHa (ORCPT
+	Thu, 27 Aug 2009 03:13:47 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:49922 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751291AbZH0HNr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 03:07:30 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 27 Aug 2009 16:05:32 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, oleg@redhat.com
-Subject: Re: mmotm 2009-08-24-16-24 uploaded
-Message-Id: <20090827160532.d6386722.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090827144453.25f1161b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <200908242328.n7ONSUHI022326@imap1.linux-foundation.org>
-	<20090827144453.25f1161b.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Aug 2009 03:13:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KkMkQupo6mOKNKWVzNToAJyUk27xLmmgzj3RfO7E+AxF/TfgcQYeWP/Xztejddrcvx
+         JSYpIXkCg/iH5AyhIG/f6cCE+UNV/SLOFecLGNjr/IKaLnGtwlOrOIKwEeJCKTFfJq1Z
+         yaedENvjV6kR3Wf4HtW5YyGBVpfuTpVHr7VF0=
+MIME-Version: 1.0
+In-Reply-To: <200908270313.32528.volkerarmin@googlemail.com>
+References: <200908211814.56800.volkerarmin@googlemail.com>
+	 <200908222126.31390.volkerarmin@googlemail.com>
+	 <86802c440908222322s44957498s72a76940f89271cf@mail.gmail.com>
+	 <200908270313.32528.volkerarmin@googlemail.com>
+Date: Thu, 27 Aug 2009 00:13:48 -0700
+Message-ID: <86802c440908270013k4b8c75b1h6bac33a623ded5e7@mail.gmail.com>
+Subject: Re: amd64 + mtrr: only 3.1gb of 8gb are covered, kernel 2.6.30 and 
+	earlier.
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Volker Armin Hemmann <volkerarmin@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009 14:44:53 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Wed, Aug 26, 2009 at 6:13 PM, Volker Armin
+Hemmann<volkerarmin@googlemail.com> wrote:
+> Hi,
+>
+> On Sonntag 23 August 2009, Yinghai Lu wrote:
+>> On Sat, Aug 22, 2009 at 12:26 PM, Volker Armin
+>>
+>> Hemmann<volkerarmin@googlemail.com> wrote:
+>> > when I went from 4gb to 6gb I had a performance degradation. Since the
+>> > 8gb are faster and the new cpu is faster, I don't see degradation. But I
+>> > wonder how much better performance could be with 'correct' mtrr.
+>>
+>> that is weird. with 4g should have mem hole remapping.
+>>
+>> do you still have /proc/mtrr for 6g setup?
+>>
+>> YH
+>
+> some more information, mtrr of 8gb with my X2 6000:
+>
+> reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
+> reg01: base=0x080000000 ( 2048MB), size= 1024MB, count=1: write-back
+> reg02: base=0x0c0000000 ( 3072MB), size=  128MB, count=1: write-back
+> reg03: base=0x0c8000000 ( 3200MB), size=   64MB, count=1: write-back
+> reg04: base=0x0cc000000 ( 3264MB), size=   32MB, count=1: write-back
+> reg05: base=0x0ce000000 ( 3296MB), size=   16MB, count=1: write-back
+>
+> from June with 2.6.30, dmesg from that incident is attached
+>
+> compared that with the mtrr with my X4:
+>
+> reg00: base=0x000000000 (    0MB), size= 2048MB, count=1: write-back
+> reg01: base=0x080000000 ( 2048MB), size= 1024MB, count=1: write-back
+> reg02: base=0x0c0000000 ( 3072MB), size=  128MB, count=1: write-back
+>
+>
+> just ignore the fgrlx parts - whenever I checked it did not made a difference
+> if X was started or not.
+>
 
-> 
-> In the newest mmotom, my S14nfslock hangs up. (x86-64/Fedora10)
-> 
-> On Mon, 24 Aug 2009 16:28:30 -0700
-> akpm@linux-foundation.org wrote:
-> 
-> > ptrace-__ptrace_detach-do-__wake_up_parent-if-we-reap-the-tracee.patch
-> > do_wait-wakeup-optimization-shift-security_task_wait-from-eligible_child-to-wait_consider_task.patch
-> 
-> bisected. following 2 patches for filtering SIGCHLD cause hang (for my environ).
-> 
-> > do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup.patch
-> > do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup-selinux_bprm_committed_creds-use-__wake_up_parent.patch
+theo one with X4, you got extra device
 
-removed S14nfslockd from rc5.d and check it by strace
-==
- 2712] fstat(6, {st_mode=S_IFREG|0644, st_size=0, ...}) = 0
-[pid  2712] mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fc6f263c000
-[pid  2712] dup(6)                      = 7
-[pid  2712] write(6, "2712\n"..., 5)    = 5
-[pid  2712] close(6)                    = 0
-[pid  2712] munmap(0x7fc6f263c000, 4096) = 0
-[pid  2712] clone(Process 2713 attached
-child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7fc6f2625780) = 2713
-[pid  2712] wait4(2713, Process 2712 suspended
- <unfinished ...>
-==
-When process 2713 exits, process 2712 don't wake up.
+[    0.383812] pci 0000:03:00.0: reg 10 io port: [0xd800-0xd8ff]
+[    0.383828] pci 0000:03:00.0: reg 18 64bit mmio: [0xfebff000-0xfebfffff]
+[    0.383844] pci 0000:03:00.0: reg 30 32bit mmio: [0xfebc0000-0xfebdffff]
+[    0.383878] pci 0000:03:00.0: supports D1 D2
+[    0.383879] pci 0000:03:00.0: PME# supported from D1 D2 D3hot D3cold
+[    0.383916] pci 0000:03:00.0: PME# disabled
 
-Then, I sent SIGTERM to 2712
-==
-Process 2713 detached
+so BIOS allocate more mmio space for it.
 
-[pid  2712] <... wait4 resumed> NULL, 0, NULL) = -1 ECHILD (No child processes)
-[pid  2712] --- SIGTERM (Terminated) @ 0 (0) ---
-==
-
-2713 was not caught by 2712.
-
-Thanks,
--Kame
-
-
-
-
-
+YH
