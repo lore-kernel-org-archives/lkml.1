@@ -1,124 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZH0Uq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbZH0Uvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752770AbZH0Uq1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 16:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZH0Uq0
+	id S1752750AbZH0Uvr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 16:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZH0Uvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 16:46:26 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:63120 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752686AbZH0Uq0 (ORCPT
+	Thu, 27 Aug 2009 16:51:47 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:57401
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752586AbZH0Uvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 16:46:26 -0400
-Date: Thu, 27 Aug 2009 13:47:56 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #14012] latest git fried my x86_64 imac
-Message-Id: <20090827134756.53359c08.randy.dunlap@oracle.com>
-In-Reply-To: <200908272145.01901.rjw@sisk.pl>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	<200908262306.38464.rjw@sisk.pl>
-	<4A96CA0A.90405@gmail.com>
-	<200908272145.01901.rjw@sisk.pl>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Aug 2009 16:51:45 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Ric Wheeler <rwheeler@redhat.com>
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
+Date: Thu, 27 Aug 2009 15:51:42 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <20090824212518.GF29763@elf.ucw.cz> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com>
+In-Reply-To: <4A967175.5070700@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt014.oracle.com [141.146.116.23]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4A96F07E.00F8:SCFSTAT5015188,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200908271551.43840.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009 21:45:01 +0200 Rafael J. Wysocki wrote:
+On Thursday 27 August 2009 06:43:49 Ric Wheeler wrote:
+> On 08/26/2009 11:53 PM, Rob Landley wrote:
+> > On Tuesday 25 August 2009 18:40:50 Ric Wheeler wrote:
+> >> Repeat experiment until you get up to something like google scale or the
+> >> other papers on failures in national labs in the US and then we can have
+> >> an informed discussion.
+> >
+> > On google scale anvil lightning can fry your machine out of a clear sky.
+> >
+> > However, there are still a few non-enterprise users out there, and
+> > knowing that specific usage patterns don't behave like they expect might
+> > be useful to them.
+>
+> You are missing the broader point of both papers.
 
-> On Thursday 27 August 2009, Justin P. Mattock wrote:
-> > Rafael J. Wysocki wrote:
-> > > On Wednesday 26 August 2009, Justin P. Mattock wrote:
-> > >    
-> > >> Rafael J. Wysocki wrote:
-> > >>      
-> > >>> This message has been generated automatically as a part of a report
-> > >>> of recent regressions.
-> > >>>
-> > >>> The following bug entry is on the current list of known regressions
-> > >>> from 2.6.30.  Please verify if it still should be listed and let me know
-> > >>> (either way).
-> > >>>
-> > >>>
-> > >>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14012
-> > >>> Subject		: latest git fried my x86_64 imac
-> > >>> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
-> > >>> Date		: 2009-08-13 07:20 (13 days old)
-> > >>> References	: http://marc.info/?l=linux-kernel&m=125014080427090&w=4
-> > >>>
-> > >>>
-> > >>>
-> > >>>
-> > >>>        
-> > >> if I revert this commit:
-> > >> af6af30c0fcd77e621638e53ef8b176bca8bd3b4
-> > >> I can get a normal bootup.
-> > >>      
-> > >
-> > > Hm, that's
-> > >
-> > > commit af6af30c0fcd77e621638e53ef8b176bca8bd3b4
-> > > Author: Peter Zijlstra<peterz@infradead.org>
-> > > Date:   Wed Aug 5 20:41:04 2009 +0200
-> > >
-> > >      ftrace: Fix perf-tracepoint OOPS
-> > >
-> > > I wonder what happens if you compile out ftrace?
-> > >
-> > >    
-> > >> As for this  bug, it seems I'm the only
-> > >> hitting this. The system is a fresh LFS build
-> > >> x86_64.
-> > >> In regards to keeping this open
-> > >> not sure, I don't have a problem with closing this
-> > >> and taking the blame as something I did during my build
-> > >> of the system, then if this becomes more frequent
-> > >> then open a new bug.
-> > >>      
-> > >
-> > > OK, I'll close it for now.
-> > >
-> > > Thanks,
-> > > Rafael
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
-> > >
-> > >    
-> > o.k. I tried disabling all of ftrace in the kernel,
-> > unfortunately the only one left
-> > is HAVE_FTRACE_SYSCALLS
-> > which seems to be selected by x86.
-> > seems the system still sticks
-> > without reverting perf-tracepoint oops.
-> 
-> That's kind of strange.  Can you attach the .config, please?
+No, I'm dismissing the papers (some of which I read when they first came out 
+and got slashdotted) as irrelevant to the topic at hand.
 
-That's what arch/x86/Kconfig does:
+Pavel has two failure modes which he can trivially reproduce.  The USB stick 
+one is reproducible on a laptop by jostling said stick.  I myself used to have 
+a literal USB keychain, and the weight of keys dangling from it pulled it out 
+of the USB socket fairly easily if I wasn't careful.  At the time nobody had 
+told me a journaling filesystem was not a reasonable safeguard here.
 
-### Arch settings
-config X86
-	def_bool y
-...
-	select HAVE_FTRACE_SYSCALLS
+Presumably the degraded raid one can be reproduced under an emulator, with no 
+hardware directly involved at all, so talking about hardware failure rates 
+ignores the fact that he's actually discussing a _software_ problem.  It may 
+happen in _response_ to hardware failures, but the damage he's attempting to 
+document happens entirely in software.
 
-It just means that the $arch has that capability, not that it is enabled.
+These failure modes can cause data loss which journaling can't help, but which 
+journaling might (or might not) conceivably hide so you don't immediately 
+notice it.  They share a common underlying assumption that the storage 
+device's update granularity is less than or equal to the filesystem's block 
+size, which is not actually true of all modern storage devices.  The fact he's 
+only _found_ two instances where this assumption bites doesn't mean there 
+aren't more waiting to be found, especially as more new storage media types 
+get introduced.
 
+Pavel's response was to attempt to document this.  Not that journaling is 
+_bad_, but that it doesn't protect against this class of problem.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Your response is to talk about google clusters, cloud storage, and cite 
+academic papers of statistical hardware failure rates.  As I understand the 
+discussion, that's not actually the issue Pavel's talking about, merely one 
+potential trigger for it.
+
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
