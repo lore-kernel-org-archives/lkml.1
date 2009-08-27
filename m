@@ -1,45 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZH0OWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZH0O3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752203AbZH0OWp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 10:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbZH0OWo
+	id S1752412AbZH0O3c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 10:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbZH0O3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 10:22:44 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:26104 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751525AbZH0OWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 10:22:44 -0400
-Message-ID: <4A96969B.2090004@redhat.com>
-Date: Thu, 27 Aug 2009 07:22:19 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Thu, 27 Aug 2009 10:29:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42300 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbZH0O3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 10:29:30 -0400
+Date: Thu, 27 Aug 2009 16:29:27 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Li_Xin2@emc.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: TCP keepalive timer problem
+Message-ID: <20090827142927.GA17220@basil.fritz.box>
+References: <0939B589FC103041945B9F13274963E303B1A9D4@CORPUSMX90A.corp.emc.com> <4A93E36C.8070502@gmail.com> <0939B589FC103041945B9F13274963E303B1AD89@CORPUSMX90A.corp.emc.com> <4A967FCE.3000807@gmail.com> <87skfdl6qt.fsf@basil.nowhere.org> <4A969566.3070606@gmail.com>
 MIME-Version: 1.0
-To: Eric Blake <ebb9@byu.net>
-CC: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bug-coreutils@gnu.org, bug-gnulib@gnu.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] open: introduce O_NOSTD
-References: <4A9285FC.8000606@byu.net> <1251202593-3676-1-git-send-email-ebb9@byu.net> <alpine.DEB.2.00.0908251420190.18518@makko.or.mcafeemobile.com> <4A968FF8.8050109@byu.net>
-In-Reply-To: <4A968FF8.8050109@byu.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A969566.3070606@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/27/2009 06:54 AM, Eric Blake wrote:
-> I hope that my example shows why doing it in the kernel is desirable -
-> there is no safe way to keep the pre-O_CLOEXEC efficiency using just the
-> library, but there IS a way to do it with kernel support:
+On Thu, Aug 27, 2009 at 04:17:10PM +0200, Eric Dumazet wrote:
+> Andi Kleen a �crit :
+> > Eric Dumazet <eric.dumazet@gmail.com> writes:
+> >> Now, 7200 seconds might be inappropriate for special needs, and considering
+> >> there is no way to change tcp_retries2 for a given socket (only choice being the global
+> >> tcp_retries2 setting), I would vote for a change in our stack, to *relax* RFC,
+> >> and get smaller keepalive timers if possible.
+> > 
+> > I think the better fix would be to just to only do that when
+> > tcp_retries2 > keep alive time. So keep the existing behaviour
+> > with default keep alive, but switch when the user defined
+> > a very short keep alive.
+> > 
+> 
+> tcp_retries2 is a number of retries, its difficult to derive a time from it.
 
-You're describing a very special case where the performance implications 
-are really minimal and try to argue that is a good enough reason?  I 
-don't think so.
+That shouldn't be too hard. 
 
-If a program really has to do thousands of these safe open calls then it 
-can invest time into opening /dev/null for any of the unallocated 
-descriptors < 3.  You can even embed this logic in the safer_open function.
+> 
+> Also, it's not clear what behavior you are refering to.
+> Imagine we can be smart and compute tcp_retries2_time (in jiffies) from tcp_retries2
+> If keepalive_timer fires and we have packets in flight, what heuristic do you suggest ?
+
+I didn't suggest to change something at firing time, just pattern
+the code you removed with if (keepalive_time > retries2 time)
+
+That's not perfect, but likely good enough.
+
+
+> if (tp->packets_out || tcp_send_head(sk))
+> 	if (tcp_retries2_time < keepalive_time_when(tp))
+> 		goto resched;
+> elapsed = tcp_time_stamp - tp->rcv_tstamp;
+> ...
+> 
+> What would be the gain ?
+> Arming timer exactly every keepalive_time_when(tp)
+> instead of keepalive_time_when(tp) - (tcp_time_stamp - tp->rcv_tstamp) ?
+
+The gain would be that you don't send unnecessary packets by default (following the RFC), but 
+still give expected behaviour to users who explicitely set short keepalives.
+
+-Andi
 
 -- 
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+ak@linux.intel.com -- Speaking for myself only.
