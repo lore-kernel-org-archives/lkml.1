@@ -1,103 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbZH0SWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZH0SWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752841AbZH0SWZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 14:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZH0SWX
+	id S1752875AbZH0SWj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 14:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZH0SWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 14:22:23 -0400
-Received: from mga09.intel.com ([134.134.136.24]:14815 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752641AbZH0SWW convert rfc822-to-8bit (ORCPT
+	Thu, 27 Aug 2009 14:22:38 -0400
+Received: from mail-iw0-f204.google.com ([209.85.223.204]:51360 "EHLO
+	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951AbZH0SWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 14:22:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,287,1249282800"; 
-   d="scan'208";a="545354049"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "'Amerigo Wang'" <amwang@redhat.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
-CC: "Luck, Tony" <tony.luck@intel.com>,
-       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
-       "'Neil Horman'" <nhorman@redhat.com>,
-       "'Eric W. Biederman'" <ebiederm@xmission.com>,
-       "'kamezawa.hiroyu@jp.fujitsu.com'" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "'Andi Kleen'" <andi@firstfloor.org>,
-       "'Michael Ellerman'" <michael@ellerman.id.au>,
-       "'M. Mohan Kumar'" <mohan@in.ibm.com>,
-       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
-       "'bernhard.walle@gmx.de'" <bernhard.walle@gmx.de>,
-       "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Anton Vorontsov'" <avorontsov@ru.mvista.com>
-Date: Thu, 27 Aug 2009 11:22:21 -0700
-Subject: RE: [Patch 6/8] powerpc: implement crashkernel=auto
-Thread-Topic: [Patch 6/8] powerpc: implement crashkernel=auto
-Thread-Index: AcomxNp0T6IBrtDlSNKirmeeQDLgoAAfkamQ
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B949E7CB@orsmsx505.amr.corp.intel.com>
-References: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
- <20090827031909.4534.24859.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090827031909.4534.24859.sendpatchset@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 27 Aug 2009 14:22:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=rxxl8yJxyaWHQnG9h64SoFh7CBTxqTMgcsvv96O7cumVC8aIQXAYtJhpPnWvmGIVlg
+         0s/RVwTqhBjMQHZbNa0GYJMyaWRVxKf9jRTYJ2Md/UiU9v90BZGqZSPMQ47T2BWXGIJa
+         XeWWLid4561DHHug7PVmy8pChOnRit25vlwzM=
 MIME-Version: 1.0
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Thu, 27 Aug 2009 11:22:19 -0700
+Message-ID: <43e72e890908271122l6b08aaa5lc66de78301c7c88d@mail.gmail.com>
+Subject: Would it help to encourage users to read/test stable-review patches
+To: stable-review@kernel.org
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->--- linux-2.6.orig/arch/powerpc/include/asm/kexec.h
->+++ linux-2.6/arch/powerpc/include/asm/kexec.h
->@@ -39,6 +39,45 @@ typedef void (*crash_shutdown_t)(void);
->
-> #ifdef CONFIG_KEXEC
->
->+#ifdef CONFIG_KEXEC_AUTO_RESERVE
->+
->+#ifndef KEXEC_AUTO_THRESHOLD
->+#define KEXEC_AUTO_THRESHOLD (1ULL<<31) /* 2G */
->+#endif
->+
->+#ifndef arch_default_crash_base
->+static inline
->+unsigned long long arch_default_crash_base(void)
->+{
->+	return KDUMP_KERNELBASE;
->+}
-You don't want inline here either.
+Just thinking out loud here.
 
->+#define arch_default_crash_base arch_default_crash_base
->+#endif
->+
->+#ifndef arch_default_crash_size
->+static inline
->+unsigned long long arch_default_crash_size(unsigned long long total_size)
->+{
+We get development review eyes on stable patches during submission
+into a subsystem, and perhaps 1-2 user tests then. Typically patches
+are pretty easy to review for stable submission but I'm wondering
+about cases where things are not so clear and perhaps we want better
+testing and are less willing to take a fix into stable than on latest
+rc. Also what if a user just wants to test an entire series queues up
+for stable-review, is there a single all-in-one file user can just
+patch -p1 to help test prior to getting the next stable release made?
+Do we want more user exposure to stable-review mailing list or is just
+a few developer eyes enough?
 
-Ditto.
-
->+	if (total_size < KEXEC_AUTO_THRESHOLD)
->+		return 0;
->+	if (total_size < (1ULL<<32))
->+		return 1ULL<<27;
->+	else {
->+#ifdef CONFIG_64BIT
->+		if (total_size > (1ULL<<37)) /* 128G */
->+			return 1ULL<<32; /* 4G */
->+		return 1ULL<<ilog2(roundup(total_size/32, 1ULL<<21));
->+#else
->+		return 1ULL<<28;
->+#endif
->+	}
->+}
->+#define arch_default_crash_size arch_default_crash_size
->+#endif
->+
->+#endif
->+#include <asm-generic/kexec.h>
->+
-> /*
->  * This function is responsible for capturing register states if coming
->  * via panic or invoking dump using sysrq-trigger.
+  Luis
