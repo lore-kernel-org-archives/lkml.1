@@ -1,59 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZH0UqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZH0Uq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752729AbZH0UqK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 16:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZH0UqJ
+	id S1752770AbZH0Uq1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 16:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZH0Uq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 16:46:09 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:39260 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752675AbZH0UqI (ORCPT
+	Thu, 27 Aug 2009 16:46:26 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:63120 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752686AbZH0Uq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 16:46:08 -0400
-Date: Thu, 27 Aug 2009 16:46:08 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
+	Thu, 27 Aug 2009 16:46:26 -0400
+Date: Thu, 27 Aug 2009 13:47:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 0/6] PM: Asynchronous suspend and resume of devices
-In-Reply-To: <200908262217.19609.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0908271637480.25639-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #14012] latest git fried my x86_64 imac
+Message-Id: <20090827134756.53359c08.randy.dunlap@oracle.com>
+In-Reply-To: <200908272145.01901.rjw@sisk.pl>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<200908262306.38464.rjw@sisk.pl>
+	<4A96CA0A.90405@gmail.com>
+	<200908272145.01901.rjw@sisk.pl>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt014.oracle.com [141.146.116.23]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4A96F07E.00F8:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Rafael J. Wysocki wrote:
+On Thu, 27 Aug 2009 21:45:01 +0200 Rafael J. Wysocki wrote:
 
-> Hi,
+> On Thursday 27 August 2009, Justin P. Mattock wrote:
+> > Rafael J. Wysocki wrote:
+> > > On Wednesday 26 August 2009, Justin P. Mattock wrote:
+> > >    
+> > >> Rafael J. Wysocki wrote:
+> > >>      
+> > >>> This message has been generated automatically as a part of a report
+> > >>> of recent regressions.
+> > >>>
+> > >>> The following bug entry is on the current list of known regressions
+> > >>> from 2.6.30.  Please verify if it still should be listed and let me know
+> > >>> (either way).
+> > >>>
+> > >>>
+> > >>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14012
+> > >>> Subject		: latest git fried my x86_64 imac
+> > >>> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
+> > >>> Date		: 2009-08-13 07:20 (13 days old)
+> > >>> References	: http://marc.info/?l=linux-kernel&m=125014080427090&w=4
+> > >>>
+> > >>>
+> > >>>
+> > >>>
+> > >>>        
+> > >> if I revert this commit:
+> > >> af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+> > >> I can get a normal bootup.
+> > >>      
+> > >
+> > > Hm, that's
+> > >
+> > > commit af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+> > > Author: Peter Zijlstra<peterz@infradead.org>
+> > > Date:   Wed Aug 5 20:41:04 2009 +0200
+> > >
+> > >      ftrace: Fix perf-tracepoint OOPS
+> > >
+> > > I wonder what happens if you compile out ftrace?
+> > >
+> > >    
+> > >> As for this  bug, it seems I'm the only
+> > >> hitting this. The system is a fresh LFS build
+> > >> x86_64.
+> > >> In regards to keeping this open
+> > >> not sure, I don't have a problem with closing this
+> > >> and taking the blame as something I did during my build
+> > >> of the system, then if this becomes more frequent
+> > >> then open a new bug.
+> > >>      
+> > >
+> > > OK, I'll close it for now.
+> > >
+> > > Thanks,
+> > > Rafael
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Please read the FAQ at  http://www.tux.org/lkml/
+> > >
+> > >    
+> > o.k. I tried disabling all of ftrace in the kernel,
+> > unfortunately the only one left
+> > is HAVE_FTRACE_SYSCALLS
+> > which seems to be selected by x86.
+> > seems the system still sticks
+> > without reverting perf-tracepoint oops.
 > 
-> The following patches introduce a mechanism allowing us to execute device
-> drivers' suspend and resume callbacks asynchronously during system sleep
-> transitions, such as suspend to RAM.
-> 
-> The idea is explained in the changelogs of the first two patches.
-> 
-> Comments welcome.
+> That's kind of strange.  Can you attach the .config, please?
 
-I've been terribly busy and haven't had a chance to look at this.  The
-earlier version seemed to have a bunch of mutual-exclusion issues; are
-they resolved now?  There were also some problems involving unsafe
-iteration over the dpm_list -- remember that devices can be
-unregistered at any time, not just while they are suspending or
-resuming.
+That's what arch/x86/Kconfig does:
 
-When a device finishes, instead of having the async thread look for 
-another device to work on, I think it would be better to have the 
-thread check the dependents of the current device.  Those which are 
-now ready can be added to a "device-ready" list, which is used to 
-direct the actions of new async threads.
+### Arch settings
+config X86
+	def_bool y
+...
+	select HAVE_FTRACE_SYSCALLS
 
-Alan Stern
+It just means that the $arch has that capability, not that it is enabled.
 
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
