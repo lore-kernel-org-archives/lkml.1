@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbZH0Roc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbZH0Ro5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262AbZH0Roc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 13:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbZH0Roa
+	id S1752386AbZH0Ro5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 13:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbZH0Roy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 13:44:30 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:51769 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751704AbZH0Rnn (ORCPT
+	Thu, 27 Aug 2009 13:44:54 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:25378 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751296AbZH0Rnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 13:43:43 -0400
+	Thu, 27 Aug 2009 13:43:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=O06hJzIKGBhbPFmKcfJ4X6WQibRZtaay+yaz07ZgZLFJdRu4cWoZX+vbgrwy+KykqQ
-         +EM7Betd7EACAIg5+H12eDYdOJY13AjG04I2OLFtXHmrdrNK5shrN0TUd+N4AiA1No3j
-         yOVqtB0lkdjjqIfZHP7Vt8nutZn+p80RqO5g4=
+        b=iz/g5k5K29ay7AyKlq2LhbXR3Ltb1wdmJSv8FQYxDs6oeCFm9d3Btiqd/J0N0ZLiiz
+         LWOezho0pNTT0Zt8a3NkP2fcJLoBrp5aMnbGdaPTyKwVgzqGzvgasaiPUdRTsnAhij0E
+         eg0mnqGiSEad7UsQ/X4Kidp/BW36fmIpOYW5k=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -29,11 +29,10 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
        Li Zefan <lizf@cn.fujitsu.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH 3/7] tracing: Don't trace kernel thread syscalls
-Date: Thu, 27 Aug 2009 19:43:31 +0200
-Message-Id: <1251395015-6329-4-git-send-email-fweisbec@gmail.com>
+       Paul Mundt <lethal@linux-sh.org>
+Subject: [PATCH 1/7] tracing: Add syscall tracepoints - s390 arch update
+Date: Thu, 27 Aug 2009 19:43:29 +0200
+Message-Id: <1251395015-6329-2-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1251395015-6329-1-git-send-email-fweisbec@gmail.com>
 References: <1251395015-6329-1-git-send-email-fweisbec@gmail.com>
@@ -43,25 +42,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 
-Kernel threads don't call syscalls using the sysenter/sysexit
-path. Instead they directly call the sys_* or do_* functions
-that implement the syscalls inside the kernel.
+This patch includes s390 arch updates to synchronize with latest
+core changes in the syscalls tracing area.
 
-The current syscall tracepoints only bind the sysenter/sysexit
-path, then it has no effect to trace the kernel thread calls
-to syscalls in that path.
-Setting the TIF_SYSCALL_TRACEPOINT flag is then useless for these.
-
-Actually there is only one case when a kernel thread can reach the
-usual syscall exit tracing path: when we create a kernel thread, the
-child comes to ret_from_fork and is the fork() return is then traced.
-But this information alone is useless, then we don't want to set the
-TIF flags for these threads.
-
-Kernel threads have task_struct->mm set to NULL.
-(Thanks to Heiko for that hint ;-)
-The idea is then to check the mm field in syscall_regfunc() and
-set the flag accordingly.
+- tracing: Map syscall name to number (syscall_name_to_nr())
+- tracing: Call arch_init_ftrace_syscalls at boot
+- tracing: add support tracepoint ids (set_syscall_{enter,exit}_id())
 
 Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 Cc: Jason Baron <jbaron@redhat.com>
@@ -76,29 +62,75 @@ Cc: Martin Bligh <mbligh@google.com>
 Cc: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-LKML-Reference: <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
+LKML-Reference: <20090825123111.GD4639@cetus.boeblingen.de.ibm.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/tracepoint.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ arch/s390/kernel/ftrace.c |   36 +++++++++++++++++++++++++++---------
+ 1 files changed, 27 insertions(+), 9 deletions(-)
 
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 1a6a453..9489a0a 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -597,7 +597,9 @@ void syscall_regfunc(void)
- 	if (!sys_tracepoint_refcount) {
- 		read_lock_irqsave(&tasklist_lock, flags);
- 		do_each_thread(g, t) {
--			set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
-+			/* Skip kernel threads. */
-+			if (t->mm)
-+				set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
- 		} while_each_thread(g, t);
- 		read_unlock_irqrestore(&tasklist_lock, flags);
+diff --git a/arch/s390/kernel/ftrace.c b/arch/s390/kernel/ftrace.c
+index 3e298e6..57bdcb1 100644
+--- a/arch/s390/kernel/ftrace.c
++++ b/arch/s390/kernel/ftrace.c
+@@ -220,6 +220,29 @@ struct syscall_metadata *syscall_nr_to_meta(int nr)
+ 	return syscalls_metadata[nr];
+ }
+ 
++int syscall_name_to_nr(char *name)
++{
++	int i;
++
++	if (!syscalls_metadata)
++		return -1;
++	for (i = 0; i < NR_syscalls; i++)
++		if (syscalls_metadata[i])
++			if (!strcmp(syscalls_metadata[i]->name, name))
++				return i;
++	return -1;
++}
++
++void set_syscall_enter_id(int num, int id)
++{
++	syscalls_metadata[num]->enter_id = id;
++}
++
++void set_syscall_exit_id(int num, int id)
++{
++	syscalls_metadata[num]->exit_id = id;
++}
++
+ static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
+ {
+ 	struct syscall_metadata *start;
+@@ -237,24 +260,19 @@ static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
+ 	return NULL;
+ }
+ 
+-void arch_init_ftrace_syscalls(void)
++static int __init arch_init_ftrace_syscalls(void)
+ {
+ 	struct syscall_metadata *meta;
+ 	int i;
+-	static atomic_t refs;
+-
+-	if (atomic_inc_return(&refs) != 1)
+-		goto out;
+ 	syscalls_metadata = kzalloc(sizeof(*syscalls_metadata) * NR_syscalls,
+ 				    GFP_KERNEL);
+ 	if (!syscalls_metadata)
+-		goto out;
++		return -ENOMEM;
+ 	for (i = 0; i < NR_syscalls; i++) {
+ 		meta = find_syscall_meta((unsigned long)sys_call_table[i]);
+ 		syscalls_metadata[i] = meta;
  	}
+-	return;
+-out:
+-	atomic_dec(&refs);
++	return 0;
+ }
++arch_initcall(arch_init_ftrace_syscalls);
+ #endif
 -- 
 1.6.2.3
 
