@@ -1,109 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbZH0V7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZH0WAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304AbZH0V7S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 17:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZH0V7Q
+	id S1753318AbZH0WAS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 18:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZH0WAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 17:59:16 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:27891 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753152AbZH0V7P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 17:59:15 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Aug 2009 17:59:15 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=LIpcF/7mvdEwl9acNOSCT5lz6OCvvmOVG0pDMSZcOIqxZPwbxnzg+v0F2P88h/9XbX1/FHuQBD5D8X/Pwsd4Vf3kEfCUDkF9CMSPfgZg9abnfPMRR2zvLK2ChijOrSsCEuMF2BTx+VNWfYc8NySTO+5RGCcg/meLGa7ptC6670Y=  ;
-X-YMail-OSG: jHRg3b8VM1nWfTxVOAg5UgO6UocSLq7Ht4wiIRfCtHPY0Yb_Qqgcz.aNmKemVht7.xFlpf.mAAMI6187lIE6xy4MG95E_0wHsCc6jMtI7dCxUTS_gQHhYTVL1P4_0mt7EB6QMZBZUH0TvWYID_o17DUWKeqqEC5hzoTP9h4xhhU.18R2RttBEwibp_jR_2LHcAr6Ksi26quX_Sw-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] rtc: Set wakeup capability for I2C and SPI RTC drivers
-Date: Thu, 27 Aug 2009 14:52:36 -0700
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ben Dooks <ben-linux@fluff.org>,
-       Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-References: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
+	Thu, 27 Aug 2009 18:00:15 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:42303 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750996AbZH0WAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 18:00:13 -0400
+Date: Thu, 27 Aug 2009 15:00:12 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+Subject: [PATCH tip/core/rcu] Changes from reviews: avoid casts, fix/add
+	warnings, improve comments.
+Message-ID: <20090827220012.GA30525@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908271452.37358.david-b@pacbell.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NAK; see details below
+Changes suggested by review comments from Josh Triplett and Mathieu
+Desnoyers.
 
-On Thursday 27 August 2009, Anton Vorontsov wrote:
-> RTC core won't allow wakeup alarms to be set if RTC devices' parent
-> (i.e. i2c_client or spi_device) isn't wakeup capable.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-Quite rightly so ... being wakeup-capable is config-specific.
+ include/linux/sched.h   |    4 +++-
+ kernel/rcutree.c        |   13 ++++++-------
+ kernel/rcutree.h        |    2 ++
+ kernel/rcutree_plugin.h |   10 ++++++----
+ 4 files changed, 17 insertions(+), 12 deletions(-)
 
-
-> For I2C devices there is I2C_CLIENT_WAKE flag exists that we can pass
-> via board info, and if set, I2C core will initialize wakeup capability.
-> For SPI devices there is no such flag at all.
-
-So why not add it for SPI?  If it's an issue, it's not
-unique to RTC devices.
-
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 3fe0315..855fd0d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1163,6 +1163,8 @@ struct sched_rt_entity {
+ #endif
+ };
  
-> I believe that it's not platform code responsibility to allow or
-> disallow wakeups, instead, drivers themselves should set the capability
-> if a device can trigger wakeups.
-
-Drivers can't generally know if that's possible though.
-They need to be told that it is, by platform code.
-
-Most devices can't issue wakeup events.
-
++struct rcu_node;
++
+ struct task_struct {
+ 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
+ 	void *stack;
+@@ -1208,7 +1210,7 @@ struct task_struct {
+ #ifdef CONFIG_TREE_PREEMPT_RCU
+ 	int rcu_read_lock_nesting;
+ 	char rcu_read_unlock_special;
+-	void *rcu_blocked_node;
++	struct rcu_node *rcu_blocked_node;
+ 	struct list_head rcu_node_entry;
+ #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
  
-> That's what drivers/base/power/sysfs.c says:
-> 
->  * It is the responsibility of device drivers to enable (or disable)
->  * wakeup signaling as part of changing device power states, respecting
->  * the policy choices provided through the driver model.
-> 
-> I2C and SPI RTC devices send wakeup events via interrupt lines, so we
-> should set the wakeup capability if IRQ is routed.
-
-Re-read the quoted sentence.  You're saying that policy
-choices should be hard-wired into the driver; contrary
-to that quote.  (In this case the choice is one that
-platform code must report, and which the hardware
-designer made:  if the device can issue wakeup events.)  
-
-
-> Ideally we should also check irq for wakeup capability before setting
-> device's capability, i.e.
-> 
-> 	if (can_irq_wake(irq))
-> 		device_set_wakeup_capable(&client->dev, 1);
-> 
-> But there is no can_irq_wake() call exist, and it is not that trivial
-> to implement it for all interrupts controllers and complex/cascaded
-> setups.
-
-That is why platform code should device_init_wakeup() and
-drivers should check device_can_wakeup(dev) ...
-
-
-> drivers/base/power/sysfs.c also covers these cases:
-> 
->  * Devices may not be able to generate wakeup events from all power
->  * states.  Also, the events may be ignored in some configurations;
->  * for example, they might need help from other devices that aren't
->  * active
-> 
-> So there is no guarantee that wakeup will actually work, 
-
-Yes there is ... it's only **exceptional** cases where it can't
-work.  Your patch would make it routine that those flags be
-unreliable; pretty nasty.
-
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index d903e2f..71bc797 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -229,7 +229,6 @@ static int rcu_implicit_offline_qs(struct rcu_data *rdp)
+ #endif /* #ifdef CONFIG_SMP */
+ 
+ #ifdef CONFIG_NO_HZ
+-static DEFINE_RATELIMIT_STATE(rcu_rs, 10 * HZ, 5);
+ 
+ /**
+  * rcu_enter_nohz - inform RCU that current CPU is entering nohz
+@@ -249,7 +248,7 @@ void rcu_enter_nohz(void)
+ 	rdtp = &__get_cpu_var(rcu_dynticks);
+ 	rdtp->dynticks++;
+ 	rdtp->dynticks_nesting--;
+-	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
++	WARN_ON_ONCE(rdtp->dynticks & 0x1);
+ 	local_irq_restore(flags);
+ }
+ 
+@@ -268,7 +267,7 @@ void rcu_exit_nohz(void)
+ 	rdtp = &__get_cpu_var(rcu_dynticks);
+ 	rdtp->dynticks++;
+ 	rdtp->dynticks_nesting++;
+-	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
++	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
+ 	local_irq_restore(flags);
+ 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+ }
+@@ -287,7 +286,7 @@ void rcu_nmi_enter(void)
+ 	if (rdtp->dynticks & 0x1)
+ 		return;
+ 	rdtp->dynticks_nmi++;
+-	WARN_ON_RATELIMIT(!(rdtp->dynticks_nmi & 0x1), &rcu_rs);
++	WARN_ON_ONCE(!(rdtp->dynticks_nmi & 0x1));
+ 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+ }
+ 
+@@ -306,7 +305,7 @@ void rcu_nmi_exit(void)
+ 		return;
+ 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
+ 	rdtp->dynticks_nmi++;
+-	WARN_ON_RATELIMIT(rdtp->dynticks_nmi & 0x1, &rcu_rs);
++	WARN_ON_ONCE(rdtp->dynticks_nmi & 0x1);
+ }
+ 
+ /**
+@@ -322,7 +321,7 @@ void rcu_irq_enter(void)
+ 	if (rdtp->dynticks_nesting++)
+ 		return;
+ 	rdtp->dynticks++;
+-	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
++	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
+ 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+ }
+ 
+@@ -341,7 +340,7 @@ void rcu_irq_exit(void)
+ 		return;
+ 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
+ 	rdtp->dynticks++;
+-	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
++	WARN_ON_ONCE(rdtp->dynticks & 0x1);
+ 
+ 	/* If the interrupt queued a callback, get out of dyntick mode. */
+ 	if (__get_cpu_var(rcu_sched_data).nxtlist ||
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index ca56036..bf8a6f9 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -81,6 +81,8 @@ struct rcu_dynticks {
+ struct rcu_node {
+ 	spinlock_t lock;
+ 	long	gpnum;		/* Current grace period for this node. */
++				/*  This will either be equal to or one */
++				/*  behind the root rcu_node's gpnum. */
+ 	unsigned long qsmask;	/* CPUs or groups that need to switch in */
+ 				/*  order for current grace period to proceed.*/
+ 	unsigned long qsmaskinit;
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index 04343be..4778936 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -92,7 +92,7 @@ static void rcu_preempt_qs(int cpu)
+ 		rnp = rdp->mynode;
+ 		spin_lock(&rnp->lock);
+ 		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
+-		t->rcu_blocked_node = (void *)rnp;
++		t->rcu_blocked_node = rnp;
+ 
+ 		/*
+ 		 * If this CPU has already checked in, then this task
+@@ -176,9 +176,9 @@ static void rcu_read_unlock_special(struct task_struct *t)
+ 		 * most one time.  So at most two passes through loop.
+ 		 */
+ 		for (;;) {
+-			rnp = (struct rcu_node *)t->rcu_blocked_node;
++			rnp = t->rcu_blocked_node;
+ 			spin_lock(&rnp->lock);
+-			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
++			if (rnp == t->rcu_blocked_node)
+ 				break;
+ 			spin_unlock(&rnp->lock);
+ 		}
+@@ -288,8 +288,10 @@ static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
+ 	struct rcu_node *rnp_root = rcu_get_root(rsp);
+ 	struct task_struct *tp;
+ 
+-	if (rnp == rnp_root)
++	if (rnp == rnp_root) {
++		WARN_ONCE(1, "Last CPU thought to be offlined?");
+ 		return;  /* Shouldn't happen: at least one CPU online. */
++	}
+ 
+ 	/*
+ 	 * Move tasks up to root rcu_node.  Rely on the fact that the
