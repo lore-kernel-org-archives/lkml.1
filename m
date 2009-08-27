@@ -1,111 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751484AbZH0LDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751577AbZH0LD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751484AbZH0LDJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 07:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZH0LDJ
+	id S1751577AbZH0LD3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 07:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZH0LD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 07:03:09 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:61608 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138AbZH0LDH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 07:03:07 -0400
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
-Subject: Re: [ANNOUNCE] 2.6.31-rc7-rt8
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	<alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
-	<alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
-	<alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
-	<alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
-	<alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
-	<alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
-	<alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
-	<alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
-	<alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
-	<alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
-	<alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
-	<alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
-	<alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
-	<alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
-	<alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
-	<alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Thu, 27 Aug 2009 14:03:05 +0300
-In-Reply-To: <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> (Thomas Gleixner's message of "Wed\, 26 Aug 2009 19\:23\:46 +0200 \(CEST\)")
-Message-ID: <878wh5friu.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 27 Aug 2009 07:03:28 -0400
+Received: from ozlabs.org ([203.10.76.45]:51273 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750994AbZH0LD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 07:03:27 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCHv4 2/2] vhost_net: a kernel-level virtio server
+Date: Thu, 27 Aug 2009 20:33:26 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Arnd Bergmann <arnd@arndb.de>, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hpa@zytor.com,
+       mingo@elte.hu, akpm@linux-foundation.org
+References: <cover.1250693417.git.mst@redhat.com> <200908261540.59900.arnd@arndb.de> <20090827101026.GA8545@redhat.com>
+In-Reply-To: <20090827101026.GA8545@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908272033.26540.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> writes:
+On Thu, 27 Aug 2009 07:40:26 pm Michael S. Tsirkin wrote:
+> On Wed, Aug 26, 2009 at 03:40:59PM +0200, Arnd Bergmann wrote:
+> > On Tuesday 25 August 2009, Michael S. Tsirkin wrote:
+> > > >  I'd like to avoid that here,
+> > > > though it's kind of ugly.  We'd need VHOST_GET_FEATURES (and ACK) to take a
+> > > > struct like:
+> > > > 
+> > > >       u32 feature_size;
+> > > >       u32 features[];
+> > 
+> > Hmm, variable length ioctl arguments, I'd rather not go there.
+> > The ioctl infrastructure already has a length argument encoded
+> > in the ioctl number. We can use that if we need more, e.g.
+> > 
+> > /* now */
+> > #define VHOST_GET_FEATURES     _IOR(VHOST_VIRTIO, 0x00, __u64)
+> > /*
+> >  * uncomment if we run out of feature bits:
+> > 
+> > struct vhost_get_features2 {
+> > 	__u64 bits[2];
+> > };
+> > #define VHOST_GET_FEATURES2     _IOR(VHOST_VIRTIO, 0x00, \
+> > 			struct  vhost_get_features2)
+> >  */
+> 
+> 
+> I thought so, too. Rusty, agree?
 
-> We are pleased to announce the next update to our new preempt-rt
-> series.
->  
->     - update to Linus' latest
->  
->     - perf counter crash fix (peterz)
->     
->     - disabled MARKERS on RT. Code with no use(rs) which just causes
->       trouble.
->
->     - edge irq forced threading fix. Fixes the IDE "interrupt lost"
->       reports
->
+Yep, am convinced.  Make it u64 to stop us having to do this tomorrow, then
+we can always extend later.
 
-Hi Thomas,
-
-Here's one more atomic_spin_lock conversion for a driver update
-that went in for -rc7.
-
-Kevin
-
->From 4faf27a4c0ceaddd7cb13f5d11928babc9c4cddc Mon Sep 17 00:00:00 2001
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Date: Thu, 27 Aug 2009 13:51:47 +0300
-Subject: [PATCH -rt] MFD: twl4030: convert irq_desc lock to atomic spinlock
-
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
----
- drivers/mfd/twl4030-irq.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
-index 7d43083..c1bc157 100644
---- a/drivers/mfd/twl4030-irq.c
-+++ b/drivers/mfd/twl4030-irq.c
-@@ -458,12 +458,12 @@ static void twl4030_sih_do_edge(struct work_struct *work)
- 
- 		bytes[byte] &= ~(0x03 << off);
- 
--		spin_lock_irq(&d->lock);
-+		atomic_spin_lock_irq(&d->lock);
- 		if (d->status & IRQ_TYPE_EDGE_RISING)
- 			bytes[byte] |= BIT(off + 1);
- 		if (d->status & IRQ_TYPE_EDGE_FALLING)
- 			bytes[byte] |= BIT(off + 0);
--		spin_unlock_irq(&d->lock);
-+		atomic_spin_unlock_irq(&d->lock);
- 
- 		edge_change &= ~BIT(i);
- 	}
--- 
-1.6.4
-
+Thanks,
+Rusty.
