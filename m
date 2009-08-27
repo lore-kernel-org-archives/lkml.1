@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751050AbZH0RYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330AbZH0R3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751050AbZH0RYl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 13:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbZH0RYk
+	id S1751330AbZH0R3Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 13:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbZH0R3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 13:24:40 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16473 "EHLO mx1.redhat.com"
+	Thu, 27 Aug 2009 13:29:24 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:20174 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750992AbZH0RYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 13:24:40 -0400
-Message-ID: <4A96C14C.8040105@redhat.com>
-Date: Thu, 27 Aug 2009 10:24:28 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1751230AbZH0R3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 13:29:23 -0400
+Message-ID: <4A96C345.3060505@redhat.com>
+Date: Thu, 27 Aug 2009 13:32:53 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Jamie Lokier <jamie@shareable.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
-References: <1250697884-22288-1-git-send-email-jack@suse.cz> <20090820221221.GA14440@infradead.org> <20090821114010.GG12579@kernel.dk> <20090821135403.GA6208@shareable.org> <20090821142635.GB30617@infradead.org> <20090821152459.GC6929@shareable.org> <20090821174525.GA28861@infradead.org> <20090822005006.GA22530@shareable.org> <20090824023422.GA775@infradead.org> <20090827143459.GB31453@shareable.org> <20090827171044.GA5427@infradead.org>
-In-Reply-To: <20090827171044.GA5427@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [GIT PULL] tracing/kprobes: Add dynamic tracepoints +	instruction
+ decoder
+References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com> <4A969F96.2020107@redhat.com> <20090827152539.GE6058@nowhere>
+In-Reply-To: <20090827152539.GE6058@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/27/2009 10:10 AM, Christoph Hellwig wrote:
-> The question is how to handle this at the libc level.  Currently glibc
-> defines O_DSYNC to be O_SYNC.  We would need to update glibc to pass
-> through O_DSYNC for newer kernels and make sure it falls back to O_SYNC
-> for olders.  I'm not sure how feasible this is, but maybe Ulrich has
-> some better ideas.
+Frederic Weisbecker wrote:
+> On Thu, Aug 27, 2009 at 11:00:38AM -0400, Masami Hiramatsu wrote:
+>> Frederic Weisbecker wrote:
+>>> Ingo,
+>>>
+>>> This is the kprobes tracing pile of patches. I've tested it
+>>> successfully by setting some kprobes through debugfs by hand.
+>>>
+>>> It brings no known regressions.
+>>>
+>>> However, the stress test provided by Masami have revealed some
+>>> unstable points. Some symbols are unsafe to probe and raise
+>>> probing recursion.
+>>>
+>>> I've added a tiny patch in the series that helps identifying the
+>>> kprobe that has raised such situation.
+>>> For example it has learned me today that it's unsafe to trace
+>>> ret_from_exception() (obviously: it's on the int 3 handler path).
+>>
+>> Thank you, Frederic.
+>>
+>> I'm currently fixing those problems on x86-64 (on kvm).
+>> I'll also check it on x86-32, and fix it.
+>>
+>> Thanks
+>
+>
+>
+> Cool.
+> Don't hesitate to interate through small patches that fix these
+> sites.
+>
+> So that I can continue to test it over time and report you what I find,
+> may be I can try to fix some of them too.
+>
+> I haven't fixed ret_from_exception because I wasn't sure about the
+> right thing to do: putting it in the kprobes section or blacklist its
+> name. It's a bit more delicate to put assembly code into sections so... :)
 
-The problem with O_* extensions is that the syscall doesn't fail if the 
-flag is not handled.  This is a problem in the open implementation which 
-can only be fixed with a new syscall.
+It depends on implementation, but I think blacklist is the last resort. :)
+AFAIK, some assembly codes are already pushed into kprobes section.
 
-Why cannot just go on and say we interpret O_SYNC like O_SYNC and 
-O_SYNC|O_DSYNC like O_DSYNC.  The POSIX spec explicitly requires that 
-the latter handled like O_SYNC.
-
-We could handle it by allocating two bits, only one is handled in the 
-kernel.  If the O_DSYNC definition for userlevel would be different from 
-the kernel definition then the kernel could interpret O_SYNC|O_DSYNC 
-like O_DSYNC.  The libc would then have to translate the userlevel 
-O_DSYNC into the kernel O_DSYNC.  If the libc is too old for the kernel 
-and the application, the userlevel flag would be passed to the kernel 
-and nothing bad happens.
-
-The cleaner alternative is to have a sys_newopen which checks for 
-unknown flags and fails in that case.
+Thank you,
 
 -- 
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
