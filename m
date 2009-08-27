@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZH0Nf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbZH0NrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752708AbZH0Nf1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 09:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZH0NfY
+	id S1752714AbZH0NrF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 09:47:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZH0NrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 09:35:24 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40737 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbZH0NfW (ORCPT
+	Thu, 27 Aug 2009 09:47:04 -0400
+Received: from mail-yw0-f184.google.com ([209.85.211.184]:61047 "EHLO
+	mail-yw0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752680AbZH0NrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 09:35:22 -0400
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Li_Xin2@emc.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: TCP keepalive timer problem
-From: Andi Kleen <andi@firstfloor.org>
-References: <0939B589FC103041945B9F13274963E303B1A9D4@CORPUSMX90A.corp.emc.com>
-	<4A93E36C.8070502@gmail.com>
-	<0939B589FC103041945B9F13274963E303B1AD89@CORPUSMX90A.corp.emc.com>
-	<4A967FCE.3000807@gmail.com>
-Date: Thu, 27 Aug 2009 15:35:22 +0200
-In-Reply-To: <4A967FCE.3000807@gmail.com> (Eric Dumazet's message of "Thu, 27 Aug 2009 14:45:02 +0200")
-Message-ID: <87skfdl6qt.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Thu, 27 Aug 2009 09:47:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=cbIiWEhWmdsGR8l9h2MB+zn63YIrNSQb+y7Q1MyKodiJsG3cQcaE2jb3sCbPjynFAX
+         YqYXz2XrEhzfY9EHFG7EFH2yKt6rR2O2mDgIJllYXZ8txjM+aKweFjCOqsS7Cv6stVid
+         uO+MovHLYNIlCzXDPp+gUjbgCoiyCjuclgpQ8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Thu, 27 Aug 2009 08:47:04 -0500
+Message-ID: <a4e6962a0908270647r182191ftf833590924f066b8@mail.gmail.com>
+Subject: [GIT PULL] 9p bug fixes for 2.6.31-rc7
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       V9FS Developers <v9fs-developer@lists.sourceforge.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet <eric.dumazet@gmail.com> writes:
->
-> Now, 7200 seconds might be inappropriate for special needs, and considering
-> there is no way to change tcp_retries2 for a given socket (only choice being the global
-> tcp_retries2 setting), I would vote for a change in our stack, to *relax* RFC,
-> and get smaller keepalive timers if possible.
+Linus, please pull this set of bug fixes and minor documentation
+revisions.  Thanks.
 
-I think the better fix would be to just to only do that when
-tcp_retries2 > keep alive time. So keep the existing behaviour
-with default keep alive, but switch when the user defined
-a very short keep alive.
+The following changes since commit 3edf2fb9d80a46d6c32ba12547a42419845b4b76:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
 
--Andi
+are available in the git repository at:
 
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Abhishek Kulkarni (10):
+      9p: Check for error in return value of v9fs_fid_add
+      9p: Fix possible inode leak in v9fs_get_inode.
+      9p: minor comment fixes
+      9p: Fix possible memleak in v9fs_inode_from fid.
+      9p: Fix v9fs show_options
+      9p: Fix possible regressions when ->get_sb fails.
+      9p: Remove redundant inode uid/gid assignment
+      9p: Add missing cast for the error return value in v9fs_get_inode
+      net/9p: insulate the client against an invalid error code sent
+by a 9p server
+      9p: remove unnecessary v9fses->options which duplicates the mount string
+
+Eric Van Hensbergen (1):
+      9p: update documentation pointers
+
+ Documentation/filesystems/9p.txt |    3 +
+ fs/9p/v9fs.c                     |   21 ++-----
+ fs/9p/v9fs.h                     |    1 -
+ fs/9p/vfs_inode.c                |  126 +++++++++++++++++++------------------
+ fs/9p/vfs_super.c                |   39 ++++--------
+ net/9p/client.c                  |   21 +++----
+ net/9p/error.c                   |    2 +-
+ net/9p/trans_fd.c                |    8 +-
+ net/9p/trans_rdma.c              |    9 ++-
+ net/9p/trans_virtio.c            |   11 +--
+ 10 files changed, 107 insertions(+), 134 deletions(-)
