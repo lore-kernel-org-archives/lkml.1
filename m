@@ -1,77 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbZH0H6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbZH0H7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751528AbZH0H6y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 03:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZH0H6x
+	id S1751596AbZH0H7G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 03:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZH0H7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 03:58:53 -0400
-Received: from staff.task.gda.pl ([153.19.250.116]:4689 "EHLO
-	staff.task.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbZH0H6w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 03:58:52 -0400
-Date: Thu, 27 Aug 2009 09:58:51 +0200 (CEST)
-From: =?ISO-8859-2?Q?Pawe=B3_Go=B3aszewski?= <blues@gda.pl>
-X-X-Sender: blues@staff.task.gda.pl
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Dhaval Giani <dhaval.giani@gmail.com>
-Subject: Re: PROBLEM: oops
-In-Reply-To: <alpine.LNX.2.00.0908261113450.16876@fgnss.gnfx.tqn.cy>
-Message-ID: <alpine.LNX.2.00.0908270956420.16876@fgnss.gnfx.tqn.cy>
-References: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy>  <1251209206.7538.1159.camel@twins>  <alpine.LNX.2.00.0908251608280.16876@fgnss.gnfx.tqn.cy>  <1251209734.7538.1160.camel@twins>  <alpine.LNX.2.00.0908251625580.16876@fgnss.gnfx.tqn.cy> 
- <1251211483.7538.1162.camel@twins>  <alpine.LNX.2.00.0908251701020.16876@fgnss.gnfx.tqn.cy>  <1251212859.7538.1166.camel@twins>  <alpine.LNX.2.00.0908252317080.17744@fgnss.gnfx.tqn.cy> <1251265742.7538.1192.camel@twins>
- <alpine.LNX.2.00.0908261113450.16876@fgnss.gnfx.tqn.cy>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Thu, 27 Aug 2009 03:59:05 -0400
+Received: from pan.madism.org ([88.191.52.104]:45125 "EHLO hermes.madism.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751559AbZH0H7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 03:59:04 -0400
+Date: Thu, 27 Aug 2009 09:59:02 +0200
+From: Pierre Habouzit <pierre.habouzit@intersec.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: [PATCH v2] perf tools: do not complain if root is owning perf.data
+Message-ID: <20090827075902.GF19653@laphroaig.corp>
+References: <1251291926-27174-1-git-send-email-pierre.habouzit@intersec.com>
+ <20090826182459.GD13632@elte.hu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="328824058-1841282464-1251359891=:16876"
-Content-ID: <alpine.LNX.2.00.0908270958210.16876@fgnss.gnfx.tqn.cy>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090826182459.GD13632@elte.hu>
+X-Face: $(^e[V4D-[`f2EmMGz@fgWK!e.B~2g.{08lKPU(nc1J~z\4B>*JEVq:E]7G-\6$Ycr4<;Z!|VY6Grt]+RsS$IMV)f>2)M="tY:ZPcU;&%it2D81X^kNya0=L]"vZmLP+UmKhgq+u*\.dJ8G!N&=EvlD
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+This improves patch fa6963b24 so that perf.data stuff that has been dumped
+as root can be read (annotate/report) by a user without the use of the
+--force.
 
---328824058-1841282464-1251359891=:16876
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
-Content-ID: <alpine.LNX.2.00.0908270958211.16876@fgnss.gnfx.tqn.cy>
+Rationale is that root has plenty of ways to screw us (usually) that do
+not require twisted schemes involving specially crafting a perf.data.
 
-On Wed, 26 Aug 2009, Pawel Golaszewski wrote:
-> > > > > > could you try to reproduce without that?
-> > > > > > 
-> > > > > > CONFIG_GROUP_SCHED=n
-> > > > > I'll try. 
-> > > It seems that problem still exists - system has crashed too. From 
-> > > netconsole: Any ideas? Last kernel I was using is 2.6.27.13 - works 
-> > > fine. None between 13 and 31 tested...
-> > # git log --format=oneline v2.6.27.13..v2.6.27.31 kernel/sched*
-> > 2b46f3769896dc04e1e49144d282e4655677105a wait: prevent exclusive waiter starvation
-> > 
-> > Nothing changed anywhere near the code that is falling apart..
-> 
-> I have 2 machines with the same hardware and similar software. On one 
-> .13 is stable - I will test it on the second one. Should be too.
+Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>,
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+Cc: <stable@kernel.org>
+---
+    On Wed, Aug 26, 2009 at 08:24:59PM +0200, Ingo Molnar wrote:
+    > Ok, this makes sense - but i think we should do this in .32 only, 
+    > with a Cc: <stable@kernel.org> backport tag for .31.1.
 
-I've checked it - 2.6.27.13 is stable for me.
+    You're the boss ;)
 
-Conclusion: there is something wrong between 2.6.27.13 and 2.6.27.31
+    > Mind doing it against the latest perfcounters tree, which can be 
+    > found in -tip:
+    > 
+    >   http://people.redhat.com/mingo/tip.git/README
+    > 
+    > your current version does not apply cleanly as the surrounding code 
+    > has changed a bit already.
 
-What can I do about that? I'm not kernel-hacker...
+    Here it is, against perfcounters/core which I assume is the proper
+    tip branch. Note that I'd suggest adding a README.Devel under
+    tools/perf to explicit how patches should be submitted, at least to
+    explain against which tree it's best to do our patches for
+    submission, it could help people avoiding losing your time with
+    unnecessary back-and-forth mails just to rebase a patch ;)
 
-> > Also:
-> > 
-> > [20621.263297] BUG: unable to handle kernel paging request at ffffffd8
-> > [20621.263396] IP: [<c081cc50>] hrtick_start_fair+0x0/0x30
-> [...]
-> > Suggests something went terribly wrong and corrupted a fundamental 
-> > data structure. Maybe turning on each and every debug feature related 
-> > to memory debugging might help.
+ tools/perf/builtin-annotate.c |    4 ++--
+ tools/perf/builtin-report.c   |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 4ac618b..4c7bc44 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -984,8 +984,8 @@ static int __cmd_annotate(void)
+ 		exit(-1);
+ 	}
+ 
+-	if (!force && (input_stat.st_uid != geteuid())) {
+-		fprintf(stderr, "file: %s not owned by current user\n", input_name);
++	if (!force && input_stat.st_uid && (input_stat.st_uid != geteuid())) {
++		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
+ 		exit(-1);
+ 	}
+ 
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index d2e2882..ea6328a 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -1405,8 +1405,8 @@ static int __cmd_report(void)
+ 		exit(-1);
+ 	}
+ 
+-	if (!force && (input_stat.st_uid != geteuid())) {
+-		fprintf(stderr, "file: %s not owned by current user\n", input_name);
++	if (!force && input_stat.st_uid && (input_stat.st_uid != geteuid())) {
++		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
+ 		exit(-1);
+ 	}
+ 
 -- 
-pozdr.  Pawe³ Go³aszewski          jid:blues<at>jabber<dot>gda<dot>pl
---------------------------------------------------------------------------
-If you think of MS-DOS as mono, and Windows as stereo, then Linux is Dolby
-Pro-Logic Surround Sound with Bass Boost and all the music is free.
---328824058-1841282464-1251359891=:16876--
+1.6.4.1.341.gf2a44
+
