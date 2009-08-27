@@ -1,112 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbZH0OB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbZH0OFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752757AbZH0OB2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 10:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZH0OB1
+	id S1752682AbZH0OFv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 10:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbZH0OFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 10:01:27 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:59382 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZH0OB0 (ORCPT
+	Thu, 27 Aug 2009 10:05:50 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:34353 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384AbZH0OFu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 10:01:26 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Chen Liqin <liqin.chen@sunplusct.com>
-Subject: Re: [GIT PULL, v4] S+core architecture (arch/score) support
-Date: Thu, 27 Aug 2009 16:00:37 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-6-generic; KDE/4.3.0; x86_64; ; )
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-References: <1251266324.16454.10.camel@ad3ser01> <200908261931.52645.arnd@arndb.de> <1251343739.23810.24.camel@ad3ser01>
-In-Reply-To: <1251343739.23810.24.camel@ad3ser01>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?iso-8859-15?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
- =?iso-8859-15?q?Y=2Ea=5E3zb?=)
- =?iso-8859-15?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
- =?iso-8859-15?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 27 Aug 2009 10:05:50 -0400
+Message-ID: <4A9692BF.2000400@oss.ntt.co.jp>
+Date: Thu, 27 Aug 2009 23:05:51 +0900
+From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Christoph Hellwig <hch@lst.de>
+CC: t-sato@yk.jp.nec.com, m-hamaguchi@ys.jp.nec.com,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Sandeen <sandeen@redhat.com>
+Subject: [PATCH 1/4] freeze_bdev: kill bd_mount_sem
+References: <4A94C151.8020900@oss.ntt.co.jp> <20090826173839.GA20175@lst.de> <4A965BD1.205@oss.ntt.co.jp>
+In-Reply-To: <4A965BD1.205@oss.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908271600.37569.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/fyOlqUl6pkGVqM1HIEf9z98A/7PG56iKDfzV
- /Yhz2vZIasihBswgVOnnpFT/w8iYY1RuO71yo83CkMLWXLOyes
- 7AGJ4nCqW0iX/MxR5b46w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 August 2009, Chen Liqin wrote:
-> On Wed, 2009-08-26 at 19:31 +0200, Arnd Bergmann wrote:
-> >
-> I will remove these changelog from repository.
+Author: Christoph Hellwig <hch@lst.de>
+Subject: [PATCH 1/4] freeze_bdev: kill bd_mount_sem
 
-ok.
+Now that we have the freeze count there is not much reason for bd_mount_sem
+anymore.  The actual freeze/thaw operations are serialized using the
+bd_fsfreeze_mutex, and the only other place we take bd_mount_sem is
+get_sb_bdev which tries to prevent mounting a filesystem while the block
+device is frozen.  Instead of add a check for bd_fsfreeze_count and
+return -EBUSY if a filesystem is frozen.  While that is a change in user
+visible behaviour a failing mount is much better for this case rather
+than having the mount process stuck uninterruptible for a long time.
 
-> > What is missing OTOH is a description of changes you made since
-> > the last version you posted, which would be needed to help
-> > people that have already reviewed your code before.
-> > Also, you have dropped the descriptions of changes that I
-> > contributed, committing the changed files as your own. If you
-> > see a need to do that next time, please ask before you do it,
-> > or find a way to keep the original commit logs.
-> 
-> How can I add old commit logs to our repository?
-> Or add people's contribute to the log?
 
-If you got a patch, use 'git am -s' to add that patch with it's
-original changelog and signoff, plus your own signoff to the
-git tree.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
 
-If something is already part of a git repository, the best way
-is to use git to merge that tree with your own, using 'git pull'.
-That will leave all the change history intact. It would be
-good to start with the git tree in the way that is in my
-repository, merge that with 2.6.31-rc6, and add your changes
-on top of that, with proper change descriptions.
+diff -urNp linux-2.6.31-rc7-orig/fs/block_dev.c linux-2.6.31-rc7/fs/block_dev.c
+--- linux-2.6.31-rc7-orig/fs/block_dev.c	2009-08-27 19:34:35.000000000 +0900
++++ linux-2.6.31-rc7/fs/block_dev.c	2009-08-27 19:36:22.000000000 +0900
+@@ -216,8 +216,6 @@ EXPORT_SYMBOL(fsync_bdev);
+   * freeze_bdev  --  lock a filesystem and force it into a consistent state
+   * @bdev:	blockdevice to lock
+   *
+- * This takes the block device bd_mount_sem to make sure no new mounts
+- * happen on bdev until thaw_bdev() is called.
+   * If a superblock is found on this device, we take the s_umount semaphore
+   * on it to make sure nobody unmounts until the snapshot creation is done.
+   * The reference counter (bd_fsfreeze_count) guarantees that only the last
+@@ -240,7 +238,6 @@ struct super_block *freeze_bdev(struct b
+  	}
+  	bdev->bd_fsfreeze_count++;
 
-> > What is the status of the port now? Do you have a working glibc
-> > and LTP test results, or are do you still need to fix more
-> > bugs that got introduced in the 2.6.30 port?
-> 
-> In fact, we still need define 
-> __ARCH_WANT_SYSCALL_NO_AT,
-> __ARCH_WANT_SYSCALL_NO_FLAGS,
-> __ARCH_WANT_SYSCALL_OFF_T,
-> __ARCH_WANT_SYSCALL_DEPRECATED
-> to make linux/score running, glibc and applictions 
-> need old syscall API.
-> And now it's really have some problems
-> in syscall interface part.
+-	down(&bdev->bd_mount_sem);
+  	sb = get_super(bdev);
+  	if (sb && !(sb->s_flags & MS_RDONLY)) {
+  		sb->s_frozen = SB_FREEZE_WRITE;
+@@ -260,7 +257,6 @@ struct super_block *freeze_bdev(struct b
+  					"VFS:Filesystem freeze failed\n");
+  				sb->s_frozen = SB_UNFROZEN;
+  				drop_super(sb);
+-				up(&bdev->bd_mount_sem);
+  				bdev->bd_fsfreeze_count--;
+  				mutex_unlock(&bdev->bd_fsfreeze_mutex);
+  				return ERR_PTR(error);
+@@ -271,7 +267,7 @@ struct super_block *freeze_bdev(struct b
+  	sync_blockdev(bdev);
+  	mutex_unlock(&bdev->bd_fsfreeze_mutex);
 
-ok.
+-	return sb;	/* thaw_bdev releases s->s_umount and bd_mount_sem */
++	return sb;	/* thaw_bdev releases s->s_umount */
+  }
+  EXPORT_SYMBOL(freeze_bdev);
 
-> But if we use our old syscall interface replace the new one,
-> score platform will run well.
-> I am a little confused, whether or not I should commit
-> score code use new or old syscall part?
+@@ -321,7 +317,6 @@ int thaw_bdev(struct block_device *bdev,
+  		drop_super(sb);
+  	}
 
-I understand your problem here, and I think it would be good
-to have second opinion from someone else here. The four
-#defines you mention are roughly in reverse order of importance.
+-	up(&bdev->bd_mount_sem);
+  	mutex_unlock(&bdev->bd_fsfreeze_mutex);
+  	return 0;
+  }
+@@ -431,7 +426,6 @@ static void init_once(void *foo)
 
-I think you really need to remove __ARCH_WANT_SYSCALL_DEPRECATED
-and get that working. Please tell us if some system call is
-giving you problems and we can find a solution together.
+  	memset(bdev, 0, sizeof(*bdev));
+  	mutex_init(&bdev->bd_mutex);
+-	sema_init(&bdev->bd_mount_sem, 1);
+  	INIT_LIST_HEAD(&bdev->bd_inodes);
+  	INIT_LIST_HEAD(&bdev->bd_list);
+  #ifdef CONFIG_SYSFS
+diff -urNp linux-2.6.31-rc7-orig/fs/super.c linux-2.6.31-rc7/fs/super.c
+--- linux-2.6.31-rc7-orig/fs/super.c	2009-08-27 19:34:35.000000000 +0900
++++ linux-2.6.31-rc7/fs/super.c	2009-08-27 19:36:22.000000000 +0900
+@@ -740,9 +740,14 @@ int get_sb_bdev(struct file_system_type
+  	 * will protect the lockfs code from trying to start a snapshot
+  	 * while we are mounting
+  	 */
+-	down(&bdev->bd_mount_sem);
++	mutex_lock(&bdev->bd_fsfreeze_mutex);
++	if (bdev->bd_fsfreeze_count > 0) {
++		mutex_unlock(&bdev->bd_fsfreeze_mutex);
++		error = -EBUSY;
++		goto error_bdev;
++	}
+  	s = sget(fs_type, test_bdev_super, set_bdev_super, bdev);
+-	up(&bdev->bd_mount_sem);
++	mutex_unlock(&bdev->bd_fsfreeze_mutex);
+  	if (IS_ERR(s))
+  		goto error_s;
 
-Removing __ARCH_WANT_SYSCALL_OFF_T should not be too hard, because
-glibc uses the loff_t versions by default anyway. I have not tried
-it though, so it may be more complicated than I thought.
-
-Now, removing __ARCH_WANT_SYSCALL_NO_AT and __ARCH_WANT_SYSCALL_NO_FLAGS
-is a lot of work that I think we need to do, but I understand that you
-might not want to touch all the common glibc code that is involved.
-Ulrich Drepper recommended that new architectures should not have
-these, and I believe that is the correct way forward. You are unfortunate
-because glibc is not at all prepared for that. Nobody else is using
-the generic system call table right now, so I think that if you
-can't find a way to work without __ARCH_WANT_SYSCALL_NO_AT and
-__ARCH_WANT_SYSCALL_NO_FLAGS, we should integrate them into the
-main set of syscalls.
-
-	Arnd <><
+diff -urNp linux-2.6.31-rc7-orig/include/linux/fs.h linux-2.6.31-rc7/include/linux/fs.h
+--- linux-2.6.31-rc7-orig/include/linux/fs.h	2009-08-27 19:34:35.000000000 +0900
++++ linux-2.6.31-rc7/include/linux/fs.h	2009-08-27 19:36:22.000000000 +0900
+@@ -640,7 +640,6 @@ struct block_device {
+  	struct super_block *	bd_super;
+  	int			bd_openers;
+  	struct mutex		bd_mutex;	/* open/close mutex */
+-	struct semaphore	bd_mount_sem;
+  	struct list_head	bd_inodes;
+  	void *			bd_holder;
+  	int			bd_holders;
