@@ -1,97 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752108AbZH0PJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbZH0PJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752108AbZH0PJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 11:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZH0PJW
+	id S1752327AbZH0PJi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 11:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZH0PJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 11:09:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39823 "EHLO
+	Thu, 27 Aug 2009 11:09:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39831 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZH0PJV (ORCPT
+	with ESMTP id S1751947AbZH0PJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 11:09:21 -0400
-Message-Id: <20090827150523.978071021@chello.nl>
+	Thu, 27 Aug 2009 11:09:25 -0400
+Message-Id: <20090827150524.238884869@chello.nl>
 References: <20090827150051.846026837@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 27 Aug 2009 17:00:54 +0200
+Date: Thu, 27 Aug 2009 17:00:57 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
        Andreas Herrmann <andreas.herrmann3@amd.com>,
        Balbir Singh <balbir@in.ibm.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC][PATCH 3/6] sched: update the cpu_power sum during load-balance
-Content-Disposition: inline; filename=sched-lb-3.patch
+Subject: [RFC][PATCH 6/6] sched: try to deal with low capacity
+Content-Disposition: inline; filename=sched-lb-6.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to prepare for a more dynamic cpu_power, update the group sum
-while walking the sched domains during load-balance.
+When the capacity drops low, we want to migrate load away. Allow the
+load-balancer to remove all tasks when we hit rock bottom.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
 ---
- kernel/sched.c |   31 +++++++++++++++++++++++++++++--
- 1 file changed, 29 insertions(+), 2 deletions(-)
+ kernel/sched.c |   29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
 
 Index: linux-2.6/kernel/sched.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched.c
 +++ linux-2.6/kernel/sched.c
-@@ -3691,6 +3691,31 @@ static inline int check_power_save_busie
- }
- #endif /* CONFIG_SCHED_MC || CONFIG_SCHED_SMT */
+@@ -3951,7 +3951,7 @@ static inline void update_sd_lb_stats(st
+ 		 * and move all the excess tasks away.
+ 		 */
+ 		if (prefer_sibling)
+-			sgs.group_capacity = 1;
++			sgs.group_capacity = min(sgs.group_capacity, 1);
  
-+static void update_sched_power(struct sched_domain *sd)
+ 		if (local_group) {
+ 			sds->this_load = sgs.avg_load;
+@@ -4183,6 +4183,26 @@ ret:
+ 	return NULL;
+ }
+ 
++static struct sched_group *group_of(int cpu)
 +{
-+	struct sched_domain *child = sd->child;
-+	struct sched_group *group, *sdg = sd->groups;
-+	unsigned long power = sdg->__cpu_power;
++	struct sched_domain *sd = rcu_dereference(cpu_rq(cpu)->sd);
 +
-+	if (!child) {
-+		/* compute cpu power for this cpu */
-+		return;
-+	}
++	if (!sd)
++		return NULL;
 +
-+	sdg->__cpu_power = 0;
-+
-+	group = child->groups;
-+	do {
-+		sdg->__cpu_power += group->__cpu_power;
-+		group = group->next;
-+	} while (group != child->groups);
-+
-+	if (sdg->__cpu_power < SCHED_LOAD_SCALE)
-+		sdg->__cpu_power = SCHED_LOAD_SCALE;
-+
-+	if (power != sdg->__cpu_power)
-+		sdg->reciprocal_cpu_power = reciprocal_value(sdg->__cpu_power);
++	return sd->groups;
 +}
++
++static unsigned long power_of(int cpu)
++{
++	struct sched_group *group = group_of(cpu);
++
++	if (!group)
++		return SCHED_LOAD_SCALE;
++
++	return group->__cpu_power;
++}
++
+ /*
+  * find_busiest_queue - find the busiest runqueue among the cpus in group.
+  */
+@@ -4195,15 +4215,18 @@ find_busiest_queue(struct sched_group *g
+ 	int i;
  
- /**
-  * update_sg_lb_stats - Update sched_group's statistics for load balancing.
-@@ -3715,8 +3740,11 @@ static inline void update_sg_lb_stats(st
- 	unsigned long sum_avg_load_per_task;
- 	unsigned long avg_load_per_task;
+ 	for_each_cpu(i, sched_group_cpus(group)) {
++		unsigned long power = power_of(i);
++		unsigned long capacity = power >> SCHED_LOAD_SHIFT;
+ 		unsigned long wl;
  
--	if (local_group)
-+	if (local_group) {
- 		balance_cpu = group_first_cpu(group);
-+		if (balance_cpu == this_cpu)
-+			update_sched_power(sd);
-+	}
+ 		if (!cpumask_test_cpu(i, cpus))
+ 			continue;
  
- 	/* Tally up the load of all CPUs in the group */
- 	sum_avg_load_per_task = avg_load_per_task = 0;
-@@ -3855,7 +3883,6 @@ static inline void update_sd_lb_stats(st
- 		update_sd_power_savings_stats(group, sds, local_group, &sgs);
- 		group = group->next;
- 	} while (group != sd->groups);
--
- }
+ 		rq = cpu_rq(i);
+-		wl = weighted_cpuload(i);
++		wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
++		wl /= power;
  
- /**
+-		if (rq->nr_running == 1 && wl > imbalance)
++		if (capacity && rq->nr_running == 1 && wl > imbalance)
+ 			continue;
+ 
+ 		if (wl > max_load) {
 
 -- 
 
