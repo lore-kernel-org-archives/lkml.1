@@ -1,81 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbZH0WNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbZH0WVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbZH0WNc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 18:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZH0WNb
+	id S1752709AbZH0WVz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 18:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbZH0WVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 18:13:31 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53486 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbZH0WNa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 18:13:30 -0400
-Date: Fri, 28 Aug 2009 00:13:21 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: raid is dangerous but that's secret (was Re: [patch] ext2/3:
-	document conditions when reliable operation is possible)
-Message-ID: <20090827221319.GA1601@ucw.cz>
-References: <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com>
+	Thu, 27 Aug 2009 18:21:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41487 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752442AbZH0WVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 18:21:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: [PATCH 7 updated] PM: Add a switch for disabling/enabling asynchronous suspend/resume
+Date: Fri, 28 Aug 2009 00:22:40 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <200908262217.19609.rjw@sisk.pl> <200908272119.47053.rjw@sisk.pl> <20090827203948.9CD25526EC9@mailhub.coreip.homeip.net>
+In-Reply-To: <20090827203948.9CD25526EC9@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A967175.5070700@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908280022.40522.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 27 August 2009, Dmitry Torokhov wrote:
+> On Thu, Aug 27, 2009 at 09:19:46PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Add sysfs attribute kernel/power/pm_async allowing the user space to
+> > disable and enable async suspend/resume of devices.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/base/power/main.c  |   13 +++++++------
+> >  drivers/base/power/power.h |    6 +++---
+> >  kernel/power/main.c        |   28 +++++++++++++++++++++++++++-
+> >  3 files changed, 37 insertions(+), 10 deletions(-)
+> > 
+> > Index: linux-2.6/kernel/power/main.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/power/main.c
+> > +++ linux-2.6/kernel/power/main.c
+> > @@ -44,6 +44,29 @@ int pm_notifier_call_chain(unsigned long
+> >  			== NOTIFY_BAD) ? -EINVAL : 0;
+> >  }
+> >  
+> > +/* If set, devices may be suspended and resumed asynchronously. */
+> > +int pm_async_enabled = 1;
+> > +
+> > +static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
+> > +			     char *buf)
+> > +{
+> > +	return sprintf(buf, "%d\n", pm_async_enabled);
+> > +}
+> > +
+> > +static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
+> > +			      const char *buf, size_t n)
+> > +{
+> > +	int val;
+> > +
+> > +	if (sscanf(buf, "%d", &val) == 1) {
+> 
+> I prefer more vigorous restrictions on the sysfs interfaces. Maybe:
+> 
+> 	if (strict_strtoul(buf, 10, &val) || val > 1)
+> 		return -EINVAL;
+> 
+> 	pm_async_enabled = val;
+> 
+> ?
 
->>> Repeat experiment until you get up to something like google scale or the
->>> other papers on failures in national labs in the US and then we can have an
->>> informed discussion.
->>>      
->> On google scale anvil lightning can fry your machine out of a clear sky.
->>
->> However, there are still a few non-enterprise users out there, and knowing
->> that specific usage patterns don't behave like they expect might be useful to
->> them.
->
-> You are missing the broader point of both papers. They (and people like  
-> me when back at EMC) look at large numbers of machines and try to fix  
-> what actually breaks when run in the real world and causes data loss.  
-> The motherboards, S-ATA controllers, disk types are the same class of  
-> parts that I have in my desktop box today.
-...
-> These errors happen extremely commonly and are what RAID deals with well.
->
-> What does not happen commonly is that during the RAID rebuild (kicked  
-> off only after a drive is kicked out), you push the power button or have  
-> a second failure (power outage).
->
-> We will have more users loose data if they decide to use ext2 instead of  
-> ext3 and use only single disk storage.
+OK
 
-So your argument basically is
+Updated patch below.
 
-'our abs brakes are broken, but lets not tell anyone; our car is still
-safer than a horse'.
+Thanks,
+Rafael
 
-and
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM: Add a switch for disabling/enabling asynchronous suspend/resume
 
-'while we know our abs brakes are broken, they are not major factor in
-accidents, so lets not tell anyone'.
+Add sysfs attribute kernel/power/pm_async allowing the user space to
+disable and enable async suspend/resume of devices.
 
-Sorry, but I'd expect slightly higher moral standards. If we can
-document it in a way that's non-scary, and does not push people to
-single disks (horses), please go ahead; but you have to mention that
-md raid breaks journalling assumptions (our abs brakes really are
-broken).
-								Pavel
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c  |   13 +++++++------
+ drivers/base/power/power.h |    6 +++---
+ kernel/power/main.c        |   31 ++++++++++++++++++++++++++++++-
+ 3 files changed, 40 insertions(+), 10 deletions(-)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -44,6 +44,32 @@ int pm_notifier_call_chain(unsigned long
+ 			== NOTIFY_BAD) ? -EINVAL : 0;
+ }
+ 
++/* If set, devices may be suspended and resumed asynchronously. */
++int pm_async_enabled = 1;
++
++static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
++			     char *buf)
++{
++	return sprintf(buf, "%d\n", pm_async_enabled);
++}
++
++static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
++			      const char *buf, size_t n)
++{
++	unsigned long val;
++
++	if (strict_strtoul(buf, 10, &val))
++		return -EINVAL;
++
++	if (val > 1)
++		return -EINVAL;
++
++	pm_async_enabled = val;
++	return n;
++}
++
++power_attr(pm_async);
++
+ #ifdef CONFIG_PM_DEBUG
+ int pm_test_level = TEST_NONE;
+ 
+@@ -208,9 +234,12 @@ static struct attribute * g[] = {
+ #ifdef CONFIG_PM_TRACE
+ 	&pm_trace_attr.attr,
+ #endif
+-#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
++#ifdef CONFIG_PM_SLEEP
++	&pm_async_attr.attr,
++#ifdef CONFIG_PM_DEBUG
+ 	&pm_test_attr.attr,
+ #endif
++#endif
+ 	NULL,
+ };
+ 
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -235,7 +235,7 @@ static int device_pm_wait_fn(struct devi
+  */
+ static void device_pm_wait_for_masters(struct device *slave)
+ {
+-	if (!pm_trace_enabled)
++	if (pm_async_enabled && !pm_trace_enabled)
+ 		device_for_each_master(slave, slave, device_pm_wait_fn);
+ }
+ 
+@@ -245,7 +245,8 @@ static void device_pm_wait_for_masters(s
+  */
+ static void device_pm_wait_for_slaves(struct device *master)
+ {
+-	device_for_each_slave(master, master, device_pm_wait_fn);
++	if (pm_async_enabled)
++		device_for_each_slave(master, master, device_pm_wait_fn);
+ }
+ 
+ /**
+@@ -560,7 +561,7 @@ static int device_resume_noirq(struct de
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend && !pm_trace_enabled) {
++	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
+ 		async_schedule(async_resume_noirq, dev);
+ 		return 0;
+ 	}
+@@ -719,7 +720,7 @@ static int device_resume(struct device *
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend && !pm_trace_enabled) {
++	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
+ 		get_device(dev);
+ 		async_schedule(async_resume, dev);
+ 		return 0;
+@@ -965,7 +966,7 @@ static int device_suspend_noirq(struct d
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend) {
++	if (pm_async_enabled && dev->power.async_suspend) {
+ 		async_schedule(async_suspend_noirq, dev);
+ 		return 0;
+ 	}
+@@ -1139,7 +1140,7 @@ static int device_suspend(struct device 
+ 	if (pm_op_started(dev))
+ 		return 0;
+ 
+-	if (dev->power.async_suspend) {
++	if (pm_async_enabled && dev->power.async_suspend) {
+ 		get_device(dev);
+ 		async_schedule(async_suspend, dev);
+ 		return 0;
+Index: linux-2.6/drivers/base/power/power.h
+===================================================================
+--- linux-2.6.orig/drivers/base/power/power.h
++++ linux-2.6/drivers/base/power/power.h
+@@ -16,10 +16,10 @@ static inline void pm_runtime_remove(str
+ 
+ #ifdef CONFIG_PM_SLEEP
+ 
+-/*
+- * main.c
+- */
++/* kernel/power/main.c */
++extern int pm_async_enabled;
+ 
++/* drivers/base/power/main.c */
+ extern struct list_head dpm_list;	/* The active device list */
+ 
+ static inline struct device *to_device(struct list_head *entry)
