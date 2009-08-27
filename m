@@ -1,84 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbZH0QFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZH0QJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752817AbZH0QFg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 12:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZH0QFg
+	id S1752839AbZH0QJk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 12:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZH0QJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 12:05:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56781 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbZH0QFf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 12:05:35 -0400
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.00.0908271156300.11745@gandalf.stny.rr.com>
-References: <1251197235.7538.1142.camel@twins>
-	 <1251211963.7538.1164.camel@twins> <4A94D3A8.1090902@cn.fujitsu.com>
-	 <1251269207.7538.1217.camel@twins> <1251270092.7538.1226.camel@twins>
-	 <4A94DFF4.5030301@cn.fujitsu.com>
-	 <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com>
-	 <20090826164624.GA21456@Krystal>
-	 <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com>
-	 <20090826180114.GA29130@Krystal> <20090826181758.GA30248@Krystal>
-	 <alpine.DEB.2.00.0908261544590.11291@gandalf.stny.rr.com>
-	 <1251354307.18584.40.camel@twins>
-	 <alpine.DEB.2.00.0908271156300.11745@gandalf.stny.rr.com>
-Content-Type: text/plain
+	Thu, 27 Aug 2009 12:09:38 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8111 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752812AbZH0QJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 12:09:38 -0400
+Message-ID: <4A96B074.8060909@redhat.com>
+Date: Thu, 27 Aug 2009 12:12:36 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [GIT PULL v2] tracing/kprobes: v1 + two fixes
+References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com> <1251344087-28719-1-git-send-email-fweisbec@gmail.com> <20090827152438.GA32553@elte.hu>
+In-Reply-To: <20090827152438.GA32553@elte.hu>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Date: Thu, 27 Aug 2009 18:04:13 +0200
-Message-Id: <1251389053.18584.101.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-27 at 11:57 -0400, Steven Rostedt wrote:
-> On Thu, 27 Aug 2009, Peter Zijlstra wrote:
+
+
+Ingo Molnar wrote:
 > 
-> > On Wed, 2009-08-26 at 15:48 -0400, Steven Rostedt wrote:
-> > >  									\
-> > > @@ -399,16 +413,20 @@ static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
-> > >  {									\
-> > >  	int ret = 0;							\
-> > >  									\
-> > > -	if (!atomic_inc_return(&event_call->profile_count))		\
-> > > +	if (!atomic_inc_return(&event_call->profile_count)) {		\
-> > > +		event_trace_up_ref();					\
-> > >  		ret = register_trace_##call(ftrace_profile_##call);	\
-> > > +	}								\
-> > >  									\
-> > >  	return ret;							\
-> > >  }									\
-> > >  									\
-> > >  static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
-> > >  {									\
-> > > -	if (atomic_add_negative(-1, &event_call->profile_count))	\
-> > > +	if (atomic_add_negative(-1, &event_call->profile_count)) {	\
-> > >  		unregister_trace_##call(ftrace_profile_##call);		\
-> > > +		event_trace_down_ref();					\
-> > > +	}								\
-> > >  }
-> > 
-> > Ha, almost, make that {un,}register_ftrace_##call() and stick the module
-> > gunk in there, and I'm ok.
+> * Frederic Weisbecker<fweisbec@gmail.com>  wrote:
 > 
-> Peter, that {un,}register_tace_##call is the tracepoint code. The 
-> DEFINE_TRACE creates those functions. This is the lowest level we can go 
-> in the ftrace.h file.
+>> Ingo,
+>>
+>> This v2 can be either pulled after tracing/kprobes (the v1) or can
+>> be pulled alone, it is based on the previous one and addresses
+>> reviews from Li Zefan.
+>>
+>> Thanks,
+>> Frederic.
+>>
+>> The following changes since commit 24851d2447830e6cba4c4b641cb73e713f312373:
+>>    Frederic Weisbecker (1):
+>>          tracing/kprobes: Dump the culprit kprobe in case of kprobe recursion
+>>
+>> are available in the git repository at:
+>>
+>>    git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
+>> 	tracing/kprobes-2
+>>
+>> Frederic Weisbecker (2):
+>>        tracing: Restore the const qualifier for field names and types definition
+>>        tracing: Remove unneeded pointer casts
+>>
+>>   include/linux/ftrace_event.h  |    6 +++---
+>>   kernel/trace/trace_events.c   |    4 ++--
+>>   kernel/trace/trace_syscalls.c |    8 ++++----
+>>   3 files changed, 9 insertions(+), 9 deletions(-)
+> 
+> I've pulled it into a staging branch (not yet in tip:master either
+> and not yet on the road to upstream either), thanks guys!
+> 
+> I have done some brief testing. One hickup is this build failure on
+> x86, caused by the kprobes instruction decoder self-test:
+> 
+>     CHK     include/linux/compile.h
+>     TEST    posttest
+>   Error: 41001024:        a1 08 30 c9 41          mov
+>   0x41c93008,%eax
+>   Error: objdump says 5 bytes, but insn_get_length() says 9 (attr:40000)
 
-Did you miss the extra f?
+Oops, it should be fixed. Hmm, it seems that addr_bytes or opnd_bytes
+is broken, would you did a cross compiling? (compiling x86-32 on x86-64)
 
-You can wrap the regular {un,}register_trace_##call() things in
-{un,}register_/F/trace_##call() functions which also take care of the
-module stuff.
 
-Your patch is virtually identical to the one that started this thread,
-everybody using the TRACE_EVENT() things will still need to worry about
-modules.
+Thank you,
+
+> another one is this build warning:
+> 
+>   In file included from include/trace/events/napi.h:5,
+>                    from net/core/net-traces.c:28:
+>   include/linux/tracepoint.h:285:1: warning: "TRACE_EVENT_FN" redefined
+>   In file included from include/trace/define_trace.h:61,
+>                    from include/trace/events/skb.h:40,
+>                    from net/core/net-traces.c:27:
+>   include/trace/ftrace.h:50:1: warning: this is the location of the previous definition
+> 
+> config attached.
+> 
+> 	Ingo
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
