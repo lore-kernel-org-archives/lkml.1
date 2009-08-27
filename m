@@ -1,112 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752074AbZH0JQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752088AbZH0JS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752074AbZH0JQo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 05:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZH0JQn
+	id S1752088AbZH0JS1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 05:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbZH0JS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 05:16:43 -0400
-Received: from mga12.intel.com ([143.182.124.36]:32812 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751920AbZH0JQm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 05:16:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="180896813"
-Subject: Re: v2.6.31-rc6: BUG: unable to handle kernel NULL pointer
-	dereference at 0000000000000008
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <alpine.LFD.2.01.0908241655370.3824@localhost.localdomain>
-References: <m163cjhwa4.fsf@fess.ebiederm.org>
-	 <m1skfnggrb.fsf@fess.ebiederm.org>
-	 <alpine.LFD.2.01.0908241530070.3824@localhost.localdomain>
-	 <alpine.LFD.2.01.0908241632060.3824@localhost.localdomain>
-	 <alpine.LFD.2.01.0908241655370.3824@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 27 Aug 2009 17:15:34 +0800
-Message-Id: <1251364534.2606.16.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Thu, 27 Aug 2009 05:18:26 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:46934 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751937AbZH0JSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 05:18:25 -0400
+Date: Thu, 27 Aug 2009 11:18:27 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Cc: tj@kernel.org, alan@lxorguk.ukuu.org.uk, jeff@garzik.org,
+       dhowells@redhat.com
+Subject: [PATCH 2/3] slow-work: add support for cancellation of slow work
+	(updated)
+Message-ID: <20090827091826.GH12579@kernel.dk>
+References: <1251364122-9592-1-git-send-email-jens.axboe@oracle.com> <1251364122-9592-2-git-send-email-jens.axboe@oracle.com> <1251364122-9592-3-git-send-email-jens.axboe@oracle.com> <20090827091409.GF12579@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090827091409.GF12579@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-24 at 17:09 -0700, Linus Torvalds wrote:
-> 
-> On Mon, 24 Aug 2009, Linus Torvalds wrote:
-> > 
-> > But I wanted to let people know that the patch is clearly not the "last 
-> > word" on this. It's a useful thing to try, but we need something better.
-> 
-> This may be better (this is a replacement for the previous patch).
-> 
-> Instead of using 'cancel_delayed_work_sync()', it makes tty_ldisc_hangup() 
-> do a 'flush_scheduled_work()' afterwards, like the other callers already 
-> do.
-> 
-> And like 'tty_ldisc_release()' already does, it does this all before even 
-> getting the ldisc_mutex, avoiding the deadlock.
-> 
-> I'm not 100% happy with this patch either, but my remaining unhappiness is 
-> more with the tty locking in general that causes this all. I suspect this 
-> patch in itself is not any worse than the other hacks we have.
-> 
-> Oh, and in case you didn't guess - this is _STILL_ totally untested. It 
-> compiles for me, but that's all I'm going to guarantee. I'm just looking 
-> at the code (and getting pretty fed up with it ;)
-> 
-> And as already mentioned: I doubt the deadlock on tty->ldisc_mutex is 
-> anything that would be hit in practice. And even if it can be triggered, 
-> the previous patch I sent out is still interesting in a "does it make the 
-> problem go away" sense. Because if it doesn't (with or without a new 
-> deadlock), then I'm looking at all the wrong places.
-> 
-> 		Linus
-> 
-I traced kernel and the root cause is really that the process doesn't wait for
-the work to be complete. So a new process picks up the released tty/work to
-use it. After the new process deletes the timer but before releasing the tty,
-the old scheduled work is started to add timer. Then, the new process releases
-the tty struct, including work/timer. So later on when the timer rearmed by the old
-scheduled work expires, kernel panic.
 
-> ---
->  drivers/char/tty_ldisc.c |   10 +++++++---
->  1 files changed, 7 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-> index 1733d34..f893d18 100644
-> --- a/drivers/char/tty_ldisc.c
-> +++ b/drivers/char/tty_ldisc.c
-> @@ -508,8 +508,9 @@ static void tty_ldisc_restore(struct tty_struct *tty, struct tty_ldisc *old)
->   *	be obtained while the delayed work queue halt ensures that no more
->   *	data is fed to the ldisc.
->   *
-> - *	In order to wait for any existing references to complete see
-> - *	tty_ldisc_wait_idle.
-> + *	You need to do a 'flush_scheduled_work()' (outside the ldisc_mutex
-> + *	in order to make sure any currently executing ldisc work is also
-> + *	flushed.
->   */
->  
->  static int tty_ldisc_halt(struct tty_struct *tty)
-> @@ -753,11 +754,14 @@ void tty_ldisc_hangup(struct tty_struct *tty)
->  	 * N_TTY.
->  	 */
->  	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
-> +		/* Make sure the old ldisc is quiescent */
-> +		tty_ldisc_halt(tty);
-> +		flush_scheduled_work();
-Perhaps it's better with below:
-	int ret = ﻿tty_ldisc_halt(tty);
-	if (!ret)
-		﻿flush_scheduled_work();
+>From 542bd594356125971a518a4c7a3e4ead21ea256a Mon Sep 17 00:00:00 2001
+From: Jens Axboe <jens.axboe@oracle.com>
+Date: Thu, 27 Aug 2009 11:17:04 +0200
+Subject: [PATCH 1/2] slow-work: add support for cancellation of slow work
 
+This adds support for cancellation of queued slow work and delayed
+slow work. If the work is already queued, it will not be executed.
+If work is attempted queued while the cancellation is running,
+it will fail.
+
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ include/linux/slow-work.h |    3 +++
+ kernel/slow-work.c        |   43 +++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
+index 12827a8..f2fd4e1 100644
+--- a/include/linux/slow-work.h
++++ b/include/linux/slow-work.h
+@@ -47,6 +47,7 @@ struct slow_work {
+ #define SLOW_WORK_EXECUTING	1	/* item currently executing */
+ #define SLOW_WORK_ENQ_DEFERRED	2	/* item enqueue deferred */
+ #define SLOW_WORK_VERY_SLOW	3	/* item is very slow */
++#define SLOW_WORK_CANCEL	4	/* item is cancelled, don't enqueue */
+ 	const struct slow_work_ops *ops; /* operations table for this item */
+ 	struct list_head	link;	/* link in queue */
+ };
+@@ -96,11 +97,13 @@ static inline void vslow_work_init(struct slow_work *work,
+ }
+ 
+ extern int slow_work_enqueue(struct slow_work *work);
++extern void cancel_slow_work(struct slow_work *work);
+ extern int slow_work_register_user(void);
+ extern void slow_work_unregister_user(void);
+ 
+ extern int delayed_slow_work_enqueue(struct delayed_slow_work *dwork,
+ 					unsigned long delay);
++extern void cancel_delayed_slow_work(struct delayed_slow_work *dwork);
+ 
+ #ifdef CONFIG_SYSCTL
+ extern ctl_table slow_work_sysctls[];
+diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+index 1eeda59..a39778a 100644
+--- a/kernel/slow-work.c
++++ b/kernel/slow-work.c
+@@ -194,7 +194,17 @@ static bool slow_work_execute(void)
+ 	if (!test_and_clear_bit(SLOW_WORK_PENDING, &work->flags))
+ 		BUG();
+ 
+-	work->ops->execute(work);
++	/*
++	 * Wake anyone waiting for this work to not be pending anymore
++	 */
++	smp_mb__after_clear_bit();
++	wake_up_bit(&work->flags, SLOW_WORK_PENDING);
++
++	/*
++	 * Don't execute if the work was cancelled after being added
++	 */
++	if (!test_bit(SLOW_WORK_CANCEL, &work->flags))
++		work->ops->execute(work);
+ 
+ 	if (very_slow)
+ 		atomic_dec(&vslow_work_executing_count);
+@@ -260,12 +270,16 @@ auto_requeue:
+  * allowed to pick items to execute.  This ensures that very slow items won't
+  * overly block ones that are just ordinarily slow.
+  *
+- * Returns 0 if successful, -EAGAIN if not.
++ * Returns 0 if successful, -EAGAIN if not (or -EBUSY if cancelled work is
++ * attempted queued)
+  */
+ int slow_work_enqueue(struct slow_work *work)
+ {
+ 	unsigned long flags;
+ 
++	if (test_bit(SLOW_WORK_CANCEL, &work->flags))
++		return -EINVAL;
++
+ 	BUG_ON(slow_work_user_count <= 0);
+ 	BUG_ON(!work);
+ 	BUG_ON(!work->ops);
+@@ -347,6 +361,9 @@ int delayed_slow_work_enqueue(struct delayed_slow_work *dwork,
+ 	struct slow_work *work = &dwork->work;
+ 	unsigned long flags;
+ 
++	if (test_bit(SLOW_WORK_CANCEL, &work->flags))
++		return -EINVAL;
++
+ 	BUG_ON(slow_work_user_count <= 0);
+ 	BUG_ON(!work);
+ 	BUG_ON(!work->ops);
+@@ -377,6 +394,28 @@ cant_get_ref:
+ }
+ EXPORT_SYMBOL(delayed_slow_work_enqueue);
+ 
++static int slow_work_wait(void *word)
++{
++	schedule();
++	return 0;
++}
++
++void cancel_slow_work(struct slow_work *work)
++{
++	set_bit(SLOW_WORK_CANCEL, &work->flags);
++	wait_on_bit(&work->flags, SLOW_WORK_PENDING, slow_work_wait,
++				TASK_UNINTERRUPTIBLE);
++	clear_bit(SLOW_WORK_CANCEL, &work->flags);
++}
++EXPORT_SYMBOL(cancel_slow_work);
++
++void cancel_delayed_slow_work(struct delayed_slow_work *dwork)
++{
++	del_timer(&dwork->timer);
++	cancel_slow_work(&dwork->work);
++}
++EXPORT_SYMBOL(cancel_delayed_slow_work);
++
+ /*
+  * Schedule a cull of the thread pool at some time in the near future
+  */
+-- 
+1.6.4.1.207.g68ea
+
+-- 
+Jens Axboe
 
