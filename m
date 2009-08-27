@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbZH0DXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZH0Da6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751999AbZH0DXH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 23:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZH0DXG
+	id S1752504AbZH0Da6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 23:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZH0Da6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 23:23:06 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60553 "EHLO gate.crashing.org"
+	Wed, 26 Aug 2009 23:30:58 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:52686 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751114AbZH0DXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 23:23:05 -0400
-Subject: Re: [PATCH -v2 0/7] powerpc: use asm-generic/dma-mapping-common.h
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.orga,
-       beckyb@kernel.crashing.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1251342735.20467.2.camel@pasglop>
-References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	 <1250142522.3587.110.camel@pasglop>
-	 <20090813160625B.fujita.tomonori@lab.ntt.co.jp>
-	 <20090813074131.GH12143@elte.hu> <1250150981.3587.157.camel@pasglop>
-	 <20090813085505.GA10671@elte.hu>  <1251342735.20467.2.camel@pasglop>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 13:17:50 +1000
-Message-Id: <1251343070.20467.3.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1751289AbZH0Da5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 23:30:57 -0400
+Message-ID: <4A95FDB4.3050904@redhat.com>
+Date: Wed, 26 Aug 2009 23:29:56 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Neil Brown <neilb@suse.de>, Ric Wheeler <rwheeler@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <20090825000842.GM17684@mit.edu> <20090825094244.GC15563@elf.ucw.cz> <4A93E908.6050908@redhat.com> <20090825211515.GA3688@elf.ucw.cz> <19092.28371.793339.764701@notabene.brown> <20090825234454.GI4300@elf.ucw.cz> <4A94B529.1080308@redhat.com> <20090826111537.GB26595@elf.ucw.cz>
+In-Reply-To: <20090826111537.GB26595@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-27 at 13:12 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-08-13 at 10:55 +0200, Ingo Molnar wrote:
+Pavel Machek wrote:
+> Hi!
 > 
-> > Ok! We could also stage it a bit (one or two weeks) in a separate 
-> > branch and allow a rebase, should you find any bugs during testing?
+>>> Ok, can you help? Having a piece of MD documentation explaining the
+>>> "powerfail nukes entire stripe" and how current filesystems do not
+>>> deal with that would be nice, along with description when exactly that
+>>> happens.
+>> Except of course for the inconvenient detail that a power
+>> failure on a degraded RAID 5 array does *NOT* nuke the
+>> entire stripe.
 > 
-> Allright so after various delays and sidetracking on my side, the
-> patches have been in my -test branch for long enough, I'm happy for them
-> to go in either way now.
-> 
-> I'm going to take them out of powerpc test for now and not put them in
-> my -next right away until I'm sure I have the right source to pull, at
-> which point I can just put from tip iommu.
+> Ok, you are right. It will nuke unrelated sector somewhere on the
+> stripe (one that is "old" and was not recently written) -- which is
+> still something ext3 can not reliably handle.
 
-IE. I think I was not clear :-)
+Not quite unrelated.  The "nuked" sector will be the one
+that used to live on the disk that is broken and no longer
+a part of the RAID 5 array.
 
-I mean, I plan to pull tip/iommu into powerpc-next and then apply the
-patches, but I want just your final word that this is a
-"stable" (non-rebase) branch and from Fujita that the patches are still
-good and haven't changed from those currently on patchwork.
+I wouldn't qualify a missing hard disk as a software issue...
 
-Cheers,
-Ben.
-
-
+-- 
+All rights reversed.
