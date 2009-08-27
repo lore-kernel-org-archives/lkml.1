@@ -1,67 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751276AbZH0KuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751324AbZH0KxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751276AbZH0KuN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 06:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbZH0KuM
+	id S1751324AbZH0KxY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 06:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZH0KxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 06:50:12 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56974 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751085AbZH0KuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 06:50:11 -0400
-Message-ID: <4A9664C2.3000004@cn.fujitsu.com>
-Date: Thu, 27 Aug 2009 18:49:38 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 27 Aug 2009 06:53:24 -0400
+Received: from ozlabs.org ([203.10.76.45]:46910 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751037AbZH0KxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 06:53:23 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.31-rc7-git2: Reported regressions 2.6.29 -> 2.6.30
+Date: Thu, 27 Aug 2009 20:23:20 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Frans Pop <elendil@planet.nl>, zajec5@gmail.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-acpi@vger.kernel.org, kernel-testers@vger.kernel.org,
+       torvalds@linux-foundation.org, Zhang Rui <rui.zhang@intel.com>,
+       Len Brown <lenb@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera> <200908261833.37310.elendil@planet.nl> <20090826123647.e60d9555.akpm@linux-foundation.org>
+In-Reply-To: <20090826123647.e60d9555.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Neil Horman <nhorman@tuxdriver.com>, David Miller <davem@davemloft.net>,
-       Wei Yongjun <yjwei@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/events: convert NAPI's tracepoint and fix
- DEFINE_TRACE_FN
-References: <4A96635C.9070404@cn.fujitsu.com>
-In-Reply-To: <4A96635C.9070404@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-TM-AS-Product-Ver: : ISVW-6.0.0.2339-3.52.0.1010-13974000
-X-TM-AS-Result: : No
-X-TM-AS-Category-Info: : 31:0.000000
-X-TM-AS-MatchedID: : 1-150567-139010-110549-110581
+Content-Disposition: inline
+Message-Id: <200908272023.21288.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 27 Aug 2009 05:06:47 am Andrew Morton wrote:
+> So in my tree I reworked it so that the new `force' arg gets passed
+> through appropriately.  It compiles cleanly but I'd suggest that Len
+> simply drop "misc:work_on_cpu-acpi" and we send it back to Rusty for
+> some rechecking (sorry).
 
+Sure.  My main motivation is to get rid of cpumasks on the stack; while
+there, I tried to fix this up properly.
 
-Xiao Guangrong wrote:
-> References: <4A966288.8020402@cn.fujitsu.com>
-> In-Reply-To: <4A966288.8020402@cn.fujitsu.com>
-> Content-Type: text/plain; charset=UTF-8
-> Content-Transfer-Encoding: 7bit
+> Rusty/Len: please work out why the title for that patch went silly.
+
+git-quiltimport uses the patch names, and doesn't extract the title.  I
+assume that's what Stephen uses.  I didn't rename the patch when I rewrote
+it not to use work_on_cpu.
+
+> Rusty, please self-administer smackings for
 > 
+> 		struct set_throttling_info sti
+> 			= { pr, p_throttling, t_state.target_state };
+> 
+> these things always start out simple and end up not-simple, so some poor
+> schmuck has to clean them up so stuff doesn't break.
+> 
+> 		struct set_throttling_info sti = {
+> 			.pr = pr,
+> 			.p_throttling = p_throttling,
+> 			.target_state = t_state.target_state,
+> 			.force = force
+> 		};
+> 
+> is better!
 
-It's look like my mail client has some problems, I'll check it and resend
-this mail. Sorry!
+Meh... same concept applies to function arguments, and we rely on typechecking
+to catch that (though we have little choice in C).
+
+> My linux-next repair job:
+
+OK, I've dropped these from my tree entirely to avoid more problems.
+
+Can you take them?  They're not really at home in my tree.
+
+arch-x86-kernel-acpi-cstatec-avoid-using-work_on_cpu.patch
+misc:work_on_cpu-acpi.patch
+misc:work_on_cpu-acpi-fix.patch
+misc:work_on_cpu-dcdbas.patch
+
+You can fetch them from http://ozlabs.org/~rusty/kernel/rr-latest/
+
+(You'll want to rename the last three something sane...)
 
 Thanks,
-Xiao
-
-> - Convert NAPI's tracepoint via TRACE_EVENT macro, the output information
->   like below:
-> 
->    sshd-2503  [000]    71.920846: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
->    sshd-2503  [000]    72.020291: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
->    sshd-2503  [000]    72.020418: napi_poll: ifname=eth0 state=NAPI_STATE_SCHED weigth=16 poll=pcnet32_poll
-> 
-> - Remove the "DECLARE_TRACE" definiens in include/trace/define_trace.h,
->   because TRACE_EVENT not use it
-> 
-> - Undef DEFINE_TRACE_FN after TRACE_EVENT/TRACE_EVENT_FN expanded,
->   then we can include more TRACE_EVENT .h file in one .c file
->   (the .c file has defined CREATE_TRACE_POINTS)
-> 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-
+Rusty.
