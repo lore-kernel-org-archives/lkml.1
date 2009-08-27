@@ -1,90 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbZH0EvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbZH0FE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752033AbZH0EvB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 00:51:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZH0EvB
+	id S1752822AbZH0FE4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 01:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZH0FEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 00:51:01 -0400
-Received: from mail-px0-f174.google.com ([209.85.216.174]:62340 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751369AbZH0EvA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 00:51:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aeIqYQADFX8XSPJgJ+ePp02KQ4Vyk0vTgNAAKHFVAja6AlDxjxlj66phXuTd1YyGLo
-         DC380j/ZBorR610tKmJ4ZCEoTuBg4pD5+0YPH+PSzLyjlly6uYq9xcIfRrsrOh6908ud
-         IQD7T80fj92cbUY+u6obhgIfhYphLNy9mF95Q=
-Date: Thu, 27 Aug 2009 12:53:14 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 2/2] module: workaround duplicate section names
-Message-ID: <20090827045314.GA4689@cr0.nay.redhat.com>
-References: <200908262202.54457.rusty@rustcorp.com.au> <200908262204.13395.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908262204.13395.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 27 Aug 2009 01:04:55 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:47477 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751751AbZH0FEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 01:04:54 -0400
+Subject: Re: Extending virtio_console to support multiple ports
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Amit Shah <amit.shah@redhat.com>
+Cc: qemu-devel@nongnu.org, kvm@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, borntraeger@de.ibm.com,
+       linux-kernel@vger.kernel.org, miltonm@bga.com, linuxppc-dev@ozlabs.org,
+       brueckner@linux.vnet.ibm.com, alan@linux.intel.com,
+       Ryan Arnold <rsa@us.ibm.com>
+In-Reply-To: <20090826154552.GA31910@amit-x200.redhat.com>
+References: <1251181044-3696-1-git-send-email-amit.shah@redhat.com>
+	 <20090826112718.GA11117@amit-x200.redhat.com>
+	 <20090826154552.GA31910@amit-x200.redhat.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-zDgknRdlrvhso4zVsYgt"
+Date: Thu, 27 Aug 2009 15:04:45 +1000
+Message-Id: <1251349485.6267.6.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 10:04:12PM +0930, Rusty Russell wrote:
->From: James Bottomley <James.Bottomley@HansenPartnership.com>
->
->(This patch leaves other problems, particularly the sections
-> directory, but recent parisc toolchains seem to produce these
-> modules and this prevents a crash and is a minimal change -- RR).
->
->The root cause is a duplicate section name (.text); is this legal?
 
-AFAIK, yes.
+--=-zDgknRdlrvhso4zVsYgt
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2009-08-26 at 21:15 +0530, Amit Shah wrote:
+> [cc'ing some people who have made some commits in hvc_console.c]
+>=20
+> On (Wed) Aug 26 2009 [16:57:18], Amit Shah wrote:
+> > On (Tue) Aug 25 2009 [11:47:20], Amit Shah wrote:
+> > >=20
+> > > Hello all,
+> > >=20
+> > > Here is a new iteration of the patch series that implements a
+> > > transport for guest and host communications.
+> > >=20
+> > > The code has been updated to reuse the virtio-console device instead
+> > > of creating a new virtio-serial device.
+> >=20
+> > And the problem now is that hvc calls the put_chars function with
+> > spinlocks held and we now allocate pages in send_buf(), called from
+> > put_chars.
+> >=20
+> > A few solutions:
+>=20
+> [snip]
+>=20
+> > - Convert hvc's usage of spinlocks to mutexes. I've no idea how this
+> >   will play out; I'm no expert here. But I did try doing this and so fa=
+r
+> >   it all looks OK. No lockups, lockdep warnings, nothing. I have full
+> >   debugging enabled. But this doesn't mean it's right.
+>=20
+> So just to test this further I added the capability to have more than
+> one hvc console spawn from virtio_console, created two consoles and did
+> a 'cat' of a file in each of the virtio-consoles. It's been running for
+> half an hour now without any badness. No spew in debug logs too.
+>=20
+> I also checked the code in hvc_console.c that takes the spin_locks.
+> Nothing there that runs from (or needs to run from) interrupt context.
+> So the change to mutexes does seem reasonable. Also, the spinlock code
+> was added really long back -- git blame shows Linus' first git commit
+> introduced them in the git history, so it's pure legacy baggage.
+
+I won't tell Ryan you called his code "pure legacy baggage" if you
+don't ;)
+
+http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/old-2.6-bkcvs.git;a=3D=
+commitdiff;h=3Dd450b4ae023fb4be175389c18f4f87677da03020
 
 
->
->However, there's a problem with commit
->6d76013381ed28979cd122eb4b249a88b5e384fa in that if you fail to allocate
->a mod->sect_attrs (in this case it's null because of the duplication),
->it still gets used without checking in add_notes_attrs()
->
->This should fix it
->
->Signed-off-by: James Bottomley <James.Bottomley@suse.de>
->Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->Tested-by: Helge Deller <deller@gmx.de>
+cheers
 
-Looks fine for me.
+--=-zDgknRdlrvhso4zVsYgt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Thanks.
+iEYEABECAAYFAkqWE+oACgkQdSjSd0sB4dJ77QCglGJ1hqEa1QKiDnJYj5Wd7qZ3
+BZgAoIKPSyPRRk69t+vlctG7SDLv/SSX
+=lH9C
+-----END PGP SIGNATURE-----
 
+--=-zDgknRdlrvhso4zVsYgt--
 
->---
->
->diff --git a/kernel/module.c b/kernel/module.c
->index fd14114..a703c49 100644
->--- a/kernel/module.c
->+++ b/kernel/module.c
->@@ -2353,7 +2353,8 @@ static noinline struct module *load_module(void __user *umod,
-> 	if (err < 0)
-> 		goto unlink;
-> 	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
->-	add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
->+	if (mod->sect_attrs)
->+		add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
-> 
-> 	/* Get rid of temporary copy */
-> 	vfree(hdr);
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
