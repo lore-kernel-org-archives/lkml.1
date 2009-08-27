@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932168AbZH0Ccj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZH0Cfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932168AbZH0Ccj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 22:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932105AbZH0Ccc
+	id S1754838AbZH0Cfx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 22:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932146AbZH0Cch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 22:32:32 -0400
+	Wed, 26 Aug 2009 22:32:37 -0400
 Received: from mail-ew0-f206.google.com ([209.85.219.206]:54351 "EHLO
 	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932093AbZH0CcZ (ORCPT
+	with ESMTP id S932094AbZH0Ccd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 22:32:25 -0400
+	Wed, 26 Aug 2009 22:32:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :mime-version:content-type:content-transfer-encoding;
-        b=A1YjM3AbEUTQvW7gBbvfKAqsxdMu7AYtic3ziblvO34UJ3GRl3GJNBdK7lSZEX7bXW
-         qbmKyaD/7O6E4bracdFM5giRlzdoFsVJUvnGLlTmZ2lXjFmCx+M/GZFz4v6/mSVhnWh4
-         KIAW83kxqZufbpOyCGemUn2b1q3Oo5wQd3xKU=
+        b=AWVs9hMz05wfOwau2KkuN4AawPxbV0alBgOybPCFrOsEEFaIEKvB0Cztv0Tq7c7LTW
+         lGGZJVH3okUkKlP9HB7GeDplqXB4Jkt/fz9Sjlf/xYP4sSNTqyj7edgWcYgE7gVx7Rxw
+         Y2gQKIIqs5XA/jgdP/LFNevOmDr2GFeXfZHtU=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>, linux-arch@vger.kernel.org,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
        Christoph Hellwig <hch@infradead.org>,
        "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>,
        Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
        =?utf-8?q?Przemys=C5=82aw=20Pawe=C5=82czyk?= 
@@ -36,9 +36,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
        Vegard Nossum <vegard.nossum@gmail.com>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 02/18] x86: X86 instruction decoder build-time selftest
-Date: Thu, 27 Aug 2009 04:32:01 +0200
-Message-Id: <1251340337-5640-3-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 05/18] x86: Add pt_regs register and stack access APIs
+Date: Thu, 27 Aug 2009 04:32:04 +0200
+Message-Id: <1251340337-5640-6-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1251340337-5640-1-git-send-email-fweisbec@gmail.com>
 References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com>
@@ -51,15 +51,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Masami Hiramatsu <mhiramat@redhat.com>
 
-Add a user-space selftest of x86 instruction decoder at kernel build
-time.
-When CONFIG_X86_DECODER_SELFTEST=y, Kbuild builds a test harness of x86
-instruction decoder and performs it after building vmlinux.
-The test compares the results of objdump and x86 instruction decoder
-code and check there are no differences.
+Add following APIs for accessing registers and stack entries from
+pt_regs.
+These APIs are required by kprobes-based event tracer on ftrace.
+Some other debugging tools might be able to use it too.
+
+- regs_query_register_offset(const char *name)
+   Query the offset of "name" register.
+
+- regs_query_register_name(unsigned int offset)
+   Query the name of register by its offset.
+
+- regs_get_register(struct pt_regs *regs, unsigned int offset)
+   Get the value of a register by its offset.
+
+- regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr)
+   Check the address is in the kernel stack.
+
+- regs_get_kernel_stack_nth(struct pt_regs *reg, unsigned int nth)
+   Get Nth entry of the kernel stack. (N >= 0)
+
+- regs_get_argument_nth(struct pt_regs *reg, unsigned int nth)
+   Get Nth argument at function call. (N >= 0)
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
+Cc: linux-arch@vger.kernel.org
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Avi Kivity <avi@redhat.com>
 Cc: Andi Kleen <ak@linux.intel.com>
@@ -68,6 +84,7 @@ Cc: Frank Ch. Eigler <fche@redhat.com>
 Cc: H. Peter Anvin <hpa@zytor.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Jason Baron <jbaron@redhat.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: K.Prasad <prasad@linux.vnet.ibm.com>
 Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Li Zefan <lizf@cn.fujitsu.com>
@@ -78,241 +95,216 @@ Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Tom Zanussi <tzanussi@gmail.com>
 Cc: Vegard Nossum <vegard.nossum@gmail.com>
-LKML-Reference: <20090813203421.31965.29006.stgit@localhost.localdomain>
+LKML-Reference: <20090813203444.31965.26374.stgit@localhost.localdomain>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- arch/x86/Kconfig.debug        |    9 +++
- arch/x86/Makefile             |    3 +
- arch/x86/tools/Makefile       |   15 ++++++
- arch/x86/tools/distill.awk    |   42 +++++++++++++++
- arch/x86/tools/test_get_len.c |  113 +++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 182 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/tools/Makefile
- create mode 100644 arch/x86/tools/distill.awk
- create mode 100644 arch/x86/tools/test_get_len.c
+ arch/x86/include/asm/ptrace.h |   62 ++++++++++++++++++++++
+ arch/x86/kernel/ptrace.c      |  112 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 174 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index d105f29..7d0b681 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -186,6 +186,15 @@ config X86_DS_SELFTEST
- config HAVE_MMIOTRACE_SUPPORT
- 	def_bool y
+diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+index 0f0d908..a3d49dd 100644
+--- a/arch/x86/include/asm/ptrace.h
++++ b/arch/x86/include/asm/ptrace.h
+@@ -7,6 +7,7 @@
  
-+config X86_DECODER_SELFTEST
-+     bool "x86 instruction decoder selftest"
-+     depends on DEBUG_KERNEL
-+	---help---
-+	 Perform x86 instruction decoder selftests at build time.
-+	 This option is useful for checking the sanity of x86 instruction
-+	 decoder code.
-+	 If unsure, say "N".
-+
- #
- # IO delay types:
- #
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 1b68659..5fe16bf 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -154,6 +154,9 @@ all: bzImage
- KBUILD_IMAGE := $(boot)/bzImage
+ #ifdef __KERNEL__
+ #include <asm/segment.h>
++#include <asm/page_types.h>
+ #endif
  
- bzImage: vmlinux
-+ifeq ($(CONFIG_X86_DECODER_SELFTEST),y)
-+	$(Q)$(MAKE) $(build)=arch/x86/tools posttest
-+endif
- 	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
- 	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
- 	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/$@
-diff --git a/arch/x86/tools/Makefile b/arch/x86/tools/Makefile
-new file mode 100644
-index 0000000..3dd626b
---- /dev/null
-+++ b/arch/x86/tools/Makefile
-@@ -0,0 +1,15 @@
-+PHONY += posttest
-+quiet_cmd_posttest = TEST    $@
-+      cmd_posttest = $(OBJDUMP) -d $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len
+ #ifndef __ASSEMBLY__
+@@ -216,6 +217,67 @@ static inline unsigned long user_stack_pointer(struct pt_regs *regs)
+ 	return regs->sp;
+ }
+ 
++/* Query offset/name of register from its name/offset */
++extern int regs_query_register_offset(const char *name);
++extern const char *regs_query_register_name(unsigned int offset);
++#define MAX_REG_OFFSET (offsetof(struct pt_regs, ss))
 +
-+posttest: $(obj)/test_get_len vmlinux
-+	$(call cmd,posttest)
-+
-+hostprogs-y	:= test_get_len
-+
-+# -I needed for generated C source and C source which in the kernel tree.
-+HOSTCFLAGS_test_get_len.o := -Wall -I$(objtree)/arch/x86/lib/ -I$(srctree)/arch/x86/include/ -I$(srctree)/arch/x86/lib/
-+
-+# Dependancies are also needed.
-+$(obj)/test_get_len.o: $(srctree)/arch/x86/lib/insn.c $(srctree)/arch/x86/lib/inat.c $(srctree)/arch/x86/include/asm/inat_types.h $(srctree)/arch/x86/include/asm/inat.h $(srctree)/arch/x86/include/asm/insn.h $(objtree)/arch/x86/lib/inat-tables.c
-+
-diff --git a/arch/x86/tools/distill.awk b/arch/x86/tools/distill.awk
-new file mode 100644
-index 0000000..d433619
---- /dev/null
-+++ b/arch/x86/tools/distill.awk
-@@ -0,0 +1,42 @@
-+#!/bin/awk -f
-+# Usage: objdump -d a.out | awk -f distill.awk | ./test_get_len
-+# Distills the disassembly as follows:
-+# - Removes all lines except the disassembled instructions.
-+# - For instructions that exceed 1 line (7 bytes), crams all the hex bytes
-+# into a single line.
-+# - Remove bad(or prefix only) instructions
-+
-+BEGIN {
-+	prev_addr = ""
-+	prev_hex = ""
-+	prev_mnemonic = ""
-+	bad_expr = "(\\(bad\\)|^rex|^.byte|^rep(z|nz)$|^lock$|^es$|^cs$|^ss$|^ds$|^fs$|^gs$|^data(16|32)$|^addr(16|32|64))"
-+	fwait_expr = "^9b "
-+	fwait_str="9b\tfwait"
++/**
++ * regs_get_register() - get register value from its offset
++ * @regs:	pt_regs from which register value is gotten.
++ * @offset:	offset number of the register.
++ *
++ * regs_get_register returns the value of a register whose offset from @regs
++ * is @offset. The @offset is the offset of the register in struct pt_regs.
++ * If @offset is bigger than MAX_REG_OFFSET, this returns 0.
++ */
++static inline unsigned long regs_get_register(struct pt_regs *regs,
++					      unsigned int offset)
++{
++	if (unlikely(offset > MAX_REG_OFFSET))
++		return 0;
++	return *(unsigned long *)((unsigned long)regs + offset);
 +}
 +
-+/^ *[0-9a-f]+:/ {
-+	if (split($0, field, "\t") < 3) {
-+		# This is a continuation of the same insn.
-+		prev_hex = prev_hex field[2]
-+	} else {
-+		# Skip bad instructions
-+		if (match(prev_mnemonic, bad_expr))
-+			prev_addr = ""
-+		# Split fwait from other f* instructions
-+		if (match(prev_hex, fwait_expr) && prev_mnemonic != "fwait") {
-+			printf "%s\t%s\n", prev_addr, fwait_str
-+			sub(fwait_expr, "", prev_hex)
-+		}
-+		if (prev_addr != "")
-+			printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
-+		prev_addr = field[1]
-+		prev_hex = field[2]
-+		prev_mnemonic = field[3]
++/**
++ * regs_within_kernel_stack() - check the address in the stack
++ * @regs:	pt_regs which contains kernel stack pointer.
++ * @addr:	address which is checked.
++ *
++ * regs_within_kenel_stack() checks @addr is within the kernel stack page(s).
++ * If @addr is within the kernel stack, it returns true. If not, returns false.
++ */
++static inline int regs_within_kernel_stack(struct pt_regs *regs,
++					   unsigned long addr)
++{
++	return ((addr & ~(THREAD_SIZE - 1))  ==
++		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
++}
++
++/**
++ * regs_get_kernel_stack_nth() - get Nth entry of the stack
++ * @regs:	pt_regs which contains kernel stack pointer.
++ * @n:		stack entry number.
++ *
++ * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
++ * is specifined by @regs. If the @n th entry is NOT in the kernel stack,
++ * this returns 0.
++ */
++static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
++						      unsigned int n)
++{
++	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
++	addr += n;
++	if (regs_within_kernel_stack(regs, (unsigned long)addr))
++		return *addr;
++	else
++		return 0;
++}
++
++/* Get Nth argument at function call */
++extern unsigned long regs_get_argument_nth(struct pt_regs *regs,
++					   unsigned int n);
++
+ /*
+  * These are defined as per linux/ptrace.h, which see.
+  */
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 8d7d5c9..a33a17d 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -49,6 +49,118 @@ enum x86_regset {
+ 	REGSET_IOPERM32,
+ };
+ 
++struct pt_regs_offset {
++	const char *name;
++	int offset;
++};
++
++#define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
++#define REG_OFFSET_END {.name = NULL, .offset = 0}
++
++static const struct pt_regs_offset regoffset_table[] = {
++#ifdef CONFIG_X86_64
++	REG_OFFSET_NAME(r15),
++	REG_OFFSET_NAME(r14),
++	REG_OFFSET_NAME(r13),
++	REG_OFFSET_NAME(r12),
++	REG_OFFSET_NAME(r11),
++	REG_OFFSET_NAME(r10),
++	REG_OFFSET_NAME(r9),
++	REG_OFFSET_NAME(r8),
++#endif
++	REG_OFFSET_NAME(bx),
++	REG_OFFSET_NAME(cx),
++	REG_OFFSET_NAME(dx),
++	REG_OFFSET_NAME(si),
++	REG_OFFSET_NAME(di),
++	REG_OFFSET_NAME(bp),
++	REG_OFFSET_NAME(ax),
++#ifdef CONFIG_X86_32
++	REG_OFFSET_NAME(ds),
++	REG_OFFSET_NAME(es),
++	REG_OFFSET_NAME(fs),
++	REG_OFFSET_NAME(gs),
++#endif
++	REG_OFFSET_NAME(orig_ax),
++	REG_OFFSET_NAME(ip),
++	REG_OFFSET_NAME(cs),
++	REG_OFFSET_NAME(flags),
++	REG_OFFSET_NAME(sp),
++	REG_OFFSET_NAME(ss),
++	REG_OFFSET_END,
++};
++
++/**
++ * regs_query_register_offset() - query register offset from its name
++ * @name:	the name of a register
++ *
++ * regs_query_register_offset() returns the offset of a register in struct
++ * pt_regs from its name. If the name is invalid, this returns -EINVAL;
++ */
++int regs_query_register_offset(const char *name)
++{
++	const struct pt_regs_offset *roff;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (!strcmp(roff->name, name))
++			return roff->offset;
++	return -EINVAL;
++}
++
++/**
++ * regs_query_register_name() - query register name from its offset
++ * @offset:	the offset of a register in struct pt_regs.
++ *
++ * regs_query_register_name() returns the name of a register from its
++ * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
++ */
++const char *regs_query_register_name(unsigned int offset)
++{
++	const struct pt_regs_offset *roff;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (roff->offset == offset)
++			return roff->name;
++	return NULL;
++}
++
++static const int arg_offs_table[] = {
++#ifdef CONFIG_X86_32
++	[0] = offsetof(struct pt_regs, ax),
++	[1] = offsetof(struct pt_regs, dx),
++	[2] = offsetof(struct pt_regs, cx)
++#else /* CONFIG_X86_64 */
++	[0] = offsetof(struct pt_regs, di),
++	[1] = offsetof(struct pt_regs, si),
++	[2] = offsetof(struct pt_regs, dx),
++	[3] = offsetof(struct pt_regs, cx),
++	[4] = offsetof(struct pt_regs, r8),
++	[5] = offsetof(struct pt_regs, r9)
++#endif
++};
++
++/**
++ * regs_get_argument_nth() - get Nth argument at function call
++ * @regs:	pt_regs which contains registers at function entry.
++ * @n:		argument number.
++ *
++ * regs_get_argument_nth() returns @n th argument of a function call.
++ * Since usually the kernel stack will be changed right after function entry,
++ * you must use this at function entry. If the @n th entry is NOT in the
++ * kernel stack or pt_regs, this returns 0.
++ */
++unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n)
++{
++	if (n < ARRAY_SIZE(arg_offs_table))
++		return *((unsigned long *)regs + arg_offs_table[n]);
++	else {
++		/*
++		 * The typical case: arg n is on the stack.
++		 * (Note: stack[0] = return address, so skip it)
++		 */
++		n -= ARRAY_SIZE(arg_offs_table);
++		return regs_get_kernel_stack_nth(regs, 1 + n);
 +	}
 +}
 +
-+END {
-+	if (prev_addr != "")
-+		printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
-+}
-diff --git a/arch/x86/tools/test_get_len.c b/arch/x86/tools/test_get_len.c
-new file mode 100644
-index 0000000..1e81adb
---- /dev/null
-+++ b/arch/x86/tools/test_get_len.c
-@@ -0,0 +1,113 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <assert.h>
-+
-+#ifdef __x86_64__
-+#define CONFIG_X86_64
-+#else
-+#define CONFIG_X86_32
-+#endif
-+#define unlikely(cond) (cond)
-+
-+#include <asm/insn.h>
-+#include <inat.c>
-+#include <insn.c>
-+
-+/*
-+ * Test of instruction analysis in general and insn_get_length() in
-+ * particular.  See if insn_get_length() and the disassembler agree
-+ * on the length of each instruction in an elf disassembly.
-+ *
-+ * Usage: objdump -d a.out | awk -f distill.awk | ./test_get_len
-+ */
-+
-+const char *prog;
-+
-+static void usage(void)
-+{
-+	fprintf(stderr, "Usage: objdump -d a.out | awk -f distill.awk |"
-+		" ./test_get_len\n");
-+	exit(1);
-+}
-+
-+static void malformed_line(const char *line, int line_nr)
-+{
-+	fprintf(stderr, "%s: malformed line %d:\n%s", prog, line_nr, line);
-+	exit(3);
-+}
-+
-+#define BUFSIZE 256
-+
-+int main(int argc, char **argv)
-+{
-+	char line[BUFSIZE];
-+	unsigned char insn_buf[16];
-+	struct insn insn;
-+	int insns = 0;
-+
-+	prog = argv[0];
-+	if (argc > 1)
-+		usage();
-+
-+	while (fgets(line, BUFSIZE, stdin)) {
-+		char copy[BUFSIZE], *s, *tab1, *tab2;
-+		int nb = 0;
-+		unsigned int b;
-+
-+		insns++;
-+		memset(insn_buf, 0, 16);
-+		strcpy(copy, line);
-+		tab1 = strchr(copy, '\t');
-+		if (!tab1)
-+			malformed_line(line, insns);
-+		s = tab1 + 1;
-+		s += strspn(s, " ");
-+		tab2 = strchr(s, '\t');
-+		if (!tab2)
-+			malformed_line(line, insns);
-+		*tab2 = '\0';	/* Characters beyond tab2 aren't examined */
-+		while (s < tab2) {
-+			if (sscanf(s, "%x", &b) == 1) {
-+				insn_buf[nb++] = (unsigned char) b;
-+				s += 3;
-+			} else
-+				break;
-+		}
-+		/* Decode an instruction */
-+#ifdef __x86_64__
-+		insn_init(&insn, insn_buf, 1);
-+#else
-+		insn_init(&insn, insn_buf, 0);
-+#endif
-+		insn_get_length(&insn);
-+		if (insn.length != nb) {
-+			fprintf(stderr, "Error: %s", line);
-+			fprintf(stderr, "Error: objdump says %d bytes, but "
-+				"insn_get_length() says %d (attr:%x)\n", nb,
-+				insn.length, insn.attr);
-+			exit(2);
-+		}
-+	}
-+	fprintf(stderr, "Succeed: decoded and checked %d instructions\n",
-+		insns);
-+	return 0;
-+}
+ /*
+  * does not yet catch signals sent when the child dies.
+  * in exit.c or in signal.c.
 -- 
 1.6.2.3
 
