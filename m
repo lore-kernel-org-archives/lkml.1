@@ -1,68 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbZH0P5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZH0P7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbZH0P5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 11:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZH0P5e
+	id S1752775AbZH0P7V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 11:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZH0P7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 11:57:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35596 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752035AbZH0P5e (ORCPT
+	Thu, 27 Aug 2009 11:59:18 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:51131 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751919AbZH0P7R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 11:57:34 -0400
-Date: Thu, 27 Aug 2009 11:57:33 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
-In-Reply-To: <1251354307.18584.40.camel@twins>
-Message-ID: <alpine.DEB.2.00.0908271156300.11745@gandalf.stny.rr.com>
-References: <1251197235.7538.1142.camel@twins>  <1251211963.7538.1164.camel@twins> <4A94D3A8.1090902@cn.fujitsu.com>  <1251269207.7538.1217.camel@twins> <1251270092.7538.1226.camel@twins>  <4A94DFF4.5030301@cn.fujitsu.com>  <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com>
-  <20090826164624.GA21456@Krystal>  <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com>  <20090826180114.GA29130@Krystal> <20090826181758.GA30248@Krystal>  <alpine.DEB.2.00.0908261544590.11291@gandalf.stny.rr.com> <1251354307.18584.40.camel@twins>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 27 Aug 2009 11:59:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MwwGF6/yk1kWVAgwQk6pvybd0GeF53TG9anSUbEUBu3unlFklxlKV+r8r2Hi4dW+rd
+         d2qGBe2jeHnakxPuc0TrwRtp0Gl5yjlt+GUfUoJ3NKNzSRvXqnTMyd8hb+/y2pbui9PQ
+         YdP7vEWQnYK+gD7TfDUodqbfX6ccctm7kLdCc=
+Date: Thu, 27 Aug 2009 17:59:14 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [GIT PULL v2] tracing/kprobes: v1 + two fixes
+Message-ID: <20090827155912.GH6058@nowhere>
+References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com> <1251344087-28719-1-git-send-email-fweisbec@gmail.com> <20090827152438.GA32553@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090827152438.GA32553@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 27 Aug 2009, Peter Zijlstra wrote:
-
-> On Wed, 2009-08-26 at 15:48 -0400, Steven Rostedt wrote:
-> >  									\
-> > @@ -399,16 +413,20 @@ static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
-> >  {									\
-> >  	int ret = 0;							\
-> >  									\
-> > -	if (!atomic_inc_return(&event_call->profile_count))		\
-> > +	if (!atomic_inc_return(&event_call->profile_count)) {		\
-> > +		event_trace_up_ref();					\
-> >  		ret = register_trace_##call(ftrace_profile_##call);	\
-> > +	}								\
-> >  									\
-> >  	return ret;							\
-> >  }									\
-> >  									\
-> >  static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
-> >  {									\
-> > -	if (atomic_add_negative(-1, &event_call->profile_count))	\
-> > +	if (atomic_add_negative(-1, &event_call->profile_count)) {	\
-> >  		unregister_trace_##call(ftrace_profile_##call);		\
-> > +		event_trace_down_ref();					\
-> > +	}								\
-> >  }
+On Thu, Aug 27, 2009 at 05:24:38PM +0200, Ingo Molnar wrote:
 > 
-> Ha, almost, make that {un,}register_ftrace_##call() and stick the module
-> gunk in there, and I'm ok.
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > Ingo,
+> > 
+> > This v2 can be either pulled after tracing/kprobes (the v1) or can 
+> > be pulled alone, it is based on the previous one and addresses 
+> > reviews from Li Zefan.
+> > 
+> > Thanks,
+> > Frederic.
+> > 
+> > The following changes since commit 24851d2447830e6cba4c4b641cb73e713f312373:
+> >   Frederic Weisbecker (1):
+> >         tracing/kprobes: Dump the culprit kprobe in case of kprobe recursion
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
+> > 	tracing/kprobes-2
+> > 
+> > Frederic Weisbecker (2):
+> >       tracing: Restore the const qualifier for field names and types definition
+> >       tracing: Remove unneeded pointer casts
+> > 
+> >  include/linux/ftrace_event.h  |    6 +++---
+> >  kernel/trace/trace_events.c   |    4 ++--
+> >  kernel/trace/trace_syscalls.c |    8 ++++----
+> >  3 files changed, 9 insertions(+), 9 deletions(-)
+> 
+> I've pulled it into a staging branch (not yet in tip:master either 
+> and not yet on the road to upstream either), thanks guys!
+> 
+> I have done some brief testing. One hickup is this build failure on 
+> x86, caused by the kprobes instruction decoder self-test:
+> 
+>    CHK     include/linux/compile.h
+>    TEST    posttest
+>  Error: 41001024:        a1 08 30 c9 41          mov    
+>  0x41c93008,%eax
+>  Error: objdump says 5 bytes, but insn_get_length() says 9 (attr:40000)
+> 
+> another one is this build warning:
+> 
+>  In file included from include/trace/events/napi.h:5,
+>                   from net/core/net-traces.c:28:
+>  include/linux/tracepoint.h:285:1: warning: "TRACE_EVENT_FN" redefined
+>  In file included from include/trace/define_trace.h:61,
+>                   from include/trace/events/skb.h:40,
+>                   from net/core/net-traces.c:27:
+>  include/trace/ftrace.h:50:1: warning: this is the location of the previous definition
+> 
+> config attached.
+> 
+> 	Ingo
 
-Peter, that {un,}register_tace_##call is the tracepoint code. The 
-DEFINE_TRACE creates those functions. This is the lowest level we can go 
-in the ftrace.h file.
 
--- Steve
+That happens also in a pure -tip master.
 
