@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbZH0G6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751407AbZH0G7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751386AbZH0G6i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 02:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZH0G6i
+	id S1751407AbZH0G7K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 02:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZH0G7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 02:58:38 -0400
-Received: from sandeen.net ([209.173.210.139]:28021 "EHLO mail.sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751302AbZH0G6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 02:58:37 -0400
-X-Greylist: delayed 1831 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Aug 2009 02:58:37 EDT
-Message-ID: <4A962774.9000604@redhat.com>
-Date: Wed, 26 Aug 2009 23:28:04 -0700
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 27 Aug 2009 02:59:09 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:60011 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbZH0G7I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 02:59:08 -0400
+Date: Wed, 26 Aug 2009 23:58:56 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: mm <mmi@superbash.de>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>, r.marek@assembler.cz
+Subject: Re: AMD K10 temp.module ready since months, but missing in
+ kernel...
+In-Reply-To: <20090827011019.59655f23@phenom>
+Message-ID: <alpine.DEB.2.01.0908262355340.5744@bogon.housecafe.de>
+References: <20090821001322.470bb177@p4laptop> <20090821104533.GA3872@liondog.tnic> <alpine.DEB.2.01.0908261314300.5744@bogon.housecafe.de> <20090827011019.59655f23@phenom>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, david@lang.hm, Pavel Machek <pavel@ucw.cz>,
-       Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net, jack@suse.cz
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz> <4A932B18.1020209@redhat.com> <20090825093414.GB15563@elf.ucw.cz> <4A94ACDF.30405@redhat.com> <20090826111751.GC26595@elf.ucw.cz> <alpine.DEB.2.00.0908260428310.30426@asgard.lang.hm> <20090826131028.GB1370@ucw.cz> <alpine.DEB.2.00.0908260642560.28411@asgard.lang.hm> <20090826180248.GB6997@mit.edu>
-In-Reply-To: <20090826180248.GB6997@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX187ty02CfNk+yps91MFfpJjXUnIszWBawq2Asv
+ 4Wjyo584nSmzKxcj3Z/LVa/YksK2NqwghDNHpr8hAhz9L7mXkK
+ f74yESTO63QabB4RDsmwQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Wed, Aug 26, 2009 at 06:43:24AM -0700, david@lang.hm wrote:
->>>> as the ext3 authors have stated many times over the years, you still need
->>>> to run fsck periodicly anyway.
->>> Where is that documented?
->> linux-kernel mailing list archives.
+On Thu, 27 Aug 2009 at 01:10, mm wrote:
+> Am Wed, 26 Aug 2009 13:15:45 -0700 (PDT) haben Sie (Christian Kujau
+> <lists@nerdbynature.de>) geschrieben:
+> > On Fri, 21 Aug 2009 at 12:45, Borislav Petkov wrote:
+> > > On Fri, Aug 21, 2009 at 12:13:22AM +0200, mmi wrote:
+> > > > Hello out there,
+> > > > 
+> > > > i found the code to read temperature of AMD K10 (Phenom)
+> > > > processors a couple of months ago in the net (GPL). I use it
+> > > > since January now and i wonder, why it's not in the kernel till
+> > > > now.
+> > > > 
+> > > > It's from the same author, who wrote k8temp.c (which is in
+> > > > kernel).
+> > 
+> > MMI, do you mean this:
+> > http://linux.derkeiler.com/Newsgroups/alt.os.linux/2008-08/msg00398.html
+> > 
+> > ...or which code are you referring to?
+> > 
+> > Christian.
 > 
-> Probably from some 6-8 years ago, in e-mail postings that I made.  My
-> argument has always been that PC-class hardware is crap, and it's a
-> Really Good Idea to periodically check the metadata because corruption
-> there can end up causing massive data loss.  The main problem is that
-> doing it at reboot time really hurt system availability, and "after 20
-> reboots (plus or minus)" resulted in fsck checks at wildly varying
-> intervals depending on how often people reboot.
-
-Aside ... can we default mkfs.ext3 to not set a mandatory fsck interval 
-then? :)
-
--Eric
-
-> What I've been recommending for some time is that people use LVM, and
-> run fsck on a snapshot every week or two, at some convenient time when
-> the system load is at a minimum.  There is an e2croncheck script in
-> the e2fsprogs sources, in the contrib directory; it's short enough
-> that I'll attach here here.
+> YES, i refer to the code of Rudolf Marek. I think, he also has written
+> the k8tmp.c. So he and his code should be well known in main line.
 > 
-> Is it *necessary*?  In a world where hardware is perfect, no.  In a
-> world where people don't bother buying ECC memory because it's 10%
-> more expensive, and PC builders use the cheapest possible parts --- I
-> think it's a really good idea.
+> In the meanwhile i read a discussion where  Rudolf 
+> thinks that it's not working on all Phenoms. Probably a problem on first
+> series of Phenom I.
 > 
-> 						- Ted
+> I tested it on latest Phenom I and since January on Phenom II, it works
+> fine.
+
+Well, it's Rudolf's code - if he thinks this code is ready for inclusion 
+as well, we'd need his Signed-off to do so....
+
+C.
+-- 
+BOFH excuse #213:
+
+Change your language to Finnish.
