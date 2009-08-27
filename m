@@ -1,102 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbZH0Qh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZH0QkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753109AbZH0Qh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 12:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbZH0QhZ
+	id S1752926AbZH0QkQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 12:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZH0QkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 12:37:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58033 "EHLO hera.kernel.org"
+	Thu, 27 Aug 2009 12:40:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38609 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752068AbZH0QhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 12:37:24 -0400
-Date: Thu, 27 Aug 2009 16:36:36 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       lizf@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mhiramat@redhat.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mhiramat@redhat.com,
-       mingo@elte.hu
-In-Reply-To: <20090827161732.GA7618@nowhere>
-References: <20090827161732.GA7618@nowhere>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing: Undef TRACE_EVENT_FN between trace events headers inclusion
-Message-ID: <tip-6c347d43eea29221a8ebab9ff9cbe7a00cddac98@git.kernel.org>
-Git-Commit-ID: 6c347d43eea29221a8ebab9ff9cbe7a00cddac98
-X-Mailer: tip-git-log-daemon
+	id S1751966AbZH0QkN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 12:40:13 -0400
+Date: Thu, 27 Aug 2009 18:40:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gregory Haskins <gregory.haskins@gmail.com>,
+       =?unknown-8bit?B?RnLDqWTDqXJpYw==?= Weisbecker 
+	<fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: FTRACE: regression in 31-rc7
+Message-ID: <20090827164007.GA30679@elte.hu>
+References: <4A96B55C.10001@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 27 Aug 2009 16:36:37 +0000 (UTC)
+In-Reply-To: <4A96B55C.10001@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6c347d43eea29221a8ebab9ff9cbe7a00cddac98
-Gitweb:     http://git.kernel.org/tip/6c347d43eea29221a8ebab9ff9cbe7a00cddac98
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 27 Aug 2009 18:17:34 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 27 Aug 2009 18:32:54 +0200
 
-tracing: Undef TRACE_EVENT_FN between trace events headers inclusion
+* Gregory Haskins <gregory.haskins@gmail.com> wrote:
 
-The recent commit:
+> Hi Steve,
+> 
+> I just moved from -rc6 to -rc7, and I noticed that the 
+> function-graph tracer suddenly stopped working properly: I do not 
+> see any output from seeming most things except a handful of 
+> interrupt related events.  I currently believe it may be an issue 
+> with tracing modules.
+> 
+> I haven't had a chance to bisect yet, but I did confirm that 
+> reverting the -rc7 merge restores the previous tracer behavior.  
+> Any help/pointers appreciated.
 
-	tracing/events: fix the include file dependencies
+Works fine here (using -rc7 based -tip):
 
-fixed a file dependency problem while including more than
-one trace event header file.
+ 11)               |  sys_munmap() {
+ 11)               |    profile_munmap() {
+ 11)               |      blocking_notifier_call_chain() {
+ 11)   0.170 us    |        __blocking_notifier_call_chain();
+ 11)   0.480 us    |      }
+ 11)   0.799 us    |    }
+ 11)               |    down_write() {
+ 11)   0.146 us    |      _cond_resched();
+ 11)   0.146 us    |      _spin_lock_irq();
+ 11)   0.754 us    |    }
+ 11)               |    do_munmap() {
+ 11)   0.144 us    |      test_ti_thread_flag();
+ 11)   0.144 us    |      test_ti_thread_flag();
+ 11)   0.164 us    |      find_vma();
+ 11)   0.156 us    |      arch_unmap_area_topdown();
+ 11)               |      unmap_region() {
+ 11)               |        lru_add_drain() {
+ 11)               |          ____pagevec_lru_add() {
+ 11)   0.153 us    |            _spin_lock_irq();
+ 11)   0.145 us    |            __inc_zone_state();
+ 11)               |            __inc_zone_state() {
+ 11)   0.144 us    |            __inc_zone_state();
+ 11)   0.146 us    |            __inc_zone_state();
+ 11)   0.145 us    |            __inc_zone_state();
+ 11)   0.223 us    |            release_pages();
+ 11)   2.463 us    |          }
+ 11)   2.795 us    |        }
+ 11)               |        unmap_vmas() {
+ 11)               |          unmap_page_range() {
+ 11)   0.144 us    |            pgd_none_or_clear_bad();
+ 11)   0.145 us    |            pud_none_or_clear_bad();
+ 11)   0.154 us    |            pmd_none_or_clear_bad();
+ 11)               |            zap_pte_range() {
+ 11)   0.145 us    |              _spin_lock();
+ 11)   0.168 us    |              vm_normal_page();
+ 11)   0.143 us    |              mark_page_accessed();
+ 11)               |              page_remove_rmap() {
+ 11)               |                __dec_zone_page_state() {
+ 11)   0.150 us    |                  __dec_zone_state();
+ 11)   0.441 us    |                }
+ 11)   0.748 us    |              }
+ 11)   0.149 us    |              vm_normal_page();
+ 11)   0.146 us    |              mark_page_accessed();
+ 11)               |              page_remove_rmap() {
+ 11)               |                __dec_zone_page_state() {
+ 11)   0.148 us    |                  __dec_zone_state();
+ 11)   0.439 us    |                }
+ 11)   0.748 us    |              }
+ 11)   0.144 us    |              vm_normal_page();
+ 11)   0.148 us    |              mark_page_accessed();
+ 11)               |              page_remove_rmap() {
+ 11)               |                __dec_zone_page_state() {
+ 11)   0.148 us    |                  __dec_zone_state();
+ 11)   0.438 us    |                }
+ 11)   0.731 us    |              }
+ 11)   0.144 us    |              vm_normal_page();
+ 11)   0.146 us    |              mark_page_accessed();
+ 11)               |              page_remove_rmap() {
+ 11)               |                __dec_zone_page_state() {
+ 11)   0.146 us    |                  __dec_zone_state();
+ 11)   0.437 us    |                }
+ 11)   0.733 us    |              }
+ 11)   0.143 us    |              vm_normal_page();
+ 11)   0.148 us    |              mark_page_accessed();
+ 11)               |              page_remove_rmap() {
+ 11)               |                __dec_zone_page_state() {
+ 11)   0.147 us    |                  __dec_zone_state();
+ 11)   0.438 us    |                }
+ 11)   0.731 us    |              }
+ 11)   0.144 us    |              vm_normal_page();
+ 11)   0.146 us    |              mark_page_accessed();
+ 11)               |              page_remove_rmap() {
+ 11)               |                __dec_zone_page_state() {
+ 11)   0.146 us    |                  __dec_zone_state();
+ 11)   0.436 us    |                }
+ 11)   0.732 us    |              }
+ 11)   0.143 us    |              vm_normal_page();
+ 11)   0.146 us    |              mark_page_accessed();
+ 11)               |              page_remove_rmap() {
+ 11)               |                __dec_zone_page_state() {
+ 11)   0.147 us    |                  __dec_zone_state();
+ 11)   0.435 us    |                }
+ 11)   0.751 us    |              }
+ 11)   0.142 us    |              vm_normal_page();
+ 11)   0.146 us    |              mark_page_accessed();
+ 11)               |              page_remove_rmap() {
+ 11)               |                __dec_zone_page_state() {
+ 11)   0.146 us    |                  __dec_zone_state();
+ 11)   0.438 us    |                }
+ 11)   0.733 us    |              }
+ 11)   0.143 us    |              vm_normal_page();
+ 11)   0.145 us    |              mark_page_accessed();
+ 11)               |              page_remove_rmap() {
+ 11)               |                __dec_zone_page_state() {
+ 11)   0.145 us    |                  __dec_zone_state();
+ 11)   0.434 us    |                }
+ 11)   0.731 us    |              }
+ 11) + 14.220 us   |            }
+ 11) + 15.442 us   |          }
+ 11) + 15.750 us   |        }
+ 11)               |        free_pgtables() {
 
-This fix undefined TRACE_EVENT after an event header macro
-preprocessing in order to make tracepoint.h able to correctly declare
-the tracepoints necessary for the next event header file.
+so it would be nice if you sent a config and a precise description 
+of what you did to see the weirdness - in case others have trouble 
+reproducing it as well.
 
-But now we also need to undefine TRACE_EVENT_FN at the end of an event
-header file preprocessing for the same reason.
-
-This fixes the following build error:
-
-In file included from include/trace/events/napi.h:5,
-                 from net/core/net-traces.c:28:
-include/linux/tracepoint.h:285:1: warning: "TRACE_EVENT_FN" redefined
-In file included from include/trace/define_trace.h:61,
-                 from include/trace/events/skb.h:40,
-                 from net/core/net-traces.c:27:
-include/trace/ftrace.h:50:1: warning: this is the location of the previous definition
-In file included from include/trace/events/napi.h:5,
-                 from net/core/net-traces.c:28:
-include/linux/tracepoint.h:285:1: warning: "TRACE_EVENT_FN" redefined
-In file included from include/trace/define_trace.h:61,
-                 from include/trace/events/skb.h:40,
-                 from net/core/net-traces.c:27:
-include/trace/ftrace.h:50:1: warning: this is the location of the previous definition
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <20090827161732.GA7618@nowhere>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/trace/define_trace.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
-index a89ed59..2a4b3bf 100644
---- a/include/trace/define_trace.h
-+++ b/include/trace/define_trace.h
-@@ -62,6 +62,7 @@
- #endif
- 
- #undef TRACE_EVENT
-+#undef TRACE_EVENT_FN
- #undef TRACE_HEADER_MULTI_READ
- 
- /* Only undef what we defined in this file */
+	Ingo
