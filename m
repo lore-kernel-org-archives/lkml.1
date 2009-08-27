@@ -1,180 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZH0WAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbZH0WA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318AbZH0WAS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 18:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZH0WAP
+	id S1753327AbZH0WA6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 18:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZH0WA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 18:00:15 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:42303 "EHLO e6.ny.us.ibm.com"
+	Thu, 27 Aug 2009 18:00:57 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:63851 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750996AbZH0WAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 18:00:13 -0400
-Date: Thu, 27 Aug 2009 15:00:12 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
-Subject: [PATCH tip/core/rcu] Changes from reviews: avoid casts, fix/add
-	warnings, improve comments.
-Message-ID: <20090827220012.GA30525@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	id S1751058AbZH0WA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 18:00:56 -0400
+Message-ID: <4A970154.2020507@redhat.com>
+Date: Thu, 27 Aug 2009 17:57:40 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Andrei Tanas <andrei@tanas.ca>
+CC: NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost>
+In-Reply-To: <d086b110526f8bac2f562850dfc70b03@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes suggested by review comments from Josh Triplett and Mathieu
-Desnoyers.
+On 08/27/2009 05:22 PM, Andrei Tanas wrote:
+> Hello,
+>
+> This is about the same problem that I wrote two days ago (md gets an error
+> while writing superblock and fails a hard drive).
+>
+> I've tried to figure out what's really going on, and as far as I can tell,
+> the disk doesn't really fail (as confirmed by multiple tests), it times out
+> trying to execute ATA_CMD_FLUSH_EXT ("at2.00 cmd ea..." in the log)
+> command. The reason for this I believe is that md_super_write queues the
+> write comand with BIO_RW_SYNCIO flag.
+> As I wrote before, with 32MB cache it is conceivable that it will take the
+> drive longer than 30 seconds (defined by SD_TIMEOUT in scsi/sd.h) to flush
+> its buffers.
+>
+> Changing safe_mode_delay to more conservative 2 seconds should definitely
+> help, but is it really necessary to write the superblock synchronously when
+> array changes status from active to active-idle?
+>
+> [90307.328266] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+> frozen
+> [90307.328275] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+> [90307.328277]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
+> (timeout)
+> [90307.328280] ata2.00: status: { DRDY }
+> [90307.328288] ata2: hard resetting link
+> [90313.218511] ata2: link is slow to respond, please be patient (ready=0)
+> [90317.377711] ata2: SRST failed (errno=-16)
+> [90317.377720] ata2: hard resetting link
+> [90318.251720] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> [90318.338026] ata2.00: configured for UDMA/133
+> [90318.338062] ata2: EH complete
+> [90318.370625] end_request: I/O error, dev sdb, sector 1953519935
+> [90318.370632] md: super_written gets error=-5, uptodate=0
+>
+>    
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+30 seconds is a very long time for a drive to respond, but I think that 
+your explanation fits the facts pretty well...
 
- include/linux/sched.h   |    4 +++-
- kernel/rcutree.c        |   13 ++++++-------
- kernel/rcutree.h        |    2 ++
- kernel/rcutree_plugin.h |   10 ++++++----
- 4 files changed, 17 insertions(+), 12 deletions(-)
+The drive might take a longer time like this when doing error handling 
+(sector remapping, etc), but then I would expect to see your remapped 
+sector count grow.
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 3fe0315..855fd0d 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1163,6 +1163,8 @@ struct sched_rt_entity {
- #endif
- };
- 
-+struct rcu_node;
-+
- struct task_struct {
- 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
- 	void *stack;
-@@ -1208,7 +1210,7 @@ struct task_struct {
- #ifdef CONFIG_TREE_PREEMPT_RCU
- 	int rcu_read_lock_nesting;
- 	char rcu_read_unlock_special;
--	void *rcu_blocked_node;
-+	struct rcu_node *rcu_blocked_node;
- 	struct list_head rcu_node_entry;
- #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
- 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index d903e2f..71bc797 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -229,7 +229,6 @@ static int rcu_implicit_offline_qs(struct rcu_data *rdp)
- #endif /* #ifdef CONFIG_SMP */
- 
- #ifdef CONFIG_NO_HZ
--static DEFINE_RATELIMIT_STATE(rcu_rs, 10 * HZ, 5);
- 
- /**
-  * rcu_enter_nohz - inform RCU that current CPU is entering nohz
-@@ -249,7 +248,7 @@ void rcu_enter_nohz(void)
- 	rdtp = &__get_cpu_var(rcu_dynticks);
- 	rdtp->dynticks++;
- 	rdtp->dynticks_nesting--;
--	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
-+	WARN_ON_ONCE(rdtp->dynticks & 0x1);
- 	local_irq_restore(flags);
- }
- 
-@@ -268,7 +267,7 @@ void rcu_exit_nohz(void)
- 	rdtp = &__get_cpu_var(rcu_dynticks);
- 	rdtp->dynticks++;
- 	rdtp->dynticks_nesting++;
--	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
-+	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
- 	local_irq_restore(flags);
- 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
- }
-@@ -287,7 +286,7 @@ void rcu_nmi_enter(void)
- 	if (rdtp->dynticks & 0x1)
- 		return;
- 	rdtp->dynticks_nmi++;
--	WARN_ON_RATELIMIT(!(rdtp->dynticks_nmi & 0x1), &rcu_rs);
-+	WARN_ON_ONCE(!(rdtp->dynticks_nmi & 0x1));
- 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
- }
- 
-@@ -306,7 +305,7 @@ void rcu_nmi_exit(void)
- 		return;
- 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
- 	rdtp->dynticks_nmi++;
--	WARN_ON_RATELIMIT(rdtp->dynticks_nmi & 0x1, &rcu_rs);
-+	WARN_ON_ONCE(rdtp->dynticks_nmi & 0x1);
- }
- 
- /**
-@@ -322,7 +321,7 @@ void rcu_irq_enter(void)
- 	if (rdtp->dynticks_nesting++)
- 		return;
- 	rdtp->dynticks++;
--	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
-+	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
- 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
- }
- 
-@@ -341,7 +340,7 @@ void rcu_irq_exit(void)
- 		return;
- 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
- 	rdtp->dynticks++;
--	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
-+	WARN_ON_ONCE(rdtp->dynticks & 0x1);
- 
- 	/* If the interrupt queued a callback, get out of dyntick mode. */
- 	if (__get_cpu_var(rcu_sched_data).nxtlist ||
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index ca56036..bf8a6f9 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -81,6 +81,8 @@ struct rcu_dynticks {
- struct rcu_node {
- 	spinlock_t lock;
- 	long	gpnum;		/* Current grace period for this node. */
-+				/*  This will either be equal to or one */
-+				/*  behind the root rcu_node's gpnum. */
- 	unsigned long qsmask;	/* CPUs or groups that need to switch in */
- 				/*  order for current grace period to proceed.*/
- 	unsigned long qsmaskinit;
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index 04343be..4778936 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -92,7 +92,7 @@ static void rcu_preempt_qs(int cpu)
- 		rnp = rdp->mynode;
- 		spin_lock(&rnp->lock);
- 		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
--		t->rcu_blocked_node = (void *)rnp;
-+		t->rcu_blocked_node = rnp;
- 
- 		/*
- 		 * If this CPU has already checked in, then this task
-@@ -176,9 +176,9 @@ static void rcu_read_unlock_special(struct task_struct *t)
- 		 * most one time.  So at most two passes through loop.
- 		 */
- 		for (;;) {
--			rnp = (struct rcu_node *)t->rcu_blocked_node;
-+			rnp = t->rcu_blocked_node;
- 			spin_lock(&rnp->lock);
--			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
-+			if (rnp == t->rcu_blocked_node)
- 				break;
- 			spin_unlock(&rnp->lock);
- 		}
-@@ -288,8 +288,10 @@ static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
- 	struct rcu_node *rnp_root = rcu_get_root(rsp);
- 	struct task_struct *tp;
- 
--	if (rnp == rnp_root)
-+	if (rnp == rnp_root) {
-+		WARN_ONCE(1, "Last CPU thought to be offlined?");
- 		return;  /* Shouldn't happen: at least one CPU online. */
-+	}
- 
- 	/*
- 	 * Move tasks up to root rcu_node.  Rely on the fact that the
+ric
+
