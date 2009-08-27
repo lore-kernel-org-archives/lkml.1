@@ -1,229 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbZH0WVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbZH0WWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709AbZH0WVz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 18:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbZH0WVx
+	id S1752778AbZH0WWb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 18:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZH0WW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 18:21:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41487 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752442AbZH0WVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 18:21:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH 7 updated] PM: Add a switch for disabling/enabling asynchronous suspend/resume
-Date: Fri, 28 Aug 2009 00:22:40 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <200908262217.19609.rjw@sisk.pl> <200908272119.47053.rjw@sisk.pl> <20090827203948.9CD25526EC9@mailhub.coreip.homeip.net>
-In-Reply-To: <20090827203948.9CD25526EC9@mailhub.coreip.homeip.net>
+	Thu, 27 Aug 2009 18:22:29 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:43613 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751997AbZH0WW2 (ORCPT
+	<rfc822;groupwise-GHaskins@novell.com;0:0>);
+	Thu, 27 Aug 2009 18:22:28 -0400
+Message-ID: <4A97071F.5070804@novell.com>
+Date: Thu, 27 Aug 2009 18:22:23 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908280022.40522.rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       riel@redhat.com, wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org>  <1251302598.18584.31.camel@twins>  <alpine.DEB.1.10.0908261211340.9933@gentwo.org>  <20090826180407.GA13632@elte.hu>  <alpine.DEB.1.10.0908261509580.9933@gentwo.org>  <20090826193252.GA14721@elte.hu>  <alpine.DEB.1.10.0908261627110.5554@gentwo.org>  <20090826135041.e6169d18.akpm@linux-foundation.org>  <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org> <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig353EA08A2E3493907A255907"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 August 2009, Dmitry Torokhov wrote:
-> On Thu, Aug 27, 2009 at 09:19:46PM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Add sysfs attribute kernel/power/pm_async allowing the user space to
-> > disable and enable async suspend/resume of devices.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/base/power/main.c  |   13 +++++++------
-> >  drivers/base/power/power.h |    6 +++---
-> >  kernel/power/main.c        |   28 +++++++++++++++++++++++++++-
-> >  3 files changed, 37 insertions(+), 10 deletions(-)
-> > 
-> > Index: linux-2.6/kernel/power/main.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/power/main.c
-> > +++ linux-2.6/kernel/power/main.c
-> > @@ -44,6 +44,29 @@ int pm_notifier_call_chain(unsigned long
-> >  			== NOTIFY_BAD) ? -EINVAL : 0;
-> >  }
-> >  
-> > +/* If set, devices may be suspended and resumed asynchronously. */
-> > +int pm_async_enabled = 1;
-> > +
-> > +static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
-> > +			     char *buf)
-> > +{
-> > +	return sprintf(buf, "%d\n", pm_async_enabled);
-> > +}
-> > +
-> > +static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
-> > +			      const char *buf, size_t n)
-> > +{
-> > +	int val;
-> > +
-> > +	if (sscanf(buf, "%d", &val) == 1) {
-> 
-> I prefer more vigorous restrictions on the sysfs interfaces. Maybe:
-> 
-> 	if (strict_strtoul(buf, 10, &val) || val > 1)
-> 		return -EINVAL;
-> 
-> 	pm_async_enabled = val;
-> 
-> ?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig353EA08A2E3493907A255907
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-OK
+Thomas Gleixner wrote:
+> On Thu, 27 Aug 2009, Christoph Lameter wrote:
+>> On Thu, 27 Aug 2009, Chris Friesen wrote:
+>>
+>>> I just went and read the docs.  One of the things I noticed is that i=
+t
+>>> says that the offlined cpu cannot run userspace tasks.  For our
+>>> situation that's a showstopper, unfortunately.
+>> It needs to be implemented the right way. Essentially this is a variat=
+ion
+>> on the isolcpu kernel boot option. We probably need some syscall to mo=
+ve
+>> a user space process to a bare metal cpu since the cpu cannot be
+>> considered online in the regular sense.
+>=20
+> It can. It needs to be flagged as reserved for special tasks and you
+> need a separate mechanism to move and pin a task to such a CPU.
+>=20
+>> An isolated cpu can then only execute one process at a time. A process=
 
-Updated patch below.
+>> would do all initialization and lock itsresources in memory before goi=
+ng
+>> to the isolated processor. Any attempt to use OS facilities need to ca=
+use
+>> the process to be moved back to a cpu with OS services.
+>=20
+> You are creating a "one special case" operation mode which is not
+> justified in my opinion. Let's look at the problem you want to solve:
+>=20
+>   Run exactly one thread on a dedicated CPU w/o any disturbance by the
+>   scheduler tick.
+>=20
+> You can move away anything else than the scheduler tick from a CPU
+> today already w/o a single line of code change.
+>=20
+> But you want to impose restrictions like resource locking and moving
+> back to another CPU in case of a syscall. What's the purpose of this ?
+> It does not buy anything except additional complexity.
+>=20
+> That's just the wrong approach. All you need is a way to tell the
+> kernel that CPUx can switch off the scheduler tick when only one
+> thread is running and that very thread is running in user space. Once
+> another thread arrives on that CPU or the single thread enters the
+> kernel for a blocking syscall the scheduler tick has to be
+> restarted.
+>=20
+> It's not rocket science to fix the well known issues of stopping and
+> eventually restarting the scheduler tick, the CPU time accounting and
+> some other small details. Such a modification would be of general use
+> contrary to your proposed solution which is just a hack to solve your
+> particular special case of operation.
 
-Thanks,
-Rafael
+I wonder if it makes sense to do something along the lines of the
+sched-class...
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM: Add a switch for disabling/enabling asynchronous suspend/resume
+IOW: What if we adopted one of the following models:
 
-Add sysfs attribute kernel/power/pm_async allowing the user space to
-disable and enable async suspend/resume of devices.
+1) Create a new class that is higher prio than FIFO/RR and, when
+selected, disables the tick.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/main.c  |   13 +++++++------
- drivers/base/power/power.h |    6 +++---
- kernel/power/main.c        |   31 ++++++++++++++++++++++++++++++-
- 3 files changed, 40 insertions(+), 10 deletions(-)
+2) Modify FIFO so that it disables tick by default...update accounting
+info at next reschedule event.
 
-Index: linux-2.6/kernel/power/main.c
-===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -44,6 +44,32 @@ int pm_notifier_call_chain(unsigned long
- 			== NOTIFY_BAD) ? -EINVAL : 0;
- }
- 
-+/* If set, devices may be suspended and resumed asynchronously. */
-+int pm_async_enabled = 1;
-+
-+static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			     char *buf)
-+{
-+	return sprintf(buf, "%d\n", pm_async_enabled);
-+}
-+
-+static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			      const char *buf, size_t n)
-+{
-+	unsigned long val;
-+
-+	if (strict_strtoul(buf, 10, &val))
-+		return -EINVAL;
-+
-+	if (val > 1)
-+		return -EINVAL;
-+
-+	pm_async_enabled = val;
-+	return n;
-+}
-+
-+power_attr(pm_async);
-+
- #ifdef CONFIG_PM_DEBUG
- int pm_test_level = TEST_NONE;
- 
-@@ -208,9 +234,12 @@ static struct attribute * g[] = {
- #ifdef CONFIG_PM_TRACE
- 	&pm_trace_attr.attr,
- #endif
--#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
-+#ifdef CONFIG_PM_SLEEP
-+	&pm_async_attr.attr,
-+#ifdef CONFIG_PM_DEBUG
- 	&pm_test_attr.attr,
- #endif
-+#endif
- 	NULL,
- };
- 
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -235,7 +235,7 @@ static int device_pm_wait_fn(struct devi
-  */
- static void device_pm_wait_for_masters(struct device *slave)
- {
--	if (!pm_trace_enabled)
-+	if (pm_async_enabled && !pm_trace_enabled)
- 		device_for_each_master(slave, slave, device_pm_wait_fn);
- }
- 
-@@ -245,7 +245,8 @@ static void device_pm_wait_for_masters(s
-  */
- static void device_pm_wait_for_slaves(struct device *master)
- {
--	device_for_each_slave(master, master, device_pm_wait_fn);
-+	if (pm_async_enabled)
-+		device_for_each_slave(master, master, device_pm_wait_fn);
- }
- 
- /**
-@@ -560,7 +561,7 @@ static int device_resume_noirq(struct de
- 	if (pm_op_started(dev))
- 		return 0;
- 
--	if (dev->power.async_suspend && !pm_trace_enabled) {
-+	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
- 		async_schedule(async_resume_noirq, dev);
- 		return 0;
- 	}
-@@ -719,7 +720,7 @@ static int device_resume(struct device *
- 	if (pm_op_started(dev))
- 		return 0;
- 
--	if (dev->power.async_suspend && !pm_trace_enabled) {
-+	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
- 		get_device(dev);
- 		async_schedule(async_resume, dev);
- 		return 0;
-@@ -965,7 +966,7 @@ static int device_suspend_noirq(struct d
- 	if (pm_op_started(dev))
- 		return 0;
- 
--	if (dev->power.async_suspend) {
-+	if (pm_async_enabled && dev->power.async_suspend) {
- 		async_schedule(async_suspend_noirq, dev);
- 		return 0;
- 	}
-@@ -1139,7 +1140,7 @@ static int device_suspend(struct device 
- 	if (pm_op_started(dev))
- 		return 0;
- 
--	if (dev->power.async_suspend) {
-+	if (pm_async_enabled && dev->power.async_suspend) {
- 		get_device(dev);
- 		async_schedule(async_suspend, dev);
- 		return 0;
-Index: linux-2.6/drivers/base/power/power.h
-===================================================================
---- linux-2.6.orig/drivers/base/power/power.h
-+++ linux-2.6/drivers/base/power/power.h
-@@ -16,10 +16,10 @@ static inline void pm_runtime_remove(str
- 
- #ifdef CONFIG_PM_SLEEP
- 
--/*
-- * main.c
-- */
-+/* kernel/power/main.c */
-+extern int pm_async_enabled;
- 
-+/* drivers/base/power/main.c */
- extern struct list_head dpm_list;	/* The active device list */
- 
- static inline struct device *to_device(struct list_head *entry)
+3) Variation of 2..leave FIFO+tick as is by default, but have some kind
+of parameter to optionally disable tick if desired.
+
+In a way, we should probably consider (2) independent of this particular
+thread.  FIFO doesn't need a tick anyway afaict...only a RESCHED+IPI
+truly ever matter here....or am I missing something obvious (probably
+w.r.t accounting)?
+
+You could then couple this solution with cpusets (possibly with a little
+work to get rid of any pesky per-cpy kthreads) to achieve the desired
+effect of interference-free operation.  You wouldn't even have to have
+funky rules eluded to above w.r.t. making sure only one userspace thread
+is running on the core.
+
+Thoughts?
+-Greg
+
+
+--------------enig353EA08A2E3493907A255907
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqXBx8ACgkQP5K2CMvXmqFh+ACfdHEqhvEAmSZ4uoeiMJ5QNr/s
+42wAn2LMe5KV54wp8HvXszgdrzH6NezA
+=j22u
+-----END PGP SIGNATURE-----
+
+--------------enig353EA08A2E3493907A255907--
