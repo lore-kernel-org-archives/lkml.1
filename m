@@ -1,72 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbZH0Mrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZH0Mt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555AbZH0Mrg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 08:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZH0Mrg
+	id S1752559AbZH0Mt0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 08:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZH0Mt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 08:47:36 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:2996 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751986AbZH0Mrf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 08:47:35 -0400
-X-SpamScore: -5
-X-BigFish: VPS-5(z1857r34a4j8deiz1432R98dN4015La594izz1202hzzz32i203h6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KP1CUX-02-8GA-02
-X-M-MSG: 
-Date: Thu, 27 Aug 2009 14:47:12 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH 8/15] sched: Add parameter sched_mn_power_savings to
-	control MN domain sched policy
-Message-ID: <20090827124712.GC13576@alberich.amd.com>
-References: <20090820131243.GO29327@alberich.amd.com> <20090820133914.GW29327@alberich.amd.com> <20090826093043.GA22064@in.ibm.com>
+	Thu, 27 Aug 2009 08:49:26 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:56170 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752100AbZH0MtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 08:49:25 -0400
+Date: Thu, 27 Aug 2009 14:49:27 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, jeff@garzik.org, dhowells@redhat.com
+Subject: Re: [PATCH 0/3] Convert libata pio task to slow-work
+Message-ID: <20090827124927.GJ12579@kernel.dk>
+References: <1251364122-9592-1-git-send-email-jens.axboe@oracle.com> <4A967DD7.20603@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090826093043.GA22064@in.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 27 Aug 2009 12:47:12.0934 (UTC) FILETIME=[7FBC0C60:01CA2714]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4A967DD7.20603@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 03:00:43PM +0530, Gautham R Shenoy wrote:
-> Hi Andreas,
+On Thu, Aug 27 2009, Tejun Heo wrote:
+> Hello, Jens.
 > 
-> On Thu, Aug 20, 2009 at 03:39:14PM +0200, Andreas Herrmann wrote:
-> > @@ -9208,6 +9229,11 @@ int __init sched_create_sysfs_power_savings_entries(struct sysdev_class *cls)
-> >  		err = sysfs_create_file(&cls->kset.kobj,
-> >  					&attr_sched_mc_power_savings.attr);
-> >  #endif
-> > +#ifdef CONFIG_SCHED_MN
-> > +	if (!err && mc_capable())
-> > +		err = sysfs_create_file(&cls->kset.kobj,
-> > +					&attr_sched_mn_power_savings.attr);
-> > +#endif
+> Jens Axboe wrote:
+> > Hi,
+> > 
+> > This patchset adds support for slow-work for delayed slow work and
+> > for cancelling slow work. Note that these patches are totally
+> > untested!
 > 
-> This would create the sysfs tunable even on systems which are
-> mc_capable() but don't have multi-nodes on a package, no ?
+> As what I'm currently working on is likely to collide with these
+> changes, here is a short summary of what's been going on.
+> 
+> /* excerpted from internal weekly work report and edited */
+> 
+> The principle is the same as I described before.  It hooks into the
+> scheduler using an alias scheduler class of sched_fair and gets
+> notifications of workqueue threads going into sleep, waking up and
+> getting preempted from which worker pool is managed automatically for
+> full concurrency with the least number of concurrent threads.
+> 
+> There's a global workqueue per-cpu and each actual workqueue is front
+> to the global one adding necessary attributes and/or defining a
+> flushing domain.  Each global workqueue can have multiple workers
+> (upto 128 in the current incarnation) and creates and kicks new ones
+> as necessary to keep the cpu occupied.
+> 
+> The diffcult part was teaching workqueue how to handle multiple
+> workers yet maintaining its exclusion properties, flushing rules and
+> forward progress guarantees - a single work can't be running
+> concurrently on the same cpu but can across different cpus,
+> flush_work() deals with single cpu flushing but others deal with all
+> the cpus and so on.  Because each work struct can't be accessed once
+> the work actually begins running, keeping track of things become
+> somewhat difficult as multiple workers now process works from a single
+> queue.  Anyways, after much head scratching, I think most problems
+> have been nailed down although I wouldn't know for sure till I get it
+> actually working.
+> 
+> There's slight more book keeping to do on each work-processing
+> iteration but overall I think it will be a win considering that it can
+> remove unnecessary task switchings, usage of different stacks (cache
+> foot-print) and cross-cpu work bouncing (for currently single threaded
+> workqueues).  If it really works as expected, it should be able to
+> replace async, [very]_slow_work and remove most of private workqueues
+> while losing no concurrency or forward-progress guarantees, which
+> would be pretty decent.
+> 
+> /**/
+> 
+> I finished first draft implementation and review pass yesterday and it
+> seems like there shouldn't be any major problem now but I haven't even
+> tried to compile it yet, so I'm not yet entirely sure how it would
+> eventually turn out and if I hit some major roadblock I might just
+> drop it.
+> 
+> It would be nice if merging of this series and the lazy work can be
+> held a bit but there's no harm in merging either.  If the concurrency
+> managed workqueue turns out to be a good idea, we can replace it then.
 
-Yes, that is a bug. I should have introduced mn_capable() to
-create this file only if really required.
+It can wait, what you describe above sounds really cool and would
+hopefully allow us to get rid of all workqueues (provided it scales well
+and doesn't fall down on cache line contention with many different
+instances pounding on it).
 
-
-Thanks,
-Andreas
+Care to post it? I know you don't think it's perfect yet, but it would
+make a lot more sense to throw effort into this rather than waste time
+on partial solutions.
 
 -- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+Jens Axboe
 
