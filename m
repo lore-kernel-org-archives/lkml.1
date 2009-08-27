@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751812AbZH0O4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZH0O4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751812AbZH0O4F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 10:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZH0O4E
+	id S1751964AbZH0O4V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 10:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbZH0O4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 10:56:04 -0400
-Received: from h5.dl5rb.org.uk ([81.2.74.5]:33072 "EHLO h5.dl5rb.org.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbZH0O4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 10:56:04 -0400
-Date: Thu, 27 Aug 2009 15:55:50 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Daney <ddaney@caviumnetworks.com>, mpm@selenic.com,
-       linux-mips@linux-mips.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] MIPS: Octeon:  Add hardware RNG platform device.
-Message-ID: <20090827145550.GF29984@linux-mips.org>
-References: <4A8DBB17.5020301@caviumnetworks.com> <1250802623-6526-1-git-send-email-ddaney@caviumnetworks.com> <20090824074730.GA32067@gondor.apana.org.au>
+	Thu, 27 Aug 2009 10:56:20 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58722 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbZH0O4T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 10:56:19 -0400
+Date: Thu, 27 Aug 2009 10:56:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+In-Reply-To: <20090827143902.GA3552@Krystal>
+Message-ID: <alpine.DEB.2.00.0908271052370.27674@gandalf.stny.rr.com>
+References: <1251270092.7538.1226.camel@twins> <4A94DFF4.5030301@cn.fujitsu.com> <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com> <20090826164624.GA21456@Krystal> <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com> <20090826180114.GA29130@Krystal>
+ <20090826181758.GA30248@Krystal> <alpine.DEB.2.00.0908261544590.11291@gandalf.stny.rr.com> <4A95E737.5080805@cn.fujitsu.com> <alpine.DEB.2.00.0908262209460.18923@gandalf.stny.rr.com> <20090827143902.GA3552@Krystal>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090824074730.GA32067@gondor.apana.org.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 24, 2009 at 05:47:30PM +1000, Herbert Xu wrote:
 
-> > Signed-off-by: David Daney <ddaney@caviumnetworks.com>
-> 
-> Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
+On Thu, 27 Aug 2009, Mathieu Desnoyers wrote:
 
-Thanks folks; queued for 2.6.32.
+> Looks good. Just don't forget to eventually add the "synchronize" calls
+> between tracepoint unregistration and the removal of their module. There
+> is a race condition in the way you do it currently.
 
-  Ralf
+I'm trying to figure out the race here. What will disappear in the 
+tracepoint? Could you give a brief example of the issue.
+
+Thanks,
+
+-- Steve
+
+
