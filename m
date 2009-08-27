@@ -1,186 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZH0WEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZH0WH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbZH0WEh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 18:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbZH0WEg
+	id S1753355AbZH0WH6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 18:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZH0WH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 18:04:36 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:50658 "EHLO e7.ny.us.ibm.com"
+	Thu, 27 Aug 2009 18:07:57 -0400
+Received: from www.tglx.de ([62.245.132.106]:41945 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753290AbZH0WEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 18:04:36 -0400
-Subject: Re: [PATCH tip/core/rcu] Changes from reviews: avoid casts,
- fix/add warnings, improve comments.
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
-In-Reply-To: <20090827220012.GA30525@linux.vnet.ibm.com>
-References: <20090827220012.GA30525@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 15:05:00 -0700
-Message-Id: <1251410700.2705.5.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	id S1753301AbZH0WH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 18:07:56 -0400
+Date: Fri, 28 Aug 2009 00:05:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: raz ben yehuda <raziebe@gmail.com>
+cc: Chris Friesen <cfriesen@nortel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       riel@redhat.com, wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+In-Reply-To: <1251408785.3700.22.camel@raz>
+Message-ID: <alpine.LFD.2.00.0908272348370.2888@localhost.localdomain>
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org> 
+ <1251302598.18584.31.camel@twins>  <alpine.DEB.1.10.0908261211340.9933@gentwo.org>  <20090826180407.GA13632@elte.hu>  <alpine.DEB.1.10.0908261509580.9933@gentwo.org>  <20090826193252.GA14721@elte.hu>  <alpine.DEB.1.10.0908261627110.5554@gentwo.org> 
+ <20090826135041.e6169d18.akpm@linux-foundation.org>  <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz>  <4A96B997.1070001@nortel.com> <1251408785.3700.22.camel@raz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-27 at 15:00 -0700, Paul E. McKenney wrote:
-> Changes suggested by review comments from Josh Triplett and Mathieu
-> Desnoyers.
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+On Fri, 28 Aug 2009, raz ben yehuda wrote:
+> On Thu, 2009-08-27 at 10:51 -0600, Chris Friesen wrote:
+> > On 08/26/2009 03:37 PM, raz ben yehuda wrote:
+> > > 
+> > > On Wed, 2009-08-26 at 15:15 -0600, Chris Friesen wrote:
+> > 
+> > >> We gave it as close to a whole cpu as we could using cpu and irq
+> > >> affinity and we used message queues in shared memory to allow another
+> > >> cpu to handle I/O.  In our case we still had kernel threads running on
+> > >> the app cpu, but if we'd had a straightforward way to avoid them we
+> > >> would have used it.
+> > 
+> > > Chris. I offer myself to help anyone wishes to apply OFFSCHED.
+> > 
+> > I just went and read the docs.  One of the things I noticed is that it
+> > says that the offlined cpu cannot run userspace tasks.  For our
+> > situation that's a showstopper, unfortunately.
+>
+> Given that your entire software is T size , and T' is the amount of real
+> time size, what is the relation T'/T ?
+> If T'/T << 1 then dissect it, and put the T' in OFFSCHED. 
+> My software T's is about 100MB while the real time section is about 60K.
 
-Signed-off-by: Josh Triplett <josh@joshtriplett.org>
+Chris was stating that your offlined cpu cannot run userspace
+tasks. How is your answer connected to Chris' statement ? Please stop
+useless marketing. LKML is about technical problems not advertisement.
 
-> ---
-> 
->  include/linux/sched.h   |    4 +++-
->  kernel/rcutree.c        |   13 ++++++-------
->  kernel/rcutree.h        |    2 ++
->  kernel/rcutree_plugin.h |   10 ++++++----
->  4 files changed, 17 insertions(+), 12 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 3fe0315..855fd0d 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1163,6 +1163,8 @@ struct sched_rt_entity {
->  #endif
->  };
-> 
-> +struct rcu_node;
-> +
->  struct task_struct {
->  	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
->  	void *stack;
-> @@ -1208,7 +1210,7 @@ struct task_struct {
->  #ifdef CONFIG_TREE_PREEMPT_RCU
->  	int rcu_read_lock_nesting;
->  	char rcu_read_unlock_special;
-> -	void *rcu_blocked_node;
-> +	struct rcu_node *rcu_blocked_node;
->  	struct list_head rcu_node_entry;
->  #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
-> 
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index d903e2f..71bc797 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -229,7 +229,6 @@ static int rcu_implicit_offline_qs(struct rcu_data *rdp)
->  #endif /* #ifdef CONFIG_SMP */
-> 
->  #ifdef CONFIG_NO_HZ
-> -static DEFINE_RATELIMIT_STATE(rcu_rs, 10 * HZ, 5);
-> 
->  /**
->   * rcu_enter_nohz - inform RCU that current CPU is entering nohz
-> @@ -249,7 +248,7 @@ void rcu_enter_nohz(void)
->  	rdtp = &__get_cpu_var(rcu_dynticks);
->  	rdtp->dynticks++;
->  	rdtp->dynticks_nesting--;
-> -	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
-> +	WARN_ON_ONCE(rdtp->dynticks & 0x1);
->  	local_irq_restore(flags);
->  }
-> 
-> @@ -268,7 +267,7 @@ void rcu_exit_nohz(void)
->  	rdtp = &__get_cpu_var(rcu_dynticks);
->  	rdtp->dynticks++;
->  	rdtp->dynticks_nesting++;
-> -	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
-> +	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
->  	local_irq_restore(flags);
->  	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
->  }
-> @@ -287,7 +286,7 @@ void rcu_nmi_enter(void)
->  	if (rdtp->dynticks & 0x1)
->  		return;
->  	rdtp->dynticks_nmi++;
-> -	WARN_ON_RATELIMIT(!(rdtp->dynticks_nmi & 0x1), &rcu_rs);
-> +	WARN_ON_ONCE(!(rdtp->dynticks_nmi & 0x1));
->  	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
->  }
-> 
-> @@ -306,7 +305,7 @@ void rcu_nmi_exit(void)
->  		return;
->  	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
->  	rdtp->dynticks_nmi++;
-> -	WARN_ON_RATELIMIT(rdtp->dynticks_nmi & 0x1, &rcu_rs);
-> +	WARN_ON_ONCE(rdtp->dynticks_nmi & 0x1);
->  }
-> 
->  /**
-> @@ -322,7 +321,7 @@ void rcu_irq_enter(void)
->  	if (rdtp->dynticks_nesting++)
->  		return;
->  	rdtp->dynticks++;
-> -	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
-> +	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
->  	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
->  }
-> 
-> @@ -341,7 +340,7 @@ void rcu_irq_exit(void)
->  		return;
->  	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
->  	rdtp->dynticks++;
-> -	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
-> +	WARN_ON_ONCE(rdtp->dynticks & 0x1);
-> 
->  	/* If the interrupt queued a callback, get out of dyntick mode. */
->  	if (__get_cpu_var(rcu_sched_data).nxtlist ||
-> diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-> index ca56036..bf8a6f9 100644
-> --- a/kernel/rcutree.h
-> +++ b/kernel/rcutree.h
-> @@ -81,6 +81,8 @@ struct rcu_dynticks {
->  struct rcu_node {
->  	spinlock_t lock;
->  	long	gpnum;		/* Current grace period for this node. */
-> +				/*  This will either be equal to or one */
-> +				/*  behind the root rcu_node's gpnum. */
->  	unsigned long qsmask;	/* CPUs or groups that need to switch in */
->  				/*  order for current grace period to proceed.*/
->  	unsigned long qsmaskinit;
-> diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-> index 04343be..4778936 100644
-> --- a/kernel/rcutree_plugin.h
-> +++ b/kernel/rcutree_plugin.h
-> @@ -92,7 +92,7 @@ static void rcu_preempt_qs(int cpu)
->  		rnp = rdp->mynode;
->  		spin_lock(&rnp->lock);
->  		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
-> -		t->rcu_blocked_node = (void *)rnp;
-> +		t->rcu_blocked_node = rnp;
-> 
->  		/*
->  		 * If this CPU has already checked in, then this task
-> @@ -176,9 +176,9 @@ static void rcu_read_unlock_special(struct task_struct *t)
->  		 * most one time.  So at most two passes through loop.
->  		 */
->  		for (;;) {
-> -			rnp = (struct rcu_node *)t->rcu_blocked_node;
-> +			rnp = t->rcu_blocked_node;
->  			spin_lock(&rnp->lock);
-> -			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
-> +			if (rnp == t->rcu_blocked_node)
->  				break;
->  			spin_unlock(&rnp->lock);
->  		}
-> @@ -288,8 +288,10 @@ static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
->  	struct rcu_node *rnp_root = rcu_get_root(rsp);
->  	struct task_struct *tp;
-> 
-> -	if (rnp == rnp_root)
-> +	if (rnp == rnp_root) {
-> +		WARN_ONCE(1, "Last CPU thought to be offlined?");
->  		return;  /* Shouldn't happen: at least one CPU online. */
-> +	}
-> 
->  	/*
->  	 * Move tasks up to root rcu_node.  Rely on the fact that the
+> They communicate through a simple ioctls.  
 
+This is totally irrelevant and we all know how communication channels
+between Linux and whatever hackery (RT-Linux, RTAI, ... OFFLINE)
+works.
+
+>               CPU isolation example: a transmission engine.
+> 
+> In the image bellow, I am presenting 4 streaming engines, over 4 Intels
+> 82598EB 10Gbps. A streaming engine is actually a Xeon E5420 2.5GHz.
+> Each engine has ***full control*** over its own interface. So you can:
+> 
+> 1. fully control the processor's usage.
+
+By disabling the OS control over the CPU resource. How innovative.
+
+> 2. know **exactly*** how much each single packet transmission costs. for
+> example, in this case in processor 3 a single packet average
+> transmission is 1974tscs, which is ~700ns.
+> 
+> 3. know how many packets fails to transmit right **on time** ( the Lates
+> counter) . and on time in this case means within the 122us jitter. 
+
+Are those statistics a crucial property of your OFFLINE thing ?
+ 
+> 4. There are 8 cores in this machine. The rest 4 OS cores are ~95% idle.
+> The only resource these cores share is the bus. 
+
+That does not change the problem that you cannot run ordinary user
+space tasks on your offlined CPUs and you are simply hacking round the
+real problem which I outlined in my previous mail.
+
+Thanks,
+
+	tglx
