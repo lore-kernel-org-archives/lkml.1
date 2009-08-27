@@ -1,117 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZH0SWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbZH0SWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZH0SWJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 14:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbZH0SWH
+	id S1752841AbZH0SWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 14:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZH0SWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 14:22:07 -0400
-Received: from ru.mvista.com ([213.79.90.228]:17712 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751904AbZH0SWG (ORCPT
+	Thu, 27 Aug 2009 14:22:23 -0400
+Received: from mga09.intel.com ([134.134.136.24]:14815 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752641AbZH0SWW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 14:22:06 -0400
-Date: Thu, 27 Aug 2009 22:22:07 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Ben Dooks <ben-linux@fluff.org>, Jean Delvare <khali@linux-fr.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH] rtc: Set wakeup capability for I2C and SPI RTC drivers
-Message-ID: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
+	Thu, 27 Aug 2009 14:22:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,287,1249282800"; 
+   d="scan'208";a="545354049"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'Amerigo Wang'" <amwang@redhat.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+CC: "Luck, Tony" <tony.luck@intel.com>,
+       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
+       "'Neil Horman'" <nhorman@redhat.com>,
+       "'Eric W. Biederman'" <ebiederm@xmission.com>,
+       "'kamezawa.hiroyu@jp.fujitsu.com'" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "'Andi Kleen'" <andi@firstfloor.org>,
+       "'Michael Ellerman'" <michael@ellerman.id.au>,
+       "'M. Mohan Kumar'" <mohan@in.ibm.com>,
+       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
+       "'bernhard.walle@gmx.de'" <bernhard.walle@gmx.de>,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Anton Vorontsov'" <avorontsov@ru.mvista.com>
+Date: Thu, 27 Aug 2009 11:22:21 -0700
+Subject: RE: [Patch 6/8] powerpc: implement crashkernel=auto
+Thread-Topic: [Patch 6/8] powerpc: implement crashkernel=auto
+Thread-Index: AcomxNp0T6IBrtDlSNKirmeeQDLgoAAfkamQ
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B949E7CB@orsmsx505.amr.corp.intel.com>
+References: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
+ <20090827031909.4534.24859.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090827031909.4534.24859.sendpatchset@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RTC core won't allow wakeup alarms to be set if RTC devices' parent
-(i.e. i2c_client or spi_device) isn't wakeup capable.
+>--- linux-2.6.orig/arch/powerpc/include/asm/kexec.h
+>+++ linux-2.6/arch/powerpc/include/asm/kexec.h
+>@@ -39,6 +39,45 @@ typedef void (*crash_shutdown_t)(void);
+>
+> #ifdef CONFIG_KEXEC
+>
+>+#ifdef CONFIG_KEXEC_AUTO_RESERVE
+>+
+>+#ifndef KEXEC_AUTO_THRESHOLD
+>+#define KEXEC_AUTO_THRESHOLD (1ULL<<31) /* 2G */
+>+#endif
+>+
+>+#ifndef arch_default_crash_base
+>+static inline
+>+unsigned long long arch_default_crash_base(void)
+>+{
+>+	return KDUMP_KERNELBASE;
+>+}
+You don't want inline here either.
 
-For I2C devices there is I2C_CLIENT_WAKE flag exists that we can pass
-via board info, and if set, I2C core will initialize wakeup capability.
-For SPI devices there is no such flag at all.
+>+#define arch_default_crash_base arch_default_crash_base
+>+#endif
+>+
+>+#ifndef arch_default_crash_size
+>+static inline
+>+unsigned long long arch_default_crash_size(unsigned long long total_size)
+>+{
 
-I believe that it's not platform code responsibility to allow or
-disallow wakeups, instead, drivers themselves should set the capability
-if a device can trigger wakeups.
+Ditto.
 
-That's what drivers/base/power/sysfs.c says:
-
- * It is the responsibility of device drivers to enable (or disable)
- * wakeup signaling as part of changing device power states, respecting
- * the policy choices provided through the driver model.
-
-I2C and SPI RTC devices send wakeup events via interrupt lines, so we
-should set the wakeup capability if IRQ is routed.
-
-Ideally we should also check irq for wakeup capability before setting
-device's capability, i.e.
-
-	if (can_irq_wake(irq))
-		device_set_wakeup_capable(&client->dev, 1);
-
-But there is no can_irq_wake() call exist, and it is not that trivial
-to implement it for all interrupts controllers and complex/cascaded
-setups.
-
-drivers/base/power/sysfs.c also covers these cases:
-
- * Devices may not be able to generate wakeup events from all power
- * states.  Also, the events may be ignored in some configurations;
- * for example, they might need help from other devices that aren't
- * active
-
-So there is no guarantee that wakeup will actually work, and so I think
-there is no point in being pedantic wrt checking IRQ wakeup capability.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/rtc/rtc-ds1305.c |    2 ++
- drivers/rtc/rtc-ds1307.c |    2 ++
- drivers/rtc/rtc-ds1374.c |    2 ++
- 3 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/rtc/rtc-ds1305.c b/drivers/rtc/rtc-ds1305.c
-index 2736b11..e256c03 100644
---- a/drivers/rtc/rtc-ds1305.c
-+++ b/drivers/rtc/rtc-ds1305.c
-@@ -780,6 +780,8 @@ static int __devinit ds1305_probe(struct spi_device *spi)
- 					spi->irq, status);
- 			goto fail1;
- 		}
-+
-+		device_set_wakeup_capable(&spi->dev, 1);
- 	}
- 
- 	/* export NVRAM */
-diff --git a/drivers/rtc/rtc-ds1307.c b/drivers/rtc/rtc-ds1307.c
-index 47a93c0..87097d4 100644
---- a/drivers/rtc/rtc-ds1307.c
-+++ b/drivers/rtc/rtc-ds1307.c
-@@ -881,6 +881,8 @@ read_rtc:
- 				"unable to request IRQ!\n");
- 			goto exit_irq;
- 		}
-+
-+		device_set_wakeup_capable(&client->dev, 1);
- 		set_bit(HAS_ALARM, &ds1307->flags);
- 		dev_dbg(&client->dev, "got IRQ %d\n", client->irq);
- 	}
-diff --git a/drivers/rtc/rtc-ds1374.c b/drivers/rtc/rtc-ds1374.c
-index 713f7bf..5317bbc 100644
---- a/drivers/rtc/rtc-ds1374.c
-+++ b/drivers/rtc/rtc-ds1374.c
-@@ -383,6 +383,8 @@ static int ds1374_probe(struct i2c_client *client,
- 			dev_err(&client->dev, "unable to request IRQ\n");
- 			goto out_free;
- 		}
-+
-+		device_set_wakeup_capable(&client->dev, 1);
- 	}
- 
- 	ds1374->rtc = rtc_device_register(client->name, &client->dev,
--- 
-1.6.3.3
+>+	if (total_size < KEXEC_AUTO_THRESHOLD)
+>+		return 0;
+>+	if (total_size < (1ULL<<32))
+>+		return 1ULL<<27;
+>+	else {
+>+#ifdef CONFIG_64BIT
+>+		if (total_size > (1ULL<<37)) /* 128G */
+>+			return 1ULL<<32; /* 4G */
+>+		return 1ULL<<ilog2(roundup(total_size/32, 1ULL<<21));
+>+#else
+>+		return 1ULL<<28;
+>+#endif
+>+	}
+>+}
+>+#define arch_default_crash_size arch_default_crash_size
+>+#endif
+>+
+>+#endif
+>+#include <asm-generic/kexec.h>
+>+
+> /*
+>  * This function is responsible for capturing register states if coming
+>  * via panic or invoking dump using sysrq-trigger.
