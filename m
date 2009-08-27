@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbZH0VtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZH0VvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753294AbZH0VtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 17:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZH0VtP
+	id S1753299AbZH0VvJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 17:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZH0VvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 17:49:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43234 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752100AbZH0VtO (ORCPT
+	Thu, 27 Aug 2009 17:51:05 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37594 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753205AbZH0VvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 17:49:14 -0400
-Date: Thu, 27 Aug 2009 14:46:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "J.H." <warthog9@kernel.org>
-Cc: rdunlap@xenotime.net, hidave.darkstar@gmail.com, webmaster@kernel.org,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, stable@kernel.org
-Subject: Re: mm/-next release on kernel.org web page?
-Message-Id: <20090827144612.28e9e25f.akpm@linux-foundation.org>
-In-Reply-To: <4A96F355.30808@kernel.org>
-References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>
-	<20090802095523.e08166e3.rdunlap@xenotime.net>
-	<a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com>
-	<20090802193045.c3f3195c.rdunlap@xenotime.net>
-	<4A766F39.7090903@kernel.org>
-	<4A95D677.2020807@kernel.org>
-	<a8e1da0908270739sbab4821x6ec402a72587a337@mail.gmail.com>
-	<20090827124315.0d0f2129.rdunlap@xenotime.net>
-	<4A96F355.30808@kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Aug 2009 17:51:05 -0400
+Date: Thu, 27 Aug 2009 23:50:56 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Chris Adams <cmadams@hiwaay.net>
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] document flash/RAID dangers
+Message-ID: <20090827215056.GA1461@ucw.cz>
+References: <dddWc-83W-51@gated-at.bofh.it> <ddefx-5R-37@gated-at.bofh.it> <ddep7-bI-7@gated-at.bofh.it> <ddeyR-iy-11@gated-at.bofh.it> <ddeyR-iy-9@gated-at.bofh.it> <ddeIu-n9-9@gated-at.bofh.it> <ddeSb-th-29@gated-at.bofh.it> <ddoRI-11a-39@gated-at.bofh.it> <ddpkB-1jQ-1@gated-at.bofh.it> <20090826134045.GA1516467@hiwaay.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826134045.GA1516467@hiwaay.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009 13:57:57 -0700
-"J.H." <warthog9@kernel.org> wrote:
+Hi!
 
-> >> Is it possible to add latest mmotm link?
-> >> Just link to andrew's broken-out.tar.gz with the stamp name?
-> > 
-> > Ditto.  Please.
+> The other thing about this thread is that the only RAID implementation
+> that is being discussed here is the MD RAID stack.  There are a lot of
+> RAID implementations that have the same issues:
 > 
-> Problem with mmotm is that Andrew is hosting that out of his public_html 
-> directory, which I can only assume means that the tree isn't intended to 
-> be consumed by the masses, as official trees are supposed to live under 
-> /pub.  If this is not the case then we need to get it moved under 
-> /pub/scm & /pub as things on public_html aren't synced out to the 
-> front-end machines.  But I will have to defer to Andrew on what 
-> direction he wants to take mmotm.
+> - motherboard (aka "fake") RAID - In Linux this is typically mapped with
+>   device mapper via dmraid; AFAIK there is not a tool to scrub (or even
+>   monitor the status of and notify on failure) a Linux DM RAID setup.
 > 
+> - hardware RAID cards without battery backup - these have the exact same
+>   issues because they cannot guarantee all writes complete, nor can they
+>   keep track of incomplete writes across power failures
+> 
+> - hardware RAID cards _with_ battery backup but that don't periodically
+>   test the battery and have a way to notify you of battery failure while
+>   Linux is running
+> 
+> The issues being raised here are not specific to extX, MD RAID, or Linux
+> at all; they are problems with non-"enterprise-class" RAID setups.
+> There's a reason enterprise-class RAID costs a lot more money than the
+> card you can pick up at Fry's.
+> 
+> There's no reason to document the design issues of general RAID
+> implementations in the Linux kernel.
 
-Well, it'd be simple enough to stick it all in a different directory. 
-But I need to find a way to shove most of -mm into linux-next, after
-which it all becomes a bit moot.
+Even when we carry one of those misdesigned implementations in-tree?
+(Note that fixed implementations do exist -- AIX? -- just add journal).
 
+'I wont't tell you that this pony bites, because many ponies do bite'?
+
+WTF? I thought we had higher moral standard than this.
+
+							Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
