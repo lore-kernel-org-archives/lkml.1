@@ -1,100 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbZH0FE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbZH0FTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbZH0FE4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 01:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZH0FEz
+	id S1752741AbZH0FTM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 01:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbZH0FTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 01:04:55 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:47477 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751751AbZH0FEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 01:04:54 -0400
-Subject: Re: Extending virtio_console to support multiple ports
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Amit Shah <amit.shah@redhat.com>
-Cc: qemu-devel@nongnu.org, kvm@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, borntraeger@de.ibm.com,
-       linux-kernel@vger.kernel.org, miltonm@bga.com, linuxppc-dev@ozlabs.org,
-       brueckner@linux.vnet.ibm.com, alan@linux.intel.com,
-       Ryan Arnold <rsa@us.ibm.com>
-In-Reply-To: <20090826154552.GA31910@amit-x200.redhat.com>
-References: <1251181044-3696-1-git-send-email-amit.shah@redhat.com>
-	 <20090826112718.GA11117@amit-x200.redhat.com>
-	 <20090826154552.GA31910@amit-x200.redhat.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-zDgknRdlrvhso4zVsYgt"
-Date: Thu, 27 Aug 2009 15:04:45 +1000
-Message-Id: <1251349485.6267.6.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 27 Aug 2009 01:19:11 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:39994
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751480AbZH0FTK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 01:19:10 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
+Date: Thu, 27 Aug 2009 00:19:02 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
+Cc: Ric Wheeler <rwheeler@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <20090825225114.GE4300@elf.ucw.cz> <4A948C94.7040103@redhat.com> <20090826025849.GF32712@mit.edu>
+In-Reply-To: <20090826025849.GF32712@mit.edu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908270019.04231.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 25 August 2009 21:58:49 Theodore Tso wrote:
+> On Tue, Aug 25, 2009 at 09:15:00PM -0400, Ric Wheeler wrote:
+> > I agree with the whole write up outside of the above - degraded RAID
+> > does meet this requirement unless you have a second (or third, counting
+> > the split write) failure during the rebuild.
+>
+> The argument is that if the degraded RAID array is running in this
+> state for a long time, and the power fails while the software RAID is
+> in the middle of writing out a stripe, such that the stripe isn't
+> completely written out, we could lose all of the data in that stripe.
+>
+> In other words, a power failure in the middle of writing out a stripe
+> in a degraded RAID array counts as a second failure.
 
---=-zDgknRdlrvhso4zVsYgt
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Or panic, hang, the drive failed because the system is overheating because the 
+air conditioner suddenly died and the server room is now an oven.  (Yup, 
+worked at that company too.)
 
-On Wed, 2009-08-26 at 21:15 +0530, Amit Shah wrote:
-> [cc'ing some people who have made some commits in hvc_console.c]
->=20
-> On (Wed) Aug 26 2009 [16:57:18], Amit Shah wrote:
-> > On (Tue) Aug 25 2009 [11:47:20], Amit Shah wrote:
-> > >=20
-> > > Hello all,
-> > >=20
-> > > Here is a new iteration of the patch series that implements a
-> > > transport for guest and host communications.
-> > >=20
-> > > The code has been updated to reuse the virtio-console device instead
-> > > of creating a new virtio-serial device.
-> >=20
-> > And the problem now is that hvc calls the put_chars function with
-> > spinlocks held and we now allocate pages in send_buf(), called from
-> > put_chars.
-> >=20
-> > A few solutions:
->=20
-> [snip]
->=20
-> > - Convert hvc's usage of spinlocks to mutexes. I've no idea how this
-> >   will play out; I'm no expert here. But I did try doing this and so fa=
-r
-> >   it all looks OK. No lockups, lockdep warnings, nothing. I have full
-> >   debugging enabled. But this doesn't mean it's right.
->=20
-> So just to test this further I added the capability to have more than
-> one hvc console spawn from virtio_console, created two consoles and did
-> a 'cat' of a file in each of the virtio-consoles. It's been running for
-> half an hour now without any badness. No spew in debug logs too.
->=20
-> I also checked the code in hvc_console.c that takes the spin_locks.
-> Nothing there that runs from (or needs to run from) interrupt context.
-> So the change to mutexes does seem reasonable. Also, the spinlock code
-> was added really long back -- git blame shows Linus' first git commit
-> introduced them in the git history, so it's pure legacy baggage.
+> To me, this isn't a particularly interesting or newsworthy point,
+> since a competent system administrator
 
-I won't tell Ryan you called his code "pure legacy baggage" if you
-don't ;)
+I'm a bit concerned by the argument that we don't need to document serious 
+pitfalls because every Linux system has a sufficiently competent administrator 
+they already know stuff that didn't even come up until the second or third day 
+it was discussed on lkml.
 
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/old-2.6-bkcvs.git;a=3D=
-commitdiff;h=3Dd450b4ae023fb4be175389c18f4f87677da03020
+"You're documenting it wrong" != "you shouldn't document it".
 
+> who cares about his data and/or
+> his hardware will (a) have a UPS,
 
-cheers
+I worked at a company that retested their UPSes a year after installing them 
+and found that _none_ of them supplied more than 15 seconds charge, and when 
+they dismantled them the batteries had physically bloated inside their little 
+plastic cases.  (Same company as the dead air conditioner, possibly 
+overheating was involved but the little _lights_ said everything was ok.)
 
---=-zDgknRdlrvhso4zVsYgt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+That was by no means the first UPS I'd seen die, the suckers have a higher 
+failure rate than hard drives in my experience.  This is a device where the 
+batteries get constantly charged and almost never tested because if it _does_ 
+fail you just rebooted your production server, so a lot of smaller companies 
+think they have one but actually don't.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> , and (b) be running with a hot spare
+> and/or will imediately replace a failed drive in a RAID array.
 
-iEYEABECAAYFAkqWE+oACgkQdSjSd0sB4dJ77QCglGJ1hqEa1QKiDnJYj5Wd7qZ3
-BZgAoIKPSyPRRk69t+vlctG7SDLv/SSX
-=lH9C
------END PGP SIGNATURE-----
+Here's hoping they shut the system down properly to install the new drive in 
+the raid then, eh?  Not accidentally pull the plug before it's finished running 
+the ~7 minutes of shutdown scripts in the last Red Hat Enterprise I messed 
+with...
 
---=-zDgknRdlrvhso4zVsYgt--
+Does this situation apply during the rebuild?  I.E. once a hot spare has been 
+supplied, is the copy to the new drive linear, or will it write dirty pages to 
+the new drive out of order, even before the reconstruction's gotten that far, 
+_and_ do so in an order that doesn't open this race window of the data being 
+unable to be reconstructed?
 
+If "degraded array" just means "don't have a replacement disk yet", then it 
+sounds like what Pavel wants to document is "don't write to a degraded array 
+at all, because power failures can cost you data due to write granularity 
+being larger than filesystem block size".  (Which still comes as news to some 
+of us, and you need a way to remount mount the degraded array read only until 
+the sysadmin can fix it.)
+
+But if "degraded array" means "hasn't finished rebuilding the new disk yet", 
+that could easily be several hours' window and not writing to it is less of an 
+option.
+
+(I realize a competent system administrator would obviously already know this, 
+but I don't.)
+
+>        	    	       	       	 	      - Ted
+
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
