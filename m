@@ -1,38 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbZH0QKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752876AbZH0QKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbZH0QKD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 12:10:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbZH0QKC
+	id S1752876AbZH0QKO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 12:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZH0QKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 12:10:02 -0400
-Received: from mail-pz0-f178.google.com ([209.85.222.178]:54431 "EHLO
-	mail-pz0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752829AbZH0QKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 12:10:01 -0400
-X-Greylist: delayed 489 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Aug 2009 12:10:01 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Gp0/xmQ0xt3iDmT+J+Lzqwap1xSZPvh+EnVL6e/wJBORvNhstxjeGjtpVCHcbCCTqr
-         NUwC/lJcW/ig4N+tO8H363ytivWXYf50YU01d7ldK0ED6EaqsDfCuMYgpws9L7CLFbO8
-         0k3fnclfvx9RsNMgs09UGhslDL/mt7itUHnqI=
+	Thu, 27 Aug 2009 12:10:13 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:3518 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752858AbZH0QKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 12:10:10 -0400
+Date: Thu, 27 Aug 2009 19:06:34 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com
+Subject: [PATCHv5 0/3] vhost: a kernel-level virtio server
+Message-ID: <20090827160633.GA23722@redhat.com>
 MIME-Version: 1.0
-Date: Thu, 27 Aug 2009 09:01:55 -0700
-Message-ID: <fb0149a90908270901m26252f52rb1f1d0f5bb3d385f@mail.gmail.com>
-Subject: Is there a way to test the IPI in SMP mode
-From: lei yang <yanglei.fage@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Rusty, ok, I think I've addressed your comments so far here.
+Coming next:
+- TSO
+- tap support
+Thanks!
 
-I want to test the IPI, any ideal
+---
 
-Thanks
-Lei
+This implements vhost: a kernel-level backend for virtio,
+The main motivation for this work is to reduce virtualization
+overhead for virtio by removing system calls on data path,
+without guest changes. For virtio-net, this removes up to
+4 system calls per packet: vm exit for kick, reentry for kick,
+iothread wakeup for packet, interrupt injection for packet.
+
+This driver is as minimal as possible and does not implement almost any
+virtio optional features, but it's fully functional (including migration
+support interfaces), and already shows a latency improvement over
+userspace.
+
+Some more detailed description attached to the patch itself.
+
+The patches apply to both 2.6.31-rc5 and kvm.git.  I'd like them to go
+into linux-next if possible.  Please comment.
+
+Changelog from v4:
+- disable rx notification when have rx buffers
+- addressed all comments from Rusty's review
+- copy bugfixes from lguest commits:
+	ebf9a5a99c1a464afe0b4dfa64416fc8b273bc5c
+	e606490c440900e50ccf73a54f6fc6150ff40815
+
+Changelog from v3:
+- checkpatch fixes
+
+Changelog from v2:
+- Comments on RCU usage
+- Compat ioctl support
+- Make variable static
+- Copied more idiomatic english from Rusty
+
+Changes from v1:
+- Move use_mm/unuse_mm from fs/aio.c to mm instead of copying.
+- Reorder code to avoid need for forward declarations
+- Kill a couple of debugging printks
+
+Michael S. Tsirkin (3):
+  mm: export use_mm/unuse_mm to modules
+  mm: reduce atomic use on use_mm fast path
+  vhost_net: a kernel-level virtio server
+
+ MAINTAINERS                 |   10 +
+ arch/x86/kvm/Kconfig        |    1 +
+ drivers/Makefile            |    1 +
+ drivers/vhost/Kconfig       |   11 +
+ drivers/vhost/Makefile      |    2 +
+ drivers/vhost/net.c         |  475 +++++++++++++++++++++++++++++
+ drivers/vhost/vhost.c       |  688 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/vhost/vhost.h       |  122 ++++++++
+ fs/aio.c                    |   47 +---
+ include/linux/Kbuild        |    1 +
+ include/linux/miscdevice.h  |    1 +
+ include/linux/mmu_context.h |    9 +
+ include/linux/vhost.h       |  101 +++++++
+ mm/Makefile                 |    2 +-
+ mm/mmu_context.c            |   61 ++++
+ 15 files changed, 1485 insertions(+), 47 deletions(-)
+ create mode 100644 drivers/vhost/Kconfig
+ create mode 100644 drivers/vhost/Makefile
+ create mode 100644 drivers/vhost/net.c
+ create mode 100644 drivers/vhost/vhost.c
+ create mode 100644 drivers/vhost/vhost.h
+ create mode 100644 include/linux/mmu_context.h
+ create mode 100644 include/linux/vhost.h
+ create mode 100644 mm/mmu_context.c
