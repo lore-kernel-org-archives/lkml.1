@@ -1,56 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932145AbZH0Cqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753238AbZH0CtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932145AbZH0Cqp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 22:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932087AbZH0Cqp
+	id S1753238AbZH0CtB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 22:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbZH0CtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 22:46:45 -0400
-Received: from mail-yw0-f184.google.com ([209.85.211.184]:64919 "EHLO
-	mail-yw0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754858AbZH0Cqo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 22:46:44 -0400
-X-Greylist: delayed 383 seconds by postgrey-1.27 at vger.kernel.org; Wed, 26 Aug 2009 22:46:43 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=P9VWEmY2+kJuWUvKhwVJy2J7eTy3khaImfYMUrnpVuhCSEJq3ImOoeY/PI1PR3SONB
-         sfnlxztQGXpJh1HIvIPDiVYvX+Pf2oIP6yMTm0YqwYhG0rq6WFvLAtQe1KXkDjeIcJs+
-         bE+1HTMDp0bM4NkoQJdtBxIa8Q86wAF5f0FwI=
-Message-ID: <4A95F212.5060008@gmail.com>
-Date: Wed, 26 Aug 2009 20:40:18 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 26 Aug 2009 22:49:00 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50670 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1749667AbZH0Cs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 22:48:59 -0400
+Message-ID: <4A95F3BC.3080502@cn.fujitsu.com>
+Date: Thu, 27 Aug 2009 10:47:24 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Georgi Chulkov <g.chulkov@jacobs-university.de>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Mark Lord <liml@rtr.ca>
-Subject: Re: ATA device reset, shoud I be concerned?
-References: <200801140019.20668.g.chulkov@jacobs-university.de>	<20080115025435.1e21b703.akpm@linux-foundation.org>	<20080115113552.75731bf8@lxorguk.ukuu.org.uk>	<4794501E.90306@gmail.com>	<20080121130256.2443d7c1@lxorguk.ukuu.org.uk>	<47949AA4.9090601@gmail.com> <20080121141425.45aa9c61@lxorguk.ukuu.org.uk> <4794ACAF.70505@gmail.com> <4794AD3F.40309@gmail.com>
-In-Reply-To: <4794AD3F.40309@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       =?UTF-8?B?UHJ6ZW15c8WCYXcgUGF3ZcWCY3p5aw==?= 
+	<przemyslaw@pawelczyk.it>,
+       Roland McGrath <roland@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH 06/18] tracing: Ftrace dynamic ftrace_event_call support
+References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com> <1251340337-5640-7-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1251340337-5640-7-git-send-email-fweisbec@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/21/2008 08:33 AM, Tejun Heo wrote:
-> Tejun Heo wrote:
->> IMHO, losing media error information is much better than locking up a
->> machine hard.  We can start white listing known good controllers but I'm
->> skeptical how much benefit it will bring.
->
-> Just a data point, even ICHs lock up after PHY event if the wrong TF
-> register is accessed.  I just don't think tempting with TF regs after
-> timeout is worth the cost.
+> -int trace_define_field(struct ftrace_event_call *call, const char *type,
+> -		       const char *name, int offset, int size, int is_signed,
+> +int trace_define_field(struct ftrace_event_call *call, char *type,
+> +		       char *name, int offset, int size, int is_signed,
+>  		       int filter_type)
 
-Nvidia CK804 SATA controllers appear to also explode on reading TF 
-registers after media errors in certain cases. (They tend to either 
-lockup the machine or throw HyperTransport timeout machine check 
-exceptions). I suspect those error paths aren't well tested (except that 
-it even explodes in Windows with the default Microsoft IDE driver, when 
-reading a scratched DVD on a SATA drive, for example.)
+I don't see why you remove "const"? 
+
+>  {
+>  	struct ftrace_event_field *field;
+> @@ -92,9 +92,7 @@ int trace_define_common_fields(struct ftrace_event_call *call)
+>  }
+>  EXPORT_SYMBOL_GPL(trace_define_common_fields);
+
+...
+
+>  	for (i = 0; i < meta->nb_args; i++) {
+> -		ret = trace_define_field(call, meta->types[i],
+> -					 meta->args[i], offset,
+> +		ret = trace_define_field(call, (char *)meta->types[i],
+> +					 (char *)meta->args[i], offset,
+
+This is not good..
+
+>  					 sizeof(unsigned long), 0,
+>  					 FILTER_OTHER);
+>  		offset += sizeof(unsigned long);
+> @@ -277,13 +277,13 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
+>  		trace_current_buffer_unlock_commit(event, 0, 0);
+>  }
+
+...
+
+> -int reg_event_syscall_exit(void *ptr)
+> +int reg_event_syscall_exit(struct ftrace_event_call *call)
+>  {
+>  	int ret = 0;
+>  	int num;
+>  	char *name;
+>  
+> -	name = (char *)ptr;
+> +	name = (char *)call->data;
+
+nitpick: implicit cast is fine.
+
+>  	num = syscall_name_to_nr(name);
+>  	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
+>  		return -ENOSYS;
+> @@ -342,12 +342,12 @@ int reg_event_syscall_exit(void *ptr)
+>  	return ret;
+>  }
+>  
+> -void unreg_event_syscall_exit(void *ptr)
+> +void unreg_event_syscall_exit(struct ftrace_event_call *call)
+>  {
+>  	int num;
+>  	char *name;
+>  
+> -	name = (char *)ptr;
+> +	name = (char *)call->data;
+
+ditto
+
+>  	num = syscall_name_to_nr(name);
+>  	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
+>  		return;
