@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbZH0QwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbZH0QxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149AbZH0QwI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 12:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbZH0QwH
+	id S1753143AbZH0QxT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 12:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbZH0QxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 12:52:07 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:57762 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752968AbZH0QwG (ORCPT
+	Thu, 27 Aug 2009 12:53:18 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:18857 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041AbZH0QxS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 12:52:06 -0400
-Message-ID: <4A96B997.1070001@nortel.com>
-Date: Thu, 27 Aug 2009 10:51:35 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: raz ben yehuda <raziebe@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       riel@redhat.com, wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-References: <1251282598.3514.20.camel@raz>	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>	 <1251297910.1791.22.camel@maxim-laptop>	<1251298443.4791.7.camel@raz>	 <1251300625.18584.18.camel@twins>	 <alpine.DEB.1.10.0908261136590.9933@gentwo.org>	 <1251302598.18584.31.camel@twins>	 <alpine.DEB.1.10.0908261211340.9933@gentwo.org>	 <20090826180407.GA13632@elte.hu>	 <alpine.DEB.1.10.0908261509580.9933@gentwo.org>	 <20090826193252.GA14721@elte.hu>	 <alpine.DEB.1.10.0908261627110.5554@gentwo.org>	 <20090826135041.e6169d18.akpm@linux-foundation.org>	 <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz>
-In-Reply-To: <1251322663.3882.48.camel@raz>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 27 Aug 2009 12:53:18 -0400
+Date: Thu, 27 Aug 2009 09:55:16 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Celejar <celejar@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, 541835@bugs.debian.org
+Subject: Re: crypto configuration / dependencies broken
+Message-Id: <20090827095516.6817be1e.randy.dunlap@oracle.com>
+In-Reply-To: <20090825195852.1dfacb6c.celejar@gmail.com>
+References: <20090825195852.1dfacb6c.celejar@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Aug 2009 16:51:44.0056 (UTC) FILETIME=[A8679B80:01CA2736]
+X-Source-IP: abhmt006.oracle.com [141.146.116.15]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4A96B9F5.01C1:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/26/2009 03:37 PM, raz ben yehuda wrote:
+On Tue, 25 Aug 2009 19:58:52 -0400 Celejar wrote:
+
+> I'm having a pretty bizarre problem with my kernel crypto
+> configuration.  I need support for a bog standard LUKS (aes /
+> cbc-essiv:sha256) / cryptsetup installation, but even after I enable
+> virtually everything in the crypto section of the kernel configs, cbc
+> fails to load.  All the relevant modules are exist (dm-mod, dm-crypt,
+> crypto_blkcipher, crypto_algapi, crypto_hash, aes_generic,
+> sha256_generic), but even after modprobing / insmoding
+> everything, /proc/crypto shows that aes and sha is there, but not cbc.
 > 
-> On Wed, 2009-08-26 at 15:15 -0600, Chris Friesen wrote:
+> The problem has been reproduced (using my kernel config) by Jonas
+> Meurer, the Debian cryptsetup maintainer, so it's not just me ;).
+> We've tried numerous different kernel versions in the .30 / .31 range.
+> 
+> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=541835
+> 
+> Does this mean that something else somewhere in the kernel needs to be
+> configured but isn't, and the necessary dependency isn't properly
+> declared?
+> 
+> My config is at:
+> http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=45;filename=config-2.6.31-rc6-lizzie-00042-gb2add73;att=1;bug=541835
+> 
+> [I'm not subscribed to lkml; please cc me on responses]
 
->> We gave it as close to a whole cpu as we could using cpu and irq
->> affinity and we used message queues in shared memory to allow another
->> cpu to handle I/O.  In our case we still had kernel threads running on
->> the app cpu, but if we'd had a straightforward way to avoid them we
->> would have used it.
 
-> Chris. I offer myself to help anyone wishes to apply OFFSCHED.
+You could try/test a patch that was just posted:
+  http://lkml.org/lkml/2009/8/27/249
 
-I just went and read the docs.  One of the things I noticed is that it
-says that the offlined cpu cannot run userspace tasks.  For our
-situation that's a showstopper, unfortunately.
 
-Chris
-
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
