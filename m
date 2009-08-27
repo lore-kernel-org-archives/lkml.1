@@ -1,125 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZH0Ane@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbZH0BDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbZH0Ane (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 20:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbZH0And
+	id S1754466AbZH0BDX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 21:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbZH0BDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 20:43:33 -0400
-Received: from shards.monkeyblade.net ([198.137.202.13]:59358 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbZH0Anc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 20:43:32 -0400
-Message-ID: <4A95D677.2020807@kernel.org>
-Date: Wed, 26 Aug 2009 17:42:31 -0700
-From: "J.H." <warthog9@kernel.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 26 Aug 2009 21:03:22 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55318 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754157AbZH0BDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 21:03:21 -0400
+Message-ID: <4A95DAF9.9070400@cn.fujitsu.com>
+Date: Thu, 27 Aug 2009 09:01:45 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: Dave Young <hidave.darkstar@gmail.com>, webmaster@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, stable@kernel.org
-Subject: Re: mm/-next release on kernel.org web page?
-References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>	<20090802095523.e08166e3.rdunlap@xenotime.net>	<a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com> <20090802193045.c3f3195c.rdunlap@xenotime.net> <4A766F39.7090903@kernel.org>
-In-Reply-To: <4A766F39.7090903@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+References: <20090825103907.GB28287@elte.hu> <1251197235.7538.1142.camel@twins> <1251211963.7538.1164.camel@twins> <4A94D3A8.1090902@cn.fujitsu.com> <1251269207.7538.1217.camel@twins> <1251270092.7538.1226.camel@twins> <4A94DFF4.5030301@cn.fujitsu.com> <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com> <20090826164624.GA21456@Krystal> <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com> <20090826180114.GA29130@Krystal>
+In-Reply-To: <20090826180114.GA29130@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.1 (shards.monkeyblade.net [198.137.202.13]); Wed, 26 Aug 2009 17:42:33 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.H. wrote:
-> Randy Dunlap wrote:
->> On Mon, 3 Aug 2009 10:08:40 +0800 Dave Young wrote:
+Mathieu Desnoyers wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+>> This patch solves the problem that Li originally reported. If something 
+>> registers a trace point belonging to a module, then it ups the ref count 
+>> of the module. This prevents a process from registering a probe to a 
+>> tracepoint belonging to a module and then having the module disappear.
 >>
->>> On Mon, Aug 3, 2009 at 12:55 AM, Randy Dunlap<rdunlap@xenotime.net> 
->>> wrote:
->>>> On Sun, 2 Aug 2009 15:56:20 +0800 Dave Young wrote:
->>>>
->>>>> Hi,
->>>>>
->>>>> The last mm patchset is 2.6.28-rc2-mm1. We can not download -mm
->>>>> patchset from kernel.org web page since the -next tree born.
->>>>>
->>>>> Could you consider put mmtom release there just like before? And even
->>>>> -next tree patchset? It will be more convenient for users who test
->>>>> kernel just by downloading from web. Now it's impossible for them to
->>>>> test these patchsets because they normally do not subscribe to lkml.
->>>>
->>>> from www.kernel.org:
->>>> For comments about the web pages, please send mail to 
->>>> webmaster@kernel.org.
->>>>
->>>> also from www.kernel.org:
->>>> Please don't use finger.kernel.org for any sort of automatic 
->>>> monitoring. The number of automatic bots hitting this port is 
->>>> causing the finger daemon to shut down more often than not. The same 
->>>> information is available from 
->>>> http://www.kernel.org/kdist/finger_banner.
->>>>
->>>> and of course the finger_banner file is not up to date.
->>>>
->>>> You may consider using my 
->>>> http://www.xenotime.net/linux/scripts/kcurrent script.
->>>> Its output (today) is:
->>>>
->>>> The latest stable version of the Linux kernel is:           2.6.30.4
->>>> The latest prepatch for the stable Linux kernel tree is:    2.6.31-rc5
->>>> The latest 2.4 version of the Linux kernel is:              2.4.37.4
->>>> The latest 2.2 version of the Linux kernel is:              2.2.26
->>>> The latest prepatch for the 2.2 Linux kernel tree is:       2.2.27-rc2
->>>> The latest -mm patch to the stable Linux kernels is:        
->>>> 2.6.28-rc2-mm1
->>>> mmotm-2009-0730-0501 ... applies to: 2.6.31-rc4
->>>> next-20090731 ... applies to: v2.6.31-rc4
->>> Thanks randy. Very helpful. But I still have same question. Normal
->>> users need a more convenient and straightforward  way to get what they
->>> want.  It will be better that we put them on www.kernel.org main page,
->>> not only the version info but also the download link.
->>>
->>> At least for me when I started my kernel hacking some years ago I
->>> always download kernel from www.kernel.org main page. I'm not sure
->>> whether others people do same thing. Current -next and mmtom are more
->>> like for us to do internal testing.
+>> Doing the example with perf in Li's original post, now errors on the 
+>> rmmod, with "ERROR: Module trace_events_sample is in use".
 >>
->> Oh, I agree with you, but webmaster@kernel.org seems to be ignoring these
->> emails (this is the third such one in the last 3-4 months).
+>> Mathieu, can I have your acked-by on this?
+>>
 > 
-> In fact we have been responding to these inquiries both to the public 
-> ones we have gotten (what we get added to on LKML), and to the private 
-> inquires, the latest one from LKML being a bit more than a week ago:
-> 
-> http://lkml.org/lkml/2009/7/24/334
-> 
-> We have been well aware of the problem for quite some time, the code 
-> base has rotted horribly, and the way kernel trees are placed in the 
-> hierarchy has changed from any reasonable assumption that was made many 
-> years ago when the code was first put together.  We (meaning me) are, 
-> literally, in the middle of revamping this code, however it's basically 
-> a complete re-write of the code base at this point.
-> 
-> And in the last few weeks we've been dealing with quite a lot on top of 
-> trying to make forward progress on this code base, like the Bind DNS 
-> vulnerabilities, OSCon, Linux Symposium and the plethora of other things 
-> that need doing.  Really, we aren't ignoring the problem, there's just 
-> one of me and a lot to do and I'm plugging away at it all.  Please be 
-> patient, I'm trying to get it done and up and running.  Until then 
-> *PLEASE* bear with us while we get through everything.
-> 
-> - John 'Warthog9' Hawley
+> Sorry, it looks buggy.
 > 
 
+And the patch itself is buggy.
 
-Not to reply to myself, but I've pushed out an update that should 
-incorporate the expected trees now, this does eliminate the 2.2 and all 
-but the last 2.4 tree (2.4.37.5), but does include all of the stable 
-2.6.x trees, the snapshots and linux-next.  Frontpage, finger and rss 
-should all be showing the new information universally.  I'll probably 
-tweak things a bit more (layout and such for the rss & html) but the 
-kernels should now be listed as people expect.
+> It does not deal with the fact that tracepoints with the same name and
+> arguments can be present in more than one module, or in a combination of
+> kernel core and modules.
+> 
+> The struct tracepoint_entry is specific to a a tracepoint name, used for
+> registration, but is eventually tied to all tracepoint instrumentation
+> instances for this tracepoint name.
+> 
+> Mathieu
+> 
 
-- John 'Warthog9' Hawley
-Chief Kernel.org Administrator
+...
+
+>> -tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
+>> +tracepoint_update_probe_range(struct module *mod,
+>> +			      struct tracepoint *begin, struct tracepoint *end)
+>>  {
+>>  	struct tracepoint *iter;
+>>  	struct tracepoint_entry *mark_entry;
+>> @@ -286,9 +291,15 @@ tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
+>>  	for (iter = begin; iter < end; iter++) {
+>>  		mark_entry = get_tracepoint(iter->name);
+>>  		if (mark_entry) {
+>> +			if (mod && !mark_entry->mod) {
+>> +				if (!try_module_get(mod))
+>> +					goto disable;
+
+You can hit this code-path even when you unregister a probe,
+so the right way is:
+	module_get() when iter->state changed from 0 from 1
+	module_put() when iter->state changed from 1 to 0
+
+But still has some other problems. You don't fail the registration,
+profile_enable() will return success even when the module is
+being destructed.
+
+>> +				mark_entry->mod = mod;
+>> +			}
+>>  			set_tracepoint(&mark_entry, iter,
+>>  					!!mark_entry->refcount);
+>>  		} else {
+>> + disable:
+>>  			disable_tracepoint(iter);
+>>  		}
+>>  	}
