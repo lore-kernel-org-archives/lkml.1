@@ -1,81 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZH0Gxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751375AbZH0GzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751353AbZH0Gxb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 02:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZH0Gxa
+	id S1751375AbZH0GzI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 02:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZH0GzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 02:53:30 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:15583 "EHLO mx1.redhat.com"
+	Thu, 27 Aug 2009 02:55:07 -0400
+Received: from mail.lang.hm ([64.81.33.126]:45200 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750913AbZH0Gx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 02:53:29 -0400
-Date: Thu, 27 Aug 2009 12:22:51 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: qemu-devel@nongnu.org, kvm@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, borntraeger@de.ibm.com,
-       linux-kernel@vger.kernel.org, miltonm@bga.com, linuxppc-dev@ozlabs.org,
-       brueckner@linux.vnet.ibm.com, alan@linux.intel.com,
-       Ryan Arnold <rsa@us.ibm.com>
-Subject: Re: Extending virtio_console to support multiple ports
-Message-ID: <20090827065251.GB3218@amit-x200.redhat.com>
-References: <1251181044-3696-1-git-send-email-amit.shah@redhat.com> <20090826112718.GA11117@amit-x200.redhat.com> <20090826154552.GA31910@amit-x200.redhat.com> <1251349485.6267.6.camel@concordia>
+	id S1751267AbZH0GzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 02:55:06 -0400
+Date: Wed, 26 Aug 2009 23:54:30 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Rob Landley <rob@landley.net>
+cc: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
+       Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+In-Reply-To: <200908270106.15032.rob@landley.net>
+Message-ID: <alpine.DEB.2.00.0908262342120.6822@asgard.lang.hm>
+References: <4A92F6FC.4060907@redhat.com> <20090826111751.GC26595@elf.ucw.cz> <20090826122813.GI32712@mit.edu> <200908270106.15032.rob@landley.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251349485.6267.6.camel@concordia>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (Thu) Aug 27 2009 [15:04:45], Michael Ellerman wrote:
-> On Wed, 2009-08-26 at 21:15 +0530, Amit Shah wrote:
-> > [cc'ing some people who have made some commits in hvc_console.c]
-> > 
-> > On (Wed) Aug 26 2009 [16:57:18], Amit Shah wrote:
-> > > On (Tue) Aug 25 2009 [11:47:20], Amit Shah wrote:
-> > > > 
-> > > > Hello all,
-> > > > 
-> > > > Here is a new iteration of the patch series that implements a
-> > > > transport for guest and host communications.
-> > > > 
-> > > > The code has been updated to reuse the virtio-console device instead
-> > > > of creating a new virtio-serial device.
-> > > 
-> > > And the problem now is that hvc calls the put_chars function with
-> > > spinlocks held and we now allocate pages in send_buf(), called from
-> > > put_chars.
-> > > 
-> > > A few solutions:
-> > 
-> > [snip]
-> > 
-> > > - Convert hvc's usage of spinlocks to mutexes. I've no idea how this
-> > >   will play out; I'm no expert here. But I did try doing this and so far
-> > >   it all looks OK. No lockups, lockdep warnings, nothing. I have full
-> > >   debugging enabled. But this doesn't mean it's right.
-> > 
-> > So just to test this further I added the capability to have more than
-> > one hvc console spawn from virtio_console, created two consoles and did
-> > a 'cat' of a file in each of the virtio-consoles. It's been running for
-> > half an hour now without any badness. No spew in debug logs too.
-> > 
-> > I also checked the code in hvc_console.c that takes the spin_locks.
-> > Nothing there that runs from (or needs to run from) interrupt context.
-> > So the change to mutexes does seem reasonable. Also, the spinlock code
-> > was added really long back -- git blame shows Linus' first git commit
-> > introduced them in the git history, so it's pure legacy baggage.
-> 
-> I won't tell Ryan you called his code "pure legacy baggage" if you
-> don't ;)
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=d450b4ae023fb4be175389c18f4f87677da03020
+On Thu, 27 Aug 2009, Rob Landley wrote:
 
-Thanks for the link!
+> On Wednesday 26 August 2009 07:28:13 Theodore Tso wrote:
+>> On Wed, Aug 26, 2009 at 01:17:52PM +0200, Pavel Machek wrote:
+>>>> Metadata takes up such a small part of the disk that fscking
+>>>> it and finding it to be OK is absolutely no guarantee that
+>>>> the data on the filesystem has not been horribly mangled.
+>>>>
+>>>> Personally, what I care about is my data.
+>>>>
+>>>> The metadata is just a way to get to my data, while the data
+>>>> is actually important.
+>>>
+>>> Personally, I care about metadata consistency, and ext3 documentation
+>>> suggests that journal protects its integrity. Except that it does not
+>>> on broken storage devices, and you still need to run fsck there.
+>>
+>> Caring about metadata consistency and not data is just weird, I'm
+>> sorry.  I can't imagine anyone who actually *cares* about what they
+>> have stored, whether it's digital photographs of child taking a first
+>> step, or their thesis research, caring about more about the metadata
+>> than the data.  Giving advice that pretends that most users have that
+>> priority is Just Wrong.
+>
+> I thought the reason for that was that if your metadata is horked, further
+> writes to the disk can trash unrelated existing data because it's lost track
+> of what's allocated and what isn't.  So back when the assumption was "what's
+> written stays written", then keeping the metadata sane was still darn
+> important to prevent normal operation from overwriting unrelated existing
+> data.
+>
+> Then Pavel notified us of a situation where interrupted writes to the disk can
+> trash unrelated existing data _anyway_, because the flash block size on the 16
+> gig flash key I bought retail at Fry's is 2 megabytes, and the filesystem thinks
+> it's 4k or smaller.  It seems like what _broke_ was the assumption that the
+> filesystem block size >= the disk block size, and nobody noticed for a while.
+> (Except the people making jffs2 and friends, anyway.)
+>
+> Today we have cheap plentiful USB keys that act like hard drives, except that
+> their write block size isn't remotely the same as hard drives', but they
+> pretend it is, and then the block wear levelling algorithms fuzz things
+> further.  (Gee, a drive controller lying about drive geometry, the scsi crowd
+> should feel right at home.)
 
-(and this general area might be the one that doesn't get major upheavals
-in 5-yr spans :-)
+actually, you don't know if your USB key works that way or not. Pavel has 
+ssome that do, that doesn't mean that all flash drives do
 
-		Amit
+when you do a write to a flash drive you have to do the following items
+
+1. allocate an empty eraseblock to put the data on
+
+2. read the old eraseblock
+
+3. merge the incoming write to the eraseblock
+
+4. write the updated data to the flash
+
+5. update the flash trnslation layer to point reads at the new location 
+instead of the old location.
+
+now if the flash drive does things in this order you will not loose any 
+previously written data.
+
+if the flash drive does step 5 before it does step 4, then you have a 
+window where a crash can loose data (and no btrfs won't survive any better 
+to have a large chunk of data just disappear)
+
+it's possible that some super-cheap flash drives skip having a flash 
+translation layer entirely, on those the process would be
+
+1. read the old data into ram
+
+2. merge the new write into the data in ram
+
+3. erase the old data
+
+4. write the new data
+
+this obviously has a significant data loss window.
+
+but if the device doesn't have a flash translation layer, then repeated 
+writes to any one sector will kill the drive fairly quickly. (updates to 
+the FAT would kill the sectors the FAT, journal, root directory, or 
+superblock lives in due to the fact that every change to the disk requires 
+an update to this file for example)
+
+> Now Pavel's coming back with a second situation where RAID stripes (under
+> certain circumstances) seem to have similar granularity issues, again breaking
+> what seems to be the same assumption.  Big media use big chunks for data, and
+> media is getting bigger.  It doesn't seem like this problem is going to
+> diminish in future.
+>
+> I agree that it seems like a good idea to have BIG RED WARNING SIGNS about
+> those kind of media and how _any_ journaling filesystem doesn't really help
+> here.  So specifically documenting "These kinds of media lose unrelated random
+> data if writes to them are interrupted, journaling filesystems can't help with
+> this and may actually hide the problem, and even an fsck will only find
+> corrupted metadata not lost file contents" seems kind of useful.
+
+I think an update to the documentation is a good thing (especially after 
+learning that a raid 6 array that has lost a single disk can still be 
+corrupted during a powerfail situation), but I also agree that Pavel's 
+wording is not detailed enough
+
+> That said, ext3's assumption that filesystem block size always >= disk update
+> block size _is_ a fundamental part of this problem, and one that isn't shared
+> by things like jffs2, and which things like btrfs might be able to address if
+> they try, by adding awareness of the real media update granularity to their
+> node layout algorithms.  (Heck, ext2 has a stripe size parameter already.
+> Does setting that appropriately for your raid make this suck less?  I haven't
+> heard anybody comment on that one yet...)
+
+I thought that that assumption was in the VFS layer, not in any particular 
+filesystem
+
+
+David Lang
