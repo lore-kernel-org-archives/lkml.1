@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbZH0KTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbZH0KTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752308AbZH0KTP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 06:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZH0KTO
+	id S1752388AbZH0KTY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 06:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZH0KTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 06:19:14 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59586 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbZH0KTN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 06:19:13 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 27 Aug 2009 19:17:25 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-08-24-16-24 uploaded
-Message-Id: <20090827191725.9d943475.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090827184303.500ac1f0.kamezawa.hiroyu@jp.fujitsu.com>
-References: <200908242328.n7ONSUHI022326@imap1.linux-foundation.org>
-	<20090827144453.25f1161b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827160532.d6386722.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827093441.GA3451@redhat.com>
-	<20090827184303.500ac1f0.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 27 Aug 2009 06:19:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:57719 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752342AbZH0KTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 06:19:22 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] allow disabling IMA at runtime
+Date: Thu, 27 Aug 2009 19:49:19 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Kyle McMartin <kyle@mcmartin.ca>, zohar@us.ibm.com,
+       linux-kernel@vger.kernel.org, eparis@redhat.com,
+       torvalds@linux-foundation.org, James Morris <jmorris@namei.org>
+References: <20090826021005.GD19494@bombadil.infradead.org> <20090826170225.7574759e.akpm@linux-foundation.org>
+In-Reply-To: <20090826170225.7574759e.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908271949.20185.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009 18:43:03 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Can't get it. It seems reaped.
-> ==
-> [root@bluextal mmotm-2.6.31-Aug27]# kill -s 0 2990(CHILD's pid)
-> bash: kill: (2990) - No such process
+On Thu, 27 Aug 2009 09:32:25 am Andrew Morton wrote:
+>   From my reading of kernel/params.c:parse_args(), every __setup()
+>   function which returns `1' should result in printk("%s: `%s' invalid
+>   for parameter `%s'), so I'm all confused and giving up.
+
+Nope, it's an "obsolete_param", so non-zero means success.
+
+> > +__setup("ima=", ima_enabled);
 > 
+> Are we supposed to use core_param() nowadays?
 
-I think I found something. rpc.statd did...
+Yeah, if this had backwards compatibility requirements.  But for new,
+non-core params like this:
 
-==
-[pid  3372] rt_sigaction(SIGCHLD, {0x1, [CHLD], SA_RESTORER|SA_RESTART, 0x7f688fb52f90}, {SIG_DFL, [], 0}, 8) = 0
-[pid  3372] rt_sigaction(SIGPIPE, {0x1, [PIPE], SA_RESTORER|SA_RESTART, 0x7f688fb52f90}, {SIG_DFL, [], 0}, 8) = 0
-[pid  3372] unlink("/var/run/rpc.statd.pid") = 0
-.....
-[pid  3372] clone(Process 3373 attached
-child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x7f68902a0780) = 3373
-[pid  3372] wait4(3373, Process 3372 suspended
- <unfinished ...>
-==
+1) make sure the module is called "ima" (even if not a module: make the
+   object ima.o)
 
-Then, SIG_IGN is set to SIGCHLD handler and children's p->exit_signal == -1.
+2) use module_param(), and make your parameters "disable" and "audit"
+   (ima_disable and ima_audit if must be nonstatic and use module_param_named).
+   You don't need to write any parse functions at all!
 
-In old bahaivor, parent, who calls wait, was waken up even if SIG_IGN.
-Now, filtered, not wake up.
-
->From man.
-==
- POSIX.1-2001  specifies  that  if the disposition of SIGCHLD is set to SIG_IGN or the SA_NOCLDWAIT
-       flag is set for SIGCHLD (see sigaction(2)), then children that terminate do not become zombies and
-       a  call  to  wait() or waitpid() will block until all children have terminated, and then fail with
-       errno set to ECHILD.  (The original POSIX standard left the behavior of setting SIGCHLD to SIG_IGN
-       unspecified.   Note  that  even  though the default disposition of SIGCHLD is "ignore", explicitly
-       setting the disposition to SIG_IGN results in different treatment  of  zombie  process  children.)
-==
-I can't undestand what happens to a parent process which does
-	1. set SIG_CHLD to SIG_IGN
-	2. call waitpid()
-	3. all children goes away.
-
-
+3) Tell users to use ima.disable and ima.audit.
 
 Thanks,
--Kame
-
+Rusty.
