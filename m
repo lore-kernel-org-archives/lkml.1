@@ -1,48 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbZH0IgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751791AbZH0Iiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751707AbZH0IgQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 04:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZH0IgP
+	id S1751791AbZH0Iiq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 04:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbZH0Iip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 04:36:15 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59548 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750761AbZH0IgO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 04:36:14 -0400
-Date: Thu, 27 Aug 2009 09:37:01 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Georgi Chulkov <g.chulkov@jacobs-university.de>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Mark Lord <liml@rtr.ca>
-Subject: Re: ATA device reset, shoud I be concerned?
-Message-ID: <20090827093701.24598b69@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A95F212.5060008@gmail.com>
-References: <200801140019.20668.g.chulkov@jacobs-university.de>
-	<20080115025435.1e21b703.akpm@linux-foundation.org>
-	<20080115113552.75731bf8@lxorguk.ukuu.org.uk>
-	<4794501E.90306@gmail.com>
-	<20080121130256.2443d7c1@lxorguk.ukuu.org.uk>
-	<47949AA4.9090601@gmail.com>
-	<20080121141425.45aa9c61@lxorguk.ukuu.org.uk>
-	<4794ACAF.70505@gmail.com>
-	<4794AD3F.40309@gmail.com>
-	<4A95F212.5060008@gmail.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Aug 2009 04:38:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49615 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750832AbZH0Iin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 04:38:43 -0400
+Message-ID: <4A96460F.3020600@kernel.org>
+Date: Thu, 27 Aug 2009 17:38:39 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Tim Blechmann <tim@klingt.org>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.31-rc5 regression: hd don't show up
+References: <h63737$b2a$1@ger.gmane.org> <4A852BC0.1090404@kernel.org> <4A8559D7.6090405@klingt.org> <4A8774E5.4070609@kernel.org> <4A87D9FC.9070408@klingt.org>
+In-Reply-To: <4A87D9FC.9070408@klingt.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------070105020307080205070708"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 27 Aug 2009 08:38:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Nvidia CK804 SATA controllers appear to also explode on reading TF 
-> registers after media errors in certain cases. (They tend to either 
-> lockup the machine or throw HyperTransport timeout machine check 
+This is a multi-part message in MIME format.
+--------------070105020307080205070708
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-You must halt any running DMA activity before reading them. This is true
-for pretty much all task file style controllers although the results of
-not doing so vary by device somewhat.
+Tim Blechmann wrote:
+>>>>> running 2.6.31-rc5 (7cb7beb31aa3d941833b6a6e553687422c31e4b6 to be
+>>>>> exact), sometimes some hard disks don't show up.
+>>>>>
+>>>>> after booting, my root hd (sda) is mounted to /, while two other hds
+>>>>> (sdb/sdc) are mounted as a user. sda is always present, but the other
+>>>>> two sometimes don't show up (i.e. they are not listed in /dev/disk/, nor
+>>>>> to they have a /dev/sdX link). with 2.6.29 and 2.6.30, all three disks
+>>>>> are reported correctly.
+>>>> Can you please attach boot logs of a successful and a failed boot?
+>>> i have two files attached:
+>>> - dmesg_good - all hds are available
+>>> - dmesg_bad - on hd is missing
+>> Can you please apply the attached patch and post the bad boot log?
+> 
+> attached you find boot logs for both a good ad a bad boot
 
+Sorry about the long delay.  I somehow marked the message read without
+actually reading it.
+
+I suspected the problem was with getting the wrong classification code
+or phantom device detection kicking in spuriously.  Looks like the
+problem happens way before that.  Can you please apply the attached
+patch and report the result?
+
+Thanks.
+
+-- 
+tejun
+
+--------------070105020307080205070708
+Content-Type: text/x-patch;
+ name="nodev-debug.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="nodev-debug.patch"
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 072ba5e..df099b7 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3770,6 +3770,7 @@ int sata_link_resume(struct ata_link *link, const unsigned long *params,
+ 
+ 	scontrol = (scontrol & 0x0f0) | 0x300;
+ 
++	ata_link_printk(link, KERN_INFO, "XXX bringing up link\n");
+ 	if ((rc = sata_scr_write(link, SCR_CONTROL, scontrol)))
+ 		return rc;
+ 
+@@ -3778,7 +3779,9 @@ int sata_link_resume(struct ata_link *link, const unsigned long *params,
+ 	 */
+ 	msleep(200);
+ 
+-	if ((rc = sata_link_debounce(link, params, deadline)))
++	rc = sata_link_debounce(link, params, deadline);
++	ata_link_printk(link, KERN_INFO, "XXX debounced rc=%d\n", rc);
++	if (rc)
+ 		return rc;
+ 
+ 	/* clear SError, some PHYs require this even for SRST to work */
+@@ -3904,8 +3907,13 @@ int sata_link_hardreset(struct ata_link *link, const unsigned long *timing,
+ 	if (rc)
+ 		goto out;
+ 	/* if link is offline nothing more to do */
+-	if (ata_phys_link_offline(link))
++	if (ata_phys_link_offline(link)) {
++		ata_link_printk(link, KERN_INFO,
++				"XXX phys link offline, l=%d p=%d\n",
++				ata_link_offline(link),
++				ata_phys_link_offline(link));
+ 		goto out;
++	}
+ 
+ 	/* Link is online.  From this point, -ENODEV too is an error. */
+ 	if (online)
+@@ -6060,7 +6068,7 @@ static void async_port_probe(void *data, async_cookie_t cookie)
+ 
+ 		ehi->probe_mask |= ATA_ALL_DEVICES;
+ 		ehi->action |= ATA_EH_RESET | ATA_EH_LPM;
+-		ehi->flags |= ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET;
++		ehi->flags |= ATA_EHI_NO_AUTOPSY/* | ATA_EHI_QUIET*/;
+ 
+ 		ap->pflags &= ~ATA_PFLAG_INITIALIZING;
+ 		ap->pflags |= ATA_PFLAG_LOADING;
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index bbbb1fa..c718d12 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -1998,6 +1998,9 @@ unsigned int ata_sff_dev_classify(struct ata_device *dev, int present,
+ 	if (r_err)
+ 		*r_err = err;
+ 
++	ata_dev_printk(dev, KERN_INFO, "XXX CLASSIFY TF %02x/%02x:%02x:%02x:%02x\n",
++		       tf.command, tf.feature, tf.lbal, tf.lbam, tf.lbah);
++
+ 	/* see if device passed diags: continue and warn later */
+ 	if (err == 0)
+ 		/* diagnostic fail : do nothing _YET_ */
+@@ -2006,11 +2009,14 @@ unsigned int ata_sff_dev_classify(struct ata_device *dev, int present,
+ 		/* do nothing */ ;
+ 	else if ((dev->devno == 0) && (err == 0x81))
+ 		/* do nothing */ ;
+-	else
++	else {
++		ata_dev_printk(dev, KERN_INFO, "XXX diag nodev\n");
+ 		return ATA_DEV_NONE;
++	}
+ 
+ 	/* determine if device is ATA or ATAPI */
+ 	class = ata_dev_classify(&tf);
++	ata_dev_printk(dev, KERN_INFO, "XXX ata_dev_classify=%d\n", class);
+ 
+ 	if (class == ATA_DEV_UNKNOWN) {
+ 		/* If the device failed diagnostic, it's likely to
+@@ -2019,13 +2025,18 @@ unsigned int ata_sff_dev_classify(struct ata_device *dev, int present,
+ 		 * device signature is invalid with diagnostic
+ 		 * failure.
+ 		 */
+-		if (present && (dev->horkage & ATA_HORKAGE_DIAGNOSTIC))
++		if (present && (dev->horkage & ATA_HORKAGE_DIAGNOSTIC)) {
++			ata_dev_printk(dev, KERN_INFO, "XXX UNK && present -> ATA\n");
+ 			class = ATA_DEV_ATA;
+-		else
++		} else {
+ 			class = ATA_DEV_NONE;
++			ata_dev_printk(dev, KERN_INFO, "XXX UNK && !present -> NONE\n");
++		}
+ 	} else if ((class == ATA_DEV_ATA) &&
+-		   (ap->ops->sff_check_status(ap) == 0))
++		   (ap->ops->sff_check_status(ap) == 0)) {
+ 		class = ATA_DEV_NONE;
++		ata_dev_printk(dev, KERN_INFO, "XXX stat==0 -> NONE\n");
++	}
+ 
+ 	return class;
+ }
+
+--------------070105020307080205070708--
