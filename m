@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZH0VJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbZH0VLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbZH0VJu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 17:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZH0VJs
+	id S1753138AbZH0VLQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 17:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZH0VLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 17:09:48 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:53862 "EHLO mx1.redhat.com"
+	Thu, 27 Aug 2009 17:11:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34017 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752794AbZH0VJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 17:09:48 -0400
-Date: Thu, 27 Aug 2009 17:08:48 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com
-Subject: Re: [PATCH 02/24] io-controller: Core of the elevator fair queuing
-Message-ID: <20090827210848.GA3821@redhat.com>
-References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com> <1250451046-9966-3-git-send-email-vgoyal@redhat.com> <4A95F444.9040705@cn.fujitsu.com>
+	id S1752757AbZH0VLN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 17:11:13 -0400
+Date: Thu, 27 Aug 2009 23:11:13 +0200
+From: Jiri Bohac <jbohac@suse.cz>
+To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       kenneth.w.chen@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: [RFC][PATCH] ia64: fix csum_ipv6_magic()
+Message-ID: <20090827211113.GA22793@midget.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A95F444.9040705@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27, 2009 at 10:49:40AM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> ...
-> > +static void update_min_vdisktime(struct io_service_tree *st)
-> > +{
-> > +	u64 vdisktime;
-> > +
-> > +	if (st->active_entity)
-> > +		vdisktime = st->active_entity->vdisktime;
-> > +
-> > +	if (st->rb_leftmost) {
-> > +		struct io_entity *entity = rb_entry(st->rb_leftmost,
-> > +						struct io_entity, rb_node);
-> > +
-> > +		if (!st->active_entity)
-> > +			vdisktime = entity->vdisktime;
-> > +		else
-> > +			vdisktime = min_vdisktime(vdisktime, entity->vdisktime);
-> > +	}
-> > +
-> > +	st->min_vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
-> > +}
-> 
-> block/elevator-fq.c: In function ‘elv_ioq_slice_expired’:
-> block/elevator-fq.c:132: warning: ‘vdisktime’ may be used uninitialized in this function
-> LD      block/built-in.o
-> 
-> We'd better initialize vdisktime at first.
-> 
+Hi,
 
-Thanks Gui. Will fix in next posting.
+I was seeing "nf_ct_icmpv6: ICMPv6 checksum failed" errors on
+every ICMPv6 packet received. The packets did not pass the
+netfilter checksum verification but they did pass the standard
+verification later and got processed. This happenns with hardware
+checksumming turned off or with adapters that do not checksum
+ICMP packets (e.g. tg3). I tracked the problem down to the ia64
+version of csum_ipv6_magic() introduced by 007d77d0c5.  For some
+arguments, it gives differrent results than the generic version.
 
-Vivek
+The following patch fixes the problem for me. IA64 experts, can
+you please have a look?
 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index d04e925..a4161c2 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -131,6 +131,8 @@ static void update_min_vdisktime(struct io_service_tree *st)
->  {
->  	u64 vdisktime;
->  
-> +	vdisktime = st->min_vdisktime;
-> +
->  	if (st->active_entity)
->  		vdisktime = st->active_entity->vdisktime;
->  
-> -- 
-> 1.5.4.rc3
+Thanks!
+
+
+[IA64] fix csum_ipv6_magic()
+
+The 32-bit parameters (len and csum) of csum_ipv6_magic() are passed in 64-bit
+registers in3 and in4. The high order 32 bits of the registers were never
+cleared, and garbage was sometimes calculated into the checksum.
+
+Fix this by clearing the high order 32 bits of the registers.
+
+Signed-off-by: Jiri Bohac <jbohac@suse.cz>
+
+diff --git a/arch/ia64/lib/ip_fast_csum.S b/arch/ia64/lib/ip_fast_csum.S
+index 1f86aeb..9a8d23f 100644
+--- a/arch/ia64/lib/ip_fast_csum.S
++++ b/arch/ia64/lib/ip_fast_csum.S
+@@ -96,20 +96,22 @@ END(ip_fast_csum)
+ GLOBAL_ENTRY(csum_ipv6_magic)
+ 	ld4	r20=[in0],4
+ 	ld4	r21=[in1],4
+-	dep	r15=in3,in2,32,16
++	zxt4	in3=in3
+ 	;;
+ 	ld4	r22=[in0],4
+ 	ld4	r23=[in1],4
+-	mux1	r15=r15,@rev
++	dep	r15=in3,in2,32,16
+ 	;;
+ 	ld4	r24=[in0],4
+ 	ld4	r25=[in1],4
+-	shr.u	r15=r15,16
++	mux1	r15=r15,@rev
+ 	add	r16=r20,r21
+ 	add	r17=r22,r23
++	zxt4	in4=in4
+ 	;;
+ 	ld4	r26=[in0],4
+ 	ld4	r27=[in1],4
++	shr.u	r15=r15,16
+ 	add	r18=r24,r25
+ 	add	r8=r16,r17
+ 	;;
+-- 
+Jiri Bohac <jbohac@suse.cz>
+SUSE Labs, SUSE CZ
+
