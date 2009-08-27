@@ -1,104 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbZH0PkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbZH0Pnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbZH0PkS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 11:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbZH0PkP
+	id S1752734AbZH0Pnh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 11:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZH0Pnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 11:40:15 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:45163 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752270AbZH0PkN (ORCPT
+	Thu, 27 Aug 2009 11:43:35 -0400
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:15298 "EHLO
+	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751436AbZH0Pne convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 11:40:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SByZlK3mGhwcywYz0l3wzS19Xww853gjKsN09N1I3t6SyfIiDnEgh36Jn5oqpZsyPI
-         D1J/B1SGLYvHurOuaTVKzD83Bc1ho2GlVPzZ/tXE24TqcXTIXDgUKidEJXs3MhyyCErx
-         RBCRGThVUJ0dabD2xS6hbxoqV/YXyVU8LiZ/M=
-Date: Thu, 27 Aug 2009 17:40:09 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [GIT PULL v2] tracing/kprobes: v1 + two fixes
-Message-ID: <20090827154007.GG6058@nowhere>
-References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com> <1251344087-28719-1-git-send-email-fweisbec@gmail.com> <20090827152438.GA32553@elte.hu>
+	Thu, 27 Aug 2009 11:43:34 -0400
+X-SpamScore: -1
+X-BigFish: VPS-1(z34a4jz1432R98dN936eM10d1Ia594izz1202hzz3198u327alz32i6bh203h61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KP1L0A-01-8TY-02
+X-M-MSG: 
+Date: Thu, 27 Aug 2009 17:42:30 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
+	cpumask on multi-node processors
+Message-ID: <20090827154230.GF13576@alberich.amd.com>
+References: <20090820131243.GO29327@alberich.amd.com> <20090820134604.GD29327@alberich.amd.com> <1251128176.7538.301.camel@twins> <20090825093101.GJ20811@alberich.amd.com> <1251194143.7538.1128.camel@twins> <20090825102409.GK20811@alberich.amd.com> <1251196502.7538.1136.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090827152438.GA32553@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1251196502.7538.1136.camel@twins>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 27 Aug 2009 15:42:30.0745 (UTC) FILETIME=[FCD6A490:01CA272C]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27, 2009 at 05:24:38PM +0200, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > Ingo,
+On Tue, Aug 25, 2009 at 12:35:02PM +0200, Peter Zijlstra wrote:
+> On Tue, 2009-08-25 at 12:24 +0200, Andreas Herrmann wrote:
+> > On Tue, Aug 25, 2009 at 11:55:43AM +0200, Peter Zijlstra wrote:
+> > > On Tue, 2009-08-25 at 11:31 +0200, Andreas Herrmann wrote:
+> > > > On Mon, Aug 24, 2009 at 05:36:16PM +0200, Peter Zijlstra wrote:
+> > > > > On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
+> > > > > > The correct mask that describes core-siblings of an processor
+> > > > > > is topology_core_cpumask. See topology adapation patches, especially
+> > > > > > http://marc.info/?l=linux-kernel&m=124964999608179
+> > > > > 
+> > > > > 
+> > > > > argh, violence, murder kill.. this is the worst possible hack and you're
+> > > > > extending it :/
+> > > > 
+> > > > So this is the third code area
+> > > > (besides sched_*_power_savings sysfs interface, and the __cpu_power fiddling)
+> > > > that is crap, mess, a hack.
+> > > > 
+> > > > Didn't know that I'd enter such a minefield when touching this code. ;-(
+> > > 
+> > > Yeah, you're lucky that way ;-) Its been creaking for a while, and I've
+> > > been making noises to the IBM people (who so far have been the main
+> > > source of power saving patches) to clean this up, but now you trod onto
+> > > all of it at once..
+> > > 
+> > > > What would be your perferred solution for the
+> > > > core_cpumask/llc_shared_map stuff?  Another domain level to get rid of
+> > > > this function?
+> > > 
+> > > Right, I'd like to see everything exposed as domain levels.
+> > > 
+> > > 
+> > > numa-cluster
+> > > numa
+> > > socket
+> > > in-socket-numa
+> > > multi-core
+> > > shared-cache
+> > > core
+> > > threads
+> > > 
+> > > We currently have a fixed order of these things, but I think we should
+> > > simply provide helpers for building the sd tree and let the arch code do
+> > > that instead of exporting all these masks in a fixed order.
+> > > 
+> > > Once we get the arch domain tree, we do degenerate stuff to cull all the
+> > > trivial domains and fold SD flags.
 > > 
-> > This v2 can be either pulled after tracing/kprobes (the v1) or can 
-> > be pulled alone, it is based on the previous one and addresses 
-> > reviews from Li Zefan.
-> > 
-> > Thanks,
-> > Frederic.
-> > 
-> > The following changes since commit 24851d2447830e6cba4c4b641cb73e713f312373:
-> >   Frederic Weisbecker (1):
-> >         tracing/kprobes: Dump the culprit kprobe in case of kprobe recursion
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
-> > 	tracing/kprobes-2
-> > 
-> > Frederic Weisbecker (2):
-> >       tracing: Restore the const qualifier for field names and types definition
-> >       tracing: Remove unneeded pointer casts
-> > 
-> >  include/linux/ftrace_event.h  |    6 +++---
-> >  kernel/trace/trace_events.c   |    4 ++--
-> >  kernel/trace/trace_syscalls.c |    8 ++++----
-> >  3 files changed, 9 insertions(+), 9 deletions(-)
+> > So any in-socket-numa is only going to haeppen with the arch-defined
+> > domain tree.
 > 
-> I've pulled it into a staging branch (not yet in tip:master either 
-> and not yet on the road to upstream either), thanks guys!
+> Well, we could see what it takes to make this work without that. I mean,
+> this is just how I'd like to see it end up, doesn't mean we cannot work
+> on it from multiple angles at the same time.
+
+Yup.
+
+> > Now that this is settled you should throw away the
+> > __build_sched_domains cleanup patches that are in tip. They won't be
+> > of use when domain creation code is basically changed.
 > 
-> I have done some brief testing. One hickup is this build failure on 
-> x86, caused by the kprobes instruction decoder self-test:
-> 
->    CHK     include/linux/compile.h
->    TEST    posttest
->  Error: 41001024:        a1 08 30 c9 41          mov    
->  0x41c93008,%eax
->  Error: objdump says 5 bytes, but insn_get_length() says 9 (attr:40000)
+> I'm not sure that's needed, we can continue work on refactoring that.
+> Small steps towards something better seems a better plan than a single
+> large step.
+
+Ok.
 
 
+Andreas
 
-I can't help for this one :)
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
- 
-> another one is this build warning:
-> 
->  In file included from include/trace/events/napi.h:5,
->                   from net/core/net-traces.c:28:
->  include/linux/tracepoint.h:285:1: warning: "TRACE_EVENT_FN" redefined
->  In file included from include/trace/define_trace.h:61,
->                   from include/trace/events/skb.h:40,
->                   from net/core/net-traces.c:27:
->  include/trace/ftrace.h:50:1: warning: this is the location of the previous definition
-> 
-> config attached.
-
-
-
-Oh, that looks like the site that includes two trace events headers.
-I wonder if it also happens in -tip master without kprobes.
-
-I'll check that, thanks.
 
