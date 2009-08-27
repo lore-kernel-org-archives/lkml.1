@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752690AbZH0XTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZH0Xno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752690AbZH0XTl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 19:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZH0XTl
+	id S1752729AbZH0Xno (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 19:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbZH0Xnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 19:19:41 -0400
-Received: from outbound-mail-307.bluehost.com ([67.222.53.253]:44367 "HELO
-	outbound-mail-307.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751123AbZH0XTk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 19:19:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=DsLasL+Hx+gHiRMJ+QwbNnr+BYt/f0hD2sxvzy7Nz20fdHbD+VStX6c2RyT0miSNilk5p0p7GJ+RZDUtTchmKWucN6n4M7CKjU8e8T/7vFKoXK2FaOpyJ6C4B+CN3WJk;
-Date: Thu, 27 Aug 2009 16:19:29 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Beng Tan <bengtan1@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: (Re)assignment of PCI BARs
-Message-ID: <20090827161929.253e001d@jbarnes-g45>
-In-Reply-To: <664902dd0908270449x24f3ee12k615540ffe22e5b58@mail.gmail.com>
-References: <664902dd0908270449x24f3ee12k615540ffe22e5b58@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+	Thu, 27 Aug 2009 19:43:43 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40483 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751638AbZH0Xnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 19:43:42 -0400
+Date: Fri, 28 Aug 2009 09:43:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, elendil@planet.nl, zajec5@gmail.com,
+       rjw@sisk.pl, linux-kernel@vger.kernel.org, protasnb@gmail.com,
+       linux-acpi@vger.kernel.org, kernel-testers@vger.kernel.org,
+       torvalds@linux-foundation.org, rui.zhang@intel.com, lenb@kernel.org
+Subject: Re: 2.6.31-rc7-git2: Reported regressions 2.6.29 -> 2.6.30
+Message-Id: <20090828094330.0f7f75d7.sfr@canb.auug.org.au>
+In-Reply-To: <20090827143653.52308d6d.akpm@linux-foundation.org>
+References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
+	<200908261833.37310.elendil@planet.nl>
+	<20090826123647.e60d9555.akpm@linux-foundation.org>
+	<200908272023.21288.rusty@rustcorp.com.au>
+	<20090827143653.52308d6d.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__28_Aug_2009_09_43_30_+1000_3fCgz2za9/ojxanB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009 19:49:32 +0800
-Beng Tan <bengtan1@gmail.com> wrote:
-> The symptom I'm seeing is that the card has BAR 0 unassigned ...
-> 
->   Region 0: Memory at <unassigned> (64-bit, prefetchable) [disabled]
-> 
-> and indeed, the kernel reports this through dmesg ...
-> 
-> [    6.147093] PCI: Failed to allocate mem resource
-> #0:10000000@e0000000 for 0000:0d:00.0
-> 
-> Full logs are available at:
-> 
-> http://208.100.55.9/coldboot_20090827/dmesg.txt
-> http://208.100.55.9/coldboot_20090827/iomem.txt
-> http://208.100.55.9/coldboot_20090827/lspci_vv.txt
-> 
-> Doesn't the kernel reassign PCI resources if the BIOS doesnt do a good
-> enough job? Or is that not the case in my old kernel (2.6.24)?
+--Signature=_Fri__28_Aug_2009_09_43_30_+1000_3fCgz2za9/ojxanB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-A newer kernel could help, there have been some resource related fixes
-since 2.6.24.
+Hi Andrew, Rusty,
 
-> Is it possible to force a reassignment of the impacted BAR? For
-> example, I wrote a small module which wrote to the device's PCI
-> configuration registers to explcitly reassign BAR 0 to 0xc00000000
-> (and also bit bashed the connecting bridge to do the same) but ... I'm
-> not sure if I'm doing it correctly.
+On Thu, 27 Aug 2009 14:36:53 -0700 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
+>
+> On Thu, 27 Aug 2009 20:23:20 +0930 Rusty Russell <rusty@rustcorp.com.au> =
+wrote:
+> >=20
+> > Can you take them?  They're not really at home in my tree.
+> >=20
+> > arch-x86-kernel-acpi-cstatec-avoid-using-work_on_cpu.patch
+> > misc:work_on_cpu-acpi.patch
+> > misc:work_on_cpu-acpi-fix.patch
+> > misc:work_on_cpu-dcdbas.patch
+> >=20
+> > You can fetch them from http://ozlabs.org/~rusty/kernel/rr-latest/
+> >=20
+> > (You'll want to rename the last three something sane...)
+>=20
+> Those patches are already in today's linux-next so I can't carry them.
+>=20
+> Please email them over in the traditional fashion once that situation
+> has sorted itself out?
 
-There are some PCI calls you can use to assign space, e.g.
-pci_bus_alloc_resource, but really the kernel should try to get this
-right.  In your case, it looks like the BIOS isn't giving the bus with
-your card a large enough window (256M BAR on your card vs. a 2M windows
-on the bus).
+Those patches will not be in next-20090828.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__28_Aug_2009_09_43_30_+1000_3fCgz2za9/ojxanB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqXGiIACgkQjjKRsyhoI8xGYgCdF1tV9fC5DVYLkjUp6rmG22vT
++kkAoKNKhLZYwSQbYUlJFhpl7mwGhxxU
+=fWnF
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__28_Aug_2009_09_43_30_+1000_3fCgz2za9/ojxanB--
