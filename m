@@ -1,101 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbZH0ToJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbZH0UE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752169AbZH0ToJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 15:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbZH0ToI
+	id S1752414AbZH0UE1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 16:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbZH0UE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 15:44:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41066 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751461AbZH0ToG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 15:44:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [Bug #14012] latest git fried my x86_64 imac
-Date: Thu, 27 Aug 2009 21:45:01 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <200908262306.38464.rjw@sisk.pl> <4A96CA0A.90405@gmail.com>
-In-Reply-To: <4A96CA0A.90405@gmail.com>
+	Thu, 27 Aug 2009 16:04:26 -0400
+Received: from mail-pz0-f178.google.com ([209.85.222.178]:49882 "EHLO
+	mail-pz0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752358AbZH0UEZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 16:04:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:message-id;
+        b=AsJOLFQyP7U5fjV31/CgwpW9K80KdiC2lQoQPcrjJ5rN+xzFJ/mKKwdMHprAjqLxwk
+         WJTsH6OnnzoHSi86AF0rBwBOmmrk/tczgTM92v6hEaI7hiH/ylorUcMv64KnlFHGVLOQ
+         +y/1p6PW1VGD6sWJr+O9MBeVHw2mrXxC2zquw=
+Date: Thu, 27 Aug 2009 13:04:20 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH 8] PM: Allow user space to change the
+	power.async_suspend flag of devices
+References: <200908262217.19609.rjw@sisk.pl> <200908270025.34821.rjw@sisk.pl> <200908272117.52931.rjw@sisk.pl> <200908272120.56021.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908272145.01901.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908272120.56021.rjw@sisk.pl>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090827203634.372EC526EC9@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 August 2009, Justin P. Mattock wrote:
-> Rafael J. Wysocki wrote:
-> > On Wednesday 26 August 2009, Justin P. Mattock wrote:
-> >    
-> >> Rafael J. Wysocki wrote:
-> >>      
-> >>> This message has been generated automatically as a part of a report
-> >>> of recent regressions.
-> >>>
-> >>> The following bug entry is on the current list of known regressions
-> >>> from 2.6.30.  Please verify if it still should be listed and let me know
-> >>> (either way).
-> >>>
-> >>>
-> >>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14012
-> >>> Subject		: latest git fried my x86_64 imac
-> >>> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
-> >>> Date		: 2009-08-13 07:20 (13 days old)
-> >>> References	: http://marc.info/?l=linux-kernel&m=125014080427090&w=4
-> >>>
-> >>>
-> >>>
-> >>>
-> >>>        
-> >> if I revert this commit:
-> >> af6af30c0fcd77e621638e53ef8b176bca8bd3b4
-> >> I can get a normal bootup.
-> >>      
-> >
-> > Hm, that's
-> >
-> > commit af6af30c0fcd77e621638e53ef8b176bca8bd3b4
-> > Author: Peter Zijlstra<peterz@infradead.org>
-> > Date:   Wed Aug 5 20:41:04 2009 +0200
-> >
-> >      ftrace: Fix perf-tracepoint OOPS
-> >
-> > I wonder what happens if you compile out ftrace?
-> >
-> >    
-> >> As for this  bug, it seems I'm the only
-> >> hitting this. The system is a fresh LFS build
-> >> x86_64.
-> >> In regards to keeping this open
-> >> not sure, I don't have a problem with closing this
-> >> and taking the blame as something I did during my build
-> >> of the system, then if this becomes more frequent
-> >> then open a new bug.
-> >>      
-> >
-> > OK, I'll close it for now.
-> >
-> > Thanks,
-> > Rafael
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-> >    
-> o.k. I tried disabling all of ftrace in the kernel,
-> unfortunately the only one left
-> is HAVE_FTRACE_SYSCALLS
-> which seems to be selected by x86.
-> seems the system still sticks
-> without reverting perf-tracepoint oops.
+Hi Rafael,
 
-That's kind of strange.  Can you attach the .config, please?
+On Thu, Aug 27, 2009 at 09:20:55PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Add sysfs attribute power/async for every device allowing the user
+> space to access the device's power.async_suspend flag and modify it,
+> if necessary.
+> 
 
-Rafael
+I don't think we should let users meddle with individual devices;
+one global flag should be enough to work around "broken-at-the-moment"
+issues.
+
+-- 
+Dmitry
