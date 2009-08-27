@@ -1,44 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbZH0Tez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752186AbZH0TlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752072AbZH0Tez (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 15:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZH0Tey
+	id S1752186AbZH0TlI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 15:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZH0TlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 15:34:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47754 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751061AbZH0Tey (ORCPT
+	Thu, 27 Aug 2009 15:41:06 -0400
+Received: from xenotime.net ([72.52.64.118]:58859 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751835AbZH0TlF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 15:34:54 -0400
-Date: Thu, 27 Aug 2009 12:34:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Anirban Sinha <ASinha@zeugmasystems.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: RE: [PATCH] console_print: change the function api to make it have
- printk style interface
-In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501EA93B4@exchange.ZeugmaSystems.local>
-Message-ID: <alpine.LFD.2.01.0908271233580.3218@localhost.localdomain>
-References: <DDFD17CC94A9BD49A82147DDF7D545C501EA9241@exchange.ZeugmaSystems.local> <20090825172640.af8b9f58.randy.dunlap@oracle.com> <DDFD17CC94A9BD49A82147DDF7D545C501EA93B4@exchange.ZeugmaSystems.local>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Aug 2009 15:41:05 -0400
+Date: Thu, 27 Aug 2009 12:43:15 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: "J.H." <warthog9@kernel.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       webmaster@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, stable@kernel.org
+Subject: Re: mm/-next release on kernel.org web page?
+Message-Id: <20090827124315.0d0f2129.rdunlap@xenotime.net>
+In-Reply-To: <a8e1da0908270739sbab4821x6ec402a72587a337@mail.gmail.com>
+References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>
+	<20090802095523.e08166e3.rdunlap@xenotime.net>
+	<a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com>
+	<20090802193045.c3f3195c.rdunlap@xenotime.net>
+	<4A766F39.7090903@kernel.org>
+	<4A95D677.2020807@kernel.org>
+	<a8e1da0908270739sbab4821x6ec402a72587a337@mail.gmail.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 27 Aug 2009 22:39:13 +0800 Dave Young wrote:
 
-
-On Wed, 26 Aug 2009, Anirban Sinha wrote:
+> On Thu, Aug 27, 2009 at 8:42 AM, J.H.<warthog9@kernel.org> wrote:
+> > J.H. wrote:
+> >>
+> >> Randy Dunlap wrote:
+> >>>
+> >>> On Mon, 3 Aug 2009 10:08:40 +0800 Dave Young wrote:
+> >>>
+> >>>> On Mon, Aug 3, 2009 at 12:55 AM, Randy Dunlap<rdunlap@xenotime.net>
+> >>>> wrote:
+> >>>>>
+> >>>>> On Sun, 2 Aug 2009 15:56:20 +0800 Dave Young wrote:
+> >>>>>
+> >>>>>> Hi,
+> >>>>>>
+> >>>>>> The last mm patchset is 2.6.28-rc2-mm1. We can not download -mm
+> >>>>>> patchset from kernel.org web page since the -next tree born.
+> >>>>>>
+> >>>>>> Could you consider put mmtom release there just like before? And even
+> >>>>>> -next tree patchset? It will be more convenient for users who test
+> >>>>>> kernel just by downloading from web. Now it's impossible for them to
+> >>>>>> test these patchsets because they normally do not subscribe to lkml.
+> >>>>>
+> >>>>> from www.kernel.org:
+> >>>>> For comments about the web pages, please send mail to
+> >>>>> webmaster@kernel.org.
+> >>>>>
+> >>>>> also from www.kernel.org:
+> >>>>> Please don't use finger.kernel.org for any sort of automatic
+> >>>>> monitoring. The number of automatic bots hitting this port is causing the
+> >>>>> finger daemon to shut down more often than not. The same information is
+> >>>>> available from http://www.kernel.org/kdist/finger_banner.
+> >>>>>
+> >>>>> and of course the finger_banner file is not up to date.
+> >>>>>
+> >>>>> You may consider using my
+> >>>>> http://www.xenotime.net/linux/scripts/kcurrent script.
+> >>>>> Its output (today) is:
+> >>>>>
+> >>>>> The latest stable version of the Linux kernel is:           2.6.30.4
+> >>>>> The latest prepatch for the stable Linux kernel tree is:    2.6.31-rc5
+> >>>>> The latest 2.4 version of the Linux kernel is:              2.4.37.4
+> >>>>> The latest 2.2 version of the Linux kernel is:              2.2.26
+> >>>>> The latest prepatch for the 2.2 Linux kernel tree is:       2.2.27-rc2
+> >>>>> The latest -mm patch to the stable Linux kernels is:
+> >>>>>  2.6.28-rc2-mm1
+> >>>>> mmotm-2009-0730-0501 ... applies to: 2.6.31-rc4
+> >>>>> next-20090731 ... applies to: v2.6.31-rc4
+> >>>>
+> >>>> Thanks randy. Very helpful. But I still have same question. Normal
+> >>>> users need a more convenient and straightforward  way to get what they
+> >>>> want.  It will be better that we put them on www.kernel.org main page,
+> >>>> not only the version info but also the download link.
+> >>>>
+> >>>> At least for me when I started my kernel hacking some years ago I
+> >>>> always download kernel from www.kernel.org main page. I'm not sure
+> >>>> whether others people do same thing. Current -next and mmtom are more
+> >>>> like for us to do internal testing.
+> >>>
+> >>> Oh, I agree with you, but webmaster@kernel.org seems to be ignoring these
+> >>> emails (this is the third such one in the last 3-4 months).
+> >>
+> >> In fact we have been responding to these inquiries both to the public ones
+> >> we have gotten (what we get added to on LKML), and to the private inquires,
+> >> the latest one from LKML being a bit more than a week ago:
+> >>
+> >> http://lkml.org/lkml/2009/7/24/334
+> >>
+> >> We have been well aware of the problem for quite some time, the code base
+> >> has rotted horribly, and the way kernel trees are placed in the hierarchy
+> >> has changed from any reasonable assumption that was made many years ago when
+> >> the code was first put together.  We (meaning me) are, literally, in the
+> >> middle of revamping this code, however it's basically a complete re-write of
+> >> the code base at this point.
+> >>
+> >> And in the last few weeks we've been dealing with quite a lot on top of
+> >> trying to make forward progress on this code base, like the Bind DNS
+> >> vulnerabilities, OSCon, Linux Symposium and the plethora of other things
+> >> that need doing.  Really, we aren't ignoring the problem, there's just one
+> >> of me and a lot to do and I'm plugging away at it all.  Please be patient,
+> >> I'm trying to get it done and up and running.  Until then *PLEASE* bear with
+> >> us while we get through everything.
+> >>
+> >> - John 'Warthog9' Hawley
+> >>
+> >
+> >
+> > Not to reply to myself, but I've pushed out an update that should
+> > incorporate the expected trees now, this does eliminate the 2.2 and all but
+> > the last 2.4 tree (2.4.37.5), but does include all of the stable 2.6.x
+> > trees, the snapshots and linux-next.  Frontpage, finger and rss should all
+> > be showing the new information universally.  I'll probably tweak things a
+> > bit more (layout and such for the rss & html) but the kernels should now be
+> > listed as people expect.
 > 
-> Since Linus has already agreed for the later, I will post a patch here
-> to remove the function. I am not very certain as to what we should do
-> about the only one single case of its genuine use - call from
-> ia64/head.S. What I have done is one solution. Please feel free to
-> debate/disagree.
+> Thanks for your work.
 
-Looks ok to me, but I'm not going to apply it in late -rc, since it 
-doesn't really fix any bug. Feel free to re-send after 2.6.31 is out, or 
-try to get it into one of the trees to be merged later.
+Yes, thanks.  Much better.
 
-		Linus
+> Is it possible to add latest mmotm link?
+> Just link to andrew's broken-out.tar.gz with the stamp name?
+
+Ditto.  Please.
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
