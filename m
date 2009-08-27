@@ -1,90 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751102AbZH0REP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751020AbZH0REr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751102AbZH0REP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 13:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZH0REP
+	id S1751020AbZH0REr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 13:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZH0REq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 13:04:15 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:34851 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750984AbZH0REO (ORCPT
+	Thu, 27 Aug 2009 13:04:46 -0400
+Received: from smtp4.ultrahosting.com ([74.213.175.253]:52268 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750739AbZH0REq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 13:04:14 -0400
-Subject: [PATCH 2/2] kmemleak: Ignore the aperture memory hole on x86_64
-To: x86@kernel.org, linux-kernel@vger.kernel.org
-From: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 27 Aug 2009 18:02:58 +0100
-Message-ID: <20090827170258.27901.83613.stgit@pc1117.cambridge.arm.com>
-In-Reply-To: <20090827165927.27901.97270.stgit@pc1117.cambridge.arm.com>
-References: <20090827165927.27901.97270.stgit@pc1117.cambridge.arm.com>
-User-Agent: StGit/0.15-rc2
+	Thu, 27 Aug 2009 13:04:46 -0400
+Date: Thu, 27 Aug 2009 13:04:37 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Chris Friesen <cfriesen@nortel.com>
+cc: raz ben yehuda <raziebe@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       riel@redhat.com, wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+In-Reply-To: <4A96B997.1070001@nortel.com>
+Message-ID: <alpine.DEB.1.10.0908271257270.17470@gentwo.org>
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org> 
+ <1251302598.18584.31.camel@twins>  <alpine.DEB.1.10.0908261211340.9933@gentwo.org>  <20090826180407.GA13632@elte.hu>  <alpine.DEB.1.10.0908261509580.9933@gentwo.org>  <20090826193252.GA14721@elte.hu>  <alpine.DEB.1.10.0908261627110.5554@gentwo.org> 
+ <20090826135041.e6169d18.akpm@linux-foundation.org>  <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Aug 2009 17:02:59.0207 (UTC) FILETIME=[3AD37970:01CA2738]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This block is allocated with alloc_bootmem() and scanned by kmemleak but
-the kernel direct mapping may no longer exist. This patch tells kmemleak
-to ignore this memory hole. The dma32_bootmem_ptr in
-dma32_reserve_bootmem() is also ignored.
+On Thu, 27 Aug 2009, Chris Friesen wrote:
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/aperture_64.c |    6 ++++++
- arch/x86/kernel/pci-dma.c     |    6 ++++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+> I just went and read the docs.  One of the things I noticed is that it
+> says that the offlined cpu cannot run userspace tasks.  For our
+> situation that's a showstopper, unfortunately.
 
-diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-index 676debf..128111d 100644
---- a/arch/x86/kernel/aperture_64.c
-+++ b/arch/x86/kernel/aperture_64.c
-@@ -20,6 +20,7 @@
- #include <linux/bitops.h>
- #include <linux/ioport.h>
- #include <linux/suspend.h>
-+#include <linux/kmemleak.h>
- #include <asm/e820.h>
- #include <asm/io.h>
- #include <asm/iommu.h>
-@@ -94,6 +95,11 @@ static u32 __init allocate_aperture(void)
- 	 * code for safe
- 	 */
- 	p = __alloc_bootmem_nopanic(aper_size, aper_size, 512ULL<<20);
-+	/*
-+	 * Kmemleak should not scan this block as it may not be mapped via the
-+	 * kernel direct mapping.
-+	 */
-+	kmemleak_ignore(p);
- 	if (!p || __pa(p)+aper_size > 0xffffffff) {
- 		printk(KERN_ERR
- 			"Cannot allocate aperture memory hole (%p,%uK)\n",
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 1a041bc..fa80f60 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -3,6 +3,7 @@
- #include <linux/dmar.h>
- #include <linux/bootmem.h>
- #include <linux/pci.h>
-+#include <linux/kmemleak.h>
- 
- #include <asm/proto.h>
- #include <asm/dma.h>
-@@ -88,6 +89,11 @@ void __init dma32_reserve_bootmem(void)
- 	size = roundup(dma32_bootmem_size, align);
- 	dma32_bootmem_ptr = __alloc_bootmem_nopanic(size, align,
- 				 512ULL<<20);
-+	/*
-+	 * Kmemleak should not scan this block as it may not be mapped via the
-+	 * kernel direct mapping.
-+	 */
-+	kmemleak_ignore(dma32_bootmem_ptr);
- 	if (dma32_bootmem_ptr)
- 		dma32_bootmem_size = size;
- 	else
+It needs to be implemented the right way. Essentially this is a variation
+on the isolcpu kernel boot option. We probably need some syscall to move
+a user space process to a bare metal cpu since the cpu cannot be
+considered online in the regular sense.
+
+An isolated cpu can then only execute one process at a time. A process
+would do all initialization and lock itsresources in memory before going
+to the isolated processor. Any attempt to use OS facilities need to cause
+the process to be moved back to a cpu with OS services.
+
 
