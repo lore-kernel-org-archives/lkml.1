@@ -1,128 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbZH0PKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751460AbZH0PLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752557AbZH0PKA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 11:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbZH0PJ7
+	id S1751460AbZH0PLU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 11:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZH0PLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 11:09:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39824 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbZH0PJV (ORCPT
+	Thu, 27 Aug 2009 11:11:18 -0400
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:55057 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750761AbZH0PLS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 11:09:21 -0400
-Message-Id: <20090827150523.908589343@chello.nl>
-References: <20090827150051.846026837@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Thu, 27 Aug 2009 17:00:53 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC][PATCH 2/6] sched: SD_PREFER_SIBLING
-Content-Disposition: inline; filename=sched-lb-2.patch
+	Thu, 27 Aug 2009 11:11:18 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvQEAAM9lkpMROOX/2dsb2JhbACBU9cshBkF
+Date: Thu, 27 Aug 2009 11:11:18 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+Message-ID: <20090827151118.GD3552@Krystal>
+References: <alpine.DEB.2.00.0908261012020.23885@gandalf.stny.rr.com> <20090826164624.GA21456@Krystal> <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com> <20090826180114.GA29130@Krystal> <20090826181758.GA30248@Krystal> <alpine.DEB.2.00.0908261544590.11291@gandalf.stny.rr.com> <4A95E737.5080805@cn.fujitsu.com> <alpine.DEB.2.00.0908262209460.18923@gandalf.stny.rr.com> <20090827143902.GA3552@Krystal> <alpine.DEB.2.00.0908271052370.27674@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0908271052370.27674@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 11:02:16 up 9 days,  1:51,  2 users,  load average: 0.84, 0.41,
+	0.33
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do the placement thing using SD flags
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Thu, 27 Aug 2009, Mathieu Desnoyers wrote:
+> 
+> > Looks good. Just don't forget to eventually add the "synchronize" calls
+> > between tracepoint unregistration and the removal of their module. There
+> > is a race condition in the way you do it currently.
+> 
+> I'm trying to figure out the race here. What will disappear in the 
+> tracepoint? Could you give a brief example of the issue.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
----
- include/linux/sched.h |   29 +++++++++++++++--------------
- kernel/sched.c        |   14 +++++++++++++-
- 2 files changed, 28 insertions(+), 15 deletions(-)
+Sure,
 
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -808,18 +808,19 @@ enum cpu_idle_type {
- #define SCHED_LOAD_SCALE_FUZZ	SCHED_LOAD_SCALE
- 
- #ifdef CONFIG_SMP
--#define SD_LOAD_BALANCE		1	/* Do load balancing on this domain. */
--#define SD_BALANCE_NEWIDLE	2	/* Balance when about to become idle */
--#define SD_BALANCE_EXEC		4	/* Balance on exec */
--#define SD_BALANCE_FORK		8	/* Balance on fork, clone */
--#define SD_WAKE_IDLE		16	/* Wake to idle CPU on task wakeup */
--#define SD_WAKE_AFFINE		32	/* Wake task to waking CPU */
--#define SD_WAKE_BALANCE		64	/* Perform balancing at task wakeup */
--#define SD_SHARE_CPUPOWER	128	/* Domain members share cpu power */
--#define SD_POWERSAVINGS_BALANCE	256	/* Balance for power savings */
--#define SD_SHARE_PKG_RESOURCES	512	/* Domain members share cpu pkg resources */
--#define SD_SERIALIZE		1024	/* Only a single load balancing instance */
--#define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
-+#define SD_LOAD_BALANCE		0x0001	/* Do load balancing on this domain. */
-+#define SD_BALANCE_NEWIDLE	0x0002	/* Balance when about to become idle */
-+#define SD_BALANCE_EXEC		0x0004	/* Balance on exec */
-+#define SD_BALANCE_FORK		0x0008	/* Balance on fork, clone */
-+#define SD_WAKE_IDLE		0x0010	/* Wake to idle CPU on task wakeup */
-+#define SD_WAKE_AFFINE		0x0020	/* Wake task to waking CPU */
-+#define SD_WAKE_BALANCE		0x0040	/* Perform balancing at task wakeup */
-+#define SD_SHARE_CPUPOWER	0x0080	/* Domain members share cpu power */
-+#define SD_POWERSAVINGS_BALANCE	0x0100	/* Balance for power savings */
-+#define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg resources */
-+#define SD_SERIALIZE		0x0400	/* Only a single load balancing instance */
-+#define SD_WAKE_IDLE_FAR	0x0800	/* Gain latency sacrificing cache hit */
-+#define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
- 
- enum powersavings_balance_level {
- 	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
-@@ -839,7 +840,7 @@ static inline int sd_balance_for_mc_powe
- 	if (sched_smt_power_savings)
- 		return SD_POWERSAVINGS_BALANCE;
- 
--	return 0;
-+	return SD_PREFER_SIBLING;
- }
- 
- static inline int sd_balance_for_package_power(void)
-@@ -847,7 +848,7 @@ static inline int sd_balance_for_package
- 	if (sched_mc_power_savings | sched_smt_power_savings)
- 		return SD_POWERSAVINGS_BALANCE;
- 
--	return 0;
-+	return SD_PREFER_SIBLING;
- }
- 
- /*
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -3803,9 +3803,13 @@ static inline void update_sd_lb_stats(st
- 			const struct cpumask *cpus, int *balance,
- 			struct sd_lb_stats *sds)
- {
-+	struct sched_domain *child = sd->child;
- 	struct sched_group *group = sd->groups;
- 	struct sg_lb_stats sgs;
--	int load_idx;
-+	int load_idx, prefer_sibling = 0;
-+
-+	if (child && child->flags & SD_PREFER_SIBLING)
-+		prefer_sibling = 1;
- 
- 	init_sd_power_savings_stats(sd, sds, idle);
- 	load_idx = get_sd_load_idx(sd, idle);
-@@ -3825,6 +3829,14 @@ static inline void update_sd_lb_stats(st
- 		sds->total_load += sgs.group_load;
- 		sds->total_pwr += group->__cpu_power;
- 
-+		/*
-+		 * In case the child domain prefers tasks go to siblings
-+		 * first, lower the group capacity to one so that we'll try
-+		 * and move all the excess tasks away.
-+		 */
-+		if (prefer_sibling)
-+			sgs.group_capacity = 1;
-+
- 		if (local_group) {
- 			sds->this_load = sgs.avg_load;
- 			sds->this = group;
+Let's say we have a tracepoint in module instrumented.c, and a probe in
+module probe.c. The probe is registered by module probe.c init through
+the tracepoint infrastructure to connect to the tracepoint in
+instrumented.c. Unregistration is done in probe.c module exit.
+
+As the instrumented code get executed (let's say periodically), it calls
+the connected probe. Preemption is disabled around the call.
+
+If you unload the probe.c module, the module exit will unregister the
+probe, but the probe code can still be in use by another CPU. You have
+to wait for quiescent state with the tracepoint synchronize (which is
+just a wrapper over synchronize_sched() before you are allowed to
+complete module unload. Otherwise, you will end up reclaiming module
+memory that is still used by probe execution.
+
+A test-case for this would be to create a probe with a delay in it, and
+an instrumented module calling the instrumentation in a loop. On a SMP
+system, running the instrumented code and probe load/unload in loops
+should trigger this race.
+
+Mathieu
+
+
+> 
+> Thanks,
+> 
+> -- Steve
+> 
+> 
 
 -- 
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
