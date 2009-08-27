@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbZH0OGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbZH0OOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbZH0OGW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 10:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZH0OGU
+	id S1752776AbZH0OOE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 10:14:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZH0OOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 10:06:20 -0400
-Received: from zola.planet-work.net ([79.99.160.15]:40593 "EHLO
-	zola.planet-work.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbZH0OGR (ORCPT
+	Thu, 27 Aug 2009 10:14:03 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:49639 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752499AbZH0OOC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 10:06:17 -0400
-X-Greylist: delayed 2129 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Aug 2009 10:06:17 EDT
-Date: Thu, 27 Aug 2009 15:26:58 +0200
-From: Julien TINNES <julien@cr0.org>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, davem@davemloft.net, security@kernel.org,
-       taviso@sdf.lonestar.org
-Subject: [PATCH] ipv4: make ip_append_data() handle NULL routing table
-Message-ID: <20090827132658.GA17099@cr0.org>
+	Thu, 27 Aug 2009 10:14:02 -0400
+Subject: Re: Extending virtio_console to support multiple ports
+From: Ryan Arnold <rsa@us.ibm.com>
+Reply-To: rsa@us.ibm.com
+To: Amit Shah <amit.shah@redhat.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>, qemu-devel@nongnu.org,
+       kvm@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       borntraeger@de.ibm.com, linux-kernel@vger.kernel.org, miltonm@bga.com,
+       linuxppc-dev@ozlabs.org, brueckner@linux.vnet.ibm.com,
+       alan@linux.intel.com
+In-Reply-To: <20090827065251.GB3218@amit-x200.redhat.com>
+References: <1251181044-3696-1-git-send-email-amit.shah@redhat.com>
+	 <20090826112718.GA11117@amit-x200.redhat.com>
+	 <20090826154552.GA31910@amit-x200.redhat.com>
+	 <1251349485.6267.6.camel@concordia>
+	 <20090827065251.GB3218@amit-x200.redhat.com>
+Content-Type: text/plain
+Organization: IBM
+Date: Thu, 27 Aug 2009 09:13:28 -0500
+Message-Id: <1251382408.3063.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a check in ip_append_data() for NULL *rtp to prevent future bugs in callers from being exploitable.
+On Thu, 2009-08-27 at 12:22 +0530, Amit Shah wrote:
+> On (Thu) Aug 27 2009 [15:04:45], Michael Ellerman wrote:
+>  Ryan you called his code "pure legacy baggage" if you
+> > don't ;)
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=d450b4ae023fb4be175389c18f4f87677da03020
+> 
+> Thanks for the link!
+> 
+> (and this general area might be the one that doesn't get major upheavals
+> in 5-yr spans :-)
 
-Signed-off-by: Julien Tinnes <julien@cr0.org>
-Signed-off-by: Tavis Ormandy <taviso@sdf.lonestar.org>
-Acked-by: David S. Miller <davem@davemloft.net>
+Actually, quite the opposite... too many cooks in the kitchen in the
+last 6 years have left this code with some historical oddities.  When I
+added the interrupt context code in the first place I made sure that the
+driver did NOTHING in the interrupt handler except awaken the working
+thread.  Someone in the subsequent years thought it'd be a good idea to
+have the interrupt handler actually do the work.
 
----
+Furthermore the front and backends were separated so that new front ends
+can be used.  This was sometime in the last 5 years as well.
 
-diff -r b3cbf0ceeb34 net/ipv4/ip_output.c
---- a/net/ipv4/ip_output.c	Mon Aug 24 14:48:29 2009 +0200
-+++ b/net/ipv4/ip_output.c	Thu Aug 27 15:20:36 2009 +0200
-@@ -814,6 +814,8 @@
- 			inet->cork.addr = ipc->addr;
- 		}
- 		rt = *rtp;
-+		if (unlikely(!rt))
-+			return -EFAULT;
- 		/*
- 		 * We steal reference to this route, caller should not release it
- 		 */
+Let's just say I'm happy to pass the torch on this one.
+
+I would suggest that someone perform throughput tests on this driver at
+some point.  At the point where I stopped maintaining it I'd gotten the
+driver to the point where there was no jerking output or lost data under
+heavy I/O load.  I'm not sure where the driver's at now.
+
+Ryan S. Arnold
+
+
