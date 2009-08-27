@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752531AbZH0UJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbZH0UNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752531AbZH0UJA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 16:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbZH0UI4
+	id S1752400AbZH0UNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 16:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZH0UNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 16:08:56 -0400
-Received: from mail-pz0-f178.google.com ([209.85.222.178]:51793 "EHLO
-	mail-pz0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752385AbZH0UIz (ORCPT
+	Thu, 27 Aug 2009 16:13:18 -0400
+Received: from mailrelay004.isp.belgacom.be ([195.238.6.170]:50910 "EHLO
+	mailrelay004.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752075AbZH0UNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 16:08:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=Su9r44nnY59XRH2vVI2vL1pDRitbmbkFzQ7PuT7IkGMTKtDPI+cZ6os/OPQo6Rzxc/
-         dMcovPFmkuSvkLVZXjrpq3trtRSG9QtndcUdJ0ByRjE+Ua4328H8S5oMQZ6Rb/8qgKAH
-         xr8jJ495i2raXBkjBB38c2A8uNyB36ydHxmL0=
-Date: Thu, 27 Aug 2009 13:08:53 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 6/6] PM: Allow serio input devices to suspend/resume
-	asynchronously
-References: <200908262217.19609.rjw@sisk.pl> <200908262224.19110.rjw@sisk.pl>
+	Thu, 27 Aug 2009 16:13:17 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEALCFlkpR92Cn/2dsb2JhbADYbAmEEAU
+Date: Thu, 27 Aug 2009 22:13:17 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: roel.kluin@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] txx9wdt.c:52: Fix txx9wdt_probe() cleaning up after
+	errors
+Message-ID: <20090827201317.GH29382@infomag.iguana.be>
+References: <4A93ACDA.8030000@gmail.com> <20090827.235200.21363768.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908262224.19110.rjw@sisk.pl>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090827204106.1132B526EC9@mailhub.coreip.homeip.net>
+In-Reply-To: <20090827.235200.21363768.anemo@mba.ocn.ne.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 10:24:19PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Set async_suspend for all serio input devices, so that they can be
-> suspended and resumed asynchronously with other devices they don't
-> depend on in a known way (i.e. devices which are not their parents
-> or children and to which they are not connected via struct pm_link
-> objects).
-> 
+Hi Atsushi,
 
-As I mentioned not yet, please - i8042 may be unhappy if you pound
-all its ports at once. I should have a solution for it though.
+> > Make txx9wdt_probe() clean up after errors.
+> > 
+> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> > ---
+> > Any comments?
+> 
+> Well, why is this patch needed?  I intentionally omitted iounmap and
+> release_mem_region because devres guarantee these resources are freed
+> on probe failure.  Or are there any leaks?
 
--- 
-Dmitry
+My opinion: a driver should do proper clean-up on probe failures because
+1) this makes clean and robust code and shows that you know what you are doing
+2) to avoid having to search for leaks if there are any. See the NULL pointer story...
+
+Kind regards,
+Wim.
+
