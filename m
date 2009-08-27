@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbZH0U6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZH0U7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbZH0U6J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 16:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZH0U6I
+	id S1752829AbZH0U7O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 16:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbZH0U7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 16:58:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41278 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752714AbZH0U6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 16:58:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH 6/6] PM: Allow serio input devices to suspend/resume asynchronously
-Date: Thu, 27 Aug 2009 22:58:35 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <200908262217.19609.rjw@sisk.pl> <200908262224.19110.rjw@sisk.pl> <20090827204106.1132B526EC9@mailhub.coreip.homeip.net>
-In-Reply-To: <20090827204106.1132B526EC9@mailhub.coreip.homeip.net>
+	Thu, 27 Aug 2009 16:59:13 -0400
+Received: from shards.monkeyblade.net ([198.137.202.13]:45755 "EHLO
+	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752226AbZH0U7N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 16:59:13 -0400
+Message-ID: <4A96F355.30808@kernel.org>
+Date: Thu, 27 Aug 2009 13:57:57 -0700
+From: "J.H." <warthog9@kernel.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: Dave Young <hidave.darkstar@gmail.com>, webmaster@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, stable@kernel.org
+Subject: Re: mm/-next release on kernel.org web page?
+References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>	<20090802095523.e08166e3.rdunlap@xenotime.net>	<a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com>	<20090802193045.c3f3195c.rdunlap@xenotime.net>	<4A766F39.7090903@kernel.org>	<4A95D677.2020807@kernel.org>	<a8e1da0908270739sbab4821x6ec402a72587a337@mail.gmail.com> <20090827124315.0d0f2129.rdunlap@xenotime.net>
+In-Reply-To: <20090827124315.0d0f2129.rdunlap@xenotime.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908272258.35861.rjw@sisk.pl>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.1 (shards.monkeyblade.net [198.137.202.13]); Thu, 27 Aug 2009 13:57:58 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 August 2009, Dmitry Torokhov wrote:
-> On Wed, Aug 26, 2009 at 10:24:19PM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Set async_suspend for all serio input devices, so that they can be
-> > suspended and resumed asynchronously with other devices they don't
-> > depend on in a known way (i.e. devices which are not their parents
-> > or children and to which they are not connected via struct pm_link
-> > objects).
-> > 
+>> Is it possible to add latest mmotm link?
+>> Just link to andrew's broken-out.tar.gz with the stamp name?
 > 
-> As I mentioned not yet, please - i8042 may be unhappy if you pound
-> all its ports at once. I should have a solution for it though.
+> Ditto.  Please.
 
-OK, I'll drop this patch.
+Problem with mmotm is that Andrew is hosting that out of his public_html 
+directory, which I can only assume means that the tree isn't intended to 
+be consumed by the masses, as official trees are supposed to live under 
+/pub.  If this is not the case then we need to get it moved under 
+/pub/scm & /pub as things on public_html aren't synced out to the 
+front-end machines.  But I will have to defer to Andrew on what 
+direction he wants to take mmotm.
 
-Thanks,
-Rafael
+- John 'Warthog9' Hawley
