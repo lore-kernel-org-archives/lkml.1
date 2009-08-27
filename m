@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbZH0LrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbZH0LtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751882AbZH0LrG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 07:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbZH0LrF
+	id S1751848AbZH0LtK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 07:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZH0LtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 07:47:05 -0400
-Received: from mtagate6.de.ibm.com ([195.212.17.166]:55014 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751375AbZH0LrE (ORCPT
+	Thu, 27 Aug 2009 07:49:10 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:47305 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbZH0LtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 07:47:04 -0400
-Date: Thu, 27 Aug 2009 13:47:04 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] m68k: fix kunmap usage in pte_alloc_one
-Message-ID: <20090827114704.GB8678@osiris.boeblingen.de.ibm.com>
+	Thu, 27 Aug 2009 07:49:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=AJLcv7KZ6icR3iufxrtQKNBdwo5sjBODD7pTVuLuPkGfI5xipS9/IStACUgv7v2fOp
+         4W716qZ8nzKHBU/lIDvckOkko7l2ABOTQwdzWdBjB/7iRSpnYYNXVB6rsQrZTi6zXrXi
+         eDc9OuxMTBwv97USWcb4Zb61/x4DPvE7f8VEU=
+Message-ID: <4A9672A5.60004@gnu.org>
+Date: Thu, 27 Aug 2009 13:48:53 +0200
+From: Paolo Bonzini <bonzini@gnu.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: davidel@xmailserver.org, avi@redhat.com, gleb@redhat.com,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] eventfd: reorganize the code to simplify new flags
+References: <cover.1250783333.git.mst@redhat.com> <20090820155703.GB8764@redhat.com>
+In-Reply-To: <20090820155703.GB8764@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] m68k: avoid pgprot_noncached redefinition
+On 08/20/2009 05:57 PM, Michael S. Tsirkin wrote:
+> +static inline int eventfd_writeable(struct eventfd_ctx *ctx, u64 n)
+> +{
+> +	return ULLONG_MAX - n>  ctx->count;
+> +}
+> +
+> +static inline void eventfd_dowrite(struct eventfd_ctx *ctx, u64 ucnt)
+> +{
+> +	if (eventfd_writeable(ctx, ucnt))
+> +		ucnt = ULLONG_MAX - ctx->count;
+> +
+> +	ctx->count += ucnt;
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+In any case, this usage of eventfd_writeable is wrong: the code was like 
+this:
 
-Compiling m68k with defconfig gives a lot of these warnings:
+-	if (ULLONG_MAX - ctx->count < n)
+-		n = (int) (ULLONG_MAX - ctx->count);
+-	ctx->count += n;
++	eventfd_dowrite(ctx, n);
 
-In file included from /home2/heicarst/linux-2.6/arch/m68k/include/asm/pgalloc.h:13,
-                 from arch/m68k/kernel/dma.c:15:
-arch/m68k/include/asm/motorola_pgalloc.h: In function 'pte_alloc_one':
-arch/m68k/include/asm/motorola_pgalloc.h:44: warning: passing argument 1 of 'kunmap' from incompatible pointer type
+and so it should be !eventfd_writable.  (This smelled when I was editing 
+patch 2, so I went back and checked patch 1).
 
-kunmap wants a page not a pte.
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- arch/m68k/include/asm/motorola_pgalloc.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/arch/m68k/include/asm/motorola_pgalloc.h
-===================================================================
---- linux-2.6.orig/arch/m68k/include/asm/motorola_pgalloc.h
-+++ linux-2.6/arch/m68k/include/asm/motorola_pgalloc.h
-@@ -41,7 +41,7 @@ static inline pgtable_t pte_alloc_one(st
- 		flush_tlb_kernel_page(pte);
- 		nocache_page(pte);
- 	}
--	kunmap(pte);
-+	kunmap(page);
- 	pgtable_page_ctor(page);
- 	return page;
- }
+Paolo
