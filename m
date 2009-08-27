@@ -1,69 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZH0MJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbZH0MJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752347AbZH0MJJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 08:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZH0MJH
+	id S1752385AbZH0MJX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 08:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZH0MJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 08:09:07 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:54634 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbZH0MJD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 08:09:03 -0400
-Date: Thu, 27 Aug 2009 08:08:41 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: Chris Friesen <cfriesen@nortel.com>, linuxppc-dev@ozlabs.org,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix book E watchdog to take WDIOC_SETTIMEOUT arg in
-	seconds
-Message-ID: <20090827120841.GA25303@zod.rchland.ibm.com>
-References: <4A8303C6.7070705@nortel.com> <20090827111458.GB29382@infomag.iguana.be>
+	Thu, 27 Aug 2009 08:09:22 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:23240 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752353AbZH0MJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 08:09:17 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] AFS: Stop readlink() on AFS crashing because file not passed
+	to afs_readpage()
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-am33@lists.infradead.org, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>, Anton Blanchard <anton@samba.org>
+Date: Thu, 27 Aug 2009 13:09:06 +0100
+Message-ID: <20090827120906.14429.94498.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090827111458.GB29382@infomag.iguana.be>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27, 2009 at 01:14:58PM +0200, Wim Van Sebroeck wrote:
->Hi Chris,
->
->> The WDIOC_SETTIMEOUT argument is supposed to be a "seconds" value.
->> However, the book E wdt currently treats it as a "period" which is
->> interpreted in a board-specific way.
->> 
->> This patch allows the user to pass in a "seconds" value and the driver
->> will set the smallest timeout that is at least as large as specified
->> by the user.  It's been tested on e500 hardware and works as
->> expected.
->> 
->> The patch only modifies the CONFIG_FSL_BOOKE case, the CONFIG_4xx case
->> is left unmodified as I don't have any hardware to test it on.
->> 
->> Signed-off-by: Chris Friesen <cfriesen@nortel.com>
->
->Added with some small changes to keep checkpatch happy. (removed trailing spaces + changed sizeof(struct watchdog_info) to sizeof(ident) and changed some spaces in tabs).
->
->Now we only need someone that can look at the CONFIG_4xx cases still :-)
+kAFS crashes when asked to read a symbolic link because page_getlink() passes a
+NULL file pointer to read_mapping_page(), but afs_readpage() expects a file
+pointer from which to extract a key.
 
-It seems the FSL watchdog is much more flexible than the one found in 4xx
-cores.  On 4xx, you basically have 4 static choices that represent specific
-times determined by the clock frequency.  I'm concerned that the lack of
-granularity here will result in less than desirable behavior.
+Modify afs_readpage() to request the appropriate key from the calling process's
+keyrings if a file struct is not supplied with one attached.
 
-For example, with a 400MHz clock you would get choices of roughly:
+Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: Anton Blanchard <anton@samba.org>
+---
 
-5.2 ms
-83.9 ms
-1.34 s
-21.47 s
+ fs/afs/file.c |   18 +++++++++++++++---
+ 1 files changed, 15 insertions(+), 3 deletions(-)
 
-Personally, I consider the first two options basically unusable.  Considering
-the second two, if a user were to say "Set the timeout for 2 seconds" they
-would then get a timeout of 21 seconds with the framework Chris' patch has
-set up.  That doesn't really seem to be ideal to me.
 
-josh
+diff --git a/fs/afs/file.c b/fs/afs/file.c
+index 0149dab..681c2a7 100644
+--- a/fs/afs/file.c
++++ b/fs/afs/file.c
+@@ -134,9 +134,16 @@ static int afs_readpage(struct file *file, struct page *page)
+ 
+ 	inode = page->mapping->host;
+ 
+-	ASSERT(file != NULL);
+-	key = file->private_data;
+-	ASSERT(key != NULL);
++	if (file) {
++		key = file->private_data;
++		ASSERT(key != NULL);
++	} else {
++		key = afs_request_key(AFS_FS_S(inode->i_sb)->volume->cell);
++		if (IS_ERR(key)) {
++			ret = PTR_ERR(key);
++			goto error_nokey;
++		}
++	}
+ 
+ 	_enter("{%x},{%lu},{%lu}", key_serial(key), inode->i_ino, page->index);
+ 
+@@ -207,12 +214,17 @@ static int afs_readpage(struct file *file, struct page *page)
+ 		unlock_page(page);
+ 	}
+ 
++	if (!file)
++		key_put(key);
+ 	_leave(" = 0");
+ 	return 0;
+ 
+ error:
+ 	SetPageError(page);
+ 	unlock_page(page);
++	if (!file)
++		key_put(key);
++error_nokey:
+ 	_leave(" = %d", ret);
+ 	return ret;
+ }
+
