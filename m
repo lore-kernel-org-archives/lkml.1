@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZH0OtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751614AbZH0Oue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751542AbZH0OtF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 10:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbZH0OtF
+	id S1751614AbZH0Oue (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 10:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZH0Oud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 10:49:05 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:40959 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751139AbZH0OtE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 10:49:04 -0400
-Message-ID: <4A969CDC.6060402@gmail.com>
-Date: Thu, 27 Aug 2009 16:49:00 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 27 Aug 2009 10:50:33 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:64753 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751218AbZH0Ouc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 10:50:32 -0400
+Date: Thu, 27 Aug 2009 17:49:05 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Paolo Bonzini <pbonzini@redhat.com>, Avi Kivity <avi@redhat.com>,
+       gleb@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+Message-ID: <20090827144905.GA22728@redhat.com>
+References: <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com> <1251363930-3916-1-git-send-email-pbonzini@redhat.com> <alpine.DEB.2.00.0908270720250.3809@makko.or.mcafeemobile.com> <20090827143027.GA22720@redhat.com> <alpine.DEB.2.00.0908270732470.3809@makko.or.mcafeemobile.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Li_Xin2@emc.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: TCP keepalive timer problem
-References: <0939B589FC103041945B9F13274963E303B1A9D4@CORPUSMX90A.corp.emc.com> <4A93E36C.8070502@gmail.com> <0939B589FC103041945B9F13274963E303B1AD89@CORPUSMX90A.corp.emc.com> <4A967FCE.3000807@gmail.com> <87skfdl6qt.fsf@basil.nowhere.org> <4A969566.3070606@gmail.com> <20090827142927.GA17220@basil.fritz.box>
-In-Reply-To: <20090827142927.GA17220@basil.fritz.box>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 27 Aug 2009 16:49:01 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0908270732470.3809@makko.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen a écrit :
-> On Thu, Aug 27, 2009 at 04:17:10PM +0200, Eric Dumazet wrote:
->> Andi Kleen a écrit :
->>> Eric Dumazet <eric.dumazet@gmail.com> writes:
->>>> Now, 7200 seconds might be inappropriate for special needs, and considering
->>>> there is no way to change tcp_retries2 for a given socket (only choice being the global
->>>> tcp_retries2 setting), I would vote for a change in our stack, to *relax* RFC,
->>>> and get smaller keepalive timers if possible.
->>> I think the better fix would be to just to only do that when
->>> tcp_retries2 > keep alive time. So keep the existing behaviour
->>> with default keep alive, but switch when the user defined
->>> a very short keep alive.
->>>
->> tcp_retries2 is a number of retries, its difficult to derive a time from it.
+On Thu, Aug 27, 2009 at 07:38:46AM -0700, Davide Libenzi wrote:
+> On Thu, 27 Aug 2009, Michael S. Tsirkin wrote:
 > 
-> That shouldn't be too hard. 
+> > On Thu, Aug 27, 2009 at 07:21:49AM -0700, Davide Libenzi wrote:
+> > > On Thu, 27 Aug 2009, Paolo Bonzini wrote:
+> > > 
+> > > > > Ok, so why not using the eventfd counter as state?
+> > > > > On the device side:
+> > > > > 
+> > > > > void write_state(int sfd, int state) {
+> > > > > 	u64 cnt;
+> > > > > 
+> > > > > 	/* Clear the current state, sfd is in non-blocking mode */
+> > > > > 	read(sfd,&cnt, sizeof(cnt));
+> > > > > 	/* Writes new state */
+> > > > > 	cnt = 1 + !!state;
+> > > > > 	write(sfd,&cnt, sizeof(cnt));
+> > > > > }
+> > > > 
+> > > > It's interesting [no sarcasm intended, mind] that EFD_SEMAPHORE was
+> > > > added exactly to avoid a read+write combination for the case of
+> > > > decrementing a value.
+> > > 
+> > > Like I repeated 25 times already, EFD_SEMAPHORE was added, because a 
+> > > *semaphore* is a pretty widely known and used abstraction.
+> > 
+> > what about an atomic variable, btw?  does it make sense to implement
+> > write that does compare and exchange?
 > 
->> Also, it's not clear what behavior you are refering to.
->> Imagine we can be smart and compute tcp_retries2_time (in jiffies) from tcp_retries2
->> If keepalive_timer fires and we have packets in flight, what heuristic do you suggest ?
-> 
-> I didn't suggest to change something at firing time, just pattern
-> the code you removed with if (keepalive_time > retries2 time)
-> 
-> That's not perfect, but likely good enough.
+> It is surprising to me, that is front of a workable solution w/out any 
+> use-once additions, yet you want to try to add optimizations and new 
+> ad-hoc abstractions to user visible interfaces.
+> Now, you tell me what an atomic variable has to do with an eventfd.
 > 
 > 
->> if (tp->packets_out || tcp_send_head(sk))
->> 	if (tcp_retries2_time < keepalive_time_when(tp))
->> 		goto resched;
->> elapsed = tcp_time_stamp - tp->rcv_tstamp;
->> ...
->>
->> What would be the gain ?
->> Arming timer exactly every keepalive_time_when(tp)
->> instead of keepalive_time_when(tp) - (tcp_time_stamp - tp->rcv_tstamp) ?
-> 
-> The gain would be that you don't send unnecessary packets by default (following the RFC), but 
-> still give expected behaviour to users who explicitely set short keepalives.
+> - Davide
 > 
 
-Yep, so to recap we have two changes :
+Oh, I stopped pushing EFD_STATE since we have a solution.
+I am just trying to grok what does and what does not consititute a
+use-once addition, in your mind, and what does and what does not
+belong in eventfd. The reason atomic does not belong there and
+semaphore does is because one waits on semaphore but not
+on atomic? Is that it?
 
-1) The one I sent (taking into account the time of last ACK we received) to compute the
-timer delays.
-
-2) The one you suggest, avoiding to send a probe if we have packets in flight, relying
-on normal retransmits timers.
-
+-- 
+MST
