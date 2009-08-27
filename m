@@ -1,91 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbZH0WB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZH0WEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753337AbZH0WB1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 18:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbZH0WB0
+	id S1753340AbZH0WEO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 18:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZH0WEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 18:01:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16410 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753194AbZH0WBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 18:01:25 -0400
-Message-ID: <4A97021A.7030902@redhat.com>
-Date: Thu, 27 Aug 2009 18:00:58 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Thu, 27 Aug 2009 18:04:14 -0400
+Received: from shards.monkeyblade.net ([198.137.202.13]:38518 "EHLO
+	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753111AbZH0WEN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 18:04:13 -0400
+Message-ID: <4A9702A2.4060700@kernel.org>
+Date: Thu, 27 Aug 2009 15:03:14 -0700
+From: "J.H." <warthog9@kernel.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-References: <20090824212518.GF29763@elf.ucw.cz> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <200908271551.43840.rob@landley.net>
-In-Reply-To: <200908271551.43840.rob@landley.net>
+To: Greg KH <gregkh@suse.de>
+CC: Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Young <hidave.darkstar@gmail.com>, webmaster@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: mm/-next release on kernel.org web page?
+References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com> <20090802095523.e08166e3.rdunlap@xenotime.net> <a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com> <20090802193045.c3f3195c.rdunlap@xenotime.net> <4A766F39.7090903@kernel.org> <4A95D677.2020807@kernel.org> <20090827033315.GA32648@suse.de>
+In-Reply-To: <20090827033315.GA32648@suse.de>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.1 (shards.monkeyblade.net [198.137.202.13]); Thu, 27 Aug 2009 15:03:16 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/27/2009 04:51 PM, Rob Landley wrote:
-> On Thursday 27 August 2009 06:43:49 Ric Wheeler wrote:
->    
->> On 08/26/2009 11:53 PM, Rob Landley wrote:
->>      
->>> On Tuesday 25 August 2009 18:40:50 Ric Wheeler wrote:
->>>        
->>>> Repeat experiment until you get up to something like google scale or the
->>>> other papers on failures in national labs in the US and then we can have
->>>> an informed discussion.
->>>>          
->>> On google scale anvil lightning can fry your machine out of a clear sky.
->>>
->>> However, there are still a few non-enterprise users out there, and
->>> knowing that specific usage patterns don't behave like they expect might
->>> be useful to them.
->>>        
->> You are missing the broader point of both papers.
->>      
-> No, I'm dismissing the papers (some of which I read when they first came out
-> and got slashdotted) as irrelevant to the topic at hand.
->    
-
-I guess I have to dismiss your dismissing then.
-> Pavel has two failure modes which he can trivially reproduce.  The USB stick
-> one is reproducible on a laptop by jostling said stick.  I myself used to have
-> a literal USB keychain, and the weight of keys dangling from it pulled it out
-> of the USB socket fairly easily if I wasn't careful.  At the time nobody had
-> told me a journaling filesystem was not a reasonable safeguard here.
->
-> Presumably the degraded raid one can be reproduced under an emulator, with no
-> hardware directly involved at all, so talking about hardware failure rates
-> ignores the fact that he's actually discussing a _software_ problem.  It may
-> happen in _response_ to hardware failures, but the damage he's attempting to
-> document happens entirely in software.
->
-> These failure modes can cause data loss which journaling can't help, but which
-> journaling might (or might not) conceivably hide so you don't immediately
-> notice it.  They share a common underlying assumption that the storage
-> device's update granularity is less than or equal to the filesystem's block
-> size, which is not actually true of all modern storage devices.  The fact he's
-> only _found_ two instances where this assumption bites doesn't mean there
-> aren't more waiting to be found, especially as more new storage media types
-> get introduced.
->
-> Pavel's response was to attempt to document this.  Not that journaling is
-> _bad_, but that it doesn't protect against this class of problem.
->
-> Your response is to talk about google clusters, cloud storage, and cite
-> academic papers of statistical hardware failure rates.  As I understand the
-> discussion, that's not actually the issue Pavel's talking about, merely one
-> potential trigger for it.
->
-> Rob
->    
+Greg KH wrote:
+> On Wed, Aug 26, 2009 at 05:42:31PM -0700, J.H. wrote:
+>> Not to reply to myself, but I've pushed out an update that should 
+>> incorporate the expected trees now, this does eliminate the 2.2 and all 
+>> but the last 2.4 tree (2.4.37.5), but does include all of the stable 
+>> 2.6.x trees, the snapshots and linux-next.  Frontpage, finger and rss 
+>> should all be showing the new information universally.  I'll probably 
+>> tweak things a bit more (layout and such for the rss & html) but the 
+>> kernels should now be listed as people expect.
+> 
+> This looks a lot better, thanks.  But note that the 2.6.28 and 2.6.29
+> stable series are no longer maintained, and the current versions of them
+> have known security issues, so it might not be a good idea to show that
+> they are recommended for use at all.
+> 
+> Is there some way that we can "mark" activly maintained releases to have
+> them show up on the front page in any way?  We can use the LATEST-IS
+> type file in the kernel directory if you want, that would be a simple
+> way to maintain this information.
 
 
+The way the script works, in particular with regards to the ever 
+changing realm of the 'stable' trees is this:
+
+Wander the entire stable directory looking for git trees that have a tag 
+that was last produced within 6 months (this can be shortened/lengthened 
+but 6 months seemed reasonable at the time).  Pull the information for 
+those kernels out and show them.  2.6.28's last tag was 3 months ago, 
+2.6.29's was 7 weeks ago (almost 2 months) but things like 2.6.27 had an 
+update 10 days ago.
+
+I would be a bit concerned about using the LATEST-IS tags in the kernel 
+directory, in particular there are external scripts that snag the 
+LATEST-IS file to determine if a kernel needs to be pulled in, etc. 
+Having multiple of those files would likely play havoc with those 
+scripts as I'm sure they are doing something like:
+
+ncftpget ftp://ftp.kernel.org/pub/linux/kernel/v2.6/LATEST-IS-*
+
+It might also be particularly confusing to people to see multiple LATEST-IS'
+
+Could do something based on the specific git tag for a tree, something 
+like tagging the tree EOL would remove it from the list immediately, 
+would have the advantage that should development be picked-back up and a 
+new tag get created it would automatically show back up in the list, as 
+well as it being explicit that that stable tree had stopped development.
+
+For things like 2.6.28 & 2.6.29 that have more serious security 
+vulnerabilities could setup some sort of blacklist file, or even a file 
+that you could touch in the repo's directory that would blacklist it as 
+well.
+
+Like said, can always shorten the expiry period from 6 months to 3 for 
+example which would more aggressively prune the list too.
+
+Thoughts?
+
+- John 'Warthog9' Hawley
