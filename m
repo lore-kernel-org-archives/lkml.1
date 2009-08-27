@@ -1,166 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZH0WLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbZH0WNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753359AbZH0WLA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 18:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZH0WK5
+	id S1753383AbZH0WNc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 18:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZH0WNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 18:10:57 -0400
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:44027 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752714AbZH0WK5 (ORCPT
+	Thu, 27 Aug 2009 18:13:31 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53486 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbZH0WNa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 18:10:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=lIRIunLlEVgLs8yGCLxdn6e8sDvqrciuq+COi5AHMrpfn8u6WVZBHv7wJx1Tgo76Qd
-         ULL6FlEE5mxXkGWrIWemqWV4pOlO2vxsIAjw64H6b29yO5dmxkTa2i40z2z5c99cJy+g
-         6vjT2+SLHohZCy94n+PzEDbgdnj6ZSrchg5p4=
-Message-ID: <4A97046D.8010008@gmail.com>
-Date: Thu, 27 Aug 2009 18:10:53 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Thu, 27 Aug 2009 18:13:30 -0400
+Date: Fri, 28 Aug 2009 00:13:21 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+	document conditions when reliable operation is possible)
+Message-ID: <20090827221319.GA1601@ucw.cz>
+References: <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: FTRACE: regression in 31-rc7
-References: <4A96B55C.10001@gmail.com> <20090827164007.GA30679@elte.hu> <4A96BB40.1070306@gmail.com> <alpine.DEB.2.00.0908271301200.29943@gandalf.stny.rr.com> <4A96BD50.9040204@gmail.com> <alpine.DEB.2.00.0908271334230.19345@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0908271334230.19345@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4F8110CC1F32B3A6B7AE21A8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A967175.5070700@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4F8110CC1F32B3A6B7AE21A8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Steven Rostedt wrote:
-> On Thu, 27 Aug 2009, Gregory Haskins wrote:
->=20
->> Hi Steve,
+>>> Repeat experiment until you get up to something like google scale or the
+>>> other papers on failures in national labs in the US and then we can have an
+>>> informed discussion.
+>>>      
+>> On google scale anvil lightning can fry your machine out of a clear sky.
 >>
->> Steven Rostedt wrote:
->> instrumented for some reason.
->>> Hmm, so you think something with the modules broke? I can test that o=
-ut=20
->>> here.
->> Thats my (admittedly fairly ignorant) theory based on the limited data=
+>> However, there are still a few non-enterprise users out there, and knowing
+>> that specific usage patterns don't behave like they expect might be useful to
+>> them.
+>
+> You are missing the broader point of both papers. They (and people like  
+> me when back at EMC) look at large numbers of machines and try to fix  
+> what actually breaks when run in the real world and causes data loss.  
+> The motherboards, S-ATA controllers, disk types are the same class of  
+> parts that I have in my desktop box today.
+...
+> These errors happen extremely commonly and are what RAID deals with well.
+>
+> What does not happen commonly is that during the RAID rebuild (kicked  
+> off only after a drive is kicked out), you push the power button or have  
+> a second failure (power outage).
+>
+> We will have more users loose data if they decide to use ext2 instead of  
+> ext3 and use only single disk storage.
 
->> samples I have in front of me. :)
->>
->> If I get a chance later, I will try to do something more scientific, o=
-r
->> at least a bisect.
->=20
-> I just did this:
+So your argument basically is
 
-Sorry, was away from the computer for a while...
+'our abs brakes are broken, but lets not tell anyone; our car is still
+safer than a horse'.
 
-In light of these reports, I suspect this may either be some kind of
-operator error, or a bad build or something.  I will retry -rc7 with a
-clean build later and see if it still reproduces.  Until then, apologies
-for the noise.
+and
 
-Kind Regards,
--Greg
+'while we know our abs brakes are broken, they are not major factor in
+accidents, so lets not tell anyone'.
 
->=20
->  # uname -r
-> 2.6.31-rc7
->  # echo :mod:ext3 > set_ftrace_filter
->  # echo function_graph > current_tracer
->  # cat trace
-> # tracer: function_graph
-> #
-> # CPU  DURATION                  FUNCTION CALLS
-> # |     |   |                     |   |   |   |
->  1)   6.928 us    |  ext3_permission();
->  1)   1.234 us    |  ext3_permission();
->  ------------------------------------------
->  1)  gdm-bin-3477  =3D>   pcscd-2951 =20
->  ------------------------------------------
->=20
->  1)   1.306 us    |  ext3_permission();
->  1)   1.314 us    |  ext3_permission();
->  1)   1.244 us    |  ext3_permission();
->  1)   1.364 us    |  ext3_permission();
->  1)   1.251 us    |  ext3_permission();
->  1)   1.473 us    |  ext3_permission();
->  1)   1.306 us    |  ext3_permission();
->  1)   1.401 us    |  ext3_permission();
->  1)   1.243 us    |  ext3_permission();
->  1)   1.301 us    |  ext3_permission();
->  1)   1.439 us    |  ext3_permission();
->  1)   1.239 us    |  ext3_permission();
->  1)   1.331 us    |  ext3_permission();
->  1)   1.423 us    |  ext3_permission();
->  1)   1.243 us    |  ext3_permission();
->  1)   1.321 us    |  ext3_permission();
->  ------------------------------------------
->  1)   pcscd-2951   =3D>  gdm-bin-3477=20
->  ------------------------------------------
->=20
->  1)   2.567 us    |  ext3_permission();
->  1)   1.139 us    |  ext3_permission();
->  1)   2.329 us    |  ext3_permission();
->  1)   1.246 us    |  ext3_permission();
->  1)   1.321 us    |  ext3_permission();
->  1)   0.989 us    |  ext3_permission();
->  1)   1.261 us    |  ext3_permission();
->  1)   1.209 us    |  ext3_permission();
->  1)   1.221 us    |  ext3_permission();
->  1)   0.968 us    |  ext3_permission();
->  1)   2.319 us    |  ext3_permission();
->  1)   1.221 us    |  ext3_permission();
->  1)   2.199 us    |  ext3_permission();
->  1)   1.269 us    |  ext3_permission();
->  ------------------------------------------
->  1)  gdm-bin-3477  =3D>   bash-3198  =20
->  ------------------------------------------
->=20
->  1)   2.852 us    |  ext3_permission();
->  1)               |  ext3_readdir() {
->  1)   1.249 us    |    free_rb_tree_fname();
->  1)               |    ext3_htree_fill_tree() {
->  1)               |      htree_dirblock_to_tree() {
->  1)               |        ext3_bread() {
->  1)               |          ext3_getblk() {
->  1)               |            ext3_get_blocks_handle() {
->  1)   1.046 us    |              ext3_block_to_path();
->=20
->=20
-> This is with the latest Linus git:
->=20
-> commit 1e23502cc57cef33455ac7cb9111e3c6d991a894
-> Merge: e99b1f2... 3161e45...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Wed Aug 26 20:54:48 2009 -0700
->=20
-> -- Steve
->=20
+Sorry, but I'd expect slightly higher moral standards. If we can
+document it in a way that's non-scary, and does not push people to
+single disks (horses), please go ahead; but you have to mention that
+md raid breaks journalling assumptions (our abs brakes really are
+broken).
+								Pavel
 
-
-
---------------enig4F8110CC1F32B3A6B7AE21A8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqXBG4ACgkQP5K2CMvXmqHz0ACfXVrX/BXCJcUNBGxGtPVx7sFk
-qJ8AnAwfBKA3Fkjys93c8spBvY+XY8GY
-=WqeD
------END PGP SIGNATURE-----
-
---------------enig4F8110CC1F32B3A6B7AE21A8--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
