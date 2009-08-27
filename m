@@ -1,174 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751508AbZH0TLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZH0TOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751508AbZH0TLm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 15:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbZH0TLm
+	id S1751542AbZH0TOO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 15:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbZH0TOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 15:11:42 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:16818 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751116AbZH0TLl (ORCPT
+	Thu, 27 Aug 2009 15:14:12 -0400
+Received: from mx01.freesources.org ([80.237.252.149]:46743 "EHLO
+	mail01.freesources.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbZH0TOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 15:11:41 -0400
-X-Trace: 250305201/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.24.64/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.24.64
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuUEAOd2lkpQKRhA/2dsb2JhbACBU9dwhBkF
-X-IronPort-AV: E=Sophos;i="4.44,287,1249254000"; 
-   d="scan'208";a="250305201"
-Date: Thu, 27 Aug 2009 20:11:05 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 13/12] ksm: fix munlock during exit_mmap deadlock
-In-Reply-To: <4A95AE06.305@redhat.com>
-Message-ID: <Pine.LNX.4.64.0908271958330.1973@sister.anvils>
-References: <20090825145832.GP14722@random.random> <20090825152217.GQ14722@random.random>
- <Pine.LNX.4.64.0908251836050.30372@sister.anvils> <20090825181019.GT14722@random.random>
- <Pine.LNX.4.64.0908251958170.5871@sister.anvils> <20090825194530.GU14722@random.random>
- <Pine.LNX.4.64.0908261910530.15622@sister.anvils> <20090826194444.GB14722@random.random>
- <Pine.LNX.4.64.0908262048270.21188@sister.anvils> <4A95A10C.5040008@redhat.com>
- <20090826211400.GE14722@random.random> <4A95AE06.305@redhat.com>
+	Thu, 27 Aug 2009 15:14:12 -0400
+X-Greylist: delayed 2341 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Aug 2009 15:14:11 EDT
+Date: Thu, 27 Aug 2009 20:35:01 +0200
+From: Jonas Meurer <jonas@freesources.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>, 541835@bugs.debian.org
+Cc: Celejar <celejar@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Message-ID: <20090827183500.GC24973@resivo.wgnet.de>
+References: <20090825195852.1dfacb6c.celejar@gmail.com>
+ <20090827095516.6817be1e.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="qjNfmADvan18RZcF"
+Content-Disposition: inline
+In-Reply-To: <20090827095516.6817be1e.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 88.69.167.238
+X-SA-Exim-Mail-From: jonas@freesources.org
+Subject: Re: [pkg-cryptsetup-devel] Bug#541835: crypto configuration /
+ dependencies broken
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:20:07 +0000)
+X-SA-Exim-Scanned: Yes (on mail01.freesources.org)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009, Izik Eidus wrote:
-> Andrea Arcangeli wrote:
-> > On Wed, Aug 26, 2009 at 11:54:36PM +0300, Izik Eidus wrote:
-> >   
-> > > But before getting into this, why is it so important to break the ksm
-> > > pages when madvise(UNMERGEABLE) get called?
-> > >     
 
-Good question.
+--qjNfmADvan18RZcF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> >
-> > The moment ksm pages are swappable, there's no apparent reason why
-> > anybody should ask the kernel to break any ksm page if the application
-> > themselfs aren't writing to them in the first place (triggering
-> > copy-on-write in app context which already handles TIF_MEMDIE just
-> > fine).
-> >   
-> 
-> I think I am the one that should be blamed for breaking the ksm pages when
-> running unmeregable (If I remember right),
+hey,
 
-No, I think it was me to blame for that: looking back at the /dev/ksm KSM
-and your draft of madvise KSM, I don't see breaking on unmerge in either.
+On 27/08/2009 Randy Dunlap wrote:
+> On Tue, 25 Aug 2009 19:58:52 -0400 Celejar wrote:
+>=20
+> > I'm having a pretty bizarre problem with my kernel crypto
+> > configuration.  I need support for a bog standard LUKS (aes /
+> > cbc-essiv:sha256) / cryptsetup installation, but even after I enable
+> > virtually everything in the crypto section of the kernel configs, cbc
+> > fails to load.  All the relevant modules are exist (dm-mod, dm-crypt,
+> > crypto_blkcipher, crypto_algapi, crypto_hash, aes_generic,
+> > sha256_generic), but even after modprobing / insmoding
+> > everything, /proc/crypto shows that aes and sha is there, but not cbc.
+> >=20
+> > The problem has been reproduced (using my kernel config) by Jonas
+> > Meurer, the Debian cryptsetup maintainer, so it's not just me ;).
+> > We've tried numerous different kernel versions in the .30 / .31 range.
+> >=20
+> > http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=3D541835
+> >=20
+> > Does this mean that something else somewhere in the kernel needs to be
+> > configured but isn't, and the necessary dependency isn't properly
+> > declared?
+> >=20
+> > My config is at:
+> > http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=3D45;filename=3Dconfig=
+-2.6.31-rc6-lizzie-00042-gb2add73;att=3D1;bug=3D541835
+> >=20
+> > [I'm not subscribed to lkml; please cc me on responses]
+>=20
+>=20
+> You could try/test a patch that was just posted:
+>   http://lkml.org/lkml/2009/8/27/249
 
-> but I think Hugh had a good case why we want to keep it... ? (If I remember
-> right again...)
+that patch seems to be for ecryptfs only, while Celejar uses dm-crypt.
+second, the patch just ensures that CRYPTO_ECB and CRYPTO_CBC are
+selected along with ECRYPT_FS. but Celejar does have both CRYPTO_ECB and
+CRYPTO_CBC selected.
 
-There were several reasons for adding it, but all rather weak.
+the problem rather is that loading the cbc blockcipher module simply
+does nothing. the module is listed in /proc/modules, but the blockcipher
+is still missing from /proc/crypto.
 
-The "good case" you're half-remembering is probably that if we didn't
-break ksm when doing madvise MADV_UNMERGEABLE, we'd lose track of any
-KSM pages in the vma we're removing VM_MERGEABLE from (since we only
-ever scan VM_MERGEABLEs), and so would be liable to build up more and
-more unswappable KSM pages, well beyond the limit which can be imposed
-by max_kernel_pages.
+the problem is not reproducible with a debian/unstable 2.6.30.6 kernel,
+even though it has cbc compiled as module as well. but if I recompile
+the same kernel sources with Celejars kernel .config, the problem
+occurs. thus it must be related to the kernel config in some way.
 
-It is important to keep that accounting right, at least for so long as
-they're unswappable; but it amounts to only a weak case, because we
-could perfectly well have two vm_flags, one to say actively try to
-merge here, and another to say there might still be KSM pages here.
-(Perhaps with some restructuring that could instead be driven from
-the stable tree end, rather than through the mm_slots and vmas.)
+greetings,
+ jonas
 
-Reasons for avoiding two vm_flags: simplicity; minimizing KSM
-footprint outside of ksm.c; and... VM_MERGEABLE has selfishly taken
-bit 31 of vm_flags, the next vm_flag is going to involve some thought
-on the best way to expand it (on 32-bit arches).  It's not an atomic
-field so it shouldn't be hard; we used to minimize the use of 64-bit
-on 32-bit but maybe gcc's unsigned long long handling is pretty good
-nowadays and it's no issue?  Or maybe the issue was always avoiding
-64-bit arithmetic, no issue with bitflags?  I don't know myself.
 
-Other reasons for breaking ksm when unmerging: my sense that we ought
-to provide a way to undo whatever is done (useful when testing, but
-does that make it worth the effort? particularly if much of the testing
-goes into testing precisely that feature!); and a notion that people
-worried about covert channels would want to be able to undo merging
-absolutely (but would they have been using MADV_MERGEABLE in the
-first place, even have KSM configured in and running? seems unlikely).
 
-It may be that MADV_UNMERGEABLE isn't really needed (I think I even
-admitted once that probably nobody would use it other than we testing
-it).  Yet I hesitate to rip it out: somehow it still seems right to
-have it in there.  Why did you have unregistering in the /dev/ksm KSM?
+--qjNfmADvan18RZcF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> 
-> > In oom deadlock terms madvise(UNMERGEABLE) is the only place that is
-> > 100% fine at breaking KSM pages, because it runs with right tsk->mm
-> > and page allocation will notice TIF_MEMDIE set on tsk.
-> >
-> > If we remove "echo 2" only remaining "unsafe" spot is the break_cow in
-> > kksmd context when memcmp fails and similar during the scan.
-> >
-> >   
-> I didnt talk here about the bug..., I talked about the behavior...
-> It is the feeling that the oom will kill applications calling into
-> UNMERGEABLE, even thought this application shouldn't die, just because it had
-> big amount of memory shared and it unmerged it in the wrong time?...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-The OOM killer makes its choices based upon total_vm (and some other
-things): doesn't even consider rss, and certainly not KSM sharing.
-So whenever out-of-memory, the OOM killer might choose to kill a very
-highly KSM-merged process, freeing very little memory, just because
-it _appears_ big from the outside.  There's nothing special to the
-unmerging case, other than that being a good way to require lots of
-page allocations in a single system call.  I don't see anything
-unfair about it being killed at the point of unmerging: much more
-unfair that it be killed when highly merged.
+iEYEARECAAYFAkqW0dQACgkQd6lUs+JfIQI44QCfYUZo+kTRNLejLzk6P2l9xxmA
++zsAn27R0reMdFx3/tWv3a12VzBAzKoV
+=VOjs
+-----END PGP SIGNATURE-----
 
-> 
-> But probably this thoughts have no end, and we are better stick with something
-> practical that can work clean and simple...
-> 
-> So what I think is this:
-> echo 2 is something we want in this version beacuse we dont support swapping
-> of the shared pages, so we got to allow some how to break the pages...
-> 
-> and echo 2 got to have UNMERGEABLE break the shared pages when its madvise get
-> called...
-> 
-> So maybe it is just better to leave it like that?
-> > > When thinking about it, lets say I want to use ksm to scan 2 applications
-> > > and merged their STATIC identical data, and then i want to stop scanning
-> > > them after i know ksm merged the pages, as soon as i will try to
-> > > unregister this 2 applications ksm will unmerge the pages, so we dont
-> > > allow such thing for the user (we can tell him ofcurse for such case to
-> > > use normal way of sharing, so this isnt a really strong case for this)
-> > >     
-> >
-> > For the app it will be tricky to know when the pages are merged
-> > though, right now it could only wait a "while"... so I don't really
-> > see madvise(UNMERGEABLE) as useful regardless how we implement
-> > it... but then this goes beyond the scope of this bug because as said
-> > madvise(UNMERGEABLE) is the only place that breaks ksm pages as safe
-> > as regular write fault in oom context because of it running in the
-> > process context (not echo 2 or kksmd context).
-> >   
-> Yea, I agree about that this case was idiotic :), Actually I thought about
-> case where application get little bit more info, but leave it, it is not worth
-> it, traditional sharing is much better for such cases.
-
-I didn't seem idiotic to me, but I hadn't realized the ksmd timelapse
-uncertainty Andrea points out.  Well, I'm not keen to change the way
-it's working at present, but I do think you're right to question all
-these aspects of unmerging.
-
-Hugh
+--qjNfmADvan18RZcF--
