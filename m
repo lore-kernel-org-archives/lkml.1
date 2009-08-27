@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZH0Xno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752765AbZH0XxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752729AbZH0Xno (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 19:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbZH0Xnn
+	id S1752765AbZH0XxH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 19:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbZH0XxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 19:43:43 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40483 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751638AbZH0Xnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 19:43:42 -0400
-Date: Fri, 28 Aug 2009 09:43:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, elendil@planet.nl, zajec5@gmail.com,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org, protasnb@gmail.com,
-       linux-acpi@vger.kernel.org, kernel-testers@vger.kernel.org,
-       torvalds@linux-foundation.org, rui.zhang@intel.com, lenb@kernel.org
-Subject: Re: 2.6.31-rc7-git2: Reported regressions 2.6.29 -> 2.6.30
-Message-Id: <20090828094330.0f7f75d7.sfr@canb.auug.org.au>
-In-Reply-To: <20090827143653.52308d6d.akpm@linux-foundation.org>
-References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera>
-	<200908261833.37310.elendil@planet.nl>
-	<20090826123647.e60d9555.akpm@linux-foundation.org>
-	<200908272023.21288.rusty@rustcorp.com.au>
-	<20090827143653.52308d6d.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__28_Aug_2009_09_43_30_+1000_3fCgz2za9/ojxanB"
+	Thu, 27 Aug 2009 19:53:06 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:43990 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323AbZH0XxF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 19:53:05 -0400
+Message-ID: <4A971C18.7050109@nortel.com>
+Date: Thu, 27 Aug 2009 17:51:52 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       raz ben yehuda <raziebe@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       riel@redhat.com, wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org>  <1251302598.18584.31.camel@twins>  <alpine.DEB.1.10.0908261211340.9933@gentwo.org>  <20090826180407.GA13632@elte.hu>  <alpine.DEB.1.10.0908261509580.9933@gentwo.org>  <20090826193252.GA14721@elte.hu>  <alpine.DEB.1.10.0908261627110.5554@gentwo.org>  <20090826135041.e6169d18.akpm@linux-foundation.org>  <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org> <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Aug 2009 23:52:13.0354 (UTC) FILETIME=[663CF8A0:01CA2771]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__28_Aug_2009_09_43_30_+1000_3fCgz2za9/ojxanB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 08/27/2009 03:09 PM, Thomas Gleixner wrote:
 
-Hi Andrew, Rusty,
+> That's just the wrong approach. All you need is a way to tell the
+> kernel that CPUx can switch off the scheduler tick when only one
+> thread is running and that very thread is running in user space. Once
+> another thread arrives on that CPU or the single thread enters the
+> kernel for a blocking syscall the scheduler tick has to be
+> restarted.
 
-On Thu, 27 Aug 2009 14:36:53 -0700 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
->
-> On Thu, 27 Aug 2009 20:23:20 +0930 Rusty Russell <rusty@rustcorp.com.au> =
-wrote:
-> >=20
-> > Can you take them?  They're not really at home in my tree.
-> >=20
-> > arch-x86-kernel-acpi-cstatec-avoid-using-work_on_cpu.patch
-> > misc:work_on_cpu-acpi.patch
-> > misc:work_on_cpu-acpi-fix.patch
-> > misc:work_on_cpu-dcdbas.patch
-> >=20
-> > You can fetch them from http://ozlabs.org/~rusty/kernel/rr-latest/
-> >=20
-> > (You'll want to rename the last three something sane...)
->=20
-> Those patches are already in today's linux-next so I can't carry them.
->=20
-> Please email them over in the traditional fashion once that situation
-> has sorted itself out?
+That's an elegant approach...I like it.
 
-Those patches will not be in next-20090828.
+How would you deal with per-cpu kernel threads (softirqs, etc.) or
+softirq processing while in the kernel?  Switching off the timer tick
+isn't sufficient because the scheduler will be triggered on the way back
+to userspace in a syscall.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__28_Aug_2009_09_43_30_+1000_3fCgz2za9/ojxanB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqXGiIACgkQjjKRsyhoI8xGYgCdF1tV9fC5DVYLkjUp6rmG22vT
-+kkAoKNKhLZYwSQbYUlJFhpl7mwGhxxU
-=fWnF
------END PGP SIGNATURE-----
-
---Signature=_Fri__28_Aug_2009_09_43_30_+1000_3fCgz2za9/ojxanB--
+Chris
