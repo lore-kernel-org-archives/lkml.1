@@ -1,76 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751409AbZH0Knw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751474AbZH0KoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751409AbZH0Knw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 06:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbZH0Knv
+	id S1751474AbZH0KoP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 06:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZH0KoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 06:43:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:54545 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751163AbZH0Knu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 06:43:50 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH] virtio-blk: set QUEUE_ORDERED_DRAIN by default
-Date: Thu, 27 Aug 2009 20:13:50 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: Christoph Hellwig <hch@lst.de>, borntraeger@de.ibm.com,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-References: <20090820205616.GA5503@lst.de> <200908262136.46570.rusty@rustcorp.com.au> <4A952A5D.5040606@redhat.com>
-In-Reply-To: <4A952A5D.5040606@redhat.com>
+	Thu, 27 Aug 2009 06:44:15 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54523 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750898AbZH0KoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 06:44:13 -0400
+Message-ID: <4A96635C.9070404@cn.fujitsu.com>
+Date: Thu, 27 Aug 2009 18:43:40 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908272013.50839.rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Neil Horman <nhorman@tuxdriver.com>, David Miller <davem@davemloft.net>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: [PATCH 3/3] tracing/events: convert NAPI's tracepoint and fix DEFINE_TRACE_FN
+X-TM-AS-Product-Ver: : ISVW-6.0.0.2339-3.52.0.1010-13974000
+X-TM-AS-Result: : No
+X-TM-AS-Category-Info: : 1:0.000000
+X-TM-AS-MatchedID: : 1-90-150644-110581-188019-139504-121162-121709
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009 09:58:13 pm Avi Kivity wrote:
-> On 08/26/2009 03:06 PM, Rusty Russell wrote:
-> > On Tue, 25 Aug 2009 11:46:08 pm Christoph Hellwig wrote:
-> >    
-> >> On Tue, Aug 25, 2009 at 11:41:37PM +0930, Rusty Russell wrote:
-> >>      
-> >>> On Fri, 21 Aug 2009 06:26:16 am Christoph Hellwig wrote:
-> >>>        
-> >>>> Currently virtio-blk doesn't set any QUEUE_ORDERED_ flag by default, which
-> >>>> means it does not allow filesystems to use barriers.  But the typical use
-> >>>> case for virtio-blk is to use a backed that uses synchronous I/O
-> >>>>          
-> >>> Really?  Does qemu open with O_SYNC?
-> >>>
-> >>> I'm definitely no block expert, but this seems strange...
-> >>> Rusty.
-> >>>        
-> >> Qemu can open it various ways, but the only one that is fully safe
-> >> is O_SYNC (cache=writethrough).
-> >>      
-> > (Rusty goes away and reads the qemu man page).
-> >
-> > 	By default, if no explicit caching is specified for a qcow2 disk image,
-> > 	cache=writeback will be used.
-> >    
-> 
-> It's now switched to writethrough.  In any case, cache=writeback means 
-> "lie to the guest, we don't care about integrity".
+References: <4A966288.8020402@cn.fujitsu.com>
+In-Reply-To: <4A966288.8020402@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Well, that was the intent of the virtio barrier feature; *don't* lie to the
-guest, make it aware of the limitations.
+- Convert NAPI's tracepoint via TRACE_EVENT macro, the output information
+  like below:
 
-Of course, having read Christoph's excellent summary of the situation, it's
-clear I failed.
+   sshd-2503  [000]    71.920846: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
+   sshd-2503  [000]    72.020291: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
+   sshd-2503  [000]    72.020418: napi_poll: ifname=eth0 state=NAPI_STATE_SCHED weigth=16 poll=pcnet32_poll
 
-> > Are you claiming qcow2 is unusual?  I can believe snapshot is less common,
-> > though I use it all the time.
-> >
-> > You'd normally have to add a feature for something like this.  I don't
-> > think this is different.
-> 
-> Why do we need to add a feature for this?
+- Remove the "DECLARE_TRACE" definiens in include/trace/define_trace.h,
+  because TRACE_EVENT not use it
 
-Because cache=writeback should *not* lie to the guest?
+- Undef DEFINE_TRACE_FN after TRACE_EVENT/TRACE_EVENT_FN expanded,
+  then we can include more TRACE_EVENT .h file in one .c file
+  (the .c file has defined CREATE_TRACE_POINTS)
 
-Rusty.
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ include/trace/define_trace.h |    5 +---
+ include/trace/events/napi.h  |   43 +++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 39 insertions(+), 9 deletions(-)
+
+diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
+index a89ed59..6158741 100644
+--- a/include/trace/define_trace.h
++++ b/include/trace/define_trace.h
+@@ -31,10 +31,6 @@
+ 		assign, print, reg, unreg)			\
+ 	DEFINE_TRACE_FN(name, reg, unreg)
+ 
+-#undef DECLARE_TRACE
+-#define DECLARE_TRACE(name, proto, args)	\
+-	DEFINE_TRACE(name)
+-
+ #undef TRACE_INCLUDE
+ #undef __TRACE_INCLUDE
+ 
+@@ -62,6 +58,7 @@
+ #endif
+ 
+ #undef TRACE_EVENT
++#undef TRACE_EVENT_FN
+ #undef TRACE_HEADER_MULTI_READ
+ 
+ /* Only undef what we defined in this file */
+diff --git a/include/trace/events/napi.h b/include/trace/events/napi.h
+index a8989c4..22802d1 100644
+--- a/include/trace/events/napi.h
++++ b/include/trace/events/napi.h
+@@ -1,11 +1,44 @@
+-#ifndef _TRACE_NAPI_H_
+-#define _TRACE_NAPI_H_
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM napi
++
++#if !defined(_TRACE_NAPI_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_NAPI_H
+ 
+ #include <linux/netdevice.h>
+ #include <linux/tracepoint.h>
+ 
+-DECLARE_TRACE(napi_poll,
++#define show_napi_state(state) state ? __print_flags(state, "|",	\
++	{ (1UL << NAPI_STATE_SCHED),	"NAPI_STATE_SCHED"	},	\
++	{ (1UL << NAPI_STATE_DISABLE),	"NAPI_STATE_DISABLE"	},	\
++	{ (1UL << NAPI_STATE_NPSVC),	"NAPI_STATE_NPSVC"	}) : "0"
++
++TRACE_EVENT(napi_poll,
++
+ 	TP_PROTO(struct napi_struct *napi),
+-	TP_ARGS(napi));
+ 
+-#endif
++	TP_ARGS(napi),
++
++	TP_STRUCT__entry(
++		__field(	unsigned long,	state		)
++		__field(	int,		weight		)
++		__field(	void *,		poll		)
++		__string(	ifname,		(napi->dev ?
++				napi->dev->name : "backlog")	)
++	),
++
++	TP_fast_assign(
++		__entry->state	= napi->state;
++		__entry->weight	= napi->weight;
++		__entry->poll	= napi->poll;
++		__assign_str(ifname, napi->dev ? napi->dev->name : "backlog")
++	),
++
++	TP_printk("ifname=%s state=%s weigth=%d poll=%pf",
++		  __get_str(ifname), show_napi_state(__entry->state),
++		  __entry->weight, __entry->poll)
++);
++
++#endif /* _TRACE_NAPI_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+-- 
+1.6.1.2
+
