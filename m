@@ -1,60 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbZH0P3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751481AbZH0PfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbZH0P3x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 11:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZH0P3w
+	id S1751481AbZH0PfJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 11:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZH0PfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 11:29:52 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:47112 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751109AbZH0P3v (ORCPT
+	Thu, 27 Aug 2009 11:35:05 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:42852 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbZH0PfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 11:29:51 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 27 Aug 2009 08:29:52 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: "Michael S. Tsirkin" <mst@redhat.com>
-cc: Paolo Bonzini <pbonzini@redhat.com>, Avi Kivity <avi@redhat.com>,
-       gleb@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-In-Reply-To: <20090827144905.GA22728@redhat.com>
-Message-ID: <alpine.DEB.2.00.0908270752090.3809@makko.or.mcafeemobile.com>
-References: <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com> <1251363930-3916-1-git-send-email-pbonzini@redhat.com> <alpine.DEB.2.00.0908270720250.3809@makko.or.mcafeemobile.com> <20090827143027.GA22720@redhat.com>
- <alpine.DEB.2.00.0908270732470.3809@makko.or.mcafeemobile.com> <20090827144905.GA22728@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 27 Aug 2009 11:35:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=eifK9aucz3a7KHlnYvdJGVNqZvucvH9NRTxvNEvmsaqaQg6VInMTrWTJlyZ36X3Mrk
+         lJF8boKCqX/ZWI0rg5Lf2D10FmoFcl/n1slXektNipFp0fIvWKilF9dj0P2EL7009H2r
+         Uofs+bzinqKnA/O1AQsE2SJ6GYMKhJ1I8z6w4=
+Date: Thu, 27 Aug 2009 17:34:49 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH 18/18] tracing/kprobes: Dump the culprit kprobe in case
+	of kprobe recursion
+Message-ID: <20090827153447.GF6058@nowhere>
+References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com> <1251340337-5640-19-git-send-email-fweisbec@gmail.com> <4A96A690.3030804@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A96A690.3030804@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009, Michael S. Tsirkin wrote:
+On Thu, Aug 27, 2009 at 11:30:24AM -0400, Masami Hiramatsu wrote:
+> Hi Frederic,
+> 
+> Frederic Weisbecker wrote:
+> > Kprobes can enter into a probing recursion, ie: a kprobe that does an
+> > endless loop because one of its core mechanism function used during
+> > probing is also probed itself.
+> > 
+> > This patch helps pinpointing the kprobe that raised such recursion
+> > by dumping it and raising a BUG instead of a warning (we also disarm
+> > the kprobe to try avoiding recursion in BUG itself). Having a BUG
+> > instead of a warning stops the stacktrace in the right place and
+> > doesn't pollute the logs with hundreds of traces that eventually end
+> > up in a stack overflow.
+> 
+> Thanks, but I also found similar bug cases.
+> 
+> > 
+> > Signed-off-by: Frederic Weisbecker<fweisbec@gmail.com>
+> > Cc: Masami Hiramatsu<mhiramat@redhat.com>
+> > Cc: Ananth N Mavinakayanahalli<ananth@in.ibm.com>
+> > ---
+> >   arch/x86/kernel/kprobes.c |    8 ++++++--
+> >   include/linux/kprobes.h   |    2 ++
+> >   kernel/kprobes.c          |    7 +++++++
+> >   3 files changed, 15 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+> > index 16ae961..ecee3d2 100644
+> > --- a/arch/x86/kernel/kprobes.c
+> > +++ b/arch/x86/kernel/kprobes.c
+> > @@ -490,9 +490,13 @@ static int __kprobes reenter_kprobe(struct kprobe *p, struct pt_regs *regs,
+> 
+> Before this, kprobes checks p != kprobe_running(), but it's a
+> meaningless branch. Hitting a kprobe while KPROBES_HIT_SS always
+> treated as unrecoverable.
 
-> Oh, I stopped pushing EFD_STATE since we have a solution.
-> I am just trying to grok what does and what does not consititute a
-> use-once addition, in your mind, and what does and what does not
-> belong in eventfd. The reason atomic does not belong there and
-> semaphore does is because one waits on semaphore but not
-> on atomic? Is that it?
-
-An atomic variable is not a synchronization interface.
-Even if it'd come up that we really need an atomic variable abstraction 
-via an fd, this should not go via eventfd.
-Yeah, maybe the name syncfd would have been better, but the very reason 
-why eventfd born was to allow KAIO to signal events to poll/select/epoll.
-That first implementation was also usable as a mutex.
-Then it was propsed to make eventfd to act as a semaphore too. Code was 
-trivial, a semaphore fitted the interface, and the abstraction was a 
-pretty damn known too. So it went in.
-Yes, you could have implemented a semaphore with the existing eventfd, by 
-reading the counter and writing counter-1. But again, a semaphore was 
-something widely known and generic enough, and was fitting the bill.
 
 
-- Davide
+Yeah, but that's the place where a probe ends up when bad reentrancy happens
+right?
 
+
+ 
+> >   			/* A probe has been hit in the codepath leading up
+> >   			 * to, or just after, single-stepping of a probed
+> >   			 * instruction. This entire codepath should strictly
+> > -			 * reside in .kprobes.text section. Raise a warning
+> > -			 * to highlight this peculiar case.
+> > +			 * reside in .kprobes.text section.
+> > +			 * Raise a BUG or we'll continue in an endless
+> > +			 * reentering loop and eventually a stack overflow.
+> >   			 */
+> > +			arch_disarm_kprobe(p);
+> > +			dump_kprobe(p);
+> > +			BUG();
+> >   		}
+> >   	default:
+> >   		/* impossible cases */
+> > diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+> > index bcd9c07..87eb79c 100644
+> > --- a/include/linux/kprobes.h
+> > +++ b/include/linux/kprobes.h
+> > @@ -296,6 +296,8 @@ void recycle_rp_inst(struct kretprobe_instance *ri, struct hlist_head *head);
+> >   int disable_kprobe(struct kprobe *kp);
+> >   int enable_kprobe(struct kprobe *kp);
+> > 
+> > +void dump_kprobe(struct kprobe *kp);
+> > +
+> >   #else /* !CONFIG_KPROBES: */
+> > 
+> >   static inline int kprobes_built_in(void)
+> > diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+> > index ef177d6..f72e96c 100644
+> > --- a/kernel/kprobes.c
+> > +++ b/kernel/kprobes.c
+> > @@ -1141,6 +1141,13 @@ static void __kprobes kill_kprobe(struct kprobe *p)
+> >   	arch_remove_kprobe(p);
+> >   }
+> > 
+> > +void __kprobes dump_kprobe(struct kprobe *kp)
+> > +{
+> > +	printk(KERN_WARNING "Dumping kprobe:\n");
+> > +	printk(KERN_WARNING "Name: %s\nAddress: %p\nOffset: %x\n",
+> > +	       kp->symbol_name, kp->addr, kp->offset);
+> > +}
+> 
+> Since kp->symbol_name + kp->offset = kp->addr, I recommend to show it
+> as "Kprobe at %s+%x:<%p>\n", kp->symbol_name, kp->offset, kp->addr.
+
+
+Ok I'll fix this, thanks.
+
+ 
+> > +
+> >   /* Module notifier call back, checking kprobes on the module */
+> >   static int __kprobes kprobes_module_callback(struct notifier_block *nb,
+> >   					     unsigned long val, void *data)
+> 
+> Thank you,
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America), Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
 
