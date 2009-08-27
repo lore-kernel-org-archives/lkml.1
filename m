@@ -1,70 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751731AbZH0LnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbZH0LoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751731AbZH0LnH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 07:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZH0LnH
+	id S1751828AbZH0LoU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 07:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZH0LoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 07:43:07 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:58887 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750954AbZH0LnF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 07:43:05 -0400
-Date: Thu, 27 Aug 2009 13:41:57 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] m68k: avoid pgprot_noncached redefinition
-Message-ID: <20090827114157.GA8678@osiris.boeblingen.de.ibm.com>
+	Thu, 27 Aug 2009 07:44:19 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:38560 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751317AbZH0LoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 07:44:17 -0400
+Message-ID: <4A967175.5070700@redhat.com>
+Date: Thu, 27 Aug 2009 07:43:49 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Rob Landley <rob@landley.net>
+CC: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+References: <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net>
+In-Reply-To: <200908262253.17886.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On 08/26/2009 11:53 PM, Rob Landley wrote:
+> On Tuesday 25 August 2009 18:40:50 Ric Wheeler wrote:
+>    
+>> Repeat experiment until you get up to something like google scale or the
+>> other papers on failures in national labs in the US and then we can have an
+>> informed discussion.
+>>      
+> On google scale anvil lightning can fry your machine out of a clear sky.
+>
+> However, there are still a few non-enterprise users out there, and knowing
+> that specific usage patterns don't behave like they expect might be useful to
+> them.
+>
+>    
 
-While compiling m68k with defconfig I get tons if these warnings:
+You are missing the broader point of both papers. They (and people like 
+me when back at EMC) look at large numbers of machines and try to fix 
+what actually breaks when run in the real world and causes data loss. 
+The motherboards, S-ATA controllers, disk types are the same class of 
+parts that I have in my desktop box today.
 
-/home2/heicarst/linux-2.6/arch/m68k/include/asm/pgtable_mm.h:148:1: warning: "pgprot_noncached" redefined
-In file included from /home2/heicarst/linux-2.6/arch/m68k/include/asm/pgtable_mm.h:138,
- from /home2/heicarst/linux-2.6/arch/m68k/include/asm/pgtable.h:4,
- from include/linux/mm.h:38,
- from /home2/heicarst/linux-2.6/arch/m68k/include/asm/atarihw.h:134,
- from arch/m68k/atari/debug.c:20:
-include/asm-generic/pgtable.h:133:1: warning: this is the location of the previous definition
+The advantage of google, national labs, etc is that they have large 
+numbers of systems and can draw conclusions that are meaningful to our 
+broad user base.
 
-Reason for this is that asm-generic/pgtable.h gets included in pgtable_mm.h
-before pgprot_noncached gets defined.
-So the check "#ifndef pgprot_noncached" in the generic header file is too early.
-Solve this by including the generic header file after the arch define.
+Specifically, in using S-ATA drives (just like ours, maybe slightly more 
+reliable) they see up to 7% of those drives fail each year.  All users 
+have "soft" drive failures like single remapped sectors.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- arch/m68k/include/asm/pgtable_mm.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+These errors happen extremely commonly and are what RAID deals with well.
 
-Index: linux-2.6/arch/m68k/include/asm/pgtable_mm.h
-===================================================================
---- linux-2.6.orig/arch/m68k/include/asm/pgtable_mm.h
-+++ linux-2.6/arch/m68k/include/asm/pgtable_mm.h
-@@ -135,7 +135,6 @@ static inline void update_mmu_cache(stru
- #endif
- 
- #ifndef __ASSEMBLY__
--#include <asm-generic/pgtable.h>
- 
- /*
-  * Macro to mark a page protection value as "uncacheable".
-@@ -154,6 +153,8 @@ static inline void update_mmu_cache(stru
- 	    ? (__pgprot((pgprot_val(prot) & _CACHEMASK040) | _PAGE_NOCACHE_S))	\
- 	    : (prot)))
- 
-+#include <asm-generic/pgtable.h>
-+
- #endif /* !__ASSEMBLY__ */
- 
- /*
+What does not happen commonly is that during the RAID rebuild (kicked 
+off only after a drive is kicked out), you push the power button or have 
+a second failure (power outage).
+
+We will have more users loose data if they decide to use ext2 instead of 
+ext3 and use only single disk storage.
+
+We have real numbers that show that is true. Injecting double faults 
+into a system that handles single faults is frankly not that interesting.
+
+You can get better protection from these double faults if you move to 
+"cloud" like storage configs where each box is fault tolerant, but you 
+also spread your data over multiple boxes in multiple locations.
+
+Regards,
+
+Ric
+
+>>>> I can promise you that hot unplugging and replugging a S-ATA drive will
+>>>> also lose you data if you are actively writing to it (ext2, 3,
+>>>> whatever).
+>>>>          
+>>> I can promise you that running S-ATA drive will also lose you data,
+>>> even if you are not actively writing to it. Just wait 10 years; so
+>>> what is your point?
+>>>        
+>> I lost a s-ata drive 24 hours after installing it in a new box. If I had
+>> MD5 RAID5, I would not have lost any.
+>>
+>> My point is that you fail to take into account the rate of failures of a
+>> given configuration and the probability of data loss given those rates.
+>>      
+> Actually, that's _exactly_ what he's talking about.
+>
+> When writing to a degraded raid or a flash disk, journaling is essentially
+> useless.  If you get a power failure, kernel panic, somebody tripping over a
+> USB cable, and so on, your filesystem will not be protected by journaling.
+> Your data won't be trashed _every_ time, but the likelihood is much greater
+> than experience with journaling in other contexts would suggest.
+>
+> Worse, the journaling may be counterproductive by _hiding_ many errors that
+> fsck would promptly detect, so when the error is detected it may not be
+> associated with the event that caused it.  It also may not be noticed until
+> good backups of the data have been overwritten or otherwise cycled out.
+>
+> You seem to be arguing that Linux is no longer used anywhere but the
+> enterprise, so issues affecting USB flash keys or cheap software-only RAID
+> aren't worth documenting?
+>
+> Rob
+>    
+
