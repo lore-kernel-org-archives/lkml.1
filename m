@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZH0Cfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932291AbZH0Cev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbZH0Cfx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 22:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932146AbZH0Cch
+	id S932291AbZH0Cev (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 22:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932224AbZH0Cet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 22:32:37 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:54351 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932094AbZH0Ccd (ORCPT
+	Wed, 26 Aug 2009 22:34:49 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:53185 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932184AbZH0Ccn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 22:32:33 -0400
+	Wed, 26 Aug 2009 22:32:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
          :mime-version:content-type:content-transfer-encoding;
-        b=AWVs9hMz05wfOwau2KkuN4AawPxbV0alBgOybPCFrOsEEFaIEKvB0Cztv0Tq7c7LTW
-         lGGZJVH3okUkKlP9HB7GeDplqXB4Jkt/fz9Sjlf/xYP4sSNTqyj7edgWcYgE7gVx7Rxw
-         Y2gQKIIqs5XA/jgdP/LFNevOmDr2GFeXfZHtU=
+        b=o1WlFDjuLNWnHDO0RhJmrX2NAzkE2POzN6SsKsbASvhLaZ0oZ45hIEQAzlamFl6Nib
+         yCc5RMiOxNTpThX183WINfXLsf+dOpmQ6edvIkBaA6pkrT+aEgD/P/IMcgevEZgmOvSe
+         A6csNubPtgjd0zBa/G8AhNpQ7YRFsUoAi4oek=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, linux-arch@vger.kernel.org,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Avi Kivity <avi@redhat.com>, Andi Kleen <ak@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Avi Kivity <avi@redhat.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
        "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
        Jim Keniston <jkenisto@us.ibm.com>,
@@ -36,9 +34,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
        Vegard Nossum <vegard.nossum@gmail.com>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 05/18] x86: Add pt_regs register and stack access APIs
-Date: Thu, 27 Aug 2009 04:32:04 +0200
-Message-Id: <1251340337-5640-6-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 09/18] tracing: Add kprobe-based event tracer documentation
+Date: Thu, 27 Aug 2009 04:32:08 +0200
+Message-Id: <1251340337-5640-10-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1251340337-5640-1-git-send-email-fweisbec@gmail.com>
 References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com>
@@ -51,32 +49,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Masami Hiramatsu <mhiramat@redhat.com>
 
-Add following APIs for accessing registers and stack entries from
-pt_regs.
-These APIs are required by kprobes-based event tracer on ftrace.
-Some other debugging tools might be able to use it too.
+Add the documentation to use the kprobe based event tracer.
 
-- regs_query_register_offset(const char *name)
-   Query the offset of "name" register.
-
-- regs_query_register_name(unsigned int offset)
-   Query the name of register by its offset.
-
-- regs_get_register(struct pt_regs *regs, unsigned int offset)
-   Get the value of a register by its offset.
-
-- regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr)
-   Check the address is in the kernel stack.
-
-- regs_get_kernel_stack_nth(struct pt_regs *reg, unsigned int nth)
-   Get Nth entry of the kernel stack. (N >= 0)
-
-- regs_get_argument_nth(struct pt_regs *reg, unsigned int nth)
-   Get Nth argument at function call. (N >= 0)
+[fweisbec@gmail.com: Split tracer and its Documentation in two patchs]
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-arch@vger.kernel.org
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Avi Kivity <avi@redhat.com>
 Cc: Andi Kleen <ak@linux.intel.com>
 Cc: Christoph Hellwig <hch@infradead.org>
@@ -95,216 +73,158 @@ Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Tom Zanussi <tzanussi@gmail.com>
 Cc: Vegard Nossum <vegard.nossum@gmail.com>
-LKML-Reference: <20090813203444.31965.26374.stgit@localhost.localdomain>
+LKML-Reference: <20090813203510.31965.29123.stgit@localhost.localdomain>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- arch/x86/include/asm/ptrace.h |   62 ++++++++++++++++++++++
- arch/x86/kernel/ptrace.c      |  112 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 174 insertions(+), 0 deletions(-)
+ Documentation/trace/kprobetrace.txt |  139 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 139 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/trace/kprobetrace.txt
 
-diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
-index 0f0d908..a3d49dd 100644
---- a/arch/x86/include/asm/ptrace.h
-+++ b/arch/x86/include/asm/ptrace.h
-@@ -7,6 +7,7 @@
- 
- #ifdef __KERNEL__
- #include <asm/segment.h>
-+#include <asm/page_types.h>
- #endif
- 
- #ifndef __ASSEMBLY__
-@@ -216,6 +217,67 @@ static inline unsigned long user_stack_pointer(struct pt_regs *regs)
- 	return regs->sp;
- }
- 
-+/* Query offset/name of register from its name/offset */
-+extern int regs_query_register_offset(const char *name);
-+extern const char *regs_query_register_name(unsigned int offset);
-+#define MAX_REG_OFFSET (offsetof(struct pt_regs, ss))
+diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
+new file mode 100644
+index 0000000..efff6eb
+--- /dev/null
++++ b/Documentation/trace/kprobetrace.txt
+@@ -0,0 +1,139 @@
++                         Kprobe-based Event Tracer
++                         =========================
 +
-+/**
-+ * regs_get_register() - get register value from its offset
-+ * @regs:	pt_regs from which register value is gotten.
-+ * @offset:	offset number of the register.
-+ *
-+ * regs_get_register returns the value of a register whose offset from @regs
-+ * is @offset. The @offset is the offset of the register in struct pt_regs.
-+ * If @offset is bigger than MAX_REG_OFFSET, this returns 0.
-+ */
-+static inline unsigned long regs_get_register(struct pt_regs *regs,
-+					      unsigned int offset)
-+{
-+	if (unlikely(offset > MAX_REG_OFFSET))
-+		return 0;
-+	return *(unsigned long *)((unsigned long)regs + offset);
-+}
++                 Documentation is written by Masami Hiramatsu
 +
-+/**
-+ * regs_within_kernel_stack() - check the address in the stack
-+ * @regs:	pt_regs which contains kernel stack pointer.
-+ * @addr:	address which is checked.
-+ *
-+ * regs_within_kenel_stack() checks @addr is within the kernel stack page(s).
-+ * If @addr is within the kernel stack, it returns true. If not, returns false.
-+ */
-+static inline int regs_within_kernel_stack(struct pt_regs *regs,
-+					   unsigned long addr)
-+{
-+	return ((addr & ~(THREAD_SIZE - 1))  ==
-+		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
-+}
 +
-+/**
-+ * regs_get_kernel_stack_nth() - get Nth entry of the stack
-+ * @regs:	pt_regs which contains kernel stack pointer.
-+ * @n:		stack entry number.
-+ *
-+ * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
-+ * is specifined by @regs. If the @n th entry is NOT in the kernel stack,
-+ * this returns 0.
-+ */
-+static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
-+						      unsigned int n)
-+{
-+	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
-+	addr += n;
-+	if (regs_within_kernel_stack(regs, (unsigned long)addr))
-+		return *addr;
-+	else
-+		return 0;
-+}
++Overview
++--------
++This tracer is similar to the events tracer which is based on Tracepoint
++infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
++and kretprobe). It probes anywhere where kprobes can probe(this means, all
++functions body except for __kprobes functions).
 +
-+/* Get Nth argument at function call */
-+extern unsigned long regs_get_argument_nth(struct pt_regs *regs,
-+					   unsigned int n);
++Unlike the function tracer, this tracer can probe instructions inside of
++kernel functions. It allows you to check which instruction has been executed.
 +
- /*
-  * These are defined as per linux/ptrace.h, which see.
-  */
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 8d7d5c9..a33a17d 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -49,6 +49,118 @@ enum x86_regset {
- 	REGSET_IOPERM32,
- };
- 
-+struct pt_regs_offset {
-+	const char *name;
-+	int offset;
-+};
++Unlike the Tracepoint based events tracer, this tracer can add and remove
++probe points on the fly.
 +
-+#define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
-+#define REG_OFFSET_END {.name = NULL, .offset = 0}
++Similar to the events tracer, this tracer doesn't need to be activated via
++current_tracer, instead of that, just set probe points via
++/sys/kernel/debug/tracing/kprobe_events. And you can set filters on each
++probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
 +
-+static const struct pt_regs_offset regoffset_table[] = {
-+#ifdef CONFIG_X86_64
-+	REG_OFFSET_NAME(r15),
-+	REG_OFFSET_NAME(r14),
-+	REG_OFFSET_NAME(r13),
-+	REG_OFFSET_NAME(r12),
-+	REG_OFFSET_NAME(r11),
-+	REG_OFFSET_NAME(r10),
-+	REG_OFFSET_NAME(r9),
-+	REG_OFFSET_NAME(r8),
-+#endif
-+	REG_OFFSET_NAME(bx),
-+	REG_OFFSET_NAME(cx),
-+	REG_OFFSET_NAME(dx),
-+	REG_OFFSET_NAME(si),
-+	REG_OFFSET_NAME(di),
-+	REG_OFFSET_NAME(bp),
-+	REG_OFFSET_NAME(ax),
-+#ifdef CONFIG_X86_32
-+	REG_OFFSET_NAME(ds),
-+	REG_OFFSET_NAME(es),
-+	REG_OFFSET_NAME(fs),
-+	REG_OFFSET_NAME(gs),
-+#endif
-+	REG_OFFSET_NAME(orig_ax),
-+	REG_OFFSET_NAME(ip),
-+	REG_OFFSET_NAME(cs),
-+	REG_OFFSET_NAME(flags),
-+	REG_OFFSET_NAME(sp),
-+	REG_OFFSET_NAME(ss),
-+	REG_OFFSET_END,
-+};
 +
-+/**
-+ * regs_query_register_offset() - query register offset from its name
-+ * @name:	the name of a register
-+ *
-+ * regs_query_register_offset() returns the offset of a register in struct
-+ * pt_regs from its name. If the name is invalid, this returns -EINVAL;
-+ */
-+int regs_query_register_offset(const char *name)
-+{
-+	const struct pt_regs_offset *roff;
-+	for (roff = regoffset_table; roff->name != NULL; roff++)
-+		if (!strcmp(roff->name, name))
-+			return roff->offset;
-+	return -EINVAL;
-+}
++Synopsis of kprobe_events
++-------------------------
++  p[:EVENT] SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: Set a probe
++  r[:EVENT] SYMBOL[+0] [FETCHARGS]			: Set a return probe
 +
-+/**
-+ * regs_query_register_name() - query register name from its offset
-+ * @offset:	the offset of a register in struct pt_regs.
-+ *
-+ * regs_query_register_name() returns the name of a register from its
-+ * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
-+ */
-+const char *regs_query_register_name(unsigned int offset)
-+{
-+	const struct pt_regs_offset *roff;
-+	for (roff = regoffset_table; roff->name != NULL; roff++)
-+		if (roff->offset == offset)
-+			return roff->name;
-+	return NULL;
-+}
++ EVENT			: Event name.
++ SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted.
++ MEMADDR		: Address where the probe is inserted.
 +
-+static const int arg_offs_table[] = {
-+#ifdef CONFIG_X86_32
-+	[0] = offsetof(struct pt_regs, ax),
-+	[1] = offsetof(struct pt_regs, dx),
-+	[2] = offsetof(struct pt_regs, cx)
-+#else /* CONFIG_X86_64 */
-+	[0] = offsetof(struct pt_regs, di),
-+	[1] = offsetof(struct pt_regs, si),
-+	[2] = offsetof(struct pt_regs, dx),
-+	[3] = offsetof(struct pt_regs, cx),
-+	[4] = offsetof(struct pt_regs, r8),
-+	[5] = offsetof(struct pt_regs, r9)
-+#endif
-+};
++ FETCHARGS		: Arguments.
++  %REG	: Fetch register REG
++  sN	: Fetch Nth entry of stack (N >= 0)
++  sa	: Fetch stack address.
++  @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
++  @SYM[+|-offs]	: Fetch memory at SYM +|- offs (SYM should be a data symbol)
++  aN	: Fetch function argument. (N >= 0)(*)
++  rv	: Fetch return value.(**)
++  ra	: Fetch return address.(**)
++  +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.(***)
 +
-+/**
-+ * regs_get_argument_nth() - get Nth argument at function call
-+ * @regs:	pt_regs which contains registers at function entry.
-+ * @n:		argument number.
-+ *
-+ * regs_get_argument_nth() returns @n th argument of a function call.
-+ * Since usually the kernel stack will be changed right after function entry,
-+ * you must use this at function entry. If the @n th entry is NOT in the
-+ * kernel stack or pt_regs, this returns 0.
-+ */
-+unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n)
-+{
-+	if (n < ARRAY_SIZE(arg_offs_table))
-+		return *((unsigned long *)regs + arg_offs_table[n]);
-+	else {
-+		/*
-+		 * The typical case: arg n is on the stack.
-+		 * (Note: stack[0] = return address, so skip it)
-+		 */
-+		n -= ARRAY_SIZE(arg_offs_table);
-+		return regs_get_kernel_stack_nth(regs, 1 + n);
-+	}
-+}
++  (*) aN may not correct on asmlinkaged functions and at the middle of
++      function body.
++  (**) only for return probe.
++  (***) this is useful for fetching a field of data structures.
 +
- /*
-  * does not yet catch signals sent when the child dies.
-  * in exit.c or in signal.c.
++
++Per-Probe Event Filtering
++-------------------------
++ Per-probe event filtering feature allows you to set different filter on each
++probe and gives you what arguments will be shown in trace buffer. If an event
++name is specified right after 'p:' or 'r:' in kprobe_events, the tracer adds
++an event under tracing/events/kprobes/<EVENT>, at the directory you can see
++'id', 'enabled', 'format' and 'filter'.
++
++enabled:
++  You can enable/disable the probe by writing 1 or 0 on it.
++
++format:
++  It shows the format of this probe event. It also shows aliases of arguments
++ which you specified to kprobe_events.
++
++filter:
++  You can write filtering rules of this event. And you can use both of aliase
++ names and field names for describing filters.
++
++
++Usage examples
++--------------
++To add a probe as a new event, write a new definition to kprobe_events
++as below.
++
++  echo p:myprobe do_sys_open a0 a1 a2 a3 > /sys/kernel/debug/tracing/kprobe_events
++
++ This sets a kprobe on the top of do_sys_open() function with recording
++1st to 4th arguments as "myprobe" event.
++
++  echo r:myretprobe do_sys_open rv ra >> /sys/kernel/debug/tracing/kprobe_events
++
++ This sets a kretprobe on the return point of do_sys_open() function with
++recording return value and return address as "myretprobe" event.
++ You can see the format of these events via
++/sys/kernel/debug/tracing/events/kprobes/<EVENT>/format.
++
++  cat /sys/kernel/debug/tracing/events/kprobes/myprobe/format
++name: myprobe
++ID: 23
++format:
++	field:unsigned short common_type;	offset:0;	size:2;
++	field:unsigned char common_flags;	offset:2;	size:1;
++	field:unsigned char common_preempt_count;	offset:3;	size:1;
++	field:int common_pid;	offset:4;	size:4;
++	field:int common_tgid;	offset:8;	size:4;
++
++	field: unsigned long ip;	offset:16;tsize:8;
++	field: int nargs;	offset:24;tsize:4;
++	field: unsigned long arg0;	offset:32;tsize:8;
++	field: unsigned long arg1;	offset:40;tsize:8;
++	field: unsigned long arg2;	offset:48;tsize:8;
++	field: unsigned long arg3;	offset:56;tsize:8;
++
++	alias: a0;	original: arg0;
++	alias: a1;	original: arg1;
++	alias: a2;	original: arg2;
++	alias: a3;	original: arg3;
++
++print fmt: "%lx: 0x%lx 0x%lx 0x%lx 0x%lx", ip, arg0, arg1, arg2, arg3
++
++
++ You can see that the event has 4 arguments and alias expressions
++corresponding to it.
++
++  echo > /sys/kernel/debug/tracing/kprobe_events
++
++ This clears all probe points. and you can see the traced information via
++/sys/kernel/debug/tracing/trace.
++
++  cat /sys/kernel/debug/tracing/trace
++# tracer: nop
++#
++#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
++#              | |       |          |         |
++           <...>-1447  [001] 1038282.286875: do_sys_open+0x0/0xd6: 0x3 0x7fffd1ec4440 0x8000 0x0
++           <...>-1447  [001] 1038282.286878: sys_openat+0xc/0xe <- do_sys_open: 0xfffffffffffffffe 0xffffffff81367a3a
++           <...>-1447  [001] 1038282.286885: do_sys_open+0x0/0xd6: 0xffffff9c 0x40413c 0x8000 0x1b6
++           <...>-1447  [001] 1038282.286915: sys_open+0x1b/0x1d <- do_sys_open: 0x3 0xffffffff81367a3a
++           <...>-1447  [001] 1038282.286969: do_sys_open+0x0/0xd6: 0xffffff9c 0x4041c6 0x98800 0x10
++           <...>-1447  [001] 1038282.286976: sys_open+0x1b/0x1d <- do_sys_open: 0x3 0xffffffff81367a3a
++
++
++ Each line shows when the kernel hits a probe, and <- SYMBOL means kernel
++returns from SYMBOL(e.g. "sys_open+0x1b/0x1d <- do_sys_open" means kernel
++returns from do_sys_open to sys_open+0x1b).
++
++
 -- 
 1.6.2.3
 
