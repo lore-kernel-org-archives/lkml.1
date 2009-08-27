@@ -1,167 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040AbZH0DQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbZH0DQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752040AbZH0DQu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 23:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbZH0DQs
+	id S1751899AbZH0DQo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 23:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbZH0DQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 23:16:48 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:12554 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751851AbZH0DQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 23:16:46 -0400
-Date: Wed, 26 Aug 2009 23:15:59 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <amwang@redhat.com>,
-       Michael Ellerman <michael@ellerman.id.au>,
-       "M. Mohan Kumar" <mohan@in.ibm.com>, akpm@linux-foundation.org,
-       bernhard.walle@gmx.de, Fenghua Yu <fenghua.yu@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
-Message-Id: <20090827031826.4534.34220.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
-References: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
-Subject: [Patch 2/8] x86: implement crashkernel=auto
+	Wed, 26 Aug 2009 23:16:42 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59298
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbZH0DQk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 23:16:40 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
+Date: Wed, 26 Aug 2009 22:16:17 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
+Cc: Ric Wheeler <rwheeler@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <82k50tjw7u.fsf@mid.bfk.de> <4A93E908.6050908@redhat.com> <20090825144210.7c77c083@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090825144210.7c77c083@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908262216.19203.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 25 August 2009 08:42:10 Alan Cox wrote:
+> On Tue, 25 Aug 2009 09:37:12 -0400
+>
+> Ric Wheeler <rwheeler@redhat.com> wrote:
+> > I really think that the expectation that all OS's (windows, mac, even
+> > your ipod) all teach you not to hot unplug a device with any file system.
+> > Users have an "eject" or "safe unload" in windows, your iPod tells you
+> > not to power off or disconnect, etc.
+>
+> Agreed
 
-Implement "crashkernel=auto" for x86 first, other arch will be added in the
-following patches.
+Ok, I'll bite: What are journaling filesystems _for_?
 
-The kernel will modify this command line with the actually reserved size,
-in case of breaking any user-space programs.
+> > I don't object to making that general statement - "Don't hot unplug a
+> > device with an active file system or actively used raw device" - but
+> > would object to the overly general statement about ext3 not working on
+> > flash, RAID5 not working, etc...
+>
+> The overall general statement for all media and all OS's should be
+>
+> "Do you have a backup, have you tested it recently"
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+It might be nice to know when you _needed_ said backup, and when you shouldn't 
+re-backup bad data over it, because your data corruption actually got detected 
+before then.
 
----
+And maybe a pony.
 
-Index: linux-2.6/kernel/kexec.c
-===================================================================
---- linux-2.6.orig/kernel/kexec.c
-+++ linux-2.6/kernel/kexec.c
-@@ -37,6 +37,7 @@
- #include <asm/io.h>
- #include <asm/system.h>
- #include <asm/sections.h>
-+#include <asm/setup.h>
- 
- /* Per cpu memory for storing cpu states in case of system crash. */
- note_buf_t* crash_notes;
-@@ -1269,6 +1270,37 @@ static int __init parse_crashkernel_simp
- 	return 0;
- }
- 
-+#ifdef CONFIG_KEXEC_AUTO_RESERVE
-+#ifndef arch_default_crash_size
-+unsigned long long arch_default_crash_size(unsigned long long total_size)
-+{
-+	if (total_size < KEXEC_AUTO_THRESHOLD)
-+		return 0;
-+	else {
-+#ifdef CONFIG_64BIT
-+		if (total_size > (1ULL<<37)) /* 128G */
-+			return KEXEC_AUTO_RESERVED_SIZE
-+				* ((1ULL<<37) / KEXEC_AUTO_THRESHOLD);
-+		return 1ULL<<ilog2(roundup(total_size/32, 1ULL<<21));
-+#else
-+		return KEXEC_AUTO_RESERVED_SIZE;
-+#endif
-+	}
-+}
-+#define arch_default_crash_size arch_default_crash_size
-+#endif
-+
-+#ifndef arch_default_crash_base
-+unsigned long long arch_default_crash_base(void)
-+{
-+	/* 0 means find the base address automatically. */
-+	return 0;
-+}
-+#define arch_default_crash_base arch_default_crash_base
-+#endif
-+
-+#endif /*CONFIG_KEXEC_AUTO_RESERVE*/
-+
- /*
-  * That function is the entry point for command line parsing and should be
-  * called from the arch-specific code.
-@@ -1297,6 +1329,39 @@ int __init parse_crashkernel(char 		 *cm
- 
- 	ck_cmdline += 12; /* strlen("crashkernel=") */
- 
-+#ifdef CONFIG_KEXEC_AUTO_RESERVE
-+	if (strncmp(ck_cmdline, "auto", 4) == 0) {
-+		unsigned long long size;
-+		int len;
-+		char tmp[32];
-+
-+		size = arch_default_crash_size(system_ram);
-+		if (size != 0) {
-+			*crash_size = size;
-+			*crash_base = arch_default_crash_base();
-+			len = scnprintf(tmp, sizeof(tmp), "%luM@%luM",
-+					(unsigned long)(*crash_size)>>20,
-+					(unsigned long)(*crash_base)>>20);
-+			/* 'len' can't be <= 4. */
-+			if (likely((len - 4 + strlen(cmdline))
-+					< COMMAND_LINE_SIZE - 1)) {
-+				memmove(ck_cmdline + len, ck_cmdline + 4,
-+					strlen(cmdline) - (ck_cmdline + 4 - cmdline) + 1);
-+				memcpy(ck_cmdline, tmp, len);
-+			}
-+			return 0;
-+		} else {
-+			/*
-+			 * We can't reserve memory auotmatcally,
-+			 * remove "crashkernel=auto" from cmdline.
-+			 */
-+			ck_cmdline += 4; /* strlen("auto") */
-+			memmove(ck_cmdline - 16, ck_cmdline,
-+				strlen(cmdline) - (ck_cmdline - cmdline) + 1);
-+			return -ENOMEM;
-+		}
-+	}
-+#endif
- 	/*
- 	 * if the commandline contains a ':', then that's the extended
- 	 * syntax -- if not, it must be the classic syntax
-Index: linux-2.6/arch/x86/include/asm/kexec.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/kexec.h
-+++ linux-2.6/arch/x86/include/asm/kexec.h
-@@ -23,6 +23,7 @@
- 
- #include <asm/page.h>
- #include <asm/ptrace.h>
-+#include <asm-generic/kexec.h>
- 
- /*
-  * KEXEC_SOURCE_MEMORY_LIMIT maximum page get_free_page can return.
-Index: linux-2.6/include/asm-generic/kexec.h
-===================================================================
---- /dev/null
-+++ linux-2.6/include/asm-generic/kexec.h
-@@ -0,0 +1,16 @@
-+#ifndef _ASM_GENERIC_KEXEC_H
-+#define _ASM_GENERIC_KEXEC_H
-+
-+#ifdef CONFIG_KEXEC_AUTO_RESERVE
-+
-+#ifndef KEXEC_AUTO_RESERVED_SIZE
-+#define KEXEC_AUTO_RESERVED_SIZE (1ULL<<27) /* 128M */
-+#endif
-+#ifndef KEXEC_AUTO_THRESHOLD
-+#define KEXEC_AUTO_THRESHOLD (1ULL<<32) /* 4G */
-+#endif
-+
-+
-+#endif /* CONFIG_KEXEC_AUTO_RESERVE */
-+
-+#endif
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
