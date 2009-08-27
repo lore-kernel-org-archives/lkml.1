@@ -1,112 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbZH0JBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbZH0JFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751886AbZH0JBs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 05:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZH0JBs
+	id S1751906AbZH0JFn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 05:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZH0JFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 05:01:48 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:57347 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751856AbZH0JBr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 05:01:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vdiii+Yh4IYG5wUJqcaxfHMrlKItFA7EJQQrOXdbN3dWKLQd4oA9CC7qTPOzIjFIwQ
-         7FUZ0i07pAj8doricep5xB/oih0Nb9EkGJ4CdFTkQLz1kJa4prLnANB1w5uoGTfUJM5+
-         zDMQEXxAXdC0LXYBQy8fJbrn78hQ3vMQ4F/Ns=
-Date: Thu, 27 Aug 2009 12:05:31 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: "Brown, Len" <len.brown@intel.com>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: acpi_ex_system_memory_space_handler oops
-Message-ID: <20090827090531.GB3075@localdomain.by>
-References: <20090812201034.GA2983@localdomain.by>
- <1250498613.28336.68.camel@minggr.sh.intel.com>
- <20090817113059.GA3245@localdomain.by>
- <d3f22a0908170622x7dd9ce73m5c3ea86406cc9935@mail.gmail.com>
- <20090818071359.GA3713@localdomain.by>
- <1250579915.13743.8.camel@minggr.sh.intel.com>
- <20090827075253.GB3536@localdomain.by>
- <1251359994.3282.11.camel@minggr.sh.intel.com>
- <20090827082927.GD3536@localdomain.by>
- <1251362657.3282.19.camel@minggr.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="6sX45UoQRIJXqkqR"
-Content-Disposition: inline
-In-Reply-To: <1251362657.3282.19.camel@minggr.sh.intel.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Thu, 27 Aug 2009 05:05:43 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:32156 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751823AbZH0JFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 05:05:42 -0400
+From: Paolo Bonzini <pbonzini@redhat.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Avi Kivity <avi@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+       gleb@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+Date: Thu, 27 Aug 2009 11:05:30 +0200
+Message-Id: <1251363930-3916-1-git-send-email-pbonzini@redhat.com>
+In-Reply-To: <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com>
+References: <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Ok, so why not using the eventfd counter as state?
+> On the device side:
+> 
+> void write_state(int sfd, int state) {
+> 	u64 cnt;
+> 
+> 	/* Clear the current state, sfd is in non-blocking mode */
+> 	read(sfd,&cnt, sizeof(cnt));
+> 	/* Writes new state */
+> 	cnt = 1 + !!state;
+> 	write(sfd,&cnt, sizeof(cnt));
+> }
 
---6sX45UoQRIJXqkqR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It's interesting [no sarcasm intended, mind] that EFD_SEMAPHORE was
+added exactly to avoid a read+write combination for the case of
+decrementing a value.  Here it's the same, just it's about the case of
+writing a *given* value.  What about having EFD_STATE simply mean "do
+not use a counter, just write the value" without affecting the way
+read works, and use
 
-On (08/27/09 16:44), Lin Ming wrote:
-> > > > [    0.178628] ACPI: EC: Look up EC in DSDT
-> > > > [    0.196480] ACPI: Interpreter enabled
-> > > > [    0.196575] ACPI: (supports S0 S1 S3 S4 S5)
-> > > > [    0.197184] ACPI: Using IOAPIC for interrupt routing
-> > > > [    0.197352] PCI: MCFG configuration 0: base e0000000 segment 0 b=
-uses 0 - 255
-> > > > [    0.203511] ACPI Error (dswload-0790): [PCFG] Namespace lookup f=
-ailure, AE_ALREADY_EXISTS
-> > > > [    0.203738] ACPI Exception: AE_ALREADY_EXISTS, During name looku=
-p/catalog 20090521 psloop-227
-> > > > [    0.203964] ACPI Error (psparse-0537): Method parse/execution fa=
-iled [\_SB_.RBPE] (Node f7017678), AE_ALREADY_EXISTS
-> > > > [    0.204256] ACPI: Marking method RBPE as Serialized because of A=
-E_ALREADY_EXISTS error
-> > > > [    0.204510] ACPI Error (psparse-0537): Method parse/execution fa=
-iled [\_GPE._L01] (Node f701d198), AE_ALREADY_EXISTS
-> > > > [    0.204803] ACPI: Marking method _L01 as Serialized because of A=
-E_ALREADY_EXISTS error
-> > > > [    0.205063] ACPI Exception: AE_ALREADY_EXISTS, while evaluating =
-GPE method [_L01] 20090521 evgpe-568
-> > >=20
-> > > Do you mean rc7-git5 sometime boot fails even with the patch applied?
-> > >
-> > No. Patched kernel boots ok. Even successfully booted kernel sometimes =
-has the given lines in dmesg.
-> > (I'll watch more.)
->=20
+	/* Writes new state */
+	cnt = 1 + !!state;
+	write(sfd,&cnt, sizeof(cnt));
 
-Yes, looks like:
+See below?
 
-> So the patch only fixes the oops,=20
-confirmed;
+Paolo
 
-> we also need to fix the AE_ALREADY_EXISTS error.
->=20
-AE_ALREADY_EXISTS fix not confirmed.=20
-(AE_ALREADY_EXISTS errors are quite rare.)
+> On the hypervisor side:
+> 
+> int read_state(int sfd) {
+> 	u64 cnt;
+> 
+> 	read(sfd,&cnt, sizeof(cnt));
+> 	return state - 1;
+> }
 
 
-	Sergey
+------------- 8<-- ---------------
+Subject: [PATCH] eventfd: new EFD_ABSOLUTE flag
 
---6sX45UoQRIJXqkqR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+This implements a new EFD_ABSOLUTE flag for eventfd.
+This changes eventfd behaviour so that write simply
+stores the value written, and is always non-blocking.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Untested (I just modified Michael's patch, and given
+the simpler code I'm not sure it's now worthwhile
+introducing the inline functions), but otherwise
 
-iJwEAQECAAYFAkqWTFsACgkQfKHnntdSXjRLYAQApejkO1KAP8yI1Oaki/dKtKxT
-adUrMkwsfnSvLTWBApWt53I8tmTTFwBcSF0cJbzxTJ4d9C+2Mcp6fwaTbBZYN0sE
-10388zWf2KRO5/Hkw9j/n9+tc/XPvzxqFg7umSqEyih1zTNZMd30TGQWyzfI/ok/
-GVQIvqhHJyQzKeF0VmU=
-=TO/l
------END PGP SIGNATURE-----
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+---
+ fs/eventfd.c            |   13 ++++++++-----
+ include/linux/eventfd.h |    4 ++--
+ 2 files changed, 10 insertions(+), 7 deletions(-)
 
---6sX45UoQRIJXqkqR--
+diff --git a/fs/eventfd.c b/fs/eventfd.c
+index 347a0e0..7b279e3 100644
+--- a/fs/eventfd.c
++++ b/fs/eventfd.c
+@@ -31,8 +31,6 @@
+ 
+ static inline int eventfd_writeable(struct eventfd_ctx *ctx, u64 n)
+ {
+-	return ULLONG_MAX - n > ctx->count;
+-	return (ctx->flags & EFD_ABSOLUTE) || (ULLONG_MAX - n > ctx->count);
+ }
+ 
+ static inline int eventfd_overflow(struct eventfd_ctx *ctx, u64 cnt)
+@@ -42,10 +40,14 @@
+ 
+ static inline void eventfd_dowrite(struct eventfd_ctx *ctx, u64 ucnt)
+ {
+-	if (eventfd_writeable(ctx, ucnt))
+-		ucnt = ULLONG_MAX - ctx->count;
++	if (ctx->flags & EFD_ABSOLUTE)
++		ctx->count = ucnt;
++	else {
++		if (ULLONG_MAX - ctx->count < ucnt)
++			ucnt = ULLONG_MAX - ctx->count;
+ 
+-	ctx->count += ucnt;
++		ctx->count += ucnt;
++	}
+ }
+ 
+ static inline u64 eventfd_doread(struct eventfd_ctx *ctx)
+diff --git a/include/linux/eventfd.h b/include/linux/eventfd.h
+index 3b85ba6..78ff649 100644
+--- a/include/linux/eventfd.h
++++ b/include/linux/eventfd.h
+@@ -19,11 +19,12 @@
+  * shared O_* flags.
+  */
+ #define EFD_SEMAPHORE (1 << 0)
++#define EFD_ABSOLUTE (1 << 1)
+ #define EFD_CLOEXEC O_CLOEXEC
+ #define EFD_NONBLOCK O_NONBLOCK
+ 
+ #define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
+-#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
++#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE | EFD_ABSOLUTE)
+ 
+ #ifdef CONFIG_EVENTFD
+--
+1.6.2.5 
