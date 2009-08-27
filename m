@@ -1,109 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZH0TOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751621AbZH0TPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751542AbZH0TOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 15:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbZH0TOM
+	id S1751621AbZH0TPd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 15:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZH0TPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 15:14:12 -0400
-Received: from mx01.freesources.org ([80.237.252.149]:46743 "EHLO
-	mail01.freesources.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751135AbZH0TOM (ORCPT
+	Thu, 27 Aug 2009 15:15:31 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:13487 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbZH0TPb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 15:14:12 -0400
-X-Greylist: delayed 2341 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Aug 2009 15:14:11 EDT
-Date: Thu, 27 Aug 2009 20:35:01 +0200
-From: Jonas Meurer <jonas@freesources.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>, 541835@bugs.debian.org
-Cc: Celejar <celejar@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-Message-ID: <20090827183500.GC24973@resivo.wgnet.de>
-References: <20090825195852.1dfacb6c.celejar@gmail.com>
- <20090827095516.6817be1e.randy.dunlap@oracle.com>
+	Thu, 27 Aug 2009 15:15:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=VPyZwy/dKYcCKLnMo0WNqTl6WAEfOv8JczAJczc9cfdc47gkjNmzbGZptF9FFwrIkV
+         wdclp/XP/BOxfI1ttmqa3P8HBzHkwj93/b9SUNOmcp959dUBBC/sy8B9ZQW5YnQEO5V0
+         fgpcRamMybZMbXkacFpdFPbE6/LOD5v9gPMSM=
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qjNfmADvan18RZcF"
-Content-Disposition: inline
-In-Reply-To: <20090827095516.6817be1e.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 88.69.167.238
-X-SA-Exim-Mail-From: jonas@freesources.org
-Subject: Re: [pkg-cryptsetup-devel] Bug#541835: crypto configuration /
- dependencies broken
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:20:07 +0000)
-X-SA-Exim-Scanned: Yes (on mail01.freesources.org)
+In-Reply-To: <082720091839.15057.4A96D2D10002C02000003AD122230647029B0A02D2080C0A9B079D0A030EBF9F030E059B070A08@att.net>
+References: <alpine.DEB.1.10.0908270803540.3447@pc1lin.fred.org> 
+	<m3prahctv6.fsf@hase.home> <082720091839.15057.4A96D2D10002C02000003AD122230647029B0A02D2080C0A9B079D0A030EBF9F030E059B070A08@att.net>
+From: Ulrich Drepper <drepper@gmail.com>
+Date: Thu, 27 Aug 2009 12:15:12 -0700
+Message-ID: <a36005b50908271215v27f06476p5808b9fb6b19fa81@mail.gmail.com>
+Subject: Re: popen2 popen call
+To: heitkamp@ameritech.net
+Cc: Andreas Schwab <schwab@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 27, 2009 at 11:39, <heitkamp@ameritech.net> wrote:
+> OK.  I read in one of the messages, that glibc, passes the popen call to a ABI in the kernel. I have not
+> looked at the code in glibc yet.
 
---qjNfmADvan18RZcF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-hey,
-
-On 27/08/2009 Randy Dunlap wrote:
-> On Tue, 25 Aug 2009 19:58:52 -0400 Celejar wrote:
->=20
-> > I'm having a pretty bizarre problem with my kernel crypto
-> > configuration.  I need support for a bog standard LUKS (aes /
-> > cbc-essiv:sha256) / cryptsetup installation, but even after I enable
-> > virtually everything in the crypto section of the kernel configs, cbc
-> > fails to load.  All the relevant modules are exist (dm-mod, dm-crypt,
-> > crypto_blkcipher, crypto_algapi, crypto_hash, aes_generic,
-> > sha256_generic), but even after modprobing / insmoding
-> > everything, /proc/crypto shows that aes and sha is there, but not cbc.
-> >=20
-> > The problem has been reproduced (using my kernel config) by Jonas
-> > Meurer, the Debian cryptsetup maintainer, so it's not just me ;).
-> > We've tried numerous different kernel versions in the .30 / .31 range.
-> >=20
-> > http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=3D541835
-> >=20
-> > Does this mean that something else somewhere in the kernel needs to be
-> > configured but isn't, and the necessary dependency isn't properly
-> > declared?
-> >=20
-> > My config is at:
-> > http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=3D45;filename=3Dconfig=
--2.6.31-rc6-lizzie-00042-gb2add73;att=3D1;bug=3D541835
-> >=20
-> > [I'm not subscribed to lkml; please cc me on responses]
->=20
->=20
-> You could try/test a patch that was just posted:
->   http://lkml.org/lkml/2009/8/27/249
-
-that patch seems to be for ecryptfs only, while Celejar uses dm-crypt.
-second, the patch just ensures that CRYPTO_ECB and CRYPTO_CBC are
-selected along with ECRYPT_FS. but Celejar does have both CRYPTO_ECB and
-CRYPTO_CBC selected.
-
-the problem rather is that loading the cbc blockcipher module simply
-does nothing. the module is listed in /proc/modules, but the blockcipher
-is still missing from /proc/crypto.
-
-the problem is not reproducible with a debian/unstable 2.6.30.6 kernel,
-even though it has cbc compiled as module as well. but if I recompile
-the same kernel sources with Celejars kernel .config, the problem
-occurs. thus it must be related to the kernel config in some way.
-
-greetings,
- jonas
-
-
-
---qjNfmADvan18RZcF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqW0dQACgkQd6lUs+JfIQI44QCfYUZo+kTRNLejLzk6P2l9xxmA
-+zsAn27R0reMdFx3/tWv3a12VzBAzKoV
-=VOjs
------END PGP SIGNATURE-----
-
---qjNfmADvan18RZcF--
+popen uses pipe2.  There is fallback code to use pipe if necessary.
+It's compiled out only of the libc assumes the kernel support is
+available.
