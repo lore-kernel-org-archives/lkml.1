@@ -1,101 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751596AbZH0H7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751578AbZH0IAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751596AbZH0H7G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 03:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZH0H7F
+	id S1751578AbZH0IAF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 04:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZH0IAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 03:59:05 -0400
-Received: from pan.madism.org ([88.191.52.104]:45125 "EHLO hermes.madism.org"
+	Thu, 27 Aug 2009 04:00:05 -0400
+Received: from cmpxchg.org ([85.214.51.133]:39911 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbZH0H7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 03:59:04 -0400
-Date: Thu, 27 Aug 2009 09:59:02 +0200
-From: Pierre Habouzit <pierre.habouzit@intersec.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: [PATCH v2] perf tools: do not complain if root is owning perf.data
-Message-ID: <20090827075902.GF19653@laphroaig.corp>
-References: <1251291926-27174-1-git-send-email-pierre.habouzit@intersec.com>
- <20090826182459.GD13632@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1751371AbZH0IAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 04:00:04 -0400
+Date: Thu, 27 Aug 2009 09:59:26 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vmscan: move PGDEACTIVATE modification to shrink_active_list()
+Message-ID: <20090827075925.GA2882@cmpxchg.org>
+References: <20090827133727.398B.A69D9226@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090826182459.GD13632@elte.hu>
-X-Face: $(^e[V4D-[`f2EmMGz@fgWK!e.B~2g.{08lKPU(nc1J~z\4B>*JEVq:E]7G-\6$Ycr4<;Z!|VY6Grt]+RsS$IMV)f>2)M="tY:ZPcU;&%it2D81X^kNya0=L]"vZmLP+UmKhgq+u*\.dJ8G!N&=EvlD
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090827133727.398B.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This improves patch fa6963b24 so that perf.data stuff that has been dumped
-as root can be read (annotate/report) by a user without the use of the
---force.
+On Thu, Aug 27, 2009 at 01:39:01PM +0900, KOSAKI Motohiro wrote:
+> Pgmoved accounting in move_active_pages_to_lru() doesn't make any sense.
+> it can be calculated in irq enabled area.
+> 
+> This patch move #-of-deactivating-pages calcution to shrink_active_list().
+> Fortunatelly, it also kill one branch.
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Rationale is that root has plenty of ways to screw us (usually) that do
-not require twisted schemes involving specially crafting a perf.data.
+Ah, this looks familiar.
 
-Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>,
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-Cc: <stable@kernel.org>
----
-    On Wed, Aug 26, 2009 at 08:24:59PM +0200, Ingo Molnar wrote:
-    > Ok, this makes sense - but i think we should do this in .32 only, 
-    > with a Cc: <stable@kernel.org> backport tag for .31.1.
+So the last version was dropped because of failures - I assume because
+Andrew dropped the patch that converted to add_page_to_lru_list() and
+nobody accounted the page-putback anymore (and a compiler error due to
+referencing the then unexisting pgmoved variable).  And this version
+does the accounting itself again, okay.
 
-    You're the boss ;)
+Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
 
-    > Mind doing it against the latest perfcounters tree, which can be 
-    > found in -tip:
-    > 
-    >   http://people.redhat.com/mingo/tip.git/README
-    > 
-    > your current version does not apply cleanly as the surrounding code 
-    > has changed a bit already.
+	Hannes
 
-    Here it is, against perfcounters/core which I assume is the proper
-    tip branch. Note that I'd suggest adding a README.Devel under
-    tools/perf to explicit how patches should be submitted, at least to
-    explain against which tree it's best to do our patches for
-    submission, it could help people avoiding losing your time with
-    unnecessary back-and-forth mails just to rebase a patch ;)
-
- tools/perf/builtin-annotate.c |    4 ++--
- tools/perf/builtin-report.c   |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 4ac618b..4c7bc44 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -984,8 +984,8 @@ static int __cmd_annotate(void)
- 		exit(-1);
- 	}
- 
--	if (!force && (input_stat.st_uid != geteuid())) {
--		fprintf(stderr, "file: %s not owned by current user\n", input_name);
-+	if (!force && input_stat.st_uid && (input_stat.st_uid != geteuid())) {
-+		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
- 		exit(-1);
- 	}
- 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index d2e2882..ea6328a 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -1405,8 +1405,8 @@ static int __cmd_report(void)
- 		exit(-1);
- 	}
- 
--	if (!force && (input_stat.st_uid != geteuid())) {
--		fprintf(stderr, "file: %s not owned by current user\n", input_name);
-+	if (!force && input_stat.st_uid && (input_stat.st_uid != geteuid())) {
-+		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
- 		exit(-1);
- 	}
- 
--- 
-1.6.4.1.341.gf2a44
-
+> ---
+>  mm/vmscan.c |   20 ++++++++++----------
+>  1 files changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 848689a..9618170 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1270,7 +1270,6 @@ static void move_active_pages_to_lru(struct zone *zone,
+>  				     struct list_head *list,
+>  				     enum lru_list lru)
+>  {
+> -	unsigned long pgmoved = 0;
+>  	struct pagevec pvec;
+>  	struct page *page;
+>  
+> @@ -1284,7 +1283,6 @@ static void move_active_pages_to_lru(struct zone *zone,
+>  
+>  		list_move(&page->lru, &zone->lru[lru].list);
+>  		mem_cgroup_add_lru_list(page, lru);
+> -		pgmoved++;
+>  
+>  		if (!pagevec_add(&pvec, page) || list_empty(list)) {
+>  			spin_unlock_irq(&zone->lru_lock);
+> @@ -1294,9 +1292,6 @@ static void move_active_pages_to_lru(struct zone *zone,
+>  			spin_lock_irq(&zone->lru_lock);
+>  		}
+>  	}
+> -	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+> -	if (!is_active_lru(lru))
+> -		__count_vm_events(PGDEACTIVATE, pgmoved);
+>  }
+>  
+>  static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+> @@ -1311,6 +1306,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+>  	struct page *page;
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>  	unsigned long nr_rotated = 0;
+> +	unsigned long nr_deactivated = 0;
+>  
+>  	lru_add_drain();
+>  	spin_lock_irq(&zone->lru_lock);
+> @@ -1365,12 +1361,18 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+>  
+>  		ClearPageActive(page);	/* we are de-activating */
+>  		list_add(&page->lru, &l_inactive);
+> +		nr_deactivated++;
+>  	}
+>  
+>  	/*
+>  	 * Move pages back to the lru list.
+>  	 */
+>  	spin_lock_irq(&zone->lru_lock);
+> +	move_active_pages_to_lru(zone, &l_active,
+> +						LRU_ACTIVE + file * LRU_FILE);
+> +	move_active_pages_to_lru(zone, &l_inactive,
+> +						LRU_BASE   + file * LRU_FILE);
+> +
+>  	/*
+>  	 * Count referenced pages from currently used mappings as rotated,
+>  	 * even though only some of them are actually re-activated.  This
+> @@ -1378,12 +1380,10 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+>  	 * get_scan_ratio.
+>  	 */
+>  	reclaim_stat->recent_rotated[file] += nr_rotated;
+> -
+> -	move_active_pages_to_lru(zone, &l_active,
+> -						LRU_ACTIVE + file * LRU_FILE);
+> -	move_active_pages_to_lru(zone, &l_inactive,
+> -						LRU_BASE   + file * LRU_FILE);
+> +	__count_vm_events(PGDEACTIVATE, nr_deactivated);
+>  	__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, -nr_taken);
+> +	__mod_zone_page_state(zone, LRU_ACTIVE + file * LRU_FILE, nr_rotated);
+> +	__mod_zone_page_state(zone, LRU_BASE + file * LRU_FILE, nr_deactivated);
+>  	spin_unlock_irq(&zone->lru_lock);
+>  }
+>  
+> -- 
+> 1.6.2.5
+> 
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
