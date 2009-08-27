@@ -1,167 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbZHZXac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbZH0AEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754191AbZHZXac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 19:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbZHZXab
+	id S1754283AbZH0AEU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 20:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZH0AET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 19:30:31 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:55011 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbZHZXa2 (ORCPT
+	Wed, 26 Aug 2009 20:04:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51863 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753426AbZH0AET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 19:30:28 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 26 Aug 2009 16:30:23 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Avi Kivity <avi@redhat.com>
-cc: "Michael S. Tsirkin" <mst@redhat.com>, gleb@redhat.com,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-In-Reply-To: <alpine.DEB.2.00.0908261242530.7780@makko.or.mcafeemobile.com>
-Message-ID: <alpine.DEB.2.00.0908261626410.7780@makko.or.mcafeemobile.com>
-References: <20090820182847.GB9282@redhat.com> <4A913DA9.1020403@redhat.com> <20090823133620.GA12841@redhat.com> <4A9146E3.2090007@redhat.com> <20090823143021.GA27495@redhat.com> <alpine.DEB.2.00.0908241114501.7951@makko.or.mcafeemobile.com>
- <20090824214900.GA9899@redhat.com> <alpine.DEB.2.00.0908241508440.7951@makko.or.mcafeemobile.com> <20090825072229.GA10608@redhat.com> <alpine.DEB.2.00.0908251456230.18518@makko.or.mcafeemobile.com> <20090826102908.GA21523@redhat.com>
- <alpine.DEB.2.00.0908261040100.7780@makko.or.mcafeemobile.com> <4A9585EC.2030505@redhat.com> <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com> <4A95900D.9090201@redhat.com> <alpine.DEB.2.00.0908261242530.7780@makko.or.mcafeemobile.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 26 Aug 2009 20:04:19 -0400
+Date: Wed, 26 Aug 2009 17:02:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: zohar@us.ibm.com, linux-kernel@vger.kernel.org, eparis@redhat.com,
+       torvalds@linux-foundation.org, James Morris <jmorris@namei.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] allow disabling IMA at runtime
+Message-Id: <20090826170225.7574759e.akpm@linux-foundation.org>
+In-Reply-To: <20090826021005.GD19494@bombadil.infradead.org>
+References: <20090826021005.GD19494@bombadil.infradead.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 26 Aug 2009, Davide Libenzi wrote:
+On Tue, 25 Aug 2009 22:10:05 -0400
+Kyle McMartin <kyle@mcmartin.ca> wrote:
 
-> > I see no kernel equivalent to read(), but that's easily done.
+> From: Kyle McMartin <kyle@redhat.com>
 > 
-> Adding an in-kernel read based on "ctx", that is no problem at all.
+> Due to a memory leak in IMA that we're currently debugging in Fedora
+> rawhide, it would be nice to be able to disable that support at runtime.
+> Currently it's only able to be built in, and there's no toggle to avoid
+> initializing it.
+> 
+> Provide one, in order to enhance debuggability. If a user can reboot a
+> machine and edit its command line, one can do a far sight worse things
+> than disabling a security precaution.
+> 
 
-Something like the untested below.
-I had thought you said the eventfd readers where in userspace, but I might 
-have misunderstood you.
+nits:
 
+> 
+> ---
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 7936b80..0d1b1ed 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -926,6 +926,11 @@ and is between 256 and 4096 characters. It is defined in the file
+>  	ihash_entries=	[KNL]
+>  			Set number of hash buckets for inode cache.
+>  
+> +	ima=		[IMA]
+> +			Format: { "0" | "1" }
+> +			0 -- disable IMA.
+> +			1 -- enable IMA. (default)
+> +
+>  	ima_audit=	[IMA]
+>  			Format: { "0" | "1" }
+>  			0 -- integrity auditing messages. (Default)
+> diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+> index 101c512..cc7603e 100644
+> --- a/security/integrity/ima/ima_main.c
+> +++ b/security/integrity/ima/ima_main.c
+> @@ -339,10 +339,27 @@ int ima_bprm_check(struct linux_binprm *bprm)
+>  	return 0;
+>  }
+>  
+> +static int ima_disabled = 0;
+> +static int __init ima_enabled(char *str)
+> +{
+> +	unsigned long enabled;
+> +
+> +	if (!strict_strtoul(str, 0, &enabled))
+> +		ima_disabled = enabled ? 0 : 1;
+> +	return 1;
+> +}
 
+- documentation says "0 or 1" but the implementation says "0 or non-zero".
 
-- Davide
+- implementation returns `1' whether or not the argument was
+  successfully parsed.
 
+  What happens if a __setup() functions returns non-1?
 
+  <spends a while fossicking through prehistory and RustyCode>
 
----
- fs/eventfd.c            |   51 +++++++++++++++++++++++++++++++++---------------
- include/linux/eventfd.h |    7 ++++++
- 2 files changed, 43 insertions(+), 15 deletions(-)
+  From my reading of kernel/params.c:parse_args(), every __setup()
+  function which returns `1' should result in printk("%s: `%s' invalid
+  for parameter `%s'), so I'm all confused and giving up.
 
-Index: linux-2.6.mod/fs/eventfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/eventfd.c	2009-08-26 15:58:03.000000000 -0700
-+++ linux-2.6.mod/fs/eventfd.c	2009-08-26 16:20:03.000000000 -0700
-@@ -130,26 +130,33 @@ static unsigned int eventfd_poll(struct 
- 	return events;
- }
- 
--static ssize_t eventfd_read(struct file *file, char __user *buf, size_t count,
--			    loff_t *ppos)
-+/**
-+ * eventfd_ctx_read - Reads the eventfd counter or wait if it is zero.
-+ * @ctx: [in] Pointer to eventfd context.
-+ * @no_wait: [in] Different from zero if the operation should not block.
-+ * @cnt: [out] Pointer to the 64bit conter value.
-+ *
-+ * Returns zero if successful, or the following error codes:
-+ *
-+ * -EAGAIN      : The operation would have blocked but @no_wait was nonzero.
-+ * -ERESTARTSYS : A signal interrupted the wait operation.
-+ */
-+ssize_t eventfd_ctx_read(struct eventfd_ctx *ctx, int no_wait, __u64 *cnt)
- {
--	struct eventfd_ctx *ctx = file->private_data;
- 	ssize_t res;
--	__u64 ucnt = 0;
- 	DECLARE_WAITQUEUE(wait, current);
- 
--	if (count < sizeof(ucnt))
--		return -EINVAL;
- 	spin_lock_irq(&ctx->wqh.lock);
-+	*cnt = 0;
- 	res = -EAGAIN;
- 	if (ctx->count > 0)
--		res = sizeof(ucnt);
--	else if (!(file->f_flags & O_NONBLOCK)) {
-+		res = 0;
-+	else if (!no_wait) {
- 		__add_wait_queue(&ctx->wqh, &wait);
--		for (res = 0;;) {
-+		for (;;) {
- 			set_current_state(TASK_INTERRUPTIBLE);
- 			if (ctx->count > 0) {
--				res = sizeof(ucnt);
-+				res = 0;
- 				break;
- 			}
- 			if (signal_pending(current)) {
-@@ -163,18 +170,32 @@ static ssize_t eventfd_read(struct file 
- 		__remove_wait_queue(&ctx->wqh, &wait);
- 		__set_current_state(TASK_RUNNING);
- 	}
--	if (likely(res > 0)) {
--		ucnt = (ctx->flags & EFD_SEMAPHORE) ? 1 : ctx->count;
--		ctx->count -= ucnt;
-+	if (likely(res == 0)) {
-+		*cnt = (ctx->flags & EFD_SEMAPHORE) ? 1 : ctx->count;
-+		ctx->count -= *cnt;
- 		if (waitqueue_active(&ctx->wqh))
- 			wake_up_locked_poll(&ctx->wqh, POLLOUT);
- 	}
- 	spin_unlock_irq(&ctx->wqh.lock);
--	if (res > 0 && put_user(ucnt, (__u64 __user *) buf))
--		return -EFAULT;
- 
- 	return res;
- }
-+EXPORT_SYMBOL_GPL(eventfd_ctx_read);
-+
-+static ssize_t eventfd_read(struct file *file, char __user *buf, size_t count,
-+			    loff_t *ppos)
-+{
-+	struct eventfd_ctx *ctx = file->private_data;
-+	ssize_t res;
-+	__u64 cnt;
-+
-+	if (count < sizeof(cnt))
-+		return -EINVAL;
-+	if ((res = eventfd_ctx_read(ctx, file->f_flags & O_NONBLOCK, &cnt)) < 0)
-+		return res;
-+
-+	return put_user(cnt, (__u64 __user *) buf) ? -EFAULT: sizeof(cnt);
-+}
- 
- static ssize_t eventfd_write(struct file *file, const char __user *buf, size_t count,
- 			     loff_t *ppos)
-Index: linux-2.6.mod/include/linux/eventfd.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/eventfd.h	2009-08-26 15:58:03.000000000 -0700
-+++ linux-2.6.mod/include/linux/eventfd.h	2009-08-26 16:17:01.000000000 -0700
-@@ -33,6 +33,7 @@ struct file *eventfd_fget(int fd);
- struct eventfd_ctx *eventfd_ctx_fdget(int fd);
- struct eventfd_ctx *eventfd_ctx_fileget(struct file *file);
- int eventfd_signal(struct eventfd_ctx *ctx, int n);
-+ssize_t eventfd_ctx_read(struct eventfd_ctx *ctx, int no_wait, __u64 *cnt);
- 
- #else /* CONFIG_EVENTFD */
- 
-@@ -55,6 +56,12 @@ static inline void eventfd_ctx_put(struc
- 
- }
- 
-+static inline ssize_t eventfd_ctx_read(struct eventfd_ctx *ctx, int no_wait,
-+				       __u64 *cnt)
-+{
-+	return -ENOSYS;
-+}
-+
- #endif
- 
- #endif /* _LINUX_EVENTFD_H */
+> +__setup("ima=", ima_enabled);
+
+Are we supposed to use core_param() nowadays?
+
+>  static int __init init_ima(void)
+>  {
+>  	int error;
+>  
+> +	if (ima_disabled) {
+> +		pr_info("IMA disabled at user request.\n");
+> +		return 0;
+> +	}
+> +
+>  	ima_iintcache_init();
+>  	error = ima_init();
+>  	ima_initialized = 1;
+
