@@ -1,116 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZH0LyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbZH0LzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751964AbZH0LyF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 07:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZH0LyE
+	id S1752011AbZH0LzS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 07:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZH0LzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 07:54:04 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:49294 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751532AbZH0LyD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 07:54:03 -0400
-Date: Thu, 27 Aug 2009 17:23:54 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
-	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
-Message-ID: <20090827115354.GC24986@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090827114908.GA24986@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 27 Aug 2009 07:55:18 -0400
+Received: from verein.lst.de ([213.95.11.210]:49602 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751791AbZH0LzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 07:55:17 -0400
+Date: Thu, 27 Aug 2009 13:54:12 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Fernando Luis V?zquez Cao <fernando@oss.ntt.co.jp>
+Cc: Christoph Hellwig <hch@lst.de>, t-sato@yk.jp.nec.com,
+       m-hamaguchi@ys.jp.nec.com, Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Sandeen <sandeen@redhat.com>
+Subject: Re: [RFC, PATCH] filesystem freeze: fix sys_umount induced perpetual freeze
+Message-ID: <20090827115412.GA8326@lst.de>
+References: <4A94C151.8020900@oss.ntt.co.jp> <20090826173839.GA20175@lst.de> <4A965BD1.205@oss.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090827114908.GA24986@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A965BD1.205@oss.ntt.co.jp>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-08-27 17:19:08]:
+On Thu, Aug 27, 2009 at 07:11:29PM +0900, Fernando Luis V?zquez Cao wrote:
+> Thank you for the pointers. I gave those patches a spin, but it seems
+> the umount case is not being tackled. I suggest rejecting the umount
+> for frozen filesystems. What do you think?
+> 
+> I will be replying to this email with a forward port of your patches
+> along with my own patches that fix the locking for umount and add a
+> new ioctl to check the freeze state of the filesystem (this is helpful
+> to create clean resource agents for HA solutions).
 
-Cpuidle infrastructure assumes pm_idle as the default idle routine.
-But, ppc_md.power_save is the default idle callback in case of pSeries.
+I think we should just reject the umount for a forzen filesystem with
+-EBUSY like I do for remount in those patches.  I somehow thought I did
+this but didn't.  Is that good for your use case?
 
-So, create a more generic, architecture independent cpuidle_pm_idle
-function pointer in driver/cpuidle/cpuidle.c and allow the idle routines
-of architectures to be set to cpuidle_pm_idle.
-
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle.c |   12 +++++++-----
- include/linux/cpuidle.h   |    7 +++++++
- 2 files changed, 14 insertions(+), 5 deletions(-)
-
-Index: linux.trees.git/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-+++ linux.trees.git/drivers/cpuidle/cpuidle.c
-@@ -25,6 +25,7 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
- DEFINE_MUTEX(cpuidle_lock);
- LIST_HEAD(cpuidle_detected_devices);
- static void (*pm_idle_old)(void);
-+void (*cpuidle_pm_idle)(void);
- 
- static int enabled_devices;
- 
-@@ -98,10 +99,10 @@ static void cpuidle_idle_call(void)
-  */
- void cpuidle_install_idle_handler(void)
- {
--	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
-+	if (enabled_devices && (cpuidle_pm_idle != cpuidle_idle_call)) {
- 		/* Make sure all changes finished before we switch to new idle */
- 		smp_wmb();
--		pm_idle = cpuidle_idle_call;
-+		cpuidle_pm_idle = cpuidle_idle_call;
- 	}
- }
- 
-@@ -110,8 +111,9 @@ void cpuidle_install_idle_handler(void)
-  */
- void cpuidle_uninstall_idle_handler(void)
- {
--	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
--		pm_idle = pm_idle_old;
-+	if (enabled_devices && pm_idle_old &&
-+			(cpuidle_pm_idle != pm_idle_old)) {
-+		cpuidle_pm_idle = pm_idle_old;
- 		cpuidle_kick_cpus();
- 	}
- }
-@@ -382,7 +384,7 @@ static int __init cpuidle_init(void)
- {
- 	int ret;
- 
--	pm_idle_old = pm_idle;
-+	pm_idle_old = cpuidle_pm_idle;
- 
- 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
- 	if (ret)
-Index: linux.trees.git/include/linux/cpuidle.h
-===================================================================
---- linux.trees.git.orig/include/linux/cpuidle.h
-+++ linux.trees.git/include/linux/cpuidle.h
-@@ -188,4 +188,11 @@ static inline void cpuidle_unregister_go
- #define CPUIDLE_DRIVER_STATE_START	0
- #endif
- 
-+/*
-+ * Idle callback used by cpuidle to call the cpuidle_idle_call().
-+ * Platform drivers can use this to register to cpuidle's idle loop.
-+ */
-+
-+extern void (*cpuidle_pm_idle)(void);
-+
- #endif /* _LINUX_CPUIDLE_H */
