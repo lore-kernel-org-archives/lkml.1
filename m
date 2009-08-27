@@ -1,47 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZH0U7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbZH0VAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752829AbZH0U7O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 16:59:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbZH0U7N
+	id S1753016AbZH0VAm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 17:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbZH0VAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 16:59:13 -0400
-Received: from shards.monkeyblade.net ([198.137.202.13]:45755 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752226AbZH0U7N (ORCPT
+	Thu, 27 Aug 2009 17:00:40 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:60262 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752931AbZH0VAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 16:59:13 -0400
-Message-ID: <4A96F355.30808@kernel.org>
-Date: Thu, 27 Aug 2009 13:57:57 -0700
-From: "J.H." <warthog9@kernel.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 27 Aug 2009 17:00:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=cdgok3uu3/LSX/9XFFCahPqf+S1SZt1mRa+whT11+JSf9QJHZmge1kTO/+/9S+E66R
+         c5sRe7eNrhRNa6mBmowNEz7v5yEjtcLAys0fezBs22lZaOCPfRjx5csPIHSY4AB1T4nk
+         jUzILHgo72dHd9VAvB3lCt1a9upjifbvQljIU=
+Message-ID: <4A96F428.3060806@gmail.com>
+Date: Thu, 27 Aug 2009 14:01:28 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: Dave Young <hidave.darkstar@gmail.com>, webmaster@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, stable@kernel.org
-Subject: Re: mm/-next release on kernel.org web page?
-References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>	<20090802095523.e08166e3.rdunlap@xenotime.net>	<a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com>	<20090802193045.c3f3195c.rdunlap@xenotime.net>	<4A766F39.7090903@kernel.org>	<4A95D677.2020807@kernel.org>	<a8e1da0908270739sbab4821x6ec402a72587a337@mail.gmail.com> <20090827124315.0d0f2129.rdunlap@xenotime.net>
-In-Reply-To: <20090827124315.0d0f2129.rdunlap@xenotime.net>
-X-Enigmail-Version: 0.95.6
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #14012] latest git fried my x86_64 imac
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>	<200908262306.38464.rjw@sisk.pl>	<4A96CA0A.90405@gmail.com>	<200908272145.01901.rjw@sisk.pl> <20090827134756.53359c08.randy.dunlap@oracle.com>
+In-Reply-To: <20090827134756.53359c08.randy.dunlap@oracle.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.1 (shards.monkeyblade.net [198.137.202.13]); Thu, 27 Aug 2009 13:57:58 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Is it possible to add latest mmotm link?
->> Just link to andrew's broken-out.tar.gz with the stamp name?
-> 
-> Ditto.  Please.
+Randy Dunlap wrote:
+> On Thu, 27 Aug 2009 21:45:01 +0200 Rafael J. Wysocki wrote:
+>
+>    
+>> On Thursday 27 August 2009, Justin P. Mattock wrote:
+>>      
+>>> Rafael J. Wysocki wrote:
+>>>        
+>>>> On Wednesday 26 August 2009, Justin P. Mattock wrote:
+>>>>
+>>>>          
+>>>>> Rafael J. Wysocki wrote:
+>>>>>
+>>>>>            
+>>>>>> This message has been generated automatically as a part of a report
+>>>>>> of recent regressions.
+>>>>>>
+>>>>>> The following bug entry is on the current list of known regressions
+>>>>>> from 2.6.30.  Please verify if it still should be listed and let me know
+>>>>>> (either way).
+>>>>>>
+>>>>>>
+>>>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14012
+>>>>>> Subject		: latest git fried my x86_64 imac
+>>>>>> Submitter	: Justin P. Mattock<justinmattock@gmail.com>
+>>>>>> Date		: 2009-08-13 07:20 (13 days old)
+>>>>>> References	: http://marc.info/?l=linux-kernel&m=125014080427090&w=4
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>              
+>>>>> if I revert this commit:
+>>>>> af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+>>>>> I can get a normal bootup.
+>>>>>
+>>>>>            
+>>>> Hm, that's
+>>>>
+>>>> commit af6af30c0fcd77e621638e53ef8b176bca8bd3b4
+>>>> Author: Peter Zijlstra<peterz@infradead.org>
+>>>> Date:   Wed Aug 5 20:41:04 2009 +0200
+>>>>
+>>>>       ftrace: Fix perf-tracepoint OOPS
+>>>>
+>>>> I wonder what happens if you compile out ftrace?
+>>>>
+>>>>
+>>>>          
+>>>>> As for this  bug, it seems I'm the only
+>>>>> hitting this. The system is a fresh LFS build
+>>>>> x86_64.
+>>>>> In regards to keeping this open
+>>>>> not sure, I don't have a problem with closing this
+>>>>> and taking the blame as something I did during my build
+>>>>> of the system, then if this becomes more frequent
+>>>>> then open a new bug.
+>>>>>
+>>>>>            
+>>>> OK, I'll close it for now.
+>>>>
+>>>> Thanks,
+>>>> Rafael
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>
+>>>>
+>>>>          
+>>> o.k. I tried disabling all of ftrace in the kernel,
+>>> unfortunately the only one left
+>>> is HAVE_FTRACE_SYSCALLS
+>>> which seems to be selected by x86.
+>>> seems the system still sticks
+>>> without reverting perf-tracepoint oops.
+>>>        
+>> That's kind of strange.  Can you attach the .config, please?
+>>      
+>
+> That's what arch/x86/Kconfig does:
+>
+> ### Arch settings
+> config X86
+> 	def_bool y
+> ...
+> 	select HAVE_FTRACE_SYSCALLS
+>
+> It just means that the $arch has that capability, not that it is enabled.
+>
+>
+> ---
+> ~Randy
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>
+>    
+Alright(see how much of newbie I am),
+then disabling ftrace(if its safe to say)
+still doesn't resolve the issue
+for me then.
 
-Problem with mmotm is that Andrew is hosting that out of his public_html 
-directory, which I can only assume means that the tree isn't intended to 
-be consumed by the masses, as official trees are supposed to live under 
-/pub.  If this is not the case then we need to get it moved under 
-/pub/scm & /pub as things on public_html aren't synced out to the 
-front-end machines.  But I will have to defer to Andrew on what 
-direction he wants to take mmotm.
+best bet, in my honest opinion
+is to hold off on anything, until
+"if any", other reports start showing up in this manner.
+if in the future there is no such reports then it's
+probably safe to say I did something wrong.
+Then if there is issues later in time by anybody,
+then we have an idea of where/what might be the causing this.
 
-- John 'Warthog9' Hawley
+
+Justin P. Mattock
+
