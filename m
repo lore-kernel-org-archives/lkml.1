@@ -1,123 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751245AbZH0Wvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751359AbZH0Wz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751245AbZH0Wvi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 18:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbZH0Wvh
+	id S1751359AbZH0Wz5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 18:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbZH0Wzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 18:51:37 -0400
-Received: from www.tglx.de ([62.245.132.106]:33690 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbZH0Wvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 18:51:36 -0400
-Date: Fri, 28 Aug 2009 00:51:22 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ashwin Chaugule <ashwinc@codeaurora.org>
-cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [RFC] [PATCH 1/1] hrtimers: Cache next hrtimer
-In-Reply-To: <4A970103.7010804@codeaurora.org>
-Message-ID: <alpine.LFD.2.00.0908280045200.2888@localhost.localdomain>
-References: <4A96FFE9.6060105@codeaurora.org> <4A970103.7010804@codeaurora.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 27 Aug 2009 18:55:54 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:51705 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbZH0Wzy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 18:55:54 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 27 Aug 2009 15:55:52 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Eric Blake <ebb9@byu.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bug-coreutils@gnu.org, bug-gnulib@gnu.org,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] open: introduce O_NOSTD
+In-Reply-To: <4A968FF8.8050109@byu.net>
+Message-ID: <alpine.DEB.2.00.0908271554130.5649@makko.or.mcafeemobile.com>
+References: <4A9285FC.8000606@byu.net> <1251202593-3676-1-git-send-email-ebb9@byu.net> <alpine.DEB.2.00.0908251420190.18518@makko.or.mcafeemobile.com> <4A968FF8.8050109@byu.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009, Ashwin Chaugule wrote:
->    Cached the hrtimer which causes the expire_next
->    value to change. This is to avoid unnecessary re-programming
->    of the clock events device.
+On Thu, 27 Aug 2009, Eric Blake wrote:
 
-You forgot to describe the application scenario which triggers this.
- 
-> @@ -843,16 +851,20 @@ static void __remove_hrtimer(struct hrtimer *timer,
->                  struct hrtimer_clock_base *base,
->                  unsigned long newstate, int reprogram)
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> According to Davide Libenzi on 8/25/2009 3:53 PM:
+> >> Another solution is for the application to sanitize all newly-created
+> >> fds: GNU coreutils provides a wrapper open_safer, which does nothing
+> >> extra in the common case that open() returned 3 or larger, but calls
+> >> fcntl(n,F_DUPFD,3)/close(n) before returning if n was less than 3.
+> >> However, this leads to triple the syscall cost for every open() call
+> >> if the process starts life with a std fd closed; and if O_CLOEXEC is
+> >> not used, still leaves a window of time where the fd can be leaked
+> >> through another thread's use of fork/exec.
+> > 
+> > I think we can say that the vast majority of the software is not going to 
+> > notice the proposed open_safer(), performance-wise, since the first three 
+> > fds are always filled. So IMO the performance impact argument is a weak one.
+> > If CLOEXEC semantics are needed in the open operation, F_DUPFD_CLOEXEC can 
+> > be used to match it.
+> 
+> The current gnulib implementation of open_safer (pre-O_CLOEXEC support) is
+> (roughly):
+> 
+> /* Wrap open, to guarantee that a successful return value is >= 3.  */
+> int open_safer (const char *name, int flags, int mode)
 > {
-> -    if (timer->state & HRTIMER_STATE_ENQUEUED) {
-> +    struct hrtimer *next_hrtimer = __get_cpu_var(hrtimer_bases).next_hrtimer;
-> +
-> +    if (hrtimer_is_queued(timer)) {
->         /*
->          * Remove the timer from the rbtree and replace the
->          * first entry pointer if necessary.
->          */
->         if (base->first == &timer->node) {
->             base->first = rb_next(&timer->node);
-> -            /* Reprogram the clock event device. if enabled */
-> -            if (reprogram && hrtimer_hres_active())
-> -                hrtimer_force_reprogram(base->cpu_base);
-> +            if (next_hrtimer == timer) {
-> +                /* Reprogram the clock event device. if enabled */
-> +                if (reprogram && hrtimer_hres_active())
-> +                    hrtimer_force_reprogram(base->cpu_base);
-> +            }
+>   int fd = open (name, flags, mode);
+>   if (0 <= fd && fd <= 2)
+>     {
+>       int dup = fcntl (fd, F_DUPFD, 3);
+>       int saved_errno = errno;
+>       close (fd);
+>       errno = saved_errno;
+>       fd = dup;
+>     }
+>   return fd;
+> }
+> 
+> which has the desired property of no overhead in the common case of all
+> standard fds open.  But it obviously mishandles the O_CLOEXEC flag.
+> Here's a first cut at supporting it:
+> 
+> int open_safer (const char *name, int flags, int mode)
+> {
+>   int fd = open (name, flags, mode);
+>   if (0 <= fd && fd <= 2)
+>     {
+>       int dup = fcntl (fd, ((flags & O_CLOEXEC)
+>                             ? F_DUPFD_CLOEXEC : F_DUPFD), 3);
+>       int saved_errno = errno;
+>       close (fd);
+>       errno = saved_errno;
+>       fd = dup;
+>     }
+>   return fd;
+> }
+> 
+> If the user requested open_safer(O_CLOEXEC), then we still have the
+> desired property of no syscall overhead and no fd leak.  But if the user
+> intentionally does not pass O_CLOEXEC because they wanted to create an
+> inheritable fd, but without stomping on standard fds, then this version
+> still has a window for an fd leak.  So let's try this version, which
+> guarantees no fd leak, while still keeping the semantics of giving the
+> user an inheritable fd outside the std fd range:
+> 
+> int open_safer (const char *name, int flags, int mode)
+> {
+>   int fd = open (name, flags | O_CLOEXEC, mode);
+>   if (0 <= fd && fd <= 2)
+>     {
+>       int dup = fcntl (fd, ((flags & O_CLOEXEC)
+>                             ? F_DUPFD_CLOEXEC : F_DUPFD), 3);
+>       int saved_errno = errno;
+>       close (fd);
+>       errno = saved_errno;
+>       fd = dup;
+>     }
+>   else if (!(flags & O_CLOEXEC))
+>     {
+>       if ((flags = fcntl (fd, F_GETFD)) < 0
+>           || fcntl (fd, F_SETFD, flags & ~FD_CLOEXEC) == -1)
+>         {
+>           int saved_errno = errno;
+>           close (fd);
+>           fd = -1;
+>           errno = saved_errno;
 >         }
->         rb_erase(&timer->node, &base->active);
+>     }
+>   return fd;
+> }
+> 
+> This solves the fd leak, and open_safer(O_CLOEXEC) is still cheap in the
+> common case.  But now the case of open_safer without O_CLOEXEC costs 3
+> syscalls, regardless of whether the standard fds were already open (if we
+> assumed there were no possibility of new FD_* flags, we could cut the
+> common-case penalty from three to two by skipping the fcntl(fd,F_GETFD)
+> and just using fcntl(fd,F_SETFD,0), but that's asking for problems).
+> 
+> > While the patch is simple, IMO this is something that can be easily taken 
+> > care in glibc layers w/out huge drawbacks.
+> 
+> I hope that my example shows why doing it in the kernel is desirable -
+> there is no safe way to keep the pre-O_CLOEXEC efficiency using just the
+> library, but there IS a way to do it with kernel support:
+> 
+> int open_safer (const char *name, int flags, int mode)
+> {
+>   return open (name, flags | O_NOSTD, mode);
+> }
 
-So if I'm not totally on the wrong track, that's the meat of the
-patch.
+Can't the handling be done on close(), like (modulo some errno save/restore):
 
-Any reason why we can't solve that problem with checking
-cpu_base->expires_next against the timer which is deleted ? 
+int safer_close(int fd) {
+	int error = close(fd);
 
-See the patently untested patch below.
+	if (fd < 3 && fd >= 0) {
+		if ((fd = open("/dev/null", O_RDWR)) > 2)
+			close(fd);
+	}
 
-Another question which arises is whether we should bother with the
-reprogramming at all and just let the last programmed event happen
-even when the corresponding timer has been removed.
+	return error;
+}
 
-Thanks,
 
-	tglx
----
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 49da79a..91d099c 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -906,19 +906,30 @@ static void __remove_hrtimer(struct hrtimer *timer,
- 			     struct hrtimer_clock_base *base,
- 			     unsigned long newstate, int reprogram)
- {
--	if (timer->state & HRTIMER_STATE_ENQUEUED) {
--		/*
--		 * Remove the timer from the rbtree and replace the
--		 * first entry pointer if necessary.
--		 */
--		if (base->first == &timer->node) {
--			base->first = rb_next(&timer->node);
--			/* Reprogram the clock event device. if enabled */
--			if (reprogram && hrtimer_hres_active())
--				hrtimer_force_reprogram(base->cpu_base);
--		}
--		rb_erase(&timer->node, &base->active);
--	}
-+	ktime_t expires;
-+
-+	if (!(timer->state & HRTIMER_STATE_ENQUEUED))
-+		goto out;
-+
-+	/*
-+	 * Remove the timer from the rbtree and replace the first
-+	 * entry pointer if necessary.
-+	 */
-+	rb_erase(&timer->node, &base->active);
-+
-+	if (base->first != &timer->node)
-+		goto out;
-+
-+	base->first = rb_next(&timer->node);
-+	/* Reprogram the clock event device. if enabled */
-+	if (!reprogram || !hrtimer_hres_active())
-+		goto out;
-+
-+	expires = ktime_sub(hrtimer_get_expires(timer), base->offset);
-+	if (base->cpu_base->expires_next.tv64 == expires.tv64)
-+		hrtimer_force_reprogram(base->cpu_base);
-+
-+out:
- 	timer->state = newstate;
- }
- 
+
+- Davide
+
 
