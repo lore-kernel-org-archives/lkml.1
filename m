@@ -1,71 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751438AbZH0TJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751508AbZH0TLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751438AbZH0TJg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 15:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbZH0TJd
+	id S1751508AbZH0TLm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 15:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbZH0TLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 15:09:33 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:41826 "EHLO
-	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbZH0TJc convert rfc822-to-8bit (ORCPT
+	Thu, 27 Aug 2009 15:11:42 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:16818 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751116AbZH0TLl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 15:09:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=U6Y1tbGwDREsOGelGD/6HGROLB+YP5AO9cZukPJ9dc6nCVZGeBwMzVOAmSA4aZhd7s
-         F0K4VKc0Es3nt7QSSWGe3XnBteBMhc91AgGSLcDg0jxRPFMU39CCbBCLTI0GzKsJOw4S
-         NWuMv3ciD9HEiYNPJpK7LKc6kW1eUFVbXudn0=
+	Thu, 27 Aug 2009 15:11:41 -0400
+X-Trace: 250305201/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.24.64/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.24.64
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuUEAOd2lkpQKRhA/2dsb2JhbACBU9dwhBkF
+X-IronPort-AV: E=Sophos;i="4.44,287,1249254000"; 
+   d="scan'208";a="250305201"
+Date: Thu, 27 Aug 2009 20:11:05 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Izik Eidus <ieidus@redhat.com>
+cc: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Justin M. Forbes" <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 13/12] ksm: fix munlock during exit_mmap deadlock
+In-Reply-To: <4A95AE06.305@redhat.com>
+Message-ID: <Pine.LNX.4.64.0908271958330.1973@sister.anvils>
+References: <20090825145832.GP14722@random.random> <20090825152217.GQ14722@random.random>
+ <Pine.LNX.4.64.0908251836050.30372@sister.anvils> <20090825181019.GT14722@random.random>
+ <Pine.LNX.4.64.0908251958170.5871@sister.anvils> <20090825194530.GU14722@random.random>
+ <Pine.LNX.4.64.0908261910530.15622@sister.anvils> <20090826194444.GB14722@random.random>
+ <Pine.LNX.4.64.0908262048270.21188@sister.anvils> <4A95A10C.5040008@redhat.com>
+ <20090826211400.GE14722@random.random> <4A95AE06.305@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20090827182952.GC10360@sequoia.sous-sol.org>
-References: <43e72e890908271122l6b08aaa5lc66de78301c7c88d@mail.gmail.com> 
-	<20090827182952.GC10360@sequoia.sous-sol.org>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Thu, 27 Aug 2009 12:09:14 -0700
-Message-ID: <43e72e890908271209mdbaaf03l820aade2266eb54c@mail.gmail.com>
-Subject: Re: Would it help to encourage users to read/test stable-review 
-	patches
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: stable-review@kernel.org, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>,
-       =?UTF-8?Q?Christian_St=C3=B6veken?= <launchpad.net@excogitation.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27, 2009 at 11:29 AM, Chris Wright<chrisw@sous-sol.org> wrote:
-> * Luis R. Rodriguez (mcgrof@gmail.com) wrote:
+On Thu, 27 Aug 2009, Izik Eidus wrote:
+> Andrea Arcangeli wrote:
+> > On Wed, Aug 26, 2009 at 11:54:36PM +0300, Izik Eidus wrote:
+> >   
+> > > But before getting into this, why is it so important to break the ksm
+> > > pages when madvise(UNMERGEABLE) get called?
+> > >     
 
->> Also what if a user just wants to test an entire series queues up
->> for stable-review, is there a single all-in-one file user can just
->> patch -p1 to help test prior to getting the next stable release made?
->
-> There is a queue that can be applied w/ quilt  (or any similar tool that
-> can handles patches + series file).  This is kept here:
->
-> http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git
+Good question.
 
-For us non-quilters and lazy people can we get an all-in-one patch
-generated from a script or something? If not I can just try to keep
-one up to date myself but figured since you have a tree it may be
-easier to refer the one place instead of two.
+> >
+> > The moment ksm pages are swappable, there's no apparent reason why
+> > anybody should ask the kernel to break any ksm page if the application
+> > themselfs aren't writing to them in the first place (triggering
+> > copy-on-write in app context which already handles TIF_MEMDIE just
+> > fine).
+> >   
+> 
+> I think I am the one that should be blamed for breaking the ksm pages when
+> running unmeregable (If I remember right),
 
->> Do we want more user exposure to stable-review mailing list or is just
->> a few developer eyes enough?
->
-> More review never hurts, but do you think there's a specific lack or
-> problem?
+No, I think it was me to blame for that: looking back at the /dev/ksm KSM
+and your draft of madvise KSM, I don't see breaking on unmerge in either.
 
-Not really, I was thinking about the fellow Ubunteros users who tend
-to not have a clue but sometimes enough good will to want to help. If
-the average user understood better the upstream process then perhaps
-it would become clearer to them the importance of stable patches and
-stable-review. Bringing users closer to stable-review to me indicates
-more users would understand the stable process and therefore would
-stop bitching to me when a 'non-cirtical' fix never made it into their
-ancient stable. Cc'ing one of those.
+> but I think Hugh had a good case why we want to keep it... ? (If I remember
+> right again...)
 
-  Luis
+There were several reasons for adding it, but all rather weak.
+
+The "good case" you're half-remembering is probably that if we didn't
+break ksm when doing madvise MADV_UNMERGEABLE, we'd lose track of any
+KSM pages in the vma we're removing VM_MERGEABLE from (since we only
+ever scan VM_MERGEABLEs), and so would be liable to build up more and
+more unswappable KSM pages, well beyond the limit which can be imposed
+by max_kernel_pages.
+
+It is important to keep that accounting right, at least for so long as
+they're unswappable; but it amounts to only a weak case, because we
+could perfectly well have two vm_flags, one to say actively try to
+merge here, and another to say there might still be KSM pages here.
+(Perhaps with some restructuring that could instead be driven from
+the stable tree end, rather than through the mm_slots and vmas.)
+
+Reasons for avoiding two vm_flags: simplicity; minimizing KSM
+footprint outside of ksm.c; and... VM_MERGEABLE has selfishly taken
+bit 31 of vm_flags, the next vm_flag is going to involve some thought
+on the best way to expand it (on 32-bit arches).  It's not an atomic
+field so it shouldn't be hard; we used to minimize the use of 64-bit
+on 32-bit but maybe gcc's unsigned long long handling is pretty good
+nowadays and it's no issue?  Or maybe the issue was always avoiding
+64-bit arithmetic, no issue with bitflags?  I don't know myself.
+
+Other reasons for breaking ksm when unmerging: my sense that we ought
+to provide a way to undo whatever is done (useful when testing, but
+does that make it worth the effort? particularly if much of the testing
+goes into testing precisely that feature!); and a notion that people
+worried about covert channels would want to be able to undo merging
+absolutely (but would they have been using MADV_MERGEABLE in the
+first place, even have KSM configured in and running? seems unlikely).
+
+It may be that MADV_UNMERGEABLE isn't really needed (I think I even
+admitted once that probably nobody would use it other than we testing
+it).  Yet I hesitate to rip it out: somehow it still seems right to
+have it in there.  Why did you have unregistering in the /dev/ksm KSM?
+
+> 
+> > In oom deadlock terms madvise(UNMERGEABLE) is the only place that is
+> > 100% fine at breaking KSM pages, because it runs with right tsk->mm
+> > and page allocation will notice TIF_MEMDIE set on tsk.
+> >
+> > If we remove "echo 2" only remaining "unsafe" spot is the break_cow in
+> > kksmd context when memcmp fails and similar during the scan.
+> >
+> >   
+> I didnt talk here about the bug..., I talked about the behavior...
+> It is the feeling that the oom will kill applications calling into
+> UNMERGEABLE, even thought this application shouldn't die, just because it had
+> big amount of memory shared and it unmerged it in the wrong time?...
+
+The OOM killer makes its choices based upon total_vm (and some other
+things): doesn't even consider rss, and certainly not KSM sharing.
+So whenever out-of-memory, the OOM killer might choose to kill a very
+highly KSM-merged process, freeing very little memory, just because
+it _appears_ big from the outside.  There's nothing special to the
+unmerging case, other than that being a good way to require lots of
+page allocations in a single system call.  I don't see anything
+unfair about it being killed at the point of unmerging: much more
+unfair that it be killed when highly merged.
+
+> 
+> But probably this thoughts have no end, and we are better stick with something
+> practical that can work clean and simple...
+> 
+> So what I think is this:
+> echo 2 is something we want in this version beacuse we dont support swapping
+> of the shared pages, so we got to allow some how to break the pages...
+> 
+> and echo 2 got to have UNMERGEABLE break the shared pages when its madvise get
+> called...
+> 
+> So maybe it is just better to leave it like that?
+> > > When thinking about it, lets say I want to use ksm to scan 2 applications
+> > > and merged their STATIC identical data, and then i want to stop scanning
+> > > them after i know ksm merged the pages, as soon as i will try to
+> > > unregister this 2 applications ksm will unmerge the pages, so we dont
+> > > allow such thing for the user (we can tell him ofcurse for such case to
+> > > use normal way of sharing, so this isnt a really strong case for this)
+> > >     
+> >
+> > For the app it will be tricky to know when the pages are merged
+> > though, right now it could only wait a "while"... so I don't really
+> > see madvise(UNMERGEABLE) as useful regardless how we implement
+> > it... but then this goes beyond the scope of this bug because as said
+> > madvise(UNMERGEABLE) is the only place that breaks ksm pages as safe
+> > as regular write fault in oom context because of it running in the
+> > process context (not echo 2 or kksmd context).
+> >   
+> Yea, I agree about that this case was idiotic :), Actually I thought about
+> case where application get little bit more info, but leave it, it is not worth
+> it, traditional sharing is much better for such cases.
+
+I didn't seem idiotic to me, but I hadn't realized the ksmd timelapse
+uncertainty Andrea points out.  Well, I'm not keen to change the way
+it's working at present, but I do think you're right to question all
+these aspects of unmerging.
+
+Hugh
