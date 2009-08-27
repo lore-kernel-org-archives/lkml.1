@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752212AbZH0Jpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZH0J7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752212AbZH0Jpk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 05:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbZH0Jpj
+	id S1752203AbZH0J7Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 05:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZH0J7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 05:45:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:53161 "EHLO gir.skynet.ie"
+	Thu, 27 Aug 2009 05:59:25 -0400
+Received: from ozlabs.org ([203.10.76.45]:50007 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752002AbZH0Jph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 05:45:37 -0400
-Date: Thu, 27 Aug 2009 10:45:39 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Zhu Yi <yi.zhu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mel Gorman <mel@skynet.ie>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       James Ketrenos <jketreno@linux.intel.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw2100-devel@lists.sourceforge.net" 
-	<ipw2100-devel@lists.sourceforge.net>
-Subject: Re: [Bug #14016] mm/ipw2200 regression
-Message-ID: <20090827094539.GA21183@csn.ul.ie>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.FIH.7sGlKB@chimera> <84144f020908252309u5cff8afdh2214577ca4db9b5d@mail.gmail.com> <20090826082741.GA25955@cmpxchg.org> <20090826093747.GA10955@csn.ul.ie> <20090826074409.606b5124.akpm@linux-foundation.org> <1251364289.3704.176.camel@debian>
+	id S1751946AbZH0J7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 05:59:24 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCHv4 2/2] vhost_net: a kernel-level virtio server
+Date: Thu, 27 Aug 2009 19:29:22 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com
+References: <cover.1250693417.git.mst@redhat.com> <20090825131634.GA13949@redhat.com> <20090826165655.GA23632@redhat.com>
+In-Reply-To: <20090826165655.GA23632@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1251364289.3704.176.camel@debian>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200908271929.23454.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27, 2009 at 05:11:29PM +0800, Zhu Yi wrote:
-> On Wed, 2009-08-26 at 22:44 +0800, Andrew Morton wrote:
+On Thu, 27 Aug 2009 02:26:55 am Michael S. Tsirkin wrote:
+> On Tue, Aug 25, 2009 at 04:16:34PM +0300, Michael S. Tsirkin wrote:
+> > > > +	/* If they don't want an interrupt, don't send one, unless empty. */
+> > > > +	if ((flags & VRING_AVAIL_F_NO_INTERRUPT) && vq->inflight)
+> > > > +		return;
+> > > 
+> > > And I wouldn't support notify on empty at all, TBH.
 > > 
-> > It is perhaps pretty simple to make the second (GFP_ATOMIC) allocation
-> > go away.  The code is already conveniently structured to do this:
+> > If I don't, virtio net in guest uses a timer, which might be expensive.
+> > Will need to check what this does.
 > > 
-> >         do {
-> >                 chunk = (struct fw_chunk *)(data + offset);
-> >                 offset += sizeof(struct fw_chunk);
-> >                 /* build DMA packet and queue up for sending */
-> >                 /* dma to chunk->address, the chunk->length bytes from
-> > data +
-> >                  * offeset*/
-> >                 /* Dma loading */
-> >                 rc = ipw_fw_dma_add_buffer(priv, shared_phys + offset,
-> > 
-> > le32_to_cpu(chunk->address),
-> > 
-> > le32_to_cpu(chunk->length));
-> >                 if (rc) {
-> >                         IPW_DEBUG_INFO("dmaAddBuffer Failed\n");
-> >                         goto out;
-> >                 }
-> > 
-> >                 offset += le32_to_cpu(chunk->length);
-> >         } while (offset < len);
-> > 
-> > what is the typical/expected value of chunk->length here?  If it's
-> > significantly less than 4096*(2^6), could we convert this function to
-> > use a separate DMAable allocation per fw_chunk?
+> > >  It should
+> > > definitely be conditional on the guest accepting the NOTIFY_ON_EMPTY
+> > > feature.
 > 
-> Unfortunately, the largest chunk size for the latest 3.1 firmware is
-> 0x20040, which also requires order 6 page allocation. I'll try to use
-> the firmware DMA command block (64 slots) to handle the image (each for
-> 4k, totally 256k).
-> 
+> lguest does not do it this way though, do it?
 
-That would be preferable as trying to make alloc-6 atomic allocations isn't
-going to pan out. As I noted, doing it as GFP_KERNEL is possible but it'll
-manifest as weird stalls periodically when the driver is loaded due to
-reclaim and if the system is swapless, it might not work at all if memory
-is mostly anonymous.
+Does when a patch in my current queue is applied though.
 
-If the DMA command block doesn't work out, what is the feasibility of holding
-onto the order-6 allocation once the module is loaded instead of allocing
-for the duration of the firmware loading and then freeing it again?
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks,
+Rusty.
