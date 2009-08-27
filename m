@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbZH0O5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751637AbZH0PES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752122AbZH0O5K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 10:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZH0O5I
+	id S1751637AbZH0PES (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 11:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbZH0PES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 10:57:08 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:21956 "EHLO mx1.redhat.com"
+	Thu, 27 Aug 2009 11:04:18 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:31843 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751499AbZH0O5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 10:57:06 -0400
-Message-ID: <4A969F96.2020107@redhat.com>
-Date: Thu, 27 Aug 2009 11:00:38 -0400
+	id S1751139AbZH0PER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 11:04:17 -0400
+Message-ID: <4A96A145.5080108@redhat.com>
+Date: Thu, 27 Aug 2009 11:07:49 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
 To: Frederic Weisbecker <fweisbec@gmail.com>
 CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [GIT PULL] tracing/kprobes: Add dynamic tracepoints + instruction
- decoder
-References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com>
-In-Reply-To: <1251340337-5640-1-git-send-email-fweisbec@gmail.com>
+       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 19/18] tracing: Restore the const qualifier for field
+ names and types definition
+References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com> <1251344087-28719-2-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1251344087-28719-2-git-send-email-fweisbec@gmail.com>
 Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,118 +28,75 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Frederic Weisbecker wrote:
-> Ingo,
+> Restore the const qualifier in field's name and type parameters of
+> trace_define_field that was lost while solving a conflict.
 > 
-> This is the kprobes tracing pile of patches. I've tested it
-> successfully by setting some kprobes through debugfs by hand.
+> Fields names and types are defined as builtin constant strings in
+> static TRACE_EVENTs. But kprobes allocates these dynamically.
 > 
-> It brings no known regressions.
+> That said, we still want to always pass these strings as const char *
+> in trace_define_fields() to avoid any further accidental writes on
+> the pointed strings.
 > 
-> However, the stress test provided by Masami have revealed some
-> unstable points. Some symbols are unsafe to probe and raise
-> probing recursion.
-> 
-> I've added a tiny patch in the series that helps identifying the
-> kprobe that has raised such situation.
-> For example it has learned me today that it's unsafe to trace
-> ret_from_exception() (obviously: it's on the int 3 handler path).
+> Reported-by: Li Zefan<lizf@cn.fujitsu.com>
+> Signed-off-by: Frederic Weisbecker<fweisbec@gmail.com>
+> Cc: Steven Rostedt<rostedt@goodmis.org>
 
-Thank you, Frederic.
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-I'm currently fixing those problems on x86-64 (on kvm).
-I'll also check it on x86-32, and fix it.
-
-Thanks
-
-> Anyway, we have all the tools to debug that and easily find the
-> fragile points to probe. It's then just a matter of investigation
-> and stress tests now.
+> ---
+>   include/linux/ftrace_event.h  |    6 +++---
+>   kernel/trace/trace_events.c   |    4 ++--
+>   kernel/trace/trace_syscalls.c |    4 ++--
+>   3 files changed, 7 insertions(+), 7 deletions(-)
 > 
-> And because the pile of patches becomes big enough, I've thought it
-> could be time to do a pull request for -tip for it to have a
-> private branch and get fixes over the time.
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index 1ab3089..73edf5a 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -148,9 +148,9 @@ enum {
+>   };
 > 
-> Tell me if that's a problem and we can delay the pull request until
-> we fix the recursive points problems.
+>   extern int trace_define_common_fields(struct ftrace_event_call *call);
+> -extern int trace_define_field(struct ftrace_event_call *call, char *type,
+> -			      char *name, int offset, int size, int is_signed,
+> -			      int filter_type);
+> +extern int trace_define_field(struct ftrace_event_call *call, const char *type,
+> +			      const char *name, int offset, int size,
+> +			      int is_signed, int filter_type);
+>   extern int trace_add_event_call(struct ftrace_event_call *call);
+>   extern void trace_remove_event_call(struct ftrace_event_call *call);
 > 
-> Thanks,
-> Frederic.
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index 8079bb5..197cdaa 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -27,8 +27,8 @@ DEFINE_MUTEX(event_mutex);
 > 
-> The following changes since commit 35dce1a99d010f3d738af4ce1b9b77302fdfe69c:
->    Ingo Molnar (1):
->          Merge branch 'tracing/core' of git://git.kernel.org/.../frederic/random-tracing into tracing/core
+>   LIST_HEAD(ftrace_events);
 > 
-> are available in the git repository at:
+> -int trace_define_field(struct ftrace_event_call *call, char *type,
+> -		       char *name, int offset, int size, int is_signed,
+> +int trace_define_field(struct ftrace_event_call *call, const char *type,
+> +		       const char *name, int offset, int size, int is_signed,
+>   		       int filter_type)
+>   {
+>   	struct ftrace_event_field *field;
+> diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+> index 5931933..a928dd0 100644
+> --- a/kernel/trace/trace_syscalls.c
+> +++ b/kernel/trace/trace_syscalls.c
+> @@ -193,8 +193,8 @@ int syscall_enter_define_fields(struct ftrace_event_call *call)
+>   		return ret;
 > 
->    git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	tracing/kprobes
-> 
-> Frederic Weisbecker (1):
->        tracing/kprobes: Dump the culprit kprobe in case of kprobe recursion
-> 
-> Masami Hiramatsu (17):
->        x86: Instruction decoder API
->        x86: X86 instruction decoder build-time selftest
->        kprobes: Checks probe address is instruction boudary on x86
->        kprobes: Cleanup fix_riprel() using insn decoder on x86
->        x86: Add pt_regs register and stack access APIs
->        tracing: Ftrace dynamic ftrace_event_call support
->        tracing: Introduce TRACE_FIELD_ZERO() macro
->        tracing: Add kprobe-based event tracer
->        tracing: Add kprobe-based event tracer documentation
->        tracing: Kprobe-tracer supports more than 6 arguments
->        tracing: Generate names for each kprobe event automatically
->        tracing: Kprobe tracer assigns new event ids for each event
->        tracing: Add kprobes event profiling interface
->        x86: Fix x86 instruction decoder selftest to check only .text
->        x86: Check awk features before generating inat-tables.c
->        tracing/kprobes: Fix format typo in trace_kprobes
->        tracing/kprobes: Change trace_arg to probe_arg
-> 
->   Documentation/trace/kprobetrace.txt  |  148 ++++
->   arch/x86/Kconfig.debug               |    9 +
->   arch/x86/Makefile                    |    3 +
->   arch/x86/include/asm/inat.h          |  188 ++++++
->   arch/x86/include/asm/inat_types.h    |   29 +
->   arch/x86/include/asm/insn.h          |  143 ++++
->   arch/x86/include/asm/ptrace.h        |   62 ++
->   arch/x86/kernel/kprobes.c            |  209 +++---
->   arch/x86/kernel/ptrace.c             |  112 +++
->   arch/x86/lib/Makefile                |   13 +
->   arch/x86/lib/inat.c                  |   78 +++
->   arch/x86/lib/insn.c                  |  464 +++++++++++++
->   arch/x86/lib/x86-opcode-map.txt      |  719 ++++++++++++++++++++
->   arch/x86/tools/Makefile              |   15 +
->   arch/x86/tools/distill.awk           |   42 ++
->   arch/x86/tools/gen-insn-attr-x86.awk |  334 +++++++++
->   arch/x86/tools/test_get_len.c        |  113 ++++
->   include/linux/ftrace_event.h         |   19 +-
->   include/linux/kprobes.h              |    2 +
->   include/linux/syscalls.h             |    4 +-
->   include/trace/ftrace.h               |   16 +-
->   include/trace/syscall.h              |   11 +-
->   kernel/kprobes.c                     |    7 +
->   kernel/trace/Kconfig                 |   12 +
->   kernel/trace/Makefile                |    1 +
->   kernel/trace/trace.h                 |   24 +
->   kernel/trace/trace_event_types.h     |    4 +-
->   kernel/trace/trace_events.c          |  121 +++-
->   kernel/trace/trace_export.c          |   34 +-
->   kernel/trace/trace_kprobe.c          | 1231 ++++++++++++++++++++++++++++++++++
->   kernel/trace/trace_syscalls.c        |   20 +-
->   31 files changed, 3991 insertions(+), 196 deletions(-)
->   create mode 100644 Documentation/trace/kprobetrace.txt
->   create mode 100644 arch/x86/include/asm/inat.h
->   create mode 100644 arch/x86/include/asm/inat_types.h
->   create mode 100644 arch/x86/include/asm/insn.h
->   create mode 100644 arch/x86/lib/inat.c
->   create mode 100644 arch/x86/lib/insn.c
->   create mode 100644 arch/x86/lib/x86-opcode-map.txt
->   create mode 100644 arch/x86/tools/Makefile
->   create mode 100644 arch/x86/tools/distill.awk
->   create mode 100644 arch/x86/tools/gen-insn-attr-x86.awk
->   create mode 100644 arch/x86/tools/test_get_len.c
->   create mode 100644 kernel/trace/trace_kprobe.c
+>   	for (i = 0; i<  meta->nb_args; i++) {
+> -		ret = trace_define_field(call, (char *)meta->types[i],
+> -					 (char *)meta->args[i], offset,
+> +		ret = trace_define_field(call, meta->types[i],
+> +					 meta->args[i], offset,
+>   					 sizeof(unsigned long), 0,
+>   					 FILTER_OTHER);
+>   		offset += sizeof(unsigned long);
 
 -- 
 Masami Hiramatsu
