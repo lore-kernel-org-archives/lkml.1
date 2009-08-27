@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752358AbZH0MWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbZH0MXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752358AbZH0MWq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 08:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbZH0MWp
+	id S1752395AbZH0MXT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 08:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbZH0MXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 08:22:45 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60619 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751906AbZH0MWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 08:22:45 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] AFS: Stop readlink() on AFS crashing because file not passed
-	to afs_readpage()
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-afs@lists.infradead.org, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, Anton Blanchard <anton@samba.org>
-Date: Thu, 27 Aug 2009 13:22:31 +0100
-Message-ID: <20090827122231.14557.79687.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Thu, 27 Aug 2009 08:23:19 -0400
+Received: from mail-pz0-f184.google.com ([209.85.222.184]:38539 "EHLO
+	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752022AbZH0MXS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 08:23:18 -0400
+X-Greylist: delayed 315 seconds by postgrey-1.27 at vger.kernel.org; Thu, 27 Aug 2009 08:23:18 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=arIYzQMY7pVPQwT6ESSRm5sUsmu9JjRDEoBnaAehWZ+6pjhK79w4bWX6aGk1JpJH+j
+         eoSIyJ1Mz9mxzCoQ9v1fs7USympduA/H1f0d43pdK9OAV+kQzGKjm8RQl9O41H8Yk+AP
+         zFYyqSDjmaCDOVokhtf+XEFpz9zYA/qXFOzNs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090827114157.GA8678@osiris.boeblingen.de.ibm.com>
+References: <20090827114157.GA8678@osiris.boeblingen.de.ibm.com>
+Date: Thu, 27 Aug 2009 14:18:05 +0200
+X-Google-Sender-Auth: 8ef848c7ee062c39
+Message-ID: <10f740e80908270518u3812b96ew574eabff21f369e5@mail.gmail.com>
+Subject: Re: [PATCH] m68k: avoid pgprot_noncached redefinition
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Greg Ungerer <gerg@uclinux.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kAFS crashes when asked to read a symbolic link because page_getlink() passes a
-NULL file pointer to read_mapping_page(), but afs_readpage() expects a file
-pointer from which to extract a key.
+On Thu, Aug 27, 2009 at 13:41, Heiko Carstens<heiko.carstens@de.ibm.com> wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+>
+> While compiling m68k with defconfig I get tons if these warnings:
+>
+> /home2/heicarst/linux-2.6/arch/m68k/include/asm/pgtable_mm.h:148:1: warning: "pgprot_noncached" redefined
+> In file included from /home2/heicarst/linux-2.6/arch/m68k/include/asm/pgtable_mm.h:138,
+>  from /home2/heicarst/linux-2.6/arch/m68k/include/asm/pgtable.h:4,
+>  from include/linux/mm.h:38,
+>  from /home2/heicarst/linux-2.6/arch/m68k/include/asm/atarihw.h:134,
+>  from arch/m68k/atari/debug.c:20:
+> include/asm-generic/pgtable.h:133:1: warning: this is the location of the previous definition
+>
+> Reason for this is that asm-generic/pgtable.h gets included in pgtable_mm.h
+> before pgprot_noncached gets defined.
+> So the check "#ifndef pgprot_noncached" in the generic header file is too early.
+> Solve this by including the generic header file after the arch define.
 
-Modify afs_readpage() to request the appropriate key from the calling process's
-keyrings if a file struct is not supplied with one attached.
+Thanks, but Linus has just pulled the fix last night.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: Anton Blanchard <anton@samba.org>
----
+Gr{oetje,eeting}s,
 
- fs/afs/file.c |   18 +++++++++++++++---
- 1 files changed, 15 insertions(+), 3 deletions(-)
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-diff --git a/fs/afs/file.c b/fs/afs/file.c
-index 0149dab..681c2a7 100644
---- a/fs/afs/file.c
-+++ b/fs/afs/file.c
-@@ -134,9 +134,16 @@ static int afs_readpage(struct file *file, struct page *page)
- 
- 	inode = page->mapping->host;
- 
--	ASSERT(file != NULL);
--	key = file->private_data;
--	ASSERT(key != NULL);
-+	if (file) {
-+		key = file->private_data;
-+		ASSERT(key != NULL);
-+	} else {
-+		key = afs_request_key(AFS_FS_S(inode->i_sb)->volume->cell);
-+		if (IS_ERR(key)) {
-+			ret = PTR_ERR(key);
-+			goto error_nokey;
-+		}
-+	}
- 
- 	_enter("{%x},{%lu},{%lu}", key_serial(key), inode->i_ino, page->index);
- 
-@@ -207,12 +214,17 @@ static int afs_readpage(struct file *file, struct page *page)
- 		unlock_page(page);
- 	}
- 
-+	if (!file)
-+		key_put(key);
- 	_leave(" = 0");
- 	return 0;
- 
- error:
- 	SetPageError(page);
- 	unlock_page(page);
-+	if (!file)
-+		key_put(key);
-+error_nokey:
- 	_leave(" = %d", ret);
- 	return ret;
- }
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
