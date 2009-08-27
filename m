@@ -1,101 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbZH0PJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbZH0PKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752241AbZH0PJi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 11:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZH0PJh
+	id S1752557AbZH0PKA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 11:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbZH0PJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 11:09:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39827 "EHLO
+	Thu, 27 Aug 2009 11:09:59 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39824 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751726AbZH0PJW (ORCPT
+	with ESMTP id S1751368AbZH0PJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 11:09:22 -0400
-Message-Id: <20090827150524.077452157@chello.nl>
+	Thu, 27 Aug 2009 11:09:21 -0400
+Message-Id: <20090827150523.908589343@chello.nl>
 References: <20090827150051.846026837@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 27 Aug 2009 17:00:55 +0200
+Date: Thu, 27 Aug 2009 17:00:53 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
        Andreas Herrmann <andreas.herrmann3@amd.com>,
        Balbir Singh <balbir@in.ibm.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC][PATCH 4/6] sched: dynamic cpu_power
-Content-Disposition: inline; filename=sched-lb-4.patch
+Subject: [RFC][PATCH 2/6] sched: SD_PREFER_SIBLING
+Content-Disposition: inline; filename=sched-lb-2.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recompute the cpu_power for each cpu during load-balance
+Do the placement thing using SD flags
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
 ---
- kernel/sched.c |   38 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 35 insertions(+), 3 deletions(-)
+ include/linux/sched.h |   29 +++++++++++++++--------------
+ kernel/sched.c        |   14 +++++++++++++-
+ 2 files changed, 28 insertions(+), 15 deletions(-)
 
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -808,18 +808,19 @@ enum cpu_idle_type {
+ #define SCHED_LOAD_SCALE_FUZZ	SCHED_LOAD_SCALE
+ 
+ #ifdef CONFIG_SMP
+-#define SD_LOAD_BALANCE		1	/* Do load balancing on this domain. */
+-#define SD_BALANCE_NEWIDLE	2	/* Balance when about to become idle */
+-#define SD_BALANCE_EXEC		4	/* Balance on exec */
+-#define SD_BALANCE_FORK		8	/* Balance on fork, clone */
+-#define SD_WAKE_IDLE		16	/* Wake to idle CPU on task wakeup */
+-#define SD_WAKE_AFFINE		32	/* Wake task to waking CPU */
+-#define SD_WAKE_BALANCE		64	/* Perform balancing at task wakeup */
+-#define SD_SHARE_CPUPOWER	128	/* Domain members share cpu power */
+-#define SD_POWERSAVINGS_BALANCE	256	/* Balance for power savings */
+-#define SD_SHARE_PKG_RESOURCES	512	/* Domain members share cpu pkg resources */
+-#define SD_SERIALIZE		1024	/* Only a single load balancing instance */
+-#define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
++#define SD_LOAD_BALANCE		0x0001	/* Do load balancing on this domain. */
++#define SD_BALANCE_NEWIDLE	0x0002	/* Balance when about to become idle */
++#define SD_BALANCE_EXEC		0x0004	/* Balance on exec */
++#define SD_BALANCE_FORK		0x0008	/* Balance on fork, clone */
++#define SD_WAKE_IDLE		0x0010	/* Wake to idle CPU on task wakeup */
++#define SD_WAKE_AFFINE		0x0020	/* Wake task to waking CPU */
++#define SD_WAKE_BALANCE		0x0040	/* Perform balancing at task wakeup */
++#define SD_SHARE_CPUPOWER	0x0080	/* Domain members share cpu power */
++#define SD_POWERSAVINGS_BALANCE	0x0100	/* Balance for power savings */
++#define SD_SHARE_PKG_RESOURCES	0x0200	/* Domain members share cpu pkg resources */
++#define SD_SERIALIZE		0x0400	/* Only a single load balancing instance */
++#define SD_WAKE_IDLE_FAR	0x0800	/* Gain latency sacrificing cache hit */
++#define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
+ 
+ enum powersavings_balance_level {
+ 	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
+@@ -839,7 +840,7 @@ static inline int sd_balance_for_mc_powe
+ 	if (sched_smt_power_savings)
+ 		return SD_POWERSAVINGS_BALANCE;
+ 
+-	return 0;
++	return SD_PREFER_SIBLING;
+ }
+ 
+ static inline int sd_balance_for_package_power(void)
+@@ -847,7 +848,7 @@ static inline int sd_balance_for_package
+ 	if (sched_mc_power_savings | sched_smt_power_savings)
+ 		return SD_POWERSAVINGS_BALANCE;
+ 
+-	return 0;
++	return SD_PREFER_SIBLING;
+ }
+ 
+ /*
 Index: linux-2.6/kernel/sched.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched.c
 +++ linux-2.6/kernel/sched.c
-@@ -3691,14 +3691,46 @@ static inline int check_power_save_busie
- }
- #endif /* CONFIG_SCHED_MC || CONFIG_SCHED_SMT */
- 
--static void update_sched_power(struct sched_domain *sd)
-+unsigned long __weak arch_smt_gain(struct sched_domain *sd, int cpu)
-+{
-+	unsigned long weight = cpumask_weight(sched_domain_span(sd));
-+	unsigned long smt_gain = sd->smt_gain;
-+
-+	smt_gain /= weight;
-+
-+	return smt_gain;
-+}
-+
-+static void update_cpu_power(struct sched_domain *sd, int cpu)
-+{
-+	unsigned long weight = cpumask_weight(sched_domain_span(sd));
-+	unsigned long power = SCHED_LOAD_SCALE;
-+	struct sched_group *sdg = sd->groups;
-+	unsigned long old = sdg->__cpu_power;
-+
-+	/* here we could scale based on cpufreq */
-+
-+	if ((sd->flags & SD_SHARE_CPUPOWER) && weight > 1) {
-+		power *= arch_smt_gain(sd, cpu);
-+		power >>= SCHED_LOAD_SHIFT;
-+	}
-+
-+	/* here we could scale based on RT time */
-+
-+	if (power != old) {
-+		sdg->__cpu_power = power;
-+		sdg->reciprocal_cpu_power = reciprocal_value(power);
-+	}
-+}
-+
-+static void update_group_power(struct sched_domain *sd, int cpu)
+@@ -3803,9 +3803,13 @@ static inline void update_sd_lb_stats(st
+ 			const struct cpumask *cpus, int *balance,
+ 			struct sd_lb_stats *sds)
  {
- 	struct sched_domain *child = sd->child;
- 	struct sched_group *group, *sdg = sd->groups;
- 	unsigned long power = sdg->__cpu_power;
++	struct sched_domain *child = sd->child;
+ 	struct sched_group *group = sd->groups;
+ 	struct sg_lb_stats sgs;
+-	int load_idx;
++	int load_idx, prefer_sibling = 0;
++
++	if (child && child->flags & SD_PREFER_SIBLING)
++		prefer_sibling = 1;
  
- 	if (!child) {
--		/* compute cpu power for this cpu */
-+		update_cpu_power(sd, cpu);
- 		return;
- 	}
+ 	init_sd_power_savings_stats(sd, sds, idle);
+ 	load_idx = get_sd_load_idx(sd, idle);
+@@ -3825,6 +3829,14 @@ static inline void update_sd_lb_stats(st
+ 		sds->total_load += sgs.group_load;
+ 		sds->total_pwr += group->__cpu_power;
  
-@@ -3743,7 +3775,7 @@ static inline void update_sg_lb_stats(st
- 	if (local_group) {
- 		balance_cpu = group_first_cpu(group);
- 		if (balance_cpu == this_cpu)
--			update_sched_power(sd);
-+			update_group_power(sd, this_cpu);
- 	}
- 
- 	/* Tally up the load of all CPUs in the group */
++		/*
++		 * In case the child domain prefers tasks go to siblings
++		 * first, lower the group capacity to one so that we'll try
++		 * and move all the excess tasks away.
++		 */
++		if (prefer_sibling)
++			sgs.group_capacity = 1;
++
+ 		if (local_group) {
+ 			sds->this_load = sgs.avg_load;
+ 			sds->this = group;
 
 -- 
 
