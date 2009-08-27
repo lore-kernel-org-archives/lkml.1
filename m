@@ -1,65 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752061AbZH0JOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752071AbZH0JPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752061AbZH0JOy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 05:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZH0JOx
+	id S1752071AbZH0JPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 05:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZH0JPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 05:14:53 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:39056 "EHLO kernel.dk"
+	Thu, 27 Aug 2009 05:15:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:48924 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751498AbZH0JOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 05:14:53 -0400
-Date: Thu, 27 Aug 2009 11:14:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Christoph Hellwig <hch@infradead.org>,
-       rostedt@goodmis.org, fweisbec@gmail.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: blktrace ftrace plugin, was Re: Receive side performance issue
-	with multi-10-GigE and NUMA
-Message-ID: <20090827091454.GG12579@kernel.dk>
-References: <20090826181502.GC13632@elte.hu> <20090826190435.GC10816@hmsreliant.think-freely.org> <20090826190830.GF13632@elte.hu> <20090826.123631.79533250.davem@davemloft.net> <20090826194835.GA16508@elte.hu> <20090826202344.GE10816@hmsreliant.think-freely.org> <20090826204027.GA21159@elte.hu> <20090827003047.GA30341@infradead.org> <20090827052628.GE12579@kernel.dk> <20090827091227.GB4260@elte.hu>
+	id S1751916AbZH0JPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 05:15:20 -0400
+Date: Thu, 27 Aug 2009 12:09:26 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>, Avi Kivity <avi@redhat.com>,
+       gleb@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
+Message-ID: <20090827090925.GA8391@redhat.com>
+References: <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com> <1251363930-3916-1-git-send-email-pbonzini@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090827091227.GB4260@elte.hu>
+In-Reply-To: <1251363930-3916-1-git-send-email-pbonzini@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27 2009, Ingo Molnar wrote:
-> 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Wed, Aug 26 2009, Christoph Hellwig wrote:
-> > > On Wed, Aug 26, 2009 at 10:40:27PM +0200, Ingo Molnar wrote:
-> > > > We are also converting non-trivial plugins to generic tracepoints. A 
-> > > > recent example are the system call tracepoints, but we also 
-> > > > converted blktrace and kmemtrace to generic tracepoints.
-> > > 
-> > > On something semi-related: Any reason to keep the blktrace 
-> > > ftrace plugin around?  I don't think there's much point in it.  
-> > > It only got added in 2.6.29, and all the blktrace tooling just 
-> > > uses the legacy ioctls.  All new uses should just use the 
-> > > TRACE_EVENT output.
+On Thu, Aug 27, 2009 at 11:05:30AM +0200, Paolo Bonzini wrote:
+> > Ok, so why not using the eventfd counter as state?
+> > On the device side:
 > > 
-> > Lets kill it.
+> > void write_state(int sfd, int state) {
+> > 	u64 cnt;
+> > 
+> > 	/* Clear the current state, sfd is in non-blocking mode */
+> > 	read(sfd,&cnt, sizeof(cnt));
+> > 	/* Writes new state */
+> > 	cnt = 1 + !!state;
+> > 	write(sfd,&cnt, sizeof(cnt));
+> > }
 > 
-> Agreed.
+> It's interesting [no sarcasm intended, mind] that EFD_SEMAPHORE was
+> added exactly to avoid a read+write combination for the case of
+> decrementing a value.  Here it's the same, just it's about the case of
+> writing a *given* value.  What about having EFD_STATE simply mean "do
+> not use a counter, just write the value" without affecting the way
+> read works, and use
 > 
-> I think we should keep the relayfs and ioctl compatibility bits 
-> though: blktrace has a mature user-space environment with many
-> years of installed base.
-> 
-> We could even move those bits back to block/blktrace_compat.c or so 
-> (after the ftrace plugin bits are removed), to make sure it's nicely 
-> isolated.
-> 
-> What do you think?
+> 	/* Writes new state */
+> 	cnt = 1 + !!state;
+> 	write(sfd,&cnt, sizeof(cnt));
 
-Of course, we have to retain the ioctl/relayfs interface, it's been in
-use for years. Keeping those out of the other trace/ bits sounds sane.
+That would work for kvm.
 
--- 
-Jens Axboe
-
+> See below?
+> 
+> Paolo
+> 
+> > On the hypervisor side:
+> > 
+> > int read_state(int sfd) {
+> > 	u64 cnt;
+> > 
+> > 	read(sfd,&cnt, sizeof(cnt));
+> > 	return state - 1;
+> > }
+> 
+> 
+> ------------- 8<-- ---------------
+> Subject: [PATCH] eventfd: new EFD_ABSOLUTE flag
+> 
+> This implements a new EFD_ABSOLUTE flag for eventfd.
+> This changes eventfd behaviour so that write simply
+> stores the value written, and is always non-blocking.
+> 
+> Untested (I just modified Michael's patch, and given
+> the simpler code I'm not sure it's now worthwhile
+> introducing the inline functions), but otherwise
+> 
+> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+> ---
+>  fs/eventfd.c            |   13 ++++++++-----
+>  include/linux/eventfd.h |    4 ++--
+>  2 files changed, 10 insertions(+), 7 deletions(-)
+> 
+> diff --git a/fs/eventfd.c b/fs/eventfd.c
+> index 347a0e0..7b279e3 100644
+> --- a/fs/eventfd.c
+> +++ b/fs/eventfd.c
+> @@ -31,8 +31,6 @@
+>  
+>  static inline int eventfd_writeable(struct eventfd_ctx *ctx, u64 n)
+>  {
+> -	return ULLONG_MAX - n > ctx->count;
+> -	return (ctx->flags & EFD_ABSOLUTE) || (ULLONG_MAX - n > ctx->count);
+>  }
+>  
+>  static inline int eventfd_overflow(struct eventfd_ctx *ctx, u64 cnt)
+> @@ -42,10 +40,14 @@
+>  
+>  static inline void eventfd_dowrite(struct eventfd_ctx *ctx, u64 ucnt)
+>  {
+> -	if (eventfd_writeable(ctx, ucnt))
+> -		ucnt = ULLONG_MAX - ctx->count;
+> +	if (ctx->flags & EFD_ABSOLUTE)
+> +		ctx->count = ucnt;
+> +	else {
+> +		if (ULLONG_MAX - ctx->count < ucnt)
+> +			ucnt = ULLONG_MAX - ctx->count;
+>  
+> -	ctx->count += ucnt;
+> +		ctx->count += ucnt;
+> +	}
+>  }
+>  
+>  static inline u64 eventfd_doread(struct eventfd_ctx *ctx)
+> diff --git a/include/linux/eventfd.h b/include/linux/eventfd.h
+> index 3b85ba6..78ff649 100644
+> --- a/include/linux/eventfd.h
+> +++ b/include/linux/eventfd.h
+> @@ -19,11 +19,12 @@
+>   * shared O_* flags.
+>   */
+>  #define EFD_SEMAPHORE (1 << 0)
+> +#define EFD_ABSOLUTE (1 << 1)
+>  #define EFD_CLOEXEC O_CLOEXEC
+>  #define EFD_NONBLOCK O_NONBLOCK
+>  
+>  #define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
+> -#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
+> +#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE | EFD_ABSOLUTE)
+>  
+>  #ifdef CONFIG_EVENTFD
+> --
+> 1.6.2.5 
