@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbZH0TcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbZH0Tez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752105AbZH0TcK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 15:32:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZH0TcJ
+	id S1752072AbZH0Tez (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 15:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZH0Tey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 15:32:09 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:22995 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751830AbZH0TcH (ORCPT
+	Thu, 27 Aug 2009 15:34:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47754 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751061AbZH0Tey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 15:32:07 -0400
-Date: Thu, 27 Aug 2009 12:34:01 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jonas Meurer <jonas@freesources.org>
-Cc: 541835@bugs.debian.org, Celejar <celejar@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org
-Subject: Re: [pkg-cryptsetup-devel] Bug#541835: crypto configuration /
- dependencies broken
-Message-Id: <20090827123401.86cd4319.randy.dunlap@oracle.com>
-In-Reply-To: <20090827183500.GC24973@resivo.wgnet.de>
-References: <20090825195852.1dfacb6c.celejar@gmail.com>
-	<20090827095516.6817be1e.randy.dunlap@oracle.com>
-	<20090827183500.GC24973@resivo.wgnet.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt004.oracle.com [141.146.116.13]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4A96DF2A.0104:SCFSTAT5015188,ss=1,fgs=0
+	Thu, 27 Aug 2009 15:34:54 -0400
+Date: Thu, 27 Aug 2009 12:34:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Anirban Sinha <ASinha@zeugmasystems.com>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: RE: [PATCH] console_print: change the function api to make it have
+ printk style interface
+In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501EA93B4@exchange.ZeugmaSystems.local>
+Message-ID: <alpine.LFD.2.01.0908271233580.3218@localhost.localdomain>
+References: <DDFD17CC94A9BD49A82147DDF7D545C501EA9241@exchange.ZeugmaSystems.local> <20090825172640.af8b9f58.randy.dunlap@oracle.com> <DDFD17CC94A9BD49A82147DDF7D545C501EA93B4@exchange.ZeugmaSystems.local>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009 20:35:01 +0200 Jonas Meurer wrote:
 
-> hey,
+
+On Wed, 26 Aug 2009, Anirban Sinha wrote:
 > 
-> On 27/08/2009 Randy Dunlap wrote:
-> > On Tue, 25 Aug 2009 19:58:52 -0400 Celejar wrote:
-> > 
-> > > I'm having a pretty bizarre problem with my kernel crypto
-> > > configuration.  I need support for a bog standard LUKS (aes /
-> > > cbc-essiv:sha256) / cryptsetup installation, but even after I enable
-> > > virtually everything in the crypto section of the kernel configs, cbc
-> > > fails to load.  All the relevant modules are exist (dm-mod, dm-crypt,
-> > > crypto_blkcipher, crypto_algapi, crypto_hash, aes_generic,
-> > > sha256_generic), but even after modprobing / insmoding
-> > > everything, /proc/crypto shows that aes and sha is there, but not cbc.
-> > > 
-> > > The problem has been reproduced (using my kernel config) by Jonas
-> > > Meurer, the Debian cryptsetup maintainer, so it's not just me ;).
-> > > We've tried numerous different kernel versions in the .30 / .31 range.
-> > > 
-> > > http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=541835
-> > > 
-> > > Does this mean that something else somewhere in the kernel needs to be
-> > > configured but isn't, and the necessary dependency isn't properly
-> > > declared?
-> > > 
-> > > My config is at:
-> > > http://bugs.debian.org/cgi-bin/bugreport.cgi?msg=45;filename=config-2.6.31-rc6-lizzie-00042-gb2add73;att=1;bug=541835
-> > > 
-> > > [I'm not subscribed to lkml; please cc me on responses]
-> > 
-> > 
-> > You could try/test a patch that was just posted:
-> >   http://lkml.org/lkml/2009/8/27/249
-> 
-> that patch seems to be for ecryptfs only, while Celejar uses dm-crypt.
-> second, the patch just ensures that CRYPTO_ECB and CRYPTO_CBC are
-> selected along with ECRYPT_FS. but Celejar does have both CRYPTO_ECB and
-> CRYPTO_CBC selected.
+> Since Linus has already agreed for the later, I will post a patch here
+> to remove the function. I am not very certain as to what we should do
+> about the only one single case of its genuine use - call from
+> ia64/head.S. What I have done is one solution. Please feel free to
+> debate/disagree.
 
-ack.
+Looks ok to me, but I'm not going to apply it in late -rc, since it 
+doesn't really fix any bug. Feel free to re-send after 2.6.31 is out, or 
+try to get it into one of the trees to be merged later.
 
-> the problem rather is that loading the cbc blockcipher module simply
-> does nothing. the module is listed in /proc/modules, but the blockcipher
-> is still missing from /proc/crypto.
-> 
-> the problem is not reproducible with a debian/unstable 2.6.30.6 kernel,
-> even though it has cbc compiled as module as well. but if I recompile
-> the same kernel sources with Celejars kernel .config, the problem
-> occurs. thus it must be related to the kernel config in some way.
-
-add cc: linux-crypto@vger.kernel.org -- maybe someone there can help out.
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+		Linus
