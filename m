@@ -1,136 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751447AbZH0K5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751484AbZH0LDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751447AbZH0K5J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 06:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZH0K5I
+	id S1751484AbZH0LDJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 07:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZH0LDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 06:57:08 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50423 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750985AbZH0K5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 06:57:06 -0400
-Message-ID: <4A96664D.8010700@cn.fujitsu.com>
-Date: Thu, 27 Aug 2009 18:56:13 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 27 Aug 2009 07:03:09 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:61608 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751138AbZH0LDH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 07:03:07 -0400
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+Subject: Re: [ANNOUNCE] 2.6.31-rc7-rt8
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	<alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
+	<alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
+	<alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
+	<alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
+	<alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
+	<alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
+	<alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
+	<alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
+	<alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
+	<alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
+	<alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+	<alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+	<alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
+	<alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
+	<alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
+	<alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Thu, 27 Aug 2009 14:03:05 +0300
+In-Reply-To: <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> (Thomas Gleixner's message of "Wed\, 26 Aug 2009 19\:23\:46 +0200 \(CEST\)")
+Message-ID: <878wh5friu.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Neil Horman <nhorman@tuxdriver.com>, David Miller <davem@davemloft.net>,
-       Wei Yongjun <yjwei@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: [PATCH 3/3] tracing/events: convert NAPI's tracepoint and fix DEFINE_TRACE_FN
-References: <4A966288.8020402@cn.fujitsu.com>
-In-Reply-To: <4A966288.8020402@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-TM-AS-Product-Ver: : ISVW-6.0.0.2339-3.52.0.1010-13974000
-X-TM-AS-Result: : No
-X-TM-AS-Category-Info: : 31:0.000000
-X-TM-AS-MatchedID: : 1-150644-110581-188019-139504-121162-121709
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Convert NAPI's tracepoint via TRACE_EVENT macro, the output information
-  like below:
+Thomas Gleixner <tglx@linutronix.de> writes:
 
-   sshd-2503  [000]    71.920846: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
-   sshd-2503  [000]    72.020291: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
-   sshd-2503  [000]    72.020418: napi_poll: ifname=eth0 state=NAPI_STATE_SCHED weigth=16 poll=pcnet32_poll
+> We are pleased to announce the next update to our new preempt-rt
+> series.
+>  
+>     - update to Linus' latest
+>  
+>     - perf counter crash fix (peterz)
+>     
+>     - disabled MARKERS on RT. Code with no use(rs) which just causes
+>       trouble.
+>
+>     - edge irq forced threading fix. Fixes the IDE "interrupt lost"
+>       reports
+>
 
-- Remove the "DECLARE_TRACE" definiens in include/trace/define_trace.h,
-  because TRACE_EVENT not use it
+Hi Thomas,
 
-- Undef DEFINE_TRACE_FN after TRACE_EVENT/TRACE_EVENT_FN expanded,
-  then we can include more TRACE_EVENT .h file in one .c file
-  (the .c file has defined CREATE_TRACE_POINTS)
+Here's one more atomic_spin_lock conversion for a driver update
+that went in for -rc7.
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Kevin
+
+>From 4faf27a4c0ceaddd7cb13f5d11928babc9c4cddc Mon Sep 17 00:00:00 2001
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Date: Thu, 27 Aug 2009 13:51:47 +0300
+Subject: [PATCH -rt] MFD: twl4030: convert irq_desc lock to atomic spinlock
+
+Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
 ---
- include/trace/define_trace.h |    5 +---
- include/trace/events/napi.h  |   43 +++++++++++++++++++++++++++++++++++++----
- 2 files changed, 39 insertions(+), 9 deletions(-)
+ drivers/mfd/twl4030-irq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
-index a89ed59..6158741 100644
---- a/include/trace/define_trace.h
-+++ b/include/trace/define_trace.h
-@@ -31,10 +31,6 @@
- 		assign, print, reg, unreg)			\
- 	DEFINE_TRACE_FN(name, reg, unreg)
+diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
+index 7d43083..c1bc157 100644
+--- a/drivers/mfd/twl4030-irq.c
++++ b/drivers/mfd/twl4030-irq.c
+@@ -458,12 +458,12 @@ static void twl4030_sih_do_edge(struct work_struct *work)
  
--#undef DECLARE_TRACE
--#define DECLARE_TRACE(name, proto, args)	\
--	DEFINE_TRACE(name)
--
- #undef TRACE_INCLUDE
- #undef __TRACE_INCLUDE
+ 		bytes[byte] &= ~(0x03 << off);
  
-@@ -62,6 +58,7 @@
- #endif
+-		spin_lock_irq(&d->lock);
++		atomic_spin_lock_irq(&d->lock);
+ 		if (d->status & IRQ_TYPE_EDGE_RISING)
+ 			bytes[byte] |= BIT(off + 1);
+ 		if (d->status & IRQ_TYPE_EDGE_FALLING)
+ 			bytes[byte] |= BIT(off + 0);
+-		spin_unlock_irq(&d->lock);
++		atomic_spin_unlock_irq(&d->lock);
  
- #undef TRACE_EVENT
-+#undef TRACE_EVENT_FN
- #undef TRACE_HEADER_MULTI_READ
- 
- /* Only undef what we defined in this file */
-diff --git a/include/trace/events/napi.h b/include/trace/events/napi.h
-index a8989c4..22802d1 100644
---- a/include/trace/events/napi.h
-+++ b/include/trace/events/napi.h
-@@ -1,11 +1,44 @@
--#ifndef _TRACE_NAPI_H_
--#define _TRACE_NAPI_H_
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM napi
-+
-+#if !defined(_TRACE_NAPI_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_NAPI_H
- 
- #include <linux/netdevice.h>
- #include <linux/tracepoint.h>
- 
--DECLARE_TRACE(napi_poll,
-+#define show_napi_state(state) state ? __print_flags(state, "|",	\
-+	{ (1UL << NAPI_STATE_SCHED),	"NAPI_STATE_SCHED"	},	\
-+	{ (1UL << NAPI_STATE_DISABLE),	"NAPI_STATE_DISABLE"	},	\
-+	{ (1UL << NAPI_STATE_NPSVC),	"NAPI_STATE_NPSVC"	}) : "0"
-+
-+TRACE_EVENT(napi_poll,
-+
- 	TP_PROTO(struct napi_struct *napi),
--	TP_ARGS(napi));
- 
--#endif
-+	TP_ARGS(napi),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned long,	state		)
-+		__field(	int,		weight		)
-+		__field(	void *,		poll		)
-+		__string(	ifname,		(napi->dev ?
-+				napi->dev->name : "backlog")	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->state	= napi->state;
-+		__entry->weight	= napi->weight;
-+		__entry->poll	= napi->poll;
-+		__assign_str(ifname, napi->dev ? napi->dev->name : "backlog")
-+	),
-+
-+	TP_printk("ifname=%s state=%s weigth=%d poll=%pf",
-+		  __get_str(ifname), show_napi_state(__entry->state),
-+		  __entry->weight, __entry->poll)
-+);
-+
-+#endif /* _TRACE_NAPI_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
+ 		edge_change &= ~BIT(i);
+ 	}
 -- 
-1.6.1.2
-
+1.6.4
 
