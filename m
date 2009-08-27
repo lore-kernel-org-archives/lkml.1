@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751142AbZH0RJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751193AbZH0RKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751142AbZH0RJG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 13:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZH0RJF
+	id S1751193AbZH0RKy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 13:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZH0RKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 13:09:05 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:51601 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943AbZH0RJE (ORCPT
+	Thu, 27 Aug 2009 13:10:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51293 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbZH0RKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 13:09:04 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 27 Aug 2009 10:09:00 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: "Michael S. Tsirkin" <mst@redhat.com>
-cc: Paolo Bonzini <pbonzini@redhat.com>, Avi Kivity <avi@redhat.com>,
-       gleb@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] eventfd: new EFD_STATE flag
-In-Reply-To: <alpine.DEB.2.00.0908270752090.3809@makko.or.mcafeemobile.com>
-Message-ID: <alpine.DEB.2.00.0908271007450.5649@makko.or.mcafeemobile.com>
-References: <alpine.DEB.2.00.0908261201570.7780@makko.or.mcafeemobile.com> <1251363930-3916-1-git-send-email-pbonzini@redhat.com> <alpine.DEB.2.00.0908270720250.3809@makko.or.mcafeemobile.com> <20090827143027.GA22720@redhat.com>
- <alpine.DEB.2.00.0908270732470.3809@makko.or.mcafeemobile.com> <20090827144905.GA22728@redhat.com> <alpine.DEB.2.00.0908270752090.3809@makko.or.mcafeemobile.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 27 Aug 2009 13:10:52 -0400
+Date: Thu, 27 Aug 2009 13:10:44 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jamie Lokier <jamie@shareable.org>, Ulrich Drepper <drepper@redhat.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
+Message-ID: <20090827171044.GA5427@infradead.org>
+References: <1250697884-22288-1-git-send-email-jack@suse.cz> <20090820221221.GA14440@infradead.org> <20090821114010.GG12579@kernel.dk> <20090821135403.GA6208@shareable.org> <20090821142635.GB30617@infradead.org> <20090821152459.GC6929@shareable.org> <20090821174525.GA28861@infradead.org> <20090822005006.GA22530@shareable.org> <20090824023422.GA775@infradead.org> <20090827143459.GB31453@shareable.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090827143459.GB31453@shareable.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009, Michael S. Tsirkin wrote:
+On Thu, Aug 27, 2009 at 03:34:59PM +0100, Jamie Lokier wrote:
+> Christoph Hellwig wrote:
+> > Then again they already don't get what they expect and never did,
+> > so if we clear document and communicate the O_SYNC (that is Linux
+> > O_SYNC) requirement we might be able to go with this.
+> 
+> I'm thinking, while we're looking at this, that now is a really good
+> time to split up O_SYNC and O_DSYNC.
+> 
+> We have separate fsync and fdatasync, so it should be quite tidy now.
+> 
+> Then we can document using O_DSYNC on Linux, which is fine for older
+> versions because it has the same value as O_SYNC at the moment.
 
-> Oh, I stopped pushing EFD_STATE since we have a solution.
+Technically we could easily make O_SYNC really mean O_SYNC and implement
+a seaprate O_DSYNC at the kernel level.
 
-Do you guys need the kernel-side eventfd_ctx_read() I posted or not?
-Because if nobody uses it, I'm not going to push it.
-
-
-- Davide
-
-
+The question is how to handle this at the libc level.  Currently glibc
+defines O_DSYNC to be O_SYNC.  We would need to update glibc to pass
+through O_DSYNC for newer kernels and make sure it falls back to O_SYNC
+for olders.  I'm not sure how feasible this is, but maybe Ulrich has
+some better ideas.
