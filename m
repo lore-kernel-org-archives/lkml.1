@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbZH0Rn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752150AbZH0RoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752084AbZH0Rn7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 13:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZH0Rn5
+	id S1752150AbZH0RoI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 13:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbZH0Rn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 13:43:57 -0400
+	Thu, 27 Aug 2009 13:43:59 -0400
 Received: from mail-ew0-f206.google.com ([209.85.219.206]:51769 "EHLO
 	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751877AbZH0Rnw (ORCPT
+	with ESMTP id S1751845AbZH0Rny (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 13:43:52 -0400
+	Thu, 27 Aug 2009 13:43:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=b6fWYKpoIhBwoHJSfsOAli7HeUoXIOsfR24X9Rhz++v6FlG0zWO3nDb0sSIMj3bC1z
-         FA61NUS7AgthWjbDiSpWi14NIkLNWZq3OTPziwxevd8R12zuFN4AymK1I9cjnHT0lVy7
-         BuwzzwDueKWnAXz91gDOevsb/Nntxp2Gr0B1s=
+        b=uzr4w4WDqNpoUCjzvFtiV0Spj0cvMlMOf3CztKF+c4pjGm2k4Y8Thqk4eeXTBPEZRv
+         V8f4ttzLDTP0vErRHtHFb2NOMIUbSf5tjuPVUjDsLWLsVwxzK3HoXhTmKQxf6GGoXtff
+         Lq7Wve+mNvwRdk8gJLh1fMbkMkvq+8vFfsLuY=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Jason Baron <jbaron@redhat.com>,
@@ -30,9 +30,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Jason Baron <jbaron@redhat.com>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anwin" <hpa@zytor.com>,
        Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
        Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH 6/7] tracing: Convert event tracing code to use NR_syscalls
-Date: Thu, 27 Aug 2009 19:43:34 +0200
-Message-Id: <1251395015-6329-7-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 7/7] tracing: Remove FTRACE_SYSCALL_MAX definitions
+Date: Thu, 27 Aug 2009 19:43:35 +0200
+Message-Id: <1251395015-6329-8-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1251395015-6329-1-git-send-email-fweisbec@gmail.com>
 References: <1251395015-6329-1-git-send-email-fweisbec@gmail.com>
@@ -42,9 +42,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jason Baron <jbaron@redhat.com>
 
-Convert the syscalls event tracing code to use NR_syscalls, instead of
-FTRACE_SYSCALL_MAX. NR_syscalls is standard accross most arches, and
-reduces code confusion/complexity.
+Remove the FTRACE_SYSCALL_MAX definitions now that we have converted the
+syscall event tracing code to use NR_syscalls.
 
 Signed-off-by: Jason Baron <jbaron@redhat.com>
 Cc: Paul Mundt <lethal@linux-sh.org>
@@ -62,149 +61,30 @@ Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: H. Peter Anwin <hpa@zytor.com>
 Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-LKML-Reference: <9b4f1a84ecae57cc6599412772efa36f0d2b815b.1251146513.git.jbaron@redhat.com>
+LKML-Reference: <f2240cdc8f0b1ca7617390c8f5ec90ba2bd348cf.1251146513.git.jbaron@redhat.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- arch/x86/kernel/ftrace.c      |    8 ++++----
- kernel/trace/trace_syscalls.c |   24 ++++++++++++------------
- 2 files changed, 16 insertions(+), 16 deletions(-)
+ arch/x86/include/asm/ftrace.h |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 3cff121..9dbb527 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -494,7 +494,7 @@ static struct syscall_metadata *find_syscall_meta(unsigned long *syscall)
+diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
+index 7113654..db24c22 100644
+--- a/arch/x86/include/asm/ftrace.h
++++ b/arch/x86/include/asm/ftrace.h
+@@ -28,13 +28,6 @@
  
- struct syscall_metadata *syscall_nr_to_meta(int nr)
- {
--	if (!syscalls_metadata || nr >= FTRACE_SYSCALL_MAX || nr < 0)
-+	if (!syscalls_metadata || nr >= NR_syscalls || nr < 0)
- 		return NULL;
+ #endif
  
- 	return syscalls_metadata[nr];
-@@ -507,7 +507,7 @@ int syscall_name_to_nr(char *name)
- 	if (!syscalls_metadata)
- 		return -1;
- 
--	for (i = 0; i < FTRACE_SYSCALL_MAX; i++) {
-+	for (i = 0; i < NR_syscalls; i++) {
- 		if (syscalls_metadata[i]) {
- 			if (!strcmp(syscalls_metadata[i]->name, name))
- 				return i;
-@@ -533,13 +533,13 @@ static int __init arch_init_ftrace_syscalls(void)
- 	unsigned long **psys_syscall_table = &sys_call_table;
- 
- 	syscalls_metadata = kzalloc(sizeof(*syscalls_metadata) *
--					FTRACE_SYSCALL_MAX, GFP_KERNEL);
-+					NR_syscalls, GFP_KERNEL);
- 	if (!syscalls_metadata) {
- 		WARN_ON(1);
- 		return -ENOMEM;
- 	}
- 
--	for (i = 0; i < FTRACE_SYSCALL_MAX; i++) {
-+	for (i = 0; i < NR_syscalls; i++) {
- 		meta = find_syscall_meta(psys_syscall_table[i]);
- 		syscalls_metadata[i] = meta;
- 	}
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index cb7f600..4f5fae6 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -11,8 +11,8 @@
- static DEFINE_MUTEX(syscall_trace_lock);
- static int sys_refcount_enter;
- static int sys_refcount_exit;
--static DECLARE_BITMAP(enabled_enter_syscalls, FTRACE_SYSCALL_MAX);
--static DECLARE_BITMAP(enabled_exit_syscalls, FTRACE_SYSCALL_MAX);
-+static DECLARE_BITMAP(enabled_enter_syscalls, NR_syscalls);
-+static DECLARE_BITMAP(enabled_exit_syscalls, NR_syscalls);
- 
- enum print_line_t
- print_syscall_enter(struct trace_iterator *iter, int flags)
-@@ -289,7 +289,7 @@ int reg_event_syscall_enter(void *ptr)
- 
- 	name = (char *)ptr;
- 	num = syscall_name_to_nr(name);
--	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-+	if (num < 0 || num >= NR_syscalls)
- 		return -ENOSYS;
- 	mutex_lock(&syscall_trace_lock);
- 	if (!sys_refcount_enter)
-@@ -312,7 +312,7 @@ void unreg_event_syscall_enter(void *ptr)
- 
- 	name = (char *)ptr;
- 	num = syscall_name_to_nr(name);
--	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-+	if (num < 0 || num >= NR_syscalls)
- 		return;
- 	mutex_lock(&syscall_trace_lock);
- 	sys_refcount_enter--;
-@@ -330,7 +330,7 @@ int reg_event_syscall_exit(void *ptr)
- 
- 	name = (char *)ptr;
- 	num = syscall_name_to_nr(name);
--	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-+	if (num < 0 || num >= NR_syscalls)
- 		return -ENOSYS;
- 	mutex_lock(&syscall_trace_lock);
- 	if (!sys_refcount_exit)
-@@ -353,7 +353,7 @@ void unreg_event_syscall_exit(void *ptr)
- 
- 	name = (char *)ptr;
- 	num = syscall_name_to_nr(name);
--	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-+	if (num < 0 || num >= NR_syscalls)
- 		return;
- 	mutex_lock(&syscall_trace_lock);
- 	sys_refcount_exit--;
-@@ -373,8 +373,8 @@ struct trace_event event_syscall_exit = {
- 
- #ifdef CONFIG_EVENT_PROFILE
- 
--static DECLARE_BITMAP(enabled_prof_enter_syscalls, FTRACE_SYSCALL_MAX);
--static DECLARE_BITMAP(enabled_prof_exit_syscalls, FTRACE_SYSCALL_MAX);
-+static DECLARE_BITMAP(enabled_prof_enter_syscalls, NR_syscalls);
-+static DECLARE_BITMAP(enabled_prof_exit_syscalls, NR_syscalls);
- static int sys_prof_refcount_enter;
- static int sys_prof_refcount_exit;
- 
-@@ -420,7 +420,7 @@ int reg_prof_syscall_enter(char *name)
- 	int num;
- 
- 	num = syscall_name_to_nr(name);
--	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-+	if (num < 0 || num >= NR_syscalls)
- 		return -ENOSYS;
- 
- 	mutex_lock(&syscall_trace_lock);
-@@ -442,7 +442,7 @@ void unreg_prof_syscall_enter(char *name)
- 	int num;
- 
- 	num = syscall_name_to_nr(name);
--	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-+	if (num < 0 || num >= NR_syscalls)
- 		return;
- 
- 	mutex_lock(&syscall_trace_lock);
-@@ -481,7 +481,7 @@ int reg_prof_syscall_exit(char *name)
- 	int num;
- 
- 	num = syscall_name_to_nr(name);
--	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-+	if (num < 0 || num >= NR_syscalls)
- 		return -ENOSYS;
- 
- 	mutex_lock(&syscall_trace_lock);
-@@ -503,7 +503,7 @@ void unreg_prof_syscall_exit(char *name)
- 	int num;
- 
- 	num = syscall_name_to_nr(name);
--	if (num < 0 || num >= FTRACE_SYSCALL_MAX)
-+	if (num < 0 || num >= NR_syscalls)
- 		return;
- 
- 	mutex_lock(&syscall_trace_lock);
+-/* FIXME: I don't want to stay hardcoded */
+-#ifdef CONFIG_X86_64
+-# define FTRACE_SYSCALL_MAX     299
+-#else
+-# define FTRACE_SYSCALL_MAX     337
+-#endif
+-
+ #ifdef CONFIG_FUNCTION_TRACER
+ #define MCOUNT_ADDR		((long)(mcount))
+ #define MCOUNT_INSN_SIZE	5 /* sizeof mcount call */
 -- 
 1.6.2.3
 
