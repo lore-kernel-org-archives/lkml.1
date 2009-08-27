@@ -1,400 +1,371 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbZH1GCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751851AbZH1GEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751909AbZH1GCX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 02:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZH1GCW
+	id S1751851AbZH1GEt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 02:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZH1GEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 02:02:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53119 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbZH1GCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 02:02:17 -0400
-Date: Fri, 28 Aug 2009 06:01:32 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1251421798-9101-1-git-send-email-fweisbec@gmail.com>
-References: <1251421798-9101-1-git-send-email-fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/tracing] perf tools: Only save the event formats we need
-Message-ID: <tip-1ef2ed1066ae9f8080cd96cba11c2d41118b8792@git.kernel.org>
-Git-Commit-ID: 1ef2ed1066ae9f8080cd96cba11c2d41118b8792
-X-Mailer: tip-git-log-daemon
+	Fri, 28 Aug 2009 02:04:49 -0400
+Received: from n9a.bullet.mail.mud.yahoo.com ([209.191.87.108]:40161 "HELO
+	n9a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751533AbZH1GEs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 02:04:48 -0400
+X-Greylist: delayed 338 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Aug 2009 02:04:47 EDT
+X-Yahoo-Newman-Id: 506025.14182.bm@omp425.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=CAi+jyMW+tbgt5lGxa5htgFRszjUAlvhEeUjddRXlL5f7xQJQnRggqPAOVnXESt4Ili04usGIzUkBp6LsnQYq1AOc154Nmx3RI5iC6cb/9fwRzOyBE/UEXo3K8724ce3w4dSTl8+oMNFZrZVoy/Mdh2z2Dov42K6h4UowOFcF3U=  ;
+X-YMail-OSG: sXQ.w6AVM1l68rjJAGo7xronllh8_EdMdaNRqa_cK_54lCVoyRv2T9MjD37mpFt.cTqmTz5ejczGjBshi2vi._J5ipkGmYCJkBNkXFLr.CqiJTndNV3T54r8RZtBhM2BwxfnDVYBj_VrP.B6GWsAUO0lL0xbF0RKF9UC4Ck94S4a2n33NKrbUb8fSZJxUa6TpBzoaZNdtKAybD.3FhqPlFrYnp6xFHu8UKgmHBrD3x8F4iDAA21mf7gS8aSICT1rJ49iQ9NdEx_MYiUUL1zA
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [patch 2.6.31-rc7] gpiolib: allow poll() on value
+Date: Thu, 27 Aug 2009 16:50:57 -0700
+User-Agent: KMail/1.9.10
+Cc: Daniel =?iso-8859-1?q?Gl=F6ckner?= <dg@emlix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 06:01:33 +0000 (UTC)
+Message-Id: <200908271650.59287.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1ef2ed1066ae9f8080cd96cba11c2d41118b8792
-Gitweb:     http://git.kernel.org/tip/1ef2ed1066ae9f8080cd96cba11c2d41118b8792
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Fri, 28 Aug 2009 03:09:58 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 28 Aug 2009 07:58:11 +0200
+From: Daniel Glöckner <dg@emlix.com>
+Subject: [PATCH v3] gpiolib: allow poll(2) on gpio value
 
-perf tools: Only save the event formats we need
+Many gpio chips allow to generate interrupts when the value of a pin
+changes. This patch gives usermode application the opportunity to make
+use of this feature by calling poll(2) on the /sys/class/gpio/gpioN/value
+sysfs file. The edge to trigger can be set in the edge file in the same
+directory. Possible values are "none", "rising", "falling", and "both".
 
-While opening a trace event counter, every events are saved in
-the trace.info file. But we only want to save the
-specifications of the events we are using.
+Using level triggers is not possible with current sysfs since nothing
+changes the GPIO value (and the IRQ keeps triggering).  Edge triggering
+will "just work".  Note that if there was an event between read() and
+poll(), the poll() returns immediately.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1251421798-9101-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Also note that this version only supports true GPIO interrupts.  Some
+later patch might be able to synthesize this behavior by timer-driven
+polling; some systems seem to need that.
 
+[dbrownell@users.sourceforge.net: align ids to 16 bit ids; whitespace]
 
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- tools/perf/builtin-record.c         |    4 +-
- tools/perf/util/parse-events.c      |   47 +++++++++++++++++++----
- tools/perf/util/parse-events.h      |   13 ++++++-
- tools/perf/util/trace-event-info.c  |   72 +++++++++++++++++++++++++++++------
- tools/perf/util/trace-event-parse.c |    1 +
- tools/perf/util/trace-event-read.c  |    1 +
- tools/perf/util/trace-event.h       |    9 ++--
- 7 files changed, 120 insertions(+), 27 deletions(-)
+ Documentation/ABI/testing/sysfs-gpio |    1 
+ Documentation/gpio.txt               |    7 +
+ drivers/gpio/gpiolib.c               |  208 ++++++++++++++++++++++++++++++++-
+ 3 files changed, 211 insertions(+), 5 deletions(-)
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index acbe594..add514d 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -549,11 +549,11 @@ static int __cmd_record(int argc, const char **argv)
+--- a/Documentation/ABI/testing/sysfs-gpio
++++ b/Documentation/ABI/testing/sysfs-gpio
+@@ -19,6 +19,7 @@ Description:
+ 	/gpioN ... for each exported GPIO #N
+ 	    /value ... always readable, writes fail for input GPIOs
+ 	    /direction ... r/w as: in, out (default low); write: high, low
++	    /edge ... r/w as: none, falling, rising, both
+ 	/gpiochipN ... for each gpiochip; #N is its first GPIO
+ 	    /base ... (r/o) same as N
+ 	    /label ... (r/o) descriptive, not necessarily unique
+--- a/Documentation/gpio.txt
++++ b/Documentation/gpio.txt
+@@ -524,6 +524,13 @@ and have the following read/write attrib
+ 		is configured as an output, this value may be written;
+ 		any nonzero value is treated as high.
  
- 
- 	if (raw_samples) {
--		read_tracing_data();
-+		read_tracing_data(attrs, nr_counters);
- 	} else {
- 		for (i = 0; i < nr_counters; i++) {
- 			if (attrs[i].sample_type & PERF_SAMPLE_RAW) {
--				read_tracing_data();
-+				read_tracing_data(attrs, nr_counters);
- 				break;
- 			}
- 		}
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 1cda97b..89d46c9 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -158,9 +158,9 @@ int valid_debugfs_mount(const char *debugfs)
- 	return 0;
- }
- 
--static const char *tracepoint_id_to_name(u64 config)
-+struct tracepoint_path *tracepoint_id_to_path(u64 config)
- {
--	static char tracepoint_name[2 * MAX_EVENT_LENGTH];
-+	struct tracepoint_path *path = NULL;
- 	DIR *sys_dir, *evt_dir;
- 	struct dirent *sys_next, *evt_next, sys_dirent, evt_dirent;
- 	struct stat st;
-@@ -170,7 +170,7 @@ static const char *tracepoint_id_to_name(u64 config)
- 	char evt_path[MAXPATHLEN];
- 
- 	if (valid_debugfs_mount(debugfs_path))
--		return "unkown";
-+		return NULL;
- 
- 	sys_dir = opendir(debugfs_path);
- 	if (!sys_dir)
-@@ -197,10 +197,23 @@ static const char *tracepoint_id_to_name(u64 config)
- 			if (id == config) {
- 				closedir(evt_dir);
- 				closedir(sys_dir);
--				snprintf(tracepoint_name, 2 * MAX_EVENT_LENGTH,
--					"%s:%s", sys_dirent.d_name,
--					evt_dirent.d_name);
--				return tracepoint_name;
-+				path = calloc(1, sizeof(path));
-+				path->system = malloc(MAX_EVENT_LENGTH);
-+				if (!path->system) {
-+					free(path);
-+					return NULL;
-+				}
-+				path->name = malloc(MAX_EVENT_LENGTH);
-+				if (!path->name) {
-+					free(path->system);
-+					free(path);
-+					return NULL;
-+				}
-+				strncpy(path->system, sys_dirent.d_name,
-+					MAX_EVENT_LENGTH);
-+				strncpy(path->name, evt_dirent.d_name,
-+					MAX_EVENT_LENGTH);
-+				return path;
- 			}
- 		}
- 		closedir(evt_dir);
-@@ -208,7 +221,25 @@ static const char *tracepoint_id_to_name(u64 config)
- 
- cleanup:
- 	closedir(sys_dir);
--	return "unkown";
-+	return NULL;
-+}
++	"edge" ... reads as either "none", "rising", "falling", or
++		"both". Write these strings to select the signal edge(s)
++		that will make poll(2) on the "value" file return.
 +
-+#define TP_PATH_LEN (MAX_EVENT_LENGTH * 2 + 1)
-+static const char *tracepoint_id_to_name(u64 config)
-+{
-+	static char buf[TP_PATH_LEN];
-+	struct tracepoint_path *path;
++		This file exists only if the pin can be configured as an
++		interrupt generating input pin.
 +
-+	path = tracepoint_id_to_path(config);
-+	if (path) {
-+		snprintf(buf, TP_PATH_LEN, "%s:%s", path->system, path->name);
-+		free(path->name);
-+		free(path->system);
-+		free(path);
-+	} else
-+		snprintf(buf, TP_PATH_LEN, "%s:%s", "unknown", "unknown");
+ GPIO controllers have paths like /sys/class/gpio/chipchip42/ (for the
+ controller implementing GPIOs starting at #42) and have the following
+ read-only attributes:
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1,5 +1,6 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/spinlock.h>
+ #include <linux/device.h>
+@@ -7,6 +8,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
+ #include <linux/gpio.h>
++#include <linux/idr.h>
+ 
+ 
+ /* Optional implementation infrastructure for GPIO interfaces.
+@@ -49,6 +51,13 @@ struct gpio_desc {
+ #define FLAG_RESERVED	2
+ #define FLAG_EXPORT	3	/* protected by sysfs_lock */
+ #define FLAG_SYSFS	4	/* exported via /sys/class/gpio/control */
++#define FLAG_TRIG_FALL	5	/* trigger on falling edge */
++#define FLAG_TRIG_RISE	6	/* trigger on rising edge */
 +
-+	return buf;
- }
++#define PDESC_ID_SHIFT	16	/* add new flags before this one */
++
++#define GPIO_FLAGS_MASK		((1 << PDESC_ID_SHIFT) - 1)
++#define GPIO_TRIGGER_MASK	(BIT(FLAG_TRIG_FALL) | BIT(FLAG_TRIG_RISE))
  
- static int is_cache_op_valid(u8 cache_type, u8 cache_op)
-diff --git a/tools/perf/util/parse-events.h b/tools/perf/util/parse-events.h
-index 9b1aeea..60704c1 100644
---- a/tools/perf/util/parse-events.h
-+++ b/tools/perf/util/parse-events.h
-@@ -1,10 +1,19 @@
--
-+#ifndef _PARSE_EVENTS_H
-+#define _PARSE_EVENTS_H
- /*
-  * Parse symbolic events/counts passed in as options:
-  */
+ #ifdef CONFIG_DEBUG_FS
+ 	const char		*label;
+@@ -56,6 +65,15 @@ struct gpio_desc {
+ };
+ static struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
  
- struct option;
- 
-+struct tracepoint_path {
-+	char *system;
-+	char *name;
-+	struct tracepoint_path *next;
++#ifdef CONFIG_GPIO_SYSFS
++struct poll_desc {
++	struct work_struct	work;
++	struct sysfs_dirent	*value_sd;
 +};
 +
-+extern struct tracepoint_path *tracepoint_id_to_path(u64 config);
++static struct idr pdesc_idr;
++#endif
 +
- extern int			nr_counters;
+ static inline void desc_set_label(struct gpio_desc *d, const char *label)
+ {
+ #ifdef CONFIG_DEBUG_FS
+@@ -188,10 +206,10 @@ static DEFINE_MUTEX(sysfs_lock);
+  *   /value
+  *      * always readable, subject to hardware behavior
+  *      * may be writable, as zero/nonzero
+- *
+- * REVISIT there will likely be an attribute for configuring async
+- * notifications, e.g. to specify polling interval or IRQ trigger type
+- * that would for example trigger a poll() on the "value".
++ *   /edge
++ *      * configures behavior of poll(2) on /value
++ *      * available only if pin can generate IRQs on input
++ *      * is read/write as "none", "falling", "rising", or "both"
+  */
  
- extern struct perf_counter_attr attrs[MAX_COUNTERS];
-@@ -21,3 +30,5 @@ extern void print_events(void);
- extern char debugfs_path[];
- extern int valid_debugfs_mount(const char *debugfs);
+ static ssize_t gpio_direction_show(struct device *dev,
+@@ -288,6 +306,175 @@ static ssize_t gpio_value_store(struct d
+ static /*const*/ DEVICE_ATTR(value, 0644,
+ 		gpio_value_show, gpio_value_store);
  
-+
-+#endif /* _PARSE_EVENTS_H */
-diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
-index 78adff1..8161527 100644
---- a/tools/perf/util/trace-event-info.c
-+++ b/tools/perf/util/trace-event-info.c
-@@ -32,7 +32,9 @@
- #include <unistd.h>
- #include <ctype.h>
- #include <errno.h>
-+#include <stdbool.h>
- 
-+#include "../perf.h"
- #include "trace-event.h"
- 
- 
-@@ -289,7 +291,18 @@ static void read_header_files(void)
- 	put_tracing_file(path);
- }
- 
--static void copy_event_system(const char *sys)
-+static bool name_in_tp_list(char *sys, struct tracepoint_path *tps)
++static irqreturn_t gpio_sysfs_irq(int irq, void *priv)
 +{
-+	while (tps) {
-+		if (!strcmp(sys, tps->name))
-+			return true;
-+		tps = tps->next;
-+	}
++	struct work_struct	*work = priv;
 +
-+	return false;
++	schedule_work(work);
++	return IRQ_HANDLED;
 +}
 +
-+static void copy_event_system(const char *sys, struct tracepoint_path *tps)
- {
- 	unsigned long long size, check_size;
- 	struct dirent *dent;
-@@ -305,7 +318,8 @@ static void copy_event_system(const char *sys)
- 
- 	while ((dent = readdir(dir))) {
- 		if (strcmp(dent->d_name, ".") == 0 ||
--		    strcmp(dent->d_name, "..") == 0)
-+		    strcmp(dent->d_name, "..") == 0 ||
-+		    !name_in_tp_list(dent->d_name, tps))
- 			continue;
- 		format = malloc_or_die(strlen(sys) + strlen(dent->d_name) + 10);
- 		sprintf(format, "%s/%s/format", sys, dent->d_name);
-@@ -321,7 +335,8 @@ static void copy_event_system(const char *sys)
- 	rewinddir(dir);
- 	while ((dent = readdir(dir))) {
- 		if (strcmp(dent->d_name, ".") == 0 ||
--		    strcmp(dent->d_name, "..") == 0)
-+		    strcmp(dent->d_name, "..") == 0 ||
-+		    !name_in_tp_list(dent->d_name, tps))
- 			continue;
- 		format = malloc_or_die(strlen(sys) + strlen(dent->d_name) + 10);
- 		sprintf(format, "%s/%s/format", sys, dent->d_name);
-@@ -340,18 +355,29 @@ static void copy_event_system(const char *sys)
- 	}
- }
- 
--static void read_ftrace_files(void)
-+static void read_ftrace_files(struct tracepoint_path *tps)
- {
- 	char *path;
- 
- 	path = get_tracing_file("events/ftrace");
- 
--	copy_event_system(path);
-+	copy_event_system(path, tps);
- 
- 	put_tracing_file(path);
- }
- 
--static void read_event_files(void)
-+static bool system_in_tp_list(char *sys, struct tracepoint_path *tps)
++static void gpio_notify_sysfs(struct work_struct *work)
 +{
-+	while (tps) {
-+		if (!strcmp(sys, tps->system))
-+			return true;
-+		tps = tps->next;
-+	}
++	struct poll_desc	*pdesc;
 +
-+	return false;
++	pdesc = container_of(work, struct poll_desc, work);
++	sysfs_notify_dirent(pdesc->value_sd);
 +}
 +
-+static void read_event_files(struct tracepoint_path *tps)
- {
- 	struct dirent *dent;
- 	struct stat st;
-@@ -370,7 +396,8 @@ static void read_event_files(void)
- 	while ((dent = readdir(dir))) {
- 		if (strcmp(dent->d_name, ".") == 0 ||
- 		    strcmp(dent->d_name, "..") == 0 ||
--		    strcmp(dent->d_name, "ftrace") == 0)
-+		    strcmp(dent->d_name, "ftrace") == 0 ||
-+		    !system_in_tp_list(dent->d_name, tps))
- 			continue;
- 		sys = malloc_or_die(strlen(path) + strlen(dent->d_name) + 2);
- 		sprintf(sys, "%s/%s", path, dent->d_name);
-@@ -388,7 +415,8 @@ static void read_event_files(void)
- 	while ((dent = readdir(dir))) {
- 		if (strcmp(dent->d_name, ".") == 0 ||
- 		    strcmp(dent->d_name, "..") == 0 ||
--		    strcmp(dent->d_name, "ftrace") == 0)
-+		    strcmp(dent->d_name, "ftrace") == 0 ||
-+		    !system_in_tp_list(dent->d_name, tps))
- 			continue;
- 		sys = malloc_or_die(strlen(path) + strlen(dent->d_name) + 2);
- 		sprintf(sys, "%s/%s", path, dent->d_name);
-@@ -396,7 +424,7 @@ static void read_event_files(void)
- 		if (ret >= 0) {
- 			if (S_ISDIR(st.st_mode)) {
- 				write_or_die(dent->d_name, strlen(dent->d_name) + 1);
--				copy_event_system(sys);
-+				copy_event_system(sys, tps);
- 			}
- 		}
- 		free(sys);
-@@ -450,9 +478,27 @@ static void read_ftrace_printk(void)
- 
- }
- 
--void read_tracing_data(void)
-+static struct tracepoint_path *
-+get_tracepoints_path(struct perf_counter_attr *pattrs, int nb_counters)
++static int gpio_setup_irq(struct gpio_desc *desc, struct device *dev,
++		unsigned long gpio_flags)
 +{
-+	struct tracepoint_path path, *ppath = &path;
-+	int i;
++	struct poll_desc	*pdesc;
++	unsigned long		irq_flags;
++	int			ret, irq, id;
 +
-+	for (i = 0; i < nb_counters; i++) {
-+		if (pattrs[i].type != PERF_TYPE_TRACEPOINT)
-+			continue;
-+		ppath->next = tracepoint_id_to_path(pattrs[i].config);
-+		if (!ppath->next)
-+			die("%s\n", "No memory to alloc tracepoints list");
-+		ppath = ppath->next;
++	if ((desc->flags & GPIO_TRIGGER_MASK) == gpio_flags)
++		return 0;
++
++	irq = gpio_to_irq(desc - gpio_desc);
++	if (irq < 0)
++		return -EIO;
++
++	id = desc->flags >> PDESC_ID_SHIFT;
++	pdesc = idr_find(&pdesc_idr, id);
++	if (pdesc) {
++		free_irq(irq, &pdesc->work);
++		cancel_work_sync(&pdesc->work);
 +	}
 +
-+	return path.next;
-+}
-+void read_tracing_data(struct perf_counter_attr *pattrs, int nb_counters)
- {
- 	char buf[BUFSIZ];
-+	struct tracepoint_path *tps;
- 
- 	output_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC | O_LARGEFILE, 0644);
- 	if (output_fd < 0)
-@@ -483,9 +529,11 @@ void read_tracing_data(void)
- 	page_size = getpagesize();
- 	write_or_die(&page_size, 4);
- 
-+	tps = get_tracepoints_path(pattrs, nb_counters);
++	desc->flags &= ~GPIO_TRIGGER_MASK;
 +
- 	read_header_files();
--	read_ftrace_files();
--	read_event_files();
-+	read_ftrace_files(tps);
-+	read_event_files(tps);
- 	read_proc_kallsyms();
- 	read_ftrace_printk();
- }
-diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-index b53b27f..a6577cd 100644
---- a/tools/perf/util/trace-event-parse.c
-+++ b/tools/perf/util/trace-event-parse.c
-@@ -29,6 +29,7 @@
- #include <errno.h>
++	if (!gpio_flags) {
++		ret = 0;
++		goto free_sd;
++	}
++
++	irq_flags = IRQF_SHARED;
++	if (test_bit(FLAG_TRIG_FALL, &gpio_flags))
++		irq_flags |= IRQF_TRIGGER_FALLING;
++	if (test_bit(FLAG_TRIG_RISE, &gpio_flags))
++		irq_flags |= IRQF_TRIGGER_RISING;
++
++	if (!pdesc) {
++		pdesc = kmalloc(sizeof(*pdesc), GFP_KERNEL);
++		if (!pdesc) {
++			ret = -ENOMEM;
++			goto err_out;
++		}
++
++		do {
++			ret = -ENOMEM;
++			if (idr_pre_get(&pdesc_idr, GFP_KERNEL))
++				ret = idr_get_new_above(&pdesc_idr,
++						pdesc, 1, &id);
++		} while (ret == -EAGAIN);
++
++		if (ret)
++			goto free_mem;
++
++		desc->flags &= GPIO_FLAGS_MASK;
++		desc->flags |= (unsigned long)id << PDESC_ID_SHIFT;
++
++		if (desc->flags >> PDESC_ID_SHIFT != id) {
++			ret = -ERANGE;
++			goto free_id;
++		}
++
++		pdesc->value_sd = sysfs_get_dirent(dev->kobj.sd, "value");
++		if (!pdesc->value_sd) {
++			ret = -ENODEV;
++			goto free_id;
++		}
++		INIT_WORK(&pdesc->work, gpio_notify_sysfs);
++	}
++
++	ret = request_irq(irq, gpio_sysfs_irq, irq_flags,
++			"gpiolib", &pdesc->work);
++	if (ret)
++		goto free_sd;
++
++	desc->flags |= gpio_flags;
++	return 0;
++
++free_sd:
++	sysfs_put(pdesc->value_sd);
++free_id:
++	idr_remove(&pdesc_idr, id);
++	desc->flags &= GPIO_FLAGS_MASK;
++free_mem:
++	kfree(pdesc);
++err_out:
++	return ret;
++}
++
++static const struct {
++	const char *name;
++	unsigned long flags;
++} trigger_types[] = {
++	{ "none",    0 },
++	{ "falling", BIT(FLAG_TRIG_FALL) },
++	{ "rising",  BIT(FLAG_TRIG_RISE) },
++	{ "both",    BIT(FLAG_TRIG_FALL) | BIT(FLAG_TRIG_RISE) },
++};
++
++static ssize_t gpio_edge_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	const struct gpio_desc	*desc = dev_get_drvdata(dev);
++	ssize_t			status;
++
++	mutex_lock(&sysfs_lock);
++
++	if (!test_bit(FLAG_EXPORT, &desc->flags))
++		status = -EIO;
++	else {
++		int i;
++
++		status = 0;
++		for (i = 0; i < ARRAY_SIZE(trigger_types); i++)
++			if ((desc->flags & GPIO_TRIGGER_MASK)
++					== trigger_types[i].flags) {
++				status = sprintf(buf, "%s\n",
++						 trigger_types[i].name);
++				break;
++			}
++	}
++
++	mutex_unlock(&sysfs_lock);
++	return status;
++}
++
++static ssize_t gpio_edge_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t size)
++{
++	struct gpio_desc	*desc = dev_get_drvdata(dev);
++	ssize_t			status;
++	int			i;
++
++	for (i = 0; i < ARRAY_SIZE(trigger_types); i++)
++		if (sysfs_streq(trigger_types[i].name, buf))
++			goto found;
++	return -EINVAL;
++
++found:
++	mutex_lock(&sysfs_lock);
++
++	if (!test_bit(FLAG_EXPORT, &desc->flags))
++		status = -EIO;
++	else {
++		status = gpio_setup_irq(desc, dev, trigger_types[i].flags);
++		if (!status)
++			status = size;
++	}
++
++	mutex_unlock(&sysfs_lock);
++
++	return status;
++}
++
++static DEVICE_ATTR(edge, 0644, gpio_edge_show, gpio_edge_store);
++
+ static const struct attribute *gpio_attrs[] = {
+ 	&dev_attr_direction.attr,
+ 	&dev_attr_value.attr,
+@@ -473,7 +660,7 @@ int gpio_export(unsigned gpio, bool dire
+ 		struct device	*dev;
  
- #undef _GNU_SOURCE
-+#include "../perf.h"
- #include "util.h"
- #include "trace-event.h"
+ 		dev = device_create(&gpio_class, desc->chip->dev, MKDEV(0, 0),
+-				    desc, ioname ? ioname : "gpio%d", gpio);
++				desc, ioname ? ioname : "gpio%d", gpio);
+ 		if (dev) {
+ 			if (direction_may_change)
+ 				status = sysfs_create_group(&dev->kobj,
+@@ -481,6 +668,14 @@ int gpio_export(unsigned gpio, bool dire
+ 			else
+ 				status = device_create_file(dev,
+ 						&dev_attr_value);
++
++			if (!status && gpio_to_irq(gpio) >= 0
++					&& (direction_may_change
++						|| !test_bit(FLAG_IS_OUT,
++							&desc->flags)))
++				status = device_create_file(dev,
++						&dev_attr_edge);
++
+ 			if (status != 0)
+ 				device_unregister(dev);
+ 		} else
+@@ -527,6 +722,7 @@ void gpio_unexport(unsigned gpio)
  
-diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
-index 1dac301..b12e490 100644
---- a/tools/perf/util/trace-event-read.c
-+++ b/tools/perf/util/trace-event-read.c
-@@ -36,6 +36,7 @@
- #include <ctype.h>
- #include <errno.h>
+ 		dev = class_find_device(&gpio_class, NULL, desc, match_export);
+ 		if (dev) {
++			gpio_setup_irq(desc, dev, 0);
+ 			clear_bit(FLAG_EXPORT, &desc->flags);
+ 			put_device(dev);
+ 			device_unregister(dev);
+@@ -611,6 +807,8 @@ static int __init gpiolib_sysfs_init(voi
+ 	unsigned long	flags;
+ 	unsigned	gpio;
  
-+#include "../perf.h"
- #include "util.h"
- #include "trace-event.h"
- 
-diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-index 3ddb894..051fcf3 100644
---- a/tools/perf/util/trace-event.h
-+++ b/tools/perf/util/trace-event.h
-@@ -1,6 +1,7 @@
--#ifndef _PARSE_EVENTS_H
--#define _PARSE_EVENTS_H
-+#ifndef _TRACE_EVENTS_H
-+#define _TRACE_EVENTS_H
- 
-+#include "parse-events.h"
- 
- #define __unused __attribute__((unused))
- 
-@@ -233,6 +234,6 @@ extern int header_page_data_size;
- 
- int parse_header_page(char *buf, unsigned long size);
- 
--void read_tracing_data(void);
-+void read_tracing_data(struct perf_counter_attr *pattrs, int nb_counters);
- 
--#endif /* _PARSE_EVENTS_H */
-+#endif /* _TRACE_EVENTS_H */
++	idr_init(&pdesc_idr);
++
+ 	status = class_register(&gpio_class);
+ 	if (status < 0)
+ 		return status;
+
