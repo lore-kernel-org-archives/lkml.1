@@ -1,84 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZH0DRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZH0DR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752516AbZH0DRl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 23:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZH0DRj
+	id S1752663AbZH0DR5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 23:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZH0DRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 23:17:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:13893 "EHLO mx1.redhat.com"
+	Wed, 26 Aug 2009 23:17:55 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41391 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752045AbZH0DRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 23:17:36 -0400
-Date: Wed, 26 Aug 2009 23:16:53 -0400
+	id S1752043AbZH0DRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 23:17:52 -0400
+Date: Wed, 26 Aug 2009 23:17:03 -0400
 From: Amerigo Wang <amwang@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       Neil Horman <nhorman@redhat.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
+       Amerigo Wang <amwang@redhat.com>,
        Michael Ellerman <michael@ellerman.id.au>,
        "M. Mohan Kumar" <mohan@in.ibm.com>, akpm@linux-foundation.org,
        bernhard.walle@gmx.de, Fenghua Yu <fenghua.yu@intel.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, Amerigo Wang <amwang@redhat.com>
-Message-Id: <20090827031920.4534.9468.sendpatchset@localhost.localdomain>
+       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
+Message-Id: <20090827031930.4534.92513.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
 References: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
-Subject: [Patch 7/8] doc: update the kdump document
+Subject: [Patch 8/8] kexec: allow to shrink reserved memory
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch implements shrinking the reserved memory for crash kernel,
+if it is more than enough.
 
-Update the document for kdump.
+For example, if you have already reserved 128M, now you just want 100M,
+you can do:
 
+# echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
+
+Note, you can only do this before loading the crash kernel.
+
+Cc: Neil Horman <nhorman@redhat.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: WANG Cong <amwang@redhat.com>
 
 ---
 
-Index: linux-2.6/Documentation/kdump/kdump.txt
+Index: linux-2.6/include/linux/kexec.h
 ===================================================================
---- linux-2.6.orig/Documentation/kdump/kdump.txt
-+++ linux-2.6/Documentation/kdump/kdump.txt
-@@ -147,6 +147,15 @@ System kernel config options
-    analysis tools require a vmlinux with debug symbols in order to read
-    and analyze a dump file.
+--- linux-2.6.orig/include/linux/kexec.h
++++ linux-2.6/include/linux/kexec.h
+@@ -206,6 +206,8 @@ extern size_t vmcoreinfo_max_size;
  
-+4) Enable "automatically reserve memory for kexec kernel" in
-+   "Processor type and features."
-+
-+   CONFIG_KEXEC_AUTO_RESERVE=y
-+
-+   This will let you to use "crashkernel=auto", instead of specifying
-+   numbers for "crashkernel=". Note, you need to have enough memory.
-+   The threshold and reserved memory size are arch-dependent.
-+
- Dump-capture kernel config options (Arch Independent)
- -----------------------------------------------------
+ int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
+ 		unsigned long long *crash_size, unsigned long long *crash_base);
++int crash_shrink_memory(unsigned long new_size);
++size_t crash_get_memory_size(void);
  
-@@ -266,6 +275,26 @@ This would mean:
-     2) if the RAM size is between 512M and 2G (exclusive), then reserve 64M
-     3) if the RAM size is larger than 2G, then reserve 128M
+ #else /* !CONFIG_KEXEC */
+ struct pt_regs;
+Index: linux-2.6/kernel/kexec.c
+===================================================================
+--- linux-2.6.orig/kernel/kexec.c
++++ linux-2.6/kernel/kexec.c
+@@ -31,6 +31,7 @@
+ #include <linux/cpu.h>
+ #include <linux/console.h>
+ #include <linux/vmalloc.h>
++#include <linux/swap.h>
  
-+Or you can use:
-+
-+    crashkernel=auto
-+
-+if you have enough memory. The threshold is 4G on ia64 and x86, 2G on powerpc,
-+below which this won't work.
-+
-+The automatically reserved memory size would be 128M on x86_32, 128M or 256M
-+on ppc, 1/32 of your physical memory size on x86_64 and ppc64 (but it will not
-+grow if you have more than 128G memory). IA64 has its own policy, shown below:
-+
-+	Memory size	Reserved memory
-+	===========	===============
-+	[4G, 12G)	256M
-+	[12G, 128G)	512M
-+	[128G, 256G)	768M
-+	[256G, 378G)	1024M
-+	[378G, 512G)	1536M
-+	[512G, 768G)	2048M
-+	[768G, )	3072M
+ #include <asm/page.h>
+ #include <asm/uaccess.h>
+@@ -1083,6 +1084,64 @@ void crash_kexec(struct pt_regs *regs)
+ 	}
+ }
  
++size_t crash_get_memory_size(void)
++{
++	size_t size;
++	mutex_lock(&kexec_mutex);
++	size = crashk_res.end - crashk_res.start + 1;
++	mutex_unlock(&kexec_mutex);
++	return size;
++}
++
++static void free_reserved_phys_range(unsigned long begin, unsigned long end)
++{
++	unsigned long addr;
++
++	for (addr = begin; addr < end; addr += PAGE_SIZE) {
++		ClearPageReserved(pfn_to_page(addr >> PAGE_SHIFT));
++		init_page_count(pfn_to_page(addr >> PAGE_SHIFT));
++		free_page((unsigned long)__va(addr));
++		totalram_pages++;
++	}
++}
++
++int crash_shrink_memory(unsigned long new_size)
++{
++	int ret = 0;
++	unsigned long start, end;
++
++	mutex_lock(&kexec_mutex);
++
++	if (kexec_crash_image) {
++		ret = -ENOENT;
++		goto unlock;
++	}
++	start = crashk_res.start;
++	end = crashk_res.end;
++
++	if (new_size >= end - start + 1) {
++		ret = -EINVAL;
++		if (new_size == end - start + 1)
++			ret = 0;
++		goto unlock;
++	}
++
++	start = roundup(start, PAGE_SIZE);
++	end = roundup(start + new_size, PAGE_SIZE);
++
++	free_reserved_phys_range(end, crashk_res.end);
++
++	if (start == end) {
++		crashk_res.end = end;
++		release_resource(&crashk_res);
++	} else
++		crashk_res.end = end - 1;
++
++unlock:
++	mutex_unlock(&kexec_mutex);
++	return ret;
++}
++
+ static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
+ 			    size_t data_len)
+ {
+Index: linux-2.6/kernel/ksysfs.c
+===================================================================
+--- linux-2.6.orig/kernel/ksysfs.c
++++ linux-2.6/kernel/ksysfs.c
+@@ -100,6 +100,26 @@ static ssize_t kexec_crash_loaded_show(s
+ }
+ KERNEL_ATTR_RO(kexec_crash_loaded);
  
- Boot into System Kernel
++static ssize_t kexec_crash_size_show(struct kobject *kobj,
++				       struct kobj_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%lu\n", crash_get_memory_size());
++}
++static ssize_t kexec_crash_size_store(struct kobject *kobj,
++				   struct kobj_attribute *attr,
++				   const char *buf, size_t count)
++{
++	unsigned long cnt;
++	int ret;
++
++	if (strict_strtoul(buf, 0, &cnt))
++		return -EINVAL;
++
++	ret = crash_shrink_memory(cnt);
++	return ret < 0 ? ret : count;
++}
++KERNEL_ATTR_RW(kexec_crash_size);
++
+ static ssize_t vmcoreinfo_show(struct kobject *kobj,
+ 			       struct kobj_attribute *attr, char *buf)
+ {
+@@ -147,6 +167,7 @@ static struct attribute * kernel_attrs[]
+ #ifdef CONFIG_KEXEC
+ 	&kexec_loaded_attr.attr,
+ 	&kexec_crash_loaded_attr.attr,
++	&kexec_crash_size_attr.attr,
+ 	&vmcoreinfo_attr.attr,
+ #endif
+ 	NULL
