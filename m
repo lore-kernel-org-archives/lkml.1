@@ -1,69 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751601AbZH0Rfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751703AbZH0Rgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751601AbZH0Rfr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 13:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZH0Rfn
+	id S1751703AbZH0Rgb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 13:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZH0Rga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 13:35:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55198 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbZH0Rfm (ORCPT
+	Thu, 27 Aug 2009 13:36:30 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57860 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751470AbZH0Rga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 13:35:42 -0400
-Date: Thu, 27 Aug 2009 13:35:40 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, hch@lst.de,
-       linux-fsdevel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>,
-       ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Felix Blyakher <felixb@sgi.com>, xfs@oss.sgi.com,
-       Anton Altaparmakov <aia21@cantab.net>,
-       linux-ntfs-dev@lists.sourceforge.net,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-ext4@vger.kernel.org, tytso@mit.edu
-Subject: Re: [PATCH 07/17] vfs: Introduce new helpers for syncing after
-	writing to O_SYNC file or IS_SYNC inode
-Message-ID: <20090827173540.GA19115@infradead.org>
-References: <1250875447-15622-1-git-send-email-jack@suse.cz> <1250875447-15622-8-git-send-email-jack@suse.cz>
+	Thu, 27 Aug 2009 13:36:30 -0400
+Date: Thu, 27 Aug 2009 13:36:31 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <gregory.haskins@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: FTRACE: regression in 31-rc7
+In-Reply-To: <4A96BD50.9040204@gmail.com>
+Message-ID: <alpine.DEB.2.00.0908271334230.19345@gandalf.stny.rr.com>
+References: <4A96B55C.10001@gmail.com> <20090827164007.GA30679@elte.hu> <4A96BB40.1070306@gmail.com> <alpine.DEB.2.00.0908271301200.29943@gandalf.stny.rr.com> <4A96BD50.9040204@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1250875447-15622-8-git-send-email-jack@suse.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +int generic_write_sync(struct file *file, loff_t pos, loff_t count)
-> +{
-> +	if (!(file->f_flags & O_SYNC) && !IS_SYNC(file->f_mapping->host))
-> +		return 0;
-> +	return generic_sync_file(file, file->f_path.dentry, pos,
-> +				 pos + count - 1,
-> +				 SYNC_SUBMIT_DATA | SYNC_WAIT_DATA);
-> +}
-> +EXPORT_SYMBOL(generic_write_sync);
 
->  
-> +/* Flags for generic_sync_file */
-> +#define SYNC_INODE		1
-> +#define SYNC_SUBMIT_DATA	2
-> +#define SYNC_WAIT_DATA		4
+On Thu, 27 Aug 2009, Gregory Haskins wrote:
 
-When I think about this more I really hate the latter two flags.
-There's really no reason to just do only either the submit or wait.
-I'd say kill the flags for now and just implement generic_write_sync
-as:
+> Hi Steve,
+> 
+> Steven Rostedt wrote:
+> instrumented for some reason.
+> > 
+> > Hmm, so you think something with the modules broke? I can test that out 
+> > here.
+> 
+> Thats my (admittedly fairly ignorant) theory based on the limited data
+> samples I have in front of me. :)
+> 
+> If I get a chance later, I will try to do something more scientific, or
+> at least a bisect.
 
-int generic_write_sync(struct file *file, loff_t pos, loff_t count)
-{
-	if (!(file->f_flags & O_SYNC) && !IS_SYNC(file->f_mapping->host))
-		return 0;
-	return vfs_fsync_range(file, file->f_path.dentry, pos,
-			       pos + count - 1, 1);
-}
+I just did this:
 
-and we can look into replacing the datasync flag with something more
-meaningfull later through the whole fsync stack.
+ # uname -r
+2.6.31-rc7
+ # echo :mod:ext3 > set_ftrace_filter
+ # echo function_graph > current_tracer
+ # cat trace
+# tracer: function_graph
+#
+# CPU  DURATION                  FUNCTION CALLS
+# |     |   |                     |   |   |   |
+ 1)   6.928 us    |  ext3_permission();
+ 1)   1.234 us    |  ext3_permission();
+ ------------------------------------------
+ 1)  gdm-bin-3477  =>   pcscd-2951  
+ ------------------------------------------
+
+ 1)   1.306 us    |  ext3_permission();
+ 1)   1.314 us    |  ext3_permission();
+ 1)   1.244 us    |  ext3_permission();
+ 1)   1.364 us    |  ext3_permission();
+ 1)   1.251 us    |  ext3_permission();
+ 1)   1.473 us    |  ext3_permission();
+ 1)   1.306 us    |  ext3_permission();
+ 1)   1.401 us    |  ext3_permission();
+ 1)   1.243 us    |  ext3_permission();
+ 1)   1.301 us    |  ext3_permission();
+ 1)   1.439 us    |  ext3_permission();
+ 1)   1.239 us    |  ext3_permission();
+ 1)   1.331 us    |  ext3_permission();
+ 1)   1.423 us    |  ext3_permission();
+ 1)   1.243 us    |  ext3_permission();
+ 1)   1.321 us    |  ext3_permission();
+ ------------------------------------------
+ 1)   pcscd-2951   =>  gdm-bin-3477 
+ ------------------------------------------
+
+ 1)   2.567 us    |  ext3_permission();
+ 1)   1.139 us    |  ext3_permission();
+ 1)   2.329 us    |  ext3_permission();
+ 1)   1.246 us    |  ext3_permission();
+ 1)   1.321 us    |  ext3_permission();
+ 1)   0.989 us    |  ext3_permission();
+ 1)   1.261 us    |  ext3_permission();
+ 1)   1.209 us    |  ext3_permission();
+ 1)   1.221 us    |  ext3_permission();
+ 1)   0.968 us    |  ext3_permission();
+ 1)   2.319 us    |  ext3_permission();
+ 1)   1.221 us    |  ext3_permission();
+ 1)   2.199 us    |  ext3_permission();
+ 1)   1.269 us    |  ext3_permission();
+ ------------------------------------------
+ 1)  gdm-bin-3477  =>   bash-3198   
+ ------------------------------------------
+
+ 1)   2.852 us    |  ext3_permission();
+ 1)               |  ext3_readdir() {
+ 1)   1.249 us    |    free_rb_tree_fname();
+ 1)               |    ext3_htree_fill_tree() {
+ 1)               |      htree_dirblock_to_tree() {
+ 1)               |        ext3_bread() {
+ 1)               |          ext3_getblk() {
+ 1)               |            ext3_get_blocks_handle() {
+ 1)   1.046 us    |              ext3_block_to_path();
+
+
+This is with the latest Linus git:
+
+commit 1e23502cc57cef33455ac7cb9111e3c6d991a894
+Merge: e99b1f2... 3161e45...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Wed Aug 26 20:54:48 2009 -0700
+
+-- Steve
+
