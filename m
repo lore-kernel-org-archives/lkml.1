@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbZH0Mum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZH0Mwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbZH0Mum (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 08:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZH0Mul
+	id S1752543AbZH0Mwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 08:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZH0Mwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 08:50:41 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:50961 "EHLO gir.skynet.ie"
+	Thu, 27 Aug 2009 08:52:35 -0400
+Received: from rtr.ca ([76.10.145.34]:49232 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752477AbZH0Mul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 08:50:41 -0400
-Date: Thu, 27 Aug 2009 13:50:44 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alexey Korolev <akorolex@gmail.com>
-Cc: Eric Munson <linux-mm@mgebm.net>, Alexey Korolev <akorolev@infradead.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3]HTLB mapping for drivers (take 2)
-Message-ID: <20090827125043.GD21183@csn.ul.ie>
-References: <alpine.LFD.2.00.0908172317470.32114@casper.infradead.org> <56e00de0908180329p2a37da3fp43ddcb8c2d63336a@mail.gmail.com> <202cde0e0908182248we01324em2d24b9e741727a7b@mail.gmail.com> <20090819100553.GE24809@csn.ul.ie> <202cde0e0908232314j4b90aa61pb4bcd0223ffbc087@mail.gmail.com> <20090825105341.GB21335@csn.ul.ie> <202cde0e0908270502p3ea403ddr516945084372ffc4@mail.gmail.com>
+	id S1750833AbZH0Mwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 08:52:35 -0400
+Message-ID: <4A96819D.7060708@rtr.ca>
+Date: Thu, 27 Aug 2009 08:52:45 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <202cde0e0908270502p3ea403ddr516945084372ffc4@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mike Mohr <akihana@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: expresscard hotplug not working
+References: <4746469c0908251817u225609bax66ea27261a1ef038@mail.gmail.com>
+In-Reply-To: <4746469c0908251817u225609bax66ea27261a1ef038@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 28, 2009 at 12:02:05AM +1200, Alexey Korolev wrote:
-> > > If reservation only, then it is necessary to keep a gfp_mask for a
-> > > file somewhere. Would it be Ok to keep a gfp_mask for a file in
-> > > file->private_data?
-> > >
-> >
-> > I'm not seeing where this gfp mask is coming out of if you don't have zone
-> > limitations. GFP masks don't help you get contiguity beyond the hugepage
-> > boundary.
->
-> Contiguity is different.
-
-Ok, then contiguity is independant of any GFP mask considerations. Why
-do you need a GFP mask?
-
-> It is not related to GFP mask.
-> Requirement to have large contigous buffer is dictated by h/w. Since
-> this is very specific case it will need very specific solution. So if
-> providing this, affects on usability of kernel interfaces it's better
-> to left interfaces good.
-
-You are in a bit of a bind with regards to contiguous allocations that are
-larger than a huge page. Neither the huge page pools nor the buddy allocator
-helps you much in this regard. I think it would be worth considering contiguous
-allocations larger than a huge page size as a separate follow-on problem to
-huge pages being available to a driver.
-
-> But large DMA buffers with large amount of sg regions is more common.
-> DMA engine often requires 32 address space. Plus memory must be non
-> movable.
-> That raises another question: would it be correct assumiing that
-> setting sysctl hugepages_treat_as_movable won't make huge pages
-> movable?
-
-Correct, treating them as movable allows them to be allocated from
-ZONE_MOVABLE. It's unlikely that swap support will be implemented for
-huge pages. It's more likely that migration support would be implemented
-at some point but AFAIK, there is little or not demand for that feature.
-
-> > If you did need the GFP mask, you could store it in hugetlbfs_inode_info
-> > as you'd expect all users of that inode to have the same GFP
-> > requirements, right?
->
-> Correct. The same GFP per inode is quite enough.
-> So that way works. I made a bit raw implementation, more testing and
-> tuning and I'll send out another version.
+Mike Mohr wrote:
+> Hi,
 > 
+> I think I'm having a similar problem to the fellow listed here:
+> 
+> http://kerneltrap.org/mailarchive/linux-kernel/2007/10/16/344543
+> 
+> The only difference is that no card will work at all unless it is
+> inserted before system power is turned on.  If the card is removed
+> while the system is running it stops working and will never return to
+> life unless the system is rebooted with the card in the slot.
+..
 
-Ok, but please keep the exposure of hugetlbfs internals to a minimum or
-at least have a strong justification. As it is, I'm not understanding why
-expanding Eric's helper for MAP_HUGETLB slightly and maintaining a mapping
-between your driver file and the underlying hugetlbfs file does not cover
-most of the problem.
+It's probably the b0rked PCIe hotplug support.
+The driver is way too strict about things at times,
+and as a result it doesn't work "out of the box" on
+a huge number of Dell notebooks (and possibly others).
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Just create a file called /etc/modprobe.d/pciehp,
+and stick this one line into it:
+
+   options pciehp pciehp_force=1
+
+See if that works.
+
