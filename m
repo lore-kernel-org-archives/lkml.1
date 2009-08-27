@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735AbZH0Stj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbZH0SuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751735AbZH0Stj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 14:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZH0Sti
+	id S1751889AbZH0SuX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 14:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbZH0SuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 14:49:38 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:35400 "EHLO kernel.dk"
+	Thu, 27 Aug 2009 14:50:22 -0400
+Received: from verein.lst.de ([213.95.11.210]:60407 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751507AbZH0Sti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 14:49:38 -0400
-Date: Thu, 27 Aug 2009 20:49:39 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk, jeff@garzik.org, dhowells@redhat.com
-Subject: Re: [PATCH 0/3] Convert libata pio task to slow-work
-Message-ID: <20090827184939.GK12579@kernel.dk>
-References: <1251364122-9592-1-git-send-email-jens.axboe@oracle.com> <4A967DD7.20603@kernel.org> <20090827124927.GJ12579@kernel.dk> <4A96830F.9040805@kernel.org>
-MIME-Version: 1.0
+	id S1751543AbZH0SuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 14:50:22 -0400
+Date: Thu, 27 Aug 2009 20:49:48 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       chris.mason@oracle.com, tytso@mit.edu, adilger@sun.com,
+       swhiteho@redhat.com, konishi.ryusuke@lab.ntt.co.jp, mfasheh@suse.com,
+       joel.becker@oracle.com
+Subject: Re: notes on volatile write caches vs fdatasync
+Message-ID: <20090827184948.GA1367@lst.de>
+References: <20090827011624.GA10405@lst.de> <20090827130252.GC14240@duck.novell.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A96830F.9040805@kernel.org>
+In-Reply-To: <20090827130252.GC14240@duck.novell.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27 2009, Tejun Heo wrote:
-> Hello, Jens.
-> 
-> Jens Axboe wrote:
-> >> It would be nice if merging of this series and the lazy work can be
-> >> held a bit but there's no harm in merging either.  If the concurrency
-> >> managed workqueue turns out to be a good idea, we can replace it then.
-> > 
-> > It can wait, what you describe above sounds really cool and would
-> > hopefully allow us to get rid of all workqueues (provided it scales well
-> > and doesn't fall down on cache line contention with many different
-> > instances pounding on it).
-> 
-> Almost all operations are per-cpu so cache lines shouldn't bounce too
-> much.  The only part I worry about is the part which checks whether a
-> work is currently executing on the current cpu which currently is
-> implemeted as a hash table.  The hash table is only 16 pointers long
-> and will be mostly empty so hopefully it doesn't add any significant
-> overhead.
+On Thu, Aug 27, 2009 at 03:02:52PM +0200, Jan Kara wrote:
+>   I've noticed this as well when we were tracking some problems Pavel
+> Machek found with his USB stick. I even wrote a patch at the time
+>   http://osdir.com/ml/linux-ext4/2009-01/msg00015.html
+> but it somehow died out. Now, the situation should be simpler with
+> fsync paths cleaned up... BTW: People wanted this to be configurable per
+> block device which probably makes sence...
 
-OK, we'll let time and experimentation be the judge.
-
-> > Care to post it? I know you don't think it's perfect yet, but it would
-> > make a lot more sense to throw effort into this rather than waste time
-> > on partial solutions.
-> 
-> I have this printed out code with full of red markings from proof
-> reading and flush implementation is mostly broken.  Please give me a
-> couple of days.  I'll post a rough unsplit version which at least
-> compiles with the planned changes applied by the end of the week.  :-)
-
-Alright, fair enough.
-
-One question - do the 'exposed' workqueues (the ones that drivers
-allocate/create) sitting in front of the global cpu queue allow more
-than one thread per cpu, or is that property retained for the global cpu
-queue (where it is a necessity)?
-
--- 
-Jens Axboe
-
+Yeah, that patch is pretty ugly.  We need to do these cache flushes
+in ->fsync (and ->sync_fs if any filesystem really doesn't guarantee to
+issue  transaction there after data has been written).  Adding it
+to simple_fsync too sounds good to me.
