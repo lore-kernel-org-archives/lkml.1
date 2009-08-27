@@ -1,97 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZH0P7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbZH0QDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752775AbZH0P7V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 11:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZH0P7S
+	id S1752789AbZH0QDn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 12:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZH0QDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 11:59:18 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:51131 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbZH0P7R (ORCPT
+	Thu, 27 Aug 2009 12:03:42 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58438 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752217AbZH0QDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 11:59:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MwwGF6/yk1kWVAgwQk6pvybd0GeF53TG9anSUbEUBu3unlFklxlKV+r8r2Hi4dW+rd
-         d2qGBe2jeHnakxPuc0TrwRtp0Gl5yjlt+GUfUoJ3NKNzSRvXqnTMyd8hb+/y2pbui9PQ
-         YdP7vEWQnYK+gD7TfDUodqbfX6ccctm7kLdCc=
-Date: Thu, 27 Aug 2009 17:59:14 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [GIT PULL v2] tracing/kprobes: v1 + two fixes
-Message-ID: <20090827155912.GH6058@nowhere>
-References: <1251340337-5640-1-git-send-email-fweisbec@gmail.com> <1251344087-28719-1-git-send-email-fweisbec@gmail.com> <20090827152438.GA32553@elte.hu>
+	Thu, 27 Aug 2009 12:03:42 -0400
+Date: Thu, 27 Aug 2009 12:03:42 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/profile: Fix profile_disable vs module_unload
+In-Reply-To: <20090827155939.GA11070@Krystal>
+Message-ID: <alpine.DEB.2.00.0908271201010.11745@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0908261343010.11291@gandalf.stny.rr.com> <20090826180114.GA29130@Krystal> <20090826181758.GA30248@Krystal> <alpine.DEB.2.00.0908261544590.11291@gandalf.stny.rr.com> <4A95E737.5080805@cn.fujitsu.com>
+ <alpine.DEB.2.00.0908262209460.18923@gandalf.stny.rr.com> <20090827143902.GA3552@Krystal> <alpine.DEB.2.00.0908271052370.27674@gandalf.stny.rr.com> <20090827151118.GD3552@Krystal> <alpine.DEB.2.00.0908271125030.11745@gandalf.stny.rr.com>
+ <20090827155939.GA11070@Krystal>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090827152438.GA32553@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27, 2009 at 05:24:38PM +0200, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > Ingo,
-> > 
-> > This v2 can be either pulled after tracing/kprobes (the v1) or can 
-> > be pulled alone, it is based on the previous one and addresses 
-> > reviews from Li Zefan.
-> > 
-> > Thanks,
-> > Frederic.
-> > 
-> > The following changes since commit 24851d2447830e6cba4c4b641cb73e713f312373:
-> >   Frederic Weisbecker (1):
-> >         tracing/kprobes: Dump the culprit kprobe in case of kprobe recursion
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
-> > 	tracing/kprobes-2
-> > 
-> > Frederic Weisbecker (2):
-> >       tracing: Restore the const qualifier for field names and types definition
-> >       tracing: Remove unneeded pointer casts
-> > 
-> >  include/linux/ftrace_event.h  |    6 +++---
-> >  kernel/trace/trace_events.c   |    4 ++--
-> >  kernel/trace/trace_syscalls.c |    8 ++++----
-> >  3 files changed, 9 insertions(+), 9 deletions(-)
-> 
-> I've pulled it into a staging branch (not yet in tip:master either 
-> and not yet on the road to upstream either), thanks guys!
-> 
-> I have done some brief testing. One hickup is this build failure on 
-> x86, caused by the kprobes instruction decoder self-test:
-> 
->    CHK     include/linux/compile.h
->    TEST    posttest
->  Error: 41001024:        a1 08 30 c9 41          mov    
->  0x41c93008,%eax
->  Error: objdump says 5 bytes, but insn_get_length() says 9 (attr:40000)
-> 
-> another one is this build warning:
-> 
->  In file included from include/trace/events/napi.h:5,
->                   from net/core/net-traces.c:28:
->  include/linux/tracepoint.h:285:1: warning: "TRACE_EVENT_FN" redefined
->  In file included from include/trace/define_trace.h:61,
->                   from include/trace/events/skb.h:40,
->                   from net/core/net-traces.c:27:
->  include/trace/ftrace.h:50:1: warning: this is the location of the previous definition
-> 
-> config attached.
-> 
-> 	Ingo
 
+On Thu, 27 Aug 2009, Mathieu Desnoyers wrote:
+> > 
+> > For this race to occur, the probe (code that hooks to the tracepoint) must 
+> > be in module that does not contain the tracepoint. We don't even need more 
+> > than one module, this could occur even with a core tracepoint. If a module 
+> > registers it, if it unregisters before unloading, the tracepoint may be 
+> > hit before the unregister and executing while the module is unloading.
+> > 
+> > I don't think we need to worry about this with the case of TRACE_EVENT and 
+> > ftrace.h. The reason is that the trace point and probes are always in the 
+> > same location. The MACROS set up the probe code with the modules. Thus, to 
+> > remove the module, you must also remove the tracepoint itself along with 
+> > the probe. If you can be executing in the probe, then you must have hit 
+> > the trace point. If you hit the trace point, then you are executing code 
+> > inside the module you are removing, which is a bug in the module code 
+> > itself.
+> > 
+> > Using the ftrace.h MACROS limits the use of tracepoints and this race 
+> > does not exist. I feel we are safe not needing to have the 
+> > tracepoint_synchronize_unregister within the ftrace.h code.
+> > 
+> 
+> Looks right. If you can guarantee that the probe is only called from
+> tracepoints located within the same module as the probe, you should be
+> safe without tracepoint_synchronize_unregister. It's worth adding a
+> comment in ftrace.h explaining that though.
 
-That happens also in a pure -tip master.
+Yeah, I tried to trick the code to see if I can get a probe in another 
+module than the trace point, and I get nothing but linking errors. I'm 
+sure if I work hard enough, I may trick it to do so, but if anyone does 
+that, I'll slap a big fat NAK on it ;-)
 
+OK, I modify my fix to add a comment to this effect.
+
+Thanks,
+
+-- Steve
