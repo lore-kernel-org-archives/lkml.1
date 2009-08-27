@@ -1,113 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbZH0AEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbZH0AE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754283AbZH0AEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 20:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZH0AET
+	id S1754328AbZH0AE2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 20:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZH0AE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 20:04:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51863 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753426AbZH0AET (ORCPT
+	Wed, 26 Aug 2009 20:04:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56699 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754287AbZH0AEW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 20:04:19 -0400
-Date: Wed, 26 Aug 2009 17:02:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: zohar@us.ibm.com, linux-kernel@vger.kernel.org, eparis@redhat.com,
-       torvalds@linux-foundation.org, James Morris <jmorris@namei.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] allow disabling IMA at runtime
-Message-Id: <20090826170225.7574759e.akpm@linux-foundation.org>
-In-Reply-To: <20090826021005.GD19494@bombadil.infradead.org>
-References: <20090826021005.GD19494@bombadil.infradead.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 26 Aug 2009 20:04:22 -0400
+Date: Wed, 26 Aug 2009 20:04:23 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Kara <jack@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, ocfs2-devel@oss.oracle.com,
+       Joel Becker <joel.becker@oracle.com>, Felix Blyakher <felixb@sgi.com>,
+       xfs@oss.sgi.com, Anton Altaparmakov <aia21@cantab.net>,
+       linux-ntfs-dev@lists.sourceforge.net,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-ext4@vger.kernel.org, tytso@mit.edu
+Subject: Re: [PATCH 07/17] vfs: Introduce new helpers for syncing after
+	writing to O_SYNC file or IS_SYNC inode
+Message-ID: <20090827000423.GA30076@infradead.org>
+References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-8-git-send-email-jack@suse.cz> <20090819162638.GE6150@infradead.org> <20090820121531.GC16486@duck.novell.com> <20090820162729.GA24659@infradead.org> <20090826182236.GA1290@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826182236.GA1290@infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 25 Aug 2009 22:10:05 -0400
-Kyle McMartin <kyle@mcmartin.ca> wrote:
-
-> From: Kyle McMartin <kyle@redhat.com>
+On Wed, Aug 26, 2009 at 02:22:36PM -0400, Christoph Hellwig wrote:
+> On Thu, Aug 20, 2009 at 12:27:29PM -0400, Christoph Hellwig wrote:
+> > Maybe you can help brain storming, but I still can't see any way in that
+> > the
+> > 
+> >   - write data
+> >   - write inode
+> >   - wait for data
+> > 
+> > actually is a benefit in terms of semantics (I agree that it could be
+> > faster in theory, but even that is debatable with todays seek latencies
+> > in disks)
 > 
-> Due to a memory leak in IMA that we're currently debugging in Fedora
-> rawhide, it would be nice to be able to disable that support at runtime.
-> Currently it's only able to be built in, and there's no toggle to avoid
-> initializing it.
+> Btw, another reason why our current default is actively harmful:
 > 
-> Provide one, in order to enhance debuggability. If a user can reboot a
-> machine and edit its command line, one can do a far sight worse things
-> than disabling a security precaution.
+> 	barriers
 > 
+> With volatile write caches we do have to flush the disk write cache in
+> ->fsync, either implicitly by a metadata operation, or explicitly if
+> only data changed.  Unless the filesystems waits itself for the data
+> to hit the disk like XFS or btrfs will be issue the cache flush
+> potentially before the data write has actually reached the disk cache.
 
-nits:
-
-> 
-> ---
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 7936b80..0d1b1ed 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -926,6 +926,11 @@ and is between 256 and 4096 characters. It is defined in the file
->  	ihash_entries=	[KNL]
->  			Set number of hash buckets for inode cache.
->  
-> +	ima=		[IMA]
-> +			Format: { "0" | "1" }
-> +			0 -- disable IMA.
-> +			1 -- enable IMA. (default)
-> +
->  	ima_audit=	[IMA]
->  			Format: { "0" | "1" }
->  			0 -- integrity auditing messages. (Default)
-> diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
-> index 101c512..cc7603e 100644
-> --- a/security/integrity/ima/ima_main.c
-> +++ b/security/integrity/ima/ima_main.c
-> @@ -339,10 +339,27 @@ int ima_bprm_check(struct linux_binprm *bprm)
->  	return 0;
->  }
->  
-> +static int ima_disabled = 0;
-> +static int __init ima_enabled(char *str)
-> +{
-> +	unsigned long enabled;
-> +
-> +	if (!strict_strtoul(str, 0, &enabled))
-> +		ima_disabled = enabled ? 0 : 1;
-> +	return 1;
-> +}
-
-- documentation says "0 or 1" but the implementation says "0 or non-zero".
-
-- implementation returns `1' whether or not the argument was
-  successfully parsed.
-
-  What happens if a __setup() functions returns non-1?
-
-  <spends a while fossicking through prehistory and RustyCode>
-
-  From my reading of kernel/params.c:parse_args(), every __setup()
-  function which returns `1' should result in printk("%s: `%s' invalid
-  for parameter `%s'), so I'm all confused and giving up.
-
-> +__setup("ima=", ima_enabled);
-
-Are we supposed to use core_param() nowadays?
-
->  static int __init init_ima(void)
->  {
->  	int error;
->  
-> +	if (ima_disabled) {
-> +		pr_info("IMA disabled at user request.\n");
-> +		return 0;
-> +	}
-> +
->  	ima_iintcache_init();
->  	error = ima_init();
->  	ima_initialized = 1;
-
+Ok, this one failed the reality check - no matter how hard I tried
+I could not reproduce that case in my test harness.  It turns out
+cache flush request are quite sensibly treated as barriers by the block
+layer and thus we drain the queue before issueing the cache flush.
