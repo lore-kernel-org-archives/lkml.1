@@ -1,91 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750886AbZH0RD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750961AbZH0RDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750886AbZH0RD0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 13:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbZH0RDY
+	id S1750961AbZH0RDp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 13:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZH0RDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 13:03:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36759 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbZH0RDX (ORCPT
+	Thu, 27 Aug 2009 13:03:44 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:34803 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750738AbZH0RDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 13:03:23 -0400
-Date: Thu, 27 Aug 2009 13:03:24 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Gregory Haskins <gregory.haskins@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: FTRACE: regression in 31-rc7
-In-Reply-To: <4A96BB40.1070306@gmail.com>
-Message-ID: <alpine.DEB.2.00.0908271301200.29943@gandalf.stny.rr.com>
-References: <4A96B55C.10001@gmail.com> <20090827164007.GA30679@elte.hu> <4A96BB40.1070306@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 27 Aug 2009 13:03:43 -0400
+Subject: [PATCH 0/2] kmemleak: x86-related patches
+To: x86@kernel.org, linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Thu, 27 Aug 2009 18:02:47 +0100
+Message-ID: <20090827165927.27901.97270.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-rc2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Aug 2009 17:02:47.0895 (UTC) FILETIME=[34156670:01CA2738]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Thu, 27 Aug 2009, Gregory Haskins wrote:
+I plan to submit these two x86-related patches for 2.6.32. Are the x86
+people OK with them (so that I can add the relevant ack)?
 
-> Ingo Molnar wrote:
-> > * Gregory Haskins <gregory.haskins@gmail.com> wrote:
-> > 
-> >> Hi Steve,
-> >>
-> >> I just moved from -rc6 to -rc7, and I noticed that the 
-> >> function-graph tracer suddenly stopped working properly: I do not 
-> >> see any output from seeming most things except a handful of 
-> >> interrupt related events.  I currently believe it may be an issue 
-> >> with tracing modules.
-> >>
-> >> I haven't had a chance to bisect yet, but I did confirm that 
-> >> reverting the -rc7 merge restores the previous tracer behavior.  
-> >> Any help/pointers appreciated.
-> > 
+Thanks.
 
 
-> 
-> Yeah, sorry.  I should have provided more detail.  Usually I'd hit Steve
-> up directly on IRC and he'd point me in the right direction, but he
-> wasn't online today.  But I guess the "IRC terseness" carried on to the
-> mail. ;).  I guess I was wondering if anyone else had seen this before
-> digging in.
+Catalin Marinas (2):
+      kmemleak: Inform kmemleak about kernel stack allocation
+      kmemleak: Ignore the aperture memory hole on x86_64
 
-Yeah, my IRC box is my laptop that is overheating. I'm currently backing 
-it up and I'm going to take it apart today. Hopefully if all goes well, 
-I'll be back on IRC with a cooler laptop ;-)
 
-> 
-> I digress.
-> 
-> All I was doing was enabling the basic function-graph tracer, enabling
-> the tracer, run a test, stopping the tracer, and taking a look at the
-> "trace" output by grepping for functions that I knew should have hit.
-> 
-> In -rc7, grep turns up empty and I can't seem to find evidence that any
-> of my code was hit, even though other utilities (like top) indicated my
-> code was indeed running (I could see kthreads belonging to my module use
-> cpu, for instance).  In addition, the test passes so its not like it may
-> have skipped over the function I was looking for.  Its just not being
-> traced for some reason.
-> 
-> Reverting back to -rc6 and a simple recompile + repeat of the same steps
-> indeed restored the behavior that I was accustomed to.
-> 
-> I noticed that both the output that I could observe, plus the output you
-> provide above seem to be core-kernel related functions.  I know all the
-> traces I was looking for were module related.  Therefore, I suspect that
-> somehow module code (or at least, my module code) is not being
-> instrumented for some reason.
+ Documentation/kmemleak.txt         |   11 +++++------
+ arch/x86/include/asm/thread_info.h |    7 ++++++-
+ arch/x86/kernel/aperture_64.c      |    6 ++++++
+ arch/x86/kernel/pci-dma.c          |    6 ++++++
+ arch/x86/kernel/process.c          |    2 ++
+ kernel/fork.c                      |    7 ++++++-
+ mm/kmemleak.c                      |   22 ----------------------
+ 7 files changed, 31 insertions(+), 30 deletions(-)
 
-Hmm, so you think something with the modules broke? I can test that out 
-here.
-
-Thanks,
-
--- Steve
-
+-- 
+Catalin
