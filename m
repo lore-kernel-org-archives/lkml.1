@@ -1,90 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475AbZH0HeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751520AbZH0Hep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751475AbZH0HeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 03:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZH0HeU
+	id S1751520AbZH0Hep (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 03:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZH0Heo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 03:34:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42357 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297AbZH0HeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 03:34:19 -0400
-Message-ID: <4A9636EB.7020408@kernel.org>
-Date: Thu, 27 Aug 2009 16:34:03 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Thu, 27 Aug 2009 03:34:44 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33164
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751309AbZH0Hem (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 03:34:42 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: david@lang.hm
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
+Date: Thu, 27 Aug 2009 02:34:40 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
+Cc: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
+       Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <4A92F6FC.4060907@redhat.com> <200908270106.15032.rob@landley.net> <alpine.DEB.2.00.0908262342120.6822@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.2.00.0908262342120.6822@asgard.lang.hm>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: make use of inc/dec conditional
-References: <4A8BCA850200007800010836@vpn.id2.novell.com> <4A8C2CDE.1010405@zytor.com> <4A8D13740200007800010BC7@vpn.id2.novell.com>
-In-Reply-To: <4A8D13740200007800010BC7@vpn.id2.novell.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 27 Aug 2009 07:34:06 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200908270234.41996.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Jan.
+On Thursday 27 August 2009 01:54:30 david@lang.hm wrote:
+> On Thu, 27 Aug 2009, Rob Landley wrote:
+> > On Wednesday 26 August 2009 07:28:13 Theodore Tso wrote:
+> >> On Wed, Aug 26, 2009 at 01:17:52PM +0200, Pavel Machek wrote:
+> >>>> Metadata takes up such a small part of the disk that fscking
+> >>>> it and finding it to be OK is absolutely no guarantee that
+> >>>> the data on the filesystem has not been horribly mangled.
+> >>>>
+> >>>> Personally, what I care about is my data.
+> >>>>
+> >>>> The metadata is just a way to get to my data, while the data
+> >>>> is actually important.
+> >>>
+> >>> Personally, I care about metadata consistency, and ext3 documentation
+> >>> suggests that journal protects its integrity. Except that it does not
+> >>> on broken storage devices, and you still need to run fsck there.
+> >>
+> >> Caring about metadata consistency and not data is just weird, I'm
+> >> sorry.  I can't imagine anyone who actually *cares* about what they
+> >> have stored, whether it's digital photographs of child taking a first
+> >> step, or their thesis research, caring about more about the metadata
+> >> than the data.  Giving advice that pretends that most users have that
+> >> priority is Just Wrong.
+> >
+> > I thought the reason for that was that if your metadata is horked,
+> > further writes to the disk can trash unrelated existing data because it's
+> > lost track of what's allocated and what isn't.  So back when the
+> > assumption was "what's written stays written", then keeping the metadata
+> > sane was still darn important to prevent normal operation from
+> > overwriting unrelated existing data.
+> >
+> > Then Pavel notified us of a situation where interrupted writes to the
+> > disk can trash unrelated existing data _anyway_, because the flash block
+> > size on the 16 gig flash key I bought retail at Fry's is 2 megabytes, and
+> > the filesystem thinks it's 4k or smaller.  It seems like what _broke_ was
+> > the assumption that the filesystem block size >= the disk block size, and
+> > nobody noticed for a while. (Except the people making jffs2 and friends,
+> > anyway.)
+> >
+> > Today we have cheap plentiful USB keys that act like hard drives, except
+> > that their write block size isn't remotely the same as hard drives', but
+> > they pretend it is, and then the block wear levelling algorithms fuzz
+> > things further.  (Gee, a drive controller lying about drive geometry, the
+> > scsi crowd should feel right at home.)
+>
+> actually, you don't know if your USB key works that way or not.
 
-Jan Beulich wrote:
->>>> "H. Peter Anvin" <hpa@zytor.com> 19.08.09 18:48 >>>
->> On 08/19/2009 12:48 AM, Jan Beulich wrote:
->>> According to gcc's instruction selection, inc/dec can be used without
->>> penalty on most CPU models, but should be avoided on others. Hence we
->>> should have a config option controlling the use of inc/dec, and
->>> respective abstraction macros to avoid making the resulting code too
->>> ugly. There are a few instances of inc/dec that must be retained in
->>> assembly code, due to that code's dependency on the instruction not
->>> changing the carry flag.
->> One thing: I doubt it matters one measurable iota when it comes to
->> locked operations.
-> 
-> Okay, I think I agree to this point.
-> 
->> Furthermore:
->>
->> -		     "decl %2	;\n"
->> +		     _ASM_DECL "%2	;\n"
->> 		     "jne 1b		;\n"
->> 		     "adcl $0, %0	;\n"
->>
->> It looks to me that the carry flag is live across the dec there.  The
-> 
-> Indeed, I overlooked that when going through and checking for the
-> CF-is-live instances.
-> 
->> other csum code look scary to me too.
->>
->> The rest of them look technically okay, but you're bloating them by two
->> bytes (one byte in 64-bit mode) for every instance.  You may want to
->> consider if any particular instance is more icache-critical than
->> stall-critical.  This is probably more of a concern for inlines than for
->> regular single-instance code like the string operations.
-> 
-> So the background really is that I wanted to introduce a percpu_inc()
-> operation subsequently (here with the goal to reduce code size by one
-> byte in a couple of places - initially just for inc_irq_stat(), didn't look
-> for other potential users), but then realized that it wouldn't be nice
-> to unconditionally introduce a possible stall here. Hence I went and
-> first created said config option, and then also went through and
-> identified the uses of inc/dec that could be replaced based on that
-> config option.
+Um, yes, I think I do.
 
-Given that we're already sprinkling inc/dec's via atomic ops, I think
-this part can proceed independently.  Also, if the only affected
-machine is the hot p4, I don't think it would worth any amount of
-code.  :-)
+> Pavel has ssome that do, that doesn't mean that all flash drives do
 
-For the percpu part, wouldn't it be better to have
-__builtin_contant_p() on the add/sub parameter, use inc/dec if the
-param is constant and 1 and make simple wrapper for inc/dec if still
-necessary?
+Pretty much all the ones that present a USB disk interface to the outside 
+world and then thus have to do hardware levelling.  Here's Valerie Aurora on 
+the topic:
 
-Thanks.
+http://valhenson.livejournal.com/25228.html
 
+>Let's start with hardware wear-leveling. Basically, nearly all practical
+> implementations of it suck. You'd imagine that it would spread out writes
+> over all the blocks in the drive, only rewriting any particular block after
+> every other block has been written. But I've heard from experts several
+> times that hardware wear-leveling can be as dumb as a ring buffer of 12
+> blocks; each time you write a block, it pulls something out of the queue
+> and sticks the old block in. If you only write one block over and over,
+> this means that writes will be spread out over a staggering 12 blocks! My
+> direct experience working with corrupted flash with built-in wear-leveling
+> is that corruption was centered around frequently written blocks (with
+> interesting patterns resulting from the interleaving of blocks from
+> different erase blocks). As a file systems person, I know what it takes to
+> do high-quality wear-leveling: it's called a log-structured file system and
+> they are non-trivial pieces of software. Your average consumer SSD is not
+> going to have sufficient hardware to implement even a half-assed
+> log-structured file system, so clearly it's going to be a lot stupider than
+> that.
+
+Back to you:
+
+> when you do a write to a flash drive you have to do the following items
+>
+> 1. allocate an empty eraseblock to put the data on
+>
+> 2. read the old eraseblock
+>
+> 3. merge the incoming write to the eraseblock
+>
+> 4. write the updated data to the flash
+>
+> 5. update the flash trnslation layer to point reads at the new location
+> instead of the old location.
+>
+> now if the flash drive does things in this order you will not loose any
+> previously written data.
+
+That's what something like jffs2 will do, sure.  (And note that mounting those 
+suckers is slow while it reads the whole disk to figure out what order to put 
+the chunks in.)
+
+However, your average consumer level device A) isn't very smart, B) is judged 
+almost entirely by price/capacity ratio and thus usually won't even hide 
+capacity for bad block remapping.  You expect them to have significant hidden 
+capacity to do safer updates with when customers aren't demanding it yet?
+
+> if the flash drive does step 5 before it does step 4, then you have a
+> window where a crash can loose data (and no btrfs won't survive any better
+> to have a large chunk of data just disappear)
+>
+> it's possible that some super-cheap flash drives
+
+I've never seen one that presented a USB disk interface that _didn't_ do this.  
+(Not that this observation means much.)  Neither the windows nor the Macintosh 
+world is calling for this yet.  Even the Linux guys barely know about it.  And 
+these are the same kinds of manufacturers that NOPed out the flush commands to 
+make their benchmarks look better...
+
+> but if the device doesn't have a flash translation layer, then repeated
+> writes to any one sector will kill the drive fairly quickly. (updates to
+> the FAT would kill the sectors the FAT, journal, root directory, or
+> superblock lives in due to the fact that every change to the disk requires
+> an update to this file for example)
+
+Yup.  It's got enough of one to get past the warantee, but beyond that they're 
+intended for archiving and sneakernet, not for running compiles on.
+
+> > That said, ext3's assumption that filesystem block size always >= disk
+> > update block size _is_ a fundamental part of this problem, and one that
+> > isn't shared by things like jffs2, and which things like btrfs might be
+> > able to address if they try, by adding awareness of the real media update
+> > granularity to their node layout algorithms.  (Heck, ext2 has a stripe
+> > size parameter already. Does setting that appropriately for your raid
+> > make this suck less?  I haven't heard anybody comment on that one yet...)
+>
+> I thought that that assumption was in the VFS layer, not in any particular
+> filesystem
+
+The VFS layer cares about how to talk to the backing store?  I thought that 
+was the filesystem driver's job...
+
+I wonder how jffs2 gets around it, then?  (Or for that matter, squashfs...)
+
+> David Lang
+
+Rob
 -- 
-tejun
+Latency is more important than throughput. It's that simple. - Linus Torvalds
