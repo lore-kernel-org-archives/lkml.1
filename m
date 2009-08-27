@@ -1,109 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751396AbZH0DE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751323AbZH0DHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751396AbZH0DE0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 23:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZH0DEZ
+	id S1751323AbZH0DHP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 23:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbZH0DHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 23:04:25 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53737 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750924AbZH0DEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 23:04:24 -0400
-Message-ID: <4A95F78F.8010307@cn.fujitsu.com>
-Date: Thu, 27 Aug 2009 11:03:43 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 26 Aug 2009 23:07:14 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54933 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbZH0DHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 23:07:13 -0400
+Message-ID: <4A95F855.5010706@garzik.org>
+Date: Wed, 26 Aug 2009 23:07:01 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] tracing: poll-able ring_buffer consumer
-Content-Type: text/plain; charset=UTF-8
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: Tejun Heo <htejun@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Georgi Chulkov <g.chulkov@jacobs-university.de>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Mark Lord <liml@rtr.ca>
+Subject: Re: ATA device reset, shoud I be concerned?
+References: <200801140019.20668.g.chulkov@jacobs-university.de>	<20080115025435.1e21b703.akpm@linux-foundation.org>	<20080115113552.75731bf8@lxorguk.ukuu.org.uk>	<4794501E.90306@gmail.com>	<20080121130256.2443d7c1@lxorguk.ukuu.org.uk>	<47949AA4.9090601@gmail.com> <20080121141425.45aa9c61@lxorguk.ukuu.org.uk> <4794ACAF.70505@gmail.com> <4794AD3F.40309@gmail.com> <4A95F212.5060008@gmail.com>
+In-Reply-To: <4A95F212.5060008@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/26/2009 10:40 PM, Robert Hancock wrote:
+> On 01/21/2008 08:33 AM, Tejun Heo wrote:
+>> Tejun Heo wrote:
+>>> IMHO, losing media error information is much better than locking up a
+>>> machine hard. We can start white listing known good controllers but I'm
+>>> skeptical how much benefit it will bring.
+>>
+>> Just a data point, even ICHs lock up after PHY event if the wrong TF
+>> register is accessed. I just don't think tempting with TF regs after
+>> timeout is worth the cost.
+>
+> Nvidia CK804 SATA controllers appear to also explode on reading TF
+> registers after media errors in certain cases. (They tend to either
+> lockup the machine or throw HyperTransport timeout machine check
+> exceptions). I suspect those error paths aren't well tested (except that
+> it even explodes in Windows with the default Microsoft IDE driver, when
+> reading a scratched DVD on a SATA drive, for example.)
 
-makes consumer side(per_cpu/cpu#/trace_pipe_raw) poll-able
+Well, reading TF when DMA or other operation is enabled is a big 
+no-no...  according to spec.  If we are touching TF before data xfer 
+operation is completed, and host controller has a chance to receive D2H 
+FIS, TF is undefined (except Status, in some cases).
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index b81ceed..6fd2664 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -4,6 +4,7 @@
- #include <linux/kmemcheck.h>
- #include <linux/mm.h>
- #include <linux/seq_file.h>
-+#include <linux/poll.h>
- 
- struct ring_buffer;
- struct ring_buffer_iter;
-@@ -188,6 +189,8 @@ int ring_buffer_read_page(struct ring_buffer *buffer, void **data_page,
- void ring_buffer_notify(struct ring_buffer *buffer);
- signed long ring_buffer_wait_page(struct ring_buffer *buffer, int cpu,
- 		signed long timeout);
-+unsigned int ring_buffer_poll(struct ring_buffer *buffer, int cpu,
-+		struct file *filp, poll_table *poll_table);
- 
- struct trace_seq;
- 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index db82b38..c7c23da 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -3389,6 +3389,22 @@ ring_buffer_wait_page(struct ring_buffer *buffer, int cpu, signed long timeout)
- 			rb_page_available(cpu_buffer), timeout);
- }
- 
-+unsigned int ring_buffer_poll(struct ring_buffer *buffer, int cpu,
-+		struct file *filp, poll_table *poll_table)
-+{
-+	struct ring_buffer_per_cpu *cpu_buffer = buffer->buffers[cpu];
-+
-+	if (rb_page_available(cpu_buffer))
-+		return POLLIN | POLLRDNORM;
-+
-+	poll_wait(filp, &cpu_buffer->sleepers, poll_table);
-+
-+	if (rb_page_available(cpu_buffer))
-+		return POLLIN | POLLRDNORM;
-+
-+	return 0;
-+}
-+
- /**
-  * ring_buffer_size - return the size of the ring buffer (in bytes)
-  * @buffer: The ring buffer.
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index ee435ed..c2aa14c 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3294,6 +3294,14 @@ static int tracing_buffers_release(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
-+static
-+unsigned int tracing_buffers_poll(struct file *filp, poll_table *poll_table)
-+{
-+	struct ftrace_buffer_info *info = filp->private_data;
-+
-+	return ring_buffer_poll(info->tr->buffer, info->cpu, filp, poll_table);
-+}
-+
- struct buffer_ref {
- 	struct ring_buffer	*buffer;
- 	void			*page;
-@@ -3459,6 +3467,7 @@ static const struct file_operations tracing_buffers_fops = {
- 	.open		= tracing_buffers_open,
- 	.read		= tracing_buffers_read,
- 	.release	= tracing_buffers_release,
-+	.poll		= tracing_buffers_poll,
- 	.splice_read	= tracing_buffers_splice_read,
- 	.llseek		= no_llseek,
- };
+	Jeff
+
 
 
 
