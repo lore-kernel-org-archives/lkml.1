@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbZH0AE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbZH0AE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328AbZH0AE2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 26 Aug 2009 20:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZH0AE1
+	id S1754346AbZH0AE7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 26 Aug 2009 20:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbZH0AE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 26 Aug 2009 20:04:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56699 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754287AbZH0AEW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 26 Aug 2009 20:04:22 -0400
-Date: Wed, 26 Aug 2009 20:04:23 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Kara <jack@suse.cz>
-Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>, ocfs2-devel@oss.oracle.com,
-       Joel Becker <joel.becker@oracle.com>, Felix Blyakher <felixb@sgi.com>,
-       xfs@oss.sgi.com, Anton Altaparmakov <aia21@cantab.net>,
-       linux-ntfs-dev@lists.sourceforge.net,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-ext4@vger.kernel.org, tytso@mit.edu
-Subject: Re: [PATCH 07/17] vfs: Introduce new helpers for syncing after
-	writing to O_SYNC file or IS_SYNC inode
-Message-ID: <20090827000423.GA30076@infradead.org>
-References: <1250697884-22288-1-git-send-email-jack@suse.cz> <1250697884-22288-8-git-send-email-jack@suse.cz> <20090819162638.GE6150@infradead.org> <20090820121531.GC16486@duck.novell.com> <20090820162729.GA24659@infradead.org> <20090826182236.GA1290@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090826182236.GA1290@infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 26 Aug 2009 20:04:58 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:39336 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754276AbZH0AE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 26 Aug 2009 20:04:57 -0400
+Date: Thu, 27 Aug 2009 10:04:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: michael@ellerman.id.au
+Cc: Alemao <xcarandiru@gmail.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: PPC driver - generic bus width
+Message-Id: <20090827100452.b872c7fd.sfr@canb.auug.org.au>
+In-Reply-To: <1251296565.7492.7.camel@concordia>
+References: <d970ff420908260625q2d34bc10p62241218f022b5c2@mail.gmail.com>
+	<1251296565.7492.7.camel@concordia>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__27_Aug_2009_10_04_52_+1000_Nxqm+2Yz+bwuMFrG"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 02:22:36PM -0400, Christoph Hellwig wrote:
-> On Thu, Aug 20, 2009 at 12:27:29PM -0400, Christoph Hellwig wrote:
-> > Maybe you can help brain storming, but I still can't see any way in that
-> > the
-> > 
-> >   - write data
-> >   - write inode
-> >   - wait for data
-> > 
-> > actually is a benefit in terms of semantics (I agree that it could be
-> > faster in theory, but even that is debatable with todays seek latencies
-> > in disks)
-> 
-> Btw, another reason why our current default is actively harmful:
-> 
-> 	barriers
-> 
-> With volatile write caches we do have to flush the disk write cache in
-> ->fsync, either implicitly by a metadata operation, or explicitly if
-> only data changed.  Unless the filesystems waits itself for the data
-> to hit the disk like XFS or btrfs will be issue the cache flush
-> potentially before the data write has actually reached the disk cache.
+--Signature=_Thu__27_Aug_2009_10_04_52_+1000_Nxqm+2Yz+bwuMFrG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, this one failed the reality check - no matter how hard I tried
-I could not reproduce that case in my test harness.  It turns out
-cache flush request are quite sensibly treated as barriers by the block
-layer and thus we drain the queue before issueing the cache flush.
+On Thu, 27 Aug 2009 00:22:45 +1000 Michael Ellerman <michael@ellerman.id.au=
+> wrote:
+>
+> > struct device_info_t {
+> > 	void (*read)();
+> > 	void (*write)();
+
+These are not prototypes because there is no parameter list (use "void" for=
+ empty).
+
+> > };
+> >=20
+> > static int __devinit device_probe()
+
+This isn't a prototype either.
+
+> > cc1: warnings being treated as errors
+> > drivers/dev_test.c:37: warning: function declaration isn't a prototype
+> > drivers/dev_test.c:38: warning: function declaration isn't a prototype
+> > drivers/dev_test.c: In function 'device_probe':
+> > drivers/dev_test.c:113: warning: assignment from incompatible pointer
+> > type
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__27_Aug_2009_10_04_52_+1000_Nxqm+2Yz+bwuMFrG
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqVzaQACgkQjjKRsyhoI8yRfQCgvq09fSY3N41YiJ9Vm0xACqnL
+5bkAni6e6kP69a50HmamFzaEF0+OCfWQ
+=saha
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__27_Aug_2009_10_04_52_+1000_Nxqm+2Yz+bwuMFrG--
