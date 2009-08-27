@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751213AbZH0RWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751289AbZH0RWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751213AbZH0RWG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 13:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZH0RWE
+	id S1751289AbZH0RWM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 13:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbZH0RWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 13:22:04 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41597 "EHLO mx1.redhat.com"
+	Thu, 27 Aug 2009 13:22:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:30620 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbZH0RWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 13:22:03 -0400
+	id S1751042AbZH0RWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 13:22:07 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip tracing/kprobes 1/6] kprobes/x86: Call BUG() when
-	reentering probe into KPROBES_HIT_SS
+Subject: [PATCH -tip tracing/kprobes 2/6] kprobes/x86-64: Allow to reenter
+	probe on post_handler
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>,
@@ -20,8 +20,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Ingo Molnar <mingo@elte.hu>
-Date: Thu, 27 Aug 2009 13:22:58 -0400
-Message-ID: <20090827172258.8246.61889.stgit@localhost.localdomain>
+Date: Thu, 27 Aug 2009 13:23:04 -0400
+Message-ID: <20090827172304.8246.4822.stgit@localhost.localdomain>
 In-Reply-To: <20090827152539.GE6058@nowhere>
 References: <20090827152539.GE6058@nowhere>
 User-Agent: StGIT/0.14.3
@@ -32,19 +32,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Call BUG() when a probe have been hit on the way of kprobe processing path,
-because that kind of probes are currently unrecoverable (recovering it will
-cause an infinit loop and stack overflow).
-
-The original code seems to assume that it will be caused by an int3 which
-another subsystem inserted on out-of-line singlestep buffer if the hitting
-probe is same as current probe. However, in that case, int3-hitting-address
-is on the out-of-line buffer and should be different from first (current)
-int3 address.
-Thus, I decided to remove the code.
-
-I also removes arch_disarm_kprobe() because it will involve other stuffs
-in text_poke().
+Allow to reenter probe on the post_handler of another probe on x86-64,
+because x86-64 already allows reentering int3.
+In that case, reentered probe just increases kp.nmissed and returns.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
@@ -52,46 +42,31 @@ Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
 
- arch/x86/kernel/kprobes.c |   26 ++++++++++----------------
- 1 files changed, 10 insertions(+), 16 deletions(-)
+ arch/x86/kernel/kprobes.c |   11 -----------
+ 1 files changed, 0 insertions(+), 11 deletions(-)
 
 diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index ecee3d2..e0fb615 100644
+index e0fb615..c5f1f11 100644
 --- a/arch/x86/kernel/kprobes.c
 +++ b/arch/x86/kernel/kprobes.c
-@@ -482,22 +482,16 @@ static int __kprobes reenter_kprobe(struct kprobe *p, struct pt_regs *regs,
- 		kcb->kprobe_status = KPROBE_REENTER;
- 		break;
- 	case KPROBE_HIT_SS:
--		if (p == kprobe_running()) {
--			regs->flags &= ~X86_EFLAGS_TF;
--			regs->flags |= kcb->kprobe_saved_flags;
--			return 0;
--		} else {
--			/* A probe has been hit in the codepath leading up
--			 * to, or just after, single-stepping of a probed
--			 * instruction. This entire codepath should strictly
--			 * reside in .kprobes.text section.
--			 * Raise a BUG or we'll continue in an endless
--			 * reentering loop and eventually a stack overflow.
--			 */
--			arch_disarm_kprobe(p);
--			dump_kprobe(p);
--			BUG();
--		}
-+		/* A probe has been hit in the codepath leading up to, or just
-+		 * after, single-stepping of a probed instruction. This entire
-+		 * codepath should strictly reside in .kprobes.text section.
-+		 * Raise a BUG or we'll continue in an endless reentering loop
-+		 * and eventually a stack overflow.
-+		 */
-+		printk(KERN_WARNING "Unrecoverable kprobe detected at %p.\n",
-+		       p->addr);
-+		dump_kprobe(p);
-+		BUG();
- 	default:
- 		/* impossible cases */
- 		WARN_ON(1);
+@@ -463,17 +463,6 @@ static int __kprobes reenter_kprobe(struct kprobe *p, struct pt_regs *regs,
+ {
+ 	switch (kcb->kprobe_status) {
+ 	case KPROBE_HIT_SSDONE:
+-#ifdef CONFIG_X86_64
+-		/* TODO: Provide re-entrancy from post_kprobes_handler() and
+-		 * avoid exception stack corruption while single-stepping on
+-		 * the instruction of the new probe.
+-		 */
+-		arch_disarm_kprobe(p);
+-		regs->ip = (unsigned long)p->addr;
+-		reset_current_kprobe();
+-		preempt_enable_no_resched();
+-		break;
+-#endif
+ 	case KPROBE_HIT_ACTIVE:
+ 		save_previous_kprobe(kcb);
+ 		set_current_kprobe(p, regs, kcb);
 
 
 -- 
