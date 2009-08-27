@@ -1,182 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751520AbZH0Hep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751533AbZH0Hgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751520AbZH0Hep (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 03:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZH0Heo
+	id S1751533AbZH0Hgx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 03:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZH0Hgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 03:34:44 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33164
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbZH0Hem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 03:34:42 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: david@lang.hm
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
-Date: Thu, 27 Aug 2009 02:34:40 -0500
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
-Cc: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-       Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-References: <4A92F6FC.4060907@redhat.com> <200908270106.15032.rob@landley.net> <alpine.DEB.2.00.0908262342120.6822@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.2.00.0908262342120.6822@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 27 Aug 2009 03:36:53 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54727 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751470AbZH0Hgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 03:36:52 -0400
+Subject: Re: [PATCH -v2 0/7] powerpc: use asm-generic/dma-mapping-common.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.orga,
+       beckyb@kernel.crashing.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090827072208.GA2131@elte.hu>
+References: <1249448908-18985-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <1250142522.3587.110.camel@pasglop>
+	 <20090813160625B.fujita.tomonori@lab.ntt.co.jp>
+	 <20090813074131.GH12143@elte.hu> <1250150981.3587.157.camel@pasglop>
+	 <20090813085505.GA10671@elte.hu> <1251342735.20467.2.camel@pasglop>
+	 <1251343070.20467.3.camel@pasglop>  <20090827072208.GA2131@elte.hu>
+Content-Type: text/plain
+Date: Thu, 27 Aug 2009 17:36:40 +1000
+Message-Id: <1251358600.20467.44.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908270234.41996.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 27 August 2009 01:54:30 david@lang.hm wrote:
-> On Thu, 27 Aug 2009, Rob Landley wrote:
-> > On Wednesday 26 August 2009 07:28:13 Theodore Tso wrote:
-> >> On Wed, Aug 26, 2009 at 01:17:52PM +0200, Pavel Machek wrote:
-> >>>> Metadata takes up such a small part of the disk that fscking
-> >>>> it and finding it to be OK is absolutely no guarantee that
-> >>>> the data on the filesystem has not been horribly mangled.
-> >>>>
-> >>>> Personally, what I care about is my data.
-> >>>>
-> >>>> The metadata is just a way to get to my data, while the data
-> >>>> is actually important.
-> >>>
-> >>> Personally, I care about metadata consistency, and ext3 documentation
-> >>> suggests that journal protects its integrity. Except that it does not
-> >>> on broken storage devices, and you still need to run fsck there.
-> >>
-> >> Caring about metadata consistency and not data is just weird, I'm
-> >> sorry.  I can't imagine anyone who actually *cares* about what they
-> >> have stored, whether it's digital photographs of child taking a first
-> >> step, or their thesis research, caring about more about the metadata
-> >> than the data.  Giving advice that pretends that most users have that
-> >> priority is Just Wrong.
-> >
-> > I thought the reason for that was that if your metadata is horked,
-> > further writes to the disk can trash unrelated existing data because it's
-> > lost track of what's allocated and what isn't.  So back when the
-> > assumption was "what's written stays written", then keeping the metadata
-> > sane was still darn important to prevent normal operation from
-> > overwriting unrelated existing data.
-> >
-> > Then Pavel notified us of a situation where interrupted writes to the
-> > disk can trash unrelated existing data _anyway_, because the flash block
-> > size on the 16 gig flash key I bought retail at Fry's is 2 megabytes, and
-> > the filesystem thinks it's 4k or smaller.  It seems like what _broke_ was
-> > the assumption that the filesystem block size >= the disk block size, and
-> > nobody noticed for a while. (Except the people making jffs2 and friends,
-> > anyway.)
-> >
-> > Today we have cheap plentiful USB keys that act like hard drives, except
-> > that their write block size isn't remotely the same as hard drives', but
-> > they pretend it is, and then the block wear levelling algorithms fuzz
-> > things further.  (Gee, a drive controller lying about drive geometry, the
-> > scsi crowd should feel right at home.)
->
-> actually, you don't know if your USB key works that way or not.
+On Thu, 2009-08-27 at 09:22 +0200, Ingo Molnar wrote:
+> 
+> ah, yes, they are stable/fine. I've put it into a separate branch 
+> for you.
+> 
+> Ben, please pull the latest iommu-for-powerpc git tree from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+> iommu-for-powerpc
+> 
+> And i could pull back the new bits from you once you have the new 
+> patches added and are happy with them. [I suspect you dont want the 
+> diffstat below in the powerpc tree]
+> 
+> That was the plan, right?
 
-Um, yes, I think I do.
+Sure, no problem. I'll stick that in powerpc-next tomorrow hopefully.
 
-> Pavel has ssome that do, that doesn't mean that all flash drives do
+Cheers,
+Ben.
 
-Pretty much all the ones that present a USB disk interface to the outside 
-world and then thus have to do hardware levelling.  Here's Valerie Aurora on 
-the topic:
-
-http://valhenson.livejournal.com/25228.html
-
->Let's start with hardware wear-leveling. Basically, nearly all practical
-> implementations of it suck. You'd imagine that it would spread out writes
-> over all the blocks in the drive, only rewriting any particular block after
-> every other block has been written. But I've heard from experts several
-> times that hardware wear-leveling can be as dumb as a ring buffer of 12
-> blocks; each time you write a block, it pulls something out of the queue
-> and sticks the old block in. If you only write one block over and over,
-> this means that writes will be spread out over a staggering 12 blocks! My
-> direct experience working with corrupted flash with built-in wear-leveling
-> is that corruption was centered around frequently written blocks (with
-> interesting patterns resulting from the interleaving of blocks from
-> different erase blocks). As a file systems person, I know what it takes to
-> do high-quality wear-leveling: it's called a log-structured file system and
-> they are non-trivial pieces of software. Your average consumer SSD is not
-> going to have sufficient hardware to implement even a half-assed
-> log-structured file system, so clearly it's going to be a lot stupider than
-> that.
-
-Back to you:
-
-> when you do a write to a flash drive you have to do the following items
->
-> 1. allocate an empty eraseblock to put the data on
->
-> 2. read the old eraseblock
->
-> 3. merge the incoming write to the eraseblock
->
-> 4. write the updated data to the flash
->
-> 5. update the flash trnslation layer to point reads at the new location
-> instead of the old location.
->
-> now if the flash drive does things in this order you will not loose any
-> previously written data.
-
-That's what something like jffs2 will do, sure.  (And note that mounting those 
-suckers is slow while it reads the whole disk to figure out what order to put 
-the chunks in.)
-
-However, your average consumer level device A) isn't very smart, B) is judged 
-almost entirely by price/capacity ratio and thus usually won't even hide 
-capacity for bad block remapping.  You expect them to have significant hidden 
-capacity to do safer updates with when customers aren't demanding it yet?
-
-> if the flash drive does step 5 before it does step 4, then you have a
-> window where a crash can loose data (and no btrfs won't survive any better
-> to have a large chunk of data just disappear)
->
-> it's possible that some super-cheap flash drives
-
-I've never seen one that presented a USB disk interface that _didn't_ do this.  
-(Not that this observation means much.)  Neither the windows nor the Macintosh 
-world is calling for this yet.  Even the Linux guys barely know about it.  And 
-these are the same kinds of manufacturers that NOPed out the flush commands to 
-make their benchmarks look better...
-
-> but if the device doesn't have a flash translation layer, then repeated
-> writes to any one sector will kill the drive fairly quickly. (updates to
-> the FAT would kill the sectors the FAT, journal, root directory, or
-> superblock lives in due to the fact that every change to the disk requires
-> an update to this file for example)
-
-Yup.  It's got enough of one to get past the warantee, but beyond that they're 
-intended for archiving and sneakernet, not for running compiles on.
-
-> > That said, ext3's assumption that filesystem block size always >= disk
-> > update block size _is_ a fundamental part of this problem, and one that
-> > isn't shared by things like jffs2, and which things like btrfs might be
-> > able to address if they try, by adding awareness of the real media update
-> > granularity to their node layout algorithms.  (Heck, ext2 has a stripe
-> > size parameter already. Does setting that appropriately for your raid
-> > make this suck less?  I haven't heard anybody comment on that one yet...)
->
-> I thought that that assumption was in the VFS layer, not in any particular
-> filesystem
-
-The VFS layer cares about how to talk to the backing store?  I thought that 
-was the filesystem driver's job...
-
-I wonder how jffs2 gets around it, then?  (Or for that matter, squashfs...)
-
-> David Lang
-
-Rob
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
