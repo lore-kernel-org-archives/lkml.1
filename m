@@ -1,87 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbZH0IpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854AbZH0Iqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751848AbZH0IpX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 04:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbZH0IpW
+	id S1751854AbZH0Iqz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 04:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbZH0Iqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 04:45:22 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:59684 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751624AbZH0IpW (ORCPT
+	Thu, 27 Aug 2009 04:46:55 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36303 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751674AbZH0Iqx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 04:45:22 -0400
-Date: Thu, 27 Aug 2009 10:45:22 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: stable@kernel.org
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: powerpc/ps3: Add missing check for PS3 to rtc-ps3 platform device
- registration (fwd)
-Message-ID: <alpine.LRH.2.00.0908271041550.22490@vixen.sonytel.be>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 27 Aug 2009 04:46:53 -0400
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+From: David Woodhouse <dwmw2@infradead.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Pavel Machek <pavel@ucw.cz>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+In-Reply-To: <20090825000842.GM17684@mit.edu>
+References: <20090824093143.GD25591@elf.ucw.cz> <82k50tjw7u.fsf@mid.bfk.de>
+	 <20090824130125.GG23677@mit.edu> <20090824195159.GD29763@elf.ucw.cz>
+	 <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz>
+	 <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz>
+	 <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz>
+	 <20090825000842.GM17684@mit.edu>
+Content-Type: text/plain
+Date: Thu, 27 Aug 2009 09:46:27 +0100
+Message-Id: <1251362787.4354.373.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For stable/linux-2.6.30.y
+On Mon, 2009-08-24 at 20:08 -0400, Theodore Tso wrote:
+> 
+> (It's worse with people using Digital SLR's shooting in raw mode,
+> since it can take upwards of 30 seconds or more to write out a 12-30MB
+> raw image, and if you eject at the wrong time, you can trash the
+> contents of the entire CF card; in the worst case, the Flash
+> Translation Layer data can get corrupted, and the card is completely
+> ruined; you can't even reformat it at the filesystem level, but have
+> to get a special Windows program from the CF manufacturer to --maybe--
+> reset the FTL layer.
 
----------- Forwarded message ----------
-Date: Thu, 27 Aug 2009 03:59:28 GMT
-From: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-To: git-commits-head@vger.kernel.org
-Subject: powerpc/ps3: Add missing check for PS3 to rtc-ps3 platform device
-    registration
+This just goes to show why having this "translation layer" done in
+firmware on the device itself is a _bad_ idea. We're much better off
+when we have full access to the underlying flash and the OS can actually
+see what's going on. That way, we can actually debug, fix and recover
+from such problems.
 
-Gitweb:     http://git.kernel.org/linus/7b6a09f3d6aedeaac923824af2a5df30300b56e9
-Commit:     7b6a09f3d6aedeaac923824af2a5df30300b56e9
-Parent:     f415c413f458837bd0c27086b79aca889f9435e4
-Author:     Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-AuthorDate: Sun Aug 23 22:54:32 2009 +0000
-Committer:  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CommitDate: Thu Aug 27 13:25:46 2009 +1000
+>   Early CF cards were especially vulnerable to
+> this; more recent CF cards are better, but it's a known failure mode
+> of CF cards.)
 
-    powerpc/ps3: Add missing check for PS3 to rtc-ps3 platform device registration
-    
-    On non-PS3, we get:
-    
-    | kernel BUG at drivers/rtc/rtc-ps3.c:36!
-    
-    because the rtc-ps3 platform device is registered unconditionally in a kernel
-    with builtin support for PS3.
-    
-    Reported-by: Sachin Sant <sachinp@in.ibm.com>
-    Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-    Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/platforms/ps3/time.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+It's a known failure mode of _everything_ that uses flash to pretend to
+be a block device. As I see it, there are no SSD devices which don't
+lose data; there are only SSD devices which haven't lost your data
+_yet_.
 
-diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
-index b178a1e..40b5cb4 100644
---- a/arch/powerpc/platforms/ps3/time.c
-+++ b/arch/powerpc/platforms/ps3/time.c
-@@ -21,6 +21,7 @@
- #include <linux/kernel.h>
- #include <linux/platform_device.h>
- 
-+#include <asm/firmware.h>
- #include <asm/rtc.h>
- #include <asm/lv1call.h>
- #include <asm/ps3.h>
-@@ -84,6 +85,9 @@ static int __init ps3_rtc_init(void)
- {
- 	struct platform_device *pdev;
- 
-+	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
-+		return -ENODEV;
-+
- 	pdev = platform_device_register_simple("rtc-ps3", -1, NULL, 0);
- 	if (IS_ERR(pdev))
- 		return PTR_ERR(pdev);
---
-To unsubscribe from this list: send the line "unsubscribe git-commits-head" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+There's no fundamental reason why it should be this way; it just is.
+
+(I'm kind of hoping that the shiny new expensive ones that everyone's
+talking about right now, that I shouldn't really be slagging off, are
+actually OK. But they're still new, and I'm certainly not trusting them
+with my own data _quite_ yet.)
+
+-- 
+dwmw2
+
