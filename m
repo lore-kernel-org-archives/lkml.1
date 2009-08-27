@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbZH0MJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751911AbZH0MKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752385AbZH0MJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 08:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZH0MJW
+	id S1751911AbZH0MKp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 08:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbZH0MKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 08:09:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23240 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752353AbZH0MJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 08:09:17 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] AFS: Stop readlink() on AFS crashing because file not passed
-	to afs_readpage()
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-am33@lists.infradead.org, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, Anton Blanchard <anton@samba.org>
-Date: Thu, 27 Aug 2009 13:09:06 +0100
-Message-ID: <20090827120906.14429.94498.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Thu, 27 Aug 2009 08:10:45 -0400
+Received: from mail-px0-f174.google.com ([209.85.216.174]:62555 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbZH0MKo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 08:10:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=rVUS5ivhyACIs1TUqAxHqLx1+ArXVjyStzLmKlwcuGzF3mGxySdkdKaWQRRXKsoLQR
+         XM5w2a8ZNfLeiwRom80MZ4Fr7u5F645emyJopJoHsmHJ/npqEB3zJpKKE051YJFRM5zO
+         BpCrqGvpaeEI1gg3fTgHWBu9bDWvBwI45SW9c=
+Message-ID: <4A9677C1.3090804@gmail.com>
+Date: Thu, 27 Aug 2009 20:10:41 +0800
+From: Zhu Yanhai <zhu.yanhai@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <wfg@linux.intel.com>, Jiri Kosina <jkosina@suse.cz>,
+       Huang Shijie <shijie8@gmail.com>
+CC: linux-kernel@vger.kernel.org, Zhu Yanhai <yanhai.zhu@linux.intel.com>
+Subject: [PATCH] Make radix_tree_preload alloc one more slot
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kAFS crashes when asked to read a symbolic link because page_getlink() passes a
-NULL file pointer to read_mapping_page(), but afs_readpage() expects a file
-pointer from which to extract a key.
+The operations against radix tree always use paths with RADIX_TREE_MAX_PATH
++ 1 slots, but radix_tree_preload only pre-allocs RADIX_TREE_MAX_PATH
+slots at present, which causes radix_tree_node_alloc tries to do
+kmem_cache_alloc at the last slot even if we don't have gfp_mask &
+__GFP_WAIT in hand.
 
-Modify afs_readpage() to request the appropriate key from the calling process's
-keyrings if a file struct is not supplied with one attached.
+Signed-off-by: Zhu Yanhai <zhu.yanhai@gmail.com>
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Acked-by: Anton Blanchard <anton@samba.org>
 ---
+ lib/radix-tree.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- fs/afs/file.c |   18 +++++++++++++++---
- 1 files changed, 15 insertions(+), 3 deletions(-)
-
-
-diff --git a/fs/afs/file.c b/fs/afs/file.c
-index 0149dab..681c2a7 100644
---- a/fs/afs/file.c
-+++ b/fs/afs/file.c
-@@ -134,9 +134,16 @@ static int afs_readpage(struct file *file, struct page *page)
+diff --git a/lib/radix-tree.c b/lib/radix-tree.c
+index 23abbd9..72225a8 100644
+--- a/lib/radix-tree.c
++++ b/lib/radix-tree.c
+@@ -79,7 +79,7 @@ static struct kmem_cache *radix_tree_node_cachep;
+  */
+ struct radix_tree_preload {
+ 	int nr;
+-	struct radix_tree_node *nodes[RADIX_TREE_MAX_PATH];
++	struct radix_tree_node *nodes[RADIX_TREE_MAX_PATH + 1];
+ };
+ static DEFINE_PER_CPU(struct radix_tree_preload, radix_tree_preloads) = { 0, };
  
- 	inode = page->mapping->host;
- 
--	ASSERT(file != NULL);
--	key = file->private_data;
--	ASSERT(key != NULL);
-+	if (file) {
-+		key = file->private_data;
-+		ASSERT(key != NULL);
-+	} else {
-+		key = afs_request_key(AFS_FS_S(inode->i_sb)->volume->cell);
-+		if (IS_ERR(key)) {
-+			ret = PTR_ERR(key);
-+			goto error_nokey;
-+		}
-+	}
- 
- 	_enter("{%x},{%lu},{%lu}", key_serial(key), inode->i_ino, page->index);
- 
-@@ -207,12 +214,17 @@ static int afs_readpage(struct file *file, struct page *page)
- 		unlock_page(page);
- 	}
- 
-+	if (!file)
-+		key_put(key);
- 	_leave(" = 0");
- 	return 0;
- 
- error:
- 	SetPageError(page);
- 	unlock_page(page);
-+	if (!file)
-+		key_put(key);
-+error_nokey:
- 	_leave(" = %d", ret);
- 	return ret;
- }
-
+-- 
+1.6.2.2
