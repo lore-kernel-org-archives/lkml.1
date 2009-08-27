@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbZH0WA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbZH0WB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbZH0WA6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 18:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZH0WA5
+	id S1753337AbZH0WB1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 18:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbZH0WB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 18:00:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:63851 "EHLO mx1.redhat.com"
+	Thu, 27 Aug 2009 18:01:26 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:16410 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751058AbZH0WA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 18:00:56 -0400
-Message-ID: <4A970154.2020507@redhat.com>
-Date: Thu, 27 Aug 2009 17:57:40 -0400
+	id S1753194AbZH0WBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 18:01:25 -0400
+Message-ID: <4A97021A.7030902@redhat.com>
+Date: Thu, 27 Aug 2009 18:00:58 -0400
 From: Ric Wheeler <rwheeler@redhat.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Andrei Tanas <andrei@tanas.ca>
-CC: NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost>
-In-Reply-To: <d086b110526f8bac2f562850dfc70b03@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Rob Landley <rob@landley.net>
+CC: Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+ possible
+References: <20090824212518.GF29763@elf.ucw.cz> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <200908271551.43840.rob@landley.net>
+In-Reply-To: <200908271551.43840.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/27/2009 05:22 PM, Andrei Tanas wrote:
-> Hello,
->
-> This is about the same problem that I wrote two days ago (md gets an error
-> while writing superblock and fails a hard drive).
->
-> I've tried to figure out what's really going on, and as far as I can tell,
-> the disk doesn't really fail (as confirmed by multiple tests), it times out
-> trying to execute ATA_CMD_FLUSH_EXT ("at2.00 cmd ea..." in the log)
-> command. The reason for this I believe is that md_super_write queues the
-> write comand with BIO_RW_SYNCIO flag.
-> As I wrote before, with 32MB cache it is conceivable that it will take the
-> drive longer than 30 seconds (defined by SD_TIMEOUT in scsi/sd.h) to flush
-> its buffers.
->
-> Changing safe_mode_delay to more conservative 2 seconds should definitely
-> help, but is it really necessary to write the superblock synchronously when
-> array changes status from active to active-idle?
->
-> [90307.328266] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
-> frozen
-> [90307.328275] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-> [90307.328277]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
-> (timeout)
-> [90307.328280] ata2.00: status: { DRDY }
-> [90307.328288] ata2: hard resetting link
-> [90313.218511] ata2: link is slow to respond, please be patient (ready=0)
-> [90317.377711] ata2: SRST failed (errno=-16)
-> [90317.377720] ata2: hard resetting link
-> [90318.251720] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [90318.338026] ata2.00: configured for UDMA/133
-> [90318.338062] ata2: EH complete
-> [90318.370625] end_request: I/O error, dev sdb, sector 1953519935
-> [90318.370632] md: super_written gets error=-5, uptodate=0
->
+On 08/27/2009 04:51 PM, Rob Landley wrote:
+> On Thursday 27 August 2009 06:43:49 Ric Wheeler wrote:
+>    
+>> On 08/26/2009 11:53 PM, Rob Landley wrote:
+>>      
+>>> On Tuesday 25 August 2009 18:40:50 Ric Wheeler wrote:
+>>>        
+>>>> Repeat experiment until you get up to something like google scale or the
+>>>> other papers on failures in national labs in the US and then we can have
+>>>> an informed discussion.
+>>>>          
+>>> On google scale anvil lightning can fry your machine out of a clear sky.
+>>>
+>>> However, there are still a few non-enterprise users out there, and
+>>> knowing that specific usage patterns don't behave like they expect might
+>>> be useful to them.
+>>>        
+>> You are missing the broader point of both papers.
+>>      
+> No, I'm dismissing the papers (some of which I read when they first came out
+> and got slashdotted) as irrelevant to the topic at hand.
 >    
 
-30 seconds is a very long time for a drive to respond, but I think that 
-your explanation fits the facts pretty well...
+I guess I have to dismiss your dismissing then.
+> Pavel has two failure modes which he can trivially reproduce.  The USB stick
+> one is reproducible on a laptop by jostling said stick.  I myself used to have
+> a literal USB keychain, and the weight of keys dangling from it pulled it out
+> of the USB socket fairly easily if I wasn't careful.  At the time nobody had
+> told me a journaling filesystem was not a reasonable safeguard here.
+>
+> Presumably the degraded raid one can be reproduced under an emulator, with no
+> hardware directly involved at all, so talking about hardware failure rates
+> ignores the fact that he's actually discussing a _software_ problem.  It may
+> happen in _response_ to hardware failures, but the damage he's attempting to
+> document happens entirely in software.
+>
+> These failure modes can cause data loss which journaling can't help, but which
+> journaling might (or might not) conceivably hide so you don't immediately
+> notice it.  They share a common underlying assumption that the storage
+> device's update granularity is less than or equal to the filesystem's block
+> size, which is not actually true of all modern storage devices.  The fact he's
+> only _found_ two instances where this assumption bites doesn't mean there
+> aren't more waiting to be found, especially as more new storage media types
+> get introduced.
+>
+> Pavel's response was to attempt to document this.  Not that journaling is
+> _bad_, but that it doesn't protect against this class of problem.
+>
+> Your response is to talk about google clusters, cloud storage, and cite
+> academic papers of statistical hardware failure rates.  As I understand the
+> discussion, that's not actually the issue Pavel's talking about, merely one
+> potential trigger for it.
+>
+> Rob
+>    
 
-The drive might take a longer time like this when doing error handling 
-(sector remapping, etc), but then I would expect to see your remapped 
-sector count grow.
-
-ric
 
