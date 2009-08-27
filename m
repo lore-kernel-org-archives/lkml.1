@@ -1,61 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752261AbZH0SLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZH0SNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752261AbZH0SLS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 14:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZH0SLQ
+	id S1752616AbZH0SNi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 14:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZH0SNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 14:11:16 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:9429 "EHLO mx1.redhat.com"
+	Thu, 27 Aug 2009 14:13:37 -0400
+Received: from mga02.intel.com ([134.134.136.20]:16027 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751730AbZH0SLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 14:11:15 -0400
-Date: Thu, 27 Aug 2009 19:09:42 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Rob Landley <rob@landley.net>, Pavel Machek <pavel@ucw.cz>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net,
-       Mikulas Patocka <mpatocka@redhat.com>
-Subject: Re: MD/DM and barriers (was Re: [patch] ext2/3: document
-	conditions when reliable operation is possible)
-Message-ID: <20090827180942.GA8140@agk-dp.fab.redhat.com>
-Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
-	Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
-	Rob Landley <rob@landley.net>, Pavel Machek <pavel@ucw.cz>,
-	Florian Weimer <fweimer@bfk.de>,
-	Goswin von Brederlow <goswin-v-b@web.de>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-	linux-ext4@vger.kernel.org, corbet@lwn.net,
-	Mikulas Patocka <mpatocka@redhat.com>
-References: <20090825225114.GE4300@elf.ucw.cz> <4A948C94.7040103@redhat.com> <20090826025849.GF32712@mit.edu> <200908270019.04231.rob@landley.net> <20090827122423.GO6997@mit.edu> <4A9685D4.2070906@redhat.com> <4A96BA2D.60804@garzik.org>
+	id S1752512AbZH0SNg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 14:13:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,287,1249282800"; 
+   d="scan'208";a="443306563"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'Amerigo Wang'" <amwang@redhat.com>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'Anton Vorontsov'" <avorontsov@ru.mvista.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
+       "'Neil Horman'" <nhorman@redhat.com>,
+       "'Eric W. Biederman'" <ebiederm@xmission.com>,
+       "'kamezawa.hiroyu@jp.fujitsu.com'" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "'Andi Kleen'" <andi@firstfloor.org>,
+       "'Michael Ellerman'" <michael@ellerman.id.au>,
+       "'M. Mohan Kumar'" <mohan@in.ibm.com>,
+       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
+       "'bernhard.walle@gmx.de'" <bernhard.walle@gmx.de>,
+       "'Ingo Molnar'" <mingo@elte.hu>
+Date: Thu, 27 Aug 2009 11:13:32 -0700
+Subject: RE: [Patch 4/8] ia64: implement crashkernel=auto
+Thread-Topic: [Patch 4/8] ia64: implement crashkernel=auto
+Thread-Index: AconAIGgxPhrH7knQhybjyvvrxVS9AAQGBrw
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B949E7A3@orsmsx505.amr.corp.intel.com>
+References: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
+ <20090827031848.4534.40440.sendpatchset@localhost.localdomain>
+ <A6AD88C3F2289247BE726C37303E1EB8B949E358@orsmsx505.amr.corp.intel.com>
+ <4A965F3A.5070007@redhat.com>
+In-Reply-To: <4A965F3A.5070007@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A96BA2D.60804@garzik.org>
-Organization: Red Hat UK Ltd. Registered in England and Wales, number
-	03798903. Registered Office: Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 1TE.
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27, 2009 at 12:54:05PM -0400, Jeff Garzik wrote:
-> DM has some barrier code...  but the above code was pasted from DM's  
-> make_request function, so I am guessing that DM's barrier stuff is  
-> incomplete and disabled at present.
+>>> --- linux-2.6.orig/arch/ia64/include/asm/kexec.h
+>>> +++ linux-2.6/arch/ia64/include/asm/kexec.h
+>>> @@ -1,6 +1,7 @@
+>>> #ifndef _ASM_IA64_KEXEC_H
+>>> #define _ASM_IA64_KEXEC_H
+>>>
+>>> +#include <asm-generic/kexec.h>
+>>>
+>>> /* Maximum physical address we can use pages from */
+>>> #define KEXEC_SOURCE_MEMORY_LIMIT (-1UL)
+>>> @@ -19,6 +20,49 @@
+>>>                 flush_icache_range(page_addr, page_addr + PAGE_SIZE); \
+>>>         } while(0)
+>>>
+>>> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
+>>> +#define MBYTES(n) ((n)*1024*1024ULL)
+>>> +#define GBYTES(n) ((n)*1024*1024*1024ULL)
+>>> +/*
+>>> +       Memory size     Reserved memory
+>>> +       ===========     ===============
+>>> +       [4G, 12G)       256M
+>>> +       [12G, 128G)     512M
+>>> +       [128G, 256G)    768M
+>>> +       [256G, 378G)    1024M
+>>> +       [378G, 512G)    1536M
+>>> +       [512G, 768G)    2048M
+>>> +       [768G, )        3072M
+>>> + */
+>>> +static inline
+>>> +unsigned long long arch_default_crash_size(unsigned long long
+>total_size)
+>>> +{
+>>>
+>>
+>> This function shouldn't be inlined (Andrew commented this before). You
+>might remove inline and add __init for this function.
+>>
+>>
+>
+>Yeah, seems I missed Andrew's comment... :-/ I will update it.
+>
+>>> +	unsigned long long ret;
+>>> +
+>>> +	if (total_size >= GBYTES(4) && total_size < GBYTES(12))
+>>> +		ret = MBYTES(256);
+>>> +	else if (total_size >= GBYTES(12) && total_size < GBYTES(128))
+>>> +		ret = MBYTES(512);
+>>> +	else if (total_size >= GBYTES(128) && total_size < GBYTES(256))
+>>> +		ret = MBYTES(768);
+>>> +	else if (total_size >= GBYTES(256) && total_size < GBYTES(378))
+>>> +		ret = MBYTES(1024);
+>>> +	else if (total_size >= GBYTES(318) && total_size < GBYTES(512))
+>>> +		ret = MBYTES(1536);
+>>> +	else if (total_size >= GBYTES(512) && total_size < GBYTES(768))
+>>> +		ret = MBYTES(2048);
+>>> +	else
+>>> +		ret = MBYTES(3072);
+>>> +	if (!ia64_platform_is("sn2") && !ia64_platform_is("uv"))
+>>> +		if (ret > GBYTES(4))
+>>> +			ret = ret / GBYTES(4) * MBYTES(256);
+>>>
+>>
+>> This code doesn't make sense to me. What you really want is following
+>code, right?
+>> +		if (total_size > GBYTES(4))
+>> +			ret = total_size / GBYTES(4) * MBYTEST(256)
+>>
+>>
+>Nope. Check check_crashkernel_memory().
 
-That code is from the new request-based multipath implementation in 2.6.31
-which doesn't yet.
+This statement will be ALWAYS false:
++		if (ret > GBYTES(4))
+since ret's max value is 3GB after the above total_size checks.
 
-But bio-based dm does support barriers now.  (Just missing some patches to
-complete the dm-raid1 support that are still under review IIRC.)
+So the code doesn't make sense. Did I miss something?
 
-Alasdair
+Thanks.
+
+-Fenghua
