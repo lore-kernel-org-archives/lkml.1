@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751311AbZH1E0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbZH1E1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751311AbZH1E0c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 00:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbZH1E0b
+	id S1751386AbZH1E1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 00:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbZH1E1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 00:26:31 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56161 "EHLO
+	Fri, 28 Aug 2009 00:27:33 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56233 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750785AbZH1E0a (ORCPT
+	with ESMTP id S1750921AbZH1E1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 00:26:30 -0400
+	Fri, 28 Aug 2009 00:27:32 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 28 Aug 2009 13:24:38 +0900
+Date: Fri, 28 Aug 2009 13:25:42 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
        "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: [RFC][PATCH 2/5] memcg: uncharge in batched manner
-Message-Id: <20090828132438.b33828bc.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [RFC][PATCH 3/5] memcg: unmap, truncate, invalidate uncharege in
+ batch
+Message-Id: <20090828132542.37d712ba.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: FUJITSU Co. LTD.
@@ -32,171 +33,89 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-In massive parallel enviroment, res_counter can be a performance bottleneck.
-This patch is a trial for reducing lock contention.
-One strong techinque to reduce lock contention is reducing calls by
-batching some amount of calls int one.
+We can do batched uncharge when
+	- invalidate/truncte file
+	- unmap range of pages.
 
-Considering charge/uncharge chatacteristic,
-	- charge is done one by one via demand-paging.
-	- uncharge is done by
-		- in chunk at munmap, truncate, exit, execve...
-		- one by one via vmscan/paging.
-
-It seems we hace a chance to batched-uncharge.
-This patch is a base patch for batched uncharge. For avoiding
-scattering memcg's structure, this patch adds memcg batch uncharge
-information to the task. please see start/end usage in next patch.
+This means we don't do "batched" uncharge in memory reclaim path.
+I think it's reasonable.
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- include/linux/memcontrol.h |   12 +++++++
- include/linux/sched.h      |    7 ++++
- mm/memcontrol.c            |   70 +++++++++++++++++++++++++++++++++++++++++----
- 3 files changed, 83 insertions(+), 6 deletions(-)
+ mm/memory.c   |    2 ++
+ mm/truncate.c |    6 ++++++
+ 2 files changed, 8 insertions(+)
 
-Index: mmotm-2.6.31-Aug27/include/linux/memcontrol.h
+Index: mmotm-2.6.31-Aug27/mm/memory.c
 ===================================================================
---- mmotm-2.6.31-Aug27.orig/include/linux/memcontrol.h
-+++ mmotm-2.6.31-Aug27/include/linux/memcontrol.h
-@@ -54,6 +54,10 @@ extern void mem_cgroup_rotate_lru_list(s
- extern void mem_cgroup_del_lru(struct page *page);
- extern void mem_cgroup_move_lists(struct page *page,
- 				  enum lru_list from, enum lru_list to);
-+
-+extern void mem_cgroup_uncharge_batch_start(void);
-+extern void mem_cgroup_uncharge_batch_end(void);
-+
- extern void mem_cgroup_uncharge_page(struct page *page);
- extern void mem_cgroup_uncharge_cache_page(struct page *page);
- extern int mem_cgroup_shmem_charge_fallback(struct page *page,
-@@ -151,6 +155,14 @@ static inline void mem_cgroup_cancel_cha
- {
- }
+--- mmotm-2.6.31-Aug27.orig/mm/memory.c
++++ mmotm-2.6.31-Aug27/mm/memory.c
+@@ -909,6 +909,7 @@ static unsigned long unmap_page_range(st
+ 		details = NULL;
  
-+static inline void mem_cgroup_uncharge_batch_start(void)
-+{
-+}
-+
-+static inline void mem_cgroup_uncharge_batch_start(void)
-+{
-+}
-+
- static inline void mem_cgroup_uncharge_page(struct page *page)
- {
+ 	BUG_ON(addr >= end);
++	mem_cgroup_uncharge_batch_start();
+ 	tlb_start_vma(tlb, vma);
+ 	pgd = pgd_offset(vma->vm_mm, addr);
+ 	do {
+@@ -921,6 +922,7 @@ static unsigned long unmap_page_range(st
+ 						zap_work, details);
+ 	} while (pgd++, addr = next, (addr != end && *zap_work > 0));
+ 	tlb_end_vma(tlb, vma);
++	mem_cgroup_uncharge_batch_end();
+ 
+ 	return addr;
  }
-Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
+Index: mmotm-2.6.31-Aug27/mm/truncate.c
 ===================================================================
---- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
-+++ mmotm-2.6.31-Aug27/mm/memcontrol.c
-@@ -1837,7 +1837,35 @@ void mem_cgroup_cancel_charge_swapin(str
- 	css_put(&mem->css);
- }
+--- mmotm-2.6.31-Aug27.orig/mm/truncate.c
++++ mmotm-2.6.31-Aug27/mm/truncate.c
+@@ -272,6 +272,7 @@ void truncate_inode_pages_range(struct a
+ 			pagevec_release(&pvec);
+ 			break;
+ 		}
++		mem_cgroup_uncharge_batch_start();
+ 		for (i = 0; i < pagevec_count(&pvec); i++) {
+ 			struct page *page = pvec.pages[i];
  
-+static bool
-+__do_batch_uncharge(struct mem_cgroup *mem, const enum charge_type ctype)
-+{
-+	struct memcg_batch_info *batch = NULL;
-+	bool uncharge_memsw;
-+	/* If swapout, usage of swap doesn't decrease */
-+	if (do_swap_account && (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
-+		uncharge_memsw = false;
-+	else
-+		uncharge_memsw = true;
- 
-+	if (current->memcg_batch.do_batch) {
-+		batch = &current->memcg_batch;
-+		if (batch->memcg == NULL) {
-+			batch->memcg = mem;
-+			css_get(&mem->css);
-+		}
-+	}
-+	if (!batch || batch->memcg != mem) {
-+		res_counter_uncharge(&mem->res, PAGE_SIZE);
-+		if (uncharge_memsw)
-+			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
-+	} else {
-+		batch->pages += PAGE_SIZE;
-+		if (uncharge_memsw)
-+			batch->memsw += PAGE_SIZE;
-+	}
-+	return soft_limit_excess;
-+}
- /*
-  * uncharge if !page_mapped(page)
-  */
-@@ -1886,12 +1914,8 @@ __mem_cgroup_uncharge_common(struct page
- 		break;
+@@ -286,6 +287,7 @@ void truncate_inode_pages_range(struct a
+ 			unlock_page(page);
+ 		}
+ 		pagevec_release(&pvec);
++		mem_cgroup_uncharge_batch_end();
  	}
- 
--	if (!mem_cgroup_is_root(mem)) {
--		res_counter_uncharge(&mem->res, PAGE_SIZE);
--		if (do_swap_account &&
--				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
--			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
--	}
-+	if (!mem_cgroup_is_root(mem))
-+		__do_batch_uncharge(mem, ctype);
- 	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
- 		mem_cgroup_swap_statistics(mem, true);
- 	mem_cgroup_charge_statistics(mem, pc, false);
-@@ -1938,6 +1962,40 @@ void mem_cgroup_uncharge_cache_page(stru
- 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
  }
- 
-+void mem_cgroup_uncharge_batch_start(void)
-+{
-+	VM_BUG_ON(current->memcg_batch.do_batch);
-+	/* avoid batch if killed by OOM */
-+	if (test_thread_flag(TIF_MEMDIE))
-+		return;
-+	current->memcg_batch.do_batch = 1;
-+	current->memcg_batch.memcg = NULL;
-+	current->memcg_batch.pages = 0;
-+	current->memcg_batch.memsw = 0;
-+}
-+
-+void mem_cgroup_uncharge_batch_end(void)
-+{
-+	struct mem_cgroup *mem;
-+
-+	if (!current->memcg_batch.do_batch)
-+		return;
-+
-+	current->memcg_batch.do_batch = 0;
-+
-+	mem = current->memcg_batch.memcg;
-+	if (!mem)
-+		return;
-+	if (current->memcg_batch.pages)
-+		res_counter_uncharge(&mem->res,
-+				     current->memcg_batch.pages, NULL);
-+	if (current->memcg_batch.memsw)
-+		res_counter_uncharge(&mem->memsw,
-+				     current->memcg_batch.memsw, NULL);
-+	/* we got css's refcnt */
-+	cgroup_release_and_wakeup_rmdir(&mem->css);
-+}
-+
- #ifdef CONFIG_SWAP
- /*
-  * called after __delete_from_swap_cache() and drop "page" account.
-Index: mmotm-2.6.31-Aug27/include/linux/sched.h
-===================================================================
---- mmotm-2.6.31-Aug27.orig/include/linux/sched.h
-+++ mmotm-2.6.31-Aug27/include/linux/sched.h
-@@ -1540,6 +1540,13 @@ struct task_struct {
- 	unsigned long trace_recursion;
- #endif /* CONFIG_TRACING */
- 	unsigned long stack_start;
-+#ifdef CONFIG_CGROUP_MEM_RES_CTLR /* memcg uses this to do batch job */
-+	struct memcg_batch_info {
-+		bool do_batch;
-+		struct mem_cgroup *memcg;
-+		long pages, memsw;
-+	} memcg_batch;
-+#endif
- };
- 
- /* Future-safe accessor for struct task_struct's cpus_allowed. */
+ EXPORT_SYMBOL(truncate_inode_pages_range);
+@@ -327,6 +329,7 @@ unsigned long invalidate_mapping_pages(s
+ 	pagevec_init(&pvec, 0);
+ 	while (next <= end &&
+ 			pagevec_lookup(&pvec, mapping, next, PAGEVEC_SIZE)) {
++		mem_cgroup_uncharge_batch_start();
+ 		for (i = 0; i < pagevec_count(&pvec); i++) {
+ 			struct page *page = pvec.pages[i];
+ 			pgoff_t index;
+@@ -354,6 +357,7 @@ unsigned long invalidate_mapping_pages(s
+ 				break;
+ 		}
+ 		pagevec_release(&pvec);
++		mem_cgroup_uncharge_batch_end();
+ 		cond_resched();
+ 	}
+ 	return ret;
+@@ -428,6 +432,7 @@ int invalidate_inode_pages2_range(struct
+ 	while (next <= end && !wrapped &&
+ 		pagevec_lookup(&pvec, mapping, next,
+ 			min(end - next, (pgoff_t)PAGEVEC_SIZE - 1) + 1)) {
++		mem_cgroup_uncharge_batch_start();
+ 		for (i = 0; i < pagevec_count(&pvec); i++) {
+ 			struct page *page = pvec.pages[i];
+ 			pgoff_t page_index;
+@@ -477,6 +482,7 @@ int invalidate_inode_pages2_range(struct
+ 			unlock_page(page);
+ 		}
+ 		pagevec_release(&pvec);
++		mem_cgroup_uncharge_batch_end();
+ 		cond_resched();
+ 	}
+ 	return ret;
 
