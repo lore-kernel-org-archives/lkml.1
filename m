@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbZH1TT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZH1TTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752806AbZH1TT2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 15:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZH1TT2
+	id S1752832AbZH1TTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 15:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZH1TTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 15:19:28 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:42799 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbZH1TT1 (ORCPT
+	Fri, 28 Aug 2009 15:19:42 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:35090 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776AbZH1TTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 15:19:27 -0400
-Date: Sat, 29 Aug 2009 00:49:23 +0530
+	Fri, 28 Aug 2009 15:19:41 -0400
+Date: Sat, 29 Aug 2009 00:49:36 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
@@ -21,99 +21,170 @@ Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Alan Stern <stern@rowland.harvard.edu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 2/3] HW-BKPT: Allow kernel breakpoints to be modified
-	through a new API
-Message-ID: <20090828191923.GC11063@in.ibm.com>
+Subject: [Patch 3/3] HW-BKPT: Enable/disable the breakpoints when still
+	registered
+Message-ID: <20090828191936.GD11063@in.ibm.com>
 References: <20090828190842.015422920@abc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=modify_kernel_hbp_02
+Content-Disposition: inline; filename=enable_disable_patch_03
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce modify_kernel_hw_breakpoint() API that can quickly change the
-characteristics (such as address, length, type) of a kernel-space
-breakpoint without having to unregister first and then re-register it.
+Allow breakpoints to be enabled/disabled without yielding the
+breakpoint request through new APIs -
+<enable><disable>_hw_breakpoint()
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
- include/asm-generic/hw_breakpoint.h |    2 +
- kernel/hw_breakpoint.c              |   49 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 51 insertions(+)
+ arch/x86/kernel/hw_breakpoint.c     |   12 +++---
+ include/asm-generic/hw_breakpoint.h |   10 +++++
+ kernel/hw_breakpoint.c              |   66 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 83 insertions(+), 5 deletions(-)
 
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+@@ -85,10 +85,11 @@ void arch_update_kernel_hw_breakpoint(vo
+ 
+ 	for (i = hbp_kernel_pos; i < HBP_NUM; i++) {
+ 		bp = per_cpu(this_hbp_kernel[i], cpu);
+-		if (bp) {
++		if (!bp)
++			continue;
++		set_debugreg(bp->info.address, i);
++		if (bp->enabled)
+ 			temp_kdr7 |= encode_dr7(i, bp->info.len, bp->info.type);
+-			set_debugreg(bp->info.address, i);
+-		}
+ 	}
+ 
+ 	/* No need to set DR6. Update the debug registers with kernel-space
+@@ -288,8 +289,9 @@ void arch_update_user_hw_breakpoint(int 
+ 	thread->debugreg7 &= ~dr7_masks[pos];
+ 	if (bp) {
+ 		thread->debugreg[pos] = bp->info.address;
+-		thread->debugreg7 |= encode_dr7(pos, bp->info.len,
+-							bp->info.type);
++		if (bp->enabled)
++			thread->debugreg7 |= encode_dr7(pos, bp->info.len,
++								bp->info.type);
+ 	} else
+ 		thread->debugreg[pos] = 0;
+ }
 Index: linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
 ===================================================================
 --- linux-2.6-tip.hbkpt.orig/include/asm-generic/hw_breakpoint.h
 +++ linux-2.6-tip.hbkpt/include/asm-generic/hw_breakpoint.h
-@@ -133,6 +133,8 @@ extern void unregister_user_hw_breakpoin
-  * Kernel breakpoints are not associated with any particular thread.
+@@ -102,6 +102,12 @@
+  * ----------------------------------------------------------------------
   */
- extern int register_kernel_hw_breakpoint(struct hw_breakpoint *bp);
-+extern int modify_kernel_hw_breakpoint(struct hw_breakpoint *old_bp,
-+					struct hw_breakpoint *new_bp);
+ struct hw_breakpoint {
++	/*
++	 * Denotes if a breakpoint is currently enabled in physical debug
++	 * registers. Not to be set directly by the end-user. Must be
++	 * operated through <enable><disable>_hw_breakpoint() APIs only.
++	 */
++	bool enabled;
+ 	void (*triggered)(struct hw_breakpoint *, struct pt_regs *);
+ 	const cpumask_t *cpumask;
+ 	struct arch_hw_breakpoint info;
+@@ -137,6 +143,10 @@ extern int modify_kernel_hw_breakpoint(s
+ 					struct hw_breakpoint *new_bp);
  extern void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp);
  
++extern void enable_hw_breakpoint(struct hw_breakpoint *bp,
++				 struct task_struct *tsk);
++extern void disable_hw_breakpoint(struct hw_breakpoint *bp,
++				  struct task_struct *tsk);
  extern unsigned int hbp_kernel_pos;
+ 
+ #endif	/* __KERNEL__ */
 Index: linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
 ===================================================================
 --- linux-2.6-tip.hbkpt.orig/kernel/hw_breakpoint.c
 +++ linux-2.6-tip.hbkpt/kernel/hw_breakpoint.c
-@@ -362,6 +362,55 @@ err_ret:
- }
- EXPORT_SYMBOL_GPL(register_kernel_hw_breakpoint);
+@@ -351,6 +351,7 @@ int register_kernel_hw_breakpoint(struct
+ 		}
+ 	}
  
-+/**
-+ * modify_kernel_hw_breakpoint - modify characteristics of a previously registered breakpoint request
-+ * @old_bp: pointer to the registered breakpoint structure
-+ * @new_bp: pointer to the breakpoint structure that replaces @old_bp
-+ *
++	bp->enabled = 1;
+ 	if (cpumask_test_cpu(smp_processor_id(), bp->cpumask))
+ 		update_each_cpu_kernel_hbp(bp);
+ 	smp_call_function_many(bp->cpumask, update_each_cpu_kernel_hbp, bp, 1);
+@@ -469,6 +470,71 @@ ret_path:
+ }
+ EXPORT_SYMBOL_GPL(unregister_kernel_hw_breakpoint);
+ 
++/*
++ * Worker routine that updates enabled/disabled status for kernel/user-space
++ * hw-breakpoints.
 + */
-+int modify_kernel_hw_breakpoint(struct hw_breakpoint *old_bp,
-+				   struct hw_breakpoint *new_bp)
++static void update_enable_status_hbp(struct hw_breakpoint *bp,
++					struct task_struct *tsk)
 +{
-+	int i, rc;
-+	unsigned int cpu;
-+	const cpumask_t *new_cpumask = new_bp->cpumask;
-+
-+	/* Default to ALL CPUs if cpumask is not specified */
-+	if (!new_cpumask)
-+		new_cpumask = new_bp->cpumask = cpu_possible_mask;
-+	/*
-+	 * The user cannot modify the cpumask of the registered breakpoint
-+	 * It requires non-trivial amount of code and new data-structures to
-+	 * allow a change in cpumask value. The user must instead 'unregister'
-+	 * and re-register a new breakpoint if 'cpumask' should be changed
-+	 */
-+	if (!cpumask_equal(old_bp->cpumask, new_cpumask))
-+		return -EINVAL;
-+
-+	rc = arch_validate_hwbkpt_settings(new_bp, NULL);
-+	if (rc)
-+		return rc;
++	int i;
++	struct thread_struct *thread = &(tsk->thread);
 +
 +	spin_lock_bh(&hw_breakpoint_lock);
-+	for_each_cpu(cpu, new_cpumask) {
-+		for (i = HBP_NUM-1; i >= hbp_kernel_pos; i--) {
-+			if (per_cpu(this_hbp_kernel[i], cpu) == old_bp) {
-+				per_cpu(this_hbp_kernel[i], cpu) = new_bp;
-+				break;
-+			}
-+		}
++
++	/* Enable/Disable the kernel-space breakpoint */
++	if (!tsk) {
++		if (cpumask_test_cpu(smp_processor_id(), bp->cpumask))
++			arch_update_kernel_hw_breakpoint(NULL);
++		smp_call_function_many(bp->cpumask,
++				arch_update_kernel_hw_breakpoint, NULL, 1);
++				       goto out;
 +	}
 +
-+	if (cpumask_test_cpu(smp_processor_id(), new_cpumask))
-+		arch_update_kernel_hw_breakpoint(NULL);
-+	smp_call_function_many(new_cpumask,
-+				arch_update_kernel_hw_breakpoint, NULL, 1);
-+
++	/* Enable/disable the user-space breakpoint */
++	for (i = 0; i < hbp_kernel_pos; i++) {
++		if (thread->hbp[i] != bp)
++			continue;
++		arch_update_user_hw_breakpoint(i, tsk);
++		if (tsk == current)
++			arch_install_thread_hw_breakpoint(tsk);
++		break;
++	}
++out:
 +	spin_unlock_bh(&hw_breakpoint_lock);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(modify_kernel_hw_breakpoint);
 +
- /* Removes breakpoint structure from the per-cpu breakpoint data-structure */
- static void remove_each_cpu_kernel_hbp(void *bp_param)
- {
++}
++
++/**
++ * enable_hw_breakpoint - re-enable a breakpoint previously disabled
++ * @bp: pointer to the breakpoint structure to be enabled
++ * @tsk: pointer to 'task_struct' of the process (for user-space breakpoints)
++ *
++ * Re-enable or disable a breakpoint, previously disabled using
++ * disable_hw_breakpoint()
++ */
++void enable_hw_breakpoint(struct hw_breakpoint *bp, struct task_struct *tsk)
++{
++	bp->enabled = 1;
++	update_enable_status_hbp(bp, tsk);
++}
++EXPORT_SYMBOL_GPL(enable_hw_breakpoint);
++
++/**
++ * disable_hw_breakpoint - disable a breakpoint from raising breakpoint exceptions
++ * @bp: pointer to the breakpoint structure to be disabled
++ * @tsk: pointer to 'task_struct' of the process (for user-space breakpoints)
++ *
++ * Disable a breakpoint without actually losing the registration. Re-enable it
++ * again using enable_hw_breakpoint()
++ */
++void disable_hw_breakpoint(struct hw_breakpoint *bp, struct task_struct *tsk)
++{
++	bp->enabled = 0;
++	update_enable_status_hbp(bp, tsk);
++}
++EXPORT_SYMBOL_GPL(disable_hw_breakpoint);
++
+ static struct notifier_block hw_breakpoint_exceptions_nb = {
+ 	.notifier_call = hw_breakpoint_exceptions_notify,
+ 	/* we need to be notified first */
 
