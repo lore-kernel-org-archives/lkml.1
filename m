@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbZH1S4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752739AbZH1S6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752512AbZH1S4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZH1S4T
+	id S1752739AbZH1S6N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 14:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZH1S6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:56:19 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:57123 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752388AbZH1S4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:56:16 -0400
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH 5/9] fanotify:drop notification if they exist in the outgoing
-	queue
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org
-Cc: davem@davemloft.net, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org
-Date: Fri, 28 Aug 2009 14:56:12 -0400
-Message-ID: <20090828185611.8014.4931.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20090828185542.8014.22791.stgit@paris.rdu.redhat.com>
-References: <20090828185542.8014.22791.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
+	Fri, 28 Aug 2009 14:58:11 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:11060 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752680AbZH1S6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 14:58:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=W7R/B9CtIegPesXEj5LgLJ3owF0JB5epjrhcEQwK7Xsr/+EWZKHJHEjvQ83DfpD2hk
+         NSU2F4H5+MRZGoP9Mn6yZhJvtRtYvVSP/Ih0z3XC5Ln8rimjAjh3r7IAf2OuVFoAvBTl
+         MQkQWSwn9ERgAXhQkqPKKrevtbwUP23Db3NF4=
+Date: Fri, 28 Aug 2009 22:58:07 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: airlied@linux.ie, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] drm: use proc_create_data()
+Message-ID: <20090828185806.GC14499@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fanotify listeners get an open file descriptor to the object in question so
-the ordering of operations is not as important as in other notification
-systems.  inotify will drop events if the last event in the event FIFO is
-the same as the current event.  This patch will drop fanotify events if
-they are the same as another event anywhere in the event FIFO.
-
-Signed-off-by: Eric Paris <eparis@redhat.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
 
- fs/notify/fanotify/fanotify.c |   40 ++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 38 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/drm_proc.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/fs/notify/fanotify/fanotify.c b/fs/notify/fanotify/fanotify.c
-index 59bc883..caf34bb 100644
---- a/fs/notify/fanotify/fanotify.c
-+++ b/fs/notify/fanotify/fanotify.c
-@@ -8,6 +8,40 @@
+--- a/drivers/gpu/drm/drm_proc.c
++++ b/drivers/gpu/drm/drm_proc.c
+@@ -106,7 +106,8 @@ int drm_proc_create_files(struct drm_info_list *files, int count,
+ 			continue;
  
- #include "fanotify.h"
+ 		tmp = kmalloc(sizeof(struct drm_info_node), GFP_KERNEL);
+-		ent = create_proc_entry(files[i].name, S_IFREG | S_IRUGO, root);
++		ent = proc_create_data(files[i].name, S_IRUGO, root,
++				       &drm_proc_fops, tmp);
+ 		if (!ent) {
+ 			DRM_ERROR("Cannot create /proc/dri/%s/%s\n",
+ 				  name, files[i].name);
+@@ -115,8 +116,6 @@ int drm_proc_create_files(struct drm_info_list *files, int count,
+ 			goto fail;
+ 		}
  
-+static bool try_merge(struct fsnotify_event *old, struct fsnotify_event *new)
-+{
-+	if ((old->mask == new->mask) &&
-+	    (old->to_tell == new->to_tell) &&
-+	    (old->data_type == new->data_type)) {
-+		switch (old->data_type) {
-+		case (FSNOTIFY_EVENT_PATH):
-+			if ((old->path.mnt == new->path.mnt) &&
-+			    (old->path.dentry == new->path.dentry))
-+				return true;
-+		case (FSNOTIFY_EVENT_NONE):
-+			return true;
-+		default:
-+			BUG();
-+		};
-+	}
-+	return false;
-+}
-+
-+static int fanotify_merge(struct list_head *list, struct fsnotify_event *event)
-+{
-+	struct fsnotify_event_holder *holder;
-+	struct fsnotify_event *test_event;
-+
-+	/* and the list better be locked by something too! */
-+
-+	list_for_each_entry_reverse(holder, list, event_list) {
-+		test_event = holder->event;
-+		if (try_merge(test_event, event))
-+			return -EEXIST;
-+	}
-+
-+	return 0;
-+}
- static int fanotify_handle_event(struct fsnotify_group *group, struct fsnotify_event *event)
- {
- 	int ret;
-@@ -20,8 +54,10 @@ static int fanotify_handle_event(struct fsnotify_group *group, struct fsnotify_e
- 	BUILD_BUG_ON(FAN_EVENT_ON_CHILD != FS_EVENT_ON_CHILD);
- 	BUILD_BUG_ON(FAN_Q_OVERFLOW != FS_Q_OVERFLOW);
- 
--	ret = fsnotify_add_notify_event(group, event, NULL, NULL);
--
-+	ret = fsnotify_add_notify_event(group, event, NULL, fanotify_merge);
-+	/* -EEXIST means this event was merged with another, not that it was an error */
-+	if (ret == -EEXIST)
-+		ret = 0;
- 	return ret;
- }
- 
-
+-		ent->proc_fops = &drm_proc_fops;
+-		ent->data = tmp;
+ 		tmp->minor = minor;
+ 		tmp->info_ent = &files[i];
+ 		list_add(&(tmp->list), &(minor->proc_nodes.list));
