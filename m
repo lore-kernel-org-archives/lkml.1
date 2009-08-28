@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751163AbZH1BPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751123AbZH1BRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751163AbZH1BPr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 21:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZH1BPp
+	id S1751123AbZH1BRK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 21:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbZH1BRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 21:15:45 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58152 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751104AbZH1BPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 21:15:44 -0400
-Message-ID: <4A972F19.4090408@cn.fujitsu.com>
-Date: Fri, 28 Aug 2009 09:12:57 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 27 Aug 2009 21:17:09 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:34449 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbZH1BRI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 21:17:08 -0400
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: David Dillow <dave@thedillows.org>,
+       Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
+       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] r8169: Reduce looping in the interrupt handler.
+References: <m1k50r8u4p.fsf@fess.ebiederm.org>
+	<20090825221903.GA13630@electric-eye.fr.zoreil.com>
+	<m1iqgbknun.fsf_-_@fess.ebiederm.org>
+	<1251294974.14241.9.camel@obelisk.thedillows.org>
+	<1251295175.14241.11.camel@obelisk.thedillows.org>
+	<m11vmy737x.fsf@fess.ebiederm.org>
+	<20090826213024.GA20428@electric-eye.fr.zoreil.com>
+	<m1hbvu45jq.fsf@fess.ebiederm.org>
+	<20090827052423.GA1709@electric-eye.fr.zoreil.com>
+	<m1ocq1ke9u.fsf@fess.ebiederm.org>
+	<20090827232024.GA30119@electric-eye.fr.zoreil.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 27 Aug 2009 18:17:01 -0700
+In-Reply-To: <20090827232024.GA30119@electric-eye.fr.zoreil.com> (Francois Romieu's message of "Fri\, 28 Aug 2009 01\:20\:24 +0200")
+Message-ID: <m1d46gka9e.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com
-Subject: Re: [PATCH 11/24] io-controller: Introduce group idling
-References: <1250451046-9966-1-git-send-email-vgoyal@redhat.com> <1250451046-9966-12-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1250451046-9966-12-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-TM-AS-Product-Ver: : ISVW-6.0.0.2339-3.52.0.1010-13974000
-X-TM-AS-Result: : No
-X-TM-AS-Category-Info: : 31:0.000000
-X-TM-AS-MatchedID: : 1-150567-188019-139010
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: romieu@fr.zoreil.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, mb@bu3sch.de, michael.riepe@googlemail.com, dave@thedillows.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> @@ -2201,13 +2362,44 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
->  		 * mean seek distance, give them a chance to run instead
->  		 * of idling.
->  		 */
-> -		if (elv_ioq_slice_used(ioq) || elv_ioq_class_idle(ioq))
-> +		if (elv_ioq_slice_used(ioq) || elv_ioq_class_idle(ioq)) {
-> +			/*
-> +			 * This is the last empty queue in the group and it
-> +			 * has consumed its slice. If we expire it right away
-> +			 * group might loose its share. Wait for an extra
-> +			 * group_idle period for a request before queue
-> +			 * expires.
-> +			 */
-> +			if (elv_iog_should_idle(ioq)) {
-> +				elv_iog_arm_slice_timer(q, iog, 1);
-> +				goto done;
-> +			}
-> +
+Francois Romieu <romieu@fr.zoreil.com> writes:
 
-Hi Vivek,
+> Eric W. Biederman <ebiederm@xmission.com> :
+> [...]
+>> Sounds good.
+>
+> Gah, I was not able to test it with a decent packet load. Patch below against
+> the current tree:
 
-I think we shouldn't arm idle timer on iog again, if it's already on.
+This kills the loop which was my concern.
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+I will double check it works on my configuration.
+Then we have the question of does it work for those folks who have cards
+where the msi appeared to get lost.
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index a4161c2..04f646f 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -3116,7 +3116,8 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
- 			 * group_idle period for a request before queue
- 			 * expires.
- 			 */
--			if (elv_iog_should_idle(ioq)) {
-+			if (elv_iog_should_idle(ioq) &&
-+			    !elv_iog_wait_busy(iog)) {
- 				elv_iog_arm_slice_timer(q, iog, 1);
- 				goto done;
- 			}
--- 
-1.5.4.rc3
+David any chance you can test this patch?
 
-
-
+Eric
