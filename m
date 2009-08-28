@@ -1,247 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbZH1Dmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751613AbZH1D51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751544AbZH1Dmh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 23:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZH1Dmf
+	id S1751613AbZH1D51 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 23:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZH1D51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 23:42:35 -0400
-Received: from mga03.intel.com ([143.182.124.21]:54871 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751228AbZH1Dmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 23:42:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="181326685"
-Subject: ipw2200: firmware DMA loading rework
-From: Zhu Yi <yi.zhu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, Johannes Weiner <hannes@cmpxchg.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Mel Gorman <mel@skynet.ie>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       James Ketrenos <jketreno@linux.intel.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw2100-devel@lists.sourceforge.net" 
-	<ipw2100-devel@lists.sourceforge.net>
-In-Reply-To: <20090826074409.606b5124.akpm@linux-foundation.org>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	 <_yaHeGjHEzG.A.FIH.7sGlKB@chimera>
-	 <84144f020908252309u5cff8afdh2214577ca4db9b5d@mail.gmail.com>
-	 <20090826082741.GA25955@cmpxchg.org>	<20090826093747.GA10955@csn.ul.ie>
-	 <20090826074409.606b5124.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 28 Aug 2009 11:42:31 +0800
-Message-Id: <1251430951.3704.181.camel@debian>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 27 Aug 2009 23:57:27 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:64045 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbZH1D50 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 23:57:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=loHp63lNUbsSzf5vD2DjHvqKHOgFyTG/8jua+FyIea8/FOet/VI4pj5AKj6qoBdx/P
+         u/NdANCgcnhyCQKHyKrlfOeP6tBjkd+DvMlxlvOBFswdY+Fai7wxrLza1HVi8qDiLRs+
+         LnA1uSmLkfQyHa9/FajVofFiiFXlu31Hm88y8=
+MIME-Version: 1.0
+In-Reply-To: <20090827161929.253e001d@jbarnes-g45>
+References: <664902dd0908270449x24f3ee12k615540ffe22e5b58@mail.gmail.com>
+	 <20090827161929.253e001d@jbarnes-g45>
+Date: Fri, 28 Aug 2009 11:57:27 +0800
+Message-ID: <664902dd0908272057g143f5717k7ae12e8f0e12f67d@mail.gmail.com>
+Subject: Re: (Re)assignment of PCI BARs
+From: Beng Tan <bengtan1@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz reported an atomic order-6 allocation failure
-for ipw2200 firmware loading in kernel 2.6.30. High order allocation is
-likely to fail and should always be avoided.
+Hi,
 
-The patch fixes this problem by replacing the original order-6
-pci_alloc_consistent() with an array of order-1 pages from a pci pool.
-This utilized the ipw2200 DMA command blocks (up to 64 slots). The
-maximum firmware size support remains the same (64*8K).
+> A newer kernel could help, there have been some resource related fixes
+> since 2.6.24.
 
-This patch fixes bug http://bugzilla.kernel.org/show_bug.cgi?id=14016
+Okay, I've compiled and tried the latest stable kernel (2.6.30.5)
+using the instructions from
+https://wiki.ubuntu.com/KernelTeam/GitKernelBuild. This kernel loads
+fine, but I still have the issue.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: Zhu Yi <yi.zhu@intel.com>
----
- drivers/net/wireless/ipw2x00/ipw2200.c |  120 ++++++++++++++++++--------------
- 1 files changed, 67 insertions(+), 53 deletions(-)
+Dumps available at
 
-diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c b/drivers/net/wireless/ipw2x00/ipw2200.c
-index 6dcac73..f593fbb 100644
---- a/drivers/net/wireless/ipw2x00/ipw2200.c
-+++ b/drivers/net/wireless/ipw2x00/ipw2200.c
-@@ -2874,45 +2874,27 @@ static int ipw_fw_dma_add_command_block(struct ipw_priv *priv,
- 	return 0;
- }
- 
--static int ipw_fw_dma_add_buffer(struct ipw_priv *priv,
--				 u32 src_phys, u32 dest_address, u32 length)
-+static int ipw_fw_dma_add_buffer(struct ipw_priv *priv, dma_addr_t *src_address,
-+				 int nr, u32 dest_address, u32 len)
- {
--	u32 bytes_left = length;
--	u32 src_offset = 0;
--	u32 dest_offset = 0;
--	int status = 0;
-+	int ret, i;
-+	u32 size;
-+
- 	IPW_DEBUG_FW(">> \n");
--	IPW_DEBUG_FW_INFO("src_phys=0x%x dest_address=0x%x length=0x%x\n",
--			  src_phys, dest_address, length);
--	while (bytes_left > CB_MAX_LENGTH) {
--		status = ipw_fw_dma_add_command_block(priv,
--						      src_phys + src_offset,
--						      dest_address +
--						      dest_offset,
--						      CB_MAX_LENGTH, 0, 0);
--		if (status) {
-+	IPW_DEBUG_FW_INFO("nr=%d dest_address=0x%x len=0x%x\n",
-+			  nr, dest_address, len);
-+
-+	for (i = 0; i < nr; i++) {
-+		size = min_t(u32, len - i * CB_MAX_LENGTH, CB_MAX_LENGTH);
-+		ret = ipw_fw_dma_add_command_block(priv, src_address[i],
-+						   dest_address +
-+						   i * CB_MAX_LENGTH, size,
-+						   0, 0);
-+		if (ret) {
- 			IPW_DEBUG_FW_INFO(": Failed\n");
- 			return -1;
- 		} else
- 			IPW_DEBUG_FW_INFO(": Added new cb\n");
--
--		src_offset += CB_MAX_LENGTH;
--		dest_offset += CB_MAX_LENGTH;
--		bytes_left -= CB_MAX_LENGTH;
--	}
--
--	/* add the buffer tail */
--	if (bytes_left > 0) {
--		status =
--		    ipw_fw_dma_add_command_block(priv, src_phys + src_offset,
--						 dest_address + dest_offset,
--						 bytes_left, 0, 0);
--		if (status) {
--			IPW_DEBUG_FW_INFO(": Failed on the buffer tail\n");
--			return -1;
--		} else
--			IPW_DEBUG_FW_INFO
--			    (": Adding new cb - the buffer tail\n");
- 	}
- 
- 	IPW_DEBUG_FW("<< \n");
-@@ -3160,59 +3142,91 @@ static int ipw_load_ucode(struct ipw_priv *priv, u8 * data, size_t len)
- 
- static int ipw_load_firmware(struct ipw_priv *priv, u8 * data, size_t len)
- {
--	int rc = -1;
-+	int ret = -1;
- 	int offset = 0;
- 	struct fw_chunk *chunk;
--	dma_addr_t shared_phys;
--	u8 *shared_virt;
-+	int total_nr = 0;
-+	int i;
-+	struct pci_pool *pool;
-+	u32 *virts[CB_NUMBER_OF_ELEMENTS_SMALL];
-+	dma_addr_t phys[CB_NUMBER_OF_ELEMENTS_SMALL];
- 
- 	IPW_DEBUG_TRACE("<< : \n");
--	shared_virt = pci_alloc_consistent(priv->pci_dev, len, &shared_phys);
- 
--	if (!shared_virt)
-+	pool = pci_pool_create("ipw2200", priv->pci_dev, CB_MAX_LENGTH, 0, 0);
-+	if (!pool) {
-+		IPW_ERROR("pci_pool_create failed\n");
- 		return -ENOMEM;
--
--	memmove(shared_virt, data, len);
-+	}
- 
- 	/* Start the Dma */
--	rc = ipw_fw_dma_enable(priv);
-+	ret = ipw_fw_dma_enable(priv);
- 
- 	/* the DMA is already ready this would be a bug. */
- 	BUG_ON(priv->sram_desc.last_cb_index > 0);
- 
- 	do {
-+		u32 chunk_len;
-+		u8 *start;
-+		int size;
-+		int nr = 0;
-+
- 		chunk = (struct fw_chunk *)(data + offset);
- 		offset += sizeof(struct fw_chunk);
-+		chunk_len = le32_to_cpu(chunk->length);
-+		start = data + offset;
-+
-+		nr = (chunk_len + CB_MAX_LENGTH - 1) / CB_MAX_LENGTH;
-+		for (i = 0; i < nr; i++) {
-+			virts[total_nr] = pci_pool_alloc(pool, GFP_KERNEL,
-+							 &phys[total_nr]);
-+			if (!virts[total_nr]) {
-+				ret = -ENOMEM;
-+				goto out;
-+			}
-+			size = min_t(u32, chunk_len - i * CB_MAX_LENGTH,
-+				     CB_MAX_LENGTH);
-+			memcpy(virts[total_nr], start, size);
-+			start += size;
-+			total_nr++;
-+			/* We don't support fw chunk larger than 64*8K */
-+			BUG_ON(total_nr > CB_NUMBER_OF_ELEMENTS_SMALL);
-+		}
-+
- 		/* build DMA packet and queue up for sending */
- 		/* dma to chunk->address, the chunk->length bytes from data +
- 		 * offeset*/
- 		/* Dma loading */
--		rc = ipw_fw_dma_add_buffer(priv, shared_phys + offset,
--					   le32_to_cpu(chunk->address),
--					   le32_to_cpu(chunk->length));
--		if (rc) {
-+		ret = ipw_fw_dma_add_buffer(priv, &phys[total_nr - nr],
-+					    nr, le32_to_cpu(chunk->address),
-+					    chunk_len);
-+		if (ret) {
- 			IPW_DEBUG_INFO("dmaAddBuffer Failed\n");
- 			goto out;
- 		}
- 
--		offset += le32_to_cpu(chunk->length);
-+		offset += chunk_len;
- 	} while (offset < len);
- 
- 	/* Run the DMA and wait for the answer */
--	rc = ipw_fw_dma_kick(priv);
--	if (rc) {
-+	ret = ipw_fw_dma_kick(priv);
-+	if (ret) {
- 		IPW_ERROR("dmaKick Failed\n");
- 		goto out;
- 	}
- 
--	rc = ipw_fw_dma_wait(priv);
--	if (rc) {
-+	ret = ipw_fw_dma_wait(priv);
-+	if (ret) {
- 		IPW_ERROR("dmaWaitSync Failed\n");
- 		goto out;
- 	}
--      out:
--	pci_free_consistent(priv->pci_dev, len, shared_virt, shared_phys);
--	return rc;
-+ out:
-+	for (i = 0; i < total_nr; i++)
-+		pci_pool_free(pool, virts[i], phys[i]);
-+
-+	pci_pool_destroy(pool);
-+
-+	return ret;
- }
- 
- /* stop nic */
--- 
-1.5.3.6
+http://208.100.55.9/cold_boot_20090828-2.6.30.5-custom/dmesg.txt
+http://208.100.55.9/cold_boot_20090828-2.6.30.5-custom/iomem.txt
+http://208.100.55.9/cold_boot_20090828-2.6.30.5-custom/lspci_vv.txt
 
+dmesg shows ...
 
+[    0.214238] pci 0000:0d:00.0: reg 10 64bit mmio: [0x000000-0xfffffff]
 
+indicating that my laptop's bios is in error and allocated BAR 0 to
+the first 256M of memory. This is obviously not right. My guess is
+linux should be able to fix this?
+
+However, later on in dmesg, I get ...
+
+[    0.292416] pnp 00:00: mem resource (0x0-0x9fbff) overlaps
+0000:0d:00.0 BAR 0 (0x0-0xfffffff), disabling
+[    0.292421] pnp 00:00: mem resource (0x9fc00-0x9ffff) overlaps
+0000:0d:00.0 BAR 0 (0x0-0xfffffff), disabling
+[    0.292425] pnp 00:00: mem resource (0xc0000-0xcffff) overlaps
+0000:0d:00.0 BAR 0 (0x0-0xfffffff), disabling
+[    0.292429] pnp 00:00: mem resource (0xe0000-0xfffff) overlaps
+0000:0d:00.0 BAR 0 (0x0-0xfffffff), disabling
+[    0.292433] pnp 00:00: mem resource (0x100000-0x7f6d33ff) overlaps
+0000:0d:00.0 BAR 0 (0x0-0xfffffff), disabling
+
+and
+
+[    0.344334] pci 0000:0d:00.0: BAR 0: can't allocate mem resource
+[0xe0000000-0xe01fffff]
+[    0.344337] pci 0000:00:1c.3: PCI bridge, secondary bus 0000:0d
+[    0.344341] pci 0000:00:1c.3:   IO window: 0xd000-0xdfff
+[    0.344348] pci 0000:00:1c.3:   MEM window: 0xefb00000-0xefcfffff
+[    0.344354] pci 0000:00:1c.3:   PREFETCH window:
+0x000000e0000000-0x000000e01fffff
+
+so linux has not reallocated BAR 0 successfully.
+
+> In your case, it looks like the BIOS isn't giving the bus with
+> your card a large enough window (256M BAR on your card vs. a 2M windows
+> on the bus).
+
+Yes, the intervening bridge only has a 2M window. Is Linux supposed to
+be intelligent enough to expand the bridge's window to 256M?
+
+Would someone more knowledgeable be able to say whether this looks like a bug?
+
+Also, I notice from iomem that PCI allocations start from 0xd0000000
+up until the end of memory. There isn't actually a free 256M chunk in
+this range.
+
+Any idea who or what decides to start allocating at 0xd0000000? Is it
+possible to tell linux to start allocating at 0xc0000000 instead?
+There's nothing there so the space is free.
+
+Also, booting the kernel with pci=assign-busses didn't affect the
+issue. It just changed the bus numbering around.
