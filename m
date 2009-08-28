@@ -1,66 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbZH1S7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbZH1TCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752205AbZH1S7U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZH1S7S
+	id S1752154AbZH1TCx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 15:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZH1TCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:59:18 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53227 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751813AbZH1S7S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:59:18 -0400
-Message-ID: <4A9828F4.4040905@zytor.com>
-Date: Fri, 28 Aug 2009 11:59:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Fri, 28 Aug 2009 15:02:52 -0400
+Received: from web180315.mail.gq1.yahoo.com ([67.195.15.81]:28563 "HELO
+	web180315.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751923AbZH1TCw convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 15:02:52 -0400
+X-Greylist: delayed 617 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Aug 2009 15:02:51 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=bellsouth.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=xNCPI3zY7vq/lHJRRMVVF0DmoGKjkGnmwfMWoM/PhnrMSCOzjhHDh2So43k1IeQCz/B/P4XcDM3XJwFfWliVnrERj5+mU3R4dsBYWMOiQUKBWCE6q3SvaNZPd/Jo4GNhUZgUJQVlur8908g6INxnHZ3DzXEJSxwCi8OimBo7E3Q=;
+Message-ID: <977209.72693.qm@web180315.mail.gq1.yahoo.com>
+X-YMail-OSG: W4dpqSUVM1mEvyf_7rmNbx9xi3IQoZTGFAh6MtqEfCFUAMrqdgXI5irlcPZhTbsSsVMzy.eiCx51xUsIvJckgeFXa7IJhipHck67QPeWPJbDHqe5uSvXKvD1iST9kOMkj_mAvKdK2F0nVP1YtYr_EJnI_mIuj7KGwGQ18ZJrP4_1bretp0IeJbD8.aeNwlj5o.XbT_Yg9gAVWtPGblnHjDKNmUyUPDRklGwjESnNCAyTUwmSBzkj4YXvyxv7EWTX9Kt2OuVUOP2fN9cTe5w_ojJbP44mkg--
+X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
+Date: Fri, 28 Aug 2009 11:52:33 -0700 (PDT)
+From: Irish Online News <promonotice@bellsouth.net>
+Reply-To: irln.drrk@btinternet.com
+Subject: Batch:074/05/ZY369
+To: undisclosed recipients:;
 MIME-Version: 1.0
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>, linux-arch@vger.kernel.org
-CC: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Sam Ravnborg <sam@ravnborg.org>
-Subject: PG_uncached, CONFIG_EXTENDED_PAGEFLAGS and !NUMA
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-
-I am looking at a patchset by Venkatesh Pallipadi which cleans up a lot
-of the corner cases in x86 PAT.
-
-http://marc.info/?i=cover.1247162373.git.venkatesh.pallipadi@intel.com
-
-This patchset pages PG_uncached available to other architectures than
-IA64 on an opt-in basis.  Unfortunately, it means we run out of page
-flags on X86_32+PAE+SPARSEMEM.
-
-Rather than increasing SECTION_SIZE_BITS further, it seems more
-reasonable to disable CONFIG_EXTENDED_PAGEFLAGS in this case:
-
-diff --git a/mm/Kconfig b/mm/Kconfig
-index c948d4c..fe221c7 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -153,7 +153,7 @@ config MEMORY_HOTREMOVE
- #
- config PAGEFLAGS_EXTENDED
-        def_bool y
--       depends on 64BIT || SPARSEMEM_VMEMMAP || !NUMA || !SPARSEMEM
-+       depends on 64BIT || SPARSEMEM_VMEMMAP || !SPARSEMEM
-
- # Heavily threaded applications may benefit from splitting the mm-wide
-
-Dropping the !NUMA requirement here seems reasonable, since we already
-have generic code that handles removing the node number from the page
-flags when there are too many.
-
-We could make this an x86-specific change, but the above generic change
-would be cleaner in terms of Kconfig complexity.  Would people object to
-this as a general change?
-
-	-hpa
+You've earned £750,000.
+Send Necessary Information:Name,Age,Country
