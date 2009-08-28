@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZH1VIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbZH1VQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752829AbZH1VIz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZH1VIy
+	id S1752650AbZH1VQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZH1VQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:08:54 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:19767 "EHLO mx1.redhat.com"
+	Fri, 28 Aug 2009 17:16:27 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:56691 "EHLO mail-out1.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726AbZH1VIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:08:53 -0400
-Message-ID: <4A984758.5020008@redhat.com>
-Date: Fri, 28 Aug 2009 14:08:40 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Jamie Lokier <jamie@shareable.org>
-CC: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	id S1751978AbZH1VQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 17:16:27 -0400
 Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
-References: <20090821135403.GA6208@shareable.org> <20090821142635.GB30617@infradead.org> <20090821152459.GC6929@shareable.org> <20090821174525.GA28861@infradead.org> <20090822005006.GA22530@shareable.org> <20090824023422.GA775@infradead.org> <20090827143459.GB31453@shareable.org> <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com> <20090828154647.GA15808@infradead.org> <20090828164432.GA8036@shareable.org>
-In-Reply-To: <20090828164432.GA8036@shareable.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ulrich Drepper <drepper@redhat.com>, Jamie Lokier <jamie@shareable.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20090828210838.GA26799@infradead.org>
+References: <20090824023422.GA775@infradead.org>
+	 <20090827143459.GB31453@shareable.org>
+	 <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com>
+	 <20090828154647.GA15808@infradead.org> <4A98008B.6050503@redhat.com>
+	 <20090828161745.GA8755@infradead.org> <4A9806D9.5050409@redhat.com>
+	 <20090828164106.GA9951@infradead.org> <4A984337.7080009@redhat.com>
+	 <20090828210838.GA26799@infradead.org>
+Content-Type: text/plain
+Date: Fri, 28 Aug 2009 17:16:14 -0400
+Message-Id: <1251494174.5984.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 7 sum msgs/h 1 total rcpts 1241 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 6C68EE416EA55C148DFB2B674ECE86ACF22D5623
+X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 195 max/h 6 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/28/2009 09:44 AM, Jamie Lokier wrote:
-> However, for userspace, there's an issue with applications which were
-> compiled with an old libc and used O_SYNC.  Most of them probably
-> expected O_SYNC behaviour but all they got was O_DSYNC, because Linux
-> didn't do it right.
+On Fri, 2009-08-28 at 17:08 -0400, Christoph Hellwig wrote:
+> #define O_SYNC	(O_FULLSYNC|O_DSYNC)
+> 
+>  - during the normal merge window I will add a real implementation for
+>    for O_FULLSYNC and O_RSYNC
+> 
+> P.S. better naming suggestions for O_FULLSYNC welcome
 
-Right.  But these programs apparently can live with the broken 
-semantics.  I don't worry too much about this.  If people really need 
-the fixed O_SYNC semantics then let them recompile their code.
-
-
-> When using a newer kernel which actually implements O_SYNC behaviour,
-> I'm thinking those applications which asked for O_SYNC should get it,
-> even though they're still linked with an old libc.
-
-In general yes, but it's too expensive.  Again, existing programs expect 
-the current behavior and can live with it.
+Basically you are just ensuring that the metadata changes are being
+synced together with the data changes, so how about O_ISYNC (inode
+sync)?
 
 
-> (Oh, and Ulrich: Why is there a "#define O_RSYNC O_SYNC" in the Glibc
-> headers?  That doesn't make sense: O_RSYNC has nothing to do with
-> writing.)
-
-O_SYNC is a superset of O_RSYNC.  In the absence of a true O_RSYNC 
-that's the next best thing.  Of course I didn't know the Linux O_SYNC is 
-really O_DSYNC.  In that context the definition doesn't make sense.
-
-
-> Although libc's __new_open() could have this:
->
->      /* Old kernels only look at O_DSYNC.  It's better than nothing. */
->      if (flags&  O_SYNC)
->          flags |= O_DSYNC;
->
-> Imho, it's better to not do that, and instead have
->
->      #define O_SYNC          (O_DSYNC|__O_SYNC_KERNEL)
-
-Why should it be better?  You're replacing something the compiler can do 
-with zero cost with active code.
-
-
-Again, these O_* constant changes are sufficient.
-
--- 
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
