@@ -1,61 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZH1MxC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbZH1M4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752543AbZH1MxC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:53:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZH1MxB
+	id S1752619AbZH1M4J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZH1M4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:53:01 -0400
-Received: from mx01.bfk.de ([193.227.124.2]:49881 "EHLO mx01.bfk.de"
+	Fri, 28 Aug 2009 08:56:08 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:58456 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752319AbZH1MxA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:53:00 -0400
-To: Eric Blake <ebb9@byu.net>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bug-coreutils@gnu.org, bug-gnulib@gnu.org,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] open: introduce O_NOSTD
-References: <4A9285FC.8000606@byu.net>
-	<1251202593-3676-1-git-send-email-ebb9@byu.net>
-	<alpine.DEB.2.00.0908251420190.18518@makko.or.mcafeemobile.com>
-	<4A968FF8.8050109@byu.net> <82k50puxx8.fsf@mid.bfk.de>
-	<4A97D16D.5060003@byu.net>
-From: Florian Weimer <fweimer@bfk.de>
-Date: Fri, 28 Aug 2009 12:52:57 +0000
-In-Reply-To: <4A97D16D.5060003@byu.net> (Eric Blake's message of "Fri\, 28 Aug 2009 06\:45\:33 -0600")
-Message-ID: <82ocq0p0ba.fsf@mid.bfk.de>
+	id S1752298AbZH1M4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 08:56:08 -0400
+Date: Fri, 28 Aug 2009 13:56:08 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] page-allocator: Split per-cpu list into
+	one-list-per-migrate-type
+Message-ID: <20090828125559.GD5054@csn.ul.ie>
+References: <1251449067-3109-1-git-send-email-mel@csn.ul.ie> <1251449067-3109-2-git-send-email-mel@csn.ul.ie> <20090828205241.fc8dfa51.minchan.kim@barrios-desktop> <28c262360908280500tb47685btc9f36ca81605d55@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262360908280500tb47685btc9f36ca81605d55@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric Blake:
+On Fri, Aug 28, 2009 at 09:00:25PM +0900, Minchan Kim wrote:
+> On Fri, Aug 28, 2009 at 8:52 PM, Minchan Kim<minchan.kim@gmail.com> wrote:
+> > Hi, Mel.
+> >
+> > On Fri, 28 Aug 2009 09:44:26 +0100
+> > Mel Gorman <mel@csn.ul.ie> wrote:
+> >
+> >> Currently the per-cpu page allocator searches the PCP list for pages of the
+> >> correct migrate-type to reduce the possibility of pages being inappropriate
+> >> placed from a fragmentation perspective. This search is potentially expensive
+> >> in a fast-path and undesirable. Splitting the per-cpu list into multiple
+> >> lists increases the size of a per-cpu structure and this was potentially
+> >> a major problem at the time the search was introduced. These problem has
+> >> been mitigated as now only the necessary number of structures is allocated
+> >> for the running system.
+> >>
+> >> This patch replaces a list search in the per-cpu allocator with one list per
+> >> migrate type. The potential snag with this approach is when bulk freeing
+> >> pages. We round-robin free pages based on migrate type which has little
+> >> bearing on the cache hotness of the page and potentially checks empty lists
+> >> repeatedly in the event the majority of PCP pages are of one type.
+> >>
+> >> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> >> Acked-by: Nick Piggin <npiggin@suse.de>
+> >> ---
+> >> †include/linux/mmzone.h | † †5 ++-
+> >> †mm/page_alloc.c † † † †| †106 ++++++++++++++++++++++++++---------------------
+> >> †2 files changed, 63 insertions(+), 48 deletions(-)
+> >>
+> >> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> >> index 008cdcd..045348f 100644
+> >> --- a/include/linux/mmzone.h
+> >> +++ b/include/linux/mmzone.h
+> >> @@ -38,6 +38,7 @@
+> >> †#define MIGRATE_UNMOVABLE † † 0
+> >> †#define MIGRATE_RECLAIMABLE † 1
+> >> †#define MIGRATE_MOVABLE † † † 2
+> >> +#define MIGRATE_PCPTYPES † † †3 /* the number of types on the pcp lists */
+> >> †#define MIGRATE_RESERVE † † † 3
+> >> †#define MIGRATE_ISOLATE † † † 4 /* can't allocate from here */
+> >> †#define MIGRATE_TYPES † † † † 5
+> >> @@ -169,7 +170,9 @@ struct per_cpu_pages {
+> >> † † † int count; † † † † † † †/* number of pages in the list */
+> >> † † † int high; † † † † † † † /* high watermark, emptying needed */
+> >> † † † int batch; † † † † † † †/* chunk size for buddy add/remove */
+> >> - † † struct list_head list; †/* the list of pages */
+> >> +
+> >> + † † /* Lists of pages, one per migrate type stored on the pcp-lists */
+> >> + † † struct list_head lists[MIGRATE_PCPTYPES];
+> >> †};
+> >>
+> >> †struct per_cpu_pageset {
+> >> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> >> index ac3afe1..65eedb5 100644
+> >> --- a/mm/page_alloc.c
+> >> +++ b/mm/page_alloc.c
+> >> @@ -522,7 +522,7 @@ static inline int free_pages_check(struct page *page)
+> >> †}
+> >>
+> >> †/*
+> >> - * Frees a list of pages.
+> >> + * Frees a number of pages from the PCP lists
+> >> † * Assumes all pages on list are in same zone, and of same order.
+> >> † * count is the number of pages to free.
+> >> † *
+> >> @@ -532,23 +532,36 @@ static inline int free_pages_check(struct page *page)
+> >> † * And clear the zone's pages_scanned counter, to hold off the "all pages are
+> >> † * pinned" detection logic.
+> >> † */
+> >> -static void free_pages_bulk(struct zone *zone, int count,
+> >> - † † † † † † † † † † † † † † † † † † struct list_head *list, int order)
+> >> +static void free_pcppages_bulk(struct zone *zone, int count,
+> >> + † † † † † † † † † † † † † † † † † † struct per_cpu_pages *pcp)
+> >> †{
+> >> + † † int migratetype = 0;
+> >> +
+> >
+> > How about caching the last sucess migratetype
+> > with 'per_cpu_pages->last_alloc_type'?
+>                                          ^^^^
+>                                          free
+> > I think it could prevent a litte spinning empty list.
+> 
+> Anyway, Ignore me.
+> I didn't see your next patch.
+> 
 
-> Your version fails to clear the cloexec bit of the final fd if the
-> original caller didn't request O_CLOEXEC.
-
-Okay, but you can fix that in a race-free manner (but I thought that
-this was implied by open_safer).
-
-> If the caller requested O_CLOEXEC, then your version takes 3, 5, or
-> 7 syscalls depending on how many std fds were closed, while my
-> version takes 3 syscalls regardless of how many std fds were closed.
-
-I really don't see a way around that.  You can't pick a descriptor and
-hope that it's unused.
-
-> Also, your suggestion has a definite race in that you are calling
-> open() multiple times rather than cloning an existing fd after the
-> first open(), such that another process could alter which file is
-> visited between your first and last open().
-
-Sure, but this is an unobservable differen.ce
+Nah, it's a reasonable suggestion. Patch 2 was one effort to reduce
+spinning but the comment was in patch 1 in case someone thought of
+something better. I tried what you suggested before but it didn't work
+out. For any sort of workload that varies the type of allocation (very
+frequent), it didn't reduce spinning significantly.
 
 -- 
-Florian Weimer                <fweimer@bfk.de>
-BFK edv-consulting GmbH       http://www.bfk.de/
-Kriegsstraﬂe 100              tel: +49-721-96201-1
-D-76133 Karlsruhe             fax: +49-721-96201-99
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
