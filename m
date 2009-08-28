@@ -1,88 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbZH1VhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZH1Vgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869AbZH1VhS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZH1VhQ
+	id S1753303AbZH1Vgb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZH1Vg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:37:16 -0400
-Received: from www.tglx.de ([62.245.132.106]:55773 "EHLO www.tglx.de"
+	Fri, 28 Aug 2009 17:36:29 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:31385 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171AbZH1VhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:37:13 -0400
-Date: Fri, 28 Aug 2009 23:36:04 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
-Subject: Re: [ANNOUNCE] 2.6.31-rc7-rt8
-In-Reply-To: <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
- <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
- <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
- <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752191AbZH1Vca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 17:32:30 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
+       jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       riel@redhat.com
+Subject: [PATCH 08/23] io-controller: cfq changes to use hierarchical fair queuing code in elevaotor layer
+Date: Fri, 28 Aug 2009 17:30:57 -0400
+Message-Id: <1251495072-7780-9-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
+Make cfq hierarhical.
+
+Signed-off-by: Nauman Rafique <nauman@google.com>
+Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
+Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
+Signed-off-by: Aristeu Rozanski <aris@redhat.com>
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/Kconfig.iosched |    8 ++++++
+ block/cfq-iosched.c   |   63 ++++++++++++++++++++++++++++++++++++++++++++++--
+ init/Kconfig          |    2 +-
+ 3 files changed, 69 insertions(+), 4 deletions(-)
+
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index dd5224d..a91a807 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -54,6 +54,14 @@ config IOSCHED_CFQ
+ 	  working environment, suitable for desktop systems.
+ 	  This is the default I/O scheduler.
  
-    - update to Linus' latest
++config IOSCHED_CFQ_HIER
++	bool "CFQ Hierarchical Scheduling support"
++	depends on IOSCHED_CFQ && CGROUPS
++	select GROUP_IOSCHED
++	default n
++	---help---
++	  Enable hierarhical scheduling in cfq.
++
+ choice
+ 	prompt "Default I/O scheduler"
+ 	default DEFAULT_CFQ
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index decb654..6c1f87a 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1285,6 +1285,60 @@ static void cfq_init_cfqq(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	cfqq->pid = pid;
+ }
  
-    - more perf counters rt education
-
-    - !RT build fix (jstultz)
-
-    - MFD rt fix (khilman)
-    
-Known issues:
-      - ARM highmem
-      - scheduler load balancing oddities. Peter is working on it.
-      - latency tracer oddities (latency tracers in combination with
-        events). Steven is working on those
-
-Give it a good testing. We aim for releasing a stable .31-rt in less
-than 24 hrs after Linus releases .31 :)
-
-Download locations:
++#ifdef CONFIG_IOSCHED_CFQ_HIER
++static void changed_cgroup(struct io_context *ioc, struct cfq_io_context *cic)
++{
++	struct cfq_queue *async_cfqq = cic_to_cfqq(cic, 0);
++	struct cfq_queue *sync_cfqq = cic_to_cfqq(cic, 1);
++	struct cfq_data *cfqd = cic->key;
++	struct io_group *iog, *__iog;
++	unsigned long flags;
++	struct request_queue *q;
++
++	if (unlikely(!cfqd))
++		return;
++
++	q = cfqd->queue;
++
++	spin_lock_irqsave(q->queue_lock, flags);
++
++	iog = elv_io_get_io_group(q, 0);
++
++	if (async_cfqq != NULL) {
++		__iog = cfqq_to_io_group(async_cfqq);
++		if (iog != __iog) {
++			/* cgroup changed, drop the reference to async queue */
++			cic_set_cfqq(cic, NULL, 0);
++			cfq_put_queue(async_cfqq);
++		}
++	}
++
++	if (sync_cfqq != NULL) {
++		__iog = cfqq_to_io_group(sync_cfqq);
++
++		/*
++		 * Drop reference to sync queue. A new sync queue will
++		 * be assigned in new group upon arrival of a fresh request.
++		 * If old queue has got requests, those reuests will be
++		 * dispatched over a period of time and queue will be freed
++		 * automatically.
++		 */
++		if (iog != __iog) {
++			cic_set_cfqq(cic, NULL, 1);
++			cfq_put_queue(sync_cfqq);
++		}
++	}
++
++	spin_unlock_irqrestore(q->queue_lock, flags);
++}
++
++static void cfq_ioc_set_cgroup(struct io_context *ioc)
++{
++	call_for_each_cic(ioc, changed_cgroup);
++	ioc->cgroup_changed = 0;
++}
++#endif  /* CONFIG_IOSCHED_CFQ_HIER */
++
+ static struct cfq_queue *
+ cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
+ 		     struct io_context *ioc, gfp_t gfp_mask)
+@@ -1296,7 +1350,7 @@ cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
+ 	struct io_group *iog = NULL;
  
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
+ retry:
+-	iog = elv_io_get_io_group(q, 0);
++	iog = elv_io_get_io_group(q, 1);
+ 
+ 	cic = cfq_cic_lookup(cfqd, ioc);
+ 	/* cic always exists here */
+@@ -1385,7 +1439,7 @@ cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct io_context *ioc,
+ 	const int ioprio_class = task_ioprio_class(ioc);
+ 	struct cfq_queue *async_cfqq = NULL;
+ 	struct cfq_queue *cfqq = NULL;
+-	struct io_group *iog = elv_io_get_io_group(cfqd->queue, 0);
++	struct io_group *iog = elv_io_get_io_group(cfqd->queue, 1);
+ 
+ 	if (!is_sync) {
+ 		async_cfqq = elv_io_group_async_queue_prio(iog, ioprio_class,
+@@ -1540,7 +1594,10 @@ out:
+ 	smp_read_barrier_depends();
+ 	if (unlikely(ioc->ioprio_changed))
+ 		cfq_ioc_set_ioprio(ioc);
+-
++#ifdef CONFIG_IOSCHED_CFQ_HIER
++	if (unlikely(ioc->cgroup_changed))
++		cfq_ioc_set_cgroup(ioc);
++#endif
+ 	return cic;
+ err_free:
+ 	cfq_cic_free(cic);
+diff --git a/init/Kconfig b/init/Kconfig
+index 29f701d..afcaa86 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -613,7 +613,7 @@ config CGROUP_MEM_RES_CTLR_SWAP
+ 	  size is 4096bytes, 512k per 1Gbytes of swap.
+ 
+ config GROUP_IOSCHED
+-	bool "Group IO Scheduler"
++	bool
+ 	depends on CGROUPS && ELV_FAIR_QUEUING
+ 	default n
+ 	---help---
+-- 
+1.6.0.6
 
-Git release branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
-  
-Git development branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
-
-Gitweb:
-     http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
-
-Information on the RT patch can be found at:
-
-    http://rt.wiki.kernel.org/index.php/Main_Page
-
-to build the 2.6.31-rc8-rt9 tree, the following patches should be
-applied:
-
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.31-rc8.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rc8-rt9.bz2
-
-Enjoy !
-
-      tglx
