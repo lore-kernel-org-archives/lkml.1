@@ -1,111 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbZH1HeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbZH1HhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752097AbZH1HeE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 03:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbZH1HeD
+	id S1752155AbZH1HhR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 03:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZH1HhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 03:34:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43149 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbZH1HeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 03:34:02 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "Pavel Machek" <pavel@ucw.cz>
-Date: Fri, 28 Aug 2009 17:31:36 +1000 (EST)
-Message-ID: <ff262c08b0c3a7a9c32dabd53a4a9a27.squirrel@neil.brown.name>
-In-Reply-To: <20090828064449.GA27528@elf.ucw.cz>
-References: <20090824212518.GF29763@elf.ucw.cz>
-    <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com>
-    <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com>
-    <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com>
-    <20090828064449.GA27528@elf.ucw.cz>
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3: 
-     document conditions when reliable operation is possible)
-Cc: "Ric Wheeler" <rwheeler@redhat.com>, "Rob Landley" <rob@landley.net>,
-       "Theodore Tso" <tytso@mit.edu>, "Florian Weimer" <fweimer@bfk.de>,
-       "Goswin von Brederlow" <goswin-v-b@web.de>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
+	Fri, 28 Aug 2009 03:37:16 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36302 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbZH1HhO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 03:37:14 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 28 Aug 2009 16:35:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH 1/5] memcg: change for softlimit.
+Message-Id: <20090828163523.e51678be.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090828072007.GH4889@balbir.in.ibm.com>
+References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090828132321.e4a497bb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090828072007.GH4889@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, August 28, 2009 4:44 pm, Pavel Machek wrote:
-> On Thu 2009-08-27 21:32:49, Ric Wheeler wrote:
->>>
->> If you have a specific bug in MD code, please propose a patch.
->
-> Interesting. So, what's technically wrong with the patch below?
->
+On Fri, 28 Aug 2009 12:50:08 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-You mean apart from ".... that high highly undesirable ...." ??
-                               ^^^^^^^^^^^
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 13:23:21]:
+> 
+> > This patch tries to modify softlimit handling in memcg/res_counter.
+> > There are 2 reasons in general.
+> > 
+> >  1. soft_limit can use only against sub-hierarchy root.
+> >     Because softlimit tree is sorted by usage, putting prural groups
+> >     under hierarchy (which shares usage) will just adds noise and unnecessary
+> >     mess. This patch limits softlimit feature only to hierarchy root.
+> >     This will make softlimit-tree maintainance better. 
+> > 
+> >  2. In these days, it's reported that res_counter can be bottleneck in
+> >     massively parallel enviroment. We need to reduce jobs under spinlock.
+> >     The reason we check softlimit at res_counter_charge() is that any member
+> >     in hierarchy can have softlimit.
+> >     But by chages in "1", only hierarchy root has soft_limit. We can omit
+> >     hierarchical check in res_counter.
+> > 
+> > After this patch, soft limit is avaliable only for root of sub-hierarchy.
+> > (Anyway, softlimit for hierarchy children just makes users confused, hard-to-use)
+> >
+> 
+> 
+> I need some time to digest this change, if the root is a hiearchy root
+> then only root can support soft limits? I think the change makes it
+> harder to use soft limits. Please help me understand better. 
+> 
+I poitned out this issue many many times while you wrote patch.
 
-And the phrase "Regular backups when using these devices ...." should
-be "Regular backups when using any devices .....".
-                               ^^^
-If you have a device failure near a power fail on a raid5 you might
-lose some blocks of data.  If you have a device failure near (or not
-near) a power failure on raid0 or jbod etc you will certainly lose lots
-of blocks of data.
+memcg has "sub tree". hierarchy here means "sub tree" with use_hierarchy =1.
 
-I think it would be better to say:
+Assume
 
-   ".... and degraded DM/MD RAID 4/5/6(*) arrays..."
-             ^^^^^^^^
-with
-(*) If device failure causes the array to become degraded during or
-immediately after the power failure, the same problem can result.
 
-And "necessary" only have the one 'c' :-)
+	/cgroup/Users/use_hierarchy=0
+		  Gold/ use_hierarchy=1 
+		     Bob
+		     Mike
+		  Silver/use_hierarchy=1
+		     
+		/System/use_hierarchy=1
+	
+In flat, there are 3 sub trees.
+	/cgroup/Users/Gold   (Gold has /cgroup/Users/Gold/Bog, /cgroup/Users/Gold/Mike)
+	/cgroup/Users/Silver .....
+	/cgroup/System	     .....
 
-NeilBrown
+Then, subtrees means a group which inherits charges by use_hierarchy=1
 
-> 									Pavel
-> ---
->
-> From: Theodore Tso <tytso@mit.edu>
->
-> Document that many devices are too broken for filesystems to protect
-> data in case of powerfail.
->
-> Signed-of-by: Pavel Machek <pavel@ucw.cz>
->
-> diff --git a/Documentation/filesystems/dangers.txt
-> b/Documentation/filesystems/dangers.txt
-> new file mode 100644
-> index 0000000..2f3eec1
-> --- /dev/null
-> +++ b/Documentation/filesystems/dangers.txt
-> @@ -0,0 +1,21 @@
-> +There are storage devices that high highly undesirable properties when
-> +they are disconnected or suffer power failures while writes are in
-> +progress; such devices include flash devices and DM/MD RAID 4/5/6 (*)
-> +arrays.  These devices have the property of potentially corrupting
-> +blocks being written at the time of the power failure, and worse yet,
-> +amplifying the region where blocks are corrupted such that additional
-> +sectors are also damaged during the power failure.
-> +
-> +Users who use such storage devices are well advised take
-> +countermeasures, such as the use of Uninterruptible Power Supplies,
-> +and making sure the flash device is not hot-unplugged while the device
-> +is being used.  Regular backups when using these devices is also a
-> +Very Good Idea.
-> +
-> +Otherwise, file systems placed on these devices can suffer silent data
-> +and file system corruption.  An forced use of fsck may detect metadata
-> +corruption resulting in file system corruption, but will not suffice
-> +to detect data corruption.
-> +
-> +(*) Degraded array or single disk failure "near" the powerfail is
-> +neccessary for this property of RAID arrays to bite.
->
->
+In current implementation, softlimit can be set to arbitrary cgroup. 
+Then, following ops are allowed.
+==
+	/cgroup/Users/Gold softlimit= 1G
+	/cgroup/Users/Gold/Bob  softlimit=800M
+	/cgroup/Users/Gold/Mike softlimit=800M
+==
+
+Then, how your RB-tree for softlimit management works ?
+
+When softlimit finds /cgroup/Users/Gold/, it will reclaim memory from
+all 3 groups by hierarchical_reclaim. If softlimit finds
+/cgroup/Users/Gold/Bob, reclaim from Bob means recalaim from Gold.
+
+Then, to keep the RB-tree neat, you have to extract all related cgroups and
+re-insert them all, every time.
+(But current code doesn't do that. It's broken.)
+
+Current soft-limit RB-tree will be easily broken i.e. not-sorted correctly
+if used under use_hierarchy=1.
+
+My patch disallows set softlimit to Bob and Mike, just allows against Gold
+because there can be considered as the same class, hierarchy.
+
+Thanks,
+-Kame
+
+
+
+
+
+
+
+
+
+
