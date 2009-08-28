@@ -1,96 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbZH1O6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbZH1PEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751877AbZH1O6l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 10:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZH1O6k
+	id S1751922AbZH1PEt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 11:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZH1PEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 10:58:40 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49047 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbZH1O6k (ORCPT
+	Fri, 28 Aug 2009 11:04:48 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:37380 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZH1PEr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 10:58:40 -0400
-Message-ID: <d50640bcbd1bb174caaca9714bbe03e5.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20090828144539.GN4889@balbir.in.ibm.com>
-References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090828132321.e4a497bb.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090828072007.GH4889@balbir.in.ibm.com>
-    <20090828163523.e51678be.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090828132643.GM4889@balbir.in.ibm.com>
-    <bfd50d44ff730c2720b882a81b7446c6.squirrel@webmail-b.css.fujitsu.com>
-    <20090828144539.GN4889@balbir.in.ibm.com>
-Date: Fri, 28 Aug 2009 23:58:39 +0900 (JST)
-Subject: Re: [RFC][PATCH 1/5] memcg: change for softlimit.
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-User-Agent: SquirrelMail/1.4.16
+	Fri, 28 Aug 2009 11:04:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=J/2Pg0mn+FLGwhMgpRgwMYJ+R+nS1WRIhFwQs8NBcuVh9AiXNi479GHJiOzg35Vp1N
+         DJ0mRCDFOwFkQwYg8FsKuYOnmwxHShIYaCNLTvEKBydHqL0rqOxaYTvksgB6wsyzvSQS
+         smp3jnToBI4LG9r23Ka1QfY3TM0+kDRZLyXPU=
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+In-Reply-To: <1251449067-3109-3-git-send-email-mel@csn.ul.ie>
+References: <1251449067-3109-1-git-send-email-mel@csn.ul.ie>
+	 <1251449067-3109-3-git-send-email-mel@csn.ul.ie>
+Date: Sat, 29 Aug 2009 00:04:48 +0900
+Message-ID: <28c262360908280804r4c40c7baw7bb535dd8c275960@mail.gmail.com>
+Subject: Re: [PATCH 2/2] page-allocator: Maintain rolling count of pages to 
+	free from the PCP
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28
-> 23:29:09]:
+Hi, Mel.
+
+On Fri, Aug 28, 2009 at 5:44 PM, Mel Gorman<mel@csn.ul.ie> wrote:
+> When round-robin freeing pages from the PCP lists, empty lists may be
+> encountered. In the event one of the lists has more pages than another,
+> there may be numerous checks for list_empty() which is undesirable. This
+> patch maintains a count of pages to free which is incremented when empty
+> lists are encountered. The intention is that more pages will then be freed
+> from fuller lists than the empty ones reducing the number of empty list
+> checks in the free path.
 >
->> Balbir Singh wrote:
->> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28
->> > 16:35:23]:
->> >
->>
->> >>
->> >> Current soft-limit RB-tree will be easily broken i.e. not-sorted
->> >> correctly
->> >> if used under use_hierarchy=1.
->> >>
->> >
->> > Not true, I think the sorted-ness is delayed and is seen when we pick
->> > a tree for reclaim. Think of it as being lazy :)
->> >
->> plz explain how enexpectedly unsorted RB-tree can work sanely.
->>
->>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  mm/page_alloc.c |   23 ++++++++++++++---------
+>  1 files changed, 14 insertions(+), 9 deletions(-)
 >
-> There are two checks built-in
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 65eedb5..9b86977 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -536,32 +536,37 @@ static void free_pcppages_bulk(struct zone *zone, int count,
+>                                        struct per_cpu_pages *pcp)
+>  {
+>        int migratetype = 0;
+> +       int batch_free = 0;
 >
-> 1. In the reclaim path (we see how much to reclaim, compared to the
-> soft limit)
-> 2. In the dequeue path where we check if we really are over soft limit
+>        spin_lock(&zone->lock);
+>        zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
+>        zone->pages_scanned = 0;
 >
-that's not a point.
-
-> I did lot of testing with the time based approach and found no broken
-> cases, I;ve been testing it with the mmotm (event based approach and I
-> am yet to see a broken case so far).
+>        __mod_zone_page_state(zone, NR_FREE_PAGES, count);
+> -       while (count--) {
+> +       while (count) {
+>                struct page *page;
+>                struct list_head *list;
 >
-I'm sorry if I don't understand RB-tree.
-I think RB-tree is a system which can sort inputs passed by caller
-one by one and will be in broken state if value of nodes changed
-while it's in tree. Wrong ?
-While a subtree is
-               7
-              / \
-             3   9
-And, by some magic, the value can be changed without extract
-               7
-              / \
-             13  9
-The biggest is 13. But the biggest number which will be selecte will be "9".
+>                /*
+> -                * Remove pages from lists in a round-robin fashion. This spinning
+> -                * around potentially empty lists is bloody awful, alternatives that
+> -                * don't suck are welcome
+> +                * Remove pages from lists in a round-robin fashion. A batch_free
+> +                * count is maintained that is incremented when an empty list is
+> +                * encountered. This is so more pages are freed off fuller lists
+> +                * instead of spinning excessively around empty lists
+>                 */
+>                do {
+> +                       batch_free++;
+>                        if (++migratetype == MIGRATE_PCPTYPES)
+>                                migratetype = 0;
+>                        list = &pcp->lists[migratetype];
+>                } while (list_empty(list));
 
-Thanks,
--Kame
+How about increasing the weight by batch_free ?
+
+batch_free = 1 << (batch_free - 1);
+
+It's assumed that if batch_free is big, it means
+there are contiguous empty lists.
+Then it is likely to need more time to refill empty lists than
+one list refill. So I think it can decrease spinning empty list
+a little more.
+
+>
+> -               page = list_entry(list->prev, struct page, lru);
+> -               /* have to delete it as __free_one_page list manipulates */
+> -               list_del(&page->lru);
+> -               trace_mm_page_pcpu_drain(page, 0, migratetype);
+> -               __free_one_page(page, zone, 0, migratetype);
+> +               do {
+> +                       page = list_entry(list->prev, struct page, lru);
+> +                       /* must delete as __free_one_page list manipulates */
+> +                       list_del(&page->lru);
+> +                       __free_one_page(page, zone, 0, migratetype);
+> +                       trace_mm_page_pcpu_drain(page, 0, migratetype);
+> +               } while (--count && --batch_free && !list_empty(list));
+>        }
+>        spin_unlock(&zone->lock);
+>  }
+> --
+> 1.6.3.3
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
 
 
 
-
-
-
-
+-- 
+Kind regards,
+Minchan Kim
