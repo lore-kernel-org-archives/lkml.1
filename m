@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZH1UAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbZH1UAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753077AbZH1UAZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 16:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZH1UAY
+	id S1753096AbZH1UAu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 16:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZH1UAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 16:00:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51655 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753047AbZH1UAW (ORCPT
+	Fri, 28 Aug 2009 16:00:49 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:62441 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbZH1UAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 16:00:22 -0400
-Date: Fri, 28 Aug 2009 21:01:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David VomLehn <dvomlehn@cisco.com>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, greg@kroah.com
-Subject: Re: [PATCH 1/1, v2]
- usb-use-kfifo-to-buffer-usb-generic-serial-writes.patch
-Message-ID: <20090828210106.51b1182a@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090828194810.GA10728@cuplxvomd02.corp.sa.net>
-References: <20090827013454.GA23601@cuplxvomd02.corp.sa.net>
-	<200908271014.54282.oliver@neukum.org>
-	<20090827172218.GA3618@cuplxvomd02.corp.sa.net>
-	<200908281507.11143.oliver@neukum.org>
-	<20090828194810.GA10728@cuplxvomd02.corp.sa.net>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Aug 2009 16:00:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=V21xgc91WyEX3+ryYm4+M26Sus+KW87H7o2pD6RBZGi7HQljJt6pjzKgTdKaQnc0Y6
+         6Km0WTNovz2pMDiDzpBr9hO5XBuzaMJ9otwvVvscihGDi2/MAWkX7weIFR/JSdG82yU1
+         6i0tApjogv02nbrfFXzTPt1m03P2pf7KvoCD4=
+Date: Sat, 29 Aug 2009 00:00:47 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: steiner@sgi.com, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] gru: use proc_create()
+Message-ID: <20090828200047.GF15123@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > You may be writing a command. If you clip out a sequence in the middle you
-> > might be sending an altered command without telling user space.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-Serial has no framing so you can't assume alignments
+ drivers/misc/sgi-gru/gruprocfs.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-> Serial output does not provide a reliable delivery mechanism. If you flip a bit
-> in the sending UART, you may also send an altered command without telling user
-> space. Still, having had some time to think about it, I think discarding the
-> rest of the data is at least as reasonable as anything else.
-
-Agreed
-
-> It seems propagating errors back to user space appears somewhat problematic,
-> but this is true independent of whether a FIFO is used.
-
-The best I can think of would be to implement socket like behaviour from
-networking. That is
-
-- at the start of a write check for an asynchronous error event
-- if there is one, clear the event and report it
-- if not do the normal write
-
-and keep a single 's**t happened' variable to record such matters.
-
-> > How can this duplicate data? If you know that you need to call
-> > usb_serial_generic_write_start, you also know that no further
-> > transfer will occur. If you don't test and restart on resume, you
-> > get this scenario:
-> > 
-> > user space writes to device
-> > user space waits for answer
-> > 
-> > kernel transfers 1. buffer
-> > system suspension - 2. buffer cannot be transfered,
-> > 	as usb_serial_generic_write_start gets -EPERM
-> > system resumption - 2. buffer is never transmitted,
-> > 	user space times out and reports an error
-
-You would need to handle this in the shutdown - and beyond that you need
-to wait for any FIFO in the device before you power it down.
-
-Its not really fixable as it isn't transactional and you have no idea if
-the state of the other device also changed. Consider 
-
-ATD foo
-oops flight time
-suspend
-
-Arrive in Australia
-resume
-ATD foo
-
-Ouch that was an expensive data call...
-
-So I am not sure that trying to be clever here is actually productive.
+--- a/drivers/misc/sgi-gru/gruprocfs.c
++++ b/drivers/misc/sgi-gru/gruprocfs.c
+@@ -340,10 +340,9 @@ static struct proc_dir_entry *proc_gru __read_mostly;
+ 
+ static int create_proc_file(struct proc_entry *p)
+ {
+-	p->entry = create_proc_entry(p->name, p->mode, proc_gru);
++	p->entry = proc_create(p->name, p->mode, proc_gru, p->fops);
+ 	if (!p->entry)
+ 		return -1;
+-	p->entry->proc_fops = p->fops;
+ 	return 0;
+ }
+ 
