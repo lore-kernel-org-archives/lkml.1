@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbZH1T35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbZH1TiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752858AbZH1T35 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 15:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbZH1T35
+	id S1752812AbZH1TiA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 15:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZH1Th7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 15:29:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58699 "EHLO hera.kernel.org"
+	Fri, 28 Aug 2009 15:37:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44720 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752588AbZH1T34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 15:29:56 -0400
-Message-ID: <4A982FF2.8040001@kernel.org>
-Date: Fri, 28 Aug 2009 12:28:50 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1752301AbZH1Th6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 15:37:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 2/6] PM: Asynchronous resume of devices
+Date: Fri, 28 Aug 2009 21:38:14 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
+Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0908281137110.4116-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908281137110.4116-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
-CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Zachary Amsden <zach@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Xiao Guangrong <xiaooguangrong@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: reservetop fix disables mem=
-References: <Pine.LNX.4.64.0908241736520.32764@sister.anvils> <4A92D029.8090807@kernel.org> <20090824182713.GB9785@elte.hu>
-In-Reply-To: <20090824182713.GB9785@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908282138.14602.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->> and according to
->> http://lkml.org/lkml/2008/12/10/388
->> http://lkml.org/lkml/2008/12/10/456
->>
->> Zachary should split reserve_top_address() to two functions... 
->> before sending that patch to Linus
+On Friday 28 August 2009, Alan Stern wrote:
+> On Wed, 26 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> mind looking at this yourself if interested? Zachary has not been 
-> active for quite some time.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Theoretically, the total time of system sleep transitions (suspend
+> > to RAM, hibernation) can be reduced by running suspend and resume
+> > callbacks of device drivers in parallel with each other.  However,
+> > there are dependencies between devices such that, for example, we may
+> > not be allowed to put one device into a low power state before
+> > anohter one has been suspended (e.g. we cannot suspend a bridge
+> > before suspending all devices behind it).  In particular, we're not
+> > allowed to suspend the parent of a device before suspending the
+> > device itself.  Analogously, we're not allowed to resume a device
+> > before resuming its parent.
 > 
+> > In this version of the patch the async threads started to execute
+> > the resume callbacks of specific device don't exit immediately having
+> > done that, but search dpm_list for devices whose PM dependencies have
+> > already been satisfied and execute their callbacks without waiting.
+> 
+> Given this design, why bother to invoke device_resume() for the async 
+> devices?  Why not just start up a bunch of async threads, each of which 
+> calls async_resume() repeatedly until everything is finished?  (And 
+> rearrange async_resume() to scan the list first and do the actual 
+> resume second.)
+> 
+> The same goes for the noirq versions.
 
+I thought about that, but there are a few things to figure out:
+- how many threads to start
+- when to start them
+- stop condition
+I had a few ideas, but then I thought it would be simpler to start an async
+thread when we know there's some async work to do (ie. there's an async
+device to handle) and make each async thread browse the list just once (the
+rationale is that we've just handled a device, so there's a chance there are
+some devices with satisfied dependencies down the list).
 
-other ways is to revive the Rusty Russell's patchset that move paramater early...
-
-YH
+Thanks,
+Rafael
