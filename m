@@ -1,131 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZH1N0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751521AbZH1N3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751542AbZH1N0w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 09:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbZH1N0u
+	id S1751521AbZH1N3i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 09:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZH1N3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 09:26:50 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:36499 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbZH1N0t (ORCPT
+	Fri, 28 Aug 2009 09:29:37 -0400
+Received: from qmta01.emeryville.ca.mail.comcast.net ([76.96.30.16]:54567 "EHLO
+	QMTA01.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751446AbZH1N3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 09:26:49 -0400
-Date: Fri, 28 Aug 2009 18:56:44 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH 1/5] memcg: change for softlimit.
-Message-ID: <20090828132643.GM4889@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com> <20090828132321.e4a497bb.kamezawa.hiroyu@jp.fujitsu.com> <20090828072007.GH4889@balbir.in.ibm.com> <20090828163523.e51678be.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 28 Aug 2009 09:29:36 -0400
+Message-ID: <4A97DBC1.3000508@xyzw.org>
+Date: Fri, 28 Aug 2009 06:29:37 -0700
+From: Brian Rogers <brian@xyzw.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090828163523.e51678be.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] inotify:  Ensure we alwasy write the terminating NULL.
+References: <m1skffj64t.fsf@fess.ebiederm.org>	<1251299483.2308.32.camel@dhcp231-106.rdu.redhat.com> <m1iqg9k17v.fsf_-_@fess.ebiederm.org>
+In-Reply-To: <m1iqg9k17v.fsf_-_@fess.ebiederm.org>
+Content-Type: multipart/mixed;
+ boundary="------------020605050003020006000308"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 16:35:23]:
+This is a multi-part message in MIME format.
+--------------020605050003020006000308
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> On Fri, 28 Aug 2009 12:50:08 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 13:23:21]:
-> > 
-> > > This patch tries to modify softlimit handling in memcg/res_counter.
-> > > There are 2 reasons in general.
-> > > 
-> > >  1. soft_limit can use only against sub-hierarchy root.
-> > >     Because softlimit tree is sorted by usage, putting prural groups
-> > >     under hierarchy (which shares usage) will just adds noise and unnecessary
-> > >     mess. This patch limits softlimit feature only to hierarchy root.
-> > >     This will make softlimit-tree maintainance better. 
-> > > 
-> > >  2. In these days, it's reported that res_counter can be bottleneck in
-> > >     massively parallel enviroment. We need to reduce jobs under spinlock.
-> > >     The reason we check softlimit at res_counter_charge() is that any member
-> > >     in hierarchy can have softlimit.
-> > >     But by chages in "1", only hierarchy root has soft_limit. We can omit
-> > >     hierarchical check in res_counter.
-> > > 
-> > > After this patch, soft limit is avaliable only for root of sub-hierarchy.
-> > > (Anyway, softlimit for hierarchy children just makes users confused, hard-to-use)
-> > >
-> > 
-> > 
-> > I need some time to digest this change, if the root is a hiearchy root
-> > then only root can support soft limits? I think the change makes it
-> > harder to use soft limits. Please help me understand better. 
-> > 
-> I poitned out this issue many many times while you wrote patch.
-> 
-> memcg has "sub tree". hierarchy here means "sub tree" with use_hierarchy =1.
-> 
-> Assume
-> 
-> 
-> 	/cgroup/Users/use_hierarchy=0
-> 		  Gold/ use_hierarchy=1 
-> 		     Bob
-> 		     Mike
-> 		  Silver/use_hierarchy=1
-> 		     
-> 		/System/use_hierarchy=1
-> 	
-> In flat, there are 3 sub trees.
-> 	/cgroup/Users/Gold   (Gold has /cgroup/Users/Gold/Bog, /cgroup/Users/Gold/Mike)
-> 	/cgroup/Users/Silver .....
-> 	/cgroup/System	     .....
-> 
-> Then, subtrees means a group which inherits charges by use_hierarchy=1
-> 
-> In current implementation, softlimit can be set to arbitrary cgroup. 
-> Then, following ops are allowed.
-> ==
-> 	/cgroup/Users/Gold softlimit= 1G
-> 	/cgroup/Users/Gold/Bob  softlimit=800M
-> 	/cgroup/Users/Gold/Mike softlimit=800M
-> ==
-> 
-> Then, how your RB-tree for softlimit management works ?
-> 
-> When softlimit finds /cgroup/Users/Gold/, it will reclaim memory from
-> all 3 groups by hierarchical_reclaim. If softlimit finds
-> /cgroup/Users/Gold/Bob, reclaim from Bob means recalaim from Gold.
-
-By reclaim from Bob means reclaim from Gold, are you referring to the
-uncharging part, if so yes. But if you look at the tasks part, we
-don't reclaim anything from the tasks in Gold.
-
-> 
-> Then, to keep the RB-tree neat, you have to extract all related cgroups and
-> re-insert them all, every time.
-> (But current code doesn't do that. It's broken.)
-
-The earlier time dependent code used to catch that, since it was time
-based. Now that it is based on activity, it will take a while before
-the group is updated. I don't think it is broken, but updates can take
-a lag before showing up.
-
-> 
-> Current soft-limit RB-tree will be easily broken i.e. not-sorted correctly
-> if used under use_hierarchy=1.
-> 
-
-Not true, I think the sorted-ness is delayed and is seen when we pick
-a tree for reclaim. Think of it as being lazy :)
-
-> My patch disallows set softlimit to Bob and Mike, just allows against Gold
-> because there can be considered as the same class, hierarchy.
+Eric W. Biederman wrote:
+> Before the rewrite copy_event_to_user always wrote a terqminating '\0'
+> byte to user space after the filename.  Since the rewrite that
+> terminating byte was skipped if your filename is exactly a multiple of
+> event_size.  Ouch!
 >
+> So add one byte to name_size before we round up and use clear_user to
+> set userspace to zero like /dev/zero does instead of copying the
+> strange nul_inotify_event.  I can't quite convince myself len_to_zero
+> will never exceed 16 and even if it doesn't clear_user should be more
+> efficient and a more accurate reflection of what the code is trying to
+> do.
+>
+> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+>   
 
-But Bob and Mike might need to set soft limits between themselves. if
-soft limit of gold is 1G and bob needs to be close to 750M and mike
-250M, how do we do it without supporting what we have today?
+I found that this change prevents my Ubuntu Karmic system from booting. 
+It just idles forever very early in the process. Probably a boot script 
+is waiting for an event that it doesn't receive properly.
+
+> -	name_len = roundup(event->name_len, event_size);
+> +	name_len = roundup(event->name_len + 1, event_size);
+>   
+
+This means the test later on will now always evaluate to true:
+> if (name_len) {
+
+And in cases where that test previously would have failed, the code now 
+outputs a block full of zeros. Assuming that's bad and the test was 
+important, I coded the attached naive fix, which is working for me.
+
+
+--------------020605050003020006000308
+Content-Type: text/x-patch;
+ name="0001-inotify-Fix-events-with-no-pathname.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-inotify-Fix-events-with-no-pathname.patch"
+
+>From 1be7a610013b47be1257d2b0296d872d6bed7416 Mon Sep 17 00:00:00 2001
+From: Brian Rogers <brian@xyzw.org>
+Date: Fri, 28 Aug 2009 04:46:51 -0700
+Subject: [PATCH] inotify: Fix events with no pathname
+
+When an event has no pathname, there's no need to pad it with a null byte and
+therefore generate an inotify_event sized block of zeros. This fixes a
+regression introduced by commit 0db501bd0610ee0c0aca84d927f90bcccd09e2bd where
+my system wouldn't finish booting because some process was being confused by
+this.
+
+Signed-off-by: Brian Rogers <brian@xyzw.org>
+---
+ fs/notify/inotify/inotify_user.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index 0e781bc..d94ce8b 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -199,7 +199,10 @@ static ssize_t copy_event_to_user(struct fsnotify_group *group,
+ 	/* round up event->name_len so it is a multiple of event_size
+ 	 * plus an extra byte for the terminating '\0'.
+ 	 */
+-	name_len = roundup(event->name_len + 1, event_size);
++	if (event->name_len > 0)
++		name_len = roundup(event->name_len + 1, event_size);
++	else
++		name_len = 0;
+ 	inotify_event.len = name_len;
  
+ 	inotify_event.mask = inotify_mask_to_arg(event->mask);
 -- 
-	Balbir
+1.6.3.3
+
+
+--------------020605050003020006000308--
