@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751768AbZH1SE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735AbZH1SIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751768AbZH1SE6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZH1SE5
+	id S1751735AbZH1SIJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 14:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbZH1SII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:04:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:22993 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751426AbZH1SE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:04:57 -0400
-Date: Fri, 28 Aug 2009 20:00:15 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 1/1] introduce __cancel_delayed_work()
-Message-ID: <20090828180015.GB19326@redhat.com>
-References: <adazl9uw3w1.fsf@cisco.com> <20090821115547.GA6901@redhat.com> <adaab1sx29p.fsf@cisco.com> <20090824180112.GC16202@redhat.com> <ada4orwvrx7.fsf@cisco.com> <20090825093906.GA3020@redhat.com> <ada7hwqto0z.fsf@cisco.com> <20090828175931.GA19326@redhat.com>
+	Fri, 28 Aug 2009 14:08:08 -0400
+Received: from web45210.mail.sp1.yahoo.com ([68.180.197.131]:38073 "HELO
+	web45210.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751125AbZH1SII convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 14:08:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=GmYOSpgxD0qn63pbTwfDRtrXZBkKeNydOLipdgXHw3PfAw4YYS/9Em1JmFMwuHzYQrUe46gcKlRfCm5z9uIRz2x18+gy6BauwLOy+PYsl8qnVetJ2qRvjNjrxkuhIn4n7WrkwE61PPpKqjVKa7qHSsU62pvX9xhmLiupNNfhFX8=;
+Message-ID: <374672.36063.qm@web45210.mail.sp1.yahoo.com>
+X-YMail-OSG: OL2ce6MVM1mtMQwYjgL3yTrTjo1Jx6o0Ql27AwYYUi0b1w98DfjA6D9938UYjI7qdNiPQ7XFep3B0poxUCuSY8NIzMSube3F2kcdJUPIDHzoncdbsejHc.3T5o6gjs.x4vH1Mye.exFkaJa49rH1Ou5_ypfns2Fl68ILwBXuV6eDXCTVgsInXiwMhOExRbjyYpO0KBJU1.f.CwGsGA--
+X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
+Date: Fri, 28 Aug 2009 11:08:08 -0700 (PDT)
+From: joe Shmoe <jsmoe3@yahoo.com>
+Subject: kernel page table mapping for >1GB <3 GB for x86 arch without PAE 
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090828175931.GA19326@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cancel_delayed_work() has to use del_timer_sync() to guarantee the
-timer function is not running after return. But most users doesn't
-actually need this, and del_timer_sync() has problems: it is not
-useable from interrupt, and it depends on every lock which could
-be taken from irq.
+Assuming I have 3GB RAM, why does not kernel create page tables in a way that all of this 3GB physical memory can be addressed . (for x86 arch 32 bit with PAE disabled )
 
-Introduce __cancel_delayed_work() which calls del_timer() instead.
+I understand the 3GB/1GB split for user/kernel address space.Isn't  this just a matter of setting up the page table entries in such a way that so all the available RAM upto 3GB can mapped in the kernel page tables. In this way CPU's MMU can take care of mapping any virtual address within first 4GB to physical address using the page table entries regardless of a process is in kernel/user mode. 
 
-The immediate reason for this patch is
-http://bugzilla.kernel.org/show_bug.cgi?id=13757
-but hopefully this helper makes sense anyway.
+Why can't some of first 768 page directory entries ( + 1024 page table 
+entries for each PDE) be used to map btw 1GB and 3GB. What is stopping the kernel from doing this?
 
-As for 13757 bug, actually we need requeue_delayed_work(), but its
-semantics is not clear yet.
+Instead why does kernel uses high memory mapping with zone model for 
+addressing physical memory above 1GB?
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Can anyone please shed some light into this,
 
---- MINI/include/linux/workqueue.h~CDW	2009-08-27 20:17:08.000000000 +0200
-+++ MINI/include/linux/workqueue.h	2009-08-27 20:22:48.000000000 +0200
-@@ -240,6 +240,21 @@ static inline int cancel_delayed_work(st
- 	return ret;
- }
- 
-+/*
-+ * Like above, but uses del_timer() instead of del_timer_sync(). This means,
-+ * if it returns 0 the timer function may be running and the queueing is in
-+ * progress.
-+ */
-+static inline int __cancel_delayed_work(struct delayed_work *work)
-+{
-+	int ret;
-+
-+	ret = del_timer(&work->timer);
-+	if (ret)
-+		work_clear_pending(&work->work);
-+	return ret;
-+}
-+
- extern int cancel_delayed_work_sync(struct delayed_work *work);
- 
- /* Obsolete. use cancel_delayed_work_sync() */
 
+Thanks,
+
+
+      
