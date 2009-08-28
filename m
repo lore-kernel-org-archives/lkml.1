@@ -1,106 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbZH1Vhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbZH1VhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033AbZH1Vhi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZH1Vc1
+	id S1752869AbZH1VhS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZH1VhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:32:27 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:4848 "EHLO mx1.redhat.com"
+	Fri, 28 Aug 2009 17:37:16 -0400
+Received: from www.tglx.de ([62.245.132.106]:55773 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751230AbZH1VcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:32:25 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
-       jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
-       riel@redhat.com
-Subject: [PATCH 15/23] io-controller: noop changes for hierarchical fair queuing
-Date: Fri, 28 Aug 2009 17:31:04 -0400
-Message-Id: <1251495072-7780-16-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
+	id S1751171AbZH1VhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 17:37:13 -0400
+Date: Fri, 28 Aug 2009 23:36:04 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+Subject: Re: [ANNOUNCE] 2.6.31-rc7-rt8
+In-Reply-To: <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
+ <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
+ <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+ <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes noop to use queue scheduling code from elevator layer.
-One can go back to old noop by deselecting CONFIG_IOSCHED_NOOP_HIER.
-
-Signed-off-by: Nauman Rafique <nauman@google.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
----
- block/Kconfig.iosched |   11 +++++++++++
- block/noop-iosched.c  |   14 ++++++++++++++
- 2 files changed, 25 insertions(+), 0 deletions(-)
-
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index a7d0bf8..28cd500 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -25,6 +25,17 @@ config IOSCHED_NOOP
- 	  that do their own scheduling and require only minimal assistance from
- 	  the kernel.
+We are pleased to announce the next update to our new preempt-rt
+series.
  
-+config IOSCHED_NOOP_HIER
-+	bool "Noop Hierarchical Scheduling support"
-+	depends on IOSCHED_NOOP && CGROUPS
-+	select ELV_FAIR_QUEUING
-+	select GROUP_IOSCHED
-+	default n
-+	---help---
-+	  Enable hierarhical scheduling in noop. In this mode noop keeps
-+	  one IO queue per cgroup instead of a global queue. Elevator
-+	  fair queuing logic ensures fairness among various queues.
-+
- config IOSCHED_AS
- 	tristate "Anticipatory I/O scheduler"
- 	default y
-diff --git a/block/noop-iosched.c b/block/noop-iosched.c
-index 731dbf2..4ba496f 100644
---- a/block/noop-iosched.c
-+++ b/block/noop-iosched.c
-@@ -6,6 +6,7 @@
- #include <linux/bio.h>
- #include <linux/module.h>
- #include <linux/init.h>
-+#include "elevator-fq.h"
+    - update to Linus' latest
  
- struct noop_queue {
- 	struct list_head queue;
-@@ -82,6 +83,15 @@ static void noop_free_noop_queue(struct elevator_queue *e, void *sched_queue)
- 	kfree(nq);
- }
- 
-+#ifdef CONFIG_IOSCHED_NOOP_HIER
-+static struct elv_fs_entry noop_attrs[] = {
-+	ELV_ATTR(fairness),
-+	ELV_ATTR(slice_sync),
-+	ELV_ATTR(group_idle),
-+	__ATTR_NULL
-+};
-+#endif
-+
- static struct elevator_type elevator_noop = {
- 	.ops = {
- 		.elevator_merge_req_fn		= noop_merged_requests,
-@@ -92,6 +102,10 @@ static struct elevator_type elevator_noop = {
- 		.elevator_alloc_sched_queue_fn	= noop_alloc_noop_queue,
- 		.elevator_free_sched_queue_fn	= noop_free_noop_queue,
- 	},
-+#ifdef CONFIG_IOSCHED_NOOP_HIER
-+	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ,
-+	.elevator_attrs = noop_attrs,
-+#endif
- 	.elevator_name = "noop",
- 	.elevator_owner = THIS_MODULE,
- };
--- 
-1.6.0.6
+    - more perf counters rt education
 
+    - !RT build fix (jstultz)
+
+    - MFD rt fix (khilman)
+    
+Known issues:
+      - ARM highmem
+      - scheduler load balancing oddities. Peter is working on it.
+      - latency tracer oddities (latency tracers in combination with
+        events). Steven is working on those
+
+Give it a good testing. We aim for releasing a stable .31-rt in less
+than 24 hrs after Linus releases .31 :)
+
+Download locations:
+ 
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+
+Git release branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
+  
+Git development branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
+
+Gitweb:
+     http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
+
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.31-rc8-rt9 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.30.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.31-rc8.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rc8-rt9.bz2
+
+Enjoy !
+
+      tglx
