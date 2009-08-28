@@ -1,95 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZH1AGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbZH1ALq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643AbZH1AGP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 20:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZH1AGL
+	id S1752981AbZH1ALq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 20:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbZH1ALp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 20:06:11 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:54874 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751911AbZH1AGK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 20:06:10 -0400
-Subject: [PATCH] You say MOD_NANO, I say ADJ_NANO
-From: john stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@tglx.de>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Miroslav Lichvar <mlichvar@redhat.com>, hmurray@megapathdsl.net,
-       Ulrich Drepper <drepper@redhat.com>,
-       Michael Tatarinov <kukabu@gmail.com>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 17:04:42 -0700
-Message-Id: <1251417882.7905.42.camel@localhost.localdomain>
+	Thu, 27 Aug 2009 20:11:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:33412 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752244AbZH1ALp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 20:11:45 -0400
+Date: Fri, 28 Aug 2009 10:11:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Magnus Damm <damm@igel.co.jp>, Paul Mundt <lethal@linux-sh.org>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: linux-next: manual merge of the v4l-dvb tree with the sh tree
+Message-Id: <20090828101141.a41b453e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MOD_NANO, ADJ_NANO, MOD_NANO, ADJ_NANO!
-Lets call the whole thing off!
-But oh! If we call the whole thing off,
-Then we must part.
-And oh! If we ever part,
-Then that might break my heart^H^H^H^Hclock!
-So, if you like MOD_NANO and I like ADJ_NANO,
-I'll include MOD_NANO and give up ADJ_NANO (not really!).
-For we know we need each other,
-So we better call the calling off off.
-Let's call the whole thing off!
+Hi Mauro,
 
+Today's linux-next merge of the v4l-dvb tree got a conflict in
+drivers/media/video/sh_mobile_ceu_camera.c between commit
+6d1386c6b8db54ac8d94c01194e0c27cd538532b ("v4l2: Runtime PM for SuperH
+Mobile CEU") from the sh tree and commits
+96d62ae620121fbf00228c925afc4439782f77e5 ("V4L/DVB (12506): soc-camera:
+convert to platform device") and 7d2d23b9101115774c2b6ce5891235a4ba38ed53
+("V4L/DVB (12510): soc-camera: (partially) convert to v4l2-(sub)dev API")
+from the v4l-dvb tree.
 
-The tumultuous NTP and Linux relationship has hit another snag: Ends up
-NTPd still uses the "xntp 3.4 compatability names" and when the STA_NANO
-value was added (along with ADJ_NANO), NTPd expected MOD_NANO to be
-added and has apparently hit some build errors.
+I fixed it up (see below) and can carry the fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Report to ntp hackers:
-https://lists.ntp.org/pipermail/hackers/2009-August/004455.html
-
-Related Bugs:
-https://support.ntp.org/bugs/show_bug.cgi?id=1219
-https://bugzilla.redhat.com/show_bug.cgi?id=505566
-
-So in an effort to make peace, here's a patch to help get things
-building again. I also have updated the comment to make sure folks don't
-think the MOD_* values are just legacy constants.
-
-Of course, NTPd really uses the glibc-headers, so those will need to be
-similarly updated before things are working again (the RH bug above
-should probably cover that).
-
-Thanks to Michael Tatarinov and Hal Murray for finding and reporting the
-issue!
-
-thanks
--john
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/include/linux/timex.h b/include/linux/timex.h
-index e6967d1..782ccd4 100644
---- a/include/linux/timex.h
-+++ b/include/linux/timex.h
-@@ -115,13 +115,16 @@ struct timex {
- #define ADJ_OFFSET_SS_READ	0xa001	/* read-only adjtime */
- #endif
- 
--/* xntp 3.4 compatibility names */
-+/* NTP userland likes the MOD_ prefix better */
- #define MOD_OFFSET	ADJ_OFFSET
- #define MOD_FREQUENCY	ADJ_FREQUENCY
- #define MOD_MAXERROR	ADJ_MAXERROR
- #define MOD_ESTERROR	ADJ_ESTERROR
- #define MOD_STATUS	ADJ_STATUS
- #define MOD_TIMECONST	ADJ_TIMECONST
-+#define MOD_TAI	ADJ_TAI
-+#define MOD_MICRO	ADJ_MICRO
-+#define MOD_NANO	ADJ_NANO
- 
- 
- /*
-
-
-
+diff --cc drivers/media/video/sh_mobile_ceu_camera.c
+index 61c47b8,9cdac58..0000000
+--- a/drivers/media/video/sh_mobile_ceu_camera.c
++++ b/drivers/media/video/sh_mobile_ceu_camera.c
+@@@ -356,11 -405,7 +404,7 @@@ static int sh_mobile_ceu_add_device(str
+  		 "SuperH Mobile CEU driver attached to camera %d\n",
+  		 icd->devnum);
+  
+- 	ret = icd->ops->init(icd);
+- 	if (ret)
+- 		goto err;
+- 
+ -	clk_enable(pcdev->clk);
+ +	pm_runtime_get_sync(ici->dev);
+  
+  	ceu_write(pcdev, CAPSR, 1 << 16); /* reset */
+  	while (ceu_read(pcdev, CSTSR) & 1)
+@@@ -394,11 -439,9 +438,9 @@@ static void sh_mobile_ceu_remove_device
+  	}
+  	spin_unlock_irqrestore(&pcdev->lock, flags);
+  
+ -	clk_disable(pcdev->clk);
+ +	pm_runtime_put_sync(ici->dev);
+  
+- 	icd->ops->release(icd);
+- 
+- 	dev_info(&icd->dev,
++ 	dev_info(icd->dev.parent,
+  		 "SuperH Mobile CEU driver detached from camera %d\n",
+  		 icd->devnum);
+  
+@@@ -860,12 -1713,16 +1711,12 @@@ static int __devinit sh_mobile_ceu_prob
+  		goto exit_release_mem;
+  	}
+  
+ -	snprintf(clk_name, sizeof(clk_name), "ceu%d", pdev->id);
+ -	pcdev->clk = clk_get(&pdev->dev, clk_name);
+ -	if (IS_ERR(pcdev->clk)) {
+ -		dev_err(&pdev->dev, "cannot get clock \"%s\"\n", clk_name);
+ -		err = PTR_ERR(pcdev->clk);
+ -		goto exit_free_irq;
+ -	}
+ +	pm_suspend_ignore_children(&pdev->dev, true);
+ +	pm_runtime_enable(&pdev->dev);
+ +	pm_runtime_resume(&pdev->dev);
+  
+  	pcdev->ici.priv = pcdev;
+- 	pcdev->ici.dev = &pdev->dev;
++ 	pcdev->ici.v4l2_dev.dev = &pdev->dev;
+  	pcdev->ici.nr = pdev->id;
+  	pcdev->ici.drv_name = dev_name(&pdev->dev);
+  	pcdev->ici.ops = &sh_mobile_ceu_host_ops;
+@@@ -924,10 -1767,9 +1775,10 @@@ static struct dev_pm_ops sh_mobile_ceu_
+  static struct platform_driver sh_mobile_ceu_driver = {
+  	.driver 	= {
+  		.name	= "sh_mobile_ceu",
+ +		.pm	= &sh_mobile_ceu_dev_pm_ops,
+  	},
+  	.probe		= sh_mobile_ceu_probe,
+- 	.remove		= sh_mobile_ceu_remove,
++ 	.remove		= __exit_p(sh_mobile_ceu_remove),
+  };
+  
+  static int __init sh_mobile_ceu_init(void)
