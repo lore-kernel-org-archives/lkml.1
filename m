@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZH1Uvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZH1U7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbZH1Uvg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 16:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZH1Uvg
+	id S1753235AbZH1U7M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 16:59:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZH1U7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 16:51:36 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:15175 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753195AbZH1Uvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 16:51:35 -0400
-Message-ID: <4A984337.7080009@redhat.com>
-Date: Fri, 28 Aug 2009 13:51:03 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Fri, 28 Aug 2009 16:59:12 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:54123 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753196AbZH1U7L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 16:59:11 -0400
+Date: Fri, 28 Aug 2009 16:21:33 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Gregory Haskins <ghaskins@novell.com>, Rik van Riel <riel@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+In-Reply-To: <alpine.LFD.2.00.0908282158100.19335@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0908281619520.15573@gentwo.org>
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org>
+ <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com> <4A975025.8030500@novell.com> <4A975CC4.1090208@novell.com> <alpine.LFD.2.00.0908281218560.2888@localhost.localdomain>
+ <alpine.DEB.1.10.0908281446520.7317@gentwo.org> <alpine.LFD.2.00.0908282100040.19335@localhost.localdomain> <alpine.DEB.1.10.0908281551450.17784@gentwo.org> <alpine.LFD.2.00.0908282158100.19335@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Jamie Lokier <jamie@shareable.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
-References: <20090821174525.GA28861@infradead.org> <20090822005006.GA22530@shareable.org> <20090824023422.GA775@infradead.org> <20090827143459.GB31453@shareable.org> <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com> <20090828154647.GA15808@infradead.org> <4A98008B.6050503@redhat.com> <20090828161745.GA8755@infradead.org> <4A9806D9.5050409@redhat.com> <20090828164106.GA9951@infradead.org>
-In-Reply-To: <20090828164106.GA9951@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/28/2009 09:41 AM, Christoph Hellwig wrote:
-> Yeah.  The implementation really is trivial in 2.6.32 - we basically
-> just need to change one function to check the new O_REALLY_SYNC flag
-> and pass down a 0 instead of a 1 to another routine in the generic
-> fs code, plus doing the same in a few filesystems opencoding it instead
-> of using the generic helpers.
+On Fri, 28 Aug 2009, Thomas Gleixner wrote:
 
-I don't think you have to change anything.  As I wrote before, the 
-kernel ignores unknown O_* flags.  It's usually a problem.  Here it is a 
-positive thing.
+> The statistics stuff needs to be tackled anyway as we need to offload
+> the sched accounting to some other cpu.
 
+The vm statisticcs in mm/vmstat.c are different from the sched accounting.
 
-> So the logistics of doing the flags really is the biggest work here.
-> And I'm not entirely sure how to do it correctly.  Can we just switch
-> the current O_SYNC defintion in the kernel headers to O_DSYNC while
-> adding the new O_SYNC and everything will continue to work?
+> What slab queue stuff is running on timers and cannot be switched off
+> in such a context?
 
-No, that's not a good idea.  This would mean a program compiled with 
-newer headers is using O_SYNC which isn't known to old kernels and 
-ignored.  Such programs will then not even get the current O_DSYNC benefits.
+slab does run a timer every 2 second to age queues. If there was activity
+then there can be a relatively long time in which we periodically throw
+out portions of the cached data.
 
+> Device specific stuff should not happen on such a CPU when there is no
+> device handled on it.
 
-> That includes a write from another process?  So O_RSYNC basically means
-> doing an range-fdatasync before the actual read request?
-
-Yes.  You can easily see how this can be useful.
-
-
-> Again, we could implement this easily if we care enough.
-
-I think it can be useful at times.
-
--- 
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+The device may periodically check for conditions that require action.
