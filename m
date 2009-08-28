@@ -1,141 +1,317 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbZH1M2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbZH1M2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752840AbZH1M2u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZH1M2s
+	id S1752810AbZH1M2I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZH1M0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:28:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55436 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752623AbZH1M2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:28:45 -0400
-Date: Fri, 28 Aug 2009 12:27:39 GMT
-From: tip-bot for Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Cc: mathieu.desnoyers@polymtl.ca, brueckner@linux.vnet.ibm.com,
-       mingo@redhat.com, schwidefsky@de.ibm.com, peterz@infradead.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       jbaron@redhat.com, laijs@cn.fujitsu.com, hpa@zytor.com,
-       jiayingz@google.com, linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
-       lethal@linux-sh.org, mingo@elte.hu, mbligh@google.com
-Reply-To: mingo@redhat.com, brueckner@linux.vnet.ibm.com,
-       mathieu.desnoyers@polymtl.ca, peterz@infradead.org,
-       schwidefsky@de.ibm.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, jbaron@redhat.com, laijs@cn.fujitsu.com,
-       hpa@zytor.com, jiayingz@google.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, lethal@linux-sh.org, mingo@elte.hu,
-       mbligh@google.com
-In-Reply-To: <20090825123111.GD4639@cetus.boeblingen.de.ibm.com>
-References: <20090825123111.GD4639@cetus.boeblingen.de.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing: Add syscall tracepoints - s390 arch update
-Message-ID: <tip-7515bf59f87f19b2a17972b74230d2f91756fe3c@git.kernel.org>
-Git-Commit-ID: 7515bf59f87f19b2a17972b74230d2f91756fe3c
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 12:27:41 +0000 (UTC)
+	Fri, 28 Aug 2009 08:26:30 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:56580 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752616AbZH1M0Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 08:26:24 -0400
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: [PATCH 13/18] OMAP: DSS2: SDI driver
+Date: Fri, 28 Aug 2009 15:25:32 +0300
+Message-Id: <1251462337-12531-14-git-send-email-tomi.valkeinen@nokia.com>
+X-Mailer: git-send-email 1.6.4
+In-Reply-To: <1251462337-12531-13-git-send-email-tomi.valkeinen@nokia.com>
+References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-3-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-4-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-5-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-6-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-7-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-8-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-9-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-10-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-11-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-12-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-13-git-send-email-tomi.valkeinen@nokia.com>
+X-OriginalArrivalTime: 28 Aug 2009 12:26:09.0715 (UTC) FILETIME=[B935E030:01CA27DA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7515bf59f87f19b2a17972b74230d2f91756fe3c
-Gitweb:     http://git.kernel.org/tip/7515bf59f87f19b2a17972b74230d2f91756fe3c
-Author:     Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-AuthorDate: Tue, 25 Aug 2009 14:31:11 +0200
-Committer:  Frederic Weisbecker <fweisbec@gmail.com>
-CommitDate: Wed, 26 Aug 2009 21:29:44 +0200
+SDI (Serial Display Interface) implements TI Flatlink 3G display
+interface.
 
-tracing: Add syscall tracepoints - s390 arch update
-
-This patch includes s390 arch updates to synchronize with latest
-core changes in the syscalls tracing area.
-
-- tracing: Map syscall name to number (syscall_name_to_nr())
-- tracing: Call arch_init_ftrace_syscalls at boot
-- tracing: add support tracepoint ids (set_syscall_{enter,exit}_id())
-
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jiaying Zhang <jiayingz@google.com>
-Cc: Martin Bligh <mbligh@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-LKML-Reference: <20090825123111.GD4639@cetus.boeblingen.de.ibm.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 ---
- arch/s390/kernel/ftrace.c |   36 +++++++++++++++++++++++++++---------
- 1 files changed, 27 insertions(+), 9 deletions(-)
+ drivers/video/omap2/dss/sdi.c |  261 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 261 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/omap2/dss/sdi.c
 
-diff --git a/arch/s390/kernel/ftrace.c b/arch/s390/kernel/ftrace.c
-index 3e298e6..57bdcb1 100644
---- a/arch/s390/kernel/ftrace.c
-+++ b/arch/s390/kernel/ftrace.c
-@@ -220,6 +220,29 @@ struct syscall_metadata *syscall_nr_to_meta(int nr)
- 	return syscalls_metadata[nr];
- }
- 
-+int syscall_name_to_nr(char *name)
-+{
-+	int i;
+diff --git a/drivers/video/omap2/dss/sdi.c b/drivers/video/omap2/dss/sdi.c
+new file mode 100644
+index 0000000..a9c727e
+--- /dev/null
++++ b/drivers/video/omap2/dss/sdi.c
+@@ -0,0 +1,261 @@
++/*
++ * linux/drivers/video/omap2/dss/sdi.c
++ *
++ * Copyright (C) 2009 Nokia Corporation
++ * Author: Tomi Valkeinen <tomi.valkeinen@nokia.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
 +
-+	if (!syscalls_metadata)
-+		return -1;
-+	for (i = 0; i < NR_syscalls; i++)
-+		if (syscalls_metadata[i])
-+			if (!strcmp(syscalls_metadata[i]->name, name))
-+				return i;
-+	return -1;
++#define DSS_SUBSYS_NAME "SDI"
++
++#include <linux/kernel.h>
++#include <linux/clk.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++
++#include <mach/board.h>
++#include <mach/display.h>
++#include "dss.h"
++
++static struct {
++	bool skip_init;
++	bool update_enabled;
++} sdi;
++
++static void sdi_basic_init(void)
++{
++	dispc_set_parallel_interface_mode(OMAP_DSS_PARALLELMODE_BYPASS);
++
++	dispc_set_lcd_display_type(OMAP_DSS_LCD_DISPLAY_TFT);
++	dispc_set_tft_data_lines(24);
++	dispc_lcd_enable_signal_polarity(1);
 +}
 +
-+void set_syscall_enter_id(int num, int id)
++static int sdi_display_enable(struct omap_dss_device *dssdev)
 +{
-+	syscalls_metadata[num]->enter_id = id;
-+}
++	struct omap_video_timings *t = &dssdev->panel.timings;
++	struct dispc_clock_info cinfo;
++	u16 lck_div, pck_div;
++	unsigned long fck;
++	unsigned long pck;
++	int r;
 +
-+void set_syscall_exit_id(int num, int id)
-+{
-+	syscalls_metadata[num]->exit_id = id;
-+}
++	r = omap_dss_start_device(dssdev);
++	if (r) {
++		DSSERR("failed to start device\n");
++		goto err0;
++	}
 +
- static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
- {
- 	struct syscall_metadata *start;
-@@ -237,24 +260,19 @@ static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
- 	return NULL;
- }
- 
--void arch_init_ftrace_syscalls(void)
-+static int __init arch_init_ftrace_syscalls(void)
- {
- 	struct syscall_metadata *meta;
- 	int i;
--	static atomic_t refs;
--
--	if (atomic_inc_return(&refs) != 1)
--		goto out;
- 	syscalls_metadata = kzalloc(sizeof(*syscalls_metadata) * NR_syscalls,
- 				    GFP_KERNEL);
- 	if (!syscalls_metadata)
--		goto out;
-+		return -ENOMEM;
- 	for (i = 0; i < NR_syscalls; i++) {
- 		meta = find_syscall_meta((unsigned long)sys_call_table[i]);
- 		syscalls_metadata[i] = meta;
- 	}
--	return;
--out:
--	atomic_dec(&refs);
++	if (dssdev->state != OMAP_DSS_DISPLAY_DISABLED) {
++		DSSERR("dssdev already enabled\n");
++		r = -EINVAL;
++		goto err1;
++	}
++
++	/* In case of skip_init sdi_init has already enabled the clocks */
++	if (!sdi.skip_init)
++		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
++
++	sdi_basic_init();
++
++	/* 15.5.9.1.2 */
++	dssdev->panel.config |= OMAP_DSS_LCD_RF | OMAP_DSS_LCD_ONOFF;
++
++	dispc_set_pol_freq(dssdev->panel.config, dssdev->panel.acbi,
++			dssdev->panel.acb);
++
++	if (!sdi.skip_init)
++		r = dispc_calc_clock_div(1, t->pixel_clock * 1000,
++				&cinfo);
++	else
++		r = dispc_get_clock_div(&cinfo);
++
++	if (r)
++		goto err2;
++
++	fck = cinfo.fck;
++	lck_div = cinfo.lck_div;
++	pck_div = cinfo.pck_div;
++
++	pck = fck / lck_div / pck_div / 1000;
++
++	if (pck != t->pixel_clock) {
++		DSSWARN("Could not find exact pixel clock. Requested %d kHz, "
++				"got %lu kHz\n",
++				t->pixel_clock, pck);
++
++		t->pixel_clock = pck;
++	}
++
++
++	dispc_set_lcd_timings(t);
++
++	r = dispc_set_clock_div(&cinfo);
++	if (r)
++		goto err2;
++
++	if (!sdi.skip_init) {
++		dss_sdi_init(dssdev->phy.sdi.datapairs);
++		dss_sdi_enable();
++		mdelay(2);
++	}
++
++	dispc_enable_lcd_out(1);
++
++	if (dssdev->driver->enable) {
++		r = dssdev->driver->enable(dssdev);
++		if (r)
++			goto err3;
++	}
++
++	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++
++	sdi.skip_init = 0;
++
 +	return 0;
- }
-+arch_initcall(arch_init_ftrace_syscalls);
- #endif
++err3:
++	dispc_enable_lcd_out(0);
++err2:
++	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
++err1:
++	omap_dss_stop_device(dssdev);
++err0:
++	return r;
++}
++
++static int sdi_display_resume(struct omap_dss_device *dssdev);
++
++static void sdi_display_disable(struct omap_dss_device *dssdev)
++{
++	if (dssdev->state == OMAP_DSS_DISPLAY_DISABLED)
++		return;
++
++	if (dssdev->state == OMAP_DSS_DISPLAY_SUSPENDED)
++		sdi_display_resume(dssdev);
++
++	if (dssdev->driver->disable)
++		dssdev->driver->disable(dssdev);
++
++	dispc_enable_lcd_out(0);
++
++	dss_sdi_disable();
++
++	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
++
++	dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
++
++	omap_dss_stop_device(dssdev);
++}
++
++static int sdi_display_suspend(struct omap_dss_device *dssdev)
++{
++	if (dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)
++		return -EINVAL;
++
++	if (dssdev->driver->suspend)
++		dssdev->driver->suspend(dssdev);
++
++	dispc_enable_lcd_out(0);
++
++	dss_sdi_disable();
++
++	dss_clk_disable(DSS_CLK_ICK | DSS_CLK_FCK1);
++
++	dssdev->state = OMAP_DSS_DISPLAY_SUSPENDED;
++
++	return 0;
++}
++
++static int sdi_display_resume(struct omap_dss_device *dssdev)
++{
++	if (dssdev->state != OMAP_DSS_DISPLAY_SUSPENDED)
++		return -EINVAL;
++
++	dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
++
++	dss_sdi_enable();
++	mdelay(2);
++
++	dispc_enable_lcd_out(1);
++
++	if (dssdev->driver->resume)
++		dssdev->driver->resume(dssdev);
++
++	dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
++
++	return 0;
++}
++
++static int sdi_display_set_update_mode(struct omap_dss_device *dssdev,
++		enum omap_dss_update_mode mode)
++{
++	if (mode == OMAP_DSS_UPDATE_MANUAL)
++		return -EINVAL;
++
++	if (mode == OMAP_DSS_UPDATE_DISABLED) {
++		dispc_enable_lcd_out(0);
++		sdi.update_enabled = 0;
++	} else {
++		dispc_enable_lcd_out(1);
++		sdi.update_enabled = 1;
++	}
++
++	return 0;
++}
++
++static enum omap_dss_update_mode sdi_display_get_update_mode(
++		struct omap_dss_device *dssdev)
++{
++	return sdi.update_enabled ? OMAP_DSS_UPDATE_AUTO :
++		OMAP_DSS_UPDATE_DISABLED;
++}
++
++static void sdi_get_timings(struct omap_dss_device *dssdev,
++			struct omap_video_timings *timings)
++{
++	*timings = dssdev->panel.timings;
++}
++
++int sdi_init_display(struct omap_dss_device *dssdev)
++{
++	DSSDBG("SDI init\n");
++
++	dssdev->enable = sdi_display_enable;
++	dssdev->disable = sdi_display_disable;
++	dssdev->suspend = sdi_display_suspend;
++	dssdev->resume = sdi_display_resume;
++	dssdev->set_update_mode = sdi_display_set_update_mode;
++	dssdev->get_update_mode = sdi_display_get_update_mode;
++	dssdev->get_timings = sdi_get_timings;
++
++	return 0;
++}
++
++int sdi_init(bool skip_init)
++{
++	/* we store this for first display enable, then clear it */
++	sdi.skip_init = skip_init;
++
++	/*
++	 * Enable clocks already here, otherwise there would be a toggle
++	 * of them until sdi_display_enable is called.
++	 */
++	if (skip_init)
++		dss_clk_enable(DSS_CLK_ICK | DSS_CLK_FCK1);
++	return 0;
++}
++
++void sdi_exit(void)
++{
++}
+-- 
+1.6.4
+
