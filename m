@@ -1,202 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751966AbZH1Gnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbZH1GpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751966AbZH1Gnf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 02:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZH1Gnf
+	id S1751994AbZH1GpG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 02:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZH1GpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 02:43:35 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:47943 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751477AbZH1Gne (ORCPT
+	Fri, 28 Aug 2009 02:45:05 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42388 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbZH1GpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 02:43:34 -0400
-Date: Fri, 28 Aug 2009 12:13:30 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
-	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
-Message-ID: <20090828064330.GB11863@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090827114908.GA24986@linux.vnet.ibm.com> <20090827115354.GC24986@linux.vnet.ibm.com> <1251377607.18584.96.camel@twins>
+	Fri, 28 Aug 2009 02:45:03 -0400
+Date: Fri, 28 Aug 2009 08:44:49 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+	document conditions when reliable operation is possible)
+Message-ID: <20090828064449.GA27528@elf.ucw.cz>
+References: <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1251377607.18584.96.camel@twins>
+In-Reply-To: <4A9733C1.2070904@redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-27 14:53:27]:
+On Thu 2009-08-27 21:32:49, Ric Wheeler wrote:
+> On 08/27/2009 06:13 PM, Pavel Machek wrote:
+>>
+>>>>> Repeat experiment until you get up to something like google scale or the
+>>>>> other papers on failures in national labs in the US and then we can have an
+>>>>> informed discussion.
+>>>>>
+>>>> On google scale anvil lightning can fry your machine out of a clear sky.
+>>>>
+>>>> However, there are still a few non-enterprise users out there, and knowing
+>>>> that specific usage patterns don't behave like they expect might be useful to
+>>>> them.
+>>>
+>>> You are missing the broader point of both papers. They (and people like
+>>> me when back at EMC) look at large numbers of machines and try to fix
+>>> what actually breaks when run in the real world and causes data loss.
+>>> The motherboards, S-ATA controllers, disk types are the same class of
+>>> parts that I have in my desktop box today.
+>> ...
+>>> These errors happen extremely commonly and are what RAID deals with well.
+>>>
+>>> What does not happen commonly is that during the RAID rebuild (kicked
+>>> off only after a drive is kicked out), you push the power button or have
+>>> a second failure (power outage).
+>>>
+>>> We will have more users loose data if they decide to use ext2 instead of
+>>> ext3 and use only single disk storage.
+>>
+>> So your argument basically is
+>>
+>> 'our abs brakes are broken, but lets not tell anyone; our car is still
+>> safer than a horse'.
+>>
+>> and
+>>
+>> 'while we know our abs brakes are broken, they are not major factor in
+>> accidents, so lets not tell anyone'.
+>>
+>> Sorry, but I'd expect slightly higher moral standards. If we can
+>> document it in a way that's non-scary, and does not push people to
+>> single disks (horses), please go ahead; but you have to mention that
+>> md raid breaks journalling assumptions (our abs brakes really are
+>> broken).
+>
+> You continue to ignore the technical facts that everyone (both MD and 
+> ext3) people put in front of you.
+>
+> If you have a specific bug in MD code, please propose a patch.
 
-> On Thu, 2009-08-27 at 17:23 +0530, Arun R Bharadwaj wrote:
-> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-08-27 17:19:08]:
-> > 
-> > Cpuidle infrastructure assumes pm_idle as the default idle routine.
-> > But, ppc_md.power_save is the default idle callback in case of pSeries.
-> > 
-> > So, create a more generic, architecture independent cpuidle_pm_idle
-> > function pointer in driver/cpuidle/cpuidle.c and allow the idle routines
-> > of architectures to be set to cpuidle_pm_idle.
-> > 
-> > Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-> > ---
-> >  drivers/cpuidle/cpuidle.c |   12 +++++++-----
-> >  include/linux/cpuidle.h   |    7 +++++++
-> >  2 files changed, 14 insertions(+), 5 deletions(-)
-> > 
-> > Index: linux.trees.git/drivers/cpuidle/cpuidle.c
-> > ===================================================================
-> > --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-> > +++ linux.trees.git/drivers/cpuidle/cpuidle.c
-> > @@ -25,6 +25,7 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
-> >  DEFINE_MUTEX(cpuidle_lock);
-> >  LIST_HEAD(cpuidle_detected_devices);
-> >  static void (*pm_idle_old)(void);
-> > +void (*cpuidle_pm_idle)(void);
-> >  
-> >  static int enabled_devices;
-> >  
-> > @@ -98,10 +99,10 @@ static void cpuidle_idle_call(void)
-> >   */
-> >  void cpuidle_install_idle_handler(void)
-> >  {
-> > -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
-> > +	if (enabled_devices && (cpuidle_pm_idle != cpuidle_idle_call)) {
-> >  		/* Make sure all changes finished before we switch to new idle */
-> >  		smp_wmb();
-> > -		pm_idle = cpuidle_idle_call;
-> > +		cpuidle_pm_idle = cpuidle_idle_call;
-> >  	}
-> >  }
-> >  
-> > @@ -110,8 +111,9 @@ void cpuidle_install_idle_handler(void)
-> >   */
-> >  void cpuidle_uninstall_idle_handler(void)
-> >  {
-> > -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
-> > -		pm_idle = pm_idle_old;
-> > +	if (enabled_devices && pm_idle_old &&
-> > +			(cpuidle_pm_idle != pm_idle_old)) {
-> > +		cpuidle_pm_idle = pm_idle_old;
-> >  		cpuidle_kick_cpus();
-> >  	}
-> >  }
-> > @@ -382,7 +384,7 @@ static int __init cpuidle_init(void)
-> >  {
-> >  	int ret;
-> >  
-> > -	pm_idle_old = pm_idle;
-> > +	pm_idle_old = cpuidle_pm_idle;
-> >  
-> >  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
-> >  	if (ret)
-> > Index: linux.trees.git/include/linux/cpuidle.h
-> > ===================================================================
-> > --- linux.trees.git.orig/include/linux/cpuidle.h
-> > +++ linux.trees.git/include/linux/cpuidle.h
-> > @@ -188,4 +188,11 @@ static inline void cpuidle_unregister_go
-> >  #define CPUIDLE_DRIVER_STATE_START	0
-> >  #endif
-> >  
-> > +/*
-> > + * Idle callback used by cpuidle to call the cpuidle_idle_call().
-> > + * Platform drivers can use this to register to cpuidle's idle loop.
-> > + */
-> > +
-> > +extern void (*cpuidle_pm_idle)(void);
-> > +
-> >  #endif /* _LINUX_CPUIDLE_H */
-> 
-> 
-> I'm not quite seeing how this makes anything any better. Not we have 3
-> function pointers, where 1 should suffice.
-> 
+Interesting. So, what's technically wrong with the patch below?
 
-Or, can we have something like:
-(if exporting a function is ok, instead of exporting a function
-pointer).
+									Pavel
+---
 
-in drivers/cpuidle/cpuidle.c
+From: Theodore Tso <tytso@mit.edu>
 
-void (*return_cpuidle_handler(void))(void)
-{
-        return cpuidle_pm_idle;
-}
-EXPORT_SYMBOL(return_cpuidle_handler);
+Document that many devices are too broken for filesystems to protect
+data in case of powerfail.
+
+Signed-of-by: Pavel Machek <pavel@ucw.cz> 
+
+diff --git a/Documentation/filesystems/dangers.txt b/Documentation/filesystems/dangers.txt
+new file mode 100644
+index 0000000..2f3eec1
+--- /dev/null
++++ b/Documentation/filesystems/dangers.txt
+@@ -0,0 +1,21 @@
++There are storage devices that high highly undesirable properties when
++they are disconnected or suffer power failures while writes are in
++progress; such devices include flash devices and DM/MD RAID 4/5/6 (*)
++arrays.  These devices have the property of potentially corrupting
++blocks being written at the time of the power failure, and worse yet,
++amplifying the region where blocks are corrupted such that additional
++sectors are also damaged during the power failure.
++        
++Users who use such storage devices are well advised take
++countermeasures, such as the use of Uninterruptible Power Supplies,
++and making sure the flash device is not hot-unplugged while the device
++is being used.  Regular backups when using these devices is also a
++Very Good Idea.
++        
++Otherwise, file systems placed on these devices can suffer silent data
++and file system corruption.  An forced use of fsck may detect metadata
++corruption resulting in file system corruption, but will not suffice
++to detect data corruption.
++
++(*) Degraded array or single disk failure "near" the powerfail is
++neccessary for this property of RAID arrays to bite.
 
 
-and from pseries/processor_idle.c,
-
-ppc_md.power_save = return_cpuidle_handler;
-
-
---arun
-
-> /me wonders what's wrong with something like:
-> 
-> struct idle_func_desc {
-> 	int		 power;
-> 	int		 latency;
-> 	void		 (*idle)(void);
-> 	struct list_head list;
-> };
-> 
-> static void spin_idle(void)
-> {
-> 	for (;;)
-> 		cpu_relax();
-> }
-> 
-> static idle_func_desc default_idle_func = {
-> 	power = 0, 	   /* doesn't safe any power */
-> 	latency = INT_MAX, /* has max latency */
-> 	idle = spin_idle,
-> 	list = INIT_LIST_HEAD(default_idle_func.list),
-> };
-> 
-> void (*idle_func)(void);
-> static struct list_head idle_func_list;
-> 
-> static void pick_idle_func(void)
-> {
-> 	struct idle_func_desc *desc, *idle = &default_idle_desc;
-> 
-> 	list_for_each_entry(desc, &idle_func_list, list) {
-> 		if (desc->power < idle->power)
-> 			continue;
-> 		if (desc->latency > target_latency);
-> 			continue;
-> 		idle = desc;
-> 	}
-> 
-> 	pm_idle = idle->idle;
-> }
-> 
-> void register_idle_func(struct idle_func_desc *desc)
-> {
-> 	WARN_ON_ONCE(!list_empty(&desc->list));
-> 
-> 	list_add_tail(&idle_func_list, &desc->list);
-> 	pick_idle_func();
-> }
-> 
-> void unregister_idle_func(struct idle_func_desc *desc)
-> {
-> 	WARN_ON_ONCE(list_empty(&desc->list));
-> 
-> 	list_del_init(&desc->list);
-> 	if (idle_func == desc->idle) 
-> 		pick_idle_func();
-> }
-> 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
