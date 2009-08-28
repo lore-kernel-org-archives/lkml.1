@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751852AbZH1SM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbZH1SRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751852AbZH1SM0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZH1SM0
+	id S1751934AbZH1SRW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 14:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZH1SRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:12:26 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:52917 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbZH1SMZ convert rfc822-to-8bit (ORCPT
+	Fri, 28 Aug 2009 14:17:22 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:43673 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbZH1SRV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:12:25 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAJi6l0qrR7PD/2dsb2JhbADCFYhAAZAXBYQZ
-X-IronPort-AV: E=Sophos;i="4.44,292,1249257600"; 
-   d="scan'208";a="377431743"
-From: Roland Dreier <rdreier@cisco.com>
-To: joe Shmoe <jsmoe3@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
-References: <374672.36063.qm@web45210.mail.sp1.yahoo.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 28 Aug 2009 11:12:26 -0700
-In-Reply-To: <374672.36063.qm@web45210.mail.sp1.yahoo.com> (joe Shmoe's
-	message of "Fri, 28 Aug 2009 11:08:08 -0700 (PDT)")
-Message-ID: <ada8wh3renp.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 28 Aug 2009 14:17:21 -0400
+Date: Fri, 28 Aug 2009 23:47:19 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: [RFC][PATCH 0/6] load-balancing and cpu_power
+Message-ID: <20090828181719.GW4889@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090827150051.846026837@chello.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 28 Aug 2009 18:12:27.0424 (UTC) FILETIME=[19B0AA00:01CA280B]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090827150051.846026837@chello.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-27 17:00:51]:
 
- > Assuming I have 3GB RAM, why does not kernel create page tables in a way that all of this 3GB physical memory can be addressed . (for x86 arch 32 bit with PAE disabled )
- > 
- > I understand the 3GB/1GB split for user/kernel address space.Isn't  this just a matter of setting up the page table entries in such a way that so all the available RAM upto 3GB can mapped in the kernel page tables. In this way CPU's MMU can take care of mapping any virtual address within first 4GB to physical address using the page table entries regardless of a process is in kernel/user mode. 
+> Hi
+> 
+> These are utterly untested patches, and even if they'd compile I guess they'll
+> balance your system straight like a banana. But it should show the direction
+> I'm wanting to take this thing.
+> 
+> I'll continue prodding at this, but wanted to put this out early so we don't
+> all start doing the same, and so that you can poke holes in it early.
+>
 
-On a 32-bit architecture, there is only 4GB of address space available.
-If the kernel uses 3GB of address space for a direct mapping of physical
-memory, then only 1GB is available for everything else (userspace,
-vmalloc, etc).  BTW, this is available by enabling CONFIG_VMSPLIT_1G.
+Let me put them on my TODO queue for testing.
+ 
 
- - R.
+-- 
+	Balbir
