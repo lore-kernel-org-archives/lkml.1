@@ -1,89 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbZH1HNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbZH1HOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752055AbZH1HNN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 03:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZH1HNN
+	id S1752078AbZH1HOE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 03:14:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZH1HOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 03:13:13 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:64035 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751958AbZH1HNM (ORCPT
+	Fri, 28 Aug 2009 03:14:03 -0400
+Received: from mailgw5.ericsson.se ([193.180.251.36]:59942 "EHLO
+	mailgw5.ericsson.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751928AbZH1HOC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 03:13:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=tAv2FLPm3lJqnIIHkVzGekPhRYVfObCAClr0sdk0N7spsrqf7hgcZo7qfcRRCv084h
-         MV/h/szNGjAYhyW1W2q2RqhrT6Sptl62BeDJb1Q4bLZG7wGNnm7GspWrJk+/wGX4kc+d
-         4awRK6f4v3iagXV09pLHRN+QnvO7Fod1FFv90=
+	Fri, 28 Aug 2009 03:14:02 -0400
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Aug 2009 03:14:01 EDT
+X-AuditID: c1b4fb24-b7c01ae00000498b-4e-4a9780355f72
+Message-ID: <4A978034.6040209@ericsson.com>
+Date: Fri, 28 Aug 2009 08:59:00 +0200
+From: Nils Carlson <nils.carlson@ericsson.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-In-Reply-To: <664902dd0908272057g143f5717k7ae12e8f0e12f67d@mail.gmail.com>
-References: <664902dd0908270449x24f3ee12k615540ffe22e5b58@mail.gmail.com>
-	 <20090827161929.253e001d@jbarnes-g45>
-	 <664902dd0908272057g143f5717k7ae12e8f0e12f67d@mail.gmail.com>
-Date: Fri, 28 Aug 2009 15:13:13 +0800
-Message-ID: <664902dd0908280013j287df5bcqe5fa3e552db40e85@mail.gmail.com>
-Subject: Re: (Re)assignment of PCI BARs
-From: Beng Tan <bengtan1@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Goldwyn Rodrigues <rgoldwyn@gmail.com>
+CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] hpet: hpet driver periodic timer setup bug fixes
+References: <20090810220503.GA29239@linux-os.sc.intel.com> <241c7a2b0908271217u178edd5eu1ec45923e527012f@mail.gmail.com>
+In-Reply-To: <241c7a2b0908271217u178edd5eu1ec45923e527012f@mail.gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 28 Aug 2009 06:59:00.0769 (UTC) FILETIME=[05726910:01CA27AD]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi there,
 
-I've found a satisfactory fix for myself ... not quite sure if I've
-got the full picture correct, but for those who are interested in
-reading ...
+Answers below.
 
-Using the boot parameter pci=resource_alignment=26@00:1c.3; I was able
-to get the kernel to reassign the intervening bridge. My iomem was
-then (excerpt only) ...
+Goldwyn Rodrigues wrote:
+> Hi,
+>
+> One comment on this patch.
+>
+> On Mon, Aug 10, 2009 at 5:05 PM, Pallipadi,
+> Venkatesh<venkatesh.pallipadi@intel.com> wrote:
+>   
+>> From: Nils Carlson <nils.carlson@ericsson.com>
+>>
+>> The periodic interrupt from drivers/char/hpet.c does not work correctly,
+>> both when using the periodic capability of the hardware and while
+>> emulating the periodic interrupt (when hardware does not support
+>> periodic mode).
+>>
+>> With timers capable of periodic interrupts, the comparator field is first
+>> set with the period value followed by set of hidden accumulator,
+>> which has the side effect of overwriting the comparator value. This
+>> results in wrong periodicity for the interrupts. For,
+>> periodic interrupts to work, following steps are necessary, in that order.
+>> * Set config with Tn_VAL_SET_CNF bit
+>> * Write to hidden accumulator, the value written is the time when the
+>>  first interrupt should be generated
+>> * Write compartor with period interval for subsequent interrupts
+>> (http://www.intel.com/hardwaredesign/hpetspec_1.pdf )
+>>
+>> When emulating periodic timer with timers not capable of periodic
+>> interrupt, driver is adding the period to counter value instead of
+>> comparator value, which causes slow drift when using this emulation.
+>>
+>> Also, driver seems to add hpetp->hp_delta both while setting up
+>> periodic interrupt and while emulating periodic interrupts with timers
+>> not capable of doing periodic interrupts. This hp_delta will result in
+>> slower than expected interrupt rate and should not be used while setting
+>> the interval.
+>>
+>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>> Signed-off-by: Nils Carlson <nils.carlson@ericsson.com>
+>> ---
+>>  drivers/char/hpet.c |   21 ++++++++++++---------
+>>  1 files changed, 12 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+>> index 4a9f349..70a770a 100644
+>> --- a/drivers/char/hpet.c
+>> +++ b/drivers/char/hpet.c
+>> @@ -166,9 +166,8 @@ static irqreturn_t hpet_interrupt(int irq, void *data)
+>>                unsigned long m, t;
+>>
+>>                t = devp->hd_ireqfreq;
+>> -               m = read_counter(&devp->hd_hpet->hpet_mc);
+>> -               write_counter(t + m + devp->hd_hpets->hp_delta,
+>> -                             &devp->hd_timer->hpet_compare);
+>> +               m = read_counter(&devp->hd_timer->hpet_compare);
+>> +               write_counter(t + m, &devp->hd_timer->hpet_compare);
+>>        }
+>>
+>>        if (devp->hd_flags & HPET_SHARED_IRQ)
+>> @@ -504,21 +503,25 @@ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+>>        g = v | Tn_32MODE_CNF_MASK | Tn_INT_ENB_CNF_MASK;
+>>
+>>        if (devp->hd_flags & HPET_PERIODIC) {
+>> -               write_counter(t, &timer->hpet_compare);
+>>                g |= Tn_TYPE_CNF_MASK;
+>> -               v |= Tn_TYPE_CNF_MASK;
+>> -               writeq(v, &timer->hpet_config);
+>> -               v |= Tn_VAL_SET_CNF_MASK;
+>> +               v |= Tn_TYPE_CNF_MASK | Tn_VAL_SET_CNF_MASK;
+>>                writeq(v, &timer->hpet_config);
+>>                local_irq_save(flags);
+>>
+>> -               /* NOTE:  what we modify here is a hidden accumulator
+>> +               /*
+>> +                * NOTE: First we modify the hidden accumulator
+>>                 * register supported by periodic-capable comparators.
+>>                 * We never want to modify the (single) counter; that
+>> -                * would affect all the comparators.
+>> +                * would affect all the comparators. The value written
+>> +                * is the counter value when the first interrupt is due.
+>>                 */
+>>                m = read_counter(&hpet->hpet_mc);
+>>                write_counter(t + m + hpetp->hp_delta, &timer->hpet_compare);
+>> +               /*
+>> +                * Then we modify the comparator, indicating the period
+>> +                * for subsequent interrupt.
+>> +                */
+>> +               write_counter(t, &timer->hpet_compare);
+>>        } else {
+>>                local_irq_save(flags);
+>>                m = read_counter(&hpet->hpet_mc);
+>>     
+>
+> Shouldn't
+> write_counter(t + m + hpetp->hp_delta, &timer->hpet_compare);
+> be deleted if we are doing
+> write_counter(t, &timer->hpet_compare);
+> ?
+>
+> Regards,
+>
+>   
+The answer is no. The first write of
+write_counter(t + m + hpetp->hp_delta, &timer->hpet_compare)
+writes directly to the comparator( also reffered to as accumulator),
+that is, it is the next trigger value. This happens because of the setting
+of Tn_VAL_SET_CNF_MASK .
 
-88000000-9fffffff : PCI Bus 0000:0d
-  88000000-8801ffff : 0000:0d:00.0
-  90000000-9fffffff : 0000:0d:00.0
-a0000000-a00fffff : PCI Bus 0000:0d
-  a0000000-a000ffff : 0000:0d:00.0
-  a0010000-a0013fff : 0000:0d:00.1
-a0100000-a0100fff : Intel Flush Page
-d0000000-dfffffff : 0000:00:02.0
+The second write, write_counter(t, &timer->hpet_compare),
+doesn't write to the comparator but instead writes to the adder register,
+the value of which is added to the comparator every time the timer triggers.
 
-Forcing a resource_alignment reallocated the bridge's windows and
-freed up space for the graphics card, which is now like so:
+So the first write sets when the FIRST trigger should occur, the second 
+write
+defines the FREQUENCY. To quoute the intel documentation regarding
+Tn_VAL_SET_CNF_MASK:
 
-0d:00.0 VGA compatible controller: ATI Technologies Inc Unknown device
-9540 (prog-if 00 [VGA controller])
-  Subsystem: Giga-byte Technology Unknown device 21ae
-  Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
-Stepping- SERR- FastB2B-
-  Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR-
-  Latency: 0, Cache Line Size: 64 bytes
-  Interrupt: pin A routed to IRQ 19
-  Region 0: Memory at 90000000 (64-bit, prefetchable) [size=256M]
-  Region 2: Memory at a0000000 (64-bit, non-prefetchable) [size=64K]
-  Region 4: I/O ports at de00 [size=256]
-  Expansion ROM at 88000000 [disabled] [size=128K]
+"Timer n Value Set: (where n is the timer number: 00 to 31). Software 
+uses this
+read/write bit only for timers that have been set to periodic mode. By 
+writing
+this bit to a 1, the software is then allowed to directly set a periodic 
+timer’s
+accumulator.
+Software does NOT have to write this bit back to 0 (it automatically 
+clears)."
 
-(I'm not sure if an align order of 26 is too much. A lesser number may
-work just as well, but I haven't tested this)
+For some nice diagrams see the intel documentation at
+http://www.intel.com/hardwaredesign/hpetspec_1.pdf
+pages 19 and 22.
 
->From here on, the card and everything else just worked, including X
-(albeit with some xorg.conf tweaking).
+Please feel free to ask more questions, I've spent a lot of time lately 
+debugging hpet.
 
-So, all I have to do is go buy two monitors :( and I can have 3
-external monitors on my old crappy laptop :)
+Regards,
 
-For those who are also interested in hooking external PCIe cards to
-their laptop's Expresscard port, the PE2L hardware does work. However,
-you may encounter BIOS-induced PCI resource allocation issues, and
-whether your distribution is recent enough to fix this is an open
-question.
+Nils
 
-Thanks all for reading.
-
-Beng
