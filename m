@@ -1,157 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbZH1M0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752576AbZH1M0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752489AbZH1M0I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZH1M0H
+	id S1752576AbZH1M0Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbZH1M0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:26:07 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:16502 "EHLO
+	Fri, 28 Aug 2009 08:26:12 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:16538 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752115AbZH1M0D (ORCPT
+	with ESMTP id S1752382AbZH1M0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:26:03 -0400
+	Fri, 28 Aug 2009 08:26:08 -0400
 From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/18] OMAP: DSS2: Intro
-Date: Fri, 28 Aug 2009 15:25:19 +0300
-Message-Id: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: [PATCH 03/18] OMAP: OMAPFB: add omapdss device
+Date: Fri, 28 Aug 2009 15:25:22 +0300
+Message-Id: <1251462337-12531-4-git-send-email-tomi.valkeinen@nokia.com>
 X-Mailer: git-send-email 1.6.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 28 Aug 2009 12:25:51.0434 (UTC) FILETIME=[AE506AA0:01CA27DA]
+In-Reply-To: <1251462337-12531-3-git-send-email-tomi.valkeinen@nokia.com>
+References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-2-git-send-email-tomi.valkeinen@nokia.com>
+ <1251462337-12531-3-git-send-email-tomi.valkeinen@nokia.com>
+X-OriginalArrivalTime: 28 Aug 2009 12:25:55.0434 (UTC) FILETIME=[B0B2C4A0:01CA27DA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch set implement new display subsystem driver (DSS2) and omapfb driver
-for OMAP2/3. The patches have been reviewed on linux-omap and linux-fbdev-devel
-mailing lists. The patches can also be found from
-http://gitorious.org/linux-omap-dss2/linux
+The upcoming new display subsystem driver is divided to two devices,
+omapdss and omapfb, of which omapdss handles the actual hardware.
 
-The patches include DSS documentation patch that includes more instructions for
-module parameters, sysfs files etc.
+This patch adds a dummy omapdss platform device for the current omapfb
+driver, which is then used to get the clocks. This will make it possible
+for the current and the new display drivers to co-exist.
 
-The patches enable DSS2 for OMAP3430 SDP board. DSS2 is used in various boards,
-for example Nokia N900, Beagle Board and Overo.
-
-I don't currently have any OMAP2 board to test DSS2, but it has worked on OMAP2
-and the possible fixes needed should be minimal.
-
-OMAP1 is not supported, and so the old DSS needs to be used on OMAP1 boards.
-
-DSS2 is partly based on the old omapfb driver by Imre Deak, and Imre has also
-contributed to DSS2 quite a bit. Ville Syrjälä has been contributing to scaling
-and tv-out work. Also some contributions have been made by Hardik Shah, Vaibhav
-Hiremath, and perhaps some others that I have forgotten =).
-
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
 ---
+ arch/arm/mach-omap2/clock24xx.c |    8 ++++----
+ arch/arm/mach-omap2/clock34xx.c |   14 +++++++-------
+ drivers/video/omap/dispc.c      |   19 ++++++++++++++++---
+ 3 files changed, 27 insertions(+), 14 deletions(-)
 
-Changes in v3:
-- Rebased on mainstream linux
-- Remove Beagle and Overo board changes
+diff --git a/arch/arm/mach-omap2/clock24xx.c b/arch/arm/mach-omap2/clock24xx.c
+index bc5d3ac..8cb8368 100644
+--- a/arch/arm/mach-omap2/clock24xx.c
++++ b/arch/arm/mach-omap2/clock24xx.c
+@@ -116,10 +116,10 @@ static struct omap_clk omap24xx_clks[] = {
+ 	CLK(NULL,	"mdm_ick",	&mdm_ick,	CK_243X),
+ 	CLK(NULL,	"mdm_osc_ck",	&mdm_osc_ck,	CK_243X),
+ 	/* DSS domain clocks */
+-	CLK("omapfb",	"ick",		&dss_ick,	CK_243X | CK_242X),
+-	CLK("omapfb",	"dss1_fck",	&dss1_fck,	CK_243X | CK_242X),
+-	CLK("omapfb",	"dss2_fck",	&dss2_fck,	CK_243X | CK_242X),
+-	CLK("omapfb",	"tv_fck",	&dss_54m_fck,	CK_243X | CK_242X),
++	CLK("omapdss",	"ick",		&dss_ick,	CK_243X | CK_242X),
++	CLK("omapdss",	"dss1_fck",	&dss1_fck,	CK_243X | CK_242X),
++	CLK("omapdss",	"dss2_fck",	&dss2_fck,	CK_243X | CK_242X),
++	CLK("omapdss",	"tv_fck",	&dss_54m_fck,	CK_243X | CK_242X),
+ 	/* L3 domain clocks */
+ 	CLK(NULL,	"core_l3_ck",	&core_l3_ck,	CK_243X | CK_242X),
+ 	CLK(NULL,	"ssi_fck",	&ssi_ssr_sst_fck, CK_243X | CK_242X),
+diff --git a/arch/arm/mach-omap2/clock34xx.c b/arch/arm/mach-omap2/clock34xx.c
+index cd7819c..aff72ea 100644
+--- a/arch/arm/mach-omap2/clock34xx.c
++++ b/arch/arm/mach-omap2/clock34xx.c
+@@ -235,13 +235,13 @@ static struct omap_clk omap34xx_clks[] = {
+ 	CLK("omap_rng",	"ick",		&rng_ick,	CK_343X),
+ 	CLK(NULL,	"sha11_ick",	&sha11_ick,	CK_343X),
+ 	CLK(NULL,	"des1_ick",	&des1_ick,	CK_343X),
+-	CLK("omapfb",	"dss1_fck",	&dss1_alwon_fck_3430es1, CK_3430ES1),
+-	CLK("omapfb",	"dss1_fck",	&dss1_alwon_fck_3430es2, CK_3430ES2),
+-	CLK("omapfb",	"tv_fck",	&dss_tv_fck,	CK_343X),
+-	CLK("omapfb",	"video_fck",	&dss_96m_fck,	CK_343X),
+-	CLK("omapfb",	"dss2_fck",	&dss2_alwon_fck, CK_343X),
+-	CLK("omapfb",	"ick",		&dss_ick_3430es1,	CK_3430ES1),
+-	CLK("omapfb",	"ick",		&dss_ick_3430es2,	CK_3430ES2),
++	CLK("omapdss",	"dss1_fck",	&dss1_alwon_fck_3430es1, CK_3430ES1),
++	CLK("omapdss",	"dss1_fck",	&dss1_alwon_fck_3430es2, CK_3430ES2),
++	CLK("omapdss",	"tv_fck",	&dss_tv_fck,	CK_343X),
++	CLK("omapdss",	"video_fck",	&dss_96m_fck,	CK_343X),
++	CLK("omapdss",	"dss2_fck",	&dss2_alwon_fck, CK_343X),
++	CLK("omapdss",	"ick",		&dss_ick_3430es1,	CK_3430ES1),
++	CLK("omapdss",	"ick",		&dss_ick_3430es2,	CK_3430ES2),
+ 	CLK(NULL,	"cam_mclk",	&cam_mclk,	CK_343X),
+ 	CLK(NULL,	"cam_ick",	&cam_ick,	CK_343X),
+ 	CLK(NULL,	"csi2_96m_fck",	&csi2_96m_fck,	CK_343X),
+diff --git a/drivers/video/omap/dispc.c b/drivers/video/omap/dispc.c
+index f021770..d383888 100644
+--- a/drivers/video/omap/dispc.c
++++ b/drivers/video/omap/dispc.c
+@@ -24,6 +24,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/clk.h>
+ #include <linux/io.h>
++#include <linux/platform_device.h>
+ 
+ #include <mach/sram.h>
+ #include <mach/board.h>
+@@ -184,6 +185,11 @@ static struct {
+ 	struct omapfb_color_key	color_key;
+ } dispc;
+ 
++static struct platform_device omapdss_device = {
++	.name		= "omapdss",
++	.id		= -1,
++};
++
+ static void enable_lcd_clocks(int enable);
+ 
+ static void inline dispc_write_reg(int idx, u32 val)
+@@ -880,20 +886,20 @@ static irqreturn_t omap_dispc_irq_handler(int irq, void *dev)
+ 
+ static int get_dss_clocks(void)
+ {
+-	dispc.dss_ick = clk_get(dispc.fbdev->dev, "ick");
++	dispc.dss_ick = clk_get(&omapdss_device.dev, "ick");
+ 	if (IS_ERR(dispc.dss_ick)) {
+ 		dev_err(dispc.fbdev->dev, "can't get ick\n");
+ 		return PTR_ERR(dispc.dss_ick);
+ 	}
+ 
+-	dispc.dss1_fck = clk_get(dispc.fbdev->dev, "dss1_fck");
++	dispc.dss1_fck = clk_get(&omapdss_device.dev, "dss1_fck");
+ 	if (IS_ERR(dispc.dss1_fck)) {
+ 		dev_err(dispc.fbdev->dev, "can't get dss1_fck\n");
+ 		clk_put(dispc.dss_ick);
+ 		return PTR_ERR(dispc.dss1_fck);
+ 	}
+ 
+-	dispc.dss_54m_fck = clk_get(dispc.fbdev->dev, "tv_fck");
++	dispc.dss_54m_fck = clk_get(&omapdss_device.dev, "tv_fck");
+ 	if (IS_ERR(dispc.dss_54m_fck)) {
+ 		dev_err(dispc.fbdev->dev, "can't get tv_fck\n");
+ 		clk_put(dispc.dss_ick);
+@@ -1349,6 +1355,12 @@ static int omap_dispc_init(struct omapfb_device *fbdev, int ext_mode,
+ 	int skip_init = 0;
+ 	int i;
+ 
++	r = platform_device_register(&omapdss_device);
++	if (r) {
++		dev_err(fbdev->dev, "can't register omapdss device\n");
++		return r;
++	}
++
+ 	memset(&dispc, 0, sizeof(dispc));
+ 
+ 	dispc.base = ioremap(DISPC_BASE, SZ_1K);
+@@ -1490,6 +1502,7 @@ static void omap_dispc_cleanup(void)
+ 	enable_interface_clocks(0);
+ 	put_dss_clocks();
+ 	iounmap(dispc.base);
++	platform_device_unregister(&omapdss_device);
+ }
+ 
+ const struct lcd_ctrl omap2_int_ctrl = {
+-- 
+1.6.4
 
-Changes in v2:
-
-- Split the commits more to make them smaller
-- Print error if fclk is too low for scaling
-- Indent SDP, Beagle, Overo board files
-- DSI: return -EIO instead of -1
-- VRFB: Move to drivers/video/omap2/
-- VRAM: Move to drivers/video/omap2/
-- VRFB: use omap2_sms_write_*() functions instead of omap_writel
-- SDI: Remove custom pinmuxing. Will be added later properly.
-- VENC: indentation changes
-- Add Taal DSI panel driver
-
----
-
-[PATCH 01/18] OMAP2: Add funcs for writing SMS_ROT_* registers
-[PATCH 02/18] OMAP: OMAPFB: split omapfb.h
-[PATCH 03/18] OMAP: OMAPFB: add omapdss device
-[PATCH 04/18] OMAP: Add VRAM manager
-[PATCH 05/18] OMAP: Add support for VRFB rotation engine
-[PATCH 06/18] OMAP: DSS2: Documentation for DSS2
-[PATCH 07/18] OMAP: DSS2: Display Subsystem Driver core
-[PATCH 08/18] OMAP: DSS2: Add more core files
-[PATCH 09/18] OMAP: DSS2: DISPC
-[PATCH 10/18] OMAP: DSS2: DPI driver
-[PATCH 11/18] OMAP: DSS2: Video encoder driver
-[PATCH 12/18] OMAP: DSS2: RFBI driver
-[PATCH 13/18] OMAP: DSS2: SDI driver
-[PATCH 14/18] OMAP: DSS2: DSI driver
-[PATCH 15/18] OMAP: DSS2: omapfb driver
-[PATCH 16/18] OMAP: DSS2: Add DPI panel drivers
-[PATCH 17/18] OMAP: DSS2: Taal DSI command mode panel driver
-[PATCH 18/18] OMAP: SDP: Enable DSS2 for OMAP3 SDP board
-
----
-
- Documentation/arm/OMAP/DSS                         |  317 ++
- arch/arm/configs/omap_3430sdp_defconfig            |   61 +-
- arch/arm/mach-omap1/board-nokia770.c               |    2 +-
- arch/arm/mach-omap2/board-3430sdp.c                |  172 +-
- arch/arm/mach-omap2/clock24xx.c                    |    8 +-
- arch/arm/mach-omap2/clock34xx.c                    |   14 +-
- arch/arm/mach-omap2/io.c                           |    4 +-
- arch/arm/mach-omap2/sdrc.c                         |   16 +
- arch/arm/plat-omap/fb.c                            |   41 +-
- arch/arm/plat-omap/include/mach/display.h          |  540 +++
- arch/arm/plat-omap/include/mach/omapfb.h           |  398 ---
- arch/arm/plat-omap/include/mach/sdrc.h             |    9 +-
- arch/arm/plat-omap/include/mach/vram.h             |   63 +
- arch/arm/plat-omap/include/mach/vrfb.h             |   46 +
- arch/arm/plat-omap/sram.c                          |    8 +
- drivers/video/Kconfig                              |    1 +
- drivers/video/Makefile                             |    1 +
- drivers/video/omap/Kconfig                         |    5 +-
- drivers/video/omap/blizzard.c                      |    2 +-
- drivers/video/omap/dispc.c                         |   21 +-
- drivers/video/omap/hwa742.c                        |    2 +-
- drivers/video/omap/lcd_h3.c                        |    2 +-
- drivers/video/omap/lcd_h4.c                        |    2 +-
- drivers/video/omap/lcd_inn1510.c                   |    2 +-
- drivers/video/omap/lcd_inn1610.c                   |    2 +-
- drivers/video/omap/lcd_osk.c                       |    2 +-
- drivers/video/omap/lcd_palmte.c                    |    2 +-
- drivers/video/omap/lcd_palmtt.c                    |    2 +-
- drivers/video/omap/lcd_palmz71.c                   |    2 +-
- drivers/video/omap/lcdc.c                          |    3 +-
- drivers/video/omap/omapfb.h                        |  227 ++
- drivers/video/omap/omapfb_main.c                   |    2 +-
- drivers/video/omap/rfbi.c                          |    3 +-
- drivers/video/omap/sossi.c                         |    2 +-
- drivers/video/omap2/Kconfig                        |    9 +
- drivers/video/omap2/Makefile                       |    6 +
- drivers/video/omap2/displays/Kconfig               |   28 +
- drivers/video/omap2/displays/Makefile              |    5 +
- drivers/video/omap2/displays/panel-generic.c       |  104 +
- .../omap2/displays/panel-samsung-lte430wq-f0c.c    |  113 +
- .../video/omap2/displays/panel-sharp-ls037v7dw01.c |  153 +
- drivers/video/omap2/displays/panel-taal.c          |  900 +++++
- drivers/video/omap2/dss/Kconfig                    |   89 +
- drivers/video/omap2/dss/Makefile                   |    6 +
- drivers/video/omap2/dss/core.c                     |  917 +++++
- drivers/video/omap2/dss/dispc.c                    | 3182 ++++++++++++++++++
- drivers/video/omap2/dss/display.c                  |  658 ++++
- drivers/video/omap2/dss/dpi.c                      |  388 +++
- drivers/video/omap2/dss/dsi.c                      | 3509 ++++++++++++++++++++
- drivers/video/omap2/dss/dss.c                      |  347 ++
- drivers/video/omap2/dss/dss.h                      |  356 ++
- drivers/video/omap2/dss/manager.c                  | 1487 +++++++++
- drivers/video/omap2/dss/overlay.c                  |  673 ++++
- drivers/video/omap2/dss/rfbi.c                     | 1310 ++++++++
- drivers/video/omap2/dss/sdi.c                      |  261 ++
- drivers/video/omap2/dss/venc.c                     |  797 +++++
- drivers/video/omap2/omapfb/Kconfig                 |   37 +
- drivers/video/omap2/omapfb/Makefile                |    2 +
- drivers/video/omap2/omapfb/omapfb-ioctl.c          |  727 ++++
- drivers/video/omap2/omapfb/omapfb-main.c           | 2137 ++++++++++++
- drivers/video/omap2/omapfb/omapfb-sysfs.c          |  507 +++
- drivers/video/omap2/omapfb/omapfb.h                |  146 +
- drivers/video/omap2/vram.c                         |  655 ++++
- drivers/video/omap2/vrfb.c                         |  277 ++
- include/linux/omapfb.h                             |  242 ++
- 65 files changed, 21558 insertions(+), 454 deletions(-)
-
----
