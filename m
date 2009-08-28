@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbZH1SRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbZH1ST3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751934AbZH1SRW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZH1SRW
+	id S1751944AbZH1ST3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 14:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZH1ST2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:17:22 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:43673 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751493AbZH1SRV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:17:21 -0400
-Date: Fri, 28 Aug 2009 23:47:19 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: Re: [RFC][PATCH 0/6] load-balancing and cpu_power
-Message-ID: <20090828181719.GW4889@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090827150051.846026837@chello.nl>
+	Fri, 28 Aug 2009 14:19:28 -0400
+Received: from www.tglx.de ([62.245.132.106]:59055 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751586AbZH1ST1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 14:19:27 -0400
+Date: Fri, 28 Aug 2009 20:19:12 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ashwin Chaugule <ashwinc@codeaurora.org>
+cc: linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [RFC] [PATCH 1/1] hrtimers: Cache next hrtimer
+In-Reply-To: <4A98070D.1050308@codeaurora.org>
+Message-ID: <alpine.LFD.2.00.0908282005410.19335@localhost.localdomain>
+References: <4A96FFE9.6060105@codeaurora.org> <4A970103.7010804@codeaurora.org> <alpine.LFD.2.00.0908280045200.2888@localhost.localdomain> <4A971245.5070507@codeaurora.org> <alpine.LFD.2.00.0908280111260.2888@localhost.localdomain> <4A9771AA.2090004@codeaurora.org>
+ <alpine.LFD.2.00.0908281308380.2888@localhost.localdomain> <4A98070D.1050308@codeaurora.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090827150051.846026837@chello.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-27 17:00:51]:
-
-> Hi
+On Fri, 28 Aug 2009, Ashwin Chaugule wrote:
+> Thomas Gleixner wrote:
+> Avg startup time 26.4 (10 runs) same as last run.
 > 
-> These are utterly untested patches, and even if they'd compile I guess they'll
-> balance your system straight like a banana. But it should show the direction
-> I'm wanting to take this thing.
-> 
-> I'll continue prodding at this, but wanted to put this out early so we don't
-> all start doing the same, and so that you can poke holes in it early.
->
+> total_calls is again equal to cache_hits ... Its been a while since I wrote my
+> patch. I'll need to look deeper to see if I've done something more. B)
+> Just to make sure, I ran my patch again, I clearly see cache_hits is always
+> less than total_calls.
 
-Let me put them on my TODO queue for testing.
- 
+Hmm. I'd really like to know why that's behaving different. 
 
--- 
-	Balbir
+Usually there are only timers in the CLOCK_MONOTONIC base during
+boot. CLOCK_REALTIME base should be empty most of the time. If my
+theory is correct then the number of reprogram events is correct as
+well because base[MONOTONIC]->first is always the one which armed the
+timer.
+
+Can you add some debug which tells us to which base the removed timer
+belongs ?
+
+Thanks,
+
+	tglx
