@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751409AbZH1QPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751479AbZH1QRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751409AbZH1QPv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 12:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZH1QPu
+	id S1751479AbZH1QRp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 12:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZH1QRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 12:15:50 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64908 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750712AbZH1QPt (ORCPT
+	Fri, 28 Aug 2009 12:17:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43840 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbZH1QRo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 12:15:49 -0400
-Date: Fri, 28 Aug 2009 12:15:49 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Tejun Heo <tj@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] lockup with the latest kernel
-In-Reply-To: <alpine.LFD.2.00.0908272059320.7223@eeepc.linux-foundation.org>
-Message-ID: <alpine.DEB.2.00.0908281213180.3647@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0908191134260.12663@gandalf.stny.rr.com> <alpine.DEB.2.00.0908271836140.26718@gandalf.stny.rr.com> <4A9744F4.7010208@kernel.org> <alpine.LFD.2.00.0908272059320.7223@eeepc.linux-foundation.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 28 Aug 2009 12:17:44 -0400
+Date: Fri, 28 Aug 2009 12:17:45 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Jamie Lokier <jamie@shareable.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
+Message-ID: <20090828161745.GA8755@infradead.org>
+References: <20090821142635.GB30617@infradead.org> <20090821152459.GC6929@shareable.org> <20090821174525.GA28861@infradead.org> <20090822005006.GA22530@shareable.org> <20090824023422.GA775@infradead.org> <20090827143459.GB31453@shareable.org> <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com> <20090828154647.GA15808@infradead.org> <4A98008B.6050503@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A98008B.6050503@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Aug 28, 2009 at 09:06:35AM -0700, Ulrich Drepper wrote:
+> On 08/28/2009 08:46 AM, Christoph Hellwig wrote:
+>>   - given that our current O_SYNC really is and always has been actuall
+>>     Posix O_DSYNC
+>
+> If this is true, then this proposal would work, yes.
 
-On Thu, 27 Aug 2009, Linus Torvalds wrote:
+I'll put it on my todo list.  While reading through the Posix specs
+I came up with some questions that you might be able to answer:
 
-> 
-> 
-> On Fri, 28 Aug 2009, Tejun Heo wrote:
-> > > 
-> > >     x86: make x86_32 use tlb_64.c
-> > >     
-> > >     Impact: less contention when issuing invalidate IPI, cleanup
-> > >     
-> > >     Make x86_32 use the same tlb code as 64bit.  The 64bit code uses
-> > >     multiple IPI vectors for tlb shootdown to reduce contention.  This
-> > >     patch makes x86_32 allocate the same 8 IPIs as x86_64 and share the
-> > >     code paths.
-> > >     
-> > >     Note that the usage of asmlinkage is inconsistent for x86_32 and 64
-> > >     and calls for further cleanup.  This has been noted with a FIXME
-> > >     comment in tlb_64.c.
-> > >     
-> > >     Signed-off-by: Tejun Heo <tj@kernel.org>
-> > > 
-> > > I can easily hit this bug at this commit, but I ran for a week on the 
-> > > commit before it. Thus I'm assuming this is the bug (but I'm not 100% 
-> > > sure).
-> > 
-> > Drat, why does it have to be mine?  ;-)
-> > 
-> > Joke aside, thank you very much for bisecting it.
-> > 
-> > ...
-> > >> [13288.222084] EIP: 0060:[<c0110821>] EFLAGS: 00000002 CPU: 0
-> > >> [13288.222084] EIP is at default_send_IPI_mask_logical+0x53/0x92
-> 
-> Is this one perhaps fixed by b04e6373d694 ("x86: don't call 
-> '->send_IPI_mask()' with an empty mask")
-> 
-> It sounds a _lot_ like that bug. Older dual-cpu x86 box, and APIC getting 
-> confused by the occasional empty CPU mask, and then subsequent IPI's will 
-> hang.
-
-I'll update my box to that kernel and see what happens and let you know.
-
-Thanks,
-
--- Steve
+ - O_RSYNC basically means we need to commit atime updates before a
+   read returns, right?  It would be easy to implement 
+   it in a slightly suboptimal fashion, but is there any point?
 
