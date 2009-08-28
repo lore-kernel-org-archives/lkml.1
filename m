@@ -1,132 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751625AbZH1MD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751617AbZH1MHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751625AbZH1MD6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbZH1MD6
+	id S1751617AbZH1MHx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZH1MHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:03:58 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:36461 "EHLO
-	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751277AbZH1MD5 convert rfc822-to-8bit (ORCPT
+	Fri, 28 Aug 2009 08:07:53 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:54734 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751211AbZH1MHw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:03:57 -0400
-X-SpamScore: 2
-X-BigFish: VPS2(z34a4jz1432R98dN936eMa594izz1202hzz3198u327alz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KP35IC-01-QWS-02
-X-M-MSG: 
-Date: Fri, 28 Aug 2009 14:03:32 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
-	cpumask on multi-node processors
-Message-ID: <20090828120332.GH13576@alberich.amd.com>
-References: <20090820131243.GO29327@alberich.amd.com> <20090820134604.GD29327@alberich.amd.com> <1251128176.7538.301.camel@twins> <20090825093101.GJ20811@alberich.amd.com> <1251194143.7538.1128.camel@twins> <20090827152551.GE13576@alberich.amd.com> <1251455984.17617.5.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1251455984.17617.5.camel@laptop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 28 Aug 2009 12:03:32.0835 (UTC) FILETIME=[90726B30:01CA27D7]
-Content-Transfer-Encoding: 8BIT
+	Fri, 28 Aug 2009 08:07:52 -0400
+Subject: Re: modules: Fix build error in the !CONFIG_KALLSYMS case
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Helge Deller <deller@gmx.de>
+In-Reply-To: <20090828084456.GB3454@elte.hu>
+References: <alpine.LFD.2.01.0908271805210.3218@localhost.localdomain>
+	 <20090828084456.GB3454@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 28 Aug 2009 08:07:49 -0400
+Message-Id: <1251461269.4226.6.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 28, 2009 at 12:39:44PM +0200, Peter Zijlstra wrote:
-> On Thu, 2009-08-27 at 17:25 +0200, Andreas Herrmann wrote:
-> > On Tue, Aug 25, 2009 at 11:55:43AM +0200, Peter Zijlstra wrote:
-> > > On Tue, 2009-08-25 at 11:31 +0200, Andreas Herrmann wrote:
-> > > > On Mon, Aug 24, 2009 at 05:36:16PM +0200, Peter Zijlstra wrote:
-> > > > > On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
-> > > > > > The correct mask that describes core-siblings of an processor
-> > > > > > is topology_core_cpumask. See topology adapation patches, especially
-> > > > > > http://marc.info/?l=linux-kernel&m=124964999608179
-> > > > > 
-> > > > > 
-> > > > > argh, violence, murder kill.. this is the worst possible hack and you're
-> > > > > extending it :/
-> > > > 
-> > > > So this is the third code area
-> > > > (besides sched_*_power_savings sysfs interface, and the __cpu_power fiddling)
-> > > > that is crap, mess, a hack.
-> > > > 
-> > > > Didn't know that I'd enter such a minefield when touching this code. ;-(
-> > > 
-> > > Yeah, you're lucky that way ;-) Its been creaking for a while, and I've
-> > > been making noises to the IBM people (who so far have been the main
-> > > source of power saving patches) to clean this up, but now you trod onto
-> > > all of it at once..
-> > > 
-> > > > What would be your perferred solution for the
-> > > > core_cpumask/llc_shared_map stuff?  Another domain level to get rid of
-> > > > this function?
-> > > 
-> > > Right, I'd like to see everything exposed as domain levels.
-> > > 
-> > > 
-> > > numa-cluster
-> > > numa
-> > > socket
-> > > in-socket-numa
-> > > multi-core
-> > > shared-cache
-> > > core
-> > > threads
-> > 
-> > Out of curiosity, when does cpu_core_mask differ from llc_shared_map
-> > on Intel? Only in case of MCM (e.g. Core2 Quad)?
+On Fri, 2009-08-28 at 10:44 +0200, Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> Yes, I think both c2q and some dual-core opteron have multiple cache
-> domains per socket.
+> > James Bottomley (1):
+> >       module: workaround duplicate section names
 > 
-> > If yes, the hackery of cpu_coregroup_mask() could be replace by
-> > the domain that I'd like to introduce for Magny-Cours:
-> > 
-> >   MC domain span would represent one die.
-> >   The new domain would span all dies in an MCM.
-> > 
-> > Bad idea?
+> -tip testing found that this patch breaks the build on x86 if 
+> CONFIG_KALLSYMS is disabled:
 > 
-> No, I think all the mentioned chips have the multi-die thing in common,
-> the intel c2q has 2 dual-core dies,
-
-> the opteron I have seems to be two
-> single cores
-
-Really? I am not aware of such a thing.
-
-Can you check how many sets of northbridge functions do you have?  If
-you would have two dies in one package then you should see one set of
-PCI functions at bus 0 device 24 and a second set of PCI functions at
-bus 0 device 25, e.g.
-
-  # lspci -d 1022:
-  ...
-  00:18.0 Host bridge [0600]: Advanced Micro Devices [AMD] Family 10h
-          [Opteron, Athlon64, Sempron] HyperTransport Configuration [1022:1200]
-  ...
-  00:19.0 Host bridge [0600]: Advanced Micro Devices [AMD] Family 10h
-          [Opteron, Athlon64, Sempron] HyperTransport Configuration [1022:1200]
-  ... 
-
-> and this magny thing has 2 many cores -- teh pun, sides
-> aching :-)
+>  kernel/module.c: In function â€˜load_moduleâ€™:
+>  kernel/module.c:2367: error: â€˜struct moduleâ€™ has no member named â€˜sect_attrsâ€™
+>  distcc[8269] ERROR: compile kernel/module.c on ph/32 failed
+>  make[1]: *** [kernel/module.o] Error 1
+>  make: *** [kernel] Error 2
+>  make: *** Waiting for unfinished jobs....
 > 
-> So the generalization to dies per socket seems sensible.
+> Commit 1b364bf misses the fact that section attributes are only 
+> built and dealt with if kallsyms is enabled. The patch below fixes 
+> this.
 
-Yup
+Thanks for finding the bug.
 
+> ( note, technically speaking this should depend on CONFIG_SYSFS as
+>   well but this patch is correct too and keeps the #ifdef less
+>   intrusive - in the KALLSYMS && !SYSFS case the code is a NOP. )
 
-Andreas
+Agree with this, but there is a way of fixing it, see below.
 
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  kernel/module.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/module.c b/kernel/module.c
+> index eccb561..b4016d1 100644
+> --- a/kernel/module.c
+> +++ b/kernel/module.c
+> @@ -2355,8 +2355,10 @@ static noinline struct module *load_module(void __user *umod,
+>  	if (err < 0)
+>  		goto unlink;
+>  	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+> +#ifdef CONFIG_KALLSYMS
+>  	if (mod->sect_attrs)
+>  		add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+> +#endif
+
+Rather than adding to the #ifdef litter in the file, isn't it better to
+move the test to a section of it that's already ifdef'd?
+
+This also fixes the problem of depending on CONFIG_SYSFS you mention.
+
+James
+
+---
+
+diff --git a/kernel/module.c b/kernel/module.c
+index eccb561..2d53718 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1274,6 +1274,10 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
+ 	struct module_notes_attrs *notes_attrs;
+ 	struct bin_attribute *nattr;
+ 
++	/* failed to create section attributes, so can't create notes */
++	if (!mod->sect_attrs)
++		return;
++
+ 	/* Count notes sections and allocate structures.  */
+ 	notes = 0;
+ 	for (i = 0; i < nsect; i++)
+@@ -2355,8 +2359,7 @@ static noinline struct module *load_module(void __user *umod,
+ 	if (err < 0)
+ 		goto unlink;
+ 	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+-	if (mod->sect_attrs)
+-		add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
++	add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+ 
+ 	/* Get rid of temporary copy */
+ 	vfree(hdr);
 
 
