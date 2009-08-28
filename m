@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751605AbZH1QXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751656AbZH1Q23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751605AbZH1QXw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 12:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZH1QXw
+	id S1751656AbZH1Q23 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 12:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbZH1Q23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 12:23:52 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:63656 "EHLO
-	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbZH1QXv convert rfc822-to-8bit (ORCPT
+	Fri, 28 Aug 2009 12:28:29 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:53245 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751457AbZH1Q22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 12:23:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=LqMOA+BVdjQYSxIyPYf771EzoJzEO/r9eu9KBHNsrYjAiQRWaqQwGD78VZS74xiZRp
-         GAsBRSh1MTZGrQI7ZAIJI+yjXMjWX44xf9ZAt+o6S6zW9u0pJWHhX6uVULcVlMBbpzsn
-         4mW5cRPSCli6CT4Ww0ijH+cHmMb+wMqp3qXS8=
+	Fri, 28 Aug 2009 12:28:28 -0400
+X-IronPort-AV: E=Sophos;i="4.44,292,1249257600"; 
+   d="scan'208";a="234521259"
+From: Roland Dreier <rdreier@cisco.com>
+To: Joachim Fenkes <FENKES@de.ibm.com>
+Cc: Hal Rosenstock <hal.rosenstock@gmail.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       OF-EWG <ewg@lists.openfabrics.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Hal Rosenstock <hnrose@comcast.net>,
+       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [ewg] [PATCH] IB/ehca: Construct MAD redirect replies from 	request MAD
+References: <200908261337.56128.fenkes@de.ibm.com>
+	<f0e08f230908260815g70de3002pfd0b34f1b17abd6@mail.gmail.com>
+	<OFF2257478.FF0FEABE-ONC125761F.00344884-C125761F.00358310@de.ibm.com>
+	<f0e08f230908270631j3e159f3fgb0034eb41acdac7b@mail.gmail.com>
+	<OFA25F14CC.CE7042E9-ONC1257620.00453C46-C1257620.00474D70@de.ibm.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 28 Aug 2009 09:28:29 -0700
+In-Reply-To: <OFA25F14CC.CE7042E9-ONC1257620.00453C46-C1257620.00474D70@de.ibm.com>
+	(Joachim Fenkes's message of "Fri, 28 Aug 2009 14:58:49 +0200")
+Message-ID: <adabplzsy1e.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <200908280934.53681.hs4233@mail.mn-solutions.de>
-References: <43e72e890908271943s6dca1257g1f1e56d0347cc21d@mail.gmail.com> 
-	<200908280934.53681.hs4233@mail.mn-solutions.de>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 28 Aug 2009 09:23:33 -0700
-Message-ID: <43e72e890908280923v376b5eeaub542201217f02fba@mail.gmail.com>
-Subject: Re: ar9271 mailing list and driver project page
-To: Holger Schurig <hs4233@mail.mn-solutions.de>
-Cc: devel@driverdev.osuosl.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>,
-       Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 28 Aug 2009 16:28:30.0167 (UTC) FILETIME=[93FEC670:01CA27FC]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 28, 2009 at 12:34 AM, Holger
-Schurig<hs4233@mail.mn-solutions.de> wrote:
->> ar9271 and ar9170 seem to share a few things, one of which is
->> firmware upload. ar9271's firmware upload routine was modified
->> to make it match ar9170's as much as possible to share it on
->> ath.ko
->
-> Is it true that most devices which will use ath.ko won't ever use
-> firmware uploading?
 
-For now only usb devices require firmware loading, but so does ar6k,
-however I am not sure how fw upload works there so I cannot be certain
-the way to upload fw will be the same as with ar9170 and ar9271.
+ > Given that you seem to like the rest of the code and Jason hasn't spoken 
+ > up yet, I think we can have Roland merge this patch. Roland, what do you 
+ > think?
 
-> It's only a few Ath-USB devices, so maybe
-> you could do an ath_fw.ko for this.
-
-True, or ath_usb, or something, only thing is it might be overkill to
-just have 1 fw upload routine on a module for sharing.
-
-> (Somebody who's always working with embedded devices and likes to
-> keeps small :-)
-
-Hey thanks :)
-
-  Luis
+I don't see any problem with the idea and this does sound like a step
+forward, so I am planning on merging this (pending review).
