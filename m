@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZH1Lt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbZH1Lwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752394AbZH1Lt7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 07:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbZH1Lt6
+	id S1752304AbZH1Lwj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 07:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbZH1Lwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 07:49:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40021 "EHLO mx3.mail.elte.hu"
+	Fri, 28 Aug 2009 07:52:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51301 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751972AbZH1Lt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 07:49:57 -0400
-Date: Fri, 28 Aug 2009 13:49:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pierre Habouzit <pierre.habouzit@intersec.com>
-Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH v2] perf tools: do not complain if root is owning
-	perf.data
-Message-ID: <20090828114951.GA25148@elte.hu>
-References: <1251291926-27174-1-git-send-email-pierre.habouzit@intersec.com> <20090826182459.GD13632@elte.hu> <20090827075902.GF19653@laphroaig.corp>
+	id S1750975AbZH1Lwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 07:52:37 -0400
+Date: Fri, 28 Aug 2009 11:51:57 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perfcounters/urgent] perf_counters: Increase paranoia level
+Message-ID: <tip-6bb56347f5162d1a7cb1dc461023360781ecd4c0@git.kernel.org>
+Git-Commit-ID: 6bb56347f5162d1a7cb1dc461023360781ecd4c0
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090827075902.GF19653@laphroaig.corp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 11:51:57 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  6bb56347f5162d1a7cb1dc461023360781ecd4c0
+Gitweb:     http://git.kernel.org/tip/6bb56347f5162d1a7cb1dc461023360781ecd4c0
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Fri, 28 Aug 2009 13:44:53 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 28 Aug 2009 13:44:53 +0200
 
-* Pierre Habouzit <pierre.habouzit@intersec.com> wrote:
+perf_counters: Increase paranoia level
 
-> This improves patch fa6963b24 so that perf.data stuff that has 
-> been dumped as root can be read (annotate/report) by a user 
-> without the use of the --force.
-> 
-> Rationale is that root has plenty of ways to screw us (usually) 
-> that do not require twisted schemes involving specially crafting a 
-> perf.data.
-> 
-> Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Paul Mackerras <paulus@samba.org>,
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-> Cc: <stable@kernel.org>
-> ---
->     On Wed, Aug 26, 2009 at 08:24:59PM +0200, Ingo Molnar wrote:
->     > Ok, this makes sense - but i think we should do this in .32 only, 
->     > with a Cc: <stable@kernel.org> backport tag for .31.1.
-> 
->     You're the boss ;)
-> 
->     > Mind doing it against the latest perfcounters tree, which can be 
->     > found in -tip:
->     > 
->     >   http://people.redhat.com/mingo/tip.git/README
->     > 
->     > your current version does not apply cleanly as the surrounding code 
->     > has changed a bit already.
-> 
->     Here it is, against perfcounters/core which I assume is the 
->     proper tip branch. [...]
+Per-cpu counters are an ASLR information leak as they show
+the execution other tasks do. Increase the paranoia level
+to 1, which disallows per-cpu counters. (they still allow
+counting/profiling of own tasks - and admin can profile
+everything.)
 
-Yeah, applied - thanks!
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
->     [...] Note that I'd suggest adding a README.Devel under 
->     tools/perf to explicit how patches should be submitted, at 
->     least to explain against which tree it's best to do our 
->     patches for submission, it could help people avoiding losing 
->     your time with unnecessary back-and-forth mails just to rebase 
->     a patch ;)
 
-Agreed! Mind sending a patch for that, or adding a wiki page for 
-that on perf.wiki.kernel.org? We could then add a link to that to 
-tools/perf/Documentation/README.Devel or so :-)
+---
+ kernel/perf_counter.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Ingo
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index f274e19..7d4bb83 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -50,7 +50,7 @@ static atomic_t nr_task_counters __read_mostly;
+  *  1 - disallow cpu counters to unpriv
+  *  2 - disallow kernel profiling to unpriv
+  */
+-int sysctl_perf_counter_paranoid __read_mostly;
++int sysctl_perf_counter_paranoid __read_mostly = 1;
+ 
+ static inline bool perf_paranoid_cpu(void)
+ {
