@@ -1,129 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbZH1GpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbZH1Gt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751994AbZH1GpG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 02:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZH1GpF
+	id S1752005AbZH1Gt3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 02:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZH1Gt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 02:45:05 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42388 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbZH1GpD (ORCPT
+	Fri, 28 Aug 2009 02:49:29 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:1375 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751865AbZH1Gt2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 02:45:03 -0400
-Date: Fri, 28 Aug 2009 08:44:49 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
-	document conditions when reliable operation is possible)
-Message-ID: <20090828064449.GA27528@elf.ucw.cz>
-References: <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A9733C1.2070904@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 28 Aug 2009 02:49:28 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
+ cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Joel Schopp <jschopp@austin.ibm.com>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20090828061434.GA11863@linux.vnet.ibm.com>
+References: <20090827114908.GA24986@linux.vnet.ibm.com>
+	 <20090827115354.GC24986@linux.vnet.ibm.com>
+	 <1251377607.18584.96.camel@twins>
+	 <20090828061434.GA11863@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Fri, 28 Aug 2009 08:48:05 +0200
+Message-Id: <1251442085.18584.120.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-08-27 21:32:49, Ric Wheeler wrote:
-> On 08/27/2009 06:13 PM, Pavel Machek wrote:
->>
->>>>> Repeat experiment until you get up to something like google scale or the
->>>>> other papers on failures in national labs in the US and then we can have an
->>>>> informed discussion.
->>>>>
->>>> On google scale anvil lightning can fry your machine out of a clear sky.
->>>>
->>>> However, there are still a few non-enterprise users out there, and knowing
->>>> that specific usage patterns don't behave like they expect might be useful to
->>>> them.
->>>
->>> You are missing the broader point of both papers. They (and people like
->>> me when back at EMC) look at large numbers of machines and try to fix
->>> what actually breaks when run in the real world and causes data loss.
->>> The motherboards, S-ATA controllers, disk types are the same class of
->>> parts that I have in my desktop box today.
->> ...
->>> These errors happen extremely commonly and are what RAID deals with well.
->>>
->>> What does not happen commonly is that during the RAID rebuild (kicked
->>> off only after a drive is kicked out), you push the power button or have
->>> a second failure (power outage).
->>>
->>> We will have more users loose data if they decide to use ext2 instead of
->>> ext3 and use only single disk storage.
->>
->> So your argument basically is
->>
->> 'our abs brakes are broken, but lets not tell anyone; our car is still
->> safer than a horse'.
->>
->> and
->>
->> 'while we know our abs brakes are broken, they are not major factor in
->> accidents, so lets not tell anyone'.
->>
->> Sorry, but I'd expect slightly higher moral standards. If we can
->> document it in a way that's non-scary, and does not push people to
->> single disks (horses), please go ahead; but you have to mention that
->> md raid breaks journalling assumptions (our abs brakes really are
->> broken).
->
-> You continue to ignore the technical facts that everyone (both MD and 
-> ext3) people put in front of you.
->
-> If you have a specific bug in MD code, please propose a patch.
+On Fri, 2009-08-28 at 11:44 +0530, Arun R Bharadwaj wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-27 14:53:27]:
+> 
+> Hi Peter, Ben,
+> 
+> I've put the whole thing in a sort of a block diagram. Hope it
+> explains things more clearly.
+> 
+> 
+> 
+> 
+> 
+> 
+> 				----------------
+> 				|    CPUIDLE   |  (Select idle states like
+> 				|   GOVERNORS  |   C1, C1e, C6 etc in case
+> 				| (Menu/Ladder)|   x86 & nap, snooze in
+> 				|	       |   case of POWER - based on
+> 				----------------   latency & power req)
+> 					^
+> 					|
+> 					|
+> 					|
+> 					|
+> 					|
+>   ----------			-----------------	         -------------
+>   |	   |			|		|	         |  PSERIES  |
+>   |  ACPI  |------------------>	|    CPUIDLE	| <--------------|   IDLE    |
+>   |	   |			|		|	         |           |
+>   ----------			-----------------	         -------------
+> 
+> Main idle routine- pm_idle()			         Main idle routine-
+> 							     ppc_md.power_save()
+> 
+> pm_idle = cpuidle_pm_idle;			         ppc_md.power_save =
+> (start using cpuidle's idle				      cpuidle_pm_idle();
+>  loop, which internally calls
+>  governor to select the right
+>  state to go into).
+> 
+> 
+> Relavent code snippet from drivers/cpuidle/cpuidle.c
+> -------------------------------------
+> 
+> static void cpuidle_idle_call(void)
+> {
+> 	............
+> 	............
+> 
+> 	/* Call the menu_select() to select the idle state to enter. */
+> 	next_state = cpuidle_curr_governor->select(dev);
+> 
+> 	............
+> 	............
+> 
+> 	/*
+> 	 * Enter the idle state previously selected. target_state->enter
+> 	 * would call pseries_cpuidle_loop() which selects nap/snooze
+> 	 * /
+> 	dev->last_residency = target_state->enter(dev, target_state);
+> }
+> 
+> void cpuidle_install_idle_handler(void)
+> {
+> 	.........
+> 	.........
+> 	cpuidle_pm_idle = cpuidle_idle_call;
+> }
 
-Interesting. So, what's technically wrong with the patch below?
+All I'm seeing here is a frigging mess.
 
-									Pavel
----
+How on earths can something called: cpuidle_install_idle_handler() have
+a void argument, _WHAT_ handler is it going to install?
 
-From: Theodore Tso <tytso@mit.edu>
+So somehow you added to the ACPI mess by now having 3 wild function
+pointers, that's _NOT_ progress.
 
-Document that many devices are too broken for filesystems to protect
-data in case of powerfail.
-
-Signed-of-by: Pavel Machek <pavel@ucw.cz> 
-
-diff --git a/Documentation/filesystems/dangers.txt b/Documentation/filesystems/dangers.txt
-new file mode 100644
-index 0000000..2f3eec1
---- /dev/null
-+++ b/Documentation/filesystems/dangers.txt
-@@ -0,0 +1,21 @@
-+There are storage devices that high highly undesirable properties when
-+they are disconnected or suffer power failures while writes are in
-+progress; such devices include flash devices and DM/MD RAID 4/5/6 (*)
-+arrays.  These devices have the property of potentially corrupting
-+blocks being written at the time of the power failure, and worse yet,
-+amplifying the region where blocks are corrupted such that additional
-+sectors are also damaged during the power failure.
-+        
-+Users who use such storage devices are well advised take
-+countermeasures, such as the use of Uninterruptible Power Supplies,
-+and making sure the flash device is not hot-unplugged while the device
-+is being used.  Regular backups when using these devices is also a
-+Very Good Idea.
-+        
-+Otherwise, file systems placed on these devices can suffer silent data
-+and file system corruption.  An forced use of fsck may detect metadata
-+corruption resulting in file system corruption, but will not suffice
-+to detect data corruption.
-+
-+(*) Degraded array or single disk failure "near" the powerfail is
-+neccessary for this property of RAID arrays to bite.
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
