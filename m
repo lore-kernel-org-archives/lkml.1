@@ -1,95 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752459AbZH1Lwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbZH1Lw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752459AbZH1Lwy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 07:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbZH1Lwx
+	id S1752494AbZH1Lw5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 07:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZH1Lw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 07:52:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51310 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752417AbZH1Lww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 07:52:52 -0400
-Date: Fri, 28 Aug 2009 11:52:09 GMT
-From: tip-bot for Pierre Habouzit <pierre.habouzit@intersec.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, pierre.habouzit@intersec.com,
-       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       pierre.habouzit@intersec.com, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090827075902.GF19653@laphroaig.corp>
-References: <20090827075902.GF19653@laphroaig.corp>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf tools: do not complain if root is owning perf.data
-Message-ID: <tip-119e7a22bb70d84849384e5113792cd45afa4f85@git.kernel.org>
-Git-Commit-ID: 119e7a22bb70d84849384e5113792cd45afa4f85
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 11:52:23 +0000 (UTC)
+	Fri, 28 Aug 2009 07:52:57 -0400
+Received: from mail-pz0-f178.google.com ([209.85.222.178]:58884 "EHLO
+	mail-pz0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752468AbZH1Lwz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 07:52:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=DJ0T98HkSmTatrnFetecAL/jbysi9ll6/MXlhHq7Ssxd2B79LZgFqQkc1QJNaSaVCB
+         5W/e5f9E0m+dnYU8OMhsA6SloNA8QDJoXrzc4n4Q6Zr8fuYytUrmT3FN8lTxj3GR0IPJ
+         uUBb2SVP5YIBO2G0sPin/WiOLI1/eY8hVyby4=
+Date: Fri, 28 Aug 2009 20:52:41 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] page-allocator: Split per-cpu list into
+ one-list-per-migrate-type
+Message-Id: <20090828205241.fc8dfa51.minchan.kim@barrios-desktop>
+In-Reply-To: <1251449067-3109-2-git-send-email-mel@csn.ul.ie>
+References: <1251449067-3109-1-git-send-email-mel@csn.ul.ie>
+	<1251449067-3109-2-git-send-email-mel@csn.ul.ie>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  119e7a22bb70d84849384e5113792cd45afa4f85
-Gitweb:     http://git.kernel.org/tip/119e7a22bb70d84849384e5113792cd45afa4f85
-Author:     Pierre Habouzit <pierre.habouzit@intersec.com>
-AuthorDate: Thu, 27 Aug 2009 09:59:02 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 28 Aug 2009 13:47:43 +0200
+Hi, Mel. 
 
-perf tools: do not complain if root is owning perf.data
+On Fri, 28 Aug 2009 09:44:26 +0100
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-This improves patch fa6963b24 so that perf.data stuff that has
-been dumped as root can be read (annotate/report) by a user
-without the use of the --force.
+> Currently the per-cpu page allocator searches the PCP list for pages of the
+> correct migrate-type to reduce the possibility of pages being inappropriate
+> placed from a fragmentation perspective. This search is potentially expensive
+> in a fast-path and undesirable. Splitting the per-cpu list into multiple
+> lists increases the size of a per-cpu structure and this was potentially
+> a major problem at the time the search was introduced. These problem has
+> been mitigated as now only the necessary number of structures is allocated
+> for the running system.
+> 
+> This patch replaces a list search in the per-cpu allocator with one list per
+> migrate type. The potential snag with this approach is when bulk freeing
+> pages. We round-robin free pages based on migrate type which has little
+> bearing on the cache hotness of the page and potentially checks empty lists
+> repeatedly in the event the majority of PCP pages are of one type.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Acked-by: Nick Piggin <npiggin@suse.de>
+> ---
+>  include/linux/mmzone.h |    5 ++-
+>  mm/page_alloc.c        |  106 ++++++++++++++++++++++++++---------------------
+>  2 files changed, 63 insertions(+), 48 deletions(-)
+> 
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 008cdcd..045348f 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -38,6 +38,7 @@
+>  #define MIGRATE_UNMOVABLE     0
+>  #define MIGRATE_RECLAIMABLE   1
+>  #define MIGRATE_MOVABLE       2
+> +#define MIGRATE_PCPTYPES      3 /* the number of types on the pcp lists */
+>  #define MIGRATE_RESERVE       3
+>  #define MIGRATE_ISOLATE       4 /* can't allocate from here */
+>  #define MIGRATE_TYPES         5
+> @@ -169,7 +170,9 @@ struct per_cpu_pages {
+>  	int count;		/* number of pages in the list */
+>  	int high;		/* high watermark, emptying needed */
+>  	int batch;		/* chunk size for buddy add/remove */
+> -	struct list_head list;	/* the list of pages */
+> +
+> +	/* Lists of pages, one per migrate type stored on the pcp-lists */
+> +	struct list_head lists[MIGRATE_PCPTYPES];
+>  };
+>  
+>  struct per_cpu_pageset {
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index ac3afe1..65eedb5 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -522,7 +522,7 @@ static inline int free_pages_check(struct page *page)
+>  }
+>  
+>  /*
+> - * Frees a list of pages. 
+> + * Frees a number of pages from the PCP lists
+>   * Assumes all pages on list are in same zone, and of same order.
+>   * count is the number of pages to free.
+>   *
+> @@ -532,23 +532,36 @@ static inline int free_pages_check(struct page *page)
+>   * And clear the zone's pages_scanned counter, to hold off the "all pages are
+>   * pinned" detection logic.
+>   */
+> -static void free_pages_bulk(struct zone *zone, int count,
+> -					struct list_head *list, int order)
+> +static void free_pcppages_bulk(struct zone *zone, int count,
+> +					struct per_cpu_pages *pcp)
+>  {
+> +	int migratetype = 0;
+> +
 
-Rationale is that root has plenty of ways to screw us (usually)
-that do not require twisted schemes involving specially
-crafting a perf.data.
+How about caching the last sucess migratetype
+with 'per_cpu_pages->last_alloc_type'?
+I think it could prevent a litte spinning empty list.
 
-Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: <stable@kernel.org>
-LKML-Reference: <20090827075902.GF19653@laphroaig.corp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>  	spin_lock(&zone->lock);
+>  	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
+>  	zone->pages_scanned = 0;
+>  
+> -	__mod_zone_page_state(zone, NR_FREE_PAGES, count << order);
+> +	__mod_zone_page_state(zone, NR_FREE_PAGES, count);
+>  	while (count--) {
+>  		struct page *page;
+> +		struct list_head *list;
+> +
+> +		/*
+> +		 * Remove pages from lists in a round-robin fashion. This spinning
+> +		 * around potentially empty lists is bloody awful, alternatives that
+> +		 * don't suck are welcome
+> +		 */
+> +		do {
+> +			if (++migratetype == MIGRATE_PCPTYPES)
+> +				migratetype = 0;
+> +			list = &pcp->lists[migratetype];
+> +		} while (list_empty(list));
+>  
+> -		VM_BUG_ON(list_empty(list));
+>  		page = list_entry(list->prev, struct page, lru);
+>  		/* have to delete it as __free_one_page list manipulates */
+>  		list_del(&page->lru);
+> -		trace_mm_page_pcpu_drain(page, order, page_private(page));
+> -		__free_one_page(page, zone, order, page_private(page));
+> +		trace_mm_page_pcpu_drain(page, 0, migratetype);
+> +		__free_one_page(page, zone, 0, migratetype);
+>  	}
+>  	spin_unlock(&zone->lock);
+>  }
 
 
----
- tools/perf/builtin-annotate.c |    4 ++--
- tools/perf/builtin-report.c   |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 4ac618b..4c7bc44 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -984,8 +984,8 @@ static int __cmd_annotate(void)
- 		exit(-1);
- 	}
- 
--	if (!force && (input_stat.st_uid != geteuid())) {
--		fprintf(stderr, "file: %s not owned by current user\n", input_name);
-+	if (!force && input_stat.st_uid && (input_stat.st_uid != geteuid())) {
-+		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
- 		exit(-1);
- 	}
- 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index d2e2882..ea6328a 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -1405,8 +1405,8 @@ static int __cmd_report(void)
- 		exit(-1);
- 	}
- 
--	if (!force && (input_stat.st_uid != geteuid())) {
--		fprintf(stderr, "file: %s not owned by current user\n", input_name);
-+	if (!force && input_stat.st_uid && (input_stat.st_uid != geteuid())) {
-+		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
- 		exit(-1);
- 	}
- 
+-- 
+Kind regards,
+Minchan Kim
