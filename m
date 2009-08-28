@@ -1,82 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbZH1Sk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbZH1StC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752109AbZH1Sk4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZH1Skz
+	id S1752055AbZH1StC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 14:49:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbZH1StC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:40:55 -0400
-Received: from web45209.mail.sp1.yahoo.com ([68.180.197.122]:22923 "HELO
-	web45209.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752021AbZH1Sky convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:40:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=hTRv8ma8jyaSEESxWuzi/IU4cQSgiRFgv9JhQKeCDMaxRUZMVw06cfOGZwAewA4fFsM5VlBFRG4OzlMee+o19zXp/ke4PN9NV5togG2pWNWbew8s2dL2X0dufP7M0ykOk1uwwgTS+XRJGTyYK1k1QFiezMNfPVBPw6jjfdVCElE=;
-Message-ID: <812804.57438.qm@web45209.mail.sp1.yahoo.com>
-X-YMail-OSG: gjxCbKAVM1lokSSJYC2XSAXRbAu.gINzn2Jza.4DXxXYzYB1NDh_Ou511pYTVxvo7gR26WxqNfgNmsJxH_bagX3XXUAGx4p55maq..9Om65OYOCNW2vY71Ry93bvu_puqmaKXq_z787FQHe3Tw6YdEULPUhtkiSDfAjb8vJaWy2Z6f9yX_xlxY4ZbGTERdHhDTjd8.UpSPaCUCtLgkyKSE8-
-X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
-Date: Fri, 28 Aug 2009 11:40:56 -0700 (PDT)
-From: joe Shmoe <jsmoe3@yahoo.com>
-Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
-To: Roland Dreier <rdreier@cisco.com>
+	Fri, 28 Aug 2009 14:49:02 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:54407 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751755AbZH1StA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 14:49:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=STAGhKTvU/mKJkG+5Lw0D7tprmSCgTjgwrc4uHzJgYhj6pQE29aLobI7OUs9/luIbd
+         Ahs5wNm3VJH+t/w+IqVXoVSQtGfFBNh5SnXECDFMkfVEdkUxUVK5fLeaWkaCV6nKJhAq
+         aYI7RaYVZfLu1p0/DMeBQytTJ0JgdpbQPk0p0=
+Date: Fri, 28 Aug 2009 22:48:56 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <ada8wh3renp.fsf@cisco.com>
+Subject: [PATCH] switch /proc/irq/prof_cpu_mask to seq_file
+Message-ID: <20090828184856.GA14499@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the reply,
-But my question is with regard to setting up the page tables during the kernel initialization in such a way so that entire RAM upto 4GB can be mapped. i.e virtual to physical address mapping. My question is strictly with reg. to physical address mapping only.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-Why does kernel stop at 1GB (896 MB to be exact) while mapping from linear to physical address. 
+ kernel/profile.c |   45 ++++++++++++++++++++++++---------------------
+ 1 file changed, 24 insertions(+), 21 deletions(-)
 
-Since a given process runs in both user/kernel mode how does it matter whether page table mapping  is for entire 4GB or 1 GB. Just because kernel setup the page tables does not mean that allocated dynamic memory cannot be accessed by given process while running in user mode. 
-
-
-For the sake of discussion, let us say I have 3.5 GB of RAM of x86 with PAE disabled and I have only one process running other than kernel.
-Why can't kernel simply setup the page table mapping in a way that entire 3.5GB is mapped from linear to physical during the initialization. Assuming this single process is given access upto 3 GB, while running in user mode this single process can access any memory location in the allocated 2 or 3 GB virtual space.
-
-
-
-
-
-
---- On Fri, 8/28/09, Roland Dreier <rdreier@cisco.com> wrote:
-
-> From: Roland Dreier <rdreier@cisco.com>
-> Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
-> To: "joe Shmoe" <jsmoe3@yahoo.com>
-> Cc: linux-kernel@vger.kernel.org
-> Date: Friday, August 28, 2009, 2:12 PM
-> 
->  > Assuming I have 3GB RAM, why does not kernel create
-> page tables in a way that all of this 3GB physical memory
-> can be addressed . (for x86 arch 32 bit with PAE disabled )
->  > 
->  > I understand the 3GB/1GB split for user/kernel
-> address space.Isn't  this just a matter of setting up the
-> page table entries in such a way that so all the available
-> RAM upto 3GB can mapped in the kernel page tables. In this
-> way CPU's MMU can take care of mapping any virtual address
-> within first 4GB to physical address using the page table
-> entries regardless of a process is in kernel/user mode. 
-> 
-> On a 32-bit architecture, there is only 4GB of address
-> space available.
-> If the kernel uses 3GB of address space for a direct
-> mapping of physical
-> memory, then only 1GB is available for everything else
-> (userspace,
-> vmalloc, etc).  BTW, this is available by enabling
-> CONFIG_VMSPLIT_1G.
-> 
->  - R.
-> 
-
-
-      
+--- a/kernel/profile.c
++++ b/kernel/profile.c
+@@ -442,48 +442,51 @@ void profile_tick(int type)
+ 
+ #ifdef CONFIG_PROC_FS
+ #include <linux/proc_fs.h>
++#include <linux/seq_file.h>
+ #include <asm/uaccess.h>
+ 
+-static int prof_cpu_mask_read_proc(char *page, char **start, off_t off,
+-			int count, int *eof, void *data)
++static int prof_cpu_mask_proc_show(struct seq_file *m, void *v)
+ {
+-	int len = cpumask_scnprintf(page, count, data);
+-	if (count - len < 2)
+-		return -EINVAL;
+-	len += sprintf(page + len, "\n");
+-	return len;
++	seq_cpumask(m, prof_cpu_mask);
++	seq_putc(m, '\n');
++	return 0;
+ }
+ 
+-static int prof_cpu_mask_write_proc(struct file *file,
+-	const char __user *buffer,  unsigned long count, void *data)
++static int prof_cpu_mask_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, prof_cpu_mask_proc_show, NULL);
++}
++
++static ssize_t prof_cpu_mask_proc_write(struct file *file,
++	const char __user *buffer, size_t count, loff_t *pos)
+ {
+-	struct cpumask *mask = data;
+-	unsigned long full_count = count, err;
+ 	cpumask_var_t new_value;
++	int err;
+ 
+ 	if (!alloc_cpumask_var(&new_value, GFP_KERNEL))
+ 		return -ENOMEM;
+ 
+ 	err = cpumask_parse_user(buffer, count, new_value);
+ 	if (!err) {
+-		cpumask_copy(mask, new_value);
+-		err = full_count;
++		cpumask_copy(prof_cpu_mask, new_value);
++		err = count;
+ 	}
+ 	free_cpumask_var(new_value);
+ 	return err;
+ }
+ 
++static const struct file_operations prof_cpu_mask_proc_fops = {
++	.open		= prof_cpu_mask_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++	.write		= prof_cpu_mask_proc_write,
++};
++
+ void create_prof_cpu_mask(struct proc_dir_entry *root_irq_dir)
+ {
+-	struct proc_dir_entry *entry;
+-
+ 	/* create /proc/irq/prof_cpu_mask */
+-	entry = create_proc_entry("prof_cpu_mask", 0600, root_irq_dir);
+-	if (!entry)
+-		return;
+-	entry->data = prof_cpu_mask;
+-	entry->read_proc = prof_cpu_mask_read_proc;
+-	entry->write_proc = prof_cpu_mask_write_proc;
++	proc_create("prof_cpu_mask", 0600, root_irq_dir, &prof_cpu_mask_proc_fops);
+ }
+ 
+ /*
