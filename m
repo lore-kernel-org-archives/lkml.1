@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbZH1VHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbZH1VIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752506AbZH1VHb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZH1VHa
+	id S1752579AbZH1VIl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZH1VIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:07:30 -0400
-Received: from host0.dyn.jankratochvil.net ([89.250.240.59]:36969 "EHLO
-	host0.dyn.jankratochvil.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751134AbZH1VHa (ORCPT
+	Fri, 28 Aug 2009 17:08:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45600 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbZH1VIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:07:30 -0400
-Date: Fri, 28 Aug 2009 23:07:11 +0200
-From: Jan Kratochvil <jan.kratochvil@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] Fix vdso32 relocation for paddr
-Message-ID: <20090828210711.GA9980@host0.dyn.jankratochvil.net>
-References: <20090826223126.GA20373@host0.dyn.jankratochvil.net> <2375c9f90908280213i520e75a2wed97781ab2cd37ca@mail.gmail.com> <20090828181534.0823745B02@magilla.sf.frob.com>
+	Fri, 28 Aug 2009 17:08:39 -0400
+Date: Fri, 28 Aug 2009 17:08:38 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Jamie Lokier <jamie@shareable.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
+Message-ID: <20090828210838.GA26799@infradead.org>
+References: <20090824023422.GA775@infradead.org> <20090827143459.GB31453@shareable.org> <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com> <20090828154647.GA15808@infradead.org> <4A98008B.6050503@redhat.com> <20090828161745.GA8755@infradead.org> <4A9806D9.5050409@redhat.com> <20090828164106.GA9951@infradead.org> <4A984337.7080009@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090828181534.0823745B02@magilla.sf.frob.com>
+In-Reply-To: <4A984337.7080009@redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Aug 2009 20:15:34 +0200, Roland McGrath wrote:
-> Thanks for heads-up.  It's definitely right to CC me on patches that change
-> the build/setup vDSO details.
+On Fri, Aug 28, 2009 at 01:51:03PM -0700, Ulrich Drepper wrote:
+> No, that's not a good idea.  This would mean a program compiled with  
+> newer headers is using O_SYNC which isn't known to old kernels and  
+> ignored.  Such programs will then not even get the current O_DSYNC 
+> benefits.
 
-OK, I thought more about {p,u}trace.
-
-
-> That change seems fine.  Or just explicit p_addr = p_vaddr would be fine
-> too (and not assume that what the linker produced is consistent, in case
-> some old linkers produce stranger results from the vdso linker scripts).
-
-Updated.  Verified on x86_64 host it works right for an i386 binary.
+Ok, let's agree on how to proceed:
 
 
-Thanks,
-Jan
+once 2.6.31 is out we will do the following
 
+ - do a global s/O_SYNC/O_DSYNC/g over the whole kernel tree
+ - add a this to include/asm-generic/fcntl.h and in modified form
+   to arch headers not using it:
 
-Signed-off-by: Jan Kratochvil <jan.kratochvil@redhat.com>
+#ifndef O_FULLSYNC
+#define O_FULLSYNC	02000000
+#endif
 
---- linux-2.6.30.x86_64/arch/x86/vdso/vdso32-setup.c-orig	2009-08-26 22:23:08.000000000 +0200
-+++ linux-2.6.30.x86_64/arch/x86/vdso/vdso32-setup.c	2009-08-26 22:38:10.000000000 +0200
-@@ -172,6 +172,7 @@ static __init void relocate_vdso(Elf32_E
- 	phdr = (void *)ehdr + ehdr->e_phoff;
- 	for (i = 0; i < ehdr->e_phnum; i++) {
- 		phdr[i].p_vaddr += VDSO_ADDR_ADJUST;
-+		phdr[i].p_paddr = phdr[i].p_vaddr;
- 
- 		/* relocate dynamic stuff */
- 		if (phdr[i].p_type == PT_DYNAMIC)
+#ifndef O_RSYNC
+#define O_RSYNC		04000000
+#endif
+
+#define O_SYNC	(O_FULLSYNC|O_DSYNC)
+
+ - during the normal merge window I will add a real implementation for
+   for O_FULLSYNC and O_RSYNC
+
+P.S. better naming suggestions for O_FULLSYNC welcome
