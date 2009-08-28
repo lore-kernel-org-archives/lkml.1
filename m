@@ -1,185 +1,335 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZH1Pc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbZH1PlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752601AbZH1Pc6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 11:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZH1Pc6
+	id S1750969AbZH1PlY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 11:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbZH1PlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 11:32:58 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:57857 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752068AbZH1Pc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 11:32:56 -0400
-Date: Fri, 28 Aug 2009 08:32:55 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: Grant Wilson <grant.wilson@zen.co.uk>, Eric Paris <eparis@parisplace.org>,
-       aviro@redhat.com, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31-rc6: Oops in fsnotify
-Message-ID: <20090828153255.GB6730@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090820164818.6039c185@worthy.swandive.local> <7e0fb38c0908201922r6f9598f9ja95623ea6cf11254@mail.gmail.com> <20090821072516.0ac7bbab@worthy.swandive.local> <1250980027.3126.50.camel@dhcp231-142.rdu.redhat.com>
+	Fri, 28 Aug 2009 11:41:24 -0400
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:60298 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbZH1PlW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 11:41:22 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+6ELsQWJfbHlaPMt49FnF/
+Date: Fri, 28 Aug 2009 08:41:21 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: vimal singh <vimal.newwork@gmail.com>
+Cc: linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-serial@vger.kernel.org
+Subject: Re: [RFC][PATCH]: Adding support for omap-serail driver
+Message-ID: <20090828154121.GG25828@atomide.com>
+References: <ce9ab5790908280649n77765dedm9161316a181b6a07@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1250980027.3126.50.camel@dhcp231-142.rdu.redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <ce9ab5790908280649n77765dedm9161316a181b6a07@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 22, 2009 at 06:27:06PM -0400, Eric Paris wrote:
-> On Fri, 2009-08-21 at 07:25 +0100, Grant Wilson wrote:
-> > On Thu, 20 Aug 2009 22:22:34 -0400
-> > Eric Paris <eparis@parisplace.org> wrote:
-> > 
-> > > I'll take a close look in the morning.  I don't offhand see how this
-> > > is possible without calling vfs_unlink on a negative dentry (does that
-> > > even make sense?)
-> > > 
-> > > What was the filesystem you are dealing with?  Odd, very, odd (as with
-> > > all the problems people find in my notify code)
-> > > 
-> > The filesystem is ext4 (converted from ext3).
-> 
-> I got the assembly from Grant, it's actually very easy to map it back to
-> the code but I don't see any problems!
-> 
-> RIP: 0010:[<ffffffff8111bf93>]  [<ffffffff8111bf93>] fsnotify+0x93/0x150
-> RSP: 0018:ffff880120c89d88  EFLAGS: 00010246
-> RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
-> RDX: ffff88012b8aadcc RSI: 0000000000000000 RDI: ffff88012b8aadc8
-> RBP: ffff880120c89df8 R08: 0000000000000000 R09: 0000000000000001
-> R10: 0000000000000001 R11: 0000000000000001 R12: 0000000000000200
-> R13: 0000000008000200 R14: ffff8801286bf760 R15: 0000000000000000
-> FS:  00007f10fd749750(0000) GS:ffff88002f000000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> DR2: 0000000000000000 CR3: 0000000120c59000 CR4: 00000000000026f0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> 
-> ffffffff8111bf77:       e8 94 ce f6 ff          callq  ffffffff81088e10 <srcu_read_lock>
-> ffffffff8111bf7c:       48 8b 1d 3d b5 6d 00    mov    0x6db53d(%rip),%rbx        # ffffffff817f74c0 <fsnotify_groups>
-> ffffffff8111bf83:       89 45 ac                mov    %eax,-0x54(%rbp)
-> ffffffff8111bf86:       48 c7 45 c8 00 00 00    movq   $0x0,-0x38(%rbp)
-> ffffffff8111bf8d:       00
-> ffffffff8111bf8e:       eb 03                   jmp    ffffffff8111bf93 <fsnotify+0x93>
-> ffffffff8111bf90:       48 8b 1b                mov    (%rbx),%rbx
-> ffffffff8111bf93:       48 8b 03                mov    (%rbx),%rax     <----------------------IP IS HERE
-> ffffffff8111bf96:       48 81 fb c0 74 7f 81    cmp    $0xffffffff817f74c0,%rbx
-> ffffffff8111bf9d:       0f 18 08                prefetcht0 (%rax)
-> ffffffff8111bfa0:       74 36                   je     ffffffff8111bfd8 <fsnotify+0xd8>
-> ffffffff8111bfa2:       44 85 63 10             test   %r12d,0x10(%rbx)   <--- [if (test_mask &group->mask)]
-> ffffffff8111bfa6:       74 e8                   je     ffffffff8111bf90 <fsnotify+0x90>
-> ffffffff8111bfa8:       48 8b 43 20             mov    0x20(%rbx),%rax
-> ffffffff8111bfac:       44 89 ea                mov    %r13d,%edx
-> ffffffff8111bfaf:       4c 89 f6                mov    %r14,%rsi
-> ffffffff8111bfb2:       48 89 df                mov    %rbx,%rdi
-> ffffffff8111bfb5:       ff 10                   callq  *(%rax) <-------------- [group->ops->should_send_event()]
-> ffffffff8111bfb7:       84 c0                   test   %al,%al
-> ffffffff8111bfb9:       74 d5                   je     ffffffff8111bf90 <fsnotify+0x90>
-> ffffffff8111bfbb:       48 83 7d c8 00          cmpq   $0x0,-0x38(%rbp)
-> ffffffff8111bfc0:       74 46                   je     ffffffff8111c008 <fsnotify+0x108> <- [fsnotify_create_event()]
-> ffffffff8111bfc2:       48 8b 43 20             mov    0x20(%rbx),%rax
-> ffffffff8111bfc6:       48 8b 75 c8             mov    -0x38(%rbp),%rsi
-> ffffffff8111bfca:       48 89 df                mov    %rbx,%rdi
-> ffffffff8111bfcd:       ff 50 08                callq  *0x8(%rax) <----------- [group->ops->handle_event()]
-> ffffffff8111bfd0:       eb be                   jmp    ffffffff8111bf90 <fsnotify+0x90>
-> ffffffff8111bfd2:       66 0f 1f 44 00 00       nopw   0x0(%rax,%rax,1)
-> ffffffff8111bfd8:       8b 75 ac                mov    -0x54(%rbp),%esi
-> ffffffff8111bfdb:       48 c7 c7 60 b3 3f 82    mov    $0xffffffff823fb360,%rdi
-> ffffffff8111bfe2:       e8 c9 cd f6 ff          callq  ffffffff81088db0 <srcu_read_unlock>
-> 
-> Here is the code segment from fsnotify():
-> 
->         idx = srcu_read_lock(&fsnotify_grp_srcu);
->         list_for_each_entry_rcu(group, &fsnotify_groups, group_list) {
->                 if (test_mask & group->mask) {
->                         if (!group->ops->should_send_event(group, to_tell, mask))
->                                 continue;
->                         if (!event) {
->                                 event = fsnotify_create_event(to_tell, mask, data,
->                                                               data_is, file_name, cookie,
->                                                               GFP_KERNEL);
->                                 /* shit, we OOM'd and now we can't tell, maybe
->                                  * someday someone else will want to do something
->                                  * here */
->                                 if (!event)
->                                         break;
->                         }
->                         group->ops->handle_event(group, event);
->                 }
->         }
->         srcu_read_unlock(&fsnotify_grp_srcu, idx);
-> 
-> So the IP is clearly inside the 'list_for_each_entry_rcu.'   This means
-> that somehow a ->next pointer = NULL.  The anchor for this list
-> (fsnotify_groups) is declared as LIST_HEAD(fsnotify_groups); so it can't
-> point to NULL.  So I have to look at things that can get added/removed.
-> fsnotify_obtain_group() does the only addition (using list_add_rcu) and
-> holding the fsnotify_grp_mutex.  __fsnotify_evict_group() does a
-> list_del_rcu() (which doesn't change the forward pointer) and also hold
-> the correct mutex.  These are the only 2 manipulation sites for objects
-> on the list and they are clearly protected by the fsnotify_grp_mutex.
-> 
-> So if all of the list manipulation has proper synchronization the
-> concern then becomes if an object was removed from the list (properly)
-> and freed (improperly) and had it's ->next pntr set to NULL before the
-> rcu timeouts.  But in fsnotify_put_group() I have:
-> 
->         __fsnotify_evict_group(group);
->         mutex_unlock(&fsnotify_grp_mutex);
->         synchronize_srcu(&fsnotify_grp_srcu);
->         fsnotify_destroy_group(group);
-> 
-> So the group is taken off of the list in __fsnotify_evict_group() and
-> then we imediately wait for the fsnotify_grp_srcu which is protecting
-> the read section where we hit a bug.  So it doesn't look possible that
-> the object could have been freed while it was still in use by this list.
-> 
-> Maybe someone a lot smarter than me or someone who understands {s,}rcu a
-> lot better than I do can show me something that I've done wrong, but I'm
-> having problems seeing anything.  The only thing I can imagine is that
-> something was scribbling in random memory it didn't own.  I'm sorry
-> Grant, but I don't see what is wrong here!  If you keep getting bugs,
-> especially if they happen in random places, I'd suggest either dying RAM
-> or blame some other random subsystem   :)
+Hi,
 
-I don't immediately see any of these potential problems, but thought
-I should list them for completeness...
+Some comments below.
 
-1.	Executing an srcu_read_unlock() without the matching
-	srcu_read_lock().  This has the same bad effect as a
-	stray decrement of a reference counter.
+* vimal singh <vimal.newwork@gmail.com> [090828 06:52]:
+> From: Govindraj R <govindraj.raja@ti.com>
+> 
+> This patch adds support for OMAP3430-HIGH SPEED UART Controller.
+> 
+> It currently adds support for the following features.
+> 
+>         1. Supports Interrupt Mode for all three UARTs on SDP/ZOOM2.
+>         2. Supports DMA Mode for all three UARTs on SDP/ZOOM2.
+>         3. Supports Hardware flow control (CTS/RTS) on SDP/ZOOM2.
+>         4. Supports 3.6Mbps baudrate on SDP/ZOOM2.
+>         5. Debug Console support on all UARTs on SDP/ZOOM2.
+>         6. Support for quad uart on ZOOM2 board.
+> 
+> The reason for adding this new driver alternative to 8250 is to avoid
+> polluting 8250 driver with too many omap specific data as 8250 already
+> supports more than 16 different uart controllers and may need too
+> many omap-platform checks to implement feature like DMA support.
 
-2.	Indefinite nesting of srcu_read_lock(), which will eventually
-	overflow the (int) counter, which is just as bad as overflowing
-	a reference counter.
+Just the DMA and PM features should be enough to justify having a
+custom driver for sure.
 
-	#1 and #2 can be checked for by occasionally checking the
-	value of srcu_readers_active().  If this ever shows up negative
-	or if it increases indefinitely, check your code carefully.
+> diff --git a/arch/arm/plat-omap/include/mach/omap-serial.h
+> b/arch/arm/plat-omap/include/mach/omap-serial.h
+> new file mode 100644
+> index 0000000..d1b0bf2
+> --- /dev/null
+> +++ b/arch/arm/plat-omap/include/mach/omap-serial.h
+> @@ -0,0 +1,84 @@
+> +/*
+> + * arch/arm/plat-omap/include/mach/omap-serial.h
+> + *
+> + * Driver for OMAP3430 UART controller.
+> + *
+> + * Copyright (C) 2009 Texas Instruments.
+> + *
+> + * Authors:
+> + *	Thara Gopinath	<thara@ti.com>
+> + *	Govindraj R	<govindraj.raja@ti.com>
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
+> +
+> +#ifndef __OMAP_SERIAL_H__
+> +#define __OMAP_SERIAL_H__
+> +
+> +#include <linux/serial_core.h>
+> +#include <linux/platform_device.h>
+> +
+> +/* TI OMAP CONSOLE */
+> +#define PORT_OMAP       86
+> +
+> +#define DRIVER_NAME	"omap-hsuart"
+> +
+> +/*
+> + * We default to IRQ0 for the "no irq" hack.   Some
+> + * machine types want  others as well - they're free
+> + * to redefine this in their header file.
+> + */
+> +#define is_real_interrupt(irq)  ((irq) != 0)
+> +
+> +#if defined(CONFIG_SERIAL_OMAP_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
+> +#define SUPPORT_SYSRQ
+> +#endif
+> +
+> +#ifdef CONFIG_ARCH_OMAP34XX
+> +#define OMAP_MDR1_DISABLE 	0x07
+> +#define OMAP_MDR1_MODE13X 	0x03
+> +#define OMAP_MDR1_MODE16X 	0x00
+> +#define OMAP_MODE13X_SPEED	230400
+> +#endif
 
-3.	Passing to srcu_read_unlock() some value other than that
-	returned by the matching srcu_read_lock().  I am presuming that
-	"idx" above is a local variable -- attempting to share the "idx"
-	variable between multiple readers would be fatal.  Please also
-	note that when I say "matching", I really mean it.  The following,
-	for example, is buggy, and could result in the type of failures
-	you are seeing:
+Omap34xx specific things should be set dynamically during init rather
+than using ifdefs. Maybe do the low level init in mach-omap2/serial.c?
+That way the driver stays clean of any processor specific hacks.
 
-		idx1 = srcu_read_lock(&my_srcu);
-		...
-		idx2 = srcu_read_lock(&my_srcu);
-		...
-		srcu_read_unlock(&my_srcu, idx1);  /* BUGGY!!! */
-		...
-		srcu_read_unlock(&my_srcu, idx2);  /* BUGGY!!! */
 
-4.	Obviously, there might be bugs in SRCU itself.  I did
-	re-inspect it, and didn't see any bugs, but you might want to
-	run rcutorture with torture_type=srcu on the hardware on which
-	the failure occurs.
+> +
+> +#define CONSOLE_NAME	"console="
+> +
+> +#define UART_CLK	(48000000)
+> +#define QUART_CLK	(1843200)
+> +
+> +/* UART NUMBERS */
+> +#define UART1		(0x0)
+> +#define UART2		(0x1)
+> +#define UART3		(0x2)
+> +#define QUART		(0x3)
+> +
+> +#ifdef CONFIG_MACH_OMAP_ZOOM2
+> +#define MAX_UARTS	QUART
+> +#else
+> +#define MAX_UARTS	UART3
+> +#endif
 
-5.	Whatever the bug really is.  ;-)
+This should be passed via platform_data.
 
-							Thanx, Paul
+
+> +
+> +#define UART_BASE(uart_no)		(uart_no == UART1) ? OMAP_UART1_BASE :\
+> +					(uart_no == UART2) ? OMAP_UART2_BASE :\
+> +					 OMAP_UART3_BASE
+> +
+> +#define UART_MODULE_BASE(uart_no)	(UART1 == uart_no ? \
+> +						IO_ADDRESS(OMAP_UART1_BASE) :\
+> +					(UART2 == uart_no ? \
+> +						IO_ADDRESS(OMAP_UART2_BASE) :\
+> +						IO_ADDRESS(OMAP_UART3_BASE)))
+
+These too you can easily set in mach-omap2/serial.c so similar.
+
+
+> +extern unsigned int fcr[MAX_UARTS];
+> +extern char *saved_command_line;
+> +
+> +struct plat_serialomap_port {
+> +	void __iomem    *membase;       /* ioremap cookie or NULL */
+> +	 resource_size_t mapbase;       /* resource base */
+
+Extra space after tab. Please run through checkpatch.pl --strict.
+
+
+> +	unsigned int    irq;            /* interrupt number */
+> +	unsigned char   regshift;       /* register shift */
+> +	upf_t           flags;          /* UPF_* flags */
+> +	void            *private_data;
+> +};
+> +
+> +#endif /* __OMAP_SERIAL_H__ */
+> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+> index 037c1e0..906fb61 100644
+> --- a/drivers/serial/Kconfig
+> +++ b/drivers/serial/Kconfig
+> @@ -1359,6 +1359,98 @@ config SERIAL_OF_PLATFORM
+>  	  Currently, only 8250 compatible ports are supported, but
+>  	  others can easily be added.
+> 
+> +config SERIAL_OMAP
+> +	bool "OMAP serial port support"
+> +	depends on ARM && ARCH_OMAP
+> +	select SERIAL_CORE
+> +	help
+> +	If you have a machine based on an Texas Instruments OMAP CPU you
+> +	can enable its onboard serial ports by enabling this option.
+> +
+> +config SERIAL_OMAP_CONSOLE
+> +	bool "Console on OMAP serial port"
+> +	depends on SERIAL_OMAP
+> +	select SERIAL_CORE_CONSOLE
+> +	help
+> +	If you have enabled the serial port on the Texas Instruments OMAP
+> +	CPU you can make it the console by answering Y to this option.
+> +
+> +	Even if you say Y here, the currently visible virtual console
+> +	(/dev/tty0) will still be used as the system console by default, but
+> +	you can alter that using a kernel command line option such as
+> +	"console=ttyS0". (Try "man bootparam" or see the documentation of
+> +	your boot loader (lilo or loadlin) about how to pass options to the
+> +	kernel at boot time.)
+> +
+> +config SERIAL_OMAP_DMA_UART1
+> +	bool "UART1 DMA support"
+> +	depends on SERIAL_OMAP
+> +	help
+> +	If you have enabled the serial port on the Texas Instruments OMAP
+> +	CPU you can enable the DMA transfer on UART 1 by answering
+> +	 to this option.
+> +
+
+No need for Kconfig option. Please pass from board-*.c files in platform_data.
+
+
+> +config SERIAL_OMAP_UART1_RXDMA_TIMEOUT
+> +	int "Timeout value for RX DMA in microseconds"
+> +	depends on SERIAL_OMAP_DMA_UART1
+> +	default "1"
+> +	help
+> +	  Set the timeout value in which you want the data pulled by RX dma to
+> +	  be passed to the tty framework.
+
+Ditto.
+
+
+> +
+> +config SERIAL_OMAP_UART1_RXDMA_BUFSIZE
+> +	int "DMA buffer size for RX in bytes"
+> +	depends on SERIAL_OMAP_DMA_UART1
+> +	default "4096"
+> +	help
+> +	  Set the dma buffer size for UART Rx
+
+Ditto for all other ports too.
+
+<snip>
+
+> diff --git a/drivers/serial/omap-serial.c b/drivers/serial/omap-serial.c
+> new file mode 100644
+> index 0000000..3b84740
+> --- /dev/null
+> +++ b/drivers/serial/omap-serial.c
+> @@ -0,0 +1,1431 @@
+> +/*
+> + * drivers/serial/omap-serial.c
+> + *
+> + * Driver for OMAP3430 UART controller.
+> + *
+> + * Copyright (C) 2009 Texas Instruments.
+> + *
+> + * Authors:
+> + *	Thara Gopinath	<thara@ti.com>
+> + *	Govindraj R	<govindraj.raja@ti.com>
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/console.h>
+> +#include <linux/serial_reg.h>
+> +#include <linux/delay.h>
+> +#include <linux/tty.h>
+> +#include <linux/tty_flip.h>
+> +#include <linux/io.h>
+> +#include <linux/dma-mapping.h>
+> +
+> +#include <asm/irq.h>
+> +#include <mach/dma.h>
+> +#include <mach/dmtimer.h>
+> +#include <mach/omap-serial.h>
+> +
+> +#ifdef DEBUG
+> +#define DPRINTK  printk
+> +#else
+> +#define DPRINTK(x...)
+> +#endif
+
+Please get rid of custom debug functions.
+
+<snip>
+
+> +			if (*status & UART_LSR_BI)
+> +				flag = TTY_BREAK;
+> +			else if (*status & UART_LSR_PE)
+> +				flag = TTY_PARITY;
+> +			else if (*status & UART_LSR_FE)
+> +				flag = TTY_FRAME;
+> +		}
+> +
+> +		if (uart_handle_sysrq_char(&up->port, ch))
+> +			goto ignore_char;
+> +
+> +		uart_insert_char(&up->port, *status, UART_LSR_OE, ch, flag);
+> +
+> +ignore_char:
+> +		*status = serial_in(up, UART_LSR);
+> +	} while ((*status & UART_LSR_DR) && (max_count-- > 0));
+> +	tty_flip_buffer_push(tty);
+> +
+> +
+> +}
+
+Extras lines at the end of function, you might want to remove.
+
+<snip>
+
+> +static struct console serial_omap_console = {
+> +	.name		= "ttyS",
+> +	.write		= serial_omap_console_write,
+> +	.device		= uart_console_device,
+> +	.setup		= serial_omap_console_setup,
+> +	.flags		= CON_PRINTBUFFER,
+> +	.index		= -1,
+> +	.data		= &serial_omap_reg,
+> +};
+
+I believe you'll need to use some other name than ttyS. Otherwise
+it will conflict with hotpluggable 8250 devices, such as bluetooth.
+
+
+> +static struct uart_driver serial_omap_reg = {
+> +	.owner		= THIS_MODULE,
+> +	.driver_name	= "OMAP-SERIAL",
+> +	.dev_name	= "ttyS",
+> +	.major		= TTY_MAJOR,
+> +	.minor		= 64,
+> +	.nr		= 4,
+> +	.cons		= OMAP_CONSOLE,
+> +};
+
+Here too. Maybe ttyO for the name?
+
+Regards,
+
+Tony
