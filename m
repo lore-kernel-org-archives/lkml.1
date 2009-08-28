@@ -1,104 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZH1M3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZH1M3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752884AbZH1M3n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZH1M3m
+	id S1752875AbZH1M3F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZH1M3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:29:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55514 "EHLO hera.kernel.org"
+	Fri, 28 Aug 2009 08:29:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55473 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752917AbZH1M3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:29:36 -0400
-Date: Fri, 28 Aug 2009 12:29:09 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       lizf@cn.fujitsu.com, jistone@redhat.com, fweisbec@gmail.com,
-       srostedt@redhat.com, tglx@linutronix.de, jbaron@redhat.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, jistone@redhat.com, fweisbec@gmail.com,
-       srostedt@redhat.com, tglx@linutronix.de, jbaron@redhat.com,
-       mingo@elte.hu
-In-Reply-To: <1251413406-6704-1-git-send-email-fweisbec@gmail.com>
-References: <1251413406-6704-1-git-send-email-fweisbec@gmail.com>
+	id S1752557AbZH1M3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 08:29:00 -0400
+Date: Fri, 28 Aug 2009 12:28:18 GMT
+From: tip-bot for Jason Baron <jbaron@redhat.com>
+Cc: brueckner@linux.vnet.ibm.com, mathieu.desnoyers@polymtl.ca,
+       mingo@redhat.com, peterz@infradead.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, heiko.carstens@de.ibm.com, tglx@linutronix.de,
+       jbaron@redhat.com, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, jiayingz@google.com, lizf@cn.fujitsu.com,
+       lethal@linux-sh.org, jistone@redhat.com, mingo@elte.hu,
+       mbligh@google.com
+Reply-To: mingo@redhat.com, mathieu.desnoyers@polymtl.ca,
+       brueckner@linux.vnet.ibm.com, peterz@infradead.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, heiko.carstens@de.ibm.com, tglx@linutronix.de,
+       jbaron@redhat.com, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, jiayingz@google.com, lizf@cn.fujitsu.com,
+       lethal@linux-sh.org, jistone@redhat.com, mingo@elte.hu,
+       mbligh@google.com
+In-Reply-To: <0f33c0f96d198fccc3ddd9ff7f5334ff5cb42706.1251146513.git.jbaron@redhat.com>
+References: <0f33c0f96d198fccc3ddd9ff7f5334ff5cb42706.1251146513.git.jbaron@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing: Fix double CPP substitution in TRACE_EVENT_FN
-Message-ID: <tip-0dd7b74787eaf7858c6c573353a83c3e2766e674@git.kernel.org>
-Git-Commit-ID: 0dd7b74787eaf7858c6c573353a83c3e2766e674
+Subject: [tip:tracing/core] tracing: Define NR_syscalls for x86 (32)
+Message-ID: <tip-dd86dda24cc1dc70031a7d9250dc3c0c430a50e2@git.kernel.org>
+Git-Commit-ID: dd86dda24cc1dc70031a7d9250dc3c0c430a50e2
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 12:29:10 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 12:28:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0dd7b74787eaf7858c6c573353a83c3e2766e674
-Gitweb:     http://git.kernel.org/tip/0dd7b74787eaf7858c6c573353a83c3e2766e674
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Fri, 28 Aug 2009 00:50:06 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 28 Aug 2009 13:55:04 +0200
+Commit-ID:  dd86dda24cc1dc70031a7d9250dc3c0c430a50e2
+Gitweb:     http://git.kernel.org/tip/dd86dda24cc1dc70031a7d9250dc3c0c430a50e2
+Author:     Jason Baron <jbaron@redhat.com>
+AuthorDate: Mon, 24 Aug 2009 17:40:14 -0400
+Committer:  Frederic Weisbecker <fweisbec@gmail.com>
+CommitDate: Wed, 26 Aug 2009 21:29:55 +0200
 
-tracing: Fix double CPP substitution in TRACE_EVENT_FN
+tracing: Define NR_syscalls for x86 (32)
 
-TRACE_EVENT_FN relays on TRACE_EVENT by reprocessing its parameters
-into the ftrace events CPP macro. This leads to a double substitution
-in some cases.
+Add a NR_syscalls #define for x86. This is used in the syscall events
+tracing code. Todo: make it dynamic like x86_64.
 
-For example, a bad consequence is a format always prefixed by
-"%s, %s\n" for every TRACE_EVENT_FN based events.
+NR_syscalls is the usual name used to determine the number of syscalls
+supported by the current arch. We want to unify the use of this number
+across archs that support the syscall tracing. This also prepare to move
+some of the arch code to core code in the syscall tracing area.
 
-Eg:
-	cat /debug/tracing/events/syscalls/sys_enter/format
-	[...]
-	print fmt: "%s, %s\n", "\"NR %ld (%lx, %lx, %lx, %lx, %lx, %lx)\"",\
-	"REC->id, REC->args[0], REC->args[1], REC->args[2], REC->args[3],\
-	REC->args[4], REC->args[5]"
-
-This creates a failure in post-processing tools such as perf trace or
-trace-cmd.
-
-Then drop this double substitution and replace it by a new __cpparg()
-macro that relays CPP arguments containing commas.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Josh Stone <jistone@redhat.com>
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Jiaying Zhang <jiayingz@google.com>
+Cc: Martin Bligh <mbligh@google.com>
 Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <srostedt@redhat.com>
-Cc: Jason Baron <jbaron@redhat.com>
-LKML-Reference: <1251413406-6704-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Josh Stone <jistone@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: H. Peter Anwin <hpa@zytor.com>
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+LKML-Reference: <0f33c0f96d198fccc3ddd9ff7f5334ff5cb42706.1251146513.git.jbaron@redhat.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
 
 ---
- include/trace/ftrace.h |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/unistd_32.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 360a77a..57c56a9 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -45,14 +45,15 @@
- 	};							\
- 	static struct ftrace_event_call event_##name
+diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+index 732a307..8deaada 100644
+--- a/arch/x86/include/asm/unistd_32.h
++++ b/arch/x86/include/asm/unistd_32.h
+@@ -345,6 +345,8 @@
  
-+#undef __cpparg
-+#define __cpparg(arg...) arg
+ #ifdef __KERNEL__
+ 
++#define NR_syscalls 337
 +
- /* Callbacks are meaningless to ftrace. */
- #undef TRACE_EVENT_FN
--#define TRACE_EVENT_FN(name, proto, args, tstruct,		\
--		assign, print, reg, unreg)			\
--	TRACE_EVENT(name, TP_PROTO(proto), TP_ARGS(args),	\
--		TP_STRUCT__entry(tstruct),			\
--		TP_fast_assign(assign),				\
--		TP_printk(print))
-+#define TRACE_EVENT_FN(name, proto, args, tstruct,			\
-+		assign, print, reg, unreg)				\
-+	TRACE_EVENT(name, __cpparg(proto), __cpparg(args),		\
-+		__cpparg(tstruct), __cpparg(assign), __cpparg(print))	\
- 
- #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
- 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+ #define __ARCH_WANT_OLD_STAT
