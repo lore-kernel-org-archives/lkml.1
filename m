@@ -1,109 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbZH1M3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbZH1Ma6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752891AbZH1M3J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbZH1M3G
+	id S1752897AbZH1Ma6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZH1Ma4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:29:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55460 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752559AbZH1M24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:28:56 -0400
-Date: Fri, 28 Aug 2009 12:28:05 GMT
-From: tip-bot for Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Cc: mathieu.desnoyers@polymtl.ca, brueckner@linux.vnet.ibm.com,
-       mingo@redhat.com, schwidefsky@de.ibm.com, peterz@infradead.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, heiko.carstens@de.ibm.com,
-       tglx@linutronix.de, jbaron@redhat.com, laijs@cn.fujitsu.com,
-       hpa@zytor.com, jiayingz@google.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, lethal@linux-sh.org, mingo@elte.hu,
-       mbligh@google.com
-Reply-To: mingo@redhat.com, brueckner@linux.vnet.ibm.com,
-       mathieu.desnoyers@polymtl.ca, peterz@infradead.org,
-       schwidefsky@de.ibm.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       heiko.carstens@de.ibm.com, tglx@linutronix.de, jbaron@redhat.com,
-       laijs@cn.fujitsu.com, hpa@zytor.com, jiayingz@google.com,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, lethal@linux-sh.org,
-       mingo@elte.hu, mbligh@google.com
-In-Reply-To: <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
-References: <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing: Don't trace kernel thread syscalls
-Message-ID: <tip-cc3b13c11c567c69a6356be98d0c03ff11541d5c@git.kernel.org>
-Git-Commit-ID: cc3b13c11c567c69a6356be98d0c03ff11541d5c
-X-Mailer: tip-git-log-daemon
+	Fri, 28 Aug 2009 08:30:56 -0400
+Received: from qmta15.emeryville.ca.mail.comcast.net ([76.96.27.228]:46398
+	"EHLO QMTA15.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752595AbZH1M2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 08:28:38 -0400
+Message-ID: <4A97CD78.7080705@byu.net>
+Date: Fri, 28 Aug 2009 06:28:40 -0600
+From: Eric Blake <ebb9@byu.net>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.23) Gecko/20090812 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
 MIME-Version: 1.0
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bug-coreutils@gnu.org, bug-gnulib@gnu.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] open: introduce O_NOSTD
+References: <4A9285FC.8000606@byu.net> <1251202593-3676-1-git-send-email-ebb9@byu.net> <alpine.DEB.2.00.0908251420190.18518@makko.or.mcafeemobile.com> <4A968FF8.8050109@byu.net> <4A96969B.2090004@redhat.com>
+In-Reply-To: <4A96969B.2090004@redhat.com>
+X-Enigmail-Version: 0.96.0
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 12:28:06 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cc3b13c11c567c69a6356be98d0c03ff11541d5c
-Gitweb:     http://git.kernel.org/tip/cc3b13c11c567c69a6356be98d0c03ff11541d5c
-Author:     Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-AuthorDate: Tue, 25 Aug 2009 18:02:37 +0200
-Committer:  Frederic Weisbecker <fweisbec@gmail.com>
-CommitDate: Wed, 26 Aug 2009 21:29:52 +0200
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-tracing: Don't trace kernel thread syscalls
+According to Ulrich Drepper on 8/27/2009 8:22 AM:
+>> I hope that my example shows why doing it in the kernel is desirable -
+>> there is no safe way to keep the pre-O_CLOEXEC efficiency using just the
+>> library, but there IS a way to do it with kernel support:
+> 
+> You're describing a very special case where the performance implications
+> are really minimal and try to argue that is a good enough reason?  I
+> don't think so.
+> 
+> If a program really has to do thousands of these safe open calls then it
+> can invest time into opening /dev/null for any of the unallocated
+> descriptors < 3.  You can even embed this logic in the safer_open function.
 
-Kernel threads don't call syscalls using the sysenter/sysexit
-path. Instead they directly call the sys_* or do_* functions
-that implement the syscalls inside the kernel.
+But that's what I've been trying to explain.  There are cases where
+opening a dummy /dev/null descriptor interferes with behavior, and where
+you NEED to leave the std descriptors closed.
 
-The current syscall tracepoints only bind the sysenter/sysexit
-path, then it has no effect to trace the kernel thread calls
-to syscalls in that path.
-Setting the TIF_SYSCALL_TRACEPOINT flag is then useless for these.
+Again, let's look at coreutils, which already is using a version of
+open_safer in many of its utilities.  Consider 'cp -i a b <&-'.  If b does
+not exist, then there is no reason for cp to prompt, so it never reads
+from stdin, and the fact that stdin was closed must not interfere with
+execution.  Which means cp cannot just blindly warn if it detects that
+stdin was closed when it started; it has to wait until conditions warrant
+reading from stdin.  On the other hand, if b exists, coreutils' cp
+correctly warns the user about the inability to read from stdin:
 
-Actually there is only one case when a kernel thread can reach the
-usual syscall exit tracing path: when we create a kernel thread, the
-child comes to ret_from_fork and is the fork() return is then traced.
-But this information alone is useless, then we don't want to set the
-TIF flags for these threads.
+$ cp -i a b <&-
+cp: overwrite `b'? cp: error closing file: Bad file descriptor
+$ echo $?
+1
 
-Kernel threads have task_struct->mm set to NULL.
-(Thanks to Heiko for that hint ;-)
-The idea is then to check the mm field in syscall_regfunc() and
-set the flag accordingly.
+If coreutils were to tie fd 0 to /dev/null, then it can no longer
+distinguish a read failure when reading the prompt from stdin, and would
+no longer be able to alert the user to the failed interactive copy.
 
-Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jiaying Zhang <jiayingz@google.com>
-Cc: Martin Bligh <mbligh@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-LKML-Reference: <20090825160237.GG4639@cetus.boeblingen.de.ibm.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Next, consider 'cp -uv a b >&-'.  Coreutils uses printf() to print status
+messages, but only if an update warranted a message.  Again, that means
+coreutils wants to know whether stdout is a valid file, and tying fd 1 to
+/dev/null can get in the way:
 
+$ cp -uv a b >&-
+$ rm b
+$ cp -uv a b >&-
+cp: write error: Bad file descriptor
 
----
- kernel/tracepoint.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Now, couple this with the fact that 'cp -r' can visit thousands of files
+during its course of operation.  There is no sane way to tie dummy fds to
+the standard descriptors, and still be able to distinguish failure to use
+a standard descriptor but only on the execution paths that actually used
+that standard descriptor.  Hence, there is a definite use case for keeping
+the std fds closed, rather than putting dummies in their place; but to
+preserve this setup without kernel support, every single open() (and
+dup(), pipe(), socket(), ...) must be wrapped to use fcntl/close to move
+new fds back out of this range.  And cp is an example of an existing
+program that really DOES end up paying a penalty of thousands of
+fcntl/close calls if started with a standard fd closed, in order to
+preserve its semantics.
 
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 1a6a453..9489a0a 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -597,7 +597,9 @@ void syscall_regfunc(void)
- 	if (!sys_tracepoint_refcount) {
- 		read_lock_irqsave(&tasklist_lock, flags);
- 		do_each_thread(g, t) {
--			set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
-+			/* Skip kernel threads. */
-+			if (t->mm)
-+				set_tsk_thread_flag(t, TIF_SYSCALL_TRACEPOINT);
- 		} while_each_thread(g, t);
- 		read_unlock_irqrestore(&tasklist_lock, flags);
- 	}
+Furthermore, while the coreutils' implementation of open_safer operates
+correctly in a single-threaded environment, it cannot close the race in a
+multi-threaded context if the application started life with fd 2 closed,
+since there is a window of time during open_safer where another thread can
+attempt to use stderr and see thread 1's newly opened file before it can
+be moved safely out of the way:
+
+thread 1              thread 2
+open_safer...
+ open -> 2
+ fcntl(2,F_DUPFD,3)
+                      fputc(stderr)
+                      fflush(stderr) -> clobbers thread 1's file
+ close(2)
+open_safer -> 3
+
+- --
+Don't work too hard, make some time for fun as well!
+
+Eric Blake             ebb9@byu.net
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Cygwin)
+Comment: Public key at home.comcast.net/~ericblake/eblake.gpg
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqXzXgACgkQ84KuGfSFAYA+ZwCgvuQ3PpDDLhLozqCUm3qyhIVj
+aqQAnR+MgdLg5apNEdHdIn9nlr4yRISI
+=0tcQ
+-----END PGP SIGNATURE-----
