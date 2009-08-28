@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752650AbZH1VQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751199AbZH1VSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752650AbZH1VQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZH1VQ1
+	id S1751199AbZH1VSt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbZH1VSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:16:27 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:56691 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751978AbZH1VQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:16:27 -0400
-Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Ulrich Drepper <drepper@redhat.com>, Jamie Lokier <jamie@shareable.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20090828210838.GA26799@infradead.org>
-References: <20090824023422.GA775@infradead.org>
-	 <20090827143459.GB31453@shareable.org>
-	 <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com>
-	 <20090828154647.GA15808@infradead.org> <4A98008B.6050503@redhat.com>
-	 <20090828161745.GA8755@infradead.org> <4A9806D9.5050409@redhat.com>
-	 <20090828164106.GA9951@infradead.org> <4A984337.7080009@redhat.com>
-	 <20090828210838.GA26799@infradead.org>
-Content-Type: text/plain
-Date: Fri, 28 Aug 2009 17:16:14 -0400
-Message-Id: <1251494174.5984.2.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 7 sum msgs/h 1 total rcpts 1241 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 6C68EE416EA55C148DFB2B674ECE86ACF22D5623
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 195 max/h 6 blacklist 0 greylist 0 ratelimit 0
+	Fri, 28 Aug 2009 17:18:48 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:42258 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbZH1VSs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 17:18:48 -0400
+From: Chetan.Loke@Emulex.Com
+To: <akataria@vmware.com>
+CC: <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       <dtor@vmware.com>, <James.Bottomley@HansenPartnership.com>,
+       <robert.w.love@intel.com>, <randy.dunlap@oracle.com>,
+       <michaelc@cs.wisc.edu>
+Date: Fri, 28 Aug 2009 14:18:29 -0700
+Subject: RE: [PATCH] SCSI driver for VMware's virtual HBA.
+Thread-Topic: [PATCH] SCSI driver for VMware's virtual HBA.
+Thread-Index: AconbL8RjLdvUsy+RH2ladF9YMEUvwAtwWHw
+Message-ID: <412A05BA40734D4887DBC67661F433080FF71D16@EXMAIL.ad.emulex.com>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+In-Reply-To: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
+X-OriginalArrivalTime: 28 Aug 2009 21:18:31.0422 (UTC) FILETIME=[17F391E0:01CA2825]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-28 at 17:08 -0400, Christoph Hellwig wrote:
-> #define O_SYNC	(O_FULLSYNC|O_DSYNC)
-> 
->  - during the normal merge window I will add a real implementation for
->    for O_FULLSYNC and O_RSYNC
-> 
-> P.S. better naming suggestions for O_FULLSYNC welcome
+Alok,
 
-Basically you are just ensuring that the metadata changes are being
-synced together with the data changes, so how about O_ISYNC (inode
-sync)?
+
+> +static int __devinit pvscsi_allocate_rings(struct pvscsi_adapter
+> *adapter)
+> +{
+> +	adapter->rings_state = pci_alloc_consistent(adapter->dev, PAGE_SIZE,
+> +						    &adapter->ringStatePA);
+> +	if (!adapter->rings_state)
+> +		return -ENOMEM;
+> +
+> +	adapter->req_pages = min(PVSCSI_MAX_NUM_PAGES_REQ_RING,
+> +				 pvscsi_ring_pages);
+> +	adapter->req_depth = adapter->req_pages
+> +					* PVSCSI_MAX_NUM_REQ_ENTRIES_PER_PAGE;
+> +	adapter->req_ring = pci_alloc_consistent(adapter->dev,
+> +						 adapter->req_pages * PAGE_SIZE,
+> +						 &adapter->reqRingPA);
+> +	if (!adapter->req_ring)
+> +		return -ENOMEM;
+> +
+> +	adapter->cmp_pages = min(PVSCSI_MAX_NUM_PAGES_CMP_RING,
+> +				 pvscsi_ring_pages);
+> +	adapter->cmp_ring = pci_alloc_consistent(adapter->dev,
+> +						 adapter->cmp_pages * PAGE_SIZE,
+> +						 &adapter->cmpRingPA);
+> +	if (!adapter->cmp_ring)
+> +		return -ENOMEM;
+> +
+> +	BUG_ON(adapter->ringStatePA & ~PAGE_MASK);
+> +	BUG_ON(adapter->reqRingPA   & ~PAGE_MASK);
+> +	BUG_ON(adapter->cmpRingPA   & ~PAGE_MASK);
+> +
+> +	if (!adapter->use_msg)
+> +		return 0;
+> +
+> +	adapter->msg_pages = min(PVSCSI_MAX_NUM_PAGES_MSG_RING,
+> +				 pvscsi_msg_ring_pages);
+> +	adapter->msg_ring = pci_alloc_consistent(adapter->dev,
+> +						 adapter->msg_pages * PAGE_SIZE,
+> +						 &adapter->msgRingPA);
+> +	if (!adapter->msg_ring)
+> +		return -ENOMEM;
+> +	BUG_ON(adapter->msgRingPA & ~PAGE_MASK);
+> +
+> +	return 0;
+> +}
+> +
+
+I understand the emulation etc. But I see that this function isn't allocating multiple rings right? Didn't see any performance benefits?
+
+
+
+Chetan
+
+
 
 
