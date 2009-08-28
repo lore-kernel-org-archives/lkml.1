@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752000AbZH1STi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbZH1Sdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752000AbZH1STi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZH1STh
+	id S1751983AbZH1Sdx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 14:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZH1Sdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:19:37 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:17690 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbZH1STf (ORCPT
+	Fri, 28 Aug 2009 14:33:53 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:33398 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbZH1Sdw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:19:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=uZ6kmGKJvMuOv9+VNKsYzDE8Vlu08Nqx0frxY67Fs5sVOLYjwv978ibvGo4YP+j38/
-         krXHv5wokNvceclbxVi+v+X0EWW6O82ehZ+mGvoGUUIav0Kw3ZhBGgFhP+Y9AkzgzYjq
-         XuSfeENtLEYrMuAKiJg/JmZJwntczTUQ3IsCM=
-Date: Fri, 28 Aug 2009 22:19:33 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] genirq: switch /proc/irq/*/spurious to seq_file
-Message-ID: <20090828181743.GA14050@x200.localdomain>
+	Fri, 28 Aug 2009 14:33:52 -0400
+Date: Fri, 28 Aug 2009 14:33:53 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Tejun Heo <tj@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] lockup with the latest kernel
+In-Reply-To: <alpine.DEB.2.00.0908281213180.3647@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.2.00.0908281428180.3647@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0908191134260.12663@gandalf.stny.rr.com> <alpine.DEB.2.00.0908271836140.26718@gandalf.stny.rr.com> <4A9744F4.7010208@kernel.org> <alpine.LFD.2.00.0908272059320.7223@eeepc.linux-foundation.org>
+ <alpine.DEB.2.00.0908281213180.3647@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
 
- kernel/irq/proc.c |   28 ++++++++++++++++++----------
- 1 file changed, 18 insertions(+), 10 deletions(-)
+On Fri, 28 Aug 2009, Steven Rostedt wrote:
+> On Thu, 27 Aug 2009, Linus Torvalds wrote:
+> > > ...
+> > > >> [13288.222084] EIP: 0060:[<c0110821>] EFLAGS: 00000002 CPU: 0
+> > > >> [13288.222084] EIP is at default_send_IPI_mask_logical+0x53/0x92
+> > 
+> > Is this one perhaps fixed by b04e6373d694 ("x86: don't call 
+> > '->send_IPI_mask()' with an empty mask")
+> > 
+> > It sounds a _lot_ like that bug. Older dual-cpu x86 box, and APIC getting 
+> > confused by the occasional empty CPU mask, and then subsequent IPI's will 
+> > hang.
+> 
+> I'll update my box to that kernel and see what happens and let you know.
 
---- a/kernel/irq/proc.c
-+++ b/kernel/irq/proc.c
-@@ -148,18 +148,30 @@ static const struct file_operations default_affinity_proc_fops = {
- };
- #endif
- 
--static int irq_spurious_read(char *page, char **start, off_t off,
--				  int count, int *eof, void *data)
-+static int irq_spurious_proc_show(struct seq_file *m, void *v)
- {
--	struct irq_desc *desc = irq_to_desc((long) data);
--	return sprintf(page, "count %u\n"
-+	struct irq_desc *desc = irq_to_desc((long) m->private);
-+	seq_printf(m, "count %u\n"
- 			     "unhandled %u\n"
- 			     "last_unhandled %u ms\n",
- 			desc->irq_count,
- 			desc->irqs_unhandled,
- 			jiffies_to_msecs(desc->last_unhandled));
-+	return 0;
- }
- 
-+static int irq_spurious_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, irq_spurious_proc_show, NULL);
-+}
-+
-+static const struct file_operations irq_spurious_proc_fops = {
-+	.open		= irq_spurious_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
- #define MAX_NAMELEN 128
- 
- static int name_unique(unsigned int irq, struct irqaction *new_action)
-@@ -204,7 +216,6 @@ void register_handler_proc(unsigned int irq, struct irqaction *action)
- void register_irq_proc(unsigned int irq, struct irq_desc *desc)
- {
- 	char name [MAX_NAMELEN];
--	struct proc_dir_entry *entry;
- 
- 	if (!root_irq_dir || (desc->chip == &no_irq_chip) || desc->dir)
- 		return;
-@@ -221,11 +232,8 @@ void register_irq_proc(unsigned int irq, struct irq_desc *desc)
- 			 &irq_affinity_proc_fops, (void *)(long)irq);
- #endif
- 
--	entry = create_proc_entry("spurious", 0444, desc->dir);
--	if (entry) {
--		entry->data = (void *)(long)irq;
--		entry->read_proc = irq_spurious_read;
--	}
-+	proc_create_data("spurious", 0444, desc->dir,
-+			 &irq_spurious_proc_fops, (void *)(long)irq);
- }
- 
- #undef MAX_NAMELEN
+I checked out the commit at b04e6373d694, compiled and booted that kernel. 
+So far, so good. It survived logging into a gnome session (sometimes locks 
+up there), and a full kernel compile (usually locks up there too). But 
+there's been rare times that it would take days before hitting the bug.
+
+I'll keep it in this kernel for a while and if it lasts the week, I'll 
+consider it fixed. This box acts as my email, dhcp and web server, as well 
+as one of the boxes in my distcc farm, thus it gets a bit of use. It will 
+not be idle during this time period.
+
+Thanks!
+
+-- Steve
+
