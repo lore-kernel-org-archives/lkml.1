@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbZH1AQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbZH1AaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbZH1AQx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 20:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZH1AQw
+	id S1752539AbZH1AaM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 20:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZH1AaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 20:16:52 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:55092 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbZH1AQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 20:16:52 -0400
-Date: Fri, 28 Aug 2009 10:16:47 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: linux-next: v4l-dvb tree build warnings
-Message-Id: <20090828101647.f453859a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__28_Aug_2009_10_16_47_+1000_L2SazQfeLP3aZJH1"
+	Thu, 27 Aug 2009 20:30:10 -0400
+Received: from ru.mvista.com ([213.79.90.228]:18626 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751349AbZH1AaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 20:30:09 -0400
+Date: Fri, 28 Aug 2009 04:30:10 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ben Dooks <ben-linux@fluff.org>,
+       Jean Delvare <khali@linux-fr.org>, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [PATCH] rtc: Set wakeup capability for I2C and SPI RTC drivers
+Message-ID: <20090828003010.GA19160@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090827182207.GA7358@oksana.dev.rtsoft.ru>
+ <200908271452.37358.david-b@pacbell.net>
+ <20090827231925.GA1131@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090827231925.GA1131@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__28_Aug_2009_10_16_47_+1000_L2SazQfeLP3aZJH1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Aug 28, 2009 at 03:19:25AM +0400, Anton Vorontsov wrote:
+[...]
+> > That is why platform code should device_init_wakeup() and
+> > drivers should check device_can_wakeup(dev) ...
+> 
+> They should (and do) check may_wakeup() (i.e. should_wakeup) before
+> suspending, not can_wakeup().
+> 
+> static int ds1374_suspend(struct i2c_client *client, pm_message_t state)
+> {
+>         if (client->irq >= 0 && device_may_wakeup(&client->dev))
+>                 enable_irq_wake(client->irq);
+>         return 0;
+> }
+> 
+> (quite funny, they issue enable_irq_wake(), assuming that otherwise
+> IRQ line won't trigger CPU wakeup. But in reality, there are interrupt
+> controllers that you can't control in that regard: any IRQ activity
+> will always resume CPU. And so 'echo disable > /sys/.../wakeup' won't
+> guarantee anything. Unreliable, nasty? Could be.)
 
-Hi Mauro,
+BTW, of course we can fix this by masking interrupts before
+suspending, but nobody actually do this (but should, I think).
 
-Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+And if RTC's IRQ is wired to power switch you're in trouble
+without any way to fix this.
 
-drivers/media/video/soc_camera.c: In function 'soc_camera_init_i2c':
-drivers/media/video/soc_camera.c:859: warning: cast from pointer to integer=
- of different size
-drivers/media/video/soc_camera_platform.c: In function 'soc_camera_platform=
-_probe':
-drivers/media/video/soc_camera_platform.c:140: warning: cast from pointer t=
-o integer of different size
-
-Introduced by commit 7d2d23b9101115774c2b6ce5891235a4ba38ed53 ("V4L/DVB
-(12510): soc-camera: (partially) convert to v4l2-(sub)dev API").
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__28_Aug_2009_10_16_47_+1000_L2SazQfeLP3aZJH1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqXIe8ACgkQjjKRsyhoI8y9tgCfY45si/eux9ddqHo/uklL6JBL
-2K4AoJ6c9oi7eHW+vpOXemlbL4hHemAh
-=rV5G
------END PGP SIGNATURE-----
-
---Signature=_Fri__28_Aug_2009_10_16_47_+1000_L2SazQfeLP3aZJH1--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
