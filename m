@@ -1,198 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751368AbZH1CQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751396AbZH1CTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751368AbZH1CQw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 22:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbZH1CQw
+	id S1751396AbZH1CTe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 22:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbZH1CTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 22:16:52 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:44522 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751197AbZH1CQv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 22:16:51 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgcFAMLWlkpMROOX/2dsb2JhbACBU9cjhBkF
-Date: Thu, 27 Aug 2009 22:16:51 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
-Subject: Re: [PATCH tip/core/rcu] Changes from reviews: avoid casts,
-	fix/add warnings, improve comments.
-Message-ID: <20090828021651.GA31575@Krystal>
-References: <20090827220012.GA30525@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 27 Aug 2009 22:19:31 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:61822 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751236AbZH1CTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 22:19:31 -0400
+Message-ID: <4A973DAE.4020508@redhat.com>
+Date: Thu, 27 Aug 2009 22:15:10 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org>  <1251302598.18584.31.camel@twins>  <alpine.DEB.1.10.0908261211340.9933@gentwo.org>  <20090826180407.GA13632@elte.hu>  <alpine.DEB.1.10.0908261509580.9933@gentwo.org>  <20090826193252.GA14721@elte.hu>  <alpine.DEB.1.10.0908261627110.5554@gentwo.org>  <20090826135041.e6169d18.akpm@linux-foundation.org>  <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org> <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A97071F.5070804@novell.com>
+In-Reply-To: <4A97071F.5070804@novell.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090827220012.GA30525@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 22:16:17 up 9 days, 13:05,  2 users,  load average: 0.36, 0.32,
-	0.23
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> Changes suggested by review comments from Josh Triplett and Mathieu
-> Desnoyers.
-> 
+Gregory Haskins wrote:
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> 2) Modify FIFO so that it disables tick by default...update accounting
+> info at next reschedule event.
 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
-> 
->  include/linux/sched.h   |    4 +++-
->  kernel/rcutree.c        |   13 ++++++-------
->  kernel/rcutree.h        |    2 ++
->  kernel/rcutree_plugin.h |   10 ++++++----
->  4 files changed, 17 insertions(+), 12 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 3fe0315..855fd0d 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1163,6 +1163,8 @@ struct sched_rt_entity {
->  #endif
->  };
->  
-> +struct rcu_node;
-> +
->  struct task_struct {
->  	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
->  	void *stack;
-> @@ -1208,7 +1210,7 @@ struct task_struct {
->  #ifdef CONFIG_TREE_PREEMPT_RCU
->  	int rcu_read_lock_nesting;
->  	char rcu_read_unlock_special;
-> -	void *rcu_blocked_node;
-> +	struct rcu_node *rcu_blocked_node;
->  	struct list_head rcu_node_entry;
->  #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
->  
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index d903e2f..71bc797 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -229,7 +229,6 @@ static int rcu_implicit_offline_qs(struct rcu_data *rdp)
->  #endif /* #ifdef CONFIG_SMP */
->  
->  #ifdef CONFIG_NO_HZ
-> -static DEFINE_RATELIMIT_STATE(rcu_rs, 10 * HZ, 5);
->  
->  /**
->   * rcu_enter_nohz - inform RCU that current CPU is entering nohz
-> @@ -249,7 +248,7 @@ void rcu_enter_nohz(void)
->  	rdtp = &__get_cpu_var(rcu_dynticks);
->  	rdtp->dynticks++;
->  	rdtp->dynticks_nesting--;
-> -	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
-> +	WARN_ON_ONCE(rdtp->dynticks & 0x1);
->  	local_irq_restore(flags);
->  }
->  
-> @@ -268,7 +267,7 @@ void rcu_exit_nohz(void)
->  	rdtp = &__get_cpu_var(rcu_dynticks);
->  	rdtp->dynticks++;
->  	rdtp->dynticks_nesting++;
-> -	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
-> +	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
->  	local_irq_restore(flags);
->  	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
->  }
-> @@ -287,7 +286,7 @@ void rcu_nmi_enter(void)
->  	if (rdtp->dynticks & 0x1)
->  		return;
->  	rdtp->dynticks_nmi++;
-> -	WARN_ON_RATELIMIT(!(rdtp->dynticks_nmi & 0x1), &rcu_rs);
-> +	WARN_ON_ONCE(!(rdtp->dynticks_nmi & 0x1));
->  	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
->  }
->  
-> @@ -306,7 +305,7 @@ void rcu_nmi_exit(void)
->  		return;
->  	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
->  	rdtp->dynticks_nmi++;
-> -	WARN_ON_RATELIMIT(rdtp->dynticks_nmi & 0x1, &rcu_rs);
-> +	WARN_ON_ONCE(rdtp->dynticks_nmi & 0x1);
->  }
->  
->  /**
-> @@ -322,7 +321,7 @@ void rcu_irq_enter(void)
->  	if (rdtp->dynticks_nesting++)
->  		return;
->  	rdtp->dynticks++;
-> -	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
-> +	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
->  	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
->  }
->  
-> @@ -341,7 +340,7 @@ void rcu_irq_exit(void)
->  		return;
->  	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
->  	rdtp->dynticks++;
-> -	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
-> +	WARN_ON_ONCE(rdtp->dynticks & 0x1);
->  
->  	/* If the interrupt queued a callback, get out of dyntick mode. */
->  	if (__get_cpu_var(rcu_sched_data).nxtlist ||
-> diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-> index ca56036..bf8a6f9 100644
-> --- a/kernel/rcutree.h
-> +++ b/kernel/rcutree.h
-> @@ -81,6 +81,8 @@ struct rcu_dynticks {
->  struct rcu_node {
->  	spinlock_t lock;
->  	long	gpnum;		/* Current grace period for this node. */
-> +				/*  This will either be equal to or one */
-> +				/*  behind the root rcu_node's gpnum. */
->  	unsigned long qsmask;	/* CPUs or groups that need to switch in */
->  				/*  order for current grace period to proceed.*/
->  	unsigned long qsmaskinit;
-> diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-> index 04343be..4778936 100644
-> --- a/kernel/rcutree_plugin.h
-> +++ b/kernel/rcutree_plugin.h
-> @@ -92,7 +92,7 @@ static void rcu_preempt_qs(int cpu)
->  		rnp = rdp->mynode;
->  		spin_lock(&rnp->lock);
->  		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
-> -		t->rcu_blocked_node = (void *)rnp;
-> +		t->rcu_blocked_node = rnp;
->  
->  		/*
->  		 * If this CPU has already checked in, then this task
-> @@ -176,9 +176,9 @@ static void rcu_read_unlock_special(struct task_struct *t)
->  		 * most one time.  So at most two passes through loop.
->  		 */
->  		for (;;) {
-> -			rnp = (struct rcu_node *)t->rcu_blocked_node;
-> +			rnp = t->rcu_blocked_node;
->  			spin_lock(&rnp->lock);
-> -			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
-> +			if (rnp == t->rcu_blocked_node)
->  				break;
->  			spin_unlock(&rnp->lock);
->  		}
-> @@ -288,8 +288,10 @@ static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
->  	struct rcu_node *rnp_root = rcu_get_root(rsp);
->  	struct task_struct *tp;
->  
-> -	if (rnp == rnp_root)
-> +	if (rnp == rnp_root) {
-> +		WARN_ONCE(1, "Last CPU thought to be offlined?");
->  		return;  /* Shouldn't happen: at least one CPU online. */
-> +	}
->  
->  	/*
->  	 * Move tasks up to root rcu_node.  Rely on the fact that the
+I like it.  The only thing to watch out for is that
+events that wake up higher-priority FIFO tasks do
+not get deferred :)
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+All rights reversed.
