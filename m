@@ -1,60 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbZH1UDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbZH1UIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753130AbZH1UDl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 16:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZH1UDk
+	id S1753105AbZH1UIe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 16:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZH1UId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 16:03:40 -0400
-Received: from www.tglx.de ([62.245.132.106]:53309 "EHLO www.tglx.de"
+	Fri, 28 Aug 2009 16:08:33 -0400
+Received: from mga09.intel.com ([134.134.136.24]:52224 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752915AbZH1UDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 16:03:39 -0400
-Date: Fri, 28 Aug 2009 22:00:30 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Gregory Haskins <ghaskins@novell.com>, Rik van Riel <riel@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-In-Reply-To: <alpine.DEB.1.10.0908281551450.17784@gentwo.org>
-Message-ID: <alpine.LFD.2.00.0908282158100.19335@localhost.localdomain>
-References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org>
- <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com> <4A975025.8030500@novell.com> <4A975CC4.1090208@novell.com> <alpine.LFD.2.00.0908281218560.2888@localhost.localdomain>
- <alpine.DEB.1.10.0908281446520.7317@gentwo.org> <alpine.LFD.2.00.0908282100040.19335@localhost.localdomain> <alpine.DEB.1.10.0908281551450.17784@gentwo.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752055AbZH1UIc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 16:08:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,292,1249282800"; 
+   d="scan'208";a="443639958"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'Amerigo Wang'" <amwang@redhat.com>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'Anton Vorontsov'" <avorontsov@ru.mvista.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
+       "'Neil Horman'" <nhorman@redhat.com>,
+       "'Eric W. Biederman'" <ebiederm@xmission.com>,
+       "'kamezawa.hiroyu@jp.fujitsu.com'" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "'Andi Kleen'" <andi@firstfloor.org>,
+       "'Michael Ellerman'" <michael@ellerman.id.au>,
+       "'M. Mohan Kumar'" <mohan@in.ibm.com>,
+       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
+       "'bernhard.walle@gmx.de'" <bernhard.walle@gmx.de>,
+       "'Ingo Molnar'" <mingo@elte.hu>
+Date: Fri, 28 Aug 2009 13:08:30 -0700
+Subject: RE: [Patch 4/8] ia64: implement crashkernel=auto
+Thread-Topic: [Patch 4/8] ia64: implement crashkernel=auto
+Thread-Index: AconxqhuCDJGDS2gTyGijKY6fQMfrgAU54Cw
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B954B3BB@orsmsx505.amr.corp.intel.com>
+References: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
+ <20090827031848.4534.40440.sendpatchset@localhost.localdomain>
+ <A6AD88C3F2289247BE726C37303E1EB8B949E358@orsmsx505.amr.corp.intel.com>
+ <4A965F3A.5070007@redhat.com>
+ <A6AD88C3F2289247BE726C37303E1EB8B949E7A3@orsmsx505.amr.corp.intel.com>
+ <4A97ABA9.8030604@redhat.com>
+In-Reply-To: <4A97ABA9.8030604@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Aug 2009, Christoph Lameter wrote:
+>>>>> +	unsigned long long ret;
+>>>>> +
+>>>>> +	if (total_size >= GBYTES(4) && total_size < GBYTES(12))
+>>>>> +		ret = MBYTES(256);
+>>>>> +	else if (total_size >= GBYTES(12) && total_size < GBYTES(128))
+>>>>> +		ret = MBYTES(512);
+>>>>> +	else if (total_size >= GBYTES(128) && total_size < GBYTES(256))
+>>>>> +		ret = MBYTES(768);
+>>>>> +	else if (total_size >= GBYTES(256) && total_size < GBYTES(378))
+>>>>> +		ret = MBYTES(1024);
+>>>>> +	else if (total_size >= GBYTES(318) && total_size < GBYTES(512))
+>>>>> +		ret = MBYTES(1536);
+>>>>> +	else if (total_size >= GBYTES(512) && total_size < GBYTES(768))
+>>>>> +		ret = MBYTES(2048);
+>>>>> +	else
+>>>>> +		ret = MBYTES(3072);
+>>>>> +	if (!ia64_platform_is("sn2") && !ia64_platform_is("uv"))
+>>>>> +		if (ret > GBYTES(4))
+>>>>> +			ret = ret / GBYTES(4) * MBYTES(256);
+>>>>>
+>>>>>
+>>>> This code doesn't make sense to me. What you really want is following
+>>>>
+>>> code, right?
+>>>
+>>>> +		if (total_size > GBYTES(4))
+>>>> +			ret = total_size / GBYTES(4) * MBYTEST(256)
+>>>>
+>>>>
+>>>>
+>>> Nope. Check check_crashkernel_memory().
+>>>
+>>
+>> This statement will be ALWAYS false:
+>> +		if (ret > GBYTES(4))
+>> since ret's max value is 3GB after the above total_size checks.
+>>
+>> So the code doesn't make sense. Did I miss something?
+>>
+>
+>Oops, in fact it was supposed to be:
+>
+>  if (ret + base > GBYTES(4))
+>    //blah blah
+>
+>Hmm, but is it possible for ia64 to choose a base address above 1G? If
+>no, that code can be removed.
 
-> On Fri, 28 Aug 2009, Thomas Gleixner wrote:
-> 
-> > Right, and I think we can get there. The timer can be eliminated with
-> > some work. Faults shouldn't happen on that CPU and all other
-> > interrupts can be kept away with proper affinity settings. Softirqs
-> > should not happen on such a CPU either as there is neither a hardirq
-> > nor a user space task triggering them. Same applies for timers. So
-> > there are some remaining issues like IPIs, but I'm pretty sure that
-> > they can be tamed to zero as well.
-> 
-> There are various timer generated thingies like vm statistics, slab queue
-> management and device specific things that run on each processor.
+I think you don't need to consider the base here. This arch_default_crash_size() only returns size. Later on, ia64 setup_crashkernel() will find a base value in reserved region and check if the base value is under 4GB etc.
 
-The statistics stuff needs to be tackled anyway as we need to offload
-the sched accounting to some other cpu.
+Thanks.
 
-What slab queue stuff is running on timers and cannot be switched off
-in such a context?
-
-Device specific stuff should not happen on such a CPU when there is no
-device handled on it.
-
-Thanks,
-
-	tglx
+-Fenghua
