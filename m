@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbZH1HUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752094AbZH1HVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752101AbZH1HUN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 03:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZH1HUN
+	id S1752094AbZH1HVn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 03:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZH1HVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 03:20:13 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:50993 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbZH1HUM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 03:20:12 -0400
-Date: Fri, 28 Aug 2009 12:50:08 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH 1/5] memcg: change for softlimit.
-Message-ID: <20090828072007.GH4889@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com> <20090828132321.e4a497bb.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090828132321.e4a497bb.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 28 Aug 2009 03:21:42 -0400
+Received: from gate.crashing.org ([63.228.1.57]:46675 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751460AbZH1HVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 03:21:42 -0400
+Subject: Re: lmb: Remove __init from lmb_end_of_DRAM()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <200908271959.n7RJxNvV008624@hera.kernel.org>
+References: <200908271959.n7RJxNvV008624@hera.kernel.org>
+Content-Type: text/plain
+Date: Fri, 28 Aug 2009 17:21:28 +1000
+Message-Id: <1251444088.20467.169.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 13:23:21]:
-
-> This patch tries to modify softlimit handling in memcg/res_counter.
-> There are 2 reasons in general.
+On Thu, 2009-08-27 at 19:59 +0000, Linux Kernel Mailing List wrote:
+> Gitweb:     http://git.kernel.org/linus/4f8ee2c9cc0e885d2bb50ef26db66150ab25213e
+> Commit:     4f8ee2c9cc0e885d2bb50ef26db66150ab25213e
+> Parent:     cf481442f2e086316ed8a1b3046f00ad23632ac4
+> Author:     Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> AuthorDate: Thu Aug 27 17:20:30 2009 +1000
+> Committer:  Linus Torvalds <torvalds@linux-foundation.org>
+> CommitDate: Thu Aug 27 12:25:26 2009 -0700
 > 
->  1. soft_limit can use only against sub-hierarchy root.
->     Because softlimit tree is sorted by usage, putting prural groups
->     under hierarchy (which shares usage) will just adds noise and unnecessary
->     mess. This patch limits softlimit feature only to hierarchy root.
->     This will make softlimit-tree maintainance better. 
-> 
->  2. In these days, it's reported that res_counter can be bottleneck in
->     massively parallel enviroment. We need to reduce jobs under spinlock.
->     The reason we check softlimit at res_counter_charge() is that any member
->     in hierarchy can have softlimit.
->     But by chages in "1", only hierarchy root has soft_limit. We can omit
->     hierarchical check in res_counter.
-> 
-> After this patch, soft limit is avaliable only for root of sub-hierarchy.
-> (Anyway, softlimit for hierarchy children just makes users confused, hard-to-use)
->
+>     lmb: Remove __init from lmb_end_of_DRAM()
+>     
+>     We call lmb_end_of_DRAM() to test whether a DMA mask is ok on a machine
+>     without IOMMU, but this function is marked as __init.
+>     
+>     I don't think there's a clean way to get the top of RAM max_pfn doesn't
+>     appear to include highmem or I missed (or we have a bug :-) so for now,
+>     let's just avoid having a broken 2.6.31 by making this function
+>     non-__init and we can revisit later.
+
+And another brown paper bag for me ! Patch is fine, but doesn't do the
+job because some idiot (me) didn't actually test (it looked so obvious)
+and didn't notice somebody had the strange idea to also put __init on
+the declaration in the .h file ! Ugh.
+
+I'll send another patch later, have to run home now.
+
+Cheers,
+Ben.
 
 
-I need some time to digest this change, if the root is a hiearchy root
-then only root can support soft limits? I think the change makes it
-harder to use soft limits. Please help me understand better. 
-
--- 
-	Balbir
