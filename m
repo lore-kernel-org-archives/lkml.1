@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751470AbZH1NiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751498AbZH1NnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751470AbZH1NiB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 09:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbZH1NiA
+	id S1751498AbZH1NnH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 09:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZH1NnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 09:38:00 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:19488 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbZH1Nh7 (ORCPT
+	Fri, 28 Aug 2009 09:43:06 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:60399 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751074AbZH1NnE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 09:37:59 -0400
-Message-ID: <4A97DD88.5090504@hp.com>
-Date: Fri, 28 Aug 2009 09:37:12 -0400
-From: jim owens <jowens@hp.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 28 Aug 2009 09:43:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=pN4bxhvVL89kl647aLFrUmY5GIb3ro47DESWkJt6aUmE6o0GNse7gmMMAoLZDdydK2
+         rmkXSJ12H7puTynL7f1h7+ETq55FJRee5f6jlObE8cT8djTIFL8KUE04UXrG941gwfI8
+         U1u4M1mN4xRnUxDDiH8eogPfdO3eJf2MsTJpE=
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: raz ben yehuda <raziebe@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-References: <1251282598.3514.20.camel@raz>	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>	 <1251300625.18584.18.camel@twins>	 <alpine.DEB.1.10.0908261136590.9933@gentwo.org>	 <1251302598.18584.31.camel@twins>	 <alpine.DEB.1.10.0908261211340.9933@gentwo.org>	 <20090826180407.GA13632@elte.hu>	 <alpine.DEB.1.10.0908261509580.9933@gentwo.org>	 <20090826193252.GA14721@elte.hu>	 <alpine.DEB.1.10.0908261627110.5554@gentwo.org>	 <20090826135041.e6169d18.akpm@linux-foundation.org>	 <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz>	 <4A96B997.1070001@nortel.com> <1251408785.3700.22.camel@raz>	 <alpine.LFD.2.00.0908272348370.2888@localhost.localdomain> <1251448697.3872.15.camel@raz> <4A97DAE7.40603@redhat.com>
-In-Reply-To: <4A97DAE7.40603@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090828133631.GF5054@csn.ul.ie>
+References: <1251449067-3109-1-git-send-email-mel@csn.ul.ie>
+	 <1251449067-3109-3-git-send-email-mel@csn.ul.ie>
+	 <84144f020908280516y6473a531n3f11f3e86251eba4@mail.gmail.com>
+	 <20090828125719.GE5054@csn.ul.ie>
+	 <1251464564.8514.3.camel@penberg-laptop>
+	 <20090828133631.GF5054@csn.ul.ie>
+Date: Fri, 28 Aug 2009 16:43:05 +0300
+X-Google-Sender-Auth: b6793ec767fcb35f
+Message-ID: <84144f020908280643h49799b94g270090f22c7cf5e0@mail.gmail.com>
+Subject: Re: [PATCH 2/2] page-allocator: Maintain rolling count of pages to 
+	free from the PCP
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> raz ben yehuda wrote:
-> 
->> yes. latency is a crucial property. 
-> 
-> In the case of network packets, wouldn't you get a lower
-> latency by transmitting the packet from the CPU that
-> knows the packet should be transmitted, instead of sending
-> an IPI to another CPU and waiting for that CPU to do the
-> work?
-> 
-> Inter-CPU communication has always been the bottleneck
-> when it comes to SMP performance.  Why does adding more
-> inter-CPU communication make your system faster, instead
-> of slower like one would expect?
-> 
+On Fri, Aug 28, 2009 at 4:36 PM, Mel Gorman<mel@csn.ul.ie> wrote:
+> This is PCPU draining. The flags are already clear of any values of interest
+> and the order is always 0. I can follow up a fix-patch that reverses it just
+> in case but I don't think it makes a major difference?
 
-Maybe just me being paranoid, but from the beginning this
-"use for dedicated IO processor" has scared the crap out of me.
+Aha, OK. Probably not worth it then.
 
-Reminds me of Winmodem... sell cheap hardware by stealing your CPU!
-
-The HPC FIFO user application on the other hand is a reasonable
-if somewhat edge-case specialized user batch job.
-
-jim
+                             Pekka
