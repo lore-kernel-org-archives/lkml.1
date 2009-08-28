@@ -1,57 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZH1H0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752148AbZH1H0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752135AbZH1H0X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 03:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZH1H0W
+	id S1752148AbZH1H0r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 03:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZH1H0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 03:26:22 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45375 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673AbZH1H0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 03:26:21 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "Florian Weimer" <fweimer@bfk.de>
-Date: Fri, 28 Aug 2009 17:23:56 +1000 (EST)
-Message-ID: <6311905a247b1ec1f264f6417ed6d5d6.squirrel@neil.brown.name>
-In-Reply-To: <827hwos98u.fsf@mid.bfk.de>
-References: <20090824212518.GF29763@elf.ucw.cz>
-    <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com>
-    <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com>
-    <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com>
-    <827hwos98u.fsf@mid.bfk.de>
-Subject: Re: raid is dangerous but that's secret
-Cc: "Ric Wheeler" <rwheeler@redhat.com>, "Pavel Machek" <pavel@ucw.cz>,
-       "Rob Landley" <rob@landley.net>, "Theodore Tso" <tytso@mit.edu>,
-       "Goswin von Brederlow" <goswin-v-b@web.de>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-User-Agent: SquirrelMail/1.4.15
+	Fri, 28 Aug 2009 03:26:46 -0400
+Received: from mail-vw0-f195.google.com ([209.85.212.195]:62670 "EHLO
+	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110AbZH1H0q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 03:26:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=WO6J3g1aY1IFsqE4c50Z+jX+yRp4TEHeBwHwCngkpdnRflRoadQW8r1PFWU3IntkTB
+         IvbwHU6y4IRbZjvYlKPdvGI+VAZW5p7cQ9lzBHoektg1nVJjErnUlNKvJxzAOpd2Blx1
+         tMJAlhjdgJGpq13mKTYn+CIFaae10AE0OEFoU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+In-Reply-To: <30c949580908272349u20145192ydfec4b1950ae7b23@mail.gmail.com>
+References: <30c949580908251825n59da4bceg77c464eca01f0c46@mail.gmail.com>
+	 <18eba5a10908252208p791288e3mc28f6aaf8306948f@mail.gmail.com>
+	 <30c949580908272349u20145192ydfec4b1950ae7b23@mail.gmail.com>
+Date: Fri, 28 Aug 2009 15:26:47 +0800
+Message-ID: <30c949580908280026i7407cdahbdcead91573fbfb8@mail.gmail.com>
+Subject: Re: oom-killer works,but the memory cannot be freed
+From: Bill Xie <bill790@gmail.com>
+To: Chungki woo <chungki.woo@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=0016364994e55ace4d04722e9bb3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, August 28, 2009 5:11 pm, Florian Weimer wrote:
-> * Ric Wheeler:
+--0016364994e55ace4d04722e9bb3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+and the oom killer message attached.  It seems when at this situation,
+
+echo 3 > /proc/sys/vm/drop_caches , cannot release the memory occupied
+by the application.
+
+
+
+On Fri, Aug 28, 2009 at 2:49 PM, Bill Xie<bill790@gmail.com> wrote:
+> hi, woo
 >
->> You continue to ignore the technical facts that everyone (both MD and
->> ext3) people put in front of you.
->>
->> If you have a specific bug in MD code, please propose a patch.
+> =A0thanks for your replay.
 >
-> In RAID 1 mode, it should read both copies and error out on
-> mismatch. 8-)
+> cat /proc/meminfo
+> MemTotal: =A0 =A0 =A0 =A060288 kB
+> MemFree: =A0 =A0 =A0 =A0 =A05100 kB
+> Buffers: =A0 =A0 =A0 =A0 =A0 =A0 8 kB
+> Cached: =A0 =A0 =A0 =A0 =A025600 kB
+> SwapCached: =A0 =A0 =A0 =A0 =A00 kB
+> Active: =A0 =A0 =A0 =A0 =A021836 kB
+> Inactive: =A0 =A0 =A0 =A015448 kB
+> SwapTotal: =A0 =A0 =A0 =A0 =A0 0 kB
+> SwapFree: =A0 =A0 =A0 =A0 =A0 =A00 kB
+> Dirty: =A0 =A0 =A0 =A0 =A0 =A0 =A0 0 kB
+> Writeback: =A0 =A0 =A0 =A0 =A0 0 kB
+> AnonPages: =A0 =A0 =A0 11740 kB
+> Mapped: =A0 =A0 =A0 =A0 =A0 1668 kB
+> Slab: =A0 =A0 =A0 =A0 =A0 =A0 2532 kB
+> SReclaimable: =A0 =A0 =A0308 kB
+> SUnreclaim: =A0 =A0 =A0 2224 kB
+> PageTables: =A0 =A0 =A0 =A0164 kB
+> NFS_Unstable: =A0 =A0 =A0 =A00 kB
+> Bounce: =A0 =A0 =A0 =A0 =A0 =A0 =A00 kB
+> CommitLimit: =A0 =A0 30144 kB
+> Committed_AS: =A0 =A015656 kB
+> VmallocTotal: =A01048404 kB
+> VmallocUsed: =A0 =A0 =A09700 kB
+> VmallocChunk: =A01038704 kB
+>
 
-Despite your smiley:
+--0016364994e55ace4d04722e9bb3
+Content-Type: application/octet-stream; name=oom-killer-630-1
+Content-Disposition: attachment; filename=oom-killer-630-1
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fywlhtge0
 
-  no it shouldn't, and no one is making any claims about raid1 being
-  unsafe, only raid4/5/6.
-
-NeilBrown
-
+aG90cGx1ZyBpbnZva2VkIG9vbS1raWxsZXI6IGdmcF9tYXNrPTB4MTIwMGQyLCBvcmRlcj0wLCBv
+b21raWxsYWRqPTAKQ2FsbCBUcmFjZToKWzw4MDAyMDdkYz5dIGR1bXBfc3RhY2srMHg4LzB4MzQK
+Wzw4MDA3Y2IzMD5dIG9vbV9raWxsX3Byb2Nlc3MrMHgxMzgvMHgxNDgKWzw4MDA3ZDFmMD5dIG91
+dF9vZl9tZW1vcnkrMHgxZjAvMHgzNDAKWzw4MDA4MDZhND5dIF9fYWxsb2NfcGFnZXMrMHgyYTQv
+MHgzZDAKWzw4MDA4ZWJkOD5dIGRvX3dwX3BhZ2UrMHgxMmMvMHg4ZWMKWzw4MDA5MTNhMD5dIGhh
+bmRsZV9tbV9mYXVsdCsweDcxOC8weDkzOApbPDgwMDI0YTFjPl0gZG9fcGFnZV9mYXVsdCsweDEy
+Yy8weDNiMApbPDgwMDE5NmU0Pl0gcmV0X2Zyb21fZXhjZXB0aW9uKzB4MC8weDEwCgpNZW0taW5m
+bzoKTm9ybWFsIHBlci1jcHU6CkNQVSAgICAwOiBIb3Q6IGhpOiAgIDE4LCBidGNoOiAgIDMgdXNk
+OiAgIDMgICBDb2xkOiBoaTogICAgNiwgYnRjaDogICAxIHVzZDogICAwCkFjdGl2ZTo3NzY3IGlu
+YWN0aXZlOjI5OTIgZGlydHk6MCB3cml0ZWJhY2s6MCB1bnN0YWJsZTowCiBmcmVlOjI1MiBzbGFi
+OjY3NiBtYXBwZWQ6OTUgcGFnZXRhYmxlczo5OSBib3VuY2U6MApOb3JtYWwgZnJlZToxMDA4a0Ig
+bWluOjEwMTZrQiBsb3c6MTI2OGtCIGhpZ2g6MTUyNGtCIGFjdGl2ZTozMTA2OGtCIGluYWN0aXZl
+OjExOTY4a0IgcHJlc3MKbG93bWVtX3Jlc2VydmVbXTogMCAwCk5vcm1hbDogMCo0a0IgMio4a0Ig
+MioxNmtCIDAqMzJrQiAxKjY0a0IgMSoxMjhrQiAxKjI1NmtCIDEqNTEya0IgMCoxMDI0a0IgMCoy
+MDQ4a0IgMCo0MDk2QgpTd2FwIGNhY2hlOiBhZGQgMCwgZGVsZXRlIDAsIGZpbmQgMC8wLCByYWNl
+IDArMApGcmVlIHN3YXAgID0gMGtCClRvdGFsIHN3YXAgPSAwa0IKRnJlZSBzd2FwOiAgICAgICAg
+ICAgIDBrQgoxNjM4NCBwYWdlcyBvZiBSQU0KMCBwYWdlcyBvZiBISUdITUVNCjI0NjcgcmVzZXJ2
+ZWQgcGFnZXMKMjM3NiBwYWdlcyBzaGFyZWQKMCBwYWdlcyBzd2FwIGNhY2hlZApPdXQgb2YgbWVt
+b3J5IChvb21fa2lsbF9hbGxvY2F0aW5nX3Rhc2spOiBraWxsIHByb2Nlc3MgNTExIChob3RwbHVn
+KSBzY29yZSAwIG9yIGEgY2hpbGQKS2lsbGVkIHByb2Nlc3MgNTExIChob3RwbHVnKQpxcGUgaW52
+b2tlZCBvb20ta2lsbGVyOiBnZnBfbWFzaz0weDEyMDFkMiwgb3JkZXI9MCwgb29ta2lsbGFkaj0w
+CkNhbGwgVHJhY2U6Cls8ODAwMjA3ZGM+XSBkdW1wX3N0YWNrKzB4OC8weDM0Cls8ODAwN2NiMzA+
+XSBvb21fa2lsbF9wcm9jZXNzKzB4MTM4LzB4MTQ4Cls8ODAwN2QxZjA+XSBvdXRfb2ZfbWVtb3J5
+KzB4MWYwLzB4MzQwCls8ODAwODA2YTQ+XSBfX2FsbG9jX3BhZ2VzKzB4MmE0LzB4M2QwCls8ODAw
+N2I1ZmM+XSBmaWxlbWFwX2ZhdWx0KzB4MTMwLzB4NjRjCls8ODAwOGU1NDA+XSBfX2RvX2ZhdWx0
+KzB4ODAvMHg1ZWMKWzw4MDA5MGRkMD5dIGhhbmRsZV9tbV9mYXVsdCsweDE0OC8weDkzOApbPDgw
+MDI0YTFjPl0gZG9fcGFnZV9mYXVsdCsweDEyYy8weDNiMApbPDgwMDE5NmU0Pl0gcmV0X2Zyb21f
+ZXhjZXB0aW9uKzB4MC8weDEwCgpNZW0taW5mbzoKTm9ybWFsIHBlci1jcHU6CkNQVSAgICAwOiBI
+b3Q6IGhpOiAgIDE4LCBidGNoOiAgIDMgdXNkOiAgIDQgICBDb2xkOiBoaTogICAgNiwgYnRjaDog
+ICAxIHVzZDogICA1CkFjdGl2ZTo3NDM2IGluYWN0aXZlOjMyMTAgZGlydHk6MCB3cml0ZWJhY2s6
+MCB1bnN0YWJsZTowCiBmcmVlOjMxNiBzbGFiOjY4MSBtYXBwZWQ6MCBwYWdldGFibGVzOjEwNCBi
+b3VuY2U6MApOb3JtYWwgZnJlZToxMjY0a0IgbWluOjEwMTZrQiBsb3c6MTI2OGtCIGhpZ2g6MTUy
+NGtCIGFjdGl2ZToyOTc0NGtCIGluYWN0aXZlOjEyODQwa0IgcHJlc3MKbG93bWVtX3Jlc2VydmVb
+XTogMCAwCk5vcm1hbDogNzIqNGtCIDAqOGtCIDEqMTZrQiAwKjMya0IgMSo2NGtCIDEqMTI4a0Ig
+MSoyNTZrQiAxKjUxMmtCIDAqMTAyNGtCIDAqMjA0OGtCIDAqNDA5QgpTd2FwIGNhY2hlOiBhZGQg
+MCwgZGVsZXRlIDAsIGZpbmQgMC8wLCByYWNlIDArMApGcmVlIHN3YXAgID0gMGtCClRvdGFsIHN3
+YXAgPSAwa0IKRnJlZSBzd2FwOiAgICAgICAgICAgIDBrQgoxNjM4NCBwYWdlcyBvZiBSQU0KMCBw
+YWdlcyBvZiBISUdITUVNCjI0NjcgcmVzZXJ2ZWQgcGFnZXMKMjI0NiBwYWdlcyBzaGFyZWQKMCBw
+YWdlcyBzd2FwIGNhY2hlZApPdXQgb2YgbWVtb3J5IChvb21fa2lsbF9hbGxvY2F0aW5nX3Rhc2sp
+OiBraWxsIHByb2Nlc3MgNTA1IChxcGUpIHNjb3JlIDAgb3IgYSBjaGlsZApLaWxsZWQgcHJvY2Vz
+cyA1MDUgKHFwZSkKdWRldmQgaW52b2tlZCBvb20ta2lsbGVyOiBnZnBfbWFzaz0weDEyMDFkMiwg
+b3JkZXI9MCwgb29ta2lsbGFkaj0tMTcKQ2FsbCBUcmFjZToKWzw4MDAyMDdkYz5dIGR1bXBfc3Rh
+Y2srMHg4LzB4MzQKWzw4MDA3Y2IzMD5dIG9vbV9raWxsX3Byb2Nlc3MrMHgxMzgvMHgxNDgKWzw4
+MDA3ZDFmMD5dIG91dF9vZl9tZW1vcnkrMHgxZjAvMHgzNDAKWzw4MDA4MDZhND5dIF9fYWxsb2Nf
+cGFnZXMrMHgyYTQvMHgzZDAKWzw4MDA3YjVmYz5dIGZpbGVtYXBfZmF1bHQrMHgxMzAvMHg2NGMK
+Wzw4MDA4ZTU0MD5dIF9fZG9fZmF1bHQrMHg4MC8weDVlYwpbPDgwMDkwZGQwPl0gaGFuZGxlX21t
+X2ZhdWx0KzB4MTQ4LzB4OTM4Cls8ODAwMjRhMWM+XSBkb19wYWdlX2ZhdWx0KzB4MTJjLzB4M2Iw
+Cls8ODAwMTk2ZTQ+XSByZXRfZnJvbV9leGNlcHRpb24rMHgwLzB4MTAKCk1lbS1pbmZvOgpOb3Jt
+YWwgcGVyLWNwdToKQ1BVICAgIDA6IEhvdDogaGk6ICAgMTgsIGJ0Y2g6ICAgMyB1c2Q6ICAxNSAg
+IENvbGQ6IGhpOiAgICA2LCBidGNoOiAgIDEgdXNkOiAgIDAKQWN0aXZlOjU2MzEgaW5hY3RpdmU6
+NTEwNCBkaXJ0eTowIHdyaXRlYmFjazowIHVuc3RhYmxlOjAKIGZyZWU6MjUzIHNsYWI6NjgxIG1h
+cHBlZDo2MiBwYWdldGFibGVzOjEwNCBib3VuY2U6MApOb3JtYWwgZnJlZToxMDEya0IgbWluOjEw
+MTZrQiBsb3c6MTI2OGtCIGhpZ2g6MTUyNGtCIGFjdGl2ZToyMjUyNGtCIGluYWN0aXZlOjIwNDE2
+a0IgcHJlc3MKbG93bWVtX3Jlc2VydmVbXTogMCAwCk5vcm1hbDogOSo0a0IgMCo4a0IgMSoxNmtC
+IDAqMzJrQiAxKjY0a0IgMSoxMjhrQiAxKjI1NmtCIDEqNTEya0IgMCoxMDI0a0IgMCoyMDQ4a0Ig
+MCo0MDk2QgpTd2FwIGNhY2hlOiBhZGQgMCwgZGVsZXRlIDAsIGZpbmQgMC8wLCByYWNlIDArMApG
+cmVlIHN3YXAgID0gMGtCClRvdGFsIHN3YXAgPSAwa0IKRnJlZSBzd2FwOiAgICAgICAgICAgIDBr
+QgoxNjM4NCBwYWdlcyBvZiBSQU0KMCBwYWdlcyBvZiBISUdITUVNCjI0NjcgcmVzZXJ2ZWQgcGFn
+ZXMKMTUwMSBwYWdlcyBzaGFyZWQKMCBwYWdlcyBzd2FwIGNhY2hlZApPdXQgb2YgbWVtb3J5IChv
+b21fa2lsbF9hbGxvY2F0aW5nX3Rhc2spOiBraWxsIHByb2Nlc3MgNTA5ICh1ZGV2ZCkgc2NvcmUg
+MCBvciBhIGNoaWxkCkZBVDogdW5hYmxlIHRvIHJlYWQgaW5vZGUgYmxvY2sgZm9yIHVwZGF0aW5n
+IChpX3BvcyA2MjQ4MikKRkFUOiB1bmFibGUgdG8gcmVhZCBpbm9kZSBibG9jayBmb3IgdXBkYXRp
+bmcgKGlfcG9zIDYyNDgyKQpvZmZpY2UgaW52b2tlZCBvb20ta2lsbGVyOiBnZnBfbWFzaz0weDEy
+MDFkMiwgb3JkZXI9MCwgb29ta2lsbGFkaj0wCkNhbGwgVHJhY2U6Cls8ODAwMjA3ZGM+XSBkdW1w
+X3N0YWNrKzB4OC8weDM0Cls8ODAwN2NiMzA+XSBvb21fa2lsbF9wcm9jZXNzKzB4MTM4LzB4MTQ4
+Cls8ODAwN2QxZjA+XSBvdXRfb2ZfbWVtb3J5KzB4MWYwLzB4MzQwCls8ODAwODA2YTQ+XSBfX2Fs
+bG9jX3BhZ2VzKzB4MmE0LzB4M2QwCls8ODAwN2I1ZmM+XSBmaWxlbWFwX2ZhdWx0KzB4MTMwLzB4
+NjRjCls8ODAwOGU1NDA+XSBfX2RvX2ZhdWx0KzB4ODAvMHg1ZWMKWzw4MDA5MGRkMD5dIGhhbmRs
+ZV9tbV9mYXVsdCsweDE0OC8weDkzOApbPDgwMDI0YTFjPl0gZG9fcGFnZV9mYXVsdCsweDEyYy8w
+eDNiMApbPDgwMDE5NmU0Pl0gcmV0X2Zyb21fZXhjZXB0aW9uKzB4MC8weDEwCgpNZW0taW5mbzoK
+Tm9ybWFsIHBlci1jcHU6CkNQVSAgICAwOiBIb3Q6IGhpOiAgIDE4LCBidGNoOiAgIDMgdXNkOiAg
+IDQgICBDb2xkOiBoaTogICAgNiwgYnRjaDogICAxIHVzZDogICA1CkFjdGl2ZTo4MDU5IGluYWN0
+aXZlOjI1NjAgZGlydHk6MCB3cml0ZWJhY2s6MCB1bnN0YWJsZTowCiBmcmVlOjMyMSBzbGFiOjY3
+NyBtYXBwZWQ6MCBwYWdldGFibGVzOjk4IGJvdW5jZTowCk5vcm1hbCBmcmVlOjEyODRrQiBtaW46
+MTAxNmtCIGxvdzoxMjY4a0IgaGlnaDoxNTI0a0IgYWN0aXZlOjMyMjM2a0IgaW5hY3RpdmU6MTAy
+NDBrQiBwcmVzcwpsb3dtZW1fcmVzZXJ2ZVtdOiAwIDAKTm9ybWFsOiA3Nyo0a0IgMCo4a0IgMSox
+NmtCIDAqMzJrQiAxKjY0a0IgMSoxMjhrQiAxKjI1NmtCIDEqNTEya0IgMCoxMDI0a0IgMCoyMDQ4
+a0IgMCo0MDlCClN3YXAgY2FjaGU6IGFkZCAwLCBkZWxldGUgMCwgZmluZCAwLzAsIHJhY2UgMCsw
+CkZyZWUgc3dhcCAgPSAwa0IKVG90YWwgc3dhcCA9IDBrQgpGcmVlIHN3YXA6ICAgICAgICAgICAg
+MGtCCjE2Mzg0IHBhZ2VzIG9mIFJBTQowIHBhZ2VzIG9mIEhJR0hNRU0KMjQ2NyByZXNlcnZlZCBw
+YWdlcwoyMzUgcGFnZXMgc2hhcmVkCjAgcGFnZXMgc3dhcCBjYWNoZWQKT3V0IG9mIG1lbW9yeSAo
+b29tX2tpbGxfYWxsb2NhdGluZ190YXNrKToga2lsbCBwcm9jZXNzIDQ5OSAob2ZmaWNlKSBzY29y
+ZSAwIG9yIGEgY2hpbGQKS2lsbGVkIHByb2Nlc3MgNDk5IChvZmZpY2UpCg==
+--0016364994e55ace4d04722e9bb3--
