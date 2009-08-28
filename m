@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750799AbZH1EHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751119AbZH1EWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750799AbZH1EHc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 00:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbZH1EHb
+	id S1751119AbZH1EWf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 00:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbZH1EWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 00:07:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50964 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750712AbZH1EHb (ORCPT
+	Fri, 28 Aug 2009 00:22:35 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57388 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750789AbZH1EWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 00:07:31 -0400
-Date: Thu, 27 Aug 2009 21:05:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Tejun Heo <tj@kernel.org>
-cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] lockup with the latest kernel
-In-Reply-To: <4A9744F4.7010208@kernel.org>
-Message-ID: <alpine.LFD.2.00.0908272059320.7223@eeepc.linux-foundation.org>
-References: <alpine.DEB.2.00.0908191134260.12663@gandalf.stny.rr.com> <alpine.DEB.2.00.0908271836140.26718@gandalf.stny.rr.com> <4A9744F4.7010208@kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 28 Aug 2009 00:22:34 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 28 Aug 2009 13:20:15 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [RFC][PATCH 0/5] memcg: reduce lock conetion
+Message-Id: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+Recently, memcg's res_counter->lock contention on big server is reported and
+Balbir wrote a workaround for root memcg.
+It's good but we need some fix for children, too.
+
+This set is for reducing lock conetion of memcg's children cgroup based on mmotm-Aug27.
+
+I'm sorry I have only 8cpu machine and can't reproduce very troublesome lock conention.
+Here is lock_stat of make -j 12 on my 8cpu box, befre-after this patch series.
+
+[Before] time make -j 12 (Best time in 3 test)
+real    2m55.170s
+user    4m38.351s
+sys     6m40.694s
+lock_stat version 0.3
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                              class name    con-bounces    contentions   waittime-min   waittime-max waittime-total    acq-bounces   acquisitions   holdtime-min   holdtime-max holdtime-total
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+                          &counter->lock:       1793728        1824383           0.90       16599.78     1255869.40       24879507       44909568           0.45       31183.88    19505982.15
+                          --------------
+                          &counter->lock         999561          [<ffffffff81099224>] res_counter_charge+0x94/0x140
+                          &counter->lock         824822          [<ffffffff8109911c>] res_counter_uncharge+0x3c/0xb0
+                          --------------
+                          &counter->lock         835597          [<ffffffff8109911c>] res_counter_uncharge+0x3c/0xb0
+                          &counter->lock         988786          [<ffffffff81099224>] res_counter_charge+0x94/0x140
+
+you can see this by "head" ;)
+
+[After] time make -j 12 (Best time in 3 test..but score was very stable.)
+real    2m52.612s
+user    4m45.450s
+sys     6m4.422s
+
+                          &counter->lock:         11159          11406           1.02          30.35        6707.74        1097940        3957860           0.47       17652.17     1534430.74
+                          --------------
+                          &counter->lock           2016          [<ffffffff810991bd>] res_counter_charge+0x4d/0x110
+                          &counter->lock           9390          [<ffffffff81099115>] res_counter_uncharge+0x35/0x90
+                          --------------
+                          &counter->lock           8962          [<ffffffff81099115>] res_counter_uncharge+0x35/0x90
+                          &counter->lock           2444          [<ffffffff810991bd>] res_counter_charge+0x4d/0x110
+
+dcache-lock, zone->lru_lock etc is much heavier than this.
 
 
-On Fri, 28 Aug 2009, Tejun Heo wrote:
-> > 
-> >     x86: make x86_32 use tlb_64.c
-> >     
-> >     Impact: less contention when issuing invalidate IPI, cleanup
-> >     
-> >     Make x86_32 use the same tlb code as 64bit.  The 64bit code uses
-> >     multiple IPI vectors for tlb shootdown to reduce contention.  This
-> >     patch makes x86_32 allocate the same 8 IPIs as x86_64 and share the
-> >     code paths.
-> >     
-> >     Note that the usage of asmlinkage is inconsistent for x86_32 and 64
-> >     and calls for further cleanup.  This has been noted with a FIXME
-> >     comment in tlb_64.c.
-> >     
-> >     Signed-off-by: Tejun Heo <tj@kernel.org>
-> > 
-> > I can easily hit this bug at this commit, but I ran for a week on the 
-> > commit before it. Thus I'm assuming this is the bug (but I'm not 100% 
-> > sure).
-> 
-> Drat, why does it have to be mine?  ;-)
-> 
-> Joke aside, thank you very much for bisecting it.
-> 
-> ...
-> >> [13288.222084] EIP: 0060:[<c0110821>] EFLAGS: 00000002 CPU: 0
-> >> [13288.222084] EIP is at default_send_IPI_mask_logical+0x53/0x92
+I expects good result on big servers.
 
-Is this one perhaps fixed by b04e6373d694 ("x86: don't call 
-'->send_IPI_mask()' with an empty mask")
+But this patch sereis is a  "big change". I (and memcg folks) have to be careful...
 
-It sounds a _lot_ like that bug. Older dual-cpu x86 box, and APIC getting 
-confused by the occasional empty CPU mask, and then subsequent IPI's will 
-hang.
 
-		Linus
+Thanks,
+-Kame
+
+
+
+
