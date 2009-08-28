@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbZH1UAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbZH1UAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753096AbZH1UAu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 16:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZH1UAt
+	id S1753122AbZH1UAz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 16:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbZH1UAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 16:00:49 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:62441 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbZH1UAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 16:00:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=V21xgc91WyEX3+ryYm4+M26Sus+KW87H7o2pD6RBZGi7HQljJt6pjzKgTdKaQnc0Y6
-         6Km0WTNovz2pMDiDzpBr9hO5XBuzaMJ9otwvVvscihGDi2/MAWkX7weIFR/JSdG82yU1
-         6i0tApjogv02nbrfFXzTPt1m03P2pf7KvoCD4=
-Date: Sat, 29 Aug 2009 00:00:47 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: steiner@sgi.com, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] gru: use proc_create()
-Message-ID: <20090828200047.GF15123@x200.localdomain>
+	Fri, 28 Aug 2009 16:00:53 -0400
+Received: from sous-sol.org ([216.99.217.87]:42159 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753041AbZH1UAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 16:00:51 -0400
+Date: Fri, 28 Aug 2009 12:59:16 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Yu Zhao <yu.zhao@intel.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] SR-IOV: correct broken resource alignment calculations
+Message-ID: <20090828195916.GK10360@sequoia.sous-sol.org>
+References: <20090828191714.GI10360@sequoia.sous-sol.org> <20090828194825.GM4884@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090828194825.GM4884@parisc-linux.org>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+* Matthew Wilcox (matthew@wil.cx) wrote:
+> On Fri, Aug 28, 2009 at 12:17:14PM -0700, Chris Wright wrote:
+> > An SR-IOV capable device includes an SR-IOV PCIe capability which
+> > describes the Virtual Function (VF) BAR requirements.  A typical SR-IOV
+> > device can support multiple VFs whose BARs must be in a contiguous region,
+> > effectively an array of VF BARs.  The BAR reports the size requirement
+> > for a single VF.  We calculate the full range needed by simply multiplying
+> > the VF BAR size with the number of possible VFs and create a resource
+> > spanning the full range.
+> > 
+> > This all seems sane enough except it artificially inflates the alignment
+> > requirement for the VF BAR.  The VF BAR need only be aligned to the size
+> > of a single BAR not the contiguous range of VF BARs.  This can cause us
+> > to fail to allocate resources for the BAR despite the fact that we
+> > actually have enough space.
+> > 
+> > This patch adds a support for a new resource alignment type,
+> > IORESOURCE_VSIZEALIGN, and allows struct resource to keep track of the
+> > size requirements of a VF BAR which are smaller than the full resource
+> > size.  This could also be done all within the PCI layer w/out bloating
+> > struct resource or using the last available bit for alignment types.
+> 
+> Yes, I think that would be preferable.  We have a *LOT* of resources in
+> the kernel, and the embedded folks would not find it funny if they all
+> grew in size suddenly.
 
- drivers/misc/sgi-gru/gruprocfs.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
---- a/drivers/misc/sgi-gru/gruprocfs.c
-+++ b/drivers/misc/sgi-gru/gruprocfs.c
-@@ -340,10 +340,9 @@ static struct proc_dir_entry *proc_gru __read_mostly;
- 
- static int create_proc_file(struct proc_entry *p)
- {
--	p->entry = create_proc_entry(p->name, p->mode, proc_gru);
-+	p->entry = proc_create(p->name, p->mode, proc_gru, p->fops);
- 	if (!p->entry)
- 		return -1;
--	p->entry->proc_fops = p->fops;
- 	return 0;
- }
- 
+OK, I'll send that momentarily.  It has one downside which is we re-read
+the BAR size multiple times.
