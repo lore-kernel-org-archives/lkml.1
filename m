@@ -1,101 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751309AbZH1VTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751438AbZH1VUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751309AbZH1VTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZH1VTT
+	id S1751438AbZH1VUm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZH1VUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:19:19 -0400
-Received: from mga03.intel.com ([143.182.124.21]:23087 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751106AbZH1VTS convert rfc822-to-8bit (ORCPT
+	Fri, 28 Aug 2009 17:20:41 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:44569 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971AbZH1VUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:19:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="181642422"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "'Jiri Bohac'" <jbohac@suse.cz>, "Luck, Tony" <tony.luck@intel.com>,
-       "'kenneth.w.chen@intel.com'" <kenneth.w.chen@intel.com>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>
-Date: Fri, 28 Aug 2009 14:19:19 -0700
-Subject: RE: [RFC][PATCH] ia64: fix csum_ipv6_magic()
-Thread-Topic: [RFC][PATCH] ia64: fix csum_ipv6_magic()
-Thread-Index: AconWvEAa+4eQKLrQiy33kv/p2DeaQAyae7Q
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B954B4A6@orsmsx505.amr.corp.intel.com>
-References: <20090827211113.GA22793@midget.suse.cz>
-In-Reply-To: <20090827211113.GA22793@midget.suse.cz>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 28 Aug 2009 17:20:41 -0400
+Message-ID: <4A984A05.9080009@nortel.com>
+Date: Fri, 28 Aug 2009 15:20:05 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       raz ben yehuda <raziebe@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       riel@redhat.com, wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org>  <1251302598.18584.31.camel@twins>  <alpine.DEB.1.10.0908261211340.9933@gentwo.org>  <20090826180407.GA13632@elte.hu>  <alpine.DEB.1.10.0908261509580.9933@gentwo.org>  <20090826193252.GA14721@elte.hu>  <alpine.DEB.1.10.0908261627110.5554@gentwo.org>  <20090826135041.e6169d18.akpm@linux-foundation.org>  <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org> <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A971C18.7050109@nortel.com> <alpine.LFD.2.00.0908280238290.2888@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908280238290.2888@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Aug 2009 21:20:26.0778 (UTC) FILETIME=[5CB57FA0:01CA2825]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->I was seeing "nf_ct_icmpv6: ICMPv6 checksum failed" errors on
->every ICMPv6 packet received. The packets did not pass the
->netfilter checksum verification but they did pass the standard
->verification later and got processed. This happenns with hardware
->checksumming turned off or with adapters that do not checksum
->ICMP packets (e.g. tg3). I tracked the problem down to the ia64
->version of csum_ipv6_magic() introduced by 007d77d0c5.  For some
->arguments, it gives differrent results than the generic version.
->
->The following patch fixes the problem for me. IA64 experts, can
->you please have a look?
->
->Thanks!
->
->
->[IA64] fix csum_ipv6_magic()
->
->The 32-bit parameters (len and csum) of csum_ipv6_magic() are passed in 64-
->bit
->registers in3 and in4. The high order 32 bits of the registers were never
->cleared, and garbage was sometimes calculated into the checksum.
->
->Fix this by clearing the high order 32 bits of the registers.
->
->Signed-off-by: Jiri Bohac <jbohac@suse.cz>
->
->diff --git a/arch/ia64/lib/ip_fast_csum.S b/arch/ia64/lib/ip_fast_csum.S
->index 1f86aeb..9a8d23f 100644
->--- a/arch/ia64/lib/ip_fast_csum.S
->+++ b/arch/ia64/lib/ip_fast_csum.S
->@@ -96,20 +96,22 @@ END(ip_fast_csum)
-> GLOBAL_ENTRY(csum_ipv6_magic)
-> 	ld4	r20=[in0],4
-> 	ld4	r21=[in1],4
->-	dep	r15=in3,in2,32,16
->+	zxt4	in3=in3
-> 	;;
-> 	ld4	r22=[in0],4
-> 	ld4	r23=[in1],4
->-	mux1	r15=r15,@rev
->+	dep	r15=in3,in2,32,16
-> 	;;
-> 	ld4	r24=[in0],4
-> 	ld4	r25=[in1],4
->-	shr.u	r15=r15,16
->+	mux1	r15=r15,@rev
-> 	add	r16=r20,r21
-> 	add	r17=r22,r23
->+	zxt4	in4=in4
-> 	;;
-> 	ld4	r26=[in0],4
-> 	ld4	r27=[in1],4
->+	shr.u	r15=r15,16
-> 	add	r18=r24,r25
-> 	add	r8=r16,r17
-> 	;;
+On 08/27/2009 06:44 PM, Thomas Gleixner wrote:
+> On Thu, 27 Aug 2009, Chris Friesen wrote:
+>> How would you deal with per-cpu kernel threads (softirqs, etc.) or
+>> softirq processing while in the kernel?
+> 
+> If you have pinned an interrupt to that CPU then you need to process
+> the softirq for it as well. If that's the device your very single user
+> space thread is talking to then you better want that, if you are not
+> interested then simply pin that device irq to some other CPU: no irq
+> -> no softirq.
 
-Looks good to me. Do you know the caller function for the failed csum_ipv6_magic()?
+Ah, okay.  For some reason I had thought that the incoming work was
+queued up globally and might be handled by any softirq.
 
-Thanks.
-
--Fenghua
+Chris
