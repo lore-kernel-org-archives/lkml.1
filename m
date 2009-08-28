@@ -1,91 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbZH1DeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbZH1Dmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751467AbZH1DeO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 23:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbZH1DeM
+	id S1751544AbZH1Dmh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 23:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZH1Dmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 23:34:12 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:53516 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbZH1DeL (ORCPT
-	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Thu, 27 Aug 2009 23:34:11 -0400
-Message-ID: <4A975025.8030500@novell.com>
-Date: Thu, 27 Aug 2009 23:33:57 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org>  <1251302598.18584.31.camel@twins>  <alpine.DEB.1.10.0908261211340.9933@gentwo.org>  <20090826180407.GA13632@elte.hu>  <alpine.DEB.1.10.0908261509580.9933@gentwo.org>  <20090826193252.GA14721@elte.hu>  <alpine.DEB.1.10.0908261627110.5554@gentwo.org>  <20090826135041.e6169d18.akpm@linux-foundation.org>  <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org> <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com>
-In-Reply-To: <4A973DAE.4020508@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig93B83232ABC25043A2695632"
+	Thu, 27 Aug 2009 23:42:35 -0400
+Received: from mga03.intel.com ([143.182.124.21]:54871 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751228AbZH1Dmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 23:42:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="181326685"
+Subject: ipw2200: firmware DMA loading rework
+From: Zhu Yi <yi.zhu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, Johannes Weiner <hannes@cmpxchg.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Mel Gorman <mel@skynet.ie>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       James Ketrenos <jketreno@linux.intel.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw2100-devel@lists.sourceforge.net" 
+	<ipw2100-devel@lists.sourceforge.net>
+In-Reply-To: <20090826074409.606b5124.akpm@linux-foundation.org>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	 <_yaHeGjHEzG.A.FIH.7sGlKB@chimera>
+	 <84144f020908252309u5cff8afdh2214577ca4db9b5d@mail.gmail.com>
+	 <20090826082741.GA25955@cmpxchg.org>	<20090826093747.GA10955@csn.ul.ie>
+	 <20090826074409.606b5124.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 28 Aug 2009 11:42:31 +0800
+Message-Id: <1251430951.3704.181.camel@debian>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig93B83232ABC25043A2695632
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Bartlomiej Zolnierkiewicz reported an atomic order-6 allocation failure
+for ipw2200 firmware loading in kernel 2.6.30. High order allocation is
+likely to fail and should always be avoided.
 
-Hi Rik,
+The patch fixes this problem by replacing the original order-6
+pci_alloc_consistent() with an array of order-1 pages from a pci pool.
+This utilized the ipw2200 DMA command blocks (up to 64 slots). The
+maximum firmware size support remains the same (64*8K).
 
-Rik van Riel wrote:
-> Gregory Haskins wrote:
->=20
->> 2) Modify FIFO so that it disables tick by default...update accounting=
+This patch fixes bug http://bugzilla.kernel.org/show_bug.cgi?id=14016
 
->> info at next reschedule event.
->=20
-> I like it.  The only thing to watch out for is that
-> events that wake up higher-priority FIFO tasks do
-> not get deferred :)
->=20
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ drivers/net/wireless/ipw2x00/ipw2200.c |  120 ++++++++++++++++++--------------
+ 1 files changed, 67 insertions(+), 53 deletions(-)
 
-Yeah, agreed.  My (potentially half-baked) proposal should work at least
-from a pure scheduling perspective since FIFO technically does not
-reschedule based on a tick, and wakeups/migrations should still work
-bidirectionally with existing scheduler policies.
+diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c b/drivers/net/wireless/ipw2x00/ipw2200.c
+index 6dcac73..f593fbb 100644
+--- a/drivers/net/wireless/ipw2x00/ipw2200.c
++++ b/drivers/net/wireless/ipw2x00/ipw2200.c
+@@ -2874,45 +2874,27 @@ static int ipw_fw_dma_add_command_block(struct ipw_priv *priv,
+ 	return 0;
+ }
+ 
+-static int ipw_fw_dma_add_buffer(struct ipw_priv *priv,
+-				 u32 src_phys, u32 dest_address, u32 length)
++static int ipw_fw_dma_add_buffer(struct ipw_priv *priv, dma_addr_t *src_address,
++				 int nr, u32 dest_address, u32 len)
+ {
+-	u32 bytes_left = length;
+-	u32 src_offset = 0;
+-	u32 dest_offset = 0;
+-	int status = 0;
++	int ret, i;
++	u32 size;
++
+ 	IPW_DEBUG_FW(">> \n");
+-	IPW_DEBUG_FW_INFO("src_phys=0x%x dest_address=0x%x length=0x%x\n",
+-			  src_phys, dest_address, length);
+-	while (bytes_left > CB_MAX_LENGTH) {
+-		status = ipw_fw_dma_add_command_block(priv,
+-						      src_phys + src_offset,
+-						      dest_address +
+-						      dest_offset,
+-						      CB_MAX_LENGTH, 0, 0);
+-		if (status) {
++	IPW_DEBUG_FW_INFO("nr=%d dest_address=0x%x len=0x%x\n",
++			  nr, dest_address, len);
++
++	for (i = 0; i < nr; i++) {
++		size = min_t(u32, len - i * CB_MAX_LENGTH, CB_MAX_LENGTH);
++		ret = ipw_fw_dma_add_command_block(priv, src_address[i],
++						   dest_address +
++						   i * CB_MAX_LENGTH, size,
++						   0, 0);
++		if (ret) {
+ 			IPW_DEBUG_FW_INFO(": Failed\n");
+ 			return -1;
+ 		} else
+ 			IPW_DEBUG_FW_INFO(": Added new cb\n");
+-
+-		src_offset += CB_MAX_LENGTH;
+-		dest_offset += CB_MAX_LENGTH;
+-		bytes_left -= CB_MAX_LENGTH;
+-	}
+-
+-	/* add the buffer tail */
+-	if (bytes_left > 0) {
+-		status =
+-		    ipw_fw_dma_add_command_block(priv, src_phys + src_offset,
+-						 dest_address + dest_offset,
+-						 bytes_left, 0, 0);
+-		if (status) {
+-			IPW_DEBUG_FW_INFO(": Failed on the buffer tail\n");
+-			return -1;
+-		} else
+-			IPW_DEBUG_FW_INFO
+-			    (": Adding new cb - the buffer tail\n");
+ 	}
+ 
+ 	IPW_DEBUG_FW("<< \n");
+@@ -3160,59 +3142,91 @@ static int ipw_load_ucode(struct ipw_priv *priv, u8 * data, size_t len)
+ 
+ static int ipw_load_firmware(struct ipw_priv *priv, u8 * data, size_t len)
+ {
+-	int rc = -1;
++	int ret = -1;
+ 	int offset = 0;
+ 	struct fw_chunk *chunk;
+-	dma_addr_t shared_phys;
+-	u8 *shared_virt;
++	int total_nr = 0;
++	int i;
++	struct pci_pool *pool;
++	u32 *virts[CB_NUMBER_OF_ELEMENTS_SMALL];
++	dma_addr_t phys[CB_NUMBER_OF_ELEMENTS_SMALL];
+ 
+ 	IPW_DEBUG_TRACE("<< : \n");
+-	shared_virt = pci_alloc_consistent(priv->pci_dev, len, &shared_phys);
+ 
+-	if (!shared_virt)
++	pool = pci_pool_create("ipw2200", priv->pci_dev, CB_MAX_LENGTH, 0, 0);
++	if (!pool) {
++		IPW_ERROR("pci_pool_create failed\n");
+ 		return -ENOMEM;
+-
+-	memmove(shared_virt, data, len);
++	}
+ 
+ 	/* Start the Dma */
+-	rc = ipw_fw_dma_enable(priv);
++	ret = ipw_fw_dma_enable(priv);
+ 
+ 	/* the DMA is already ready this would be a bug. */
+ 	BUG_ON(priv->sram_desc.last_cb_index > 0);
+ 
+ 	do {
++		u32 chunk_len;
++		u8 *start;
++		int size;
++		int nr = 0;
++
+ 		chunk = (struct fw_chunk *)(data + offset);
+ 		offset += sizeof(struct fw_chunk);
++		chunk_len = le32_to_cpu(chunk->length);
++		start = data + offset;
++
++		nr = (chunk_len + CB_MAX_LENGTH - 1) / CB_MAX_LENGTH;
++		for (i = 0; i < nr; i++) {
++			virts[total_nr] = pci_pool_alloc(pool, GFP_KERNEL,
++							 &phys[total_nr]);
++			if (!virts[total_nr]) {
++				ret = -ENOMEM;
++				goto out;
++			}
++			size = min_t(u32, chunk_len - i * CB_MAX_LENGTH,
++				     CB_MAX_LENGTH);
++			memcpy(virts[total_nr], start, size);
++			start += size;
++			total_nr++;
++			/* We don't support fw chunk larger than 64*8K */
++			BUG_ON(total_nr > CB_NUMBER_OF_ELEMENTS_SMALL);
++		}
++
+ 		/* build DMA packet and queue up for sending */
+ 		/* dma to chunk->address, the chunk->length bytes from data +
+ 		 * offeset*/
+ 		/* Dma loading */
+-		rc = ipw_fw_dma_add_buffer(priv, shared_phys + offset,
+-					   le32_to_cpu(chunk->address),
+-					   le32_to_cpu(chunk->length));
+-		if (rc) {
++		ret = ipw_fw_dma_add_buffer(priv, &phys[total_nr - nr],
++					    nr, le32_to_cpu(chunk->address),
++					    chunk_len);
++		if (ret) {
+ 			IPW_DEBUG_INFO("dmaAddBuffer Failed\n");
+ 			goto out;
+ 		}
+ 
+-		offset += le32_to_cpu(chunk->length);
++		offset += chunk_len;
+ 	} while (offset < len);
+ 
+ 	/* Run the DMA and wait for the answer */
+-	rc = ipw_fw_dma_kick(priv);
+-	if (rc) {
++	ret = ipw_fw_dma_kick(priv);
++	if (ret) {
+ 		IPW_ERROR("dmaKick Failed\n");
+ 		goto out;
+ 	}
+ 
+-	rc = ipw_fw_dma_wait(priv);
+-	if (rc) {
++	ret = ipw_fw_dma_wait(priv);
++	if (ret) {
+ 		IPW_ERROR("dmaWaitSync Failed\n");
+ 		goto out;
+ 	}
+-      out:
+-	pci_free_consistent(priv->pci_dev, len, shared_virt, shared_phys);
+-	return rc;
++ out:
++	for (i = 0; i < total_nr; i++)
++		pci_pool_free(pool, virts[i], phys[i]);
++
++	pci_pool_destroy(pool);
++
++	return ret;
+ }
+ 
+ /* stop nic */
+-- 
+1.5.3.6
 
-However, and to what I believe is your point: its not entirely clear to
-me what impact, if any, there would be w.r.t. any _other_ events that
-may be driven off of the scheduler tick (i.e. events other than
-scheduling policies, like timeslice expiration, etc).  Perhaps someone
-else like Thomas, Ingo, or Peter have some input here.
-
-I guess the specific question to ask is: Does the scheduler tick code
-have any role other than timeslice policies and updating accounting
-information?  Examples would include timer-expiry, for instance.  I
-would think most of this logic is handled by finer grained components
-like HRT, but I am admittedly ignorant of the actual timer voodoo ;)
-
-Kind Regards,
--Greg
 
 
---------------enig93B83232ABC25043A2695632
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqXUCUACgkQP5K2CMvXmqEDOgCeOkTQln9Gx/bcBXM8iRZ5faAF
-dU4An086DWdCFVYr6T0wocVmNMDryvKH
-=4Xge
------END PGP SIGNATURE-----
-
---------------enig93B83232ABC25043A2695632--
