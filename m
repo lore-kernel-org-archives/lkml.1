@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769AbZH1M7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750882AbZH1NCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752769AbZH1M7A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZH1M67
+	id S1750882AbZH1NCp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 09:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbZH1NCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:58:59 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:55395 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752420AbZH1M67 (ORCPT
+	Fri, 28 Aug 2009 09:02:44 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35163 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbZH1NCo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:58:59 -0400
-In-Reply-To: <f0e08f230908270631j3e159f3fgb0034eb41acdac7b@mail.gmail.com>
-References: <200908261337.56128.fenkes@de.ibm.com>	 <f0e08f230908260815g70de3002pfd0b34f1b17abd6@mail.gmail.com>
-	 <OFF2257478.FF0FEABE-ONC125761F.00344884-C125761F.00358310@de.ibm.com> <f0e08f230908270631j3e159f3fgb0034eb41acdac7b@mail.gmail.com>
-To: Hal Rosenstock <hal.rosenstock@gmail.com>
-Cc: Christoph Raisch <raisch@de.ibm.com>, OF-EWG <ewg@lists.openfabrics.org>,
-       OF-General <general@lists.openfabrics.org>,
-       Hal Rosenstock <hnrose@comcast.net>,
-       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-MIME-Version: 1.0
-Subject: Re: [ewg] [PATCH] IB/ehca: Construct MAD redirect replies from 	request MAD
-X-KeepSent: A25F14CC:CE7042E9-C1257620:00453C46;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Build V851_07072009 July 07, 2009
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFA25F14CC.CE7042E9-ONC1257620.00453C46-C1257620.00474D70@de.ibm.com>
-Date: Fri, 28 Aug 2009 14:58:49 +0200
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 8.0.1|February 07, 2008) at
- 28/08/2009 14:58:51,
-	Serialize complete at 28/08/2009 14:58:51
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 28 Aug 2009 09:02:44 -0400
+Subject: Re: [PATCH 2/2] page-allocator: Maintain rolling count of pages to
+ free from the PCP
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090828125719.GE5054@csn.ul.ie>
+References: <1251449067-3109-1-git-send-email-mel@csn.ul.ie>
+	 <1251449067-3109-3-git-send-email-mel@csn.ul.ie>
+	 <84144f020908280516y6473a531n3f11f3e86251eba4@mail.gmail.com>
+	 <20090828125719.GE5054@csn.ul.ie>
+Date: Fri, 28 Aug 2009 16:02:44 +0300
+Message-Id: <1251464564.8514.3.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hal Rosenstock <hal.rosenstock@gmail.com> wrote on 27.08.2009 15:31:40:
+Hi Mel,
 
-> I don't think it should be hard coded. IMO it would be better to default 
-to 18
-> and somehow able to be adjusted (via a (dynamic) module parameter ?).
+On Fri, 2009-08-28 at 13:57 +0100, Mel Gorman wrote:
+> On Fri, Aug 28, 2009 at 03:16:34PM +0300, Pekka Enberg wrote:
+> > Hi Mel,
+> > 
+> > On Fri, Aug 28, 2009 at 11:44 AM, Mel Gorman<mel@csn.ul.ie> wrote:
+> > > -               page = list_entry(list->prev, struct page, lru);
+> > > -               /* have to delete it as __free_one_page list manipulates */
+> > > -               list_del(&page->lru);
+> > > -               trace_mm_page_pcpu_drain(page, 0, migratetype);
+> > > -               __free_one_page(page, zone, 0, migratetype);
+> > > +               do {
+> > > +                       page = list_entry(list->prev, struct page, lru);
+> > > +                       /* must delete as __free_one_page list manipulates */
+> > > +                       list_del(&page->lru);
+> > > +                       __free_one_page(page, zone, 0, migratetype);
+> > > +                       trace_mm_page_pcpu_drain(page, 0, migratetype);
+> > 
+> > This calls trace_mm_page_pcpu_drain() *after* __free_one_page(). It's
+> > probably not a good idea as __free_one_page() can alter the struct
+> > page in various ways.
+> > 
+> 
+> While true, does it alter the struct page in any way that matters?
 
-I don't see how making this a parameter would benefit any end user, while 
-on the other hand it clutters up our parameter list.
+Page flags and order are probably interesting for tracing?
 
-Changing RespTimeValue won't influence the IB performance or user-visible 
-behavior of our driver in any way, and in fact, all RespTimeValue says is 
-"Please use a timeout of one second for all future MADs you send me", only 
-there won't be any more MADs in the future because we just redirected the 
-client to someone else. So, the RespTimeValue field is a don't care in the 
-redirection scenario. Setting it to an arbitrary, but legal value isn't 
-much more than a concession towards any broken clients that may be out 
-there.
-
-Given that you seem to like the rest of the code and Jason hasn't spoken 
-up yet, I think we can have Roland merge this patch. Roland, what do you 
-think?
-
-Regards,
-  Joachim
+			Pekka
 
