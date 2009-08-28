@@ -1,95 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752094AbZH1PM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752207AbZH1PNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752094AbZH1PM2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 11:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbZH1PM2
+	id S1752207AbZH1PNZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 11:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZH1PNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 11:12:28 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49281 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbZH1PM1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 11:12:27 -0400
-Message-ID: <25afd2b84c65e7c2c8f2edde31c914f7.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20090828150829.GR4889@balbir.in.ibm.com>
-References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090828132321.e4a497bb.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090828072007.GH4889@balbir.in.ibm.com>
-    <20090828163523.e51678be.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090828132643.GM4889@balbir.in.ibm.com>
-    <bfd50d44ff730c2720b882a81b7446c6.squirrel@webmail-b.css.fujitsu.com>
-    <712c0209222358d9c7d1e33f93e21c30.squirrel@webmail-b.css.fujitsu.com>
-    <20090828144648.GO4889@balbir.in.ibm.com>
-    <b2d13270df033cc94ec4387e01c88c82.squirrel@webmail-b.css.fujitsu.com>
-    <20090828150829.GR4889@balbir.in.ibm.com>
-Date: Sat, 29 Aug 2009 00:12:26 +0900 (JST)
-Subject: Re: [RFC][PATCH 1/5] memcg: change for softlimit.
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-User-Agent: SquirrelMail/1.4.16
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Fri, 28 Aug 2009 11:13:24 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:2909 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751513AbZH1PNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 11:13:23 -0400
+X-IronPort-AV: E=Sophos;i="4.44,291,1249282800"; 
+   d="scan'208";a="233230387"
+Subject: SUNRPC: Fix rpc_task_force_reencode
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>, stable <stable@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Fri, 28 Aug 2009 11:12:12 -0400
+Message-Id: <1251472332.4844.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 28 Aug 2009 15:13:09.0180 (UTC) FILETIME=[0D46E7C0:01CA27F2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-29
-> 00:06:23]:
->
->> Balbir Singh wrote:
->> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28
->> > 23:40:56]:
->> >
->> >> KAMEZAWA Hiroyuki wrote:
->> >> > Balbir Singh wrote:
->> >> >> But Bob and Mike might need to set soft limits between themselves.
->> if
->> >> >> soft limit of gold is 1G and bob needs to be close to 750M and
->> mike
->> >> >> 250M, how do we do it without supporting what we have today?
->> >> >>
->> >> > Don't use hierarchy or don't use softlimit.
->> >> > (I never think fine-grain  soft limit can be useful.)
->> >> >
->> >> > Anyway, I have to modify unnecessary hacks for res_counter of
->> >> softlimit.
->> >> > plz allow modification. that's bad.
->> >> > I postpone RB-tree breakage problem, plz explain it or fix it by
->> >> yourself.
->> >> >
->> >> I changed my mind....per-zone RB-tree is also broken ;)
->> >>
->> >> Why I don't like broken system is a function which a user can't
->> >> know/calculate how-it-works is of no use in mission critical systems.
->> >>
->> >> I'd like to think how-to-fix it with better algorithm. Maybe RB-tree
->> >> is not a choice.
->> >>
->> >
->> > Soft limits are not meant for mission critical work :-) Soft limits is
->> > best effort and not a guaranteed resource allocation mechanism. I've
->> > mentioned in previous emails how we recover if we find the data is
->> > stale
->> >
->> yes. but can you explain how selection will be done to users ?
->> I can't.
->>
->
-> From a user point, we get what we set, but the timelines can be a
-> little longer.
->
-I'll drop this patch, anyway. But will modify res_counter.
-We have to reduce ops under lock after we see spinlock can explode
-system time.
+This patch fixes the bug that was reported in
+  http://bugzilla.kernel.org/show_bug.cgi?id=14053
 
-Thanks,
--Kame
+If we're in the case where we need to force a reencode and then resend of
+the RPC request, due to xprt_transmit failing with a networking error, then
+we _must_ retransmit the entire request.
 
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+Please apply to mainline and stable
+
+ net/sunrpc/clnt.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+
+diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
+index c1e467e..fac0ca9 100644
+--- a/net/sunrpc/clnt.c
++++ b/net/sunrpc/clnt.c
+@@ -955,6 +955,7 @@ static inline void
+ rpc_task_force_reencode(struct rpc_task *task)
+ {
+ 	task->tk_rqstp->rq_snd_buf.len = 0;
++	task->tk_rqstp->rq_bytes_sent = 0;
+ }
+ 
+ static inline void
+
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
