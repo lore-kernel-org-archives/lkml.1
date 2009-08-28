@@ -1,49 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751482AbZH1N0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZH1N0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751482AbZH1N0q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 09:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbZH1N0q
+	id S1751542AbZH1N0w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 09:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbZH1N0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 09:26:46 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:2820 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751436AbZH1N0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 09:26:45 -0400
-Message-ID: <4A97DAE7.40603@redhat.com>
-Date: Fri, 28 Aug 2009 09:25:59 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Fri, 28 Aug 2009 09:26:50 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:36499 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751487AbZH1N0t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 09:26:49 -0400
+Date: Fri, 28 Aug 2009 18:56:44 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH 1/5] memcg: change for softlimit.
+Message-ID: <20090828132643.GM4889@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com> <20090828132321.e4a497bb.kamezawa.hiroyu@jp.fujitsu.com> <20090828072007.GH4889@balbir.in.ibm.com> <20090828163523.e51678be.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: raz ben yehuda <raziebe@gmail.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Chris Friesen <cfriesen@nortel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-References: <1251282598.3514.20.camel@raz>	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>	 <1251300625.18584.18.camel@twins>	 <alpine.DEB.1.10.0908261136590.9933@gentwo.org>	 <1251302598.18584.31.camel@twins>	 <alpine.DEB.1.10.0908261211340.9933@gentwo.org>	 <20090826180407.GA13632@elte.hu>	 <alpine.DEB.1.10.0908261509580.9933@gentwo.org>	 <20090826193252.GA14721@elte.hu>	 <alpine.DEB.1.10.0908261627110.5554@gentwo.org>	 <20090826135041.e6169d18.akpm@linux-foundation.org>	 <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz>	 <4A96B997.1070001@nortel.com> <1251408785.3700.22.camel@raz>	 <alpine.LFD.2.00.0908272348370.2888@localhost.localdomain> <1251448697.3872.15.camel@raz>
-In-Reply-To: <1251448697.3872.15.camel@raz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090828163523.e51678be.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-raz ben yehuda wrote:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 16:35:23]:
 
-> yes. latency is a crucial property. 
+> On Fri, 28 Aug 2009 12:50:08 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 13:23:21]:
+> > 
+> > > This patch tries to modify softlimit handling in memcg/res_counter.
+> > > There are 2 reasons in general.
+> > > 
+> > >  1. soft_limit can use only against sub-hierarchy root.
+> > >     Because softlimit tree is sorted by usage, putting prural groups
+> > >     under hierarchy (which shares usage) will just adds noise and unnecessary
+> > >     mess. This patch limits softlimit feature only to hierarchy root.
+> > >     This will make softlimit-tree maintainance better. 
+> > > 
+> > >  2. In these days, it's reported that res_counter can be bottleneck in
+> > >     massively parallel enviroment. We need to reduce jobs under spinlock.
+> > >     The reason we check softlimit at res_counter_charge() is that any member
+> > >     in hierarchy can have softlimit.
+> > >     But by chages in "1", only hierarchy root has soft_limit. We can omit
+> > >     hierarchical check in res_counter.
+> > > 
+> > > After this patch, soft limit is avaliable only for root of sub-hierarchy.
+> > > (Anyway, softlimit for hierarchy children just makes users confused, hard-to-use)
+> > >
+> > 
+> > 
+> > I need some time to digest this change, if the root is a hiearchy root
+> > then only root can support soft limits? I think the change makes it
+> > harder to use soft limits. Please help me understand better. 
+> > 
+> I poitned out this issue many many times while you wrote patch.
+> 
+> memcg has "sub tree". hierarchy here means "sub tree" with use_hierarchy =1.
+> 
+> Assume
+> 
+> 
+> 	/cgroup/Users/use_hierarchy=0
+> 		  Gold/ use_hierarchy=1 
+> 		     Bob
+> 		     Mike
+> 		  Silver/use_hierarchy=1
+> 		     
+> 		/System/use_hierarchy=1
+> 	
+> In flat, there are 3 sub trees.
+> 	/cgroup/Users/Gold   (Gold has /cgroup/Users/Gold/Bog, /cgroup/Users/Gold/Mike)
+> 	/cgroup/Users/Silver .....
+> 	/cgroup/System	     .....
+> 
+> Then, subtrees means a group which inherits charges by use_hierarchy=1
+> 
+> In current implementation, softlimit can be set to arbitrary cgroup. 
+> Then, following ops are allowed.
+> ==
+> 	/cgroup/Users/Gold softlimit= 1G
+> 	/cgroup/Users/Gold/Bob  softlimit=800M
+> 	/cgroup/Users/Gold/Mike softlimit=800M
+> ==
+> 
+> Then, how your RB-tree for softlimit management works ?
+> 
+> When softlimit finds /cgroup/Users/Gold/, it will reclaim memory from
+> all 3 groups by hierarchical_reclaim. If softlimit finds
+> /cgroup/Users/Gold/Bob, reclaim from Bob means recalaim from Gold.
 
-In the case of network packets, wouldn't you get a lower
-latency by transmitting the packet from the CPU that
-knows the packet should be transmitted, instead of sending
-an IPI to another CPU and waiting for that CPU to do the
-work?
+By reclaim from Bob means reclaim from Gold, are you referring to the
+uncharging part, if so yes. But if you look at the tasks part, we
+don't reclaim anything from the tasks in Gold.
 
-Inter-CPU communication has always been the bottleneck
-when it comes to SMP performance.  Why does adding more
-inter-CPU communication make your system faster, instead
-of slower like one would expect?
+> 
+> Then, to keep the RB-tree neat, you have to extract all related cgroups and
+> re-insert them all, every time.
+> (But current code doesn't do that. It's broken.)
 
+The earlier time dependent code used to catch that, since it was time
+based. Now that it is based on activity, it will take a while before
+the group is updated. I don't think it is broken, but updates can take
+a lag before showing up.
+
+> 
+> Current soft-limit RB-tree will be easily broken i.e. not-sorted correctly
+> if used under use_hierarchy=1.
+> 
+
+Not true, I think the sorted-ness is delayed and is seen when we pick
+a tree for reclaim. Think of it as being lazy :)
+
+> My patch disallows set softlimit to Bob and Mike, just allows against Gold
+> because there can be considered as the same class, hierarchy.
+>
+
+But Bob and Mike might need to set soft limits between themselves. if
+soft limit of gold is 1G and bob needs to be close to 750M and mike
+250M, how do we do it without supporting what we have today?
+ 
 -- 
-All rights reversed.
+	Balbir
