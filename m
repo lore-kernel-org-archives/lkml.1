@@ -1,57 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751849AbZH1Qdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbZH1QeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751849AbZH1Qdm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 12:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbZH1Qdl
+	id S1751896AbZH1QeV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 12:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZH1QeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 12:33:41 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:47338 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751365AbZH1Qdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 12:33:40 -0400
-Message-ID: <4A9806D9.5050409@redhat.com>
-Date: Fri, 28 Aug 2009 09:33:29 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Fri, 28 Aug 2009 12:34:20 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:4295 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbZH1QeT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 12:34:19 -0400
+X-IronPort-AV: E=McAfee;i="5300,2777,5722"; a="22776080"
+Message-ID: <4A98070D.1050308@codeaurora.org>
+Date: Fri, 28 Aug 2009 12:34:21 -0400
+From: Ashwin Chaugule <ashwinc@codeaurora.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Jamie Lokier <jamie@shareable.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
-References: <20090821142635.GB30617@infradead.org> <20090821152459.GC6929@shareable.org> <20090821174525.GA28861@infradead.org> <20090822005006.GA22530@shareable.org> <20090824023422.GA775@infradead.org> <20090827143459.GB31453@shareable.org> <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com> <20090828154647.GA15808@infradead.org> <4A98008B.6050503@redhat.com> <20090828161745.GA8755@infradead.org>
-In-Reply-To: <20090828161745.GA8755@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [RFC] [PATCH 1/1] hrtimers: Cache next hrtimer
+References: <4A96FFE9.6060105@codeaurora.org> <4A970103.7010804@codeaurora.org> <alpine.LFD.2.00.0908280045200.2888@localhost.localdomain> <4A971245.5070507@codeaurora.org> <alpine.LFD.2.00.0908280111260.2888@localhost.localdomain> <4A9771AA.2090004@codeaurora.org> <alpine.LFD.2.00.0908281308380.2888@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908281308380.2888@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/28/2009 09:17 AM, Christoph Hellwig wrote:
-> I'll put it on my todo list.
+Thomas Gleixner wrote:
 
-Any ABI change like this takes a long time to trickle down.
+> On Fri, 28 Aug 2009, Ashwin Chaugule wrote:
+>   
+>> Thomas Gleixner wrote:
+>> Just didn't know the following could have the same effect. (base->offset is
+>> confusing)
+>>     
+>
+> It's simple. We have CLOCK_MONOTONIC and CLOCK_REALTIME. The internal
+> time base is CLOCK_MONOTONIC. So we use base->offset to convert
+> CLOCK_REALTIME to CLOCK_MONOTONIC. In case the timer is
+> CLOCK_MONOTONIC we so the substraction as well, but it simply
+> subtracts 0 :)
+>  
+>   
+Cool ! 
 
-If this is agreed to be the correct approach then adding the O_* 
-definitions earlier is better.  Even if it isn't yet implemented.  Then, 
-once the kernel side is implemented, programs are ready to use it.  I 
-cannot jump the gun and define the flags myself first.
+> Gah. Looking at the patch with an awake brain makes me feel
+> stupid. Working version below.
+>   
+Um. Same thing happened again. See below .. :)
+
+> ---
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index 49da79a..380682b 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -906,19 +906,28 @@ static void __remove_hrtimer(struct hrtimer *timer,
+>  			     struct hrtimer_clock_base *base,
+>  			     unsigned long newstate, int reprogram)
+>  {
+> -	if (timer->state & HRTIMER_STATE_ENQUEUED) {
+> -		/*
+> -		 * Remove the timer from the rbtree and replace the
+> -		 * first entry pointer if necessary.
+> -		 */
+> -		if (base->first == &timer->node) {
+> -			base->first = rb_next(&timer->node);
+> -			/* Reprogram the clock event device. if enabled */
+> -			if (reprogram && hrtimer_hres_active())
+> +	ktime_t expires;
+> +
+> +	if (!(timer->state & HRTIMER_STATE_ENQUEUED))
+> +		goto out;
+> +
+> +	/*
+> +	 * Remove the timer from the rbtree and replace the first
+> +	 * entry pointer if necessary.
+> +	 */
+> +	if (base->first == &timer->node) {
+> +		base->first = rb_next(&timer->node);       
+>   
+> +		/* Reprogram the clock event device. if enabled */
+> +		if (reprogram && hrtimer_hres_active()) {
+>   
+
+  			   timer->total_calls++;
 
 
->   - O_RSYNC basically means we need to commit atime updates before a
->     read returns, right?
+> +			expires = ktime_sub(hrtimer_get_expires(timer),
+> +					    base->offset);
+> +			if (base->cpu_base->expires_next.tv64 == expires.tv64)
+>   
 
-No, that's not it.
+                          {
 
-O_RSYNC on its own just means the data is successfully transferred to 
-the calling process (always the case).
+                                   timer->cache_hits++;    
 
-O_RSYNC|O_DSYNC means that if a read request hits data that is currently 
-in a cache and not yet on the medium, then the write to medium is 
-successful before the read succeeds.
+>  				hrtimer_force_reprogram(base->cpu_base);
+>   
+                          }
 
-O_RSYNC|O_SYNC means the same plus the integrity of file meta 
-information (access time etc).
+>  		}
+> -		rb_erase(&timer->node, &base->active);
+>  	}
+> +
+> +	rb_erase(&timer->node, &base->active);
+> +out:
+>  	timer->state = newstate;
+>  }
+>   
+ 
 
--- 
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+Avg startup time 26.4 (10 runs) same as last run.
+
+total_calls is again equal to cache_hits ... 
+Its been a while since I wrote my patch. I'll need to look deeper to see if I've done something more. B)
+Just to make sure, I ran my patch again, I clearly see cache_hits is always less than total_calls.
+
+
+Cheers,
+Ashwin
+
+
+
