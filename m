@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751550AbZH1VxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZH1Vxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751550AbZH1VxE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:53:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZH1VxB
+	id S1753379AbZH1Vxf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZH1Vxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:53:01 -0400
-Received: from mga11.intel.com ([192.55.52.93]:60014 "EHLO mga11.intel.com"
+	Fri, 28 Aug 2009 17:53:34 -0400
+Received: from mga01.intel.com ([192.55.52.88]:12203 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753225AbZH1Vw7 convert rfc822-to-8bit (ORCPT
+	id S1752898AbZH1Vxc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:52:59 -0400
+	Fri, 28 Aug 2009 17:53:32 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,292,1249282800"; 
-   d="scan'208,223";a="488365432"
+   d="scan'208,223";a="488365545"
 From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>,
        Jeremy Fitzhardinge <jeremy@goop.org>
@@ -22,12 +22,11 @@ CC: LKML <linux-kernel@vger.kernel.org>, x86 team <x86@kernel.org>,
        Arjan van de Veen <arjan@infradead.org>, Avi Kivity <avi@redhat.com>,
        Rusty Russell <rusty@rustcorp.com.au>,
        Alok N Kataria <akataria@vmware.com>
-Date: Fri, 28 Aug 2009 14:52:58 -0700
-Subject: [RFC PATCH 3/7] x86: add moorestown specific platform setup code
-Thread-Topic: [RFC PATCH 3/7] x86: add moorestown specific platform setup
- code
-Thread-Index: Acoir9vx9XaYijQEQY+7z9INN3fH8AFdww0w
-Message-ID: <43F901BD926A4E43B106BF17856F07556A5EA874@orsmsx508.amr.corp.intel.com>
+Date: Fri, 28 Aug 2009 14:53:21 -0700
+Subject: [RFC PATCH 7/7] x86: add more platform_setup functions
+Thread-Topic: [RFC PATCH 7/7] x86: add more platform_setup functions
+Thread-Index: Acoir9vx9XaYijQEQY+7z9INN3fH8AFeVRHg
+Message-ID: <43F901BD926A4E43B106BF17856F07556A5EA87A@orsmsx508.amr.corp.intel.com>
 References: <20090821205008.518392436@linutronix.de>
  <20090821205601.878468441@linutronix.de> <4A8F1E4D.9080409@goop.org>
  <alpine.LFD.2.00.0908220034110.1769@localhost.localdomain>
@@ -44,221 +43,199 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From dbb97928dc27061b56fc86b9b37f71f54bbafb59 Mon Sep 17 00:00:00 2001
+>From fbfe65d64e4dbb31940d31a59e080bfa15d121bb Mon Sep 17 00:00:00 2001
 From: Jacob Pan <jacob.jun.pan@intel.com>
-Date: Fri, 28 Aug 2009 08:31:45 -0700
-Subject: [PATCH] x86: add moorestown specific platform setup code
+Date: Wed, 8 Jul 2009 16:51:42 -0700
+Subject: [PATCH] x86: RFC add more platform_setup functions
 
-This patch fills in platform_setup functions for Moorestown. The abstraction
-is used to integarte into pc compaitible boot flow.
+check_timer can be abstracted so that we don't have to do the complicated
+checks for platform timer for all platforms. pci irq enable/disable can also
+benefit from the platform setup layer, but this part is not complete in this
+patch, should be able to include visws. e.g.
+
+pcibios_enable_irq = &pci_visws_enable_irq;
+pcibios_disable_irq = &pci_visws_disable_irq;
 
 Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
 ---
- arch/x86/include/asm/setup.h |    8 ++
- arch/x86/kernel/Makefile     |    1 +
- arch/x86/kernel/mrst.c       |  149 ++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/setup.c      |    1 +
- 4 files changed, 159 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/kernel/mrst.c
+ arch/x86/include/asm/apic.h      |    2 ++
+ arch/x86/include/asm/pci_x86.h   |    2 ++
+ arch/x86/include/asm/platform.h  |   11 +++++++++++
+ arch/x86/kernel/apic/io_apic.c   |    6 +++---
+ arch/x86/kernel/platform_setup.c |    4 ++++
+ arch/x86/pci/irq.c               |   11 +++++++----
+ 6 files changed, 29 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
-index 055b778..2ef1514 100644
---- a/arch/x86/include/asm/setup.h
-+++ b/arch/x86/include/asm/setup.h
-@@ -49,6 +49,14 @@ extern void reserve_standard_io_resources(void);
- extern void i386_reserve_resources(void);
- extern void setup_default_timer_irq(void);
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 4f2d26d..6698f3b 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -85,6 +85,8 @@ extern u32 safe_xapic_wait_icr_idle(void);
+ extern void xapic_icr_write(u32, u32);
+ extern int setup_profiling_timer(unsigned int);
+ extern void pre_init_apic_IRQ(void);
++extern void default_check_timer(void);
++extern int timer_irq_works(void);
  
-+#ifdef CONFIG_MRST
-+extern void mrst_early_detect(void);
-+extern void setup_mrst_default_feature(void);
-+#else
-+static inline void mrst_early_detect(void) { }
-+static inline void setup_mrst_default_feature(void) { };
+ static inline void native_apic_mem_write(u32 reg, u32 v)
+ {
+diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
+index b399988..118a62d 100644
+--- a/arch/x86/include/asm/pci_x86.h
++++ b/arch/x86/include/asm/pci_x86.h
+@@ -116,6 +116,8 @@ extern int __init pci_visws_init(void);
+ extern int __init pci_numaq_init(void);
+ extern int __init pcibios_init(void);
+ 
++extern int pirq_enable_irq(struct pci_dev *dev);
++
+ /* pci-mmconfig.c */
+ 
+ extern int __init pci_mmcfg_arch_init(void);
+diff --git a/arch/x86/include/asm/platform.h b/arch/x86/include/asm/platform.h
+index 1cea28c..d698f68 100644
+--- a/arch/x86/include/asm/platform.h
++++ b/arch/x86/include/asm/platform.h
+@@ -6,6 +6,7 @@
+ struct mpc_bus;
+ struct mpc_cpu;
+ struct mpc_table;
++struct pci_dev;
+ 
+ /**
+  * struct platform_setup_quirks - platform specific quirks
+@@ -62,6 +63,11 @@ struct platform_setup_irqs {
+ 	void (*pre_vector_init)(void);
+ 	void (*intr_init)(void);
+ 	void (*trap_init)(void);
++
++#ifdef CONFIG_PCI
++	int (*pci_enable_irq)(struct pci_dev *dev);
++	void (*pci_disable_irq)(struct pci_dev *dev);
++#endif
+ };
+ 
+ /**
+@@ -97,6 +103,7 @@ struct platform_setup_timers {
+ 	void (*tsc_pre_init)(void);
+ 	void (*timer_init)(void);
+ 	unsigned long (*calibrate_tsc)(void);
++	void (*check_timers)(void);
+ };
+ 
+ /**
+@@ -127,4 +134,8 @@ extern struct platform_setup_cpuhotplug platform_cpuhotplug_setup;
+ extern void platform_setup_noop(void);
+ extern void platform_setup_uint_noop(unsigned int unused);
+ 
++#ifdef CONFIG_PCI
++extern int pirq_enable_irq(struct pci_dev *dev);
 +#endif
 +
- #ifndef _SETUP
+ #endif
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 25a5b72..4418daa 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -2155,7 +2155,7 @@ __setup("no_timer_check", notimercheck);
+  *	- if this function detects that timer IRQs are defunct, then we fall
+  *	  back to ISA timer IRQs
+  */
+-static int __init timer_irq_works(void)
++int __init timer_irq_works(void)
+ {
+ 	unsigned long t1 = jiffies;
+ 	unsigned long flags;
+@@ -2868,7 +2868,7 @@ int timer_through_8259 __initdata;
+  *
+  * FIXME: really need to revamp this for all platforms.
+  */
+-static inline void __init check_timer(void)
++inline void __init default_check_timer(void)
+ {
+ 	struct irq_desc *desc = irq_to_desc(0);
+ 	struct irq_cfg *cfg = desc->chip_data;
+@@ -3084,7 +3084,7 @@ void __init setup_IO_APIC(void)
+ 	sync_Arb_IDs();
+ 	setup_IO_APIC_irqs();
+ 	init_IO_APIC_traps();
+-	check_timer();
++	platform_setup.timers.check_timers();
+ }
  
  /*
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 7aed450..4d0a9cd 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -105,6 +105,7 @@ obj-$(CONFIG_SCx200)		+= scx200.o
- scx200-y			+= scx200_32.o
- 
- obj-$(CONFIG_OLPC)		+= olpc.o
-+obj-$(CONFIG_MRST)		+= mrst.o
- 
- microcode-y				:= microcode_core.o
- microcode-$(CONFIG_MICROCODE_INTEL)	+= microcode_intel.o
-diff --git a/arch/x86/kernel/mrst.c b/arch/x86/kernel/mrst.c
-new file mode 100644
-index 0000000..671d8e5
---- /dev/null
-+++ b/arch/x86/kernel/mrst.c
-@@ -0,0 +1,149 @@
-+/*
-+ * mrst.c: Intel Moorestown platform specific setup code
-+ *
-+ * (C) Copyright 2008 Intel Corporation
-+ * Author: Jacob Pan (jacob.jun.pan@intel.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ *
-+ * Note:
-+ *
-+ */
-+
-+#include <linux/stackprotector.h>
-+#include <linux/spi/spi.h>
-+#include <linux/i2c.h>
-+#include <linux/sfi.h>
-+#include <linux/i2c/pca953x.h>
-+#include <linux/spi/langwell_pmic_gpio.h>
-+#include <linux/gpio_keys.h>
-+#include <linux/input.h>
-+#include <linux/platform_device.h>
-+#include <linux/pci.h>
-+
-+#include <asm/platform_feature.h>
-+#include <asm/apb_timer.h>
-+#include <asm/apic.h>
-+#include <asm/hw_irq.h>
-+#include <asm/setup.h>
-+#include <asm/io.h>
-+
-+#define LANGWELL_GPIO_ALT_ADDR	0xff12c038
-+#define MRST_I2C_BUSNUM		3
-+
-+static inline void __init mrst_pre_intr_init(void)
-+{
-+	pre_init_apic_IRQ();
-+}
-+
-+/*
-+ * the secondary clock in Moorestown can be APBT or LAPIC clock, default to
-+ * APBT but cmdline option can also override it.
-+ */
-+static void __init mrst_setup_secondary_clock(void)
-+{
-+	if (disable_apbt_percpu)
-+		return setup_secondary_APIC_clock();
-+	else {
-+#ifdef CONFIG_CC_STACKPROTECTOR
-+		/*
-+		  * TBD:
-+		 * this is to avoid false stack corruption panic since
-+		 * request_irq will be called early for secondary apbt clock.
-+		*/
-+		boot_init_stack_canary();
+diff --git a/arch/x86/kernel/platform_setup.c b/arch/x86/kernel/platform_setup.c
+index 9752eff..b60fb5b 100644
+--- a/arch/x86/kernel/platform_setup.c
++++ b/arch/x86/kernel/platform_setup.c
+@@ -44,6 +44,9 @@ struct __initdata platform_setup_ops platform_setup = {
+ 		.pre_vector_init = init_ISA_irqs,
+ 		.intr_init = native_init_IRQ,
+ 		.trap_init = platform_setup_noop,
++#ifdef CONFIG_PCI
++		.pci_enable_irq = pirq_enable_irq,
 +#endif
-+		apbt_setup_secondary_clock();
+ 	},
+ 
+ 	.oem = {
+@@ -61,6 +64,7 @@ struct __initdata platform_setup_ops platform_setup = {
+ 		.tsc_pre_init = platform_setup_noop,
+ 		.timer_init = hpet_time_init,
+ 		.calibrate_tsc = native_calibrate_tsc,
++		.check_timers = default_check_timer,
+ 	},
+ 
+ 	.quirks = {
+diff --git a/arch/x86/pci/irq.c b/arch/x86/pci/irq.c
+index 0696d50..c31bd03 100644
+--- a/arch/x86/pci/irq.c
++++ b/arch/x86/pci/irq.c
+@@ -14,6 +14,7 @@
+ #include <linux/io.h>
+ #include <linux/smp.h>
+ #include <asm/io_apic.h>
++#include <asm/platform_feature.h>
+ #include <linux/irq.h>
+ #include <linux/acpi.h>
+ #include <asm/pci_x86.h>
+@@ -26,8 +27,6 @@ static int acer_tm360_irqrouting;
+ 
+ static struct irq_routing_table *pirq_table;
+ 
+-static int pirq_enable_irq(struct pci_dev *dev);
+-
+ /*
+  * Never use: 0, 1, 2 (timer, keyboard, and cascade)
+  * Avoid using: 13, 14 and 15 (FP error and IDE).
+@@ -1022,6 +1021,10 @@ static void __init pcibios_fixup_irqs(void)
+ 	u8 pin;
+ 
+ 	DBG(KERN_DEBUG "PCI: IRQ fixup\n");
++	if (!platform_has(X86_PLATFORM_FEATURE_BIOS)) {
++		DBG(KERN_DEBUG "PCI: No BIOS, skip IRQ fixup\n");
++		return;
 +	}
-+}
-+
-+static void __init mrst_check_timer(void)
-+{
-+	if (timer_irq_works())
-+		printk(KERN_INFO "APB timer works\n");
-+	else
-+		panic("Check APB timer failed\n");
-+}
-+
-+static unsigned long __init mrst_calibrate_tsc(void)
-+{
-+	unsigned long flags, fast_calibrate;
-+
-+	local_irq_save(flags);
-+	fast_calibrate = apbt_quick_calibrate();
-+	local_irq_restore(flags);
-+
-+	if (fast_calibrate)
-+		return fast_calibrate;
-+
-+	return 0;
-+}
-+
-+static int mrst_pirq_enable_irq(struct pci_dev *dev)
-+{
-+	u8 pin;
-+	struct io_apic_irq_attr irq_attr;
-+
-+	pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin);
-+
-+	/* For platforms only have IOAPIC, the PCI irq line is 1:1 mapped to
-+	 * IOAPIC RTE entries, so we just enable RTE for the device.
-+	 */
-+	irq_attr.ioapic = mp_sfi_find_ioapic(dev->irq);
-+	irq_attr.ioapic_pin = dev->irq;
-+	irq_attr.trigger = 1; /* level */
-+	irq_attr.polarity = 1; /* active low */
-+	io_apic_set_pci_routing(&dev->dev, dev->irq, &irq_attr);
-+
-+	return 0;
-+}
-+
-+
-+inline void setup_mrst_default_feature(void)
-+{
-+	/*
-+	 * x86pc default platform setup ops are setup prior to start_kernel
-+	 * we override default platform_setup calls for Moorestown
-+	 */
-+	platform_setup.resources.reserve_ebda_region = platform_setup_noop;
-+	platform_setup.resources.probe_roms = platform_setup_noop;
-+	platform_setup.resources.reserve_resources = platform_setup_noop;
-+
-+	platform_setup.irqs.pre_vector_init = mrst_pre_intr_init;
-+	platform_setup.irqs.pci_enable_irq = mrst_pirq_enable_irq,
-+
-+	platform_setup.timers.timer_init = apbt_time_init;
-+	platform_setup.timers.check_timers = mrst_check_timer;
-+	platform_setup.timers.calibrate_tsc = mrst_calibrate_tsc;
-+
-+	platform_cpuhotplug_setup.setup_percpu_clockev =
-+						mrst_setup_secondary_clock;
-+
-+
-+	/* assign feature flags */
-+	clear_all_platform_feature();
-+	platform_feature_set_flag(X86_PLATFORM_FEATURE_SFI);
-+	platform_feature_set_flag(X86_PLATFORM_FEATURE_IOAPIC);
-+	platform_feature_set_flag(X86_PLATFORM_FEATURE_APBT);
-+	platform_feature_set_flag(X86_PLATFORM_FEATURE_VRTC);
-+	platform_feature_set_flag(X86_PLATFORM_FEATURE_PCISHIM);
-+
-+}
-+
-+void __init mrst_early_detect(void)
-+{
-+	int subarch_id = boot_params.hdr.hardware_subarch;
-+
-+	if ((subarch_id >= 0) && (subarch_id < N_X86_SUBARCHS)) {
-+		if (subarch_id == X86_SUBARCH_MRST) {
-+			setup_mrst_default_feature();
-+			return;
-+		}
-+	} else {
-+		printk(KERN_INFO "Use default X86 platform feature set\n");
-+	}
-+}
-+
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 35c3edc..9fef9d9 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -692,6 +692,7 @@ void __init setup_arch(char **cmdline_p)
- #ifdef CONFIG_X86_32
- 	memcpy(&boot_cpu_data, &new_cpu_data, sizeof(new_cpu_data));
- 	visws_early_detect();
-+	mrst_early_detect();
- #else
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
- #endif
+ 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+ 		/*
+ 		 * If the BIOS has set an out of range IRQ number, just
+@@ -1142,7 +1145,7 @@ int __init pcibios_irq_init(void)
+ 			pirq_table = NULL;
+ 	}
+ 
+-	pcibios_enable_irq = pirq_enable_irq;
++	pcibios_enable_irq = platform_setup.irqs.pci_enable_irq;
+ 
+ 	pcibios_fixup_irqs();
+ 
+@@ -1185,7 +1188,7 @@ void pcibios_penalize_isa_irq(int irq, int active)
+ 		pirq_penalize_isa_irq(irq, active);
+ }
+ 
+-static int pirq_enable_irq(struct pci_dev *dev)
++int pirq_enable_irq(struct pci_dev *dev)
+ {
+ 	u8 pin;
+ 
 -- 
 1.5.6.5
 
