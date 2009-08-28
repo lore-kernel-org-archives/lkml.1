@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZH1U7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbZH1VHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbZH1U7M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 16:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZH1U7M
+	id S1752188AbZH1VHB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZH1VHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 16:59:12 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:54123 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753196AbZH1U7L (ORCPT
+	Fri, 28 Aug 2009 17:07:00 -0400
+Received: from web45215.mail.sp1.yahoo.com ([68.180.197.176]:24280 "HELO
+	web45215.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750984AbZH1VG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 16:59:11 -0400
-Date: Fri, 28 Aug 2009 16:21:33 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Gregory Haskins <ghaskins@novell.com>, Rik van Riel <riel@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-In-Reply-To: <alpine.LFD.2.00.0908282158100.19335@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0908281619520.15573@gentwo.org>
-References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org>
- <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com> <4A975025.8030500@novell.com> <4A975CC4.1090208@novell.com> <alpine.LFD.2.00.0908281218560.2888@localhost.localdomain>
- <alpine.DEB.1.10.0908281446520.7317@gentwo.org> <alpine.LFD.2.00.0908282100040.19335@localhost.localdomain> <alpine.DEB.1.10.0908281551450.17784@gentwo.org> <alpine.LFD.2.00.0908282158100.19335@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 28 Aug 2009 17:06:59 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
+  b=GAXVFDHW9opHmafdH1bKEm3Sjcj3GJtVjiradSkHnl28009OM4hRpPukv9oEcOcrVEkcoNnQygBvwX79ETTgCbM9J0Do80UZg4DQkt22NL6E/fsttSSyTPIKu+FVoIK03YjbrBjDXjQaQn4JpYtZkBFQcY1CrW2+6XbJhXSk0lc=;
+Message-ID: <989804.72681.qm@web45215.mail.sp1.yahoo.com>
+X-YMail-OSG: z2R922MVM1mYVaOR22s9fcwzrmt8ScME6V3sJNSB0BytJ5j_67ySr7GdGlLEi.Au_ddMJSdGPNibje314kD4x3Gn2HKsfZJLekF28nxU5J.Bbl_g8anhjSNrUFQe0wEspLYd_.vxxJfAcpz.ssZbJ3l2xeHTKvCkArDSIiZomOYcs_unE0fmfsCRy8WKXlx9KTMRCeg8sATaK3hkOd_a3cdj_ke0OdN5cCLDJbNn5UYGM_4-
+X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
+Date: Fri, 28 Aug 2009 14:07:01 -0700 (PDT)
+From: joe Shmoe <jsmoe3@yahoo.com>
+Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+In-Reply-To: <20090828205337.3677cf04@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Aug 2009, Thomas Gleixner wrote:
+doesn't CR3 gets reloaded for process switch? If so , how does it matter if you setup page table mapping for all the available RAM instead of limiting to just 1GB
 
-> The statistics stuff needs to be tackled anyway as we need to offload
-> the sched accounting to some other cpu.
+--- On Fri, 8/28/09, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-The vm statisticcs in mm/vmstat.c are different from the sched accounting.
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
+> To: "joe Shmoe" <jsmoe3@yahoo.com>
+> Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+> Date: Friday, August 28, 2009, 3:53 PM
+> On Fri, 28 Aug 2009 12:44:25 -0700
+> (PDT)
+> joe Shmoe <jsmoe3@yahoo.com>
+> wrote:
+> 
+> > No I am not talking about embedded systems. It is just
+> an example.
+> > My question is what is preventing the kernel from
+> setting up the page tables so that entire RAM can be mapped
+> upto 4 GB.
+> 
+> The design of the x86 processor
+> 
+> You only have 4GB of virtual address space at any one time
+> so you have to
+> fit the following within your 4GB virtual space
+> 
+> - Virtual addresses of the user space
+> - Mappings for physical memory
+> - Kernel virtual spaces (vmalloc etc)
+> - Various miscellaneous kernel mappings
+> - I/O MMIO space
+> 
+> Now you could in theory switch the page tables on kernel
+> entry to get a
+> very big user space mapping and then instead of relying on
+> the user space
+> being mapped you could map specific user pages or access
+> them via their
+> physical address lookup.
+> 
+> That however means reloading %cr3 (page table base) which
+> is very
+> expensive, and some very hard to implement locking on user
+> space access.
+> 
+> Some other processor families have the notion of "spaces"
+> or MMU
+> bypassing. The Sparc64 for example can access MMIO space
+> without an MMU
+> mapping or virtual address being needed for it. x86 does
+> not - it has
+> segments but the segments map into the 4GB space so they
+> don't help here
+> hence the current implementation and 3G/1G split.
+> 
 
-> What slab queue stuff is running on timers and cannot be switched off
-> in such a context?
 
-slab does run a timer every 2 second to age queues. If there was activity
-then there can be a relatively long time in which we periodically throw
-out portions of the cached data.
-
-> Device specific stuff should not happen on such a CPU when there is no
-> device handled on it.
-
-The device may periodically check for conditions that require action.
+      
