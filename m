@@ -1,48 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbZH1UKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbZH1UXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbZH1UKB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 16:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZH1UKA
+	id S1753101AbZH1UXX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 16:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZH1UXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 16:10:00 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:42809 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753025AbZH1UJ7 (ORCPT
+	Fri, 28 Aug 2009 16:23:22 -0400
+Received: from web45216.mail.sp1.yahoo.com ([68.180.197.185]:37913 "HELO
+	web45216.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752055AbZH1UXW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 16:09:59 -0400
-Date: Fri, 28 Aug 2009 15:52:37 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Gregory Haskins <ghaskins@novell.com>, Rik van Riel <riel@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-In-Reply-To: <alpine.LFD.2.00.0908282100040.19335@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0908281551450.17784@gentwo.org>
-References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org>
- <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com> <4A975025.8030500@novell.com> <4A975CC4.1090208@novell.com> <alpine.LFD.2.00.0908281218560.2888@localhost.localdomain>
- <alpine.DEB.1.10.0908281446520.7317@gentwo.org> <alpine.LFD.2.00.0908282100040.19335@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 28 Aug 2009 16:23:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
+  b=o3WYGItRbk2NQgHPU9MqcCZqD4TRQXULaHYh52q1PMKDu6C/FOdxxkUBiq5Rb0qHn7m1+XIkQR3an0rcQdlD2k2c8FtxoFeln5NtxSJr/8/1pvruJJbUESjumj6OL1OnqfWULQnIWoBWB0ELnC0OCwbimwgXY78GV+prAJRKLRo=;
+Message-ID: <205.26101.qm@web45216.mail.sp1.yahoo.com>
+X-YMail-OSG: 4oy7O04VM1n4mhbOVf8BEy_4J5raGtI4zVMyFUDhvHaTed6RZxRL4nPuSi5Yzvh0IxwElROtZdzWZ_IQ6uwvZOALtsqeyHwkcO7NH.1pIb8uC3ZSsOWCkRPEolsfNshgG7avJihKBAroan83ONgwldj5XR96HMdREEPV0gWBMKt644pTEBjZwqPTQveF_OrliOv0treTOOPlSfetbaJfFZrcQTxhL3LrcSp8.NkAy2cF6W7ljnVgxQ--
+X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
+Date: Fri, 28 Aug 2009 13:23:23 -0700 (PDT)
+From: joe Shmoe <jsmoe3@yahoo.com>
+Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090828205337.3677cf04@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Aug 2009, Thomas Gleixner wrote:
+>That however means reloading %cr3 (page table base) which is very
+>expensive, and some very hard to implement locking on user space access
 
-> Right, and I think we can get there. The timer can be eliminated with
-> some work. Faults shouldn't happen on that CPU and all other
-> interrupts can be kept away with proper affinity settings. Softirqs
-> should not happen on such a CPU either as there is neither a hardirq
-> nor a user space task triggering them. Same applies for timers. So
-> there are some remaining issues like IPIs, but I'm pretty sure that
-> they can be tamed to zero as well.
+I understand the implications of reloading CR3. But once the page tables are  setup to map all the available physical RAM to virtual (linear) address it could be for eg. 1, 2, 3 or 4 GB how does it matter.
 
-There are various timer generated thingies like vm statistics, slab queue
-management and device specific things that run on each processor.
+Now If a process wants to access a memory location which is above 1GB , since kernel already setup the page tables CPU MMU will do the translation since it consults this page table setup by kernel. Of course it also makes sure the page table has appropriate privilege level for access.
 
+Am I missing something here?
+
+ 
+
+
+
+--- On Fri, 8/28/09, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
+> To: "joe Shmoe" <jsmoe3@yahoo.com>
+> Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+> Date: Friday, August 28, 2009, 3:53 PM
+> On Fri, 28 Aug 2009 12:44:25 -0700
+> (PDT)
+> joe Shmoe <jsmoe3@yahoo.com>
+> wrote:
+> 
+> > No I am not talking about embedded systems. It is just
+> an example.
+> > My question is what is preventing the kernel from
+> setting up the page tables so that entire RAM can be mapped
+> upto 4 GB.
+> 
+> The design of the x86 processor
+> 
+> You only have 4GB of virtual address space at any one time
+> so you have to
+> fit the following within your 4GB virtual space
+> 
+> - Virtual addresses of the user space
+> - Mappings for physical memory
+> - Kernel virtual spaces (vmalloc etc)
+> - Various miscellaneous kernel mappings
+> - I/O MMIO space
+> 
+> Now you could in theory switch the page tables on kernel
+> entry to get a
+> very big user space mapping and then instead of relying on
+> the user space
+> being mapped you could map specific user pages or access
+> them via their
+> physical address lookup.
+> 
+> That however means reloading %cr3 (page table base) which
+> is very
+> expensive, and some very hard to implement locking on user
+> space access.
+> 
+> Some other processor families have the notion of "spaces"
+> or MMU
+> bypassing. The Sparc64 for example can access MMIO space
+> without an MMU
+> mapping or virtual address being needed for it. x86 does
+> not - it has
+> segments but the segments map into the 4GB space so they
+> don't help here
+> hence the current implementation and 3G/1G split.
+> 
+
+
+      
