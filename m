@@ -1,37 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751387AbZH1QGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751377AbZH1QNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751387AbZH1QGt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 12:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbZH1QGs
+	id S1751377AbZH1QNr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 12:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbZH1QNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 12:06:48 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:17778 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbZH1QGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 12:06:47 -0400
-Message-ID: <4A98008B.6050503@redhat.com>
-Date: Fri, 28 Aug 2009 09:06:35 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Fri, 28 Aug 2009 12:13:46 -0400
+Received: from mail-px0-f174.google.com ([209.85.216.174]:47911 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbZH1QNq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 12:13:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version
+         :content-type;
+        b=rvA3Mr9VV2JGLEmJ4VYKAk02GITOpFkZsbTTqnR6+TMlOkF0L+nX9Ljo1imjED1KAw
+         OMjPY5Zb0KYgAYX1iVSgWA06Onyie361xwbRGAsGxWdVNpUE+fu73TeQVZn7hbXcKF92
+         gmNpUg5ugrjbEHD8wTuNH5VskxihdFhLhn+XU=
+Date: Sat, 29 Aug 2009 00:13:37 +0800 (SGT)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+X-X-Sender: root@boston.corp.fedex.com
+To: "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       Eric Paris <eparis@redhat.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Linux-2.6.31-rc8 inotify hangs samba clients
+Message-ID: <Pine.LNX.4.64.0908282358560.19623@boston.corp.fedex.com>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Jamie Lokier <jamie@shareable.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
-References: <20090821114010.GG12579@kernel.dk> <20090821135403.GA6208@shareable.org> <20090821142635.GB30617@infradead.org> <20090821152459.GC6929@shareable.org> <20090821174525.GA28861@infradead.org> <20090822005006.GA22530@shareable.org> <20090824023422.GA775@infradead.org> <20090827143459.GB31453@shareable.org> <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com> <20090828154647.GA15808@infradead.org>
-In-Reply-To: <20090828154647.GA15808@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/28/2009 08:46 AM, Christoph Hellwig wrote:
->   - given that our current O_SYNC really is and always has been actuall
->     Posix O_DSYNC
 
-If this is true, then this proposal would work, yes.
 
--- 
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+The first part of commit 0db501bd0610ee0c0aca84d927f90bcccd09e2bd hangs 
+WinXP clients browsing Linux samba folders ... trying to add a 
+terminating byte to name_len. Reverting this solves the problem.
+
+The second part of adding zeros is fine.
+
+If we don't revert here, then Samba 3.3.7 will have to change to work with 
+Linux 2.6.31-rc8, and perhaps other codes as well.
+
+Thanks,
+Jeff
+
+
+
+
+commit 0db501bd0610ee0c0aca84d927f90bcccd09e2bd
+Author: Eric W. Biederman <ebiederm@xmission.com>
+Date:   Thu Aug 27 03:20:04 2009 -0700
+
+     inotify: Ensure we alwasy write the terminating NULL.
+
+     Before the rewrite copy_event_to_user always wrote a terqminating '\0'
+     byte to user space after the filename.  Since the rewrite that
+     terminating byte was skipped if your filename is exactly a multiple of
+     event_size.  Ouch!
+
+     So add one byte to name_size before we round up.
+
+     Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+     Signed-off-by: Eric Paris <eparis@redhat.com>
+
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index ce1f582..0e781bc 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -199,8 +196,10 @@ static ssize_t copy_event_to_user(struct fsnotify_group *group,
+  		inotify_free_event_priv(fsn_priv);
+  	}
+
+-	/* round up event->name_len so it is a multiple of event_size */
+-	name_len = roundup(event->name_len, event_size);
++	/* round up event->name_len so it is a multiple of event_size
++	 * plus an extra byte for the terminating '\0'.
++	 */
++	name_len = roundup(event->name_len, event_size) + 1;
+  	inotify_event.len = name_len;
+
+  	inotify_event.mask = inotify_mask_to_arg(event->mask);
