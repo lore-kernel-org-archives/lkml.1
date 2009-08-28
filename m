@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854AbZH1Frc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbZH1Ft7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751854AbZH1Frc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 01:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbZH1Frb
+	id S1751899AbZH1Ft7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 01:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZH1Ft7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 01:47:31 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:35050 "EHLO smtps.tip.net.au"
+	Fri, 28 Aug 2009 01:49:59 -0400
+Received: from gate.crashing.org ([63.228.1.57]:45515 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751079AbZH1Fra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 01:47:30 -0400
-Date: Fri, 28 Aug 2009 15:47:22 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: sound tree build failure
-Message-Id: <20090828154722.7151f65d.sfr@canb.auug.org.au>
-In-Reply-To: <s5hiqg8mrc4.wl%tiwai@suse.de>
-References: <20090828112339.88f4be05.sfr@canb.auug.org.au>
-	<s5hiqg8mrc4.wl%tiwai@suse.de>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__28_Aug_2009_15_47_22_+1000_TZVaB2ECoqgsmAIK"
+	id S1751803AbZH1Ft6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 01:49:58 -0400
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Message-Id: <0A998CA2-4E4E-4104-A5F4-235B4B746EAA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090818220419.GE25090@oksana.dev.rtsoft.ru>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH 5/8] spi_mpc8xxx: Fix uninitialized variable
+Date: Fri, 28 Aug 2009 00:48:50 -0500
+References: <20090818220304.GA23640@oksana.dev.rtsoft.ru> <20090818220419.GE25090@oksana.dev.rtsoft.ru>
+X-Mailer: Apple Mail (2.936)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__28_Aug_2009_15_47_22_+1000_TZVaB2ECoqgsmAIK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Takashi,
+On Aug 18, 2009, at 5:04 PM, Anton Vorontsov wrote:
 
-On Fri, 28 Aug 2009 07:37:31 +0200 Takashi Iwai <tiwai@suse.de> wrote:
+> This patch fixes the following warning:
 >
-> Fixed this typo now.  Sorry for inconvenience.
+> CC      drivers/spi/spi_mpc8xxx.o
+>  spi_mpc8xxx.c: In function 'of_mpc8xxx_spi_probe':
+>  spi_mpc8xxx.c:681: warning: 'ret' may be used uninitialized in this  
+> function
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> drivers/spi/spi_mpc8xxx.c |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Thanks.
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__28_Aug_2009_15_47_22_+1000_TZVaB2ECoqgsmAIK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqXb2sACgkQjjKRsyhoI8ynlgCdE3D7Pbmu4/ySVv6ZNV97x28a
-BN0AnAwUx+Y+NQUrudvY/9VxWZ6JEqNs
-=khZr
------END PGP SIGNATURE-----
-
---Signature=_Fri__28_Aug_2009_15_47_22_+1000_TZVaB2ECoqgsmAIK--
+- k
