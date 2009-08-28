@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752739AbZH1S6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbZH1S4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752739AbZH1S6N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZH1S6L
+	id S1752566AbZH1S4e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 14:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZH1S4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:58:11 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:11060 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbZH1S6H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:58:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=W7R/B9CtIegPesXEj5LgLJ3owF0JB5epjrhcEQwK7Xsr/+EWZKHJHEjvQ83DfpD2hk
-         NSU2F4H5+MRZGoP9Mn6yZhJvtRtYvVSP/Ih0z3XC5Ln8rimjAjh3r7IAf2OuVFoAvBTl
-         MQkQWSwn9ERgAXhQkqPKKrevtbwUP23Db3NF4=
-Date: Fri, 28 Aug 2009 22:58:07 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: airlied@linux.ie, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] drm: use proc_create_data()
-Message-ID: <20090828185806.GC14499@x200.localdomain>
+	Fri, 28 Aug 2009 14:56:31 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:27779 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752532AbZH1S42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 14:56:28 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH 6/9] fanotify: merge notification events with different masks
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org
+Cc: davem@davemloft.net, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+Date: Fri, 28 Aug 2009 14:56:19 -0400
+Message-ID: <20090828185618.8014.55255.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20090828185542.8014.22791.stgit@paris.rdu.redhat.com>
+References: <20090828185542.8014.22791.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Instead of just merging fanotify events if they are exactly the same, merge
+notification events with different masks.  To do this we have to clone the
+old event, update the mask in the new event with the new merged mask, and
+put the new event in place of the old event.
+
+Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- drivers/gpu/drm/drm_proc.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ fs/notify/fanotify/fanotify.c |   24 ++++++++++++++++++------
+ 1 files changed, 18 insertions(+), 6 deletions(-)
 
---- a/drivers/gpu/drm/drm_proc.c
-+++ b/drivers/gpu/drm/drm_proc.c
-@@ -106,7 +106,8 @@ int drm_proc_create_files(struct drm_info_list *files, int count,
- 			continue;
+diff --git a/fs/notify/fanotify/fanotify.c b/fs/notify/fanotify/fanotify.c
+index caf34bb..e8e56cb 100644
+--- a/fs/notify/fanotify/fanotify.c
++++ b/fs/notify/fanotify/fanotify.c
+@@ -10,8 +10,7 @@
  
- 		tmp = kmalloc(sizeof(struct drm_info_node), GFP_KERNEL);
--		ent = create_proc_entry(files[i].name, S_IFREG | S_IRUGO, root);
-+		ent = proc_create_data(files[i].name, S_IRUGO, root,
-+				       &drm_proc_fops, tmp);
- 		if (!ent) {
- 			DRM_ERROR("Cannot create /proc/dri/%s/%s\n",
- 				  name, files[i].name);
-@@ -115,8 +116,6 @@ int drm_proc_create_files(struct drm_info_list *files, int count,
- 			goto fail;
- 		}
+ static bool try_merge(struct fsnotify_event *old, struct fsnotify_event *new)
+ {
+-	if ((old->mask == new->mask) &&
+-	    (old->to_tell == new->to_tell) &&
++	if ((old->to_tell == new->to_tell) &&
+ 	    (old->data_type == new->data_type)) {
+ 		switch (old->data_type) {
+ 		case (FSNOTIFY_EVENT_PATH):
+@@ -29,15 +28,28 @@ static bool try_merge(struct fsnotify_event *old, struct fsnotify_event *new)
  
--		ent->proc_fops = &drm_proc_fops;
--		ent->data = tmp;
- 		tmp->minor = minor;
- 		tmp->info_ent = &files[i];
- 		list_add(&(tmp->list), &(minor->proc_nodes.list));
+ static int fanotify_merge(struct list_head *list, struct fsnotify_event *event)
+ {
+-	struct fsnotify_event_holder *holder;
++	struct fsnotify_event_holder *test_holder, *prev;
+ 	struct fsnotify_event *test_event;
++	struct fsnotify_event *new_event;
++	int ret;
+ 
+ 	/* and the list better be locked by something too! */
+ 
+-	list_for_each_entry_reverse(holder, list, event_list) {
+-		test_event = holder->event;
+-		if (try_merge(test_event, event))
++	list_for_each_entry_safe_reverse(test_holder, prev, list, event_list) {
++		test_event = test_holder->event;
++		if (try_merge(test_event, event)) {
++			if (test_event->mask == event->mask)
++				return -EEXIST;
++			new_event = fsnotify_clone_event(test_event);
++			if (!new_event)
++				return 0;
++			new_event->mask = (test_event->mask | event->mask);
++			ret = fsnotify_replace_event(test_holder, new_event);
++			fsnotify_put_event(new_event); /* matches the ref from clone */
++			if (ret)
++				return ret;
+ 			return -EEXIST;
++		}
+ 	}
+ 
+ 	return 0;
+
