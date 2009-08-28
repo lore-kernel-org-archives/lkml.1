@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751603AbZH1F7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751745AbZH1GCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751603AbZH1F7U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 01:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZH1F7T
+	id S1751745AbZH1GCR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 02:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZH1GCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 01:59:19 -0400
-Received: from n19.bullet.mail.mud.yahoo.com ([68.142.206.146]:30763 "HELO
-	n19.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751099AbZH1F7S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 01:59:18 -0400
-X-Yahoo-Newman-Id: 6855.35346.bm@omp406.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=t5uTMv+YopqbZMeMYPMXztSVRb0DPXTllQ0Vj0ZwTd89iVkDpqMohrEOV3qEEBOP+bK9W6iz3Hrklb7On31N1uiV5DeCHCwy2hZrR0fDOvZ41abRVfWyQDDZCyKxCRNiQZRVzcyFfAYX1tluB+abGfpDdcKKNP3hJOHsRJsEFZU=  ;
-X-YMail-OSG: ljTDTyUVM1nFU1TbnGNsUTjUbAdQQ8Dbt3tZ39L1XtIgk54nWnpXAEwrVFEIukwj1dc85qFOwQgvDMQuDnRGUDh35YekZCxIc6ntSghfAa.xw9LZaLCEuwQ_rtZWFQL6Oahbb.u8Bb57LD2EKy4GvRZ_KyA57G8qNfqCM1km0bFlorv2X.uTrB6W2JJK.uCOeJWL1prKiUx795EGnFiPVbk0aJdMKOSBJR1Lr2RixQtMPQAsnHAfIuZSIAvPWSoTbyYaWByHuqX6VvHljtm7UfpAs.eJ
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH v2 0/8] spi_mpc8xxx: Add support for DMA transfers
-Date: Thu, 27 Aug 2009 21:41:59 -0700
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-References: <20090818220304.GA23640@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090818220304.GA23640@oksana.dev.rtsoft.ru>
+	Fri, 28 Aug 2009 02:02:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53118 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751390AbZH1GCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 02:02:15 -0400
+Date: Fri, 28 Aug 2009 06:01:45 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, peterz@infradead.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1251427567-10551-2-git-send-email-fweisbec@gmail.com>
+References: <1251427567-10551-2-git-send-email-fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perfcounters/tracing] perf tools: Fix missing string field printing in perf trace
+Message-ID: <tip-d498bc1f6261dd6f655440eb2f1c7fa25694d3ba@git.kernel.org>
+Git-Commit-ID: d498bc1f6261dd6f655440eb2f1c7fa25694d3ba
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200908272141.59796.david-b@pacbell.net>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 06:01:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 18 August 2009, Anton Vorontsov wrote:
+Commit-ID:  d498bc1f6261dd6f655440eb2f1c7fa25694d3ba
+Gitweb:     http://git.kernel.org/tip/d498bc1f6261dd6f655440eb2f1c7fa25694d3ba
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Fri, 28 Aug 2009 04:46:07 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 28 Aug 2009 07:58:11 +0200
 
-> - Fix build issues in fsl_qe_udc;
-> - Some minor cosmetic changes in "Add support for QE DMA mode and
->   CPM1/CPM2 chips" patch.
+perf tools: Fix missing string field printing in perf trace
 
-Hmm ... the first four of these are pure PPC stuff and thus
-not appropriate to send as SPI patches; but the second four
-depend on them.
+Some string fields are not printed because of a missing printf
+in the post-processing.
 
-So I'll just say
+Before:
+	    perf-10070 [000]     0.000000: sched_switch: task :10070 [120] (R) ==> :5720 [120]
+           geany-5720  [000]     0.000000: sched_switch: task :5720 [120] (S) ==> :10070 [120]
+            perf-10070 [000]     0.000000: sched_switch: task :10070 [120] (R) ==> :5720 [120]
+           geany-5720  [000]     0.000000: sched_switch: task :5720 [120] (S) ==> :10070 [120]
+          <idle>-0     [000]     0.000000: sched_switch: task :0 [140] (R) ==> :361 [115]
 
-  Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+After:
+	    perf-10070 [000]     0.000000: sched_switch: task perf:10070 [120] (R) ==> geany:5720 [120]
+           geany-5720  [000]     0.000000: sched_switch: task geany:5720 [120] (S) ==> perf:10070 [120]
+            perf-10070 [000]     0.000000: sched_switch: task perf:10070 [120] (R) ==> geany:5720 [120]
+           geany-5720  [000]     0.000000: sched_switch: task geany:5720 [120] (S) ==> perf:10070 [120]
+          <idle>-0     [000]     0.000000: sched_switch: task swapper:0 [140] (R) ==> kondemand/1:361 [115]
 
-and ask you to merge via the PPC tree.  (And hope that you
-verified these are bisectable...)
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1251427567-10551-2-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ tools/perf/util/trace-event-parse.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
+index a6577cd..96c5e97 100644
+--- a/tools/perf/util/trace-event-parse.c
++++ b/tools/perf/util/trace-event-parse.c
+@@ -1997,6 +1997,7 @@ static void print_str_arg(void *data, int size,
+ 		memcpy(str, data + arg->field.field->offset,
+ 		       arg->field.field->size);
+ 		str[arg->field.field->size] = 0;
++		printf("%s", str);
+ 		free(str);
+ 		break;
+ 	case PRINT_FLAGS:
