@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZH1M6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769AbZH1M7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbZH1M6Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZH1M6X
+	id S1752769AbZH1M7A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZH1M67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:58:23 -0400
-Received: from qmta05.emeryville.ca.mail.comcast.net ([76.96.30.48]:57500 "EHLO
-	QMTA05.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752535AbZH1M6X (ORCPT
+	Fri, 28 Aug 2009 08:58:59 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:55395 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbZH1M67 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:58:23 -0400
-Message-ID: <4A97D471.5030100@byu.net>
-Date: Fri, 28 Aug 2009 06:58:25 -0600
-From: Eric Blake <ebb9@byu.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.23) Gecko/20090812 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
+	Fri, 28 Aug 2009 08:58:59 -0400
+In-Reply-To: <f0e08f230908270631j3e159f3fgb0034eb41acdac7b@mail.gmail.com>
+References: <200908261337.56128.fenkes@de.ibm.com>	 <f0e08f230908260815g70de3002pfd0b34f1b17abd6@mail.gmail.com>
+	 <OFF2257478.FF0FEABE-ONC125761F.00344884-C125761F.00358310@de.ibm.com> <f0e08f230908270631j3e159f3fgb0034eb41acdac7b@mail.gmail.com>
+To: Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: Christoph Raisch <raisch@de.ibm.com>, OF-EWG <ewg@lists.openfabrics.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Hal Rosenstock <hnrose@comcast.net>,
+       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
 MIME-Version: 1.0
-To: Florian Weimer <fweimer@bfk.de>
-CC: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bug-coreutils@gnu.org, bug-gnulib@gnu.org,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] open: introduce O_NOSTD
-References: <4A9285FC.8000606@byu.net>	<1251202593-3676-1-git-send-email-ebb9@byu.net>	<alpine.DEB.2.00.0908251420190.18518@makko.or.mcafeemobile.com>	<4A968FF8.8050109@byu.net> <82k50puxx8.fsf@mid.bfk.de>	<4A97D16D.5060003@byu.net> <82ocq0p0ba.fsf@mid.bfk.de>
-In-Reply-To: <82ocq0p0ba.fsf@mid.bfk.de>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [ewg] [PATCH] IB/ehca: Construct MAD redirect replies from 	request MAD
+X-KeepSent: A25F14CC:CE7042E9-C1257620:00453C46;
+ type=4; name=$KeepSent
+X-Mailer: Lotus Notes Build V851_07072009 July 07, 2009
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OFA25F14CC.CE7042E9-ONC1257620.00453C46-C1257620.00474D70@de.ibm.com>
+Date: Fri, 28 Aug 2009 14:58:49 +0200
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 8.0.1|February 07, 2008) at
+ 28/08/2009 14:58:51,
+	Serialize complete at 28/08/2009 14:58:51
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hal Rosenstock <hal.rosenstock@gmail.com> wrote on 27.08.2009 15:31:40:
 
-According to Florian Weimer on 8/28/2009 6:52 AM:
->> If the caller requested O_CLOEXEC, then your version takes 3, 5, or
->> 7 syscalls depending on how many std fds were closed, while my
->> version takes 3 syscalls regardless of how many std fds were closed.
-> 
-> I really don't see a way around that.  You can't pick a descriptor and
-> hope that it's unused.
+> I don't think it should be hard coded. IMO it would be better to default 
+to 18
+> and somehow able to be adjusted (via a (dynamic) module parameter ?).
 
-fcntl(,F_DUPFD,3) is NOT like dup2.  It picks the next available
-descriptor that is at least 3.
+I don't see how making this a parameter would benefit any end user, while 
+on the other hand it clutters up our parameter list.
 
-- --
-Don't work too hard, make some time for fun as well!
+Changing RespTimeValue won't influence the IB performance or user-visible 
+behavior of our driver in any way, and in fact, all RespTimeValue says is 
+"Please use a timeout of one second for all future MADs you send me", only 
+there won't be any more MADs in the future because we just redirected the 
+client to someone else. So, the RespTimeValue field is a don't care in the 
+redirection scenario. Setting it to an arbitrary, but legal value isn't 
+much more than a concession towards any broken clients that may be out 
+there.
 
-Eric Blake             ebb9@byu.net
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (Cygwin)
-Comment: Public key at home.comcast.net/~ericblake/eblake.gpg
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+Given that you seem to like the rest of the code and Jason hasn't spoken 
+up yet, I think we can have Roland merge this patch. Roland, what do you 
+think?
 
-iEYEARECAAYFAkqX1HEACgkQ84KuGfSFAYAzYQCgnwad5k39bZJqw3Wg1vMED/Fd
-zjYAmwenJlImBUE33geRdHC6aoVSx7JG
-=omNI
------END PGP SIGNATURE-----
+Regards,
+  Joachim
+
