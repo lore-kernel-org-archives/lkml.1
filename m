@@ -1,48 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730AbZH1S5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbZH1S4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752730AbZH1S5K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbZH1S5I
+	id S1752367AbZH1S4H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 14:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZH1S4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:57:08 -0400
-Received: from vms173015pub.verizon.net ([206.46.173.15]:48593 "EHLO
-	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbZH1S5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:57:04 -0400
-Date: Fri, 28 Aug 2009 14:56:49 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bzolnier@gmail.com
-Subject: Re: [PATCH 3/4] fujitsu-laptop: driver [un]registration fixes
-In-reply-to: <200907310846.n6V8k2nd006757@mercury.physics.adelaide.edu.au>
-Message-id: <alpine.LFD.2.00.0908281455010.23436@localhost.localdomain>
-References: <200907310846.n6V8k2nd006757@mercury.physics.adelaide.edu.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 28 Aug 2009 14:56:05 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41574 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752207AbZH1S4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 14:56:02 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH 3/9] networking/fanotify: declare fanotify socket numbers
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org
+Cc: davem@davemloft.net, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+Date: Fri, 28 Aug 2009 14:55:57 -0400
+Message-ID: <20090828185556.8014.70319.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20090828185542.8014.22791.stgit@paris.rdu.redhat.com>
+References: <20090828185542.8014.22791.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009, Jonathan Woithe wrote:
+fanotify's user interface uses a custom socket (it doesn't use netlink
+since work must be done in the context of the receive side of the socket)
 
-> [PATCH 3/4] fujitsu-laptop: driver [un]registration fixes
-> 
-> >From Bartlomiej Zolnierkiewicz.
+This patch simply defines the fanotify socket number declarations.  The
+actual implementation of the socket is in a later patch.
 
-This line needs to be the 1st in the message for the attribution
-to work correctly, and it needs to follow this format:
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+ include/linux/socket.h |    5 ++++-
+ net/core/sock.c        |    6 +++---
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-> * Move led_classdev_unregister() calls from fujitsu_cleanup() to
->   acpi_fujitsu_hotkey_remove().
-
-i fixed it manually and applied for 2.6.32.
-
-thanks,
--Len Brown, Intel Open Source Technology Center
+diff --git a/include/linux/socket.h b/include/linux/socket.h
+index 3b461df..e03f47b 100644
+--- a/include/linux/socket.h
++++ b/include/linux/socket.h
+@@ -195,7 +195,8 @@ struct ucred {
+ #define AF_ISDN		34	/* mISDN sockets 		*/
+ #define AF_PHONET	35	/* Phonet sockets		*/
+ #define AF_IEEE802154	36	/* IEEE802154 sockets		*/
+-#define AF_MAX		37	/* For now.. */
++#define AF_FANOTIFY	37	/* fscking all access sockets	*/
++#define AF_MAX		38	/* For now.. */
+ 
+ /* Protocol families, same as address families. */
+ #define PF_UNSPEC	AF_UNSPEC
+@@ -235,6 +236,7 @@ struct ucred {
+ #define PF_ISDN		AF_ISDN
+ #define PF_PHONET	AF_PHONET
+ #define PF_IEEE802154	AF_IEEE802154
++#define PF_FANOTIFY	AF_FANOTIFY
+ #define PF_MAX		AF_MAX
+ 
+ /* Maximum queue length specifiable by listen.  */
+@@ -306,6 +308,7 @@ struct ucred {
+ #define SOL_PNPIPE	275
+ #define SOL_RDS		276
+ #define SOL_IUCV	277
++#define SOL_FANOTIFY	278
+ 
+ /* IPX options */
+ #define IPX_TYPE	1
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 3ac34ea..1259525 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -155,7 +155,7 @@ static const char *const af_family_key_strings[AF_MAX+1] = {
+   "sk_lock-27"       , "sk_lock-28"          , "sk_lock-AF_CAN"      ,
+   "sk_lock-AF_TIPC"  , "sk_lock-AF_BLUETOOTH", "sk_lock-IUCV"        ,
+   "sk_lock-AF_RXRPC" , "sk_lock-AF_ISDN"     , "sk_lock-AF_PHONET"   ,
+-  "sk_lock-AF_IEEE802154",
++  "sk_lock-AF_IEEE802154", "sk_lock-AF_FANOTIFY",
+   "sk_lock-AF_MAX"
+ };
+ static const char *const af_family_slock_key_strings[AF_MAX+1] = {
+@@ -171,7 +171,7 @@ static const char *const af_family_slock_key_strings[AF_MAX+1] = {
+   "slock-27"       , "slock-28"          , "slock-AF_CAN"      ,
+   "slock-AF_TIPC"  , "slock-AF_BLUETOOTH", "slock-AF_IUCV"     ,
+   "slock-AF_RXRPC" , "slock-AF_ISDN"     , "slock-AF_PHONET"   ,
+-  "slock-AF_IEEE802154",
++  "slock-AF_IEEE802154", "slock=AF_FANOTIFY",
+   "slock-AF_MAX"
+ };
+ static const char *const af_family_clock_key_strings[AF_MAX+1] = {
+@@ -187,7 +187,7 @@ static const char *const af_family_clock_key_strings[AF_MAX+1] = {
+   "clock-27"       , "clock-28"          , "clock-AF_CAN"      ,
+   "clock-AF_TIPC"  , "clock-AF_BLUETOOTH", "clock-AF_IUCV"     ,
+   "clock-AF_RXRPC" , "clock-AF_ISDN"     , "clock-AF_PHONET"   ,
+-  "clock-AF_IEEE802154",
++  "clock-AF_IEEE802154", "clock-AF_FANOTIFY",
+   "clock-AF_MAX"
+ };
+ 
 
