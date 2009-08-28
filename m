@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbZH1Rag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751864AbZH1RpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751923AbZH1Rag (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 13:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbZH1Rag
+	id S1751864AbZH1RpV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 13:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbZH1RpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 13:30:36 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:64027 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbZH1Raf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 13:30:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAD2xl0qrR7O6/2dsb2JhbADCHohAAZAbBYQZhEM
-X-IronPort-AV: E=Sophos;i="4.44,292,1249257600"; 
-   d="scan'208";a="186389164"
-From: Roland Dreier <rdreier@cisco.com>
-To: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: Opinions on moving Linux InfiniBand/RDMA mailing list to vger?
-References: <adavdkiw3gx.fsf@cisco.com>
-	<20090820.160800.50693597.davem@davemloft.net>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 28 Aug 2009 10:30:36 -0700
-In-Reply-To: <20090820.160800.50693597.davem@davemloft.net> (David Miller's
-	message of "Thu, 20 Aug 2009 16:08:00 -0700 (PDT)")
-Message-ID: <ada7hwnsv5v.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 28 Aug 2009 13:45:20 -0400
+Received: from mga09.intel.com ([134.134.136.24]:54726 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751283AbZH1RpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 13:45:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,292,1249282800"; 
+   d="scan'208";a="443605620"
+Date: Fri, 28 Aug 2009 19:47:24 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Amit Kucheria <amit.kucheria@verdurent.com>
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 1/3] MFD: TWL4030: Add support for TWL4030/5030 dynamic
+ power switching
+Message-ID: <20090828174722.GB6162@sortiz.org>
+References: <1250517469-15899-1-git-send-email-amit.kucheria@verdurent.com>
+ <1250517706-16053-1-git-send-email-amit.kucheria@verdurent.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Aug 2009 17:30:37.0290 (UTC) FILETIME=[41889CA0:01CA2805]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <1250517706-16053-1-git-send-email-amit.kucheria@verdurent.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems we only had positive responses to moving from general@ to a new
-linux-rdma@vger.kernel.org list, so I'll work on a transition plan.
+Hi Amit,
 
-For now, please continue to use general@lists.openfabrics.org.  However,
-you may want to subscribe to the vger list to be ready for the
-transition; for information on that, see http://vger.kernel.org.
+On Mon, Aug 17, 2009 at 05:01:46PM +0300, Amit Kucheria wrote:
+> +
+> +#include <asm/mach-types.h>
+You'll have to make your Kconfig entry depend on ARM if you want to include
+this file. Too bad you need it just for the special sdp and ldp cases, but I
+guess there's no other solution.
 
- - Roland
+Cheers,
+Samuel.
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
