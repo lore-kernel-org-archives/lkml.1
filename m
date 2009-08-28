@@ -1,123 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbZH1M3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbZH1M2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752911AbZH1M3O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZH1M3K
+	id S1752840AbZH1M2u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZH1M2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:29:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55482 "EHLO hera.kernel.org"
+	Fri, 28 Aug 2009 08:28:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55436 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752561AbZH1M3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:29:06 -0400
-Date: Fri, 28 Aug 2009 12:28:30 GMT
-From: tip-bot for Jason Baron <jbaron@redhat.com>
-Cc: brueckner@linux.vnet.ibm.com, mathieu.desnoyers@polymtl.ca,
-       mingo@redhat.com, peterz@infradead.org, fweisbec@gmail.com,
-       rostedt@goodmis.org, heiko.carstens@de.ibm.com, tglx@linutronix.de,
-       jbaron@redhat.com, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, jiayingz@google.com, lizf@cn.fujitsu.com,
-       lethal@linux-sh.org, jistone@redhat.com, mingo@elte.hu,
+	id S1752623AbZH1M2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 08:28:45 -0400
+Date: Fri, 28 Aug 2009 12:27:39 GMT
+From: tip-bot for Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Cc: mathieu.desnoyers@polymtl.ca, brueckner@linux.vnet.ibm.com,
+       mingo@redhat.com, schwidefsky@de.ibm.com, peterz@infradead.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       jbaron@redhat.com, laijs@cn.fujitsu.com, hpa@zytor.com,
+       jiayingz@google.com, linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
+       lethal@linux-sh.org, mingo@elte.hu, mbligh@google.com
+Reply-To: mingo@redhat.com, brueckner@linux.vnet.ibm.com,
+       mathieu.desnoyers@polymtl.ca, peterz@infradead.org,
+       schwidefsky@de.ibm.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, jbaron@redhat.com, laijs@cn.fujitsu.com,
+       hpa@zytor.com, jiayingz@google.com, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitsu.com, lethal@linux-sh.org, mingo@elte.hu,
        mbligh@google.com
-Reply-To: mingo@redhat.com, mathieu.desnoyers@polymtl.ca,
-       brueckner@linux.vnet.ibm.com, peterz@infradead.org, fweisbec@gmail.com,
-       rostedt@goodmis.org, heiko.carstens@de.ibm.com, tglx@linutronix.de,
-       jbaron@redhat.com, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, jiayingz@google.com, lizf@cn.fujitsu.com,
-       lethal@linux-sh.org, jistone@redhat.com, mingo@elte.hu,
-       mbligh@google.com
-In-Reply-To: <20090826160910.GB2658@redhat.com>
-References: <20090826160910.GB2658@redhat.com>
+In-Reply-To: <20090825123111.GD4639@cetus.boeblingen.de.ibm.com>
+References: <20090825123111.GD4639@cetus.boeblingen.de.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing: Define NR_syscalls for x86_64
-Message-ID: <tip-a5a2f8e2acb991327952c45a13f5441fc09dffd6@git.kernel.org>
-Git-Commit-ID: a5a2f8e2acb991327952c45a13f5441fc09dffd6
+Subject: [tip:tracing/core] tracing: Add syscall tracepoints - s390 arch update
+Message-ID: <tip-7515bf59f87f19b2a17972b74230d2f91756fe3c@git.kernel.org>
+Git-Commit-ID: 7515bf59f87f19b2a17972b74230d2f91756fe3c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 12:28:31 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 12:27:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a5a2f8e2acb991327952c45a13f5441fc09dffd6
-Gitweb:     http://git.kernel.org/tip/a5a2f8e2acb991327952c45a13f5441fc09dffd6
-Author:     Jason Baron <jbaron@redhat.com>
-AuthorDate: Wed, 26 Aug 2009 12:09:10 -0400
+Commit-ID:  7515bf59f87f19b2a17972b74230d2f91756fe3c
+Gitweb:     http://git.kernel.org/tip/7515bf59f87f19b2a17972b74230d2f91756fe3c
+Author:     Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+AuthorDate: Tue, 25 Aug 2009 14:31:11 +0200
 Committer:  Frederic Weisbecker <fweisbec@gmail.com>
-CommitDate: Wed, 26 Aug 2009 21:29:58 +0200
+CommitDate: Wed, 26 Aug 2009 21:29:44 +0200
 
-tracing: Define NR_syscalls for x86_64
+tracing: Add syscall tracepoints - s390 arch update
 
-Express the available number of syscalls in a standard way by defining
-NR_syscalls.
+This patch includes s390 arch updates to synchronize with latest
+core changes in the syscalls tracing area.
 
-The common way to define it is to place its definition in asm/unistd.h
-However, the number of syscalls is defined using __NR_syscall_max in
-x86-64 after building a dynamic header file "asm-offsets.h"
+- tracing: Map syscall name to number (syscall_name_to_nr())
+- tracing: Call arch_init_ftrace_syscalls at boot
+- tracing: add support tracepoint ids (set_syscall_{enter,exit}_id())
 
-The source file that generates this header, asm-offsets-64.c includes
-unistd.h, then if we want to express NR_syscalls from __NR_syscall_max
-in unistd.h only after generating the dynamic header file, we need a
-watchguard.
-
-If unistd.h is included from asm-offsets-64.c, then we are generating
-asm-offset.h which defines __NR_syscall_max. At this time, we don't
-want to (we can't) define NR_syscalls, then we do nothing.
-Otherwise we define NR_syscalls because we know asm-offsets.h has
-been generated.
-
-Signed-off-by: Jason Baron <jbaron@redhat.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: Paul Mundt <lethal@linux-sh.org>
+Signed-off-by: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Cc: Jason Baron <jbaron@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: Jiaying Zhang <jiayingz@google.com>
 Cc: Martin Bligh <mbligh@google.com>
 Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Josh Stone <jistone@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: H. Peter Anwin <hpa@zytor.com>
-Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-LKML-Reference: <20090826160910.GB2658@redhat.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
+LKML-Reference: <20090825123111.GD4639@cetus.boeblingen.de.ibm.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
 
 ---
- arch/x86/include/asm/unistd_64.h |    6 ++++++
- arch/x86/kernel/asm-offsets_64.c |    1 +
- 2 files changed, 7 insertions(+), 0 deletions(-)
+ arch/s390/kernel/ftrace.c |   36 +++++++++++++++++++++++++++---------
+ 1 files changed, 27 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
-index 900e161..b9f3c60 100644
---- a/arch/x86/include/asm/unistd_64.h
-+++ b/arch/x86/include/asm/unistd_64.h
-@@ -688,6 +688,12 @@ __SYSCALL(__NR_perf_counter_open, sys_perf_counter_open)
- #endif	/* __NO_STUBS */
+diff --git a/arch/s390/kernel/ftrace.c b/arch/s390/kernel/ftrace.c
+index 3e298e6..57bdcb1 100644
+--- a/arch/s390/kernel/ftrace.c
++++ b/arch/s390/kernel/ftrace.c
+@@ -220,6 +220,29 @@ struct syscall_metadata *syscall_nr_to_meta(int nr)
+ 	return syscalls_metadata[nr];
+ }
  
- #ifdef __KERNEL__
++int syscall_name_to_nr(char *name)
++{
++	int i;
 +
-+#ifndef COMPILE_OFFSETS
-+#include <asm/asm-offsets.h>
-+#define NR_syscalls (__NR_syscall_max + 1)
-+#endif
++	if (!syscalls_metadata)
++		return -1;
++	for (i = 0; i < NR_syscalls; i++)
++		if (syscalls_metadata[i])
++			if (!strcmp(syscalls_metadata[i]->name, name))
++				return i;
++	return -1;
++}
 +
- /*
-  * "Conditional" syscalls
-  *
-diff --git a/arch/x86/kernel/asm-offsets_64.c b/arch/x86/kernel/asm-offsets_64.c
-index 898ecc4..4a6aeed 100644
---- a/arch/x86/kernel/asm-offsets_64.c
-+++ b/arch/x86/kernel/asm-offsets_64.c
-@@ -3,6 +3,7 @@
-  * This code generates raw asm output which is post-processed to extract
-  * and format the required data.
-  */
-+#define COMPILE_OFFSETS
++void set_syscall_enter_id(int num, int id)
++{
++	syscalls_metadata[num]->enter_id = id;
++}
++
++void set_syscall_exit_id(int num, int id)
++{
++	syscalls_metadata[num]->exit_id = id;
++}
++
+ static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
+ {
+ 	struct syscall_metadata *start;
+@@ -237,24 +260,19 @@ static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
+ 	return NULL;
+ }
  
- #include <linux/crypto.h>
- #include <linux/sched.h> 
+-void arch_init_ftrace_syscalls(void)
++static int __init arch_init_ftrace_syscalls(void)
+ {
+ 	struct syscall_metadata *meta;
+ 	int i;
+-	static atomic_t refs;
+-
+-	if (atomic_inc_return(&refs) != 1)
+-		goto out;
+ 	syscalls_metadata = kzalloc(sizeof(*syscalls_metadata) * NR_syscalls,
+ 				    GFP_KERNEL);
+ 	if (!syscalls_metadata)
+-		goto out;
++		return -ENOMEM;
+ 	for (i = 0; i < NR_syscalls; i++) {
+ 		meta = find_syscall_meta((unsigned long)sys_call_table[i]);
+ 		syscalls_metadata[i] = meta;
+ 	}
+-	return;
+-out:
+-	atomic_dec(&refs);
++	return 0;
+ }
++arch_initcall(arch_init_ftrace_syscalls);
+ #endif
