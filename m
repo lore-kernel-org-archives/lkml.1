@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752137AbZH1Hmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbZH1Hwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752137AbZH1Hmd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 03:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZH1Hmd
+	id S1752044AbZH1Hwo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 03:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZH1Hwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 03:42:33 -0400
-Received: from emita2.mittwald.de ([85.199.173.189]:38125 "EHLO
-	emita2.mittwald.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751665AbZH1Hmc (ORCPT
+	Fri, 28 Aug 2009 03:52:44 -0400
+Received: from hq-exedge.brocade.com ([66.243.153.82]:38664 "EHLO
+	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbZH1Hwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 03:42:32 -0400
-X-Greylist: delayed 419 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Aug 2009 03:42:32 EDT
-From: Holger Schurig <hs4233@mail.mn-solutions.de>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: ar9271 mailing list and driver project page
-Date: Fri, 28 Aug 2009 09:34:53 +0200
-User-Agent: KMail/1.9.7
-Cc: devel@driverdev.osuosl.org,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-References: <43e72e890908271943s6dca1257g1f1e56d0347cc21d@mail.gmail.com>
-In-Reply-To: <43e72e890908271943s6dca1257g1f1e56d0347cc21d@mail.gmail.com>
+	Fri, 28 Aug 2009 03:52:43 -0400
+Date: Fri, 28 Aug 2009 00:52:44 -0700
+From: Jing Huang <huangj@brocade.com>
+Message-ID: <200908280752.n7S7qi0q029726@blc-10-6.brocade.com>
+To: <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH 0/14] bfa: Brocade BFA FC SCSI driver (overview)
+CC: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       <rvadivel@brocade.com>, <vravindr@brocade.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908280934.53681.hs4233@mail.mn-solutions.de>
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ar9271 and ar9170 seem to share a few things, one of which is
-> firmware upload. ar9271's firmware upload routine was modified
-> to make it match ar9170's as much as possible to share it on
-> ath.ko
+From: Jing Huang <huangj@brocade.com>
 
-Is it true that most devices which will use ath.ko won't ever use 
-firmware uploading?  It's only a few Ath-USB devices, so maybe 
-you could do an ath_fw.ko for this.
+Resubmitting the patches to address code review comments from Rolf Eike Beer
+on 8/21/2009.
 
-(Somebody who's always working with embedded devices and likes to 
-keeps small :-)
+Patches are generated using 2.6.31-rc7 kernel.
 
--- 
-http://www.holgerschurig.de
+[PATCH 1/14]: SCSI LLD driver code, module init/exit, PCI and SCSI host entry
+points, interrupt handler, and sysfs interface etc. 
+
+[PATCH 2/14]: Hardware/FW access code. part-1
+
+[PATCH 3/14]: Hardware/FW access code. part-2
+
+[PATCH 4/14]: Hardware/FW access code. part-3
+
+[PATCH 5/14]: Hardware/FW access code. part-4
+
+[PATCH 6/14]: FC state machines. part-1
+
+[PATCH 7/14]: FC state machines. part-2
+
+[PATCH 8/14]: FC state machines. part-3
+
+[PATCH 9/14]: FC state machines. part-3
+
+[PATCH 10/14]: Common header files shared by linux driver,
+hardware/FW access code, FC state machines. part-1
+
+[PATCH 11/14]: Common header files shared by linux driver,
+hardware/FW access code, FC state machines. part-2
+
+[PATCH 12/14]: Common header files shared by linux driver,
+hardware/FW access code, FC state machines. part-3
+
+[PATCH 13/14]: Updated Kconfig and Makefile for driver/scsi, and Makefile
+for bfa driver 
+
+[PATCH 14/14]: Updated MAINTAINER file.
+
+Signed-off-by: Jing Huang <huangj@brocade.com>
+---
