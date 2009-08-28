@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751293AbZH1JLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751391AbZH1JNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751293AbZH1JLy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 05:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZH1JLy
+	id S1751391AbZH1JNJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 05:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZH1JNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 05:11:54 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:38086 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbZH1JLx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 05:11:53 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: James Morris <jmorris@namei.org>
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>, David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/1] SECURITY: selinux, fix update_rlimit_cpu parameter
-Date: Fri, 28 Aug 2009 11:11:54 +0200
-Message-Id: <1251450714-1498-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
+	Fri, 28 Aug 2009 05:13:08 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:55861 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751119AbZH1JNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 05:13:07 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Michal Schmidt <mschmidt@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH] xenfb: connect to backend before registering fb
+References: <4A96DD03.2080808@goop.org>
+From: Markus Armbruster <armbru@redhat.com>
+Date: Fri, 28 Aug 2009 11:12:42 +0200
+In-Reply-To: <4A96DD03.2080808@goop.org> (Jeremy Fitzhardinge's message of "Thu\, 27 Aug 2009 12\:22\:43 -0700")
+Message-ID: <87k50oqp2t.fsf@pike.pond.sub.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't pass rlim_cur member of RLIM_NLIMITS-1=RLIMIT_RTTIME limit
-to update_rlimit_cpu() in selinux_bprm_committing_creds.
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Use proper rlim[RLIMIT_CPU].rlim_cur instead.
+> As soon as the framebuffer is registered, our methods may be called by the
+> kernel. This leads to a crash as xenfb_refresh() gets called before we have
+> the irq.
+>
+> Connect to the backend before registering our framebuffer with the kernel.
+>
+> [ Fixes bug http://bugzilla.kernel.org/show_bug.cgi?id=14059 ]
+>
+> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Introduced by f06febc96ba8e0af80bcc3eaec0a109e88275fac
-(timers: fix itimer/many thread hang)
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: James Morris <jmorris@namei.org>
-Cc: Eric Paris <eparis@parisplace.org>
-Cc: David Howells <dhowells@redhat.com>
----
- security/selinux/hooks.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 205f5b0..839622a 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2360,7 +2360,7 @@ static void selinux_bprm_committing_creds(struct linux_binprm *bprm)
- 			initrlim = init_task.signal->rlim + i;
- 			rlim->rlim_cur = min(rlim->rlim_max, initrlim->rlim_cur);
- 		}
--		update_rlimit_cpu(rlim->rlim_cur);
-+		update_rlimit_cpu(current->signal->rlim[RLIMIT_CPU].rlim_cur);
- 	}
- }
- 
--- 
-1.6.3.3
-
+Looks good to me.
