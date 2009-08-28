@@ -1,371 +1,367 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751851AbZH1GEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbZH1GE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751851AbZH1GEt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 02:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZH1GEt
+	id S1751943AbZH1GE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 02:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZH1GE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 02:04:49 -0400
-Received: from n9a.bullet.mail.mud.yahoo.com ([209.191.87.108]:40161 "HELO
-	n9a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751533AbZH1GEs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 02:04:48 -0400
-X-Greylist: delayed 338 seconds by postgrey-1.27 at vger.kernel.org; Fri, 28 Aug 2009 02:04:47 EDT
-X-Yahoo-Newman-Id: 506025.14182.bm@omp425.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=CAi+jyMW+tbgt5lGxa5htgFRszjUAlvhEeUjddRXlL5f7xQJQnRggqPAOVnXESt4Ili04usGIzUkBp6LsnQYq1AOc154Nmx3RI5iC6cb/9fwRzOyBE/UEXo3K8724ce3w4dSTl8+oMNFZrZVoy/Mdh2z2Dov42K6h4UowOFcF3U=  ;
-X-YMail-OSG: sXQ.w6AVM1l68rjJAGo7xronllh8_EdMdaNRqa_cK_54lCVoyRv2T9MjD37mpFt.cTqmTz5ejczGjBshi2vi._J5ipkGmYCJkBNkXFLr.CqiJTndNV3T54r8RZtBhM2BwxfnDVYBj_VrP.B6GWsAUO0lL0xbF0RKF9UC4Ck94S4a2n33NKrbUb8fSZJxUa6TpBzoaZNdtKAybD.3FhqPlFrYnp6xFHu8UKgmHBrD3x8F4iDAA21mf7gS8aSICT1rJ49iQ9NdEx_MYiUUL1zA
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.31-rc7] gpiolib: allow poll() on value
-Date: Thu, 27 Aug 2009 16:50:57 -0700
-User-Agent: KMail/1.9.10
-Cc: Daniel =?iso-8859-1?q?Gl=F6ckner?= <dg@emlix.com>
+	Fri, 28 Aug 2009 02:04:58 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:37557 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751868AbZH1GE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 02:04:57 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: akataria@vmware.com
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+Date: Fri, 28 Aug 2009 08:03:45 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-git; KDE/4.3.0; i686; ; )
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@vmware.com>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+In-Reply-To: <1251415060.16297.58.camel@ank32.eng.vmware.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200908271650.59287.david-b@pacbell.net>
+Content-Type: multipart/signed;
+  boundary="nextPart3717920.ZMyIxS8oHG";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908280803.52025.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daniel Glöckner <dg@emlix.com>
-Subject: [PATCH v3] gpiolib: allow poll(2) on gpio value
+--nextPart3717920.ZMyIxS8oHG
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Many gpio chips allow to generate interrupts when the value of a pin
-changes. This patch gives usermode application the opportunity to make
-use of this feature by calling poll(2) on the /sys/class/gpio/gpioN/value
-sysfs file. The edge to trigger can be set in the edge file in the same
-directory. Possible values are "none", "rising", "falling", and "both".
+Alok Kataria wrote:
+> Greetings to all,
+>
+> Please find below a patch which adds support for the VMware
+> paravirtualized SCSI device (PVSCSI).
 
-Using level triggers is not possible with current sysfs since nothing
-changes the GPIO value (and the IRQ keeps triggering).  Edge triggering
-will "just work".  Note that if there was an event between read() and
-poll(), the poll() returns immediately.
+> +static const struct pci_device_id pvscsi_pci_tbl[] =3D {
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_VMWARE, PCI_DEVICE_ID_VMWARE_PVSCSI) },
+> +	{ 0 }
+> +};
 
-Also note that this version only supports true GPIO interrupts.  Some
-later patch might be able to synthesize this behavior by timer-driven
-polling; some systems seem to need that.
+This can be written shorter as PCI_VDEVICE(VMWARE, 0x07C0). Putting the dev=
+ice=20
+id into the header doesn't get any benefit I see, it just makes harder to=20
+collect the pieces together. It's used only here AFAICT so just write it do=
+wn=20
+here and be done with it. The vendor id might be better places in=20
+include/linux/pci_ids.h.
 
-[dbrownell@users.sourceforge.net: align ids to 16 bit ids; whitespace]
+> +static struct pvscsi_ctx *
+> +pvscsi_acquire_context(struct pvscsi_adapter *adapter, struct scsi_cmnd
+> *cmd) +{
+> +	struct pvscsi_ctx *ctx;
+> +
+> +	if (list_empty(&adapter->cmd_pool))
+> +		return NULL;
+> +
+> +	ctx =3D list_entry(adapter->cmd_pool.next, struct pvscsi_ctx, list);
 
-Signed-off-by: Daniel Glöckner <dg@emlix.com>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- Documentation/ABI/testing/sysfs-gpio |    1 
- Documentation/gpio.txt               |    7 +
- drivers/gpio/gpiolib.c               |  208 ++++++++++++++++++++++++++++++++-
- 3 files changed, 211 insertions(+), 5 deletions(-)
+list_first_entry(&adapter->cmd_pool, struct pvscsi_ctx, list);
 
---- a/Documentation/ABI/testing/sysfs-gpio
-+++ b/Documentation/ABI/testing/sysfs-gpio
-@@ -19,6 +19,7 @@ Description:
- 	/gpioN ... for each exported GPIO #N
- 	    /value ... always readable, writes fail for input GPIOs
- 	    /direction ... r/w as: in, out (default low); write: high, low
-+	    /edge ... r/w as: none, falling, rising, both
- 	/gpiochipN ... for each gpiochip; #N is its first GPIO
- 	    /base ... (r/o) same as N
- 	    /label ... (r/o) descriptive, not necessarily unique
---- a/Documentation/gpio.txt
-+++ b/Documentation/gpio.txt
-@@ -524,6 +524,13 @@ and have the following read/write attrib
- 		is configured as an output, this value may be written;
- 		any nonzero value is treated as high.
- 
-+	"edge" ... reads as either "none", "rising", "falling", or
-+		"both". Write these strings to select the signal edge(s)
-+		that will make poll(2) on the "value" file return.
-+
-+		This file exists only if the pin can be configured as an
-+		interrupt generating input pin.
-+
- GPIO controllers have paths like /sys/class/gpio/chipchip42/ (for the
- controller implementing GPIOs starting at #42) and have the following
- read-only attributes:
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -1,5 +1,6 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/spinlock.h>
- #include <linux/device.h>
-@@ -7,6 +8,7 @@
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
- #include <linux/gpio.h>
-+#include <linux/idr.h>
- 
- 
- /* Optional implementation infrastructure for GPIO interfaces.
-@@ -49,6 +51,13 @@ struct gpio_desc {
- #define FLAG_RESERVED	2
- #define FLAG_EXPORT	3	/* protected by sysfs_lock */
- #define FLAG_SYSFS	4	/* exported via /sys/class/gpio/control */
-+#define FLAG_TRIG_FALL	5	/* trigger on falling edge */
-+#define FLAG_TRIG_RISE	6	/* trigger on rising edge */
-+
-+#define PDESC_ID_SHIFT	16	/* add new flags before this one */
-+
-+#define GPIO_FLAGS_MASK		((1 << PDESC_ID_SHIFT) - 1)
-+#define GPIO_TRIGGER_MASK	(BIT(FLAG_TRIG_FALL) | BIT(FLAG_TRIG_RISE))
- 
- #ifdef CONFIG_DEBUG_FS
- 	const char		*label;
-@@ -56,6 +65,15 @@ struct gpio_desc {
- };
- static struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
- 
-+#ifdef CONFIG_GPIO_SYSFS
-+struct poll_desc {
-+	struct work_struct	work;
-+	struct sysfs_dirent	*value_sd;
-+};
-+
-+static struct idr pdesc_idr;
-+#endif
-+
- static inline void desc_set_label(struct gpio_desc *d, const char *label)
- {
- #ifdef CONFIG_DEBUG_FS
-@@ -188,10 +206,10 @@ static DEFINE_MUTEX(sysfs_lock);
-  *   /value
-  *      * always readable, subject to hardware behavior
-  *      * may be writable, as zero/nonzero
-- *
-- * REVISIT there will likely be an attribute for configuring async
-- * notifications, e.g. to specify polling interval or IRQ trigger type
-- * that would for example trigger a poll() on the "value".
-+ *   /edge
-+ *      * configures behavior of poll(2) on /value
-+ *      * available only if pin can generate IRQs on input
-+ *      * is read/write as "none", "falling", "rising", or "both"
-  */
- 
- static ssize_t gpio_direction_show(struct device *dev,
-@@ -288,6 +306,175 @@ static ssize_t gpio_value_store(struct d
- static /*const*/ DEVICE_ATTR(value, 0644,
- 		gpio_value_show, gpio_value_store);
- 
-+static irqreturn_t gpio_sysfs_irq(int irq, void *priv)
-+{
-+	struct work_struct	*work = priv;
-+
-+	schedule_work(work);
-+	return IRQ_HANDLED;
-+}
-+
-+static void gpio_notify_sysfs(struct work_struct *work)
-+{
-+	struct poll_desc	*pdesc;
-+
-+	pdesc = container_of(work, struct poll_desc, work);
-+	sysfs_notify_dirent(pdesc->value_sd);
-+}
-+
-+static int gpio_setup_irq(struct gpio_desc *desc, struct device *dev,
-+		unsigned long gpio_flags)
-+{
-+	struct poll_desc	*pdesc;
-+	unsigned long		irq_flags;
-+	int			ret, irq, id;
-+
-+	if ((desc->flags & GPIO_TRIGGER_MASK) == gpio_flags)
-+		return 0;
-+
-+	irq = gpio_to_irq(desc - gpio_desc);
-+	if (irq < 0)
-+		return -EIO;
-+
-+	id = desc->flags >> PDESC_ID_SHIFT;
-+	pdesc = idr_find(&pdesc_idr, id);
-+	if (pdesc) {
-+		free_irq(irq, &pdesc->work);
-+		cancel_work_sync(&pdesc->work);
-+	}
-+
-+	desc->flags &= ~GPIO_TRIGGER_MASK;
-+
-+	if (!gpio_flags) {
-+		ret = 0;
-+		goto free_sd;
-+	}
-+
-+	irq_flags = IRQF_SHARED;
-+	if (test_bit(FLAG_TRIG_FALL, &gpio_flags))
-+		irq_flags |= IRQF_TRIGGER_FALLING;
-+	if (test_bit(FLAG_TRIG_RISE, &gpio_flags))
-+		irq_flags |= IRQF_TRIGGER_RISING;
-+
-+	if (!pdesc) {
-+		pdesc = kmalloc(sizeof(*pdesc), GFP_KERNEL);
-+		if (!pdesc) {
-+			ret = -ENOMEM;
-+			goto err_out;
-+		}
-+
-+		do {
-+			ret = -ENOMEM;
-+			if (idr_pre_get(&pdesc_idr, GFP_KERNEL))
-+				ret = idr_get_new_above(&pdesc_idr,
-+						pdesc, 1, &id);
-+		} while (ret == -EAGAIN);
-+
-+		if (ret)
-+			goto free_mem;
-+
-+		desc->flags &= GPIO_FLAGS_MASK;
-+		desc->flags |= (unsigned long)id << PDESC_ID_SHIFT;
-+
-+		if (desc->flags >> PDESC_ID_SHIFT != id) {
-+			ret = -ERANGE;
-+			goto free_id;
-+		}
-+
-+		pdesc->value_sd = sysfs_get_dirent(dev->kobj.sd, "value");
-+		if (!pdesc->value_sd) {
-+			ret = -ENODEV;
-+			goto free_id;
-+		}
-+		INIT_WORK(&pdesc->work, gpio_notify_sysfs);
-+	}
-+
-+	ret = request_irq(irq, gpio_sysfs_irq, irq_flags,
-+			"gpiolib", &pdesc->work);
-+	if (ret)
-+		goto free_sd;
-+
-+	desc->flags |= gpio_flags;
-+	return 0;
-+
-+free_sd:
-+	sysfs_put(pdesc->value_sd);
-+free_id:
-+	idr_remove(&pdesc_idr, id);
-+	desc->flags &= GPIO_FLAGS_MASK;
-+free_mem:
-+	kfree(pdesc);
-+err_out:
-+	return ret;
-+}
-+
-+static const struct {
-+	const char *name;
-+	unsigned long flags;
-+} trigger_types[] = {
-+	{ "none",    0 },
-+	{ "falling", BIT(FLAG_TRIG_FALL) },
-+	{ "rising",  BIT(FLAG_TRIG_RISE) },
-+	{ "both",    BIT(FLAG_TRIG_FALL) | BIT(FLAG_TRIG_RISE) },
-+};
-+
-+static ssize_t gpio_edge_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	ssize_t			status;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else {
-+		int i;
-+
-+		status = 0;
-+		for (i = 0; i < ARRAY_SIZE(trigger_types); i++)
-+			if ((desc->flags & GPIO_TRIGGER_MASK)
-+					== trigger_types[i].flags) {
-+				status = sprintf(buf, "%s\n",
-+						 trigger_types[i].name);
-+				break;
-+			}
-+	}
-+
-+	mutex_unlock(&sysfs_lock);
-+	return status;
-+}
-+
-+static ssize_t gpio_edge_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	ssize_t			status;
-+	int			i;
-+
-+	for (i = 0; i < ARRAY_SIZE(trigger_types); i++)
-+		if (sysfs_streq(trigger_types[i].name, buf))
-+			goto found;
-+	return -EINVAL;
-+
-+found:
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else {
-+		status = gpio_setup_irq(desc, dev, trigger_types[i].flags);
-+		if (!status)
-+			status = size;
-+	}
-+
-+	mutex_unlock(&sysfs_lock);
-+
-+	return status;
-+}
-+
-+static DEVICE_ATTR(edge, 0644, gpio_edge_show, gpio_edge_store);
-+
- static const struct attribute *gpio_attrs[] = {
- 	&dev_attr_direction.attr,
- 	&dev_attr_value.attr,
-@@ -473,7 +660,7 @@ int gpio_export(unsigned gpio, bool dire
- 		struct device	*dev;
- 
- 		dev = device_create(&gpio_class, desc->chip->dev, MKDEV(0, 0),
--				    desc, ioname ? ioname : "gpio%d", gpio);
-+				desc, ioname ? ioname : "gpio%d", gpio);
- 		if (dev) {
- 			if (direction_may_change)
- 				status = sysfs_create_group(&dev->kobj,
-@@ -481,6 +668,14 @@ int gpio_export(unsigned gpio, bool dire
- 			else
- 				status = device_create_file(dev,
- 						&dev_attr_value);
-+
-+			if (!status && gpio_to_irq(gpio) >= 0
-+					&& (direction_may_change
-+						|| !test_bit(FLAG_IS_OUT,
-+							&desc->flags)))
-+				status = device_create_file(dev,
-+						&dev_attr_edge);
-+
- 			if (status != 0)
- 				device_unregister(dev);
- 		} else
-@@ -527,6 +722,7 @@ void gpio_unexport(unsigned gpio)
- 
- 		dev = class_find_device(&gpio_class, NULL, desc, match_export);
- 		if (dev) {
-+			gpio_setup_irq(desc, dev, 0);
- 			clear_bit(FLAG_EXPORT, &desc->flags);
- 			put_device(dev);
- 			device_unregister(dev);
-@@ -611,6 +807,8 @@ static int __init gpiolib_sysfs_init(voi
- 	unsigned long	flags;
- 	unsigned	gpio;
- 
-+	idr_init(&pdesc_idr);
-+
- 	status = class_register(&gpio_class);
- 	if (status < 0)
- 		return status;
+> +/*
+> + * Map a pvscsi_ctx struct to a context ID field value; we map to a simp=
+le
+> + * non-zero integer.
+> + */
+> +static u64 pvscsi_map_context(const struct pvscsi_adapter *adapter,
+> +			      const struct pvscsi_ctx *ctx)
+> +{
+> +	return ctx - adapter->cmd_map + 1;
+> +}
 
+Is this guaranteed to always be !=3D0? Maybe add a BUG_ON or WARN_ON here? =
+And=20
+if it is guaranteed please add a short comment to say /how/ this works, as=
+=20
+just from the first look this is at least suspicious.
+
+> +static void pvscsi_write_cmd_desc(const struct pvscsi_adapter *adapter,
+> +				  u32 cmd, const void *desc, size_t len)
+> +{
+> +	const u32 *ptr =3D desc;
+> +	unsigned i;
+> +
+> +	len /=3D sizeof(u32);
+
+How about sizeof(*ptr)? This would just remove the "magic" knowledge about =
+the=20
+size.
+
+> +static int pvscsi_setup_msg_workqueue(struct pvscsi_adapter *adapter)
+> +{
+> +	char name[32];
+> +
+> +	if (!pvscsi_use_msg)
+> +		return 0;
+> +
+> +	pvscsi_reg_write(adapter, PVSCSI_REG_OFFSET_COMMAND,
+> +			 PVSCSI_CMD_SETUP_MSG_RING);
+> +
+> +	if (pvscsi_reg_read(adapter, PVSCSI_REG_OFFSET_COMMAND_STATUS) =3D=3D -=
+1)
+> +		return 0;
+> +
+> +	snprintf(name, sizeof name, "pvscsi_wq_%u", adapter->host->host_no);
+
+sizeof(name)
+
+> +	adapter->workqueue =3D create_singlethread_workqueue(name);
+> +	if (!adapter->workqueue) {
+> +		printk(KERN_ERR "pvscsi: failed to create work queue\n");
+> +		return 0;
+> +	}
+> +	INIT_WORK(&adapter->work, pvscsi_msg_workqueue_handler);
+> +
+> +	return 1;
+> +}
+> +
+> +static irqreturn_t pvscsi_isr(int irq, void *devp)
+> +{
+> +	struct pvscsi_adapter *adapter =3D devp;
+> +	int handled;
+> +
+> +	if (adapter->use_msi || adapter->use_msix)
+> +		handled =3D true;
+> +	else {
+> +		u32 val =3D pvscsi_read_intr_status(adapter);
+> +		handled =3D (val & PVSCSI_INTR_ALL_SUPPORTED) !=3D 0;
+> +		if (handled)
+> +			pvscsi_write_intr_status(devp, val);
+> +	}
+> +
+> +	if (handled) {
+> +		unsigned long flags;
+> +
+> +		spin_lock_irqsave(&adapter->hw_lock, flags);
+> +
+> +		pvscsi_process_completion_ring(adapter);
+> +		if (adapter->use_msg && pvscsi_msg_pending(adapter))
+> +			queue_work(adapter->workqueue, &adapter->work);
+> +
+> +		spin_unlock_irqrestore(&adapter->hw_lock, flags);
+> +	}
+> +
+> +	return IRQ_RETVAL(handled);
+> +}
+> +
+> +static void pvscsi_free_sgls(const struct pvscsi_adapter *adapter)
+> +{
+> +	struct pvscsi_ctx *ctx =3D adapter->cmd_map;
+> +	unsigned i;
+> +
+> +	for (i =3D 0; i < adapter->req_depth; ++i, ++ctx)
+> +		pci_free_consistent(adapter->dev, PAGE_SIZE, ctx->sgl,
+> +				    ctx->sglPA);
+> +}
+> +
+> +static int pvscsi_setup_msix(const struct pvscsi_adapter *adapter, int
+> *irq) +{
+> +#ifdef CONFIG_PCI_MSI
+> +	struct msix_entry entry =3D { 0, PVSCSI_VECTOR_COMPLETION };
+> +	int ret;
+> +
+> +	ret =3D pci_enable_msix(adapter->dev, &entry, 1);
+> +	if (ret)
+> +		return ret;
+> +
+> +	*irq =3D entry.vector;
+> +
+> +	return 0;
+> +#else
+> +	return -1;
+> +#endif
+> +}
+
+You don't need those #ifdef's here. If CONFIG_PCI_MSI is not defined=20
+pci_enable_msix() is a static inline that always returns -1 (see=20
+include/linux/pci.h).
+
+> +static void pvscsi_shutdown_intr(struct pvscsi_adapter *adapter)
+> +{
+> +	if (adapter->irq) {
+> +		free_irq(adapter->irq, adapter);
+> +		adapter->irq =3D 0;
+> +	}
+> +#ifdef CONFIG_PCI_MSI
+> +	if (adapter->use_msi) {
+> +		pci_disable_msi(adapter->dev);
+> +		adapter->use_msi =3D 0;
+> +	}
+> +
+> +	if (adapter->use_msix) {
+> +		pci_disable_msix(adapter->dev);
+> +		adapter->use_msix =3D 0;
+> +	}
+> +#endif
+> +}
+
+Those can go away then too, I think.
+
+> +static int __devinit pvscsi_probe(struct pci_dev *pdev,
+> +				  const struct pci_device_id *id)
+> +{
+> +	struct pvscsi_adapter *adapter;
+> +	struct Scsi_Host *host;
+> +	unsigned long base, i;
+> +	int error;
+> +
+> +	error =3D -ENODEV;
+> +
+> +	if (pci_enable_device(pdev))
+> +		return error;
+
+As always I suggest having a look on devres (see Documentation/driver-
+model/devres.txt) which could simplify your error handling here and your=20
+release function a lot. You only need to make sure it doesn't hurt if all t=
+he=20
+PCI resources are freed after the scsi ones as you would end up cleaning th=
+e=20
+scsi ones by hand and afterwards devres would throw all it handles (which w=
+ill=20
+probably be most of your PCI stuff) away itself.
+
+> +	if (pci_set_dma_mask(pdev, DMA_BIT_MASK(64)) =3D=3D 0 &&
+> +	    pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64)) =3D=3D 0) {
+> +		printk(KERN_INFO "pvscsi: using 64bit dma\n");
+> +	} else if (pci_set_dma_mask(pdev, DMA_BIT_MASK(32)) =3D=3D 0 &&
+> +		   pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32)) =3D=3D 0) {
+> +		printk(KERN_INFO "pvscsi: using 32bit dma\n");
+> +	} else {
+> +		printk(KERN_ERR "pvscsi: failed to set DMA mask\n");
+> +		goto out_disable_device;
+> +	}
+> +
+> +	pvscsi_template.can_queue =3D
+> +		min(PVSCSI_MAX_NUM_PAGES_REQ_RING, pvscsi_ring_pages) *
+> +		PVSCSI_MAX_NUM_REQ_ENTRIES_PER_PAGE;
+> +	pvscsi_template.cmd_per_lun =3D
+> +		min(pvscsi_template.can_queue, pvscsi_cmd_per_lun);
+> +	host =3D scsi_host_alloc(&pvscsi_template, sizeof(struct pvscsi_adapter=
+));
+> +	if (!host) {
+> +		printk(KERN_ERR "pvscsi: failed to allocate host\n");
+> +		goto out_disable_device;
+> +	}
+> +
+> +	adapter =3D shost_priv(host);
+> +	memset(adapter, 0, sizeof *adapter);
+
+sizeof(*adapter)
+
+> +	adapter->dev  =3D pdev;
+> +	adapter->host =3D host;
+> +
+> +	spin_lock_init(&adapter->hw_lock);
+> +
+> +	host->max_channel =3D 0;
+> +	host->max_id      =3D 16;
+> +	host->max_lun     =3D 1;
+> +
+> +	pci_read_config_byte(pdev, PCI_CLASS_REVISION, &adapter->rev);
+
+That's in pdev->revision anyway, isn't it?
+
+> +	if (pci_request_regions(pdev, "pvscsi")) {
+> +		printk(KERN_ERR "pvscsi: pci memory selection failed\n");
+> +		goto out_free_host;
+> +	}
+> +
+> +	base =3D 0;
+> +	for (i =3D 0; i < DEVICE_COUNT_RESOURCE; i++) {
+> +		if ((pci_resource_flags(pdev, i) & PCI_BASE_ADDRESS_SPACE_IO))
+> +			continue;
+> +
+> +		if (pci_resource_len(pdev, i) <
+> +					PVSCSI_MEM_SPACE_NUM_PAGES * PAGE_SIZE)
+> +			continue;
+> +
+> +		base =3D pci_resource_start(pdev, i);
+> +		break;
+> +	}
+> +
+> +	if (base =3D=3D 0) {
+> +		printk(KERN_ERR "pvscsi: adapter has no suitable MMIO region\n");
+> +		goto out_release_resources;
+> +	}
+> +
+> +	adapter->mmioBase =3D ioremap(base, PVSCSI_MEM_SPACE_SIZE);
+
+You are mapping this here with a (probably) different size than the one you=
+=20
+checked above. Also pci_iomap() could simplify that as you don't have to ge=
+t=20
+the base address and only need to tell it the bar number.
+
+> +	if (!adapter->mmioBase) {
+> +		printk(KERN_ERR "pvscsi: can't ioremap 0x%lx\n", base);
+> +		goto out_release_resources;
+> +	}
+> +
+> +	pci_set_master(pdev);
+> +	pci_set_drvdata(pdev, host);
+> +
+> +	ll_adapter_reset(adapter);
+> +
+> +	adapter->use_msg =3D pvscsi_setup_msg_workqueue(adapter);
+> +
+> +	error =3D pvscsi_allocate_rings(adapter);
+> +	if (error) {
+> +		printk(KERN_ERR "pvscsi: unable to allocate ring memory\n");
+> +		goto out_release_resources;
+> +	}
+> +
+> +	/*
+> +	 * From this point on we should reset the adapter if anything goes
+> +	 * wrong.
+> +	 */
+> +	pvscsi_setup_all_rings(adapter);
+> +
+> +	adapter->cmd_map =3D kmalloc(adapter->req_depth *
+> +				   sizeof(struct pvscsi_ctx), GFP_KERNEL);
+
+kcalloc(), this will do overflow checking and also clear the memory for you.
+
+
+> +	printk(KERN_INFO "VMware PVSCSI rev %d on bus:%u slot:%u func:%u host
+> #%u\n", +	       adapter->rev, pdev->bus->number, PCI_SLOT(pdev->devfn),
+> +	       PCI_FUNC(pdev->devfn), host->host_no);
+
+dev_info(&pdev->dev, ..), this should also give you the PCI=20
+domain/bus/slot/function information for free.
+
+> +static int __init pvscsi_init(void)
+> +{
+> +	printk(KERN_DEBUG "%s - version %s\n",
+> +	       PVSCSI_LINUX_DRIVER_DESC, PVSCSI_DRIVER_VERSION_STRING);
+
+pr_debug()
+
+HTH & HAND
+
+Eike
+
+--nextPart3717920.ZMyIxS8oHG
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEABECAAYFAkqXc0cACgkQXKSJPmm5/E4jDQCfQpZVkUf2qTuhe/WyKRqK2BFU
+T/MAnjOJlZCn9iGIZyX4KlUeBwvJ8oii
+=UjJP
+-----END PGP SIGNATURE-----
+
+--nextPart3717920.ZMyIxS8oHG--
