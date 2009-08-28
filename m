@@ -1,58 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZH1V3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751711AbZH1Vc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbZH1V3b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZH1V3a
+	id S1751711AbZH1Vc1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZH1Vc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:29:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48465 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbZH1V3a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:29:30 -0400
-Date: Fri, 28 Aug 2009 17:29:21 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Christoph Hellwig <hch@infradead.org>, Ulrich Drepper <drepper@redhat.com>,
-       Jamie Lokier <jamie@shareable.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
-Message-ID: <20090828212921.GA13662@infradead.org>
-References: <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com> <20090828154647.GA15808@infradead.org> <4A98008B.6050503@redhat.com> <20090828161745.GA8755@infradead.org> <4A9806D9.5050409@redhat.com> <20090828164106.GA9951@infradead.org> <4A984337.7080009@redhat.com> <20090828210838.GA26799@infradead.org> <1251494174.5984.2.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251494174.5984.2.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 28 Aug 2009 17:32:26 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:15541 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750903AbZH1VcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 17:32:25 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
+       jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       riel@redhat.com
+Subject: [PATCH 09/23] io-controller: Export disk time used and nr sectors dipatched through cgroups
+Date: Fri, 28 Aug 2009 17:30:58 -0400
+Message-Id: <1251495072-7780-10-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 28, 2009 at 05:16:14PM -0400, Trond Myklebust wrote:
-> On Fri, 2009-08-28 at 17:08 -0400, Christoph Hellwig wrote:
-> > #define O_SYNC	(O_FULLSYNC|O_DSYNC)
-> > 
-> >  - during the normal merge window I will add a real implementation for
-> >    for O_FULLSYNC and O_RSYNC
-> > 
-> > P.S. better naming suggestions for O_FULLSYNC welcome
-> 
-> Basically you are just ensuring that the metadata changes are being
-> synced together with the data changes, so how about O_ISYNC (inode
-> sync)?
+o This patch exports some statistics through cgroup interface. Two of the
+  statistics currently exported are actual disk time assigned to the cgroup
+  and actual number of sectors dispatched to disk on behalf of this cgroup.
 
-Yeah.  Thinking about this a bit more we should define this flag
-much more clearly.  In the obvious implementation it would not actually
-do anything if it's set on it's own.  We would only check it if O_DSYNC
-is already set to decided if we want to set the datasync argument to
-->fsync to 0 or 1 for the generic filesystems (and similar things for
-filesystems not using the generic helper).
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/elevator-fq.c |   76 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ block/elevator-fq.h |   10 +++++++
+ 2 files changed, 86 insertions(+), 0 deletions(-)
 
-If we deem that this is too unsafe we could make sure O_DSYNC always
-gets set on this fag in ->open, but if we make sure O_SYNC is defined
-like the one above in the kernel headers and glibc we should be fine.
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 8e40b64..563db2d 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -13,6 +13,7 @@
+ 
+ #include <linux/blkdev.h>
+ #include <linux/blktrace_api.h>
++#include <linux/seq_file.h>
+ #include "elevator-fq.h"
+ 
+ const int elv_slice_sync = HZ / 10;
+@@ -257,6 +258,8 @@ entity_served(struct io_entity *entity, unsigned long served,
+ 	for_each_entity(entity) {
+ 		entity->vdisktime += elv_delta_fair(served, entity);
+ 		update_min_vdisktime(entity->st);
++		entity->total_time += served;
++		entity->total_sectors += nr_sectors;
+ 	}
+ }
+ 
+@@ -854,6 +857,66 @@ STORE_FUNCTION(weight, IO_WEIGHT_MIN, IO_WEIGHT_MAX);
+ STORE_FUNCTION(ioprio_class, IOPRIO_CLASS_RT, IOPRIO_CLASS_IDLE);
+ #undef STORE_FUNCTION
+ 
++static int io_cgroup_disk_time_read(struct cgroup *cgroup,
++				struct cftype *cftype, struct seq_file *m)
++{
++	struct io_cgroup *iocg;
++	struct io_group *iog;
++	struct hlist_node *n;
++
++	if (!cgroup_lock_live_group(cgroup))
++		return -ENODEV;
++
++	iocg = cgroup_to_io_cgroup(cgroup);
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
++		/*
++		 * There might be groups which are not functional and
++		 * waiting to be reclaimed upon cgoup deletion.
++		 */
++		if (iog->key) {
++			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
++					MINOR(iog->dev),
++					iog->entity.total_time);
++		}
++	}
++	rcu_read_unlock();
++	cgroup_unlock();
++
++	return 0;
++}
++
++static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
++				struct cftype *cftype, struct seq_file *m)
++{
++	struct io_cgroup *iocg;
++	struct io_group *iog;
++	struct hlist_node *n;
++
++	if (!cgroup_lock_live_group(cgroup))
++		return -ENODEV;
++
++	iocg = cgroup_to_io_cgroup(cgroup);
++
++	rcu_read_lock();
++	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
++		/*
++		 * There might be groups which are not functional and
++		 * waiting to be reclaimed upon cgoup deletion.
++		 */
++		if (iog->key) {
++			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
++					MINOR(iog->dev),
++					iog->entity.total_sectors);
++		}
++	}
++	rcu_read_unlock();
++	cgroup_unlock();
++
++	return 0;
++}
++
+ struct cftype io_files[] = {
+ 	{
+ 		.name = "weight",
+@@ -865,6 +928,14 @@ struct cftype io_files[] = {
+ 		.read_u64 = io_cgroup_ioprio_class_read,
+ 		.write_u64 = io_cgroup_ioprio_class_write,
+ 	},
++	{
++		.name = "disk_time",
++		.read_seq_string = io_cgroup_disk_time_read,
++	},
++	{
++		.name = "disk_sectors",
++		.read_seq_string = io_cgroup_disk_sectors_read,
++	},
+ };
+ 
+ static int iocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
+@@ -956,6 +1027,8 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
+ 	struct io_cgroup *iocg;
+ 	struct io_group *iog, *leaf = NULL, *prev = NULL;
+ 	gfp_t flags = GFP_ATOMIC |  __GFP_ZERO;
++	unsigned int major, minor;
++	struct backing_dev_info *bdi = &q->backing_dev_info;
+ 
+ 	for (; cgroup != NULL; cgroup = cgroup->parent) {
+ 		iocg = cgroup_to_io_cgroup(cgroup);
+@@ -976,6 +1049,9 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
+ 
+ 		iog->iocg_id = css_id(&iocg->css);
+ 
++		sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
++		iog->dev = MKDEV(major, minor);
++
+ 		io_group_init_entity(iocg, iog);
+ 
+ 		atomic_set(&iog->ref, 0);
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index 56d0bfc..9757e39 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -53,6 +53,13 @@ struct io_entity {
+ 
+ 	unsigned short ioprio, ioprio_class;
+ 	int ioprio_changed;
++
++	/*
++	 * Keep track of total service received by this entity. Keep the
++	 * stats both for time slices and number of sectors dispatched
++	 */
++	unsigned long total_time;
++	unsigned long total_sectors;
+ };
+ 
+ /*
+@@ -104,6 +111,9 @@ struct io_group {
+ 	struct io_queue *async_idle_queue;
+ 	void *key;
+ 	struct rcu_head rcu_head;
++
++	/* The device MKDEV(major, minor), this group has been created for */
++	dev_t	dev;
+ };
+ 
+ struct io_cgroup {
+-- 
+1.6.0.6
 
-Although in that case a name that doesn't suggest that it actually does
-something useful would be better.
