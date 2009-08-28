@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751171AbZH1Ng3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751470AbZH1NiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751171AbZH1Ng3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 09:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbZH1Ng2
+	id S1751470AbZH1NiB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 09:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbZH1NiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 09:36:28 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:33539 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbZH1Ng2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 09:36:28 -0400
-Date: Fri, 28 Aug 2009 14:36:31 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] page-allocator: Maintain rolling count of pages to
-	free from the PCP
-Message-ID: <20090828133631.GF5054@csn.ul.ie>
-References: <1251449067-3109-1-git-send-email-mel@csn.ul.ie> <1251449067-3109-3-git-send-email-mel@csn.ul.ie> <84144f020908280516y6473a531n3f11f3e86251eba4@mail.gmail.com> <20090828125719.GE5054@csn.ul.ie> <1251464564.8514.3.camel@penberg-laptop>
+	Fri, 28 Aug 2009 09:38:00 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:19488 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751011AbZH1Nh7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 09:37:59 -0400
+Message-ID: <4A97DD88.5090504@hp.com>
+Date: Fri, 28 Aug 2009 09:37:12 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1251464564.8514.3.camel@penberg-laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Rik van Riel <riel@redhat.com>
+CC: raz ben yehuda <raziebe@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+References: <1251282598.3514.20.camel@raz>	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>	 <1251300625.18584.18.camel@twins>	 <alpine.DEB.1.10.0908261136590.9933@gentwo.org>	 <1251302598.18584.31.camel@twins>	 <alpine.DEB.1.10.0908261211340.9933@gentwo.org>	 <20090826180407.GA13632@elte.hu>	 <alpine.DEB.1.10.0908261509580.9933@gentwo.org>	 <20090826193252.GA14721@elte.hu>	 <alpine.DEB.1.10.0908261627110.5554@gentwo.org>	 <20090826135041.e6169d18.akpm@linux-foundation.org>	 <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz>	 <4A96B997.1070001@nortel.com> <1251408785.3700.22.camel@raz>	 <alpine.LFD.2.00.0908272348370.2888@localhost.localdomain> <1251448697.3872.15.camel@raz> <4A97DAE7.40603@redhat.com>
+In-Reply-To: <4A97DAE7.40603@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 28, 2009 at 04:02:44PM +0300, Pekka Enberg wrote:
-> Hi Mel,
+Rik van Riel wrote:
+> raz ben yehuda wrote:
 > 
-> On Fri, 2009-08-28 at 13:57 +0100, Mel Gorman wrote:
-> > On Fri, Aug 28, 2009 at 03:16:34PM +0300, Pekka Enberg wrote:
-> > > Hi Mel,
-> > > 
-> > > On Fri, Aug 28, 2009 at 11:44 AM, Mel Gorman<mel@csn.ul.ie> wrote:
-> > > > -               page = list_entry(list->prev, struct page, lru);
-> > > > -               /* have to delete it as __free_one_page list manipulates */
-> > > > -               list_del(&page->lru);
-> > > > -               trace_mm_page_pcpu_drain(page, 0, migratetype);
-> > > > -               __free_one_page(page, zone, 0, migratetype);
-> > > > +               do {
-> > > > +                       page = list_entry(list->prev, struct page, lru);
-> > > > +                       /* must delete as __free_one_page list manipulates */
-> > > > +                       list_del(&page->lru);
-> > > > +                       __free_one_page(page, zone, 0, migratetype);
-> > > > +                       trace_mm_page_pcpu_drain(page, 0, migratetype);
-> > > 
-> > > This calls trace_mm_page_pcpu_drain() *after* __free_one_page(). It's
-> > > probably not a good idea as __free_one_page() can alter the struct
-> > > page in various ways.
-> > > 
-> > 
-> > While true, does it alter the struct page in any way that matters?
+>> yes. latency is a crucial property. 
 > 
-> Page flags and order are probably interesting for tracing?
+> In the case of network packets, wouldn't you get a lower
+> latency by transmitting the packet from the CPU that
+> knows the packet should be transmitted, instead of sending
+> an IPI to another CPU and waiting for that CPU to do the
+> work?
+> 
+> Inter-CPU communication has always been the bottleneck
+> when it comes to SMP performance.  Why does adding more
+> inter-CPU communication make your system faster, instead
+> of slower like one would expect?
 > 
 
-This is PCPU draining. The flags are already clear of any values of interest
-and the order is always 0. I can follow up a fix-patch that reverses it just
-in case but I don't think it makes a major difference?
+Maybe just me being paranoid, but from the beginning this
+"use for dedicated IO processor" has scared the crap out of me.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Reminds me of Winmodem... sell cheap hardware by stealing your CPU!
+
+The HPC FIFO user application on the other hand is a reasonable
+if somewhat edge-case specialized user batch job.
+
+jim
