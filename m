@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZH1TlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZH1ToZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752867AbZH1TlJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 15:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZH1TlJ
+	id S1752842AbZH1ToZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 15:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbZH1ToY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 15:41:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44741 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752540AbZH1TlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 15:41:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH 7 updated] PM: Add a switch for disabling/enabling asynchronous suspend/resume
-Date: Fri, 28 Aug 2009 21:42:05 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc6-rjw; KDE/4.3.0; x86_64; ; )
-Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <200908262217.19609.rjw@sisk.pl> <200908280022.40522.rjw@sisk.pl> <20090828055520.E561A526EC9@mailhub.coreip.homeip.net>
-In-Reply-To: <20090828055520.E561A526EC9@mailhub.coreip.homeip.net>
+	Fri, 28 Aug 2009 15:44:24 -0400
+Received: from web45211.mail.sp1.yahoo.com ([68.180.197.140]:48285 "HELO
+	web45211.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752645AbZH1ToY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 15:44:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=x20GCF9P8lCMS5uUb6GGSO41p+V130mNx5R1KomGcOFe7GgsVBytl07BIyMbh3mYFLi0OVdM5qajR23jMd+6hUSnqWHM60RtV9wR97giLmEvhld9LmdGmgYvAZHM8wzwcGum+xgtK0Nz7Eh61rUdsuwZX4ii4u5TytaW8qJ07c4=;
+Message-ID: <8980.20135.qm@web45211.mail.sp1.yahoo.com>
+X-YMail-OSG: cZAdacMVM1mtyMv76y.yfhyqoB0jj_jL0EaQUpbL04zgf1UgLYTfEUZ9yfzFNrfSazh7Dc_VGFL3RXDaNst9ZhlJ0oQmRpGpQpGLS5bgjql0YKf0.wDgU9LIgeN8Wz9KioEe64B2tePGQPzRJgnkbDG9rPsCzgLdnv3id8sKKseymg7secOmlkpE6XR0QYThWSRgzsGcj0DrChuwJnw-
+X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
+Date: Fri, 28 Aug 2009 12:44:25 -0700 (PDT)
+From: joe Shmoe <jsmoe3@yahoo.com>
+Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <24089.1251486780@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908282142.05812.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 28 August 2009, Dmitry Torokhov wrote:
-> On Fri, Aug 28, 2009 at 12:22:40AM +0200, Rafael J. Wysocki wrote:
-> > +/* kernel/power/main.c */
-> > +extern int pm_async_enabled;
-> >  
+No I am not talking about embedded systems. It is just an example.
+My question is what is preventing the kernel from setting up the page tables so that entire RAM can be mapped upto 4 GB.
+
+page tables have to be setup for every process anyway with first 768 PDE entries being unique and remaining 256 entries being same for all the processes.
+
+
+--- On Fri, 8/28/09, Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
+
+> From: Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu>
+> Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
+> To: "joe Shmoe" <jsmoe3@yahoo.com>
+> Cc: "Roland Dreier" <rdreier@cisco.com>, linux-kernel@vger.kernel.org
+> Date: Friday, August 28, 2009, 3:13 PM
+> On Fri, 28 Aug 2009 11:40:56 PDT, joe
+> Shmoe said:
 > 
-> Sorry, forgot about this in the first mail - why don't we make it a
-> bool?
+> > For the sake of discussion, let us say I have 3.5 GB
+> of RAM of x86 with PAE
+> > disabled and I have only one process running other
+> than kernel.
+> 
+> Oh, so an embedded environment. Sure, you could play games
+> with that.
+> 
+> But most Linux systems have more processes running than
+> just 'init'. And
+> in that case, what do you do with your memory map?  It
+> gets a bit more
+> complicated then....
+> 
+> 
 
-I didn't do that because of the
 
-sprintf(buf, "%d\n", pm_async_enabled)
-
-in pm_async_show(), where it clearly is treated as an int.
-
-Thanks,
-Rafael
+      
