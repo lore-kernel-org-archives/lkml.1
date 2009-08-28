@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbZH1VdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbZH1VeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753197AbZH1VdD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:33:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZH1Vc6
+	id S1753215AbZH1VeF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbZH1Vdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:32:58 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:7848 "EHLO mx1.redhat.com"
+	Fri, 28 Aug 2009 17:33:51 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:25547 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752887AbZH1Vcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:32:50 -0400
+	id S1752968AbZH1Vcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 17:32:52 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
 Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
@@ -21,1188 +21,764 @@ Cc: containers@lists.linux-foundation.org, dm-devel@redhat.com,
        vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org,
        jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
        riel@redhat.com
-Subject: [PATCH 13/23] io-controller: Separate out queue and data
-Date: Fri, 28 Aug 2009 17:31:02 -0400
-Message-Id: <1251495072-7780-14-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 19/23] io-controller: map async requests to appropriate cgroup
+Date: Fri, 28 Aug 2009 17:31:08 -0400
+Message-Id: <1251495072-7780-20-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
 References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o So far noop, deadline and AS had one common structure called *_data which
-  contained both the queue information where requests are queued and also
-  common data used for scheduling. This patch breaks down this common
-  structure in two parts, *_queue and *_data. This is along the lines of
-  cfq where all the reuquests are queued in queue and common data and tunables
-  are part of data.
+o So far we were assuming that a bio/rq belongs to the task who is submitting
+  it. It did not hold good in case of async writes. This patch makes use of
+  blkio_cgroup pataches to attribute the aysnc writes to right group instead
+  of task submitting the bio.
 
-o It does not change the functionality but this re-organization helps once
-  noop, deadline and AS are changed to use hierarchical fair queuing.
+o For sync requests, we continue to assume that io belongs to the task
+  submitting it. Only in case of async requests, we make use of io tracking
+  patches to track the owner cgroup.
 
-o looks like queue_empty function is not required and we can check for
-  q->nr_sorted in elevator layer to see if ioscheduler queues are empty or
-  not.
+o So far cfq always caches the async queue pointer. With async requests now
+  not necessarily being tied to submitting task io context, caching the
+  pointer will not help for async queues. This patch introduces a new config
+  option CONFIG_TRACK_ASYNC_CONTEXT. If this option is not set, cfq retains
+  old behavior where async queue pointer is cached in task context. If it
+  is set, async queue pointer is not cached and we take help of bio
+  tracking patches to determine group bio belongs to and then map it to
+  async queue of that group.
 
 Signed-off-by: Nauman Rafique <nauman@google.com>
 Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/as-iosched.c       |  208 ++++++++++++++++++++++++++--------------------
- block/deadline-iosched.c |  117 ++++++++++++++++----------
- block/elevator.c         |  111 +++++++++++++++++++++----
- block/noop-iosched.c     |   59 ++++++-------
- include/linux/elevator.h |    9 ++-
- 5 files changed, 320 insertions(+), 184 deletions(-)
+ block/Kconfig.iosched    |   16 +++++
+ block/as-iosched.c       |    2 +-
+ block/blk-core.c         |    7 +-
+ block/cfq-iosched.c      |  152 ++++++++++++++++++++++++++++++++++++----------
+ block/deadline-iosched.c |    2 +-
+ block/elevator-fq.c      |   91 +++++++++++++++++++++++----
+ block/elevator-fq.h      |   31 ++++++---
+ block/elevator.c         |   15 +++--
+ include/linux/elevator.h |   22 ++++++-
+ 9 files changed, 266 insertions(+), 72 deletions(-)
 
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index 8ab08da..8b507c4 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -132,6 +132,22 @@ config DEBUG_GROUP_IOSCHED
+ 	  Enable some debugging hooks for hierarchical scheduling support.
+ 	  Currently it just outputs more information in blktrace output.
+ 
++config TRACK_ASYNC_CONTEXT
++	bool "Determine async request context from bio"
++	depends on GROUP_IOSCHED
++	select CGROUP_BLKIO
++	default n
++	---help---
++	  Normally async request is attributed to the task submitting the
++	  request. With group ioscheduling, for accurate accounting of
++	  async writes, one needs to map the request to original task/cgroup
++	  which originated the request and not the submitter of the request.
++
++	  Currently there are generic io tracking patches to provide facility
++	  to map bio to original owner. If this option is set, for async
++	  request, original owner of the bio is decided by using io tracking
++	  patches otherwise we continue to attribute the request to the
++	  submitting thread.
+ endmenu
+ 
+ endif
 diff --git a/block/as-iosched.c b/block/as-iosched.c
-index b90acbe..ec6b940 100644
+index 2a9cd06..8ea9398 100644
 --- a/block/as-iosched.c
 +++ b/block/as-iosched.c
-@@ -76,13 +76,7 @@ enum anticipation_status {
- 				 * or timed out */
- };
- 
--struct as_data {
--	/*
--	 * run time data
--	 */
--
--	struct request_queue *q;	/* the "owner" queue */
--
-+struct as_queue {
- 	/*
- 	 * requests (as_rq s) are present on both sort_list and fifo_list
- 	 */
-@@ -90,6 +84,14 @@ struct as_data {
- 	struct list_head fifo_list[2];
- 
- 	struct request *next_rq[2];	/* next in sort order */
-+	unsigned long last_check_fifo[2];
-+	int write_batch_count;		/* max # of reqs in a write batch */
-+	int current_write_count;	/* how many requests left this batch */
-+	int write_batch_idled;		/* has the write batch gone idle? */
-+};
-+
-+struct as_data {
-+	struct request_queue *q;	/* the "owner" queue */
- 	sector_t last_sector[2];	/* last SYNC & ASYNC sectors */
- 
- 	unsigned long exit_prob;	/* probability a task will exit while
-@@ -103,21 +105,17 @@ struct as_data {
- 	sector_t new_seek_mean;
- 
- 	unsigned long current_batch_expires;
--	unsigned long last_check_fifo[2];
- 	int changed_batch;		/* 1: waiting for old batch to end */
- 	int new_batch;			/* 1: waiting on first read complete */
--	int batch_data_dir;		/* current batch SYNC / ASYNC */
--	int write_batch_count;		/* max # of reqs in a write batch */
--	int current_write_count;	/* how many requests left this batch */
--	int write_batch_idled;		/* has the write batch gone idle? */
- 
- 	enum anticipation_status antic_status;
- 	unsigned long antic_start;	/* jiffies: when it started */
- 	struct timer_list antic_timer;	/* anticipatory scheduling timer */
--	struct work_struct antic_work;	/* Deferred unplugging */
-+	struct work_struct antic_work;  /* Deferred unplugging */
- 	struct io_context *io_context;	/* Identify the expected process */
- 	int ioc_finished; /* IO associated with io_context is finished */
- 	int nr_dispatched;
-+	int batch_data_dir;		/* current batch SYNC / ASYNC */
- 
- 	/*
- 	 * settings that change how the i/o scheduler behaves
-@@ -258,13 +256,14 @@ static void as_put_io_context(struct request *rq)
- /*
-  * rb tree support functions
-  */
--#define RQ_RB_ROOT(ad, rq)	(&(ad)->sort_list[rq_is_sync((rq))])
-+#define RQ_RB_ROOT(asq, rq)	(&(asq)->sort_list[rq_is_sync((rq))])
- 
- static void as_add_rq_rb(struct as_data *ad, struct request *rq)
+@@ -1515,7 +1515,7 @@ as_merge(struct request_queue *q, struct request **req, struct bio *bio)
  {
- 	struct request *alias;
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
- 
--	while ((unlikely(alias = elv_rb_add(RQ_RB_ROOT(ad, rq), rq)))) {
-+	while ((unlikely(alias = elv_rb_add(RQ_RB_ROOT(asq, rq), rq)))) {
- 		as_move_to_dispatch(ad, alias);
- 		as_antic_stop(ad);
- 	}
-@@ -272,7 +271,9 @@ static void as_add_rq_rb(struct as_data *ad, struct request *rq)
- 
- static inline void as_del_rq_rb(struct as_data *ad, struct request *rq)
- {
--	elv_rb_del(RQ_RB_ROOT(ad, rq), rq);
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
-+
-+	elv_rb_del(RQ_RB_ROOT(asq, rq), rq);
- }
- 
- /*
-@@ -366,7 +367,7 @@ as_choose_req(struct as_data *ad, struct request *rq1, struct request *rq2)
-  * what request to process next. Anticipation works on top of this.
-  */
- static struct request *
--as_find_next_rq(struct as_data *ad, struct request *last)
-+as_find_next_rq(struct as_data *ad, struct as_queue *asq, struct request *last)
- {
- 	struct rb_node *rbnext = rb_next(&last->rb_node);
- 	struct rb_node *rbprev = rb_prev(&last->rb_node);
-@@ -382,7 +383,7 @@ as_find_next_rq(struct as_data *ad, struct request *last)
- 	else {
- 		const int data_dir = rq_is_sync(last);
- 
--		rbnext = rb_first(&ad->sort_list[data_dir]);
-+		rbnext = rb_first(&asq->sort_list[data_dir]);
- 		if (rbnext && rbnext != &last->rb_node)
- 			next = rb_entry_rq(rbnext);
- 	}
-@@ -789,9 +790,10 @@ static int as_can_anticipate(struct as_data *ad, struct request *rq)
- static void as_update_rq(struct as_data *ad, struct request *rq)
- {
- 	const int data_dir = rq_is_sync(rq);
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
- 
- 	/* keep the next_rq cache up to date */
--	ad->next_rq[data_dir] = as_choose_req(ad, rq, ad->next_rq[data_dir]);
-+	asq->next_rq[data_dir] = as_choose_req(ad, rq, asq->next_rq[data_dir]);
- 
- 	/*
- 	 * have we been anticipating this request?
-@@ -812,25 +814,26 @@ static void update_write_batch(struct as_data *ad)
- {
- 	unsigned long batch = ad->batch_expire[BLK_RW_ASYNC];
- 	long write_time;
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, NULL);
- 
- 	write_time = (jiffies - ad->current_batch_expires) + batch;
- 	if (write_time < 0)
- 		write_time = 0;
- 
--	if (write_time > batch && !ad->write_batch_idled) {
-+	if (write_time > batch && !asq->write_batch_idled) {
- 		if (write_time > batch * 3)
--			ad->write_batch_count /= 2;
-+			asq->write_batch_count /= 2;
- 		else
--			ad->write_batch_count--;
--	} else if (write_time < batch && ad->current_write_count == 0) {
-+			asq->write_batch_count--;
-+	} else if (write_time < batch && asq->current_write_count == 0) {
- 		if (batch > write_time * 3)
--			ad->write_batch_count *= 2;
-+			asq->write_batch_count *= 2;
- 		else
--			ad->write_batch_count++;
-+			asq->write_batch_count++;
- 	}
- 
--	if (ad->write_batch_count < 1)
--		ad->write_batch_count = 1;
-+	if (asq->write_batch_count < 1)
-+		asq->write_batch_count = 1;
- }
- 
- /*
-@@ -901,6 +904,7 @@ static void as_remove_queued_request(struct request_queue *q,
- 	const int data_dir = rq_is_sync(rq);
- 	struct as_data *ad = q->elevator->elevator_data;
- 	struct io_context *ioc;
-+	struct as_queue *asq = elv_get_sched_queue(q, rq);
- 
- 	WARN_ON(RQ_STATE(rq) != AS_RQ_QUEUED);
- 
-@@ -914,8 +918,8 @@ static void as_remove_queued_request(struct request_queue *q,
- 	 * Update the "next_rq" cache if we are about to remove its
- 	 * entry
- 	 */
--	if (ad->next_rq[data_dir] == rq)
--		ad->next_rq[data_dir] = as_find_next_rq(ad, rq);
-+	if (asq->next_rq[data_dir] == rq)
-+		asq->next_rq[data_dir] = as_find_next_rq(ad, asq, rq);
- 
- 	rq_fifo_clear(rq);
- 	as_del_rq_rb(ad, rq);
-@@ -929,23 +933,23 @@ static void as_remove_queued_request(struct request_queue *q,
-  *
-  * See as_antic_expired comment.
-  */
--static int as_fifo_expired(struct as_data *ad, int adir)
-+static int as_fifo_expired(struct as_data *ad, struct as_queue *asq, int adir)
- {
- 	struct request *rq;
- 	long delta_jif;
- 
--	delta_jif = jiffies - ad->last_check_fifo[adir];
-+	delta_jif = jiffies - asq->last_check_fifo[adir];
- 	if (unlikely(delta_jif < 0))
- 		delta_jif = -delta_jif;
- 	if (delta_jif < ad->fifo_expire[adir])
- 		return 0;
- 
--	ad->last_check_fifo[adir] = jiffies;
-+	asq->last_check_fifo[adir] = jiffies;
- 
--	if (list_empty(&ad->fifo_list[adir]))
-+	if (list_empty(&asq->fifo_list[adir]))
- 		return 0;
- 
--	rq = rq_entry_fifo(ad->fifo_list[adir].next);
-+	rq = rq_entry_fifo(asq->fifo_list[adir].next);
- 
- 	return time_after(jiffies, rq_fifo_time(rq));
- }
-@@ -954,7 +958,7 @@ static int as_fifo_expired(struct as_data *ad, int adir)
-  * as_batch_expired returns true if the current batch has expired. A batch
-  * is a set of reads or a set of writes.
-  */
--static inline int as_batch_expired(struct as_data *ad)
-+static inline int as_batch_expired(struct as_data *ad, struct as_queue *asq)
- {
- 	if (ad->changed_batch || ad->new_batch)
- 		return 0;
-@@ -964,7 +968,7 @@ static inline int as_batch_expired(struct as_data *ad)
- 		return time_after(jiffies, ad->current_batch_expires);
- 
- 	return time_after(jiffies, ad->current_batch_expires)
--		|| ad->current_write_count == 0;
-+		|| asq->current_write_count == 0;
- }
- 
- /*
-@@ -973,6 +977,7 @@ static inline int as_batch_expired(struct as_data *ad)
- static void as_move_to_dispatch(struct as_data *ad, struct request *rq)
- {
- 	const int data_dir = rq_is_sync(rq);
-+	struct as_queue *asq = elv_get_sched_queue(ad->q, rq);
- 
- 	BUG_ON(RB_EMPTY_NODE(&rq->rb_node));
- 
-@@ -995,12 +1000,12 @@ static void as_move_to_dispatch(struct as_data *ad, struct request *rq)
- 			ad->io_context = NULL;
- 		}
- 
--		if (ad->current_write_count != 0)
--			ad->current_write_count--;
-+		if (asq->current_write_count != 0)
-+			asq->current_write_count--;
- 	}
- 	ad->ioc_finished = 0;
- 
--	ad->next_rq[data_dir] = as_find_next_rq(ad, rq);
-+	asq->next_rq[data_dir] = as_find_next_rq(ad, asq, rq);
- 
- 	/*
- 	 * take it off the sort and fifo list, add to dispatch queue
-@@ -1024,9 +1029,16 @@ static void as_move_to_dispatch(struct as_data *ad, struct request *rq)
- static int as_dispatch_request(struct request_queue *q, int force)
- {
- 	struct as_data *ad = q->elevator->elevator_data;
--	const int reads = !list_empty(&ad->fifo_list[BLK_RW_SYNC]);
--	const int writes = !list_empty(&ad->fifo_list[BLK_RW_ASYNC]);
- 	struct request *rq;
-+	struct as_queue *asq = elv_select_sched_queue(q, force);
-+	int reads, writes;
-+
-+	if (!asq)
-+		return 0;
-+
-+	reads = !list_empty(&asq->fifo_list[BLK_RW_SYNC]);
-+	writes = !list_empty(&asq->fifo_list[BLK_RW_ASYNC]);
-+
- 
- 	if (unlikely(force)) {
- 		/*
-@@ -1042,25 +1054,25 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 		ad->changed_batch = 0;
- 		ad->new_batch = 0;
- 
--		while (ad->next_rq[BLK_RW_SYNC]) {
--			as_move_to_dispatch(ad, ad->next_rq[BLK_RW_SYNC]);
-+		while (asq->next_rq[BLK_RW_SYNC]) {
-+			as_move_to_dispatch(ad, asq->next_rq[BLK_RW_SYNC]);
- 			dispatched++;
- 		}
--		ad->last_check_fifo[BLK_RW_SYNC] = jiffies;
-+		asq->last_check_fifo[BLK_RW_SYNC] = jiffies;
- 
--		while (ad->next_rq[BLK_RW_ASYNC]) {
--			as_move_to_dispatch(ad, ad->next_rq[BLK_RW_ASYNC]);
-+		while (asq->next_rq[BLK_RW_ASYNC]) {
-+			as_move_to_dispatch(ad, asq->next_rq[BLK_RW_ASYNC]);
- 			dispatched++;
- 		}
--		ad->last_check_fifo[BLK_RW_ASYNC] = jiffies;
-+		asq->last_check_fifo[BLK_RW_ASYNC] = jiffies;
- 
- 		return dispatched;
- 	}
- 
- 	/* Signal that the write batch was uncontended, so we can't time it */
- 	if (ad->batch_data_dir == BLK_RW_ASYNC && !reads) {
--		if (ad->current_write_count == 0 || !writes)
--			ad->write_batch_idled = 1;
-+		if (asq->current_write_count == 0 || !writes)
-+			asq->write_batch_idled = 1;
- 	}
- 
- 	if (!(reads || writes)
-@@ -1069,14 +1081,14 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 		|| ad->changed_batch)
- 		return 0;
- 
--	if (!(reads && writes && as_batch_expired(ad))) {
-+	if (!(reads && writes && as_batch_expired(ad, asq))) {
- 		/*
- 		 * batch is still running or no reads or no writes
- 		 */
--		rq = ad->next_rq[ad->batch_data_dir];
-+		rq = asq->next_rq[ad->batch_data_dir];
- 
- 		if (ad->batch_data_dir == BLK_RW_SYNC && ad->antic_expire) {
--			if (as_fifo_expired(ad, BLK_RW_SYNC))
-+			if (as_fifo_expired(ad, asq, BLK_RW_SYNC))
- 				goto fifo_expired;
- 
- 			if (as_can_anticipate(ad, rq)) {
-@@ -1100,7 +1112,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 	 */
- 
- 	if (reads) {
--		BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[BLK_RW_SYNC]));
-+		BUG_ON(RB_EMPTY_ROOT(&asq->sort_list[BLK_RW_SYNC]));
- 
- 		if (writes && ad->batch_data_dir == BLK_RW_SYNC)
- 			/*
-@@ -1113,8 +1125,8 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 			ad->changed_batch = 1;
- 		}
- 		ad->batch_data_dir = BLK_RW_SYNC;
--		rq = rq_entry_fifo(ad->fifo_list[BLK_RW_SYNC].next);
--		ad->last_check_fifo[ad->batch_data_dir] = jiffies;
-+		rq = rq_entry_fifo(asq->fifo_list[BLK_RW_SYNC].next);
-+		asq->last_check_fifo[ad->batch_data_dir] = jiffies;
- 		goto dispatch_request;
- 	}
- 
-@@ -1124,7 +1136,7 @@ static int as_dispatch_request(struct request_queue *q, int force)
- 
- 	if (writes) {
- dispatch_writes:
--		BUG_ON(RB_EMPTY_ROOT(&ad->sort_list[BLK_RW_ASYNC]));
-+		BUG_ON(RB_EMPTY_ROOT(&asq->sort_list[BLK_RW_ASYNC]));
- 
- 		if (ad->batch_data_dir == BLK_RW_SYNC) {
- 			ad->changed_batch = 1;
-@@ -1137,10 +1149,10 @@ dispatch_writes:
- 			ad->new_batch = 0;
- 		}
- 		ad->batch_data_dir = BLK_RW_ASYNC;
--		ad->current_write_count = ad->write_batch_count;
--		ad->write_batch_idled = 0;
--		rq = rq_entry_fifo(ad->fifo_list[BLK_RW_ASYNC].next);
--		ad->last_check_fifo[BLK_RW_ASYNC] = jiffies;
-+		asq->current_write_count = asq->write_batch_count;
-+		asq->write_batch_idled = 0;
-+		rq = rq_entry_fifo(asq->fifo_list[BLK_RW_ASYNC].next);
-+		asq->last_check_fifo[BLK_RW_ASYNC] = jiffies;
- 		goto dispatch_request;
- 	}
- 
-@@ -1152,9 +1164,9 @@ dispatch_request:
- 	 * If a request has expired, service it.
- 	 */
- 
--	if (as_fifo_expired(ad, ad->batch_data_dir)) {
-+	if (as_fifo_expired(ad, asq, ad->batch_data_dir)) {
- fifo_expired:
--		rq = rq_entry_fifo(ad->fifo_list[ad->batch_data_dir].next);
-+		rq = rq_entry_fifo(asq->fifo_list[ad->batch_data_dir].next);
- 	}
- 
- 	if (ad->changed_batch) {
-@@ -1187,6 +1199,7 @@ static void as_add_request(struct request_queue *q, struct request *rq)
- {
- 	struct as_data *ad = q->elevator->elevator_data;
- 	int data_dir;
-+	struct as_queue *asq = elv_get_sched_queue(q, rq);
- 
- 	RQ_SET_STATE(rq, AS_RQ_NEW);
- 
-@@ -1205,7 +1218,7 @@ static void as_add_request(struct request_queue *q, struct request *rq)
- 	 * set expire time and add to fifo list
- 	 */
- 	rq_set_fifo_time(rq, jiffies + ad->fifo_expire[data_dir]);
--	list_add_tail(&rq->queuelist, &ad->fifo_list[data_dir]);
-+	list_add_tail(&rq->queuelist, &asq->fifo_list[data_dir]);
- 
- 	as_update_rq(ad, rq); /* keep state machine up to date */
- 	RQ_SET_STATE(rq, AS_RQ_QUEUED);
-@@ -1227,31 +1240,20 @@ static void as_deactivate_request(struct request_queue *q, struct request *rq)
- 		atomic_inc(&RQ_IOC(rq)->aic->nr_dispatched);
- }
- 
--/*
-- * as_queue_empty tells us if there are requests left in the device. It may
-- * not be the case that a driver can get the next request even if the queue
-- * is not empty - it is used in the block layer to check for plugging and
-- * merging opportunities
-- */
--static int as_queue_empty(struct request_queue *q)
--{
--	struct as_data *ad = q->elevator->elevator_data;
--
--	return list_empty(&ad->fifo_list[BLK_RW_ASYNC])
--		&& list_empty(&ad->fifo_list[BLK_RW_SYNC]);
--}
--
- static int
- as_merge(struct request_queue *q, struct request **req, struct bio *bio)
- {
--	struct as_data *ad = q->elevator->elevator_data;
  	sector_t rb_key = bio->bi_sector + bio_sectors(bio);
  	struct request *__rq;
-+	struct as_queue *asq = elv_get_sched_queue_current(q);
-+
-+	if (!asq)
-+		return ELEVATOR_NO_MERGE;
+-	struct as_queue *asq = elv_get_sched_queue_current(q);
++	struct as_queue *asq = elv_get_sched_queue_bio(q, bio);
  
- 	/*
- 	 * check for front merge
- 	 */
--	__rq = elv_rb_find(&ad->sort_list[bio_data_dir(bio)], rb_key);
-+	__rq = elv_rb_find(&asq->sort_list[bio_data_dir(bio)], rb_key);
- 	if (__rq && elv_rq_merge_ok(__rq, bio)) {
- 		*req = __rq;
- 		return ELEVATOR_FRONT_MERGE;
-@@ -1334,6 +1336,41 @@ static int as_may_queue(struct request_queue *q, int rw)
- 	return ret;
+ 	if (!asq)
+ 		return ELEVATOR_NO_MERGE;
+diff --git a/block/blk-core.c b/block/blk-core.c
+index e3299a7..47cce59 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -619,7 +619,8 @@ static inline void blk_free_request(struct request_queue *q, struct request *rq)
  }
  
-+/* Called with queue lock held */
-+static void *as_alloc_as_queue(struct request_queue *q,
-+				struct elevator_queue *eq, gfp_t gfp_mask)
-+{
-+	struct as_queue *asq;
-+	struct as_data *ad = eq->elevator_data;
-+
-+	asq = kmalloc_node(sizeof(*asq), gfp_mask | __GFP_ZERO, q->node);
-+	if (asq == NULL)
-+		goto out;
-+
-+	INIT_LIST_HEAD(&asq->fifo_list[BLK_RW_SYNC]);
-+	INIT_LIST_HEAD(&asq->fifo_list[BLK_RW_ASYNC]);
-+	asq->sort_list[BLK_RW_SYNC] = RB_ROOT;
-+	asq->sort_list[BLK_RW_ASYNC] = RB_ROOT;
-+	if (ad)
-+		asq->write_batch_count = ad->batch_expire[BLK_RW_ASYNC] / 10;
-+	else
-+		asq->write_batch_count = default_write_batch_expire / 10;
-+
-+	if (asq->write_batch_count < 2)
-+		asq->write_batch_count = 2;
-+out:
-+	return asq;
-+}
-+
-+static void as_free_as_queue(struct elevator_queue *e, void *sched_queue)
-+{
-+	struct as_queue *asq = sched_queue;
-+
-+	BUG_ON(!list_empty(&asq->fifo_list[BLK_RW_SYNC]));
-+	BUG_ON(!list_empty(&asq->fifo_list[BLK_RW_ASYNC]));
-+	kfree(asq);
-+}
-+
- static void as_exit_queue(struct elevator_queue *e)
+ static struct request *
+-blk_alloc_request(struct request_queue *q, int flags, int priv, gfp_t gfp_mask)
++blk_alloc_request(struct request_queue *q, struct bio *bio, int flags, int priv,
++					gfp_t gfp_mask)
  {
- 	struct as_data *ad = e->elevator_data;
-@@ -1341,9 +1378,6 @@ static void as_exit_queue(struct elevator_queue *e)
- 	del_timer_sync(&ad->antic_timer);
- 	cancel_work_sync(&ad->antic_work);
+ 	struct request *rq = mempool_alloc(q->rq.rq_pool, gfp_mask);
  
--	BUG_ON(!list_empty(&ad->fifo_list[BLK_RW_SYNC]));
--	BUG_ON(!list_empty(&ad->fifo_list[BLK_RW_ASYNC]));
--
- 	put_io_context(ad->io_context);
- 	kfree(ad);
- }
-@@ -1367,10 +1401,6 @@ static void *as_init_queue(struct request_queue *q, struct elevator_queue *eq)
- 	init_timer(&ad->antic_timer);
- 	INIT_WORK(&ad->antic_work, as_work_handler);
+@@ -631,7 +632,7 @@ blk_alloc_request(struct request_queue *q, int flags, int priv, gfp_t gfp_mask)
+ 	rq->cmd_flags = flags | REQ_ALLOCED;
  
--	INIT_LIST_HEAD(&ad->fifo_list[BLK_RW_SYNC]);
--	INIT_LIST_HEAD(&ad->fifo_list[BLK_RW_ASYNC]);
--	ad->sort_list[BLK_RW_SYNC] = RB_ROOT;
--	ad->sort_list[BLK_RW_ASYNC] = RB_ROOT;
- 	ad->fifo_expire[BLK_RW_SYNC] = default_read_expire;
- 	ad->fifo_expire[BLK_RW_ASYNC] = default_write_expire;
- 	ad->antic_expire = default_antic_expire;
-@@ -1378,9 +1408,6 @@ static void *as_init_queue(struct request_queue *q, struct elevator_queue *eq)
- 	ad->batch_expire[BLK_RW_ASYNC] = default_write_batch_expire;
- 
- 	ad->current_batch_expires = jiffies + ad->batch_expire[BLK_RW_SYNC];
--	ad->write_batch_count = ad->batch_expire[BLK_RW_ASYNC] / 10;
--	if (ad->write_batch_count < 2)
--		ad->write_batch_count = 2;
- 
- 	return ad;
- }
-@@ -1478,7 +1505,6 @@ static struct elevator_type iosched_as = {
- 		.elevator_add_req_fn =		as_add_request,
- 		.elevator_activate_req_fn =	as_activate_request,
- 		.elevator_deactivate_req_fn = 	as_deactivate_request,
--		.elevator_queue_empty_fn =	as_queue_empty,
- 		.elevator_completed_req_fn =	as_completed_request,
- 		.elevator_former_req_fn =	elv_rb_former_request,
- 		.elevator_latter_req_fn =	elv_rb_latter_request,
-@@ -1486,6 +1512,8 @@ static struct elevator_type iosched_as = {
- 		.elevator_init_fn =		as_init_queue,
- 		.elevator_exit_fn =		as_exit_queue,
- 		.trim =				as_trim,
-+		.elevator_alloc_sched_queue_fn = as_alloc_as_queue,
-+		.elevator_free_sched_queue_fn = as_free_as_queue,
- 	},
- 
- 	.elevator_attrs = as_attrs,
-diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
-index 25af8b9..5b017da 100644
---- a/block/deadline-iosched.c
-+++ b/block/deadline-iosched.c
-@@ -23,25 +23,23 @@ static const int writes_starved = 2;    /* max times reads can starve a write */
- static const int fifo_batch = 16;       /* # of sequential requests treated as one
- 				     by the above parameters. For throughput. */
- 
--struct deadline_data {
--	/*
--	 * run time data
--	 */
--
-+struct deadline_queue {
- 	/*
- 	 * requests (deadline_rq s) are present on both sort_list and fifo_list
- 	 */
--	struct rb_root sort_list[2];	
-+	struct rb_root sort_list[2];
- 	struct list_head fifo_list[2];
--
- 	/*
- 	 * next in sort order. read, write or both are NULL
- 	 */
- 	struct request *next_rq[2];
- 	unsigned int batching;		/* number of sequential requests made */
--	sector_t last_sector;		/* head position */
- 	unsigned int starved;		/* times reads have starved writes */
-+};
- 
-+struct deadline_data {
-+	struct request_queue *q;
-+	sector_t last_sector;		/* head position */
- 	/*
- 	 * settings that change how the i/o scheduler behaves
- 	 */
-@@ -56,7 +54,9 @@ static void deadline_move_request(struct deadline_data *, struct request *);
- static inline struct rb_root *
- deadline_rb_root(struct deadline_data *dd, struct request *rq)
- {
--	return &dd->sort_list[rq_data_dir(rq)];
-+	struct deadline_queue *dq = elv_get_sched_queue(dd->q, rq);
-+
-+	return &dq->sort_list[rq_data_dir(rq)];
- }
- 
- /*
-@@ -87,9 +87,10 @@ static inline void
- deadline_del_rq_rb(struct deadline_data *dd, struct request *rq)
- {
- 	const int data_dir = rq_data_dir(rq);
-+	struct deadline_queue *dq = elv_get_sched_queue(dd->q, rq);
- 
--	if (dd->next_rq[data_dir] == rq)
--		dd->next_rq[data_dir] = deadline_latter_request(rq);
-+	if (dq->next_rq[data_dir] == rq)
-+		dq->next_rq[data_dir] = deadline_latter_request(rq);
- 
- 	elv_rb_del(deadline_rb_root(dd, rq), rq);
- }
-@@ -102,6 +103,7 @@ deadline_add_request(struct request_queue *q, struct request *rq)
- {
- 	struct deadline_data *dd = q->elevator->elevator_data;
- 	const int data_dir = rq_data_dir(rq);
-+	struct deadline_queue *dq = elv_get_sched_queue(q, rq);
- 
- 	deadline_add_rq_rb(dd, rq);
- 
-@@ -109,7 +111,7 @@ deadline_add_request(struct request_queue *q, struct request *rq)
- 	 * set expire time and add to fifo list
- 	 */
- 	rq_set_fifo_time(rq, jiffies + dd->fifo_expire[data_dir]);
--	list_add_tail(&rq->queuelist, &dd->fifo_list[data_dir]);
-+	list_add_tail(&rq->queuelist, &dq->fifo_list[data_dir]);
- }
- 
- /*
-@@ -129,6 +131,11 @@ deadline_merge(struct request_queue *q, struct request **req, struct bio *bio)
- 	struct deadline_data *dd = q->elevator->elevator_data;
- 	struct request *__rq;
- 	int ret;
-+	struct deadline_queue *dq;
-+
-+	dq = elv_get_sched_queue_current(q);
-+	if (!dq)
-+		return ELEVATOR_NO_MERGE;
- 
- 	/*
- 	 * check for front merge
-@@ -136,7 +143,7 @@ deadline_merge(struct request_queue *q, struct request **req, struct bio *bio)
- 	if (dd->front_merges) {
- 		sector_t sector = bio->bi_sector + bio_sectors(bio);
- 
--		__rq = elv_rb_find(&dd->sort_list[bio_data_dir(bio)], sector);
-+		__rq = elv_rb_find(&dq->sort_list[bio_data_dir(bio)], sector);
- 		if (__rq) {
- 			BUG_ON(sector != blk_rq_pos(__rq));
- 
-@@ -207,10 +214,11 @@ static void
- deadline_move_request(struct deadline_data *dd, struct request *rq)
- {
- 	const int data_dir = rq_data_dir(rq);
-+	struct deadline_queue *dq = elv_get_sched_queue(dd->q, rq);
- 
--	dd->next_rq[READ] = NULL;
--	dd->next_rq[WRITE] = NULL;
--	dd->next_rq[data_dir] = deadline_latter_request(rq);
-+	dq->next_rq[READ] = NULL;
-+	dq->next_rq[WRITE] = NULL;
-+	dq->next_rq[data_dir] = deadline_latter_request(rq);
- 
- 	dd->last_sector = rq_end_sector(rq);
- 
-@@ -225,9 +233,9 @@ deadline_move_request(struct deadline_data *dd, struct request *rq)
-  * deadline_check_fifo returns 0 if there are no expired requests on the fifo,
-  * 1 otherwise. Requires !list_empty(&dd->fifo_list[data_dir])
-  */
--static inline int deadline_check_fifo(struct deadline_data *dd, int ddir)
-+static inline int deadline_check_fifo(struct deadline_queue *dq, int ddir)
- {
--	struct request *rq = rq_entry_fifo(dd->fifo_list[ddir].next);
-+	struct request *rq = rq_entry_fifo(dq->fifo_list[ddir].next);
- 
- 	/*
- 	 * rq is expired!
-@@ -245,20 +253,26 @@ static inline int deadline_check_fifo(struct deadline_data *dd, int ddir)
- static int deadline_dispatch_requests(struct request_queue *q, int force)
- {
- 	struct deadline_data *dd = q->elevator->elevator_data;
--	const int reads = !list_empty(&dd->fifo_list[READ]);
--	const int writes = !list_empty(&dd->fifo_list[WRITE]);
-+	struct deadline_queue *dq = elv_select_sched_queue(q, force);
-+	int reads, writes;
- 	struct request *rq;
- 	int data_dir;
- 
-+	if (!dq)
-+		return 0;
-+
-+	reads = !list_empty(&dq->fifo_list[READ]);
-+	writes = !list_empty(&dq->fifo_list[WRITE]);
-+
- 	/*
- 	 * batches are currently reads XOR writes
- 	 */
--	if (dd->next_rq[WRITE])
--		rq = dd->next_rq[WRITE];
-+	if (dq->next_rq[WRITE])
-+		rq = dq->next_rq[WRITE];
- 	else
--		rq = dd->next_rq[READ];
-+		rq = dq->next_rq[READ];
- 
--	if (rq && dd->batching < dd->fifo_batch)
-+	if (rq && dq->batching < dd->fifo_batch)
- 		/* we have a next request are still entitled to batch */
- 		goto dispatch_request;
- 
-@@ -268,9 +282,9 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
- 	 */
- 
- 	if (reads) {
--		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[READ]));
-+		BUG_ON(RB_EMPTY_ROOT(&dq->sort_list[READ]));
- 
--		if (writes && (dd->starved++ >= dd->writes_starved))
-+		if (writes && (dq->starved++ >= dd->writes_starved))
- 			goto dispatch_writes;
- 
- 		data_dir = READ;
-@@ -284,9 +298,9 @@ static int deadline_dispatch_requests(struct request_queue *q, int force)
- 
- 	if (writes) {
- dispatch_writes:
--		BUG_ON(RB_EMPTY_ROOT(&dd->sort_list[WRITE]));
-+		BUG_ON(RB_EMPTY_ROOT(&dq->sort_list[WRITE]));
- 
--		dd->starved = 0;
-+		dq->starved = 0;
- 
- 		data_dir = WRITE;
- 
-@@ -299,48 +313,62 @@ dispatch_find_request:
- 	/*
- 	 * we are not running a batch, find best request for selected data_dir
- 	 */
--	if (deadline_check_fifo(dd, data_dir) || !dd->next_rq[data_dir]) {
-+	if (deadline_check_fifo(dq, data_dir) || !dq->next_rq[data_dir]) {
- 		/*
- 		 * A deadline has expired, the last request was in the other
- 		 * direction, or we have run out of higher-sectored requests.
- 		 * Start again from the request with the earliest expiry time.
- 		 */
--		rq = rq_entry_fifo(dd->fifo_list[data_dir].next);
-+		rq = rq_entry_fifo(dq->fifo_list[data_dir].next);
- 	} else {
- 		/*
- 		 * The last req was the same dir and we have a next request in
- 		 * sort order. No expired requests so continue on from here.
- 		 */
--		rq = dd->next_rq[data_dir];
-+		rq = dq->next_rq[data_dir];
- 	}
- 
--	dd->batching = 0;
-+	dq->batching = 0;
- 
- dispatch_request:
- 	/*
- 	 * rq is the selected appropriate request.
- 	 */
--	dd->batching++;
-+	dq->batching++;
- 	deadline_move_request(dd, rq);
- 
- 	return 1;
- }
- 
--static int deadline_queue_empty(struct request_queue *q)
-+static void *deadline_alloc_deadline_queue(struct request_queue *q,
-+				struct elevator_queue *eq, gfp_t gfp_mask)
- {
--	struct deadline_data *dd = q->elevator->elevator_data;
-+	struct deadline_queue *dq;
- 
--	return list_empty(&dd->fifo_list[WRITE])
--		&& list_empty(&dd->fifo_list[READ]);
-+	dq = kmalloc_node(sizeof(*dq), gfp_mask | __GFP_ZERO, q->node);
-+	if (dq == NULL)
-+		goto out;
-+
-+	INIT_LIST_HEAD(&dq->fifo_list[READ]);
-+	INIT_LIST_HEAD(&dq->fifo_list[WRITE]);
-+	dq->sort_list[READ] = RB_ROOT;
-+	dq->sort_list[WRITE] = RB_ROOT;
-+out:
-+	return dq;
-+}
-+
-+static void deadline_free_deadline_queue(struct elevator_queue *e,
-+						void *sched_queue)
-+{
-+	struct deadline_queue *dq = sched_queue;
-+
-+	kfree(dq);
- }
- 
- static void deadline_exit_queue(struct elevator_queue *e)
- {
- 	struct deadline_data *dd = e->elevator_data;
- 
--	BUG_ON(!list_empty(&dd->fifo_list[READ]));
--	BUG_ON(!list_empty(&dd->fifo_list[WRITE]));
--
- 	kfree(dd);
- }
- 
-@@ -356,10 +384,7 @@ deadline_init_queue(struct request_queue *q, struct elevator_queue *eq)
- 	if (!dd)
- 		return NULL;
- 
--	INIT_LIST_HEAD(&dd->fifo_list[READ]);
--	INIT_LIST_HEAD(&dd->fifo_list[WRITE]);
--	dd->sort_list[READ] = RB_ROOT;
--	dd->sort_list[WRITE] = RB_ROOT;
-+	dd->q = q;
- 	dd->fifo_expire[READ] = read_expire;
- 	dd->fifo_expire[WRITE] = write_expire;
- 	dd->writes_starved = writes_starved;
-@@ -446,13 +471,13 @@ static struct elevator_type iosched_deadline = {
- 		.elevator_merge_req_fn =	deadline_merged_requests,
- 		.elevator_dispatch_fn =		deadline_dispatch_requests,
- 		.elevator_add_req_fn =		deadline_add_request,
--		.elevator_queue_empty_fn =	deadline_queue_empty,
- 		.elevator_former_req_fn =	elv_rb_former_request,
- 		.elevator_latter_req_fn =	elv_rb_latter_request,
- 		.elevator_init_fn =		deadline_init_queue,
- 		.elevator_exit_fn =		deadline_exit_queue,
-+		.elevator_alloc_sched_queue_fn = deadline_alloc_deadline_queue,
-+		.elevator_free_sched_queue_fn = deadline_free_deadline_queue,
- 	},
--
- 	.elevator_attrs = deadline_attrs,
- 	.elevator_name = "deadline",
- 	.elevator_owner = THIS_MODULE,
-diff --git a/block/elevator.c b/block/elevator.c
-index b2725cd..0b7c5a6 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -197,17 +197,54 @@ static struct elevator_type *elevator_get(const char *name)
- 	return e;
- }
- 
--static void *elevator_init_queue(struct request_queue *q,
--				 struct elevator_queue *eq)
-+static void *
-+elevator_init_data(struct request_queue *q, struct elevator_queue *eq)
- {
--	return eq->ops->elevator_init_fn(q, eq);
-+	void *data = NULL;
-+
-+	if (eq->ops->elevator_init_fn) {
-+		data = eq->ops->elevator_init_fn(q, eq);
-+		if (data)
-+			return data;
-+		else
-+			return ERR_PTR(-ENOMEM);
-+	}
-+
-+	/* IO scheduler does not instanciate data (noop), it is not an error */
-+	return NULL;
-+}
-+
-+static void
-+elevator_free_sched_queue(struct elevator_queue *eq, void *sched_queue)
-+{
-+	/* Not all io schedulers (cfq) strore sched_queue */
-+	if (!sched_queue)
-+		return;
-+	eq->ops->elevator_free_sched_queue_fn(eq, sched_queue);
-+}
-+
-+static void *
-+elevator_alloc_sched_queue(struct request_queue *q, struct elevator_queue *eq)
-+{
-+	void *sched_queue = NULL;
-+
-+	if (eq->ops->elevator_alloc_sched_queue_fn) {
-+		sched_queue = eq->ops->elevator_alloc_sched_queue_fn(q, eq,
-+								GFP_KERNEL);
-+		if (!sched_queue)
-+			return ERR_PTR(-ENOMEM);
-+
-+	}
-+
-+	return sched_queue;
- }
- 
- static void elevator_attach(struct request_queue *q, struct elevator_queue *eq,
--			   void *data)
-+				void *data, void *sched_queue)
- {
- 	q->elevator = eq;
- 	eq->elevator_data = data;
-+	eq->sched_queue = sched_queue;
- }
- 
- static char chosen_elevator[16];
-@@ -288,7 +325,7 @@ int elevator_init(struct request_queue *q, char *name)
- 	struct elevator_type *e = NULL;
- 	struct elevator_queue *eq;
- 	int ret = 0;
--	void *data;
-+	void *data = NULL, *sched_queue = NULL;
- 
- 	INIT_LIST_HEAD(&q->queue_head);
- 	q->last_merge = NULL;
-@@ -322,13 +359,21 @@ int elevator_init(struct request_queue *q, char *name)
- 	if (!eq)
- 		return -ENOMEM;
- 
--	data = elevator_init_queue(q, eq);
--	if (!data) {
-+	data = elevator_init_data(q, eq);
-+
-+	if (IS_ERR(data)) {
-+		kobject_put(&eq->kobj);
-+		return -ENOMEM;
-+	}
-+
-+	sched_queue = elevator_alloc_sched_queue(q, eq);
-+
-+	if (IS_ERR(sched_queue)) {
- 		kobject_put(&eq->kobj);
- 		return -ENOMEM;
- 	}
- 
--	elevator_attach(q, eq, data);
-+	elevator_attach(q, eq, data, sched_queue);
- 	return ret;
- }
- EXPORT_SYMBOL(elevator_init);
-@@ -336,6 +381,7 @@ EXPORT_SYMBOL(elevator_init);
- void elevator_exit(struct elevator_queue *e)
- {
- 	mutex_lock(&e->sysfs_lock);
-+	elevator_free_sched_queue(e, e->sched_queue);
- 	elv_exit_fq_data(e);
- 	if (e->ops->elevator_exit_fn)
- 		e->ops->elevator_exit_fn(e);
-@@ -1024,7 +1070,7 @@ EXPORT_SYMBOL_GPL(elv_unregister);
- static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
- {
- 	struct elevator_queue *old_elevator, *e;
--	void *data;
-+	void *data = NULL, *sched_queue = NULL;
- 
- 	/*
- 	 * Allocate new elevator
-@@ -1033,10 +1079,18 @@ static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
- 	if (!e)
- 		return 0;
- 
--	data = elevator_init_queue(q, e);
--	if (!data) {
-+	data = elevator_init_data(q, e);
-+
-+	if (IS_ERR(data)) {
- 		kobject_put(&e->kobj);
--		return 0;
-+		return -ENOMEM;
-+	}
-+
-+	sched_queue = elevator_alloc_sched_queue(q, e);
-+
-+	if (IS_ERR(sched_queue)) {
-+		kobject_put(&e->kobj);
-+		return -ENOMEM;
- 	}
- 
- 	/*
-@@ -1053,7 +1107,7 @@ static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
- 	/*
- 	 * attach and start new elevator
- 	 */
--	elevator_attach(q, e, data);
-+	elevator_attach(q, e, data, sched_queue);
- 
+ 	if (priv) {
+-		if (unlikely(elv_set_request(q, rq, gfp_mask))) {
++		if (unlikely(elv_set_request(q, rq, bio, gfp_mask))) {
+ 			mempool_free(rq, q->rq.rq_pool);
+ 			return NULL;
+ 		}
+@@ -772,7 +773,7 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
+ 		rw_flags |= REQ_IO_STAT;
  	spin_unlock_irq(q->queue_lock);
  
-@@ -1168,16 +1222,43 @@ struct request *elv_rb_latter_request(struct request_queue *q,
+-	rq = blk_alloc_request(q, rw_flags, priv, gfp_mask);
++	rq = blk_alloc_request(q, bio, rw_flags, priv, gfp_mask);
+ 	if (unlikely(!rq)) {
+ 		/*
+ 		 * Allocation failed presumably due to memory. Undo anything
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 52c4710..034b5ca 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -176,8 +176,8 @@ CFQ_CFQQ_FNS(coop);
+ 	blk_add_trace_msg((cfqd)->queue, "cfq " fmt, ##args)
+ 
+ static void cfq_dispatch_insert(struct request_queue *, struct request *);
+-static struct cfq_queue *cfq_get_queue(struct cfq_data *, int,
+-				       struct io_context *, gfp_t);
++static struct cfq_queue *cfq_get_queue(struct cfq_data *, struct bio *bio,
++					int, struct io_context *, gfp_t);
+ static struct cfq_io_context *cfq_cic_lookup(struct cfq_data *,
+ 						struct io_context *);
+ 
+@@ -187,22 +187,56 @@ static inline struct cfq_queue *cic_to_cfqq(struct cfq_io_context *cic,
+ 	return cic->cfqq[!!is_sync];
  }
- EXPORT_SYMBOL(elv_rb_latter_request);
  
--/* Get the io scheduler queue pointer. For cfq, it is stored in rq->ioq*/
-+/* Get the io scheduler queue pointer. */
- void *elv_get_sched_queue(struct request_queue *q, struct request *rq)
- {
--	return elv_ioq_sched_queue(req_ioq(rq));
-+	/*
-+	 * io scheduler is not using fair queuing. Return sched_queue
-+	 * pointer stored in elevator_queue. It will be null if io
-+	 * scheduler never stored anything there to begin with (cfq)
-+	 */
-+	if (!elv_iosched_fair_queuing_enabled(q->elevator))
-+		return q->elevator->sched_queue;
-+
-+	/*
-+	 * IO schedueler is using fair queuing infrasture. If io scheduler
-+	 * has passed a non null rq, retrieve sched_queue pointer from
-+	 * there. */
-+	if (rq)
-+		return elv_ioq_sched_queue(req_ioq(rq));
-+
-+	return NULL;
- }
- EXPORT_SYMBOL(elv_get_sched_queue);
- 
- /* Select an ioscheduler queue to dispatch request from. */
- void *elv_select_sched_queue(struct request_queue *q, int force)
- {
-+	if (!elv_iosched_fair_queuing_enabled(q->elevator))
-+		return q->elevator->sched_queue;
-+
- 	return elv_ioq_sched_queue(elv_select_ioq(q, force));
- }
- EXPORT_SYMBOL(elv_select_sched_queue);
-+
-+/*
-+ * Get the io scheduler queue pointer for current task.
-+ */
-+void *elv_get_sched_queue_current(struct request_queue *q)
-+{
-+	return q->elevator->sched_queue;
-+}
-+EXPORT_SYMBOL(elv_get_sched_queue_current);
-diff --git a/block/noop-iosched.c b/block/noop-iosched.c
-index 36fc210..d587832 100644
---- a/block/noop-iosched.c
-+++ b/block/noop-iosched.c
-@@ -7,7 +7,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- 
--struct noop_data {
-+struct noop_queue {
- 	struct list_head queue;
- };
- 
-@@ -19,11 +19,14 @@ static void noop_merged_requests(struct request_queue *q, struct request *rq,
- 
- static int noop_dispatch(struct request_queue *q, int force)
- {
--	struct noop_data *nd = q->elevator->elevator_data;
-+	struct noop_queue *nq = elv_select_sched_queue(q, force);
- 
--	if (!list_empty(&nd->queue)) {
-+	if (!nq)
-+		return 0;
-+
-+	if (!list_empty(&nq->queue)) {
- 		struct request *rq;
--		rq = list_entry(nd->queue.next, struct request, queuelist);
-+		rq = list_entry(nq->queue.next, struct request, queuelist);
- 		list_del_init(&rq->queuelist);
- 		elv_dispatch_sort(q, rq);
- 		return 1;
-@@ -33,24 +36,17 @@ static int noop_dispatch(struct request_queue *q, int force)
- 
- static void noop_add_request(struct request_queue *q, struct request *rq)
- {
--	struct noop_data *nd = q->elevator->elevator_data;
-+	struct noop_queue *nq = elv_get_sched_queue(q, rq);
- 
--	list_add_tail(&rq->queuelist, &nd->queue);
+-static inline void cic_set_cfqq(struct cfq_io_context *cic,
+-				struct cfq_queue *cfqq, int is_sync)
+-{
+-	cic->cfqq[!!is_sync] = cfqq;
 -}
 -
--static int noop_queue_empty(struct request_queue *q)
--{
--	struct noop_data *nd = q->elevator->elevator_data;
--
--	return list_empty(&nd->queue);
-+	list_add_tail(&rq->queuelist, &nq->queue);
- }
- 
- static struct request *
- noop_former_request(struct request_queue *q, struct request *rq)
+ /*
+- * We regard a request as SYNC, if it's either a read or has the SYNC bit
+- * set (in which case it could also be direct WRITE).
++ * Determine the cfq queue bio should go in. This is primarily used by
++ * front merge and allow merge functions.
++ *
++ * Currently this function takes the ioprio and iprio_class from task
++ * submitting async bio. Later save the task information in the page_cgroup
++ * and retrieve task's ioprio and class from there.
+  */
+-static inline int cfq_bio_sync(struct bio *bio)
++static struct cfq_queue *cic_bio_to_cfqq(struct cfq_data *cfqd,
++		struct cfq_io_context *cic, struct bio *bio, int is_sync)
  {
--	struct noop_data *nd = q->elevator->elevator_data;
-+	struct noop_queue *nq = elv_get_sched_queue(q, rq);
+-	if (bio_data_dir(bio) == READ || bio_sync(bio))
+-		return 1;
++	struct cfq_queue *cfqq = NULL;
  
--	if (rq->queuelist.prev == &nd->queue)
-+	if (rq->queuelist.prev == &nq->queue)
- 		return NULL;
- 	return list_entry(rq->queuelist.prev, struct request, queuelist);
- }
-@@ -58,30 +54,32 @@ noop_former_request(struct request_queue *q, struct request *rq)
- static struct request *
- noop_latter_request(struct request_queue *q, struct request *rq)
- {
--	struct noop_data *nd = q->elevator->elevator_data;
-+	struct noop_queue *nq = elv_get_sched_queue(q, rq);
- 
--	if (rq->queuelist.next == &nd->queue)
-+	if (rq->queuelist.next == &nq->queue)
- 		return NULL;
- 	return list_entry(rq->queuelist.next, struct request, queuelist);
- }
- 
--static void *noop_init_queue(struct request_queue *q, struct elevator_queue *eq)
-+static void *noop_alloc_noop_queue(struct request_queue *q,
-+				struct elevator_queue *eq, gfp_t gfp_mask)
- {
--	struct noop_data *nd;
-+	struct noop_queue *nq;
- 
--	nd = kmalloc_node(sizeof(*nd), GFP_KERNEL, q->node);
--	if (!nd)
--		return NULL;
--	INIT_LIST_HEAD(&nd->queue);
--	return nd;
-+	nq = kmalloc_node(sizeof(*nq), gfp_mask | __GFP_ZERO, q->node);
-+	if (nq == NULL)
-+		goto out;
+-	return 0;
++	cfqq = cic_to_cfqq(cic, is_sync);
 +
-+	INIT_LIST_HEAD(&nq->queue);
-+out:
-+	return nq;
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	if (!cfqq && !is_sync) {
++		const int ioprio = task_ioprio(cic->ioc);
++		const int ioprio_class = task_ioprio_class(cic->ioc);
++		struct io_group *iog;
++		/*
++		 * async bio tracking is enabled and we are not caching
++		 * async queue pointer in cic.
++		 */
++		iog = elv_io_get_io_group_bio(cfqd->queue, bio, 0);
++		if (!iog) {
++			/*
++			 * May be this is first rq/bio and io group has not
++			 * been setup yet.
++			 */
++			return NULL;
++		}
++		return elv_io_group_async_queue_prio(iog, ioprio_class, ioprio);
++	}
++#endif
++	return cfqq;
++}
++
++static inline void cic_set_cfqq(struct cfq_io_context *cic,
++				struct cfq_queue *cfqq, int is_sync)
++{
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	/*
++	 * Don't cache async queue pointer as now one io context might
++	 * be submitting async io for various different async queues
++	 */
++	if (!is_sync)
++		return;
++#endif
++	cic->cfqq[!!is_sync] = cfqq;
  }
  
--static void noop_exit_queue(struct elevator_queue *e)
-+static void noop_free_noop_queue(struct elevator_queue *e, void *sched_queue)
+ static inline struct io_group *cfqq_to_io_group(struct cfq_queue *cfqq)
+@@ -526,7 +560,7 @@ cfq_find_rq_fmerge(struct cfq_data *cfqd, struct bio *bio)
+ 	if (!cic)
+ 		return NULL;
+ 
+-	cfqq = cic_to_cfqq(cic, cfq_bio_sync(bio));
++	cfqq = cic_bio_to_cfqq(cfqd, cic, bio, elv_bio_sync(bio));
+ 	if (cfqq) {
+ 		sector_t sector = bio->bi_sector + bio_sectors(bio);
+ 
+@@ -609,7 +643,7 @@ static int cfq_allow_merge(struct request_queue *q, struct request *rq,
+ 	/*
+ 	 * Disallow merge of a sync bio into an async request.
+ 	 */
+-	if (cfq_bio_sync(bio) && !rq_is_sync(rq))
++	if (elv_bio_sync(bio) && !rq_is_sync(rq))
+ 		return 0;
+ 
+ 	/*
+@@ -620,7 +654,7 @@ static int cfq_allow_merge(struct request_queue *q, struct request *rq,
+ 	if (!cic)
+ 		return 0;
+ 
+-	cfqq = cic_to_cfqq(cic, cfq_bio_sync(bio));
++	cfqq = cic_bio_to_cfqq(cfqd, cic, bio, elv_bio_sync(bio));
+ 	if (cfqq == RQ_CFQQ(rq))
+ 		return 1;
+ 
+@@ -1244,14 +1278,28 @@ static void changed_ioprio(struct io_context *ioc, struct cfq_io_context *cic)
+ 	spin_lock_irqsave(cfqd->queue->queue_lock, flags);
+ 
+ 	cfqq = cic->cfqq[BLK_RW_ASYNC];
++
+ 	if (cfqq) {
+ 		struct cfq_queue *new_cfqq;
+-		new_cfqq = cfq_get_queue(cfqd, BLK_RW_ASYNC, cic->ioc,
++
++		/*
++		 * Drop the reference to old queue unconditionally. Don't
++		 * worry whether new async prio queue has been allocated
++		 * or not.
++		 */
++		cic_set_cfqq(cic, NULL, BLK_RW_ASYNC);
++		cfq_put_queue(cfqq);
++
++		/*
++		 * Why to allocate new queue now? Will it not be automatically
++		 * allocated whenever another async request from same context
++		 * comes? Keeping it for the time being because existing cfq
++		 * code allocates the new queue immediately upon prio change
++		 */
++		new_cfqq = cfq_get_queue(cfqd, NULL, BLK_RW_ASYNC, cic->ioc,
+ 						GFP_ATOMIC);
+-		if (new_cfqq) {
+-			cic->cfqq[BLK_RW_ASYNC] = new_cfqq;
+-			cfq_put_queue(cfqq);
+-		}
++		if (new_cfqq)
++			cic_set_cfqq(cic, new_cfqq, BLK_RW_ASYNC);
+ 	}
+ 
+ 	cfqq = cic->cfqq[BLK_RW_SYNC];
+@@ -1302,7 +1350,7 @@ static void changed_cgroup(struct io_context *ioc, struct cfq_io_context *cic)
+ 
+ 	spin_lock_irqsave(q->queue_lock, flags);
+ 
+-	iog = elv_io_get_io_group(q, 0);
++	iog = elv_io_get_io_group(q, NULL, 0);
+ 
+ 	if (async_cfqq != NULL) {
+ 		__iog = cfqq_to_io_group(async_cfqq);
+@@ -1340,7 +1388,7 @@ static void cfq_ioc_set_cgroup(struct io_context *ioc)
+ #endif  /* CONFIG_IOSCHED_CFQ_HIER */
+ 
+ static struct cfq_queue *
+-cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
++cfq_find_alloc_queue(struct cfq_data *cfqd, struct bio *bio, int is_sync,
+ 		     struct io_context *ioc, gfp_t gfp_mask)
  {
--	struct noop_data *nd = e->elevator_data;
-+	struct noop_queue *nq = sched_queue;
+ 	struct cfq_queue *cfqq, *new_cfqq = NULL;
+@@ -1350,12 +1398,28 @@ cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
+ 	struct io_group *iog = NULL;
  
--	BUG_ON(!list_empty(&nd->queue));
--	kfree(nd);
-+	kfree(nq);
+ retry:
+-	iog = elv_io_get_io_group(q, 1);
++	iog = elv_io_get_io_group_bio(q, bio, 1);
+ 
+ 	cic = cfq_cic_lookup(cfqd, ioc);
+ 	/* cic always exists here */
+ 	cfqq = cic_to_cfqq(cic, is_sync);
+ 
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	if (!cfqq && !is_sync) {
++		const int ioprio = task_ioprio(cic->ioc);
++		const int ioprio_class = task_ioprio_class(cic->ioc);
++
++		/*
++		 * We have not cached async queue pointer as bio tracking
++		 * is enabled. Look into group async queue array using ioc
++		 * class and prio to see if somebody already allocated the
++		 * queue.
++		 */
++
++		cfqq = elv_io_group_async_queue_prio(iog, ioprio_class, ioprio);
++	}
++#endif
++
+ 	/*
+ 	 * Always try a new alloc if we fell back to the OOM cfqq
+ 	 * originally, since it should just be a temporary situation.
+@@ -1432,14 +1496,14 @@ out:
  }
  
- static struct elevator_type elevator_noop = {
-@@ -89,11 +87,10 @@ static struct elevator_type elevator_noop = {
- 		.elevator_merge_req_fn		= noop_merged_requests,
- 		.elevator_dispatch_fn		= noop_dispatch,
- 		.elevator_add_req_fn		= noop_add_request,
--		.elevator_queue_empty_fn	= noop_queue_empty,
- 		.elevator_former_req_fn		= noop_former_request,
- 		.elevator_latter_req_fn		= noop_latter_request,
--		.elevator_init_fn		= noop_init_queue,
--		.elevator_exit_fn		= noop_exit_queue,
-+		.elevator_alloc_sched_queue_fn	= noop_alloc_noop_queue,
-+		.elevator_free_sched_queue_fn	= noop_free_noop_queue,
- 	},
- 	.elevator_name = "noop",
- 	.elevator_owner = THIS_MODULE,
+ static struct cfq_queue *
+-cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct io_context *ioc,
+-	      gfp_t gfp_mask)
++cfq_get_queue(struct cfq_data *cfqd, struct bio *bio, int is_sync,
++		struct io_context *ioc, gfp_t gfp_mask)
+ {
+ 	const int ioprio = task_ioprio(ioc);
+ 	const int ioprio_class = task_ioprio_class(ioc);
+ 	struct cfq_queue *async_cfqq = NULL;
+ 	struct cfq_queue *cfqq = NULL;
+-	struct io_group *iog = elv_io_get_io_group(cfqd->queue, 1);
++	struct io_group *iog = elv_io_get_io_group_bio(cfqd->queue, bio, 1);
+ 
+ 	if (!is_sync) {
+ 		async_cfqq = elv_io_group_async_queue_prio(iog, ioprio_class,
+@@ -1448,14 +1512,35 @@ cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct io_context *ioc,
+ 	}
+ 
+ 	if (!cfqq)
+-		cfqq = cfq_find_alloc_queue(cfqd, is_sync, ioc, gfp_mask);
++		cfqq = cfq_find_alloc_queue(cfqd, bio, is_sync, ioc, gfp_mask);
+ 
+ 	if (!is_sync && !async_cfqq)
+ 		elv_io_group_set_async_queue(iog, ioprio_class, ioprio,
+ 							cfqq->ioq);
+-
+-	/* ioc reference */
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	/*
++	 * ioc reference. If async request queue/group is determined from the
++	 * original task/cgroup and not from submitter task, io context can
++	 * not cache the pointer to async queue and everytime a request comes,
++	 * it will be determined by going through the async queue array.
++	 *
++	 * This comes from the fact that we might be getting async requests
++	 * which belong to a different cgroup altogether than the cgroup
++	 * iocontext belongs to. And this thread might be submitting bios
++	 * from various cgroups. So every time async queue will be different
++	 * based on the cgroup of the bio/rq. Can't cache the async cfqq
++	 * pointer in cic.
++	 */
++	if (is_sync)
++		elv_get_ioq(cfqq->ioq);
++#else
++	/*
++	 * async requests are being attributed to task submitting
++	 * it, hence cic can cache async cfqq pointer. Take the
++	 * queue reference even for async queue.
++	 */
+ 	elv_get_ioq(cfqq->ioq);
++#endif
+ 	return cfqq;
+ }
+ 
+@@ -1908,7 +1993,8 @@ static void cfq_put_request(struct request *rq)
+  * Allocate cfq data structures associated with this request.
+  */
+ static int
+-cfq_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
++cfq_set_request(struct request_queue *q, struct request *rq, struct bio *bio,
++				gfp_t gfp_mask)
+ {
+ 	struct cfq_data *cfqd = q->elevator->elevator_data;
+ 	struct cfq_io_context *cic;
+@@ -1928,7 +2014,7 @@ cfq_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
+ 
+ 	cfqq = cic_to_cfqq(cic, is_sync);
+ 	if (!cfqq || cfqq == &cfqd->oom_cfqq) {
+-		cfqq = cfq_get_queue(cfqd, is_sync, cic->ioc, gfp_mask);
++		cfqq = cfq_get_queue(cfqd, bio, is_sync, cic->ioc, gfp_mask);
+ 		cic_set_cfqq(cic, cfqq, is_sync);
+ 	}
+ 
+diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
+index e5bc823..cc9c8c3 100644
+--- a/block/deadline-iosched.c
++++ b/block/deadline-iosched.c
+@@ -134,7 +134,7 @@ deadline_merge(struct request_queue *q, struct request **req, struct bio *bio)
+ 	int ret;
+ 	struct deadline_queue *dq;
+ 
+-	dq = elv_get_sched_queue_current(q);
++	dq = elv_get_sched_queue_bio(q, bio);
+ 	if (!dq)
+ 		return ELEVATOR_NO_MERGE;
+ 
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index a14fa72..9c8783c 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -14,6 +14,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/blktrace_api.h>
+ #include <linux/seq_file.h>
++#include <linux/biotrack.h>
+ #include "elevator-fq.h"
+ 
+ const int elv_slice_sync = HZ / 10;
+@@ -917,6 +918,9 @@ struct io_cgroup io_root_cgroup = {
+ 
+ static struct io_cgroup *cgroup_to_io_cgroup(struct cgroup *cgroup)
+ {
++	if (!cgroup)
++		return &io_root_cgroup;
++
+ 	return container_of(cgroup_subsys_state(cgroup, io_subsys_id),
+ 			    struct io_cgroup, css);
+ }
+@@ -1376,9 +1380,45 @@ end:
+ 	return iog;
+ }
+ 
++struct io_group *elv_io_get_io_group_bio(struct request_queue *q,
++						struct bio *bio, int create)
++{
++	struct page *page = NULL;
++
++	/*
++	 * Determine the group from task context. Even calls from
++	 * blk_get_request() which don't have any bio info will be mapped
++	 * to the task's group
++	 */
++	if (!bio)
++		goto sync;
++
++	if (bio_barrier(bio)) {
++		/*
++		 * Map barrier requests to root group. May be more special
++		 * bio cases should come here
++		 */
++		return q->elevator->efqd->root_group;
++	}
++
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	/* Map the sync bio to the right group using task context */
++	if (elv_bio_sync(bio))
++		goto sync;
++
++	/* Determine the group from info stored in page */
++	page = bio_iovec_idx(bio, 0)->bv_page;
++	return elv_io_get_io_group(q, page, create);
++#endif
++
++sync:
++	return elv_io_get_io_group(q, page, create);
++}
++EXPORT_SYMBOL(elv_io_get_io_group_bio);
++
+ /*
+- * Search for the io group current task belongs to. If create=1, then also
+- * create the io group if it is not already there.
++ * Find the io group page belongs to.
++ * If "create" is set, io group is created if it is not already present.
+  *
+  * Note: This function should be called with queue lock held. It returns
+  * a pointer to io group without taking any reference. That group will
+@@ -1386,28 +1426,45 @@ end:
+  * needs to get hold of queue lock). So if somebody needs to use group
+  * pointer even after dropping queue lock, take a reference to the group
+  * before dropping queue lock.
++ *
++ * One can call it without queue lock with rcu read lock held for browsing
++ * through the groups.
+  */
+-struct io_group *elv_io_get_io_group(struct request_queue *q, int create)
++struct io_group *
++elv_io_get_io_group(struct request_queue *q, struct page *page, int create)
+ {
+ 	struct cgroup *cgroup;
+ 	struct io_group *iog;
+ 	struct elv_fq_data *efqd = q->elevator->efqd;
+ 
+-	assert_spin_locked(q->queue_lock);
++	if (create)
++		assert_spin_locked(q->queue_lock);
+ 
+ 	rcu_read_lock();
+-	cgroup = task_cgroup(current, io_subsys_id);
++
++	if (!page)
++		cgroup = task_cgroup(current, io_subsys_id);
++	else
++		cgroup = get_cgroup_from_page(page);
++
++	if (!cgroup) {
++		iog = efqd->root_group;
++		goto out;
++	}
++
+ 	iog = io_find_alloc_group(q, cgroup, efqd, create);
+ 	if (!iog) {
+ 		if (create)
+ 			iog = efqd->root_group;
+-		else
++		else {
+ 			/*
+ 			 * bio merge functions doing lookup don't want to
+ 			 * map bio to root group by default
+ 			 */
+ 			iog = NULL;
++		}
+ 	}
++out:
+ 	rcu_read_unlock();
+ 	return iog;
+ }
+@@ -1637,7 +1694,7 @@ int elv_io_group_allow_merge(struct request *rq, struct bio *bio)
+ 		return 1;
+ 
+ 	/* Determine the io group of the bio submitting task */
+-	iog = elv_io_get_io_group(q, 0);
++	iog = elv_io_get_io_group_bio(q, bio, 0);
+ 	if (!iog) {
+ 		/* May be task belongs to a differet cgroup for which io
+ 		 * group has not been setup yet. */
+@@ -1670,7 +1727,7 @@ elv_io_group_set_ioq(struct io_group *iog, struct io_queue *ioq)
+  * function is not invoked.
+  */
+ int elv_set_request_ioq(struct request_queue *q, struct request *rq,
+-					gfp_t gfp_mask)
++				struct bio *bio, gfp_t gfp_mask)
+ {
+ 	struct elevator_queue *e = q->elevator;
+ 	unsigned long flags;
+@@ -1686,7 +1743,7 @@ int elv_set_request_ioq(struct request_queue *q, struct request *rq,
+ 
+ retry:
+ 	/* Determine the io group request belongs to */
+-	iog = elv_io_get_io_group(q, 1);
++	iog = elv_io_get_io_group_bio(q, bio, 1);
+ 	BUG_ON(!iog);
+ 
+ 	/* Get the iosched queue */
+@@ -1773,18 +1830,20 @@ queue_fail:
+ }
+ 
+ /*
+- * Find out the io queue of current task. Optimization for single ioq
++ * Find out the io queue of bio belongs to. Optimization for single ioq
+  * per io group io schedulers.
+  */
+-struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
++struct io_queue *elv_lookup_ioq_bio(struct request_queue *q, struct bio *bio)
+ {
+ 	struct io_group *iog;
+ 
+ 	/* Determine the io group and io queue of the bio submitting task */
+-	iog = elv_io_get_io_group(q, 0);
++	iog = elv_io_get_io_group_bio(q, bio, 0);
+ 	if (!iog) {
+-		/* May be task belongs to a cgroup for which io group has
+-		 * not been setup yet. */
++		/*
++		 * May be bio belongs to a cgroup for which io group has
++		 * not been setup yet.
++		 */
+ 		return NULL;
+ 	}
+ 	return iog->ioq;
+@@ -2549,6 +2608,10 @@ expire:
+ new_queue:
+ 	ioq = elv_set_active_ioq(q, new_ioq);
+ keep_queue:
++	if (ioq)
++		elv_log_ioq(efqd, ioq, "select busy=%d qued=%d disp=%d",
++				elv_nr_busy_ioq(q->elevator), ioq->nr_queued,
++				elv_ioq_nr_dispatched(ioq));
+ 	return ioq;
+ }
+ 
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index 95ed680..9fe52fa 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -414,7 +414,9 @@ static inline struct io_queue *elv_get_oom_ioq(struct elevator_queue *eq)
+ extern int elv_io_group_allow_merge(struct request *rq, struct bio *bio);
+ extern void elv_put_iog(struct io_group *iog);
+ extern struct io_group *elv_io_get_io_group(struct request_queue *q,
+-						int create);
++					struct page *page, int create);
++extern struct io_group *elv_io_get_io_group_bio(struct request_queue *q,
++					struct bio *bio, int create);
+ extern ssize_t elv_group_idle_show(struct elevator_queue *q, char *name);
+ extern ssize_t elv_group_idle_store(struct elevator_queue *q, const char *name,
+ 					size_t count);
+@@ -424,9 +426,10 @@ static inline void elv_get_iog(struct io_group *iog)
+ }
+ 
+ extern int elv_set_request_ioq(struct request_queue *q, struct request *rq,
+-					gfp_t gfp_mask);
++					struct bio *bio, gfp_t gfp_mask);
+ extern void elv_reset_request_ioq(struct request_queue *q, struct request *rq);
+-extern struct io_queue *elv_lookup_ioq_current(struct request_queue *q);
++extern struct io_queue *elv_lookup_ioq_bio(struct request_queue *q,
++						struct bio *bio);
+ 
+ #else /* !GROUP_IOSCHED */
+ 
+@@ -439,14 +442,20 @@ static inline void elv_get_iog(struct io_group *iog) {}
+ static inline void elv_put_iog(struct io_group *iog) {}
+ 
+ static inline struct io_group *
+-elv_io_get_io_group(struct request_queue *q, int create)
++elv_io_get_io_group(struct request_queue *q, struct page *page, int create)
+ {
+ 	/* In flat mode, there is only root group */
+ 	return q->elevator->efqd->root_group;
+ }
+ 
+-static inline int
+-elv_set_request_ioq(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
++static inline struct io_group *
++elv_io_get_io_group_bio(struct request_queue *q, struct bio *bio, int create)
++{
++	return q->elevator->efqd->root_group;
++}
++
++static inline int elv_set_request_ioq(struct request_queue *q,
++			struct request *rq, struct bio *bio, gfp_t gfp_mask)
+ {
+ 	return 0;
+ }
+@@ -454,7 +463,8 @@ elv_set_request_ioq(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
+ static inline void
+ elv_reset_request_ioq(struct request_queue *q, struct request *rq) { }
+ 
+-static inline struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
++static inline struct io_queue *
++elv_lookup_ioq_bio(struct request_queue *q, struct bio *bio)
+ {
+ 	return NULL;
+ }
+@@ -553,8 +563,8 @@ static inline int elv_io_group_allow_merge(struct request *rq, struct bio *bio)
+ {
+ 	return 1;
+ }
+-static inline int
+-elv_set_request_ioq(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
++static inline int elv_set_request_ioq(struct request_queue *q,
++			struct request *rq, struct bio *bio, gfp_t gfp_mask)
+ {
+ 	return 0;
+ }
+@@ -562,7 +572,8 @@ elv_set_request_ioq(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
+ static inline void
+ elv_reset_request_ioq(struct request_queue *q, struct request *rq) { }
+ 
+-static inline struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
++static inline struct io_queue *elv_lookup_ioq_bio(struct request_queue *q,
++						struct bio *bio)
+ {
+ 	return NULL;
+ }
+diff --git a/block/elevator.c b/block/elevator.c
+index bc43edd..4ed37b6 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -865,7 +865,8 @@ struct request *elv_former_request(struct request_queue *q, struct request *rq)
+ 	return NULL;
+ }
+ 
+-int elv_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
++int elv_set_request(struct request_queue *q, struct request *rq,
++			struct bio *bio, gfp_t gfp_mask)
+ {
+ 	struct elevator_queue *e = q->elevator;
+ 
+@@ -874,10 +875,10 @@ int elv_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
+ 	 * ioq per io group
+ 	 */
+ 	if (elv_iosched_single_ioq(e))
+-		return elv_set_request_ioq(q, rq, gfp_mask);
++		return elv_set_request_ioq(q, rq, bio, gfp_mask);
+ 
+ 	if (e->ops->elevator_set_req_fn)
+-		return e->ops->elevator_set_req_fn(q, rq, gfp_mask);
++		return e->ops->elevator_set_req_fn(q, rq, bio, gfp_mask);
+ 
+ 	rq->elevator_private = NULL;
+ 	return 0;
+@@ -1279,19 +1280,19 @@ void *elv_select_sched_queue(struct request_queue *q, int force)
+ EXPORT_SYMBOL(elv_select_sched_queue);
+ 
+ /*
+- * Get the io scheduler queue pointer for current task.
++ * Get the io scheduler queue pointer for the group bio belongs to.
+  *
+  * If fair queuing is enabled, determine the io group of task and retrieve
+  * the ioq pointer from that. This is used by only single queue ioschedulers
+  * for retrieving the queue associated with the group to decide whether the
+  * new bio can do a front merge or not.
+  */
+-void *elv_get_sched_queue_current(struct request_queue *q)
++void *elv_get_sched_queue_bio(struct request_queue *q, struct bio *bio)
+ {
+ 	/* Fair queuing is not enabled. There is only one queue. */
+ 	if (!elv_iosched_fair_queuing_enabled(q->elevator))
+ 		return q->elevator->sched_queue;
+ 
+-	return elv_ioq_sched_queue(elv_lookup_ioq_current(q));
++	return elv_ioq_sched_queue(elv_lookup_ioq_bio(q, bio));
+ }
+-EXPORT_SYMBOL(elv_get_sched_queue_current);
++EXPORT_SYMBOL(elv_get_sched_queue_bio);
 diff --git a/include/linux/elevator.h b/include/linux/elevator.h
-index 4414a61..2c6b0c7 100644
+index 3d4e31c..0ace96e 100644
 --- a/include/linux/elevator.h
 +++ b/include/linux/elevator.h
-@@ -30,8 +30,10 @@ typedef void (elevator_deactivate_req_fn) (struct request_queue *, struct reques
- typedef void *(elevator_init_fn) (struct request_queue *,
- 					struct elevator_queue *);
- typedef void (elevator_exit_fn) (struct elevator_queue *);
--#ifdef CONFIG_ELV_FAIR_QUEUING
-+typedef void* (elevator_alloc_sched_queue_fn) (struct request_queue *q,
-+					struct elevator_queue *eq, gfp_t);
- typedef void (elevator_free_sched_queue_fn) (struct elevator_queue*, void *);
-+#ifdef CONFIG_ELV_FAIR_QUEUING
- typedef void (elevator_active_ioq_set_fn) (struct request_queue*, void *, int);
- typedef void (elevator_active_ioq_reset_fn) (struct request_queue *, void*);
- typedef void (elevator_arm_slice_timer_fn) (struct request_queue*, void*);
-@@ -68,8 +70,9 @@ struct elevator_ops
- 	elevator_exit_fn *elevator_exit_fn;
- 	void (*trim)(struct io_context *);
+@@ -22,7 +22,8 @@ typedef struct request *(elevator_request_list_fn) (struct request_queue *, stru
+ typedef void (elevator_completed_req_fn) (struct request_queue *, struct request *);
+ typedef int (elevator_may_queue_fn) (struct request_queue *, int);
  
--#ifdef CONFIG_ELV_FAIR_QUEUING
-+	elevator_alloc_sched_queue_fn *elevator_alloc_sched_queue_fn;
- 	elevator_free_sched_queue_fn *elevator_free_sched_queue_fn;
-+#ifdef CONFIG_ELV_FAIR_QUEUING
- 	elevator_active_ioq_set_fn *elevator_active_ioq_set_fn;
- 	elevator_active_ioq_reset_fn *elevator_active_ioq_reset_fn;
+-typedef int (elevator_set_req_fn) (struct request_queue *, struct request *, gfp_t);
++typedef int (elevator_set_req_fn) (struct request_queue *, struct request *,
++					struct bio *bio, gfp_t);
+ typedef void (elevator_put_req_fn) (struct request *);
+ typedef void (elevator_activate_req_fn) (struct request_queue *, struct request *);
+ typedef void (elevator_deactivate_req_fn) (struct request_queue *, struct request *);
+@@ -146,7 +147,8 @@ extern void elv_unregister_queue(struct request_queue *q);
+ extern int elv_may_queue(struct request_queue *, int);
+ extern void elv_abort_queue(struct request_queue *);
+ extern void elv_completed_request(struct request_queue *, struct request *);
+-extern int elv_set_request(struct request_queue *, struct request *, gfp_t);
++extern int elv_set_request(struct request_queue *, struct request *,
++					struct bio *bio, gfp_t);
+ extern void elv_put_request(struct request_queue *, struct request *);
+ extern void elv_drain_elevator(struct request_queue *);
  
-@@ -109,6 +112,7 @@ struct elevator_queue
- {
- 	struct elevator_ops *ops;
- 	void *elevator_data;
-+	void *sched_queue;
- 	struct kobject kobj;
- 	struct elevator_type *elevator_type;
- 	struct mutex sysfs_lock;
-@@ -255,5 +259,6 @@ static inline int elv_iosched_fair_queuing_enabled(struct elevator_queue *e)
+@@ -275,6 +277,20 @@ static inline int elv_iosched_single_ioq(struct elevator_queue *e)
  #endif /* ELV_IOSCHED_FAIR_QUEUING */
  extern void *elv_get_sched_queue(struct request_queue *q, struct request *rq);
  extern void *elv_select_sched_queue(struct request_queue *q, int force);
-+extern void *elv_get_sched_queue_current(struct request_queue *q);
+-extern void *elv_get_sched_queue_current(struct request_queue *q);
++extern void *elv_get_sched_queue_bio(struct request_queue *q, struct bio *bio);
++
++/*
++ * This is equivalent of rq_is_sync()/cfq_bio_sync() function where we
++ * determine whether an rq/bio is sync or not. There are cases like during
++ * merging and during * request allocation, where we don't have rq but bio
++ * and needs to find out * if this bio will be considered as sync or async by
++ * elevator/iosched. This function is useful in such cases.
++ */
++static inline int elv_bio_sync(struct bio *bio)
++{
++	if ((bio_data_dir(bio) == READ) || bio_sync(bio))
++		return 1;
++	return 0;
++}
  #endif /* CONFIG_BLOCK */
  #endif
 -- 
