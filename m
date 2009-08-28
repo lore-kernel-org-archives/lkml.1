@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbZH1TwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbZH1TxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752890AbZH1TwX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 15:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZH1TwW
+	id S1752891AbZH1TxH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 15:53:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZH1TxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 15:52:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60714 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752386AbZH1TwW (ORCPT
+	Fri, 28 Aug 2009 15:53:06 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:38739 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752476AbZH1TxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 15:52:22 -0400
-Date: Fri, 28 Aug 2009 20:53:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: joe Shmoe <jsmoe3@yahoo.com>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
-Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without
- PAE
-Message-ID: <20090828205337.3677cf04@lxorguk.ukuu.org.uk>
-In-Reply-To: <8980.20135.qm@web45211.mail.sp1.yahoo.com>
-References: <24089.1251486780@turing-police.cc.vt.edu>
-	<8980.20135.qm@web45211.mail.sp1.yahoo.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 28 Aug 2009 15:53:05 -0400
+Date: Sat, 29 Aug 2009 01:23:03 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Nitin Gupta <ngupta@vflare.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-mm-cc@laptop.org
+Subject: Re: [PATCH 4/4] compcache: documentation
+Message-ID: <20090828195303.GA4889@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <200908241008.02184.ngupta@vflare.org> <661de9470908251003y3db1fb3awb648f9340cd0beb4@mail.gmail.com> <4A94293A.2090103@vflare.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4A94293A.2090103@vflare.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Aug 2009 12:44:25 -0700 (PDT)
-joe Shmoe <jsmoe3@yahoo.com> wrote:
+* Nitin Gupta <ngupta@vflare.org> [2009-08-25 23:41:06]:
 
-> No I am not talking about embedded systems. It is just an example.
-> My question is what is preventing the kernel from setting up the page tables so that entire RAM can be mapped upto 4 GB.
+> On 08/25/2009 10:33 PM, Balbir Singh wrote:
+>
+>
+>>> +It consists of three modules:
+>>> + - xvmalloc.ko: memory allocator
+>>
+>> I've seen your case for a custom allocator, but why can't we
+>>
+>> 1) Refactor slob and use it
+>
+> SLOB is fundamentally a different allocator. It looked at it in detail
+> but could not image how can I make it suitable for the project. SLOB
+> really does not fit it.
+>
+>> 2) Do we care about the optimizations in SLUB w.r.t. scalability in
+>> your module? If so.. will xvmalloc meet those requirements?
+>>
+>
+> Scalability is desired which xvmalloc lacks in its current state. My
+> plan is to have a wrapper around xvmalloc that creates per-cpu pools
+> and leave xvmalloc core simple. Along with this, detailed profiling
+> needs to be done to see where the bottlenecks are in the core itself.
+>
 
-The design of the x86 processor
+I've not yet tested the patches, but adding another allocator does
+worry me a bit. Do you intend to allow other users to consume the
+allocator routines?
 
-You only have 4GB of virtual address space at any one time so you have to
-fit the following within your 4GB virtual space
+>
+>>
+>> What level of compression have you observed? Any speed trade-offs?
+>>
+>
+> All the performance numbers can be found at:
+> http://code.google.com/p/compcache/wiki/Performance
+>
+> I also summarized these in patch [0/4]:
+> http://lkml.org/lkml/2009/8/24/8
+>
+> The compression ratio is highly workload dependent. On "generic" desktop
+> workload, stats show:
+>  - ~80% of pages compressing to PAGE_SIZE/2 or less.
+>  - ~1% incompressible pages.
+>
+>
+> For the speed part, please refer to performance numbers at link above.
+> It show cases where it help or hurts the performance.
+>
 
-- Virtual addresses of the user space
-- Mappings for physical memory
-- Kernel virtual spaces (vmalloc etc)
-- Various miscellaneous kernel mappings
-- I/O MMIO space
+Thanks, I'll take a look at the links
 
-Now you could in theory switch the page tables on kernel entry to get a
-very big user space mapping and then instead of relying on the user space
-being mapped you could map specific user pages or access them via their
-physical address lookup.
-
-That however means reloading %cr3 (page table base) which is very
-expensive, and some very hard to implement locking on user space access.
-
-Some other processor families have the notion of "spaces" or MMU
-bypassing. The Sparc64 for example can access MMIO space without an MMU
-mapping or virtual address being needed for it. x86 does not - it has
-segments but the segments map into the 4GB space so they don't help here
-hence the current implementation and 3G/1G split.
+-- 
+	Balbir
