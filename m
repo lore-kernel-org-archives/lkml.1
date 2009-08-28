@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbZH1Fqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854AbZH1Frc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751913AbZH1Fqy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 01:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbZH1Fqw
+	id S1751854AbZH1Frc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 01:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbZH1Frb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 01:46:52 -0400
-Received: from gate.crashing.org ([63.228.1.57]:45460 "EHLO gate.crashing.org"
+	Fri, 28 Aug 2009 01:47:31 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35050 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672AbZH1Fqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 01:46:51 -0400
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Message-Id: <04A4E77E-C7A2-46B7-8AF4-966868E3AEDA@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-In-Reply-To: <20090818220418.GD25090@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [PATCH 4/8] powerpc/qe&cpm: Implement static inline stubs for non-QE/CPM builds
-Date: Fri, 28 Aug 2009 00:45:56 -0500
-References: <20090818220304.GA23640@oksana.dev.rtsoft.ru> <20090818220418.GD25090@oksana.dev.rtsoft.ru>
-X-Mailer: Apple Mail (2.936)
+	id S1751079AbZH1Fra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 01:47:30 -0400
+Date: Fri, 28 Aug 2009 15:47:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: sound tree build failure
+Message-Id: <20090828154722.7151f65d.sfr@canb.auug.org.au>
+In-Reply-To: <s5hiqg8mrc4.wl%tiwai@suse.de>
+References: <20090828112339.88f4be05.sfr@canb.auug.org.au>
+	<s5hiqg8mrc4.wl%tiwai@suse.de>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__28_Aug_2009_15_47_22_+1000_TZVaB2ECoqgsmAIK"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Fri__28_Aug_2009_15_47_22_+1000_TZVaB2ECoqgsmAIK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Aug 18, 2009, at 5:04 PM, Anton Vorontsov wrote:
+Hi Takashi,
 
-> This is needed to avoid ugly #ifdefs in drivers. Also update  
-> fsl_qe_udc
-> driver so that now it doesn't define its own versions that cause build
-> breakage when the generic stubs are used.
+On Fri, 28 Aug 2009 07:37:31 +0200 Takashi Iwai <tiwai@suse.de> wrote:
 >
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> arch/powerpc/include/asm/cpm.h  |   44 ++++++++++++++++++++++++++++++ 
-> +++++++++
-> arch/powerpc/include/asm/qe.h   |   11 ++++++++-
-> drivers/usb/gadget/fsl_qe_udc.h |   15 -------------
-> 3 files changed, 54 insertions(+), 16 deletions(-)
+> Fixed this typo now.  Sorry for inconvenience.
 
+Thanks.
 
-applied to next
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-- k
+--Signature=_Fri__28_Aug_2009_15_47_22_+1000_TZVaB2ECoqgsmAIK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqXb2sACgkQjjKRsyhoI8ynlgCdE3D7Pbmu4/ySVv6ZNV97x28a
+BN0AnAwUx+Y+NQUrudvY/9VxWZ6JEqNs
+=khZr
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__28_Aug_2009_15_47_22_+1000_TZVaB2ECoqgsmAIK--
