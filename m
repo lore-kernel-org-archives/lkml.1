@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbZH1PKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751496AbZH1PKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752146AbZH1PKP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 11:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbZH1PKO
+	id S1751496AbZH1PKv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 11:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZH1PKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 11:10:14 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:43260 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbZH1PKN (ORCPT
+	Fri, 28 Aug 2009 11:10:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54016 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbZH1PKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 11:10:13 -0400
-Date: Fri, 28 Aug 2009 20:40:11 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH 2/5] memcg: uncharge in batched manner
-Message-ID: <20090828151011.GS4889@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com> <20090828132438.b33828bc.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090828132438.b33828bc.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 28 Aug 2009 11:10:50 -0400
+Subject: [PATCH] perf_counter: fix possible /0 bug in swcounters
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 28 Aug 2009 17:10:47 +0200
+Message-Id: <1251472247.17617.74.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 13:24:38]:
+We have a race in the swcounter stuff where we can start counting a
+counter that has never been enabled, this leads to a /0 situation.
 
-> 
-> In massive parallel enviroment, res_counter can be a performance bottleneck.
-> This patch is a trial for reducing lock contention.
-> One strong techinque to reduce lock contention is reducing calls by
-> batching some amount of calls int one.
-> 
-> Considering charge/uncharge chatacteristic,
-> 	- charge is done one by one via demand-paging.
-> 	- uncharge is done by
-> 		- in chunk at munmap, truncate, exit, execve...
-> 		- one by one via vmscan/paging.
-> 
-> It seems we hace a chance to batched-uncharge.
-> This patch is a base patch for batched uncharge. For avoiding
-> scattering memcg's structure, this patch adds memcg batch uncharge
-> information to the task. please see start/end usage in next patch.
->
+The below avoids the /0 but doesn't close the race, this would need a
+new counter state.
 
-Overall it is a very good idea, can't we do the uncharge at the poin
-tof unmap_vmas, exit_mmap, etc so that we don't have to keep
-additional data structures around. 
+The race is due to perf_swcounter_is_counting() which cannot discern
+between disabled due to scheduled out, and disabled for any other
+reason.
 
--- 
-	Balbir
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/perf_counter.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 53abcbe..2b90d26 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -4103,6 +4103,7 @@ perf_counter_alloc(struct perf_counter_attr *attr,
+ 	hwc->sample_period = attr->sample_period;
+ 	if (attr->freq && attr->sample_freq)
+ 		hwc->sample_period = 1;
++	hwc->last_period = hwc->sample_period;
+ 
+ 	atomic64_set(&hwc->period_left, hwc->sample_period);
+ 
+
+
