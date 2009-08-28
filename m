@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737AbZH1Oq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751902AbZH1OrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751737AbZH1Oq5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 10:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbZH1Oq5
+	id S1751902AbZH1OrJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 10:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZH1OrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 10:46:57 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:59559 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751050AbZH1Oq4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 10:46:56 -0400
-Date: Fri, 28 Aug 2009 20:16:48 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH 1/5] memcg: change for softlimit.
-Message-ID: <20090828144648.GO4889@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com> <20090828132321.e4a497bb.kamezawa.hiroyu@jp.fujitsu.com> <20090828072007.GH4889@balbir.in.ibm.com> <20090828163523.e51678be.kamezawa.hiroyu@jp.fujitsu.com> <20090828132643.GM4889@balbir.in.ibm.com> <bfd50d44ff730c2720b882a81b7446c6.squirrel@webmail-b.css.fujitsu.com> <712c0209222358d9c7d1e33f93e21c30.squirrel@webmail-b.css.fujitsu.com>
+	Fri, 28 Aug 2009 10:47:08 -0400
+Received: from mail.tpi.com ([70.99.223.143]:2464 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751856AbZH1OrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 10:47:06 -0400
+Message-ID: <4A97EDE4.90705@canonical.com>
+Date: Fri, 28 Aug 2009 08:47:00 -0600
+From: Tim Gardner <tim.gardner@canonical.com>
+Reply-To: tim.gardner@canonical.com
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <712c0209222358d9c7d1e33f93e21c30.squirrel@webmail-b.css.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Eric Paris <eparis@redhat.com>
+CC: torvalds@linux-foundation.org, ebiederm@xmission.com, brian@xyzw.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] inotify regresion in -rc8 causes boot hang/failure
+References: <1251468443.2947.7.camel@dhcp231-106.rdu.redhat.com>
+In-Reply-To: <1251468443.2947.7.camel@dhcp231-106.rdu.redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 23:40:56]:
-
-> KAMEZAWA Hiroyuki wrote:
-> > Balbir Singh wrote:
-> >> But Bob and Mike might need to set soft limits between themselves. if
-> >> soft limit of gold is 1G and bob needs to be close to 750M and mike
-> >> 250M, how do we do it without supporting what we have today?
-> >>
-> > Don't use hierarchy or don't use softlimit.
-> > (I never think fine-grain  soft limit can be useful.)
-> >
-> > Anyway, I have to modify unnecessary hacks for res_counter of softlimit.
-> > plz allow modification. that's bad.
-> > I postpone RB-tree breakage problem, plz explain it or fix it by yourself.
-> >
-> I changed my mind....per-zone RB-tree is also broken ;)
+Eric Paris wrote:
+> The following changes since commit 326ba5010a5429a5a528b268b36a5900d4ab0eba:
+>   Linus Torvalds (1):
+>         Linux 2.6.31-rc8
 > 
-> Why I don't like broken system is a function which a user can't
-> know/calculate how-it-works is of no use in mission critical systems.
+> are available in the git repository at:
 > 
-> I'd like to think how-to-fix it with better algorithm. Maybe RB-tree
-> is not a choice.
->
+>   git://git.infradead.org/users/eparis/notify.git for-linus
+> 
+> Brian Rogers (1):
+>       inotify: do not send a block of zeros when no pathname is available
+> 
+>  fs/notify/inotify/inotify_user.c |    8 +++++---
+>  1 files changed, 5 insertions(+), 3 deletions(-)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Soft limits are not meant for mission critical work :-) Soft limits is
-best effort and not a guaranteed resource allocation mechanism. I've
-mentioned in previous emails how we recover if we find the data is
-stale
+This fixes boot problems on a RAID-0 box with 4 disks.
 
- 
-
+rtg
 -- 
-	Balbir
+Tim Gardner tim.gardner@canonical.com
