@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751237AbZH1B3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751264AbZH1BdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751237AbZH1B3m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 21:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZH1B3k
+	id S1751264AbZH1BdW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 21:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZH1BdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 21:29:40 -0400
-Received: from smtp.knology.net ([24.214.63.101]:34824 "EHLO smtp.knology.net"
+	Thu, 27 Aug 2009 21:33:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41417 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750838AbZH1B3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 21:29:40 -0400
-Subject: Re: [PATCH] r8169: Reduce looping in the interrupt handler.
-From: David Dillow <dave@thedillows.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Francois Romieu <romieu@fr.zoreil.com>,
-       Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
-       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <m1d46gka9e.fsf@fess.ebiederm.org>
-References: <m1k50r8u4p.fsf@fess.ebiederm.org>
-	 <20090825221903.GA13630@electric-eye.fr.zoreil.com>
-	 <m1iqgbknun.fsf_-_@fess.ebiederm.org>
-	 <1251294974.14241.9.camel@obelisk.thedillows.org>
-	 <1251295175.14241.11.camel@obelisk.thedillows.org>
-	 <m11vmy737x.fsf@fess.ebiederm.org>
-	 <20090826213024.GA20428@electric-eye.fr.zoreil.com>
-	 <m1hbvu45jq.fsf@fess.ebiederm.org>
-	 <20090827052423.GA1709@electric-eye.fr.zoreil.com>
-	 <m1ocq1ke9u.fsf@fess.ebiederm.org>
-	 <20090827232024.GA30119@electric-eye.fr.zoreil.com>
-	 <m1d46gka9e.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Date: Thu, 27 Aug 2009 21:29:38 -0400
-Message-Id: <1251422978.21865.2.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	id S1750997AbZH1BdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 21:33:20 -0400
+Message-ID: <4A9733C1.2070904@redhat.com>
+Date: Thu, 27 Aug 2009 21:32:49 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+References: <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <20090827221319.GA1601@ucw.cz>
+In-Reply-To: <20090827221319.GA1601@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-08-27 at 18:17 -0700, Eric W. Biederman wrote:
-> Francois Romieu <romieu@fr.zoreil.com> writes:
-> 
-> > Eric W. Biederman <ebiederm@xmission.com> :
-> > [...]
-> >> Sounds good.
-> >
-> > Gah, I was not able to test it with a decent packet load. Patch below against
-> > the current tree:
-> 
-> This kills the loop which was my concern.
-> 
-> I will double check it works on my configuration.
-> Then we have the question of does it work for those folks who have cards
-> where the msi appeared to get lost.
-> 
-> David any chance you can test this patch?
+On 08/27/2009 06:13 PM, Pavel Machek wrote:
+>
+>>>> Repeat experiment until you get up to something like google scale or the
+>>>> other papers on failures in national labs in the US and then we can have an
+>>>> informed discussion.
+>>>>
+>>> On google scale anvil lightning can fry your machine out of a clear sky.
+>>>
+>>> However, there are still a few non-enterprise users out there, and knowing
+>>> that specific usage patterns don't behave like they expect might be useful to
+>>> them.
+>>
+>> You are missing the broader point of both papers. They (and people like
+>> me when back at EMC) look at large numbers of machines and try to fix
+>> what actually breaks when run in the real world and causes data loss.
+>> The motherboards, S-ATA controllers, disk types are the same class of
+>> parts that I have in my desktop box today.
+> ...
+>> These errors happen extremely commonly and are what RAID deals with well.
+>>
+>> What does not happen commonly is that during the RAID rebuild (kicked
+>> off only after a drive is kicked out), you push the power button or have
+>> a second failure (power outage).
+>>
+>> We will have more users loose data if they decide to use ext2 instead of
+>> ext3 and use only single disk storage.
+>
+> So your argument basically is
+>
+> 'our abs brakes are broken, but lets not tell anyone; our car is still
+> safer than a horse'.
+>
+> and
+>
+> 'while we know our abs brakes are broken, they are not major factor in
+> accidents, so lets not tell anyone'.
+>
+> Sorry, but I'd expect slightly higher moral standards. If we can
+> document it in a way that's non-scary, and does not push people to
+> single disks (horses), please go ahead; but you have to mention that
+> md raid breaks journalling assumptions (our abs brakes really are
+> broken).
+> 								Pavel
+>
 
-It'll be this weekend, but I can see cases where it can lock my chip up
--- they should be rare, but then I thought your case would be extremely
-rare...
 
-I think we'll need to go to a full separation between MSI and
-level-triggered interrupt handlers, or at the very least mask everything
-and handle it all in NAPI. That seems more viable now that I know
-Francois is not terribly worried about diverging from the vendor driver
-there.
+You continue to ignore the technical facts that everyone (both MD and ext3) 
+people put in front of you.
+
+If you have a specific bug in MD code, please propose a patch.
+
+Ric
 
