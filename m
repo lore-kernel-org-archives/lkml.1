@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751123AbZH1BRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751213AbZH1BXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751123AbZH1BRK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 21:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbZH1BRJ
+	id S1751213AbZH1BXt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 21:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZH1BXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 21:17:09 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:34449 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbZH1BRI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 21:17:08 -0400
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: David Dillow <dave@thedillows.org>,
-       Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
-       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] r8169: Reduce looping in the interrupt handler.
-References: <m1k50r8u4p.fsf@fess.ebiederm.org>
-	<20090825221903.GA13630@electric-eye.fr.zoreil.com>
-	<m1iqgbknun.fsf_-_@fess.ebiederm.org>
-	<1251294974.14241.9.camel@obelisk.thedillows.org>
-	<1251295175.14241.11.camel@obelisk.thedillows.org>
-	<m11vmy737x.fsf@fess.ebiederm.org>
-	<20090826213024.GA20428@electric-eye.fr.zoreil.com>
-	<m1hbvu45jq.fsf@fess.ebiederm.org>
-	<20090827052423.GA1709@electric-eye.fr.zoreil.com>
-	<m1ocq1ke9u.fsf@fess.ebiederm.org>
-	<20090827232024.GA30119@electric-eye.fr.zoreil.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 27 Aug 2009 18:17:01 -0700
-In-Reply-To: <20090827232024.GA30119@electric-eye.fr.zoreil.com> (Francois Romieu's message of "Fri\, 28 Aug 2009 01\:20\:24 +0200")
-Message-ID: <m1d46gka9e.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: romieu@fr.zoreil.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, mb@bu3sch.de, michael.riepe@googlemail.com, dave@thedillows.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+	Thu, 27 Aug 2009 21:23:46 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42596 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751058AbZH1BXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 21:23:45 -0400
+Date: Fri, 28 Aug 2009 11:23:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: sound tree build failure
+Message-Id: <20090828112339.88f4be05.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__28_Aug_2009_11_23_39_+1000_=keHP43CMQlHOkUh"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francois Romieu <romieu@fr.zoreil.com> writes:
+--Signature=_Fri__28_Aug_2009_11_23_39_+1000_=keHP43CMQlHOkUh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Eric W. Biederman <ebiederm@xmission.com> :
-> [...]
->> Sounds good.
->
-> Gah, I was not able to test it with a decent packet load. Patch below against
-> the current tree:
+Hi Takashi,
 
-This kills the loop which was my concern.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-I will double check it works on my configuration.
-Then we have the question of does it work for those folks who have cards
-where the msi appeared to get lost.
+sound/core/oss/mixer_oss.c: In function 'snd_mixer_oss_proc_write':
+sound/core/oss/mixer_oss.c:1168: error: implicit declaration of function 'p=
+rinkt'
+sound/core/seq/seq_device.c: In function 'snd_seq_device_register_driver':
+sound/core/seq/seq_device.c:327: error: implicit declaration of function 'p=
+rinkt'
 
-David any chance you can test this patch?
+Caused by commit 36ce99c1dcab2978fc1900f19b431adedd8f99f6 ("ALSA: Add
+debug module option").
 
-Eric
+I have used the version of the sound tree from next-20090827 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__28_Aug_2009_11_23_39_+1000_=keHP43CMQlHOkUh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqXMZsACgkQjjKRsyhoI8yYSACgrxJ+q7PcYkBOY1brxAk871AG
+v8cAnjg13H1vUXn1FUBoeKhgabxbDulf
+=XVRI
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__28_Aug_2009_11_23_39_+1000_=keHP43CMQlHOkUh--
