@@ -1,113 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751617AbZH1MHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751745AbZH1MJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751617AbZH1MHx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZH1MHx
+	id S1751745AbZH1MJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZH1MJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:07:53 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:54734 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751211AbZH1MHw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:07:52 -0400
-Subject: Re: modules: Fix build error in the !CONFIG_KALLSYMS case
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Helge Deller <deller@gmx.de>
-In-Reply-To: <20090828084456.GB3454@elte.hu>
-References: <alpine.LFD.2.01.0908271805210.3218@localhost.localdomain>
-	 <20090828084456.GB3454@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 28 Aug 2009 08:07:49 -0400
-Message-Id: <1251461269.4226.6.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+	Fri, 28 Aug 2009 08:09:57 -0400
+Received: from thunk.org ([69.25.196.29]:57763 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbZH1MJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 08:09:56 -0400
+Date: Fri, 28 Aug 2009 08:08:54 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Pavel Machek <pavel@ucw.cz>, NeilBrown <neilb@suse.de>
+Cc: Ric Wheeler <rwheeler@redhat.com>, Rob Landley <rob@landley.net>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+	document conditions when reliable operation is possible)
+Message-ID: <20090828120854.GA8153@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
+	NeilBrown <neilb@suse.de>, Ric Wheeler <rwheeler@redhat.com>,
+	Rob Landley <rob@landley.net>, Florian Weimer <fweimer@bfk.de>,
+	Goswin von Brederlow <goswin-v-b@web.de>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+	linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <20090828064449.GA27528@elf.ucw.cz> <ff262c08b0c3a7a9c32dabd53a4a9a27.squirrel@neil.brown.name> <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com> <20090828064449.GA27528@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ff262c08b0c3a7a9c32dabd53a4a9a27.squirrel@neil.brown.name> <20090828064449.GA27528@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-28 at 10:44 +0200, Ingo Molnar wrote:
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Fri, Aug 28, 2009 at 08:44:49AM +0200, Pavel Machek wrote:
+> From: Theodore Tso <tytso@mit.edu>
 > 
-> > James Bottomley (1):
-> >       module: workaround duplicate section names
+> Document that many devices are too broken for filesystems to protect
+> data in case of powerfail.
 > 
-> -tip testing found that this patch breaks the build on x86 if 
-> CONFIG_KALLSYMS is disabled:
-> 
->  kernel/module.c: In function ‘load_module’:
->  kernel/module.c:2367: error: ‘struct module’ has no member named ‘sect_attrs’
->  distcc[8269] ERROR: compile kernel/module.c on ph/32 failed
->  make[1]: *** [kernel/module.o] Error 1
->  make: *** [kernel] Error 2
->  make: *** Waiting for unfinished jobs....
-> 
-> Commit 1b364bf misses the fact that section attributes are only 
-> built and dealt with if kallsyms is enabled. The patch below fixes 
-> this.
+> Signed-of-by: Pavel Machek <pavel@ucw.cz> 
 
-Thanks for finding the bug.
+NACK.  I didn't write this patch, and it's disingenuous for you to try
+to claim that I authored it.
 
-> ( note, technically speaking this should depend on CONFIG_SYSFS as
->   well but this patch is correct too and keeps the #ifdef less
->   intrusive - in the KALLSYMS && !SYSFS case the code is a NOP. )
+You took text I wrote from the *middle* of an e-mail discussion and
+you ignored multiple corrections to typo's that I made --- typo's that
+I would have corrected if I had ultimately decided to post this as a
+patch, which I did NOT.
 
-Agree with this, but there is a way of fixing it, see below.
+While Neil Brown's corrections are minimally necessary so the text is
+at least technically *correct*, it's still not the right advice to
+give system administrators.  It's better than the fear-mongering
+patches you had proposed earlier, but what would be better *still* is
+telling people why running with degraded RAID arrays is bad, and to
+give them further tips about how to use RAID arrays safely.
 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/module.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/module.c b/kernel/module.c
-> index eccb561..b4016d1 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -2355,8 +2355,10 @@ static noinline struct module *load_module(void __user *umod,
->  	if (err < 0)
->  		goto unlink;
->  	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
-> +#ifdef CONFIG_KALLSYMS
->  	if (mod->sect_attrs)
->  		add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
-> +#endif
+To use your ABS brakes analogy, just becase it's not safe to rely on
+ABS brakes if the "check brakes" light is on, that doesn't justify
+writing something alarmist which claims that ABS brakes don't work
+100% of the time, don't use ABS brakes, they're broken!!!!
 
-Rather than adding to the #ifdef litter in the file, isn't it better to
-move the test to a section of it that's already ifdef'd?
+The first part of it is true, since ABS brakes can suffer mechnical
+failure.  But what we should be telling drivers is, "if the 'check
+brakes' light comes on, don't keep driving with it, go to a garage and
+get it fixed!!!".  Similarly, if you get a notice that your RAID is
+running in degraded mode, you've already suffered one failure; you
+won't survive another failure, so fix that issue ASAP!
 
-This also fixes the problem of depending on CONFIG_SYSFS you mention.
+If you're really paranoid, you could decide to "pull over to the side
+of the road"; that is, you could stop writing to the RAID array as
+soon as possible, and then get the the RAID array rebuilt before
+proceeding.  That can reduce the chances of a second failure.  But in
+the real world, there are costs associated with taking a production
+server off-line, and the prudent system administrator has to do a
+risk-reward tradeoff.  A better approach might to have the array
+configured with a hot spare, and to regularly scrub the array, and
+configure the RAID array with either a battery backup or a UPS.  And
+hot-swap drives might not be a bad idea, too.
 
-James
+But in any case, just because ABS brakes and RAID arrays can suffer
+failures, that doesn't mean you should run around telling people not
+to use RAID arrays or RAID arrays are broken.  People are better off
+using RAID than not using single disk storage solutions, just as
+people are better off using ABS brakes than not.
 
----
+Your argument basically boils down to, "if you drive like a maniac
+when the roads are wet and slippery, ABS brakes might not save your
+life.  Since ABS brake might cause you to have a false sense of
+security, it's better to tell users that ABS brakes are broken."
 
-diff --git a/kernel/module.c b/kernel/module.c
-index eccb561..2d53718 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1274,6 +1274,10 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
- 	struct module_notes_attrs *notes_attrs;
- 	struct bin_attribute *nattr;
- 
-+	/* failed to create section attributes, so can't create notes */
-+	if (!mod->sect_attrs)
-+		return;
-+
- 	/* Count notes sections and allocate structures.  */
- 	notes = 0;
- 	for (i = 0; i < nsect; i++)
-@@ -2355,8 +2359,7 @@ static noinline struct module *load_module(void __user *umod,
- 	if (err < 0)
- 		goto unlink;
- 	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
--	if (mod->sect_attrs)
--		add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
-+	add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
- 
- 	/* Get rid of temporary copy */
- 	vfree(hdr);
+That's just silly.  What we should be telling people instead is (a)
+pay attention to the check brakes light (just as you should pay
+attention to the RAID array is degraded warning), and (b) while ABS
+brakes will get you out of some situations with life and limb intact,
+they do not repeal that laws of physics (do regular full and
+incremental backups; practice disk scrubbing; use UPS's or battery
+backups).
 
-
+							- Ted
