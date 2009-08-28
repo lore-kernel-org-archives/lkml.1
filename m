@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751656AbZH1Q23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbZH1QaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751656AbZH1Q23 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 12:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbZH1Q23
+	id S1751739AbZH1QaW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 12:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbZH1QaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 12:28:29 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:53245 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457AbZH1Q22 (ORCPT
+	Fri, 28 Aug 2009 12:30:21 -0400
+Received: from mail-yw0-f184.google.com ([209.85.211.184]:59117 "EHLO
+	mail-yw0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751496AbZH1QaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 12:28:28 -0400
-X-IronPort-AV: E=Sophos;i="4.44,292,1249257600"; 
-   d="scan'208";a="234521259"
-From: Roland Dreier <rdreier@cisco.com>
-To: Joachim Fenkes <FENKES@de.ibm.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       OF-EWG <ewg@lists.openfabrics.org>,
-       OF-General <general@lists.openfabrics.org>,
-       Hal Rosenstock <hnrose@comcast.net>,
-       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [ewg] [PATCH] IB/ehca: Construct MAD redirect replies from 	request MAD
-References: <200908261337.56128.fenkes@de.ibm.com>
-	<f0e08f230908260815g70de3002pfd0b34f1b17abd6@mail.gmail.com>
-	<OFF2257478.FF0FEABE-ONC125761F.00344884-C125761F.00358310@de.ibm.com>
-	<f0e08f230908270631j3e159f3fgb0034eb41acdac7b@mail.gmail.com>
-	<OFA25F14CC.CE7042E9-ONC1257620.00453C46-C1257620.00474D70@de.ibm.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 28 Aug 2009 09:28:29 -0700
-In-Reply-To: <OFA25F14CC.CE7042E9-ONC1257620.00453C46-C1257620.00474D70@de.ibm.com>
-	(Joachim Fenkes's message of "Fri, 28 Aug 2009 14:58:49 +0200")
-Message-ID: <adabplzsy1e.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 28 Aug 2009 12:30:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=DAhNCoejN7gaciGDIqlaP4Kar/KirS64c0PdA/QBNgFAYfdVIcPgLO97uGUxnYLyqP
+         Q5gdZS2/kwm5T8KABqoq2ZeQHrEoszxJPSW1lHV/GdIqrpC/L1coEr88u7+rnfC4jtdW
+         ltq1vGBtYtgKNGsOtzE4Y9tDQ065GtXKFTlIU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Aug 2009 16:28:30.0167 (UTC) FILETIME=[93FEC670:01CA27FC]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+In-Reply-To: <1251476422.28787.1.camel@dhcp231-106.rdu.redhat.com>
+References: <Pine.LNX.4.64.0908282358560.19623@boston.corp.fedex.com>
+	 <1251476422.28787.1.camel@dhcp231-106.rdu.redhat.com>
+Date: Sat, 29 Aug 2009 00:30:22 +0800
+Message-ID: <b6a2187b0908280930s6366eda6pe1d5024b4ef890dd@mail.gmail.com>
+Subject: Re: Linux-2.6.31-rc8 inotify hangs samba clients
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Aug 29, 2009 at 12:20 AM, Eric Paris<eparis@redhat.com> wrote:
 
- > Given that you seem to like the rest of the code and Jason hasn't spoken 
- > up yet, I think we can have Roland merge this patch. Roland, what do you 
- > think?
+> Deffinitly not Samba's fault.  I should have 2 patches to fix inotify
+> at:
+>
+> http://git.infradead.org/users/eparis/notify.git/shortlog/refs/heads/for-linus
 
-I don't see any problem with the idea and this does sound like a step
-forward, so I am planning on merging this (pending review).
+Eric, didn't expect instantaneous response as I was sending out the
+wrong patch and had to correct it.
+
+Thanks again for the pointer and fixes. Will wait to pull from Linus's git.
+
+Jeff.
