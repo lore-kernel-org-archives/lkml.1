@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbZH1Qzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751611AbZH1Q6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752122AbZH1Qzc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 12:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZH1Qzc
+	id S1751611AbZH1Q6Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 12:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbZH1Q6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 12:55:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60742 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751886AbZH1Qzb (ORCPT
+	Fri, 28 Aug 2009 12:58:16 -0400
+Received: from mail-vw0-f195.google.com ([209.85.212.195]:55118 "EHLO
+	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbZH1Q6P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 12:55:31 -0400
-Date: Fri, 28 Aug 2009 12:55:26 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Nikanth Karthikesan <knikanth@suse.de>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Kernel 2.6.30.4 loop(..?) regression (& with/2.6.31-rc6)
-Message-ID: <20090828165526.GA6133@infradead.org>
-References: <20090822205502.GA18904@infradead.org> <alpine.DEB.2.00.0908221659030.23463@p34.internal.lan> <20090823224504.GA19942@infradead.org> <alpine.DEB.2.00.0908240704130.9427@p34.internal.lan> <alpine.DEB.2.00.0908260949550.9396@p34.internal.lan> <20090826180234.GC14019@infradead.org> <alpine.DEB.2.00.0908261717001.1594@p34.internal.lan> <20090826212732.GA18124@infradead.org> <alpine.DEB.2.00.0908261728580.1594@p34.internal.lan> <alpine.DEB.2.00.0908280720220.30806@p34.internal.lan>
+	Fri, 28 Aug 2009 12:58:15 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908280720220.30806@p34.internal.lan>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <alpine.LFD.2.01.0908271805210.3218@localhost.localdomain>
+References: <alpine.LFD.2.01.0908271805210.3218@localhost.localdomain>
+Date: Fri, 28 Aug 2009 12:58:17 -0400
+Message-ID: <7e0fb38c0908280958x2c680e97v36f74c6ece52cb8d@mail.gmail.com>
+Subject: Re: Linux 2.6.31-rc8
+From: Eric Paris <eparis@parisplace.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 28, 2009 at 07:23:11AM -0400, Justin Piszcz wrote:
-> If both '-o nobarrier' and the patch solves the issue, what is the next  
-> action that should be taken?  Update the documentation to always use
-> -o nobarrier for cryptoloop? Or get the patch reverted in mainline?
+2009/8/27 Linus Torvalds <torvalds@linux-foundation.org>:
 
-We'll have to figure out why it causes those problems and how fix them.
--o nobarrier on a loop device is extremly unsafe as you will possible
-lose large amounts of log updates in case of a crash.
+> So apart from the trivial but somewhat bulky stuff like that, there's a
+> sparc TLB loading upddate, there's a mpt2sas driver update, and there's
+> the plan9 filesystem update. And there's a few fs/notify cleanups and
+> fixes that will hopefully put the inotify problems behind us for good.
+> Knock wood.
 
+Knocking on wood failed.  I actually screwed inotify up worse in -rc8
+than ever before (2 new regressions including inotify never gets
+events!!)
+
+Sorry to everyone out there trying to use -rc8...
+
+-Eric
