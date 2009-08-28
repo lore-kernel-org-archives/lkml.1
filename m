@@ -1,88 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZH1Tpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbZH1TsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752907AbZH1Tpo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 15:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbZH1Tpm
+	id S1752920AbZH1TsL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 15:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZH1TsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 15:45:42 -0400
-Received: from mail-px0-f174.google.com ([209.85.216.174]:51864 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752753AbZH1Tpl (ORCPT
+	Fri, 28 Aug 2009 15:48:10 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:24644 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752828AbZH1TsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 15:45:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=bSZAOsegifdzH6Vyh9ddzWgETQyjeihpy4KEx4FAh7V/HS5uhr+D7PNJOlpJOY1dID
-         KeSVf8UNu1fuEpPosEIE+zl915o+FZTftWWCW6eVxXv0FHyZ7N5nlQxtyYN0ARqHq14S
-         U2h5c29y+ZiwndBH0UDUr/gtFcIaxncerQ3pc=
-Message-ID: <4A9833DE.4030600@gmail.com>
-Date: Fri, 28 Aug 2009 15:45:34 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Fri, 28 Aug 2009 15:48:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAIvRl0qrR7PD/2dsb2JhbADBfohAAZAfBYQZ
+X-IronPort-AV: E=Sophos;i="4.44,292,1249257600"; 
+   d="scan'208";a="234602607"
+Date: Fri, 28 Aug 2009 12:48:10 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, greg@kroah.com
+Subject: Re: [PATCH 1/1, v2]
+	usb-use-kfifo-to-buffer-usb-generic-serial-writes.patch
+Message-ID: <20090828194810.GA10728@cuplxvomd02.corp.sa.net>
+References: <20090827013454.GA23601@cuplxvomd02.corp.sa.net> <200908271014.54282.oliver@neukum.org> <20090827172218.GA3618@cuplxvomd02.corp.sa.net> <200908281507.11143.oliver@neukum.org>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: FTRACE: regression in 31-rc7
-References: <4A96B55C.10001@gmail.com> <20090827164007.GA30679@elte.hu> <4A96BB40.1070306@gmail.com> <alpine.DEB.2.00.0908271301200.29943@gandalf.stny.rr.com> <4A96BD50.9040204@gmail.com> <alpine.DEB.2.00.0908271334230.19345@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0908271334230.19345@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD0D2B45A00F08A7FBA5524FD"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908281507.11143.oliver@neukum.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-3; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD0D2B45A00F08A7FBA5524FD
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, Aug 28, 2009 at 03:07:10PM +0200, Oliver Neukum wrote:
+> Am Donnerstag, 27. August 2009 19:22:18 schrieb David VomLehn:
+> > On Thu, Aug 27, 2009 at 10:14:53AM +0200, Oliver Neukum wrote:
+> > > > +	/* send the data out the bulk port */
+> > > > +	result = usb_submit_urb(port->write_urb, GFP_ATOMIC);
+> > > > +	if (result) {
+> > > > +		dev_err(&port->dev,
+> > > > +			"%s - failed submitting write urb, error %d\n",
+> > > > +						__func__, result);
+> > > > +		/* don't have to grab the lock here, as we will
+> > > > +		   retry if != 0 */
+> > > > +		port->write_urb_busy = 0;
+> > > > +		status = result;
+> > >
+> > > This looks deficient. If the first part of a transmission fails,
+> > > the fifo's remaining content should be discarded and if possible
+> > > an error returned to user space.
+> >
+> > I thought about that, and perhaps I don't know enough about about USB
+> > failure modes, but it's not really clear to me that the FIFO's contents
+> > should be tossed. The pro argument is that losing more data may make it
+> > clearer that an error occurred, but the con is that this may be a transient
+> > error and why should we discard perfectly good data? I'm definitely open to
+> > discussion on this.
+> 
+> You may be writing a command. If you clip out a sequence in the middle you
+> might be sending an altered command without telling user space.
 
-Steven Rostedt wrote:
-> On Thu, 27 Aug 2009, Gregory Haskins wrote:
->=20
->> Hi Steve,
->>
->> Steven Rostedt wrote:
->> instrumented for some reason.
->>> Hmm, so you think something with the modules broke? I can test that o=
-ut=20
->>> here.
->> Thats my (admittedly fairly ignorant) theory based on the limited data=
+Serial output does not provide a reliable delivery mechanism. If you flip a bit
+in the sending UART, you may also send an altered command without telling user
+space. Still, having had some time to think about it, I think discarding the
+rest of the data is at least as reasonable as anything else.
 
->> samples I have in front of me. :)
->>
->> If I get a chance later, I will try to do something more scientific, o=
-r
->> at least a bisect.
->=20
-> I just did this:
+It seems propagating errors back to user space appears somewhat problematic,
+but this is true independent of whether a FIFO is used.
 
-<snip>
+> > > [..]
+> > >
+> > > > @@ -487,8 +515,8 @@ void usb_serial_generic_write_bulk_callback(struct
+> > > > urb *urb) port->urbs_in_flight = 0;
+> > > >  		spin_unlock_irqrestore(&port->lock, flags);
+> > > >  	} else {
+> > > > -		/* Handle the case for single urb mode */
+> > > >  		port->write_urb_busy = 0;
+> > > > +		usb_serial_generic_write_start(port, 0);
+> > >
+> > > This is a problem. This may fail due to a system suspend.
+> > > In that case you cannot depend on the next write restarting
+> > > IO. You need to restart IO in resume()
+> >
+> > It's not so clear that this is a problem. Serial output is not idempotent
+> > the way disk output is; you trade the risk of dropped data for the risk of
+> > duplicated data.  I have a belief, open to challenge, that users can handle
+> > would regard duplicated data as more confusing than dropped data.
+> 
+> How can this duplicate data? If you know that you need to call
+> usb_serial_generic_write_start, you also know that no further
+> transfer will occur. If you don't test and restart on resume, you
+> get this scenario:
+> 
+> user space writes to device
+> user space waits for answer
+> 
+> kernel transfers 1. buffer
+> system suspension - 2. buffer cannot be transfered,
+> 	as usb_serial_generic_write_start gets -EPERM
+> system resumption - 2. buffer is never transmitted,
+> 	user space times out and reports an error
 
-I just did a clean build with -rc7 and all is well.  Not sure what
-happened before, but sorry for the noise...
+Okay, this makes sense. This functionality was also missing in the FIFO-less
+version of this file, so it's over and above the original intent of the patch,
+but it looks easy enough to do and I'm all in favor of better suspend/resume
+support.
 
-Kind Regards,
--Greg
+> 
+> > > [..]
+> > >
+> > > > @@ -96,6 +98,8 @@ struct usb_serial_port {
+> > > >  	unsigned char		*bulk_out_buffer;
+> > > >  	int			bulk_out_size;
+> > > >  	struct urb		*write_urb;
+> > > > +	struct kfifo		*write_fifo;
+> > > > +	spinlock_t		write_fifo_lock;
+> > >
+> > > Do you really need a separate lock?
+> >
+> > No. I could, theoretically, grab the BKL, but why hold up anything you
+> > don't have to? If someone wants to make an argument based on cacheline
+> > thrashing, they could certainly do so, but the data rates being used here
+> > are relatively low.
+> 
+> Is there any lock the usb serial subsystem provides you could use?
 
+There is an existing spinlock_t element and it looks like there shouldn't be a
+conflict, so, yes, that looks like a good suggestion.
 
---------------enigD0D2B45A00F08A7FBA5524FD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> 		Oliver
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqYM94ACgkQP5K2CMvXmqHIOACbBZQE1MaULk5hTvRD+9jBSmLk
-E/UAn2KdthUjO9AaMKY5HEraU45ko0Ka
-=mbxx
------END PGP SIGNATURE-----
-
---------------enigD0D2B45A00F08A7FBA5524FD--
+David VL
