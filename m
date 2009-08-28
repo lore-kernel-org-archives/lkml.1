@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbZH1Vqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZH1Vs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753328AbZH1Vqm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 17:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZH1Vqm
+	id S1752087AbZH1Vs7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 17:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZH1Vs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 17:46:42 -0400
-Received: from staff.task.gda.pl ([153.19.250.116]:4093 "EHLO
-	staff.task.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbZH1Vql (ORCPT
+	Fri, 28 Aug 2009 17:48:59 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:35970 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752155AbZH1Vs6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 17:46:41 -0400
-Date: Fri, 28 Aug 2009 23:46:35 +0200 (CEST)
-From: Pawel Golaszewski <blues@gda.pl>
-X-X-Sender: blues@staff.task.gda.pl
-To: Peter Zijlstra <peterz@infradead.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Dhaval Giani <dhaval.giani@gmail.com>
-Subject: Re: PROBLEM: oops
-In-Reply-To: <1251364230.18584.52.camel@twins>
-Message-ID: <alpine.LNX.2.00.0908282345150.18588@fgnss.gnfx.tqn.cy>
-References: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy>  <1251209206.7538.1159.camel@twins>  <alpine.LNX.2.00.0908251608280.16876@fgnss.gnfx.tqn.cy>  <1251209734.7538.1160.camel@twins>  <alpine.LNX.2.00.0908251625580.16876@fgnss.gnfx.tqn.cy> 
- <1251211483.7538.1162.camel@twins>  <alpine.LNX.2.00.0908251701020.16876@fgnss.gnfx.tqn.cy>  <1251212859.7538.1166.camel@twins>  <alpine.LNX.2.00.0908252317080.17744@fgnss.gnfx.tqn.cy>  <1251265742.7538.1192.camel@twins>  <alpine.LNX.2.00.0908261113450.16876@fgnss.gnfx.tqn.cy>
-  <alpine.LNX.2.00.0908270956420.16876@fgnss.gnfx.tqn.cy> <1251364230.18584.52.camel@twins>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 28 Aug 2009 17:48:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Mitb2xlNsWrfuKJQ+3Ly9VHp+DCdYdKAA6lyZWuO+5UNsbwe5LoqnV6OdIqdu6Gwzx
+         fL+oTDkk1p5NpgnfQfm17KDGMyLrKq1C+CdkuBgD4R0HoTqfwm0zeDPhwrpIWGQ+fb8V
+         OcN13jqlM2s22jAc0I1OrS4uA2n/8KwukC/VQ=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="328824058-1931371185-1251495996=:18588"
+In-Reply-To: <20090712080410.GA8512@localhost>
+References: <6afc6d4a0907111027w76234c8fv11ab77864515fdb0@mail.gmail.com> 
+	<20090712080410.GA8512@localhost>
+From: Fernando Silveira <fsilveira@gmail.com>
+Date: Fri, 28 Aug 2009 18:48:40 -0300
+Message-ID: <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com>
+Subject: Re: I/O and pdflush
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, Jul 12, 2009 at 05:04, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> On Sat, Jul 11, 2009 at 02:27:25PM -0300, Fernando Silveira wrote:
+>> I'm having a hard time with an application that writes sequentially
+>> 250GB of non-stop data directly to a solid state disk (OCZ SSD CORE
+>> v2) device and I hope you can help me. The command "dd if=/dev/zero
+>> of=/dev/sdc bs=4M" reproduces the same symptoms I'm having and writes
+>> exactly as that application does.
+>
+> What's your kernel version? �Can the following patch help?
 
---328824058-1931371185-1251495996=:18588
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Sorry for the delay, but I could not test it before.
 
-On Thu, 27 Aug 2009, Peter Zijlstra wrote:
-> > > > # git log --format=oneline v2.6.27.13..v2.6.27.31 kernel/sched*
-> > > > 2b46f3769896dc04e1e49144d282e4655677105a wait: prevent exclusive waiter starvation
-> > > > 
-> > > > Nothing changed anywhere near the code that is falling apart..
-> > > I have 2 machines with the same hardware and similar software. On 
-> > > one .13 is stable - I will test it on the second one. Should be too.
-> > I've checked it - 2.6.27.13 is stable for me. Conclusion: there is 
-> > something wrong between 2.6.27.13 and 2.6.27.31 What can I do about 
-> > that? I'm not kernel-hacker...
-> Unless any of the memory debugging options yield a clue the best you can 
-> do is a bisection I'm afraid.
-> 
-> # git log --format=oneline v2.6.27.13..v2.6.27.31 | wc -l
-> 630
+Unfortunately it did not help or change any symptoms at all. The
+kernel version I tested was a non-patched 2.6.30.1 version.
 
-Ok, I checked:
-
-2.6.27.15 works fine
-2.6.27.17 crashes (log was sent).
-
-What now?
+Do you have any other hint?
 
 -- 
-pozdr.  Paweł Gołaszewski          jid:blues<at>jabber<dot>gda<dot>pl
---------------------------------------------------------------------------
-If you think of MS-DOS as mono, and Windows as stereo, then Linux is Dolby
-Pro-Logic Surround Sound with Bass Boost and all the music is free.
---328824058-1931371185-1251495996=:18588--
+Fernando Silveira <fsilveira@gmail.com>
