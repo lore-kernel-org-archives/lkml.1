@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751293AbZH1B4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751269AbZH1CC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751293AbZH1B4Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 21:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbZH1B4Q
+	id S1751269AbZH1CC0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 22:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZH1CCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 21:56:16 -0400
-Received: from mexforward.lss.emc.com ([128.222.32.20]:47430 "EHLO
-	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbZH1B4P convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 21:56:15 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 27 Aug 2009 22:02:24 -0400
+Received: from ozlabs.org ([203.10.76.45]:56673 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751021AbZH1CCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 22:02:23 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: 2.6.31-rc7-git2: Reported regressions 2.6.29 -> 2.6.30
+Date: Fri, 28 Aug 2009 11:32:18 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
+       zajec5@gmail.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       protasnb@gmail.com, linux-acpi@vger.kernel.org,
+       kernel-testers@vger.kernel.org, torvalds@linux-foundation.org,
+       Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>
+References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera> <200908272023.21288.rusty@rustcorp.com.au> <20090827211351.f9c96bfc.sfr@canb.auug.org.au>
+In-Reply-To: <20090827211351.f9c96bfc.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: TCP keepalive timer problem
-Date: Thu, 27 Aug 2009 21:55:35 -0400
-Message-ID: <0939B589FC103041945B9F13274963E303BA96BB@CORPUSMX90A.corp.emc.com>
-In-Reply-To: <4A969CDC.6060402@gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: TCP keepalive timer problem
-Thread-Index: AconJaswj2UTUtu9Sy2Tmhj8o2zyAwAWKkLw
-References: <0939B589FC103041945B9F13274963E303B1A9D4@CORPUSMX90A.corp.emc.com> <4A93E36C.8070502@gmail.com> <0939B589FC103041945B9F13274963E303B1AD89@CORPUSMX90A.corp.emc.com> <4A967FCE.3000807@gmail.com> <87skfdl6qt.fsf@basil.nowhere.org> <4A969566.3070606@gmail.com> <20090827142927.GA17220@basil.fritz.box> <4A969CDC.6060402@gmail.com>
-From: <Li_Xin2@emc.com>
-To: <eric.dumazet@gmail.com>, <andi@firstfloor.org>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-X-OriginalArrivalTime: 28 Aug 2009 01:56:02.0459 (UTC) FILETIME=[B2546EB0:01CA2782]
-X-EMM-EM: Active
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908281132.19765.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 27 Aug 2009 08:43:51 pm Stephen Rothwell wrote:
+> Hi Rusty,
+> 
+> On Thu, 27 Aug 2009 20:23:20 +0930 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> >
+> > > Rusty/Len: please work out why the title for that patch went silly.
+> > 
+> > git-quiltimport uses the patch names, and doesn't extract the title.  I
+> > assume that's what Stephen uses.  I didn't rename the patch when I rewrote
+> > it not to use work_on_cpu.
+> 
+> git quiltimport assumes "mail-like" patches, so it looks for "From:" and
+> "Subject:" lines.  I guess it could be made to use the first line of the
+> patch if there is no subject ...
 
- > Yep, so to recap we have two changes :
+My scripts should all handle Subject: prefixes, I can just start using that.
 
-> 1) The one I sent (taking into account the time of last ACK we
-received) to compute the
-> timer delays.
-
-> 2) The one you suggest, avoiding to send a probe if we have packets in
-flight, relying
-> on normal retransmits timers.
-
-I agree with these two changes, but I think the patch for point 2 given
-by Eric is not correct:
-
-
-elapsed = keepalive_time_when(tp);
-
- if (tp->packets_out || tcp_send_head(sk))
- 	if (tcp_retries2_time < keepalive_time_when(tp))
- 		goto resched;
- elapsed = tcp_time_stamp - tp->rcv_tstamp;
-
-
-The problem is: you should not always compare tcp_retries2_time with
-keepalive_time_when. If the first keepalive probe is already sent, you
-should compare with keepalive_intvl_when
- ( or keepalive_intvl_when * (
-tp->keepalive_probes?:sysctl_tcp_keepalive_probes -
-icsk->icsk_probes_out ) if keepalive probe is already sent, and the
-elapsed time also needs to take that into account.
-
-elapsed =
-icsk->icsk_probes_out?keepalive_intvl_when(tp):keepalive_time_when(tp);
-
- if (tp->packets_out || tcp_send_head(sk))
- 	if (tcp_retries2_time < (icsk->icsk_probes_out?
-keepalive_intvl_when(tp)  : keepalive_time_when(tp))
- 		goto resched;
- elapsed = tcp_time_stamp - tp->rcv_tstamp;
-
-How do you think?
+Thanks,
+Rusty.
