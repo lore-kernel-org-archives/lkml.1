@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751267AbZH1NLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751278AbZH1NUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751267AbZH1NLz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 09:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbZH1NLy
+	id S1751278AbZH1NUv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 09:20:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZH1NUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 09:11:54 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:32941 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbZH1NLy convert rfc822-to-8bit (ORCPT
+	Fri, 28 Aug 2009 09:20:50 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57010 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbZH1NUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 09:11:54 -0400
-Message-Id: <4A97F3BD02000078000121B9@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Fri, 28 Aug 2009 14:11:57 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <yhlu.kernel@gmail.com>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86-64: fix earlyprintk=dbgp for machines without NX
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 28 Aug 2009 09:20:50 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 28 Aug 2009 15:20:29 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: core: reduce stack usage in bus reset tasklet
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.82fef6d14408ae6d@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since parse_early_param() may (e.g. for earlyprintk=dbgp) involve calls
-to page table manipulation functions (here set_fixmap_nocache()), NX
-hardware support must be determined before calling that function (so
-that __supported_pte_mask gets properly set up). But the call after
-parse_early_param() can also not go away, as that will honor eventual
-command line specified disabling of the NX functionality (this will
-then just result in whatever mappings got established during
-parse_early_param() having the NX bit set despite it being disabled on
-the command line, but I think that's tolerable).
+fw_compute_block_crc() used 1024 bytes of the kernel stack.  This
+function is called
+  - in process context when the local node's config ROM is updated,
+  - in tasklet context of the bus reset handler.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+Replace the stack-allocated buffer by a static buffer.
+Serialize buffer accesses by a static local spinlock.
 
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- arch/x86/kernel/setup.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/firewire/core-card.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
---- linux-2.6.31-rc8/arch/x86/kernel/setup.c	2009-08-28 14:57:38.000000000 +0200
-+++ 2.6.31-rc8-x86_64-check-efer-earlier/arch/x86/kernel/setup.c	2009-08-28 14:52:33.000000000 +0200
-@@ -796,6 +796,16 @@ void __init setup_arch(char **cmdline_p)
- 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
- 	*cmdline_p = command_line;
+Index: linux-2.6.31-rc8/drivers/firewire/core-card.c
+===================================================================
+--- linux-2.6.31-rc8.orig/drivers/firewire/core-card.c
++++ linux-2.6.31-rc8/drivers/firewire/core-card.c
+@@ -40,13 +40,19 @@
  
-+#ifdef CONFIG_X86_64
-+	/*
-+	 * Must call this twice: Once just to detect whether hardware doesn't
-+	 * support NX (so that the early EHCI debug console setup can safely
-+	 * call set_fixmap(), and then again after parsing early parameters to
-+	 * honor the respective command line option.
-+	 */
-+	check_efer();
-+#endif
+ int fw_compute_block_crc(u32 *block)
+ {
+-	__be32 be32_block[256];
++	static DEFINE_SPINLOCK(buffer_lock);
++	static __be32 buffer[256];
++	unsigned long flags;
+ 	int i, length;
+ 
++	spin_lock_irqsave(&buffer_lock, flags);
 +
- 	parse_early_param();
+ 	length = (*block >> 16) & 0xff;
+ 	for (i = 0; i < length; i++)
+-		be32_block[i] = cpu_to_be32(block[i + 1]);
+-	*block |= crc_itu_t(0, (u8 *) be32_block, length * 4);
++		buffer[i] = cpu_to_be32(block[i + 1]);
++	*block |= crc_itu_t(0, (u8 *)buffer, length * 4);
++
++	spin_unlock_irqrestore(&buffer_lock, flags);
  
- #ifdef CONFIG_X86_64
+ 	return length;
+ }
 
-
+-- 
+Stefan Richter
+-=====-==--= =--- ===--
+http://arcgraph.de/sr/
 
