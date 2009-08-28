@@ -1,110 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751431AbZH1N0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751482AbZH1N0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751431AbZH1N0g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 09:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZH1N0f
+	id S1751482AbZH1N0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 09:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbZH1N0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 09:26:35 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:36501 "EHLO smtp.gentoo.org"
+	Fri, 28 Aug 2009 09:26:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:2820 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbZH1N0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 09:26:34 -0400
-Message-ID: <4A97DBD2.903@gentoo.org>
-Date: Fri, 28 Aug 2009 08:29:54 -0500
-From: "Jory A. Pratt" <anarchy@gentoo.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090822 Thunderbird/3.0b3
+	id S1751436AbZH1N0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 09:26:45 -0400
+Message-ID: <4A97DAE7.40603@redhat.com>
+Date: Fri, 28 Aug 2009 09:25:59 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix Makefile to ensure proper options get passed from gcc
-Content-Type: multipart/mixed;
- boundary="------------060500080203080301000803"
+To: raz ben yehuda <raziebe@gmail.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Chris Friesen <cfriesen@nortel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+References: <1251282598.3514.20.camel@raz>	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>	 <1251300625.18584.18.camel@twins>	 <alpine.DEB.1.10.0908261136590.9933@gentwo.org>	 <1251302598.18584.31.camel@twins>	 <alpine.DEB.1.10.0908261211340.9933@gentwo.org>	 <20090826180407.GA13632@elte.hu>	 <alpine.DEB.1.10.0908261509580.9933@gentwo.org>	 <20090826193252.GA14721@elte.hu>	 <alpine.DEB.1.10.0908261627110.5554@gentwo.org>	 <20090826135041.e6169d18.akpm@linux-foundation.org>	 <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz>	 <4A96B997.1070001@nortel.com> <1251408785.3700.22.camel@raz>	 <alpine.LFD.2.00.0908272348370.2888@localhost.localdomain> <1251448697.3872.15.camel@raz>
+In-Reply-To: <1251448697.3872.15.camel@raz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060500080203080301000803
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+raz ben yehuda wrote:
 
-if -D__KERNEL__ is not passed via KBUILD_CFLAGS the compiler can have 
-options passed by default that will unset
-other options such as -ffreestanding or -fno-toplevel-reorder if the 
-compiler is passing -fPIE.
+> yes. latency is a crucial property. 
 
-refer to fix-fpie-from-being-used.diff
+In the case of network packets, wouldn't you get a lower
+latency by transmitting the packet from the CPU that
+knows the packet should be transmitted, instead of sending
+an IPI to another CPU and waiting for that CPU to do the
+work?
 
-Another option that was suggested from another user was to pass 
--D__KERNEL__ via Kbuild.include, patch is also attached.
-either patch would work, There is no risk of breakage, benefit is for 
-those who use a hardened toolchain.
+Inter-CPU communication has always been the bottleneck
+when it comes to SMP performance.  Why does adding more
+inter-CPU communication make your system faster, instead
+of slower like one would expect?
 
-fix-cc-options-check.patch
-
-I believe we should pass the option via KBUILD_CFLAGS as to not confuse 
-the fact that we are not building CPP code, but rather C code.
-
-Also correct me if I am wrong but last I knew only part of kernel that 
-was cpp was qconfig.
-
--Jory
-
---------------060500080203080301000803
-Content-Type: text/plain;
- name="fix-fpie-from-being-used.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="fix-fpie-from-being-used.diff"
-
-signed off by: Jory A. Pratt <anarchy@gentoo.org>
-
-When -fPIE is pass to cc1 it can't use -ffreestanding or -fno-toplevel-reorder.
-This will cause issues in video-vga.c when compiled leaving a user with no video
-modes avaliable when booting system.
-Many thanks to Vinky for tracking down bug.
-
---- Makefile~	2009-08-27 21:38:59.809945943 -0500
-+++ Makefile	2009-08-27 21:40:04.204922755 -0500
-@@ -348,7 +348,8 @@
- 		   -fno-strict-aliasing -fno-common \
- 		   -Werror-implicit-function-declaration \
- 		   -Wno-format-security \
--		   -fno-delete-null-pointer-checks
-+		   -fno-delete-null-pointer-checks \
-+		   -D__KERNEL__
- KBUILD_AFLAGS   := -D__ASSEMBLY__
- 
- # Read KERNELRELEASE from include/config/kernel.release (if it exists)
-
---------------060500080203080301000803
-Content-Type: text/plain;
- name="fix-cc-options-check.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="fix-cc-options-check.patch"
-
-2009-08-28		Magnus Granberg		<zorry@ume.nu>
-		
-		#282201
-		* scripts/Kbuild.incude		add $(KBUILD_CPPFLAGS)
-
---- scripts/Kbuild.include.zorry	2009-08-28 01:50:41.000000000 +0000
-+++ scripts/Kbuild.include	2009-08-28 01:50:31.000000000 +0000
-@@ -105,12 +105,12 @@
- # Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
- 
- cc-option = $(call try-run,\
--	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",$(1),$(2))
-+	$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",$(1),$(2))
- 
- # cc-option-yn
- # Usage: flag := $(call cc-option-yn,-march=winchip-c6)
- cc-option-yn = $(call try-run,\
--	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",y,n)
-+	$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",y,n)
- 
- # cc-option-align
- # Prefix align with either -falign or -malign
-
-
---------------060500080203080301000803--
+-- 
+All rights reversed.
