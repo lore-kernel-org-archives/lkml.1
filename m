@@ -1,108 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751936AbZH1GOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZH1GQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751936AbZH1GOj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 02:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZH1GOi
+	id S1751954AbZH1GQJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 02:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZH1GQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 02:14:38 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:46296 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721AbZH1GOi (ORCPT
+	Fri, 28 Aug 2009 02:16:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36327 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbZH1GQG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 02:14:38 -0400
-Date: Fri, 28 Aug 2009 11:44:34 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Joel Schopp <jschopp@austin.ibm.com>, Paul Mackerras <paulus@samba.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
-	cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
-Message-ID: <20090828061434.GA11863@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090827114908.GA24986@linux.vnet.ibm.com> <20090827115354.GC24986@linux.vnet.ibm.com> <1251377607.18584.96.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1251377607.18584.96.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 28 Aug 2009 02:16:06 -0400
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       maximlevitsky@gmail.com, efault@gmx.de, riel@redhat.com,
+       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <4A97071F.5070804@novell.com>
+References: <1251282598.3514.20.camel@raz>
+	 <alpine.DEB.1.10.0908260943090.9924@gentwo.org>
+	 <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>
+	 <1251300625.18584.18.camel@twins>
+	 <alpine.DEB.1.10.0908261136590.9933@gentwo.org>
+	 <1251302598.18584.31.camel@twins>
+	 <alpine.DEB.1.10.0908261211340.9933@gentwo.org>
+	 <20090826180407.GA13632@elte.hu>
+	 <alpine.DEB.1.10.0908261509580.9933@gentwo.org>
+	 <20090826193252.GA14721@elte.hu>
+	 <alpine.DEB.1.10.0908261627110.5554@gentwo.org>
+	 <20090826135041.e6169d18.akpm@linux-foundation.org>
+	 <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz>
+	 <4A96B997.1070001@nortel.com>
+	 <alpine.DEB.1.10.0908271257270.17470@gentwo.org>
+	 <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain>
+	 <4A97071F.5070804@novell.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 28 Aug 2009 08:14:20 +0200
+Message-Id: <1251440060.18584.103.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-08-27 14:53:27]:
+On Thu, 2009-08-27 at 18:22 -0400, Gregory Haskins wrote:
 
-Hi Peter, Ben,
+> I wonder if it makes sense to do something along the lines of the
+> sched-class...
 
-I've put the whole thing in a sort of a block diagram. Hope it
-explains things more clearly.
-
-
-
+Disabling the tick isn't a big deal from the scheduler's point of view,
+its all the other accounting crap that happens.
 
 
-
-				----------------
-				|    CPUIDLE   |  (Select idle states like
-				|   GOVERNORS  |   C1, C1e, C6 etc in case
-				| (Menu/Ladder)|   x86 & nap, snooze in
-				|	       |   case of POWER - based on
-				----------------   latency & power req)
-					^
-					|
-					|
-					|
-					|
-					|
-  ----------			-----------------	         -------------
-  |	   |			|		|	         |  PSERIES  |
-  |  ACPI  |------------------>	|    CPUIDLE	| <--------------|   IDLE    |
-  |	   |			|		|	         |           |
-  ----------			-----------------	         -------------
-
-Main idle routine- pm_idle()			         Main idle routine-
-							     ppc_md.power_save()
-
-pm_idle = cpuidle_pm_idle;			         ppc_md.power_save =
-(start using cpuidle's idle				      cpuidle_pm_idle();
- loop, which internally calls
- governor to select the right
- state to go into).
-
-
-Relavent code snippet from drivers/cpuidle/cpuidle.c
--------------------------------------
-
-static void cpuidle_idle_call(void)
-{
-	............
-	............
-
-	/* Call the menu_select() to select the idle state to enter. */
-	next_state = cpuidle_curr_governor->select(dev);
-
-	............
-	............
-
-	/*
-	 * Enter the idle state previously selected. target_state->enter
-	 * would call pseries_cpuidle_loop() which selects nap/snooze
-	 * /
-	dev->last_residency = target_state->enter(dev, target_state);
-}
-
-void cpuidle_install_idle_handler(void)
-{
-	.........
-	.........
-	cpuidle_pm_idle = cpuidle_idle_call;
-}
-
---arun
