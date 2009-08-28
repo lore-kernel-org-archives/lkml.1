@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752447AbZH1IZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752396AbZH1If4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752447AbZH1IZw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 04:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZH1IZv
+	id S1752396AbZH1If4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 04:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZH1Ifz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 04:25:51 -0400
-Received: from hq-exedge.brocade.com ([66.243.153.82]:38781 "EHLO
-	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752349AbZH1IZu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 04:25:50 -0400
-Date: Fri, 28 Aug 2009 01:25:52 -0700
-From: Jing Huang <huangj@brocade.com>
-Message-ID: <200908280825.n7S8PqkC005890@blc-10-6.brocade.com>
-To: <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 14/14] bfa: Brocade BFA FC SCSI driver (maint)
-CC: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
-       <rvadivel@brocade.com>, <vravindr@brocade.com>
+	Fri, 28 Aug 2009 04:35:55 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54057 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752075AbZH1Ify (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 04:35:54 -0400
+Date: Fri, 28 Aug 2009 10:35:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.31-rc8
+Message-ID: <20090828083545.GA3454@elte.hu>
+References: <alpine.LFD.2.01.0908271805210.3218@localhost.localdomain> <4A9793CF.6010406@nets.rwth-aachen.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9793CF.6010406@nets.rwth-aachen.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jing Huang <huangj@brocade.com>
 
-This patch contains updated MAINTAINERS file.
+* Arnd Hannemann <hannemann@nets.rwth-aachen.de> wrote:
 
-Signed-off-by: Jing Huang <huangj@brocade.com>
----
- MAINTAINERS |    7 +++++++
- 1 files changed, 7 insertions(+)
+> Hi Linus,
+> 
+> Linus Torvalds wrote.
+> > This should be the last -rc, and it's really been quieting down. There's 
+> > 131 commits there, and it's all pretty trivial. For example, in the 
+> > dirstat below, most of the arch/x86 changes are due to some vmlinux.lds.S 
+> > changes to fix problems with older binutils, not actual code changes. And 
+> > on powerpc, it's all the ps3 defconfig update.
+> 
+> I wonder why the one liner
+> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commit;h=d560bc61575efae43595cbcb56d0ba3b9450139c
+> did not went in. It fixes a regression from 2.6.30:
+> http://bugzilla.kernel.org/show_bug.cgi?id=14062
 
-diff -urpN orig/MAINTAINERS patch/MAINTAINERS
---- orig/MAINTAINERS	2009-08-27 19:42:01.000000000 -0700
-+++ patch/MAINTAINERS	2009-08-27 19:42:01.000000000 -0700
-@@ -1158,6 +1158,13 @@ L:	netdev@vger.kernel.org
- S:	Supported
- F:	drivers/net/tg3.*
- 
-+BROCADE BFA FC SCSI DRIVER
-+P:      Jing Huang
-+M:      huangj@brocade.com
-+L:      linux-scsi@vger.kernel.org
-+S:      Supported
-+F:      drivers/scsi/bfa/
-+
- BSG (block layer generic sg v4 driver)
- M:	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
- L:	linux-scsi@vger.kernel.org
+It missed the previous push by a few hours - will send it today or 
+tomorrow.
+
+	Ingo
