@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221AbZH1BZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751237AbZH1B3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751221AbZH1BZg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 27 Aug 2009 21:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbZH1BZd
+	id S1751237AbZH1B3m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 27 Aug 2009 21:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZH1B3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 27 Aug 2009 21:25:33 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:39950 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802AbZH1BZc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 27 Aug 2009 21:25:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ebcgsiEEyrp9ctWnHHcmvuATAVDpQ3kjiAiOXw7UVFa3p+TPyz4d7wQXwqTcDYxnPo
-         Y+ybv6QT8ICAaaWEGSyWCGiesRUlsOi3avj3beBIDnaGUDKNBJNkMs3NAzKEr6D7M99u
-         1eQkZbZHp+ou5dPqkcqy20WqHa6YhOpmo8QBc=
-Date: Fri, 28 Aug 2009 03:25:31 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] perf tools: Only save the event formats we need
-Message-ID: <20090828012530.GA6018@nowhere>
-References: <1251421798-9101-1-git-send-email-fweisbec@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251421798-9101-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 27 Aug 2009 21:29:40 -0400
+Received: from smtp.knology.net ([24.214.63.101]:34824 "EHLO smtp.knology.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838AbZH1B3k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 27 Aug 2009 21:29:40 -0400
+Subject: Re: [PATCH] r8169: Reduce looping in the interrupt handler.
+From: David Dillow <dave@thedillows.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Francois Romieu <romieu@fr.zoreil.com>,
+       Michael Riepe <michael.riepe@googlemail.com>,
+       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
+       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <m1d46gka9e.fsf@fess.ebiederm.org>
+References: <m1k50r8u4p.fsf@fess.ebiederm.org>
+	 <20090825221903.GA13630@electric-eye.fr.zoreil.com>
+	 <m1iqgbknun.fsf_-_@fess.ebiederm.org>
+	 <1251294974.14241.9.camel@obelisk.thedillows.org>
+	 <1251295175.14241.11.camel@obelisk.thedillows.org>
+	 <m11vmy737x.fsf@fess.ebiederm.org>
+	 <20090826213024.GA20428@electric-eye.fr.zoreil.com>
+	 <m1hbvu45jq.fsf@fess.ebiederm.org>
+	 <20090827052423.GA1709@electric-eye.fr.zoreil.com>
+	 <m1ocq1ke9u.fsf@fess.ebiederm.org>
+	 <20090827232024.GA30119@electric-eye.fr.zoreil.com>
+	 <m1d46gka9e.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Thu, 27 Aug 2009 21:29:38 -0400
+Message-Id: <1251422978.21865.2.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 28, 2009 at 03:09:58AM +0200, Frederic Weisbecker wrote:
-> While opening a trace event counter, every events are saved in the
-> trace.info file. But we only want to save the specifications of the
-> events we are using.
+On Thu, 2009-08-27 at 18:17 -0700, Eric W. Biederman wrote:
+> Francois Romieu <romieu@fr.zoreil.com> writes:
+> 
+> > Eric W. Biederman <ebiederm@xmission.com> :
+> > [...]
+> >> Sounds good.
+> >
+> > Gah, I was not able to test it with a decent packet load. Patch below against
+> > the current tree:
+> 
+> This kills the loop which was my concern.
+> 
+> I will double check it works on my configuration.
+> Then we have the question of does it work for those folks who have cards
+> where the msi appeared to get lost.
+> 
+> David any chance you can test this patch?
 
+It'll be this weekend, but I can see cases where it can lock my chip up
+-- they should be rare, but then I thought your case would be extremely
+rare...
 
-
-I must confess I haven't done that because I care much about the amount
-of saved format, you can also beat me because this patch regress perf trace
-in that it won't support the trace appending mode anymore (for now).
-
-That said, tracing/events/*/*/format is full of non trivial cases.
-perf trace was failing because it can't yet handle scalar dereference
-in the format arguments (since the recent sys_enter tracepoint add).
-
-So what I plan toward this patch is to start iterating on trivial
-cases and make them work well without beeing annoyed by format fetching
-that are not supported yet.
+I think we'll need to go to a full separation between MSI and
+level-triggered interrupt handlers, or at the very least mask everything
+and handle it all in NAPI. That seems more viable now that I know
+Francois is not terribly worried about diverging from the vendor driver
+there.
 
