@@ -1,92 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbZH1KDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045AbZH1KIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752005AbZH1KDj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 06:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZH1KDi
+	id S1752045AbZH1KIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 06:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbZH1KIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 06:03:38 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60021 "EHLO mx1.redhat.com"
+	Fri, 28 Aug 2009 06:08:17 -0400
+Received: from www.tglx.de ([62.245.132.106]:41852 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbZH1KDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 06:03:38 -0400
-Message-ID: <4A97ABA9.8030604@redhat.com>
-Date: Fri, 28 Aug 2009 18:04:25 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	id S1751451AbZH1KIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 06:08:16 -0400
+Date: Fri, 28 Aug 2009 12:05:22 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: raz ben yehuda <raziebe@gmail.com>
+cc: Chris Friesen <cfriesen@nortel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       riel@redhat.com, wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+In-Reply-To: <1251448697.3872.15.camel@raz>
+Message-ID: <alpine.LFD.2.00.0908281057070.2888@localhost.localdomain>
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org> 
+ <1251302598.18584.31.camel@twins>  <alpine.DEB.1.10.0908261211340.9933@gentwo.org>  <20090826180407.GA13632@elte.hu>  <alpine.DEB.1.10.0908261509580.9933@gentwo.org>  <20090826193252.GA14721@elte.hu>  <alpine.DEB.1.10.0908261627110.5554@gentwo.org> 
+ <20090826135041.e6169d18.akpm@linux-foundation.org>  <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz>  <4A96B997.1070001@nortel.com> <1251408785.3700.22.camel@raz>  <alpine.LFD.2.00.0908272348370.2888@localhost.localdomain>
+ <1251448697.3872.15.camel@raz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'Anton Vorontsov'" <avorontsov@ru.mvista.com>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>,
-       "'Neil Horman'" <nhorman@redhat.com>,
-       "'Eric W. Biederman'" <ebiederm@xmission.com>,
-       "'kamezawa.hiroyu@jp.fujitsu.com'" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "'Andi Kleen'" <andi@firstfloor.org>,
-       "'Michael Ellerman'" <michael@ellerman.id.au>,
-       "'M. Mohan Kumar'" <mohan@in.ibm.com>,
-       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
-       "'bernhard.walle@gmx.de'" <bernhard.walle@gmx.de>,
-       "'Ingo Molnar'" <mingo@elte.hu>
-Subject: Re: [Patch 4/8] ia64: implement crashkernel=auto
-References: <20090827031800.4534.94868.sendpatchset@localhost.localdomain> <20090827031848.4534.40440.sendpatchset@localhost.localdomain> <A6AD88C3F2289247BE726C37303E1EB8B949E358@orsmsx505.amr.corp.intel.com> <4A965F3A.5070007@redhat.com> <A6AD88C3F2289247BE726C37303E1EB8B949E7A3@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B949E7A3@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yu, Fenghua wrote:
->>>> +	unsigned long long ret;
->>>> +
->>>> +	if (total_size >= GBYTES(4) && total_size < GBYTES(12))
->>>> +		ret = MBYTES(256);
->>>> +	else if (total_size >= GBYTES(12) && total_size < GBYTES(128))
->>>> +		ret = MBYTES(512);
->>>> +	else if (total_size >= GBYTES(128) && total_size < GBYTES(256))
->>>> +		ret = MBYTES(768);
->>>> +	else if (total_size >= GBYTES(256) && total_size < GBYTES(378))
->>>> +		ret = MBYTES(1024);
->>>> +	else if (total_size >= GBYTES(318) && total_size < GBYTES(512))
->>>> +		ret = MBYTES(1536);
->>>> +	else if (total_size >= GBYTES(512) && total_size < GBYTES(768))
->>>> +		ret = MBYTES(2048);
->>>> +	else
->>>> +		ret = MBYTES(3072);
->>>> +	if (!ia64_platform_is("sn2") && !ia64_platform_is("uv"))
->>>> +		if (ret > GBYTES(4))
->>>> +			ret = ret / GBYTES(4) * MBYTES(256);
->>>>
->>>>         
->>> This code doesn't make sense to me. What you really want is following
->>>       
->> code, right?
->>     
->>> +		if (total_size > GBYTES(4))
->>> +			ret = total_size / GBYTES(4) * MBYTEST(256)
->>>
->>>
->>>       
->> Nope. Check check_crashkernel_memory().
->>     
+On Fri, 28 Aug 2009, raz ben yehuda wrote:
+> On Fri, 2009-08-28 at 00:05 +0200, Thomas Gleixner wrote:
+> > This is totally irrelevant and we all know how communication channels
+> > between Linux and whatever hackery (RT-Linux, RTAI, ... OFFLINE)
+> > works.
 >
-> This statement will be ALWAYS false:
-> +		if (ret > GBYTES(4))
-> since ret's max value is 3GB after the above total_size checks.
+> Why are you referring to the above projects as hacks ? What is a hack ?
+
+Everything which works around the real problem instead of solving it.
+
+> > > 2. know **exactly*** how much each single packet transmission costs. for
+> > > example, in this case in processor 3 a single packet average
+> > > transmission is 1974tscs, which is ~700ns.
+> > > 
+> > > 3. know how many packets fails to transmit right **on time** ( the Lates
+> > > counter) . and on time in this case means within the 122us jitter. 
+> > 
+> > Are those statistics a crucial property of your OFFLINE thing ?
+
+> yes. latency is a crucial property. 
+
+You are not answering my quesiton.
+
+Also reducing latencies is something we want to do in the kernel
+proper in the first place. We all know that you can reduce the
+latencies by taking control away from the kernel and running a side
+show. But that's nothing new. It has been done for decades already and
+none of these projects has ever improved the kernel itself.
+
+> > > 4. There are 8 cores in this machine. The rest 4 OS cores are ~95% idle.
+> > > The only resource these cores share is the bus. 
+> > 
+> > That does not change the problem that you cannot run ordinary user
+> > space tasks on your offlined CPUs and you are simply hacking round the
+> > real problem which I outlined in my previous mail.
 >
-> So the code doesn't make sense. Did I miss something?
->   
+> OFFSCHED is not just about RT. it is about assigning assignments to
+> another resource outside the operating system. very much like GPUs,
+> network processors, and so on, but just with software that is
+> accessible to the OS.
 
-Oops, in fact it was supposed to be:
+I was not talking about RT. I was talking about the problem that you
+cannot run an ordinary user space task on your offlined CPU. That's
+the main point where the design sucks. Having specialized programming
+environments which impose tight restrictions on the application
+programmer for no good reason are horrible.
 
-  if (ret + base > GBYTES(4))
-    //blah blah
+Also how are GPUs, network processors related to my statements ?
+Running specialized software on dedicated hardware which is an addon
+to the base system controlled by the kernel is not new. There are
+enough real world applications running Linux on the main CPU and some
+extra code on an add on DSP or whatever. Cell/SPU or the TI ARM/DSP
+combos are just the most obvious examples which come to my mind. Where
+is the point of OFFSCHED here ?
 
-Hmm, but is it possible for ia64 to choose a base address above 1G? If 
-no, that code can be removed.
+In your earlier mails you talked about isolating cores of the base
+system by taking the control away from the kernel and what a wonderful
+solution this is because it allows you full control over that core.
 
-Thanks!
+We can dedicate a core to special computations today and we can assign
+resources of any kind to it under the full control of the OS. The only
+disturbing factor is the scheduler tick.
 
+So you work around the scheduler tick problem by taking the core away
+from the OS. That does not solve the problem, it simply introduces a
+complete set of new problems:
 
+ - accounting of CPU utilization excludes the offlined core
 
+ - resource assignment is restricted to startup of the application
+
+ - standard admin tools (top, ps ....) are not working
+
+ - unnecessary restrictions for the application programmer:
+    - no syscalls
+    - no standard IPC
+    - ....
+
+ - debugging of the code which runs on the offlined core needs
+   separate tools
+
+ - performance analysis e.g. with profiling/performance counters
+   cannot use the existing mechanisms
+
+ - ....
+
+Thanks,
+
+	tglx
