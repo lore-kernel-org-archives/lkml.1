@@ -1,82 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbZH1LXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752319AbZH1LZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752240AbZH1LXK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 07:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZH1LXK
+	id S1752319AbZH1LZh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 07:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZH1LZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 07:23:10 -0400
-Received: from lucidpixels.com ([75.144.35.66]:37985 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbZH1LXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 07:23:09 -0400
-Date: Fri, 28 Aug 2009 07:23:11 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Nikanth Karthikesan <knikanth@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.30.4 loop(..?) regression (& with/2.6.31-rc6)
-In-Reply-To: <alpine.DEB.2.00.0908261728580.1594@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0908280720220.30806@p34.internal.lan>
-References: <alpine.DEB.2.00.0908221044420.30321@p34.internal.lan> <20090822201558.GA17955@infradead.org> <alpine.DEB.2.00.0908221645440.20848@p34.internal.lan> <20090822205502.GA18904@infradead.org> <alpine.DEB.2.00.0908221659030.23463@p34.internal.lan>
- <20090823224504.GA19942@infradead.org> <alpine.DEB.2.00.0908240704130.9427@p34.internal.lan> <alpine.DEB.2.00.0908260949550.9396@p34.internal.lan> <20090826180234.GC14019@infradead.org> <alpine.DEB.2.00.0908261717001.1594@p34.internal.lan>
- <20090826212732.GA18124@infradead.org> <alpine.DEB.2.00.0908261728580.1594@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 28 Aug 2009 07:25:36 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56170 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbZH1LZg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 07:25:36 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 28 Aug 2009 13:25:15 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 1/2] firewire: ohci: fix Agere FW643 and multiple cameras
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org, Samuel Audet <samuel.audet@gmail.com>,
+       Jonathan Cameron <jic23@cam.ac.uk>
+Message-ID: <tkrat.9dcf6c9a7dfd35fd@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Date: 
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: firewire: ohci: fix Agere FW643 and multiple cameras
 
+An Agere FW643 OHCI 1.1 card works fine for video reception from one
+camera but fails early if receiving from two cameras.  After a short
+while, no IR IRQ events occur and the context control register does not
+react anymore.  This happens regardless whether both IR DMA contexts are
+dual-buffer or one is dual-buffer and the other packet-per-buffer.
 
-On Wed, 26 Aug 2009, Justin Piszcz wrote:
+This can be worked around by disabling dual buffer DMA mode entirely.
+http://sourceforge.net/mailarchive/message.php?msg_name=4A7C0594.2020208%40gmail.com
 
->
->
-> On Wed, 26 Aug 2009, Christoph Hellwig wrote:
->
->> On Wed, Aug 26, 2009 at 05:19:11PM -0400, Justin Piszcz wrote:
->>> For the root filesystem, on / type xfs (rw,noatime)
->>> For larger partitions (per the cryptoloop doc) the partition itself is
->>> setup via cryptoloop and then XFS ontop of that.  Nothing special.
->> 
->> Just to make sure we have all data here - you see the problem only
->> with loop devices backed by XFS, only with loop devices backed by
->> raw partitions or with both?
-> Both.
->
->> 
->>>> Any way to trgiger it with just loop but not crypto, etc.
->>> Unfortunately not that I am aware of..  Would trying the kernel with the
->>> patch removed and mounted with -o nobarrier help to show us anything, or?
->> 
->> Actually, yes - seeing what happens if you run plain 2.6.30 or 2.6.31-rc
->> without the backout patch, but with -o nobarrier would be very
->> interesting.
->> 
-> Will give it a try with 2.6.31-rc6 and mount all loop devices (both those 
-> backed by XFS and raw partitions) with -o nobarrier to see if the problem 
-> recurs.  So far though with that patch up until this next test, there were no 
-> problems.
->
-> Justin.
->
->
+Reported-by: Samuel Audet <samuel.audet@gmail.com>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/ohci.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Hi,
+Index: linux-2.6.31-rc8/drivers/firewire/ohci.c
+===================================================================
+--- linux-2.6.31-rc8.orig/drivers/firewire/ohci.c
++++ linux-2.6.31-rc8/drivers/firewire/ohci.c
+@@ -34,6 +34,7 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/pci.h>
++#include <linux/pci_ids.h>
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
+ 
+@@ -2372,6 +2373,9 @@ static void ohci_pmac_off(struct pci_dev
+ #define ohci_pmac_off(dev)
+ #endif /* CONFIG_PPC_PMAC */
+ 
++#define PCI_VENDOR_ID_AGERE		PCI_VENDOR_ID_ATT
++#define PCI_DEVICE_ID_AGERE_FW643	0x5901
++
+ static int __devinit pci_probe(struct pci_dev *dev,
+ 			       const struct pci_device_id *ent)
+ {
+@@ -2422,6 +2426,11 @@ static int __devinit pci_probe(struct pc
+ 	version = reg_read(ohci, OHCI1394_Version) & 0x00ff00ff;
+ 	ohci->use_dualbuffer = version >= OHCI_VERSION_1_1;
+ 
++	/* dual-buffer mode is broken if more than one IR context is active */
++	if (dev->vendor == PCI_VENDOR_ID_AGERE &&
++	    dev->device == PCI_DEVICE_ID_AGERE_FW643)
++		ohci->use_dualbuffer = false;
++
+ /* x86-32 currently doesn't use highmem for dma_alloc_coherent */
+ #if !defined(CONFIG_X86_32)
+ 	/* dual-buffer mode is broken with descriptor addresses above 2G */
 
-So far:
+-- 
+Stefan Richter
+-=====-==--= =--- ===--
+http://arcgraph.de/sr/
 
-$ uptime
-  07:20:04 up 1 day, 13:49,  1 user,  load average: 0.07, 0.02, 0.06
-
-Let's give it another 48-72 hours with -o nobarrier, so far, it has not 
-recurred.
-
-It still may happen; however, moving forward I was wondering..
-
-If both '-o nobarrier' and the patch solves the issue, what is the next 
-action that should be taken?  Update the documentation to always use
--o nobarrier for cryptoloop? Or get the patch reverted in mainline?
-
-Justin.
