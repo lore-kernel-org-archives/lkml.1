@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbZH1U3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbZH1Uhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753153AbZH1U3P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 16:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZH1U3P
+	id S1753191AbZH1Uhb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 16:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZH1Uha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 16:29:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59146 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752995AbZH1U3O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 16:29:14 -0400
-Date: Fri, 28 Aug 2009 16:29:13 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, akpm@linux-foundation.org, jack@suse.cz,
-       yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk,
-       damien.wyart@free.fr, fweisbec@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: [PATCH 1/9] writeback: move dirty inodes from super_block to
-	backing_dev_info
-Message-ID: <20090828202913.GA18233@infradead.org>
-References: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com> <1248989044-21605-2-git-send-email-jens.axboe@oracle.com> <20090806213505.GB20538@infradead.org> <20090812161250.GK12579@kernel.dk>
+	Fri, 28 Aug 2009 16:37:30 -0400
+Received: from www.tglx.de ([62.245.132.106]:42392 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753089AbZH1Uha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 16:37:30 -0400
+Date: Fri, 28 Aug 2009 22:34:16 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Gregory Haskins <ghaskins@novell.com>, Rik van Riel <riel@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+In-Reply-To: <alpine.DEB.1.10.0908281619520.15573@gentwo.org>
+Message-ID: <alpine.LFD.2.00.0908282231260.19335@localhost.localdomain>
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org>
+ <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com> <4A975025.8030500@novell.com> <4A975CC4.1090208@novell.com> <alpine.LFD.2.00.0908281218560.2888@localhost.localdomain>
+ <alpine.DEB.1.10.0908281446520.7317@gentwo.org> <alpine.LFD.2.00.0908282100040.19335@localhost.localdomain> <alpine.DEB.1.10.0908281551450.17784@gentwo.org> <alpine.LFD.2.00.0908282158100.19335@localhost.localdomain>
+ <alpine.DEB.1.10.0908281619520.15573@gentwo.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090812161250.GK12579@kernel.dk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 12, 2009 at 06:12:50PM +0200, Jens Axboe wrote:
-> OK, so you'd prefer leaving the super block lists in place and rather
-> have the super blocks hanging off the bdi?
+On Fri, 28 Aug 2009, Christoph Lameter wrote:
 
-That would solve the above problem.  It would also implicitly provide
-increased locality by always writing batches of dirty inodes per fs.
-
-> What about file systems that
-> support more than one block device per mount, like btrfs?
-
-Or XFS :)
-
-> Can we assume
-> that they will forever provide a single bdi backing? btrfs currently has
-> this, just wondering about future implications.
-
-I don't see any point to assume things are forever.  For making progress
-on this and getting it merged in .32 making that assumption is a good
-one IMHO.
-
-Now the question about that to do with a filesystem on multiple actual
-backing device is an interesting one.  What about the case of having
-btrfs just one half of two disks each?  Or same with a "normal" fs
-ontop of LVM/MD?  Maybe in the end one thread(-pool) per filesystem
-and not just per backing dev is the way forward, with the threads
-schedule so that they don't interfer if they operate on the same
-backing dev?
-
-
+> On Fri, 28 Aug 2009, Thomas Gleixner wrote:
 > 
-> -- 
-> Jens Axboe
+> > The statistics stuff needs to be tackled anyway as we need to offload
+> > the sched accounting to some other cpu.
 > 
----end quoted text---
+> The vm statisticcs in mm/vmstat.c are different from the sched accounting.
+
+I know, but the problem is basically the same. Delegate the stats to
+someone else.
+ 
+> > What slab queue stuff is running on timers and cannot be switched off
+> > in such a context?
+> 
+> slab does run a timer every 2 second to age queues. If there was activity
+> then there can be a relatively long time in which we periodically throw
+> out portions of the cached data.
+
+Right, but why does that affect a CPU which is marked "I'm not
+involved in that game" ?
+ 
+> > Device specific stuff should not happen on such a CPU when there is no
+> > device handled on it.
+> 
+> The device may periodically check for conditions that require action.
+
+Errm. The device is associated to some other CPU, so why would it
+require action on an isolated one ? Or are you talking about a device
+which is associated to that isolated CPU ?
+
+Thanks,
+
+	tglx
+
