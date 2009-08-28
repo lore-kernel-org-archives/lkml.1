@@ -1,89 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbZH1TQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZH1TQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752768AbZH1TQd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 15:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZH1TQd
+	id S1752787AbZH1TQt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 15:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbZH1TQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 15:16:33 -0400
-Received: from mx1-old.redhat.com ([66.187.233.31]:52462 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752567AbZH1TQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 15:16:32 -0400
+	Fri, 28 Aug 2009 15:16:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42835 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752550AbZH1TQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 15:16:47 -0400
+Date: Fri, 28 Aug 2009 19:16:25 GMT
+From: tip-bot for john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       akpm@linux-foundation.org, johnstul@us.ibm.com, shemminger@vyatta.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, akpm@linux-foundation.org, shemminger@vyatta.com,
+       tglx@linutronix.de
+In-Reply-To: <1250552447.7212.92.camel@localhost.localdomain>
+References: <1250552447.7212.92.camel@localhost.localdomain>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/tsc] x86: Make tsc=reliable override boot time stability checks
+Message-ID: <tip-d3b8f889a220aed825accc28eb64ce283a0d51ac@git.kernel.org>
+Git-Commit-ID: d3b8f889a220aed825accc28eb64ce283a0d51ac
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: eligible_child() && __WCLONE && task_detached() (Was: mmotm
-	2009-08-24-16-24 uploaded)
-In-Reply-To: Oleg Nesterov's message of  Friday, 28 August 2009 19:17:24 +0200 <20090828171724.GA17445@redhat.com>
-References: <200908242328.n7ONSUHI022326@imap1.linux-foundation.org>
-	<20090827144453.25f1161b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827160532.d6386722.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827093441.GA3451@redhat.com>
-	<20090827184303.500ac1f0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827100846.GA6462@redhat.com>
-	<20090827193133.b7eed4a9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827105209.GA8469@redhat.com>
-	<20090828171724.GA17445@redhat.com>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20090828191624.0F5BC45B02@magilla.sf.frob.com>
-Date: Fri, 28 Aug 2009 12:16:24 -0700 (PDT)
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 19:16:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> eligible_child:
-> 
-> 	/* Wait for all children (clone and not) if __WALL is set;
-> 	 * otherwise, wait for clone children *only* if __WCLONE is
-> 	 * set; otherwise, wait for non-clone children *only*.  (Note:
-> 	 * A "clone" child here is one that reports to its parent
-> 	 * using a signal other than SIGCHLD.) */
-> 
-> 	if (((p->exit_signal != SIGCHLD) ^ !!(wo->wo_flags & __WCLONE))
-> 	    && !(wo->wo_flags & __WALL))
-> 		return 0;
-> 
-> I just can't understand what is the supposed behaviour when p is
-> sub-thread and p->exit_signal == -1.
+Commit-ID:  d3b8f889a220aed825accc28eb64ce283a0d51ac
+Gitweb:     http://git.kernel.org/tip/d3b8f889a220aed825accc28eb64ce283a0d51ac
+Author:     john stultz <johnstul@us.ibm.com>
+AuthorDate: Mon, 17 Aug 2009 16:40:47 -0700
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Fri, 28 Aug 2009 21:13:05 +0200
 
-As you say, you're not even supposed to be here when exit_signal = -1,
-except for the ptrace case.  This logic exists for the non-CLONE_THREAD
-clone case, i.e. ->exit_signal != SIGCHLD and != -1.
+x86: Make tsc=reliable override boot time stability checks
 
-> IOW, perhaps this check should be
-> 
-> 	if (!task_detached(p) && !(wo->wo_flags & __WALL) &&
-> 	    (p->exit_signal != SIGCHLD) ^ !!(wo->wo_flags & __WCLONE))
-> 		return 0;
+This patch makes the tsc=reliable option disable the boot time
+stability checks. Currently the option only disables the runtime
+watchdog checks. This change allows folks who want to override the
+boot time TSC stability checks and use the TSC when the system would
+otherwise disqualify it.
 
-That seems OK to me.
+There still are some situations that the TSC will be disqualified,
+such as cpufreq scaling. But these are situations where the box will
+hang if allowed.
 
-> When task_detached(p) == T, "p->exit_signal != SIGCHLD" looks like a
-> false positive to me. Because -1 is not a siganl, this is a marker
-> which indicates the deatached task - sub-thread or EXIT_DEAD. It _seems_
-> to me this check was added when threads were processes, and it was
-> possible to wait/reap a thread, not process.
+Patch also includes a fix for an issue found by Thomas Gleixner, where
+the TSC disqualification message wouldn't be printed after a call to
+unsynchronized_tsc().
 
-That's all still possible, it's just no longer common.
-i.e. clone(SIGUSR1|CLONE_VM, ...) or whatnot (no CLONE_THREAD).
-
-> In short. If ptracer calls wait4(ptraced_sub_thread), is it really
-> supposed it must use __WCLONE || __WALL?
-
-I suspect not, but I'm not quite sure.  That is, it makes sense to me that
-a ptracer should always get its tracees in all waits.  That is consistent
-with not having to use WUNTRACED, for example.  But I'm not really sure any
-more what the historical behavior of this has been.  The code in GDB uses
-__WALL and __WCLONE in various places, clearly assuming that just ptrace
-alone is not enough for every wait4 call to catch every tracee.  It seems
-likely that this method was necessary in the past and that's why the code
-is like that.
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: akataria@vmware.com
+Cc: Stephen Hemminger <shemminger@vyatta.com>
+LKML-Reference: <1250552447.7212.92.camel@localhost.localdomain>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
-Thanks,
-Roland
+
+---
+ Documentation/kernel-parameters.txt |    9 +++++----
+ arch/x86/kernel/tsc.c               |    7 +++++--
+ 2 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 7936b80..4c6b415 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2484,12 +2484,13 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Format:
+ 			<io>,<irq>,<dma>,<dma2>,<sb_io>,<sb_irq>,<sb_dma>,<mpu_io>,<mpu_irq>
+ 
+-	tsc=		Disable clocksource-must-verify flag for TSC.
++	tsc=		Disable clocksource stability checks for TSC.
+ 			Format: <string>
+ 			[x86] reliable: mark tsc clocksource as reliable, this
+-			disables clocksource verification at runtime.
+-			Used to enable high-resolution timer mode on older
+-			hardware, and in virtualized environment.
++			disables clocksource verification at runtime, as well
++			as the stability checks done at bootup.	Used to enable
++			high-resolution timer mode on older hardware, and in
++			virtualized environment.
+ 
+ 	turbografx.map[2|3]=	[HW,JOY]
+ 			TurboGraFX parallel port interface
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 71f4368..648fb26 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -825,6 +825,9 @@ __cpuinit int unsynchronized_tsc(void)
+ 
+ 	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
+ 		return 0;
++
++	if (tsc_clocksource_reliable)
++		return 0;
+ 	/*
+ 	 * Intel systems are normally all synchronized.
+ 	 * Exceptions must mark TSC as unstable:
+@@ -832,10 +835,10 @@ __cpuinit int unsynchronized_tsc(void)
+ 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
+ 		/* assume multi socket systems are not synchronized: */
+ 		if (num_possible_cpus() > 1)
+-			tsc_unstable = 1;
++			return 1;
+ 	}
+ 
+-	return tsc_unstable;
++	return 0;
+ }
+ 
+ static void __init init_tsc_clocksource(void)
