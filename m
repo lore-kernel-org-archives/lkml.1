@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbZH1HBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbZH1HDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751997AbZH1HBj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 03:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbZH1HBh
+	id S1752036AbZH1HDN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 03:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZH1HDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 03:01:37 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56598 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751478AbZH1HBh (ORCPT
+	Fri, 28 Aug 2009 03:03:12 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47513 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbZH1HDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 03:01:37 -0400
-Date: Fri, 28 Aug 2009 09:01:25 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 8] PM: Allow user space to change the
-	power.async_suspend flag of devices
-Message-ID: <20090828070124.GB27928@elf.ucw.cz>
-References: <200908262217.19609.rjw@sisk.pl> <200908272120.56021.rjw@sisk.pl> <20090827203634.372EC526EC9@mailhub.coreip.homeip.net> <200908280024.06082.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908280024.06082.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 28 Aug 2009 03:03:12 -0400
+Subject: Re: [PATCH 2/4]: CPUIDLE: Introduce architecture independent
+ cpuidle_pm_idle in drivers/cpuidle/cpuidle.c
+From: Peter Zijlstra <peterz@infradead.org>
+To: arun@linux.vnet.ibm.com
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Joel Schopp <jschopp@austin.ibm.com>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1251442085.18584.120.camel@twins>
+References: <20090827114908.GA24986@linux.vnet.ibm.com>
+	 <20090827115354.GC24986@linux.vnet.ibm.com>
+	 <1251377607.18584.96.camel@twins>
+	 <20090828061434.GA11863@linux.vnet.ibm.com>
+	 <1251442085.18584.120.camel@twins>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 28 Aug 2009 09:01:12 +0200
+Message-Id: <1251442872.18584.125.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-08-28 00:24:06, Rafael J. Wysocki wrote:
-> On Thursday 27 August 2009, Dmitry Torokhov wrote:
-> > Hi Rafael,
-> > 
-> > On Thu, Aug 27, 2009 at 09:20:55PM +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > Add sysfs attribute power/async for every device allowing the user
-> > > space to access the device's power.async_suspend flag and modify it,
-> > > if necessary.
-> > > 
-> > 
-> > I don't think we should let users meddle with individual devices;
-> > one global flag should be enough to work around "broken-at-the-moment"
-> > issues.
+On Fri, 2009-08-28 at 08:48 +0200, Peter Zijlstra wrote:
 > 
-> Well, this patch is handy for testing if anyone is interested, so I posted it.
+> > void cpuidle_install_idle_handler(void)
+> > {
+> >       .........
+> >       .........
+> >       cpuidle_pm_idle = cpuidle_idle_call;
+> > }
 > 
-> It isn't exactly safe, though, you're right.
+> All I'm seeing here is a frigging mess.
+> 
+> How on earths can something called: cpuidle_install_idle_handler() have
+> a void argument, _WHAT_ handler is it going to install?
 
-I guess it would be acceptable to let the users disable it
-per-driver... but if we can get without that, it would be better.
+Argh, now I see, it installs itself as the platform idle handler.
 
-(it is obviously ok for debugging).
-									Pavel
+so cpuidle_install_idle_handler() pokes at the unmanaged pm_idle pointer
+to make cpuidle take control.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On module load it does:
+
+ pm_idle_old = pm_idle;
+
+then in the actual idle loop it does:
+
+        if (!dev || !dev->enabled) {
+                if (pm_idle_old)
+                        pm_idle_old();
+
+who is to say that the pointer stored at module init time is still
+around at that time?
+
+So cpuidle recognised the pm_idle stuff was a flaky, but instead of
+fixing it, they build a whole new layer on top of it. Brilliant.
+
+/me goes mark this whole thread read, I've got enough things to do.
