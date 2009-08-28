@@ -1,128 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbZH1M4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbZH1M5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752619AbZH1M4J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 08:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZH1M4I
+	id S1752641AbZH1M5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 08:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZH1M5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 08:56:08 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:58456 "EHLO gir.skynet.ie"
+	Fri, 28 Aug 2009 08:57:16 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:52146 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752298AbZH1M4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 08:56:08 -0400
-Date: Fri, 28 Aug 2009 13:56:08 +0100
+	id S1752372AbZH1M5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 08:57:16 -0400
+Date: Fri, 28 Aug 2009 13:57:19 +0100
 From: Mel Gorman <mel@csn.ul.ie>
-To: Minchan Kim <minchan.kim@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linux Memory Management List <linux-mm@kvack.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        Nick Piggin <npiggin@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] page-allocator: Split per-cpu list into
-	one-list-per-migrate-type
-Message-ID: <20090828125559.GD5054@csn.ul.ie>
-References: <1251449067-3109-1-git-send-email-mel@csn.ul.ie> <1251449067-3109-2-git-send-email-mel@csn.ul.ie> <20090828205241.fc8dfa51.minchan.kim@barrios-desktop> <28c262360908280500tb47685btc9f36ca81605d55@mail.gmail.com>
+Subject: Re: [PATCH 2/2] page-allocator: Maintain rolling count of pages to
+	free from the PCP
+Message-ID: <20090828125719.GE5054@csn.ul.ie>
+References: <1251449067-3109-1-git-send-email-mel@csn.ul.ie> <1251449067-3109-3-git-send-email-mel@csn.ul.ie> <84144f020908280516y6473a531n3f11f3e86251eba4@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262360908280500tb47685btc9f36ca81605d55@mail.gmail.com>
+In-Reply-To: <84144f020908280516y6473a531n3f11f3e86251eba4@mail.gmail.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 28, 2009 at 09:00:25PM +0900, Minchan Kim wrote:
-> On Fri, Aug 28, 2009 at 8:52 PM, Minchan Kim<minchan.kim@gmail.com> wrote:
-> > Hi, Mel.
-> >
-> > On Fri, 28 Aug 2009 09:44:26 +0100
-> > Mel Gorman <mel@csn.ul.ie> wrote:
-> >
-> >> Currently the per-cpu page allocator searches the PCP list for pages of the
-> >> correct migrate-type to reduce the possibility of pages being inappropriate
-> >> placed from a fragmentation perspective. This search is potentially expensive
-> >> in a fast-path and undesirable. Splitting the per-cpu list into multiple
-> >> lists increases the size of a per-cpu structure and this was potentially
-> >> a major problem at the time the search was introduced. These problem has
-> >> been mitigated as now only the necessary number of structures is allocated
-> >> for the running system.
-> >>
-> >> This patch replaces a list search in the per-cpu allocator with one list per
-> >> migrate type. The potential snag with this approach is when bulk freeing
-> >> pages. We round-robin free pages based on migrate type which has little
-> >> bearing on the cache hotness of the page and potentially checks empty lists
-> >> repeatedly in the event the majority of PCP pages are of one type.
-> >>
-> >> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> >> Acked-by: Nick Piggin <npiggin@suse.de>
-> >> ---
-> >>  include/linux/mmzone.h |    5 ++-
-> >>  mm/page_alloc.c        |  106 ++++++++++++++++++++++++++---------------------
-> >>  2 files changed, 63 insertions(+), 48 deletions(-)
-> >>
-> >> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> >> index 008cdcd..045348f 100644
-> >> --- a/include/linux/mmzone.h
-> >> +++ b/include/linux/mmzone.h
-> >> @@ -38,6 +38,7 @@
-> >>  #define MIGRATE_UNMOVABLE     0
-> >>  #define MIGRATE_RECLAIMABLE   1
-> >>  #define MIGRATE_MOVABLE       2
-> >> +#define MIGRATE_PCPTYPES      3 /* the number of types on the pcp lists */
-> >>  #define MIGRATE_RESERVE       3
-> >>  #define MIGRATE_ISOLATE       4 /* can't allocate from here */
-> >>  #define MIGRATE_TYPES         5
-> >> @@ -169,7 +170,9 @@ struct per_cpu_pages {
-> >>       int count;              /* number of pages in the list */
-> >>       int high;               /* high watermark, emptying needed */
-> >>       int batch;              /* chunk size for buddy add/remove */
-> >> -     struct list_head list;  /* the list of pages */
-> >> +
-> >> +     /* Lists of pages, one per migrate type stored on the pcp-lists */
-> >> +     struct list_head lists[MIGRATE_PCPTYPES];
-> >>  };
-> >>
-> >>  struct per_cpu_pageset {
-> >> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> >> index ac3afe1..65eedb5 100644
-> >> --- a/mm/page_alloc.c
-> >> +++ b/mm/page_alloc.c
-> >> @@ -522,7 +522,7 @@ static inline int free_pages_check(struct page *page)
-> >>  }
-> >>
-> >>  /*
-> >> - * Frees a list of pages.
-> >> + * Frees a number of pages from the PCP lists
-> >>   * Assumes all pages on list are in same zone, and of same order.
-> >>   * count is the number of pages to free.
-> >>   *
-> >> @@ -532,23 +532,36 @@ static inline int free_pages_check(struct page *page)
-> >>   * And clear the zone's pages_scanned counter, to hold off the "all pages are
-> >>   * pinned" detection logic.
-> >>   */
-> >> -static void free_pages_bulk(struct zone *zone, int count,
-> >> -                                     struct list_head *list, int order)
-> >> +static void free_pcppages_bulk(struct zone *zone, int count,
-> >> +                                     struct per_cpu_pages *pcp)
-> >>  {
-> >> +     int migratetype = 0;
-> >> +
-> >
-> > How about caching the last sucess migratetype
-> > with 'per_cpu_pages->last_alloc_type'?
->                                          ^^^^
->                                          free
-> > I think it could prevent a litte spinning empty list.
+On Fri, Aug 28, 2009 at 03:16:34PM +0300, Pekka Enberg wrote:
+> Hi Mel,
 > 
-> Anyway, Ignore me.
-> I didn't see your next patch.
+> On Fri, Aug 28, 2009 at 11:44 AM, Mel Gorman<mel@csn.ul.ie> wrote:
+> > -               page = list_entry(list->prev, struct page, lru);
+> > -               /* have to delete it as __free_one_page list manipulates */
+> > -               list_del(&page->lru);
+> > -               trace_mm_page_pcpu_drain(page, 0, migratetype);
+> > -               __free_one_page(page, zone, 0, migratetype);
+> > +               do {
+> > +                       page = list_entry(list->prev, struct page, lru);
+> > +                       /* must delete as __free_one_page list manipulates */
+> > +                       list_del(&page->lru);
+> > +                       __free_one_page(page, zone, 0, migratetype);
+> > +                       trace_mm_page_pcpu_drain(page, 0, migratetype);
+> 
+> This calls trace_mm_page_pcpu_drain() *after* __free_one_page(). It's
+> probably not a good idea as __free_one_page() can alter the struct
+> page in various ways.
 > 
 
-Nah, it's a reasonable suggestion. Patch 2 was one effort to reduce
-spinning but the comment was in patch 1 in case someone thought of
-something better. I tried what you suggested before but it didn't work
-out. For any sort of workload that varies the type of allocation (very
-frequent), it didn't reduce spinning significantly.
+While true, does it alter the struct page in any way that matters?
+
+> 
+> > +               } while (--count && --batch_free && !list_empty(list));
+> >        }
+> >        spin_unlock(&zone->lock);
+> >  }
+> 
 
 -- 
 Mel Gorman
