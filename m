@@ -1,106 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbZH1KaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751776AbZH1Kjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262AbZH1KaL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 06:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZH1KaK
+	id S1751776AbZH1Kjs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 06:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZH1Kjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 06:30:10 -0400
-Received: from www.tglx.de ([62.245.132.106]:41391 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752213AbZH1KaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 06:30:09 -0400
-Date: Fri, 28 Aug 2009 12:26:55 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Gregory Haskins <ghaskins@novell.com>
-cc: Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-In-Reply-To: <4A975CC4.1090208@novell.com>
-Message-ID: <alpine.LFD.2.00.0908281218560.2888@localhost.localdomain>
-References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251298443.4791.7.camel@raz>  <1251300625.18584.18.camel@twins>  <alpine.DEB.1.10.0908261136590.9933@gentwo.org> 
- <1251302598.18584.31.camel@twins>  <alpine.DEB.1.10.0908261211340.9933@gentwo.org>  <20090826180407.GA13632@elte.hu>  <alpine.DEB.1.10.0908261509580.9933@gentwo.org>  <20090826193252.GA14721@elte.hu>  <alpine.DEB.1.10.0908261627110.5554@gentwo.org> 
- <20090826135041.e6169d18.akpm@linux-foundation.org>  <4A95A5EE.90400@nortel.com> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org> <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain>
- <4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com> <4A975025.8030500@novell.com> <4A975CC4.1090208@novell.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 28 Aug 2009 06:39:48 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50736 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbZH1Kjr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 06:39:47 -0400
+Subject: Re: [PATCH 15/15] x86: Fix cpu_coregroup_mask to return correct
+ cpumask on multi-node processors
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090827152551.GE13576@alberich.amd.com>
+References: <20090820131243.GO29327@alberich.amd.com>
+	 <20090820134604.GD29327@alberich.amd.com> <1251128176.7538.301.camel@twins>
+	 <20090825093101.GJ20811@alberich.amd.com>
+	 <1251194143.7538.1128.camel@twins>
+	 <20090827152551.GE13576@alberich.amd.com>
+Content-Type: text/plain
+Date: Fri, 28 Aug 2009 12:39:44 +0200
+Message-Id: <1251455984.17617.5.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Aug 2009, Gregory Haskins wrote:
-> > However, and to what I believe is your point: its not entirely clear to
-> > me what impact, if any, there would be w.r.t. any _other_ events that
-> > may be driven off of the scheduler tick (i.e. events other than
-> > scheduling policies, like timeslice expiration, etc).  Perhaps someone
-> > else like Thomas, Ingo, or Peter have some input here.
+On Thu, 2009-08-27 at 17:25 +0200, Andreas Herrmann wrote:
+> On Tue, Aug 25, 2009 at 11:55:43AM +0200, Peter Zijlstra wrote:
+> > On Tue, 2009-08-25 at 11:31 +0200, Andreas Herrmann wrote:
+> > > On Mon, Aug 24, 2009 at 05:36:16PM +0200, Peter Zijlstra wrote:
+> > > > On Thu, 2009-08-20 at 15:46 +0200, Andreas Herrmann wrote:
+> > > > > The correct mask that describes core-siblings of an processor
+> > > > > is topology_core_cpumask. See topology adapation patches, especially
+> > > > > http://marc.info/?l=linux-kernel&m=124964999608179
+> > > > 
+> > > > 
+> > > > argh, violence, murder kill.. this is the worst possible hack and you're
+> > > > extending it :/
+> > > 
+> > > So this is the third code area
+> > > (besides sched_*_power_savings sysfs interface, and the __cpu_power fiddling)
+> > > that is crap, mess, a hack.
+> > > 
+> > > Didn't know that I'd enter such a minefield when touching this code. ;-(
 > > 
-> > I guess the specific question to ask is: Does the scheduler tick code
-> > have any role other than timeslice policies and updating accounting
-> > information?  Examples would include timer-expiry, for instance.  I
-> > would think most of this logic is handled by finer grained components
-> > like HRT, but I am admittedly ignorant of the actual timer voodoo ;)
-
-There is not much happening in the scheduler tick:
-
- - accounting of CPU time. this can be delegated to some other CPU
-   as long as the user space task is running and consuming 100%
-
- - timer list timers. If there is no service/device active on that CPU
-   then there are no timers to run
-
- - rcu call backs. Same as above, but might need some tweaking.
-
- - printk tick. Not really interesting
-
- - scheduler time slicing. Not necessary in such a context
-
- - posix cpu timers. Only interesting when the application uses them
-
-So there is not much which needs the tick in such a scenario. 
-
-Of course we'd need to exclude that CPU from the do_timer duty as
-well.
-
-> Thinking about this idea some more:  I can't see why this isn't just a
-> trivial variation of the nohz idle code already in mainline.  In both
-> cases (idle and FIFO tasks) the cpu is "consumed" 100% by some arbitrary
-> job (spinning/HLT for idle, RT thread for FIFO) while we have the
-> scheduler tick disabled.  The only real difference is a matter of
-> power-management (HLT/mwait go to sleep-states, whereas spinning/rt-task
-> run full tilt).
+> > Yeah, you're lucky that way ;-) Its been creaking for a while, and I've
+> > been making noises to the IBM people (who so far have been the main
+> > source of power saving patches) to clean this up, but now you trod onto
+> > all of it at once..
+> > 
+> > > What would be your perferred solution for the
+> > > core_cpumask/llc_shared_map stuff?  Another domain level to get rid of
+> > > this function?
+> > 
+> > Right, I'd like to see everything exposed as domain levels.
+> > 
+> > 
+> > numa-cluster
+> > numa
+> > socket
+> > in-socket-numa
+> > multi-core
+> > shared-cache
+> > core
+> > threads
 > 
-> Therefore the answer may be as simple as bracketing the FIFO task with
-> tick_nohz_stop_sched_tick() + tick_nohz_restart_sched_tick().  The nohz
-> code will probably need some minor adjustments so it is not assuming
-> things about the state being "idle" (e.g. "isidle") for places when it
-> matters (idle_calls++ stat is one example).
+> Out of curiosity, when does cpu_core_mask differ from llc_shared_map
+> on Intel? Only in case of MCM (e.g. Core2 Quad)?
 
-Yeah, it's similar to what we do in nohz idle already, but we'd need
-to split out some of the functions very carefully to reuse them.
+Yes, I think both c2q and some dual-core opteron have multiple cache
+domains per socket.
 
-> Potential problems:
+> If yes, the hackery of cpu_coregroup_mask() could be replace by
+> the domain that I'd like to introduce for Magny-Cours:
 > 
-> a) disabling/renabling the tick on a per-RT task schedule() may prove to
-> be prohibitively expensive.
-
-For a single taks consuming 100% CPU it is a non problem. You disable
-it once. But yes on a standard system this needs to be investigated.
- 
-> b) we will need to make sure the rt-bandwidth protection mechanism is
-> defeated so the task is allowed to consume 100% bandwidth.
+>   MC domain span would represent one die.
+>   The new domain would span all dies in an MCM.
 > 
-> Perhaps these states should be in the cpuset/root-domain, and configured
-> when you create the partition (e.g. "tick=off", "bandwidth=off" makes it
-> an "offline" set).
+> Bad idea?
 
-That makes sense and should not be rocket science to implement.
+No, I think all the mentioned chips have the multi-die thing in common,
+the intel c2q has 2 dual-core dies, the opteron I have seems to be two
+single cores and this magny thing has 2 many cores -- teh pun, sides
+aching :-)
 
-Thanks,
+So the generalization to dies per socket seems sensible.
 
-	tglx
+
+
