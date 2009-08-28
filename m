@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751278AbZH1NUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751431AbZH1N0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751278AbZH1NUv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 09:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZH1NUu
+	id S1751431AbZH1N0g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 09:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZH1N0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 09:20:50 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57010 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbZH1NUu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 09:20:50 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 28 Aug 2009 15:20:29 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: core: reduce stack usage in bus reset tasklet
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.82fef6d14408ae6d@s5r6.in-berlin.de>
+	Fri, 28 Aug 2009 09:26:35 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:36501 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751310AbZH1N0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 09:26:34 -0400
+Message-ID: <4A97DBD2.903@gentoo.org>
+Date: Fri, 28 Aug 2009 08:29:54 -0500
+From: "Jory A. Pratt" <anarchy@gentoo.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090822 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix Makefile to ensure proper options get passed from gcc
+Content-Type: multipart/mixed;
+ boundary="------------060500080203080301000803"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fw_compute_block_crc() used 1024 bytes of the kernel stack.  This
-function is called
-  - in process context when the local node's config ROM is updated,
-  - in tasklet context of the bus reset handler.
+This is a multi-part message in MIME format.
+--------------060500080203080301000803
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Replace the stack-allocated buffer by a static buffer.
-Serialize buffer accesses by a static local spinlock.
+if -D__KERNEL__ is not passed via KBUILD_CFLAGS the compiler can have 
+options passed by default that will unset
+other options such as -ffreestanding or -fno-toplevel-reorder if the 
+compiler is passing -fPIE.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/core-card.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+refer to fix-fpie-from-being-used.diff
 
-Index: linux-2.6.31-rc8/drivers/firewire/core-card.c
-===================================================================
---- linux-2.6.31-rc8.orig/drivers/firewire/core-card.c
-+++ linux-2.6.31-rc8/drivers/firewire/core-card.c
-@@ -40,13 +40,19 @@
+Another option that was suggested from another user was to pass 
+-D__KERNEL__ via Kbuild.include, patch is also attached.
+either patch would work, There is no risk of breakage, benefit is for 
+those who use a hardened toolchain.
+
+fix-cc-options-check.patch
+
+I believe we should pass the option via KBUILD_CFLAGS as to not confuse 
+the fact that we are not building CPP code, but rather C code.
+
+Also correct me if I am wrong but last I knew only part of kernel that 
+was cpp was qconfig.
+
+-Jory
+
+--------------060500080203080301000803
+Content-Type: text/plain;
+ name="fix-fpie-from-being-used.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="fix-fpie-from-being-used.diff"
+
+signed off by: Jory A. Pratt <anarchy@gentoo.org>
+
+When -fPIE is pass to cc1 it can't use -ffreestanding or -fno-toplevel-reorder.
+This will cause issues in video-vga.c when compiled leaving a user with no video
+modes avaliable when booting system.
+Many thanks to Vinky for tracking down bug.
+
+--- Makefile~	2009-08-27 21:38:59.809945943 -0500
++++ Makefile	2009-08-27 21:40:04.204922755 -0500
+@@ -348,7 +348,8 @@
+ 		   -fno-strict-aliasing -fno-common \
+ 		   -Werror-implicit-function-declaration \
+ 		   -Wno-format-security \
+-		   -fno-delete-null-pointer-checks
++		   -fno-delete-null-pointer-checks \
++		   -D__KERNEL__
+ KBUILD_AFLAGS   := -D__ASSEMBLY__
  
- int fw_compute_block_crc(u32 *block)
- {
--	__be32 be32_block[256];
-+	static DEFINE_SPINLOCK(buffer_lock);
-+	static __be32 buffer[256];
-+	unsigned long flags;
- 	int i, length;
- 
-+	spin_lock_irqsave(&buffer_lock, flags);
-+
- 	length = (*block >> 16) & 0xff;
- 	for (i = 0; i < length; i++)
--		be32_block[i] = cpu_to_be32(block[i + 1]);
--	*block |= crc_itu_t(0, (u8 *) be32_block, length * 4);
-+		buffer[i] = cpu_to_be32(block[i + 1]);
-+	*block |= crc_itu_t(0, (u8 *)buffer, length * 4);
-+
-+	spin_unlock_irqrestore(&buffer_lock, flags);
- 
- 	return length;
- }
+ # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 
--- 
-Stefan Richter
--=====-==--= =--- ===--
-http://arcgraph.de/sr/
+--------------060500080203080301000803
+Content-Type: text/plain;
+ name="fix-cc-options-check.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="fix-cc-options-check.patch"
 
+2009-08-28		Magnus Granberg		<zorry@ume.nu>
+		
+		#282201
+		* scripts/Kbuild.incude		add $(KBUILD_CPPFLAGS)
+
+--- scripts/Kbuild.include.zorry	2009-08-28 01:50:41.000000000 +0000
++++ scripts/Kbuild.include	2009-08-28 01:50:31.000000000 +0000
+@@ -105,12 +105,12 @@
+ # Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
+ 
+ cc-option = $(call try-run,\
+-	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",$(1),$(2))
++	$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",$(1),$(2))
+ 
+ # cc-option-yn
+ # Usage: flag := $(call cc-option-yn,-march=winchip-c6)
+ cc-option-yn = $(call try-run,\
+-	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",y,n)
++	$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",y,n)
+ 
+ # cc-option-align
+ # Prefix align with either -falign or -malign
+
+
+--------------060500080203080301000803--
