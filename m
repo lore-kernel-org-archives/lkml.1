@@ -1,151 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbZH1SeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbZH1Sk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbZH1SeX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 14:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZH1SeW
+	id S1752109AbZH1Sk4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 14:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZH1Skz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 14:34:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43195 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbZH1SeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 14:34:21 -0400
-Date: Fri, 28 Aug 2009 18:34:00 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] clocksource: Resolve cpu hotplug dead lock with TSC unstable
-Message-ID: <tip-7285dd7fd375763bfb8ab1ac9cf3f1206f503c16@git.kernel.org>
-Git-Commit-ID: 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
-X-Mailer: tip-git-log-daemon
+	Fri, 28 Aug 2009 14:40:55 -0400
+Received: from web45209.mail.sp1.yahoo.com ([68.180.197.122]:22923 "HELO
+	web45209.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752021AbZH1Sky convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 14:40:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=hTRv8ma8jyaSEESxWuzi/IU4cQSgiRFgv9JhQKeCDMaxRUZMVw06cfOGZwAewA4fFsM5VlBFRG4OzlMee+o19zXp/ke4PN9NV5togG2pWNWbew8s2dL2X0dufP7M0ykOk1uwwgTS+XRJGTyYK1k1QFiezMNfPVBPw6jjfdVCElE=;
+Message-ID: <812804.57438.qm@web45209.mail.sp1.yahoo.com>
+X-YMail-OSG: gjxCbKAVM1lokSSJYC2XSAXRbAu.gINzn2Jza.4DXxXYzYB1NDh_Ou511pYTVxvo7gR26WxqNfgNmsJxH_bagX3XXUAGx4p55maq..9Om65OYOCNW2vY71Ry93bvu_puqmaKXq_z787FQHe3Tw6YdEULPUhtkiSDfAjb8vJaWy2Z6f9yX_xlxY4ZbGTERdHhDTjd8.UpSPaCUCtLgkyKSE8-
+X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
+Date: Fri, 28 Aug 2009 11:40:56 -0700 (PDT)
+From: joe Shmoe <jsmoe3@yahoo.com>
+Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <ada8wh3renp.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 28 Aug 2009 18:34:01 +0000 (UTC)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
-Gitweb:     http://git.kernel.org/tip/7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Fri, 28 Aug 2009 20:25:24 +0200
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Fri, 28 Aug 2009 20:25:24 +0200
+Thanks for the reply,
+But my question is with regard to setting up the page tables during the kernel initialization in such a way so that entire RAM upto 4GB can be mapped. i.e virtual to physical address mapping. My question is strictly with reg. to physical address mapping only.
 
-clocksource: Resolve cpu hotplug dead lock with TSC unstable
+Why does kernel stop at 1GB (896 MB to be exact) while mapping from linear to physical address. 
 
-Martin Schwidefsky analyzed it:
-To register a clocksource the clocksource_mutex is acquired and if
-necessary timekeeping_notify is called to install the clocksource as
-the timekeeper clock. timekeeping_notify uses stop_machine which needs
-to take cpu_add_remove_lock mutex.
-Starting a new cpu is done with the cpu_add_remove_lock mutex held.
-native_cpu_up checks the tsc of the new cpu and if the tsc is no good
-clocksource_change_rating is called. Which needs the clocksource_mutex
-and the deadlock is complete.
-
-The solution is to replace the TSC via the clocksource watchdog
-mechanism. Mark the TSC as unstable and schedule the watchdog work so
-it gets removed in the watchdog thread context.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <new-submission>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: John Stultz <johnstul@us.ibm.com>
+Since a given process runs in both user/kernel mode how does it matter whether page table mapping  is for entire 4GB or 1 GB. Just because kernel setup the page tables does not mean that allocated dynamic memory cannot be accessed by given process while running in user mode. 
 
 
----
- arch/x86/kernel/tsc.c       |    8 +++++---
- include/linux/clocksource.h |    1 +
- kernel/time/clocksource.c   |   33 ++++++++++++++++++++++++++++++---
- 3 files changed, 36 insertions(+), 6 deletions(-)
+For the sake of discussion, let us say I have 3.5 GB of RAM of x86 with PAE disabled and I have only one process running other than kernel.
+Why can't kernel simply setup the page table mapping in a way that entire 3.5GB is mapped from linear to physical during the initialization. Assuming this single process is given access upto 3 GB, while running in user mode this single process can access any memory location in the allocated 2 or 3 GB virtual space.
 
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 9684254..fc3672a 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -767,12 +767,14 @@ void mark_tsc_unstable(char *reason)
- {
- 	if (!tsc_unstable) {
- 		tsc_unstable = 1;
--		printk("Marking TSC unstable due to %s\n", reason);
-+		printk(KERN_INFO "Marking TSC unstable due to %s\n", reason);
- 		/* Change only the rating, when not registered */
- 		if (clocksource_tsc.mult)
--			clocksource_change_rating(&clocksource_tsc, 0);
--		else
-+			clocksource_mark_unstable(&clocksource_tsc);
-+		else {
-+			clocksource_tsc.flags |= CLOCK_SOURCE_UNSTABLE;
- 			clocksource_tsc.rating = 0;
-+		}
- 	}
- }
- 
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 9ea40ff..83d2fbd 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -277,6 +277,7 @@ extern struct clocksource* clocksource_get_next(void);
- extern void clocksource_change_rating(struct clocksource *cs, int rating);
- extern void clocksource_resume(void);
- extern struct clocksource * __init __weak clocksource_default_clock(void);
-+extern void clocksource_mark_unstable(struct clocksource *cs);
- 
- #ifdef CONFIG_GENERIC_TIME_VSYSCALL
- extern void update_vsyscall(struct timespec *ts, struct clocksource *c);
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index e0c86ad..a0af4ff 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -149,15 +149,42 @@ static void clocksource_watchdog_work(struct work_struct *work)
- 	kthread_run(clocksource_watchdog_kthread, NULL, "kwatchdog");
- }
- 
--static void clocksource_unstable(struct clocksource *cs, int64_t delta)
-+static void __clocksource_unstable(struct clocksource *cs)
- {
--	printk(KERN_WARNING "Clocksource %s unstable (delta = %Ld ns)\n",
--	       cs->name, delta);
- 	cs->flags &= ~(CLOCK_SOURCE_VALID_FOR_HRES | CLOCK_SOURCE_WATCHDOG);
- 	cs->flags |= CLOCK_SOURCE_UNSTABLE;
- 	schedule_work(&watchdog_work);
- }
- 
-+static void clocksource_unstable(struct clocksource *cs, int64_t delta)
-+{
-+	printk(KERN_WARNING "Clocksource %s unstable (delta = %Ld ns)\n",
-+	       cs->name, delta);
-+	__clocksource_unstable(cs);
-+}
-+
-+/**
-+ * clocksource_mark_unstable - mark clocksource unstable via watchdog
-+ * @cs:		clocksource to be marked unstable
-+ *
-+ * This function is called instead of clocksource_change_rating from
-+ * cpu hotplug code to avoid a deadlock between the clocksource mutex
-+ * and the cpu hotplug mutex. It defers the update of the clocksource
-+ * to the watchdog thread.
-+ */
-+void clocksource_mark_unstable(struct clocksource *cs)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&watchdog_lock, flags);
-+	if (!(cs->flags & CLOCK_SOURCE_UNSTABLE)) {
-+		if (list_empty(&cs->wd_list))
-+			list_add(&cs->wd_list, &watchdog_list);
-+		__clocksource_unstable(cs);
-+	}
-+	spin_unlock_irqrestore(&watchdog_lock, flags);
-+}
-+
- static void clocksource_watchdog(unsigned long data)
- {
- 	struct clocksource *cs;
+
+
+
+
+
+--- On Fri, 8/28/09, Roland Dreier <rdreier@cisco.com> wrote:
+
+> From: Roland Dreier <rdreier@cisco.com>
+> Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
+> To: "joe Shmoe" <jsmoe3@yahoo.com>
+> Cc: linux-kernel@vger.kernel.org
+> Date: Friday, August 28, 2009, 2:12 PM
+> 
+>  > Assuming I have 3GB RAM, why does not kernel create
+> page tables in a way that all of this 3GB physical memory
+> can be addressed . (for x86 arch 32 bit with PAE disabled )
+>  > 
+>  > I understand the 3GB/1GB split for user/kernel
+> address space.Isn't  this just a matter of setting up the
+> page table entries in such a way that so all the available
+> RAM upto 3GB can mapped in the kernel page tables. In this
+> way CPU's MMU can take care of mapping any virtual address
+> within first 4GB to physical address using the page table
+> entries regardless of a process is in kernel/user mode. 
+> 
+> On a 32-bit architecture, there is only 4GB of address
+> space available.
+> If the kernel uses 3GB of address space for a direct
+> mapping of physical
+> memory, then only 1GB is available for everything else
+> (userspace,
+> vmalloc, etc).  BTW, this is available by enabling
+> CONFIG_VMSPLIT_1G.
+> 
+>  - R.
+> 
+
+
+      
