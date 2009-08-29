@@ -1,108 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752275AbZH2LZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752258AbZH2L21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752275AbZH2LZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 07:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZH2LZ5
+	id S1752258AbZH2L21 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 07:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZH2L20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 07:25:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40045 "EHLO hera.kernel.org"
+	Sat, 29 Aug 2009 07:28:26 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:63687 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbZH2LZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 07:25:55 -0400
-Date: Sat, 29 Aug 2009 11:25:09 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1251472247.17617.74.camel@laptop>
-References: <1251472247.17617.74.camel@laptop>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/urgent] perf_counter: Fix /0 bug in swcounters
-Message-ID: <tip-eced1dfcfcf6b0a35e925d73916a9d8e36ab5457@git.kernel.org>
-Git-Commit-ID: eced1dfcfcf6b0a35e925d73916a9d8e36ab5457
-X-Mailer: tip-git-log-daemon
+	id S1751539AbZH2L2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 07:28:25 -0400
+Message-ID: <4A9910D5.4060208@redhat.com>
+Date: Sat, 29 Aug 2009 07:28:21 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 29 Aug 2009 11:25:23 +0000 (UTC)
+To: Pavel Machek <pavel@ucw.cz>
+CC: david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+References: <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu> <4A948C94.7040103@redhat.com> <20090826025849.GF32712@mit.edu> <4A9510D2.1090704@redhat.com> <20090826111208.GA26595@elf.ucw.cz> <alpine.DEB.2.00.0908260416270.30426@asgard.lang.hm> <20090829094919.GF1634@ucw.cz>
+In-Reply-To: <20090829094919.GF1634@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  eced1dfcfcf6b0a35e925d73916a9d8e36ab5457
-Gitweb:     http://git.kernel.org/tip/eced1dfcfcf6b0a35e925d73916a9d8e36ab5457
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Fri, 28 Aug 2009 17:10:47 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 29 Aug 2009 13:20:11 +0200
+On 08/29/2009 05:49 AM, Pavel Machek wrote:
+>    
+>>> So instead of fixing or at least documenting known software deficiency
+>>> in Linux MD stack, you'll try to surpress that information so that
+>>> people use more of raid5 setups?
+>>>
+>>> Perhaps the better documentation will push them to RAID1, or maybe
+>>> make them buy an UPS?
+>>>        
+>> people aren't objecting to better documentation, they are objecting to
+>> misleading documentation.
+>>      
+> Actually Ric is. He's trying hard to make RAID5 look better than it
+> really is.
+>
+>    
+>
 
-perf_counter: Fix /0 bug in swcounters
+I object to misleading and dangerous documentation that you have 
+proposed. I spend a lot of time working in data integrity, talking and 
+writing about it so I care deeply that we don't misinform people.
 
-We have a race in the swcounter stuff where we can start
-counting a counter that has never been enabled, this leads to a
-/0 situation.
+In this thread, I put out a draft that is accurate several times and you 
+have failed to respond to it.
 
-The below avoids the /0 but doesn't close the race, this would
-need a new counter state.
+The big picture that you don't agree with is:
 
-The race is due to perf_swcounter_is_counting() which cannot
-discern between disabled due to scheduled out, and disabled for
-any other reason.
+(1) RAID (specifically MD RAID) will dramatically improve data integrity 
+for real users. This is not a statement of opinion, this is a statement 
+of fact that has been shown to be true in large scale deployments with 
+commodity hardware.
 
-Such a crash has been seen by Ingo:
+(2) RAID5 protects you against a single failure and your test case 
+purposely injects a double failure.
 
-[  967.092372] divide error: 0000 [#1] SMP
-[  967.096499] last sysfs file: /sys/devices/system/cpu/cpu15/cache/index2/shared_cpu_map
-[  967.104846] CPU 5
-[  967.106965] Modules linked in:
-[  967.110169] Pid: 3351, comm: hackbench Not tainted 2.6.31-rc8-tip-01158-gd940a54-dirty #1568 X8DTN
-[  967.119456] RIP: 0010:[<ffffffff810c0aba>]  [<ffffffff810c0aba>] perf_swcounter_ctx_event+0x127/0x1af
-[  967.129137] RSP: 0018:ffff8801a95abd70  EFLAGS: 00010046
-[  967.134699] RAX: 0000000000000002 RBX: ffff8801bd645c00 RCX: 0000000000000002
-[  967.142162] RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff8801bd645d40
-[  967.149584] RBP: ffff8801a95abdb0 R08: 0000000000000001 R09: ffff8801a95abe00
-[  967.157042] R10: 0000000000000037 R11: ffff8801aa1245f8 R12: ffff8801a95abe00
-[  967.164481] R13: ffff8801a95abe00 R14: ffff8801aa1c0e78 R15: 0000000000000001
-[  967.171953] FS:  0000000000000000(0000) GS:ffffc90000a00000(0063) knlGS:00000000f7f486c0
-[  967.180406] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-[  967.186374] CR2: 000000004822c0ac CR3: 00000001b19a2000 CR4: 00000000000006e0
-[  967.193770] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[  967.201224] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[  967.208692] Process hackbench (pid: 3351, threadinfo ffff8801a95aa000, task ffff8801a96b0000)
-[  967.217607] Stack:
-[  967.219711]  0000000000000000 0000000000000037 0000000200000001 ffffc90000a1107c
-[  967.227296] <0> ffff8801a95abe00 0000000000000001 0000000000000001 0000000000000037
-[  967.235333] <0> ffff8801a95abdf0 ffffffff810c0c20 0000000200a14f30 ffff8801a95abe40
-[  967.243532] Call Trace:
-[  967.246103]  [<ffffffff810c0c20>] do_perf_swcounter_event+0xde/0xec
-[  967.252635]  [<ffffffff810c0ca7>] perf_tpcounter_event+0x79/0x7b
-[  967.258957]  [<ffffffff81037f73>] ftrace_profile_sched_switch+0xc0/0xcb
-[  967.265791]  [<ffffffff8155f22d>] schedule+0x429/0x4c4
-[  967.271156]  [<ffffffff8100c01e>] int_careful+0xd/0x14
+(3) How to configure MD reliably should be documented in MD 
+documentation, not in each possible FS or raw device application
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1251472247.17617.74.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+(4) Data loss occurs in non-journalling file systems and journalling 
+file systems when you suffer double failures or hot unplug storage, 
+especially inexpensive FLASH parts.
+
+ric
 
 
----
- kernel/perf_counter.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 7d4bb83..d7cbc57 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -4066,6 +4066,7 @@ perf_counter_alloc(struct perf_counter_attr *attr,
- 	hwc->sample_period = attr->sample_period;
- 	if (attr->freq && attr->sample_freq)
- 		hwc->sample_period = 1;
-+	hwc->last_period = hwc->sample_period;
- 
- 	atomic64_set(&hwc->period_left, hwc->sample_period);
- 
