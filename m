@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751613AbZH2FsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbZH2GFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751613AbZH2FsY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 01:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZH2FsY
+	id S1751739AbZH2GFa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 02:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZH2GF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 01:48:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56923 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750977AbZH2FsX (ORCPT
+	Sat, 29 Aug 2009 02:05:29 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35059
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751713AbZH2GF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 01:48:23 -0400
-Date: Fri, 28 Aug 2009 19:48:07 -1000 (HST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: Eric Paris <eparis@redhat.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux-2.6.31-rc8 inotify hangs samba clients
-In-Reply-To: <b6a2187b0908280930s6366eda6pe1d5024b4ef890dd@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0908281945590.10281@eeepc.linux-foundation.org>
-References: <Pine.LNX.4.64.0908282358560.19623@boston.corp.fedex.com>  <1251476422.28787.1.camel@dhcp231-106.rdu.redhat.com> <b6a2187b0908280930s6366eda6pe1d5024b4ef890dd@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 29 Aug 2009 02:05:28 -0400
+Date: Fri, 28 Aug 2009 23:05:42 -0700 (PDT)
+Message-Id: <20090828.230542.249636196.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-08-28
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090828191039.GC32694@tuxdriver.com>
+References: <20090828191039.GC32694@tuxdriver.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Fri, 28 Aug 2009 15:10:39 -0400
 
-
-On Sat, 29 Aug 2009, Jeff Chua wrote:
+> Dave,
 > 
-> Thanks again for the pointer and fixes. Will wait to pull from Linus's 
-> git.
+> One more late-breaker for 2.6.31...
+> 
+> This patch is rather large for this stage of the cycle, but it
+> corrects a regression disussed recently on LKML, documented in bug
+> 14016 at bugzilla.kernel.org.  This jist of it is that the ipw2200
+> firmware loading routine was using an order 6 memory allocation that was
+> failing with newer allocators under some circumstances.
 
-Ok, I've merged the inotify things (along with a few others changes). 
-Please do give it a good test. I'm going to be online only to a _very_ 
-limited degree (four-tank dive day tomorrow! Yeehaa), so I really hope 
-that this solves it all.
-
-			Linus
+Pulled, thanks.
