@@ -1,80 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752258AbZH2L21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752329AbZH2MFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752258AbZH2L21 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 07:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZH2L20
+	id S1752329AbZH2MFV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 08:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZH2MFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 07:28:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:63687 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751539AbZH2L2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 07:28:25 -0400
-Message-ID: <4A9910D5.4060208@redhat.com>
-Date: Sat, 29 Aug 2009 07:28:21 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Sat, 29 Aug 2009 08:05:20 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:63617 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267AbZH2MFU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 08:05:20 -0400
+From: Chetan.Loke@Emulex.Com
+To: <akataria@vmware.com>
+CC: <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       <dtor@vmware.com>, <James.Bottomley@HansenPartnership.com>,
+       <robert.w.love@intel.com>, <randy.dunlap@oracle.com>,
+       <michaelc@cs.wisc.edu>
+Date: Sat, 29 Aug 2009 05:04:58 -0700
+Subject: RE: [PATCH] SCSI driver for VMware's virtual HBA.
+Thread-Topic: [PATCH] SCSI driver for VMware's virtual HBA.
+Thread-Index: AcooLzZufbp7jZl4TveUr9IJZUvQ+QAbSWmw
+Message-ID: <412A05BA40734D4887DBC67661F433080FF71D90@EXMAIL.ad.emulex.com>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <412A05BA40734D4887DBC67661F433080FF71D16@EXMAIL.ad.emulex.com>
+ <1251498656.25584.7.camel@ank32.eng.vmware.com>
+In-Reply-To: <1251498656.25584.7.camel@ank32.eng.vmware.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: david@lang.hm, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
- document conditions when reliable operation is possible)
-References: <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu> <4A948C94.7040103@redhat.com> <20090826025849.GF32712@mit.edu> <4A9510D2.1090704@redhat.com> <20090826111208.GA26595@elf.ucw.cz> <alpine.DEB.2.00.0908260416270.30426@asgard.lang.hm> <20090829094919.GF1634@ucw.cz>
-In-Reply-To: <20090829094919.GF1634@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Aug 2009 12:05:01.0493 (UTC) FILETIME=[EFB44E50:01CA28A0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/29/2009 05:49 AM, Pavel Machek wrote:
->    
->>> So instead of fixing or at least documenting known software deficiency
->>> in Linux MD stack, you'll try to surpress that information so that
->>> people use more of raid5 setups?
->>>
->>> Perhaps the better documentation will push them to RAID1, or maybe
->>> make them buy an UPS?
->>>        
->> people aren't objecting to better documentation, they are objecting to
->> misleading documentation.
->>      
-> Actually Ric is. He's trying hard to make RAID5 look better than it
-> really is.
->
->    
->
+> -----Original Message-----
+> From: Alok Kataria [mailto:akataria@vmware.com]
+> Sent: Friday, August 28, 2009 6:31 PM
+> To: Loke,Chetan
+> Cc: linux-kernel@vger.kernel.org; akpm@linux-foundation.org; Dmitry
+> Torokhov; James.Bottomley@HansenPartnership.com; robert.w.love@intel.com;
+> randy.dunlap@oracle.com; michaelc@cs.wisc.edu
+> Subject: RE: [PATCH] SCSI driver for VMware's virtual HBA.
+> 
+> Hi Chetan,
 
-I object to misleading and dangerous documentation that you have 
-proposed. I spend a lot of time working in data integrity, talking and 
-writing about it so I care deeply that we don't misinform people.
+Hi
 
-In this thread, I put out a draft that is accurate several times and you 
-have failed to respond to it.
-
-The big picture that you don't agree with is:
-
-(1) RAID (specifically MD RAID) will dramatically improve data integrity 
-for real users. This is not a statement of opinion, this is a statement 
-of fact that has been shown to be true in large scale deployments with 
-commodity hardware.
-
-(2) RAID5 protects you against a single failure and your test case 
-purposely injects a double failure.
-
-(3) How to configure MD reliably should be documented in MD 
-documentation, not in each possible FS or raw device application
-
-(4) Data loss occurs in non-journalling file systems and journalling 
-file systems when you suffer double failures or hot unplug storage, 
-especially inexpensive FLASH parts.
-
-ric
+> 
+> On Fri, 2009-08-28 at 14:18 -0700, Chetan.Loke@Emulex.Com wrote:
+> > Alok,
+> >
+> >
+> > > +static int __devinit pvscsi_allocate_rings(struct pvscsi_adapter
+> > > *adapter)
+> > > +{
+> > > +	adapter->rings_state = pci_alloc_consistent(adapter->dev, PAGE_SIZE,
+> > > +						    &adapter->ringStatePA);
+> > > +	adapter->req_ring = pci_alloc_consistent(adapter->dev,
+> > > +						 adapter->req_pages * PAGE_SIZE,
+> > > +						 &adapter->reqRingPA);
+> > > +	adapter->cmp_ring = pci_alloc_consistent(adapter->dev,
+> > > +						 adapter->cmp_pages * PAGE_SIZE,
+> > > +						 &adapter->cmpRingPA);
 
 
+> >
+> > I understand the emulation etc. But I see that this function isn't
+> > allocating multiple rings right? Didn't see any performance benefits?
+> >
+> 
+> The function is allocating multiple rings, actually 2 of them for the
+> IO path, request and completion rings (req_ring, cmp_ring).
+> 
+> Let me know if you were asking something else.
+> 
+
+I was using 'Ring' loosely.
+So, Ring == [req_path,cmpl_path]
+Example - R0[req-path,cmpl-path]
+
+But the code doesn't allocate R0,R1,...,RN.
+
+Existing code - 
+
+      --------
+	Ring-0
+	--------
+	  Req 
+	   +
+	   |
+ 	   +
+        Cmpl     
+
+
+Why not multiple rings as shown below - 
+
+      --------	--------
+	Ring-0	Ring-M
+	--------	--------
+	  Req 	  Req
+	   +		   +
+	   |		   |
+ 	   +		   +
+        Cmpl     	  Cmpl
+
+
+
+Creating multiple rings @ the guest level buys nothing in terms of performance? This is also related to how the hypervisor will schedule the world-interrupts. If 'a' pv-driver has multiple interrupt lines enabled then will the interrupts/ISR's get routed on different PCPU's for a vmworld? Or is there a limitation?
+
+
+Chetan
 
