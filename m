@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555AbZH2USU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbZH2UWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752555AbZH2USU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 16:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbZH2UST
+	id S1752530AbZH2UWL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 16:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZH2UWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 16:18:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49757 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752477AbZH2USS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 16:18:18 -0400
-Message-ID: <4A998CCA.1040407@kernel.org>
-Date: Sat, 29 Aug 2009 13:17:14 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Sat, 29 Aug 2009 16:22:10 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45417
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020AbZH2UWJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 16:22:09 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
+Date: Sat, 29 Aug 2009 15:22:06 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
+Cc: david@lang.hm, Ric Wheeler <rwheeler@redhat.com>,
+       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <20090824212518.GF29763@elf.ucw.cz> <alpine.DEB.2.00.0908280748080.6822@asgard.lang.hm> <20090829100558.GH1634@ucw.cz>
+In-Reply-To: <20090829100558.GH1634@ucw.cz>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: [PATCH] x86: use hard_smp_processor_id to get apic id for amd k8
- cpus
-References: <4A9391CD.5020804@kernel.org>  <4A946082.9090809@kernel.org>	 <1251240835.2636.28.camel@sbs-t61>  <4A948C88.9060403@kernel.org>	 <1251308988.2787.39.camel@sbs-t61.sc.intel.com> <4A9587FE.20503@kernel.org> <1251325455.2787.61.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1251325455.2787.61.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908291522.07694.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 29 August 2009 05:05:58 Pavel Machek wrote:
+> On Fri 2009-08-28 07:49:38, david@lang.hm wrote:
+> > On Thu, 27 Aug 2009, Rob Landley wrote:
+> >> Pavel's response was to attempt to document this.  Not that journaling
+> >> is _bad_, but that it doesn't protect against this class of problem.
+> >
+> > I don't think anyone is disagreeing with the statement that journaling
+> > doesn't protect against this class of problems, but Pavel's statements
+> > didn't say that. he stated that ext3 is more dangerous than ext2.
+>
+> Well, if you use 'common' fsck policy, ext3 _is_ more dangerous.
 
-otherwise, system with apci id lifting will have wrong apicid in
-/proc/cpuinfo
+The filesystem itself isn't more dangerous, but it may provide a false sense of 
+security when used on storage devices it wasn't designed for.
 
-and use that in srat_detect_node
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
-
----
- arch/x86/kernel/cpu/amd.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/arch/x86/kernel/cpu/amd.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
-+++ linux-2.6/arch/x86/kernel/cpu/amd.c
-@@ -277,7 +277,7 @@ static void __cpuinit srat_detect_node(s
- #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
- 	int cpu = smp_processor_id();
- 	int node;
--	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
-+	unsigned apicid = c->apicid;
- 
- 	node = c->phys_proc_id;
- 	if (apicid_to_node[apicid] != NUMA_NO_NODE)
-@@ -437,6 +437,9 @@ static void __cpuinit init_amd(struct cp
- 	}
- 	if (c->x86 == 0x10 || c->x86 == 0x11)
- 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
-+
-+	/* get apicid instead of initial apic id from cpuid */
-+	c->apicid = hard_smp_processor_id();
- #else
- 
- 	/*
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
