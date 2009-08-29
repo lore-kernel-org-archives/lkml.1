@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZH2Njn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751919AbZH2Nl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751956AbZH2Njn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 09:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZH2Njl
+	id S1751919AbZH2Nl1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 09:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZH2Nl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 09:39:41 -0400
-Received: from smtp.knology.net ([24.214.63.101]:37958 "EHLO smtp.knology.net"
+	Sat, 29 Aug 2009 09:41:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44119 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbZH2Njk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 09:39:40 -0400
-Subject: Re: r8169 NETDEV WATCHDOG: eth0: transmit timed out [0/8]
-From: David Dillow <dave@thedillows.org>
-To: roma1390 <roma1390@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <b410963b0908290216x19206aa6o4458bb55b5578a04@mail.gmail.com>
-References: <b410963b0908290216x19206aa6o4458bb55b5578a04@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 29 Aug 2009 09:39:40 -0400
-Message-Id: <1251553180.13707.16.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1751427AbZH2Nl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 09:41:26 -0400
+Date: Sat, 29 Aug 2009 15:41:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Patch 0/1] HW-BKPT: Allow per-cpu kernel-space Hardware
+	Breakpoint requests
+Message-ID: <20090829134107.GD24123@elte.hu>
+References: <20090817124641.GA13354@in.ibm.com> <20090819161119.GA3633@in.ibm.com> <20090819173259.GF4972@nowhere> <20090820172719.GA16499@in.ibm.com> <20090821142811.GF11098@elte.hu> <20090826033637.GB6245@nowhere> <20090826091642.GB7743@elte.hu> <20090826114954.GA6009@nowhere> <20090826180245.GA4438@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826180245.GA4438@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-29 at 12:16 +0300, roma1390 wrote:
-> Using 3 different r8169 devices on 2 servers (from 2 server so 100% of
-> population) we getting
-> 
-> NETDEV WATCHDOG: eth0: transmit timed out
 
-You're running an old version of the kernel, and the driver was patched
-to fix that issue in 2.6.30. It is also in the 2.6.29.x stable series,
-and I think maybe the 2.6.28.x series -- please try those and see if you
-problem is resolved.
+* K.Prasad <prasad@linux.vnet.ibm.com> wrote:
 
-We're aware of a possible issue with the fix in those kernels, and are
-working it in another thread. A quick search of the archives should turn
-it up. Will you be willing to test patches?
+> I am not sure if pmus can handle, (or want to handle) all the 
+> intricacies involved with the hw-breakpoint layer [...]
 
->From your dmesg, it looks like you have 8169c's, running in MSI mode.
-Can you please confirm this by sending your /proc/interrupt info:
-	cat /proc/interrupts | grep eth0
+Which are those intricacies? It's all rather straightforward 
+register scheduling and reservation stuff - which perfcounters 
+already solves in a very rich way.
 
-Also, in the future, please cc netdev on network bug reports.
-Thanks!
-
+	Ingo
