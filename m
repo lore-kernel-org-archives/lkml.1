@@ -1,43 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbZH2GFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751890AbZH2H1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751739AbZH2GFa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 02:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZH2GF3
+	id S1751890AbZH2H1s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 03:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbZH2H1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 02:05:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35059
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751713AbZH2GF2 (ORCPT
+	Sat, 29 Aug 2009 03:27:47 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:45652 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750770AbZH2H1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 02:05:28 -0400
-Date: Fri, 28 Aug 2009 23:05:42 -0700 (PDT)
-Message-Id: <20090828.230542.249636196.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-08-28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090828191039.GC32694@tuxdriver.com>
-References: <20090828191039.GC32694@tuxdriver.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 29 Aug 2009 03:27:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=HI+vcCD8IvmZg31TX9BT+NdkS2k+DVXJwYzuE/hKax0azu1rEvhnOezVBiipylp88D
+         gGk9WAOiUsLcFCKhDOXiboVXQtnHdqt+6ef1nDdPxdq3QO3OnbEEW6mkz7BAHrRs6Jvo
+         PWUTMCL1Zz6XWhsstN4ARylAukoSBQG6wglf0=
+MIME-Version: 1.0
+Date: Sat, 29 Aug 2009 16:20:22 +0900
+Message-ID: <f76951a90908290020x5c4f8c8cjaba919e3f934fa85@mail.gmail.com>
+Subject: [PATCH] proc: let task status file print utime and stime.
+From: Tatsuhiro Aoshima <tatsu.pc@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: tatsu.pc@gmail.com, yoshfuji@linux-ipv6.org,
+       kosaki.motohiro@jp.fujitsu.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Fri, 28 Aug 2009 15:10:39 -0400
+From: Tatsuhiro Aoshima <tatsu.pc@gmail.com>
+Subject: [PATCH] proc: let task status file print utime and stime.
 
-> Dave,
-> 
-> One more late-breaker for 2.6.31...
-> 
-> This patch is rather large for this stage of the cycle, but it
-> corrects a regression disussed recently on LKML, documented in bug
-> 14016 at bugzilla.kernel.org.  This jist of it is that the ipw2200
-> firmware loading routine was using an order 6 memory allocation that was
-> failing with newer allocators under some circumstances.
+The task status file in proc file system did not contain
+user-time and system-time. Thus, users could not get
+those information of running task easily. I think
+these values should be provived in human readable format.
+By this patch, users can get stime and utime very easily.
 
-Pulled, thanks.
+Signed-off-by: Tatsuhiro Aoshima <tatsu.pc@gmail.com>
+Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ fs/proc/array.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 725a650..29afa68 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -162,6 +162,7 @@ static inline void task_state(struct seq_file *m,
+struct pid_namespace *ns,
+       struct fdtable *fdt = NULL;
+       const struct cred *cred;
+       pid_t ppid, tpid;
++       struct timeval utime, stime;
+
+       rcu_read_lock();
+       ppid = pid_alive(p) ?
+@@ -173,6 +174,8 @@ static inline void task_state(struct seq_file *m,
+struct pid_namespace *ns,
+                       tpid = task_pid_nr_ns(tracer, ns);
+       }
+       cred = get_cred((struct cred *) __task_cred(p));
++       cputime_to_timeval(task_utime(p), &utime);
++       cputime_to_timeval(task_stime(p), &stime);
+       seq_printf(m,
+               "State:\t%s\n"
+               "Tgid:\t%d\n"
+@@ -180,13 +183,17 @@ static inline void task_state(struct seq_file
+*m, struct pid_namespace *ns,
+               "PPid:\t%d\n"
+               "TracerPid:\t%d\n"
+               "Uid:\t%d\t%d\t%d\t%d\n"
+-               "Gid:\t%d\t%d\t%d\t%d\n",
++               "Gid:\t%d\t%d\t%d\t%d\n"
++               "Utime:\t%lu.%06lu\n"
++               "Stime:\t%lu.%06lu\n",
+               get_task_state(p),
+               task_tgid_nr_ns(p, ns),
+               pid_nr_ns(pid, ns),
+               ppid, tpid,
+               cred->uid, cred->euid, cred->suid, cred->fsuid,
+-               cred->gid, cred->egid, cred->sgid, cred->fsgid);
++               cred->gid, cred->egid, cred->sgid, cred->fsgid,
++               (unsigned long) utime.tv_sec, (unsigned long) utime.tv_usec,
++               (unsigned long) stime.tv_sec, (unsigned long) stime.tv_usec);
+
+       task_lock(p);
+       if (p->files)
