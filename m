@@ -1,158 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbZH2KVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbZH2Kam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062AbZH2KVb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 06:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZH2KVa
+	id S1752080AbZH2Kam (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 06:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZH2Kal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 06:21:30 -0400
-Received: from mga03.intel.com ([143.182.124.21]:55184 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751314AbZH2KVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 06:21:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="181851289"
-Date: Sat, 29 Aug 2009 18:21:26 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Fernando Silveira <fsilveira@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: I/O and pdflush
-Message-ID: <20090829102126.GA22409@localhost>
-References: <6afc6d4a0907111027w76234c8fv11ab77864515fdb0@mail.gmail.com> <20090712080410.GA8512@localhost> <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com> <20090829101247.GA20786@localhost>
+	Sat, 29 Aug 2009 06:30:41 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44340 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbZH2Kak (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 06:30:40 -0400
+Date: Sat, 29 Aug 2009 11:49:20 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: david@lang.hm
+Cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
+	document conditions when reliable operation is possible)
+Message-ID: <20090829094919.GF1634@ucw.cz>
+References: <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu> <4A948C94.7040103@redhat.com> <20090826025849.GF32712@mit.edu> <4A9510D2.1090704@redhat.com> <20090826111208.GA26595@elf.ucw.cz> <alpine.DEB.2.00.0908260416270.30426@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/mixed; boundary="qMm9M+Fa2AknHoGS"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090829101247.GA20786@localhost>
+In-Reply-To: <alpine.DEB.2.00.0908260416270.30426@asgard.lang.hm>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 29, 2009 at 06:12:47PM +0800, Wu Fengguang wrote:
-> On Sat, Aug 29, 2009 at 05:48:40AM +0800, Fernando Silveira wrote:
-> > On Sun, Jul 12, 2009 at 05:04, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > > On Sat, Jul 11, 2009 at 02:27:25PM -0300, Fernando Silveira wrote:
-> > >> I'm having a hard time with an application that writes sequentially
-> > >> 250GB of non-stop data directly to a solid state disk (OCZ SSD CORE
-> > >> v2) device and I hope you can help me. The command "dd if=/dev/zero
-> > >> of=/dev/sdc bs=4M" reproduces the same symptoms I'm having and writes
-> > >> exactly as that application does.
-> > >
-> > > What's your kernel version?  Can the following patch help?
-> > 
-> > Sorry for the delay, but I could not test it before.
-> > 
-> > Unfortunately it did not help or change any symptoms at all. The
-> > kernel version I tested was a non-patched 2.6.30.1 version.
-> > 
-> > Do you have any other hint?
-> 
-> Sure. Attached is a writeback debug patch. It will generate lots of
-> kernel messages. You can just stop your klogd, start your workload
-> and monitor the SSD writeback throughput via tools like iostat/dstat.
 
-Fernando, will you post the output of iostat/dstat too? Thanks!
-The ssd-no_dirty_buffer_with_random_192mb_writes.png is a good overview,
-however I'd like to also check out the numbers for each second :)
+--qMm9M+Fa2AknHoGS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks,
-Fengguang
 
-> When it goes into the suboptimal 25MB/s state for several seconds, run
->         dmesg > dmesg-writeback
-> and send me the log.
-> 
-> And it is advised to turn on the kconfig option CONFIG_PRINTK_TIME=y.
-> 
-> Thanks,
-> Fengguang
+>> So instead of fixing or at least documenting known software deficiency
+>> in Linux MD stack, you'll try to surpress that information so that
+>> people use more of raid5 setups?
+>>
+>> Perhaps the better documentation will push them to RAID1, or maybe
+>> make them buy an UPS?
+>
+> people aren't objecting to better documentation, they are objecting to  
+> misleading documentation.
 
->  mm/page-writeback.c |   38 ++++++++++++++++++++++++++++++++++++++
->  1 file changed, 38 insertions(+)
-> 
-> --- mm.orig/mm/page-writeback.c
-> +++ mm/mm/page-writeback.c
-> @@ -116,6 +116,33 @@ EXPORT_SYMBOL(laptop_mode);
->  
->  /* End of sysctl-exported parameters */
->  
-> +#define writeback_debug_report(n, wbc) do {                               \
-> +	__writeback_debug_report(n, wbc, __FILE__, __LINE__, __FUNCTION__); \
-> +} while (0)
-> +
-> +void print_writeback_control(struct writeback_control *wbc)
-> +{
-> +	printk(KERN_DEBUG
-> +			"global dirty %lu writeback %lu nfs %lu "
-> +			"flags %c%c towrite %ld skipped %ld\n",
-> +			global_page_state(NR_FILE_DIRTY),
-> +			global_page_state(NR_WRITEBACK),
-> +			global_page_state(NR_UNSTABLE_NFS),
-> +			wbc->encountered_congestion ? 'C':'_',
-> +			wbc->more_io ? 'M':'_',
-> +			wbc->nr_to_write,
-> +			wbc->pages_skipped);
-> +}
-> +
-> +void __writeback_debug_report(long n, struct writeback_control *wbc,
-> +		const char *file, int line, const char *func)
-> +{
-> +	printk(KERN_DEBUG "%s %d %s: %s(%d) %ld\n",
-> +			file, line, func,
-> +			current->comm, current->pid,
-> +			n);
-> +	print_writeback_control(wbc);
-> +}
->  
->  static void background_writeout(unsigned long _min_pages);
->  
-> @@ -546,6 +573,7 @@ static void balance_dirty_pages(struct a
->  			pages_written += write_chunk - wbc.nr_to_write;
->  			get_dirty_limits(&background_thresh, &dirty_thresh,
->  				       &bdi_thresh, bdi);
-> +			writeback_debug_report(pages_written, &wbc);
->  		}
->  
->  		/*
-> @@ -572,6 +600,7 @@ static void balance_dirty_pages(struct a
->  			break;		/* We've done our duty */
->  
->  		congestion_wait(WRITE, HZ/10);
-> +		writeback_debug_report(-pages_written, &wbc);
->  	}
->  
->  	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
-> @@ -666,6 +695,11 @@ void throttle_vm_writeout(gfp_t gfp_mask
->  			global_page_state(NR_WRITEBACK) <= dirty_thresh)
->                          	break;
->                  congestion_wait(WRITE, HZ/10);
-> +		printk(KERN_DEBUG "throttle_vm_writeout: "
-> +				"congestion_wait on %lu+%lu > %lu\n",
-> +				global_page_state(NR_UNSTABLE_NFS),
-> +				global_page_state(NR_WRITEBACK),
-> +				dirty_thresh);
->  
->  		/*
->  		 * The caller might hold locks which can prevent IO completion
-> @@ -715,7 +749,9 @@ static void background_writeout(unsigned
->  			else
->  				break;
->  		}
-> +		writeback_debug_report(min_pages, &wbc);
->  	}
-> +	writeback_debug_report(min_pages, &wbc);
->  }
->  
->  /*
-> @@ -788,7 +824,9 @@ static void wb_kupdate(unsigned long arg
->  				break;	/* All the old data is written */
->  		}
->  		nr_to_write -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-> +		writeback_debug_report(nr_to_write, &wbc);
->  	}
-> +	writeback_debug_report(nr_to_write, &wbc);
->  	if (time_before(next_jif, jiffies + HZ))
->  		next_jif = jiffies + HZ;
->  	if (dirty_writeback_interval)
+Actually Ric is. He's trying hard to make RAID5 look better than it
+really is.
 
+> for flash drives the danger is very straightforward (although even then  
+> you have to note that it depends heavily on the firmware of the device,  
+> some will loose lots of data, some won't loose any)
+
+I have not seen one that works :-(.
+
+> you are generalizing that since you have lost data on flash drives, all  
+> flash drives are dangerous.
+
+Do the flash manufacturers claim they do not cause collateral damage
+during powerfail? If not, they probably are dangerous.
+
+Anyway, you wanted a test, and one is attached. It normally takes like
+4 unplugs to uncover problems.
+
+> but the super simplified statement you keep trying to make is  
+> significantly overstating and oversimplifying the problem.
+
+Offer better docs? You are right that it does not lose whole stripe,
+it merely loses random block on same stripe, but result for journaling
+filesystem is similar.
+									Pavel
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+--qMm9M+Fa2AknHoGS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=fstest
+
+#!/bin/bash
+#
+# Copyright 2008 Pavel Machek <pavel@suse.cz>, GPLv2
+#
+# vfat is broken with filesize=0
+#
+#
+
+if [ .$MOUNTOPTS = . ]; then
+# ext3 is needed, or you need to disable caches using hdparm.
+# odirsync is needed, else modify fstest.worker to fsync the directory.
+    MOUNTOPTS="-o dirsync"
+fi
+if [ .$BDEV = . ]; then
+#    BDEV=/dev/sdb3
+    BDEV=/dev/nd0
+fi
+
+export FILESIZE=4000
+export NUMFILES=4000
+
+waitforcard() {
+    umount /mnt
+    echo Waiting for card:
+    while ! mount $BDEV $MOUNTOPTS /mnt 2> /dev/null; do
+	echo -n .
+	sleep 1
+    done
+#   hdparm -W0 $BDEV
+    echo
+}
+
+mkdir delme.fstest
+cd delme.fstest
+
+waitforcard
+rm tmp.* final.* /mnt/tmp.* /mnt/final.*
+
+while true; do
+    ../fstest.work
+    echo
+    waitforcard
+    echo Testing: fsck....
+    umount /mnt
+    fsck -fy $BDEV
+    echo Testing....
+    waitforcard
+    for A in final.*; do
+	echo -n $A " "
+	cmp $A /mnt/$A || exit
+    done
+    echo
+done
+
+--qMm9M+Fa2AknHoGS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="fstest.work"
+
+#!/bin/bash
+#
+# Copyright 2008 Pavel Machek <pavel@suse.cz>, GPLv2
+#
+
+echo "Writing test files: "
+for A in `seq $NUMFILES`; do
+    echo -n $A " "
+    rm final.$A
+    cat /dev/urandom | head -c $FILESIZE > tmp.$A
+    dd conv=fsync if=tmp.$A of=/mnt/final.$A 2> /dev/zero || exit
+#    cat /mnt/final.$A > /dev/null || exit
+# sync should not be needed, as dd asks for fsync
+#    sync
+    mv tmp.$A final.$A
+done
+
+--qMm9M+Fa2AknHoGS--
