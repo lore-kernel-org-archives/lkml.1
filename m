@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbZH2Nan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZH2NdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751881AbZH2Nan (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 09:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZH2Nam
+	id S1751894AbZH2NdG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 09:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZH2NdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 09:30:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54956 "EHLO mx3.mail.elte.hu"
+	Sat, 29 Aug 2009 09:33:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40754 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183AbZH2Nam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 09:30:42 -0400
-Date: Sat, 29 Aug 2009 15:29:54 +0200
+	id S1751127AbZH2NdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 09:33:04 -0400
+Date: Sat, 29 Aug 2009 15:31:52 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 1/2] kmemleak: Inform kmemleak about kernel stack
-	allocation
-Message-ID: <20090829132954.GB24123@elte.hu>
-References: <20090827165927.27901.97270.stgit@pc1117.cambridge.arm.com> <20090827170253.27901.33997.stgit@pc1117.cambridge.arm.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] kmemleak: Ignore the aperture memory hole on x86_64
+Message-ID: <20090829133152.GC24123@elte.hu>
+References: <20090827165927.27901.97270.stgit@pc1117.cambridge.arm.com> <20090827170258.27901.83613.stgit@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090827170253.27901.33997.stgit@pc1117.cambridge.arm.com>
+In-Reply-To: <20090827170258.27901.83613.stgit@pc1117.cambridge.arm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,39 +35,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-> Traversing all the tasks in the system for scanning the kernel 
-> stacks requires locking which increases the kernel latency 
-> considerably. This patch informs kmemleak about newly allocated or 
-> freed stacks so that they are treated as any other allocated 
-> object. Subsequent patch will remove the explicit stack scanning 
-> from mm/kmemleak.c.
+> This block is allocated with alloc_bootmem() and scanned by kmemleak but
+> the kernel direct mapping may no longer exist. This patch tells kmemleak
+> to ignore this memory hole. The dma32_bootmem_ptr in
+> dma32_reserve_bootmem() is also ignored.
 > 
 > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
 > ---
->  arch/x86/include/asm/thread_info.h |    7 ++++++-
->  arch/x86/kernel/process.c          |    2 ++
->  kernel/fork.c                      |    7 ++++++-
->  3 files changed, 14 insertions(+), 2 deletions(-)
+>  arch/x86/kernel/aperture_64.c |    6 ++++++
+>  arch/x86/kernel/pci-dma.c     |    6 ++++++
+>  2 files changed, 12 insertions(+), 0 deletions(-)
 > 
-> diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-> index fad7d40..f26432a 100644
-> --- a/arch/x86/include/asm/thread_info.h
-> +++ b/arch/x86/include/asm/thread_info.h
-> @@ -162,7 +162,12 @@ struct thread_info {
->  #define __HAVE_ARCH_THREAD_INFO_ALLOCATOR
->  
->  #define alloc_thread_info(tsk)						\
-> -	((struct thread_info *)__get_free_pages(THREAD_FLAGS, THREAD_ORDER))
-> +({									\
-> +	struct thread_info *ti = (struct thread_info *)			\
-> +		__get_free_pages(THREAD_FLAGS, THREAD_ORDER);		\
-> +	kmemleak_alloc(ti, THREAD_SIZE, 1, THREAD_FLAGS);		\
-> +	ti;								\
-> +})
+> diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+> index 676debf..128111d 100644
+> --- a/arch/x86/kernel/aperture_64.c
+> +++ b/arch/x86/kernel/aperture_64.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/bitops.h>
+>  #include <linux/ioport.h>
+>  #include <linux/suspend.h>
+> +#include <linux/kmemleak.h>
+>  #include <asm/e820.h>
+>  #include <asm/io.h>
+>  #include <asm/iommu.h>
+> @@ -94,6 +95,11 @@ static u32 __init allocate_aperture(void)
+>  	 * code for safe
+>  	 */
+>  	p = __alloc_bootmem_nopanic(aper_size, aper_size, 512ULL<<20);
+> +	/*
+> +	 * Kmemleak should not scan this block as it may not be mapped via the
+> +	 * kernel direct mapping.
+> +	 */
+> +	kmemleak_ignore(p);
+>  	if (!p || __pa(p)+aper_size > 0xffffffff) {
+>  		printk(KERN_ERR
+>  			"Cannot allocate aperture memory hole (%p,%uK)\n",
 
-Sidenote:this used to be a trivial wrapper to gfp so it was 
-borderline OK as a CPP macro - now it's a non-trivial CPP wrapper 
-macro which is not OK. Mind converting it to an inline function?
+This sure does not look right for the rare but theoretically 
+possible !p case, does it?
+
+> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+> index 1a041bc..fa80f60 100644
+> --- a/arch/x86/kernel/pci-dma.c
+> +++ b/arch/x86/kernel/pci-dma.c
+> @@ -3,6 +3,7 @@
+>  #include <linux/dmar.h>
+>  #include <linux/bootmem.h>
+>  #include <linux/pci.h>
+> +#include <linux/kmemleak.h>
+>  
+>  #include <asm/proto.h>
+>  #include <asm/dma.h>
+> @@ -88,6 +89,11 @@ void __init dma32_reserve_bootmem(void)
+>  	size = roundup(dma32_bootmem_size, align);
+>  	dma32_bootmem_ptr = __alloc_bootmem_nopanic(size, align,
+>  				 512ULL<<20);
+> +	/*
+> +	 * Kmemleak should not scan this block as it may not be mapped via the
+> +	 * kernel direct mapping.
+> +	 */
+> +	kmemleak_ignore(dma32_bootmem_ptr);
+>  	if (dma32_bootmem_ptr)
+>  		dma32_bootmem_size = size;
+
+Same question.
 
 	Ingo
