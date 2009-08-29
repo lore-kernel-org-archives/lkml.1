@@ -1,160 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbZH2KMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZH2KSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973AbZH2KMx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 06:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZH2KMw
+	id S1751962AbZH2KSE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 06:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZH2KSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 06:12:52 -0400
-Received: from mga03.intel.com ([143.182.124.21]:37988 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751450AbZH2KMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 06:12:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="181849408"
-Date: Sat, 29 Aug 2009 18:12:47 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Fernando Silveira <fsilveira@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: I/O and pdflush
-Message-ID: <20090829101247.GA20786@localhost>
-References: <6afc6d4a0907111027w76234c8fv11ab77864515fdb0@mail.gmail.com> <20090712080410.GA8512@localhost> <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com>
+	Sat, 29 Aug 2009 06:18:03 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54246 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbZH2KSB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 06:18:01 -0400
+Date: Sat, 29 Aug 2009 11:36:57 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Bug #13646] warn_on tty_io.c, broken bluetooth
+Message-ID: <20090829093657.GC1634@ucw.cz>
+References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera> <Cg6cQYLdUxG.A.f2B.l0GlKB@chimera> <84144f020908252314l364588bfi16e2d426cece2c5a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="a8Wt8u1KmwUX3Y2C"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com>
+In-Reply-To: <84144f020908252314l364588bfi16e2d426cece2c5a@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---a8Wt8u1KmwUX3Y2C
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-
-On Sat, Aug 29, 2009 at 05:48:40AM +0800, Fernando Silveira wrote:
-> On Sun, Jul 12, 2009 at 05:04, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > On Sat, Jul 11, 2009 at 02:27:25PM -0300, Fernando Silveira wrote:
-> >> I'm having a hard time with an application that writes sequentially
-> >> 250GB of non-stop data directly to a solid state disk (OCZ SSD CORE
-> >> v2) device and I hope you can help me. The command "dd if=/dev/zero
-> >> of=/dev/sdc bs=4M" reproduces the same symptoms I'm having and writes
-> >> exactly as that application does.
+On Wed 2009-08-26 09:14:02, Pekka Enberg wrote:
+> On Wed, Aug 26, 2009 at 12:05 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.29 and 2.6.30.
 > >
-> > What's your kernel version?  Can the following patch help?
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.29 and 2.6.30. ?Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> >
+> > Bug-Entry ? ? ? : http://bugzilla.kernel.org/show_bug.cgi?id=13646
+> > Subject ? ? ? ? : warn_on tty_io.c, broken bluetooth
+> > Submitter ? ? ? : Pavel Machek <pavel@ucw.cz>
+> > Date ? ? ? ? ? ?: 2009-06-19 17:05 (68 days old)
+> > References ? ? ?: http://lkml.org/lkml/2009/6/19/187
 > 
-> Sorry for the delay, but I could not test it before.
-> 
-> Unfortunately it did not help or change any symptoms at all. The
-> kernel version I tested was a non-patched 2.6.30.1 version.
-> 
-> Do you have any other hint?
+> Pavel, is this still an open issue? Plenty tty fixes went into 2.6.31
+> so maybe we need to backport some of them to -stable?
 
-Sure. Attached is a writeback debug patch. It will generate lots of
-kernel messages. You can just stop your klogd, start your workload
-and monitor the SSD writeback throughput via tools like iostat/dstat.
-When it goes into the suboptimal 25MB/s state for several seconds, run
-        dmesg > dmesg-writeback
-and send me the log.
+It seems to be interminent, and depends on timing/usage patterns. (Try
+to start bluetooth when it is already starting). It
+is possible that it was there before. Perhaps it can be just closed as
+'bug but not regression'.
 
-And it is advised to turn on the kconfig option CONFIG_PRINTK_TIME=y.
+								Pavel
 
-Thanks,
-Fengguang
-
---a8Wt8u1KmwUX3Y2C
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="writeback-debug.patch"
-
- mm/page-writeback.c |   38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
-
---- mm.orig/mm/page-writeback.c
-+++ mm/mm/page-writeback.c
-@@ -116,6 +116,33 @@ EXPORT_SYMBOL(laptop_mode);
- 
- /* End of sysctl-exported parameters */
- 
-+#define writeback_debug_report(n, wbc) do {                               \
-+	__writeback_debug_report(n, wbc, __FILE__, __LINE__, __FUNCTION__); \
-+} while (0)
-+
-+void print_writeback_control(struct writeback_control *wbc)
-+{
-+	printk(KERN_DEBUG
-+			"global dirty %lu writeback %lu nfs %lu "
-+			"flags %c%c towrite %ld skipped %ld\n",
-+			global_page_state(NR_FILE_DIRTY),
-+			global_page_state(NR_WRITEBACK),
-+			global_page_state(NR_UNSTABLE_NFS),
-+			wbc->encountered_congestion ? 'C':'_',
-+			wbc->more_io ? 'M':'_',
-+			wbc->nr_to_write,
-+			wbc->pages_skipped);
-+}
-+
-+void __writeback_debug_report(long n, struct writeback_control *wbc,
-+		const char *file, int line, const char *func)
-+{
-+	printk(KERN_DEBUG "%s %d %s: %s(%d) %ld\n",
-+			file, line, func,
-+			current->comm, current->pid,
-+			n);
-+	print_writeback_control(wbc);
-+}
- 
- static void background_writeout(unsigned long _min_pages);
- 
-@@ -546,6 +573,7 @@ static void balance_dirty_pages(struct a
- 			pages_written += write_chunk - wbc.nr_to_write;
- 			get_dirty_limits(&background_thresh, &dirty_thresh,
- 				       &bdi_thresh, bdi);
-+			writeback_debug_report(pages_written, &wbc);
- 		}
- 
- 		/*
-@@ -572,6 +600,7 @@ static void balance_dirty_pages(struct a
- 			break;		/* We've done our duty */
- 
- 		congestion_wait(WRITE, HZ/10);
-+		writeback_debug_report(-pages_written, &wbc);
- 	}
- 
- 	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
-@@ -666,6 +695,11 @@ void throttle_vm_writeout(gfp_t gfp_mask
- 			global_page_state(NR_WRITEBACK) <= dirty_thresh)
-                         	break;
-                 congestion_wait(WRITE, HZ/10);
-+		printk(KERN_DEBUG "throttle_vm_writeout: "
-+				"congestion_wait on %lu+%lu > %lu\n",
-+				global_page_state(NR_UNSTABLE_NFS),
-+				global_page_state(NR_WRITEBACK),
-+				dirty_thresh);
- 
- 		/*
- 		 * The caller might hold locks which can prevent IO completion
-@@ -715,7 +749,9 @@ static void background_writeout(unsigned
- 			else
- 				break;
- 		}
-+		writeback_debug_report(min_pages, &wbc);
- 	}
-+	writeback_debug_report(min_pages, &wbc);
- }
- 
- /*
-@@ -788,7 +824,9 @@ static void wb_kupdate(unsigned long arg
- 				break;	/* All the old data is written */
- 		}
- 		nr_to_write -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
-+		writeback_debug_report(nr_to_write, &wbc);
- 	}
-+	writeback_debug_report(nr_to_write, &wbc);
- 	if (time_before(next_jif, jiffies + HZ))
- 		next_jif = jiffies + HZ;
- 	if (dirty_writeback_interval)
-
---a8Wt8u1KmwUX3Y2C--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
