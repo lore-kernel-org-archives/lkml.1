@@ -1,205 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbZH2N63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbZH2N6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752232AbZH2N63 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 09:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZH2N63
+	id S1752386AbZH2N6b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 09:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZH2N6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 09:58:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36498 "EHLO hera.kernel.org"
+	Sat, 29 Aug 2009 09:58:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36497 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751602AbZH2N61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751185AbZH2N61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 29 Aug 2009 09:58:27 -0400
-Date: Sat, 29 Aug 2009 13:57:52 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       paulmck@linux.vnet.ibm.com, hpa@zytor.com, mingo@redhat.com,
-       josh@joshtriplett.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, josh@joshtriplett.org, mingo@elte.hu
-In-Reply-To: <20090827220012.GA30525@linux.vnet.ibm.com>
-References: <20090827220012.GA30525@linux.vnet.ibm.com>
+Date: Sat, 29 Aug 2009 13:58:06 GMT
+From: tip-bot for Jan Beulich <JBeulich@novell.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yhlu.kernel@gmail.com, jbeulich@novell.com, JBeulich@novell.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yhlu.kernel@gmail.com, jbeulich@novell.com, JBeulich@novell.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A97F3BD02000078000121B9@vpn.id2.novell.com>
+References: <4A97F3BD02000078000121B9@vpn.id2.novell.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Changes from reviews: avoid casts, fix/add warnings, improve comments
-Message-ID: <tip-868489660dabc0c28087cca3dbc1adbbc398c6fe@git.kernel.org>
-Git-Commit-ID: 868489660dabc0c28087cca3dbc1adbbc398c6fe
+Subject: [tip:x86/pat] x86: Fix earlyprintk=dbgp for machines without NX
+Message-ID: <tip-47d25003cbd9e9030a95f7ccc4e70fec6aa7b844@git.kernel.org>
+Git-Commit-ID: 47d25003cbd9e9030a95f7ccc4e70fec6aa7b844
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 29 Aug 2009 13:57:54 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 29 Aug 2009 13:58:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  868489660dabc0c28087cca3dbc1adbbc398c6fe
-Gitweb:     http://git.kernel.org/tip/868489660dabc0c28087cca3dbc1adbbc398c6fe
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Thu, 27 Aug 2009 15:00:12 -0700
+Commit-ID:  47d25003cbd9e9030a95f7ccc4e70fec6aa7b844
+Gitweb:     http://git.kernel.org/tip/47d25003cbd9e9030a95f7ccc4e70fec6aa7b844
+Author:     Jan Beulich <JBeulich@novell.com>
+AuthorDate: Fri, 28 Aug 2009 14:11:57 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 29 Aug 2009 15:34:40 +0200
+CommitDate: Sat, 29 Aug 2009 15:47:32 +0200
 
-rcu: Changes from reviews: avoid casts, fix/add warnings, improve comments
+x86: Fix earlyprintk=dbgp for machines without NX
 
-Changes suggested by review comments from Josh Triplett and
-Mathieu Desnoyers.
+Since parse_early_param() may (e.g. for earlyprintk=dbgp)
+involve calls to page table manipulation functions (here
+set_fixmap_nocache()), NX hardware support must be determined
+before calling that function (so that __supported_pte_mask gets
+properly set up).
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Acked-by: Josh Triplett <josh@joshtriplett.org>
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: akpm@linux-foundation.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-LKML-Reference: <20090827220012.GA30525@linux.vnet.ibm.com>
+But the call after parse_early_param() can also not go away, as
+that will honor eventual command line specified disabling of
+the NX functionality.
+
+( This will then just result in whatever mappings got
+  established during parse_early_param() having the NX bit set
+  despite it being disabled on the command line, but I think
+  that's tolerable).
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+LKML-Reference: <4A97F3BD02000078000121B9@vpn.id2.novell.com>
+[ merged to x86/pat to resolve a conflict. ]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/sched.h   |    4 +++-
- kernel/rcutree.c        |   13 ++++++-------
- kernel/rcutree.h        |    2 ++
- kernel/rcutree_plugin.h |   10 ++++++----
- 4 files changed, 17 insertions(+), 12 deletions(-)
+ arch/x86/kernel/setup.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 3fe0315..855fd0d 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1163,6 +1163,8 @@ struct sched_rt_entity {
- #endif
- };
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 02643cc..eb1f1e6 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -714,6 +714,16 @@ void __init setup_arch(char **cmdline_p)
+ 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
+ 	*cmdline_p = command_line;
  
-+struct rcu_node;
++#ifdef CONFIG_X86_64
++	/*
++	 * Must call this twice: Once just to detect whether hardware doesn't
++	 * support NX (so that the early EHCI debug console setup can safely
++	 * call set_fixmap(), and then again after parsing early parameters to
++	 * honor the respective command line option.
++	 */
++	check_efer();
++#endif
 +
- struct task_struct {
- 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
- 	void *stack;
-@@ -1208,7 +1210,7 @@ struct task_struct {
- #ifdef CONFIG_TREE_PREEMPT_RCU
- 	int rcu_read_lock_nesting;
- 	char rcu_read_unlock_special;
--	void *rcu_blocked_node;
-+	struct rcu_node *rcu_blocked_node;
- 	struct list_head rcu_node_entry;
- #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
+ 	parse_early_param();
  
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index d903e2f..71bc797 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -229,7 +229,6 @@ static int rcu_implicit_offline_qs(struct rcu_data *rdp)
- #endif /* #ifdef CONFIG_SMP */
- 
- #ifdef CONFIG_NO_HZ
--static DEFINE_RATELIMIT_STATE(rcu_rs, 10 * HZ, 5);
- 
- /**
-  * rcu_enter_nohz - inform RCU that current CPU is entering nohz
-@@ -249,7 +248,7 @@ void rcu_enter_nohz(void)
- 	rdtp = &__get_cpu_var(rcu_dynticks);
- 	rdtp->dynticks++;
- 	rdtp->dynticks_nesting--;
--	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
-+	WARN_ON_ONCE(rdtp->dynticks & 0x1);
- 	local_irq_restore(flags);
- }
- 
-@@ -268,7 +267,7 @@ void rcu_exit_nohz(void)
- 	rdtp = &__get_cpu_var(rcu_dynticks);
- 	rdtp->dynticks++;
- 	rdtp->dynticks_nesting++;
--	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
-+	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
- 	local_irq_restore(flags);
- 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
- }
-@@ -287,7 +286,7 @@ void rcu_nmi_enter(void)
- 	if (rdtp->dynticks & 0x1)
- 		return;
- 	rdtp->dynticks_nmi++;
--	WARN_ON_RATELIMIT(!(rdtp->dynticks_nmi & 0x1), &rcu_rs);
-+	WARN_ON_ONCE(!(rdtp->dynticks_nmi & 0x1));
- 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
- }
- 
-@@ -306,7 +305,7 @@ void rcu_nmi_exit(void)
- 		return;
- 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
- 	rdtp->dynticks_nmi++;
--	WARN_ON_RATELIMIT(rdtp->dynticks_nmi & 0x1, &rcu_rs);
-+	WARN_ON_ONCE(rdtp->dynticks_nmi & 0x1);
- }
- 
- /**
-@@ -322,7 +321,7 @@ void rcu_irq_enter(void)
- 	if (rdtp->dynticks_nesting++)
- 		return;
- 	rdtp->dynticks++;
--	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
-+	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
- 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
- }
- 
-@@ -341,7 +340,7 @@ void rcu_irq_exit(void)
- 		return;
- 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
- 	rdtp->dynticks++;
--	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
-+	WARN_ON_ONCE(rdtp->dynticks & 0x1);
- 
- 	/* If the interrupt queued a callback, get out of dyntick mode. */
- 	if (__get_cpu_var(rcu_sched_data).nxtlist ||
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-index ca56036..bf8a6f9 100644
---- a/kernel/rcutree.h
-+++ b/kernel/rcutree.h
-@@ -81,6 +81,8 @@ struct rcu_dynticks {
- struct rcu_node {
- 	spinlock_t lock;
- 	long	gpnum;		/* Current grace period for this node. */
-+				/*  This will either be equal to or one */
-+				/*  behind the root rcu_node's gpnum. */
- 	unsigned long qsmask;	/* CPUs or groups that need to switch in */
- 				/*  order for current grace period to proceed.*/
- 	unsigned long qsmaskinit;
-diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index 04343be..4778936 100644
---- a/kernel/rcutree_plugin.h
-+++ b/kernel/rcutree_plugin.h
-@@ -92,7 +92,7 @@ static void rcu_preempt_qs(int cpu)
- 		rnp = rdp->mynode;
- 		spin_lock(&rnp->lock);
- 		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
--		t->rcu_blocked_node = (void *)rnp;
-+		t->rcu_blocked_node = rnp;
- 
- 		/*
- 		 * If this CPU has already checked in, then this task
-@@ -176,9 +176,9 @@ static void rcu_read_unlock_special(struct task_struct *t)
- 		 * most one time.  So at most two passes through loop.
- 		 */
- 		for (;;) {
--			rnp = (struct rcu_node *)t->rcu_blocked_node;
-+			rnp = t->rcu_blocked_node;
- 			spin_lock(&rnp->lock);
--			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
-+			if (rnp == t->rcu_blocked_node)
- 				break;
- 			spin_unlock(&rnp->lock);
- 		}
-@@ -288,8 +288,10 @@ static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
- 	struct rcu_node *rnp_root = rcu_get_root(rsp);
- 	struct task_struct *tp;
- 
--	if (rnp == rnp_root)
-+	if (rnp == rnp_root) {
-+		WARN_ONCE(1, "Last CPU thought to be offlined?");
- 		return;  /* Shouldn't happen: at least one CPU online. */
-+	}
- 
- 	/*
- 	 * Move tasks up to root rcu_node.  Rely on the fact that the
+ 	/* VMI may relocate the fixmap; do this before touching ioremap area */
