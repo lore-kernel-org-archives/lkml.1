@@ -1,163 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbZH2Sus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbZH2TAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752444AbZH2Sus (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 14:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZH2Sur
+	id S1752489AbZH2TAw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 15:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZH2TAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 14:50:47 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:47530 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752348AbZH2Suq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 14:50:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=RWwwLNRH9WpmO+spYX3Knb5qBD3RIm7FK+XlK/+q6Hw598tHut0hpcmtJbIKv7jvUy
-         KFywKDu+pNiOkT+OOWVg/5B0DggWYE/8B7Ad7af784uE45NIbdpkGoDkOLEQZ38iJE3K
-         ro3ZE6A+nH9JgWz43M+5fdt6XyVxY6eru5e2A=
-Subject: Re: ACPI locks hardware devices when it doesn't detect vista
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-pm <linux-pm@lists.linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Mairo <rety@poczta.onet.pl>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       lenb <lenb@kernel.org>
-In-Reply-To: <1251506453.28828.0.camel@maxim-laptop>
-References: <1250945310.14167.150.camel@maxim-laptop>
-	 <1251503638.17451.14.camel@maxim-laptop>
-	 <1251506453.28828.0.camel@maxim-laptop>
-Content-Type: text/plain
-Date: Sat, 29 Aug 2009 21:50:41 +0300
-Message-Id: <1251571841.10321.1.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sat, 29 Aug 2009 15:00:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47161 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752421AbZH2TAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 15:00:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
+Date: Sat, 29 Aug 2009 21:01:38 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <19096.15539.205951.931871@pilspetsen.it.uu.se> <19097.14413.89047.384281@pilspetsen.it.uu.se>
+In-Reply-To: <19097.14413.89047.384281@pilspetsen.it.uu.se>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908292101.38800.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What do you think to do in this case:
-
-On Sat, 2009-08-29 at 03:40 +0300, Maxim Levitsky wrote:
-> Oh, and cc linux-acpi....
+On Saturday 29 August 2009, Mikael Pettersson wrote:
+> Mikael Pettersson writes:
+>  > Rafael J. Wysocki writes:
+>  >  > On Thursday 27 August 2009, Mikael Pettersson wrote:
+>  >  > > On Tue, 25 Aug 2009 22:34:53 +0200 (CEST), Rafael J. Wysocki wrote:
+>  >  > > > The following bug entry is on the current list of known regressions
+>  >  > > > from 2.6.30.  Please verify if it still should be listed and let me know
+>  >  > > > (either way).
+>  >  > > > 
+>  >  > > > 
+>  >  > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14015
+>  >  > > > Subject		: pty regressed again, breaking expect and gcc's testsuite
+>  >  > > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+>  >  > > > Date		: 2009-08-14 23:41 (12 days old)
+>  >  > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125029329805643&w=3D4
+>  >  > > 
+>  >  > > Not fixed. With 2.6.31-rc7 I'm still seeing repeatable testsuite
+>  >  > > failures on powerpc64. Reverting to 2.6.30 makes the failures go away.
+>  >  > 
+>  >  > Thanks for the update.
+>  >  > 
+>  >  > I guess 2.6.31-rc8 doesn't make any difference, does it?
+>  > 
+>  > I've scheduled a number of gcc bootstraps and testsuite runs
+>  > with -rc8 on x86, powerpc64, and arm. I'll post an update in
+>  > a day or so.
 > 
-> On Sat, 2009-08-29 at 02:53 +0300, Maxim Levitsky wrote:
-> > On Sat, 2009-08-22 at 15:48 +0300, Maxim Levitsky wrote:
-> > > Hi,
-> > > 
-> > > <joke>
-> > > This should be brought to a Microsoft antitrust case...
-> > > </joke>
-> > > 
-> > > 
-> > > Today many notebooks ship with a embedded infrared receiver.
-> > > In Vista there is new subsystem that decodes these signals.
-> > > (of course it works only with Microsoft Certificated Remotes (TM)...)
-> > > 
-> > > The receiver is usually presented to system as a pnp device 
-> > > (using acpi tables)
-> > > 
-> > > It turns out that some bioses actually use the OSI, ACPI feature of the
-> > > operation system to detect if running inside Vista. If not they disable
-> > > the infrared receiver.
-> > > 
-> > >             Device (MIR)
-> > >             {
-> > >                 Name (_HID, EisaId ("ENE0100"))
-> > >                 Method (_STA, 0, NotSerialized)
-> > >                 {
-> > >                     If (LAnd (MCIR, LEqual (OSYS, 0x07D6)))
-> > >                     {
-> > >                         Return (0x0F)
-> > >                     }
-> > >                     Else
-> > >                     {
-> > >                         Store (Zero, ^^LPCB.IOR2)
-> > >                         Return (Zero)
-> > >                     }
-> > >                 }
-> > > 
-> > > 	.......
-> > > 
-> > 
-> > >     Scope (_SB)
-> > >     {
-> > >         Method (_INI, 0, NotSerialized)
-> > >         {
-> > 		....
-> > 
-> > >             If (CondRefOf (_OSI, Local0))
-> > >             {
-> > >                 If (_OSI ("Linux"))
-> > >                 {
-> > >                     Store (One, LINX)
-> > >                     Store (Zero, ECDY)
-> > >                 }
-> > 
-> >                   ..........
-> > > 
-> > 
-> > >                 If (_OSI ("Windows 2006"))
-> > >                 {
-> > >                     Store (0x07D6, OSYS)
-> > >                 }
-> >                   .......
-> > 
-> > 
-> > I have finally managed to find root case of this problem.
-> > 
-> > Indeed the _STA method of infrared receiver is called before the _INI of
-> > _SB.
-> > 
-> > The problem lies in acpi_bus_init()
-> > 	/*
-> > 	 * ACPI 2.0 requires the EC driver to be loaded and work before
-> > 	 * the EC device is found in the namespace (i.e. before acpi_initialize_objects()
-> > 	 * is called).
-> > 	 *
-> > 	 * This is accomplished by looking for the ECDT table, and getting
-> > 	 * the EC parameters out of that.
-> > 	 */
-> > 
-> > 	status = acpi_ec_ecdt_probe();
-> > 	/* Ignore result. Not having an ECDT is not fatal. */
-> > 
-> > 	status = acpi_initialize_objects(ACPI_FULL_INITIALIZATION);
-> > 	if (ACPI_FAILURE(status)) {
-> > 		printk(KERN_ERR PREFIX "Unable to initialize ACPI objects\n");
-> > 		goto error1;
-> > 	}
-> >         .......
-> > 
-> > 
-> > on Mairo's system (just as well as on mine) there is no ECDT.
-> > Thus, acpi_ec_ecdt_probe() triggers a acpi namespace walk, 
-> > which in turn triggers invocation on _STA (which is supposed to be
-> > harmless, but the <beep>, the bios developers produce doesn't seem to
-> > meet this criteria....).
-> > 
-> > And this is done before running _INI methods, which are run just later,
-> > in acpi_initialize_objects.
-> > 
-> > I suspect that many systems use _SB._INI to test the OS version, thus
-> > this behavior needs to be revised.
-> > 
-> > The fact that this (as usual) works in windows suggest that it might  be
-> > good to look up the ECDT table before acpi_initialize_objects, but if
-> > not found, look up the EC later.
-> > 
-> > On my system, although I have tried to reproduce this bug, I couldn't,
-> > and I know now why: It just so happens that on my system CIR device is
-> > listed in acpi tables after the EC, but on Mairo's system EC is just
-> > first device.
-> > 
-> > Maybe we can add a 'walk only' function, that walks the namespace, but
-> > doesn't touch the _STA, and use it to find the EC there?
-> > 
-> > Looking for comments,
-> > 	Best regards,
-> > 		Maxim Levitsky
-> > 
-> 
+> 2.6.31-rc8 results in bogus testsuite failures on all three platforms.
 
+That may be a result of the known inotify borkage in -rc8 that has been fixed
+in the current Linus' tree.
+
+Thanks,
+Rafael
