@@ -1,78 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752092AbZH2Q2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751830AbZH2QgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752092AbZH2Q2x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 12:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbZH2Q2w
+	id S1751830AbZH2QgV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 12:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZH2QgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 12:28:52 -0400
-Received: from mail.lang.hm ([64.81.33.126]:33329 "EHLO bifrost.lang.hm"
+	Sat, 29 Aug 2009 12:36:20 -0400
+Received: from mail.lang.hm ([64.81.33.126]:47006 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752002AbZH2Q2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 12:28:51 -0400
-Date: Sat, 29 Aug 2009 09:27:32 -0700 (PDT)
+	id S1751387AbZH2QgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 12:36:19 -0400
+Date: Sat, 29 Aug 2009 09:35:51 -0700 (PDT)
 From: david@lang.hm
 X-X-Sender: dlang@asgard.lang.hm
 To: Pavel Machek <pavel@ucw.cz>
-cc: David Woodhouse <dwmw2@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
+cc: Ric Wheeler <rwheeler@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
        Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
        kernel list <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
        rdunlap@xenotime.net, linux-doc@vger.kernel.org,
        linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
- possible
-In-Reply-To: <20090829100909.GI1634@ucw.cz>
-Message-ID: <alpine.DEB.2.00.0908290923130.6822@asgard.lang.hm>
-References: <20090824195159.GD29763@elf.ucw.cz> <4A92F6FC.4060907@redhat.com> <20090824205209.GE29763@elf.ucw.cz> <4A930160.8060508@redhat.com> <20090824212518.GF29763@elf.ucw.cz> <20090824223915.GI17684@mit.edu> <20090824230036.GK29763@elf.ucw.cz>
- <20090825000842.GM17684@mit.edu> <1251362787.4354.373.camel@macbook.infradead.org> <alpine.DEB.2.00.0908280738140.6822@asgard.lang.hm> <20090829100909.GI1634@ucw.cz>
+Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+In-Reply-To: <20090829094919.GF1634@ucw.cz>
+Message-ID: <alpine.DEB.2.00.0908290931260.6822@asgard.lang.hm>
+References: <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu> <4A948C94.7040103@redhat.com> <20090826025849.GF32712@mit.edu> <4A9510D2.1090704@redhat.com>
+ <20090826111208.GA26595@elf.ucw.cz> <alpine.DEB.2.00.0908260416270.30426@asgard.lang.hm> <20090829094919.GF1634@ucw.cz>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: MULTIPART/Mixed; BOUNDARY=qMm9M+Fa2AknHoGS
+Content-ID: <alpine.DEB.2.00.0908290931261.6822@asgard.lang.hm>
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--qMm9M+Fa2AknHoGS
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; format=flowed
+Content-ID: <alpine.DEB.2.00.0908290931262.6822@asgard.lang.hm>
+Content-Disposition: INLINE
+
 On Sat, 29 Aug 2009, Pavel Machek wrote:
 
-> On Fri 2009-08-28 07:46:42, david@lang.hm wrote:
->>
->>
->> so what sort of test would be needed to identify if a device has this
->> problem?
->>
->> people can do ad-hoc tests by pulling the devices in use and then
->> checking the entire device, but something better should be available.
->>
->> it seems to me that there are two things needed to define the tests.
->>
->> 1. a predictable write load so that it's easy to detect data getting lose
->>
->> 2. some statistical analysis to decide how many device pulls are needed
->> (under the write load defined in #1) to make the odds high that the
->> problem will be revealed.
+>> for flash drives the danger is very straightforward (although even then
+>> you have to note that it depends heavily on the firmware of the device,
+>> some will loose lots of data, some won't loose any)
 >
-> Its simpler than that. It usually breaks after third unplug or so.
+> I have not seen one that works :-(.
+
+so let's get broader testing (including testing the SSDs as well as the 
+thumb drives)
+
+>> you are generalizing that since you have lost data on flash drives, all
+>> flash drives are dangerous.
 >
->> for USB devices there may be a way to use the power management functions
->> to cut power to the device without requiring it to physically be pulled,
->> if this is the case (even if this only works on some specific chipsets),
->> it would drasticly speed up the testing
->
-> This is really so easy to reproduce, that such speedup is not
-> neccessary. Just try the scripts :-).
+> Do the flash manufacturers claim they do not cause collateral damage
+> during powerfail? If not, they probably are dangerous.
 
-so if it doesn't get corrupted after 5 unplugs does that mean that that 
-particular device doesn't have a problem? or does it just mean you got 
-lucky?
+I think that every single one of them will tell you to not unplug the 
+drive while writing to it. in fact, I'll bet they all tell you to not 
+unplug the drive without unmounting ('ejecting') it at the OS level.
 
-would 10 sucessful unplugs mean that it's safe?
+> Anyway, you wanted a test, and one is attached. It normally takes like
+> 4 unplugs to uncover problems.
 
-what about 20?
+Ok, help me understand this.
 
-we need to get this beyond anecdotal evidence mode, to something that 
-(even if not perfect, as you can get 100 'heads' in a row with an honest 
-coin) gives you pretty good assurances that a particular device is either 
-good or bad.
+I copy these two files to a system, change them to point at the correct 
+device, run them and unplug the drive while it's running.
+
+when I plug the device back in, how do I tell if it lost something 
+unexpected? since you are writing from urandom I have no idea what data 
+_should_ be on the drive, so how can I detect that a data block has been 
+corrupted?
 
 David Lang
+--qMm9M+Fa2AknHoGS
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-ID: <alpine.DEB.2.00.0908290931263.6822@asgard.lang.hm>
+Content-Description: 
+Content-Disposition: ATTACHMENT; FILENAME=fstest
+
+#!/bin/bash
+#
+# Copyright 2008 Pavel Machek <pavel@suse.cz>, GPLv2
+#
+# vfat is broken with filesize=0
+#
+#
+
+if [ .$MOUNTOPTS = . ]; then
+# ext3 is needed, or you need to disable caches using hdparm.
+# odirsync is needed, else modify fstest.worker to fsync the directory.
+    MOUNTOPTS="-o dirsync"
+fi
+if [ .$BDEV = . ]; then
+#    BDEV=/dev/sdb3
+    BDEV=/dev/nd0
+fi
+
+export FILESIZE=4000
+export NUMFILES=4000
+
+waitforcard() {
+    umount /mnt
+    echo Waiting for card:
+    while ! mount $BDEV $MOUNTOPTS /mnt 2> /dev/null; do
+	echo -n .
+	sleep 1
+    done
+#   hdparm -W0 $BDEV
+    echo
+}
+
+mkdir delme.fstest
+cd delme.fstest
+
+waitforcard
+rm tmp.* final.* /mnt/tmp.* /mnt/final.*
+
+while true; do
+    ../fstest.work
+    echo
+    waitforcard
+    echo Testing: fsck....
+    umount /mnt
+    fsck -fy $BDEV
+    echo Testing....
+    waitforcard
+    for A in final.*; do
+	echo -n $A " "
+	cmp $A /mnt/$A || exit
+    done
+    echo
+done
+
+--qMm9M+Fa2AknHoGS
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-ID: <alpine.DEB.2.00.0908290931264.6822@asgard.lang.hm>
+Content-Description: 
+Content-Disposition: ATTACHMENT; FILENAME=fstest.work
+
+#!/bin/bash
+#
+# Copyright 2008 Pavel Machek <pavel@suse.cz>, GPLv2
+#
+
+echo "Writing test files: "
+for A in `seq $NUMFILES`; do
+    echo -n $A " "
+    rm final.$A
+    cat /dev/urandom | head -c $FILESIZE > tmp.$A
+    dd conv=fsync if=tmp.$A of=/mnt/final.$A 2> /dev/zero || exit
+#    cat /mnt/final.$A > /dev/null || exit
+# sync should not be needed, as dd asks for fsync
+#    sync
+    mv tmp.$A final.$A
+done
+
+--qMm9M+Fa2AknHoGS--
