@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbZH2Xaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZH2XdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752766AbZH2Xaj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 19:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZH2Xaj
+	id S1752845AbZH2XdJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 19:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZH2XdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 19:30:39 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:44816 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231AbZH2Xai (ORCPT
+	Sat, 29 Aug 2009 19:33:09 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:52664 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbZH2XdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 19:30:38 -0400
+	Sat, 29 Aug 2009 19:33:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=GzF9xPfxHBk9nN/OTuy1eCYg4rBxcW+d3g8TXc0EDKQmZy6yvZH1Lxlh/n7fwP34S7
-         VvQnsTzznYX0qnvI1EhElBmE5qTm41KlKVPQkK8c5YXOmRQcHbwgcIVAbdZPy1Twe25g
-         AMr0kDeAQuEmNQRBzpd96Ci5jaDmpJVPfjOBQ=
-Subject: Re: Is acpi_ec_ecdt_probe() broken? (was: Re: ACPI locks hardware
- devices when it doesn't detect vista)
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mario <rety@poczta.onet.pl>, Len Brown <lenb@kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-In-Reply-To: <200908300037.45412.rjw@sisk.pl>
-References: <1250945310.14167.150.camel@maxim-laptop>
-	 <1251575484.10321.11.camel@maxim-laptop>
-	 <200908292305.55050.rety@poczta.onet.pl>  <200908300037.45412.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sun, 30 Aug 2009 02:30:34 +0300
-Message-Id: <1251588634.15582.0.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TDfzf+qHhfVYJfWV43kIsUP+Vz2tBQWKwF2WYkLtz4JhzpcepODyIRMGjv4OQ+JgcD
+         TnKSHJE/22LarQhOJpvNT9LHxc/Ijqonh4nx/jBjFd+JyTgAE3E4EA8sqD2Jvm2lADU9
+         VoZ/NriYwym1dBpMUMtumXa2DlQG7LkBmbbuQ=
+Date: Sun, 30 Aug 2009 01:33:06 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jason Baron <jbaron@redhat.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
+Subject: Re: [GIT PULL] tracing/syscalls: The next bunch
+Message-ID: <20090829233304.GA6101@nowhere>
+References: <1251395015-6329-1-git-send-email-fweisbec@gmail.com> <20090829104334.GA17156@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090829104334.GA17156@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-08-30 at 00:37 +0200, Rafael J. Wysocki wrote:
-> On Saturday 29 August 2009, Mario wrote:
-> > Exact model is Compal JFL92.
-> > I've attached a dmidecode output.
+On Sat, Aug 29, 2009 at 12:43:34PM +0200, Ingo Molnar wrote:
 > 
-> OK
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
-> Maxim, Mario, can you create a bug entry in the kernel Bugzilla for this
-> issue and put my address into the CC list in there?
+> > Ingo,
+> > 
+> > Here is another bunch of syscalls tracing patches.
+> 
+> i have tested them, and something in this batch, when merged into 
+> tip/master:
+> 
+> 0dd7b74: tracing: Fix double CPP substitution in TRACE_EVENT_FN
+> 66c6e29: Merge branch 'tracing/core' of git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing into tracing/core
+> 117226d: tracing: Remove FTRACE_SYSCALL_MAX definitions
+> 57421db: tracing: Convert event tracing code to use NR_syscalls
+> a5a2f8e: tracing: Define NR_syscalls for x86_64
+> dd86dda: tracing: Define NR_syscalls for x86 (32)
+> cc3b13c: tracing: Don't trace kernel thread syscalls
+> cd0980f: tracing: Check invalid syscall nr while tracing syscalls
+> 7515bf5: tracing: Add syscall tracepoints - s390 arch update
 
-Done,
 
-http://bugzilla.kernel.org/show_bug.cgi?id=14086
-
-
-Best regards,
-	Maxim Levitsky
+Argh, I've just tested a merge of tip:tracing/core into tip:master
+and I can't reproduce the hang, neither in x86-64 SMP nor in a
+pentium III :-(
 
