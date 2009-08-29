@@ -1,240 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbZH2TWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbZH2Tjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752512AbZH2TWE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 15:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbZH2TWD
+	id S1752535AbZH2Tjx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 15:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZH2Tjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 15:22:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47234 "EHLO ogre.sisk.pl"
+	Sat, 29 Aug 2009 15:39:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47284 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752421AbZH2TWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 15:22:01 -0400
+	id S1752020AbZH2Tjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 15:39:51 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "linux-pm" <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 9]  PM: Measure device suspend and resume times (was: Re: [PATCH 0/6] PM: Asynchronous suspend and resume of devices)
-Date: Sat, 29 Aug 2009 21:22:59 +0200
+To: Maxim Levitsky <maximlevitsky@gmail.com>, Len Brown <lenb@kernel.org>
+Subject: Is acpi_ec_ecdt_probe() broken? (was: Re: ACPI locks hardware devices when it doesn't detect vista)
+Date: Sat, 29 Aug 2009 21:40:06 +0200
 User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Alan Stern <stern@rowland.harvard.edu>,
+Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Mairo <rety@poczta.onet.pl>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <200908262217.19609.rjw@sisk.pl>
-In-Reply-To: <200908262217.19609.rjw@sisk.pl>
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <1250945310.14167.150.camel@maxim-laptop> <1251503638.17451.14.camel@maxim-laptop>
+In-Reply-To: <1251503638.17451.14.camel@maxim-laptop>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908292122.59398.rjw@sisk.pl>
+Message-Id: <200908292140.06935.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 26 August 2009, Rafael J. Wysocki wrote:
-> Hi,
+On Saturday 29 August 2009, Maxim Levitsky wrote:
+> On Sat, 2009-08-22 at 15:48 +0300, Maxim Levitsky wrote:
+> > Hi,
+> > 
+> > <joke>
+> > This should be brought to a Microsoft antitrust case...
+> > </joke>
+> > 
+> > 
+> > Today many notebooks ship with a embedded infrared receiver.
+> > In Vista there is new subsystem that decodes these signals.
+> > (of course it works only with Microsoft Certificated Remotes (TM)...)
+> > 
+> > The receiver is usually presented to system as a pnp device 
+> > (using acpi tables)
+> > 
+> > It turns out that some bioses actually use the OSI, ACPI feature of the
+> > operation system to detect if running inside Vista. If not they disable
+> > the infrared receiver.
+> > 
+> >             Device (MIR)
+> >             {
+> >                 Name (_HID, EisaId ("ENE0100"))
+> >                 Method (_STA, 0, NotSerialized)
+> >                 {
+> >                     If (LAnd (MCIR, LEqual (OSYS, 0x07D6)))
+> >                     {
+> >                         Return (0x0F)
+> >                     }
+> >                     Else
+> >                     {
+> >                         Store (Zero, ^^LPCB.IOR2)
+> >                         Return (Zero)
+> >                     }
+> >                 }
+> > 
+> > 	.......
+> > 
 > 
-> The following patches introduce a mechanism allowing us to execute device
-> drivers' suspend and resume callbacks asynchronously during system sleep
-> transitions, such as suspend to RAM.
+> >     Scope (_SB)
+> >     {
+> >         Method (_INI, 0, NotSerialized)
+> >         {
+> 		....
 > 
-> The idea is explained in the changelogs of the first two patches.
+> >             If (CondRefOf (_OSI, Local0))
+> >             {
+> >                 If (_OSI ("Linux"))
+> >                 {
+> >                     Store (One, LINX)
+> >                     Store (Zero, ECDY)
+> >                 }
 > 
-> Comments welcome.
+>                   ..........
+> > 
+> 
+> >                 If (_OSI ("Windows 2006"))
+> >                 {
+> >                     Store (0x07D6, OSYS)
+> >                 }
+>                   .......
+> 
+> 
+> I have finally managed to find root case of this problem.
+> 
+> Indeed the _STA method of infrared receiver is called before the _INI of
+> _SB.
 
-I have one more patch that adds time measurements to the code in
-drivers/base/power/main.c, so that one can easily see how much these operations
-take.
+This is a bug IMO.  Len, what do you think?
+
+> The problem lies in acpi_bus_init()
+> 	/*
+> 	 * ACPI 2.0 requires the EC driver to be loaded and work before
+> 	 * the EC device is found in the namespace (i.e. before acpi_initialize_objects()
+> 	 * is called).
+> 	 *
+> 	 * This is accomplished by looking for the ECDT table, and getting
+> 	 * the EC parameters out of that.
+> 	 */
+> 
+> 	status = acpi_ec_ecdt_probe();
+> 	/* Ignore result. Not having an ECDT is not fatal. */
+> 
+> 	status = acpi_initialize_objects(ACPI_FULL_INITIALIZATION);
+> 	if (ACPI_FAILURE(status)) {
+> 		printk(KERN_ERR PREFIX "Unable to initialize ACPI objects\n");
+> 		goto error1;
+> 	}
+>         .......
+> 
+> 
+> on Mairo's system (just as well as on mine) there is no ECDT.
+> Thus, acpi_ec_ecdt_probe() triggers a acpi namespace walk, 
+> which in turn triggers invocation on _STA (which is supposed to be
+> harmless, but the <beep>, the bios developers produce doesn't seem to
+> meet this criteria....).
+> 
+> And this is done before running _INI methods, which are run just later,
+> in acpi_initialize_objects.
+> 
+> I suspect that many systems use _SB._INI to test the OS version, thus
+> this behavior needs to be revised.
+> 
+> The fact that this (as usual) works in windows suggest that it might  be
+> good to look up the ECDT table before acpi_initialize_objects, but if
+> not found, look up the EC later.
+> 
+> On my system, although I have tried to reproduce this bug, I couldn't,
+> and I know now why: It just so happens that on my system CIR device is
+> listed in acpi tables after the EC, but on Mairo's system EC is just
+> first device.
+> 
+> Maybe we can add a 'walk only' function, that walks the namespace, but
+> doesn't touch the _STA, and use it to find the EC there?
+
+To my eyes, this problem is a result of a workaround in acpi_ec_ecdt_probe(),
+that according to the comment in there "is needed only on some broken machines
+which require early EC, but fail to provide ECDT".
+
+You probably wrote that in one of the previous messages, but is your machine an
+ASUS one by chance?
+
+Len, really, the things done by acpi_ec_ecdt_probe() in case ECDT is not found
+don't look good to me at all.
+
+Why do we run the workaround for everyone, not just for _the_ broken systems?
+
+Moreover, why is "ASUS" hardcoded into the function as a known bad vendor
+rather than put into a table?
 
 Thanks,
 Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM: Measure device suspend and resume times
-
-Measure and print the time of suspending and resuming all devices.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/main.c |   56 +++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/pm.h        |    3 ++
- kernel/power/swsusp.c     |    6 ----
- 3 files changed, 59 insertions(+), 6 deletions(-)
-
-Index: linux-2.6/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.orig/kernel/power/swsusp.c
-+++ linux-2.6/kernel/power/swsusp.c
-@@ -169,14 +169,10 @@ int swsusp_swap_in_use(void)
- void swsusp_show_speed(struct timeval *start, struct timeval *stop,
- 			unsigned nr_pages, char *msg)
- {
--	s64 elapsed_centisecs64;
--	int centisecs;
-+	int centisecs = pm_time_elapsed(start, stop);
- 	int k;
- 	int kps;
- 
--	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
--	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
--	centisecs = elapsed_centisecs64;
- 	if (centisecs == 0)
- 		centisecs = 1;	/* avoid div-by-zero */
- 	k = nr_pages * (PAGE_SIZE / 1024);
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -28,6 +28,7 @@
- #include <linux/interrupt.h>
- #include <linux/async.h>
- #include <linux/completion.h>
-+#include <linux/time.h>
- 
- #include "../base.h"
- #include "power.h"
-@@ -434,6 +435,20 @@ static bool pm_op_started(struct device 
- 	return ret;
- }
- 
-+/**
-+ * pm_time_elapsed - Compute time elapsed between two timestamps.
-+ * @start: First timestamp.
-+ * @stop: Second timestamp.
-+ */
-+int pm_time_elapsed(struct timeval *start, struct timeval *stop)
-+{
-+	s64 elapsed_centisecs64;
-+
-+	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
-+	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
-+	return elapsed_centisecs64;
-+}
-+
- static char *pm_verb(int event)
- {
- 	switch (event) {
-@@ -458,6 +473,16 @@ static char *pm_verb(int event)
- 	}
- }
- 
-+static void dpm_show_time(struct timeval *start, struct timeval *stop,
-+			  pm_message_t state, const char *info)
-+{
-+	int centisecs = pm_time_elapsed(start, stop);
-+
-+	printk(KERN_INFO "PM: %s%s%s of devices complete in %d.%02d seconds\n",
-+		info ? info : "", info ? " " : "", pm_verb(state.event),
-+		centisecs / 100, centisecs % 100);
-+}
-+
- static void pm_dev_dbg(struct device *dev, pm_message_t state, char *info)
- {
- 	dev_dbg(dev, "%s%s%s\n", info, pm_verb(state.event),
-@@ -580,6 +605,9 @@ static int device_resume_noirq(struct de
- void dpm_resume_noirq(pm_message_t state)
- {
- 	struct device *dev;
-+	struct timeval start, stop;
-+
-+	do_gettimeofday(&start);
- 
- 	mutex_lock(&dpm_list_mtx);
- 	transition_started = false;
-@@ -595,6 +623,10 @@ void dpm_resume_noirq(pm_message_t state
- 		}
- 	dpm_synchronize_noirq();
- 	mutex_unlock(&dpm_list_mtx);
-+
-+	do_gettimeofday(&stop);
-+	dpm_show_time(&start, &stop, state, "EARLY");
-+
- 	resume_device_irqs();
- }
- EXPORT_SYMBOL_GPL(dpm_resume_noirq);
-@@ -740,6 +772,9 @@ static int device_resume(struct device *
- static void dpm_resume(pm_message_t state)
- {
- 	struct list_head list;
-+	struct timeval start, stop;
-+
-+	do_gettimeofday(&start);
- 
- 	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
-@@ -770,6 +805,9 @@ static void dpm_resume(pm_message_t stat
- 	list_splice(&list, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
- 	dpm_synchronize();
-+
-+	do_gettimeofday(&stop);
-+	dpm_show_time(&start, &stop, state, NULL);
- }
- 
- /**
-@@ -985,8 +1023,11 @@ static int device_suspend_noirq(struct d
- int dpm_suspend_noirq(pm_message_t state)
- {
- 	struct device *dev;
-+	struct timeval start, stop;
- 	int error = 0;
- 
-+	do_gettimeofday(&start);
-+
- 	suspend_device_irqs();
- 	mutex_lock(&dpm_list_mtx);
- 	pm_transition = state;
-@@ -1004,8 +1045,12 @@ int dpm_suspend_noirq(pm_message_t state
- 	}
- 	dpm_synchronize_noirq();
- 	mutex_unlock(&dpm_list_mtx);
--	if (error)
-+	if (error) {
- 		dpm_resume_noirq(resume_event(state));
-+	} else {
-+		do_gettimeofday(&stop);
-+		dpm_show_time(&start, &stop, state, "LATE");
-+	}
- 	return error;
- }
- EXPORT_SYMBOL_GPL(dpm_suspend_noirq);
-@@ -1157,8 +1202,11 @@ static int device_suspend(struct device 
- static int dpm_suspend(pm_message_t state)
- {
- 	struct list_head list;
-+	struct timeval start, stop;
- 	int error = 0;
- 
-+	do_gettimeofday(&start);
-+
- 	INIT_LIST_HEAD(&list);
- 	mutex_lock(&dpm_list_mtx);
- 	pm_transition = state;
-@@ -1188,6 +1236,12 @@ static int dpm_suspend(pm_message_t stat
- 	list_splice(&list, dpm_list.prev);
- 	mutex_unlock(&dpm_list_mtx);
- 	dpm_synchronize();
-+
-+	if (!error) {
-+		do_gettimeofday(&stop);
-+		dpm_show_time(&start, &stop, state, NULL);
-+	}
-+
- 	return error;
- }
- 
-Index: linux-2.6/include/linux/pm.h
-===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -505,6 +505,9 @@ extern int sysdev_suspend(pm_message_t s
- extern int dpm_suspend_noirq(pm_message_t state);
- extern int dpm_suspend_start(pm_message_t state);
- 
-+struct timeval;
-+extern int pm_time_elapsed(struct timeval *start, struct timeval *stop);
-+
- extern void __suspend_report_result(const char *function, void *fn, int ret);
- 
- #define suspend_report_result(fn, ret)					\
