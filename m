@@ -1,92 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751765AbZH2Okd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751830AbZH2Omu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751765AbZH2Okd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 10:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZH2Okc
+	id S1751830AbZH2Omu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 10:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZH2Omt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 10:40:32 -0400
-Received: from web45216.mail.sp1.yahoo.com ([68.180.197.185]:45444 "HELO
-	web45216.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751578AbZH2Okc convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 10:40:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=SbHyjku1zgL8gWAtakYt/uLQ0fVjXoMIaAcXwzaMJbzdXTODK6mptol5+QY8GAxekCIMCKA+baOsnNxIK/Inb6E4OnBQ9C8ZCtkt2iWfM5eos8R9846EgjRauTe4625kLtmrNuZEa6T35tdSKF0cR9VJX7fbA2vCZEnF9aOYZHs=;
-Message-ID: <477591.96177.qm@web45216.mail.sp1.yahoo.com>
-X-YMail-OSG: OIRSy_0VM1lUtoFCK8akvttTGuVuCcV_hVslaKHhUTp4dW9mHXAXRG5Lsl3lxjfXYznX5PzCrWylrJQpodqQzOX77ev.tAL9HIoUuM4L6g4S25u4nbKN._GfEAn8MqlJ2UKJmNiHa8tkdxEq1J5Qi36gS32cvIJ5LimrqtQJfzaw9DM8LiV1EPfQj3ghFj4rvpdGrjvpBiVXgyfXo4rRI6Yq_Zq2c9KZC4TWbitFjmX64IwuJl5PYrJSRPJ5QGZJTPegdE6zEaU-
-X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
-Date: Sat, 29 Aug 2009 07:40:34 -0700 (PDT)
-From: joe Shmoe <jsmoe3@yahoo.com>
-Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090828231603.7918be05@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 29 Aug 2009 10:42:49 -0400
+Received: from fifo99.com ([67.223.236.141]:56620 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751700AbZH2Omt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 10:42:49 -0400
+Subject: Re: System lockup with 2.6.26.8-rt16 on ARM9 [Solved]
+From: Daniel Walker <dwalker@fifo99.com>
+To: Remy Bohmer <linux@bohmer.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+In-Reply-To: <3efb10970908290047k6f4d5a14of148db7f2b179f18@mail.gmail.com>
+References: <3efb10970908290047k6f4d5a14of148db7f2b179f18@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 29 Aug 2009 07:42:45 -0700
+Message-Id: <1251556965.9909.10.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Alan,
-May be I confused you. Sorry
+On Sat, 2009-08-29 at 09:47 +0200, Remy Bohmer wrote:
 
-> 0-3GB        MMU translations
-> to arbitary basically random
-> physical addresses (with many pages shared and some
-> absent)
-
-Can those "arbitary basically random physical addresses" fall outside 
-1GB-3GB is my question. Why does kernel stop at 896MB during page table setup. Why not go ahead and map the remaining available RAM (where RAM size is > 1GB < 4GB)
-But kernel uses different technique for addressing the high memory > 896MB
-
-Not sure this is being done so that it will be easier for kernel to maintain page table assignments/swaping to various processes.
- 
-> 3GB+        Physical mapping
-> only accessible in kernel mode
-
-Yes. This part I understand obviously these addresses are issued only when a process is running in kernel mode.
-
-
---- On Fri, 8/28/09, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Subject: Re: kernel page table mapping for >1GB <3 GB for x86 arch without PAE
-> To: "joe Shmoe" <jsmoe3@yahoo.com>
-> Cc: linux-kernel@vger.kernel.org
-> Date: Friday, August 28, 2009, 6:16 PM
-> O> I understand the implications
-> of reloading CR3. But once the page tables are  setup
-> to map all the available physical RAM to virtual (linear)
-> address it could be for eg. 1, 2, 3 or 4 GB how does it
-> matter.
+> Well, we found the root cause of this problem.
+> It turned out to be caused by sched_clock() that made disjunct time jumps.
+> This caused this check to become true in kernel/sched_rt.c:370:
+>          if (rt_rq->rt_time > runtime) {
+>                 rt_rq->rt_throttled = 1;
+>                 if (rt_rq_throttled(rt_rq)) {
+>                         sched_rt_rq_dequeue(rt_rq);
+>                         return 1;
+>                 }
+>         }
 > 
-> Where are you putting the user virtual addresses. User
-> addresses don't
-> map direct to physical addresses so you need both sets of
-> translations at
-> once
+> The end results is that all realtime tasks got throttled for a long
+> time, and that time got extended every time sched_clock() made such a
+> jump. I would never have expected the scheduler would show this kind
+> of behaviour while CONFIG_RT_GROUP_SCHED is _not_ set...
 > 
-> Right now you have
-> 
-> 0-3GB        MMU translations
-> to arbitary basically random
-> physical addresses (with many pages shared and some
-> absent)
-> 
-> 3GB+        Physical mapping
-> only accessible in kernel mode
-> 
-> If user applications ran with a 1:1 mapping of application
-> space to
-> physical addresses you would be fine - but they don't and
-> it would be
-> rather hard to run like that because you want page sharing,
-> lazy unshare,
-> vfork etc to all work.
+> The root-cause of the sched_clock being faulty was a synchronisation
+> issue between 2 clock domains. The CPU clock and the clock domain of
+> the peripheral (GPT) on which the sched_clock() implementation was
+> based. The GPT made jumps backwards which triggered a false wraparound
+> detection in the conversion of 32->64 bit timestamps, causing the time
+> to jump about 356 seconds in the future...
 > 
 
+Can you tell us more about what type of board this was? I've never heard
+of a ARM board having an unstable clocksource before ..
 
-      
+Daniel
+
