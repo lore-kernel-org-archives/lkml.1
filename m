@@ -1,91 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751908AbZH2PKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751633AbZH2Pcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751908AbZH2PKX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 11:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZH2PKW
+	id S1751633AbZH2Pcg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 11:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZH2Pcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 11:10:22 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:40629 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751813AbZH2PKW (ORCPT
+	Sat, 29 Aug 2009 11:32:36 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:43459 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbZH2Pcf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 11:10:22 -0400
-Subject: Re: [PATCH 1/2] kmemleak: Inform kmemleak about kernel stack
-	allocation
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <1251556083.5518.2.camel@pc1117.cambridge.arm.com>
-References: <20090827165927.27901.97270.stgit@pc1117.cambridge.arm.com>
-	 <20090827170253.27901.33997.stgit@pc1117.cambridge.arm.com>
-	 <20090829132954.GB24123@elte.hu>
-	 <1251556083.5518.2.camel@pc1117.cambridge.arm.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Sat, 29 Aug 2009 16:08:42 +0100
-Message-Id: <1251558522.5923.1.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Aug 2009 15:08:42.0986 (UTC) FILETIME=[9906ACA0:01CA28BA]
+	Sat, 29 Aug 2009 11:32:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=O9VYPx4Fb/n3r0QdA/9nn2uelvQnQ7N1kHYE3vmAREnDBn52M3cn063ULxzmCgtvl8
+         1F4s66iU5VuG+SYwbKXYmky0FVliH8ETipeB+batJI3PdHf3vAH6FAnrGdNmVG1Z0Fen
+         dU1EIHXh3X6m+3mbjhruqAiv9Dwf3MxSWAroI=
+MIME-Version: 1.0
+In-Reply-To: <20090829122217.GA17448@cmpxchg.org>
+References: <Pine.LNX.4.64.0908282034240.19475@sister.anvils>
+	 <2f11576a0908290300h155596e1y730c355ade7a671e@mail.gmail.com>
+	 <20090829122217.GA17448@cmpxchg.org>
+Date: Sun, 30 Aug 2009 00:32:36 +0900
+X-Google-Sender-Auth: a43d57ccbe04d845
+Message-ID: <2f11576a0908290832l7ec0c88dl14431e8a2e1d1189@mail.gmail.com>
+Subject: Re: [PATCH mmotm] vmscan move pgdeactivate modification to 
+	shrink_active_list fix
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-29 at 15:28 +0100, Catalin Marinas wrote:
-> On Sat, 2009-08-29 at 15:29 +0200, Ingo Molnar wrote:
-> > * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > 
-> > > Traversing all the tasks in the system for scanning the kernel 
-> > > stacks requires locking which increases the kernel latency 
-> > > considerably. This patch informs kmemleak about newly allocated or 
-> > > freed stacks so that they are treated as any other allocated 
-> > > object. Subsequent patch will remove the explicit stack scanning 
-> > > from mm/kmemleak.c.
-> > > 
-> > > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> > > Cc: Ingo Molnar <mingo@redhat.com>
-> > > ---
-> > >  arch/x86/include/asm/thread_info.h |    7 ++++++-
-> > >  arch/x86/kernel/process.c          |    2 ++
-> > >  kernel/fork.c                      |    7 ++++++-
-> > >  3 files changed, 14 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-> > > index fad7d40..f26432a 100644
-> > > --- a/arch/x86/include/asm/thread_info.h
-> > > +++ b/arch/x86/include/asm/thread_info.h
-> > > @@ -162,7 +162,12 @@ struct thread_info {
-> > >  #define __HAVE_ARCH_THREAD_INFO_ALLOCATOR
-> > >  
-> > >  #define alloc_thread_info(tsk)						\
-> > > -	((struct thread_info *)__get_free_pages(THREAD_FLAGS, THREAD_ORDER))
-> > > +({									\
-> > > +	struct thread_info *ti = (struct thread_info *)			\
-> > > +		__get_free_pages(THREAD_FLAGS, THREAD_ORDER);		\
-> > > +	kmemleak_alloc(ti, THREAD_SIZE, 1, THREAD_FLAGS);		\
-> > > +	ti;								\
-> > > +})
-> > 
-> > Sidenote:this used to be a trivial wrapper to gfp so it was 
-> > borderline OK as a CPP macro - now it's a non-trivial CPP wrapper 
-> > macro which is not OK. Mind converting it to an inline function?
-> 
-> I tried this first but got compilation errors in files that didn't even
-> call this function. To make it workable, thread_info.h would need to
-> include additional headers. If that's acceptable, I can post an updated
-> patch.
+2009/8/29 Johannes Weiner <hannes@cmpxchg.org>:
+> On Sat, Aug 29, 2009 at 07:00:47PM +0900, KOSAKI Motohiro wrote:
+>> Hi Hugh
+>>
+>> 2009/8/29 Hugh Dickins <hugh.dickins@tiscali.co.uk>:
+>> > mmotm 2009-08-27-16-51 lets the OOM killer loose on my loads even
+>> > quicker than last time: one bug fixed but another bug introduced.
+>> > vmscan-move-pgdeactivate-modification-to-shrink_active_list.patch
+>> > forgot to add NR_LRU_BASE to lru index to make zone_page_state index.
+>> >
+>> > Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+>>
+>> Can I use your test case?
+>> Currently LRU_BASE is 0. it mean
+>>
+>> LRU_BASE == NR_INACTIVE_ANON == 0
+>> LRU_ACTIVE == NR_ACTIVE_ANON == 1
+>
+> The zone counters are
+>
+>        NR_FREE_PAGES = 0
+>        NR_INACTIVE_ANON = NR_LRU_BASE = 1
+>        NR_ACTIVE_ANON = 2
+>        ...,
+>
+> and NR_LRU_BASE is the offset of the LRU items within the zone stat
+> items.  You missed this offset, so accounting to LRU_BASE + 0 *
+> LRU_FILE actually accounts to NR_FREE_PAGES, not to NR_INACTIVE_ANON.
 
-Actually I think it's only the kmemleak.h header but it would get
-included via thread_info.h in many other files. An alternative is to
-make kmemleak_alloc() etc. return the pointer passed as argument and
-keep the macro something like:
+/me slapt self. thank you correct me ;)
 
-kmemleak_alloc(__get_free_pages(...), ...)
 
-though it is still a bit long.
+> I get the feeling we should make this thing more robust...
 
--- 
-Catalin
-
+I agree your perfectly.
