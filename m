@@ -1,231 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751533AbZH2N6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbZH2N63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751533AbZH2N6K (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 09:58:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZH2N6J
+	id S1752232AbZH2N63 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 09:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZH2N63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 09:58:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36480 "EHLO hera.kernel.org"
+	Sat, 29 Aug 2009 09:58:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36498 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbZH2N6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 09:58:07 -0400
-Date: Sat, 29 Aug 2009 13:57:40 GMT
+	id S1751602AbZH2N61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 09:58:27 -0400
+Date: Sat, 29 Aug 2009 13:57:52 GMT
 From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       paulmck@linux.vnet.ibm.com, hpa@zytor.com, mingo@redhat.com,
+       josh@joshtriplett.org, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090827215816.GA30472@linux.vnet.ibm.com>
-References: <20090827215816.GA30472@linux.vnet.ibm.com>
+       mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, josh@joshtriplett.org, mingo@elte.hu
+In-Reply-To: <20090827220012.GA30525@linux.vnet.ibm.com>
+References: <20090827220012.GA30525@linux.vnet.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Create rcutree plugins to handle hotplug CPU for multi-level trees
-Message-ID: <tip-dd5d19bafd90d33043a4a14b2e2d98612caa293c@git.kernel.org>
-Git-Commit-ID: dd5d19bafd90d33043a4a14b2e2d98612caa293c
+Subject: [tip:core/rcu] rcu: Changes from reviews: avoid casts, fix/add warnings, improve comments
+Message-ID: <tip-868489660dabc0c28087cca3dbc1adbbc398c6fe@git.kernel.org>
+Git-Commit-ID: 868489660dabc0c28087cca3dbc1adbbc398c6fe
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 29 Aug 2009 13:57:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 29 Aug 2009 13:57:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  dd5d19bafd90d33043a4a14b2e2d98612caa293c
-Gitweb:     http://git.kernel.org/tip/dd5d19bafd90d33043a4a14b2e2d98612caa293c
+Commit-ID:  868489660dabc0c28087cca3dbc1adbbc398c6fe
+Gitweb:     http://git.kernel.org/tip/868489660dabc0c28087cca3dbc1adbbc398c6fe
 Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Thu, 27 Aug 2009 14:58:16 -0700
+AuthorDate: Thu, 27 Aug 2009 15:00:12 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 29 Aug 2009 15:34:39 +0200
+CommitDate: Sat, 29 Aug 2009 15:34:40 +0200
 
-rcu: Create rcutree plugins to handle hotplug CPU for multi-level trees
+rcu: Changes from reviews: avoid casts, fix/add warnings, improve comments
 
-When offlining CPUs from a multi-level tree, there is the
-possibility of offlining the last CPU from a given node when
-there are preempted RCU read-side critical sections that
-started life on one of the CPUs on that node.
-
-In this case, the corresponding tasks will be enqueued via the
-task_struct's rcu_node_entry list_head onto one of the
-rcu_node's blocked_tasks[] lists.  These tasks need to be moved
-somewhere else so that they will prevent the current grace
-period from ending. That somewhere is the root rcu_node.
+Changes suggested by review comments from Josh Triplett and
+Mathieu Desnoyers.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Acked-by: Josh Triplett <josh@joshtriplett.org>
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: laijs@cn.fujitsu.com
 Cc: dipankar@in.ibm.com
 Cc: akpm@linux-foundation.org
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josht@linux.vnet.ibm.com
 Cc: dvhltc@us.ibm.com
 Cc: niv@us.ibm.com
 Cc: peterz@infradead.org
 Cc: rostedt@goodmis.org
-LKML-Reference: <20090827215816.GA30472@linux.vnet.ibm.com>
+LKML-Reference: <20090827220012.GA30525@linux.vnet.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/init_task.h |    2 +-
- include/linux/sched.h     |    4 +-
- kernel/rcutree.c          |    2 +
- kernel/rcutree_plugin.h   |   69 +++++++++++++++++++++++++++++++++++++++++---
- 4 files changed, 69 insertions(+), 8 deletions(-)
+ include/linux/sched.h   |    4 +++-
+ kernel/rcutree.c        |   13 ++++++-------
+ kernel/rcutree.h        |    2 ++
+ kernel/rcutree_plugin.h |   10 ++++++----
+ 4 files changed, 17 insertions(+), 12 deletions(-)
 
-diff --git a/include/linux/init_task.h b/include/linux/init_task.h
-index 79d4bae..9e7f2e8 100644
---- a/include/linux/init_task.h
-+++ b/include/linux/init_task.h
-@@ -98,7 +98,7 @@ extern struct group_info init_groups;
- #define INIT_TASK_RCU_PREEMPT(tsk)					\
- 	.rcu_read_lock_nesting = 0,					\
- 	.rcu_read_unlock_special = 0,					\
--	.rcu_blocked_cpu = -1,						\
-+	.rcu_blocked_node = NULL,					\
- 	.rcu_node_entry = LIST_HEAD_INIT(tsk.rcu_node_entry),
- #else
- #define INIT_TASK_RCU_PREEMPT(tsk)
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index bfca26d..3fe0315 100644
+index 3fe0315..855fd0d 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -1208,7 +1208,7 @@ struct task_struct {
+@@ -1163,6 +1163,8 @@ struct sched_rt_entity {
+ #endif
+ };
+ 
++struct rcu_node;
++
+ struct task_struct {
+ 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
+ 	void *stack;
+@@ -1208,7 +1210,7 @@ struct task_struct {
  #ifdef CONFIG_TREE_PREEMPT_RCU
  	int rcu_read_lock_nesting;
  	char rcu_read_unlock_special;
--	int rcu_blocked_cpu;
-+	void *rcu_blocked_node;
+-	void *rcu_blocked_node;
++	struct rcu_node *rcu_blocked_node;
  	struct list_head rcu_node_entry;
  #endif /* #ifdef CONFIG_TREE_PREEMPT_RCU */
  
-@@ -1735,7 +1735,7 @@ static inline void rcu_copy_process(struct task_struct *p)
- {
- 	p->rcu_read_lock_nesting = 0;
- 	p->rcu_read_unlock_special = 0;
--	p->rcu_blocked_cpu = -1;
-+	p->rcu_blocked_node = NULL;
- 	INIT_LIST_HEAD(&p->rcu_node_entry);
- }
- 
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index fee6316..d903e2f 100644
+index d903e2f..71bc797 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -81,6 +81,7 @@ struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
- DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
+@@ -229,7 +229,6 @@ static int rcu_implicit_offline_qs(struct rcu_data *rdp)
+ #endif /* #ifdef CONFIG_SMP */
  
- extern long rcu_batches_completed_sched(void);
-+static struct rcu_node *rcu_get_root(struct rcu_state *rsp);
- static void cpu_quiet_msk(unsigned long mask, struct rcu_state *rsp,
- 			  struct rcu_node *rnp, unsigned long flags);
- static void cpu_quiet_msk_finish(struct rcu_state *rsp, unsigned long flags);
-@@ -876,6 +877,7 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
- 			spin_unlock(&rnp->lock); /* irqs remain disabled. */
- 			break;
- 		}
-+		rcu_preempt_offline_tasks(rsp, rnp);
- 		mask = rnp->grpmask;
- 		spin_unlock(&rnp->lock);	/* irqs remain disabled. */
- 		rnp = rnp->parent;
+ #ifdef CONFIG_NO_HZ
+-static DEFINE_RATELIMIT_STATE(rcu_rs, 10 * HZ, 5);
+ 
+ /**
+  * rcu_enter_nohz - inform RCU that current CPU is entering nohz
+@@ -249,7 +248,7 @@ void rcu_enter_nohz(void)
+ 	rdtp = &__get_cpu_var(rcu_dynticks);
+ 	rdtp->dynticks++;
+ 	rdtp->dynticks_nesting--;
+-	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
++	WARN_ON_ONCE(rdtp->dynticks & 0x1);
+ 	local_irq_restore(flags);
+ }
+ 
+@@ -268,7 +267,7 @@ void rcu_exit_nohz(void)
+ 	rdtp = &__get_cpu_var(rcu_dynticks);
+ 	rdtp->dynticks++;
+ 	rdtp->dynticks_nesting++;
+-	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
++	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
+ 	local_irq_restore(flags);
+ 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+ }
+@@ -287,7 +286,7 @@ void rcu_nmi_enter(void)
+ 	if (rdtp->dynticks & 0x1)
+ 		return;
+ 	rdtp->dynticks_nmi++;
+-	WARN_ON_RATELIMIT(!(rdtp->dynticks_nmi & 0x1), &rcu_rs);
++	WARN_ON_ONCE(!(rdtp->dynticks_nmi & 0x1));
+ 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+ }
+ 
+@@ -306,7 +305,7 @@ void rcu_nmi_exit(void)
+ 		return;
+ 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
+ 	rdtp->dynticks_nmi++;
+-	WARN_ON_RATELIMIT(rdtp->dynticks_nmi & 0x1, &rcu_rs);
++	WARN_ON_ONCE(rdtp->dynticks_nmi & 0x1);
+ }
+ 
+ /**
+@@ -322,7 +321,7 @@ void rcu_irq_enter(void)
+ 	if (rdtp->dynticks_nesting++)
+ 		return;
+ 	rdtp->dynticks++;
+-	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
++	WARN_ON_ONCE(!(rdtp->dynticks & 0x1));
+ 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
+ }
+ 
+@@ -341,7 +340,7 @@ void rcu_irq_exit(void)
+ 		return;
+ 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
+ 	rdtp->dynticks++;
+-	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
++	WARN_ON_ONCE(rdtp->dynticks & 0x1);
+ 
+ 	/* If the interrupt queued a callback, get out of dyntick mode. */
+ 	if (__get_cpu_var(rcu_sched_data).nxtlist ||
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index ca56036..bf8a6f9 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -81,6 +81,8 @@ struct rcu_dynticks {
+ struct rcu_node {
+ 	spinlock_t lock;
+ 	long	gpnum;		/* Current grace period for this node. */
++				/*  This will either be equal to or one */
++				/*  behind the root rcu_node's gpnum. */
+ 	unsigned long qsmask;	/* CPUs or groups that need to switch in */
+ 				/*  order for current grace period to proceed.*/
+ 	unsigned long qsmaskinit;
 diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-index 201334c..04343be 100644
+index 04343be..4778936 100644
 --- a/kernel/rcutree_plugin.h
 +++ b/kernel/rcutree_plugin.h
 @@ -92,7 +92,7 @@ static void rcu_preempt_qs(int cpu)
  		rnp = rdp->mynode;
  		spin_lock(&rnp->lock);
  		t->rcu_read_unlock_special |= RCU_READ_UNLOCK_BLOCKED;
--		t->rcu_blocked_cpu = cpu;
-+		t->rcu_blocked_node = (void *)rnp;
+-		t->rcu_blocked_node = (void *)rnp;
++		t->rcu_blocked_node = rnp;
  
  		/*
  		 * If this CPU has already checked in, then this task
-@@ -170,12 +170,21 @@ static void rcu_read_unlock_special(struct task_struct *t)
- 	if (special & RCU_READ_UNLOCK_BLOCKED) {
- 		t->rcu_read_unlock_special &= ~RCU_READ_UNLOCK_BLOCKED;
+@@ -176,9 +176,9 @@ static void rcu_read_unlock_special(struct task_struct *t)
+ 		 * most one time.  So at most two passes through loop.
+ 		 */
+ 		for (;;) {
+-			rnp = (struct rcu_node *)t->rcu_blocked_node;
++			rnp = t->rcu_blocked_node;
+ 			spin_lock(&rnp->lock);
+-			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
++			if (rnp == t->rcu_blocked_node)
+ 				break;
+ 			spin_unlock(&rnp->lock);
+ 		}
+@@ -288,8 +288,10 @@ static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
+ 	struct rcu_node *rnp_root = rcu_get_root(rsp);
+ 	struct task_struct *tp;
  
--		/* Remove this task from the list it blocked on. */
--		rnp = rcu_preempt_state.rda[t->rcu_blocked_cpu]->mynode;
--		spin_lock(&rnp->lock);
-+		/*
-+		 * Remove this task from the list it blocked on.  The
-+		 * task can migrate while we acquire the lock, but at
-+		 * most one time.  So at most two passes through loop.
-+		 */
-+		for (;;) {
-+			rnp = (struct rcu_node *)t->rcu_blocked_node;
-+			spin_lock(&rnp->lock);
-+			if (rnp == (struct rcu_node *)t->rcu_blocked_node)
-+				break;
-+			spin_unlock(&rnp->lock);
-+		}
- 		empty = list_empty(&rnp->blocked_tasks[rnp->gpnum & 0x1]);
- 		list_del_init(&t->rcu_node_entry);
--		t->rcu_blocked_cpu = -1;
-+		t->rcu_blocked_node = NULL;
- 
- 		/*
- 		 * If this was the last task on the current list, and if
-@@ -262,6 +271,47 @@ static int rcu_preempted_readers(struct rcu_node *rnp)
- #ifdef CONFIG_HOTPLUG_CPU
- 
- /*
-+ * Handle tasklist migration for case in which all CPUs covered by the
-+ * specified rcu_node have gone offline.  Move them up to the root
-+ * rcu_node.  The reason for not just moving them to the immediate
-+ * parent is to remove the need for rcu_read_unlock_special() to
-+ * make more than two attempts to acquire the target rcu_node's lock.
-+ *
-+ * The caller must hold rnp->lock with irqs disabled.
-+ */
-+static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
-+				      struct rcu_node *rnp)
-+{
-+	int i;
-+	struct list_head *lp;
-+	struct list_head *lp_root;
-+	struct rcu_node *rnp_root = rcu_get_root(rsp);
-+	struct task_struct *tp;
-+
-+	if (rnp == rnp_root)
-+		return;  /* Shouldn't happen: at least one CPU online. */
-+
-+	/*
-+	 * Move tasks up to root rcu_node.  Rely on the fact that the
-+	 * root rcu_node can be at most one ahead of the rest of the
-+	 * rcu_nodes in terms of gp_num value.  This fact allows us to
-+	 * move the blocked_tasks[] array directly, element by element.
-+	 */
-+	for (i = 0; i < 2; i++) {
-+		lp = &rnp->blocked_tasks[i];
-+		lp_root = &rnp_root->blocked_tasks[i];
-+		while (!list_empty(lp)) {
-+			tp = list_entry(lp->next, typeof(*tp), rcu_node_entry);
-+			spin_lock(&rnp_root->lock); /* irqs already disabled */
-+			list_del(&tp->rcu_node_entry);
-+			tp->rcu_blocked_node = rnp_root;
-+			list_add(&tp->rcu_node_entry, lp_root);
-+			spin_unlock(&rnp_root->lock); /* irqs remain disabled */
-+		}
+-	if (rnp == rnp_root)
++	if (rnp == rnp_root) {
++		WARN_ONCE(1, "Last CPU thought to be offlined?");
+ 		return;  /* Shouldn't happen: at least one CPU online. */
 +	}
-+}
-+
-+/*
-  * Do CPU-offline processing for preemptable RCU.
-  */
- static void rcu_preempt_offline_cpu(int cpu)
-@@ -410,6 +460,15 @@ static int rcu_preempted_readers(struct rcu_node *rnp)
- #ifdef CONFIG_HOTPLUG_CPU
  
- /*
-+ * Because preemptable RCU does not exist, it never needs to migrate
-+ * tasks that were blocked within RCU read-side critical sections.
-+ */
-+static void rcu_preempt_offline_tasks(struct rcu_state *rsp,
-+				      struct rcu_node *rnp)
-+{
-+}
-+
-+/*
-  * Because preemptable RCU does not exist, it never needs CPU-offline
-  * processing.
-  */
+ 	/*
+ 	 * Move tasks up to root rcu_node.  Rely on the fact that the
