@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751324AbZH2BPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751430AbZH2BaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751324AbZH2BPh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 28 Aug 2009 21:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbZH2BPh
+	id S1751430AbZH2BaP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 28 Aug 2009 21:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbZH2BaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 28 Aug 2009 21:15:37 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:55411 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbZH2BPg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 28 Aug 2009 21:15:36 -0400
-Date: Sat, 29 Aug 2009 02:15:17 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Alan Cox <alan@linux.intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kvm@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, miltonm@bga.com,
-       qemu-devel@nongnu.org, borntraeger@de.ibm.com,
-       brueckner@linux.vnet.ibm.com, Amit Shah <amit.shah@redhat.com>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [Qemu-devel] Re: Extending virtio_console to support multiple ports
-Message-ID: <20090829011517.GG8036@shareable.org>
-References: <1251181044-3696-1-git-send-email-amit.shah@redhat.com> <20090826112718.GA11117@amit-x200.redhat.com> <20090826154552.GA31910@amit-x200.redhat.com> <1251346023.20467.21.camel@pasglop> <20090827100809.5f0aa0a7@linux.intel.com>
+	Fri, 28 Aug 2009 21:30:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:47217 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751106AbZH2BaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 28 Aug 2009 21:30:13 -0400
+Message-ID: <4A988473.7010208@redhat.com>
+Date: Fri, 28 Aug 2009 21:29:23 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090827100809.5f0aa0a7@linux.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 03/23] io-controller: Common flat fair queuing code in
+ elevaotor layer
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-4-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1251495072-7780-4-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> >  - Then, are we certain that there's no case where the tty layer will
-> > call us with some lock held or in an atomic context ? To be honest,
-> > I've totally lost track of the locking rules in tty land lately so it
-> > might well be ok, but something to verify.
+Vivek Goyal wrote:
+> This is common fair queuing code in elevator layer. This is controlled by
+> config option CONFIG_ELV_FAIR_QUEUING. This patch initially only introduces
+> flat fair queuing support where there is only one group, "root group" and all
+> the tasks belong to root group.
 > 
-> Some of the less well behaved line disciplines do this and always have
-> done.
+> This elevator layer changes are backward compatible. That means any ioscheduler
+> using old interfaces will continue to work.
+> 
+> This is essentially a lot of CFQ logic moved into common layer so that other
+> IO schedulers can make use of that in hierarhical scheduling setup.
+> 
+> Signed-off-by: Nauman Rafique <nauman@google.com>
+> Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
+> Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
+> Signed-off-by: Aristeu Rozanski <aris@redhat.com>
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 
-I had a backtrace in my kernel log recently which looked like that,
-while doing PPP over Bluetooth RFCOMM.  Resulted in AppArmor
-complaining that it's hook was being called in irq context.
+Acked-by: Rik van Riel <riel@redhat.com>
 
--- Jamie
+-- 
+All rights reversed.
