@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbZH2MWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752348AbZH2MaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752231AbZH2MWt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 08:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZH2MWs
+	id S1752348AbZH2MaW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 08:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZH2MaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 08:22:48 -0400
-Received: from cmpxchg.org ([85.214.51.133]:47722 "EHLO cmpxchg.org"
+	Sat, 29 Aug 2009 08:30:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46276 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751314AbZH2MWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 08:22:48 -0400
-Date: Sat, 29 Aug 2009 14:22:18 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH mmotm] vmscan move pgdeactivate modification to shrink_active_list fix
-Message-ID: <20090829122217.GA17448@cmpxchg.org>
-References: <Pine.LNX.4.64.0908282034240.19475@sister.anvils> <2f11576a0908290300h155596e1y730c355ade7a671e@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2f11576a0908290300h155596e1y730c355ade7a671e@mail.gmail.com>
+	id S1751462AbZH2MaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 08:30:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Bug #13646] warn_on tty_io.c, broken bluetooth
+Date: Sat, 29 Aug 2009 14:31:14 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera> <84144f020908252314l364588bfi16e2d426cece2c5a@mail.gmail.com> <20090829093657.GC1634@ucw.cz>
+In-Reply-To: <20090829093657.GC1634@ucw.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908291431.14313.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 29, 2009 at 07:00:47PM +0900, KOSAKI Motohiro wrote:
-> Hi Hugh
+On Saturday 29 August 2009, Pavel Machek wrote:
+> On Wed 2009-08-26 09:14:02, Pekka Enberg wrote:
+> > On Wed, Aug 26, 2009 at 12:05 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of regressions introduced between 2.6.29 and 2.6.30.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > introduced between 2.6.29 and 2.6.30. ?Please verify if it still should
+> > > be listed and let me know (either way).
+> > >
+> > >
+> > > Bug-Entry ? ? ? : http://bugzilla.kernel.org/show_bug.cgi?id=13646
+> > > Subject ? ? ? ? : warn_on tty_io.c, broken bluetooth
+> > > Submitter ? ? ? : Pavel Machek <pavel@ucw.cz>
+> > > Date ? ? ? ? ? ?: 2009-06-19 17:05 (68 days old)
+> > > References ? ? ?: http://lkml.org/lkml/2009/6/19/187
+> > 
+> > Pavel, is this still an open issue? Plenty tty fixes went into 2.6.31
+> > so maybe we need to backport some of them to -stable?
 > 
-> 2009/8/29 Hugh Dickins <hugh.dickins@tiscali.co.uk>:
-> > mmotm 2009-08-27-16-51 lets the OOM killer loose on my loads even
-> > quicker than last time: one bug fixed but another bug introduced.
-> > vmscan-move-pgdeactivate-modification-to-shrink_active_list.patch
-> > forgot to add NR_LRU_BASE to lru index to make zone_page_state index.
-> >
-> > Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> 
-> Can I use your test case?
-> Currently LRU_BASE is 0. it mean
-> 
-> LRU_BASE == NR_INACTIVE_ANON == 0
-> LRU_ACTIVE == NR_ACTIVE_ANON == 1
+> It seems to be interminent, and depends on timing/usage patterns. (Try
+> to start bluetooth when it is already starting). It
+> is possible that it was there before. Perhaps it can be just closed as
+> 'bug but not regression'.
 
-The zone counters are
+Done.
 
-	NR_FREE_PAGES = 0
-	NR_INACTIVE_ANON = NR_LRU_BASE = 1
-	NR_ACTIVE_ANON = 2
-	...,
-
-and NR_LRU_BASE is the offset of the LRU items within the zone stat
-items.  You missed this offset, so accounting to LRU_BASE + 0 *
-LRU_FILE actually accounts to NR_FREE_PAGES, not to NR_INACTIVE_ANON.
-
-I get the feeling we should make this thing more robust...
-
-	Hannes
-
-> Therefore, I doubt there are another issue in current mmotm.
-> Can I join your strange oom fixing works?
-> 
-> 
-> > ---
-> >
-> >  mm/vmscan.c |    6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> >
-> > --- mmotm/mm/vmscan.c   2009-08-28 10:07:57.000000000 +0100
-> > +++ linux/mm/vmscan.c   2009-08-28 18:30:33.000000000 +0100
-> > @@ -1381,8 +1381,10 @@ static void shrink_active_list(unsigned
-> >        reclaim_stat->recent_rotated[file] += nr_rotated;
-> >        __count_vm_events(PGDEACTIVATE, nr_deactivated);
-> >        __mod_zone_page_state(zone, NR_ISOLATED_ANON + file, -nr_taken);
-> > -       __mod_zone_page_state(zone, LRU_ACTIVE + file * LRU_FILE, nr_rotated);
-> > -       __mod_zone_page_state(zone, LRU_BASE + file * LRU_FILE, nr_deactivated);
-> > +       __mod_zone_page_state(zone, NR_ACTIVE_ANON + file * LRU_FILE,
-> > +                                                       nr_rotated);
-> > +       __mod_zone_page_state(zone, NR_INACTIVE_ANON + file * LRU_FILE,
-> > +                                                       nr_deactivated);
-> >        spin_unlock_irq(&zone->lru_lock);
-> >  }
+Thanks,
+Rafael
