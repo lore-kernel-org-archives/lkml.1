@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZH2KSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbZH2KTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751962AbZH2KSE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 06:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZH2KSD
+	id S1752002AbZH2KTG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 06:19:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZH2KTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 06:18:03 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54246 "EHLO
+	Sat, 29 Aug 2009 06:19:05 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54298 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751129AbZH2KSB (ORCPT
+	with ESMTP id S1751369AbZH2KTD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 06:18:01 -0400
-Date: Sat, 29 Aug 2009 11:36:57 +0200
+	Sat, 29 Aug 2009 06:19:03 -0400
+Date: Sat, 29 Aug 2009 11:38:04 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #13646] warn_on tty_io.c, broken bluetooth
-Message-ID: <20090829093657.GC1634@ucw.cz>
-References: <JuOd1ZASH0B.A.YGB.0zGlKB@chimera> <Cg6cQYLdUxG.A.f2B.l0GlKB@chimera> <84144f020908252314l364588bfi16e2d426cece2c5a@mail.gmail.com>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+Message-ID: <20090829093804.GD1634@ucw.cz>
+References: <20090825233701.GH4300@elf.ucw.cz> <4A947839.4010601@redhat.com> <20090826000657.GK4300@elf.ucw.cz> <4A947E05.8070406@redhat.com> <20090826002045.GO4300@elf.ucw.cz> <4A9481BE.1030308@redhat.com> <20090826003803.GP4300@elf.ucw.cz> <4A9485A6.1010803@redhat.com> <20090826112121.GD26595@elf.ucw.cz> <4A952370.50603@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020908252314l364588bfi16e2d426cece2c5a@mail.gmail.com>
+In-Reply-To: <4A952370.50603@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-08-26 09:14:02, Pekka Enberg wrote:
-> On Wed, Aug 26, 2009 at 12:05 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.29 and 2.6.30.
-> >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.29 and 2.6.30. ?Please verify if it still should
-> > be listed and let me know (either way).
-> >
-> >
-> > Bug-Entry ? ? ? : http://bugzilla.kernel.org/show_bug.cgi?id=13646
-> > Subject ? ? ? ? : warn_on tty_io.c, broken bluetooth
-> > Submitter ? ? ? : Pavel Machek <pavel@ucw.cz>
-> > Date ? ? ? ? ? ?: 2009-06-19 17:05 (68 days old)
-> > References ? ? ?: http://lkml.org/lkml/2009/6/19/187
-> 
-> Pavel, is this still an open issue? Plenty tty fixes went into 2.6.31
-> so maybe we need to backport some of them to -stable?
+>> Example I seen went like this:
+>>
+>> Drive in raid 5 failed; hot spare was available (no idea about
+>> UPS). System apparently locked up trying to talk to the failed drive,
+>> or maybe admin just was not patient enough, so he just powercycled the
+>> array. He lost the array.
+>>
+>> So while most people will not agressively powercycle the RAID array,
+>> drive failure still provokes little tested error paths, and getting
+>> unclean shutdown is quite easy in such case.
+>
+> Then what we need to document is do not power cycle an array during a  
+> rebuild, right?
 
-It seems to be interminent, and depends on timing/usage patterns. (Try
-to start bluetooth when it is already starting). It
-is possible that it was there before. Perhaps it can be just closed as
-'bug but not regression'.
+Yep, that and the fact that you should fsck if you do.
 
-								Pavel
+> If it wasn't the admin that timed out and the box really was hung (no  
+> drive activity lights, etc), you will need to power cycle/reboot but  
+> then you should not have this active rebuild issuing writes either...
+
+Ok, I guess you are right here.
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
