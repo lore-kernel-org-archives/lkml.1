@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZH2RBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752148AbZH2RDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752135AbZH2RBa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 13:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZH2RB3
+	id S1752148AbZH2RDt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 13:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZH2RDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 13:01:29 -0400
-Received: from www.tglx.de ([62.245.132.106]:36805 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751581AbZH2RB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 13:01:29 -0400
-Date: Sat, 29 Aug 2009 18:59:54 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
-       x86 team <x86@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>, Avi Kivity <avi@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alok N Kataria <akataria@vmware.com>
-Subject: Re: [RFC PATCH 0/7] x86/boot: Moorestown patch set based on platform_set
- abstraction
-In-Reply-To: <43F901BD926A4E43B106BF17856F07556A5EA86F@orsmsx508.amr.corp.intel.com>
-Message-ID: <alpine.LFD.2.00.0908291858400.19335@localhost.localdomain>
-References: <20090821205008.518392436@linutronix.de> <20090821205601.878468441@linutronix.de> <4A8F1E4D.9080409@goop.org> <alpine.LFD.2.00.0908220034110.1769@localhost.localdomain> <43F901BD926A4E43B106BF17856F07556A5EA86F@orsmsx508.amr.corp.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 29 Aug 2009 13:03:48 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:25793 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbZH2RDs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 13:03:48 -0400
+Message-ID: <4A995F53.50509@hp.com>
+Date: Sat, 29 Aug 2009 13:03:15 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <ghaskins@novell.com>, Rik van Riel <riel@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
+       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: RFC: THE OFFLINE SCHEDULER
+References: <1251282598.3514.20.camel@raz>  <alpine.DEB.1.10.0908260943090.9924@gentwo.org>  <1251297910.1791.22.camel@maxim-laptop> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org> <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com> <4A975025.8030500@novell.com> <4A975CC4.1090208@novell.com> <alpine.LFD.2.00.0908281218560.2888@localhost.localdomain> <alpine.DEB.1.10.0908281446520.7317@gentwo.org> <alpine.LFD.2.00.0908282100040.19335@localhost.localdomain> <alpine.DEB.1.10.0908281551450.17784@gentwo.org> <alpine.LFD.2.00.0908282158100.19335@localhost.localdomain> <alpine.DEB.1.10.0908281619520.15573@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0908281619520.15573@gentwo.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Aug 2009, Pan, Jacob jun wrote:
-
-> Based on platform_setup patchset posted by tglx (http://lkml.org/lkml/2009/8/21/358)
+Christoph Lameter wrote:
+> On Fri, 28 Aug 2009, Thomas Gleixner wrote:
+>> What slab queue stuff is running on timers and cannot be switched off
+>> in such a context?
 > 
-> These Moorestown patches have become much simplified once ported to the new
-> platform_setup layer. 
+> slab does run a timer every 2 second to age queues. If there was activity
+> then there can be a relatively long time in which we periodically throw
+> out portions of the cached data.
+
+OK, you have me fully confused now.
+
+ From other HPC people, I know the "no noise in my math application"
+requirement.  But that means the user code that is running on the
+CPU must not do anything that wakes the kernel.  Not even page faults,
+so they pin the memory at job start.
+
+Anything the user code does that needs kernel statistics or
+kernel action is "I must fix my user code", or "I accept that
+the noise is necessary".
+
+So we don't need to offload stats to other CPUs, stats are not needed.
+
+>> Device specific stuff should not happen on such a CPU when there is no
+>> device handled on it.
 > 
-> Now the platform feature flags are less useful, in fact they
-> are only used in separating ioapic and 8259 now, so once the interrupt
-> controller code is drivernized, we would not need the platform feature flags
-> in the core.
+> The device may periodically check for conditions that require action.
 
-I don't think that we need big changes in the ioapic code. All you
-need can be done with way simpler tweaking.
+Again, what is this device and why is it controlled directly by
+user-space code.  Devices should be controlled even in an HPC
+environment by the kernel.  AFAIK HPC wants the kernel to be the
+bootstrap and data transfer manager running on a small subset of
+the total CPUs, with the dedicated CPUs running math jobs.
 
-Thanks,
-
-	tglx
-
-
+jim
