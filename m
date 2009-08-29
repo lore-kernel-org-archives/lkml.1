@@ -1,89 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbZH2KIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbZH2KMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751886AbZH2KIx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 06:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZH2KIx
+	id S1751973AbZH2KMx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 06:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZH2KMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 06:08:53 -0400
-Received: from mail-yw0-f186.google.com ([209.85.211.186]:46718 "EHLO
-	mail-yw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbZH2KIw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 06:08:52 -0400
-X-Greylist: delayed 486 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Aug 2009 06:08:52 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=V6CA6sfSDHqRh+i/XhKj17h/XZbMNGFY5DggfrJgKWPNNMPQQYgeWJgZodqkg6ENFx
-         7KYvdkZXbsJ604NIEC30yoBIkZlQStwgvz6z5O+SRMO7ifj+Q2N1Ecqf+jjnJ9S64nWD
-         s9r1OLe0BztLU8mMJ4xwIUbnaQqb6Ez/bvJb8=
+	Sat, 29 Aug 2009 06:12:52 -0400
+Received: from mga03.intel.com ([143.182.124.21]:37988 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751450AbZH2KMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 06:12:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="181849408"
+Date: Sat, 29 Aug 2009 18:12:47 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Fernando Silveira <fsilveira@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: I/O and pdflush
+Message-ID: <20090829101247.GA20786@localhost>
+References: <6afc6d4a0907111027w76234c8fv11ab77864515fdb0@mail.gmail.com> <20090712080410.GA8512@localhost> <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0908282034240.19475@sister.anvils>
-References: <Pine.LNX.4.64.0908282034240.19475@sister.anvils>
-Date: Sat, 29 Aug 2009 19:00:47 +0900
-X-Google-Sender-Auth: f5e2b9aae9cda40b
-Message-ID: <2f11576a0908290300h155596e1y730c355ade7a671e@mail.gmail.com>
-Subject: Re: [PATCH mmotm] vmscan move pgdeactivate modification to 
-	shrink_active_list fix
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/mixed; boundary="a8Wt8u1KmwUX3Y2C"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh
 
-2009/8/29 Hugh Dickins <hugh.dickins@tiscali.co.uk>:
-> mmotm 2009-08-27-16-51 lets the OOM killer loose on my loads even
-> quicker than last time: one bug fixed but another bug introduced.
-> vmscan-move-pgdeactivate-modification-to-shrink_active_list.patch
-> forgot to add NR_LRU_BASE to lru index to make zone_page_state index.
->
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+--a8Wt8u1KmwUX3Y2C
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 
-Can I use your test case?
-Currently LRU_BASE is 0. it mean
+On Sat, Aug 29, 2009 at 05:48:40AM +0800, Fernando Silveira wrote:
+> On Sun, Jul 12, 2009 at 05:04, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> > On Sat, Jul 11, 2009 at 02:27:25PM -0300, Fernando Silveira wrote:
+> >> I'm having a hard time with an application that writes sequentially
+> >> 250GB of non-stop data directly to a solid state disk (OCZ SSD CORE
+> >> v2) device and I hope you can help me. The command "dd if=/dev/zero
+> >> of=/dev/sdc bs=4M" reproduces the same symptoms I'm having and writes
+> >> exactly as that application does.
+> >
+> > What's your kernel version? Â Can the following patch help?
+> 
+> Sorry for the delay, but I could not test it before.
+> 
+> Unfortunately it did not help or change any symptoms at all. The
+> kernel version I tested was a non-patched 2.6.30.1 version.
+> 
+> Do you have any other hint?
 
-LRU_BASE == NR_INACTIVE_ANON == 0
-LRU_ACTIVE == NR_ACTIVE_ANON == 1
+Sure. Attached is a writeback debug patch. It will generate lots of
+kernel messages. You can just stop your klogd, start your workload
+and monitor the SSD writeback throughput via tools like iostat/dstat.
+When it goes into the suboptimal 25MB/s state for several seconds, run
+        dmesg > dmesg-writeback
+and send me the log.
 
-Therefore, I doubt there are another issue in current mmotm.
-Can I join your strange oom fixing works?
+And it is advised to turn on the kconfig option CONFIG_PRINTK_TIME=y.
 
+Thanks,
+Fengguang
 
-> ---
->
->  mm/vmscan.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> --- mmotm/mm/vmscan.c   2009-08-28 10:07:57.000000000 +0100
-> +++ linux/mm/vmscan.c   2009-08-28 18:30:33.000000000 +0100
-> @@ -1381,8 +1381,10 @@ static void shrink_active_list(unsigned
->        reclaim_stat->recent_rotated[file] += nr_rotated;
->        __count_vm_events(PGDEACTIVATE, nr_deactivated);
->        __mod_zone_page_state(zone, NR_ISOLATED_ANON + file, -nr_taken);
-> -       __mod_zone_page_state(zone, LRU_ACTIVE + file * LRU_FILE, nr_rotated);
-> -       __mod_zone_page_state(zone, LRU_BASE + file * LRU_FILE, nr_deactivated);
-> +       __mod_zone_page_state(zone, NR_ACTIVE_ANON + file * LRU_FILE,
-> +                                                       nr_rotated);
-> +       __mod_zone_page_state(zone, NR_INACTIVE_ANON + file * LRU_FILE,
-> +                                                       nr_deactivated);
->        spin_unlock_irq(&zone->lru_lock);
->  }
->
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+--a8Wt8u1KmwUX3Y2C
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="writeback-debug.patch"
+
+ mm/page-writeback.c |   38 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+--- mm.orig/mm/page-writeback.c
++++ mm/mm/page-writeback.c
+@@ -116,6 +116,33 @@ EXPORT_SYMBOL(laptop_mode);
+ 
+ /* End of sysctl-exported parameters */
+ 
++#define writeback_debug_report(n, wbc) do {                               \
++	__writeback_debug_report(n, wbc, __FILE__, __LINE__, __FUNCTION__); \
++} while (0)
++
++void print_writeback_control(struct writeback_control *wbc)
++{
++	printk(KERN_DEBUG
++			"global dirty %lu writeback %lu nfs %lu "
++			"flags %c%c towrite %ld skipped %ld\n",
++			global_page_state(NR_FILE_DIRTY),
++			global_page_state(NR_WRITEBACK),
++			global_page_state(NR_UNSTABLE_NFS),
++			wbc->encountered_congestion ? 'C':'_',
++			wbc->more_io ? 'M':'_',
++			wbc->nr_to_write,
++			wbc->pages_skipped);
++}
++
++void __writeback_debug_report(long n, struct writeback_control *wbc,
++		const char *file, int line, const char *func)
++{
++	printk(KERN_DEBUG "%s %d %s: %s(%d) %ld\n",
++			file, line, func,
++			current->comm, current->pid,
++			n);
++	print_writeback_control(wbc);
++}
+ 
+ static void background_writeout(unsigned long _min_pages);
+ 
+@@ -546,6 +573,7 @@ static void balance_dirty_pages(struct a
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			get_dirty_limits(&background_thresh, &dirty_thresh,
+ 				       &bdi_thresh, bdi);
++			writeback_debug_report(pages_written, &wbc);
+ 		}
+ 
+ 		/*
+@@ -572,6 +600,7 @@ static void balance_dirty_pages(struct a
+ 			break;		/* We've done our duty */
+ 
+ 		congestion_wait(WRITE, HZ/10);
++		writeback_debug_report(-pages_written, &wbc);
+ 	}
+ 
+ 	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+@@ -666,6 +695,11 @@ void throttle_vm_writeout(gfp_t gfp_mask
+ 			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+                         	break;
+                 congestion_wait(WRITE, HZ/10);
++		printk(KERN_DEBUG "throttle_vm_writeout: "
++				"congestion_wait on %lu+%lu > %lu\n",
++				global_page_state(NR_UNSTABLE_NFS),
++				global_page_state(NR_WRITEBACK),
++				dirty_thresh);
+ 
+ 		/*
+ 		 * The caller might hold locks which can prevent IO completion
+@@ -715,7 +749,9 @@ static void background_writeout(unsigned
+ 			else
+ 				break;
+ 		}
++		writeback_debug_report(min_pages, &wbc);
+ 	}
++	writeback_debug_report(min_pages, &wbc);
+ }
+ 
+ /*
+@@ -788,7 +824,9 @@ static void wb_kupdate(unsigned long arg
+ 				break;	/* All the old data is written */
+ 		}
+ 		nr_to_write -= MAX_WRITEBACK_PAGES - wbc.nr_to_write;
++		writeback_debug_report(nr_to_write, &wbc);
+ 	}
++	writeback_debug_report(nr_to_write, &wbc);
+ 	if (time_before(next_jif, jiffies + HZ))
+ 		next_jif = jiffies + HZ;
+ 	if (dirty_writeback_interval)
+
+--a8Wt8u1KmwUX3Y2C--
