@@ -1,55 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbZH2UWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbZH2VCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752530AbZH2UWL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 16:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZH2UWK
+	id S1752579AbZH2VCn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 17:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbZH2VCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 16:22:10 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45417
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752020AbZH2UWJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 16:22:09 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is possible
-Date: Sat, 29 Aug 2009 15:22:06 -0500
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
-Cc: david@lang.hm, Ric Wheeler <rwheeler@redhat.com>,
-       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-References: <20090824212518.GF29763@elf.ucw.cz> <alpine.DEB.2.00.0908280748080.6822@asgard.lang.hm> <20090829100558.GH1634@ucw.cz>
-In-Reply-To: <20090829100558.GH1634@ucw.cz>
+	Sat, 29 Aug 2009 17:02:42 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:59868 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752558AbZH2VCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 17:02:41 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Bart Hartgers <bart.hartgers@gmail.com>
+Subject: Re: New ark3116 driver - testers needed
+Date: Sat, 29 Aug 2009 23:02:31 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-usb@vger.kernel.org, ark3116_driver@auctionant.de,
+       linux-kernel@vger.kernel.org
+References: <7eb6a4d80908230546tc246dbdq33ffadcdce9a605a@mail.gmail.com>
+In-Reply-To: <7eb6a4d80908230546tc246dbdq33ffadcdce9a605a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200908291522.07694.rob@landley.net>
+Message-Id: <200908292302.34282.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 29 August 2009 05:05:58 Pavel Machek wrote:
-> On Fri 2009-08-28 07:49:38, david@lang.hm wrote:
-> > On Thu, 27 Aug 2009, Rob Landley wrote:
-> >> Pavel's response was to attempt to document this.  Not that journaling
-> >> is _bad_, but that it doesn't protect against this class of problem.
-> >
-> > I don't think anyone is disagreeing with the statement that journaling
-> > doesn't protect against this class of problems, but Pavel's statements
-> > didn't say that. he stated that ext3 is more dangerous than ext2.
+On Sunday 23 August 2009 14:46:16 Bart Hartgers wrote:
+> Hi All,
 >
-> Well, if you use 'common' fsck policy, ext3 _is_ more dangerous.
+> I managed to write an improved ark3116 driver after I figured out that
+> it is just an 16450 UART with some USB glue logic.
+>
+> Compared to the old ark3116 driver it offers the following improvements:
+> - cts/rts handshake support
+> - break signalling
+> - line error detection
+>
+> Since it is a big step from the previous driver, it made little sense
+> to modify that one, so I created new driver, named ark316new. Also
+> this means that both could coexist if the new one doesn't work for
+> someone.
+>
+> I have no datasheet, so the driver is entirely based on reverse
+> engineering, and some testing by others would be a good idea.
+>
+> I also tried to include the IrDA fixes for the old ark3116.c driver
+> that were posted on this list recently, but I could not test if
+> these work, since I don't have the proper hardware.
+>
+> Because of this, I would appreciate reports of both success and
+> failure in using this driver.
 
-The filesystem itself isn't more dangerous, but it may provide a false sense of 
-security when used on storage devices it wasn't designed for.
+Tested the driver today with that Gembird UIR-22.
 
-Rob
+It did not compile neither in 2.6.30.1 nor in 2.6.31-rc8 with the following 
+error:
+
+ark3116new.c:790: error: unknown field shutdown specified in initializer
+ark3116new/ark3116new.c:790: warning: initialization from incompatible pointer 
+type
+
+Commenting that line produced a module that worked:
+usb 1-1: new full speed USB device using uhci_hcd and address 2
+usb 1-1: configuration #0 chosen from 1 choice
+usb 1-1: config 0 descriptor??
+usbcore: registered new interface driver usbserial
+usbserial: USB Serial Driver core
+USB Serial support registered for ARK3116 RS232/IrDA
+ark3116new 1-1:0.0: ARK3116 RS232/IrDA converter detected
+usb 1-1: ark3116new using IrDA mode
+usb 1-1: ARK3116 RS232/IrDA converter now attached to ttyUSB0
+usbcore: registered new interface driver ark3116new
+ark3116new:v0.1:USB ARK3116 serial/IrDA driver
+usb 1-1: ark3116new don't know how to do software flow control
+NET: Registered protocol family 23
+
+Ran "irattach /dev/ttyUSB0 -s" and then "obexftp -i -l" to list files on Nokia 
+6230i. It worked fine and file transfer too. So the IrDA mode works.
+
+When I unplugged the device, irattach remained running and some error message 
+was written to console every few seconds (sorry, I haven't recorded it). 
+Killing irattach then resulted in oops. But this might be expected as the 
+shutdown function was commented out.
+
+I think that this driver should replace current ark3116 driver. Having two 
+drivers for the same hardware is a bad thing.
+
 -- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+Ondrej Zary
