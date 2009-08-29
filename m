@@ -1,107 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbZH2XMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbZH2XMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbZH2XMU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 19:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZH2XLX
+	id S1752862AbZH2XMo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 19:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZH2XMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 19:11:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58939 "EHLO
+	Sat, 29 Aug 2009 19:12:41 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58945 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752258AbZH2XLV (ORCPT
+	with ESMTP id S1752569AbZH2XLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 19:11:21 -0400
-Message-Id: <20090829231122.067717674@bombadil.infradead.org>
+	Sat, 29 Aug 2009 19:11:22 -0400
+Message-Id: <20090829231122.495453860@bombadil.infradead.org>
 User-Agent: quilt/0.47-1
-Date: Sat, 29 Aug 2009 19:03:37 -0400
+Date: Sat, 29 Aug 2009 19:03:39 -0400
 From: Christoph Hellwig <hch@infradead.org>
 To: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Cc: liml@rtr.ca, jens.axboe@oracle.com, matthew@wil.cx, dwmw2@infradead.org,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: [PATCH 5/7] libata: Add support for TRIM
+Cc: liml@rtr.ca, jens.axboe@oracle.com, matthew@wil.cx, dwmw2@infradead.org
+Subject: [PATCH 7/7] xfs: add batches discard support
 References: <20090829230332.017137693@bombadil.infradead.org>
-Content-Disposition: inline; filename=discard-add-libata-trim-support
+Content-Disposition: inline; filename=xfs-add-trim-support-2
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthew Wilcox <willy@linux.intel.com>
+Add support for discarding all currently unused space by an ioctl.  Only
+intended as demonstration and not for merging.
 
-libata: Add support for TRIM
+Use the following small tool to exercise it:
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
----
 
-Index: linux-2.6/drivers/ata/libata-scsi.c
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <sys/ioctl.h>
+
+#define XFS_IOC_TRIM                 _IOR ('X', 126, uint32_t)
+
+
+int main(int argc, char **argv)
+{
+	int minsize = 4096;
+	int fd;
+
+	if (argc != 2) {
+		fprintf(stderr, "usage: %s mountpoint\n", argv[0]);
+		return 1;
+	}
+
+	fd = open(argv[1], O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		return 1;
+	}
+
+	if (ioctl(fd, XFS_IOC_TRIM, &minsize)) {
+		if (errno == EOPNOTSUPP)
+			fprintf(stderr, "TRIM not supported\n");
+		else
+			perror("XFS_IOC_TRIM");
+		return 1;
+	}
+
+	return 0;
+}
+
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_ioctl.c
 ===================================================================
---- linux-2.6.orig/drivers/ata/libata-scsi.c	2009-08-29 15:53:44.851841524 -0300
-+++ linux-2.6/drivers/ata/libata-scsi.c	2009-08-29 19:25:16.319344322 -0300
-@@ -1051,6 +1051,46 @@ static void ata_gen_ata_sense(struct ata
- 	desc[11] = block;
- }
- 
-+static int ata_discard_fn(struct request_queue *q, struct request *req,
-+							struct bio *bio)
-+{
-+	unsigned size;
-+	struct page *page = alloc_page(GFP_KERNEL);
-+	if (!page)
-+		goto error;
-+
-+	size = ata_set_lba_range_entries(page_address(page), PAGE_SIZE / 8,
-+					bio->bi_sector, bio_sectors(bio));
-+	bio->bi_size = 0;
-+	if (bio_add_pc_page(q, bio, page, size, 0) < size)
-+		goto free_page;
-+
-+	req->cmd_type = REQ_TYPE_BLOCK_PC;
-+	req->cmd_len = 16;
-+	req->cmd[0] = ATA_16;
-+	req->cmd[1] = (6 << 1) | 1;		/* dma, 48-bit */
-+	req->cmd[2] = 0x6;			/* length, direction */
-+	req->cmd[3] = 0;			/* feature high */
-+	req->cmd[4] = ATA_DSM_TRIM;		/* feature low */
-+	req->cmd[5] = (size / 512) >> 8;	/* nsect high */
-+	req->cmd[6] = size / 512;		/* nsect low */
-+	req->cmd[7] = 0;			/* lba */
-+	req->cmd[8] = 0;			/* lba */
-+	req->cmd[9] = 0;			/* lba */
-+	req->cmd[10] = 0;			/* lba */
-+	req->cmd[11] = 0;			/* lba */
-+	req->cmd[12] = 0;			/* lba */
-+	req->cmd[13] = ATA_LBA;			/* device */
-+	req->cmd[14] = ATA_CMD_DSM;		/* command */
-+	req->cmd[15] = 0;			/* control */
-+
-+	return 0;
-+ free_page:
-+	__free_page(page);
-+ error:
-+	return -ENOMEM;
-+}
-+
- static void ata_scsi_sdev_config(struct scsi_device *sdev)
- {
- 	sdev->use_10_for_rw = 1;
-@@ -1099,6 +1139,9 @@ static int ata_scsi_dev_config(struct sc
- 	/* configure max sectors */
- 	blk_queue_max_sectors(sdev->request_queue, dev->max_sectors);
- 
-+	if (ata_id_has_trim(dev->id))
-+		blk_queue_set_discard(sdev->request_queue, ata_discard_fn);
-+
- 	if (dev->class == ATA_DEV_ATAPI) {
- 		struct request_queue *q = sdev->request_queue;
- 		void *buf;
-@@ -2431,6 +2474,8 @@ static unsigned int ata_scsiop_read_cap(
- 		rbuf[15] = lowest_aligned;
- 	}
- 
-+	if (ata_id_has_trim(args->id))
-+		rbuf[14] = 0x80;
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl.c	2009-08-29 15:53:27.319844716 -0300
++++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl.c	2009-08-29 16:51:56.271867967 -0300
+@@ -1274,6 +1274,31 @@ xfs_ioc_getbmapx(
  	return 0;
  }
  
++STATIC int
++xfs_ioc_trim(
++	struct xfs_mount	*mp,
++	__uint32_t		*argp)
++{
++	xfs_agnumber_t		agno;
++	int			error = 0;
++	__uint32_t		minlen;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	if (get_user(minlen, argp))
++		return -EFAULT;
++
++	down_read(&mp->m_peraglock);
++	for (agno = 0; agno < mp->m_sb.sb_agcount; agno++) {
++		error = -xfs_trim_extents(mp, agno, minlen);
++		if (error)
++			break;
++	}
++	up_read(&mp->m_peraglock);
++
++	return error;
++}
++
+ /*
+  * Note: some of the ioctl's return positive numbers as a
+  * byte count indicating success, such as readlink_by_handle.
+@@ -1523,6 +1548,9 @@ xfs_file_ioctl(
+ 		error = xfs_errortag_clearall(mp, 1);
+ 		return -error;
+ 
++	case XFS_IOC_TRIM:
++		return xfs_ioc_trim(mp, arg);
++
+ 	default:
+ 		return -ENOTTY;
+ 	}
+Index: linux-2.6/fs/xfs/xfs_alloc.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_alloc.c	2009-08-29 15:53:27.355845733 -0300
++++ linux-2.6/fs/xfs/xfs_alloc.c	2009-08-29 16:59:20.451343922 -0300
+@@ -2609,6 +2609,96 @@ error0:
+ 	return error;
+ }
+ 
++STATIC int
++xfs_trim_extent(
++	struct xfs_mount	*mp,
++	xfs_agnumber_t		agno,
++	xfs_agblock_t		fbno,
++	xfs_extlen_t		flen)
++{
++	xfs_daddr_t		blkno = XFS_AGB_TO_DADDR(mp, agno, fbno);
++	sector_t		nblks = XFS_FSB_TO_BB(mp, flen);
++	int			error;
++
++	xfs_fs_cmn_err(CE_NOTE, mp, "discarding sectors [0x%llx-0x%llx]",
++			blkno, nblks);
++
++	error = -blkdev_issue_discard(mp->m_ddev_targp->bt_bdev, blkno, nblks,
++				      GFP_NOFS, DISCARD_FL_WAIT);
++	if (error && error != EOPNOTSUPP)
++		xfs_fs_cmn_err(CE_NOTE, mp, "discard failed, error %d", error);
++	return error;
++}
++
++/*
++ * Notify the underlying block device about our free extent map.
++ *
++ * This walks all free extents above a minimum threshold and notifies the
++ * underlying device that these blocks are unused.  That information is
++ * useful for SSDs or thinly provisioned storage in high end arrays or
++ * virtualization scenarios.
++ */
++int
++xfs_trim_extents(
++	struct xfs_mount	*mp,
++	xfs_agnumber_t		agno,
++	xfs_extlen_t		minlen)	/* minimum extent size to bother */
++{
++	struct xfs_btree_cur	*cur;	/* cursor for the by-block btree */
++	struct xfs_buf		*agbp;	/* AGF buffer pointer */
++	xfs_agblock_t		bno;	/* block the for next search */
++	xfs_agblock_t		fbno;	/* start block of found extent */
++	xfs_extlen_t		flen;	/* length of found extent */
++	int			error;
++	int			i;
++
++	error = xfs_alloc_read_agf(mp, NULL, agno, 0, &agbp);
++	if (error)
++		return error;
++
++	bno = 0;
++	for (;;) {
++		cur = xfs_allocbt_init_cursor(mp, NULL, agbp, agno,
++					      XFS_BTNUM_BNO);
++
++		error = xfs_alloc_lookup_ge(cur, bno, minlen, &i);
++		if (error)
++			goto error0;
++		if (!i) {
++			/*
++			 * No more free extents found: done.
++			 */
++			xfs_btree_del_cursor(cur, XFS_BTREE_NOERROR);
++			break;
++		}
++
++		error = xfs_alloc_get_rec(cur, &fbno, &flen, &i);
++		if (error)
++			goto error0;
++		XFS_WANT_CORRUPTED_GOTO(i == 1, error0);
++
++		/*
++		 * Pass if the freespace extent isn't long enough to bother.
++		 */
++		if (flen >= minlen) {
++			error = xfs_trim_extent(mp, agno, fbno, flen);
++			if (error) {
++				xfs_btree_del_cursor(cur, XFS_BTREE_NOERROR);
++				break;
++			}
++		}
++
++		xfs_btree_del_cursor(cur, XFS_BTREE_NOERROR);
++		bno = fbno + flen;
++	}
++
++out:
++	xfs_buf_relse(agbp);
++	return error;
++error0:
++	xfs_btree_del_cursor(cur, XFS_BTREE_ERROR);
++	goto out;
++}
+ 
+ /*
+  * AG Busy list management
+Index: linux-2.6/fs/xfs/xfs_alloc.h
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_alloc.h	2009-08-29 15:53:27.371844485 -0300
++++ linux-2.6/fs/xfs/xfs_alloc.h	2009-08-29 16:51:56.271867967 -0300
+@@ -215,4 +215,7 @@ xfs_free_extent(
+ 	xfs_fsblock_t	bno,	/* starting block number of extent */
+ 	xfs_extlen_t	len);	/* length of extent */
+ 
++int xfs_trim_extents(struct xfs_mount *mp, xfs_agnumber_t agno,
++	xfs_extlen_t minlen);
++
+ #endif	/* __XFS_ALLOC_H__ */
+Index: linux-2.6/fs/xfs/xfs_fs.h
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_fs.h	2009-08-29 15:53:27.391844445 -0300
++++ linux-2.6/fs/xfs/xfs_fs.h	2009-08-29 16:51:56.279865211 -0300
+@@ -475,6 +475,7 @@ typedef struct xfs_handle {
+ #define XFS_IOC_ATTRMULTI_BY_HANDLE  _IOW ('X', 123, struct xfs_fsop_attrmulti_handlereq)
+ #define XFS_IOC_FSGEOMETRY	     _IOR ('X', 124, struct xfs_fsop_geom)
+ #define XFS_IOC_GOINGDOWN	     _IOR ('X', 125, __uint32_t)
++#define XFS_IOC_TRIM		     _IOR ('X', 126, __uint32_t)
+ /*	XFS_IOC_GETFSUUID ---------- deprecated 140	 */
+ 
+ 
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl32.c	2009-08-29 15:53:27.339845024 -0300
++++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c	2009-08-29 16:51:56.283864672 -0300
+@@ -563,6 +563,7 @@ xfs_file_compat_ioctl(
+ 	case XFS_IOC_GOINGDOWN:
+ 	case XFS_IOC_ERROR_INJECTION:
+ 	case XFS_IOC_ERROR_CLEARALL:
++	case XFS_IOC_TRIM:
+ 		return xfs_file_ioctl(filp, cmd, p);
+ #ifndef BROKEN_X86_ALIGNMENT
+ 	/* These are handled fine if no alignment issues */
 
