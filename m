@@ -1,59 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbZH3R3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbZH3RaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753928AbZH3R3W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 13:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZH3R3V
+	id S1753948AbZH3RaW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 13:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbZH3RaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 13:29:21 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:61293 "EHLO
-	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbZH3R3V convert rfc822-to-8bit (ORCPT
+	Sun, 30 Aug 2009 13:30:21 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:59066 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753605AbZH3RaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 13:29:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :content-type:content-transfer-encoding;
-        b=UCqeNsheWqi9OjI8Y1TGI+jtVNq6ApNJyWV4zH9VimVxu8IhsorTW4xkJgvyNS+mj7
-         crIPuYHhypUFMYPjCIjBHilmXe1NjnekOcvZRbIhB51Sagavs59KEyioSyihB26WULJr
-         spVsQumdhGo+fMl7xZUuPxlIQU6ZuazJ3wvck=
+	Sun, 30 Aug 2009 13:30:19 -0400
+Date: Sun, 30 Aug 2009 18:29:59 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       Evgeniy Polyakov <zbr@ioremap.net>, ocfs2-devel@oss.oracle.com,
+       Joel Becker <joel.becker@oracle.com>, Felix Blyakher <felixb@sgi.com>,
+       xfs@oss.sgi.com, Anton Altaparmakov <aia21@cantab.net>,
+       linux-ntfs-dev@lists.sourceforge.net,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-ext4@vger.kernel.org, tytso@mit.edu
+Subject: Re: [PATCH 07/17] vfs: Introduce new helpers for syncing after writing to O_SYNC file or IS_SYNC inode
+Message-ID: <20090830172959.GD7129@shareable.org>
+References: <1250875447-15622-1-git-send-email-jack@suse.cz> <1250875447-15622-8-git-send-email-jack@suse.cz> <20090827173540.GA19115@infradead.org> <20090830163551.GA7129@shareable.org> <20090830163917.GA23955@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <20090830171749.GA8642@mit.edu>
-References: <43e72e890908272225w79ec5bf6kc7ef1160e5a088ae@mail.gmail.com> 
-	<tnxtyzr7vcl.fsf@pc1117.cambridge.arm.com> <20090830163417.GA15183@skywalker.linux.vnet.ibm.com> 
-	<20090830171749.GA8642@mit.edu>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Sun, 30 Aug 2009 10:29:01 -0700
-Message-ID: <43e72e890908301029t71a9c1a2t3d17e99cf3112ad2@mail.gmail.com>
-Subject: Re: memleaks, acpi + ext4 + tty
-To: Theodore Tso <tytso@mit.edu>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090830163917.GA23955@lst.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 30, 2009 at 10:17 AM, Theodore Tso<tytso@mit.edu> wrote:
-> On Sun, Aug 30, 2009 at 10:04:17PM +0530, Aneesh Kumar K.V wrote:
->> > The ext4 reports are real leaks and patch was posted here -
->> > http://lkml.org/lkml/2009/7/15/62. However, it hasn't been merged into
->> > mainline yet (I cc'ed Aneesh).
->>
->> The patch is part of ext4-patchqueue  http://repo.or.cz/w/ext4-patch-queue.git
->>
->> Any plans to push the patches to linus tree soon ?
->
-> Yes, as soon as the next merge window opens.  The leak only shows up
-> when you mount and unmount a filesystem, which under normal
-> circumstances doesn't happen a huge number of times on most systems.
-> By the time it showed up it was late enough in the 2.6.31-rcX series
-> that I figured it was better to wait until the next merge window.  I
-> didn't consider it a high priority bug.
+Christoph Hellwig wrote:
+> Linux has sync_file_range which currently is a perfect way to lose your
+> synced' data, but with two more flags and calls to ->fsync we could
+> turn it into range-fsync/fdatasync.
 
-That's odd I run into this kmemleak with a single bootup, no manual remounts.
+Apart from the way it loses your data, the man page for
+sync_file_range never manages to explain quite why you should use the
+existing flags in various combinations.  It's only obvious if you've
+worked on a kernel yourself.
 
-  Luis
+Having asked this before, it appears one of the reasons for
+sync_file_range working as it does is to give the application more
+control over writeback order and to some extent, reduce the amount of
+blocking.
+
+But it's really difficult to manage the amount of blocking with it.
+You need to know the request queue size among other things, and even
+if you do it's dynamic.  Writeback order would be as easy with
+fdatasync_range, and if you want to reduce blocking, a good
+implementation of aio_fsync would be more useful.  Or, you have to use
+application writeback threads anyway, so fdatasync_range again.
+
+The one thing sync_file_range can do is let you submit multiple ranges
+which the elevators can sort for the hardware.  You can't do that with
+sequential calls to fdatasync_range, and it's not clear that aio_fsync
+is implemented well enough (but it's a fairly good API for it).
+
+Nick Piggin's idea to let fdatasync_range take multiple ranges might
+help with that, but it's not clear how much.
+
+> I'm not sure if that's a good
+> idea or if we should just add a sys_fdatasync_rage systems call.
+
+fdatasync_range has the advantage of being comprehensible.  People
+will use it because it makes sense.
+
+sync_file_range could be hijacked with new flags to implement
+fdatasync_range.  If that's done, I'd rename the system call, but keep
+it compatible with sync_file_range's flags, which would never be set
+when userspace uses the new functionality.
+
+> I don't quite see the point of a range-fsync, but it could be easily
+> implemented as a flag.
+
+A flags argument would be good anyway: to indicate if we want an
+ordinary fdatasync, or something which flushes the relevant bit of
+volatile hardware caches too.  With that as a capability, it is useful
+to offer fsync, because that'd be the only way to get a volatile
+hardware cache flush (or maybe the only way not to?).
+
+For that reason, it should be permitted to give an infinitely large range.
+
+I don't see the point of range-fsync either, but I'm not sure if I see
+any harm in it.  If permitted, range-fsync with a zero-byte range
+would flush just the inode state and none of the data.  If that's
+technically available, maybe O_ISYNC and "#define O_SYNC
+(O_DATASYNC|O_ISYNC)" isn't such as daft idea.
+
+I'd call it fsync_range for consistency with aio_fsync (POSIX), which
+takes flags O_DSYNC or O_SYNC to indicate the type of sync.  But I'd
+use new flag names, to keep the space clear for other flags.  Just
+sketching some ideas:
+
+/* One of FSYNC_RANGE_SYNC or FSYNC_RANGE_DATASYNC must be set. */
+
+#define FSYNC_RANGE_SYNC	(1 << 0)	/* Like fsync, O_SYNC. */
+#define FSYNC_RANGE_DATASYNC	(1 << 1)	/* Like fdatasync, O_DSYNC. */
+#define FSYNC_RANGE_NO_HWCACHE	(1 << 2)	/* Not hardware caches. */
+
+-- Jamie
