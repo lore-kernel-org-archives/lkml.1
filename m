@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbZH3M63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbZH3M6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbZH3M63 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 08:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbZH3M63
+	id S1753452AbZH3M6g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 08:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZH3M6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 08:58:29 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:62832 "EHLO
+	Sun, 30 Aug 2009 08:58:35 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:37085 "EHLO
 	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753410AbZH3M62 (ORCPT
+	with ESMTP id S1753452AbZH3M6c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 08:58:28 -0400
+	Sun, 30 Aug 2009 08:58:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=fnk+BnevatIQkKN/jFVAFF/JeVtjCnRiBf5nzfcptoaxWhj1d+6UKJvJGVfw0YpJ08
-         TuEDrxMy9sXL3c3NkBVrk9PnyuYLs6wv2r7Z8k4RA8kyasHsWP5gmuTb4c3ThxuUQnRb
-         rC++L4pos6Nbminn6b8iHX77SxCNpI5nf/B4A=
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=RlIFT5DrkOh0GeW2NjbaB9Qf2HJfJ5iRCq7oLjvJGVDqxCm7qG2H64liWY0puHKuU0
+         EJIL6fKOfml3FzGy1Tz1jrgFRbdJHb03PJYQwxf3z5H72MKsYCWSOTF6ihOQsrUr432i
+         QZOFAMUwnDhyH1vo/igYYl8OSr76C3PoQmtI4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [PATCH 00/33] Staging: rt{286,287,307}0: merge rt3070 with rt2870
-Date: Sun, 30 Aug 2009 14:28:27 +0200
+To: Zhu Yi <yi.zhu@intel.com>
+Subject: Re: ipw2200: firmware DMA loading rework
+Date: Sun, 30 Aug 2009 14:37:42 +0200
 User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-00015-gadda766-dirty; KDE/4.3.0; i686; ; )
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, devel@driverdev.osuosl.org,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-References: <20090823132846.17784.13359.sendpatchset@localhost.localdomain> <4A917D64.7010504@gmail.com>
-In-Reply-To: <4A917D64.7010504@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@skynet.ie>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       James Ketrenos <jketreno@linux.intel.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw2100-devel@lists.sourceforge.net" 
+	<ipw2100-devel@lists.sourceforge.net>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <20090826074409.606b5124.akpm@linux-foundation.org> <1251430951.3704.181.camel@debian>
+In-Reply-To: <1251430951.3704.181.camel@debian>
 MIME-Version: 1.0
-Message-Id: <200908301428.28026.bzolnier@gmail.com>
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908301437.42133.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 23 August 2009 19:33:24 Marcin Slusarz wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> > Hi,
-> > 
-> > The final part of rt2870 and rt3070 merge.
-> > 
-> > It adds RT3070 chipset support to rt2870 driver and removes no longer needed
-> > rt3070 driver (yes, it means one Ralink driver less in the staging tree!).
-> > 
-> > [ in the process many bugs in all Ralink drivers were fixed, RT2870 chipset
-> >   support was converted to use the new firmware and ~1.5 KLOC were removed ]
-> > 
-> > I tested it on RT2860 and RT3070 chipsets already but I would need some help
-> > from people with RT2870 hardware to verify those changes (Mike? Marcin?).
-> 
-> I tested this patchset on WUSB54GC-V3 (1737:0077) and it works fine so far.
-> Unfortunately it's not rt2870 you are looking for. With rt2800usb driver I get:
-> phy0 -> rt2x00_set_chip: Info - Chipset detected - rt: 1600, rf: 0006, rev: 30700200.
-> so it's rt3070 chipset.
+On Friday 28 August 2009 05:42:31 Zhu Yi wrote:
+> Bartlomiej Zolnierkiewicz reported an atomic order-6 allocation failure
+> for ipw2200 firmware loading in kernel 2.6.30. High order allocation is
 
-Thanks, more testing for all Ralink changes that went into staging tree
-is still needed and appreciated.
+s/2.6.30/2.6.31-rc6/
+
+The issue has always been there but it was some recent change that
+explicitly triggered the allocation failures (after 2.6.31-rc1).
+
+> likely to fail and should always be avoided.
+> 
+> The patch fixes this problem by replacing the original order-6
+> pci_alloc_consistent() with an array of order-1 pages from a pci pool.
+> This utilized the ipw2200 DMA command blocks (up to 64 slots). The
+> maximum firmware size support remains the same (64*8K).
+> 
+> This patch fixes bug http://bugzilla.kernel.org/show_bug.cgi?id=14016
+> 
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+
+Thanks for the fix (also kudos to other people helping with the bugreport),
+it works fine so far and looks OK to me:
+
+Tested-and-reviewed-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
