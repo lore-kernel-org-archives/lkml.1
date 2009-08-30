@@ -1,78 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753796AbZH3PVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbZH3Ph1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753796AbZH3PVB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 11:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZH3PVA
+	id S1753810AbZH3Ph1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 11:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbZH3Ph1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 11:21:00 -0400
-Received: from thunk.org ([69.25.196.29]:50970 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753221AbZH3PU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 11:20:59 -0400
-Date: Sun, 30 Aug 2009 11:20:23 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: NeilBrown <neilb@suse.de>, Ric Wheeler <rwheeler@redhat.com>,
-       Rob Landley <rob@landley.net>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
-	document conditions when reliable operation is possible)
-Message-ID: <20090830152023.GB23828@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-	NeilBrown <neilb@suse.de>, Ric Wheeler <rwheeler@redhat.com>,
-	Rob Landley <rob@landley.net>, Florian Weimer <fweimer@bfk.de>,
-	Goswin von Brederlow <goswin-v-b@web.de>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-	linux-ext4@vger.kernel.org, corbet@lwn.net
-References: <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com> <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>
+	Sun, 30 Aug 2009 11:37:27 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:41789 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753710AbZH3Ph0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 11:37:26 -0400
+Date: Sun, 30 Aug 2009 17:37:22 +0200
+From: Sebastian Andrzej Siewior <sebastian@ml.breakpoint.cc>
+To: Celejar <celejar@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Jonas Meurer <jonas@freesources.org>, 541835@bugs.debian.org,
+       lkml <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org
+Subject: Re: [pkg-cryptsetup-devel] Bug#541835: crypto configuration /
+	dependencies broken
+Message-ID: <20090830153722.GA28497@Chamillionaire.breakpoint.cc>
+References: <20090825195852.1dfacb6c.celejar@gmail.com> <20090827095516.6817be1e.randy.dunlap@oracle.com> <20090827183500.GC24973@resivo.wgnet.de> <20090827123401.86cd4319.randy.dunlap@oracle.com> <20090828080056.GA3204@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090830075135.GA1874@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20090828080056.GA3204@Chamillionaire.breakpoint.cc>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 30, 2009 at 09:51:35AM +0200, Pavel Machek wrote:
-> 
-> If it only was this simple. We don't have 'check brakes' (aka
-> 'journalling ineffective') warning light. If we had that, I would not
-> have problem.
+* Sebastian Andrzej Siewior | 2009-08-28 10:00:56 [+0200]:
 
-But we do; comptently designed (and in the cast of software RAID,
-competently packaged) RAID subsystems send notifications to the system
-administrator when there is a hard drive failure.  Some hardware RAID
-systems will send a page to the system administrator.  A mid-range
-Areca card has a separate ethernet port so it can send e-mail to the
-administrator, even if the OS is hosed for some reason.
+>>> the problem is not reproducible with a debian/unstable 2.6.30.6 kernel,
+>>> even though it has cbc compiled as module as well. but if I recompile
+>>> the same kernel sources with Celejars kernel .config, the problem
+>>> occurs. thus it must be related to the kernel config in some way.
+>It must be the kernel confing since I run .30.stable and it works. I try
+>to look at it later.
 
-And it's not a matter of journalling ineffective; the much bigger deal
-is, "your data is at risk"; perhaps because the file system metadata
-may become subject to corruption, but more critically, because the
-file data may become subject to corruption.  Metadata becoming subject
-to corruption is important primarily because it leads to data becoming
-corruption; metadata is the tail; the user's data is the dog.
+Your kernel config is fine, the problem is that the initramfs tools do
+not copy all of the required modules into the initramfs. The missing
+modles are:
+- cryptomgr: that one is responsible to load the cbc and aes module and
+  bind them to cbc(aes)
+- chainiv: that one creates IVs if the "user" does not specify one.
+  dm-crypt probably does not use that one but is required due to the way
+  crypto works atm.
+- krng: provides random numbers and is required by chainiv.
 
-So we *do* have the warning light; the problem is that just as some
-people may not realize that "check brakes" means, "YOU COULD DIE",
-some people may not realize that "hard drive failure; RAID array
-degraded" could mean, "YOU COULD LOSE DATA".
+If you add those three to /etc/initramfs/modules than it should work.
 
-Fortunately, for software RAID, this is easily solved; if you are so
-concerned, why don't you submit a patch to mdadm adjusting the e-mail
-sent to the system administrator when the array is in a degraded
-state, such that it states, "YOU COULD LOSE DATA".  I would gently
-suggest to you this would be ***far*** more effective that a patch to
-kernel documentation.
+Could someone please look at initramfs to figure out why those three
+modules are not copied in this reduced setup?
 
-						- Ted
+>Sebastian
