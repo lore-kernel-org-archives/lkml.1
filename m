@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZH3U2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZH3U3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbZH3U2d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 16:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZH3U2c
+	id S1754088AbZH3U3b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 16:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZH3U3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 16:28:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48870 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752606AbZH3U2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 16:28:31 -0400
-Date: Sun, 30 Aug 2009 20:27:41 GMT
-From: tip-bot for Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, randy.dunlap@oracle.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, randy.dunlap@oracle.com
-In-Reply-To: <4A9ADEC0.70306@oracle.com>
-References: <4A9ADEC0.70306@oracle.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] timers: Drop a function prototype
-Message-ID: <tip-e500011ffa191d662ac64d4ada6a5187b3180e16@git.kernel.org>
-Git-Commit-ID: e500011ffa191d662ac64d4ada6a5187b3180e16
-X-Mailer: tip-git-log-daemon
+	Sun, 30 Aug 2009 16:29:31 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:46019 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754043AbZH3U3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 16:29:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=W7VFYgeup7cZRhhTh65mjPgDjNZ3O2gwvJoIGXNv1mmFg7DtbxFT5wtT9amCxzXJ1y
+         3sZFuGvQe6Oq1atxMdyTOtfNcWp0DTr9fTRGLm7dFfPauQ7ZAAYQi+gWTv03Y2F4DmVo
+         N2+z4OCM/tX94Fmj9sJNCXxO3uUTiIkJS230I=
+Date: Sun, 30 Aug 2009 22:29:26 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
+       tglx@linutronix.de, borislav.petkov@amd.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [PATCH 3/3] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
+ CPUID bit
+Message-ID: <20090830202926.GC22234@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	"H. Peter Anvin" <hpa@zytor.com>, mingo@redhat.com,
+	linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
+	tglx@linutronix.de, borislav.petkov@amd.com,
+	linux-tip-commits@vger.kernel.org
+References: <1251633031-2244-1-git-send-email-petkovbb@gmail.com>
+ <1251633031-2244-3-git-send-email-petkovbb@gmail.com>
+ <4A9AD17A.6060507@zytor.com>
+ <20090830193039.GB22234@liondog.tnic>
+ <4A9ADAC3.3020004@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 30 Aug 2009 20:27:42 +0000 (UTC)
+In-Reply-To: <4A9ADAC3.3020004@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e500011ffa191d662ac64d4ada6a5187b3180e16
-Gitweb:     http://git.kernel.org/tip/e500011ffa191d662ac64d4ada6a5187b3180e16
-Author:     Randy Dunlap <randy.dunlap@oracle.com>
-AuthorDate: Sun, 30 Aug 2009 13:19:12 -0700
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Sun, 30 Aug 2009 22:26:34 +0200
+On Sun, Aug 30, 2009 at 01:02:11PM -0700, H. Peter Anvin wrote:
+> On 08/30/2009 12:30 PM, Borislav Petkov wrote:
+> > On Sun, Aug 30, 2009 at 12:22:34PM -0700, H. Peter Anvin wrote:
+> >> On 08/30/2009 04:50 AM, Borislav Petkov wrote:
+> >>>  			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
+> >>> +			if (!rdmsrl_amd_safe(0xc001100d, &val)) {
+> >>> +				val &= ~(1ULL << 32);
+> >>> +				wrmsr_amd_safe(0xc001100d, (u32) val,
+> >>> +							   (u32)(val >> 32));
+> >>> +			}
+> >>> +		}
+> >> We presumably want/need wrmsrl_amd_safe() here!
+> > 
+> > Actually, it is wrmsr_amd_safe() because we need the magic value in
+> > %edi. wrmsr_amd_safe() calls the _regs variant with the array argument.
+> > And we don't have a wrmsrl_amd_safe-one which gets a 64bit msr value as
+> > an argument similar to the rdmsrl one.
+> > 
+> 
+> That's exactly the point.  We shouldn't have rdmsrl_amd_safe() on one
+> hand and wrmsr_asm_safe() on the other.  I have already fixed this up in
+> my tree, but this kind of asymmetry should have been a big red flashing
+> light.
 
-timers: Drop a function prototype
+Ok, what do we want actually? We have rdmsr_safe and rdmsrl_safe where
+the last one engineers the 2 u32s into a u64. My gut feeling would opt
+for the 2 32bit values instead of one 64bit since they're naturally
+returned into %eax:%edx. And in the most cases we need only one of the
+values. However, the MSRs themselves are 64bit... Hmmm...
 
-Drop prototype for non-existent next_timer_interrupt() function.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: akpm <akpm@linux-foundation.org>
-LKML-Reference: <4A9ADEC0.70306@oracle.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-
-
----
- include/linux/timer.h |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
-
-diff --git a/include/linux/timer.h b/include/linux/timer.h
-index be62ec2..a2d1eb6 100644
---- a/include/linux/timer.h
-+++ b/include/linux/timer.h
-@@ -175,11 +175,6 @@ extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
- 
- /*
-  * Return when the next timer-wheel timeout occurs (in absolute jiffies),
-- * locks the timer base:
-- */
--extern unsigned long next_timer_interrupt(void);
--/*
-- * Return when the next timer-wheel timeout occurs (in absolute jiffies),
-  * locks the timer base and does the comparison against the given
-  * jiffie.
-  */
+-- 
+Regards/Gruss,
+    Boris.
