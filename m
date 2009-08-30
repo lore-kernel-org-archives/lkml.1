@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbZH3GtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752067AbZH3G7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbZH3GtS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 02:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZH3GtR
+	id S1752067AbZH3G7V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 02:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZH3G7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 02:49:17 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43457 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751872AbZH3GtQ (ORCPT
+	Sun, 30 Aug 2009 02:59:20 -0400
+Received: from smtp1m5.poczta.onet.pl ([213.180.138.32]:52578 "EHLO
+	smtp1m5.poczta.onet.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751417AbZH3G7U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 02:49:16 -0400
-Date: Sun, 30 Aug 2009 08:49:09 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, david@lang.hm,
-       Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] document flash/RAID dangers
-Message-ID: <20090830064909.GB1417@ucw.cz>
-References: <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm> <20090826001206.GL4300@elf.ucw.cz> <4A94812C.5010803@redhat.com> <20090826004430.GR4300@elf.ucw.cz> <alpine.DEB.2.00.0908251817390.30426@asgard.lang.hm> <20090826112535.GF26595@elf.ucw.cz> <20090826123709.GJ32712@mit.edu>
+	Sun, 30 Aug 2009 02:59:20 -0400
+From: Mario <rety@poczta.onet.pl>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: Is acpi_ec_ecdt_probe() broken? (was: Re: ACPI locks hardware devices when it doesn't detect vista)
+Date: Sun, 30 Aug 2009 08:59:29 +0200
+User-Agent: KMail/1.9.10
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <1250945310.14167.150.camel@maxim-laptop> <200908300037.45412.rjw@sisk.pl> <1251588634.15582.0.camel@maxim-laptop>
+In-Reply-To: <1251588634.15582.0.camel@maxim-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090826123709.GJ32712@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200908300859.29494.rety@poczta.onet.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-08-26 08:37:09, Theodore Tso wrote:
-> On Wed, Aug 26, 2009 at 01:25:36PM +0200, Pavel Machek wrote:
-> > > you just plain cannot count on writes that are in flight when a powerfail 
-> > > happens to do predictable things, let alone what you consider sane or  
-> > > proper.
-> > 
-> > From what I see, this kind of failure is rather harder to reproduce
-> > than the software problems. And at least SGI machines were designed to
-> > avoid this...
-> > 
-> > Anyway, I'd like to hear from ext3 people... what happens on read
-> > errors in journal? That's what you'd expect to see in situation above.
-> 
-> On a power failure, what normally happens is that the random garbage
-> gets written into the disk drive's last dying gasp, since the memory
-> starts going insane and sends garbage to the disk.  So the disk
-> successfully completes the write, but the sector contains garbage.
-> Since HDD's tend to be last thing to die, being less sensitive to
-> voltage drops than the memory or DMA controller, my experience is that
-> you don't get a read error after the system comes up, you just get
-> garbage written into the journal.
-> 
-> The ext3 journalling code waits until all of the journal code is
-> written, and only then writes the commit block.  On restart, we look
-> for the last valid commit block.  So if the power failure is before we
-> write the commit block, we replay the journal up until the previous
-> commit block.  If the power failure is while we are writing the commit
-> block, garbage will be written out instead of the commit block, and so
-> it falls back to the previous case.
-> 
-> We do not allow any updates to the filesystem metadata to take place
-> until the commit block has been written; therefore the filesystem
-> stays consistent.
+Maxim, 
 
-Ok, cool.
+I did the test regarding last coment from Alexey Starikovskiy on the bugzilla.
 
-> If there the journal *does* develop read errors, then fsck will
-> require a manual fsck, and so the boot operation will get stopped so a
-> system administrator can provide manual intervention.  The best bet
-> for the sysadmin is to replay as much of the journal she can, and then
-> let fsck fix any resulting filesystem inconsistencies.  In practice,
+>What happens if acpi_ec_ecdt_probe() is not called at all? Do you have same
+>hang as with changed order?
 
-...and that should result in consistent fs with no data loss, because
-read error is essentialy the same as garbage given back, right?
+That did it. System starts and MIR works ok without setpci solution.
 
-...plus, this is significant difference from logical-logging
-filesystems, no?
+Regards
+Mario
 
-Should this go to Documentation/, somewhere?
+Sunday 30 of August 2009 01:30:34 Maxim Levitsky wrote:
+> On Sun, 2009-08-30 at 00:37 +0200, Rafael J. Wysocki wrote:
+> > On Saturday 29 August 2009, Mario wrote:
+> > > Exact model is Compal JFL92.
+> > > I've attached a dmidecode output.
+> >
+> > OK
+> >
+> > Maxim, Mario, can you create a bug entry in the kernel Bugzilla for this
+> > issue and put my address into the CC list in there?
+>
+> Done,
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=14086
+>
+>
+> Best regards,
+> 	Maxim Levitsky
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
