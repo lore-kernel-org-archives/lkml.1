@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbZH3NJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbZH3NOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753556AbZH3NJE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 09:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbZH3NJD
+	id S1753527AbZH3NOA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 09:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbZH3NN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 09:09:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48742 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753409AbZH3NJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 09:09:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/6] PM: Asynchronous resume of devices
-Date: Sun, 30 Aug 2009 15:09:50 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0908282146550.9540-100000@netrider.rowland.org> <200908291449.57667.rjw@sisk.pl> <20090830064533.GA1417@ucw.cz>
-In-Reply-To: <20090830064533.GA1417@ucw.cz>
+	Sun, 30 Aug 2009 09:13:59 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:43878 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753456AbZH3NN6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 09:13:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=WB2L/CC4YHG+dy/BT9qzUenqBQ/YY1GlTaTYCDEBcaP2D+SUxtsA1UOgUlnqi3nJ9m
+         UnMu6tDWlQl6ASQcNzwzOwM97EL971ibuOI3W7S15J47Ir8e5g+BfYdAgh3yDeuvtSX/
+         osqT2HhMWl4CBR+i3MPF7tJdtMm/aD6Scszco=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] MAINTAINERS: remove dead ncpfs list
+Date: Sun, 30 Aug 2009 15:14:31 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-00015-gadda766-dirty; KDE/4.3.0; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Petr Vandrovec <vandrove@vc.cvut.cz>, linux-kernel@vger.kernel.org
+References: <200908192219.09911.bzolnier@gmail.com> <1250719775.3407.91.camel@Joe-Laptop.home>
+In-Reply-To: <1250719775.3407.91.camel@Joe-Laptop.home>
 MIME-Version: 1.0
+Message-Id: <200908301514.31208.bzolnier@gmail.com>
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908301509.50855.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 August 2009, Pavel Machek wrote:
-> Hi!
-> 
-> > > > > > > The same goes for the noirq versions.
-> > > > > > 
-> > > > > > I thought about that, but there are a few things to figure out:
-> > > > > > - how many threads to start
-> > > > > 
-> > > > > That's a tough question.  Right now you start roughly as many threads
-> > > > > as there are async devices.  That seems like overkill.
-> > > > 
-> > > > In fact they are substantially fewer than that, for the following reasons.
-> > > > 
-> > > > First, the async framework will not start more than MAX_THREADS threads,
-> > > > which is 256 at the moment.  This number is less than the number of async
-> > > > devices to handle on an average system.
-> > > 
-> > > Okay, but MAX_THREADS isn't under your control.  Remember also that 
-> > > each thread takes up some memory, and during hibernation we are in a 
-> > > memory-constrained situation.
+On Thursday 20 August 2009 00:09:35 Joe Perches wrote:
+> On Wed, 2009-08-19 at 22:19 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] MAINTAINERS: remove dead ncpfs list
 > > 
-> > We keep some extra free memory for things like this.  It's not likely to be
-> > exhausted by the async threads alone.
+> > On Saturday 01 August 2009 00:30:39 Mail Delivery Subsystem wrote:
+> > > Delivery to the following recipient failed permanently:
+> > > 
+> > >      linware@sh.cvut.cz
 > 
-> What extra memory? You are creating quite a lot of threads. For 256 of
-> them, it would take cca 2MB...
+> Documentation/filesystems/ncpfs.txt looks pretty out of date
+> as well.
+> 
+> "Linware's home site is klokan.sh.cvut.cz/pub/linux/linware"
+> is dead.
 
-We never start that many threads and even if there's not enough memory to
-start a new thread, the async framework will handle that for us.
+OK, lets fix it while we are at it..
 
-> You recently removed code from s2disk that freed 4MB of extra memory,
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ncpfs: remove dead URL from documentation
 
-That was removed from s2ram.  For STD we still have PAGES_FOR_IO and
-SPARE_PAGES, nothing's changed there.
+Noticed-by: Joe Perches <joe@perches.com>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+Andrew, could you also pick up my "ncpfs: fix wrong check in __ncp_ioctl()"
+patch from 2009-07-28?  Thanks.
 
-Thanks,
-Rafael
+ Documentation/filesystems/ncpfs.txt |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: b/Documentation/filesystems/ncpfs.txt
+===================================================================
+--- a/Documentation/filesystems/ncpfs.txt
++++ b/Documentation/filesystems/ncpfs.txt
+@@ -7,6 +7,6 @@ ftp.gwdg.de/pub/linux/misc/ncpfs, but su
+ will have it as well.
+ 
+ Related products are linware and mars_nwe, which will give Linux partial
+-NetWare server functionality.  Linware's home site is
+-klokan.sh.cvut.cz/pub/linux/linware; mars_nwe can be found on
+-ftp.gwdg.de/pub/linux/misc/ncpfs.
++NetWare server functionality.
++
++mars_nwe can be found on ftp.gwdg.de/pub/linux/misc/ncpfs.
