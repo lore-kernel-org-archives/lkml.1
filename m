@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbZH3Bfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbZH3CPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753152AbZH3Bfy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 21:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZH3Bfy
+	id S1753182AbZH3CPg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 22:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZH3CPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 21:35:54 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:44842 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753118AbZH3Bfx (ORCPT
+	Sat, 29 Aug 2009 22:15:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55351 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbZH3CPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 21:35:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZEifr7EL3a3wxtIMJpKpU968NbRjOWEf3tyfxfnimEcwIwdv/ZR/1lWSeVKQfyL0tN
-         5x6q57JEL5cl2KUZdxKdhLcBAyfBipA00jz3D6EId7DWHoqXk/6FDR2L+nF5GNBm6+YW
-         GL8Ld/viYwI3OXd1Sy3nfXV57ymtDZXy5JGgI=
-Date: Sun, 30 Aug 2009 03:35:52 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH -tip tracing/kprobes 1/2] x86: Allow x86-32 instruction
-	decoder selftest on x86-64
-Message-ID: <20090830013551.GD387@nowhere>
-References: <20090827163533.GA30268@elte.hu> <20090828221319.8778.88508.stgit@localhost.localdomain>
+	Sat, 29 Aug 2009 22:15:34 -0400
+Date: Sat, 29 Aug 2009 22:15:34 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, liml@rtr.ca,
+       jens.axboe@oracle.com, dwmw2@infradead.org
+Subject: Re: [PATCH 0/7] discard support revisited
+Message-ID: <20090830021534.GA14706@infradead.org>
+References: <20090829230332.017137693@bombadil.infradead.org> <20090829233718.GD22870@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090828221319.8778.88508.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090829233718.GD22870@parisc-linux.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 28, 2009 at 06:13:19PM -0400, Masami Hiramatsu wrote:
-> Pass $(CONFIG_64BIT) to the x86 insn decoder selftest for decoding 32bit code
-> on x86-64, which will happen when building kernel with ARCH=i386 on x86-64.
+On Sat, Aug 29, 2009 at 05:37:19PM -0600, Matthew Wilcox wrote:
+> >  - I have implemented support for sending WRITE SAME requests with the
+> >    unmap bit set in sd.  This has been tested with a qemu-based backed
+> >    only so far, but we'll get some real array coverage soon.
 > 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Jim Keniston <jkenisto@us.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
+> I think we're going to need to figure out whether we should be sending
+> UNMAP or WRITE SAME ... probably need to dive back into the T10 poostorm
+> to see what's going on.
 
+Good question.  Latest I had heard was that at least one array vendor
+prefers the WRITE SAME.  To me it looks like the much saner interface
+for the OS, so unless there are arrays that strongly prefer UNMAP or
+we need to make use of the multiple extends feature in it I'd go with
+WRITE SAME as first choice.
 
+> > I would really love to see some progress on this in the 2.6.32 circle.
+> > We should at least get the block layer bits in that allow implementing
+> > a somewhat useful discard function.  I would also love to see the
+> > actual scsi and libata implementations in so that we can start playing
+> > around with it.  But given the speed up the current TRIM implementations
+> > and the expectations for WRITE SAME we should make sure the exact
+> > TRIM tracking is not actually enabled anywhere by default for now.
+> 
+> Jens had some objections to the block layer bits last time I posted
+> these.  I forget what they were now (this would have been around May
+> 2nd, I think).  What I've done instead in my current patchset (which
+> undoubtedly has bugs because it isn't tested, because I'm not supposed
+> to be working on the weekends) is to make sd_prep_fn() call a new method
+> in the scsi_host_template.  That should translate the discard request
+> into a BLOCK_PC ATA_16 command, and we'll all be happy.
+> 
+> It goes a little something like this:
+> http://git.kernel.org/?p=linux/kernel/git/willy/ssd.git;a=shortlog;h=trim-20090829
+> 
+> Right now, the test tool is telling me 'Operation not supported', and
+> I haven't tried to figure out why yet.
 
-Also applied those two, thanks!
-
+Queue flag and handling the discard in the prep function is much better
+than the prepare function, yes.  I don't like the prep_fn callout to the
+host a lot.  If we go with WRITE SAME as prefered discard option for
+scsi translating it to TRIM should be relatively easy, it uses the same
+LBA/length encoding as the regular WRITE_16, except that the payload is
+just a single sector.  That should be not too hard to implement in the
+SAT layer.
