@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbZH3HUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZH3H1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582AbZH3HUG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 03:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZH3HUF
+	id S1752631AbZH3H1w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 03:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZH3H1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 03:20:05 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41751 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751853AbZH3HUD (ORCPT
+	Sun, 30 Aug 2009 03:27:52 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:39574 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751980AbZH3H1v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 03:20:03 -0400
-Date: Sun, 30 Aug 2009 09:19:57 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
-       Rik van Riel <riel@redhat.com>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090830071957.GA1656@ucw.cz>
-References: <4A92F6FC.4060907@redhat.com> <20090826111751.GC26595@elf.ucw.cz> <20090826122813.GI32712@mit.edu> <200908270106.15032.rob@landley.net> <alpine.DEB.2.00.0908262342120.6822@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908262342120.6822@asgard.lang.hm>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 30 Aug 2009 03:27:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:reply-to:organization:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=fO27zFg57Bstb7aFkowbqFRwQ9hfJueCaW8Ac31UgGDF84Yli/OF6CAtX5UiGIDJk2
+         A5DKTw65a76Og0B8hKPVLzPBM09AfCbwXcFwbZS9fgaGzavQ3RTFRr4j1HHbVQNraxKs
+         Nt5jBu3yeMWlzjUB3S8t/A/aELaCa045IlYKQ=
+Date: Sun, 30 Aug 2009 09:27:50 +0200
+From: tartifola@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: Lenovo compact cam 17ef:4802
+Message-Id: <20090830092750.50e66b66.tartifola@gmail.com>
+Reply-To: tartifola@gmail.com
+Organization: Tartifola Inc.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
->> I thought the reason for that was that if your metadata is horked, further
->> writes to the disk can trash unrelated existing data because it's lost track
->> of what's allocated and what isn't.  So back when the assumption was "what's
->> written stays written", then keeping the metadata sane was still darn
->> important to prevent normal operation from overwriting unrelated existing
->> data.
->>
->> Then Pavel notified us of a situation where interrupted writes to the disk can
->> trash unrelated existing data _anyway_, because the flash block size on the 16
->> gig flash key I bought retail at Fry's is 2 megabytes, and the filesystem thinks
->> it's 4k or smaller.  It seems like what _broke_ was the assumption that the
->> filesystem block size >= the disk block size, and nobody noticed for a while.
->> (Except the people making jffs2 and friends, anyway.)
->>
->> Today we have cheap plentiful USB keys that act like hard drives, except that
->> their write block size isn't remotely the same as hard drives', but they
->> pretend it is, and then the block wear levelling algorithms fuzz things
->> further.  (Gee, a drive controller lying about drive geometry, the scsi crowd
->> should feel right at home.)
->
-> actually, you don't know if your USB key works that way or not. Pavel has 
-> ssome that do, that doesn't mean that all flash drives do
->
-> when you do a write to a flash drive you have to do the following items
->
-> 1. allocate an empty eraseblock to put the data on
->
-> 2. read the old eraseblock
->
-> 3. merge the incoming write to the eraseblock
->
-> 4. write the updated data to the flash
->
-> 5. update the flash trnslation layer to point reads at the new location  
-> instead of the old location.
+Hi,
+I'm experiencing problems with a Lenovo compact USB cam. I'm using Gentoo
+with kernel 2.6.30-gentoo-r4. I tried to use the built-in modules and
+also with gspca-af183a871db8 form linuxTV with the same result. It
+seems that the cam is correctly recognized
 
+>dmesg
+Linux video capture interface: v2.00
+gspca: main v2.6.0 registered
+gspca: probing 17ef:4802
+vc032x: check sensor header 20
+vc032x: Sensor ID 143a (3)
+vc032x: Find Sensor MI1310_SOC
+gspca: probe ok
+usbcore: registered new interface driver vc032x
+vc032x: registered
 
-That would need two erases per single sector writen, no? Erase is in
-milisecond range, so the performance would be just way too bad :-(.
-	   	     	 	     	      	       	       Pavel
+However when I try to use it, for example, with cheese I get this error
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>cheese                                          
+(cheese:21741): GStreamer-WARNING **: pad source:src returned caps which are not a real subset of its template caps
+libv4l2: error dequeuing buf: Input/output error
+libv4l2: error dequeuing buf: Input/output error
+libv4l2: error dequeuing buf: Input/output error
+libv4l2: error dequeuing buf: Input/output error
+libv4l2: error dequeuing buf: Input/output error
+libv4l2: error dequeuing buf: Input/output error
+
+Essentially Cheese does not show any available resolutions. Problems
+also with xawtv
+
+>xawtv
+This is xawtv-3.95, running on Linux/i686 (2.6.30-gentoo-r4)
+WARNING: v4l-conf is compiled without DGA support.
+/dev/video0 [v4l2]: no overlay support
+v4l-conf had some trouble, trying to continue anyway
+Warning: Cannot convert string "-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*" to type FontStruct
+no way to get: 384x288 32 bit TrueColor (LE: bgr-)
+
+and a similar issue with mplayer
+
+Any help to debug my problem?
+Thanks in advance
+
