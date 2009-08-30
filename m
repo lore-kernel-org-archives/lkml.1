@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbZH3RRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZH3RSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbZH3RRz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 13:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZH3RRy
+	id S1753933AbZH3RSe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 13:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZH3RSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 13:17:54 -0400
-Received: from thunk.org ([69.25.196.29]:39296 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753514AbZH3RRx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 13:17:53 -0400
-Date: Sun, 30 Aug 2009 13:17:49 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: memleaks, acpi + ext4 + tty
-Message-ID: <20090830171749.GA8642@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	"Luis R. Rodriguez" <mcgrof@gmail.com>,
-	linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-References: <43e72e890908272225w79ec5bf6kc7ef1160e5a088ae@mail.gmail.com> <tnxtyzr7vcl.fsf@pc1117.cambridge.arm.com> <20090830163417.GA15183@skywalker.linux.vnet.ibm.com>
+	Sun, 30 Aug 2009 13:18:33 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42441 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753897AbZH3RSd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 13:18:33 -0400
+X-Sasl-enc: b+2gMtzUgv4B5ROeP8S1k9lrYmZyAaQ10GMnY7+Iw3mW 1251652712
+Message-ID: <4A9AB45B.6060500@imap.cc>
+Date: Sun, 30 Aug 2009 19:18:19 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090830163417.GA15183@skywalker.linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: stable-review@kernel.org, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: Would it help to encourage users to read/test stable-review patches
+References: <43e72e890908271122l6b08aaa5lc66de78301c7c88d@mail.gmail.com>
+In-Reply-To: <43e72e890908271122l6b08aaa5lc66de78301c7c88d@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig88595DA8D52B081C970977DE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 30, 2009 at 10:04:17PM +0530, Aneesh Kumar K.V wrote:
-> > The ext4 reports are real leaks and patch was posted here -
-> > http://lkml.org/lkml/2009/7/15/62. However, it hasn't been merged into
-> > mainline yet (I cc'ed Aneesh).
-> 
-> The patch is part of ext4-patchqueue  http://repo.or.cz/w/ext4-patch-queue.git
-> 
-> Any plans to push the patches to linus tree soon ?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig88595DA8D52B081C970977DE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Yes, as soon as the next merge window opens.  The leak only shows up
-when you mount and unmount a filesystem, which under normal
-circumstances doesn't happen a huge number of times on most systems.
-By the time it showed up it was late enough in the 2.6.31-rcX series
-that I figured it was better to wait until the next merge window.  I
-didn't consider it a high priority bug.
+Luis R. Rodriguez schrieb:
+> We get development review eyes on stable patches during submission
+> into a subsystem, and perhaps 1-2 user tests then. Typically patches
+> are pretty easy to review for stable submission but I'm wondering
+> about cases where things are not so clear [...]
+> Do we want more user exposure to stable-review mailing list or is just
+> a few developer eyes enough?
 
-       	       	      	     	     	   - Ted
+Having been bitten quite recently by a -stable mismerge, I am of two
+minds about this. On one hand, it would have been nice to catch that
+problem during stable review instead of when it hit an actual
+distribution. (Ubuntu, as it happened.) On the other hand, I'm not
+sure user exposure would have helped all that much in this case.
+
+Generally speaking, the way I understand stable rules, those cases
+where things are not so clear shouldn't make it into the review in
+the first place. The problem is with the cases where things appear
+to be quite clear but aren't. Those are the ones the review cycle
+must catch.
+
+Jm2c
+T.
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
+
+
+--------------enig88595DA8D52B081C970977DE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFKmrRlQ3+did9BuFsRArw9AJ4wSgAN4x5GDxU/0MDC9aHyTC1EOgCbBj6z
+W2m4MeICum3xkW3yhP2xix8=
+=aYL5
+-----END PGP SIGNATURE-----
+
+--------------enig88595DA8D52B081C970977DE--
