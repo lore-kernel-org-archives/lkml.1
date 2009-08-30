@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbZH3Gpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbZH3GtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003AbZH3Gpl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 02:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZH3Gpk
+	id S1752030AbZH3GtS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 02:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZH3GtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 02:45:40 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43177 "EHLO
+	Sun, 30 Aug 2009 02:49:17 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43457 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751108AbZH3Gpj (ORCPT
+	with ESMTP id S1751872AbZH3GtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 02:45:39 -0400
-Date: Sun, 30 Aug 2009 08:45:33 +0200
+	Sun, 30 Aug 2009 02:49:16 -0400
+Date: Sun, 30 Aug 2009 08:49:09 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 2/6] PM: Asynchronous resume of devices
-Message-ID: <20090830064533.GA1417@ucw.cz>
-References: <Pine.LNX.4.44L0.0908282146550.9540-100000@netrider.rowland.org> <200908291449.57667.rjw@sisk.pl>
+To: Theodore Tso <tytso@mit.edu>, david@lang.hm,
+       Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] document flash/RAID dangers
+Message-ID: <20090830064909.GB1417@ucw.cz>
+References: <20090825224004.GD4300@elf.ucw.cz> <alpine.DEB.2.00.0908251547520.28411@asgard.lang.hm> <20090825233701.GH4300@elf.ucw.cz> <alpine.DEB.2.00.0908251651140.28411@asgard.lang.hm> <20090826001206.GL4300@elf.ucw.cz> <4A94812C.5010803@redhat.com> <20090826004430.GR4300@elf.ucw.cz> <alpine.DEB.2.00.0908251817390.30426@asgard.lang.hm> <20090826112535.GF26595@elf.ucw.cz> <20090826123709.GJ32712@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908291449.57667.rjw@sisk.pl>
+In-Reply-To: <20090826123709.GJ32712@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > > > > The same goes for the noirq versions.
-> > > > > 
-> > > > > I thought about that, but there are a few things to figure out:
-> > > > > - how many threads to start
-> > > > 
-> > > > That's a tough question.  Right now you start roughly as many threads
-> > > > as there are async devices.  That seems like overkill.
-> > > 
-> > > In fact they are substantially fewer than that, for the following reasons.
-> > > 
-> > > First, the async framework will not start more than MAX_THREADS threads,
-> > > which is 256 at the moment.  This number is less than the number of async
-> > > devices to handle on an average system.
+On Wed 2009-08-26 08:37:09, Theodore Tso wrote:
+> On Wed, Aug 26, 2009 at 01:25:36PM +0200, Pavel Machek wrote:
+> > > you just plain cannot count on writes that are in flight when a powerfail 
+> > > happens to do predictable things, let alone what you consider sane or  
+> > > proper.
 > > 
-> > Okay, but MAX_THREADS isn't under your control.  Remember also that 
-> > each thread takes up some memory, and during hibernation we are in a 
-> > memory-constrained situation.
+> > From what I see, this kind of failure is rather harder to reproduce
+> > than the software problems. And at least SGI machines were designed to
+> > avoid this...
+> > 
+> > Anyway, I'd like to hear from ext3 people... what happens on read
+> > errors in journal? That's what you'd expect to see in situation above.
 > 
-> We keep some extra free memory for things like this.  It's not likely to be
-> exhausted by the async threads alone.
+> On a power failure, what normally happens is that the random garbage
+> gets written into the disk drive's last dying gasp, since the memory
+> starts going insane and sends garbage to the disk.  So the disk
+> successfully completes the write, but the sector contains garbage.
+> Since HDD's tend to be last thing to die, being less sensitive to
+> voltage drops than the memory or DMA controller, my experience is that
+> you don't get a read error after the system comes up, you just get
+> garbage written into the journal.
+> 
+> The ext3 journalling code waits until all of the journal code is
+> written, and only then writes the commit block.  On restart, we look
+> for the last valid commit block.  So if the power failure is before we
+> write the commit block, we replay the journal up until the previous
+> commit block.  If the power failure is while we are writing the commit
+> block, garbage will be written out instead of the commit block, and so
+> it falls back to the previous case.
+> 
+> We do not allow any updates to the filesystem metadata to take place
+> until the commit block has been written; therefore the filesystem
+> stays consistent.
 
-What extra memory? You are creating quite a lot of threads. For 256 of
-them, it would take cca 2MB... You recently removed code from s2disk
-that freed 4MB of extra memory, so you are now essentially relying on
-min_free_kbytes -- and even then is not reliable, user might s2disk
-under memory pressure. min_free_kbytes is 1MB on my system.
+Ok, cool.
+
+> If there the journal *does* develop read errors, then fsck will
+> require a manual fsck, and so the boot operation will get stopped so a
+> system administrator can provide manual intervention.  The best bet
+> for the sysadmin is to replay as much of the journal she can, and then
+> let fsck fix any resulting filesystem inconsistencies.  In practice,
+
+...and that should result in consistent fs with no data loss, because
+read error is essentialy the same as garbage given back, right?
+
+...plus, this is significant difference from logical-logging
+filesystems, no?
+
+Should this go to Documentation/, somewhere?
 
 								Pavel
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
