@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZH3Uqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbZH3Ut2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbZH3Uqs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 16:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZH3Uqs
+	id S1754117AbZH3Ut2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 16:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbZH3Ut2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 16:46:48 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:52113 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092AbZH3Uqr (ORCPT
+	Sun, 30 Aug 2009 16:49:28 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51831 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754093AbZH3Ut1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 16:46:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent;
-        b=EYlheyN2kQlFEmiKHVc9VAtPI25TpD7yzDx/xa9n/HKrWSaDD1d6vPXC/cOqCL0YFd
-         7VLqXgnVmw63yohcByLDu91fk4OZbrHEMu4VhtEL5pbKedVSt3UIuAqZKh8/vbD3IJbz
-         jbGWPyH8S4HYxl97U1FbiadEdUwX9vmgAlVAc=
-Date: Sun, 30 Aug 2009 22:46:46 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
+	Sun, 30 Aug 2009 16:49:27 -0400
+Message-ID: <4A9AE5B1.80305@zytor.com>
+Date: Sun, 30 Aug 2009 13:48:49 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Borislav Petkov <petkovbb@googlemail.com>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
        tglx@linutronix.de, borislav.petkov@amd.com,
        linux-tip-commits@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86, msr: rewrite AMD rd/wrmsr variants
-Message-ID: <20090830204646.GD22234@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, mingo@redhat.com,
-	linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-	tglx@linutronix.de, borislav.petkov@amd.com,
-	linux-tip-commits@vger.kernel.org
-References: <1251633031-2244-1-git-send-email-petkovbb@gmail.com>
- <1251633031-2244-2-git-send-email-petkovbb@gmail.com>
- <4A9ADB24.6000100@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A9ADB24.6000100@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Subject: Re: [PATCH 3/3] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
+ CPUID bit
+References: <1251633031-2244-1-git-send-email-petkovbb@gmail.com> <1251633031-2244-3-git-send-email-petkovbb@gmail.com> <4A9AD17A.6060507@zytor.com> <20090830193039.GB22234@liondog.tnic> <4A9ADAC3.3020004@zytor.com> <20090830202926.GC22234@liondog.tnic>
+In-Reply-To: <20090830202926.GC22234@liondog.tnic>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 30, 2009 at 01:03:48PM -0700, H. Peter Anvin wrote:
-> On 08/30/2009 04:50 AM, Borislav Petkov wrote:
-> > +#define memset(d,c,l) __builtin_memset(d,c,l)
+On 08/30/2009 01:29 PM, Borislav Petkov wrote:
 > 
-> Uh, *NO*.
+> Ok, what do we want actually? We have rdmsr_safe and rdmsrl_safe where
+> the last one engineers the 2 u32s into a u64. My gut feeling would opt
+> for the 2 32bit values instead of one 64bit since they're naturally
+> returned into %eax:%edx. And in the most cases we need only one of the
+> values. However, the MSRs themselves are 64bit... Hmmm...
 > 
-> #include <linux/string.h> instead.
 
-With string.h I seem to be getting some symbols visibility conflict at
-link time:
+The 2x32 bit interface is the legacy interface.  It turned out to be a
+bad idea, but it's hard to clean up all the users.
 
-arch/x86/boot/compressed/misc.c:134: error: conflicting types for ‘memset’
-/home/boris/kernel/linux-2.6/arch/x86/include/asm/msr.h:178: error: previous implicit declaration of ‘memset’ was here
-make[2]: *** [arch/x86/boot/compressed/misc.o] Error 1
-make[2]: *** Waiting for unfinished jobs....
-make[1]: *** [arch/x86/boot/compressed/vmlinux] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [bzImage] Error 2
-make: *** Waiting for unfinished jobs....
-
-Will look more deeply into it tomorrow.
+	-hpa
 
 -- 
-Regards/Gruss,
-    Boris.
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
