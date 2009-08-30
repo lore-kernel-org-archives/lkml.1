@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbZH3QTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbZH3Q1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbZH3QTw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 12:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbZH3QTv
+	id S1753866AbZH3Q1b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 12:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbZH3Q1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 12:19:51 -0400
-Received: from mail-gx0-f205.google.com ([209.85.217.205]:43682 "EHLO
-	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753408AbZH3QTv (ORCPT
+	Sun, 30 Aug 2009 12:27:30 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:36420 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753662AbZH3Q1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 12:19:51 -0400
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] swap: Fix swap size in case of block devices
-Date: Sun, 30 Aug 2009 21:49:10 +0530
-User-Agent: KMail/1.12.0 (Linux/2.6.29.6-217.2.16.fc11.x86_64; KDE/4.3.0; x86_64; ; )
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
+	Sun, 30 Aug 2009 12:27:30 -0400
+Date: Sun, 30 Aug 2009 12:27:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+cc: Linus Walleij <linus.ml.walleij@gmail.com>, <linux-kernel@vger.kernel.org>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Russell King <linux@arm.linux.org.uk>,
+       <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] AB3100 regulator support v1
+In-Reply-To: <20090830103448.GD4334@sirena.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0908301217410.10608-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908302149.10981.ngupta@vflare.org>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During swapon, swap size is set to number of usable pages in the given
-swap file/block device minus 1 (for header page). In case of block devices,
-this size is incorrectly set as one page less than the actual due to an
-off-by-one error. For regular files, this size is set correctly.
+On Sun, 30 Aug 2009, Mark Brown wrote:
 
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
----
+> On Sun, Aug 30, 2009 at 01:03:38AM +0200, Linus Walleij wrote:
+> 
+> [While setting up a child platform device from a platform driver
+> probe...]
+> 
+> > >> +     /* This would seem logical but makes everything break... */
+> > >> +     /* pdev->dev.parent = parent; */
+> 
+> > > Err...  it does?  In what way?
+> 
+> > The sub-platform devices are added, but when I add a platform driver for
+> > them, the probing does not commence, because they hang in
+> > driver base/dd.c: __driver_attach() trying to take the parent semaphore,
+> > i.e. this line:
+> 
+> > 	if (dev->parent)	/* Needed for USB */
+> > 		down(&dev->parent->sem);
+> 
+> > In this case the parent is ab3100-regulators, the platform device for
+> > the set of regulators.
+> 
+> On the face of it (and without having actually looked at a running
+> system or anything yet) I'm rather surprised that platform based MFD
+> drivers aren't running into this issue more often.  CCing in Alan who
+> made the change.
 
- mm/swapfile.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+I'm not at all familiar with the detailed issues involved here.  
+Perhaps because of this, I don't see why there's any reason for
+deadlocking.  __driver_attach() is invoked when a new driver is
+registered; to avoid problems all you have to do is make sure you
+aren't holding any device locks when you register a driver.
 
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 8ffdc0d..3d37b97 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -1951,9 +1951,9 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
- 	if (error)
- 		goto bad_swap;
+In general, drivers are registered as part of a module initialization
+routine, which is quite separate from device probing.  Hence the code
+doing the registration doesn't hold any locks.
 
-+	/* excluding header page */
- 	nr_good_pages = swap_header->info.last_page -
--			swap_header->info.nr_badpages -
--			1 /* header page */;
-+			swap_header->info.nr_badpages;
+Is the problem that the probe routine for a platform device is 
+registering some child devices and then registering a driver for them?  
+If that's the case, the problem can be solved by doing thing in the 
+opposite order: Register the driver _before_ registering the devices it 
+is supposed to manage.  Then __driver_attach() won't run -- 
+device_attach() will instead -- so the problem won't arise.
 
- 	if (nr_good_pages) {
- 		swap_map[0] = SWAP_MAP_BAD;
+Alan Stern
+
