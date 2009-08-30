@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924AbZH3Ahv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbZH3AjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752924AbZH3Ahv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 20:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbZH3Ahu
+	id S1752943AbZH3AjI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 20:39:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbZH3AjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 20:37:50 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:40568 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752882AbZH3Ahu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 20:37:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=NkUjpLvYQxD7f85fo9fKWc774nxRgEAF6lJaNk0/rNStoSfIdk+tRPgbdbBEcQEPnD
-         IpcFwOZPk9r6aW2fZE51qd0jggwOgo/fKReXbLRib5p9YfglFcq0ItP0yEF3ZmZ+eho3
-         7UrWbhC+4TRxuKr/gbsbXiXpgJ71SaXM0KqNE=
+	Sat, 29 Aug 2009 20:39:08 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752897AbZH3AjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 20:39:07 -0400
+Message-ID: <4A99C9FC.2010004@redhat.com>
+Date: Sat, 29 Aug 2009 20:38:20 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-In-Reply-To: <63386a3d0908291603i76603a17hc20a8d219c1dc07a@mail.gmail.com>
-References: <1250806271-24419-1-git-send-email-linus.walleij@stericsson.com>
-	 <20090821105636.GA2850@sirena.org.uk>
-	 <63386a3d0908291603i76603a17hc20a8d219c1dc07a@mail.gmail.com>
-Date: Sun, 30 Aug 2009 02:37:51 +0200
-Message-ID: <63386a3d0908291737m5a17eaddxd3c39471553cf500@mail.gmail.com>
-Subject: Re: [PATCH] AB3100 regulator support v1
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org
-Cc: Linus Walleij <linus.walleij@stericsson.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 11/23] io-controller: Introduce group idling
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-12-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1251495072-7780-12-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/30 Linus Walleij <linus.ml.walleij@gmail.com>:
+Vivek Goyal wrote:
+> o It is not always that IO from a process or group is continuous. There are
+>   cases of dependent reads where next read is not issued till previous read
+>   has finished. For such cases, CFQ introduced the notion of slice_idle,
+>   where we idle on the queue for sometime hoping next request will come
+>   and that's how fairness is provided otherwise queue will be deleted
+>   immediately from the service tree and this process will not get the
+>   fair share.
+> 
+> o This patch introduces the similar concept at group level. Idle on the group
+>   for a period of "group_idle" which is tunable through sysfs interface. So
+>   if a group is empty and about to be deleted, we idle for the next request.
+> 
+> o This patch also introduces the notion of wait busy where we wait for one
+>   extra group_idle period even if queue has consumed its time slice. The
+>   reason being that group will loose its share upon removal from service
+>   tree as some other entity will be picked for dispatch and vtime jump will
+>   take place.
+> 
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 
-> So this is because I am in the parents probe() function of course,
-> and it's all expected.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-I was curious how wm8350 on MX31 did this while using only subsys_initcalls()
-(wm8400 doesn't look like it's completed yet) and found:
-
-subsys_initcall_() ->
-drivers/mfd/wm8350-i2c.:wm8350_i2c_init() ->
-drivers/mfd/wm8350-i2c.c:wm8350_i2c_probe() ->
-drivers/mfd/wm8350-core.c:wm8350_device_init() ->
-arch/arm/mach-mx3/mx31ads.c:mx31_wm8350_init() ->
-drivers/regulator/wm8350-regulator.c:wm8350_register_regulator()
-
-which creates a platform device and sets the parent to
-the struct wm8350->dev. But this is actually the i2c_client dev
-and then it is not so strange that it works nicely to have both
-the 8350 core device as parent and the platform devices as
-children in a subsys_initcall() since the i2c core does not
-use the regular device driver matching scheme, but rolls it's
-own (which does NOT try to take the parent's semaphore...)
-
-Linus Walleij
+-- 
+All rights reversed.
