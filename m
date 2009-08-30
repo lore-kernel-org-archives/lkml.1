@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbZH3CaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZH3Cal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752741AbZH3CaS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 22:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZH3CaQ
+	id S1753203AbZH3Cal (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 22:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZH3Cah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 22:30:16 -0400
-Received: from mga09.intel.com ([134.134.136.24]:62555 "EHLO mga09.intel.com"
+	Sat, 29 Aug 2009 22:30:37 -0400
+Received: from mga11.intel.com ([192.55.52.93]:2616 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752358AbZH3CaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 22:30:04 -0400
+	id S1753005AbZH3Cae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 22:30:34 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,297,1249282800"; 
-   d="scan'208";a="443931901"
-Subject: [PATCH v3 01/14] async_tx: rename zero_sum to val
+   d="scan'208";a="488600476"
+Subject: [PATCH v3 07/14] md/raid5,
+	6: add percpu scribble region for buffer lists
 To: neilb@suse.de
 From: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-raid@vger.kernel.org, Andre Noll <maan@systemlinux.org>,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       linux-kernel@vger.kernel.org
-Date: Sat, 29 Aug 2009 19:30:06 -0700
-Message-ID: <20090830023005.5934.9549.stgit@dwillia2-linux.ch.intel.com>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Sat, 29 Aug 2009 19:30:36 -0700
+Message-ID: <20090830023036.5934.79772.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090830022908.5934.72142.stgit@dwillia2-linux.ch.intel.com>
 References: <20090830022908.5934.72142.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -30,334 +29,353 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'zero_sum' does not properly describe the operation of generating parity
-and checking that it validates against an existing buffer.  Change the
-name of the operation to 'val' (for 'validate').  This is in
-anticipation of the p+q case where it is a requirement to identify the
-target parity buffers separately from the source buffers, because the
-target parity buffers will not have corresponding pq coefficients.
+Use percpu memory rather than stack for storing the buffer lists used in
+parity calculations.  Include space for dma address conversions and pass
+that to async_tx via the async_submit_ctl.scribble pointer.
 
-Reviewed-by: Andre Noll <maan@systemlinux.org>
-Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+[ Impact: move memory pressure from stack to heap ]
+
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- Documentation/crypto/async-tx-api.txt |   14 ++++++------
- arch/arm/mach-iop13xx/setup.c         |    8 +++----
- arch/arm/plat-iop/adma.c              |    2 +-
- crypto/async_tx/async_xor.c           |   16 +++++++-------
- drivers/dma/dmaengine.c               |    4 ++-
- drivers/dma/iop-adma.c                |   38 +++++++++++++++++----------------
- drivers/md/raid5.c                    |    2 +-
- include/linux/async_tx.h              |    2 +-
- include/linux/dmaengine.h             |    8 +++----
- 9 files changed, 47 insertions(+), 47 deletions(-)
+ drivers/md/raid5.c |  132 ++++++++++++++++++++++++++++++++++++++++------------
+ drivers/md/raid5.h |    8 +++
+ 2 files changed, 110 insertions(+), 30 deletions(-)
 
-diff --git a/Documentation/crypto/async-tx-api.txt b/Documentation/crypto/async-tx-api.txt
-index 9f59fcb..4af1218 100644
---- a/Documentation/crypto/async-tx-api.txt
-+++ b/Documentation/crypto/async-tx-api.txt
-@@ -61,13 +61,13 @@ async_<operation>(<op specific parameters>,
- 		  void *callback_parameter);
- 
- 3.2 Supported operations:
--memcpy       - memory copy between a source and a destination buffer
--memset       - fill a destination buffer with a byte value
--xor          - xor a series of source buffers and write the result to a
--	       destination buffer
--xor_zero_sum - xor a series of source buffers and set a flag if the
--	       result is zero.  The implementation attempts to prevent
--	       writes to memory
-+memcpy  - memory copy between a source and a destination buffer
-+memset  - fill a destination buffer with a byte value
-+xor     - xor a series of source buffers and write the result to a
-+	  destination buffer
-+xor_val - xor a series of source buffers and set a flag if the
-+	  result is zero.  The implementation attempts to prevent
-+	  writes to memory
- 
- 3.3 Descriptor management:
- The return value is non-NULL and points to a 'descriptor' when the operation
-diff --git a/arch/arm/mach-iop13xx/setup.c b/arch/arm/mach-iop13xx/setup.c
-index cfd4d2e..9800228 100644
---- a/arch/arm/mach-iop13xx/setup.c
-+++ b/arch/arm/mach-iop13xx/setup.c
-@@ -478,7 +478,7 @@ void __init iop13xx_platform_init(void)
- 			dma_cap_set(DMA_MEMCPY, plat_data->cap_mask);
- 			dma_cap_set(DMA_XOR, plat_data->cap_mask);
- 			dma_cap_set(DMA_DUAL_XOR, plat_data->cap_mask);
--			dma_cap_set(DMA_ZERO_SUM, plat_data->cap_mask);
-+			dma_cap_set(DMA_XOR_VAL, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMSET, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMCPY_CRC32C, plat_data->cap_mask);
- 			dma_cap_set(DMA_INTERRUPT, plat_data->cap_mask);
-@@ -490,7 +490,7 @@ void __init iop13xx_platform_init(void)
- 			dma_cap_set(DMA_MEMCPY, plat_data->cap_mask);
- 			dma_cap_set(DMA_XOR, plat_data->cap_mask);
- 			dma_cap_set(DMA_DUAL_XOR, plat_data->cap_mask);
--			dma_cap_set(DMA_ZERO_SUM, plat_data->cap_mask);
-+			dma_cap_set(DMA_XOR_VAL, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMSET, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMCPY_CRC32C, plat_data->cap_mask);
- 			dma_cap_set(DMA_INTERRUPT, plat_data->cap_mask);
-@@ -502,13 +502,13 @@ void __init iop13xx_platform_init(void)
- 			dma_cap_set(DMA_MEMCPY, plat_data->cap_mask);
- 			dma_cap_set(DMA_XOR, plat_data->cap_mask);
- 			dma_cap_set(DMA_DUAL_XOR, plat_data->cap_mask);
--			dma_cap_set(DMA_ZERO_SUM, plat_data->cap_mask);
-+			dma_cap_set(DMA_XOR_VAL, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMSET, plat_data->cap_mask);
- 			dma_cap_set(DMA_MEMCPY_CRC32C, plat_data->cap_mask);
- 			dma_cap_set(DMA_INTERRUPT, plat_data->cap_mask);
- 			dma_cap_set(DMA_PQ_XOR, plat_data->cap_mask);
- 			dma_cap_set(DMA_PQ_UPDATE, plat_data->cap_mask);
--			dma_cap_set(DMA_PQ_ZERO_SUM, plat_data->cap_mask);
-+			dma_cap_set(DMA_PQ_VAL, plat_data->cap_mask);
- 			break;
- 		}
- 	}
-diff --git a/arch/arm/plat-iop/adma.c b/arch/arm/plat-iop/adma.c
-index f724208..c040044 100644
---- a/arch/arm/plat-iop/adma.c
-+++ b/arch/arm/plat-iop/adma.c
-@@ -198,7 +198,7 @@ static int __init iop3xx_adma_cap_init(void)
- 	dma_cap_set(DMA_INTERRUPT, iop3xx_aau_data.cap_mask);
- 	#else
- 	dma_cap_set(DMA_XOR, iop3xx_aau_data.cap_mask);
--	dma_cap_set(DMA_ZERO_SUM, iop3xx_aau_data.cap_mask);
-+	dma_cap_set(DMA_XOR_VAL, iop3xx_aau_data.cap_mask);
- 	dma_cap_set(DMA_MEMSET, iop3xx_aau_data.cap_mask);
- 	dma_cap_set(DMA_INTERRUPT, iop3xx_aau_data.cap_mask);
- 	#endif
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 95fe2c8..e0580b0 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -222,7 +222,7 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index 5359236..7727954 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -642,11 +642,18 @@ static void ops_complete_compute5(void *stripe_head_ref)
+ 	release_stripe(sh);
  }
  
- /**
-- * async_xor_zero_sum - attempt a xor parity check with a dma engine.
-+ * async_xor_val - attempt a xor parity check with a dma engine.
-  * @dest: destination page used if the xor is performed synchronously
-  * @src_list: array of source pages.  The dest page must be listed as a source
-  * 	at index zero.  The contents of this array may be overwritten.
-@@ -236,13 +236,13 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
-  * @cb_param: parameter to pass to the callback routine
-  */
- struct dma_async_tx_descriptor *
--async_xor_zero_sum(struct page *dest, struct page **src_list,
-+async_xor_val(struct page *dest, struct page **src_list,
- 	unsigned int offset, int src_cnt, size_t len,
- 	u32 *result, enum async_tx_flags flags,
- 	struct dma_async_tx_descriptor *depend_tx,
- 	dma_async_tx_callback cb_fn, void *cb_param)
+-static struct dma_async_tx_descriptor *ops_run_compute5(struct stripe_head *sh)
++/* return a pointer to the address conversion region of the scribble buffer */
++static addr_conv_t *to_addr_conv(struct stripe_head *sh,
++				 struct raid5_percpu *percpu)
++{
++	return percpu->scribble + sizeof(struct page *) * (sh->disks + 2);
++}
++
++static struct dma_async_tx_descriptor *
++ops_run_compute5(struct stripe_head *sh, struct raid5_percpu *percpu)
  {
--	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_ZERO_SUM,
-+	struct dma_chan *chan = async_tx_find_channel(depend_tx, DMA_XOR_VAL,
- 						      &dest, 1, src_list,
- 						      src_cnt, len);
- 	struct dma_device *device = chan ? chan->device : NULL;
-@@ -261,15 +261,15 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
- 			dma_src[i] = dma_map_page(device->dev, src_list[i],
- 						  offset, len, DMA_TO_DEVICE);
+-	/* kernel stack size limits the total number of disks */
+ 	int disks = sh->disks;
+-	struct page *xor_srcs[disks];
++	struct page **xor_srcs = percpu->scribble;
+ 	int target = sh->ops.target;
+ 	struct r5dev *tgt = &sh->dev[target];
+ 	struct page *xor_dest = tgt->page;
+@@ -666,7 +673,7 @@ static struct dma_async_tx_descriptor *ops_run_compute5(struct stripe_head *sh)
+ 	atomic_inc(&sh->count);
  
--		tx = device->device_prep_dma_zero_sum(chan, dma_src, src_cnt,
--						      len, result,
--						      dma_prep_flags);
-+		tx = device->device_prep_dma_xor_val(chan, dma_src, src_cnt,
-+						     len, result,
-+						     dma_prep_flags);
- 		if (unlikely(!tx)) {
- 			async_tx_quiesce(&depend_tx);
- 
- 			while (!tx) {
- 				dma_async_issue_pending(chan);
--				tx = device->device_prep_dma_zero_sum(chan,
-+				tx = device->device_prep_dma_xor_val(chan,
- 					dma_src, src_cnt, len, result,
- 					dma_prep_flags);
- 			}
-@@ -296,7 +296,7 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
- 
- 	return tx;
- }
--EXPORT_SYMBOL_GPL(async_xor_zero_sum);
-+EXPORT_SYMBOL_GPL(async_xor_val);
- 
- static int __init async_xor_init(void)
- {
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 92438e9..6781e8f 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -644,8 +644,8 @@ int dma_async_device_register(struct dma_device *device)
- 		!device->device_prep_dma_memcpy);
- 	BUG_ON(dma_has_cap(DMA_XOR, device->cap_mask) &&
- 		!device->device_prep_dma_xor);
--	BUG_ON(dma_has_cap(DMA_ZERO_SUM, device->cap_mask) &&
--		!device->device_prep_dma_zero_sum);
-+	BUG_ON(dma_has_cap(DMA_XOR_VAL, device->cap_mask) &&
-+		!device->device_prep_dma_xor_val);
- 	BUG_ON(dma_has_cap(DMA_MEMSET, device->cap_mask) &&
- 		!device->device_prep_dma_memset);
- 	BUG_ON(dma_has_cap(DMA_INTERRUPT, device->cap_mask) &&
-diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index 2f05226..6ff79a6 100644
---- a/drivers/dma/iop-adma.c
-+++ b/drivers/dma/iop-adma.c
-@@ -660,9 +660,9 @@ iop_adma_prep_dma_xor(struct dma_chan *chan, dma_addr_t dma_dest,
+ 	init_async_submit(&submit, ASYNC_TX_XOR_ZERO_DST, NULL,
+-			  ops_complete_compute5, sh, NULL);
++			  ops_complete_compute5, sh, to_addr_conv(sh, percpu));
+ 	if (unlikely(count == 1))
+ 		tx = async_memcpy(xor_dest, xor_srcs[0], 0, 0, STRIPE_SIZE, &submit);
+ 	else
+@@ -684,11 +691,11 @@ static void ops_complete_prexor(void *stripe_head_ref)
  }
  
  static struct dma_async_tx_descriptor *
--iop_adma_prep_dma_zero_sum(struct dma_chan *chan, dma_addr_t *dma_src,
--			   unsigned int src_cnt, size_t len, u32 *result,
--			   unsigned long flags)
-+iop_adma_prep_dma_xor_val(struct dma_chan *chan, dma_addr_t *dma_src,
-+			  unsigned int src_cnt, size_t len, u32 *result,
-+			  unsigned long flags)
+-ops_run_prexor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
++ops_run_prexor(struct stripe_head *sh, struct raid5_percpu *percpu,
++	       struct dma_async_tx_descriptor *tx)
  {
- 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
- 	struct iop_adma_desc_slot *sw_desc, *grp_start;
-@@ -906,7 +906,7 @@ out:
+-	/* kernel stack size limits the total number of disks */
+ 	int disks = sh->disks;
+-	struct page *xor_srcs[disks];
++	struct page **xor_srcs = percpu->scribble;
+ 	int count = 0, pd_idx = sh->pd_idx, i;
+ 	struct async_submit_ctl submit;
  
- #define IOP_ADMA_NUM_SRC_TEST 4 /* must be <= 15 */
- static int __devinit
--iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
-+iop_adma_xor_val_self_test(struct iop_adma_device *device)
- {
- 	int i, src_idx;
- 	struct page *dest;
-@@ -1002,7 +1002,7 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
- 		PAGE_SIZE, DMA_TO_DEVICE);
- 
- 	/* skip zero sum if the capability is not present */
--	if (!dma_has_cap(DMA_ZERO_SUM, dma_chan->device->cap_mask))
-+	if (!dma_has_cap(DMA_XOR_VAL, dma_chan->device->cap_mask))
- 		goto free_resources;
- 
- 	/* zero sum the sources with the destintation page */
-@@ -1016,10 +1016,10 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
- 		dma_srcs[i] = dma_map_page(dma_chan->device->dev,
- 					   zero_sum_srcs[i], 0, PAGE_SIZE,
- 					   DMA_TO_DEVICE);
--	tx = iop_adma_prep_dma_zero_sum(dma_chan, dma_srcs,
--					IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
--					&zero_sum_result,
--					DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
-+	tx = iop_adma_prep_dma_xor_val(dma_chan, dma_srcs,
-+				       IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
-+				       &zero_sum_result,
-+				       DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
- 
- 	cookie = iop_adma_tx_submit(tx);
- 	iop_adma_issue_pending(dma_chan);
-@@ -1072,10 +1072,10 @@ iop_adma_xor_zero_sum_self_test(struct iop_adma_device *device)
- 		dma_srcs[i] = dma_map_page(dma_chan->device->dev,
- 					   zero_sum_srcs[i], 0, PAGE_SIZE,
- 					   DMA_TO_DEVICE);
--	tx = iop_adma_prep_dma_zero_sum(dma_chan, dma_srcs,
--					IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
--					&zero_sum_result,
--					DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
-+	tx = iop_adma_prep_dma_xor_val(dma_chan, dma_srcs,
-+				       IOP_ADMA_NUM_SRC_TEST + 1, PAGE_SIZE,
-+				       &zero_sum_result,
-+				       DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
- 
- 	cookie = iop_adma_tx_submit(tx);
- 	iop_adma_issue_pending(dma_chan);
-@@ -1192,9 +1192,9 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
- 		dma_dev->max_xor = iop_adma_get_max_xor();
- 		dma_dev->device_prep_dma_xor = iop_adma_prep_dma_xor;
+@@ -706,7 +713,7 @@ ops_run_prexor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
  	}
--	if (dma_has_cap(DMA_ZERO_SUM, dma_dev->cap_mask))
--		dma_dev->device_prep_dma_zero_sum =
--			iop_adma_prep_dma_zero_sum;
-+	if (dma_has_cap(DMA_XOR_VAL, dma_dev->cap_mask))
-+		dma_dev->device_prep_dma_xor_val =
-+			iop_adma_prep_dma_xor_val;
- 	if (dma_has_cap(DMA_INTERRUPT, dma_dev->cap_mask))
- 		dma_dev->device_prep_dma_interrupt =
- 			iop_adma_prep_dma_interrupt;
-@@ -1249,7 +1249,7 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
  
- 	if (dma_has_cap(DMA_XOR, dma_dev->cap_mask) ||
- 		dma_has_cap(DMA_MEMSET, dma_dev->cap_mask)) {
--		ret = iop_adma_xor_zero_sum_self_test(adev);
-+		ret = iop_adma_xor_val_self_test(adev);
- 		dev_dbg(&pdev->dev, "xor self test returned %d\n", ret);
- 		if (ret)
- 			goto err_free_iop_chan;
-@@ -1259,10 +1259,10 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
- 	  "( %s%s%s%s%s%s%s%s%s%s)\n",
- 	  dma_has_cap(DMA_PQ_XOR, dma_dev->cap_mask) ? "pq_xor " : "",
- 	  dma_has_cap(DMA_PQ_UPDATE, dma_dev->cap_mask) ? "pq_update " : "",
--	  dma_has_cap(DMA_PQ_ZERO_SUM, dma_dev->cap_mask) ? "pq_zero_sum " : "",
-+	  dma_has_cap(DMA_PQ_VAL, dma_dev->cap_mask) ? "pq_val " : "",
- 	  dma_has_cap(DMA_XOR, dma_dev->cap_mask) ? "xor " : "",
- 	  dma_has_cap(DMA_DUAL_XOR, dma_dev->cap_mask) ? "dual_xor " : "",
--	  dma_has_cap(DMA_ZERO_SUM, dma_dev->cap_mask) ? "xor_zero_sum " : "",
-+	  dma_has_cap(DMA_XOR_VAL, dma_dev->cap_mask) ? "xor_val " : "",
- 	  dma_has_cap(DMA_MEMSET, dma_dev->cap_mask)  ? "fill " : "",
- 	  dma_has_cap(DMA_MEMCPY_CRC32C, dma_dev->cap_mask) ? "cpy+crc " : "",
- 	  dma_has_cap(DMA_MEMCPY, dma_dev->cap_mask) ? "cpy " : "",
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index 3bbc6d6..f8d2d35 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -854,7 +854,7 @@ static void ops_run_check(struct stripe_head *sh)
+ 	init_async_submit(&submit, ASYNC_TX_XOR_DROP_DST, tx,
+-			  ops_complete_prexor, sh, NULL);
++			  ops_complete_prexor, sh, to_addr_conv(sh, percpu));
+ 	tx = async_xor(xor_dest, xor_srcs, 0, count, STRIPE_SIZE, &submit);
+ 
+ 	return tx;
+@@ -775,11 +782,11 @@ static void ops_complete_postxor(void *stripe_head_ref)
+ }
+ 
+ static void
+-ops_run_postxor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
++ops_run_postxor(struct stripe_head *sh, struct raid5_percpu *percpu,
++		struct dma_async_tx_descriptor *tx)
+ {
+-	/* kernel stack size limits the total number of disks */
+ 	int disks = sh->disks;
+-	struct page *xor_srcs[disks];
++	struct page **xor_srcs = percpu->scribble;
+ 	struct async_submit_ctl submit;
+ 	int count = 0, pd_idx = sh->pd_idx, i;
+ 	struct page *xor_dest;
+@@ -819,7 +826,8 @@ ops_run_postxor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
+ 
+ 	atomic_inc(&sh->count);
+ 
+-	init_async_submit(&submit, flags, tx, ops_complete_postxor, sh, NULL);
++	init_async_submit(&submit, flags, tx, ops_complete_postxor, sh,
++			  to_addr_conv(sh, percpu));
+ 	if (unlikely(count == 1))
+ 		tx = async_memcpy(xor_dest, xor_srcs[0], 0, 0, STRIPE_SIZE, &submit);
+ 	else
+@@ -838,11 +846,10 @@ static void ops_complete_check(void *stripe_head_ref)
+ 	release_stripe(sh);
+ }
+ 
+-static void ops_run_check(struct stripe_head *sh)
++static void ops_run_check(struct stripe_head *sh, struct raid5_percpu *percpu)
+ {
+-	/* kernel stack size limits the total number of disks */
+ 	int disks = sh->disks;
+-	struct page *xor_srcs[disks];
++	struct page **xor_srcs = percpu->scribble;
+ 	struct dma_async_tx_descriptor *tx;
+ 	struct async_submit_ctl submit;
+ 
+@@ -858,7 +865,8 @@ static void ops_run_check(struct stripe_head *sh)
  			xor_srcs[count++] = dev->page;
  	}
  
--	tx = async_xor_zero_sum(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
-+	tx = async_xor_val(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
- 		&sh->ops.zero_sum_result, 0, NULL, NULL, NULL);
+-	init_async_submit(&submit, 0, NULL, NULL, NULL, NULL);
++	init_async_submit(&submit, 0, NULL, NULL, NULL,
++			  to_addr_conv(sh, percpu));
+ 	tx = async_xor_val(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
+ 			   &sh->ops.zero_sum_result, &submit);
  
- 	atomic_inc(&sh->count);
-diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
-index 5fc2ef8..513150d 100644
---- a/include/linux/async_tx.h
-+++ b/include/linux/async_tx.h
-@@ -117,7 +117,7 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 	dma_async_tx_callback cb_fn, void *cb_fn_param);
+@@ -871,21 +879,26 @@ static void raid5_run_ops(struct stripe_head *sh, unsigned long ops_request)
+ {
+ 	int overlap_clear = 0, i, disks = sh->disks;
+ 	struct dma_async_tx_descriptor *tx = NULL;
++	raid5_conf_t *conf = sh->raid_conf;
++	struct raid5_percpu *percpu;
++	unsigned long cpu;
  
- struct dma_async_tx_descriptor *
--async_xor_zero_sum(struct page *dest, struct page **src_list,
-+async_xor_val(struct page *dest, struct page **src_list,
- 	unsigned int offset, int src_cnt, size_t len,
- 	u32 *result, enum async_tx_flags flags,
- 	struct dma_async_tx_descriptor *depend_tx,
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 2e2aa3d..6768727 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -55,8 +55,8 @@ enum dma_transaction_type {
- 	DMA_PQ_XOR,
- 	DMA_DUAL_XOR,
- 	DMA_PQ_UPDATE,
--	DMA_ZERO_SUM,
--	DMA_PQ_ZERO_SUM,
-+	DMA_XOR_VAL,
-+	DMA_PQ_VAL,
- 	DMA_MEMSET,
- 	DMA_MEMCPY_CRC32C,
- 	DMA_INTERRUPT,
-@@ -214,7 +214,7 @@ struct dma_async_tx_descriptor {
-  * @device_free_chan_resources: release DMA channel's resources
-  * @device_prep_dma_memcpy: prepares a memcpy operation
-  * @device_prep_dma_xor: prepares a xor operation
-- * @device_prep_dma_zero_sum: prepares a zero_sum operation
-+ * @device_prep_dma_xor_val: prepares a xor validation operation
-  * @device_prep_dma_memset: prepares a memset operation
-  * @device_prep_dma_interrupt: prepares an end of chain interrupt operation
-  * @device_prep_slave_sg: prepares a slave dma operation
-@@ -243,7 +243,7 @@ struct dma_device {
- 	struct dma_async_tx_descriptor *(*device_prep_dma_xor)(
- 		struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
- 		unsigned int src_cnt, size_t len, unsigned long flags);
--	struct dma_async_tx_descriptor *(*device_prep_dma_zero_sum)(
-+	struct dma_async_tx_descriptor *(*device_prep_dma_xor_val)(
- 		struct dma_chan *chan, dma_addr_t *src,	unsigned int src_cnt,
- 		size_t len, u32 *result, unsigned long flags);
- 	struct dma_async_tx_descriptor *(*device_prep_dma_memset)(
++	cpu = get_cpu();
++	percpu = per_cpu_ptr(conf->percpu, cpu);
+ 	if (test_bit(STRIPE_OP_BIOFILL, &ops_request)) {
+ 		ops_run_biofill(sh);
+ 		overlap_clear++;
+ 	}
+ 
+ 	if (test_bit(STRIPE_OP_COMPUTE_BLK, &ops_request)) {
+-		tx = ops_run_compute5(sh);
++		tx = ops_run_compute5(sh, percpu);
+ 		/* terminate the chain if postxor is not set to be run */
+ 		if (tx && !test_bit(STRIPE_OP_POSTXOR, &ops_request))
+ 			async_tx_ack(tx);
+ 	}
+ 
+ 	if (test_bit(STRIPE_OP_PREXOR, &ops_request))
+-		tx = ops_run_prexor(sh, tx);
++		tx = ops_run_prexor(sh, percpu, tx);
+ 
+ 	if (test_bit(STRIPE_OP_BIODRAIN, &ops_request)) {
+ 		tx = ops_run_biodrain(sh, tx);
+@@ -893,10 +906,10 @@ static void raid5_run_ops(struct stripe_head *sh, unsigned long ops_request)
+ 	}
+ 
+ 	if (test_bit(STRIPE_OP_POSTXOR, &ops_request))
+-		ops_run_postxor(sh, tx);
++		ops_run_postxor(sh, percpu, tx);
+ 
+ 	if (test_bit(STRIPE_OP_CHECK, &ops_request))
+-		ops_run_check(sh);
++		ops_run_check(sh, percpu);
+ 
+ 	if (overlap_clear)
+ 		for (i = disks; i--; ) {
+@@ -904,6 +917,7 @@ static void raid5_run_ops(struct stripe_head *sh, unsigned long ops_request)
+ 			if (test_and_clear_bit(R5_Overlap, &dev->flags))
+ 				wake_up(&sh->raid_conf->wait_for_overlap);
+ 		}
++	put_cpu();
+ }
+ 
+ static int grow_one_stripe(raid5_conf_t *conf)
+@@ -953,6 +967,28 @@ static int grow_stripes(raid5_conf_t *conf, int num)
+ 	return 0;
+ }
+ 
++/**
++ * scribble_len - return the required size of the scribble region
++ * @num - total number of disks in the array
++ *
++ * The size must be enough to contain:
++ * 1/ a struct page pointer for each device in the array +2
++ * 2/ room to convert each entry in (1) to its corresponding dma
++ *    (dma_map_page()) or page (page_address()) address.
++ *
++ * Note: the +2 is for the destination buffers of the ddf/raid6 case where we
++ * calculate over all devices (not just the data blocks), using zeros in place
++ * of the P and Q blocks.
++ */
++static size_t scribble_len(int num)
++{
++	size_t len;
++
++	len = sizeof(struct page *) * (num+2) + sizeof(addr_conv_t) * (num+2);
++
++	return len;
++}
++
+ static int resize_stripes(raid5_conf_t *conf, int newsize)
+ {
+ 	/* Make all the stripes able to hold 'newsize' devices.
+@@ -981,6 +1017,7 @@ static int resize_stripes(raid5_conf_t *conf, int newsize)
+ 	struct stripe_head *osh, *nsh;
+ 	LIST_HEAD(newstripes);
+ 	struct disk_info *ndisks;
++	unsigned long cpu;
+ 	int err;
+ 	struct kmem_cache *sc;
+ 	int i;
+@@ -1046,7 +1083,7 @@ static int resize_stripes(raid5_conf_t *conf, int newsize)
+ 	/* Step 3.
+ 	 * At this point, we are holding all the stripes so the array
+ 	 * is completely stalled, so now is a good time to resize
+-	 * conf->disks.
++	 * conf->disks and the scribble region
+ 	 */
+ 	ndisks = kzalloc(newsize * sizeof(struct disk_info), GFP_NOIO);
+ 	if (ndisks) {
+@@ -1057,10 +1094,30 @@ static int resize_stripes(raid5_conf_t *conf, int newsize)
+ 	} else
+ 		err = -ENOMEM;
+ 
++	get_online_cpus();
++	conf->scribble_len = scribble_len(newsize);
++	for_each_present_cpu(cpu) {
++		struct raid5_percpu *percpu;
++		void *scribble;
++
++		percpu = per_cpu_ptr(conf->percpu, cpu);
++		scribble = kmalloc(conf->scribble_len, GFP_NOIO);
++
++		if (scribble) {
++			kfree(percpu->scribble);
++			percpu->scribble = scribble;
++		} else {
++			err = -ENOMEM;
++			break;
++		}
++	}
++	put_online_cpus();
++
+ 	/* Step 4, return new stripes to service */
+ 	while(!list_empty(&newstripes)) {
+ 		nsh = list_entry(newstripes.next, struct stripe_head, lru);
+ 		list_del_init(&nsh->lru);
++
+ 		for (i=conf->raid_disks; i < newsize; i++)
+ 			if (nsh->dev[i].page == NULL) {
+ 				struct page *p = alloc_page(GFP_NOIO);
+@@ -4318,6 +4375,7 @@ static void raid5_free_percpu(raid5_conf_t *conf)
+ 	for_each_possible_cpu(cpu) {
+ 		percpu = per_cpu_ptr(conf->percpu, cpu);
+ 		safe_put_page(percpu->spare_page);
++		kfree(percpu->scribble);
+ 	}
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	unregister_cpu_notifier(&conf->cpu_notify);
+@@ -4347,9 +4405,15 @@ static int raid456_cpu_notify(struct notifier_block *nfb, unsigned long action,
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		if (!percpu->spare_page)
++		if (conf->level == 6 && !percpu->spare_page)
+ 			percpu->spare_page = alloc_page(GFP_KERNEL);
+-		if (!percpu->spare_page) {
++		if (!percpu->scribble)
++			percpu->scribble = kmalloc(conf->scribble_len, GFP_KERNEL);
++
++		if (!percpu->scribble ||
++		    (conf->level == 6 && !percpu->spare_page)) {
++			safe_put_page(percpu->spare_page);
++			kfree(percpu->scribble);
+ 			pr_err("%s: failed memory allocation for cpu%ld\n",
+ 			       __func__, cpu);
+ 			return NOTIFY_BAD;
+@@ -4358,7 +4422,9 @@ static int raid456_cpu_notify(struct notifier_block *nfb, unsigned long action,
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+ 		safe_put_page(percpu->spare_page);
++		kfree(percpu->scribble);
+ 		percpu->spare_page = NULL;
++		percpu->scribble = NULL;
+ 		break;
+ 	default:
+ 		break;
+@@ -4372,12 +4438,9 @@ static int raid5_alloc_percpu(raid5_conf_t *conf)
+ 	unsigned long cpu;
+ 	struct page *spare_page;
+ 	struct raid5_percpu *allcpus;
++	void *scribble;
+ 	int err;
+ 
+-	/* the only percpu data is the raid6 spare page */
+-	if (conf->level != 6)
+-		return 0;
+-
+ 	allcpus = alloc_percpu(struct raid5_percpu);
+ 	if (!allcpus)
+ 		return -ENOMEM;
+@@ -4386,12 +4449,20 @@ static int raid5_alloc_percpu(raid5_conf_t *conf)
+ 	get_online_cpus();
+ 	err = 0;
+ 	for_each_present_cpu(cpu) {
+-		spare_page = alloc_page(GFP_KERNEL);
+-		if (!spare_page) {
++		if (conf->level == 6) {
++			spare_page = alloc_page(GFP_KERNEL);
++			if (!spare_page) {
++				err = -ENOMEM;
++				break;
++			}
++			per_cpu_ptr(conf->percpu, cpu)->spare_page = spare_page;
++		}
++		scribble = kmalloc(scribble_len(conf->raid_disks), GFP_KERNEL);
++		if (!scribble) {
+ 			err = -ENOMEM;
+ 			break;
+ 		}
+-		per_cpu_ptr(conf->percpu, cpu)->spare_page = spare_page;
++		per_cpu_ptr(conf->percpu, cpu)->scribble = scribble;
+ 	}
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	conf->cpu_notify.notifier_call = raid456_cpu_notify;
+@@ -4443,6 +4514,7 @@ static raid5_conf_t *setup_conf(mddev_t *mddev)
+ 		goto abort;
+ 
+ 	conf->raid_disks = mddev->raid_disks;
++	conf->scribble_len = scribble_len(conf->raid_disks);
+ 	if (mddev->reshape_position == MaxSector)
+ 		conf->previous_raid_disks = mddev->raid_disks;
+ 	else
+diff --git a/drivers/md/raid5.h b/drivers/md/raid5.h
+index 07a7a41..e7baabf 100644
+--- a/drivers/md/raid5.h
++++ b/drivers/md/raid5.h
+@@ -386,7 +386,15 @@ struct raid5_private_data {
+ 	/* per cpu variables */
+ 	struct raid5_percpu {
+ 		struct page	*spare_page; /* Used when checking P/Q in raid6 */
++		void		*scribble;   /* space for constructing buffer
++					      * lists and performing address
++					      * conversions
++					      */
+ 	} *percpu;
++	size_t			scribble_len; /* size of scribble region must be
++					       * associated with conf to handle
++					       * cpu hotplug while reshaping
++					       */
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	struct notifier_block	cpu_notify;
+ #endif
 
