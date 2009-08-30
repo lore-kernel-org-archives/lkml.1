@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbZH3CaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbZH3Cb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752893AbZH3CaZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 22:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZH3CaU
+	id S1753302AbZH3Cb0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 22:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZH3CbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 22:30:20 -0400
-Received: from mga02.intel.com ([134.134.136.20]:64419 "EHLO mga02.intel.com"
+	Sat, 29 Aug 2009 22:31:24 -0400
+Received: from mga11.intel.com ([192.55.52.93]:29248 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752631AbZH3CaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 22:30:09 -0400
+	id S1752360AbZH3CbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 22:31:10 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,297,1249282800"; 
-   d="scan'208";a="546013393"
-Subject: [PATCH v3 02/14] async_tx: kill ASYNC_TX_DEP_ACK flag
+   d="scan'208";a="488600540"
+Subject: [PATCH v3 14/14] async_tx: raid6 recovery self test
 To: neilb@suse.de
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, Andre Noll <maan@systemlinux.org>,
        Maciej Sosnowski <maciej.sosnowski@intel.com>,
        linux-kernel@vger.kernel.org
-Date: Sat, 29 Aug 2009 19:30:11 -0700
-Message-ID: <20090830023011.5934.34392.stgit@dwillia2-linux.ch.intel.com>
+Date: Sat, 29 Aug 2009 19:31:12 -0700
+Message-ID: <20090830023112.5934.13738.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090830022908.5934.72142.stgit@dwillia2-linux.ch.intel.com>
 References: <20090830022908.5934.72142.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -30,228 +30,300 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In support of inter-channel chaining async_tx utilizes an ack flag to
-gate whether a dependent operation can be chained to another.  While the
-flag is not set the chain can be considered open for appending.  Setting
-the ack flag closes the chain and flags the descriptor for garbage
-collection.  The ASYNC_TX_DEP_ACK flag essentially means "close the
-chain after adding this dependency".  Since each operation can only have
-one child the api now implicitly sets the ack flag at dependency
-submission time.  This removes an unnecessary management burden from
-clients of the api.
-
-[ Impact: clean up and enforce one dependency per operation ]
+Port drivers/md/raid6test/test.c to use the async raid6 recovery
+routines.  This is meant as a unit test for raid6 acceleration drivers.  In
+addition to the 16-drive test case this implements tests for the 4-disk and
+5-disk special cases (dma devices can not generically handle less than 2
+sources), and adds a test for the D+Q case.
 
 Reviewed-by: Andre Noll <maan@systemlinux.org>
 Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- Documentation/crypto/async-tx-api.txt |    9 ++++-----
- crypto/async_tx/async_memcpy.c        |    2 +-
- crypto/async_tx/async_memset.c        |    2 +-
- crypto/async_tx/async_tx.c            |    4 ++--
- crypto/async_tx/async_xor.c           |    6 ++----
- drivers/md/raid5.c                    |   25 +++++++++++--------------
- include/linux/async_tx.h              |    4 +---
- 7 files changed, 22 insertions(+), 30 deletions(-)
+ crypto/async_tx/Makefile    |    1 
+ crypto/async_tx/raid6test.c |  241 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/md/Kconfig          |   13 ++
+ 3 files changed, 255 insertions(+), 0 deletions(-)
+ create mode 100644 crypto/async_tx/raid6test.c
 
-diff --git a/Documentation/crypto/async-tx-api.txt b/Documentation/crypto/async-tx-api.txt
-index 4af1218..76feda8 100644
---- a/Documentation/crypto/async-tx-api.txt
-+++ b/Documentation/crypto/async-tx-api.txt
-@@ -80,8 +80,8 @@ acknowledged by the application before the offload engine driver is allowed to
- recycle (or free) the descriptor.  A descriptor can be acked by one of the
- following methods:
- 1/ setting the ASYNC_TX_ACK flag if no child operations are to be submitted
--2/ setting the ASYNC_TX_DEP_ACK flag to acknowledge the parent
--   descriptor of a new operation.
-+2/ submitting an unacknowledged descriptor as a dependency to another
-+   async_tx call will implicitly set the acknowledged state.
- 3/ calling async_tx_ack() on the descriptor.
+diff --git a/crypto/async_tx/Makefile b/crypto/async_tx/Makefile
+index 9a1a768..d1e0e6f 100644
+--- a/crypto/async_tx/Makefile
++++ b/crypto/async_tx/Makefile
+@@ -4,3 +4,4 @@ obj-$(CONFIG_ASYNC_MEMSET) += async_memset.o
+ obj-$(CONFIG_ASYNC_XOR) += async_xor.o
+ obj-$(CONFIG_ASYNC_PQ) += async_pq.o
+ obj-$(CONFIG_ASYNC_RAID6_RECOV) += async_raid6_recov.o
++obj-$(CONFIG_ASYNC_RAID6_TEST) += raid6test.o
+diff --git a/crypto/async_tx/raid6test.c b/crypto/async_tx/raid6test.c
+new file mode 100644
+index 0000000..98c83ca
+--- /dev/null
++++ b/crypto/async_tx/raid6test.c
+@@ -0,0 +1,241 @@
++/*
++ * asynchronous raid6 recovery self test
++ * Copyright (c) 2009, Intel Corporation.
++ *
++ * based on drivers/md/raid6test/test.c:
++ * 	Copyright 2002-2007 H. Peter Anvin
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ */
++#include <linux/async_tx.h>
++#include <linux/random.h>
++
++#undef pr
++#define pr(fmt, args...) pr_info("raid6test: " fmt, ##args)
++
++#define NDISKS 16 /* Including P and Q */
++
++static struct page *dataptrs[NDISKS];
++static struct page *data[NDISKS+3];
++static struct page *spare;
++static struct page *recovi;
++static struct page *recovj;
++
++static void callback(void *param)
++{
++	struct completion *cmp = param;
++
++	complete(cmp);
++}
++
++static void makedata(int disks)
++{
++	int i, j;
++
++	for (i = 0; i < disks; i++) {
++		for (j = 0; j < PAGE_SIZE/sizeof(u32); j += sizeof(u32)) {
++			u32 *p = page_address(data[i]) + j;
++
++			*p = random32();
++		}
++
++		dataptrs[i] = data[i];
++	}
++}
++
++static char disk_type(int d, int disks)
++{
++	if (d == disks - 2)
++		return 'P';
++	else if (d == disks - 1)
++		return 'Q';
++	else
++		return 'D';
++}
++
++/* Recover two failed blocks. */
++static void raid6_dual_recov(int disks, size_t bytes, int faila, int failb, struct page **ptrs)
++{
++	struct async_submit_ctl submit;
++	addr_conv_t addr_conv[disks];
++	struct completion cmp;
++	struct dma_async_tx_descriptor *tx = NULL;
++	enum sum_check_flags result = ~0;
++
++	if (faila > failb)
++		swap(faila, failb);
++
++	if (failb == disks-1) {
++		if (faila == disks-2) {
++			/* P+Q failure.  Just rebuild the syndrome. */
++			init_async_submit(&submit, 0, NULL, NULL, NULL, addr_conv);
++			tx = async_gen_syndrome(ptrs, 0, disks, bytes, &submit);
++		} else {
++			struct page *blocks[disks];
++			struct page *dest;
++			int count = 0;
++			int i;
++
++			/* data+Q failure.  Reconstruct data from P,
++			 * then rebuild syndrome
++			 */
++			for (i = disks; i-- ; ) {
++				if (i == faila || i == failb)
++					continue;
++				blocks[count++] = ptrs[i];
++			}
++			dest = ptrs[faila];
++			init_async_submit(&submit, ASYNC_TX_XOR_ZERO_DST, NULL,
++					  NULL, NULL, addr_conv);
++			tx = async_xor(dest, blocks, 0, count, bytes, &submit);
++
++			init_async_submit(&submit, 0, tx, NULL, NULL, addr_conv);
++			tx = async_gen_syndrome(ptrs, 0, disks, bytes, &submit);
++		}
++	} else {
++		if (failb == disks-2) {
++			/* data+P failure. */
++			init_async_submit(&submit, 0, NULL, NULL, NULL, addr_conv);
++			tx = async_raid6_datap_recov(disks, bytes, faila, ptrs, &submit);
++		} else {
++			/* data+data failure. */
++			init_async_submit(&submit, 0, NULL, NULL, NULL, addr_conv);
++			tx = async_raid6_2data_recov(disks, bytes, faila, failb, ptrs, &submit);
++		}
++	}
++	init_completion(&cmp);
++	init_async_submit(&submit, ASYNC_TX_ACK, tx, callback, &cmp, addr_conv);
++	tx = async_syndrome_val(ptrs, 0, disks, bytes, &result, spare, &submit);
++	async_tx_issue_pending(tx);
++
++	if (wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000)) == 0)
++		pr("%s: timeout! (faila: %d failb: %d disks: %d)\n",
++		   __func__, faila, failb, disks);
++
++	if (result != 0)
++		pr("%s: validation failure! faila: %d failb: %d sum_check_flags: %x\n",
++		   __func__, faila, failb, result);
++}
++
++static int test_disks(int i, int j, int disks)
++{
++	int erra, errb;
++
++	memset(page_address(recovi), 0xf0, PAGE_SIZE);
++	memset(page_address(recovj), 0xba, PAGE_SIZE);
++
++	dataptrs[i] = recovi;
++	dataptrs[j] = recovj;
++
++	raid6_dual_recov(disks, PAGE_SIZE, i, j, dataptrs);
++
++	erra = memcmp(page_address(data[i]), page_address(recovi), PAGE_SIZE);
++	errb = memcmp(page_address(data[j]), page_address(recovj), PAGE_SIZE);
++
++	pr("%s(%d, %d): faila=%3d(%c)  failb=%3d(%c)  %s\n",
++	   __func__, i, j, i, disk_type(i, disks), j, disk_type(j, disks),
++	   (!erra && !errb) ? "OK" : !erra ? "ERRB" : !errb ? "ERRA" : "ERRAB");
++
++	dataptrs[i] = data[i];
++	dataptrs[j] = data[j];
++
++	return erra || errb;
++}
++
++static int test(int disks, int *tests)
++{
++	addr_conv_t addr_conv[disks];
++	struct dma_async_tx_descriptor *tx;
++	struct async_submit_ctl submit;
++	struct completion cmp;
++	int err = 0;
++	int i, j;
++
++	recovi = data[disks];
++	recovj = data[disks+1];
++	spare  = data[disks+2];
++
++	makedata(disks);
++
++	/* Nuke syndromes */
++	memset(page_address(data[disks-2]), 0xee, PAGE_SIZE);
++	memset(page_address(data[disks-1]), 0xee, PAGE_SIZE);
++
++	/* Generate assumed good syndrome */
++	init_completion(&cmp);
++	init_async_submit(&submit, ASYNC_TX_ACK, NULL, callback, &cmp, addr_conv);
++	tx = async_gen_syndrome(dataptrs, 0, disks, PAGE_SIZE, &submit);
++	async_tx_issue_pending(tx);
++
++	if (wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000)) == 0) {
++		pr("error: initial gen_syndrome(%d) timed out\n", disks);
++		return 1;
++	}
++
++	pr("testing the %d-disk case...\n", disks);
++	for (i = 0; i < disks-1; i++)
++		for (j = i+1; j < disks; j++) {
++			(*tests)++;
++			err += test_disks(i, j, disks);
++		}
++
++	return err;
++}
++
++
++static int raid6_test(void)
++{
++	int err = 0;
++	int tests = 0;
++	int i;
++
++	for (i = 0; i < NDISKS+3; i++) {
++		data[i] = alloc_page(GFP_KERNEL);
++		if (!data[i]) {
++			while (i--)
++				put_page(data[i]);
++			return -ENOMEM;
++		}
++	}
++
++	/* the 4-disk and 5-disk cases are special for the recovery code */
++	if (NDISKS > 4)
++		err += test(4, &tests);
++	if (NDISKS > 5)
++		err += test(5, &tests);
++	err += test(NDISKS, &tests);
++
++	pr("\n");
++	pr("complete (%d tests, %d failure%s)\n",
++	   tests, err, err == 1 ? "" : "s");
++
++	for (i = 0; i < NDISKS+3; i++)
++		put_page(data[i]);
++
++	return 0;
++}
++
++static void raid6_test_exit(void)
++{
++}
++
++/* when compiled-in wait for drivers to load first (assumes dma drivers
++ * are also compliled-in)
++ */
++late_initcall(raid6_test);
++module_exit(raid6_test_exit);
++MODULE_AUTHOR("Dan Williams <dan.j.williams@intel.com>");
++MODULE_DESCRIPTION("asynchronous RAID-6 recovery self tests");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/md/Kconfig b/drivers/md/Kconfig
+index 36e0675..41b3ae2 100644
+--- a/drivers/md/Kconfig
++++ b/drivers/md/Kconfig
+@@ -155,6 +155,19 @@ config MD_RAID456
+ config MD_RAID6_PQ
+ 	tristate
  
- 3.4 When does the operation execute?
-@@ -136,10 +136,9 @@ int run_xor_copy_xor(struct page **xor_srcs,
- 
- 	tx = async_xor(xor_dest, xor_srcs, 0, xor_src_cnt, xor_len,
- 		       ASYNC_TX_XOR_DROP_DST, NULL, NULL, NULL);
--	tx = async_memcpy(copy_dest, copy_src, 0, 0, copy_len,
--			  ASYNC_TX_DEP_ACK, tx, NULL, NULL);
-+	tx = async_memcpy(copy_dest, copy_src, 0, 0, copy_len, tx, NULL, NULL);
- 	tx = async_xor(xor_dest, xor_srcs, 0, xor_src_cnt, xor_len,
--		       ASYNC_TX_XOR_DROP_DST | ASYNC_TX_DEP_ACK | ASYNC_TX_ACK,
-+		       ASYNC_TX_XOR_DROP_DST | ASYNC_TX_ACK,
- 		       tx, complete_xor_copy_xor, NULL);
- 
- 	async_tx_issue_pending_all();
-diff --git a/crypto/async_tx/async_memcpy.c b/crypto/async_tx/async_memcpy.c
-index ddccfb0..7117ec6 100644
---- a/crypto/async_tx/async_memcpy.c
-+++ b/crypto/async_tx/async_memcpy.c
-@@ -35,7 +35,7 @@
-  * @src: src page
-  * @offset: offset in pages to start transaction
-  * @len: length in bytes
-- * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK,
-+ * @flags: ASYNC_TX_ACK
-  * @depend_tx: memcpy depends on the result of this transaction
-  * @cb_fn: function to call when the memcpy completes
-  * @cb_param: parameter to pass to the callback routine
-diff --git a/crypto/async_tx/async_memset.c b/crypto/async_tx/async_memset.c
-index 5b5eb99..b2f1338 100644
---- a/crypto/async_tx/async_memset.c
-+++ b/crypto/async_tx/async_memset.c
-@@ -35,7 +35,7 @@
-  * @val: fill value
-  * @offset: offset in pages to start transaction
-  * @len: length in bytes
-- * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
-+ * @flags: ASYNC_TX_ACK
-  * @depend_tx: memset depends on the result of this transaction
-  * @cb_fn: function to call when the memcpy completes
-  * @cb_param: parameter to pass to the callback routine
-diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
-index 06eb6cc..3766bc3 100644
---- a/crypto/async_tx/async_tx.c
-+++ b/crypto/async_tx/async_tx.c
-@@ -223,7 +223,7 @@ async_tx_submit(struct dma_chan *chan, struct dma_async_tx_descriptor *tx,
- 	if (flags & ASYNC_TX_ACK)
- 		async_tx_ack(tx);
- 
--	if (depend_tx && (flags & ASYNC_TX_DEP_ACK))
-+	if (depend_tx)
- 		async_tx_ack(depend_tx);
- }
- EXPORT_SYMBOL_GPL(async_tx_submit);
-@@ -231,7 +231,7 @@ EXPORT_SYMBOL_GPL(async_tx_submit);
- /**
-  * async_trigger_callback - schedules the callback function to be run after
-  * any dependent operations have been completed.
-- * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
-+ * @flags: ASYNC_TX_ACK
-  * @depend_tx: 'callback' requires the completion of this transaction
-  * @cb_fn: function to call after depend_tx completes
-  * @cb_param: parameter to pass to the callback routine
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index e0580b0..3cc5dc7 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -105,7 +105,6 @@ do_async_xor(struct dma_chan *chan, struct page *dest, struct page **src_list,
- 				_cb_param);
- 
- 		depend_tx = tx;
--		flags |= ASYNC_TX_DEP_ACK;
- 
- 		if (src_cnt > xor_src_cnt) {
- 			/* drop completed sources */
-@@ -168,8 +167,7 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
-  * @offset: offset in pages to start transaction
-  * @src_cnt: number of source pages
-  * @len: length in bytes
-- * @flags: ASYNC_TX_XOR_ZERO_DST, ASYNC_TX_XOR_DROP_DEST,
-- *	ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
-+ * @flags: ASYNC_TX_XOR_ZERO_DST, ASYNC_TX_XOR_DROP_DEST, ASYNC_TX_ACK
-  * @depend_tx: xor depends on the result of this transaction.
-  * @cb_fn: function to call when the xor completes
-  * @cb_param: parameter to pass to the callback routine
-@@ -230,7 +228,7 @@ static int page_is_zero(struct page *p, unsigned int offset, size_t len)
-  * @src_cnt: number of source pages
-  * @len: length in bytes
-  * @result: 0 if sum == 0 else non-zero
-- * @flags: ASYNC_TX_ACK, ASYNC_TX_DEP_ACK
-+ * @flags: ASYNC_TX_ACK
-  * @depend_tx: xor depends on the result of this transaction.
-  * @cb_fn: function to call when the xor completes
-  * @cb_param: parameter to pass to the callback routine
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index f8d2d35..0ef5362 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -525,14 +525,12 @@ async_copy_data(int frombio, struct bio *bio, struct page *page,
- 			bio_page = bio_iovec_idx(bio, i)->bv_page;
- 			if (frombio)
- 				tx = async_memcpy(page, bio_page, page_offset,
--					b_offset, clen,
--					ASYNC_TX_DEP_ACK,
--					tx, NULL, NULL);
-+						  b_offset, clen, 0,
-+						  tx, NULL, NULL);
- 			else
- 				tx = async_memcpy(bio_page, page, b_offset,
--					page_offset, clen,
--					ASYNC_TX_DEP_ACK,
--					tx, NULL, NULL);
-+						  page_offset, clen, 0,
-+						  tx, NULL, NULL);
- 		}
- 		if (clen < len) /* hit end of page */
- 			break;
-@@ -615,8 +613,7 @@ static void ops_run_biofill(struct stripe_head *sh)
- 	}
- 
- 	atomic_inc(&sh->count);
--	async_trigger_callback(ASYNC_TX_DEP_ACK | ASYNC_TX_ACK, tx,
--		ops_complete_biofill, sh);
-+	async_trigger_callback(ASYNC_TX_ACK, tx, ops_complete_biofill, sh);
- }
- 
- static void ops_complete_compute5(void *stripe_head_ref)
-@@ -701,8 +698,8 @@ ops_run_prexor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
- 	}
- 
- 	tx = async_xor(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
--		ASYNC_TX_DEP_ACK | ASYNC_TX_XOR_DROP_DST, tx,
--		ops_complete_prexor, sh);
-+		       ASYNC_TX_XOR_DROP_DST, tx,
-+		       ops_complete_prexor, sh);
- 
- 	return tx;
- }
-@@ -809,7 +806,7 @@ ops_run_postxor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
- 	 * set ASYNC_TX_XOR_DROP_DST and ASYNC_TX_XOR_ZERO_DST
- 	 * for the synchronous xor case
- 	 */
--	flags = ASYNC_TX_DEP_ACK | ASYNC_TX_ACK |
-+	flags = ASYNC_TX_ACK |
- 		(prexor ? ASYNC_TX_XOR_DROP_DST : ASYNC_TX_XOR_ZERO_DST);
- 
- 	atomic_inc(&sh->count);
-@@ -858,7 +855,7 @@ static void ops_run_check(struct stripe_head *sh)
- 		&sh->ops.zero_sum_result, 0, NULL, NULL, NULL);
- 
- 	atomic_inc(&sh->count);
--	tx = async_trigger_callback(ASYNC_TX_DEP_ACK | ASYNC_TX_ACK, tx,
-+	tx = async_trigger_callback(ASYNC_TX_ACK, tx,
- 		ops_complete_check, sh);
- }
- 
-@@ -2687,8 +2684,8 @@ static void handle_stripe_expansion(raid5_conf_t *conf, struct stripe_head *sh,
- 
- 			/* place all the copies on one channel */
- 			tx = async_memcpy(sh2->dev[dd_idx].page,
--				sh->dev[i].page, 0, 0, STRIPE_SIZE,
--				ASYNC_TX_DEP_ACK, tx, NULL, NULL);
-+					  sh->dev[i].page, 0, 0, STRIPE_SIZE,
-+					  0, tx, NULL, NULL);
- 
- 			set_bit(R5_Expanded, &sh2->dev[dd_idx].flags);
- 			set_bit(R5_UPTODATE, &sh2->dev[dd_idx].flags);
-diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
-index 513150d..9f14cd5 100644
---- a/include/linux/async_tx.h
-+++ b/include/linux/async_tx.h
-@@ -58,13 +58,11 @@ struct dma_chan_ref {
-  * array.
-  * @ASYNC_TX_ACK: immediately ack the descriptor, precludes setting up a
-  * dependency chain
-- * @ASYNC_TX_DEP_ACK: ack the dependency descriptor.  Useful for chaining.
-  */
- enum async_tx_flags {
- 	ASYNC_TX_XOR_ZERO_DST	 = (1 << 0),
- 	ASYNC_TX_XOR_DROP_DST	 = (1 << 1),
--	ASYNC_TX_ACK		 = (1 << 3),
--	ASYNC_TX_DEP_ACK	 = (1 << 4),
-+	ASYNC_TX_ACK		 = (1 << 2),
- };
- 
- #ifdef CONFIG_DMA_ENGINE
++config ASYNC_RAID6_TEST
++	tristate "Self test for hardware accelerated raid6 recovery"
++	depends on MD_RAID6_PQ
++	select ASYNC_RAID6_RECOV
++	---help---
++	  This is a one-shot self test that permutes through the
++	  recovery of all the possible two disk failure scenarios for a
++	  N-disk array.  Recovery is performed with the asynchronous
++	  raid6 recovery routines, and will optionally use an offload
++	  engine if one is available.
++
++	  If unsure, say N.
++
+ config MD_MULTIPATH
+ 	tristate "Multipath I/O support"
+ 	depends on BLK_DEV_MD
 
