@@ -1,76 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbZH3CPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbZH3CaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbZH3CPg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 22:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZH3CPf
+	id S1752427AbZH3CaA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 22:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZH3C37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 22:15:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55351 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753159AbZH3CPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 22:15:34 -0400
-Date: Sat, 29 Aug 2009 22:15:34 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, liml@rtr.ca,
-       jens.axboe@oracle.com, dwmw2@infradead.org
-Subject: Re: [PATCH 0/7] discard support revisited
-Message-ID: <20090830021534.GA14706@infradead.org>
-References: <20090829230332.017137693@bombadil.infradead.org> <20090829233718.GD22870@parisc-linux.org>
+	Sat, 29 Aug 2009 22:29:59 -0400
+Received: from mga14.intel.com ([143.182.124.37]:45876 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752080AbZH3C36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 22:29:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="182006178"
+Subject: [PATCH v3 00/14] Asynchronous raid6 acceleration (part 1 of 3)
+To: neilb@suse.de
+From: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Sat, 29 Aug 2009 19:30:00 -0700
+Message-ID: <20090830022908.5934.72142.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGit/0.14.3.289.g7daff
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090829233718.GD22870@parisc-linux.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 29, 2009 at 05:37:19PM -0600, Matthew Wilcox wrote:
-> >  - I have implemented support for sending WRITE SAME requests with the
-> >    unmap bit set in sd.  This has been tested with a qemu-based backed
-> >    only so far, but we'll get some real array coverage soon.
-> 
-> I think we're going to need to figure out whether we should be sending
-> UNMAP or WRITE SAME ... probably need to dive back into the T10 poostorm
-> to see what's going on.
+Extend the async_tx api to include routines for offloading raid6 operations to
+hardware.  This is part1, part2 contains raid6 extensions to the iop-adma
+driver, and part3 contains the changes to make the md/raid6 driver
+asynchronous.
 
-Good question.  Latest I had heard was that at least one array vendor
-prefers the WRITE SAME.  To me it looks like the much saner interface
-for the OS, so unless there are arrays that strongly prefer UNMAP or
-we need to make use of the multiple extends feature in it I'd go with
-WRITE SAME as first choice.
+The combined series is available at:
 
-> > I would really love to see some progress on this in the 2.6.32 circle.
-> > We should at least get the block layer bits in that allow implementing
-> > a somewhat useful discard function.  I would also love to see the
-> > actual scsi and libata implementations in so that we can start playing
-> > around with it.  But given the speed up the current TRIM implementations
-> > and the expectations for WRITE SAME we should make sure the exact
-> > TRIM tracking is not actually enabled anywhere by default for now.
-> 
-> Jens had some objections to the block layer bits last time I posted
-> these.  I forget what they were now (this would have been around May
-> 2nd, I think).  What I've done instead in my current patchset (which
-> undoubtedly has bugs because it isn't tested, because I'm not supposed
-> to be working on the weekends) is to make sd_prep_fn() call a new method
-> in the scsi_host_template.  That should translate the discard request
-> into a BLOCK_PC ATA_16 command, and we'll all be happy.
-> 
-> It goes a little something like this:
-> http://git.kernel.org/?p=linux/kernel/git/willy/ssd.git;a=shortlog;h=trim-20090829
-> 
-> Right now, the test tool is telling me 'Operation not supported', and
-> I haven't tried to figure out why yet.
+   git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git raid6
 
-Queue flag and handling the discard in the prep function is much better
-than the prepare function, yes.  I don't like the prep_fn callout to the
-host a lot.  If we go with WRITE SAME as prefered discard option for
-scsi translating it to TRIM should be relatively easy, it uses the same
-LBA/length encoding as the regular WRITE_16, except that the payload is
-just a single sector.  That should be not too hard to implement in the
-SAT layer.
+The changes since v2 [1] are:
+1/ Moved various stripe handling resources to a percpu allocation.
+   Specifically the 'scribble' buffer (for passing and converting address
+   lists) and the raid6 spare page have been moved.
+
+2/ Added 4-disk and 5-disk special cases to the raid6 recovery code as
+   they are special with respect to offload engines.  The recovery
+   algorithms use a zero page in the place of the dead data pages.  When
+   the async_tx api sees the raid6_empty_zero_page as a source it simply
+   drops it in the asynchronous path.  This can result, for example, in a
+   PQ operation with a source count of zero in the case of recovering 2
+   data disks in a 4-disk array.  This does not map to hardware so the
+   recovery code refactors the operation in these special cases.  The
+   raid6test module has been updated to hit these cases.
+
+I can carry this in async_tx.git/next, or let me know if you would
+rather pull this into md.git/for-next.
+
+Thanks,
+Dan
+
+[1]: http://marc.info/?l=linux-raid&m=124269482227272&w=2
+
+Note, I know that "md/raid6: release spare page at ->stop()" is already
+upstream, but I have not rebased the tree to preserve the testing that
+has gone into this series to date.
+
+---
+
+Dan Williams (14):
+      async_tx: rename zero_sum to val
+      async_tx: kill ASYNC_TX_DEP_ACK flag
+      async_tx: structify submission arguments, add scribble
+      async_xor: permit callers to pass in a 'dma/page scribble' region
+      md/raid6: release spare page at ->stop()
+      md/raid6: move the spare page to a percpu allocation
+      md/raid5,6: add percpu scribble region for buffer lists
+      async_tx: add sum check flags
+      async_tx: kill needless module_{init|exit}
+      async_tx: remove walk of tx->parent chain in dma_wait_for_async_tx
+      async_tx: add support for asynchronous GF multiplication
+      async_tx: add support for asynchronous RAID6 recovery operations
+      dmatest: add pq support
+      async_tx: raid6 recovery self test
+
+ Documentation/crypto/async-tx-api.txt       |   75 +++-
+ arch/arm/include/asm/hardware/iop3xx-adma.h |    5 
+ arch/arm/mach-iop13xx/include/mach/adma.h   |   12 -
+ arch/arm/mach-iop13xx/setup.c               |   10 -
+ arch/arm/plat-iop/adma.c                    |    2 
+ crypto/async_tx/Kconfig                     |    9 +
+ crypto/async_tx/Makefile                    |    3 
+ crypto/async_tx/async_memcpy.c              |   39 +-
+ crypto/async_tx/async_memset.c              |   38 +-
+ crypto/async_tx/async_pq.c                  |  388 +++++++++++++++++++++++
+ crypto/async_tx/async_raid6_recov.c         |  448 +++++++++++++++++++++++++++
+ crypto/async_tx/async_tx.c                  |   83 ++---
+ crypto/async_tx/async_xor.c                 |  199 ++++++------
+ crypto/async_tx/raid6test.c                 |  241 ++++++++++++++
+ drivers/dma/Kconfig                         |    2 
+ drivers/dma/dmaengine.c                     |   53 +--
+ drivers/dma/dmatest.c                       |   26 ++
+ drivers/dma/iop-adma.c                      |   40 +-
+ drivers/md/Kconfig                          |   13 +
+ drivers/md/raid5.c                          |  452 ++++++++++++++++++---------
+ drivers/md/raid5.h                          |   22 +
+ include/linux/async_tx.h                    |  126 ++++++--
+ include/linux/dmaengine.h                   |  116 ++++++-
+ 23 files changed, 1907 insertions(+), 495 deletions(-)
+ create mode 100644 crypto/async_tx/async_pq.c
+ create mode 100644 crypto/async_tx/async_raid6_recov.c
+ create mode 100644 crypto/async_tx/raid6test.c
