@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbZH3CbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbZH3Cby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbZH3CbL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 22:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbZH3CbI
+	id S1753317AbZH3Cby (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 22:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZH3Caw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 22:31:08 -0400
-Received: from mga03.intel.com ([143.182.124.21]:13436 "EHLO mga03.intel.com"
+	Sat, 29 Aug 2009 22:30:52 -0400
+Received: from mga01.intel.com ([192.55.52.88]:25499 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752360AbZH3CbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 22:31:05 -0400
+	id S1753207AbZH3Cau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 22:30:50 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="182006404"
-Subject: [PATCH v3 13/14] dmatest: add pq support
+X-IronPort-AV: E=Sophos;i="4.44,297,1249282800"; 
+   d="scan'208";a="488600509"
+Subject: [PATCH v3 10/14] async_tx: remove walk of tx->parent chain in
+	dma_wait_for_async_tx
 To: neilb@suse.de
 From: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-raid@vger.kernel.org, Andre Noll <maan@systemlinux.org>,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       linux-kernel@vger.kernel.org
-Date: Sat, 29 Aug 2009 19:31:07 -0700
-Message-ID: <20090830023107.5934.16509.stgit@dwillia2-linux.ch.intel.com>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Sat, 29 Aug 2009 19:30:52 -0700
+Message-ID: <20090830023052.5934.3855.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090830022908.5934.72142.stgit@dwillia2-linux.ch.intel.com>
 References: <20090830022908.5934.72142.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -30,87 +29,169 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Test raid6 p+q operations with a simple "always multiply by 1" q
-calculation to fit into dmatest's current destination verification
-scheme.
+We currently walk the parent chain when waiting for a given tx to
+complete however this walk may race with the driver cleanup routine.
+The routines in async_raid6_recov.c may fall back to the synchronous
+path at any point so we need to be prepared to call async_tx_quiesce()
+(which calls  dma_wait_for_async_tx).  To remove the ->parent walk we
+guarantee that every time a dependency is attached ->issue_pending() is
+invoked, then we can simply poll the initial descriptor until
+completion.
 
-Reviewed-by: Andre Noll <maan@systemlinux.org>
-Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+This also allows for a lighter weight 'issue pending' implementation as
+there is no longer a requirement to iterate through all the channels'
+->issue_pending() routines as long as operations have been submitted in
+an ordered chain.  async_tx_issue_pending() is added for this case.
+
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/dma/dmatest.c |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
+ crypto/async_tx/async_tx.c |   13 +++++++------
+ drivers/dma/dmaengine.c    |   45 ++++++++++----------------------------------
+ include/linux/async_tx.h   |   23 ++++++++++++++++++++++
+ 3 files changed, 40 insertions(+), 41 deletions(-)
 
-diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
-index a27c0fb..a5ee541 100644
---- a/drivers/dma/dmatest.c
-+++ b/drivers/dma/dmatest.c
-@@ -43,6 +43,11 @@ module_param(xor_sources, uint, S_IRUGO);
- MODULE_PARM_DESC(xor_sources,
- 		"Number of xor source buffers (default: 3)");
+diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
+index 6e37ad3..60615fe 100644
+--- a/crypto/async_tx/async_tx.c
++++ b/crypto/async_tx/async_tx.c
+@@ -77,8 +77,8 @@ static void
+ async_tx_channel_switch(struct dma_async_tx_descriptor *depend_tx,
+ 			struct dma_async_tx_descriptor *tx)
+ {
+-	struct dma_chan *chan;
+-	struct dma_device *device;
++	struct dma_chan *chan = depend_tx->chan;
++	struct dma_device *device = chan->device;
+ 	struct dma_async_tx_descriptor *intr_tx = (void *) ~0;
  
-+static unsigned int pq_sources = 3;
-+module_param(pq_sources, uint, S_IRUGO);
-+MODULE_PARM_DESC(pq_sources,
-+		"Number of p+q source buffers (default: 3)");
-+
- /*
-  * Initialization patterns. All bytes in the source buffer has bit 7
-  * set, all bytes in the destination buffer has bit 7 cleared.
-@@ -227,6 +232,7 @@ static int dmatest_func(void *data)
- 	dma_cookie_t		cookie;
- 	enum dma_status		status;
- 	enum dma_ctrl_flags 	flags;
-+	u8			pq_coefs[pq_sources];
- 	int			ret;
- 	int			src_cnt;
- 	int			dst_cnt;
-@@ -243,6 +249,11 @@ static int dmatest_func(void *data)
- 	else if (thread->type == DMA_XOR) {
- 		src_cnt = xor_sources | 1; /* force odd to ensure dst = src */
- 		dst_cnt = 1;
-+	} else if (thread->type == DMA_PQ) {
-+		src_cnt = pq_sources | 1; /* force odd to ensure dst = src */
-+		dst_cnt = 2;
-+		for (i = 0; i < pq_sources; i++)
-+			pq_coefs[i] = 1;
- 	} else
- 		goto err_srcs;
- 
-@@ -310,6 +321,15 @@ static int dmatest_func(void *data)
- 						      dma_dsts[0] + dst_off,
- 						      dma_srcs, xor_sources,
- 						      len, flags);
-+		else if (thread->type == DMA_PQ) {
-+			dma_addr_t dma_pq[dst_cnt];
-+
-+			for (i = 0; i < dst_cnt; i++)
-+				dma_pq[i] = dma_dsts[i] + dst_off;
-+			tx = dev->device_prep_dma_pq(chan, dma_pq, dma_srcs,
-+						     pq_sources, pq_coefs,
-+						     len, flags);
-+		}
- 
- 		if (!tx) {
- 			for (i = 0; i < src_cnt; i++)
-@@ -446,6 +466,8 @@ static int dmatest_add_threads(struct dmatest_chan *dtc, enum dma_transaction_ty
- 		op = "copy";
- 	else if (type == DMA_XOR)
- 		op = "xor";
-+	else if (type == DMA_PQ)
-+		op = "pq";
- 	else
- 		return -EINVAL;
- 
-@@ -501,6 +523,10 @@ static int dmatest_add_channel(struct dma_chan *chan)
- 		cnt = dmatest_add_threads(dtc, DMA_XOR);
- 		thread_count += cnt > 0 ?: 0;
+ 	/* first check to see if we can still append to depend_tx */
+@@ -90,11 +90,11 @@ async_tx_channel_switch(struct dma_async_tx_descriptor *depend_tx,
  	}
-+	if (dma_has_cap(DMA_PQ, dma_dev->cap_mask)) {
-+		cnt = dmatest_add_threads(dtc, DMA_PQ);
-+		thread_count += cnt > 0 ?: 0;
+ 	spin_unlock_bh(&depend_tx->lock);
+ 
+-	if (!intr_tx)
++	/* attached dependency, flush the parent channel */
++	if (!intr_tx) {
++		device->device_issue_pending(chan);
+ 		return;
+-
+-	chan = depend_tx->chan;
+-	device = chan->device;
 +	}
  
- 	pr_info("dmatest: Started %u threads using %s\n",
- 		thread_count, dma_chan_name(chan));
+ 	/* see if we can schedule an interrupt
+ 	 * otherwise poll for completion
+@@ -128,6 +128,7 @@ async_tx_channel_switch(struct dma_async_tx_descriptor *depend_tx,
+ 			intr_tx->tx_submit(intr_tx);
+ 			async_tx_ack(intr_tx);
+ 		}
++		device->device_issue_pending(chan);
+ 	} else {
+ 		if (dma_wait_for_async_tx(depend_tx) == DMA_ERROR)
+ 			panic("%s: DMA_ERROR waiting for depend_tx\n",
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 6781e8f..e002e0e 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -934,49 +934,24 @@ EXPORT_SYMBOL(dma_async_tx_descriptor_init);
+ 
+ /* dma_wait_for_async_tx - spin wait for a transaction to complete
+  * @tx: in-flight transaction to wait on
+- *
+- * This routine assumes that tx was obtained from a call to async_memcpy,
+- * async_xor, async_memset, etc which ensures that tx is "in-flight" (prepped
+- * and submitted).  Walking the parent chain is only meant to cover for DMA
+- * drivers that do not implement the DMA_INTERRUPT capability and may race with
+- * the driver's descriptor cleanup routine.
+  */
+ enum dma_status
+ dma_wait_for_async_tx(struct dma_async_tx_descriptor *tx)
+ {
+-	enum dma_status status;
+-	struct dma_async_tx_descriptor *iter;
+-	struct dma_async_tx_descriptor *parent;
++	unsigned long dma_sync_wait_timeout = jiffies + msecs_to_jiffies(5000);
+ 
+ 	if (!tx)
+ 		return DMA_SUCCESS;
+ 
+-	WARN_ONCE(tx->parent, "%s: speculatively walking dependency chain for"
+-		  " %s\n", __func__, dma_chan_name(tx->chan));
+-
+-	/* poll through the dependency chain, return when tx is complete */
+-	do {
+-		iter = tx;
+-
+-		/* find the root of the unsubmitted dependency chain */
+-		do {
+-			parent = iter->parent;
+-			if (!parent)
+-				break;
+-			else
+-				iter = parent;
+-		} while (parent);
+-
+-		/* there is a small window for ->parent == NULL and
+-		 * ->cookie == -EBUSY
+-		 */
+-		while (iter->cookie == -EBUSY)
+-			cpu_relax();
+-
+-		status = dma_sync_wait(iter->chan, iter->cookie);
+-	} while (status == DMA_IN_PROGRESS || (iter != tx));
+-
+-	return status;
++	while (tx->cookie == -EBUSY) {
++		if (time_after_eq(jiffies, dma_sync_wait_timeout)) {
++			pr_err("%s timeout waiting for descriptor submission\n",
++				__func__);
++			return DMA_ERROR;
++		}
++		cpu_relax();
++	}
++	return dma_sync_wait(tx->chan, tx->cookie);
+ }
+ EXPORT_SYMBOL_GPL(dma_wait_for_async_tx);
+ 
+diff --git a/include/linux/async_tx.h b/include/linux/async_tx.h
+index 3d21a25..12a2efc 100644
+--- a/include/linux/async_tx.h
++++ b/include/linux/async_tx.h
+@@ -83,6 +83,24 @@ struct async_submit_ctl {
+ 
+ #ifdef CONFIG_DMA_ENGINE
+ #define async_tx_issue_pending_all dma_issue_pending_all
++
++/**
++ * async_tx_issue_pending - send pending descriptor to the hardware channel
++ * @tx: descriptor handle to retrieve hardware context
++ *
++ * Note: any dependent operations will have already been issued by
++ * async_tx_channel_switch, or (in the case of no channel switch) will
++ * be already pending on this channel.
++ */
++static inline void async_tx_issue_pending(struct dma_async_tx_descriptor *tx)
++{
++	if (likely(tx)) {
++		struct dma_chan *chan = tx->chan;
++		struct dma_device *dma = chan->device;
++
++		dma->device_issue_pending(chan);
++	}
++}
+ #ifdef CONFIG_ARCH_HAS_ASYNC_TX_FIND_CHANNEL
+ #include <asm/async_tx.h>
+ #else
+@@ -98,6 +116,11 @@ static inline void async_tx_issue_pending_all(void)
+ 	do { } while (0);
+ }
+ 
++static inline void async_tx_issue_pending(struct dma_async_tx_descriptor *tx)
++{
++	do { } while (0);
++}
++
+ static inline struct dma_chan *
+ async_tx_find_channel(struct async_submit_ctl *submit,
+ 		      enum dma_transaction_type tx_type, struct page **dst,
 
