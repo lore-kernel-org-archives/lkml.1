@@ -1,64 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbZH3Uxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbZH3Uzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754108AbZH3Uxc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 16:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZH3Uxb
+	id S1754126AbZH3Uzy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 16:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZH3Uzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 16:53:31 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:54012 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754008AbZH3Uxa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 16:53:30 -0400
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: David Dillow <dave@thedillows.org>,
-       Michael Riepe <michael.riepe@googlemail.com>,
-       Michael Buesch <mb@bu3sch.de>, Rui Santos <rsantos@grupopie.com>,
-       Michael B??ker <m.bueker@berlin.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] r8169: Reduce looping in the interrupt handler.
-References: <1251294974.14241.9.camel@obelisk.thedillows.org>
-	<1251295175.14241.11.camel@obelisk.thedillows.org>
-	<m11vmy737x.fsf@fess.ebiederm.org>
-	<20090826213024.GA20428@electric-eye.fr.zoreil.com>
-	<m1hbvu45jq.fsf@fess.ebiederm.org>
-	<20090827052423.GA1709@electric-eye.fr.zoreil.com>
-	<m1ocq1ke9u.fsf@fess.ebiederm.org>
-	<20090827232024.GA30119@electric-eye.fr.zoreil.com>
-	<m1d46gka9e.fsf@fess.ebiederm.org>
-	<1251422978.21865.2.camel@obelisk.thedillows.org>
-	<20090830203735.GA24912@electric-eye.fr.zoreil.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 30 Aug 2009 13:53:22 -0700
-In-Reply-To: <20090830203735.GA24912@electric-eye.fr.zoreil.com> (Francois Romieu's message of "Sun\, 30 Aug 2009 22\:37\:35 +0200")
-Message-ID: <m17hwl2fct.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 30 Aug 2009 16:55:53 -0400
+Received: from ns.unixsol.org ([193.110.159.2]:57164 "EHLO ns.unixsol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754024AbZH3Uzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 16:55:52 -0400
+Message-ID: <4A9AE758.2060106@unixsol.org>
+Date: Sun, 30 Aug 2009 23:55:52 +0300
+From: Georgi Chorbadzhiyski <gf@unixsol.org>
+Organization: Unix Solutions Ltd. (http://unixsol.org)
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: romieu@fr.zoreil.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, m.bueker@berlin.de, rsantos@grupopie.com, mb@bu3sch.de, michael.riepe@googlemail.com, dave@thedillows.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: Dmitry Torokhov <dtor@mail.ru>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Henk Vergonet <henk.vergonet@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, usbb2k-api-dev@nongnu.org
+Subject: input: Phone buttons in USB handsets/phones
+Content-Type: text/plain; charset=windows-1251
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francois Romieu <romieu@fr.zoreil.com> writes:
+Hi guys, I'm patching yealink.c to support p4k phone and
+I'm wondering what to do about the extra buttons that are
+found the phone [1] but are not defined as KEY_xxxxxx in
+input.h?
 
-> David Dillow <dave@thedillows.org> :
-> [...]
->> It'll be this weekend, but I can see cases where it can lock my chip up
->> -- they should be rare, but then I thought your case would be extremely
->> rare...
->
-> I don't get it.
->
-> Can you elaborate the relevant cases or give some sample scenarios for
-> them ?
+For example the phone that I'm working with have these
+buttons that do not have matching definitions in input.h:
 
-I think David is referring to the fact that in the NAPI loop there is
-nothing that acks everything.
+  FLASH
+  REDIAL
+  SPEAKER
 
-Eric
+for testing purposes I mapped them to f, r and s
+but that's probably not what should be done.
+
+So what to do about them?
+
+[1]: http://www.von-phone.com/prodimages/P4K-functions.jpg
+
+Right now mapping looks like this:
+
++
++/*
++ * USB-P4K button layout:
++ *
++ *        IN   up    OUT
++ *      VOL+           DEL
++ *       VOL- down   DIAL
++ *
++ *       1      2      3
++ *       4      5      6
++ *       7      8      9
++ *       *      0      #
++ *
++ *    HELP     (S)    SEND
++ *      FLASH       REDIAL
++ *
++ * The "up" and "down" keys, are one big key
++ * The (S) is one big green key with speaker picture on it
++ */
++static int map_p4k_to_key(int scancode)
++{
++	switch(scancode) {			/* phone key:	*/
++	case 0x34: return KEY_LEFT;		/*   IN		*/
++	case 0x32: return KEY_UP;		/*   up		*/
++	case 0x10: return KEY_RIGHT;		/*   OUT	*/
++	case 0x30: return KEY_DOWN;		/*   down	*/
++	case 0x31: return KEY_VOLUMEUP;		/*   VOL+	*/
++	case 0x40: return KEY_VOLUMEDOWN;	/*   VOL-	*/
++	case 0x33: return KEY_BACKSPACE;	/*   DEL	*/
++	case 0x00: return KEY_ENTER;		/*   DIAL	*/
++	case 0x21: return KEY_1;		/*   1		*/
++	case 0x11: return KEY_2;		/*   2 		*/
++	case 0x01: return KEY_3;		/*   3		*/
++	case 0x22: return KEY_4;		/*   4		*/
++	case 0x12: return KEY_5;		/*   5		*/
++	case 0x02: return KEY_6;		/*   6		*/
++	case 0x23: return KEY_7;		/*   7		*/
++	case 0x13: return KEY_8;		/*   8		*/
++	case 0x03: return KEY_9;		/*   9		*/
++	case 0x24: return KEY_KPASTERISK; 	/*   *		*/
++	case 0x14: return KEY_0;		/*   0		*/
++	case 0x04: return KEY_LEFTSHIFT |
++			  KEY_3 << 8;		/*   #		*/
++	case 0x05: return KEY_HELP; 		/*   HELP	*/
++	case 0x15: return KEY_F;   		/*   FLASH	*/
++	case 0x20: return KEY_S;  		/*   SPEAKER	*/
++	case 0x25: return KEY_SEND; 		/*   SEND	*/
++	case 0x44: return KEY_R;    		/*   REDIAL	*/
++	}
++	return -EINVAL;
++}
+
+A related question - cm109 driver uses KEY_NUMERIC_xxx constants
+but since yealink is an older driver (merged in 2.6.14-rc1) it
+returns KEY_0..KEY_9, KPASTERISK and a hack to return #.
+
+Is it a good idea to make yealink return KEY_NUMERIC_xxxx codes
+since they are specially designed for numeric keypads (phones).
+
+On one hand this will unify somehow codes returned by cm109
+(supports at least 5 different usb phone models) and yealink
+(lots of nice usb phones) but on the other hand support for
+KEY_NUMERIC_xxx should be added to every application that
+right now is working fine with yealink driver (but not cm109).
+Right now returning normal 1,2,3,etc makes testing the driver
+a lot easier. Just plug the phone and enter some numbers.
+In this case KEY_NUMERIC_xxxx codes are PITA.
+
+So I'm a bit stuck at what to do, should I patch yealink
+to return NUMERIC_xxx codes or switch cm109 to returning
+KEY_1..KEY_9, KEY_ASTERISK, etc?
+
+-- 
+Georgi Chorbadzhiyski
+http://georgi.unixsol.org/
