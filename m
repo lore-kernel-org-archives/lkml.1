@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbZH3Q6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbZH3RIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753670AbZH3Q6k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 12:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbZH3Q6j
+	id S1753873AbZH3RIS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 13:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZH3RIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 12:58:39 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:50711 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753516AbZH3Q6i (ORCPT
+	Sun, 30 Aug 2009 13:08:17 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44504 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753537AbZH3RIQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 12:58:38 -0400
-Date: Sun, 30 Aug 2009 17:58:34 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
-Message-ID: <20090830165834.GC7129@shareable.org>
-References: <20090821152459.GC6929@shareable.org> <20090821174525.GA28861@infradead.org> <20090822005006.GA22530@shareable.org> <20090824023422.GA775@infradead.org> <20090827143459.GB31453@shareable.org> <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com> <20090828154647.GA15808@infradead.org> <20090828164432.GA8036@shareable.org> <4A984758.5020008@redhat.com>
+	Sun, 30 Aug 2009 13:08:16 -0400
+Message-ID: <4A9AB1D0.7000403@zytor.com>
+Date: Sun, 30 Aug 2009 10:07:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A984758.5020008@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
+       mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
+       tglx@linutronix.de, borislav.petkov@amd.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
+ CPUID bit
+References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com> <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org> <20090816064132.GA16278@elte.hu> <20090816214934.GB7765@liondog.tnic> <4A8EDC02.8000508@zytor.com> <20090822163750.GA31631@liondog.tnic> <4A92F93F.8000502@zytor.com> <20090825055215.GA22595@liondog.tnic> <4A93884E.3000403@zytor.com> <20090830114329.GA9038@liondog.tnic>
+In-Reply-To: <20090830114329.GA9038@liondog.tnic>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> On 08/28/2009 09:44 AM, Jamie Lokier wrote:
-> >(Oh, and Ulrich: Why is there a "#define O_RSYNC O_SYNC" in the Glibc
-> >headers?  That doesn't make sense: O_RSYNC has nothing to do with
-> >writing.)
+On 08/30/2009 04:43 AM, Borislav Petkov wrote:
+> On Mon, Aug 24, 2009 at 11:44:30PM -0700, H. Peter Anvin wrote:
+>> On 08/24/2009 10:52 PM, Borislav Petkov wrote:
+>>> On Mon, Aug 24, 2009 at 01:34:07PM -0700, H. Peter Anvin wrote:
+>>>> Looks reasonable... although part of me wonders if having a pointer to
+>>>> an array containing the entire register file in and out is even better,
+>>>> of if I'm just overengineering at this point.
+>>> Hmm, let's have necessity determine that. I can only think of %edi being
+>>> used as an input reg to rd/wrmsr beside %ecx but it could be very well
+>>> that some other x86 hardware uses other regs too. Do we actually need
+>>> all regs or a two should suffice?
+>>>
+>> Hard to know.  In theory we shouldn't need ESI and EDI either!
+>>
+>> As I said, I wouldn't have worried about it at all if it wasn't for
+>> paravirt_ops turning these things into ABIs.
 > 
-> O_SYNC is a superset of O_RSYNC.  In the absence of a true O_RSYNC 
-> that's the next best thing.
+> Ok, here's what I could come up with. It seems to work (tested only on a
+> Fam10h box), it should cover all our msr needs for now and alleviate the
+> need for adding yet another paravirt_ops member.
+> 
 
-That's an error - O_SYNC is not a superset of O_RSYNC.
+Looks good... there are a few minor tweaks to the assembly (in
+particular, if we're going to do the single file with a macro then the
+macro invocation should be outside the architecture #ifdef; second, I
+realized a better implementation of the 64-bit code after I sent you the
+email) but I can take care of this.
 
-O_SYNC (by itself) only affects writes.
+This is for .32, right?
 
-O_RSYNC only affect reads.
+	-hpa
 
-In the absence of O_RSYNC support in the kernel, it's better to not
-define O_RSYNC at all in userspace.  That tells applications they can
-call fsync/fdatasync themselves before reading to get an equivalent
-effect.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-In fact O_RSYNC, when implemented correctly, can be used by
-applications to get the effect of range-fsync/fdatasync when such
-system calls aren't available (by reading a range), but not as
-efficiently of course.  Defining O_RSYNC as O_SYNC fails to do that.
-
--- Jamie
