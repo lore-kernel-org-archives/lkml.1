@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZH3MwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZH3Mxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZH3MwA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 08:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZH3MwA
+	id S1753463AbZH3Mxi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 08:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZH3Mxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 08:52:00 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:63817 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753353AbZH3Mv7 convert rfc822-to-8bit (ORCPT
+	Sun, 30 Aug 2009 08:53:37 -0400
+Received: from mail-qy0-f172.google.com ([209.85.221.172]:40682 "EHLO
+	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753392AbZH3Mxg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 08:51:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RCq4Ji0Ris5aNxDuCQEJfn+niMp6Ycc+k6MldxLnLWYopDqfjKihqSSqKgTefqV1nq
-         DfX4HDd9uV3N8n63OxmLuIAFBSYWx56G2PBTyyIrwI96/GJktbrck41ojT0ALqqYHNGA
-         NrTcoj7jxv6PXUKqjze7t0vHHaAA7Aq5s4kdQ=
+	Sun, 30 Aug 2009 08:53:36 -0400
 MIME-Version: 1.0
-In-Reply-To: <20090830103448.GD4334@sirena.org.uk>
-References: <1250806271-24419-1-git-send-email-linus.walleij@stericsson.com>
-	 <20090821105636.GA2850@sirena.org.uk>
-	 <63386a3d0908291603i76603a17hc20a8d219c1dc07a@mail.gmail.com>
-	 <20090830103448.GD4334@sirena.org.uk>
-Date: Sun, 30 Aug 2009 14:51:57 +0200
-Message-ID: <63386a3d0908300551s9c7f69dt5b3861fa329da35a@mail.gmail.com>
-Subject: Re: [PATCH] AB3100 regulator support v1
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
+In-Reply-To: <37219a840908241332w2e2d45d8kd6406de3e60d1317@mail.gmail.com>
+References: <20090730200714.5a7ab8a6@pedra.chehab.org>
+	 <37219a840907310825n51d5a6bar79ea1f31dd889327@mail.gmail.com>
+	 <20090801014053.7f53da83@pedra.chehab.org>
+	 <303a8ee30908011103n3c12258icd2bfd1305b419d3@mail.gmail.com>
+	 <20090811140128.211d4d11@caramujo.chehab.org>
+	 <37219a840908111457o4b6abc64n52291f044b56782d@mail.gmail.com>
+	 <37219a840908241332w2e2d45d8kd6406de3e60d1317@mail.gmail.com>
+Date: Sun, 30 Aug 2009 08:53:35 -0400
+Message-ID: <303a8ee30908300553s6d81a2cdn43145de51298afd5@mail.gmail.com>
+Subject: Re: [PULL] http://kernellabs.com/hg/~mkrufky/sms1xxx
+From: Michael Krufky <mkrufky@kernellabs.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-media <linux-media@vger.kernel.org>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/30 Mark Brown <broonie@opensource.wolfsonmicro.com>:
+Mauro,
 
-> [While setting up a child platform device from a platform driver
-> probe...]
+On Mon, Aug 24, 2009 at 4:32 PM, Michael Krufky<mkrufky@kernellabs.com> wrote:
+> Mauro,
 >
->> >> +     /* This would seem logical but makes everything break... */
->> >> +     /* pdev->dev.parent = parent; */
+> Would you please send the final GPIO fix to Linus to fix the
+> regression on the Hauppauge devices.  2.6.31 is in -rc7 now, and I
+> would hate for this regression to not yet be solved before the kernel
+> is released.
 >
->> > Err...  it does?  In what way?
+> I apologize for nagging -- I just prefer for fixes to be merged
+> upstream *before* a kernel release.
 >
->> The sub-platform devices are added, but when I add a platform driver for
->> them, the probing does not commence, because they hang in
->> driver base/dd.c: __driver_attach() trying to take the parent semaphore,
->> i.e. this line:
+> Thank you.
 >
->>       if (dev->parent)        /* Needed for USB */
->>               down(&dev->parent->sem);
+> Just as a reminder, the changeset that is still waiting for upstream merge is:
 >
->> In this case the parent is ab3100-regulators, the platform device for
->> the set of regulators.
->
-> On the face of it (and without having actually looked at a running
-> system or anything yet) I'm rather surprised that platform based MFD
-> drivers aren't running into this issue more often.  CCing in Alan who
-> made the change.
+> *       sms1xxx: restore GPIO functionality for all Hauppauge devices
 
-I think it hasn't happened a lot because most MFD:s spawn their
-platform device children at subsystem_init and then register drivers
-for them at driver_init. E.g. all the wm8350 children have their
-drivers at higher init levels, except for the regulators which are by
-chance saved by having the i2c device as parent.
+Just another reminder -- this is cutting it very close now.
 
-> However, fixing this is not required to avoid the issue for this
-> particular driver.  The problem is being caused because in addition to
-> the core MFD driver for the device you've chosen to create both a
-> platform device covering all regulators and further per-regulator child
-> platform devices.
+I repeat, that this is a feature that worked in previous kernels but
+is broken in 2.6.31.
 
-Yeah I know, I thought it was elegant... :-/
+I feel very concerned, considering that I posted a regression fix over
+six weeks ago and it still has not made it into Linus' kernel tree.
 
-> If you create only one level of child device for the
-> MFD you'll avoid the issue because your core device is an I2C device.
-> Either have a device per regulator or have a single device which
-> registers multiple regulators.
+I understand that you are a busy man -- Would it be easier for you if
+I sent this patch to Linus, myself?
 
-Yep I elaborated registering multiple regulators to the ab3100-regulators
-platform device, I'll try this.
+Please advise.
 
-Linus
+Thank you for your time.
+
+Regards,
+
+Michael Krufky
