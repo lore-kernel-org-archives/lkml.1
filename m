@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870AbZH2XhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752871AbZH3AL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752870AbZH2XhT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 19:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZH2XhS
+	id S1752871AbZH3AL1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 20:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbZH3AL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 19:37:18 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:57638 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752301AbZH2XhR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 19:37:17 -0400
-Date: Sat, 29 Aug 2009 17:37:19 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, liml@rtr.ca, jens.axboe@oracle.com,
-       dwmw2@infradead.org
-Subject: Re: [PATCH 0/7] discard support revisited
-Message-ID: <20090829233718.GD22870@parisc-linux.org>
-References: <20090829230332.017137693@bombadil.infradead.org>
+	Sat, 29 Aug 2009 20:11:26 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:29245 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752595AbZH3AL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 20:11:26 -0400
+Message-ID: <4A99C37A.1020809@redhat.com>
+Date: Sat, 29 Aug 2009 20:10:34 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090829230332.017137693@bombadil.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 10/23] io-controller: Debug hierarchical IO scheduling
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-11-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1251495072-7780-11-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 29, 2009 at 07:03:32PM -0400, Christoph Hellwig wrote:
-> I've started working on discard support a little bit more, and I think
-> it's time to get an overview over the state we're in right now.  This
-> patchswt is what I needed to get the batched discard support in XFS
-> properly working.  Many patches are just forward ported from Matthew's
-> SSD tree and I hope quilt mail didn't lose the attributions.
-
-Funny, I was working on forward-porting my patches this morning.
-
->  - blkdev_issue_discard is now a lot more generic - it grows a flags
->    argument to control if we issue a barrier discard request or not
->    or if we wait or not.  That is needed for the batched discard support
->    in XFS which wants to wait just like the ioctl interface.
-
-Seems fine.
-
->  - I have implemented support for sending WRITE SAME requests with the
->    unmap bit set in sd.  This has been tested with a qemu-based backed
->    only so far, but we'll get some real array coverage soon.
-
-I think we're going to need to figure out whether we should be sending
-UNMAP or WRITE SAME ... probably need to dive back into the T10 poostorm
-to see what's going on.
-
->  - there is a new patch to allow larger discard requests.
->  - the last patch is just my old batched discard patch for xfs ported
->    to work ontop of this series.
+Vivek Goyal wrote:
+> o Littile debugging aid for hierarchical IO scheduling.
 > 
-> I would really love to see some progress on this in the 2.6.32 circle.
-> We should at least get the block layer bits in that allow implementing
-> a somewhat useful discard function.  I would also love to see the
-> actual scsi and libata implementations in so that we can start playing
-> around with it.  But given the speed up the current TRIM implementations
-> and the expectations for WRITE SAME we should make sure the exact
-> TRIM tracking is not actually enabled anywhere by default for now.
+> o Enabled under CONFIG_DEBUG_GROUP_IOSCHED
+> 
+> o Currently it outputs more debug messages in blktrace output which helps
+>   a great deal in debugging in hierarchical setup. It also creates additional
+>   cgroup interfaces io.disk_queue and io.disk_dequeue to output some more
+>   debugging data.
+> 
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 
-Jens had some objections to the block layer bits last time I posted
-these.  I forget what they were now (this would have been around May
-2nd, I think).  What I've done instead in my current patchset (which
-undoubtedly has bugs because it isn't tested, because I'm not supposed
-to be working on the weekends) is to make sd_prep_fn() call a new method
-in the scsi_host_template.  That should translate the discard request
-into a BLOCK_PC ATA_16 command, and we'll all be happy.
-
-It goes a little something like this:
-http://git.kernel.org/?p=linux/kernel/git/willy/ssd.git;a=shortlog;h=trim-20090829
-
-Right now, the test tool is telling me 'Operation not supported', and
-I haven't tried to figure out why yet.
+Acked-by: Rik van Riel <riel@redhat.com>
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+All rights reversed.
