@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbZH3RIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZH3ROl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753873AbZH3RIS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 13:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZH3RIR
+	id S1753919AbZH3ROl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 13:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbZH3ROk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 13:08:17 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44504 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753537AbZH3RIQ (ORCPT
+	Sun, 30 Aug 2009 13:14:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46615 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753881AbZH3ROk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 13:08:16 -0400
-Message-ID: <4A9AB1D0.7000403@zytor.com>
-Date: Sun, 30 Aug 2009 10:07:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sun, 30 Aug 2009 13:14:40 -0400
+Date: Sun, 30 Aug 2009 13:14:38 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, liml@rtr.ca,
+       jens.axboe@oracle.com, matthew@wil.cx, dwmw2@infradead.org
+Subject: Re: [PATCH 4/7] sd: add support for WRITE SAME (16) with unmap bit
+Message-ID: <20090830171438.GA12178@infradead.org>
+References: <20090829230332.017137693@bombadil.infradead.org> <20090829231121.713422216@bombadil.infradead.org> <4A9A5E89.7070204@ru.mvista.com>
 MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-       tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
- CPUID bit
-References: <1250251594-8348-2-git-send-email-borislav.petkov@amd.com> <tip-c74cb13b94118ec89e48849806356b67caa5ff86@git.kernel.org> <20090816064132.GA16278@elte.hu> <20090816214934.GB7765@liondog.tnic> <4A8EDC02.8000508@zytor.com> <20090822163750.GA31631@liondog.tnic> <4A92F93F.8000502@zytor.com> <20090825055215.GA22595@liondog.tnic> <4A93884E.3000403@zytor.com> <20090830114329.GA9038@liondog.tnic>
-In-Reply-To: <20090830114329.GA9038@liondog.tnic>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9A5E89.7070204@ru.mvista.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/30/2009 04:43 AM, Borislav Petkov wrote:
-> On Mon, Aug 24, 2009 at 11:44:30PM -0700, H. Peter Anvin wrote:
->> On 08/24/2009 10:52 PM, Borislav Petkov wrote:
->>> On Mon, Aug 24, 2009 at 01:34:07PM -0700, H. Peter Anvin wrote:
->>>> Looks reasonable... although part of me wonders if having a pointer to
->>>> an array containing the entire register file in and out is even better,
->>>> of if I'm just overengineering at this point.
->>> Hmm, let's have necessity determine that. I can only think of %edi being
->>> used as an input reg to rd/wrmsr beside %ecx but it could be very well
->>> that some other x86 hardware uses other regs too. Do we actually need
->>> all regs or a two should suffice?
->>>
->> Hard to know.  In theory we shouldn't need ESI and EDI either!
->>
->> As I said, I wouldn't have worried about it at all if it wasn't for
->> paravirt_ops turning these things into ABIs.
-> 
-> Ok, here's what I could come up with. It seems to work (tested only on a
-> Fam10h box), it should cover all our msr needs for now and alleviate the
-> need for adding yet another paravirt_ops member.
-> 
+On Sun, Aug 30, 2009 at 03:12:09PM +0400, Sergei Shtylyov wrote:
+>> +	printk(KERN_INFO "umap, lba = 0x%lld, len = %d\n",
+>>   
+>
+>   So, is it hex or decimal? :-)
+>
+>> +	       bio->bi_sector, bio_sectors(bio));
+>>   
+>
+>   Since bio->bi_sector can either be 4 or 8 bytes, you need a cast to  
+> unsigned long long here.
 
-Looks good... there are a few minor tweaks to the assembly (in
-particular, if we're going to do the single file with a macro then the
-macro invocation should be outside the architecture #ifdef; second, I
-realized a better implementation of the 64-bit code after I sent you the
-email) but I can take care of this.
-
-This is for .32, right?
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Indeed.  But as this is justa debug printk that slipped through I will
+just remove it completely in the next iteration.
 
