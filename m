@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZH3OdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbZH3OoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbZH3OdM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 10:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZH3OdL
+	id S1753780AbZH3OoH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 10:44:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZH3OoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 10:33:11 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:51597 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753483AbZH3OdK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 10:33:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=KwvI+0wfxBeOohL6BwOD2LLRpm3VrsC9YJKHO1EUjBuvUc1N+KJtBY6lWzar1rWejQ
-         s7Amqc/vQSdolyfI1GaS6Y6JYg9eeNQj1Zl9FjqEIusfpTmgHPhCTd5jekxaiBMq6uL2
-         VtwTaDCKQc1TpYLk5P5cmOCuxKPp47IkmhyPA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] ata_piix: parallel scanning on PATA needs an extra locking
-Date: Sun, 30 Aug 2009 16:33:19 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-00015-gadda766-dirty; KDE/4.3.0; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Alan Cox <alan@linux.intel.com>, Jeff Garzik <jgarzik@redhat.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200908301456.30132.bzolnier@gmail.com> <20090830151321.57bc33eb@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090830151321.57bc33eb@lxorguk.ukuu.org.uk>
+	Sun, 30 Aug 2009 10:44:07 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:50204 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753488AbZH3OoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 10:44:05 -0400
+Message-ID: <4A9A9034.8000703@msgid.tls.msk.ru>
+Date: Sun, 30 Aug 2009 18:44:04 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Message-Id: <200908301633.19978.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Ric Wheeler <rwheeler@redhat.com>
+CC: david@lang.hm, Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+References: <ff262c08b0c3a7a9c32dabd53a4a9a27.squirrel@neil.brown.name> <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com> <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz> <alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm> <4A9A88B6.9050902@redhat.com>
+In-Reply-To: <4A9A88B6.9050902@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 30 August 2009 16:13:21 Alan Cox wrote:
-> > Lets fix all such races by adding an extra locking to ->set_piomode
-> > and ->set_dmamode methods for PATA controllers.
+Ric Wheeler wrote:
+[]
+> The easiest way to lose your data in Linux - with RAID, without RAID, 
+> S-ATA or SAS - is to run with the write cache enabled.
 > 
-> Would it not be better to take the host lock in libata-core for these
-> cases so that we fix all the adapters in one swoop. Even if we are doing
-> this lock taking in the controller specific code it seems the right lock
-> to use ?
+> If you compare the size of even a large RAID stripe it will be measured 
+> in KB and as this thread has mentioned already, you stand to have damage 
+> to just one stripe (or even just a disk sector or two).
+> 
+> If you lose power with the write caches enabled on that same 5 drive 
+> RAID set, you could lose as much as 5 * 32MB of freshly written data on  
+> a power loss (16-32MB write caches are common on s-ata disks these days).
 
-Yes, taking the host lock would be a preferred solution in the long-term
-and would allow us to enable parallel scanning for many other controllers
-later.
+This is fundamentally wrong.  Many filesystems today use either barriers
+or flushes (if barriers are not supported), and the times when disk drives
+were lying to the OS that the cache got flushed are long gone.
 
-The downside is that it requires somebody to audit all host drivers before
-making such change and much more testing time..
+> For MD5 (and MD6), you really must run with the write cache disabled 
+> until we get barriers to work for those configurations.
 
-> Looks fine as a temproary quickfix tho
+I highly doubt barriers will ever be supported on anything but simple
+raid1, because it's impossible to guarantee ordering across multiple
+drives.  Well, it *is* possible to have write barriers with journalled
+(and/or with battery-backed-cache) raid[456].
 
-That was the goal of the patch (I verified the issue only yesterday).
+Note that even if raid[456] does not support barriers, write cache
+flushes still works.
+
+/mjt
