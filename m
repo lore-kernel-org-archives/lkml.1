@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZH3QkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbZH3QoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbZH3QkI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 12:40:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbZH3QkH
+	id S1753558AbZH3QoU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 12:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZH3QoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 12:40:07 -0400
-Received: from verein.lst.de ([213.95.11.210]:57627 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753883AbZH3QkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 12:40:06 -0400
-Date: Sun, 30 Aug 2009 18:39:17 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, hch@lst.de,
-       linux-fsdevel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>,
-       ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Felix Blyakher <felixb@sgi.com>, xfs@oss.sgi.com,
-       Anton Altaparmakov <aia21@cantab.net>,
-       linux-ntfs-dev@lists.sourceforge.net,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-ext4@vger.kernel.org, tytso@mit.edu
-Subject: Re: [PATCH 07/17] vfs: Introduce new helpers for syncing after writing to O_SYNC file or IS_SYNC inode
-Message-ID: <20090830163917.GA23955@lst.de>
-References: <1250875447-15622-1-git-send-email-jack@suse.cz> <1250875447-15622-8-git-send-email-jack@suse.cz> <20090827173540.GA19115@infradead.org> <20090830163551.GA7129@shareable.org>
-Mime-Version: 1.0
+	Sun, 30 Aug 2009 12:44:19 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:53631 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753477AbZH3QoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 12:44:18 -0400
+Date: Sun, 30 Aug 2009 17:44:11 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ulrich Drepper <drepper@redhat.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: adding proper O_SYNC/O_DSYNC, was Re: O_DIRECT and barriers
+Message-ID: <20090830164411.GB7129@shareable.org>
+References: <20090827143459.GB31453@shareable.org> <20090827171044.GA5427@infradead.org> <4A96C14C.8040105@redhat.com> <20090828154647.GA15808@infradead.org> <4A98008B.6050503@redhat.com> <20090828161745.GA8755@infradead.org> <4A9806D9.5050409@redhat.com> <20090828164106.GA9951@infradead.org> <4A984337.7080009@redhat.com> <20090828210838.GA26799@infradead.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090830163551.GA7129@shareable.org>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+In-Reply-To: <20090828210838.GA26799@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 30, 2009 at 05:35:51PM +0100, Jamie Lokier wrote:
-> I like that.  It looks really clear and self-documenting, if
-> vfs_fsync_range does what it sounds like, which is a nice change.
-> 
-> If I've guessed right what that code does, proper O_RSYNC will be easy:
-> 
-> int generic_sync_before_read(struct file *file, loff_t pos, loff_t count)
-> {
-> 	int is_sync = ((file->f_flags & O_SYNC)
-> 		       || IS_SYNC(file->f_mapping->host));
-> 	int is_dsync = is_sync || (file->f_flags & O_DSYNC);
-> 
-> 	if (!is_dsync || !(file->f_flags & O_RSYNC))
-> 		return 0;
-> 	return vfs_fsync_range(file, file->f_ath.denty, pos,
-> 			       pos + count - 1, is_sync);
-> }
+Christoph Hellwig wrote:
+> P.S. better naming suggestions for O_FULLSYNC welcome
 
-Yes. something like this.
+O_FULLSYNC might get confused with MacOS X's F_FULLSYNC, which means
+something else: fsync through hardware volatile write caches.
 
-> (By the way, did I mention Irix has range-fsync and range-fdatasync
-> system calls too :-) (actually fcntls))
+(Might we even want to provide O_FULLSYNC and O_FULLDATASYNC to mean
+that, eventually?)
 
-Linux has sync_file_range which currently is a perfect way to lose your
-synced' data, but with two more flags and calls to ->fsync we could
-turn it into range-fsync/fdatasync.  I'm not sure if that's a good
-idea or if we should just add a sys_fdatasync_rage systems call.
+O_ISYNC is a bit misleading if we don't really offer "flush just the
+inode state" by itself.
 
-I don't quite see the point of a range-fsync, but it could be easily
-implemented as a flag.
+So it should at least start with underscores: __O_ISYNC.
 
+How about __O_SYNC_NEW with
+
+    #define O_SYNC     (O_DSYNC|__O_SYNC_NEW)
+
+I think that tells people reading the headers a bit about what to
+expect on older kernels too.
+
+-- Jamie
