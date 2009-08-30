@@ -1,94 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbZH3LMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbZH3LMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321AbZH3LMT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 07:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZH3LMT
+	id S1753348AbZH3LMn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 07:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbZH3LMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 07:12:19 -0400
-Received: from h155.mvista.com ([63.81.120.155]:16742 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752759AbZH3LMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 07:12:18 -0400
-Message-ID: <4A9A5E89.7070204@ru.mvista.com>
-Date: Sun, 30 Aug 2009 15:12:09 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sun, 30 Aug 2009 07:12:42 -0400
+Received: from mail-vw0-f195.google.com ([209.85.212.195]:57354 "EHLO
+	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752759AbZH3LMm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 07:12:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=lxdXkr+TkbGb90zeWv/zbMoSWRFKBfm+4B+kwKoEUuyD8D0m5Suyp6Fhkvalzc/Dg/
+         9vZagfoon7oM30MZmwmfo1mD6Q2IOT4gSMvRF/Iqyu49PCNYv14eSpn/WIX9fMtS5oWw
+         ctc2Cl2weD4WebWwSnvMPlvajPI1+CvkTn4IY=
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, liml@rtr.ca, jens.axboe@oracle.com,
-       matthew@wil.cx, dwmw2@infradead.org
-Subject: Re: [PATCH 4/7] sd: add support for WRITE SAME (16) with unmap bit
-References: <20090829230332.017137693@bombadil.infradead.org> <20090829231121.713422216@bombadil.infradead.org>
-In-Reply-To: <20090829231121.713422216@bombadil.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4A9285FC.8000606@byu.net>
+References: <4A9285FC.8000606@byu.net>
+Date: Sun, 30 Aug 2009 12:12:42 +0100
+X-Google-Sender-Auth: 5e1471e5ce05cb2c
+Message-ID: <c5df85930908300412lc2f334dle4502492b25827f5@mail.gmail.com>
+Subject: Re: [RFC] new open flag O_NOSTD
+From: James Youngman <jay@gnu.org>
+To: Eric Blake <ebb9@byu.net>
+Cc: linux-kernel@vger.kernel.org, bug-coreutils <bug-coreutils@gnu.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Christoph Hellwig wrote:
-
-> Add a prepare_discard function to sd that sends a WRITE SAME request with
-> the unmap bit set to the device if it advertises thin provisioning support.
+On Mon, Aug 24, 2009 at 1:22 PM, Eric Blake<ebb9@byu.net> wrote:
+> The name proposed in this mail is O_NOSTD (implying that a successful
+> result will not be any of the standard file descriptors); other ideas
+> mentioned on the bug-gnulib list were O_SAFER, O_NONSTD, O_NOSTDFD.
+> http://lists.gnu.org/archive/html/bug-gnulib/2009-08/msg00358.html
 >
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
->
-> Index: linux-2.6/drivers/scsi/sd.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/scsi/sd.c	2009-08-29 19:19:36.067371669 -0300
-> +++ linux-2.6/drivers/scsi/sd.c	2009-08-29 19:26:20.723754241 -0300
-> @@ -911,6 +911,50 @@ static void sd_prepare_flush(struct requ
->  	rq->cmd_len = 10;
->  }
->  
-> +static int sd_prepare_discard(struct request_queue *q, struct request *rq,
-> +		struct bio *bio)
-> +{
-> +	struct scsi_device *sdp = q->queuedata;
-> +	struct page *page = alloc_page(GFP_KERNEL);
-> +
-> +	if (!page)
-> +		return -ENOMEM;
-> +
-> +	rq->cmd_type = REQ_TYPE_BLOCK_PC;
-> +	rq->timeout = SD_TIMEOUT;
-> +	rq->cmd[0] = WRITE_SAME_16;
-> +	rq->cmd[1] = 0x8; /* UNMAP bit */
-> +	rq->cmd[2] = sizeof(bio->bi_sector) > 4 ?
-> +			(unsigned char) (bio->bi_sector >> 56) & 0xff : 0;
-> +	rq->cmd[3] = sizeof(bio->bi_sector) > 4 ?
-> +			(unsigned char) (bio->bi_sector >> 48) & 0xff : 0;
-> +	rq->cmd[4] = sizeof(bio->bi_sector) > 4 ?
-> +			(unsigned char) (bio->bi_sector >> 40) & 0xff : 0;
-> +	rq->cmd[5] = sizeof(bio->bi_sector) > 4 ?
-> +			(unsigned char) (bio->bi_sector >> 32) & 0xff : 0;
-> +	rq->cmd[6] = (unsigned char) (bio->bi_sector >> 24) & 0xff;
-> +	rq->cmd[7] = (unsigned char) (bio->bi_sector >> 16) & 0xff;
-> +	rq->cmd[8] = (unsigned char) (bio->bi_sector >> 8) & 0xff;
-> +	rq->cmd[9] = (unsigned char) bio->bi_sector & 0xff;
-> +	rq->cmd[10] = (unsigned char) (bio_sectors(bio) >> 24) & 0xff;
-> +	rq->cmd[11] = (unsigned char) (bio_sectors(bio) >> 16) & 0xff;
-> +	rq->cmd[12] = (unsigned char) (bio_sectors(bio) >> 8) & 0xff;
-> +	rq->cmd[13] = (unsigned char) bio_sectors(bio) & 0xff;
-> +	rq->cmd[14] = 0;
-> +	rq->cmd[15] = 0;
-> +	rq->cmd_len = 16;
-> +
-> +	printk(KERN_INFO "umap, lba = 0x%lld, len = %d\n",
->   
+> Thoughts?
 
-   So, is it hex or decimal? :-)
+Mostly yes,  I like it.
 
-> +	       bio->bi_sector, bio_sectors(bio));
->   
+I'd like to explicitly vote against O_SAFER, because there may be (for
+some systems or in the future) some other way of making open(2) safer.
+  I'd vote positively for O_NOSTDFD or O_NOSTD.
 
-   Since bio->bi_sector can either be 4 or 8 bytes, you need a cast to 
-unsigned long long here.
-
-MBR, Sergei
-
-
+James.
