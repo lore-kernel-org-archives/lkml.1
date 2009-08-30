@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752957AbZH3All@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753009AbZH3Alv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752957AbZH3All (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 20:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbZH3All
+	id S1753009AbZH3Alv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 20:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbZH3Alu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 20:41:41 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41605 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752878AbZH3Alk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 20:41:40 -0400
-Message-ID: <4A99CA64.9090807@redhat.com>
-Date: Sat, 29 Aug 2009 20:40:04 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Sat, 29 Aug 2009 20:41:50 -0400
+Received: from mail-yw0-f186.google.com ([209.85.211.186]:62372 "EHLO
+	mail-yw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752970AbZH3Als (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 20:41:48 -0400
+X-Greylist: delayed 310 seconds by postgrey-1.27 at vger.kernel.org; Sat, 29 Aug 2009 20:41:48 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=RzudOuU4z92VRbxBgs8PDkT3T0cnmrvCDn76f2J1xugK2s9/oFwYwXhZBcUqT9iEyu
+         MKc8yhe0LHuLS/D/yQ3Se+WR3K4+D6d+/TD+r1sqoaWCetEKMTzey+u2ja3gwdBn5ksW
+         y55sxXI45zm510LBaU4w7WMuGhOClMJfNtgSk=
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 12/23] io-controller: Wait for requests to complete from
- last queue before new queue is scheduled
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-13-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1251495072-7780-13-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <alpine.LFD.2.00.0908281945590.10281@eeepc.linux-foundation.org>
+References: <Pine.LNX.4.64.0908282358560.19623@boston.corp.fedex.com>
+	 <1251476422.28787.1.camel@dhcp231-106.rdu.redhat.com>
+	 <b6a2187b0908280930s6366eda6pe1d5024b4ef890dd@mail.gmail.com>
+	 <alpine.LFD.2.00.0908281945590.10281@eeepc.linux-foundation.org>
+Date: Sun, 30 Aug 2009 08:36:40 +0800
+Message-ID: <b6a2187b0908291736j57d8ec83g2ffbe79ba610e16e@mail.gmail.com>
+Subject: Re: Linux-2.6.31-rc8 inotify hangs samba clients
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Paris <eparis@redhat.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
+On Sat, Aug 29, 2009 at 1:48 PM, Linus
+Torvalds<torvalds@linux-foundation.org> wrote:
+> On Sat, 29 Aug 2009, Jeff Chua wrote:
+>>
+>> Thanks again for the pointer and fixes. Will wait to pull from Linus's
+>> git.
+>
+> Ok, I've merged the inotify things (along with a few others changes).
+> Please do give it a good test. I'm going to be online only to a _very_
+> limited degree (four-tank dive day tomorrow! Yeehaa), so I really hope
+> that this solves it all.
 
-> o Because above behavior can result in reduced throughput, this behavior will
->   be enabled only if user sets "fairness" tunable to 1.
-> 
-> o This patch helps in achieving more isolation between reads and buffered
->   writes in different cgroups. 
+Looks solved. Seems faster than before "introducing the bad fix".
 
-Could be a nice help against SATA NCQ request starvation.
+Have a great dive!
 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-
-Acked-by: Rik van Riel <riel@redhat.com>
-
--- 
-All rights reversed.
+Thanks,
+Jeff
