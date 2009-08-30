@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbZH3Pmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbZH3QDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbZH3Pmd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 11:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbZH3Pmc
+	id S1753843AbZH3QDO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 12:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZH3QDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 11:42:32 -0400
-Received: from outbound-mail-319.bluehost.com ([67.222.54.251]:36754 "HELO
-	outbound-mail-319.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752163AbZH3Pmc (ORCPT
+	Sun, 30 Aug 2009 12:03:13 -0400
+Received: from mail-yw0-f188.google.com ([209.85.211.188]:41475 "EHLO
+	mail-yw0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753574AbZH3QDN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 11:42:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=LRJaBQqiU0LnNDo5OVyTbN2noZ7iPItdv3nm6iegLdICG5OL2tPZ2EdUIhdJQumSRvTY6uzPZtqA+GX96xIx950Xe+tWmGB2/PeZ3Q7+BNwMRM6dim1673f9ExkH0bOg;
-Date: Sun, 30 Aug 2009 08:42:16 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Anvin <hpa@zytor.com>, Arjan van de Veen <arjan@infradead.org>,
-       Pan Jacob jun <jacob.jun.pan@intel.com>
-Subject: Re: [RFC patch 4/4] x86: Add pci subarch init to x86_init
-Message-ID: <20090830084216.7afd48f6@jbarnes-g45>
-In-Reply-To: <20090830122528.727735101@linutronix.de>
-References: <20090830122225.608718729@linutronix.de>
-	<20090830122528.727735101@linutronix.de>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Sun, 30 Aug 2009 12:03:13 -0400
+X-Greylist: delayed 386 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Aug 2009 12:03:13 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=cS0ICBg5DSzJMaKgDOS5hvEDVxHaw32r1jkEgxyNN0pTCmF72kFBN+4L/gGSBgi5oG
+         TaGHt+G6Y4YuJiXlw+MUtJ/TE3WMiOv2Gzz4+mdsmzf7Zji/fCd7n8juOdzetDrPYVC8
+         BF3wZXWLh/k8OZaAJiv9K6Gu3tfhjofzQMxaE=
+MIME-Version: 1.0
+Date: Sun, 30 Aug 2009 11:56:49 -0400
+Message-ID: <804dabb00908300856x3e5d03f9m2a1672009b904cdb@mail.gmail.com>
+Subject: micro-SD problem
+From: Peter Teoh <htmldeveloper@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Aug 2009 13:05:42 -0000
-Thomas Gleixner <tglx@linutronix.de> wrote:
+I just bought an 8G brand new micro-SD.....i plugged into my
+blackberry....it created the filesystem inside....and then I plugged
+into m WinXP SP3, and I can some directories created on it, and i can
+even copy files to the subdir.
 
-> Replace the #ifdef'ed olpc specific init function by a conditional
-> x86_init function. This hook is also helpful for the upcoming
-> Moorestown support.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
->  arch/x86/include/asm/olpc.h     |   20 ++------------------
->  arch/x86/include/asm/pci_x86.h  |    1 -
->  arch/x86/include/asm/x86_init.h |    4 +++-
->  arch/x86/kernel/olpc.c          |    8 +++++---
->  arch/x86/pci/init.c             |    7 +++----
->  arch/x86/pci/olpc.c             |    3 ---
->  6 files changed, 13 insertions(+), 30 deletions(-)
+Next i plugged it into my Linux:   (2.6.31-rc6) and got the following
+dmesg output:
 
-This is definitely nicer than what we have today...  There's one other
-PCI patch for MRST in my pci tree:
-http://git.kernel.org/?p=linux/kernel/git/jbarnes/pci-2.6.git;a=shortlog;h=mrst-support
-it might also need updating in light of these changes.
+[   39.513014] eth0: no IPv6 routers present
+[14556.821035] usb 1-1: new high speed USB device using ehci_hcd and address 2
+[14556.937437] usb 1-1: configuration #1 chosen from 1 choice
+[14557.035489] Initializing USB Mass Storage driver...
+[14557.035663] scsi6 : SCSI emulation for USB Mass Storage devices
+[14557.036575] usbcore: registered new interface driver usb-storage
+[14557.036580] USB Mass Storage support registered.
+[14557.044956] usb-storage: device found at 2
+[14557.044960] usb-storage: waiting for device to settle before scanning
+[14562.044859] scsi 6:0:0:0: Direct-Access     Multi    Flash Reader
+  1.00 PQ: 0 ANSI: 0
+[14562.045118] sd 6:0:0:0: Attached scsi generic sg2 type 0
+[14592.806021] usb 1-1: reset high speed USB device using ehci_hcd and address 2
+[14603.023025] usb 1-1: reset high speed USB device using ehci_hcd and address 2
+[14619.240021] usb 1-1: reset high speed USB device using ehci_hcd and address 2
+[14619.458027] usb 1-1: reset high speed USB device using ehci_hcd and address 2
+[14629.675032] usb 1-1: reset high speed USB device using ehci_hcd and address 2
+[14629.791287] sd 6:0:0:0: Device offlined - not ready after error recovery
+[14629.791334] sd 6:0:0:0: rejecting I/O to offline device
+[14629.791362] sd 6:0:0:0: rejecting I/O to offline device
+[14629.791382] sd 6:0:0:0: rejecting I/O to offline device
+[14629.791391] sd 6:0:0:0: [sdc] READ CAPACITY failed
+[14629.791395] sd 6:0:0:0: [sdc] Result: hostbyte=DID_NO_CONNECT
+driverbyte=DRIVER_OK
+[14629.791402] sd 6:0:0:0: [sdc] Sense not available.
+[14629.791419] sd 6:0:0:0: rejecting I/O to offline device
+[14629.791431] sd 6:0:0:0: [sdc] Write Protect is off
+[14629.791436] sd 6:0:0:0: [sdc] Mode Sense: 00 00 00 00
+[14629.791440] sd 6:0:0:0: [sdc] Assuming drive cache: write through
+[14629.791650] sd 6:0:0:0: [sdc] Attached SCSI removable disk
+[14629.791874] usb-storage: device scan complete
+
+
+fdisk -l /dev/sdc returned nothing, neither it is automounted by my
+FedoraCore 10.   Is there any limitations/problems from the Linux
+side?
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Regards,
+Peter Teoh
