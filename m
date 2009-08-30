@@ -1,111 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbZH3Ane@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbZH3Asw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981AbZH3Ane (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 29 Aug 2009 20:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZH3Ane
+	id S1753028AbZH3Asw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 29 Aug 2009 20:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZH3Asv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 29 Aug 2009 20:43:34 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:50951 "EHLO elrond.infotech.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752876AbZH3And (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 29 Aug 2009 20:43:33 -0400
-Message-ID: <4A99CB2F.9000000@interlog.com>
-Date: Sat, 29 Aug 2009 20:43:27 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 29 Aug 2009 20:48:51 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:52223 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752898AbZH3Asu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 29 Aug 2009 20:48:50 -0400
+Date: Sat, 29 Aug 2009 20:48:51 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH 2/6] PM: Asynchronous resume of devices
+In-Reply-To: <200908291449.57667.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908292043500.26533-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, liml@rtr.ca, jens.axboe@oracle.com,
-       matthew@wil.cx, dwmw2@infradead.org
-Subject: Re: [PATCH 4/7] sd: add support for WRITE SAME (16) with unmap bit
-References: <20090829230332.017137693@bombadil.infradead.org> <20090829231121.713422216@bombadil.infradead.org>
-In-Reply-To: <20090829231121.713422216@bombadil.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> Add a prepare_discard function to sd that sends a WRITE SAME request with
-> the unmap bit set to the device if it advertises thin provisioning support.
+On Sat, 29 Aug 2009, Rafael J. Wysocki wrote:
+
+> I only wanted to say that the advantage is not really that "big". :-)
 > 
+> > I must agree, 14 threads isn't a lot.  But at the moment that number is 
+> > random, not under your control.
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> It's not directly controlled, but there are some interactions between the
+> async threads, the main threads and the async framework that don't allow this
+> number to grow too much.
 > 
-> Index: linux-2.6/drivers/scsi/sd.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/scsi/sd.c	2009-08-29 19:19:36.067371669 -0300
-> +++ linux-2.6/drivers/scsi/sd.c	2009-08-29 19:26:20.723754241 -0300
-> @@ -911,6 +911,50 @@ static void sd_prepare_flush(struct requ
->  	rq->cmd_len = 10;
->  }
->  
-> +static int sd_prepare_discard(struct request_queue *q, struct request *rq,
-> +		struct bio *bio)
-> +{
-> +	struct scsi_device *sdp = q->queuedata;
-> +	struct page *page = alloc_page(GFP_KERNEL);
-> +
-> +	if (!page)
-> +		return -ENOMEM;
-> +
-> +	rq->cmd_type = REQ_TYPE_BLOCK_PC;
-> +	rq->timeout = SD_TIMEOUT;
-> +	rq->cmd[0] = WRITE_SAME_16;
-> +	rq->cmd[1] = 0x8; /* UNMAP bit */
-> +	rq->cmd[2] = sizeof(bio->bi_sector) > 4 ?
-> +			(unsigned char) (bio->bi_sector >> 56) & 0xff : 0;
-> +	rq->cmd[3] = sizeof(bio->bi_sector) > 4 ?
-> +			(unsigned char) (bio->bi_sector >> 48) & 0xff : 0;
-> +	rq->cmd[4] = sizeof(bio->bi_sector) > 4 ?
-> +			(unsigned char) (bio->bi_sector >> 40) & 0xff : 0;
-> +	rq->cmd[5] = sizeof(bio->bi_sector) > 4 ?
-> +			(unsigned char) (bio->bi_sector >> 32) & 0xff : 0;
-> +	rq->cmd[6] = (unsigned char) (bio->bi_sector >> 24) & 0xff;
-> +	rq->cmd[7] = (unsigned char) (bio->bi_sector >> 16) & 0xff;
-> +	rq->cmd[8] = (unsigned char) (bio->bi_sector >> 8) & 0xff;
-> +	rq->cmd[9] = (unsigned char) bio->bi_sector & 0xff;
-> +	rq->cmd[10] = (unsigned char) (bio_sectors(bio) >> 24) & 0xff;
-> +	rq->cmd[11] = (unsigned char) (bio_sectors(bio) >> 16) & 0xff;
-> +	rq->cmd[12] = (unsigned char) (bio_sectors(bio) >> 8) & 0xff;
-> +	rq->cmd[13] = (unsigned char) bio_sectors(bio) & 0xff;
-> +	rq->cmd[14] = 0;
-> +	rq->cmd[15] = 0;
-> +	rq->cmd_len = 16;
-> +
-> +	printk(KERN_INFO "umap, lba = 0x%lld, len = %d\n",
-> +	       bio->bi_sector, bio_sectors(bio));
-> +
-> +	bio->bi_size = 0;
-> +	if (bio_add_pc_page(q, bio, page, sdp->sector_size, 0) <
-> +			sdp->sector_size)
-> +		return -EIO;
-> +
-> +	return 0;
-> +}
-> +
->  static void sd_rescan(struct device *dev)
->  {
->  	struct scsi_disk *sdkp = scsi_disk_get_from_dev(dev);
-> @@ -1369,6 +1413,9 @@ static int read_capacity_16(struct scsi_
->  		sd_printk(KERN_NOTICE, sdkp,
->  			  "physical block alignment offset: %u\n", alignment);
->  
-> +	if (buffer[14] & 0x80)
-> +		sdkp->thin_provisioning = 1;
-> +
+> IMO it sometimes is better to allow things to work themselves out, as long as
+> they don't explode, than to try to keep everything under strict control.  YMMV.
 
-So you are checking the TPE bit (Thin Provisioning Enabled) but
-not the TPRZ bit (Thin Provisioning Read Zeros). Shouldn't
-there also be a sdkp->thin_provisioning_read_zeros bit defined
-in struct scsi_disk?
+For testing purposes it would be nice to have a one-line summary for
+each device containing a thread ID, start timestamp, end timestamp, and
+elapsed time.  With that information you could evaluate the amount of
+parallelism and determine where the bottlenecks are.  It would give a
+much more detailed picture of the entire process than the total time of
+your recent patch 9.
 
-Is your application well defined when TPRZ==0 ?
-
-Doug Gilbert
-
+Alan Stern
 
 
