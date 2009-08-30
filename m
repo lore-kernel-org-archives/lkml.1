@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751647AbZH3Ecb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751554AbZH3GG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751647AbZH3Ecb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 00:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZH3Eca
+	id S1751554AbZH3GG5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 02:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbZH3GG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 00:32:30 -0400
-Received: from mail001.aei.ca ([206.123.6.130]:52739 "EHLO mail001.aei.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751077AbZH3Ec3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 00:32:29 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Aug 2009 00:32:29 EDT
-From: Ed Tomlinson <edt@aei.ca>
-To: linux-kernel@vger.kernel.org
-Subject: Ext4 corruption that will not go away
-Date: Sun, 30 Aug 2009 00:25:47 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc8-crc; KDE/4.2.4; x86_64; ; )
-Cc: linux-ext4@vger.kernel.org
-References: <E1LOG9D-0006h4-7R@closure.thunk.org> <20090119113300.GC9482@skywalker>
-In-Reply-To: <20090119113300.GC9482@skywalker>
+	Sun, 30 Aug 2009 02:06:56 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:36205 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbZH3GG4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 02:06:56 -0400
+X-IronPort-AV: E=McAfee;i="5300,2777,5724"; a="22825870"
+Message-ID: <4A9A1701.2070703@codeaurora.org>
+Date: Sun, 30 Aug 2009 02:06:57 -0400
+From: Ashwin Chaugule <ashwinc@codeaurora.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [RFC] [PATCH 1/1] hrtimers: Cache next hrtimer
+References: <4A96FFE9.6060105@codeaurora.org> <4A970103.7010804@codeaurora.org> <alpine.LFD.2.00.0908280045200.2888@localhost.localdomain> <4A971245.5070507@codeaurora.org> <alpine.LFD.2.00.0908280111260.2888@localhost.localdomain> <4A9771AA.2090004@codeaurora.org> <alpine.LFD.2.00.0908281308380.2888@localhost.localdomain> <4A98070D.1050308@codeaurora.org> <alpine.LFD.2.00.0908282005410.19335@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908282005410.19335@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908300025.48034.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Thomas Gleixner wrote:
 
-I am running 2.6.31-rc8+ and have ext4 corruption that will not go away.
+> Hmm. I'd really like to know why that's behaving different. 
+>
+> Usually there are only timers in the CLOCK_MONOTONIC base during
+> boot. CLOCK_REALTIME base should be empty most of the time. If my
+> theory is correct then the number of reprogram events is correct as
+> well because base[MONOTONIC]->first is always the one which armed the
+> timer.
+>
+>
+>   
+Okay, I think I figured this out :)
 
-My root fs is ext4 on sdb3.  I have moved the directory with corruption into lost+found and booted to a rescuse
-system (arch linux) and run fsck.ext4 on the filesystem, which then reports its clean...  Booting back into my
-gentoo system and attempting to remove the xx directory from lost+found gives:
+I added some debug to find out how many timers are going to expire_next. 
 
-[  172.408799] EXT4-fs error (device sdb3): ext4_ext_check_inode: bad header/extent in inode #706801: invalid magic - magic 0, entries 0, max 0(0), depth 0(0)                                                                                                
-[  172.429410] EXT4-fs error (device sdb3): ext4_ext_check_inode: bad header/extent in inode #706801: invalid magic - magic 0, entries 0, max 0(0), depth 0(0)                                                                                                
-[  172.449920] EXT4-fs error (device sdb3): ext4_ext_check_inode: bad header/extent in inode #706801: invalid magic - magic 0, entries 0, max 0(0), depth 0(0)
+hrtimer_reprogram()
 
-The above is repeatable.
+   if (expires.tv64 == expires_next->tv64)
 
-How can I _really_ clean this fs?  What info is needed to help the process?
+                if (timer != next_hrtimer)
 
-TIA,
-Ed Tomlinson
+                        timer->realtime++;  
+(lazily reusing realtime here, coz we know its always zero otherwise ;) )
+
+Now timer->realtime is very much non-zero :)
+
+So, now base->first has already changed (leftmost node in the rb tree) and is 
+pointing to this new timer node which is also going to expire_next, but hasn't
+changed the value of expire_next (we just returned 0).
+
+Therefore, in remove_hrtimer()
+
++	if (base->first == &timer->node) {
++		base->first = rb_next(&timer->node);
++		/* Reprogram the clock event device. if enabled */
++		if (reprogram && hrtimer_hres_active()) {
++			expires = ktime_sub(hrtimer_get_expires(timer),
++					    base->offset);
+
+
+timer->node is going to point to the latest timer enqueued which is going 
+to expire_next.
+
+With your latest patch, we will force reprogram, but the next node to arm
+the timer will be needless, because, its expiry is equal to expires_next.
+
+So, by having a pointer like next_hrtimer, helps to represent all the timers
+that are going to expire next, and thats why timer->cache_hits was always less
+than timer->total_count.IOW, we avoided re-programming the device, if the 
+next timer was going to expire at the same time as the one we just removed.
+
+Thoughts ?
+
+Cheers,
+
+Ashwin
 
