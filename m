@@ -1,191 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbZH3Wve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbZH3Wzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbZH3Wve (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 18:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbZH3Wve
+	id S1754214AbZH3Wzu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 18:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZH3Wzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 18:51:34 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:10558 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754196AbZH3Wvd (ORCPT
+	Sun, 30 Aug 2009 18:55:49 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:45952 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753983AbZH3Wzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 18:51:33 -0400
-Date: Mon, 31 Aug 2009 00:51:34 +0200 (CEST)
-From: Jesper Juhl <jj@chaosbits.net>
-To: linux-scsi <linux-scsi@vger.kernel.org>
-cc: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-       Mike Anderson <andmike@us.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] scsi_error size reduction and readability improvement
-Message-ID: <alpine.LNX.2.00.0908310044090.18745@swampdragon.chaosbits.net>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Sun, 30 Aug 2009 18:55:49 -0400
+Date: Sun, 30 Aug 2009 23:55:42 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Mike Mohr <akihana@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: expresscard hotplug not working
+Message-ID: <20090830225542.GB901@srcf.ucam.org>
+References: <4746469c0908251817u225609bax66ea27261a1ef038@mail.gmail.com> <4A96819D.7060708@rtr.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A96819D.7060708@rtr.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 27, 2009 at 08:52:45AM -0400, Mark Lord wrote:
 
-Make scsi_error.c a bit easier to read by cutting down on the number of 
-long lines of pointer derefs. Also decrease object size a bit;
-  $ size drivers/scsi/scsi_error.o*
-     text    data     bss     dec     hex filename
-     6755       6       6    6767    1a6f drivers/scsi/scsi_error.o
-     6767       6       6    6779    1a7b drivers/scsi/scsi_error.o.orig
+> Just create a file called /etc/modprobe.d/pciehp,
+> and stick this one line into it:
+>
+>   options pciehp pciehp_force=1
+>
+> See if that works.
 
-Signed-off-by: Jesper Juhl <jj@chaosbits.net>
----
-
-diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
-index a168935..094fe8a 100644
---- a/drivers/scsi/scsi_error.c
-+++ b/drivers/scsi/scsi_error.c
-@@ -124,14 +124,15 @@ int scsi_eh_scmd_add(struct scsi_cmnd *scmd, int eh_flag)
- enum blk_eh_timer_return scsi_times_out(struct request *req)
- {
- 	struct scsi_cmnd *scmd = req->special;
-+	struct Scsi_Host *shost = scmd->device->host;
- 	enum blk_eh_timer_return rtn = BLK_EH_NOT_HANDLED;
- 
- 	scsi_log_completion(scmd, TIMEOUT_ERROR);
- 
--	if (scmd->device->host->transportt->eh_timed_out)
--		rtn = scmd->device->host->transportt->eh_timed_out(scmd);
--	else if (scmd->device->host->hostt->eh_timed_out)
--		rtn = scmd->device->host->hostt->eh_timed_out(scmd);
-+	if (shost->transportt->eh_timed_out)
-+		rtn = shost->transportt->eh_timed_out(scmd);
-+	else if (shost->hostt->eh_timed_out)
-+		rtn = shost->hostt->eh_timed_out(scmd);
- 
- 	if (unlikely(rtn == BLK_EH_NOT_HANDLED &&
- 		     !scsi_eh_scmd_add(scmd, SCSI_EH_CANCEL_CMD))) {
-@@ -414,24 +415,24 @@ static void scsi_eh_done(struct scsi_cmnd *scmd)
-  */
- static int scsi_try_host_reset(struct scsi_cmnd *scmd)
- {
-+	struct Scsi_Host *shost = scmd->device->host;
- 	unsigned long flags;
- 	int rtn;
- 
- 	SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Host RST\n",
- 					  __func__));
- 
--	if (!scmd->device->host->hostt->eh_host_reset_handler)
-+	if (!shost->hostt->eh_host_reset_handler)
- 		return FAILED;
- 
--	rtn = scmd->device->host->hostt->eh_host_reset_handler(scmd);
-+	rtn = shost->hostt->eh_host_reset_handler(scmd);
- 
- 	if (rtn == SUCCESS) {
--		if (!scmd->device->host->hostt->skip_settle_delay)
-+		if (!shost->hostt->skip_settle_delay)
- 			ssleep(HOST_RESET_SETTLE_TIME);
--		spin_lock_irqsave(scmd->device->host->host_lock, flags);
--		scsi_report_bus_reset(scmd->device->host,
--				      scmd_channel(scmd));
--		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
-+		spin_lock_irqsave(shost->host_lock, flags);
-+		scsi_report_bus_reset(shost, scmd_channel(scmd));
-+		spin_unlock_irqrestore(shost->host_lock, flags);
- 	}
- 
- 	return rtn;
-@@ -443,24 +444,24 @@ static int scsi_try_host_reset(struct scsi_cmnd *scmd)
-  */
- static int scsi_try_bus_reset(struct scsi_cmnd *scmd)
- {
-+	struct Scsi_Host *shost = scmd->device->host;
- 	unsigned long flags;
- 	int rtn;
- 
- 	SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Bus RST\n",
- 					  __func__));
- 
--	if (!scmd->device->host->hostt->eh_bus_reset_handler)
-+	if (!shost->hostt->eh_bus_reset_handler)
- 		return FAILED;
- 
--	rtn = scmd->device->host->hostt->eh_bus_reset_handler(scmd);
-+	rtn = shost->hostt->eh_bus_reset_handler(scmd);
- 
- 	if (rtn == SUCCESS) {
--		if (!scmd->device->host->hostt->skip_settle_delay)
-+		if (!shost->hostt->skip_settle_delay)
- 			ssleep(BUS_RESET_SETTLE_TIME);
--		spin_lock_irqsave(scmd->device->host->host_lock, flags);
--		scsi_report_bus_reset(scmd->device->host,
--				      scmd_channel(scmd));
--		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
-+		spin_lock_irqsave(shost->host_lock, flags);
-+		scsi_report_bus_reset(shost, scmd_channel(scmd));
-+		spin_unlock_irqrestore(shost->host_lock, flags);
- 	}
- 
- 	return rtn;
-@@ -484,18 +485,19 @@ static void __scsi_report_device_reset(struct scsi_device *sdev, void *data)
-  */
- static int scsi_try_target_reset(struct scsi_cmnd *scmd)
- {
-+	struct Scsi_Host *shost = scmd->device->host;
- 	unsigned long flags;
- 	int rtn;
- 
--	if (!scmd->device->host->hostt->eh_target_reset_handler)
-+	if (!shost->hostt->eh_target_reset_handler)
- 		return FAILED;
- 
--	rtn = scmd->device->host->hostt->eh_target_reset_handler(scmd);
-+	rtn = shost->hostt->eh_target_reset_handler(scmd);
- 	if (rtn == SUCCESS) {
--		spin_lock_irqsave(scmd->device->host->host_lock, flags);
-+		spin_lock_irqsave(shost->host_lock, flags);
- 		__starget_for_each_device(scsi_target(scmd->device), NULL,
- 					  __scsi_report_device_reset);
--		spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
-+		spin_unlock_irqrestore(shost->host_lock, flags);
- 	}
- 
- 	return rtn;
-@@ -513,12 +515,13 @@ static int scsi_try_target_reset(struct scsi_cmnd *scmd)
-  */
- static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
- {
-+	struct Scsi_Host *shost = scmd->device->host;
- 	int rtn;
- 
--	if (!scmd->device->host->hostt->eh_device_reset_handler)
-+	if (!shost->hostt->eh_device_reset_handler)
- 		return FAILED;
- 
--	rtn = scmd->device->host->hostt->eh_device_reset_handler(scmd);
-+	rtn = shost->hostt->eh_device_reset_handler(scmd);
- 	if (rtn == SUCCESS)
- 		__scsi_report_device_reset(scmd->device, NULL);
- 	return rtn;
-@@ -526,10 +529,12 @@ static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
- 
- static int __scsi_try_to_abort_cmd(struct scsi_cmnd *scmd)
- {
--	if (!scmd->device->host->hostt->eh_abort_handler)
-+	struct Scsi_Host *shost = scmd->device->host;
-+
-+	if (!shost->hostt->eh_abort_handler)
- 		return FAILED;
- 
--	return scmd->device->host->hostt->eh_abort_handler(scmd);
-+	return shost->hostt->eh_abort_handler(scmd);
- }
- 
- /**
-
-
-
+It's worth noting that Windows didn't support native pcie hotplug until 
+Vista, and so any hardware that works with XP (ie, basically all of it, 
+including Dells) is supposed to be using acpi hotplug instead. I've 
+fixed one bug that led to acpiphp not working on some hardware, but if 
+anyone's still running with pciehp_force=1 then please send me the 
+output of acpidump so it can be fixed properly.
 
 -- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-
+Matthew Garrett | mjg59@srcf.ucam.org
