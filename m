@@ -1,79 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZH3H1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940AbZH3Hvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbZH3H1w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 03:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZH3H1w
+	id S1752940AbZH3Hvr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 03:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZH3Hvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 03:27:52 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:39574 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751980AbZH3H1v (ORCPT
+	Sun, 30 Aug 2009 03:51:46 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59618 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752666AbZH3Hvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 03:27:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:reply-to:organization:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=fO27zFg57Bstb7aFkowbqFRwQ9hfJueCaW8Ac31UgGDF84Yli/OF6CAtX5UiGIDJk2
-         A5DKTw65a76Og0B8hKPVLzPBM09AfCbwXcFwbZS9fgaGzavQ3RTFRr4j1HHbVQNraxKs
-         Nt5jBu3yeMWlzjUB3S8t/A/aELaCa045IlYKQ=
-Date: Sun, 30 Aug 2009 09:27:50 +0200
-From: tartifola@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: Lenovo compact cam 17ef:4802
-Message-Id: <20090830092750.50e66b66.tartifola@gmail.com>
-Reply-To: tartifola@gmail.com
-Organization: Tartifola Inc.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 30 Aug 2009 03:51:45 -0400
+Date: Sun, 30 Aug 2009 09:51:35 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Theodore Tso <tytso@mit.edu>, NeilBrown <neilb@suse.de>,
+       Ric Wheeler <rwheeler@redhat.com>, Rob Landley <rob@landley.net>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+	document conditions when reliable operation is possible)
+Message-ID: <20090830075135.GA1874@ucw.cz>
+References: <ff262c08b0c3a7a9c32dabd53a4a9a27.squirrel@neil.brown.name> <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com> <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090828120854.GA8153@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-Hi,
-I'm experiencing problems with a Lenovo compact USB cam. I'm using Gentoo
-with kernel 2.6.30-gentoo-r4. I tried to use the built-in modules and
-also with gspca-af183a871db8 form linuxTV with the same result. It
-seems that the cam is correctly recognized
+> > From: Theodore Tso <tytso@mit.edu>
+> > 
+> > Document that many devices are too broken for filesystems to protect
+> > data in case of powerfail.
+> > 
+> > Signed-of-by: Pavel Machek <pavel@ucw.cz> 
+> 
+> NACK.  I didn't write this patch, and it's disingenuous for you to try
+> to claim that I authored it.
 
->dmesg
-Linux video capture interface: v2.00
-gspca: main v2.6.0 registered
-gspca: probing 17ef:4802
-vc032x: check sensor header 20
-vc032x: Sensor ID 143a (3)
-vc032x: Find Sensor MI1310_SOC
-gspca: probe ok
-usbcore: registered new interface driver vc032x
-vc032x: registered
+Well, you did write original text, so I wanted to give you
+credit. Sorry.
 
-However when I try to use it, for example, with cheese I get this error
+> While Neil Brown's corrections are minimally necessary so the text is
+> at least technically *correct*, it's still not the right advice to
+> give system administrators.  It's better than the fear-mongering
+> patches you had proposed earlier, but what would be better *still* is
+> telling people why running with degraded RAID arrays is bad, and to
+> give them further tips about how to use RAID arrays safely.
 
->cheese                                          
-(cheese:21741): GStreamer-WARNING **: pad source:src returned caps which are not a real subset of its template caps
-libv4l2: error dequeuing buf: Input/output error
-libv4l2: error dequeuing buf: Input/output error
-libv4l2: error dequeuing buf: Input/output error
-libv4l2: error dequeuing buf: Input/output error
-libv4l2: error dequeuing buf: Input/output error
-libv4l2: error dequeuing buf: Input/output error
+Maybe this belongs to Doc*/filesystems, and more detailed RAID
+description should go to md description?
 
-Essentially Cheese does not show any available resolutions. Problems
-also with xawtv
+> To use your ABS brakes analogy, just becase it's not safe to rely on
+> ABS brakes if the "check brakes" light is on, that doesn't justify
+> writing something alarmist which claims that ABS brakes don't work
+> 100% of the time, don't use ABS brakes, they're broken!!!!
 
->xawtv
-This is xawtv-3.95, running on Linux/i686 (2.6.30-gentoo-r4)
-WARNING: v4l-conf is compiled without DGA support.
-/dev/video0 [v4l2]: no overlay support
-v4l-conf had some trouble, trying to continue anyway
-Warning: Cannot convert string "-*-ledfixed-medium-r-*--39-*-*-*-c-*-*-*" to type FontStruct
-no way to get: 384x288 32 bit TrueColor (LE: bgr-)
+If it only was this simple. We don't have 'check brakes' (aka
+'journalling ineffective') warning light. If we had that, I would not
+have problem.
 
-and a similar issue with mplayer
+It is rather that your ABS brakes are ineffective if 'check engine'
+(RAID degraded) is lit. And yes, running with 'check engine' for
+extended periods may be bad idea, but I know people that do
+that... and I still hope their brakes work (and believe they should
+have won suit for damages should their ABS brakes fail). 
 
-Any help to debug my problem?
-Thanks in advance
+> That's just silly.  What we should be telling people instead is (a)
+> pay attention to the check brakes light (just as you should pay
+> attention to the RAID array is degraded warning), and (b) while ABS
 
+'your RAID array is degraded' is very counter intuitive way to say
+'...and btw your journalling is no longer effective, either'.
+
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
