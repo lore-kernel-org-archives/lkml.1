@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZH3RSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbZH3R3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbZH3RSe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 13:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZH3RSd
+	id S1753928AbZH3R3W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 13:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZH3R3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 13:18:33 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42441 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753897AbZH3RSd (ORCPT
+	Sun, 30 Aug 2009 13:29:21 -0400
+Received: from mail-iw0-f204.google.com ([209.85.223.204]:61293 "EHLO
+	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753579AbZH3R3V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 13:18:33 -0400
-X-Sasl-enc: b+2gMtzUgv4B5ROeP8S1k9lrYmZyAaQ10GMnY7+Iw3mW 1251652712
-Message-ID: <4A9AB45B.6060500@imap.cc>
-Date: Sun, 30 Aug 2009 19:18:19 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Sun, 30 Aug 2009 13:29:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :content-type:content-transfer-encoding;
+        b=UCqeNsheWqi9OjI8Y1TGI+jtVNq6ApNJyWV4zH9VimVxu8IhsorTW4xkJgvyNS+mj7
+         crIPuYHhypUFMYPjCIjBHilmXe1NjnekOcvZRbIhB51Sagavs59KEyioSyihB26WULJr
+         spVsQumdhGo+fMl7xZUuPxlIQU6ZuazJ3wvck=
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-CC: stable-review@kernel.org, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: Would it help to encourage users to read/test stable-review patches
-References: <43e72e890908271122l6b08aaa5lc66de78301c7c88d@mail.gmail.com>
-In-Reply-To: <43e72e890908271122l6b08aaa5lc66de78301c7c88d@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig88595DA8D52B081C970977DE"
+In-Reply-To: <20090830171749.GA8642@mit.edu>
+References: <43e72e890908272225w79ec5bf6kc7ef1160e5a088ae@mail.gmail.com> 
+	<tnxtyzr7vcl.fsf@pc1117.cambridge.arm.com> <20090830163417.GA15183@skywalker.linux.vnet.ibm.com> 
+	<20090830171749.GA8642@mit.edu>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Sun, 30 Aug 2009 10:29:01 -0700
+Message-ID: <43e72e890908301029t71a9c1a2t3d17e99cf3112ad2@mail.gmail.com>
+Subject: Re: memleaks, acpi + ext4 + tty
+To: Theodore Tso <tytso@mit.edu>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig88595DA8D52B081C970977DE
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Sun, Aug 30, 2009 at 10:17 AM, Theodore Tso<tytso@mit.edu> wrote:
+> On Sun, Aug 30, 2009 at 10:04:17PM +0530, Aneesh Kumar K.V wrote:
+>> > The ext4 reports are real leaks and patch was posted here -
+>> > http://lkml.org/lkml/2009/7/15/62. However, it hasn't been merged into
+>> > mainline yet (I cc'ed Aneesh).
+>>
+>> The patch is part of ext4-patchqueue  http://repo.or.cz/w/ext4-patch-queue.git
+>>
+>> Any plans to push the patches to linus tree soon ?
+>
+> Yes, as soon as the next merge window opens.  The leak only shows up
+> when you mount and unmount a filesystem, which under normal
+> circumstances doesn't happen a huge number of times on most systems.
+> By the time it showed up it was late enough in the 2.6.31-rcX series
+> that I figured it was better to wait until the next merge window.  I
+> didn't consider it a high priority bug.
 
-Luis R. Rodriguez schrieb:
-> We get development review eyes on stable patches during submission
-> into a subsystem, and perhaps 1-2 user tests then. Typically patches
-> are pretty easy to review for stable submission but I'm wondering
-> about cases where things are not so clear [...]
-> Do we want more user exposure to stable-review mailing list or is just
-> a few developer eyes enough?
+That's odd I run into this kmemleak with a single bootup, no manual remounts.
 
-Having been bitten quite recently by a -stable mismerge, I am of two
-minds about this. On one hand, it would have been nice to catch that
-problem during stable review instead of when it hit an actual
-distribution. (Ubuntu, as it happened.) On the other hand, I'm not
-sure user exposure would have helped all that much in this case.
-
-Generally speaking, the way I understand stable rules, those cases
-where things are not so clear shouldn't make it into the review in
-the first place. The problem is with the cases where things appear
-to be quite clear but aren't. Those are the ones the review cycle
-must catch.
-
-Jm2c
-T.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
-
-
---------------enig88595DA8D52B081C970977DE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFKmrRlQ3+did9BuFsRArw9AJ4wSgAN4x5GDxU/0MDC9aHyTC1EOgCbBj6z
-W2m4MeICum3xkW3yhP2xix8=
-=aYL5
------END PGP SIGNATURE-----
-
---------------enig88595DA8D52B081C970977DE--
+  Luis
