@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751554AbZH3GG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbZH3Gak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751554AbZH3GG5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 02:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbZH3GG4
+	id S1751930AbZH3Gak (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 02:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZH3Gaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 02:06:56 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:36205 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbZH3GG4 (ORCPT
+	Sun, 30 Aug 2009 02:30:39 -0400
+Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:58564 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751808AbZH3Gai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 02:06:56 -0400
-X-IronPort-AV: E=McAfee;i="5300,2777,5724"; a="22825870"
-Message-ID: <4A9A1701.2070703@codeaurora.org>
-Date: Sun, 30 Aug 2009 02:06:57 -0400
-From: Ashwin Chaugule <ashwinc@codeaurora.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Sun, 30 Aug 2009 02:30:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
+	:date:message-id:mime-version:content-type; q=dns; s=sasl; b=DyN
+	qnI3m4uw8J/mDIwyE1XYFsEo+xVbSEMNmvoEc1pl/BvcJH2SGQJ78XsuPS8mB5je
+	OEY9BQNztixQYNGMr3vEQY09oViz68tRI+miMEmRDVRM7DCUQiAydDVTQXJAeRW+
+	3OXniX+aj1ztkom5E++3vd/6xhZZaFyrgUlpZssc=
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.4.2
+From: Junio C Hamano <gitster@pobox.com>
+Date: Sat, 29 Aug 2009 23:30:25 -0700
+Message-ID: <7v1vmtreym.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [RFC] [PATCH 1/1] hrtimers: Cache next hrtimer
-References: <4A96FFE9.6060105@codeaurora.org> <4A970103.7010804@codeaurora.org> <alpine.LFD.2.00.0908280045200.2888@localhost.localdomain> <4A971245.5070507@codeaurora.org> <alpine.LFD.2.00.0908280111260.2888@localhost.localdomain> <4A9771AA.2090004@codeaurora.org> <alpine.LFD.2.00.0908281308380.2888@localhost.localdomain> <4A98070D.1050308@codeaurora.org> <alpine.LFD.2.00.0908282005410.19335@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0908282005410.19335@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: A00CEC90-952E-11DE-9CFA-8B19076EA04E-77302942!a-pb-sasl-sd.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
+The latest maintenance release GIT 1.6.4.2 is available at the
+usual places:
 
-> Hmm. I'd really like to know why that's behaving different. 
->
-> Usually there are only timers in the CLOCK_MONOTONIC base during
-> boot. CLOCK_REALTIME base should be empty most of the time. If my
-> theory is correct then the number of reprogram events is correct as
-> well because base[MONOTONIC]->first is always the one which armed the
-> timer.
->
->
->   
-Okay, I think I figured this out :)
+  http://www.kernel.org/pub/software/scm/git/
 
-I added some debug to find out how many timers are going to expire_next. 
+  git-1.6.4.2.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.4.2.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.4.2.tar.{gz,bz2}		(preformatted docs)
 
-hrtimer_reprogram()
+The RPM binary packages for a few architectures are found in:
 
-   if (expires.tv64 == expires_next->tv64)
+  RPMS/$arch/git-*-1.6.4.2-1.fc9.$arch.rpm	(RPM)
 
-                if (timer != next_hrtimer)
+GIT v1.6.4.2 Release Notes
+==========================
 
-                        timer->realtime++;  
-(lazily reusing realtime here, coz we know its always zero otherwise ;) )
+Fixes since v1.6.4.1
+--------------------
 
-Now timer->realtime is very much non-zero :)
+* --date=relative output between 1 and 5 years ago rounded the number of
+    years when saying X years Y months ago, instead of rounding it down.
 
-So, now base->first has already changed (leftmost node in the rb tree) and is 
-pointing to this new timer node which is also going to expire_next, but hasn't
-changed the value of expire_next (we just returned 0).
+* "git add -p" did not handle changes in executable bits correctly
+  (a regression around 1.6.3).
 
-Therefore, in remove_hrtimer()
+* "git apply" did not honor GNU diff's convention to mark the creation/deletion
+  event with UNIX epoch timestamp on missing side.
 
-+	if (base->first == &timer->node) {
-+		base->first = rb_next(&timer->node);
-+		/* Reprogram the clock event device. if enabled */
-+		if (reprogram && hrtimer_hres_active()) {
-+			expires = ktime_sub(hrtimer_get_expires(timer),
-+					    base->offset);
+* "git checkout" incorrectly removed files in a directory pointed by a
+  symbolic link during a branch switch that replaces a directory with
+  a symbolic link.
 
+* "git clean -d -f" happily descended into a subdirectory that is managed by a
+  separate git repository.  It now requires two -f options for safety.
 
-timer->node is going to point to the latest timer enqueued which is going 
-to expire_next.
+* "git fetch/push" over http transports had two rather grave bugs.
 
-With your latest patch, we will force reprogram, but the next node to arm
-the timer will be needless, because, its expiry is equal to expires_next.
+* "git format-patch --cover-letter" did not prepare the cover letter file
+  for use with non-ASCII strings when there are the series contributors with
+  non-ASCII names.
 
-So, by having a pointer like next_hrtimer, helps to represent all the timers
-that are going to expire next, and thats why timer->cache_hits was always less
-than timer->total_count.IOW, we avoided re-programming the device, if the 
-next timer was going to expire at the same time as the one we just removed.
+* "git pull origin branch" and "git fetch origin && git merge origin/branch"
+  left different merge messages in the resulting commit.
 
-Thoughts ?
-
-Cheers,
-
-Ashwin
-
+Other minor documentation updates are included.
