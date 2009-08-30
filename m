@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752067AbZH3G7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752290AbZH3HBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752067AbZH3G7V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 02:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZH3G7U
+	id S1752290AbZH3HBQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 03:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZH3HBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 02:59:20 -0400
-Received: from smtp1m5.poczta.onet.pl ([213.180.138.32]:52578 "EHLO
-	smtp1m5.poczta.onet.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbZH3G7U (ORCPT
+	Sun, 30 Aug 2009 03:01:16 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48900 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbZH3HBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 02:59:20 -0400
-From: Mario <rety@poczta.onet.pl>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: Is acpi_ec_ecdt_probe() broken? (was: Re: ACPI locks hardware devices when it doesn't detect vista)
-Date: Sun, 30 Aug 2009 08:59:29 +0200
-User-Agent: KMail/1.9.10
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-References: <1250945310.14167.150.camel@maxim-laptop> <200908300037.45412.rjw@sisk.pl> <1251588634.15582.0.camel@maxim-laptop>
-In-Reply-To: <1251588634.15582.0.camel@maxim-laptop>
+	Sun, 30 Aug 2009 03:01:15 -0400
+Date: Sun, 30 Aug 2009 09:01:09 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090830070109.GC1417@ucw.cz>
+References: <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu> <4A948C94.7040103@redhat.com> <20090826025849.GF32712@mit.edu> <4A9510D2.1090704@redhat.com> <20090826111208.GA26595@elf.ucw.cz> <20090826122311.GH32712@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908300859.29494.rety@poczta.onet.pl>
+In-Reply-To: <20090826122311.GH32712@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim, 
+On Wed 2009-08-26 08:23:11, Theodore Tso wrote:
+> On Wed, Aug 26, 2009 at 01:12:08PM +0200, Pavel Machek wrote:
+> > > I agree that this is not an interesting (or likely) scenario, certainly  
+> > > when compared to the much more frequent failures that RAID will protect  
+> > > against which is why I object to the document as Pavel suggested. It  
+> > > will steer people away from using RAID and directly increase their  
+> > > chances of losing their data if they use just a single disk.
+> > 
+> > So instead of fixing or at least documenting known software deficiency
+> > in Linux MD stack, you'll try to surpress that information so that
+> > people use more of raid5 setups?
+> 
+> First of all, it's not a "known software deficiency"; you can't do
+> anything about a degraded RAID array, other than to replace the failed
+> disk. 
 
-I did the test regarding last coment from Alexey Starikovskiy on the bugzilla.
+You could add journal to raid5.
 
->What happens if acpi_ec_ecdt_probe() is not called at all? Do you have same
->hang as with changed order?
+> "ext2 and ext3 have this surprising dependency that disks act like
+> disks".  (alarmist)
 
-That did it. System starts and MIR works ok without setpci solution.
+AFAICT, you mount block device, not disk. Many block devices fail the
+test. And since users (and block device developers) do not  know in
+detail how disks behave, it is hard to blame them... ("you may corrupt
+sector you are writing to and ext3 handles that ok" was surprise for
+me, for example).
 
-Regards
-Mario
-
-Sunday 30 of August 2009 01:30:34 Maxim Levitsky wrote:
-> On Sun, 2009-08-30 at 00:37 +0200, Rafael J. Wysocki wrote:
-> > On Saturday 29 August 2009, Mario wrote:
-> > > Exact model is Compal JFL92.
-> > > I've attached a dmidecode output.
-> >
-> > OK
-> >
-> > Maxim, Mario, can you create a bug entry in the kernel Bugzilla for this
-> > issue and put my address into the CC list in there?
->
-> Done,
->
-> http://bugzilla.kernel.org/show_bug.cgi?id=14086
->
->
-> Best regards,
-> 	Maxim Levitsky
-
-
+					
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
