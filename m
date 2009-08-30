@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZH3SzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZH3TFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753979AbZH3SzX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 14:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbZH3SzX
+	id S1753994AbZH3TFi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 15:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZH3TFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 14:55:23 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:49505 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753952AbZH3SzW convert rfc822-to-8bit (ORCPT
+	Sun, 30 Aug 2009 15:05:38 -0400
+Received: from www84.your-server.de ([213.133.104.84]:45581 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753967AbZH3TFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 14:55:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:message-id
-         :content-type:content-transfer-encoding;
-        b=D5Bq82voCOQV/Dj7VJv1BwWSUT7NGjf+PS+tZzCs0/nx5yetqQWGv6OyMNg5JR8CnY
-         0tq/ImH2PQrxCgx6qXTO2PfX6Uwqjgt0RfuwHdIdWyxIJvyLMSBStWy01okmBM6g8EZR
-         rn2PAaGNb/45xRILsrNguPNDRJqX9CfwEkk10=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powermac: thermal control turns system off in normal temperature conditions
-Date: Sun, 30 Aug 2009 20:54:20 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-00015-gadda766-dirty; KDE/4.3.0; i686; ; )
-Cc: Lyonel Vincent <lyonel@ezix.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Message-Id: <200908302054.20498.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Sun, 30 Aug 2009 15:05:37 -0400
+Subject: Re: [PATCH] Fix proc_file_write missing ppos update
+From: Stefani Seibold <stefani@seibold.net>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20090829231650.GA29419@infradead.org>
+References: <1251563892.13287.11.camel@wall-e>
+	 <20090829231650.GA29419@infradead.org>
+Content-Type: text/plain
+Date: Sun, 30 Aug 2009 21:05:44 +0200
+Message-Id: <1251659144.20987.18.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lyonel Vincent <lyonel@ezix.org>
-Subject: [PATCH] powermac: thermal control turns system off in normal temperature conditions
+Am Samstag, den 29.08.2009, 19:16 -0400 schrieb Christoph Hellwig:
+> On Sat, Aug 29, 2009 at 06:38:12PM +0200, Stefani Seibold wrote:
+> > The following fix a long standing issue in the proc_file_write function,
+> > which doesn't update the ppos file position pointer.
+> 
+> The right fix is to get rid of the last remaining
+> read_proc_t/write_proc_t instances and switch everyone to implement file
+> operations.  Alexey has been working on this on and off for a while.
+> 
 
-On certain PowerMacs, a module (therm_windtunnel) controls various
-thermal settings (it can report CPU/case temperature, change speed
-of internal fans, etc.)
+Switching all users of read_proc_t/write_proc_t to file operation is a
+huge job. About 180 files must be fixed.
 
-By default, the hardware thermal control has a temperature limit to
-protect the computer from damages (the default limit seems to be 80°C)
-but therm_windtunnel.c reduces it to an anormaly low value (65°C),
-which means that he computer will shut down randomly when hit by direct
-sun light or during summer (summer in France can be quite hot), actually
-possibly losing data instead of protecting it.
+But the main reason not to do this is because the breakage of "out of
+tree" drivers.
 
-The overheat limit in therm_windtunnel.c:253-254 should be set to 75°C
-and 70°C instead of 65°C and 60°C respectively.
+I like the current simplified proc interface. It saves a lot of code
+duplication because the basic operations will be handled inside the
+kernel and not in the driver.
 
-From: Lyonel Vincent <lyonel@ezix.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-Resurrected from Fedora's bugzilla (aka The Big Black Hole):
-https://bugzilla.redhat.com/show_bug.cgi?id=171937
+There is no reason for Alexey to finish his work, submit it and maybe it
+will be accepted. 
 
-The patch itself seems perfectly valid to me
-(especially given comments in therm_windtunnel.c).
+In the meantime i will see my patch as the preferred solution: a cleanup
+of the current interface.
 
- drivers/macintosh/therm_windtunnel.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: b/drivers/macintosh/therm_windtunnel.c
-===================================================================
---- a/drivers/macintosh/therm_windtunnel.c
-+++ b/drivers/macintosh/therm_windtunnel.c
-@@ -239,8 +239,8 @@ setup_hardware( void )
- 	 * to be on the safe side (OSX doesn't)...
- 	 */
- 	if( x.overheat_temp == (80 << 8) ) {
--		x.overheat_temp = 65 << 8;
--		x.overheat_hyst = 60 << 8;
-+		x.overheat_temp = 75 << 8;
-+		x.overheat_hyst = 70 << 8;
- 		write_reg( x.thermostat, 2, x.overheat_hyst, 2 );
- 		write_reg( x.thermostat, 3, x.overheat_temp, 2 );
- 
