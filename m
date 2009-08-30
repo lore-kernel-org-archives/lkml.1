@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZH3Mxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbZH3M4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbZH3Mxi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 08:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZH3Mxh
+	id S1753470AbZH3M4B (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 08:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZH3M4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 08:53:37 -0400
-Received: from mail-qy0-f172.google.com ([209.85.221.172]:40682 "EHLO
-	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753392AbZH3Mxg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 08:53:36 -0400
+	Sun, 30 Aug 2009 08:56:00 -0400
+Received: from mail.lang.hm ([64.81.33.126]:57634 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753401AbZH3Mz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 08:55:59 -0400
+Date: Sun, 30 Aug 2009 05:55:01 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@ucw.cz>
+cc: Theodore Tso <tytso@mit.edu>, NeilBrown <neilb@suse.de>,
+       Ric Wheeler <rwheeler@redhat.com>, Rob Landley <rob@landley.net>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+In-Reply-To: <20090830075135.GA1874@ucw.cz>
+Message-ID: <alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>
+References: <ff262c08b0c3a7a9c32dabd53a4a9a27.squirrel@neil.brown.name> <20090824212518.GF29763@elf.ucw.cz> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <20090827221319.GA1601@ucw.cz>
+ <4A9733C1.2070904@redhat.com> <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <37219a840908241332w2e2d45d8kd6406de3e60d1317@mail.gmail.com>
-References: <20090730200714.5a7ab8a6@pedra.chehab.org>
-	 <37219a840907310825n51d5a6bar79ea1f31dd889327@mail.gmail.com>
-	 <20090801014053.7f53da83@pedra.chehab.org>
-	 <303a8ee30908011103n3c12258icd2bfd1305b419d3@mail.gmail.com>
-	 <20090811140128.211d4d11@caramujo.chehab.org>
-	 <37219a840908111457o4b6abc64n52291f044b56782d@mail.gmail.com>
-	 <37219a840908241332w2e2d45d8kd6406de3e60d1317@mail.gmail.com>
-Date: Sun, 30 Aug 2009 08:53:35 -0400
-Message-ID: <303a8ee30908300553s6d81a2cdn43145de51298afd5@mail.gmail.com>
-Subject: Re: [PULL] http://kernellabs.com/hg/~mkrufky/sms1xxx
-From: Michael Krufky <mkrufky@kernellabs.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: linux-media <linux-media@vger.kernel.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro,
+On Sun, 30 Aug 2009, Pavel Machek wrote:
 
-On Mon, Aug 24, 2009 at 4:32 PM, Michael Krufky<mkrufky@kernellabs.com> wrote:
-> Mauro,
+>>> From: Theodore Tso <tytso@mit.edu>
+>>>
+>> To use your ABS brakes analogy, just becase it's not safe to rely on
+>> ABS brakes if the "check brakes" light is on, that doesn't justify
+>> writing something alarmist which claims that ABS brakes don't work
+>> 100% of the time, don't use ABS brakes, they're broken!!!!
 >
-> Would you please send the final GPIO fix to Linus to fix the
-> regression on the Hauppauge devices.  2.6.31 is in -rc7 now, and I
-> would hate for this regression to not yet be solved before the kernel
-> is released.
+> If it only was this simple. We don't have 'check brakes' (aka
+> 'journalling ineffective') warning light. If we had that, I would not
+> have problem.
 >
-> I apologize for nagging -- I just prefer for fixes to be merged
-> upstream *before* a kernel release.
->
-> Thank you.
->
-> Just as a reminder, the changeset that is still waiting for upstream merge is:
->
-> *       sms1xxx: restore GPIO functionality for all Hauppauge devices
+> It is rather that your ABS brakes are ineffective if 'check engine'
+> (RAID degraded) is lit. And yes, running with 'check engine' for
+> extended periods may be bad idea, but I know people that do
+> that... and I still hope their brakes work (and believe they should
+> have won suit for damages should their ABS brakes fail).
 
-Just another reminder -- this is cutting it very close now.
+the 'RAID degraded' warning says that _anything_ you put on that block 
+device is at risk. it doesn't matter if you are using a filesystem with a 
+journal, one without, or using the raw device directly.
 
-I repeat, that this is a feature that worked in previous kernels but
-is broken in 2.6.31.
-
-I feel very concerned, considering that I posted a regression fix over
-six weeks ago and it still has not made it into Linus' kernel tree.
-
-I understand that you are a busy man -- Would it be easier for you if
-I sent this patch to Linus, myself?
-
-Please advise.
-
-Thank you for your time.
-
-Regards,
-
-Michael Krufky
+David Lang
