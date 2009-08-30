@@ -1,375 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZH3VtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZH3WNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754162AbZH3VtQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 17:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZH3VtP
+	id S1754186AbZH3WNa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 18:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbZH3WN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 17:49:15 -0400
-Received: from mail.df.lth.se ([194.47.250.12]:53805 "EHLO df.lth.se"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754145AbZH3VtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 17:49:15 -0400
-From: Linus Walleij <linus.walleij@stericsson.com>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       Samuel Ortiz <sameo@linux.intel.com>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
-       Linus Walleij <linus.walleij@stericsson.com>,
-       Samuel Ortiz <sameo@linux.intel.com>
-Subject: [PATCH] AB3100 RTC support v4
-Date: Sun, 30 Aug 2009 23:49:04 +0200
-Message-Id: <1251668944-32222-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: git-send-email 1.6.2.rc1
+	Sun, 30 Aug 2009 18:13:29 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38702 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753242AbZH3WN2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 18:13:28 -0400
+Date: Sun, 30 Aug 2009 19:13:25 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Michael Krufky <mkrufky@kernellabs.com>
+Cc: linux-media <linux-media@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PULL] http://kernellabs.com/hg/~mkrufky/sms1xxx
+Message-ID: <20090830191325.45cf1e69@pedra.chehab.org>
+In-Reply-To: <303a8ee30908300553s6d81a2cdn43145de51298afd5@mail.gmail.com>
+References: <20090730200714.5a7ab8a6@pedra.chehab.org>
+	<37219a840907310825n51d5a6bar79ea1f31dd889327@mail.gmail.com>
+	<20090801014053.7f53da83@pedra.chehab.org>
+	<303a8ee30908011103n3c12258icd2bfd1305b419d3@mail.gmail.com>
+	<20090811140128.211d4d11@caramujo.chehab.org>
+	<37219a840908111457o4b6abc64n52291f044b56782d@mail.gmail.com>
+	<37219a840908241332w2e2d45d8kd6406de3e60d1317@mail.gmail.com>
+	<303a8ee30908300553s6d81a2cdn43145de51298afd5@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds support for the RTC found inside the AB3100 Mixed Signal chip.
-The symbols used for communicating with the chip is found in the
-mfd/ab3100-core.c driver that also provides the platform device.
+Em Sun, 30 Aug 2009 08:53:35 -0400
+Michael Krufky <mkrufky@kernellabs.com> escreveu:
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
-Acked-by: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: Samuel Ortiz <sameo@linux.intel.com>
----
-Changelog v3->v4
-- Remove error message that will be given by the RTC core anyway.
-- Suggest to push this through Sam's MFD tree if it's OK with Sam.
-Changelog v2->v3
-- Oneliner bug found by colleague during integration test.
-Changelog v1->v2
-- Renamed accessor functions to match the symbols queued in Samuel
-  Ortiz' MFD for-next tree.
-- Check return errors from accessor functions where missing.
-- Use rtc_valid_tm() when returning alarm time.
-- Remove needless initialization message.
-- No saving of clock from kernelspace in .remove or .shutdown.
-  Use hwclock from userspace shutdown scripts instead.
----
- drivers/rtc/Kconfig      |    9 ++
- drivers/rtc/Makefile     |    1 +
- drivers/rtc/rtc-ab3100.c |  281 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 291 insertions(+), 0 deletions(-)
- create mode 100644 drivers/rtc/rtc-ab3100.c
+> Mauro,
+> 
+> On Mon, Aug 24, 2009 at 4:32 PM, Michael Krufky<mkrufky@kernellabs.com> wrote:
+> > Mauro,
+> >
+> > Would you please send the final GPIO fix to Linus to fix the
+> > regression on the Hauppauge devices.  2.6.31 is in -rc7 now, and I
+> > would hate for this regression to not yet be solved before the kernel
+> > is released.
+> >
+> > I apologize for nagging -- I just prefer for fixes to be merged
+> > upstream *before* a kernel release.
+> >
+> > Thank you.
+> >
+> > Just as a reminder, the changeset that is still waiting for upstream merge is:
+> >
+> > *       sms1xxx: restore GPIO functionality for all Hauppauge devices
+> 
+> Just another reminder -- this is cutting it very close now.
+> 
+> I repeat, that this is a feature that worked in previous kernels but
+> is broken in 2.6.31.
+> 
+> I feel very concerned, considering that I posted a regression fix over
+> six weeks ago and it still has not made it into Linus' kernel tree.
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 81adbdb..a36dffd 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -535,6 +535,15 @@ config RTC_DRV_PCF50633
- 	  If you say yes here you get support for the RTC subsystem of the
- 	  NXP PCF50633 used in embedded systems.
- 
-+config RTC_DRV_AB3100
-+	tristate "ST-Ericsson AB3100 RTC"
-+	depends on AB3100_CORE
-+	default y if AB3100_CORE
-+	help
-+	  Select this to enable the ST-Ericsson AB3100 Mixed Signal IC RTC
-+	  support. This chip contains a battery- and capacitor-backed RTC.
-+
-+
- comment "on-CPU RTC drivers"
- 
- config RTC_DRV_OMAP
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 3c0f2b2..fe85afb 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -17,6 +17,7 @@ rtc-core-$(CONFIG_RTC_INTF_SYSFS) += rtc-sysfs.o
- 
- # Keep the list ordered.
- 
-+obj-$(CONFIG_RTC_DRV_AB3100)	+= rtc-ab3100.o
- obj-$(CONFIG_RTC_DRV_AT32AP700X)+= rtc-at32ap700x.o
- obj-$(CONFIG_RTC_DRV_AT91RM9200)+= rtc-at91rm9200.o
- obj-$(CONFIG_RTC_DRV_AT91SAM9)	+= rtc-at91sam9.o
-diff --git a/drivers/rtc/rtc-ab3100.c b/drivers/rtc/rtc-ab3100.c
-new file mode 100644
-index 0000000..4704aac
---- /dev/null
-+++ b/drivers/rtc/rtc-ab3100.c
-@@ -0,0 +1,281 @@
-+/*
-+ * Copyright (C) 2007-2009 ST-Ericsson AB
-+ * License terms: GNU General Public License (GPL) version 2
-+ * RTC clock driver for the AB3100 Analog Baseband Chip
-+ * Author: Linus Walleij <linus.walleij@stericsson.com>
-+ */
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/rtc.h>
-+#include <linux/mfd/ab3100.h>
-+
-+/* Clock rate in Hz */
-+#define AB3100_RTC_CLOCK_RATE	32768
-+
-+/*
-+ * The AB3100 RTC registers. These are the same for
-+ * AB3000 and AB3100.
-+ * Control register:
-+ * Bit 0: RTC Monitor cleared=0, active=1, if you set it
-+ *        to 1 it remains active until RTC power is lost.
-+ * Bit 1: 32 kHz Oscillator, 0 = on, 1 = bypass
-+ * Bit 2: Alarm on, 0 = off, 1 = on
-+ * Bit 3: 32 kHz buffer disabling, 0 = enabled, 1 = disabled
-+ */
-+#define AB3100_RTC		0x53
-+/* default setting, buffer disabled, alarm on */
-+#define RTC_SETTING		0x30
-+/* Alarm when AL0-AL3 == TI0-TI3  */
-+#define AB3100_AL0		0x56
-+#define AB3100_AL1		0x57
-+#define AB3100_AL2		0x58
-+#define AB3100_AL3		0x59
-+/* This 48-bit register that counts up at 32768 Hz */
-+#define AB3100_TI0		0x5a
-+#define AB3100_TI1		0x5b
-+#define AB3100_TI2		0x5c
-+#define AB3100_TI3		0x5d
-+#define AB3100_TI4		0x5e
-+#define AB3100_TI5		0x5f
-+
-+/*
-+ * RTC clock functions and device struct declaration
-+ */
-+static int ab3100_rtc_set_mmss(struct device *dev, unsigned long secs)
-+{
-+	struct ab3100 *ab3100_data = dev_get_drvdata(dev);
-+	u8 regs[] = {AB3100_TI0, AB3100_TI1, AB3100_TI2,
-+		     AB3100_TI3, AB3100_TI4, AB3100_TI5};
-+	unsigned char buf[6];
-+	u64 fat_time = (u64) secs * AB3100_RTC_CLOCK_RATE * 2;
-+	int err = 0;
-+	int i;
-+
-+	buf[0] = (fat_time) & 0xFF;
-+	buf[1] = (fat_time >> 8) & 0xFF;
-+	buf[2] = (fat_time >> 16) & 0xFF;
-+	buf[3] = (fat_time >> 24) & 0xFF;
-+	buf[4] = (fat_time >> 32) & 0xFF;
-+	buf[5] = (fat_time >> 40) & 0xFF;
-+
-+	for (i = 0; i < 6; i++) {
-+		err = ab3100_set_register_interruptible(ab3100_data,
-+							regs[i], buf[i]);
-+		if (err)
-+			return err;
-+	}
-+
-+	/* Set the flag to mark that the clock is now set */
-+	return ab3100_mask_and_set_register_interruptible(ab3100_data,
-+							  AB3100_RTC,
-+							  0xFE, 0x01);
-+
-+}
-+
-+static int ab3100_rtc_read_time(struct device *dev, struct rtc_time *tm)
-+{
-+	struct ab3100 *ab3100_data = dev_get_drvdata(dev);
-+	unsigned long time;
-+	u8 rtcval;
-+	int err;
-+
-+	err = ab3100_get_register_interruptible(ab3100_data,
-+						AB3100_RTC, &rtcval);
-+	if (err)
-+		return err;
-+
-+	if (!(rtcval & 0x01)) {
-+		dev_info(dev, "clock not set (lost power)");
-+		return -EINVAL;
-+	} else {
-+		u64 fat_time;
-+		u8 buf[6];
-+
-+		/* Read out time registers */
-+		err = ab3100_get_register_page_interruptible(ab3100_data,
-+							     AB3100_TI0,
-+							     buf, 6);
-+		if (err != 0)
-+			return err;
-+
-+		fat_time = ((u64) buf[5] << 40) | ((u64) buf[4] << 32) |
-+			((u64) buf[3] << 24) | ((u64) buf[2] << 16) |
-+			((u64) buf[1] << 8) | (u64) buf[0];
-+		time = (unsigned long) (fat_time /
-+					(u64) (AB3100_RTC_CLOCK_RATE * 2));
-+	}
-+
-+	rtc_time_to_tm(time, tm);
-+
-+	return rtc_valid_tm(tm);
-+}
-+
-+static int ab3100_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alarm)
-+{
-+	struct ab3100 *ab3100_data = dev_get_drvdata(dev);
-+	unsigned long time;
-+	u64 fat_time;
-+	u8 buf[6];
-+	u8 rtcval;
-+	int err;
-+
-+	/* Figure out if alarm is enabled or not */
-+	err = ab3100_get_register_interruptible(ab3100_data,
-+						AB3100_RTC, &rtcval);
-+	if (err)
-+		return err;
-+	if (rtcval & 0x04)
-+		alarm->enabled = 1;
-+	else
-+		alarm->enabled = 0;
-+	/* No idea how this could be represented */
-+	alarm->pending = 0;
-+	/* Read out alarm registers, only 4 bytes */
-+	err = ab3100_get_register_page_interruptible(ab3100_data,
-+						     AB3100_AL0, buf, 4);
-+	if (err)
-+		return err;
-+	fat_time = ((u64) buf[3] << 40) | ((u64) buf[2] << 32) |
-+		((u64) buf[1] << 24) | ((u64) buf[0] << 16);
-+	time = (unsigned long) (fat_time / (u64) (AB3100_RTC_CLOCK_RATE * 2));
-+
-+	rtc_time_to_tm(time, &alarm->time);
-+
-+	return rtc_valid_tm(&alarm->time);
-+}
-+
-+static int ab3100_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alarm)
-+{
-+	struct ab3100 *ab3100_data = dev_get_drvdata(dev);
-+	u8 regs[] = {AB3100_AL0, AB3100_AL1, AB3100_AL2, AB3100_AL3};
-+	unsigned char buf[4];
-+	unsigned long secs;
-+	u64 fat_time;
-+	int err;
-+	int i;
-+
-+	rtc_tm_to_time(&alarm->time, &secs);
-+	fat_time = (u64) secs * AB3100_RTC_CLOCK_RATE * 2;
-+	buf[0] = (fat_time >> 16) & 0xFF;
-+	buf[1] = (fat_time >> 24) & 0xFF;
-+	buf[2] = (fat_time >> 32) & 0xFF;
-+	buf[3] = (fat_time >> 40) & 0xFF;
-+
-+	/* Set the alarm */
-+	for (i = 0; i < 4; i++) {
-+		err = ab3100_set_register_interruptible(ab3100_data,
-+							regs[i], buf[i]);
-+		if (err)
-+			return err;
-+	}
-+	/* Then enable the alarm */
-+	return ab3100_mask_and_set_register_interruptible(ab3100_data,
-+							  AB3100_RTC, ~(1 << 2),
-+							  alarm->enabled << 2);
-+}
-+
-+static int ab3100_rtc_irq_enable(struct device *dev, unsigned int enabled)
-+{
-+	struct ab3100 *ab3100_data = dev_get_drvdata(dev);
-+
-+	/*
-+	 * It's not possible to enable/disable the alarm IRQ for this RTC.
-+	 * It does not actually trigger any IRQ: instead its only function is
-+	 * to power up the system, if it wasn't on. This will manifest as
-+	 * a "power up cause" in the AB3100 power driver (battery charging etc)
-+	 * and need to be handled there instead.
-+	 */
-+	if (enabled)
-+		return ab3100_mask_and_set_register_interruptible(ab3100_data,
-+						    AB3100_RTC, ~(1 << 2),
-+						    1 << 2);
-+	else
-+		return ab3100_mask_and_set_register_interruptible(ab3100_data,
-+						    AB3100_RTC, ~(1 << 2),
-+						    0);
-+}
-+
-+static const struct rtc_class_ops ab3100_rtc_ops = {
-+	.read_time	= ab3100_rtc_read_time,
-+	.set_mmss	= ab3100_rtc_set_mmss,
-+	.read_alarm	= ab3100_rtc_read_alarm,
-+	.set_alarm	= ab3100_rtc_set_alarm,
-+	.alarm_irq_enable = ab3100_rtc_irq_enable,
-+};
-+
-+static int __init ab3100_rtc_probe(struct platform_device *pdev)
-+{
-+	int err;
-+	u8 regval;
-+	struct rtc_device *rtc;
-+	struct ab3100 *ab3100_data = platform_get_drvdata(pdev);
-+
-+	/* The first RTC register needs special treatment */
-+	err = ab3100_get_register_interruptible(ab3100_data,
-+						AB3100_RTC, &regval);
-+	if (err) {
-+		dev_err(&pdev->dev, "unable to read RTC register\n");
-+		return -ENODEV;
-+	}
-+
-+	if ((regval & 0xFE) != RTC_SETTING) {
-+		dev_warn(&pdev->dev, "not default value in RTC reg 0x%x\n",
-+			 regval);
-+	}
-+
-+	if ((regval & 1) == 0) {
-+		/*
-+		 * Set bit to detect power loss.
-+		 * This bit remains until RTC power is lost.
-+		 */
-+		regval = 1 | RTC_SETTING;
-+		err = ab3100_set_register_interruptible(ab3100_data,
-+							AB3100_RTC, regval);
-+		/* Ignore any error on this write */
-+	}
-+
-+	rtc = rtc_device_register("ab3100-rtc", &pdev->dev, &ab3100_rtc_ops,
-+				  THIS_MODULE);
-+	if (IS_ERR(rtc)) {
-+		err = PTR_ERR(rtc);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __exit ab3100_rtc_remove(struct platform_device *pdev)
-+{
-+	struct rtc_device *rtc = platform_get_drvdata(pdev);
-+
-+	rtc_device_unregister(rtc);
-+	return 0;
-+}
-+
-+static struct platform_driver ab3100_rtc_driver = {
-+	.driver = {
-+		.name = "ab3100-rtc",
-+		.owner = THIS_MODULE,
-+	},
-+	.remove	 = __exit_p(ab3100_rtc_remove),
-+};
-+
-+static int __init ab3100_rtc_init(void)
-+{
-+	return platform_driver_probe(&ab3100_rtc_driver,
-+				     ab3100_rtc_probe);
-+}
-+
-+static void __exit ab3100_rtc_exit(void)
-+{
-+	platform_driver_unregister(&ab3100_rtc_driver);
-+}
-+
-+module_init(ab3100_rtc_init);
-+module_exit(ab3100_rtc_exit);
-+
-+MODULE_AUTHOR("Linus Walleij <linus.walleij@stericsson.com>");
-+MODULE_DESCRIPTION("AB3100 RTC Driver");
-+MODULE_LICENSE("GPL");
--- 
-1.6.2.1
+Part of the time were spent trying to reach Siano for their comments. This were
+added on my queue on Aug, 19, after our unsuccessful trial of contacting them.
 
+Unfortunately, I had a bad time having to rebase my -git trees, removing some
+patches there in order to fix a conflict related to arch patches sent via
+my tree.
+
+You don't need to worry since they'll be send in time for 2.6.31.
+
+> I understand that you are a busy man -- Would it be easier for you if
+> I sent this patch to Linus, myself?
+
+I'm currently merging the pending patches on my tree. I should be sending a
+pull request upstream by the end of the day or tomorrow.
+
+If you just send it directly, you'll break my tree, and cause troubles on the
+upstream request for some other patches for 2.6.31
+
+
+
+Cheers,
+Mauro
