@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbZHaNeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbZHaNhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbZHaNeE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 09:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbZHaNeD
+	id S1752721AbZHaNhP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 09:37:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZHaNhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 09:34:03 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:34296 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751459AbZHaNeC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 09:34:02 -0400
-Message-ID: <4A9BD13E.4040501@gmail.com>
-Date: Mon, 31 Aug 2009 15:33:50 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 31 Aug 2009 09:37:15 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:22359 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751963AbZHaNhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 09:37:14 -0400
+Message-ID: <4A9BD209.8030903@redhat.com>
+Date: Mon, 31 Aug 2009 16:37:13 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       David Miller <davem@davemloft.net>, Wei Yongjun <yjwei@cn.fujitsu.com>,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH resend] drop_monitor: fix trace_napi_poll_hit()
-References: <4A9B6963.5090207@cn.fujitsu.com> <4A9B6E57.7090703@gmail.com> <20090831111245.GA2105@hmsreliant.think-freely.org>
-In-Reply-To: <20090831111245.GA2105@hmsreliant.think-freely.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 31 Aug 2009 15:33:50 +0200 (CEST)
+To: KVM list <kvm@vger.kernel.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: KVM maintainership update
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman a écrit :
-> I still see a large number of drivers that update dev->last_rx, although its
-> not all as I look through the list, so something definately seems amiss.
+Starting now, Marcelo will co-maintain KVM with me.  The plan is that we 
+will commit on alternating weeks.  There will be no change to any 
+procedures -- patches should be posted to kvm@vger.kernel.org and will 
+be applied to kvm.git and qemu-kvm.git on git.kernel.org.
 
-Some drivers still update dev->last_rx for their own needs, not a core
-network concern.
+This move is intended to benefit all involved:
+- you, in improving maintainer responsiveness and review quality
+- me, in allowing me to increase my coding contributions
+- Marcelo, in some way that still eludes me
 
-But a cleanup is certainly possible on few other drivers, about a dozen
-if I count correctly.
+Let us wish Marcelo a productive co-maintainership.  I'm off to the beach.
 
-> 
-> If its not going to be consistently updated, why are still carrying that field
-> in dev?  Are we just waiting on someone to do the janitorial work to remove it?
-> If so, I can, and I'll fix up the drop monitor in the process, to use a private
-> timestamp.
+-- 
+error compiling committee.c: too many arguments to function
 
-We have to keep dev->last_rx for bonding use, so please use a private
-timestamp for drop monitor.
-
-Thanks
