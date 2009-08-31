@@ -1,177 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751753AbZHaKHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751901AbZHaKIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751753AbZHaKHW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 06:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZHaKHV
+	id S1751901AbZHaKIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 06:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbZHaKIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 06:07:21 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40316 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbZHaKHV (ORCPT
+	Mon, 31 Aug 2009 06:08:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:36267 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbZHaKIS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 06:07:21 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 31 Aug 2009 19:05:28 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       benh@kernel.crashing.org, ralf@linux-mips.org, xiyou.wangcong@gmail.com,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       jirislaby@gmail.com
-Subject: [PATCH 4/8][mmotm] kcore register text area in generic way
-Message-Id: <20090831190528.8d81bdfb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090831190024.fadc3b50.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090831190024.fadc3b50.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Aug 2009 06:08:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=MFhGNQauzc2RmJtk53Kjyw954VvMAsRnyRqD0nMxc+YX/qxR0A+Cq5/i7E72zTZmAn
+         zTzNE8kvWyM1IY7NAN7C9AKl1LoQ5c7jP8z0zVzNnZ+AxjlVBs069in4YWIL+9whhnRt
+         cf0UcEZrniwX/PBfzLnuF0bfH5qBHTW/KAd3w=
+MIME-Version: 1.0
+In-Reply-To: <20090831074842.GA28091@linux-sh.org>
+References: <20090831074842.GA28091@linux-sh.org>
+Date: Mon, 31 Aug 2009 13:08:19 +0300
+X-Google-Sender-Auth: c5b2163849d4420e
+Message-ID: <84144f020908310308i48790f78g5a7d73a60ea854f8@mail.gmail.com>
+Subject: Re: page allocator regression on nommu
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Paul Mundt <lethal@linux-sh.org>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Hi Paul,
 
-Some 64bit arch has special segment for mapping kernel text.  It should be
-entried to /proc/kcore in addtion to direct-linear-map, vmalloc area. 
-This patch unifies KCORE_TEXT entry scattered under x86 and ia64.
+On Mon, Aug 31, 2009 at 10:48 AM, Paul Mundt<lethal@linux-sh.org> wrote:
+> It seems we've managed to trigger a fairly interesting conflict between
+> the anti-fragmentation disabling code and the nommu region rbtree. I've
+> bisected it down to:
+>
+> commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e
+> Author: Mel Gorman <mel@csn.ul.ie>
+> Date:   Tue Jun 16 15:31:58 2009 -0700
+>
+>    page allocator: move check for disabled anti-fragmentation out of fastpath
+>
+>    On low-memory systems, anti-fragmentation gets disabled as there is
+>    nothing it can do and it would just incur overhead shuffling pages between
+>    lists constantly.  Currently the check is made in the free page fast path
+>    for every page.  This patch moves it to a slow path.  On machines with low
+>    memory, there will be small amount of additional overhead as pages get
+>    shuffled between lists but it should quickly settle.
+>
+> which causes death on unpacking initramfs on my nommu board. With this
+> reverted, everything works as expected. Note that this blows up with all of
+> SLOB/SLUB/SLAB.
+>
+> I'll continue debugging it, and can post my .config if it will be helpful, but
+> hopefully you have some suggestions on what to try :-)
+>
+> ---
+>
+> modprobe: page allocation failure. order:7, mode:0xd0
 
-I'm not familiar with other archs (mips has its own even after this patch)
-but range of [_stext ..._end) is a valid area of text and it's not in
-direct-map area, defining CONFIG_ARCH_PROC_KCORE_TEXT is only a necessary
-thing to do.
+OK, so we have order 7 page allocation here...
 
-Note: I left mips as it is now.
+> Stack: (0x0c909d2c to 0x0c90a000)
+> 9d20:                            0c0387d2 00000000 00000000 0c107fcc 00000000
+> 9d40: 00000000 0c107fcc 0c2f8960 00000000 00000010 00000000 00000000 000200d0
+> 9d60: 00000000 0c041614 0c9f8cf4 00000000 0c9f8d1c 00000000 00000004 00000000
+> 9d80: 00000007 0c01a582 0c2f8cd0 00000000 00000000 00049000 00000049 00048fff
+> 9da0: 00049fff 00049000 00000007 0c06633a 00000001 0c909f30 0003e950 0c0bad00
+> 9dc0: 0000984a 0c2f8ea0 ffffe000 00000002 00000000 0c065314 0c2f8ea0 0c077f60
+> 9de0: 00049000 0000673c 00000050 000369a0 000019cf 00000004 00004e20 0003e950
+> 9e00: 000481aa 00000001 00004eaa 000049a0 00007fb0 000369a0 00000000 00000000
+> 9e20: 0c909e50 00000000 00000000 0c066790 00000000 0c909f30 00000000 00000000
+> 9e40: 0c2f8ea0 0c909f30 0c909e50 00004eaa 00000000 00000000 00000000 00000000
+> 9e60: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> 9e80: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> 9ea0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> 9ec0: 0c0482ee 00000000 fffffff8 0c2f8ea0 0c104ff8 0c04884e 0c0feb64 00000001
+> 9ee0: 0c048570 ffffe000 0c2f8ea0 00000000 00000000 0c813eb8 0c909f30 0c002e68
+> 9f00: 00000000 00000000 00000000 0c0feb64 0c813eb8 0c909f30 0c960000 0c007972
+> 9f20: ffffff0f 00000071 00000100 0c002e38 0000000b ffffff0f 00000001 0000000b
+> 9f40: 0c0fea64 0c813eb8 0c0feb64 0c2f898c 00000000 ffffe000 0c9f8990 00000000
+> 9f60: 00000000 00000000 00000000 0c909f8c 0c0050ca 0c01e874 40000001 00000000
+> 9f80: 00000000 4795ce40 0000004c 0c002cca 00000000 00000000 00000000 00000000
+> 9fa0: 00000000 00000000 00000000 00000000 00000000 0c9f8990 0c01e7a4 00000000
+> 9fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> 9fe0: 0c909f9c 0c002cc4 00000000 40000000 00000000 00000000 00000000 00000000
+>
+> Call trace:
+>  [<0c041614>] do_mmap_pgoff+0x638/0xa68
+>  [<0c01a582>] flush_itimer_signals+0x36/0x60
+>  [<0c06633a>] load_flat_file+0x32a/0x738
+>  [<0c0bad00>] down_write+0x0/0xc
+>  [<0c065314>] load_elf_fdpic_binary+0x44/0xa8c
+>  [<0c077f60>] memset+0x0/0x60
+>  [<0c066790>] load_flat_binary+0x48/0x2fc
+>  [<0c0482ee>] search_binary_handler+0x4a/0x1fc
+>  [<0c04884e>] do_execve+0x156/0x2bc
+>  [<0c048570>] copy_strings+0x0/0x150
+>  [<0c002e68>] sys_execve+0x30/0x5c
+>  [<0c007972>] syscall_call+0xc/0x10
+>  [<0c002e38>] sys_execve+0x0/0x5c
+>  [<0c0050ca>] kernel_execve+0x6/0xc
+>  [<0c01e874>] ____call_usermodehelper+0xd0/0xfc
+>  [<0c002cca>] kernel_thread_helper+0x6/0x10
+>  [<0c01e7a4>] ____call_usermodehelper+0x0/0xfc
+>  [<0c002cc4>] kernel_thread_helper+0x0/0x10
+>
+> Mem-Info:
+> Normal per-cpu:
+> CPU    0: hi:    0, btch:   1 usd:   0
+> Active_anon:0 active_file:0 inactive_anon:0
+>  inactive_file:0 unevictable:323 dirty:0 writeback:0 unstable:0
+>  free:2967 slab:0 mapped:0 pagetables:0 bounce:0
+> Normal free:11868kB min:0kB low:0kB high:0kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:1292kB present:16256kB pages_scanned:0 all_unreclaimable? no
+> lowmem_reserve[]: 0 0
+> Normal: 267*4kB 268*8kB 251*16kB 145*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB 0*8192kB 0*16384kB 0*32768kB = 11868kB
 
-Changelog:
- - fixed bisection breakage in ia64
+...but we seem to be all out of order > 3 pages. I'm not sure why
+commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e changes any of this,
+though.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+> 323 total pagecache pages
+> ------------[ cut here ]------------
+> kernel BUG at mm/nommu.c:598!
+> Kernel BUG: 003e [#1]
+> Modules linked in:
+>
+> Pid : 51, Comm:                 modprobe
+> CPU : 0                 Not tainted  (2.6.31-rc7 #2835)
+>
+> PC is at __put_nommu_region+0xe/0xb0
+> PR is at do_mmap_pgoff+0x8dc/0xa68
 
- arch/ia64/Kconfig     |    4 ++++
- arch/ia64/mm/init.c   |    3 +--
- arch/x86/Kconfig      |    4 ++++
- arch/x86/mm/init_64.c |    4 +---
- fs/proc/kcore.c       |   19 ++++++++++++++++++-
- 5 files changed, 28 insertions(+), 6 deletions(-)
+This looks to be a bug in nommu do_mmap_pgoff() error handling. I
+guess we shouldn't call __put_nommu_region() if add_nommu_region()
+hasn't been called?
 
-Index: mmotm-2.6.31-Aug27/arch/ia64/Kconfig
-===================================================================
---- mmotm-2.6.31-Aug27.orig/arch/ia64/Kconfig
-+++ mmotm-2.6.31-Aug27/arch/ia64/Kconfig
-@@ -496,6 +496,10 @@ config HAVE_ARCH_NODEDATA_EXTENSION
- 	def_bool y
- 	depends on NUMA
- 
-+config ARCH_PROC_KCORE_TEXT
-+	def_bool y
-+	depends on PROC_KCORE
-+
- config IA32_SUPPORT
- 	bool "Support for Linux/x86 binaries"
- 	help
-Index: mmotm-2.6.31-Aug27/arch/x86/Kconfig
-===================================================================
---- mmotm-2.6.31-Aug27.orig/arch/x86/Kconfig
-+++ mmotm-2.6.31-Aug27/arch/x86/Kconfig
-@@ -1252,6 +1252,10 @@ config ARCH_MEMORY_PROBE
- 	def_bool X86_64
- 	depends on MEMORY_HOTPLUG
- 
-+config ARCH_PROC_KCORE_TEXT
-+	def_bool y
-+	depends on X86_64 && PROC_KCORE
-+
- config ILLEGAL_POINTER_VALUE
-        hex
-        default 0 if X86_32
-Index: mmotm-2.6.31-Aug27/arch/x86/mm/init_64.c
-===================================================================
---- mmotm-2.6.31-Aug27.orig/arch/x86/mm/init_64.c
-+++ mmotm-2.6.31-Aug27/arch/x86/mm/init_64.c
-@@ -647,8 +647,7 @@ EXPORT_SYMBOL_GPL(memory_add_physaddr_to
- 
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
--static struct kcore_list kcore_mem, kcore_kernel,
--			 kcore_modules, kcore_vsyscall;
-+static struct kcore_list kcore_mem, kcore_modules, kcore_vsyscall;
- 
- void __init mem_init(void)
- {
-@@ -678,7 +677,6 @@ void __init mem_init(void)
- 
- 	/* Register memory areas for /proc/kcore */
- 	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
--	kclist_add(&kcore_kernel, &_stext, _end - _stext, KCORE_TEXT);
- 	kclist_add(&kcore_modules, (void *)MODULES_VADDR, MODULES_LEN,
- 			KCORE_OTHER);
- 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_START,
-Index: mmotm-2.6.31-Aug27/fs/proc/kcore.c
-===================================================================
---- mmotm-2.6.31-Aug27.orig/fs/proc/kcore.c
-+++ mmotm-2.6.31-Aug27/fs/proc/kcore.c
-@@ -21,6 +21,7 @@
- #include <asm/uaccess.h>
- #include <asm/io.h>
- #include <linux/list.h>
-+#include <asm/sections.h>
- 
- #define CORE_STR "CORE"
- 
-@@ -374,10 +375,26 @@ read_kcore(struct file *file, char __use
- 
- static struct kcore_list kcore_vmalloc;
- 
-+#ifdef CONFIG_ARCH_PROC_KCORE_TEXT
-+static struct kcore_list kcore_text;
-+/*
-+ * If defined, special segment is used for mapping kernel text instead of
-+ * direct-map area. We need to create special TEXT section.
-+ */
-+static void __init proc_kcore_text_init(void)
-+{
-+	kclist_add(&kcore_text, _stext, _end - _stext, KCORE_TEXT);
-+}
-+#else
-+static void __init proc_kcore_text_init(void)
-+{
-+}
-+#endif
-+
- static int __init proc_kcore_init(void)
- {
- 	proc_root_kcore = proc_create("kcore", S_IRUSR, NULL, &proc_kcore_operations);
--
-+	proc_kcore_text_init();
- 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
- 		VMALLOC_END - VMALLOC_START, KCORE_VMALLOC);
- 	return 0;
-Index: mmotm-2.6.31-Aug27/arch/ia64/mm/init.c
-===================================================================
---- mmotm-2.6.31-Aug27.orig/arch/ia64/mm/init.c
-+++ mmotm-2.6.31-Aug27/arch/ia64/mm/init.c
-@@ -617,7 +617,7 @@ mem_init (void)
- 	long reserved_pages, codesize, datasize, initsize;
- 	pg_data_t *pgdat;
- 	int i;
--	static struct kcore_list kcore_mem, kcore_kernel;
-+	static struct kcore_list kcore_mem;
- 
- 	BUG_ON(PTRS_PER_PGD * sizeof(pgd_t) != PAGE_SIZE);
- 	BUG_ON(PTRS_PER_PMD * sizeof(pmd_t) != PAGE_SIZE);
-@@ -640,7 +640,6 @@ mem_init (void)
- 	high_memory = __va(max_low_pfn * PAGE_SIZE);
- 
- 	kclist_add(&kcore_mem, __va(0), max_low_pfn * PAGE_SIZE, KCORE_RAM);
--	kclist_add(&kcore_kernel, _stext, _end - _stext, KCORE_TEXT);
- 
- 	for_each_online_pgdat(pgdat)
- 		if (pgdat->bdata->node_bootmem_map)
-
+> PC  : 0c040e7a SP  : 0c909d7c SR  : 40000001
+> R0  : 0000001d R1  : 00000000 R2  : 00000000 R3  : 0000000d
+> R4  : 0c9f8cf4 R5  : 000017de R6  : ffffffff R7  : 00000035
+> R8  : 0c9f8cf4 R9  : 00000000 R10 : 00000000 R11 : fffffff4
+> R12 : 0c9f8d1c R13 : 00000000 R14 : 0c9f8cf4
+> MACH: 0000017e MACL: baf11680 GBR : 00000000 PR  : 0c0418b8
+>
+> Call trace:
+>  [<0c0418b8>] do_mmap_pgoff+0x8dc/0xa68
+>  [<0c01a582>] flush_itimer_signals+0x36/0x60
+>  [<0c06633a>] load_flat_file+0x32a/0x738
+>  [<0c0bad00>] down_write+0x0/0xc
+>  [<0c065314>] load_elf_fdpic_binary+0x44/0xa8c
+>  [<0c077f60>] memset+0x0/0x60
+>  [<0c066790>] load_flat_binary+0x48/0x2fc
+>  [<0c0482ee>] search_binary_handler+0x4a/0x1fc
+>  [<0c04884e>] do_execve+0x156/0x2bc
+>  [<0c048570>] copy_strings+0x0/0x150
+>  [<0c002e68>] sys_execve+0x30/0x5c
+>  [<0c007972>] syscall_call+0xc/0x10
+>  [<0c002e38>] sys_execve+0x0/0x5c
+>  [<0c0050ca>] kernel_execve+0x6/0xc
+>  [<0c01e874>] ____call_usermodehelper+0xd0/0xfc
+>  [<0c002cca>] kernel_thread_helper+0x6/0x10
+>  [<0c01e7a4>] ____call_usermodehelper+0x0/0xfc
+>  [<0c002cc4>] kernel_thread_helper+0x0/0x10
+>
+> Code:
+>  0c040e74:  tst       r1, r1
+>  0c040e76:  bf.s      0c040e7c
+>  0c040e78:  mov       r4, r8
+> ->0c040e7a:  trapa     #62
+>  0c040e7c:  stc       sr, r1
+>  0c040e7e:  mov       r1, r0
+>  0c040e80:  or        #-16, r0
+>  0c040e82:  ldc       r0, sr
+>  0c040e84:  mov       r1, r0
+>
+> Process: modprobe (pid: 51, stack limit = 0c908001)
+> Stack: (0x0c909d7c to 0x0c90a000)
+> 9d60:                                                                0c0418b8
+> 9d80: 00000007 0c01a582 0c2f8cd0 00000000 00000000 00049000 00000049 00048fff
+> 9da0: 00049fff 00049000 00000007 0c06633a 00000001 0c909f30 0003e950 0c0bad00
+> 9dc0: 0000984a 0c2f8ea0 ffffe000 00000002 00000000 0c065314 0c2f8ea0 0c077f60
+> 9de0: 00049000 0000673c 00000050 000369a0 000019cf 00000004 00004e20 0003e950
+> 9e00: 000481aa 00000001 00004eaa 000049a0 00007fb0 000369a0 00000000 00000000
+> 9e20: 0c909e50 00000000 00000000 0c066790 00000000 0c909f30 00000000 00000000
+> 9e40: 0c2f8ea0 0c909f30 0c909e50 00004eaa 00000000 00000000 00000000 00000000
+> 9e60: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> 9e80: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> 9ea0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> 9ec0: 0c0482ee 00000000 fffffff8 0c2f8ea0 0c104ff8 0c04884e 0c0feb64 00000001
+> 9ee0: 0c048570 ffffe000 0c2f8ea0 00000000 00000000 0c813eb8 0c909f30 0c002e68
+> 9f00: 00000000 00000000 00000000 0c0feb64 0c813eb8 0c909f30 0c960000 0c007972
+> 9f20: ffffff0f 00000071 00000100 0c002e38 0000000b ffffff0f 00000001 0000000b
+> 9f40: 0c0fea64 0c813eb8 0c0feb64 0c2f898c 00000000 ffffe000 0c9f8990 00000000
+> 9f60: 00000000 00000000 00000000 0c909f8c 0c0050ca 0c01e874 40000001 00000000
+> 9f80: 00000000 4795ce40 0000004c 0c002cca 00000000 00000000 00000000 00000000
+> 9fa0: 00000000 00000000 00000000 00000000 00000000 0c9f8990 0c01e7a4 00000000
+> 9fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+> 9fe0: 0c909f9c 0c002cc4 00000000 40000000 00000000 00000000 00000000 00000000
+> ---[ end trace 139ce121c98e96c9 ]---
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
