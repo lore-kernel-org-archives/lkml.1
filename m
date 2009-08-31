@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbZHaS4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZHaS4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbZHaS4g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 14:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZHaS4N
+	id S1754254AbZHaS4h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 14:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZHaS4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 14:56:13 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:36629 "EHLO
+	Mon, 31 Aug 2009 14:56:12 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:36622 "EHLO
 	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753708AbZHaS4J (ORCPT
+	with ESMTP id S1753466AbZHaS4J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Aug 2009 14:56:09 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: akpm@linux-foundation.org
 Cc: mingo@redhat.com, oleg@redhat.com, linux-kernel@vger.kernel.org,
        Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 5/6] core: allow setrlimit to non-current tasks
-Date: Mon, 31 Aug 2009 20:56:13 +0200
-Message-Id: <1251744974-29398-5-git-send-email-jirislaby@gmail.com>
+Subject: [PATCH 3/6] core: add task_struct to update_rlimit_cpu
+Date: Mon, 31 Aug 2009 20:56:11 +0200
+Message-Id: <1251744974-29398-3-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1251744974-29398-1-git-send-email-jirislaby@gmail.com>
 References: <1251744974-29398-1-git-send-email-jirislaby@gmail.com>
@@ -24,68 +24,82 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add locking to allow setrlimit accept task parameter other than
-current.
-
-Namely, lock tasklist_lock for read and check whether the task
-structure has signal and sighand non-null. Do all the signal
-processing under that lock still held.
+Add task_struct as a parameter to update_rlimit_cpu to be able to set
+rlimit_cpu of different task than current.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Oleg Nesterov <oleg@redhat.com>
 ---
- kernel/sys.c |   26 ++++++++++++++++++++------
- 1 files changed, 20 insertions(+), 6 deletions(-)
+ include/linux/posix-timers.h |    2 +-
+ kernel/posix-cpu-timers.c    |   10 +++++-----
+ kernel/sys.c                 |    2 +-
+ security/selinux/hooks.c     |    3 ++-
+ 4 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 919cebe..777a152 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1244,16 +1244,27 @@ int setrlimit(struct task_struct *tsk, unsigned int resource,
+diff --git a/include/linux/posix-timers.h b/include/linux/posix-timers.h
+index 4f71bf4..3e23844 100644
+--- a/include/linux/posix-timers.h
++++ b/include/linux/posix-timers.h
+@@ -117,6 +117,6 @@ void set_process_cpu_timer(struct task_struct *task, unsigned int clock_idx,
  
- 	if (new_rlim->rlim_cur > new_rlim->rlim_max)
- 		return -EINVAL;
-+
-+	/* protect tsk->signal and tsk->sighand from disappearing */
-+	read_lock_irq(&tasklist_lock);
-+	if (!tsk->signal || !tsk->sighand) {
-+		retval = -ESRCH;
-+		goto unlock;
-+	}
- 	old_rlim = tsk->signal->rlim + resource;
- 	if ((new_rlim->rlim_max > old_rlim->rlim_max) &&
--	    !capable(CAP_SYS_RESOURCE))
--		return -EPERM;
--	if (resource == RLIMIT_NOFILE && new_rlim->rlim_max > sysctl_nr_open)
--		return -EPERM;
-+	    !capable(CAP_SYS_RESOURCE)) {
-+		retval = -EPERM;
-+		goto unlock;
-+	}
-+	if (resource == RLIMIT_NOFILE && new_rlim->rlim_max > sysctl_nr_open) {
-+		retval = -EPERM;
-+		goto unlock;
-+	}
+ long clock_nanosleep_restart(struct restart_block *restart_block);
  
- 	retval = security_task_setrlimit(tsk, resource, new_rlim);
- 	if (retval)
--		return retval;
-+		goto unlock;
+-void update_rlimit_cpu(unsigned long rlim_new);
++void update_rlimit_cpu(struct task_struct *task, unsigned long rlim_new);
  
- 	if (resource == RLIMIT_CPU && new_rlim->rlim_cur == 0) {
- 		/*
-@@ -1283,7 +1294,10 @@ int setrlimit(struct task_struct *tsk, unsigned int resource,
+ #endif
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index 12161f7..a61c625 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -12,16 +12,16 @@
+ /*
+  * Called after updating RLIMIT_CPU to set timer expiration if necessary.
+  */
+-void update_rlimit_cpu(unsigned long rlim_new)
++void update_rlimit_cpu(struct task_struct *task, unsigned long rlim_new)
+ {
+ 	cputime_t cputime = secs_to_cputime(rlim_new);
+-	struct signal_struct *const sig = current->signal;
++	struct signal_struct *const sig = task->signal;
  
- 	update_rlimit_cpu(tsk, new_rlim->rlim_cur);
- out:
--	return 0;
-+	retval = 0;
-+unlock:
-+	read_unlock_irq(&tasklist_lock);
-+	return retval;
+ 	if (cputime_eq(sig->it[CPUCLOCK_PROF].expires, cputime_zero) ||
+ 	    cputime_gt(sig->it[CPUCLOCK_PROF].expires, cputime)) {
+-		spin_lock_irq(&current->sighand->siglock);
+-		set_process_cpu_timer(current, CPUCLOCK_PROF, &cputime, NULL);
+-		spin_unlock_irq(&current->sighand->siglock);
++		spin_lock_irq(&task->sighand->siglock);
++		set_process_cpu_timer(task, CPUCLOCK_PROF, &cputime, NULL);
++		spin_unlock_irq(&task->sighand->siglock);
+ 	}
  }
  
- SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+diff --git a/kernel/sys.c b/kernel/sys.c
+index ae7be2e..d501f60 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1284,7 +1284,7 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ 	if (new_rlim.rlim_cur == RLIM_INFINITY)
+ 		goto out;
+ 
+-	update_rlimit_cpu(new_rlim.rlim_cur);
++	update_rlimit_cpu(current, new_rlim.rlim_cur);
+ out:
+ 	return 0;
+ }
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 839622a..6903784 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2360,7 +2360,8 @@ static void selinux_bprm_committing_creds(struct linux_binprm *bprm)
+ 			initrlim = init_task.signal->rlim + i;
+ 			rlim->rlim_cur = min(rlim->rlim_max, initrlim->rlim_cur);
+ 		}
+-		update_rlimit_cpu(current->signal->rlim[RLIMIT_CPU].rlim_cur);
++		update_rlimit_cpu(current,
++				current->signal->rlim[RLIMIT_CPU].rlim_cur);
+ 	}
+ }
+ 
 -- 
 1.6.3.3
 
