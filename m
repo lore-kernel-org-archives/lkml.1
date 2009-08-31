@@ -1,65 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752348AbZHaMCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751682AbZHaMFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752348AbZHaMCu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 08:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZHaMCu
+	id S1751682AbZHaMFZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 08:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZHaMFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 08:02:50 -0400
-Received: from mailrelay012.isp.belgacom.be ([195.238.6.179]:61258 "EHLO
-	mailrelay012.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752113AbZHaMCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 08:02:49 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAOJYm0pR9dii/2dsb2JhbADWMwmEEQWCRA
-Date: Mon, 31 Aug 2009 14:02:50 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: roel.kluin@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, teheo@suse.de
-Subject: Re: [PATCH] txx9wdt.c:52: Fix txx9wdt_probe() cleaning up after
-	errors
-Message-ID: <20090831120250.GM29382@infomag.iguana.be>
-References: <4A93ACDA.8030000@gmail.com> <20090827.235200.21363768.anemo@mba.ocn.ne.jp> <20090827201317.GH29382@infomag.iguana.be> <20090828.232429.106266868.anemo@mba.ocn.ne.jp>
+	Mon, 31 Aug 2009 08:05:24 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9577 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751091AbZHaMFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 08:05:23 -0400
+Message-ID: <4A9BBC4A.6070708@redhat.com>
+Date: Mon, 31 Aug 2009 08:04:26 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090828.232429.106266868.anemo@mba.ocn.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tejun Heo <tj@kernel.org>
+CC: Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
+       Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org>
+In-Reply-To: <4A9B8583.9050601@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Atsushi,
+On 08/31/2009 04:10 AM, Tejun Heo wrote:
+> Ric Wheeler wrote:
+>    
+>> On 08/27/2009 05:22 PM, Andrei Tanas wrote:
+>>      
+>>> Hello,
+>>>
+>>> This is about the same problem that I wrote two days ago (md gets an
+>>> error
+>>> while writing superblock and fails a hard drive).
+>>>
+>>> I've tried to figure out what's really going on, and as far as I can
+>>> tell,
+>>> the disk doesn't really fail (as confirmed by multiple tests), it
+>>> times out
+>>> trying to execute ATA_CMD_FLUSH_EXT ("at2.00 cmd ea..." in the log)
+>>> command. The reason for this I believe is that md_super_write queues the
+>>> write comand with BIO_RW_SYNCIO flag.
+>>> As I wrote before, with 32MB cache it is conceivable that it will take
+>>> the
+>>> drive longer than 30 seconds (defined by SD_TIMEOUT in scsi/sd.h) to
+>>> flush
+>>> its buffers.
+>>>
+>>> Changing safe_mode_delay to more conservative 2 seconds should definitely
+>>> help, but is it really necessary to write the superblock synchronously
+>>> when
+>>> array changes status from active to active-idle?
+>>>
+>>> [90307.328266] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+>>> frozen
+>>> [90307.328275] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+>>> [90307.328277]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
+>>> (timeout)
+>>> [90307.328280] ata2.00: status: { DRDY }
+>>> [90307.328288] ata2: hard resetting link
+>>> [90313.218511] ata2: link is slow to respond, please be patient (ready=0)
+>>> [90317.377711] ata2: SRST failed (errno=-16)
+>>> [90317.377720] ata2: hard resetting link
+>>> [90318.251720] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>>> [90318.338026] ata2.00: configured for UDMA/133
+>>> [90318.338062] ata2: EH complete
+>>> [90318.370625] end_request: I/O error, dev sdb, sector 1953519935
+>>> [90318.370632] md: super_written gets error=-5, uptodate=0
+>>>
+>>>
+>>>        
+>> 30 seconds is a very long time for a drive to respond, but I think that
+>> your explanation fits the facts pretty well...
+>>      
+> Even with 32MB cache, 30secs should be more than enough.  It's not
+> like the drive is gonna do random write on those.  It's likely to make
+> only very few number of strokes over the platter and it really
+> shouldn't take very long.  I'm yet to see an actual case where a
+> properly functioning drive timed out flush because the flush itself
+> took long enough.
+>
+>    
 
-> On Thu, 27 Aug 2009 22:13:17 +0200, Wim Van Sebroeck <wim@iguana.be> wrote:
-> > > > Make txx9wdt_probe() clean up after errors.
-> > > > 
-> > > > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> > > > ---
-> > > > Any comments?
-> > > 
-> > > Well, why is this patch needed?  I intentionally omitted iounmap and
-> > > release_mem_region because devres guarantee these resources are freed
-> > > on probe failure.  Or are there any leaks?
-> > 
-> > My opinion: a driver should do proper clean-up on probe failures because
-> > 1) this makes clean and robust code and shows that you know what you are doing
-> > 2) to avoid having to search for leaks if there are any. See the NULL pointer story...
-> 
-> I think "proper clean-up" in this case is "do nothing for
-> devres-managed resources".  An example in
-> Documentation/driver-model/devres.txt clearly say so.  Actually most
-> drivers do not call devm_iounmap in any case.
+I agree - vendors put a lot of pressure on drive manufacturers to finish 
+up (even during error recovery) in much less than 30 seconds. The push 
+was always for something closer to 15 seconds iirc.
 
-I will have a look at devres managed resources and than come back on this.
+>> The drive might take a longer time like this when doing error handling
+>> (sector remapping, etc), but then I would expect to see your remapped
+>> sector count grow.
+>>      
+> Yes, this is a possibility and according to the spec, libata EH should
+> be retrying flushes a few times before giving up but I'm not sure
+> whether keeping retrying for several minutes is a good idea either.
+> Is it?
+>
+> Thanks.
+>
+>    
 
-> Also, the patch added devm_iounmap in failure path but not in exit
-> path.  This looks inconsistent.
+I don't think that retrying for minutes is a good idea. I wonder if this 
+could be caused by power issues or cable issues to the drive?
 
-Correct, if we use it in the probe error function then it should be used also in the exit function.
-
-Kind regards,
-Wim.
+Ric
 
