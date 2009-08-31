@@ -1,428 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751661AbZHaVnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751597AbZHaVxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751661AbZHaVnP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 17:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZHaVnO
+	id S1751597AbZHaVxN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 17:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZHaVxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 17:43:14 -0400
-Received: from mail-vw0-f195.google.com ([209.85.212.195]:46521 "EHLO
-	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750951AbZHaVnM convert rfc822-to-8bit (ORCPT
+	Mon, 31 Aug 2009 17:53:12 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:37231 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751014AbZHaVxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 17:43:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=GIwH8SK3mBV3vbHwjaRHTUu1BZNfYq6oAqCw5Nd1XdB+CARBwudwtfqJfo8R54tRma
-         JyEchJs95ljS2wsqGdMgDZtK2F9BTfPKZVZgCyhpPYyo0a74yF6/DRWkeCpIVs6vJEDi
-         KxfflF960fsL8OmeJLZuxutL6BJ7vSPEUJ2Rk=
-MIME-Version: 1.0
-In-Reply-To: <20090830232450.2ed2b07d@pedra.chehab.org>
-References: <1250820538.29546.5.camel@Joe-Laptop.home>
-	 <20090830232450.2ed2b07d@pedra.chehab.org>
-Date: Mon, 31 Aug 2009 17:43:13 -0400
-Message-ID: <f34657950908311443x4847c66ap79e90d7bc4863385@mail.gmail.com>
-Subject: Re: [PATCH] sn9c20x: Reduce data usage, make functions static
-From: Brian Johnson <brijohn@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Joe Perches <joe@perches.com>, Jean-Francois Moine <moinejf@free.fr>,
-       linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 31 Aug 2009 17:53:11 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@vmware.com>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Maxime Austruy <maustruy@vmware.com>,
+       Bhavesh Davda <bhavesh@vmware.com>
+In-Reply-To: <1251741624.18828.83.camel@mulgrave.site>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <1251739735.16169.20.camel@ank32.eng.vmware.com>
+	 <1251741624.18828.83.camel@mulgrave.site>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 31 Aug 2009 14:53:13 -0700
+Message-Id: <1251755593.16169.51.camel@ank32.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro,
-Yes, sorry been busy this last week.
-I've tested this patch against three separate webcams and everything
-works just fine.
+Hi James, 
 
-I'd also like to ask if it would be possible to get a mercurial
-account on linuxtv.org?
+Thanks for your comments. 
 
-Brian Johnson
+On Mon, 2009-08-31 at 11:00 -0700, James Bottomley wrote:
+> On Mon, 2009-08-31 at 10:28 -0700, Alok Kataria wrote:
+> > VMware PVSCSI driver - v2.
+> 
+> OK, so the first thing that springs to mind is that we already have one
+> of these things: the ibmvscsi ... is there no way we can share code
+> between this and the other PV drivers?
 
-On Sun, Aug 30, 2009 at 10:24 PM, Mauro Carvalho
-Chehab<mchehab@redhat.com> wrote:
-> Hi Brian,
->
-> Any news about the patch? It is always a good idea to try to reduce the kernel
-> size footprint.
->
-> Cheers,
-> Mauro.
->
-> Em Thu, 20 Aug 2009 19:08:58 -0700
-> Joe Perches <joe@perches.com> escreveu:
->
->> Compiled, not tested, no hardware
->>
->> Reduces size of object
->>
->> Use s16 instead of int where possible.
->> Use struct instead of arrays
->>
->> Before:
->> $ size drivers/media/video/gspca/sn9c20x.o
->>    text          data     bss     dec     hex filename
->>   29346          1124    4128   34598    8726 drivers/media/video/gspca/sn9c20x.o
->>
->> After:
->> $ size drivers/media/video/gspca/sn9c20x.o
->>    text          data     bss     dec     hex filename
->>   25042          1124    4112   30278    7646 drivers/media/video/gspca/sn9c20x.o
->>
->> Signed-off-by: Joe Perches <joe@perches.com>
->> ---
->>  drivers/media/video/gspca/sn9c20x.c |  101 +++++++++++++++++++---------------
->>  1 files changed, 56 insertions(+), 45 deletions(-)
->>
->> diff --git a/drivers/media/video/gspca/sn9c20x.c b/drivers/media/video/gspca/sn9c20x.c
->> index fcfbbd3..8ddf738 100644
->> --- a/drivers/media/video/gspca/sn9c20x.c
->> +++ b/drivers/media/video/gspca/sn9c20x.c
->> @@ -403,7 +403,7 @@ static const struct v4l2_pix_format sxga_mode[] = {
->>               .priv = 3 | MODE_RAW | MODE_SXGA},
->>  };
->>
->> -static const int hsv_red_x[] = {
->> +static const s16 hsv_red_x[] = {
->>       41,  44,  46,  48,  50,  52,  54,  56,
->>       58,  60,  62,  64,  66,  68,  70,  72,
->>       74,  76,  78,  80,  81,  83,  85,  87,
->> @@ -451,7 +451,7 @@ static const int hsv_red_x[] = {
->>       24,  26,  28,  30,  33,  35,  37,  39, 41
->>  };
->>
->> -static const int hsv_red_y[] = {
->> +static const s16 hsv_red_y[] = {
->>       82,  80,  78,  76,  74,  73,  71,  69,
->>       67,  65,  63,  61,  58,  56,  54,  52,
->>       50,  48,  46,  44,  41,  39,  37,  35,
->> @@ -499,7 +499,7 @@ static const int hsv_red_y[] = {
->>       96, 94, 92, 91, 89, 87, 85, 84, 82
->>  };
->>
->> -static const int hsv_green_x[] = {
->> +static const s16 hsv_green_x[] = {
->>       -124, -124, -125, -125, -125, -125, -125, -125,
->>       -125, -126, -126, -125, -125, -125, -125, -125,
->>       -125, -124, -124, -124, -123, -123, -122, -122,
->> @@ -547,7 +547,7 @@ static const int hsv_green_x[] = {
->>       -120, -120, -121, -122, -122, -123, -123, -124, -124
->>  };
->>
->> -static const int hsv_green_y[] = {
->> +static const s16 hsv_green_y[] = {
->>       -100, -99, -98, -97, -95, -94, -93, -91,
->>       -90, -89, -87, -86, -84, -83, -81, -80,
->>       -78, -76, -75, -73, -71, -70, -68, -66,
->> @@ -595,7 +595,7 @@ static const int hsv_green_y[] = {
->>       -109, -108, -107, -106, -105, -104, -103, -102, -100
->>  };
->>
->> -static const int hsv_blue_x[] = {
->> +static const s16 hsv_blue_x[] = {
->>       112, 113, 114, 114, 115, 116, 117, 117,
->>       118, 118, 119, 119, 120, 120, 120, 121,
->>       121, 121, 122, 122, 122, 122, 122, 122,
->> @@ -643,7 +643,7 @@ static const int hsv_blue_x[] = {
->>       104, 105, 106, 107, 108, 109, 110, 111, 112
->>  };
->>
->> -static const int hsv_blue_y[] = {
->> +static const s16 hsv_blue_y[] = {
->>       -11, -13, -15, -17, -19, -21, -23, -25,
->>       -27, -29, -31, -33, -35, -37, -39, -41,
->>       -43, -45, -46, -48, -50, -52, -54, -55,
->> @@ -792,7 +792,17 @@ static u8 hv7131r_gain[] = {
->>       0x78 /* 8x */
->>  };
->>
->> -static u8 soi968_init[][2] = {
->> +struct i2c_reg_u8 {
->> +     u8 reg;
->> +     u8 val;
->> +};
->> +
->> +struct i2c_reg_u16 {
->> +     u8 reg;
->> +     u16 val;
->> +};
->> +
->> +static struct i2c_reg_u8 soi968_init[] = {
->>       {0x12, 0x80}, {0x0c, 0x00}, {0x0f, 0x1f},
->>       {0x11, 0x80}, {0x38, 0x52}, {0x1e, 0x00},
->>       {0x33, 0x08}, {0x35, 0x8c}, {0x36, 0x0c},
->> @@ -806,7 +816,7 @@ static u8 soi968_init[][2] = {
->>       {0x00, 0x00}, {0x01, 0x80}, {0x02, 0x80},
->>  };
->>
->> -static u8 ov7660_init[][2] = {
->> +static struct i2c_reg_u8 ov7660_init[] = {
->>       {0x0e, 0x80}, {0x0d, 0x08}, {0x0f, 0xc3},
->>       {0x04, 0xc3}, {0x10, 0x40}, {0x11, 0x40},
->>       {0x12, 0x05}, {0x13, 0xba}, {0x14, 0x2a},
->> @@ -815,7 +825,7 @@ static u8 ov7660_init[][2] = {
->>       {0x2e, 0x0b}, {0x01, 0x78}, {0x02, 0x50},
->>  };
->>
->> -static u8 ov7670_init[][2] = {
->> +static struct i2c_reg_u8 ov7670_init[] = {
->>       {0x12, 0x80}, {0x11, 0x80}, {0x3a, 0x04}, {0x12, 0x01},
->>       {0x32, 0xb6}, {0x03, 0x0a}, {0x0c, 0x00}, {0x3e, 0x00},
->>       {0x70, 0x3a}, {0x71, 0x35}, {0x72, 0x11}, {0x73, 0xf0},
->> @@ -872,7 +882,7 @@ static u8 ov7670_init[][2] = {
->>       {0x93, 0x00},
->>  };
->>
->> -static u8 ov9650_init[][2] = {
->> +static struct i2c_reg_u8 ov9650_init[] = {
->>       {0x12, 0x80}, {0x00, 0x00}, {0x01, 0x78},
->>       {0x02, 0x78}, {0x03, 0x36}, {0x04, 0x03},
->>       {0x05, 0x00}, {0x06, 0x00}, {0x08, 0x00},
->> @@ -902,7 +912,7 @@ static u8 ov9650_init[][2] = {
->>       {0xaa, 0x92}, {0xab, 0x0a},
->>  };
->>
->> -static u8 ov9655_init[][2] = {
->> +static struct i2c_reg_u8 ov9655_init[] = {
->>       {0x12, 0x80}, {0x12, 0x01}, {0x0d, 0x00}, {0x0e, 0x61},
->>       {0x11, 0x80}, {0x13, 0xba}, {0x14, 0x2e}, {0x16, 0x24},
->>       {0x1e, 0x04}, {0x1e, 0x04}, {0x1e, 0x04}, {0x27, 0x08},
->> @@ -939,7 +949,7 @@ static u8 ov9655_init[][2] = {
->>       {0x00, 0x03}, {0x00, 0x0a}, {0x00, 0x10}, {0x00, 0x13},
->>  };
->>
->> -static u16 mt9v112_init[][2] = {
->> +static struct i2c_reg_u16 mt9v112_init[] = {
->>       {0xf0, 0x0000}, {0x0d, 0x0021}, {0x0d, 0x0020},
->>       {0x34, 0xc019}, {0x0a, 0x0011}, {0x0b, 0x000b},
->>       {0x20, 0x0703}, {0x35, 0x2022}, {0xf0, 0x0001},
->> @@ -958,7 +968,7 @@ static u16 mt9v112_init[][2] = {
->>       {0x2c, 0x00ae}, {0x2d, 0x00ae}, {0x2e, 0x00ae},
->>  };
->>
->> -static u16 mt9v111_init[][2] = {
->> +static struct i2c_reg_u16 mt9v111_init[] = {
->>       {0x01, 0x0004}, {0x0d, 0x0001}, {0x0d, 0x0000},
->>       {0x01, 0x0001}, {0x02, 0x0016}, {0x03, 0x01e1},
->>       {0x04, 0x0281}, {0x05, 0x0004}, {0x07, 0x3002},
->> @@ -985,7 +995,7 @@ static u16 mt9v111_init[][2] = {
->>       {0x0e, 0x0008}, {0x06, 0x002d}, {0x05, 0x0004},
->>  };
->>
->> -static u16 mt9v011_init[][2] = {
->> +static struct i2c_reg_u16 mt9v011_init[] = {
->>       {0x07, 0x0002}, {0x0d, 0x0001}, {0x0d, 0x0000},
->>       {0x01, 0x0008}, {0x02, 0x0016}, {0x03, 0x01e1},
->>       {0x04, 0x0281}, {0x05, 0x0083}, {0x06, 0x0006},
->> @@ -1012,7 +1022,7 @@ static u16 mt9v011_init[][2] = {
->>       {0x06, 0x0029}, {0x05, 0x0009},
->>  };
->>
->> -static u16 mt9m001_init[][2] = {
->> +static struct i2c_reg_u16 mt9m001_init[] = {
->>       {0x0d, 0x0001}, {0x0d, 0x0000}, {0x01, 0x000e},
->>       {0x02, 0x0014}, {0x03, 0x03c1}, {0x04, 0x0501},
->>       {0x05, 0x0083}, {0x06, 0x0006}, {0x0d, 0x0002},
->> @@ -1025,14 +1035,14 @@ static u16 mt9m001_init[][2] = {
->>       {0x2e, 0x0029}, {0x07, 0x0002},
->>  };
->>
->> -static u16 mt9m111_init[][2] = {
->> +static struct i2c_reg_u16 mt9m111_init[] = {
->>       {0xf0, 0x0000}, {0x0d, 0x0008}, {0x0d, 0x0009},
->>       {0x0d, 0x0008}, {0xf0, 0x0001}, {0x3a, 0x4300},
->>       {0x9b, 0x4300}, {0xa1, 0x0280}, {0xa4, 0x0200},
->>       {0x06, 0x308e}, {0xf0, 0x0000},
->>  };
->>
->> -static u8 hv7131r_init[][2] = {
->> +static struct i2c_reg_u8 hv7131r_init[] = {
->>       {0x02, 0x08}, {0x02, 0x00}, {0x01, 0x08},
->>       {0x02, 0x00}, {0x20, 0x00}, {0x21, 0xd0},
->>       {0x22, 0x00}, {0x23, 0x09}, {0x01, 0x08},
->> @@ -1043,7 +1053,7 @@ static u8 hv7131r_init[][2] = {
->>       {0x23, 0x09}, {0x01, 0x08},
->>  };
->>
->> -int reg_r(struct gspca_dev *gspca_dev, u16 reg, u16 length)
->> +static int reg_r(struct gspca_dev *gspca_dev, u16 reg, u16 length)
->>  {
->>       struct usb_device *dev = gspca_dev->dev;
->>       int result;
->> @@ -1062,7 +1072,8 @@ int reg_r(struct gspca_dev *gspca_dev, u16 reg, u16 length)
->>       return 0;
->>  }
->>
->> -int reg_w(struct gspca_dev *gspca_dev, u16 reg, const u8 *buffer, int length)
->> +static int reg_w(struct gspca_dev *gspca_dev, u16 reg,
->> +              const u8 *buffer, int length)
->>  {
->>       struct usb_device *dev = gspca_dev->dev;
->>       int result;
->> @@ -1082,13 +1093,13 @@ int reg_w(struct gspca_dev *gspca_dev, u16 reg, const u8 *buffer, int length)
->>       return 0;
->>  }
->>
->> -int reg_w1(struct gspca_dev *gspca_dev, u16 reg, const u8 value)
->> +static int reg_w1(struct gspca_dev *gspca_dev, u16 reg, const u8 value)
->>  {
->>       u8 data[1] = {value};
->>       return reg_w(gspca_dev, reg, data, 1);
->>  }
->>
->> -int i2c_w(struct gspca_dev *gspca_dev, const u8 *buffer)
->> +static int i2c_w(struct gspca_dev *gspca_dev, const u8 *buffer)
->>  {
->>       int i;
->>       reg_w(gspca_dev, 0x10c0, buffer, 8);
->> @@ -1104,7 +1115,7 @@ int i2c_w(struct gspca_dev *gspca_dev, const u8 *buffer)
->>       return -1;
->>  }
->>
->> -int i2c_w1(struct gspca_dev *gspca_dev, u8 reg, u8 val)
->> +static int i2c_w1(struct gspca_dev *gspca_dev, u8 reg, u8 val)
->>  {
->>       struct sd *sd = (struct sd *) gspca_dev;
->>
->> @@ -1126,7 +1137,7 @@ int i2c_w1(struct gspca_dev *gspca_dev, u8 reg, u8 val)
->>       return i2c_w(gspca_dev, row);
->>  }
->>
->> -int i2c_w2(struct gspca_dev *gspca_dev, u8 reg, u16 val)
->> +static int i2c_w2(struct gspca_dev *gspca_dev, u8 reg, u16 val)
->>  {
->>       struct sd *sd = (struct sd *) gspca_dev;
->>       u8 row[8];
->> @@ -1201,8 +1212,8 @@ static int ov9650_init_sensor(struct gspca_dev *gspca_dev)
->>       struct sd *sd = (struct sd *) gspca_dev;
->>
->>       for (i = 0; i < ARRAY_SIZE(ov9650_init); i++) {
->> -             if (i2c_w1(gspca_dev, ov9650_init[i][0],
->> -                             ov9650_init[i][1]) < 0) {
->> +             if (i2c_w1(gspca_dev, ov9650_init[i].reg,
->> +                             ov9650_init[i].val) < 0) {
->>                       err("OV9650 sensor initialization failed");
->>                       return -ENODEV;
->>               }
->> @@ -1218,8 +1229,8 @@ static int ov9655_init_sensor(struct gspca_dev *gspca_dev)
->>       struct sd *sd = (struct sd *) gspca_dev;
->>
->>       for (i = 0; i < ARRAY_SIZE(ov9655_init); i++) {
->> -             if (i2c_w1(gspca_dev, ov9655_init[i][0],
->> -                             ov9655_init[i][1]) < 0) {
->> +             if (i2c_w1(gspca_dev, ov9655_init[i].reg,
->> +                             ov9655_init[i].val) < 0) {
->>                       err("OV9655 sensor initialization failed");
->>                       return -ENODEV;
->>               }
->> @@ -1237,8 +1248,8 @@ static int soi968_init_sensor(struct gspca_dev *gspca_dev)
->>       struct sd *sd = (struct sd *) gspca_dev;
->>
->>       for (i = 0; i < ARRAY_SIZE(soi968_init); i++) {
->> -             if (i2c_w1(gspca_dev, soi968_init[i][0],
->> -                             soi968_init[i][1]) < 0) {
->> +             if (i2c_w1(gspca_dev, soi968_init[i].reg,
->> +                             soi968_init[i].val) < 0) {
->>                       err("SOI968 sensor initialization failed");
->>                       return -ENODEV;
->>               }
->> @@ -1256,8 +1267,8 @@ static int ov7660_init_sensor(struct gspca_dev *gspca_dev)
->>       struct sd *sd = (struct sd *) gspca_dev;
->>
->>       for (i = 0; i < ARRAY_SIZE(ov7660_init); i++) {
->> -             if (i2c_w1(gspca_dev, ov7660_init[i][0],
->> -                             ov7660_init[i][1]) < 0) {
->> +             if (i2c_w1(gspca_dev, ov7660_init[i].reg,
->> +                             ov7660_init[i].val) < 0) {
->>                       err("OV7660 sensor initialization failed");
->>                       return -ENODEV;
->>               }
->> @@ -1275,8 +1286,8 @@ static int ov7670_init_sensor(struct gspca_dev *gspca_dev)
->>       struct sd *sd = (struct sd *) gspca_dev;
->>
->>       for (i = 0; i < ARRAY_SIZE(ov7670_init); i++) {
->> -             if (i2c_w1(gspca_dev, ov7670_init[i][0],
->> -                             ov7670_init[i][1]) < 0) {
->> +             if (i2c_w1(gspca_dev, ov7670_init[i].reg,
->> +                             ov7670_init[i].val) < 0) {
->>                       err("OV7670 sensor initialization failed");
->>                       return -ENODEV;
->>               }
->> @@ -1299,8 +1310,8 @@ static int mt9v_init_sensor(struct gspca_dev *gspca_dev)
->>       ret = i2c_r2(gspca_dev, 0xff, &value);
->>       if ((ret == 0) && (value == 0x8243)) {
->>               for (i = 0; i < ARRAY_SIZE(mt9v011_init); i++) {
->> -                     if (i2c_w2(gspca_dev, mt9v011_init[i][0],
->> -                                     mt9v011_init[i][1]) < 0) {
->> +                     if (i2c_w2(gspca_dev, mt9v011_init[i].reg,
->> +                                     mt9v011_init[i].val) < 0) {
->>                               err("MT9V011 sensor initialization failed");
->>                               return -ENODEV;
->>                       }
->> @@ -1317,8 +1328,8 @@ static int mt9v_init_sensor(struct gspca_dev *gspca_dev)
->>       ret = i2c_r2(gspca_dev, 0xff, &value);
->>       if ((ret == 0) && (value == 0x823a)) {
->>               for (i = 0; i < ARRAY_SIZE(mt9v111_init); i++) {
->> -                     if (i2c_w2(gspca_dev, mt9v111_init[i][0],
->> -                                     mt9v111_init[i][1]) < 0) {
->> +                     if (i2c_w2(gspca_dev, mt9v111_init[i].reg,
->> +                                     mt9v111_init[i].val) < 0) {
->>                               err("MT9V111 sensor initialization failed");
->>                               return -ENODEV;
->>                       }
->> @@ -1339,8 +1350,8 @@ static int mt9v_init_sensor(struct gspca_dev *gspca_dev)
->>       ret = i2c_r2(gspca_dev, 0x00, &value);
->>       if ((ret == 0) && (value == 0x1229)) {
->>               for (i = 0; i < ARRAY_SIZE(mt9v112_init); i++) {
->> -                     if (i2c_w2(gspca_dev, mt9v112_init[i][0],
->> -                                     mt9v112_init[i][1]) < 0) {
->> +                     if (i2c_w2(gspca_dev, mt9v112_init[i].reg,
->> +                                     mt9v112_init[i].val) < 0) {
->>                               err("MT9V112 sensor initialization failed");
->>                               return -ENODEV;
->>                       }
->> @@ -1360,8 +1371,8 @@ static int mt9m111_init_sensor(struct gspca_dev *gspca_dev)
->>       struct sd *sd = (struct sd *) gspca_dev;
->>       int i;
->>       for (i = 0; i < ARRAY_SIZE(mt9m111_init); i++) {
->> -             if (i2c_w2(gspca_dev, mt9m111_init[i][0],
->> -                             mt9m111_init[i][1]) < 0) {
->> +             if (i2c_w2(gspca_dev, mt9m111_init[i].reg,
->> +                             mt9m111_init[i].val) < 0) {
->>                       err("MT9M111 sensor initialization failed");
->>                       return -ENODEV;
->>               }
->> @@ -1376,8 +1387,8 @@ static int mt9m001_init_sensor(struct gspca_dev *gspca_dev)
->>       struct sd *sd = (struct sd *) gspca_dev;
->>       int i;
->>       for (i = 0; i < ARRAY_SIZE(mt9m001_init); i++) {
->> -             if (i2c_w2(gspca_dev, mt9m001_init[i][0],
->> -                             mt9m001_init[i][1]) < 0) {
->> +             if (i2c_w2(gspca_dev, mt9m001_init[i].reg,
->> +                             mt9m001_init[i].val) < 0) {
->>                       err("MT9M001 sensor initialization failed");
->>                       return -ENODEV;
->>               }
->> @@ -1395,8 +1406,8 @@ static int hv7131r_init_sensor(struct gspca_dev *gspca_dev)
->>       struct sd *sd = (struct sd *) gspca_dev;
->>
->>       for (i = 0; i < ARRAY_SIZE(hv7131r_init); i++) {
->> -             if (i2c_w1(gspca_dev, hv7131r_init[i][0],
->> -                             hv7131r_init[i][1]) < 0) {
->> +             if (i2c_w1(gspca_dev, hv7131r_init[i].reg,
->> +                             hv7131r_init[i].val) < 0) {
->>                       err("HV7131R Sensor initialization failed");
->>                       return -ENODEV;
->>               }
->
->
-> --
->
-> Cheers,
-> Mauro
->
+I took a quick look at the ibmvscsi driver, and there are lot of
+differences between the two, mainly the ABI that is shared between the
+hypervisor and driver differ. Also the ibmvscsi driver seems to offer a
+lot of other features as well, like the SRP. 
+
+The pvscsi driver is a simple SCSI adapter driver and is basically no
+different than any other SCSI driver written for a particular HBA.
+
+> 
+> > Changelog (v2-v1)
+> > - use PCI_VDEVICE instead of PCI_DEVICE.
+> > - use list_first_entry
+> > - use parenthesis for every sizeof usage
+> > - get rid of all #ifdef for CONFIG_PCI_MSI
+> > - use PVSCSI_MEM_SPACE_SIZE while checking for MMIO resource len.
+> > - use kcalloc instead of kmalloc.
+> > - replaced a couple of scmd_printk usage with dev_dbg
+> > - use dev_info and pr_info at couple of places.
+> > - add a comment to pvscsi_map_context
+> > - Add entry in MAINTAINERS.
+> > 
+> > Patch applies on top of 2.6.31-rc8.
+> > --
+> > 
+> > SCSI driver for VMware's virtual HBA.
+> > 
+> > From: Alok N Kataria <akataria@vmware.com>
+> > 
+> > This is a driver for VMware's paravirtualized SCSI device,
+> > which should improve disk performance for guests running
+> > under control of VMware hypervisors that support such devices.
+> > 
+> > Signed-off-by: Alok N Kataria <akataria@vmware.com>
+> > ---
+> > 
+> >  MAINTAINERS           |    7 
+> >  drivers/scsi/Kconfig  |    8 
+> >  drivers/scsi/Makefile |    1 
+> >  drivers/scsi/pvscsi.c | 1391 +++++++++++++++++++++++++++++++++++++++++++++++++
+> >  drivers/scsi/pvscsi.h |  395 ++++++++++++++
+> >  5 files changed, 1802 insertions(+), 0 deletions(-)
+> >  create mode 100644 drivers/scsi/pvscsi.c
+> >  create mode 100644 drivers/scsi/pvscsi.h
+> > 
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 60299a9..952fe93 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -5491,6 +5491,13 @@ S:	Maintained
+> >  F:	drivers/vlynq/vlynq.c
+> >  F:	include/linux/vlynq.h
+> >  
+> > +VMware PVSCSI driver
+> > +M:	Alok Kataria <akataria@vmware.com>
+> > +L:	linux-scsi@vger.kernel.org
+> > +S:	Maintained
+> > +F:	drivers/scsi/pvscsi.c
+> > +F:	drivers/scsi/pvscsi.h
+> > +
+> >  VOLTAGE AND CURRENT REGULATOR FRAMEWORK
+> >  M:	Liam Girdwood <lrg@slimlogic.co.uk>
+> >  M:	Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> > index 9c23122..8a47981 100644
+> > --- a/drivers/scsi/Kconfig
+> > +++ b/drivers/scsi/Kconfig
+> > @@ -620,6 +620,14 @@ config SCSI_FLASHPOINT
+> >  	  substantial, so users of MultiMaster Host Adapters may not
+> >  	  wish to include it.
+> >  
+> > +config VMWARE_PVSCSI
+> > +	tristate "VMware PVSCSI driver support"
+> > +	depends on PCI && SCSI && X86
+> 
+> This is a PCI emulation driver ... it shouldn't be x86 only.
+
+VMware virtualizes only x86 hardware, as a result this device will be
+available for use only on x86 systems, so I don't think allowing it for
+other arch's matters as such. Apart from that, the driver relies on some
+memory ordering semantics which the X86 follows. This is done to
+optimize the driver code and avoid using expensive memory barriers which
+are not needed on x86. I have added comments in the driver code for
+these cases.
+
+> 
+> > +	help
+> > +	  This driver supports VMware's para virtualized SCSI HBA.
+> > +	  To compile this driver as a module, choose M here: the
+> > +	  module will be called pvscsi.
+> > +
+> >  config LIBFC
+> >  	tristate "LibFC module"
+> >  	select SCSI_FC_ATTRS
+> > diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
+> > index 25429ea..27fd013 100644
+> > --- a/drivers/scsi/Makefile
+> > +++ b/drivers/scsi/Makefile
+> > @@ -130,6 +130,7 @@ obj-$(CONFIG_SCSI_MVSAS)	+= mvsas/
+> >  obj-$(CONFIG_PS3_ROM)		+= ps3rom.o
+> >  obj-$(CONFIG_SCSI_CXGB3_ISCSI)	+= libiscsi.o libiscsi_tcp.o cxgb3i/
+> >  obj-$(CONFIG_SCSI_BNX2_ISCSI)	+= libiscsi.o bnx2i/
+> > +obj-$(CONFIG_VMWARE_PVSCSI)	+= pvscsi.o
+> >  
+> >  obj-$(CONFIG_ARM)		+= arm/
+> >  
+> > diff --git a/drivers/scsi/pvscsi.c b/drivers/scsi/pvscsi.c
+> > new file mode 100644
+> > index 0000000..fc85a3a
+> > --- /dev/null
+> > +++ b/drivers/scsi/pvscsi.c
+> [...]
+> > +static int __devinit pvscsi_allocate_sg(struct pvscsi_adapter *adapter)
+> > +{
+> > +	struct pvscsi_ctx *ctx;
+> > +	int i;
+> > +
+> > +	ctx = adapter->cmd_map;
+> > +	BUILD_BUG_ON(sizeof(struct pvscsi_sg_list) > PAGE_SIZE);
+> > +
+> > +	for (i = 0; i < adapter->req_depth; ++i, ++ctx) {
+> > +		ctx->sgl = pci_alloc_consistent(adapter->dev, PAGE_SIZE,
+> > +						&ctx->sglPA);
+> 
+> Why do you need coherent memory for the sg list?  Surely the use pattern
+> of an SG list is that it follows a predefined ownership model between
+> the driver and the virtual device, thus not really requiring coherent
+> memory?
+
+The SG list needs to be accessed by the hypervisor too, and we need the
+physical address to access it from the hypervisor. We do that using the
+sglPA field right now, which the pci_.. interface returns.  Do you think
+something else should be used for that purpose ? 
+
+Alok
+
+> > +		BUG_ON(ctx->sglPA & ~PAGE_MASK);
+> > +		if (!ctx->sgl) {
+> > +			for (; i >= 0; --i, --ctx) {
+> > +				pci_free_consistent(adapter->dev, PAGE_SIZE,
+> > +						    ctx->sgl, ctx->sglPA);
+> > +				ctx->sgl = NULL;
+> > +				ctx->sglPA = 0;
+> > +			}
+> > +			return -ENOMEM;
+> > +		}
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> 
+> James
+> 
+> 
+
