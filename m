@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbZHaTMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbZHaTMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbZHaTMJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 15:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZHaTMI
+	id S1754270AbZHaTMk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 15:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZHaTMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 15:12:08 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:57355 "EHLO mgw2.diku.dk"
+	Mon, 31 Aug 2009 15:12:39 -0400
+Received: from mail.lang.hm ([64.81.33.126]:43703 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751879AbZHaTMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 15:12:07 -0400
-Date: Mon, 31 Aug 2009 21:12:07 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/char/amiserial.c: Add local_irq_restore in error
- handling code
-Message-ID: <Pine.LNX.4.64.0908312111400.17886@ask.diku.dk>
+	id S1751510AbZHaTMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 15:12:38 -0400
+Date: Mon, 31 Aug 2009 12:11:46 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Christoph Hellwig <hch@infradead.org>
+cc: Ric Wheeler <rwheeler@redhat.com>, Michael Tokarev <mjt@tls.msk.ru>,
+       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+In-Reply-To: <20090831183154.GB3620@infradead.org>
+Message-ID: <alpine.DEB.2.00.0908311209500.6822@asgard.lang.hm>
+References: <20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz> <alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm> <4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru> <20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>
+ <20090831131626.GA17325@infradead.org> <4A9BCEA8.9080206@redhat.com> <alpine.DEB.2.00.0908310847530.6822@asgard.lang.hm> <20090831183154.GB3620@infradead.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Mon, 31 Aug 2009, Christoph Hellwig wrote:
 
-The gotos to the labels fail_free_irq and fail_unregister only occur
-between local_irq_save and local_irq_restore, so it would seem that this
-code should also call local_irq_restore.
+> On Mon, Aug 31, 2009 at 08:50:53AM -0700, david@lang.hm wrote:
+>>> It would also be very useful to have all of our top tier file systems
+>>> enable barriers by default, provide consistent barrier on/off mount
+>>> options and log a nice warning when not enabled....
+>>
+>> most people are not willing to live with unbuffered write performance.
+>
+> I'm not sure what you mean with unbuffered write support, the only
+> common use of that term is for userspace I/O using the read/write
+> sysctem calls directly in comparism to buffered I/O which uses
+> the stdio library.
+>
+> But be ensure that the use of barriers and cache flushes in fsync does not
+> completely disable caching (or "buffering"), it just does flush flushes
+> the disk write cache in case we either commit a log buffer than need to
+> be on disk, or performan an fsync where we really do want to have data
+> on disk instead of lying to the application about the status of the
+> I/O completion.  Which btw could be interpreted as a violation of the
+> Posix rules.
 
-The semantic match that detects this problem is as follows:
-(http://coccinelle.lip6.fr/)
+as I understood it, the proposal that I responded to was to change the 
+kernel to detect if barriers are enabled for the entire stack or not, and 
+if not disable the write caches on the drives.
 
-// <smpl>
-@rl@
-expression l;
-position p;
-expression E,E1,E2;
-@@
+there are definantly times when that is the correct thing to do, but I 
+am not sure that it is the correct thing to do by default.
 
-local_irq_save(l);
-<... when != local_irq_restore(l)
-     when != spin_unlock_irqrestore(E,l)
-if (...) { ... when != local_irq_restore(l)
-               when != spin_unlock_irqrestore(E1,l)
-*    return@p ...;
-}
-...>
-(
-spin_unlock_irqrestore(E2,l);
-|
-local_irq_restore(l);
-)
-</smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/char/amiserial.c            |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/char/amiserial.c b/drivers/char/amiserial.c
-index 6c32fbf..2131ecb 100644
---- a/drivers/char/amiserial.c
-+++ b/drivers/char/amiserial.c
-@@ -2056,6 +2056,7 @@ fail_free_irq:
- 	free_irq(IRQ_AMIGA_TBE, state);
- fail_unregister:
- 	tty_unregister_driver(serial_driver);
-+	local_irq_restore(flags);
- fail_release_mem_region:
- 	release_mem_region(CUSTOM_PHYSADDR+0x30, 4);
- fail_put_tty_driver:
+David Lang
