@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbZHaNhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751091AbZHaNsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752721AbZHaNhP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 09:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZHaNhP
+	id S1751091AbZHaNsa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 09:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbZHaNsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 09:37:15 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:22359 "EHLO mx1.redhat.com"
+	Mon, 31 Aug 2009 09:48:30 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:48345 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751963AbZHaNhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 09:37:14 -0400
-Message-ID: <4A9BD209.8030903@redhat.com>
-Date: Mon, 31 Aug 2009 16:37:13 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1750790AbZHaNs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 09:48:29 -0400
+Date: Mon, 31 Aug 2009 09:46:33 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 16/23] io-controller: deadline changes for hierarchical
+	fair queuing
+Message-ID: <20090831134633.GA3758@redhat.com>
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-17-git-send-email-vgoyal@redhat.com> <4A9B3FD3.6000407@redhat.com>
 MIME-Version: 1.0
-To: KVM list <kvm@vger.kernel.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: KVM maintainership update
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9B3FD3.6000407@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Starting now, Marcelo will co-maintain KVM with me.  The plan is that we 
-will commit on alternating weeks.  There will be no change to any 
-procedures -- patches should be posted to kvm@vger.kernel.org and will 
-be applied to kvm.git and qemu-kvm.git on git.kernel.org.
+On Sun, Aug 30, 2009 at 11:13:23PM -0400, Rik van Riel wrote:
+> Vivek Goyal wrote:
+>> This patch changes deadline to use queue scheduling code from elevator layer.
+>> One can go back to old deadline by selecting CONFIG_IOSCHED_DEADLINE_HIER.
+>                                     ^ deselecting ?
+>
 
-This move is intended to benefit all involved:
-- you, in improving maintainer responsiveness and review quality
-- me, in allowing me to increase my coding contributions
-- Marcelo, in some way that still eludes me
+Yes. Its a typo. Should be "deselecting". Will fix the comment.
 
-Let us wish Marcelo a productive co-maintainership.  I'm off to the beach.
+Thanks
+Vivek
 
--- 
-error compiling committee.c: too many arguments to function
-
+>> Signed-off-by: Nauman Rafique <nauman@google.com>
+>> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+>
+> Acked-by: Rik van Riel <riel@redhat.com>
+>
+> -- 
+> All rights reversed.
