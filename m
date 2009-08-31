@@ -1,139 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbZHaT07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbZHaT2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754320AbZHaT07 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 15:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbZHaT06
+	id S1754369AbZHaT2r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 15:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbZHaT2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 15:26:58 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:46257 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753708AbZHaT06 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 15:26:58 -0400
-X-Trace: 255534147/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.118.155/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.118.155
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEACPBm0pPRXab/2dsb2JhbACBU9gEhBoF
-X-IronPort-AV: E=Sophos;i="4.44,306,1249254000"; 
-   d="scan'208";a="255534147"
-Date: Mon, 31 Aug 2009 20:26:22 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Nitin Gupta <ngupta@vflare.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] swap: Fix swap size in case of block devices
-In-Reply-To: <4A9C06B2.3040009@vflare.org>
-Message-ID: <Pine.LNX.4.64.0908311959460.13560@sister.anvils>
-References: <200908302149.10981.ngupta@vflare.org>
- <Pine.LNX.4.64.0908311151190.16326@sister.anvils> <4A9C06B2.3040009@vflare.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 31 Aug 2009 15:28:46 -0400
+Received: from mga09.intel.com ([134.134.136.24]:64776 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754334AbZHaT2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 15:28:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,306,1249282800"; 
+   d="scan'208";a="546438205"
+Date: Mon, 31 Aug 2009 12:28:35 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Dave Airlie <airlied@redhat.com>
+Cc: Tony luck <tony.luck@intel.com>, linux-ia64 <linux-ia64@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>
+Subject: [PATCH] linux-next drm_cache.c: fix compilation error
+Message-ID: <20090831192834.GA10462@linux-os.sc.intel.com>
+References: <bug-504363-150293@bugzilla.redhat.com> <200908042017.n74KHsNw018095@bz-web1.app.phx.redhat.com> <20090804221119.GA21544@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090804221119.GA21544@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Aug 2009, Nitin Gupta wrote:
-> 
-> mkswap sets last_page correctly: 0-based index of last usable
-> swap page. To explain why this bug affects only block swap devices,
-> some code walkthrough is done below:
-> (BTW, I only checked mkswap which is part of util-linux-ng 2.14.2).
-> 
-> swapon()
-> {
->  ...
->         nr_good_pages = swap_header->info.last_page -
->                         swap_header->info.nr_badpages -
->                         1 /* header page */;
-> 
-> ====
-> 	off-by-one error: for both regular and block device case, but...
-> ====
-> 
->         if (nr_good_pages) {
->                 swap_map[0] = SWAP_MAP_BAD;
->                 p->max = maxpages;
->                 p->pages = nr_good_pages;
->                 nr_extents = setup_swap_extents(p, &span);
-> ====
-> For block devices, setup_swap_extents() leaves p->pages untouched.
-> For regular files, it sets p->pages
-> 	== total usable swap pages (including header page) - 1;
+When compiling drm_cache.c on ia64, gcc reports undefined
+drm_clflush_ipi_handler() error. The problem is because drm_cache_ipi_handler is
+a typo.
 
-I think you're overlooking the "page < sis->max" condition
-in setup_swap_extents()'s loop.  So at the end of the loop,
-if no pages were lost to fragmentation, we have
+One straightforward fix is changing drm_cache_ipi_handler to
+drm_clflush_ipi_handler.
 
-		sis->max = page_no;		/* no change */
-		sis->pages = page_no - 1;	/* no change */
+But since drm_clflush_ipi_handler() does nothing on non-x86 platforms and ipi
+handling is costly, it would be better to just do nothing on non-x86 platforms
+and remove drm_clflush_ipi_handler() for those platforms.
 
-> ====
->                 if (nr_extents < 0) {
->                         error = nr_extents;
->                         goto bad_swap;
->                 }
->                 nr_good_pages = p->pages;
-> 
-> ====
-> So, for block device, nr_good_pages == last_page - nr_badpages - 1
-> 				== (total pages - 1) - nr_badpages - 1 (error)
-> 			For regular files, nr_good_pages == total pages - 1
-> (correct)
-> ====
-> 
->         }
-> ...
-> }
-> 
-> 
-> With this fix, block device case is corrected to last_page - nr_badpages - 1
-> while regular file case remain correct since setup_swap_extents() still gives
-> same correct value in p->pages (== total pages - 1).
-> 
-> 
-> > And regarding the patch itself: my understanding is that the problem
-> > is with the interpretation of last_page, so I don't think one change
-> > to nr_good_pages would be enough to fix it - you'd need to change the
-> > other places where last_page is referred to too.
-> >
-> 
-> I looked at other instances of last_page in swapon() -- all these other
-> instances looked correct to me.
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
 
-I believe they're all consistent with the off-by-oneness of nr_good_pages.
-p->max, for example, is consistently one more than p->pages, so long as
-there are no bad pages and no overflowing the swp_entry_t.
+---
+The issue was introduced by commit c9c97b8c75019814d8c007059bc827bb475be917
+in linux-next.
 
-Perhaps you're placing too much faith in your interpretation of "max"?
-I dislike several conventions in swapfile.c, it does lend itself to
-off-by-oneness.
+ drm_cache.c |    7 -------
+ 1 files changed, 7 deletions(-)
 
-> 
-> > I'm still disinclined to make any change here myself (beyond
-> > a comment noting the discrepancy); but tell me I'm a fool.
-> >
-> 
-> I agree that nobody would bother losing 1 swap slot, so it might
-> not be desirable to have this fix. But IMHO, I don't see any reason
-> to leave this discrepancy between regular files and swap devices -- its
-> just so odd.
-
-Yes, I'd dislike that discrepancy between regular files and block
-devices, if I could see it.  Though I'd probably still be cautious
-about the disk partitions.
-
-dd if=/dev/zero of=/swap bs=200k	# says 204800 bytes (205kB)
-mkswap /swap				# says size = 196 KiB
-swapon /swap				# dmesg says Adding 192k swap
-
-which is what I've come to expect from the off-by-one,
-even on regular files.
-
-Hugh
+diff --git a/drivers/gpu/drm/drm_cache.c b/drivers/gpu/drm/drm_cache.c
+index 3a5575e..8054a5c 100644
+--- a/drivers/gpu/drm/drm_cache.c
++++ b/drivers/gpu/drm/drm_cache.c
+@@ -62,10 +62,6 @@ drm_clflush_ipi_handler(void *null)
+ {
+ 	wbinvd();
+ }
+-#elif !defined(__powerpc__)
+-static void drm_cache_ipi_handler(void *dummy)
+-{
+-}
+ #endif
+ void
+ drm_clflush_pages(struct page *pages[], unsigned long num_pages)
+@@ -94,9 +90,6 @@ drm_clflush_pages(struct page *pages[], unsigned long num_pages)
+ 				   (unsigned long)page_virtual + PAGE_SIZE);
+ 		kunmap_atomic(page_virtual, KM_USER0);
+ 	}
+-#else
+-	if (on_each_cpu(drm_clflush_ipi_handler, NULL, 1) != 0)
+-		printk(KERN_ERR "Timed out waiting for drm cache flush\n");
+ #endif
+ }
+ EXPORT_SYMBOL(drm_clflush_pages);
