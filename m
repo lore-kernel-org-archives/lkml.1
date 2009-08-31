@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbZHaIhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbZHaIh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752888AbZHaIhq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 04:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZHaIhp
+	id S1753000AbZHaIh6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 04:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbZHaIh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 04:37:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57212 "EHLO hera.kernel.org"
+	Mon, 31 Aug 2009 04:37:57 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57228 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752459AbZHaIhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 04:37:43 -0400
-Date: Mon, 31 Aug 2009 08:37:18 GMT
+	id S1752758AbZHaIh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 04:37:56 -0400
+Date: Mon, 31 Aug 2009 08:37:31 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
        mingo@redhat.com, fweisbec@gmail.com, peterz@infradead.org,
@@ -17,180 +17,64 @@ Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
        linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1251693921-6579-1-git-send-email-fweisbec@gmail.com>
-References: <1251693921-6579-1-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1251693921-6579-2-git-send-email-fweisbec@gmail.com>
+References: <1251693921-6579-2-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf tools: Librarize idle thread registration
-Message-ID: <tip-5b447a6a13ea823b698bf4c01193654fd7ebf4ec@git.kernel.org>
-Git-Commit-ID: 5b447a6a13ea823b698bf4c01193654fd7ebf4ec
+Subject: [tip:perfcounters/core] perf tools: Resolve idle thread cmdline for perf trace
+Message-ID: <tip-3a2684ca58e06941ff00e3f096ca44f898a6d13e@git.kernel.org>
+Git-Commit-ID: 3a2684ca58e06941ff00e3f096ca44f898a6d13e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 08:37:19 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 08:37:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5b447a6a13ea823b698bf4c01193654fd7ebf4ec
-Gitweb:     http://git.kernel.org/tip/5b447a6a13ea823b698bf4c01193654fd7ebf4ec
+Commit-ID:  3a2684ca58e06941ff00e3f096ca44f898a6d13e
+Gitweb:     http://git.kernel.org/tip/3a2684ca58e06941ff00e3f096ca44f898a6d13e
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Mon, 31 Aug 2009 06:45:18 +0200
+AuthorDate: Mon, 31 Aug 2009 06:45:19 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Mon, 31 Aug 2009 10:04:48 +0200
 
-perf tools: Librarize idle thread registration
+perf tools: Resolve idle thread cmdline for perf trace
 
-Librarize register_idle_thread() used by annotate and report.
+The cmd-trace tool used the cmdline file and resolved the idle
+thread using a hardcoded check for the 0 task pid.
+
+Now we have a centralized way to do that from perf using
+register_idle_thread() API.
+
+Before:
+	:0-0     [000]     0.000000: irq_handler_entry: irq=0 handler=name
+	:0-0     [000]     0.000000: irq_handler_entry: irq=0 handler=name
+
+After:
+	[idle]-0     [000]     0.000000: irq_handler_entry: irq=0 handler=name
+	[idle]-0     [000]     0.000000: irq_handler_entry: irq=0 handler=name
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <1251693921-6579-1-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1251693921-6579-2-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-annotate.c |   13 +------------
- tools/perf/builtin-report.c   |   32 +++++++++++++++-----------------
- tools/perf/util/thread.c      |   13 +++++++++++++
- tools/perf/util/thread.h      |    2 ++
- 4 files changed, 31 insertions(+), 29 deletions(-)
+ tools/perf/builtin-trace.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 4c7bc44..043d85b 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -472,17 +472,6 @@ static void output__resort(void)
- 	}
- }
- 
--static void register_idle_thread(void)
--{
--	struct thread *thread = threads__findnew(0, &threads, &last_match);
--
--	if (thread == NULL ||
--			thread__set_comm(thread, "[idle]")) {
--		fprintf(stderr, "problem inserting idle task.\n");
--		exit(-1);
--	}
--}
--
- static unsigned long total = 0,
- 		     total_mmap = 0,
- 		     total_comm = 0,
-@@ -970,7 +959,7 @@ static int __cmd_annotate(void)
- 	uint32_t size;
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index dd3c2e7..8247fd0 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -164,6 +164,7 @@ static int __cmd_trace(void)
  	char *buf;
  
--	register_idle_thread();
+ 	trace_report();
 +	register_idle_thread(&threads, &last_match);
  
  	input = open(input_name, O_RDONLY);
  	if (input < 0) {
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index cdd46ab..cdf9a8d 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -666,12 +666,9 @@ static void dso__calc_col_width(struct dso *self)
- 	self->slen_calculated = 1;
- }
- 
--static int thread__set_comm_adjust(struct thread *self, const char *comm)
-+static void thread__comm_adjust(struct thread *self)
- {
--	int ret = thread__set_comm(self, comm);
--
--	if (ret)
--		return ret;
-+	char *comm = self->comm;
- 
- 	if (!col_width_list_str && !field_sep &&
- 	    (!comm_list || strlist__has_entry(comm_list, comm))) {
-@@ -682,6 +679,16 @@ static int thread__set_comm_adjust(struct thread *self, const char *comm)
- 			threads__col_width = slen + 6;
- 		}
- 	}
-+}
-+
-+static int thread__set_comm_adjust(struct thread *self, const char *comm)
-+{
-+	int ret = thread__set_comm(self, comm);
-+
-+	if (ret)
-+		return ret;
-+
-+	thread__comm_adjust(self);
- 
- 	return 0;
- }
-@@ -1073,17 +1080,6 @@ print_entries:
- 	return ret;
- }
- 
--static void register_idle_thread(void)
--{
--	struct thread *thread = threads__findnew(0, &threads, &last_match);
--
--	if (thread == NULL ||
--			thread__set_comm_adjust(thread, "[idle]")) {
--		fprintf(stderr, "problem inserting idle task.\n");
--		exit(-1);
--	}
--}
--
- static unsigned long total = 0,
- 		     total_mmap = 0,
- 		     total_comm = 0,
-@@ -1381,11 +1377,13 @@ static int __cmd_report(void)
- 	unsigned long offset = 0;
- 	unsigned long head, shift;
- 	struct stat input_stat;
-+	struct thread *idle;
- 	event_t *event;
- 	uint32_t size;
- 	char *buf;
- 
--	register_idle_thread();
-+	idle = register_idle_thread(&threads, &last_match);
-+	thread__comm_adjust(idle);
- 
- 	if (show_threads)
- 		perf_read_values_init(&show_threads_values);
-diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
-index f98032c..3acd37f 100644
---- a/tools/perf/util/thread.c
-+++ b/tools/perf/util/thread.c
-@@ -80,6 +80,19 @@ threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match)
- 	return th;
- }
- 
-+struct thread *
-+register_idle_thread(struct rb_root *threads, struct thread **last_match)
-+{
-+	struct thread *thread = threads__findnew(0, threads, last_match);
-+
-+	if (!thread || thread__set_comm(thread, "[idle]")) {
-+		fprintf(stderr, "problem inserting idle task.\n");
-+		exit(-1);
-+	}
-+
-+	return thread;
-+}
-+
- void thread__insert_map(struct thread *self, struct map *map)
- {
- 	struct map *pos, *tmp;
-diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
-index b1c6671..634f280 100644
---- a/tools/perf/util/thread.h
-+++ b/tools/perf/util/thread.h
-@@ -13,6 +13,8 @@ struct thread {
- int thread__set_comm(struct thread *self, const char *comm);
- struct thread *
- threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match);
-+struct thread *
-+register_idle_thread(struct rb_root *threads, struct thread **last_match);
- void thread__insert_map(struct thread *self, struct map *map);
- int thread__fork(struct thread *self, struct thread *parent);
- struct map *thread__find_map(struct thread *self, u64 ip);
