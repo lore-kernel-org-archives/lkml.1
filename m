@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbZHaXKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbZHaXP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751924AbZHaXKA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 19:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZHaXKA
+	id S1752080AbZHaXP4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 19:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZHaXPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 19:10:00 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:41920 "EHLO
+	Mon, 31 Aug 2009 19:15:55 -0400
+Received: from mail-iw0-f204.google.com ([209.85.223.204]:64953 "EHLO
 	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZHaXJ7 (ORCPT
+	with ESMTP id S1751046AbZHaXPz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 19:09:59 -0400
+	Mon, 31 Aug 2009 19:15:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:date:message-id:subject:from:to:content-type;
-        b=CyW0SVv31TBl+4RPmnsmTI80fx88s4KdOBHKRyOHmFNILhIE19/a6IoMz1s9embqXT
-         DhLb4Vr/UHkR/D7XlF5TtRAJ5+W1u6T2nKYGwlSgJ4Yttm96i1s2f3d96CGXXuC0IZf4
-         Q5J0nVP/nPnupYm/rbChj9rPKy9dXQ4CwFc0I=
+        b=W7eOQ1rHEOEt3BsFCpAwGsGwOn8q35AoURIkGZf+xNF/hBTXWl7CKSXURKfH7UAVGP
+         ZV1/WkaW7M6PMN/ni/tqRjF35gfeo/faVFVyvaWPM1rtbjrEDusc0DGCfSBDD5XlJjFo
+         FNbOHkkZXhaHDitw7hVUxmB6Ze0a1Aqbbq6MM=
 MIME-Version: 1.0
-Date: Mon, 31 Aug 2009 16:10:01 -0700
-Message-ID: <438397970908311610o424a9777rd786417468f1d7d7@mail.gmail.com>
-Subject: Lost CALL_FUNCTION_IPI(0xfb) on Xeon X7350 causes soft lockup
+Date: Mon, 31 Aug 2009 16:15:57 -0700
+Message-ID: <438397970908311615h17f63f14i42966dcf93ca0418@mail.gmail.com>
+Subject: soft lockup -- CALL_FUNCTION IPI (0xfb) gets lost on 2.6.23 kernel
 From: Kallol Biswas <nucleodyne@gmail.com>
 To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
@@ -76,7 +76,6 @@ PID: 5679   TASK: ffff811018041040  CPU: 5   COMMAND: "dd_raid"
 
 Is there a chip erratum that a call function IPI may not be delivered
 to a processor?
-
 cat /proc/cpuinfo
 
 processor       : 15
@@ -105,5 +104,5 @@ cache_alignment : 64
 address sizes   : 40 bits physical, 48 bits virtual
 power management:
 ......
-Total 16 processors on the system.
+Total 16 processors are on the system.
 Kallol
