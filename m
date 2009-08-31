@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbZHaGdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbZHaGqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbZHaGdh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 02:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbZHaGdg
+	id S1754520AbZHaGqx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 02:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbZHaGqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 02:33:36 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:59159 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754495AbZHaGdf (ORCPT
+	Mon, 31 Aug 2009 02:46:52 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:60082 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752329AbZHaGqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 02:33:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GCUZ1kTtlWbu/Fd2klLZyrrrFihZl+dGOlBi+rOQwvUBIUlGoOlND5xc1V6nQuVDxJ
-         RtTfENuRi1pSwBFNvrwj3dGJ7KGMTGpbICo2t2s1GAQmoU3GeqGSGbA7AWia24BAIw2O
-         MhH3QLvnPxTleHUBB2tlxXzxSiP4bbBlxBey4=
-Date: Mon, 31 Aug 2009 10:33:34 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix proc_file_write missing ppos update
-Message-ID: <20090831063334.GB7821@x200.localdomain>
-References: <1251563892.13287.11.camel@wall-e> <20090829231650.GA29419@infradead.org> <1251659144.20987.18.camel@wall-e>
+	Mon, 31 Aug 2009 02:46:51 -0400
+Date: Mon, 31 Aug 2009 10:56:29 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Guillaume Chazarain <guichaz@gmail.com>
+Cc: Nikanth Karthikesan <knikanth@suse.de>, linux-kernel@vger.kernel.org,
+       procps-feedback@lists.sf.net, Albert Cahalan <albert@users.sf.net>
+Subject: Re: [PATCH 1/3] taskstats-fork: Add a new taskstats command to get
+	notification on fork/clone
+Message-ID: <20090831052629.GA16742@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <200907211031.48294.knikanth@suse.de> <20090721060114.GS24157@balbir.in.ibm.com> <200907211154.42563.knikanth@suse.de> <3d8471ca0908301252j15cb33b1j913921bd8fc6704c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1251659144.20987.18.camel@wall-e>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <3d8471ca0908301252j15cb33b1j913921bd8fc6704c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 30, 2009 at 09:05:44PM +0200, Stefani Seibold wrote:
-> Am Samstag, den 29.08.2009, 19:16 -0400 schrieb Christoph Hellwig:
-> > On Sat, Aug 29, 2009 at 06:38:12PM +0200, Stefani Seibold wrote:
-> > > The following fix a long standing issue in the proc_file_write function,
-> > > which doesn't update the ppos file position pointer.
-> > 
-> > The right fix is to get rid of the last remaining
-> > read_proc_t/write_proc_t instances and switch everyone to implement file
-> > operations.  Alexey has been working on this on and off for a while.
-> > 
+* Guillaume Chazarain <guichaz@gmail.com> [2009-08-30 21:52:22]:
+
+> On Tue, Jul 21, 2009 at 8:24 AM, Nikanth Karthikesan<knikanth@suse.de> wrote:
+> > Ah.. proc-events was the exact thing, I was looking for! Thanks.
 > 
-> Switching all users of read_proc_t/write_proc_t to file operation is a
-> huge job. About 180 files must be fixed.
+> AFAICT proc-events can only be used by root, so that makes it
+> unsuitable for *top.
+> 
+> Anyway, iotop will always have to iterate over all threads to query
+> their taskstats and other attributes, so the O(nr_threads) complexity
+> is unavoidable.
+>
 
-Less, staging stuff is on it's own.
+Unless you want the stats for tgid in signal struct. In some cases we
+accumulate, in some we don't. But yes irrespective or kernel/user
+space the complexity exists. 
 
-> But the main reason not to do this is because the breakage of "out of
-> tree" drivers.
-
-Just how many times it needs to be repeated.
-
-Out-of-tree argument means almost nothing.
-
-> I like the current simplified proc interface. It saves a lot of code
-> duplication because the basic operations will be handled inside the
-> kernel and not in the driver.
-
-It's garbage.
-
-Arbirtrary 3 KB limit on read,
-kernel memory giving trailer in ->read_proc which is impossible to get right,
-was always buggy wrt module unload (quickly fixed, but it was always meant
-to be temporary).
-
-Now that SCSI pile is mostly finished, what a horrible code interface provoked.
-
-> There is no reason for Alexey to finish his work, submit it and maybe it
-> will be accepted. 
-
-You'd better start converting to struct file_operations::write now.
-
-> In the meantime i will see my patch as the preferred solution: a cleanup
-> of the current interface.
+-- 
+	Balbir
