@@ -1,34 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754457AbZHaFmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbZHaGFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754457AbZHaFmv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 01:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbZHaFmu
+	id S1754466AbZHaGFI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 02:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbZHaGFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 01:42:50 -0400
-Received: from mail.datastar.net ([12.221.0.25]:59903 "EHLO rosco.datastar.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754376AbZHaFmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 01:42:50 -0400
-Message-ID: <51201.41.220.75.3.1251690117.squirrel@www2.datastar.net>
-Date: Sun, 30 Aug 2009 22:41:57 -0500 (CDT)
-Subject: Your Qualification Numbers(G-999-747, UZ-900-77)
-From: "U.N Foundation Grant Donation" <info@unfoundation.com>
-Reply-To: patrick-hill@live.co.uk
-User-Agent: SquirrelMail/1.4.8-5.el4.centos.5
+	Mon, 31 Aug 2009 02:05:07 -0400
+Received: from mail00d.mail.t-online.hu ([84.2.42.5]:60494 "EHLO
+	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754192AbZHaGFG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 02:05:06 -0400
+X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Aug 2009 02:05:06 EDT
+Message-ID: <4A9B65E6.5070005@freemail.hu>
+Date: Mon, 31 Aug 2009 07:55:50 +0200
+From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: unlisted-recipients:; (no To-header on input)
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Jean-Francois Moine <moinejf@free.fr>,
+       Thomas Kaiser <thomas@kaiser-linux.li>, linux-media@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND][PATCH 1/2] v4l2: modify the webcam video standard handling
+References: <4A52E897.8000607@freemail.hu>	<4A910C42.5000001@freemail.hu> <20090830234114.16b90c36@pedra.chehab.org>
+In-Reply-To: <20090830234114.16b90c36@pedra.chehab.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32721; Body=5 Fuz1=5
+	Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to inform that you have been choosen by the U.N Foundation
-to receive a Grant Donation of $1,000,000.00 USD.Your Qualification
-Numbers(G-999-747, UZ-900-77),Contact Mr. Patrick Hill
-Name,address,country for claim: E-mail : patrick-hill@live.co.uk
+Hi,
 
-United Nations Foundation.
-http://www.unfoundation.org/
+first of all thank you for your detailed answer.
+
+Mauro Carvalho Chehab wrote:
+> Hi Németh,
+> 
+> Em Sun, 23 Aug 2009 11:30:42 +0200
+> Németh Márton <nm127@freemail.hu> escreveu:
+> 
+>> From: Márton Németh <nm127@freemail.hu>
+>>
+>> Change the handling of the case when vdev->tvnorms == 0.
+>>
+> 
+> This patch (together with a few others related to tvnorms and camera drivers)
+> reopens an old discussion: should webcams report a tvnorm?
+> 
+> There's no easy answer for it since:
+> 
+> 1) removing support for VIDIOC_G_STD/VIDIOC_S_STD causes regressions, since
+> some userspace apps stops working;
+> 
+> 2) It is a common scenario to use cameras connected to some capture only devices
+> like several bttv boards used on surveillance systems. Those drivers report STD,
+> since they are used also on TV;
+> 
+> 3) There are even some devices that allows cameras to be connected to one input and
+> TV on another input. This is another case were the driver will report a TV std;
+> 
+> 4) Most webcam formats are based on ITU-T formats designed to be compatible
+> with TV (formats like CIF and like 640x480 - and their multiple/sub-multiples);
+> 
+> 5) There are formats that weren't originated from TV on some digital webcams,
+> so, for those formats, it makes no sense to report an existing std.
+> 
+> Once people proposed to create an special format for those cases
+> (V4L2_STD_DIGITAL or something like that), but, after lots of discussions,
+> no changes were done at API nor at the drivers.
+> 
+> While we don't have an agreement on this, I don't think we should apply a patch
+> like this.
+
+I was reading the V4L2 specification and based my patch on the specification.
+
+Maybe the specification is wrong at that point? (see Chapter 1.7 Video Standards
+at http://v4l2spec.bytesex.org/spec/x448.htm , starting with paragraph 6:
+"Special rules apply to USB cameras...")
+
+Regards,
+
+	Márton Németh
+
