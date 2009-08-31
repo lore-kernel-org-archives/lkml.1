@@ -1,90 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbZHaL7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752358AbZHaL7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752229AbZHaL7M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 07:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZHaL7L
+	id S1752358AbZHaL7X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 07:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbZHaL7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 07:59:11 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40550 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbZHaL7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 07:59:09 -0400
-Date: Mon, 31 Aug 2009 21:59:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: linux-next: i2c tree build failure
-Message-Id: <20090831215905.caadce2f.sfr@canb.auug.org.au>
-In-Reply-To: <20090831131647.3f609ad4@hyperion.delvare>
-References: <20090831111935.5059565b.sfr@canb.auug.org.au>
-	<20090831120449.3f64aa74@hyperion.delvare>
-	<20090831210335.f382d7ff.sfr@canb.auug.org.au>
-	<20090831131647.3f609ad4@hyperion.delvare>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__31_Aug_2009_21_59_05_+1000_fpPjmB2PgN2pdiIT"
+	Mon, 31 Aug 2009 07:59:21 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56418 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752245AbZHaL7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 07:59:19 -0400
+Message-ID: <119e8331d1210b1f56d0f6416863bfbc.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090831110204.GG4770@balbir.in.ibm.com>
+References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090828132438.b33828bc.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090831110204.GG4770@balbir.in.ibm.com>
+Date: Mon, 31 Aug 2009 20:59:18 +0900 (JST)
+Subject: Re: [RFC][PATCH 2/5] memcg: uncharge in batched manner
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__31_Aug_2009_21_59_05_+1000_fpPjmB2PgN2pdiIT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Balbir Singh wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28
+> 13:24:38]:
 
-Hi Jean,
-
-On Mon, 31 Aug 2009 13:16:47 +0200 Jean Delvare <khali@linux-fr.org> wrote:
+>> +	}
+>> +	if (!batch || batch->memcg != mem) {
+>> +		res_counter_uncharge(&mem->res, PAGE_SIZE);
+>> +		if (uncharge_memsw)
+>> +			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
 >
-> OK, thanks for the clarification. I did not notice Greg had split some
-> of his trees that way. Makes sense.
->=20
-> > It you decide to leave that patch out and
-> > change the dependency, please let me know as I will then have to merge
-> > your tree after Greg's (it is currently earlier.
->=20
-> Regardless of what I do, I think it would make sense to merge
-> driver-core before driver subsystem trees. I would insert if before pci.
+> Could you please add a comment stating that if memcg is different that
+> we do a direct uncharge else we batch.
+>
+really necessary ?. ok. I'll do.
 
-I merge driver-core near the end because it often has API changes in it
-and Linus suggested that the pain of API changes should be with the
-changer.
+>> +	} else {
+>> +		batch->pages += PAGE_SIZE;
+>> +		if (uncharge_memsw)
+>> +			batch->memsw += PAGE_SIZE;
+>> +	}
+>> +	return soft_limit_excess;
+>> +}
+>>  /*
+>>   * uncharge if !page_mapped(page)
+>>   */
+>> @@ -1886,12 +1914,8 @@ __mem_cgroup_uncharge_common(struct page
+>>  		break;
+>>  	}
+>>
+>> -	if (!mem_cgroup_is_root(mem)) {
+>> -		res_counter_uncharge(&mem->res, PAGE_SIZE);
+>> -		if (do_swap_account &&
+>> -				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+>> -			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+>> -	}
+>> +	if (!mem_cgroup_is_root(mem))
+>> +		__do_batch_uncharge(mem, ctype);
+>
+> Now I am beginning to think we need a cond_mem_cgroup_is_not_root()
+> function.
+>
+I can't catch waht cond_mem_cgroup_is_not_root() means.
 
-> I am also surprised that I would have to tell you. What is the purpose
-> of the NEXT_BASE tag if you do not check for dependencies automatically?
 
-I use the tag to choose the base when I import the quilt series into git.
-So far I have not needed to automate the ordering of the imports.
+>>  	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+>>  		mem_cgroup_swap_statistics(mem, true);
+>>  	mem_cgroup_charge_statistics(mem, pc, false);
+>> @@ -1938,6 +1962,40 @@ void mem_cgroup_uncharge_cache_page(stru
+>>  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+>>  }
+>>
+>> +void mem_cgroup_uncharge_batch_start(void)
+>> +{
+>> +	VM_BUG_ON(current->memcg_batch.do_batch);
+>> +	/* avoid batch if killed by OOM */
+>> +	if (test_thread_flag(TIF_MEMDIE))
+>> +		return;
+>> +	current->memcg_batch.do_batch = 1;
+>> +	current->memcg_batch.memcg = NULL;
+>> +	current->memcg_batch.pages = 0;
+>> +	current->memcg_batch.memsw = 0;
+>> +}
+>> +
+>> +void mem_cgroup_uncharge_batch_end(void)
+>> +{
+>> +	struct mem_cgroup *mem;
+>> +
+>> +	if (!current->memcg_batch.do_batch)
+>> +		return;
+>> +
+>> +	current->memcg_batch.do_batch = 0;
+>> +
+>> +	mem = current->memcg_batch.memcg;
+>> +	if (!mem)
+>> +		return;
+>> +	if (current->memcg_batch.pages)
+>> +		res_counter_uncharge(&mem->res,
+>> +				     current->memcg_batch.pages, NULL);
+>> +	if (current->memcg_batch.memsw)
+>> +		res_counter_uncharge(&mem->memsw,
+>> +				     current->memcg_batch.memsw, NULL);
+>> +	/* we got css's refcnt */
+>> +	cgroup_release_and_wakeup_rmdir(&mem->css);
+>
+>
+> Does this effect deleting of a group and delay it by a large amount?
+>
+plz see what cgroup_release_and_xxxx  fixed. This is not for delay
+but for race-condition, which makes rmdir sleep permanently.
 
-> Anyway, if you say git can deal with duplicate patches OK, then I think
-> I'll simply re-add the patch on my end. But I do not have a strong
-> opinion on this either, so if you prefer clean dependencies and
-> ordering without duplicate patches, it is just as easy for me to leave
-> the redundant patch out and restore the NEXT_BASE tag.
+Thanks,
+-Kame
 
-I prefer less dependencies (so you could put the patch back in), however,
-that means if Greg changes the patch, then we will have two slightly
-different versions to merge.  I can cope with that as well.
-
-Just readd the patch :-)
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__31_Aug_2009_21_59_05_+1000_fpPjmB2PgN2pdiIT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqbuwkACgkQjjKRsyhoI8z07gCffwjDfqIS5/sUxWXYacczmbjg
-eFEAnAp5PjUq9vBsQJPEQx+fKIFZq9bu
-=GYIO
------END PGP SIGNATURE-----
-
---Signature=_Mon__31_Aug_2009_21_59_05_+1000_fpPjmB2PgN2pdiIT--
