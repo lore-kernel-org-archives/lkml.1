@@ -1,229 +1,428 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751578AbZHaVbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751661AbZHaVnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751578AbZHaVbg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 17:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZHaVbf
+	id S1751661AbZHaVnP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 17:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZHaVnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 17:31:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54010 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751026AbZHaVbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 17:31:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 10 update] PM: Measure suspend and resume times for individual devices
-Date: Mon, 31 Aug 2009 23:32:26 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0908292043500.26533-100000@netrider.rowland.org> <20090831135222.GB29281@elte.hu> <200908311756.54624.rjw@sisk.pl>
-In-Reply-To: <200908311756.54624.rjw@sisk.pl>
+	Mon, 31 Aug 2009 17:43:14 -0400
+Received: from mail-vw0-f195.google.com ([209.85.212.195]:46521 "EHLO
+	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbZHaVnM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 17:43:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=GIwH8SK3mBV3vbHwjaRHTUu1BZNfYq6oAqCw5Nd1XdB+CARBwudwtfqJfo8R54tRma
+         JyEchJs95ljS2wsqGdMgDZtK2F9BTfPKZVZgCyhpPYyo0a74yF6/DRWkeCpIVs6vJEDi
+         KxfflF960fsL8OmeJLZuxutL6BJ7vSPEUJ2Rk=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908312332.26198.rjw@sisk.pl>
+In-Reply-To: <20090830232450.2ed2b07d@pedra.chehab.org>
+References: <1250820538.29546.5.camel@Joe-Laptop.home>
+	 <20090830232450.2ed2b07d@pedra.chehab.org>
+Date: Mon, 31 Aug 2009 17:43:13 -0400
+Message-ID: <f34657950908311443x4847c66ap79e90d7bc4863385@mail.gmail.com>
+Subject: Re: [PATCH] sn9c20x: Reduce data usage, make functions static
+From: Brian Johnson <brijohn@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Joe Perches <joe@perches.com>, Jean-Francois Moine <moinejf@free.fr>,
+       linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 31 August 2009, Rafael J. Wysocki wrote:
-> On Monday 31 August 2009, Ingo Molnar wrote:
-...
-> > > > Hm, these CPP macros are rather ugly. Why is there a need for 
-> > > > the TIMER_DECLARE() wrapper - if a proper inline function is 
-> > > > used there's no need for that.
-> > > 
-> > > I need a variable to be declared so that I can save the "start" 
-> > > timestamp in it.  I don't need the variable if DEBUG is unset, 
-> > > though.
-> > > 
-> > > How would you do that without using a macro?  Or #ifdef #endif 
-> > > block that would be uglier IMO (which is why I didn't do that)?
-> > 
-> > Well, why not use an inline function like i suggested? [which does 
-> > nothing in the !enabled case] You can keep the local variable always 
-> > defined.
-> 
-> Well, I used the macros _exactly_ because I didn't want to keep the local
-> variable always defined.
-> 
-> Now, if you think that adding several useless bytes to the stack frame is OK,
-> perhaps it can be always defined.  However, IMnsHO that would be
-> (a) confusing (why define a variable you don't use) and (b) wasteful.
-> 
-> Perhaps the names of the macros should be directly related to debugging?
+Mauro,
+Yes, sorry been busy this last week.
+I've tested this patch against three separate webcams and everything
+works just fine.
 
-Something like in the patch below, maybe?
+I'd also like to ask if it would be possible to get a mercurial
+account on linuxtv.org?
 
-Best,
-Rafael
+Brian Johnson
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM: Measure suspend and resume times for individual devices
-
-If verbose PM debugging is enabled, measure and print the time of
-suspending and resuming of individual devices.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/main.c |   51 +++++++++++++++++++++++++++++++++++++++++-----
- kernel/power/swsusp.c     |    2 -
- 2 files changed, 47 insertions(+), 6 deletions(-)
-
-Index: linux-2.6/drivers/base/power/main.c
-===================================================================
---- linux-2.6.orig/drivers/base/power/main.c
-+++ linux-2.6/drivers/base/power/main.c
-@@ -442,11 +442,11 @@ static bool pm_op_started(struct device 
-  */
- int pm_time_elapsed(struct timeval *start, struct timeval *stop)
- {
--	s64 elapsed_centisecs64;
-+	s64 elapsed_msecs64;
- 
--	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
--	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
--	return elapsed_centisecs64;
-+	elapsed_msecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
-+	do_div(elapsed_msecs64, NSEC_PER_SEC / 1000);
-+	return elapsed_msecs64;
- }
- 
- static char *pm_verb(int event)
-@@ -476,7 +476,7 @@ static char *pm_verb(int event)
- static void dpm_show_time(struct timeval *start, struct timeval *stop,
- 			  pm_message_t state, const char *info)
- {
--	int centisecs = pm_time_elapsed(start, stop);
-+	int centisecs = pm_time_elapsed(start, stop) / 10;
- 
- 	printk(KERN_INFO "PM: %s%s%s of devices complete in %d.%02d seconds\n",
- 		info ? info : "", info ? " " : "", pm_verb(state.event),
-@@ -497,6 +497,33 @@ static void pm_dev_err(struct device *de
- 		kobject_name(&dev->kobj), pm_verb(state.event), info, error);
- }
- 
-+#ifdef DEBUG
-+static void device_show_time(struct timeval *start, struct device *dev,
-+			     pm_message_t state, char *info)
-+{
-+	struct timeval stop;
-+	int msecs;
-+
-+	do_gettimeofday(&stop);
-+	msecs = pm_time_elapsed(start, &stop);
-+	dev_dbg(dev, "PID %d: %s%s%s complete in %d.%03d seconds\n",
-+		task_pid_nr(current), info ? info : "", info ? " " : "",
-+		pm_verb(state.event), msecs / 1000, msecs % 1000);
-+}
-+
-+#define DEBUG_TIMEVAL(tv)	struct timeval tv
-+#define DEBUG_TIME_START(tv)	do { \
-+		do_gettimeofday(&tv); \
-+	} while (0)
-+#define DEBUG_TIME_SHOW(tv, dev, state, info)	do { \
-+		device_show_time(&tv, dev, state, info); \
-+	} while (0)
-+#else /* !DEBUG */
-+#define DEBUG_TIMEVAL(tv)
-+#define DEBUG_TIME_START(tv)	do { } while (0)
-+#define DEBUG_TIME_SHOW(tv, dev, state, info)	do { } while (0)
-+#endif /* !DEBUG */
-+
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-@@ -510,7 +537,9 @@ static void pm_dev_err(struct device *de
- static int __device_resume_noirq(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
-+	DEBUG_TIMEVAL(start);
- 
-+	DEBUG_TIME_START(start);
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
-@@ -523,6 +552,7 @@ static int __device_resume_noirq(struct 
- 	wake_up_all(&dev->power.wait_queue);
- 
- 	TRACE_RESUME(error);
-+	DEBUG_TIME_SHOW(start, dev, state, "EARLY");
- 	return error;
- }
- 
-@@ -639,7 +669,9 @@ EXPORT_SYMBOL_GPL(dpm_resume_noirq);
- static int __device_resume(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
-+	DEBUG_TIMEVAL(start);
- 
-+	DEBUG_TIME_START(start);
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 
-@@ -681,6 +713,7 @@ static int __device_resume(struct device
- 	wake_up_all(&dev->power.wait_queue);
- 
- 	TRACE_RESUME(error);
-+	DEBUG_TIME_SHOW(start, dev, state, NULL);
- 	return error;
- }
- 
-@@ -923,6 +956,9 @@ static pm_message_t resume_event(pm_mess
- static int __device_suspend_noirq(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
-+	DEBUG_TIMEVAL(start);
-+
-+	DEBUG_TIME_START(start);
- 
- 	if (dev->bus && dev->bus->pm) {
- 		pm_dev_dbg(dev, state, "LATE ");
-@@ -932,6 +968,7 @@ static int __device_suspend_noirq(struct
- 	dev->power.op_complete = true;
- 	wake_up_all(&dev->power.wait_queue);
- 
-+	DEBUG_TIME_SHOW(start, dev, state, "LATE");
- 	return error;
- }
- 
-@@ -1063,6 +1100,9 @@ EXPORT_SYMBOL_GPL(dpm_suspend_noirq);
- static int __device_suspend(struct device *dev, pm_message_t state)
- {
- 	int error = 0;
-+	DEBUG_TIMEVAL(start);
-+
-+	DEBUG_TIME_START(start);
- 
- 	down(&dev->sem);
- 
-@@ -1103,6 +1143,7 @@ static int __device_suspend(struct devic
- 	dev->power.op_complete = true;
- 	wake_up_all(&dev->power.wait_queue);
- 
-+	DEBUG_TIME_SHOW(start, dev, state, NULL);
- 	return error;
- }
- 
-Index: linux-2.6/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.orig/kernel/power/swsusp.c
-+++ linux-2.6/kernel/power/swsusp.c
-@@ -169,7 +169,7 @@ int swsusp_swap_in_use(void)
- void swsusp_show_speed(struct timeval *start, struct timeval *stop,
- 			unsigned nr_pages, char *msg)
- {
--	int centisecs = pm_time_elapsed(start, stop);
-+	int centisecs = pm_time_elapsed(start, stop) / 10;
- 	int k;
- 	int kps;
- 
+On Sun, Aug 30, 2009 at 10:24 PM, Mauro Carvalho
+Chehab<mchehab@redhat.com> wrote:
+> Hi Brian,
+>
+> Any news about the patch? It is always a good idea to try to reduce the kernel
+> size footprint.
+>
+> Cheers,
+> Mauro.
+>
+> Em Thu, 20 Aug 2009 19:08:58 -0700
+> Joe Perches <joe@perches.com> escreveu:
+>
+>> Compiled, not tested, no hardware
+>>
+>> Reduces size of object
+>>
+>> Use s16 instead of int where possible.
+>> Use struct instead of arrays
+>>
+>> Before:
+>> $ size drivers/media/video/gspca/sn9c20x.o
+>>    text          data     bss     dec     hex filename
+>>   29346          1124    4128   34598    8726 drivers/media/video/gspca/sn9c20x.o
+>>
+>> After:
+>> $ size drivers/media/video/gspca/sn9c20x.o
+>>    text          data     bss     dec     hex filename
+>>   25042          1124    4112   30278    7646 drivers/media/video/gspca/sn9c20x.o
+>>
+>> Signed-off-by: Joe Perches <joe@perches.com>
+>> ---
+>>  drivers/media/video/gspca/sn9c20x.c |  101 +++++++++++++++++++---------------
+>>  1 files changed, 56 insertions(+), 45 deletions(-)
+>>
+>> diff --git a/drivers/media/video/gspca/sn9c20x.c b/drivers/media/video/gspca/sn9c20x.c
+>> index fcfbbd3..8ddf738 100644
+>> --- a/drivers/media/video/gspca/sn9c20x.c
+>> +++ b/drivers/media/video/gspca/sn9c20x.c
+>> @@ -403,7 +403,7 @@ static const struct v4l2_pix_format sxga_mode[] = {
+>>               .priv = 3 | MODE_RAW | MODE_SXGA},
+>>  };
+>>
+>> -static const int hsv_red_x[] = {
+>> +static const s16 hsv_red_x[] = {
+>>       41,  44,  46,  48,  50,  52,  54,  56,
+>>       58,  60,  62,  64,  66,  68,  70,  72,
+>>       74,  76,  78,  80,  81,  83,  85,  87,
+>> @@ -451,7 +451,7 @@ static const int hsv_red_x[] = {
+>>       24,  26,  28,  30,  33,  35,  37,  39, 41
+>>  };
+>>
+>> -static const int hsv_red_y[] = {
+>> +static const s16 hsv_red_y[] = {
+>>       82,  80,  78,  76,  74,  73,  71,  69,
+>>       67,  65,  63,  61,  58,  56,  54,  52,
+>>       50,  48,  46,  44,  41,  39,  37,  35,
+>> @@ -499,7 +499,7 @@ static const int hsv_red_y[] = {
+>>       96, 94, 92, 91, 89, 87, 85, 84, 82
+>>  };
+>>
+>> -static const int hsv_green_x[] = {
+>> +static const s16 hsv_green_x[] = {
+>>       -124, -124, -125, -125, -125, -125, -125, -125,
+>>       -125, -126, -126, -125, -125, -125, -125, -125,
+>>       -125, -124, -124, -124, -123, -123, -122, -122,
+>> @@ -547,7 +547,7 @@ static const int hsv_green_x[] = {
+>>       -120, -120, -121, -122, -122, -123, -123, -124, -124
+>>  };
+>>
+>> -static const int hsv_green_y[] = {
+>> +static const s16 hsv_green_y[] = {
+>>       -100, -99, -98, -97, -95, -94, -93, -91,
+>>       -90, -89, -87, -86, -84, -83, -81, -80,
+>>       -78, -76, -75, -73, -71, -70, -68, -66,
+>> @@ -595,7 +595,7 @@ static const int hsv_green_y[] = {
+>>       -109, -108, -107, -106, -105, -104, -103, -102, -100
+>>  };
+>>
+>> -static const int hsv_blue_x[] = {
+>> +static const s16 hsv_blue_x[] = {
+>>       112, 113, 114, 114, 115, 116, 117, 117,
+>>       118, 118, 119, 119, 120, 120, 120, 121,
+>>       121, 121, 122, 122, 122, 122, 122, 122,
+>> @@ -643,7 +643,7 @@ static const int hsv_blue_x[] = {
+>>       104, 105, 106, 107, 108, 109, 110, 111, 112
+>>  };
+>>
+>> -static const int hsv_blue_y[] = {
+>> +static const s16 hsv_blue_y[] = {
+>>       -11, -13, -15, -17, -19, -21, -23, -25,
+>>       -27, -29, -31, -33, -35, -37, -39, -41,
+>>       -43, -45, -46, -48, -50, -52, -54, -55,
+>> @@ -792,7 +792,17 @@ static u8 hv7131r_gain[] = {
+>>       0x78 /* 8x */
+>>  };
+>>
+>> -static u8 soi968_init[][2] = {
+>> +struct i2c_reg_u8 {
+>> +     u8 reg;
+>> +     u8 val;
+>> +};
+>> +
+>> +struct i2c_reg_u16 {
+>> +     u8 reg;
+>> +     u16 val;
+>> +};
+>> +
+>> +static struct i2c_reg_u8 soi968_init[] = {
+>>       {0x12, 0x80}, {0x0c, 0x00}, {0x0f, 0x1f},
+>>       {0x11, 0x80}, {0x38, 0x52}, {0x1e, 0x00},
+>>       {0x33, 0x08}, {0x35, 0x8c}, {0x36, 0x0c},
+>> @@ -806,7 +816,7 @@ static u8 soi968_init[][2] = {
+>>       {0x00, 0x00}, {0x01, 0x80}, {0x02, 0x80},
+>>  };
+>>
+>> -static u8 ov7660_init[][2] = {
+>> +static struct i2c_reg_u8 ov7660_init[] = {
+>>       {0x0e, 0x80}, {0x0d, 0x08}, {0x0f, 0xc3},
+>>       {0x04, 0xc3}, {0x10, 0x40}, {0x11, 0x40},
+>>       {0x12, 0x05}, {0x13, 0xba}, {0x14, 0x2a},
+>> @@ -815,7 +825,7 @@ static u8 ov7660_init[][2] = {
+>>       {0x2e, 0x0b}, {0x01, 0x78}, {0x02, 0x50},
+>>  };
+>>
+>> -static u8 ov7670_init[][2] = {
+>> +static struct i2c_reg_u8 ov7670_init[] = {
+>>       {0x12, 0x80}, {0x11, 0x80}, {0x3a, 0x04}, {0x12, 0x01},
+>>       {0x32, 0xb6}, {0x03, 0x0a}, {0x0c, 0x00}, {0x3e, 0x00},
+>>       {0x70, 0x3a}, {0x71, 0x35}, {0x72, 0x11}, {0x73, 0xf0},
+>> @@ -872,7 +882,7 @@ static u8 ov7670_init[][2] = {
+>>       {0x93, 0x00},
+>>  };
+>>
+>> -static u8 ov9650_init[][2] = {
+>> +static struct i2c_reg_u8 ov9650_init[] = {
+>>       {0x12, 0x80}, {0x00, 0x00}, {0x01, 0x78},
+>>       {0x02, 0x78}, {0x03, 0x36}, {0x04, 0x03},
+>>       {0x05, 0x00}, {0x06, 0x00}, {0x08, 0x00},
+>> @@ -902,7 +912,7 @@ static u8 ov9650_init[][2] = {
+>>       {0xaa, 0x92}, {0xab, 0x0a},
+>>  };
+>>
+>> -static u8 ov9655_init[][2] = {
+>> +static struct i2c_reg_u8 ov9655_init[] = {
+>>       {0x12, 0x80}, {0x12, 0x01}, {0x0d, 0x00}, {0x0e, 0x61},
+>>       {0x11, 0x80}, {0x13, 0xba}, {0x14, 0x2e}, {0x16, 0x24},
+>>       {0x1e, 0x04}, {0x1e, 0x04}, {0x1e, 0x04}, {0x27, 0x08},
+>> @@ -939,7 +949,7 @@ static u8 ov9655_init[][2] = {
+>>       {0x00, 0x03}, {0x00, 0x0a}, {0x00, 0x10}, {0x00, 0x13},
+>>  };
+>>
+>> -static u16 mt9v112_init[][2] = {
+>> +static struct i2c_reg_u16 mt9v112_init[] = {
+>>       {0xf0, 0x0000}, {0x0d, 0x0021}, {0x0d, 0x0020},
+>>       {0x34, 0xc019}, {0x0a, 0x0011}, {0x0b, 0x000b},
+>>       {0x20, 0x0703}, {0x35, 0x2022}, {0xf0, 0x0001},
+>> @@ -958,7 +968,7 @@ static u16 mt9v112_init[][2] = {
+>>       {0x2c, 0x00ae}, {0x2d, 0x00ae}, {0x2e, 0x00ae},
+>>  };
+>>
+>> -static u16 mt9v111_init[][2] = {
+>> +static struct i2c_reg_u16 mt9v111_init[] = {
+>>       {0x01, 0x0004}, {0x0d, 0x0001}, {0x0d, 0x0000},
+>>       {0x01, 0x0001}, {0x02, 0x0016}, {0x03, 0x01e1},
+>>       {0x04, 0x0281}, {0x05, 0x0004}, {0x07, 0x3002},
+>> @@ -985,7 +995,7 @@ static u16 mt9v111_init[][2] = {
+>>       {0x0e, 0x0008}, {0x06, 0x002d}, {0x05, 0x0004},
+>>  };
+>>
+>> -static u16 mt9v011_init[][2] = {
+>> +static struct i2c_reg_u16 mt9v011_init[] = {
+>>       {0x07, 0x0002}, {0x0d, 0x0001}, {0x0d, 0x0000},
+>>       {0x01, 0x0008}, {0x02, 0x0016}, {0x03, 0x01e1},
+>>       {0x04, 0x0281}, {0x05, 0x0083}, {0x06, 0x0006},
+>> @@ -1012,7 +1022,7 @@ static u16 mt9v011_init[][2] = {
+>>       {0x06, 0x0029}, {0x05, 0x0009},
+>>  };
+>>
+>> -static u16 mt9m001_init[][2] = {
+>> +static struct i2c_reg_u16 mt9m001_init[] = {
+>>       {0x0d, 0x0001}, {0x0d, 0x0000}, {0x01, 0x000e},
+>>       {0x02, 0x0014}, {0x03, 0x03c1}, {0x04, 0x0501},
+>>       {0x05, 0x0083}, {0x06, 0x0006}, {0x0d, 0x0002},
+>> @@ -1025,14 +1035,14 @@ static u16 mt9m001_init[][2] = {
+>>       {0x2e, 0x0029}, {0x07, 0x0002},
+>>  };
+>>
+>> -static u16 mt9m111_init[][2] = {
+>> +static struct i2c_reg_u16 mt9m111_init[] = {
+>>       {0xf0, 0x0000}, {0x0d, 0x0008}, {0x0d, 0x0009},
+>>       {0x0d, 0x0008}, {0xf0, 0x0001}, {0x3a, 0x4300},
+>>       {0x9b, 0x4300}, {0xa1, 0x0280}, {0xa4, 0x0200},
+>>       {0x06, 0x308e}, {0xf0, 0x0000},
+>>  };
+>>
+>> -static u8 hv7131r_init[][2] = {
+>> +static struct i2c_reg_u8 hv7131r_init[] = {
+>>       {0x02, 0x08}, {0x02, 0x00}, {0x01, 0x08},
+>>       {0x02, 0x00}, {0x20, 0x00}, {0x21, 0xd0},
+>>       {0x22, 0x00}, {0x23, 0x09}, {0x01, 0x08},
+>> @@ -1043,7 +1053,7 @@ static u8 hv7131r_init[][2] = {
+>>       {0x23, 0x09}, {0x01, 0x08},
+>>  };
+>>
+>> -int reg_r(struct gspca_dev *gspca_dev, u16 reg, u16 length)
+>> +static int reg_r(struct gspca_dev *gspca_dev, u16 reg, u16 length)
+>>  {
+>>       struct usb_device *dev = gspca_dev->dev;
+>>       int result;
+>> @@ -1062,7 +1072,8 @@ int reg_r(struct gspca_dev *gspca_dev, u16 reg, u16 length)
+>>       return 0;
+>>  }
+>>
+>> -int reg_w(struct gspca_dev *gspca_dev, u16 reg, const u8 *buffer, int length)
+>> +static int reg_w(struct gspca_dev *gspca_dev, u16 reg,
+>> +              const u8 *buffer, int length)
+>>  {
+>>       struct usb_device *dev = gspca_dev->dev;
+>>       int result;
+>> @@ -1082,13 +1093,13 @@ int reg_w(struct gspca_dev *gspca_dev, u16 reg, const u8 *buffer, int length)
+>>       return 0;
+>>  }
+>>
+>> -int reg_w1(struct gspca_dev *gspca_dev, u16 reg, const u8 value)
+>> +static int reg_w1(struct gspca_dev *gspca_dev, u16 reg, const u8 value)
+>>  {
+>>       u8 data[1] = {value};
+>>       return reg_w(gspca_dev, reg, data, 1);
+>>  }
+>>
+>> -int i2c_w(struct gspca_dev *gspca_dev, const u8 *buffer)
+>> +static int i2c_w(struct gspca_dev *gspca_dev, const u8 *buffer)
+>>  {
+>>       int i;
+>>       reg_w(gspca_dev, 0x10c0, buffer, 8);
+>> @@ -1104,7 +1115,7 @@ int i2c_w(struct gspca_dev *gspca_dev, const u8 *buffer)
+>>       return -1;
+>>  }
+>>
+>> -int i2c_w1(struct gspca_dev *gspca_dev, u8 reg, u8 val)
+>> +static int i2c_w1(struct gspca_dev *gspca_dev, u8 reg, u8 val)
+>>  {
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>
+>> @@ -1126,7 +1137,7 @@ int i2c_w1(struct gspca_dev *gspca_dev, u8 reg, u8 val)
+>>       return i2c_w(gspca_dev, row);
+>>  }
+>>
+>> -int i2c_w2(struct gspca_dev *gspca_dev, u8 reg, u16 val)
+>> +static int i2c_w2(struct gspca_dev *gspca_dev, u8 reg, u16 val)
+>>  {
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>       u8 row[8];
+>> @@ -1201,8 +1212,8 @@ static int ov9650_init_sensor(struct gspca_dev *gspca_dev)
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>
+>>       for (i = 0; i < ARRAY_SIZE(ov9650_init); i++) {
+>> -             if (i2c_w1(gspca_dev, ov9650_init[i][0],
+>> -                             ov9650_init[i][1]) < 0) {
+>> +             if (i2c_w1(gspca_dev, ov9650_init[i].reg,
+>> +                             ov9650_init[i].val) < 0) {
+>>                       err("OV9650 sensor initialization failed");
+>>                       return -ENODEV;
+>>               }
+>> @@ -1218,8 +1229,8 @@ static int ov9655_init_sensor(struct gspca_dev *gspca_dev)
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>
+>>       for (i = 0; i < ARRAY_SIZE(ov9655_init); i++) {
+>> -             if (i2c_w1(gspca_dev, ov9655_init[i][0],
+>> -                             ov9655_init[i][1]) < 0) {
+>> +             if (i2c_w1(gspca_dev, ov9655_init[i].reg,
+>> +                             ov9655_init[i].val) < 0) {
+>>                       err("OV9655 sensor initialization failed");
+>>                       return -ENODEV;
+>>               }
+>> @@ -1237,8 +1248,8 @@ static int soi968_init_sensor(struct gspca_dev *gspca_dev)
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>
+>>       for (i = 0; i < ARRAY_SIZE(soi968_init); i++) {
+>> -             if (i2c_w1(gspca_dev, soi968_init[i][0],
+>> -                             soi968_init[i][1]) < 0) {
+>> +             if (i2c_w1(gspca_dev, soi968_init[i].reg,
+>> +                             soi968_init[i].val) < 0) {
+>>                       err("SOI968 sensor initialization failed");
+>>                       return -ENODEV;
+>>               }
+>> @@ -1256,8 +1267,8 @@ static int ov7660_init_sensor(struct gspca_dev *gspca_dev)
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>
+>>       for (i = 0; i < ARRAY_SIZE(ov7660_init); i++) {
+>> -             if (i2c_w1(gspca_dev, ov7660_init[i][0],
+>> -                             ov7660_init[i][1]) < 0) {
+>> +             if (i2c_w1(gspca_dev, ov7660_init[i].reg,
+>> +                             ov7660_init[i].val) < 0) {
+>>                       err("OV7660 sensor initialization failed");
+>>                       return -ENODEV;
+>>               }
+>> @@ -1275,8 +1286,8 @@ static int ov7670_init_sensor(struct gspca_dev *gspca_dev)
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>
+>>       for (i = 0; i < ARRAY_SIZE(ov7670_init); i++) {
+>> -             if (i2c_w1(gspca_dev, ov7670_init[i][0],
+>> -                             ov7670_init[i][1]) < 0) {
+>> +             if (i2c_w1(gspca_dev, ov7670_init[i].reg,
+>> +                             ov7670_init[i].val) < 0) {
+>>                       err("OV7670 sensor initialization failed");
+>>                       return -ENODEV;
+>>               }
+>> @@ -1299,8 +1310,8 @@ static int mt9v_init_sensor(struct gspca_dev *gspca_dev)
+>>       ret = i2c_r2(gspca_dev, 0xff, &value);
+>>       if ((ret == 0) && (value == 0x8243)) {
+>>               for (i = 0; i < ARRAY_SIZE(mt9v011_init); i++) {
+>> -                     if (i2c_w2(gspca_dev, mt9v011_init[i][0],
+>> -                                     mt9v011_init[i][1]) < 0) {
+>> +                     if (i2c_w2(gspca_dev, mt9v011_init[i].reg,
+>> +                                     mt9v011_init[i].val) < 0) {
+>>                               err("MT9V011 sensor initialization failed");
+>>                               return -ENODEV;
+>>                       }
+>> @@ -1317,8 +1328,8 @@ static int mt9v_init_sensor(struct gspca_dev *gspca_dev)
+>>       ret = i2c_r2(gspca_dev, 0xff, &value);
+>>       if ((ret == 0) && (value == 0x823a)) {
+>>               for (i = 0; i < ARRAY_SIZE(mt9v111_init); i++) {
+>> -                     if (i2c_w2(gspca_dev, mt9v111_init[i][0],
+>> -                                     mt9v111_init[i][1]) < 0) {
+>> +                     if (i2c_w2(gspca_dev, mt9v111_init[i].reg,
+>> +                                     mt9v111_init[i].val) < 0) {
+>>                               err("MT9V111 sensor initialization failed");
+>>                               return -ENODEV;
+>>                       }
+>> @@ -1339,8 +1350,8 @@ static int mt9v_init_sensor(struct gspca_dev *gspca_dev)
+>>       ret = i2c_r2(gspca_dev, 0x00, &value);
+>>       if ((ret == 0) && (value == 0x1229)) {
+>>               for (i = 0; i < ARRAY_SIZE(mt9v112_init); i++) {
+>> -                     if (i2c_w2(gspca_dev, mt9v112_init[i][0],
+>> -                                     mt9v112_init[i][1]) < 0) {
+>> +                     if (i2c_w2(gspca_dev, mt9v112_init[i].reg,
+>> +                                     mt9v112_init[i].val) < 0) {
+>>                               err("MT9V112 sensor initialization failed");
+>>                               return -ENODEV;
+>>                       }
+>> @@ -1360,8 +1371,8 @@ static int mt9m111_init_sensor(struct gspca_dev *gspca_dev)
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>       int i;
+>>       for (i = 0; i < ARRAY_SIZE(mt9m111_init); i++) {
+>> -             if (i2c_w2(gspca_dev, mt9m111_init[i][0],
+>> -                             mt9m111_init[i][1]) < 0) {
+>> +             if (i2c_w2(gspca_dev, mt9m111_init[i].reg,
+>> +                             mt9m111_init[i].val) < 0) {
+>>                       err("MT9M111 sensor initialization failed");
+>>                       return -ENODEV;
+>>               }
+>> @@ -1376,8 +1387,8 @@ static int mt9m001_init_sensor(struct gspca_dev *gspca_dev)
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>       int i;
+>>       for (i = 0; i < ARRAY_SIZE(mt9m001_init); i++) {
+>> -             if (i2c_w2(gspca_dev, mt9m001_init[i][0],
+>> -                             mt9m001_init[i][1]) < 0) {
+>> +             if (i2c_w2(gspca_dev, mt9m001_init[i].reg,
+>> +                             mt9m001_init[i].val) < 0) {
+>>                       err("MT9M001 sensor initialization failed");
+>>                       return -ENODEV;
+>>               }
+>> @@ -1395,8 +1406,8 @@ static int hv7131r_init_sensor(struct gspca_dev *gspca_dev)
+>>       struct sd *sd = (struct sd *) gspca_dev;
+>>
+>>       for (i = 0; i < ARRAY_SIZE(hv7131r_init); i++) {
+>> -             if (i2c_w1(gspca_dev, hv7131r_init[i][0],
+>> -                             hv7131r_init[i][1]) < 0) {
+>> +             if (i2c_w1(gspca_dev, hv7131r_init[i].reg,
+>> +                             hv7131r_init[i].val) < 0) {
+>>                       err("HV7131R Sensor initialization failed");
+>>                       return -ENODEV;
+>>               }
+>
+>
+> --
+>
+> Cheers,
+> Mauro
+>
