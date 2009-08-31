@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751865AbZHaVyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751902AbZHaV5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751865AbZHaVyP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 17:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbZHaVyO
+	id S1751902AbZHaV5A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 17:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZHaV5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 17:54:14 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:59500 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751105AbZHaVyO (ORCPT
+	Mon, 31 Aug 2009 17:57:00 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:59077 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbZHaV47 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 17:54:14 -0400
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dtor@vmware.com>, Maxime Austruy <maustruy@vmware.com>
-In-Reply-To: <200908312051.26264.eike-kernel@sf-tec.de>
-References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
-	 <200908280803.52025.eike-kernel@sf-tec.de>
-	 <1251739571.16169.17.camel@ank32.eng.vmware.com>
-	 <200908312051.26264.eike-kernel@sf-tec.de>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Mon, 31 Aug 2009 14:54:16 -0700
-Message-Id: <1251755656.16169.52.camel@ank32.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Mon, 31 Aug 2009 17:56:59 -0400
+Message-ID: <4A9C4723.5080309@codemonkey.ws>
+Date: Mon, 31 Aug 2009 16:56:51 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: "Xin, Xiaohui" <xiaohui.xin@intel.com>, "mst@redhat.com" <mst@redhat.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <E88DD564E9DC5446A76B2B47C3BCCA150219600F9B@pdsmsx503.ccr.corp.intel.com> <C85CEDA13AB1CF4D9D597824A86D2B9006AEB944B8@PDSMSX501.ccr.corp.intel.com> <4A9C0DC2.6080704@redhat.com>
+In-Reply-To: <4A9C0DC2.6080704@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Avi Kivity wrote:
+> On 08/31/2009 02:42 PM, Xin, Xiaohui wrote:
+>> Hi, Michael
+>> That's a great job. We are now working on support VMDq on KVM, and 
+>> since the VMDq hardware presents L2 sorting based on MAC addresses 
+>> and VLAN tags, our target is to implement a zero copy solution using 
+>> VMDq. We stared from the virtio-net architecture. What we want to 
+>> proposal is to use AIO combined with direct I/O:
+>> 1) Modify virtio-net Backend service in Qemu to submit aio requests 
+>> composed from virtqueue.
+>> 2) Modify TUN/TAP device to support aio operations and the user space 
+>> buffer directly mapping into the host kernel.
+>> 3) Let a TUN/TAP device binds to single rx/tx queue from the NIC.
+>> 4) Modify the net_dev and skb structure to permit allocated skb to 
+>> use user space directly mapped payload buffer address rather then 
+>> kernel allocated.
+>>
+>> As zero copy is also your goal, we are interested in what's in your 
+>> mind, and would like to collaborate with you if possible.
+>>    
+>
+> One way to share the effort is to make vmdq queues available as normal 
+> kernel interfaces.
 
-On Mon, 2009-08-31 at 11:51 -0700, Rolf Eike Beer wrote:
-> Alok Kataria wrote:
-> > Hi Eike,
-> 
-> > > > +static int __devinit pvscsi_probe(struct pci_dev *pdev,
-> > > > +				  const struct pci_device_id *id)
-> > > > +{
-> > > > +	struct pvscsi_adapter *adapter;
-> > > > +	struct Scsi_Host *host;
-> > > > +	unsigned long base, i;
-> > > > +	int error;
-> > > > +
-> > > > +	error = -ENODEV;
-> > > > +
-> > > > +	if (pci_enable_device(pdev))
-> > > > +		return error;
-> > >
-> > > As always I suggest having a look on devres (see Documentation/driver-
-> > > model/devres.txt) which could simplify your error handling here and your
-> > > release function a lot. You only need to make sure it doesn't hurt if all
-> > > the PCI resources are freed after the scsi ones as you would end up
-> > > cleaning the scsi ones by hand and afterwards devres would throw all it
-> > > handles (which will probably be most of your PCI stuff) away itself.
-> >
-> > I took a quick look, but would prefer not to change this right now. Will
-> > do this as a incremental change later. Hope that is fine.
-> 
-> Just a suggestion ;)
-> 
-> > > > +	adapter->dev  = pdev;
-> > > > +	adapter->host = host;
-> > > > +
-> > > > +	spin_lock_init(&adapter->hw_lock);
-> > > > +
-> > > > +	host->max_channel = 0;
-> > > > +	host->max_id      = 16;
-> > > > +	host->max_lun     = 1;
-> > > > +
-> > > > +	pci_read_config_byte(pdev, PCI_CLASS_REVISION, &adapter->rev);
-> > >
-> > > That's in pdev->revision anyway, isn't it?
-> >
-> > Yep, though, its needed in pvscsi_info, so will keep this in adapter
-> > too.
-> 
-> Yes, but you don't need to do pci_read_config_byte() but simply copying that 
-> over from pdev->revision.
+It may be possible to make vmdq appear like an sr-iov capable device 
+from userspace.  sr-iov provides the userspace interfaces to allocate 
+interfaces and assign mac addresses.  To make it useful, you would have 
+to handle tx multiplexing in the driver but that would be much easier to 
+consume for kvm.
 
-Oh..yes, will take care of that in the next revision.  
+Regards,
 
-Thanks,
-Alok
-> 
-> Eike
-
+Anthony Liguori
