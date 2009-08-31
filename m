@@ -1,42 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbZHaXHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751543AbZHaWBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752033AbZHaXHE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 19:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZHaXHC
+	id S1751543AbZHaWBi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 18:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZHaWBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 19:07:02 -0400
-Received: from mail.qau.edu.pk ([121.52.146.212]:58291 "EHLO qau.edu.pk"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751312AbZHaXHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 19:07:01 -0400
-Message-ID: <1367.213.37.214.189.1251749035.squirrel@mail.qau.edu.pk>
-Date: Tue, 1 Sep 2009 01:03:55 +0500 (PKT)
-Subject: Lieber Freund!!!
-From: Standard Bank von =?iso-8859-1?Q?S=FCd_Afrika?= 
-	<redboathfinancia@aim.com>
-Reply-To: lutherzhiri@aim.com
-User-Agent: SquirrelMail/1.4.6
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-X-Priority: 3 (Normal)
-Importance: Normal
-X-NAIMIME-Disclaimer: 1
-X-NAIMIME-Modified: 1
-To: unlisted-recipients:; (no To-header on input)
+	Mon, 31 Aug 2009 18:01:37 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:58060 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbZHaWBh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 18:01:37 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: akpm@linux-foundation.org
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 1/1] hw_breakpoints: fix locking in load_debug_registers
+Date: Tue,  1 Sep 2009 00:01:38 +0200
+Message-Id: <1251756098-22852-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n7VN7D16026123
 
-Lieber Freund!!!
-Ich vermute das diese E-Mail eine Ãœberraschung fÃ¼r Sie sein wird, aber esist wahr.Ich bin bei einer routinen ÃœberprÃ¼fung in meiner Bank (StandardBank von SÃ¼d Afrika) wo ich arbeite, auf einem Konto gestoÃŸen, was nichtin anspruch genommen worden ist, wo derzeit $12,500,000(zwÃ¶lfmillionenfÃ¼nfhundert US Dollar)gutgeschrieben sind.
-Dieses Konto gehÃ¶rte Herrn Manfred Becker, der ein Kunde in unsere Bankwar, der leider verstorben ist. Herr Becker war ein gebÃ¼rtigerDeutscher.Damit es mir mÃ¶glich ist dieses Geld $12,500,000 inanspruchzunehmen, benÃ¶tige ich die zusammenarbeit eines AuslÃ¤ndischen Partners wieSie,den ich als Verwandter und Erbe des verstorbenen Herrn Beckervorstellen kann,damit wir das Geld inanspruch nehmen kÃ¶nnen.
-FÃ¼r diese UnterstÃ¼tzung erhalten Sie 30% der Erbschaftsumme und dierestlichen 70% teile ich mir mit meinen zwei Arbeitskollegen, die mich beidieser Transaktion ebenfalls unterstÃ¼tzen.Wenn Sie interessiert sind,kÃ¶nnen Sie mir bitte eine E-Mail schicken, damit ich Ihnen mehr Detailszukommen lassen kann.
-Schicken Sie bitte Ihre Antwort auf diese E-Mail Adresse:(lutherzhiri@aim.com)
-Mit freundlichen GrÃ¼ÃŸen
-Herr Luther Zihiri.
+load_debug_registers is called with interrupts disabled from
+many contexts and causes a warning to be dropped, e.g.:
+------------[ cut here ]------------
+WARNING: at kernel/softirq.c:143 local_bh_enable_ip+0x75/0xa0()
+Hardware name: To Be Filled By O.E.M.
+Modules linked in: nfs lockd auth_rpcgss sunrpc ath5k ath
+Pid: 15083, comm: pm-suspend Tainted: G        W  2.6.31-rc7-mm1_64 #687
+Call Trace:
+ [<ffffffff8103f6c8>] warn_slowpath_common+0x78/0xb0
+ [<ffffffff8103f70f>] warn_slowpath_null+0xf/0x20
+ [<ffffffff81045875>] local_bh_enable_ip+0x75/0xa0
+ [<ffffffff8142feff>] _spin_unlock_bh+0xf/0x20
+ [<ffffffff81089141>] load_debug_registers+0x51/0x60
+ [<ffffffff8134fa93>] restore_processor_state+0x1b3/0x240
+ [<ffffffff8119ba54>] acpi_suspend_enter+0x56/0xaf
+ [<ffffffff8106e66d>] suspend_devices_and_enter+0x14d/0x1a0
+ [<ffffffff8106e79b>] enter_state+0xdb/0xf0
+ [<ffffffff8106ded1>] state_store+0x91/0x100
+ [<ffffffff8116ac77>] kobj_attr_store+0x17/0x20
+ [<ffffffff8111b2e0>] sysfs_write_file+0xe0/0x160
+ [<ffffffff810c33e8>] vfs_write+0xb8/0x1b0
+ [<ffffffff81432735>] ? do_page_fault+0x185/0x350
+ [<ffffffff810c3a4c>] sys_write+0x4c/0x80
+ [<ffffffff8100beeb>] system_call_fastpath+0x16/0x1b
+---[ end trace fc3dd2304adb23aa ]---
 
+Fix it by switching from spin_lock_bh to spin_lock_irqsave and
+removing nested local_irq_save.
 
-This is Virus Free Email Scanned by QAU's McAfee Virus Scanner""THIS COMMUNICATION MAY CONTAIN CONFIDENTIAL AND/OR OTHERWISE PROPRIETARY MATERIALand is thus for use only by the intended recipient. If you received this in error, please contact the sender and delete the e-mailand its attachments from all computers."www.qau.edu.pkÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/hw_breakpoint.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index c1f64e6..bc5368d 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -80,17 +80,15 @@ void load_debug_registers(void)
+ 	unsigned long flags;
+ 	struct task_struct *tsk = current;
+ 
+-	spin_lock_bh(&hw_breakpoint_lock);
++	spin_lock_irqsave(&hw_breakpoint_lock, flags);
+ 
+ 	/* Prevent IPIs for new kernel breakpoint updates */
+-	local_irq_save(flags);
+ 	arch_update_kernel_hw_breakpoint(NULL);
+-	local_irq_restore(flags);
+ 
+ 	if (test_tsk_thread_flag(tsk, TIF_DEBUG))
+ 		arch_install_thread_hw_breakpoint(tsk);
+ 
+-	spin_unlock_bh(&hw_breakpoint_lock);
++	spin_unlock_irqrestore(&hw_breakpoint_lock, flags);
+ }
+ 
+ /*
+-- 
+1.6.3.3
+
