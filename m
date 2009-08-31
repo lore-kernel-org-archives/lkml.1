@@ -1,111 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753616AbZHaEpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbZHaEw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753616AbZHaEpq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 00:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZHaEpp
+	id S1753326AbZHaEw0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 00:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZHaEwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 00:45:45 -0400
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:64608 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921AbZHaEpZ (ORCPT
+	Mon, 31 Aug 2009 00:52:25 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:38713 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752475AbZHaEwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 00:45:25 -0400
+	Mon, 31 Aug 2009 00:52:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ZBGBsxoX87etDlAFeLMxLEoNdT8S5p9XAmOrO0NTUeXUrcF/KFUb5WY5BTSXW3+1BH
-         q58WexvN1aAX0umO5BN4mL1p3PNjeip4noes/NicSSbiWfiOZd94bcxuzOlaqU8N9ttr
-         K5wgTpq9pQBvE/qsDNpZyeUYyqtlh6UOobl2k=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Pr/+T1HzPiXqNHUeZwbcdgDASjc1T/cz1yh5pZ0fWr6gkeXuMvYWRjhmcMIyb2rrsX
+         eRFhPW24ju2bs/SszceEmqSuD5ou8KhEyIJn+10MwW+4z7tU5DHSI6KbP3NssrVwNo5F
+         TgUgpHxc6BuH7xfUnjJenz2v1I42o6Qc+fnOg=
+Date: Mon, 31 Aug 2009 06:52:23 +0200
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 4/4] perf tools: Complete support for dynamic strings
-Date: Mon, 31 Aug 2009 06:45:21 +0200
-Message-Id: <1251693921-6579-4-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
-References: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH 3/4] perf tools: Unify swapper tasks naming
+Message-ID: <20090831045222.GA6603@nowhere>
+References: <1251682323-10395-1-git-send-email-fweisbec@gmail.com> <1251693921-6579-3-git-send-email-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251693921-6579-3-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Complete support for __str_loc type strings of ftrace events which
-have dynamic offsets values set for each of them inside their sammples.
+On Mon, Aug 31, 2009 at 06:45:20AM +0200, Frederic Weisbecker wrote:
+> In perf tools, we hardcode the pid 0 cmdline resolving to "idle"
+> because the init task is not included in the COMM events.
+> 
+> But the idle tasks secondary cpus are resolved into their "init"
+> name through the COMM events.
+> We have then such strange result in perf report (ditto with trace):
+> 
+>     19.66%       init    [kernel]          [k] acpi_idle_enter_c1
+>     17.32%       [idle]  [kernel]          [k] acpi_idle_enter_c1
+>
 
-Before:
-        geany-5759  [000]     0.000000: lock_release: name
-        geany-5759  [000]     0.000000: lock_release: name
-        geany-5759  [000]     0.000000: lock_release: name
-  kondemand/0-362   [000]     0.000000: lock_release: name
-      pdflush-421   [000]     0.000000: lock_release: name
 
-After:
-        geany-5759  [000]     0.000000: lock_release: &u->lock
-        geany-5759  [000]     0.000000: lock_release: key
-        geany-5759  [000]     0.000000: lock_release: &group->notification_mutex
-  kondemand/0-362   [000]     0.000000: lock_release: &rq->lock
-      pdflush-421   [000]     0.000000: lock_release: &rq->lock
+And BTW, idle/boot cpu is the only task that has square brackets.
+Either these should be removed or we could add these brackets
+to every kernel task coms.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
----
- tools/perf/util/trace-event-parse.c |   16 ++++++++++++++--
- tools/perf/util/trace-event.h       |    1 +
- 2 files changed, 15 insertions(+), 2 deletions(-)
+I've tried with the following patch. It doesn't change anything, I'm not
+sure why, I haven't yet investigate much for now:
 
-diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-index 96c5e97..665dac2 100644
---- a/tools/perf/util/trace-event-parse.c
-+++ b/tools/perf/util/trace-event-parse.c
-@@ -1548,6 +1548,7 @@ process_str(struct event *event __unused, struct print_arg *arg, char **tok)
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index d988dfb..3753c39 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -3230,10 +3230,15 @@ static void perf_counter_comm_event(struct perf_comm_event *comm_event)
+ 	struct perf_cpu_context *cpuctx;
+ 	struct perf_counter_context *ctx;
+ 	unsigned int size;
+-	char comm[TASK_COMM_LEN];
++	char comm[TASK_COMM_LEN + 2]; /* Also reserve square backets */
  
- 	arg->type = PRINT_STRING;
- 	arg->string.string = token;
-+	arg->string.offset = -1;
- 
- 	if (read_expected(EVENT_DELIM, (char *)")") < 0)
- 		return EVENT_ERROR;
-@@ -2031,9 +2032,20 @@ static void print_str_arg(void *data, int size,
- 
- 	case PRINT_TYPE:
- 		break;
--	case PRINT_STRING:
--		printf("%s", arg->string.string);
-+	case PRINT_STRING: {
-+		int str_offset;
+ 	memset(comm, 0, sizeof(comm));
+-	strncpy(comm, comm_event->task->comm, sizeof(comm));
 +
-+		if (arg->string.offset == -1) {
-+			struct format_field *f;
++	if (comm_event->task->mm)
++		strncpy(comm, comm_event->task->comm, sizeof(comm));
++	else
++		snprintf(comm, sizeof(comm), "[%s]", comm_event->task->comm);
 +
-+			f = find_any_field(event, arg->string.string);
-+			arg->string.offset = f->offset;
-+		}
-+		str_offset = *(int *)(data + arg->string.offset);
-+		str_offset &= 0xffff;
-+		printf("%s", ((char *)data) + str_offset);
- 		break;
-+	}
- 	case PRINT_OP:
- 		/*
- 		 * The only op for string should be ? :
-diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-index 051fcf3..420294a 100644
---- a/tools/perf/util/trace-event.h
-+++ b/tools/perf/util/trace-event.h
-@@ -50,6 +50,7 @@ struct print_arg_atom {
+ 	size = ALIGN(strlen(comm)+1, sizeof(u64));
  
- struct print_arg_string {
- 	char			*string;
-+	int			offset;
- };
- 
- struct print_arg_field {
--- 
-1.6.2.3
+ 	comm_event->comm = comm;
+
 
