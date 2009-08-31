@@ -1,73 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbZHaNWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZHaNXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430AbZHaNWY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 09:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbZHaNWX
+	id S1753485AbZHaNXL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 09:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZHaNXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 09:22:23 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:17128 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751963AbZHaNWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 09:22:22 -0400
-Message-ID: <4A9BCEA8.9080206@redhat.com>
-Date: Mon, 31 Aug 2009 09:22:48 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.8.b3.fc12 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
- document conditions when reliable operation is possible)
-References: <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com> <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz> <alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm> <4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru> <20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com> <20090831131626.GA17325@infradead.org>
-In-Reply-To: <20090831131626.GA17325@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 31 Aug 2009 09:23:10 -0400
+Received: from mtagate3.de.ibm.com ([195.212.17.163]:54171 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753301AbZHaNXJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 09:23:09 -0400
+Date: Mon, 31 Aug 2009 10:47:28 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com,
+       Ihno Krumreich <ihno@suse.de>, Greg KH <gregkh@suse.de>
+Subject: Re: [BUG] race of RCU vs NOHU
+Message-ID: <20090831104728.1b439a54@skybase>
+In-Reply-To: <20090821155418.GB6735@linux.vnet.ibm.com>
+References: <20090807151529.2806b8b4@skybase>
+	<20090807142957.GB6700@linux.vnet.ibm.com>
+	<20090810142535.3e685109@skybase>
+	<20090810150807.GA6791@linux.vnet.ibm.com>
+	<20090811125653.12c35ee8@skybase>
+	<20090811145222.GA6739@linux.vnet.ibm.com>
+	<20090811171751.34ca3b3b@skybase>
+	<20090811180407.GD6739@linux.vnet.ibm.com>
+	<20090812093233.4006b9a1@skybase>
+	<20090821155418.GB6735@linux.vnet.ibm.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/31/2009 09:16 AM, Christoph Hellwig wrote:
-> On Mon, Aug 31, 2009 at 09:15:27AM -0400, Ric Wheeler wrote:
->>> While most common filesystem do have barrier support it is:
->>>
->>>    - not actually enabled for the two most common filesystems
->>>    - the support for write barriers an cache flushing tends to be buggy
->>>      all over our software stack,
->>>
->>
->> Or just missing - I think that MD5/6 simply drop the requests at present.
->>
->> I wonder if it would be worth having MD probe for write cache enabled&
->> warn if barriers are not supported?
->
-> In my opinion even that is too weak.  We know how to control the cache
-> settings on all common disks (that is scsi and ata), so we should always
-> disable the write cache unless we know that the whole stack (filesystem,
-> raid, volume managers) supports barriers.  And even then we should make
-> sure the filesystems does actually use barriers everywhere that's needed
-> which failed at for years.
->
+On Fri, 21 Aug 2009 08:54:18 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-I was thinking about that as well. Having us disable the write cache when we 
-know it is not supported (like in the MD5 case) would certainly be *much* safer 
-for almost everyone.
+> On Wed, Aug 12, 2009 at 09:32:33AM +0200, Martin Schwidefsky wrote:
+> > On Tue, 11 Aug 2009 11:04:07 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Tue, Aug 11, 2009 at 05:17:51PM +0200, Martin Schwidefsky wrote:
+> > > > On Tue, 11 Aug 2009 07:52:22 -0700
+> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > 
+> > > > > On Tue, Aug 11, 2009 at 12:56:53PM +0200, Martin Schwidefsky wrote:
+> > > > > > On Mon, 10 Aug 2009 08:08:07 -0700
+> > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > 
+> > > > > > > On Mon, Aug 10, 2009 at 02:25:35PM +0200, Martin Schwidefsky wrote:
+> > > > > > > > On Fri, 7 Aug 2009 07:29:57 -0700
+> > > > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > > > 
+> > > > > > > > > On Fri, Aug 07, 2009 at 03:15:29PM +0200, Martin Schwidefsky wrote:
+> > > > > > > > > > Hi Paul,
+> > > > > > > > > > I analysed a dump of a hanging 2.6.30 system and found what I think is
+> > > > > > > > > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
+> > > > > > > > > > kernel but they should be independent of the bug.
+> > > > > > > > > > 
+> > > > > > > > > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
+> > > > > > > > > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
+> > > > > > > > > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
+> > > > > > > > > > sleep for NEXT_TIMER_MAX_DELTA ticks.
+> > > > > > > > > 
+> > > > > > > > > Congratulations, Martin!  You have exercised what to date has been a
+> > > > > > > > > theoretical bug identified last year by Manfred Spraul.  The fix is to
+> > > > > > > > > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
+> > > > > > > > > 2.6.29.
+> > > > > > > > > 
+> > > > > > > > > Of course, if you need to work with an old kernel version, you might
+> > > > > > > > > still need a patch, perhaps for the various -stable versions.  If so,
+> > > > > > > > > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
+> > > > > > > > > rather than backwards on CONFIG_RCU_CLASSIC.
+> > > > > > > > 
+> > > > > > > > SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
+> > > > > > > > present there and I think it needs to be fixed :-/
+> > > > > > > 
+> > > > > > > I was afraid of that.  ;-)
+> > > > > > > 
+> > > > > > > Given that there are some other theoretical bugs in Classic RCU involving
+> > > > > > > interrupts and CONFIG_NO_HZ, would backporting CONFIG_TREE_RCU make more
+> > > > > > > sense than playing whack-a-mole on Classic RCU bugs?
+> > > > > > 
+> > > > > > Fine with me but I don't know if SuSE/Novell is willing to accept such a
+> > > > > > big change for an existing distribution. I've put Ihno and Greg on Cc.
+> > > > > 
+> > > > > Good point!  While they are thinking about the tradeoff between
+> > > > > whack-a-mole on Classic RCU and backporting CONFIG_TREE_RCU, if I was
+> > > > > to send you a patch backporting CONFIG_TREE_RCU, to exactly which kernel
+> > > > > version(s) should I backport it to?
+> > > > 
+> > > > We found the bug with kernel version 2.6.30 - the kernel on our test systems
+> > > > still use classic RCU. For us it is easy to switch to tree-RCU, no patch
+> > > > required.
+> > > 
+> > > Ah!  Could you please send me the test you use?  My tests were
+> > > insufficient to force this problem to happen.
+> > 
+> > There is no specific test, just a regular system boot. The boot did not
+> > finish and our tester took a dump. This boot failure seems to happen from
+> > time to time.
+> 
+> OK.  Has CONFIG_TREE_RCU been working for you?  If so, which variant
+> of 2.6.27 do you need a backport to?
 
-We would need to have a way to override the write cache disabling for people who 
-either know that they have a non-volatile write cache (unlikely as it would 
-probably be to put MD5 on top of a hardware RAID/external array, but some of the 
-new SSD's claim to have non-volatile write cache).
+We changed the configuration of our test kernels to CONFIG_TREE_RCU. So
+far the problem has not shown up again. As we a dealing with a rare race
+here this has to be taken with a grain of salt.
 
-It would also be very useful to have all of our top tier file systems enable 
-barriers by default, provide consistent barrier on/off mount options and log a 
-nice warning when not enabled....
+-- 
+blue skies,
+   Martin.
 
-ric
+"Reality continues to ruin my life." - Calvin.
 
