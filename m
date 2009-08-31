@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbZHaMXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752635AbZHaM3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752811AbZHaMXT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 08:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZHaMXS
+	id S1752635AbZHaM3q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 08:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZHaM3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 08:23:18 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:41649 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752424AbZHaMXS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 08:23:18 -0400
-Date: Mon, 31 Aug 2009 17:53:16 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH 2/5] memcg: uncharge in batched manner
-Message-ID: <20090831122316.GM4770@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com> <20090828132438.b33828bc.kamezawa.hiroyu@jp.fujitsu.com> <20090831110204.GG4770@balbir.in.ibm.com> <119e8331d1210b1f56d0f6416863bfbc.squirrel@webmail-b.css.fujitsu.com> <20090831121008.GL4770@balbir.in.ibm.com> <48d928bed22f20fc495e9ca1758dc7ed.squirrel@webmail-b.css.fujitsu.com>
+	Mon, 31 Aug 2009 08:29:45 -0400
+Received: from rtr.ca ([76.10.145.34]:39530 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751941AbZHaM3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 08:29:45 -0400
+Message-ID: <4A9BC239.9060009@rtr.ca>
+Date: Mon, 31 Aug 2009 08:29:45 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <48d928bed22f20fc495e9ca1758dc7ed.squirrel@webmail-b.css.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Mike Mohr <akihana@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: expresscard hotplug not working
+References: <4746469c0908251817u225609bax66ea27261a1ef038@mail.gmail.com> <4A96819D.7060708@rtr.ca> <20090830225542.GB901@srcf.ucam.org>
+In-Reply-To: <20090830225542.GB901@srcf.ucam.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-31 21:14:10]:
-
-> Balbir Singh wrote:
-> >> > Does this effect deleting of a group and delay it by a large amount?
-> >> >
-> >> plz see what cgroup_release_and_xxxx  fixed. This is not for delay
-> >> but for race-condition, which makes rmdir sleep permanently.
-> >>
-> >
-> > I've seen those patches, where rmdir() can hang. My conern was time
-> > elapsed since we do css_get() and do a cgroup_release_and_wake_rmdir()
-> >
-> plz read unmap() and truncate() code.
-> The number of pages handled without cond_resched() is limited.
+Matthew Garrett wrote:
+> On Thu, Aug 27, 2009 at 08:52:45AM -0400, Mark Lord wrote:
 > 
->
+>> Just create a file called /etc/modprobe.d/pciehp,
+>> and stick this one line into it:
+>>
+>>   options pciehp pciehp_force=1
+>>
+>> See if that works.
+> 
+> It's worth noting that Windows didn't support native pcie hotplug until 
+> Vista, and so any hardware that works with XP (ie, basically all of it, 
+> including Dells) is supposed to be using acpi hotplug instead. I've 
+> fixed one bug that led to acpiphp not working on some hardware, but if 
+> anyone's still running with pciehp_force=1 then please send me the 
+> output of acpidump so it can be fixed properly.
+..
 
-I understand that part, I was referring to tasks stuck doing rmdir()
-while we do batched uncharge, will it be very visible to the end user?
-cond_resched() is bad in this case.. since it means we'll stay longer
-before we release the cgroup.
- 
+My Dell works fine with PCIe hotplug under XP,
+but not under Linux without pciehp=1.
 
--- 
-	Balbir
+I have not retested without that parameter for quite some time, though.
+What do I have to do to retest with "acpihp" ?
+
+Thanks.
+
