@@ -1,64 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751940AbZHaW0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752167AbZHaWff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751940AbZHaW0m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 18:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZHaW0m
+	id S1752167AbZHaWff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 18:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZHaWfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 18:26:42 -0400
-Received: from mail-gx0-f205.google.com ([209.85.217.205]:44686 "EHLO
-	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbZHaW0l convert rfc822-to-8bit (ORCPT
+	Mon, 31 Aug 2009 18:35:34 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:41325 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751046AbZHaWfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 18:26:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=JNIxXdTCcZHlBALMlufqUF71xOnLz1ydNEQnhjXcBbwyiYU7JDT5AFpZGDvBIv82FH
-         QD7Hff9IcHRvZAZr+7yHn9btKGe6QTqxyhdkSIMZt2nz5fDJyv5rnUtlJySvxAqsUtjN
-         0P/g/JnGRRszaFZ4ODalL34aZwVNvnqjaJ7TM=
-MIME-Version: 1.0
-In-Reply-To: <20090831180746.GA32110@piper.oerlikon.madduck.net>
-References: <4A947682.2010204@redhat.com> <4A967175.5070700@redhat.com>
-	 <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com>
-	 <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu>
-	 <20090830075135.GA1874@ucw.cz> <20090830152023.GB23828@mit.edu>
-	 <4807377b0908311049id9a2167r937bc8447c2b3546@mail.gmail.com>
-	 <20090831180746.GA32110@piper.oerlikon.madduck.net>
-Date: Mon, 31 Aug 2009 15:26:42 -0700
-Message-ID: <4807377b0908311526r3b42f581j27b9c26166b7ac96@mail.gmail.com>
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3: 
-	document conditions when reliable operation is possible)
-From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-       NeilBrown <neilb@suse.de>, Ric Wheeler <rwheeler@redhat.com>,
-       Rob Landley <rob@landley.net>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 31 Aug 2009 18:35:33 -0400
+Subject: RE: [PATCH] SCSI driver for VMware's virtual HBA.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@vmware.com>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "robert.w.love@intel.com" <robert.w.love@intel.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "michaelc@cs.wisc.edu" <michaelc@cs.wisc.edu>,
+       Maxime Austruy <maustruy@vmware.com>,
+       Bhavesh Davda <bhavesh@vmware.com>
+In-Reply-To: <412A05BA40734D4887DBC67661F433080FF71D90@EXMAIL.ad.emulex.com>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <412A05BA40734D4887DBC67661F433080FF71D16@EXMAIL.ad.emulex.com>
+	 <1251498656.25584.7.camel@ank32.eng.vmware.com>
+	 <412A05BA40734D4887DBC67661F433080FF71D90@EXMAIL.ad.emulex.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 31 Aug 2009 15:35:36 -0700
+Message-Id: <1251758136.16169.74.camel@ank32.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 11:07 AM, martin f krafft<madduck@debian.org> wrote:
-> also sprach Jesse Brandeburg <jesse.brandeburg@gmail.com> [2009.08.31.1949 +0200]:
->> In the case of a degraded array, could the kernel be more
->> proactive (or maybe even mdadm) and have the filesystem remount
->> itself withOUT journalling enabled?  This seems on the surface to
->> be possible, but I don't know the internal particulars that might
->> prevent/allow it.
->
-> Why would I want to disable the filesystem journal in that case?
+Hi Chetan,
 
-I misspoke w.r.t journalling, the idea I was trying to get across was
-to remount with -o sync while running on a degraded array, but given
-some of the other comments in this thread I'm not even sure that would
-help.  the idea was to make writes as safe as possible (at the cost of
-speed) when running on a degraded array, and to have the transition be
-as hands-free as possible, just have the kernel (or mdadm) by default
-remount.
+> > 
+> > On Fri, 2009-08-28 at 14:18 -0700, Chetan.Loke@Emulex.Com wrote:
+> > > Alok,
+> > >
+> > >
+> > > > +static int __devinit pvscsi_allocate_rings(struct pvscsi_adapter
+> > > > *adapter)
+> > > > +{
+> > > > +	adapter->rings_state = pci_alloc_consistent(adapter->dev, PAGE_SIZE,
+> > > > +						    &adapter->ringStatePA);
+> > > > +	adapter->req_ring = pci_alloc_consistent(adapter->dev,
+> > > > +						 adapter->req_pages * PAGE_SIZE,
+> > > > +						 &adapter->reqRingPA);
+> > > > +	adapter->cmp_ring = pci_alloc_consistent(adapter->dev,
+> > > > +						 adapter->cmp_pages * PAGE_SIZE,
+> > > > +						 &adapter->cmpRingPA);
+> 
+> 
+> > >
+> > > I understand the emulation etc. But I see that this function isn't
+> > > allocating multiple rings right? Didn't see any performance benefits?
+> > >
+> > 
+> > The function is allocating multiple rings, actually 2 of them for the
+> > IO path, request and completion rings (req_ring, cmp_ring).
+> > 
+> > Let me know if you were asking something else.
+> > 
+> 
+> I was using 'Ring' loosely.
+> So, Ring == [req_path,cmpl_path]
+> Example - R0[req-path,cmpl-path]
+> 
+> But the code doesn't allocate R0,R1,...,RN.
+> 
+> Existing code - 
+> 
+>       --------
+> 	Ring-0
+> 	--------
+> 	  Req 
+> 	   +
+> 	   |
+>  	   +
+>         Cmpl     
+> 
+> 
+> Why not multiple rings as shown below - 
+> 
+>       --------	--------
+> 	Ring-0	Ring-M
+> 	--------	--------
+> 	  Req 	  Req
+> 	   +		   +
+> 	   |		   |
+>  	   +		   +
+>         Cmpl     	  Cmpl
+> 
+> 
+> 
+> Creating multiple rings @ the guest level buys nothing in terms of
+> performance? 
+
+We implement single (pair of) rings in the hypervisor too. And haven't
+seen that as a bottleneck in our experiments, yet. And IMO it only makes
+sense to support that once their are devices which support multiple
+request queues out their.
+
+It would be interesting to understand your view point on this as well.
+Have you seen any interesting performance data with multiple rings
+support, in the emulation software that you are aware of ?  
+
+> This is also related to how the hypervisor will schedule the
+> world-interrupts. If 'a' pv-driver has multiple interrupt lines
+> enabled then will the interrupts/ISR's get routed on different PCPU's
+> for a vmworld? Or is there a limitation?
+
+Right now since we support a single completion ring only one vector will
+be used to deliver intr's. 
+Though its important to note that pvscsi does support MSI-X and hence
+can support enabling multiple vectors once the need arises.
+
+Thanks,
+Alok
+> 
+> 
+> Chetan
+> 
+
