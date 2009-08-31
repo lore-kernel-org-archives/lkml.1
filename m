@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752421AbZHaRII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbZHaRIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752421AbZHaRII (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 13:08:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZHaRIH
+	id S1752185AbZHaRIF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 13:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZHaRIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 13:08:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:32877 "EHLO hera.kernel.org"
+	Mon, 31 Aug 2009 13:08:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32875 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbZHaRID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 13:08:03 -0400
-Date: Mon, 31 Aug 2009 17:07:15 GMT
+	id S1751073AbZHaRIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 13:08:02 -0400
+Date: Mon, 31 Aug 2009 17:07:00 GMT
 From: tip-bot for Heiko Carstens <heiko.carstens@de.ibm.com>
 Cc: mingo@redhat.com, torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
        schwidefsky@de.ibm.com, ehrhardt@linux.vnet.ibm.com, arnd@arndb.de,
@@ -26,36 +26,35 @@ Reply-To: mingo@redhat.com, a.p.zijlstra@chello.nl,
        horsth@linux.vnet.ibm.com, davem@davemloft.net,
        benh@kernel.crashing.org, geert@linux-m68k.org,
        linux-arch@vger.kernel.org, nickpiggin@yahoo.com.au, mingo@elte.hu
-In-Reply-To: <20090831124416.306495811@de.ibm.com>
-References: <20090831124416.306495811@de.ibm.com>
+In-Reply-To: <20090831124415.918799705@de.ibm.com>
+References: <20090831124415.918799705@de.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/locking] locking, sparc: Rename __spin_try_lock() and friends
-Message-ID: <tip-9f34ceb60357a7166c929d7b52bd057ad7ffc54b@git.kernel.org>
-Git-Commit-ID: 9f34ceb60357a7166c929d7b52bd057ad7ffc54b
+Subject: [tip:core/locking] locking, powerpc: Rename __spin_try_lock() and friends
+Message-ID: <tip-8307a98097222f4d9c2e62ebccd6f5df439328de@git.kernel.org>
+Git-Commit-ID: 8307a98097222f4d9c2e62ebccd6f5df439328de
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 17:07:16 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 17:07:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9f34ceb60357a7166c929d7b52bd057ad7ffc54b
-Gitweb:     http://git.kernel.org/tip/9f34ceb60357a7166c929d7b52bd057ad7ffc54b
+Commit-ID:  8307a98097222f4d9c2e62ebccd6f5df439328de
+Gitweb:     http://git.kernel.org/tip/8307a98097222f4d9c2e62ebccd6f5df439328de
 Author:     Heiko Carstens <heiko.carstens@de.ibm.com>
-AuthorDate: Mon, 31 Aug 2009 14:43:32 +0200
+AuthorDate: Mon, 31 Aug 2009 14:43:31 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Mon, 31 Aug 2009 18:08:48 +0200
 
-locking, sparc: Rename __spin_try_lock() and friends
+locking, powerpc: Rename __spin_try_lock() and friends
 
 Needed to avoid namespace conflicts when the common code
 function bodies of _spin_try_lock() etc. are moved to a header
 file where the function name would be __spin_try_lock().
 
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Acked-by: David S. Miller <davem@davemloft.net>
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Arnd Bergmann <arnd@arndb.de>
 Cc: Nick Piggin <nickpiggin@yahoo.com.au>
@@ -70,147 +69,102 @@ Cc: Paul Mackerras <paulus@samba.org>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Roman Zippel <zippel@linux-m68k.org>
 Cc: <linux-arch@vger.kernel.org>
-LKML-Reference: <20090831124416.306495811@de.ibm.com>
+LKML-Reference: <20090831124415.918799705@de.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/sparc/include/asm/spinlock_32.h |   12 ++++++------
- arch/sparc/include/asm/spinlock_64.h |   28 ++++++++++++++--------------
- 2 files changed, 20 insertions(+), 20 deletions(-)
+ arch/powerpc/include/asm/spinlock.h |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/sparc/include/asm/spinlock_32.h b/arch/sparc/include/asm/spinlock_32.h
-index 46f91ab..857630c 100644
---- a/arch/sparc/include/asm/spinlock_32.h
-+++ b/arch/sparc/include/asm/spinlock_32.h
-@@ -76,7 +76,7 @@ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
-  *
-  * Unfortunately this scheme limits us to ~16,000,000 cpus.
+diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
+index c3b1931..198266c 100644
+--- a/arch/powerpc/include/asm/spinlock.h
++++ b/arch/powerpc/include/asm/spinlock.h
+@@ -54,7 +54,7 @@
+  * This returns the old value in the lock, so we succeeded
+  * in getting the lock if the return value is 0.
   */
--static inline void __read_lock(raw_rwlock_t *rw)
-+static inline void arch_read_lock(raw_rwlock_t *rw)
+-static inline unsigned long __spin_trylock(raw_spinlock_t *lock)
++static inline unsigned long arch_spin_trylock(raw_spinlock_t *lock)
  {
- 	register raw_rwlock_t *lp asm("g1");
- 	lp = rw;
-@@ -92,11 +92,11 @@ static inline void __read_lock(raw_rwlock_t *rw)
- #define __raw_read_lock(lock) \
- do {	unsigned long flags; \
- 	local_irq_save(flags); \
--	__read_lock(lock); \
-+	arch_read_lock(lock); \
- 	local_irq_restore(flags); \
- } while(0)
+ 	unsigned long tmp, token;
  
--static inline void __read_unlock(raw_rwlock_t *rw)
-+static inline void arch_read_unlock(raw_rwlock_t *rw)
+@@ -76,7 +76,7 @@ static inline unsigned long __spin_trylock(raw_spinlock_t *lock)
+ static inline int __raw_spin_trylock(raw_spinlock_t *lock)
  {
- 	register raw_rwlock_t *lp asm("g1");
- 	lp = rw;
-@@ -112,7 +112,7 @@ static inline void __read_unlock(raw_rwlock_t *rw)
- #define __raw_read_unlock(lock) \
- do {	unsigned long flags; \
- 	local_irq_save(flags); \
--	__read_unlock(lock); \
-+	arch_read_unlock(lock); \
- 	local_irq_restore(flags); \
- } while(0)
- 
-@@ -150,7 +150,7 @@ static inline int __raw_write_trylock(raw_rwlock_t *rw)
- 	return (val == 0);
+ 	CLEAR_IO_SYNC;
+-	return __spin_trylock(lock) == 0;
++	return arch_spin_trylock(lock) == 0;
  }
  
--static inline int __read_trylock(raw_rwlock_t *rw)
-+static inline int arch_read_trylock(raw_rwlock_t *rw)
+ /*
+@@ -108,7 +108,7 @@ static inline void __raw_spin_lock(raw_spinlock_t *lock)
  {
- 	register raw_rwlock_t *lp asm("g1");
- 	register int res asm("o0");
-@@ -169,7 +169,7 @@ static inline int __read_trylock(raw_rwlock_t *rw)
- ({	unsigned long flags; \
- 	int res; \
- 	local_irq_save(flags); \
--	res = __read_trylock(lock); \
-+	res = arch_read_trylock(lock); \
- 	local_irq_restore(flags); \
- 	res; \
- })
-diff --git a/arch/sparc/include/asm/spinlock_64.h b/arch/sparc/include/asm/spinlock_64.h
-index f6b2b92..43e5147 100644
---- a/arch/sparc/include/asm/spinlock_64.h
-+++ b/arch/sparc/include/asm/spinlock_64.h
-@@ -92,7 +92,7 @@ static inline void __raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long fla
+ 	CLEAR_IO_SYNC;
+ 	while (1) {
+-		if (likely(__spin_trylock(lock) == 0))
++		if (likely(arch_spin_trylock(lock) == 0))
+ 			break;
+ 		do {
+ 			HMT_low();
+@@ -126,7 +126,7 @@ void __raw_spin_lock_flags(raw_spinlock_t *lock, unsigned long flags)
  
- /* Multi-reader locks, these are much saner than the 32-bit Sparc ones... */
- 
--static void inline __read_lock(raw_rwlock_t *lock)
-+static void inline arch_read_lock(raw_rwlock_t *lock)
+ 	CLEAR_IO_SYNC;
+ 	while (1) {
+-		if (likely(__spin_trylock(lock) == 0))
++		if (likely(arch_spin_trylock(lock) == 0))
+ 			break;
+ 		local_save_flags(flags_dis);
+ 		local_irq_restore(flags);
+@@ -181,7 +181,7 @@ extern void __raw_spin_unlock_wait(raw_spinlock_t *lock);
+  * This returns the old value in the lock + 1,
+  * so we got a read lock if the return value is > 0.
+  */
+-static inline long __read_trylock(raw_rwlock_t *rw)
++static inline long arch_read_trylock(raw_rwlock_t *rw)
  {
- 	unsigned long tmp1, tmp2;
+ 	long tmp;
  
-@@ -115,7 +115,7 @@ static void inline __read_lock(raw_rwlock_t *lock)
- 	: "memory");
+@@ -205,7 +205,7 @@ static inline long __read_trylock(raw_rwlock_t *rw)
+  * This returns the old value in the lock,
+  * so we got the write lock if the return value is 0.
+  */
+-static inline long __write_trylock(raw_rwlock_t *rw)
++static inline long arch_write_trylock(raw_rwlock_t *rw)
+ {
+ 	long tmp, token;
+ 
+@@ -228,7 +228,7 @@ static inline long __write_trylock(raw_rwlock_t *rw)
+ static inline void __raw_read_lock(raw_rwlock_t *rw)
+ {
+ 	while (1) {
+-		if (likely(__read_trylock(rw) > 0))
++		if (likely(arch_read_trylock(rw) > 0))
+ 			break;
+ 		do {
+ 			HMT_low();
+@@ -242,7 +242,7 @@ static inline void __raw_read_lock(raw_rwlock_t *rw)
+ static inline void __raw_write_lock(raw_rwlock_t *rw)
+ {
+ 	while (1) {
+-		if (likely(__write_trylock(rw) == 0))
++		if (likely(arch_write_trylock(rw) == 0))
+ 			break;
+ 		do {
+ 			HMT_low();
+@@ -255,12 +255,12 @@ static inline void __raw_write_lock(raw_rwlock_t *rw)
+ 
+ static inline int __raw_read_trylock(raw_rwlock_t *rw)
+ {
+-	return __read_trylock(rw) > 0;
++	return arch_read_trylock(rw) > 0;
  }
  
--static int inline __read_trylock(raw_rwlock_t *lock)
-+static int inline arch_read_trylock(raw_rwlock_t *lock)
+ static inline int __raw_write_trylock(raw_rwlock_t *rw)
  {
- 	int tmp1, tmp2;
- 
-@@ -136,7 +136,7 @@ static int inline __read_trylock(raw_rwlock_t *lock)
- 	return tmp1;
+-	return __write_trylock(rw) == 0;
++	return arch_write_trylock(rw) == 0;
  }
  
--static void inline __read_unlock(raw_rwlock_t *lock)
-+static void inline arch_read_unlock(raw_rwlock_t *lock)
- {
- 	unsigned long tmp1, tmp2;
- 
-@@ -152,7 +152,7 @@ static void inline __read_unlock(raw_rwlock_t *lock)
- 	: "memory");
- }
- 
--static void inline __write_lock(raw_rwlock_t *lock)
-+static void inline arch_write_lock(raw_rwlock_t *lock)
- {
- 	unsigned long mask, tmp1, tmp2;
- 
-@@ -177,7 +177,7 @@ static void inline __write_lock(raw_rwlock_t *lock)
- 	: "memory");
- }
- 
--static void inline __write_unlock(raw_rwlock_t *lock)
-+static void inline arch_write_unlock(raw_rwlock_t *lock)
- {
- 	__asm__ __volatile__(
- "	stw		%%g0, [%0]"
-@@ -186,7 +186,7 @@ static void inline __write_unlock(raw_rwlock_t *lock)
- 	: "memory");
- }
- 
--static int inline __write_trylock(raw_rwlock_t *lock)
-+static int inline arch_write_trylock(raw_rwlock_t *lock)
- {
- 	unsigned long mask, tmp1, tmp2, result;
- 
-@@ -210,14 +210,14 @@ static int inline __write_trylock(raw_rwlock_t *lock)
- 	return result;
- }
- 
--#define __raw_read_lock(p)	__read_lock(p)
--#define __raw_read_lock_flags(p, f) __read_lock(p)
--#define __raw_read_trylock(p)	__read_trylock(p)
--#define __raw_read_unlock(p)	__read_unlock(p)
--#define __raw_write_lock(p)	__write_lock(p)
--#define __raw_write_lock_flags(p, f) __write_lock(p)
--#define __raw_write_unlock(p)	__write_unlock(p)
--#define __raw_write_trylock(p)	__write_trylock(p)
-+#define __raw_read_lock(p)	arch_read_lock(p)
-+#define __raw_read_lock_flags(p, f) arch_read_lock(p)
-+#define __raw_read_trylock(p)	arch_read_trylock(p)
-+#define __raw_read_unlock(p)	arch_read_unlock(p)
-+#define __raw_write_lock(p)	arch_write_lock(p)
-+#define __raw_write_lock_flags(p, f) arch_write_lock(p)
-+#define __raw_write_unlock(p)	arch_write_unlock(p)
-+#define __raw_write_trylock(p)	arch_write_trylock(p)
- 
- #define __raw_read_can_lock(rw)		(!((rw)->lock & 0x80000000UL))
- #define __raw_write_can_lock(rw)	(!(rw)->lock)
+ static inline void __raw_read_unlock(raw_rwlock_t *rw)
