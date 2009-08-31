@@ -1,95 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751379AbZHaK7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751277AbZHaLCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751379AbZHaK7u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 06:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZHaK7t
+	id S1751277AbZHaLCK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 07:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbZHaLCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 06:59:49 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:33812 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbZHaK7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 06:59:48 -0400
-Date: Mon, 31 Aug 2009 11:59:52 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: page allocator regression on nommu
-Message-ID: <20090831105952.GC29627@csn.ul.ie>
-References: <20090831074842.GA28091@linux-sh.org> <20090831103056.GA29627@csn.ul.ie> <20090831104315.GB30264@linux-sh.org>
+	Mon, 31 Aug 2009 07:02:09 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:44702 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbZHaLCI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 07:02:08 -0400
+Date: Mon, 31 Aug 2009 16:32:04 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH 2/5] memcg: uncharge in batched manner
+Message-ID: <20090831110204.GG4770@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com> <20090828132438.b33828bc.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090831104315.GB30264@linux-sh.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090828132438.b33828bc.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 07:43:15PM +0900, Paul Mundt wrote:
-> On Mon, Aug 31, 2009 at 11:30:56AM +0100, Mel Gorman wrote:
-> > On Mon, Aug 31, 2009 at 04:48:43PM +0900, Paul Mundt wrote:
-> > > Hi Mel,
-> > > 
-> > > It seems we've managed to trigger a fairly interesting conflict between
-> > > the anti-fragmentation disabling code and the nommu region rbtree. I've
-> > > bisected it down to:
-> > > 
-> > > commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e
-> > > Author: Mel Gorman <mel@csn.ul.ie>
-> > > Date:   Tue Jun 16 15:31:58 2009 -0700
-> > > 
-> > >     page allocator: move check for disabled anti-fragmentation out of fastpath
-> > > 
-> > >     On low-memory systems, anti-fragmentation gets disabled as there is
-> > >     nothing it can do and it would just incur overhead shuffling pages between
-> > >     lists constantly.  Currently the check is made in the free page fast path
-> > >     for every page.  This patch moves it to a slow path.  On machines with low
-> > >     memory, there will be small amount of additional overhead as pages get
-> > >     shuffled between lists but it should quickly settle.
-> > > 
-> > > which causes death on unpacking initramfs on my nommu board. With this
-> > > reverted, everything works as expected. Note that this blows up with all of
-> > > SLOB/SLUB/SLAB.
-> > > 
-> > > I'll continue debugging it, and can post my .config if it will be helpful, but
-> > > hopefully you have some suggestions on what to try :-)
-> > > 
-> > 
-> > Based on the output you have given me, it would appear the real
-> > underlying cause is that fragmentation caused the allocation to fail.
-> > The following patch might fix the problem.
-> >
-> Unfortunately this has no impact, the same issue occurs.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 13:24:38]:
+
 > 
+> In massive parallel enviroment, res_counter can be a performance bottleneck.
+> This patch is a trial for reducing lock contention.
+> One strong techinque to reduce lock contention is reducing calls by
+> batching some amount of calls int one.
+> 
+> Considering charge/uncharge chatacteristic,
+> 	- charge is done one by one via demand-paging.
+> 	- uncharge is done by
+> 		- in chunk at munmap, truncate, exit, execve...
+> 		- one by one via vmscan/paging.
+> 
+> It seems we hace a chance to batched-uncharge.
+> This patch is a base patch for batched uncharge. For avoiding
+> scattering memcg's structure, this patch adds memcg batch uncharge
+> information to the task. please see start/end usage in next patch.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  include/linux/memcontrol.h |   12 +++++++
+>  include/linux/sched.h      |    7 ++++
+>  mm/memcontrol.c            |   70 +++++++++++++++++++++++++++++++++++++++++----
+>  3 files changed, 83 insertions(+), 6 deletions(-)
+> 
+> Index: mmotm-2.6.31-Aug27/include/linux/memcontrol.h
+> ===================================================================
+> --- mmotm-2.6.31-Aug27.orig/include/linux/memcontrol.h
+> +++ mmotm-2.6.31-Aug27/include/linux/memcontrol.h
+> @@ -54,6 +54,10 @@ extern void mem_cgroup_rotate_lru_list(s
+>  extern void mem_cgroup_del_lru(struct page *page);
+>  extern void mem_cgroup_move_lists(struct page *page,
+>  				  enum lru_list from, enum lru_list to);
+> +
+> +extern void mem_cgroup_uncharge_batch_start(void);
+> +extern void mem_cgroup_uncharge_batch_end(void);
+> +
+>  extern void mem_cgroup_uncharge_page(struct page *page);
+>  extern void mem_cgroup_uncharge_cache_page(struct page *page);
+>  extern int mem_cgroup_shmem_charge_fallback(struct page *page,
+> @@ -151,6 +155,14 @@ static inline void mem_cgroup_cancel_cha
+>  {
+>  }
+> 
+> +static inline void mem_cgroup_uncharge_batch_start(void)
+> +{
+> +}
+> +
+> +static inline void mem_cgroup_uncharge_batch_start(void)
+> +{
+> +}
+> +
+>  static inline void mem_cgroup_uncharge_page(struct page *page)
+>  {
+>  }
+> Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
+> +++ mmotm-2.6.31-Aug27/mm/memcontrol.c
+> @@ -1837,7 +1837,35 @@ void mem_cgroup_cancel_charge_swapin(str
+>  	css_put(&mem->css);
+>  }
+> 
+> +static bool
+> +__do_batch_uncharge(struct mem_cgroup *mem, const enum charge_type ctype)
+> +{
+> +	struct memcg_batch_info *batch = NULL;
+> +	bool uncharge_memsw;
+> +	/* If swapout, usage of swap doesn't decrease */
+> +	if (do_swap_account && (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+> +		uncharge_memsw = false;
+> +	else
+> +		uncharge_memsw = true;
+>
+> +	if (current->memcg_batch.do_batch) {
+> +		batch = &current->memcg_batch;
+> +		if (batch->memcg == NULL) {
+> +			batch->memcg = mem;
+> +			css_get(&mem->css);
+> +		}
+> +	}
+> +	if (!batch || batch->memcg != mem) {
+> +		res_counter_uncharge(&mem->res, PAGE_SIZE);
+> +		if (uncharge_memsw)
+> +			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
 
-What is the output of the following debug patch?
+Could you please add a comment stating that if memcg is different that
+we do a direct uncharge else we batch.
 
-====
-page-allocator: Debug per-cpu free
+> +	} else {
+> +		batch->pages += PAGE_SIZE;
+> +		if (uncharge_memsw)
+> +			batch->memsw += PAGE_SIZE;
+> +	}
+> +	return soft_limit_excess;
+> +}
+>  /*
+>   * uncharge if !page_mapped(page)
+>   */
+> @@ -1886,12 +1914,8 @@ __mem_cgroup_uncharge_common(struct page
+>  		break;
+>  	}
+> 
+> -	if (!mem_cgroup_is_root(mem)) {
+> -		res_counter_uncharge(&mem->res, PAGE_SIZE);
+> -		if (do_swap_account &&
+> -				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+> -			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+> -	}
+> +	if (!mem_cgroup_is_root(mem))
+> +		__do_batch_uncharge(mem, ctype);
 
-It's possible that pages being freed on the per-cpu list of 1 page is
-the wrong type when anti-fragmentation is disabled. It could have the
-impact of triggering a fallback earlier than it should happen.
+Now I am beginning to think we need a cond_mem_cgroup_is_not_root()
+function.
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index d052abb..a2a11ce 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1042,6 +1042,7 @@ static void free_hot_cold_page(struct page *page, int cold)
- 
- 	pcp = &zone_pcp(zone, get_cpu())->pcp;
- 	set_page_private(page, get_pageblock_migratetype(page));
-+	WARN_ON_ONCE(page_group_by_mobility_disabled && page_private(page) != MIGRATE_UNMOVABLE);
- 	local_irq_save(flags);
- 	if (unlikely(wasMlocked))
- 		free_page_mlock(page);
+>  	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+>  		mem_cgroup_swap_statistics(mem, true);
+>  	mem_cgroup_charge_statistics(mem, pc, false);
+> @@ -1938,6 +1962,40 @@ void mem_cgroup_uncharge_cache_page(stru
+>  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+>  }
+> 
+> +void mem_cgroup_uncharge_batch_start(void)
+> +{
+> +	VM_BUG_ON(current->memcg_batch.do_batch);
+> +	/* avoid batch if killed by OOM */
+> +	if (test_thread_flag(TIF_MEMDIE))
+> +		return;
+> +	current->memcg_batch.do_batch = 1;
+> +	current->memcg_batch.memcg = NULL;
+> +	current->memcg_batch.pages = 0;
+> +	current->memcg_batch.memsw = 0;
+> +}
+> +
+> +void mem_cgroup_uncharge_batch_end(void)
+> +{
+> +	struct mem_cgroup *mem;
+> +
+> +	if (!current->memcg_batch.do_batch)
+> +		return;
+> +
+> +	current->memcg_batch.do_batch = 0;
+> +
+> +	mem = current->memcg_batch.memcg;
+> +	if (!mem)
+> +		return;
+> +	if (current->memcg_batch.pages)
+> +		res_counter_uncharge(&mem->res,
+> +				     current->memcg_batch.pages, NULL);
+> +	if (current->memcg_batch.memsw)
+> +		res_counter_uncharge(&mem->memsw,
+> +				     current->memcg_batch.memsw, NULL);
+> +	/* we got css's refcnt */
+> +	cgroup_release_and_wakeup_rmdir(&mem->css);
+
+
+Does this effect deleting of a group and delay it by a large amount?
+
+> +}
+> +
+>  #ifdef CONFIG_SWAP
+>  /*
+>   * called after __delete_from_swap_cache() and drop "page" account.
+> Index: mmotm-2.6.31-Aug27/include/linux/sched.h
+> ===================================================================
+> --- mmotm-2.6.31-Aug27.orig/include/linux/sched.h
+> +++ mmotm-2.6.31-Aug27/include/linux/sched.h
+> @@ -1540,6 +1540,13 @@ struct task_struct {
+>  	unsigned long trace_recursion;
+>  #endif /* CONFIG_TRACING */
+>  	unsigned long stack_start;
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR /* memcg uses this to do batch job */
+> +	struct memcg_batch_info {
+> +		bool do_batch;
+> +		struct mem_cgroup *memcg;
+> +		long pages, memsw;
+> +	} memcg_batch;
+> +#endif
+>  };
+> 
+>  /* Future-safe accessor for struct task_struct's cpus_allowed. */
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+-- 
+	Balbir
