@@ -1,149 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbZHaXvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbZHaXy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752159AbZHaXvc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 19:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZHaXvb
+	id S1752294AbZHaXy2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 19:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbZHaXy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 19:51:31 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:39364 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZHaXva convert rfc822-to-8bit (ORCPT
+	Mon, 31 Aug 2009 19:54:28 -0400
+Received: from mail-iw0-f204.google.com ([209.85.223.204]:64359 "EHLO
+	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbZHaXy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 19:51:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=GGTRuVkp+PWHCU2AE6WITUooY+lkOcwpYsS3PxOjf0+SYB2/JKlMed2Ux2HEKmO6e
-	lFf/rGIfYbX+rxzSXWqhg==
+	Mon, 31 Aug 2009 19:54:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=b2M62x5Z9NbxdKSZIx8/fQOeT2vTE11pzpJvRqPORRdnPDd2inbua9J//VB4ezXrQL
+         VhFcA/E8r/67hviJYOE1baNjiz2QbsiGmEsa1gUorFB/GJjrwLkCGKB+qce7IBOKyAuT
+         wto2xB4qraxR722yiKl6iTCFsZVAGUFG7xmhc=
 MIME-Version: 1.0
-In-Reply-To: <20090831185640.GF3758@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
-	 <1251495072-7780-19-git-send-email-vgoyal@redhat.com>
-	 <4A9C09BE.4060404@redhat.com> <20090831185640.GF3758@redhat.com>
-Date: Mon, 31 Aug 2009 16:51:25 -0700
-Message-ID: <e98e18940908311651s26de5b70ye6f4a82402956309@mail.gmail.com>
-Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to 
-	track async bios.
-From: Nauman Rafique <nauman@google.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+In-Reply-To: <43e72e890908311302s58743978wd8950f167a871cfb@mail.gmail.com>
+References: <tnxtyzr7vcl.fsf@pc1117.cambridge.arm.com> <43e72e890908281509o44930348w581b865107ea3e98@mail.gmail.com> 
+	<43e72e890908310123w5d361ed5tff58a7663044bdcd@mail.gmail.com> 
+	<43e72e890908311050s320d0ceen312a0d3d9e4fbc76@mail.gmail.com> 
+	<43e72e890908311137k78ac439bs4edf376d07343a32@mail.gmail.com> 
+	<43e72e890908311230u28b0642ep7a6bfd9dab82318a@mail.gmail.com> 
+	<20090831193345.GG5631@tuxdriver.com> <43e72e890908311243u50b9323fveda9feaaa4d8efdb@mail.gmail.com> 
+	<20090831194753.GH5631@tuxdriver.com> <43e72e890908311302s58743978wd8950f167a871cfb@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Mon, 31 Aug 2009 16:54:09 -0700
+Message-ID: <43e72e890908311654t5d9489d3w9a817cffab5cb8f8@mail.gmail.com>
+Subject: Re: memleaks, acpi + ext4 + tty
+To: "John W. Linville" <linville@tuxdriver.com>,
+       Eric Paris <eparis@parisplace.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 11:56 AM, Vivek Goyal<vgoyal@redhat.com> wrote:
-> On Mon, Aug 31, 2009 at 01:34:54PM -0400, Rik van Riel wrote:
->> Vivek Goyal wrote:
->>> o blkio_cgroup patches from Ryo to track async bios.
->>>
->>> o This functionality is used to determine the group of async IO from page
->>>   instead of context of submitting task.
->>>
->>> Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
->>> Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
->>> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+On Mon, Aug 31, 2009 at 1:02 PM, Luis R. Rodriguez<mcgrof@gmail.com> wrote:
+> On Mon, Aug 31, 2009 at 12:47 PM, John W.
+> Linville<linville@tuxdriver.com> wrote:
+>> On Mon, Aug 31, 2009 at 12:43:01PM -0700, Luis R. Rodriguez wrote:
+>>> On Mon, Aug 31, 2009 at 12:33 PM, John W.
+>>> Linville<linville@tuxdriver.com> wrote:
 >>
->> This seems to be the most complex part of the code so far,
->> but I see why this code is necessary.
+>>> > My guess is that the culprit is between
+>>> > v2.6.31-rc8 and whatever is at the head of linux-2.6-allstable.
+>>>
+>>> But the issue is *not* in linux-2.6-allstable, it is only present on
+>>> wireless-testing, and I went as far back as merge-2009-08-28. I was
+>>> using whatever tag was available prior to you moving to rc8, and that
+>>> worked.
 >>
+>> OK, then I can only guess that something went wrong in your bisection
+>> (e.g. dirty build, something not marked properly, etc).
 >
-> Hi Rik,
->
-> Thanks for reviewing the patches. I wanted to have better understanding of
-> where all does it help to associate a bio to the group of process who
-> created/owned the page. Hence few thoughts.
->
-> When a bio is submitted to IO scheduler, it needs to determine the group
-> bio belongs to and group which should be charged to. There seem to be two
-> methods.
->
-> - Attribute the bio to cgroup submitting process belongs to.
-> - For async requests, track the original owner hence cgroup of the page
->  and charge that group for the bio.
->
-> One can think of pros/cons of both the approaches.
->
-> - The primary use case of tracking async context seems be that if a
->  process T1 in group G1 mmaps a big file and then another process T2 in
->  group G2, asks for memory and triggers reclaim and generates writes of
->  the file pages mapped by T1, then these writes should not be charged to
->  T2, hence blkio_cgroup pages.
->
->  But the flip side of this might be that group G2 is a low weight group
->  and probably too busy also right now, which will delay the write out
->  and possibly T2 will wait longer for memory to be allocated.
->
-> - At one point of time Andrew mentioned that buffered writes are generally a
->  big problem and one needs to map these to owner's group. Though I am not
->  very sure what specific problem he was referring to. Can we attribute
->  buffered writes to pdflush threads and move all pdflush threads in a
->  cgroup to limit system wide write out activity?
->
-> - Somebody also gave an example where there is a memory hogging process and
->  possibly pushes out some processes to swap. It does not sound fair to
->  charge those proccess for that swap writeout. These processes never
->  requested swap IO.
->
-> - If there are multiple buffered writers in the system, then those writers
->  can also be forced to writeout some pages to disk before they are
->  allowed to dirty more pages. As per the page cache design, any writer
->  can pick any inode and start writing out pages. So it can happen a
->  weight group task is writting out pages dirtied by a lower weight group
->  task. If, async bio is mapped to owner's group, it might happen that
->  higher weight group task might be made to sleep on lower weight group
->  task because request descriptors are all consumed up.
->
-> It looks like there does not seem to be a clean way which covers all the
-> cases without issues. I am just trying to think, what is a simple way
-> which covers most of the cases. Can we just stick to using submitting task
-> context to determine a bio's group (as cfq does). Which can result in
-> following.
->
-> - Less code and reduced complexity.
->
-> - Buffered writes will be charged to pdflush and its group. If one wish to
->  limit buffered write activity for pdflush, one can move all the pdflush
->  threads into a group and assign desired weight. Writes submitted in
->  process context will continue to be charged to that process irrespective
->  of the fact who dirtied that page.
+> Well so remember I did a clean git clone of wireless-testing and the
+> issue was still there, but I determined just now it seems rc8 from
+> Linus does indeed also have the issue. For some reason the issue was
+> not present on hpa's rc8 on linux-2.6-allstable. Will double check on
+> that again.
 
-What if we wanted to control buffered write activity per group? If a
-group keeps dirtying pages, we wouldn't want it to dominate the disk
-IO capacity at the expense of other cgroups (by dominating the writes
-sent down by pdflush).
+OK so hpa's tree just had all of Linus' stuff pulled, not just rc8. It
+turns out Eric Paris' inotify patches are required to fix 2.6.31-rc8
+for me.. I tested just one patch and it fixed my bootup lag:
 
->
-> - swap activity will be charged to kswapd and its group. If swap writes
->  are coming from process context, it gets charged to process and its
->  group.
->
-> - If one is worried about the case of one process being charged for write
->  out of file mapped by another process during reclaim, then we can
->  probably make use of memory controller and mount memory controller and
->  io controller together on same hierarchy. I am told that with memory
->  controller, group's memory will be reclaimed by the process requesting
->  more memory. If that's the case, then IO will automatically be charged
->  to right group if we use submitting task context.
->
-> I just wanted to bring this point forward for more discussions to know
-> what is the right thing to do? Use bio tracking or not.
->
-> Ryo, any thoughts on this?
->
-> Thanks
-> Vivek
->
->> Acked-by: Rik van Riel <riel@redhat.com>
->
+http://git.infradead.org/users/eparis/notify.git/commit/b962e7312ae87006aed6f68ceee94bdf8db08338
+
+FWIW for that patch:
+
+Tested-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+
+So -- you if you're like me and had issues with bootup lag on
+wireless-testing, you can probably fix your wireless-testing by
+pulling his patches:
+
+git pull git://git.infradead.org/users/eparis/notify.git for-linus
+
+I saw Linus had some other fixes but I'll wait for rc9 for that as my
+box seems reasonably stable right now.
+
+  Luis
