@@ -1,156 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZHaTIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZHaTI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbZHaTIN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 15:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZHaTIM
+	id S1754219AbZHaTI6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 15:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZHaTI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 15:08:12 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:21465 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753853AbZHaTIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 15:08:12 -0400
-Subject: Re: [PATCH 2/6] SECURITY: add task_struct to setrlimit
-From: Eric Paris <eparis@redhat.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: akpm@linux-foundation.org, mingo@redhat.com, oleg@redhat.com,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       eparis@redhat.com, sds@tycho.nsa.gov
-In-Reply-To: <1251744974-29398-2-git-send-email-jirislaby@gmail.com>
-References: <1251744974-29398-1-git-send-email-jirislaby@gmail.com>
-	 <1251744974-29398-2-git-send-email-jirislaby@gmail.com>
-Content-Type: text/plain
-Date: Mon, 31 Aug 2009 15:07:33 -0400
-Message-Id: <1251745653.2158.1.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Aug 2009 15:08:57 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:40894 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbZHaTI5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 15:08:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FyLAf0/TuDtNQ5+aYKw2zmUfJgXmBJFHXVjhRx9Vc0rl1Y4y0sgmOfB23cK2xDJVSa
+         EuFDvnR8jz4ehOtwD1MbVvh/6mL264wLoWQI+3EKZst8QJbxfSUsDQzXjYzDmPJrC0Q/
+         Cg6iVH/ohwz75Y9TBLfBw7iK5t8lqrWAPT+no=
+Date: Mon, 31 Aug 2009 21:08:54 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: srostedt@redhat.com, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] tracing: remove mentioning of legacy latency_trace
+	file from documentation
+Message-ID: <20090831190852.GC6048@nowhere>
+References: <1251744635-14926-1-git-send-email-albin.tonnerre@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251744635-14926-1-git-send-email-albin.tonnerre@free-electrons.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-31 at 20:56 +0200, Jiri Slaby wrote:
-> Add task_struct to task_setrlimit of security_operations to be able to set
-> rlimit of different task than current.
+On Mon, Aug 31, 2009 at 08:50:35PM +0200, Albin Tonnerre wrote:
+> The latency_trace file got removed a while back by commit
+> 886b5b73d71e4027d7dc6c14f5f7ab102201ea6b. This patch fixes the
+> documentation to stop mentioning it.
 > 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: James Morris <jmorris@namei.org>
-> Cc: Eric Paris <eparis@parisplace.org>
-
-It looks ok to me.  We still seem to have complete SELinux control and I
-don't see that you missed anything elsewhere in the security subsystem.
-
-Acked-by: Eric Paris <eparis@redhat.com>
-
-
+> Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
 > ---
->  include/linux/security.h |    9 ++++++---
->  kernel/sys.c             |    2 +-
->  security/capability.c    |    3 ++-
->  security/security.c      |    5 +++--
->  security/selinux/hooks.c |    7 ++++---
->  5 files changed, 16 insertions(+), 10 deletions(-)
+>  Documentation/trace/ftrace.txt |   55 +++++++++++++++++----------------------
+>  1 files changed, 24 insertions(+), 31 deletions(-)
 > 
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index 0f81525..880a21c 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -1520,7 +1520,8 @@ struct security_operations {
->  	int (*task_setnice) (struct task_struct *p, int nice);
->  	int (*task_setioprio) (struct task_struct *p, int ioprio);
->  	int (*task_getioprio) (struct task_struct *p);
-> -	int (*task_setrlimit) (unsigned int resource, struct rlimit *new_rlim);
-> +	int (*task_setrlimit) (struct task_struct *p, unsigned int resource,
-> +			struct rlimit *new_rlim);
->  	int (*task_setscheduler) (struct task_struct *p, int policy,
->  				  struct sched_param *lp);
->  	int (*task_getscheduler) (struct task_struct *p);
-> @@ -1775,7 +1776,8 @@ int security_task_setgroups(struct group_info *group_info);
->  int security_task_setnice(struct task_struct *p, int nice);
->  int security_task_setioprio(struct task_struct *p, int ioprio);
->  int security_task_getioprio(struct task_struct *p);
-> -int security_task_setrlimit(unsigned int resource, struct rlimit *new_rlim);
-> +int security_task_setrlimit(struct task_struct *p, unsigned int resource,
-> +		struct rlimit *new_rlim);
->  int security_task_setscheduler(struct task_struct *p,
->  				int policy, struct sched_param *lp);
->  int security_task_getscheduler(struct task_struct *p);
-> @@ -2385,7 +2387,8 @@ static inline int security_task_getioprio(struct task_struct *p)
->  	return 0;
->  }
+> diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
+> index a39b3c7..3f058ab 100644
+> --- a/Documentation/trace/ftrace.txt
+> +++ b/Documentation/trace/ftrace.txt
+> @@ -85,26 +85,19 @@ of ftrace. Here is a list of some of the key files:
+>  	This file holds the output of the trace in a human
+>  	readable format (described below).
 >  
-> -static inline int security_task_setrlimit(unsigned int resource,
-> +static inline int security_task_setrlimit(struct task_struct *p,
-> +					  unsigned int resource,
->  					  struct rlimit *new_rlim)
->  {
->  	return 0;
-> diff --git a/kernel/sys.c b/kernel/sys.c
-> index a7e36b6..ae7be2e 100644
-> --- a/kernel/sys.c
-> +++ b/kernel/sys.c
-> @@ -1254,7 +1254,7 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
->  	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
->  		return -EPERM;
+> -  latency_trace:
+> -
+> -	This file shows the same trace but the information
+> -	is organized more to display possible latencies
+> -	in the system (described below).
+> -
+>    trace_pipe:
 >  
-> -	retval = security_task_setrlimit(resource, &new_rlim);
-> +	retval = security_task_setrlimit(current, resource, &new_rlim);
->  	if (retval)
->  		return retval;
+>  	The output is the same as the "trace" file but this
+>  	file is meant to be streamed with live tracing.
+> -	Reads from this file will block until new data
+> -	is retrieved. Unlike the "trace" and "latency_trace"
+> -	files, this file is a consumer. This means reading
+> -	from this file causes sequential reads to display
+> -	more current data. Once data is read from this
+> -	file, it is consumed, and will not be read
+> -	again with a sequential read. The "trace" and
+> -	"latency_trace" files are static, and if the
+> -	tracer is not adding more data, they will display
+> -	the same information every time they are read.
+> +	Reads from this file will block until new data is
+> +	retrieved.  Unlike the "trace" file, this file is a
+> +	consumer. This means reading from this file causes
+> +	sequential reads to display more current data. Once
+> +	data is read from this file, it is consumed, and
+> +	will not be read again with a sequential read. The
+> +	"trace" file is static, and if the tracer is not
+> +	adding more data,they will display the same
+> +	information every time they are read.
 >  
-> diff --git a/security/capability.c b/security/capability.c
-> index 6c38f4d..90d6daf 100644
-> --- a/security/capability.c
-> +++ b/security/capability.c
-> @@ -447,7 +447,8 @@ static int cap_task_getioprio(struct task_struct *p)
->  	return 0;
->  }
+>    trace_options:
 >  
-> -static int cap_task_setrlimit(unsigned int resource, struct rlimit *new_rlim)
-> +static int cap_task_setrlimit(struct task_struct *p, unsigned int resource,
-> +		struct rlimit *new_rlim)
->  {
->  	return 0;
->  }
-> diff --git a/security/security.c b/security/security.c
-> index 0b7f9eb..b2c21dc 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -779,9 +779,10 @@ int security_task_getioprio(struct task_struct *p)
->  	return security_ops->task_getioprio(p);
->  }
+> @@ -117,10 +110,10 @@ of ftrace. Here is a list of some of the key files:
+>  	Some of the tracers record the max latency.
+>  	For example, the time interrupts are disabled.
+>  	This time is saved in this file. The max trace
+> -	will also be stored, and displayed by either
+> -	"trace" or "latency_trace".  A new max trace will
+> -	only be recorded if the latency is greater than
+> -	the value in this file. (in microseconds)
+> +	will also be stored, and displayed by "trace".
+> +	A new max trace will only be recorded if the
+> +	latency is greater than the value in this
+> +	file. (in microseconds)
 >  
-> -int security_task_setrlimit(unsigned int resource, struct rlimit *new_rlim)
-> +int security_task_setrlimit(struct task_struct *p, unsigned int resource,
-> +		struct rlimit *new_rlim)
->  {
-> -	return security_ops->task_setrlimit(resource, new_rlim);
-> +	return security_ops->task_setrlimit(p, resource, new_rlim);
->  }
+>    buffer_size_kb:
 >  
->  int security_task_setscheduler(struct task_struct *p,
-> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> index 496e626..839622a 100644
-> --- a/security/selinux/hooks.c
-> +++ b/security/selinux/hooks.c
-> @@ -3355,16 +3355,17 @@ static int selinux_task_getioprio(struct task_struct *p)
->  	return current_has_perm(p, PROCESS__GETSCHED);
->  }
+> @@ -209,8 +202,7 @@ Here is the list of current tracers that may be configured.
+>  	Traces the areas that disable interrupts and saves
+>  	the trace with the longest max latency.
+>  	See tracing_max_latency. When a new max is recorded,
+> -	it replaces the old trace. It is best to view this
+> -	trace via the latency_trace file.
+> +	it replaces the old trace.
 >  
-> -static int selinux_task_setrlimit(unsigned int resource, struct rlimit *new_rlim)
-> +static int selinux_task_setrlimit(struct task_struct *p, unsigned int resource,
-> +		struct rlimit *new_rlim)
->  {
-> -	struct rlimit *old_rlim = current->signal->rlim + resource;
-> +	struct rlimit *old_rlim = p->signal->rlim + resource;
+>    "preemptoff"
 >  
->  	/* Control the ability to change the hard limit (whether
->  	   lowering or raising it), so that the hard limit can
->  	   later be used as a safe reset point for the soft limit
->  	   upon context transitions.  See selinux_bprm_committing_creds. */
->  	if (old_rlim->rlim_max != new_rlim->rlim_max)
-> -		return current_has_perm(current, PROCESS__SETRLIMIT);
-> +		return current_has_perm(p, PROCESS__SETRLIMIT);
+> @@ -307,8 +299,8 @@ the lowest priority thread (pid 0).
+>  Latency trace format
+>  --------------------
 >  
->  	return 0;
->  }
+> -For traces that display latency times, the latency_trace file
+> -gives somewhat more information to see why a latency happened.
+> +For traces that display latency times, the trace file gives
+> +somewhat more information to see why a latency happened.
 
+
+
+Hmm, now that the latency_trace file has disappeared, this sentence
+doesn't make sens anymore.
+The trace file gives more information about latency than...? :-)
+
+Actually the latency format still exists.
+It's toggable through the latency-format trace option:
+
+echo latency-format > trace_options
+
+I guess this documentation should actually not make the latency
+format documentation disappear but actually mirror the moving from
+a file to an option.
+
+
+>  Here is a typical trace.
+>  
+>  # tracer: irqsoff
+> @@ -382,7 +374,7 @@ The above is mostly meaningful for kernel developers.
+>  
+>    time: This differs from the trace file output. The trace file output
+>  	includes an absolute timestamp. The timestamp used by the
+> -	latency_trace file is relative to the start of the trace.
+> +	trace file is relative to the start of the trace.
+
+
+
+This is wrong. The timestamp in the trace file is absolute (relative
+to the boot).
+
+Please correct it according to the latency-format option.
+
+
+
+>    delay: This is just to help catch your eye a bit better. And
+>  	 needs to be fixed to be only relative to the same CPU.
+> @@ -440,7 +432,8 @@ Here are the available options:
+>    sym-addr:
+>     bash-4000  [01]  1477.606694: simple_strtoul <c0339346>
+>  
+> -  verbose - This deals with the latency_trace file.
+> +  verbose - This deals with the trace file when it
+> +            displays lantecy times.
+
+
+"latency"
+
+Is it true when latency-format is not selected?
+
+Thanks.
 
