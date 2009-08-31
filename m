@@ -1,76 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751556AbZHaHuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751594AbZHaHvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751556AbZHaHuU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 03:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZHaHuU
+	id S1751594AbZHaHvx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 03:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZHaHvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 03:50:20 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:56321 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488AbZHaHuS (ORCPT
+	Mon, 31 Aug 2009 03:51:53 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:55330 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751436AbZHaHvw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 03:50:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=aZfX41kF+nPSBwL4eaqGlyOVtMRadVW+WOHfiYZAXoraCRyAGnPN6KCInXTReGhkld
-         7L/iKBhfOtEjsROSPMoqkw869yPN5DB6UPf3sjScDKjy9gae7Bmxrx8B7RPL3mYNwuAX
-         GLTeF0ULvZCOYbWiHpOfzNbxKtc6emIsSXP20=
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: <hpa@zytor.com>
-Cc: <mingo@redhat.com>, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-       tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org
-Subject: [PATCH 3/3] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM CPUID bit
-Date: Mon, 31 Aug 2009 09:50:11 +0200
-Message-Id: <1251705011-18636-3-git-send-email-petkovbb@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1251705011-18636-1-git-send-email-petkovbb@gmail.com>
-References: <1251705011-18636-1-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <20090831073429.GA26596@liondog.tnic>
-References: <20090831073429.GA26596@liondog.tnic>
+	Mon, 31 Aug 2009 03:51:52 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
+Date: Mon, 31 Aug 2009 15:51:29 +0800
+Message-ID: <73839B4A0818E747864426270AC332C304438600@zmy16exm20.fsl.freescale.net>
+In-Reply-To: <20090828151953.GA14776@oksana.dev.rtsoft.ru>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH v2] powerpc/85xx: Add eSDHC support for MPC8536DS boards
+Thread-Index: Acon8xDcD7QYWkcLRBmiFK/myh2ZmgCG7TgQ
+References: <20090807195724.GA24020@oksana.dev.rtsoft.ru> <20090807195822.GG2735@oksana.dev.rtsoft.ru> <A17F24A0-87E0-4FFA-9C14-DF57D8A9D015@kernel.crashing.org> <20090818233818.GA29042@oksana.dev.rtsoft.ru> <F58A75CD-73CC-4F75-AF51-2BCC0B828E84@kernel.crashing.org> <20090819015101.GA10782@oksana.dev.rtsoft.ru> <73839B4A0818E747864426270AC332C304438438@zmy16exm20.fsl.freescale.net> <20090828151953.GA14776@oksana.dev.rtsoft.ru>
+From: "Hu Mingkai-B21284" <Mingkai.Hu@freescale.com>
+To: <avorontsov@ru.mvista.com>
+Cc: "Kumar Gala" <galak@kernel.crashing.org>, "Ben Dooks" <ben@fluff.org>,
+       <linux-kernel@vger.kernel.org>, <sdhci-devel@lists.ossman.eu>,
+       <linuxppc-dev@ozlabs.org>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Pierre Ossman" <pierre@ossman.eu>,
+       "David Vrabel" <david.vrabel@csr.com>
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Borislav Petkov <borislav.petkov@amd.com>
+ 
 
-fbd8b1819e80ac5a176d085fdddc3a34d1499318 turns off the bit for
-/proc/cpuinfo. However, a proper/full fix would be to additionally
-turn off the bit in the CPUID output so that future callers get
-correct CPU features info.
+> -----Original Message-----
+> From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com] 
+> Sent: Friday, August 28, 2009 11:20 PM
+> To: Hu Mingkai-B21284
+> Cc: Kumar Gala; Ben Dooks; linux-kernel@vger.kernel.org; 
+> sdhci-devel@lists.ossman.eu; linuxppc-dev@ozlabs.org; Andrew 
+> Morton; Pierre Ossman; David Vrabel
+> Subject: Re: [PATCH v2] powerpc/85xx: Add eSDHC support for 
+> MPC8536DS boards
+> 
+> On Fri, Aug 28, 2009 at 07:02:51PM +0800, Hu Mingkai-B21284 wrote:
+> > > On Tue, Aug 18, 2009 at 08:24:17PM -0500, Kumar Gala wrote:
+> > > > 
+> > > > On Aug 18, 2009, at 6:38 PM, Anton Vorontsov wrote:
+> > > > 
+> > > > >This patch simply adds sdhci node to the device tree.
+> > > > >
+> > > > >We specify clock-frequency manually, so that eSDHC will
+> > > work without
+> > > > >upgrading U-Boot. Though, that'll only work for default setup 
+> > > > >(1500
+> > > > >MHz) on new board revisions. For non-default setups, it's
+> > > recommended
+> > > > >to upgrade U-Boot, since it will fixup clock-frequency
+> > > automatically.
+> > > > >
+> > > > >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > > 
+> > > > out of interest the 85xx eSDHC don't need the sdhci,wp-inverted 
+> > > > property?
+> > > 
+> > > Yes, eSDHC controllers in MPC85xx report normal state in its 
+> > > registers.
+> > > 
+> > 
+> > Hi Anton,
+> > 
+> > The eSDHC controller in different silicon version on 
+> MPC8536  reports 
+> > different WP state in the register PRSSTAT:
+> 
+> Thanks a million for the heads up!
+> 
+> Yes, the manual I used ("MPC8536ERM Rev. 0 10/2008") doesn't 
+> mention that, but the newer manual that I just downloaded 
+> ("MPC8536ERM Rev. 1
+> 05/2009") does.
+> 
+> [...]
+> > For silicon 1.0,  the macro 
+> SDHCI_QUIRK_INVERTED_WRITE_PROTECT is also 
+> > defined, so the dirver will report the error WP state in function 
+> > sdhci_get_ro.
+> 
+> Not any longer. We don't actually define it for any 85xx CPUs.
+> 
+> I need to think how should we handle all these WP inversions. :-)
+> 
+> So, we have inversion in BCSR (depending on the BCSR 
+> revision), configurable inversion in CPU via GENCFGR for 1.1 
+> silicon, and non-configurable non-inverted reporting for 1.0 
+> silicon...
+> 
+> Do you know if there are any plans to fix the WP inversion 
+> for MPC8569E-MDS boards, or make something like GENCFGR for 
+> MPC8569 CPUs?
+> 
+> Thanks,
+> 
 
-Do that by basically reversing what the BIOS wrongfully does at boot.
+Sorry, I also don't know the plan to MPC8569 CPU, but if I get any info,
+I'll inform you ASAP. :-)
 
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- arch/x86/kernel/cpu/amd.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
+Best regards,
+Mingkai
 
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 63fddcd..0a717fc 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -404,9 +404,18 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 		/*
- 		 * Some BIOSes incorrectly force this feature, but only K8
- 		 * revision D (model = 0x14) and later actually support it.
-+		 * (AMD Erratum #110, docId: 25759).
- 		 */
--		if (c->x86_model < 0x14)
-+		if (c->x86_model < 0x14 && cpu_has(c, X86_FEATURE_LAHF_LM)) {
-+			u64 val;
-+
- 			clear_cpu_cap(c, X86_FEATURE_LAHF_LM);
-+			if (!rdmsrl_amd_safe(0xc001100d, &val)) {
-+				val &= ~(1ULL << 32);
-+				wrmsrl_amd_safe(0xc001100d, val);
-+			}
-+		}
-+
- 	}
- 	if (c->x86 == 0x10 || c->x86 == 0x11)
- 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
--- 
-1.6.3.3
-
+> --
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
+> 
+> 
