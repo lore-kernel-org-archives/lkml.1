@@ -1,89 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823AbZHaPwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZHaPwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752823AbZHaPwQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 11:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZHaPwQ
+	id S1753030AbZHaPwZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 11:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbZHaPwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 11:52:16 -0400
-Received: from mail.lang.hm ([64.81.33.126]:43644 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751644AbZHaPwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 11:52:15 -0400
-Date: Mon, 31 Aug 2009 08:50:53 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Ric Wheeler <rwheeler@redhat.com>
-cc: Christoph Hellwig <hch@infradead.org>, Michael Tokarev <mjt@tls.msk.ru>,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
- document conditions when reliable operation is possible)
-In-Reply-To: <4A9BCEA8.9080206@redhat.com>
-Message-ID: <alpine.DEB.2.00.0908310847530.6822@asgard.lang.hm>
-References: <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com> <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz> <alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm> <4A9A88B6.9050902@redhat.com>
- <4A9A9034.8000703@msgid.tls.msk.ru> <20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com> <20090831131626.GA17325@infradead.org> <4A9BCEA8.9080206@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 31 Aug 2009 11:52:24 -0400
+Received: from mx01.freesources.org ([80.237.252.149]:46651 "EHLO
+	mail01.freesources.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbZHaPwV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 11:52:21 -0400
+Date: Mon, 31 Aug 2009 17:52:00 +0200
+From: Jonas Meurer <jonas@freesources.org>
+To: Sebastian Andrzej Siewior <sebastian@ml.breakpoint.cc>
+Cc: Celejar <celejar@gmail.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       541835@bugs.debian.org, lkml <linux-kernel@vger.kernel.org>,
+       linux-crypto@vger.kernel.org
+Message-ID: <20090831155200.GD7678@resivo.wgnet.de>
+References: <20090825195852.1dfacb6c.celejar@gmail.com>
+ <20090827095516.6817be1e.randy.dunlap@oracle.com>
+ <20090827183500.GC24973@resivo.wgnet.de>
+ <20090827123401.86cd4319.randy.dunlap@oracle.com>
+ <20090828080056.GA3204@Chamillionaire.breakpoint.cc>
+ <20090830153722.GA28497@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090830153722.GA28497@Chamillionaire.breakpoint.cc>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 94.219.126.195
+X-SA-Exim-Mail-From: jonas@freesources.org
+Subject: Re: [pkg-cryptsetup-devel] Bug#541835: crypto configuration /
+ dependencies broken
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:20:07 +0000)
+X-SA-Exim-Scanned: Yes (on mail01.freesources.org)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Aug 2009, Ric Wheeler wrote:
+hey,
 
-> On 08/31/2009 09:16 AM, Christoph Hellwig wrote:
->> On Mon, Aug 31, 2009 at 09:15:27AM -0400, Ric Wheeler wrote:
->>>> While most common filesystem do have barrier support it is:
->>>>
->>>>    - not actually enabled for the two most common filesystems
->>>>    - the support for write barriers an cache flushing tends to be buggy
->>>>      all over our software stack,
->>>> 
->>> 
->>> Or just missing - I think that MD5/6 simply drop the requests at present.
->>> 
->>> I wonder if it would be worth having MD probe for write cache enabled&
->>> warn if barriers are not supported?
->> 
->> In my opinion even that is too weak.  We know how to control the cache
->> settings on all common disks (that is scsi and ata), so we should always
->> disable the write cache unless we know that the whole stack (filesystem,
->> raid, volume managers) supports barriers.  And even then we should make
->> sure the filesystems does actually use barriers everywhere that's needed
->> which failed at for years.
->> 
->
-> I was thinking about that as well. Having us disable the write cache when we 
-> know it is not supported (like in the MD5 case) would certainly be *much* 
-> safer for almost everyone.
->
-> We would need to have a way to override the write cache disabling for people 
-> who either know that they have a non-volatile write cache (unlikely as it 
-> would probably be to put MD5 on top of a hardware RAID/external array, but 
-> some of the new SSD's claim to have non-volatile write cache).
+On 30/08/2009 Sebastian Andrzej Siewior wrote:
+> * Sebastian Andrzej Siewior | 2009-08-28 10:00:56 [+0200]:
+> 
+> >>> the problem is not reproducible with a debian/unstable 2.6.30.6 kernel,
+> >>> even though it has cbc compiled as module as well. but if I recompile
+> >>> the same kernel sources with Celejars kernel .config, the problem
+> >>> occurs. thus it must be related to the kernel config in some way.
+> >It must be the kernel confing since I run .30.stable and it works. I try
+> >to look at it later.
+> 
+> Your kernel config is fine, the problem is that the initramfs tools do
+> not copy all of the required modules into the initramfs. The missing
+> modles are:
+> - cryptomgr: that one is responsible to load the cbc and aes module and
+>   bind them to cbc(aes)
+> - chainiv: that one creates IVs if the "user" does not specify one.
+>   dm-crypt probably does not use that one but is required due to the way
+>   crypto works atm.
+> - krng: provides random numbers and is required by chainiv.
+> 
+> If you add those three to /etc/initramfs/modules than it should work.
+> 
+> Could someone please look at initramfs to figure out why those three
+> modules are not copied in this reduced setup?
 
-I've done this when the hardware raid only suppored raid 5 but I wanted 
-raid 6. I've also done it when I had enough disks to need more than one 
-hardware raid card to talk to them all, but wanted one logical drive for 
-the system.
+the reason is simply that no other crypto modules define depends on the
+listed ones:
 
-> It would also be very useful to have all of our top tier file systems enable 
-> barriers by default, provide consistent barrier on/off mount options and log 
-> a nice warning when not enabled....
+# modinfo -F depends dm-crypt
+dm-mod,crypto_blkcipher
 
-most people are not willing to live with unbuffered write performance. 
-they care about their data, but they also care about performance, and 
-since performance is what they see on an ongong basis, they tend to care 
-more about performance.
+# modinfo -F aes_generic sha256_generic cbc
+crypto_algapi
+crypto_hash
+crypto_algapi,crypto_blkcipher
 
-given that we don't even have barriers enabled by default on ext3 due to 
-the performance hit, what makes you think that disabling buffers entirely 
-is going to be acceptable to people?
+# modinfo -F crypto_blkcipher crypto_hash
+crypto_algapi
+crypto_algapi
 
-David Lang
+and even the new modules don't depend on each other:
+
+# modinfo -F cryptomgr
+crypto_hash,crypto_algapi,crypto_blkcipher,aead,pcompress
+
+# modinfo -F chainiv
+crypto_algapi,rng,crypto_wq,crypto_blkcipher
+
+# modinfo -F krng
+rng,crypto_algapi
+
+so the following depends should be added/changed:
+
+- chainiv should depend o 'krng' instead of 'rng' at least
+- maybe cipher modules like aes,serpent,... should depend on 'cryptomgr'
+  instead of 'crypto_algapi'
+- crypto_algapi should depend on chainiv
+
+these changes are pure guesses, i don't know the details. but at least
+additional depends need to be defined for crypto modules, don't you
+think so?
+
+greetings,
+ jonas
