@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751858AbZHaIOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752130AbZHaITR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751858AbZHaIOb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 04:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZHaIOa
+	id S1752130AbZHaITR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 04:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZHaITQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 04:14:30 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:49882 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751158AbZHaIO3 (ORCPT
+	Mon, 31 Aug 2009 04:19:16 -0400
+Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:54911
+	"EHLO mswedge2.sunplus.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751210AbZHaITP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 04:14:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=sq+WX5hcdoaYuWvb6pPcJ1GjY9fGq2X+NWuOgNjItDdgRqi08eT/81vLIhFcUBK9wl
-         fHotQUi4HRHhMVG2yuuLped4ejWtH8YPcGNPcAXl2QKAFGeHc46FxZWxcpYLUX+FAJoZ
-         M72XnPn30Q31mdUb5nSI9XXuUcA5tuuCEmO24=
-Date: Mon, 31 Aug 2009 10:14:26 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-       tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86, AMD: Disable wrongly set X86_FEATURE_LAHF_LM
- CPUID bit
-Message-ID: <20090831081426.GA2876@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, mingo@redhat.com,
-	linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-	tglx@linutronix.de, borislav.petkov@amd.com,
-	linux-tip-commits@vger.kernel.org
-References: <1251633031-2244-1-git-send-email-petkovbb@gmail.com>
- <1251633031-2244-3-git-send-email-petkovbb@gmail.com>
- <4A9AD17A.6060507@zytor.com>
- <20090830193039.GB22234@liondog.tnic>
- <4A9ADAC3.3020004@zytor.com>
- <20090830202926.GC22234@liondog.tnic>
- <4A9AE5B1.80305@zytor.com>
+	Mon, 31 Aug 2009 04:19:15 -0400
+X-Greylist: delayed 1381 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Aug 2009 04:19:15 EDT
+In-Reply-To: <200908271600.37569.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [GIT PULL, v4] S+core architecture (arch/score) support
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4A9AE5B1.80305@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
+Message-ID: <OF0579E5F2.3B710FBD-ON48257623.002611FB-48257623.002B92AD@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Mon, 31 Aug 2009 15:48:33 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/08/31 ?? 03:48:34,
+	Serialize complete at 2009/08/31 ?? 03:48:34
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n7V8JY16012551
 
-On Sun, Aug 30, 2009 at 01:48:49PM -0700, H. Peter Anvin wrote:
-> The 2x32 bit interface is the legacy interface.  It turned out to be a
-> bad idea, but it's hard to clean up all the users.
+Arnd Bergmann <arnd@arndb.de> Ğ´ÓÚ 2009-08-27 22:00:37:
 
-By the way, do we want to switch all rd/wrmsr users to the rd/wrmsrl et
-al interfaces? I could do that gradually - there are only about 400+
-callsites :)
+> 
+> I understand your problem here, and I think it would be good
+> to have second opinion from someone else here. The four
+> #defines you mention are roughly in reverse order of importance.
+> 
+> I think you really need to remove __ARCH_WANT_SYSCALL_DEPRECATED
+> and get that working. Please tell us if some system call is
+> giving you problems and we can find a solution together.
+> 
+> Removing __ARCH_WANT_SYSCALL_OFF_T should not be too hard, because
+> glibc uses the loff_t versions by default anyway. I have not tried
+> it though, so it may be more complicated than I thought.
+> 
 
--- 
-Regards/Gruss,
-    Boris.
+in __ARCH_WANT_SYSCALL_DEPRECATED,
+asm-generic/unistd.h haven't define __NR_ipc and __NR__llseek
+which used in glibc.
+
+Now we have maintained 3 sets of syscall API code use for glibc.
+1: Old syscall interface, which linux/score system work well.
+2: New syscall interface, define all 4 macro __ARCH_WANT_SYSCALL_XXX,
+        linux/score system work now, but we still debug the glibc code.
+3: New syscall interface, without define __ARCH_WANT_SYSCALL_DEPRECATED
+        and __ARCH_WANT_SYSCALL_OFF_T, linux/score system couldn't work.
+        because glibc have many place need to fix.
+
+Liqin
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
