@@ -1,107 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZHaOpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751815AbZHaPDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752907AbZHaOpI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 10:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZHaOpH
+	id S1751815AbZHaPDi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 11:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZHaPDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 10:45:07 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:36973 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752576AbZHaOpF convert rfc822-to-8bit (ORCPT
+	Mon, 31 Aug 2009 11:03:38 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:18092 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750872AbZHaPDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 10:45:05 -0400
-From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-To: "Syed Mohammed, Khasim" <khasim@ti.com>, Steve Sakoman <sakoman@gmail.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org Mailing List" 
-	<linux-omap@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Tony Lindgren <tony@atomide.com>,
-       Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Mon, 31 Aug 2009 20:14:43 +0530
-Subject: RE: [PATCH 00/18] OMAP: DSS2: Intro
-Thread-Topic: [PATCH 00/18] OMAP: DSS2: Intro
-Thread-Index: AcoqR0n2W0I5RdOXR5+xDReB8va5ogAAQjmQAABDbhA=
-Message-ID: <19F8576C6E063C45BE387C64729E73940436A4A9B6@dbde02.ent.ti.com>
-References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
-	 <4A9B96A7.5040005@gmail.com>
- <5e088bd90908310720p290ba68dwd6106a778fd7c740@mail.gmail.com>
- <0680EC522D0CC943BC586913CF3768C0037CE48136@dbde02.ent.ti.com>
-In-Reply-To: <0680EC522D0CC943BC586913CF3768C0037CE48136@dbde02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 31 Aug 2009 11:03:37 -0400
+X-Trace: 255419715/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.31.213/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.31.213
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Au4EAMeCm0pQKR/V/2dsb2JhbACBU45OAcgOhBoF
+X-IronPort-AV: E=Sophos;i="4.44,305,1249254000"; 
+   d="scan'208";a="255419715"
+Date: Mon, 31 Aug 2009 16:03:02 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Andi Kleen <ak@linux.intel.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Valerie Aurora <vaurora@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH mmotm] vfs: optimize touch_time too fix
+Message-ID: <Pine.LNX.4.64.0908311558220.4384@sister.anvils>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Recent mmotms give me WARNING: at fs/namespace.c:612 mntput_no_expire()+...
+when unmounting: __mntput()'s WARN_ON(count_mnt_writers(mnt)).
 
-> -----Original Message-----
-> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> owner@vger.kernel.org] On Behalf Of Syed Mohammed, Khasim
-> Sent: Monday, August 31, 2009 8:11 PM
-> To: Steve Sakoman; Artem Bityutskiy; linux-kernel@vger.kernel.org;
-> linux-omap@vger.kernel.org Mailing List
-> Cc: Andrew Morton; Tony Lindgren; Tomi Valkeinen
-> Subject: RE: [PATCH 00/18] OMAP: DSS2: Intro
-> 
-> 
-> 
-> > -----Original Message-----
-> > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> owner@vger.kernel.org] On Behalf Of Steve
-> > Sakoman
-> > Sent: Monday, August 31, 2009 7:50 PM
-> > To: Artem Bityutskiy
-> > Cc: Andrew Morton; Tony Lindgren; Tomi Valkeinen; linux-
-> kernel@vger.kernel.org; linux-
-> > omap@vger.kernel.org Mailing List
-> > Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
-> >
-> > On Mon, Aug 31, 2009 at 2:23 AM, Artem
-> Bityutskiy<dedekind1@gmail.com> wrote:
-> >
-> > > We are using DSS2 in Nokia for about a year already. N900 is
-> using this
-> > > code, for example. Other (non-Nokia) projects are using DSS2 as
-> well.
-> > > The code was public for long time and was sent several times for
-> review.
-> > >
-> > > In any case,
-> > >
-> > > Tested-by: Artem Bityutskiy <artem.bityutskiy@nokia.com>
-> >
-> > Gumstix has also been shipping with DSS2 on their Overo product
-> for
-> > many months now.
-> >
-> > Tested-by: Steve Sakoman <steve@sakoman.com>
-> 
-> If there is a concern on OMAP2 support, I can confirm that there is
-> no difference between OMAP2 and OMAP3 Display Subsystem from
-> Register level. So what ever works on OMAP3 DSS2 should straight
-> away work for OMAP2 as well.
-> 
-> I agree with rest of the folks here, we should get DSS2 merged in
-> mainline. It is being extensively used on all OMAP3 platforms.
-> 
-[Hiremath, Vaibhav] I am also agreeing with the point that we should merge the DSS2; it's now almost year we have migrated to DSS2. Most of our customers are based out of it.
+That's because vfs-optimize-touch_time-too.patch inverted the sense
+of mnt_want_write_file(), which is error-returning, not a boolean.
 
-Thanks,
-Vaibhav
+Presumably filetime updates went missing too, but I didn't notice those.
 
-> Regards,
-> Khasim
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-
-> omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+---
 
+ fs/inode.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- mmotm/fs/inode.c	2009-08-28 10:07:56.000000000 +0100
++++ linux/fs/inode.c	2009-08-31 14:08:24.000000000 +0100
+@@ -1481,7 +1481,7 @@ void file_update_time(struct file *file)
+ 		return;
+ 
+ 	/* Finally allowed to write? Takes lock. */
+-	if (!mnt_want_write_file(file))
++	if (mnt_want_write_file(file))
+ 		return;
+ 
+ 	/* Only change inode inside the lock region */
