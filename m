@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbZHaGFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbZHaGLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466AbZHaGFI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 02:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbZHaGFH
+	id S1754481AbZHaGLU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 02:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbZHaGLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 02:05:07 -0400
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:60494 "EHLO
-	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754192AbZHaGFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 02:05:06 -0400
-X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Aug 2009 02:05:06 EDT
-Message-ID: <4A9B65E6.5070005@freemail.hu>
-Date: Mon, 31 Aug 2009 07:55:50 +0200
-From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Mon, 31 Aug 2009 02:11:19 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56647 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751472AbZHaGLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 02:11:18 -0400
+Message-ID: <4A9B6963.5090207@cn.fujitsu.com>
+Date: Mon, 31 Aug 2009 14:10:43 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Jean-Francois Moine <moinejf@free.fr>,
-       Thomas Kaiser <thomas@kaiser-linux.li>, linux-media@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND][PATCH 1/2] v4l2: modify the webcam video standard handling
-References: <4A52E897.8000607@freemail.hu>	<4A910C42.5000001@freemail.hu> <20090830234114.16b90c36@pedra.chehab.org>
-In-Reply-To: <20090830234114.16b90c36@pedra.chehab.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32721; Body=5 Fuz1=5
-	Fuz2=5
+To: David Miller <davem@davemloft.net>
+CC: Neil Horman <nhorman@tuxdriver.com>, Wei Yongjun <yjwei@cn.fujitsu.com>,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH resend] drop_monitor: fix trace_napi_poll_hit()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The net_dev of backlog napi is NULL, like below:
 
-first of all thank you for your detailed answer.
+__get_cpu_var(softnet_data).backlog.dev == NULL
 
-Mauro Carvalho Chehab wrote:
-> Hi Németh,
-> 
-> Em Sun, 23 Aug 2009 11:30:42 +0200
-> Németh Márton <nm127@freemail.hu> escreveu:
-> 
->> From: Márton Németh <nm127@freemail.hu>
->>
->> Change the handling of the case when vdev->tvnorms == 0.
->>
-> 
-> This patch (together with a few others related to tvnorms and camera drivers)
-> reopens an old discussion: should webcams report a tvnorm?
-> 
-> There's no easy answer for it since:
-> 
-> 1) removing support for VIDIOC_G_STD/VIDIOC_S_STD causes regressions, since
-> some userspace apps stops working;
-> 
-> 2) It is a common scenario to use cameras connected to some capture only devices
-> like several bttv boards used on surveillance systems. Those drivers report STD,
-> since they are used also on TV;
-> 
-> 3) There are even some devices that allows cameras to be connected to one input and
-> TV on another input. This is another case were the driver will report a TV std;
-> 
-> 4) Most webcam formats are based on ITU-T formats designed to be compatible
-> with TV (formats like CIF and like 640x480 - and their multiple/sub-multiples);
-> 
-> 5) There are formats that weren't originated from TV on some digital webcams,
-> so, for those formats, it makes no sense to report an existing std.
-> 
-> Once people proposed to create an special format for those cases
-> (V4L2_STD_DIGITAL or something like that), but, after lots of discussions,
-> no changes were done at API nor at the drivers.
-> 
-> While we don't have an agreement on this, I don't think we should apply a patch
-> like this.
+So, we should check it in napi tracepoint's probe function
 
-I was reading the V4L2 specification and based my patch on the specification.
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ net/core/drop_monitor.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Maybe the specification is wrong at that point? (see Chapter 1.7 Video Standards
-at http://v4l2spec.bytesex.org/spec/x448.htm , starting with paragraph 6:
-"Special rules apply to USB cameras...")
-
-Regards,
-
-	Márton Németh
+diff --git a/net/core/drop_monitor.c b/net/core/drop_monitor.c
+index 9d66fa9..d311202 100644
+--- a/net/core/drop_monitor.c
++++ b/net/core/drop_monitor.c
+@@ -182,7 +182,8 @@ static void trace_napi_poll_hit(struct napi_struct *napi)
+ 	/*
+ 	 * Ratelimit our check time to dm_hw_check_delta jiffies
+ 	 */
+-	if (!time_after(jiffies, napi->dev->last_rx + dm_hw_check_delta))
++	if (!napi->dev ||
++	    !time_after(jiffies, napi->dev->last_rx + dm_hw_check_delta))
+ 		return;
+ 
+ 	rcu_read_lock();
+-- 
+1.6.1.2
 
