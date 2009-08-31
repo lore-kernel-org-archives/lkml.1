@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZHaJJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbZHaJ0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbZHaJJm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 05:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZHaJJl
+	id S1753492AbZHaJ0f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 05:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbZHaJ0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 05:09:41 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49126 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752408AbZHaJJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 05:09:41 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Guillaume Chazarain <guichaz@gmail.com>
-Subject: Re: [PATCH 1/3] taskstats-fork: Add a new taskstats command to get notification on fork/clone
-Date: Mon, 31 Aug 2009 14:41:28 +0530
-User-Agent: KMail/1.12.0 (Linux/2.6.27.29-0.1-default; KDE/4.3.0; x86_64; ; )
-Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       procps-feedback@lists.sf.net, Albert Cahalan <albert@users.sf.net>
-References: <200907211031.48294.knikanth@suse.de> <200907211154.42563.knikanth@suse.de> <3d8471ca0908301252j15cb33b1j913921bd8fc6704c@mail.gmail.com>
-In-Reply-To: <3d8471ca0908301252j15cb33b1j913921bd8fc6704c@mail.gmail.com>
+	Mon, 31 Aug 2009 05:26:35 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:55315 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751488AbZHaJ0e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 05:26:34 -0400
+Message-ID: <4A9B96A7.5040005@gmail.com>
+Date: Mon, 31 Aug 2009 12:23:51 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908311441.28354.knikanth@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Tony Lindgren <tony@atomide.com>
+CC: Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-kernel@vger.kernel.org,
+       "linux-omap@vger.kernel.org Mailing List" 
+	<linux-omap@vger.kernel.org>
+Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
+References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
+In-Reply-To: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 31 Aug 2009 09:24:20.0527 (UTC) FILETIME=[D21123F0:01CA2A1C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 31 August 2009 01:22:22 Guillaume Chazarain wrote:
-> On Tue, Jul 21, 2009 at 8:24 AM, Nikanth Karthikesan<knikanth@suse.de> 
-wrote:
-> > Ah.. proc-events was the exact thing, I was looking for! Thanks.
+On 08/28/2009 03:25 PM, Tomi Valkeinen wrote:
+> This patch set implement new display subsystem driver (DSS2) and omapfb driver
+> for OMAP2/3. The patches have been reviewed on linux-omap and linux-fbdev-devel
+> mailing lists. The patches can also be found from
+> http://gitorious.org/linux-omap-dss2/linux
 >
-> AFAICT proc-events can only be used by root, so that makes it
-> unsuitable for *top.
+> The patches include DSS documentation patch that includes more instructions for
+> module parameters, sysfs files etc.
 >
-> Anyway, iotop will always have to iterate over all threads to query
-> their taskstats and other attributes, so the O(nr_threads) complexity
-> is unavoidable.
+> The patches enable DSS2 for OMAP3430 SDP board. DSS2 is used in various boards,
+> for example Nokia N900, Beagle Board and Overo.
 >
+> I don't currently have any OMAP2 board to test DSS2, but it has worked on OMAP2
+> and the possible fixes needed should be minimal.
+>
+> OMAP1 is not supported, and so the old DSS needs to be used on OMAP1 boards.
+>
+> DSS2 is partly based on the old omapfb driver by Imre Deak, and Imre has also
+> contributed to DSS2 quite a bit. Ville Syrjälä has been contributing to scaling
+> and tv-out work. Also some contributions have been made by Hardik Shah, Vaibhav
+> Hiremath, and perhaps some others that I have forgotten =).
 
-If it would simply iterate over all the current threads, the complexity would 
-be O(nr_threads). But while iterating through all the current threads, it 
-checks whether it is a new thread or a known thread, so that it can calculate 
-the delta values. This is what I optimized by using taskstats-fork, which 
-could be optimized using proc-events. 
+Tony, Andrew,
 
-Thanks
-Nikanth
+how could we merge this code (unless there are requests to change something, which
+does not seem to be the case.). It seems like there is no maintainer who could
+merge this. Or there is? Would Tomi need to send a direct pull request to Linus,
+or this could got via Tony?
+
+We are using DSS2 in Nokia for about a year already. N900 is using this
+code, for example. Other (non-Nokia) projects are using DSS2 as well.
+The code was public for long time and was sent several times for review.
+
+In any case,
+
+Tested-by: Artem Bityutskiy <artem.bityutskiy@nokia.com>
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
