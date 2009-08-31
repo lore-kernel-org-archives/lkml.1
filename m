@@ -1,116 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZHaRLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752391AbZHaRT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753502AbZHaRLW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 13:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZHaRLV
+	id S1752391AbZHaRT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 13:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZHaRT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 13:11:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33046 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752678AbZHaRLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 13:11:17 -0400
-Date: Mon, 31 Aug 2009 17:08:33 GMT
-From: tip-bot for Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: mingo@redhat.com, torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       schwidefsky@de.ibm.com, ehrhardt@linux.vnet.ibm.com, arnd@arndb.de,
-       akpm@linux-foundation.org, heiko.carstens@de.ibm.com,
-       zippel@linux-m68k.org, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, paulus@samba.org, horsth@linux.vnet.ibm.com,
-       davem@davemloft.net, benh@kernel.crashing.org, geert@linux-m68k.org,
-       linux-arch@vger.kernel.org, mingo@elte.hu, nickpiggin@yahoo.com.au
-Reply-To: mingo@redhat.com, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, schwidefsky@de.ibm.com,
-       ehrhardt@linux.vnet.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
-       heiko.carstens@de.ibm.com, tglx@linutronix.de, zippel@linux-m68k.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, paulus@samba.org,
-       horsth@linux.vnet.ibm.com, davem@davemloft.net,
-       benh@kernel.crashing.org, geert@linux-m68k.org,
-       linux-arch@vger.kernel.org, nickpiggin@yahoo.com.au, mingo@elte.hu
-In-Reply-To: <20090831124419.319518405@de.ibm.com>
-References: <20090831124419.319518405@de.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/locking] locking: Inline spinlock code for all locking variants on s390
-Message-ID: <tip-b62e180cae6bd82e246d871a1e44e03f8019d421@git.kernel.org>
-Git-Commit-ID: b62e180cae6bd82e246d871a1e44e03f8019d421
-X-Mailer: tip-git-log-daemon
+	Mon, 31 Aug 2009 13:19:59 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:45483 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbZHaRT6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 13:19:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=p4K604JRWEsqnBExFLHxt0oBztqqqerpXgg3AWNDzA249Kh3lUx7tMx5EN9YKxl+uS
+         zetSS30iwgvuihshdyzNAV/Hj10bgBHbvv3YxYoB6fFCUAVeJ9aJOGUzd2NiquIRmL2r
+         9BbfpuoC20BVJCXXPShFRyRskUSloqMQUpOFM=
+Date: Mon, 31 Aug 2009 21:19:56 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Stefani Seibold <stefani@seibold.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix proc_file_write missing ppos update
+Message-ID: <20090831171956.GA3036@x200.localdomain>
+References: <1251563892.13287.11.camel@wall-e> <1251659144.20987.18.camel@wall-e> <20090831063334.GB7821@x200.localdomain> <200908311744.52972.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 17:08:33 +0000 (UTC)
+In-Reply-To: <200908311744.52972.arnd@arndb.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b62e180cae6bd82e246d871a1e44e03f8019d421
-Gitweb:     http://git.kernel.org/tip/b62e180cae6bd82e246d871a1e44e03f8019d421
-Author:     Heiko Carstens <heiko.carstens@de.ibm.com>
-AuthorDate: Mon, 31 Aug 2009 14:43:39 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 31 Aug 2009 18:08:51 +0200
+On Mon, Aug 31, 2009 at 05:44:52PM +0200, Arnd Bergmann wrote:
+> On Monday 31 August 2009, Alexey Dobriyan wrote:
+> > Out-of-tree argument means almost nothing.
+> > 
+> > ...
+> >
+> > You'd better start converting to struct file_operations::write now.
+> 
+> Maybe a purely mechanical conversion to file_operations would be a nice first
+> step, just so we can remove read_proc and write_proc? Taking scsi_proc.c
+> as an example, this should be really straightforward and lets us get
+> rid of the write_proc and read_proc callbacks from proc_dir_entry without
+> having to rewrite all the remaining drivers that use it.
+> 
+> Obviously, someone who understands the specific driver code better should
+> then clean up the code by converting to seq_file operations or something
+> else that is appropriate there.
 
-locking: Inline spinlock code for all locking variants on s390
+I don't like any churn in that area. Everything is ready for ->proc_fops usage.
+So we should simply convert users away.
+Actually most of SCSI and IDE is already done, just wasn't sent yet.
 
-Speeds up several benchmarks in a measurable way, so inline
-all spin-lock variants by default.
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Horst Hartmann <horsth@linux.vnet.ibm.com>
-Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Cc: <linux-arch@vger.kernel.org>
-LKML-Reference: <20090831124419.319518405@de.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/s390/include/asm/spinlock.h |   29 +++++++++++++++++++++++++++++
- 1 files changed, 29 insertions(+), 0 deletions(-)
-
-diff --git a/arch/s390/include/asm/spinlock.h b/arch/s390/include/asm/spinlock.h
-index c9af0d1..41ce686 100644
---- a/arch/s390/include/asm/spinlock.h
-+++ b/arch/s390/include/asm/spinlock.h
-@@ -191,4 +191,33 @@ static inline int __raw_write_trylock(raw_rwlock_t *rw)
- #define _raw_read_relax(lock)	cpu_relax()
- #define _raw_write_relax(lock)	cpu_relax()
- 
-+#define __always_inline__spin_lock
-+#define __always_inline__read_lock
-+#define __always_inline__write_lock
-+#define __always_inline__spin_lock_bh
-+#define __always_inline__read_lock_bh
-+#define __always_inline__write_lock_bh
-+#define __always_inline__spin_lock_irq
-+#define __always_inline__read_lock_irq
-+#define __always_inline__write_lock_irq
-+#define __always_inline__spin_lock_irqsave
-+#define __always_inline__read_lock_irqsave
-+#define __always_inline__write_lock_irqsave
-+#define __always_inline__spin_trylock
-+#define __always_inline__read_trylock
-+#define __always_inline__write_trylock
-+#define __always_inline__spin_trylock_bh
-+#define __always_inline__spin_unlock
-+#define __always_inline__read_unlock
-+#define __always_inline__write_unlock
-+#define __always_inline__spin_unlock_bh
-+#define __always_inline__read_unlock_bh
-+#define __always_inline__write_unlock_bh
-+#define __always_inline__spin_unlock_irq
-+#define __always_inline__read_unlock_irq
-+#define __always_inline__write_unlock_irq
-+#define __always_inline__spin_unlock_irqrestore
-+#define __always_inline__read_unlock_irqrestore
-+#define __always_inline__write_unlock_irqrestore
-+
- #endif /* __ASM_SPINLOCK_H */
+After conversion, ->read_proc, ->write_proc, create_proc_read_entry(),
+create_proc_entry() will become deprecated for a while, then gone.
