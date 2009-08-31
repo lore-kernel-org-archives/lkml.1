@@ -1,129 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZHaNCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbZHaNDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753232AbZHaNCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 09:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZHaNCd
+	id S1753228AbZHaNDo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 09:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZHaNDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 09:02:33 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:24295 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753068AbZHaNCa (ORCPT
+	Mon, 31 Aug 2009 09:03:43 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42489 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbZHaNDm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 09:02:30 -0400
-X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMzz1202hzzz32i6bh203h61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KP8S7X-01-A3O-02
-X-M-MSG: 
-Date: Mon, 31 Aug 2009 15:01:29 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: Borislav Petkov <borislav.petkov@amd.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] x86, cacheinfo: Fixup L3 cache information for AMD
-	multi-node processors
-Message-ID: <20090831130129.GE21867@alberich.amd.com>
-References: <20090831125349.GA21867@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090831125349.GA21867@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 31 Aug 2009 13:01:29.0265 (UTC) FILETIME=[27CCCA10:01CA2A3B]
+	Mon, 31 Aug 2009 09:03:42 -0400
+Date: Mon, 31 Aug 2009 10:03:32 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: =?ISO-8859-1?B?TultZXRoIE3hcnRvbg==?= <nm127@freemail.hu>,
+       "Jean-Francois Moine" <moinejf@free.fr>,
+       Thomas Kaiser <thomas@kaiser-linux.li>, linux-media@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND][PATCH 1/2] v4l2: modify the webcam video standard
+ handling
+Message-ID: <20090831100332.2176c7c4@pedra.chehab.org>
+In-Reply-To: <200908310858.24763.laurent.pinchart@ideasonboard.com>
+References: <4A52E897.8000607@freemail.hu>
+	<4A910C42.5000001@freemail.hu>
+	<20090830234114.16b90c36@pedra.chehab.org>
+	<200908310858.24763.laurent.pinchart@ideasonboard.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Em Mon, 31 Aug 2009 08:58:24 +0200
+Laurent Pinchart <laurent.pinchart@ideasonboard.com> escreveu:
 
-L3 cache size, associativity and shared_cpu information need to be
-adapted to show information for an internal node instead of the
-entire physical package.
+> Hi Mauro,
+> 
+> On Monday 31 August 2009 04:41:14 Mauro Carvalho Chehab wrote:
+> > Hi Németh,
+> >
+> > Em Sun, 23 Aug 2009 11:30:42 +0200
+> >
+> > Németh Márton <nm127@freemail.hu> escreveu:
+> > > From: Márton Németh <nm127@freemail.hu>
+> > >
+> > > Change the handling of the case when vdev->tvnorms == 0.
+> >
+> > This patch (together with a few others related to tvnorms and camera
+> > drivers) reopens an old discussion: should webcams report a tvnorm?
+> >
+> > There's no easy answer for it since:
+> >
+> > 1) removing support for VIDIOC_G_STD/VIDIOC_S_STD causes regressions, since
+> > some userspace apps stops working;
+> 
+> Then those applications don't work with the uvcvideo driver in the first 
+> place. This is getting less and less common :-)
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |   30 ++++++++++++++++++++----------
- 1 files changed, 20 insertions(+), 10 deletions(-)
+Good to know. Yet, removing VIDIOC_[GS]_STD will break a behavior used on
+webcams for a long time. One thing is to accept new webcam drivers without it.
+This can be done (and were already done, when we accepted uvc). A separate
+issue is to change the behavior of the userspace API on existing drivers.
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 306bf0d..41bdada 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -241,7 +241,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 0:
- 		if (!l1->val)
- 			return;
--		assoc = l1->assoc;
-+		assoc = assocs[l1->assoc];
- 		line_size = l1->line_size;
- 		lines_per_tag = l1->lines_per_tag;
- 		size_in_kb = l1->size_in_kb;
-@@ -249,7 +249,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 2:
- 		if (!l2.val)
- 			return;
--		assoc = l2.assoc;
-+		assoc = assocs[l2.assoc];
- 		line_size = l2.line_size;
- 		lines_per_tag = l2.lines_per_tag;
- 		/* cpu_data has errata corrections for K7 applied */
-@@ -258,10 +258,14 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 3:
- 		if (!l3.val)
- 			return;
--		assoc = l3.assoc;
-+		assoc = assocs[l3.assoc];
- 		line_size = l3.line_size;
- 		lines_per_tag = l3.lines_per_tag;
- 		size_in_kb = l3.size_encoded * 512;
-+		if (boot_cpu_has(X86_FEATURE_AMD_DCM)) {
-+			size_in_kb = size_in_kb >> 1;
-+			assoc = assoc >> 1;
-+		}
- 		break;
- 	default:
- 		return;
-@@ -270,18 +274,14 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	eax->split.is_self_initializing = 1;
- 	eax->split.type = types[leaf];
- 	eax->split.level = levels[leaf];
--	if (leaf == 3)
--		eax->split.num_threads_sharing =
--			current_cpu_data.x86_max_cores - 1;
--	else
--		eax->split.num_threads_sharing = 0;
-+	eax->split.num_threads_sharing = 0;
- 	eax->split.num_cores_on_die = current_cpu_data.x86_max_cores - 1;
- 
- 
--	if (assoc == 0xf)
-+	if (assoc == 0xffff)
- 		eax->split.is_fully_associative = 1;
- 	ebx->split.coherency_line_size = line_size - 1;
--	ebx->split.ways_of_associativity = assocs[assoc] - 1;
-+	ebx->split.ways_of_associativity = assoc - 1;
- 	ebx->split.physical_line_partition = lines_per_tag - 1;
- 	ecx->split.number_of_sets = (size_in_kb * 1024) / line_size /
- 		(ebx->split.ways_of_associativity + 1) - 1;
-@@ -523,6 +523,16 @@ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
- 	int index_msb, i;
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
- 
-+	if ((index == 3) && (c->x86_vendor == X86_VENDOR_AMD)) {
-+		for_each_online_cpu(i) {
-+			if (!per_cpu(cpuid4_info, i))
-+				continue;
-+			this_leaf = CPUID4_INFO_IDX(i, index);
-+			cpumask_copy(to_cpumask(this_leaf->shared_cpu_map),
-+				     cpu_node_mask(i));
-+		}
-+		return;
-+	}
- 	this_leaf = CPUID4_INFO_IDX(cpu, index);
- 	num_threads_sharing = 1 + this_leaf->eax.split.num_threads_sharing;
- 
--- 
-1.6.4
+> > 2) It is a common scenario to use cameras connected to some capture only
+> > devices like several bttv boards used on surveillance systems. Those
+> > drivers report STD, since they are used also on TV;
+> >
+> > 3) There are even some devices that allows cameras to be connected to one
+> > input and TV on another input. This is another case were the driver will
+> > report a TV std;
+> 
+> TV standards are ill-named, they are actually analog standards. 
+> VIDIOC_[GS]_STD are perfectly valid for capture devices with analog inputs, 
+> even if they don't use a TV tuner.
 
+It is not that simple. In general, at the bridge chip, all inputs are digital.
+The analog to digital conversion is done by a separate chip on most devices,
+and there are some boards where you have, for example, digital sensors
+connected to it.
+
+> > 4) Most webcam formats are based on ITU-T formats designed to be compatible
+> > with TV (formats like CIF and like 640x480 - and their
+> > multiple/sub-multiples);
+> 
+> Even HD formats still have roots in the analog TV world. It's a real mess. 
+> Nonetheless, even if the actual frame size is compatible with TV, there is 
+> simply no concept of PAL/NTSC for webcams.
+
+Ok, but still it is possible to use V4L2_STD_525_60 and V4L2_STD_625_50 when all
+you need is to set the number of lines and the basis of the sampling rate.
+There is also V4L2_STD_UNKNOWN standard used on some drivers.
+
+> > 5) There are formats that weren't originated from TV on some digital
+> > webcams, so, for those formats, it makes no sense to report an existing
+> > std.
+> >
+> > Once people proposed to create an special format for those cases
+> > (V4L2_STD_DIGITAL or something like that), but, after lots of discussions,
+> > no changes were done at API nor at the drivers.
+> 
+> TV standards only apply to analog video. Let's simply not use it for digital 
+> video. We don't expect drivers to implement VIDIOC_[GS]_JPEGCOMP with fake 
+> values when they don't support JPEG compression, so we should not expect them 
+> to implement VIDIOC_[GS]_STD when they don't support analog TV.
+
+If you look at the tree, several drivers that returns compressed formats
+implements those ioctls. This is even required on several cases, where you may
+have an analog TV connected on it.
+
+That's said, I understand your arguments that implementing [G/S]_STD is
+senseless on almost all camera drivers, since it won't actually control
+anything. So, IMO, a good compromise is to keep the existing implementation on
+the legacy drivers [1], but think twice before implementing
+it on a new driver.
+
+[1] We could eventually drop it even for the existing drivers, provided that the
+ioctl won't control anything at the device and that we properly document it in
+Documentation/feature-removal-schedule.txt, giving enough time for the remaining
+userspace apps and distros to change to the new behavior.
+
+> > While we don't have an agreement on this, I don't think we should apply a
+> > patch like this.
 
 
+
+Cheers,
+Mauro
