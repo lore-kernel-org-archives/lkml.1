@@ -1,125 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZHaIi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbZHaIia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbZHaIi3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 04:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZHaIi2
+	id S1753159AbZHaIia (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 04:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZHaIi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 04:38:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57253 "EHLO hera.kernel.org"
+	Mon, 31 Aug 2009 04:38:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42390 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbZHaIi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752987AbZHaIi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 31 Aug 2009 04:38:27 -0400
-Date: Mon, 31 Aug 2009 08:37:56 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1251693921-6579-4-git-send-email-fweisbec@gmail.com>
-References: <1251693921-6579-4-git-send-email-fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf tools: Complete support for dynamic strings
-Message-ID: <tip-561f732c1233f6bf7c3c5c5fb9b4d90bb6c107aa@git.kernel.org>
-Git-Commit-ID: 561f732c1233f6bf7c3c5c5fb9b4d90bb6c107aa
-X-Mailer: tip-git-log-daemon
+Date: Mon, 31 Aug 2009 10:38:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] kmemleak: Ignore the aperture memory hole on x86_64
+Message-ID: <20090831083813.GD15619@elte.hu>
+References: <20090827165927.27901.97270.stgit@pc1117.cambridge.arm.com> <20090827170258.27901.83613.stgit@pc1117.cambridge.arm.com> <20090829133152.GC24123@elte.hu> <1251556208.5518.5.camel@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 08:37:57 +0000 (UTC)
+In-Reply-To: <1251556208.5518.5.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  561f732c1233f6bf7c3c5c5fb9b4d90bb6c107aa
-Gitweb:     http://git.kernel.org/tip/561f732c1233f6bf7c3c5c5fb9b4d90bb6c107aa
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Mon, 31 Aug 2009 06:45:21 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 31 Aug 2009 10:04:49 +0200
 
-perf tools: Complete support for dynamic strings
+* Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-Complete support for __str_loc type strings of ftrace events
-which have dynamic offsets values set for each of them inside
-their sammples.
+> On Sat, 2009-08-29 at 15:31 +0200, Ingo Molnar wrote:
+> > * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> > > --- a/arch/x86/kernel/aperture_64.c
+> > > +++ b/arch/x86/kernel/aperture_64.c
+> > > @@ -20,6 +20,7 @@
+> > >  #include <linux/bitops.h>
+> > >  #include <linux/ioport.h>
+> > >  #include <linux/suspend.h>
+> > > +#include <linux/kmemleak.h>
+> > >  #include <asm/e820.h>
+> > >  #include <asm/io.h>
+> > >  #include <asm/iommu.h>
+> > > @@ -94,6 +95,11 @@ static u32 __init allocate_aperture(void)
+> > >  	 * code for safe
+> > >  	 */
+> > >  	p = __alloc_bootmem_nopanic(aper_size, aper_size, 512ULL<<20);
+> > > +	/*
+> > > +	 * Kmemleak should not scan this block as it may not be mapped via the
+> > > +	 * kernel direct mapping.
+> > > +	 */
+> > > +	kmemleak_ignore(p);
+> > >  	if (!p || __pa(p)+aper_size > 0xffffffff) {
+> > >  		printk(KERN_ERR
+> > >  			"Cannot allocate aperture memory hole (%p,%uK)\n",
+> > 
+> > This sure does not look right for the rare but theoretically 
+> > possible !p case, does it?
+> 
+> All the kmemleak_* callbacks check for (p && !IS_ERR(p)), just to
+> simplify the calling site.
 
-Before:
-        geany-5759  [000]     0.000000: lock_release: name
-        geany-5759  [000]     0.000000: lock_release: name
-        geany-5759  [000]     0.000000: lock_release: name
-  kondemand/0-362   [000]     0.000000: lock_release: name
-      pdflush-421   [000]     0.000000: lock_release: name
+Indeed, i see. It's OK this way then.
 
-After:
-        geany-5759  [000]     0.000000: lock_release: &u->lock
-        geany-5759  [000]     0.000000: lock_release: key
-        geany-5759  [000]     0.000000: lock_release: &group->notification_mutex
-  kondemand/0-362   [000]     0.000000: lock_release: &rq->lock
-      pdflush-421   [000]     0.000000: lock_release: &rq->lock
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1251693921-6579-4-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-
-
----
- tools/perf/util/trace-event-parse.c |   16 ++++++++++++++--
- tools/perf/util/trace-event.h       |    1 +
- 2 files changed, 15 insertions(+), 2 deletions(-)
-
-diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-index 96c5e97..665dac2 100644
---- a/tools/perf/util/trace-event-parse.c
-+++ b/tools/perf/util/trace-event-parse.c
-@@ -1548,6 +1548,7 @@ process_str(struct event *event __unused, struct print_arg *arg, char **tok)
- 
- 	arg->type = PRINT_STRING;
- 	arg->string.string = token;
-+	arg->string.offset = -1;
- 
- 	if (read_expected(EVENT_DELIM, (char *)")") < 0)
- 		return EVENT_ERROR;
-@@ -2031,9 +2032,20 @@ static void print_str_arg(void *data, int size,
- 
- 	case PRINT_TYPE:
- 		break;
--	case PRINT_STRING:
--		printf("%s", arg->string.string);
-+	case PRINT_STRING: {
-+		int str_offset;
-+
-+		if (arg->string.offset == -1) {
-+			struct format_field *f;
-+
-+			f = find_any_field(event, arg->string.string);
-+			arg->string.offset = f->offset;
-+		}
-+		str_offset = *(int *)(data + arg->string.offset);
-+		str_offset &= 0xffff;
-+		printf("%s", ((char *)data) + str_offset);
- 		break;
-+	}
- 	case PRINT_OP:
- 		/*
- 		 * The only op for string should be ? :
-diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-index 051fcf3..420294a 100644
---- a/tools/perf/util/trace-event.h
-+++ b/tools/perf/util/trace-event.h
-@@ -50,6 +50,7 @@ struct print_arg_atom {
- 
- struct print_arg_string {
- 	char			*string;
-+	int			offset;
- };
- 
- struct print_arg_field {
+	Ingo
