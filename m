@@ -1,49 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZHaMu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbZHaMw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbZHaMu7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 08:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZHaMu7
+	id S1752837AbZHaMw4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 08:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZHaMwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 08:50:59 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:43665 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750833AbZHaMu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 08:50:58 -0400
-Date: Mon, 31 Aug 2009 07:50:59 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gru: allocation may fail in quicktest1()
-Message-ID: <20090831125059.GA31874@sgi.com>
-References: <4A9B8A8F.5020600@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A9B8A8F.5020600@gmail.com>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 31 Aug 2009 08:52:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52202 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751386AbZHaMwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 08:52:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 10] PM: Measure suspend and resume times for individual devices (was: Re: [PATCH 2/6] PM: Asynchronous resume of devices)
+Date: Mon, 31 Aug 2009 14:53:47 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0908292043500.26533-100000@netrider.rowland.org> <200908302313.52945.rjw@sisk.pl> <20090831072545.GA21570@elte.hu>
+In-Reply-To: <20090831072545.GA21570@elte.hu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908311453.47138.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 10:32:15AM +0200, Roel Kluin wrote:
-> The allocation may fail.
+On Monday 31 August 2009, Ingo Molnar wrote:
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > On Sunday 30 August 2009, Rafael J. Wysocki wrote:
+> > > On Sunday 30 August 2009, Alan Stern wrote:
+> > > > On Sat, 29 Aug 2009, Rafael J. Wysocki wrote:
+> > > > 
+> > > > > I only wanted to say that the advantage is not really that "big". :-)
+> > > > > 
+> > > > > > I must agree, 14 threads isn't a lot.  But at the moment that number is 
+> > > > > > random, not under your control.
+> > > > > 
+> > > > > It's not directly controlled, but there are some interactions between the
+> > > > > async threads, the main threads and the async framework that don't allow this
+> > > > > number to grow too much.
+> > > > > 
+> > > > > IMO it sometimes is better to allow things to work themselves out, as long as
+> > > > > they don't explode, than to try to keep everything under strict control.  YMMV.
+> > > > 
+> > > > For testing purposes it would be nice to have a one-line summary for
+> > > > each device containing a thread ID, start timestamp, end timestamp, and
+> > > > elapsed time.  With that information you could evaluate the amount of
+> > > > parallelism and determine where the bottlenecks are.  It would give a
+> > > > much more detailed picture of the entire process than the total time of
+> > > > your recent patch 9.
+> > > 
+> > > Of course it would.  I think I'll implement it.
+> > 
+> > OK, below is a patch for that.  It only prints the time elapsed, because the
+> > timestamps themselves can be obtained from the usual kernel timestamping.
+> > 
+> > It's on top of all the previous patches.
+> > 
+> > Thanks,
+> > Rafael
+> > 
+> > ---
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: PM: Measure suspend and resume times for individual devices
+> > 
+> > If verbose PM debugging is enabled, measure and print the time of
+> > suspending and resuming of individual devices.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/base/power/main.c |   51 +++++++++++++++++++++++++++++++++++++++++-----
+> >  kernel/power/swsusp.c     |    2 -
+> >  2 files changed, 47 insertions(+), 6 deletions(-)
+> > 
+> > Index: linux-2.6/drivers/base/power/main.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/base/power/main.c
+> > +++ linux-2.6/drivers/base/power/main.c
+> > @@ -442,11 +442,11 @@ static bool pm_op_started(struct device 
+> >   */
+> >  int pm_time_elapsed(struct timeval *start, struct timeval *stop)
+> >  {
+> > -	s64 elapsed_centisecs64;
+> > +	s64 elapsed_msecs64;
+> >  
+> > -	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
+> > -	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
+> > -	return elapsed_centisecs64;
+> > +	elapsed_msecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
+> > +	do_div(elapsed_msecs64, NSEC_PER_SEC / 1000);
+> > +	return elapsed_msecs64;
+> >  }
+> >  
+> >  static char *pm_verb(int event)
+> > @@ -476,7 +476,7 @@ static char *pm_verb(int event)
+> >  static void dpm_show_time(struct timeval *start, struct timeval *stop,
+> >  			  pm_message_t state, const char *info)
+> >  {
+> > -	int centisecs = pm_time_elapsed(start, stop);
+> > +	int centisecs = pm_time_elapsed(start, stop) / 10;
+> >  
+> >  	printk(KERN_INFO "PM: %s%s%s of devices complete in %d.%02d seconds\n",
+> >  		info ? info : "", info ? " " : "", pm_verb(state.event),
+> > @@ -497,6 +497,33 @@ static void pm_dev_err(struct device *de
+> >  		kobject_name(&dev->kobj), pm_verb(state.event), info, error);
+> >  }
+> >  
+> > +#ifdef DEBUG
+> > +static void device_show_time(struct timeval *start, struct device *dev,
+> > +			     pm_message_t state, char *info)
+> > +{
+> > +	struct timeval stop;
+> > +	int msecs;
+> > +
+> > +	do_gettimeofday(&stop);
+> > +	msecs = pm_time_elapsed(start, &stop);
+> > +	dev_dbg(dev, "PID %d: %s%s%s complete in %d.%03d seconds\n",
+> > +		task_pid_nr(current), info ? info : "", info ? " " : "",
+> > +		pm_verb(state.event), msecs / 1000, msecs % 1000);
+> > +}
+> > +
+> > +#define TIMER_DECLARE(timer)	struct timeval timer
+> > +#define TIMER_START(timer)	do { \
+> > +		do_gettimeofday(&timer); \
+> > +	} while (0)
+> > +#define TIMER_STOP(timer, dev, state, info)	do { \
+> > +		device_show_time(&timer, dev, state, info); \
+> > +	} while (0)
+> > +#else /* !DEBUG */
+> > +#define TIMER_DECLARE(timer)
+> > +#define TIMER_START(timer)	do { } while (0)
+> > +#define TIMER_STOP(timer, dev, state, info)	do { } while (0)
+> > +#endif /* !DEBUG */
+> > +
+> >  /*------------------------- Resume routines -------------------------*/
+> >  
+> >  /**
+> > @@ -510,7 +537,9 @@ static void pm_dev_err(struct device *de
+> >  static int __device_resume_noirq(struct device *dev, pm_message_t state)
+> >  {
+> >  	int error = 0;
+> > +	TIMER_DECLARE(timer);
+> >  
+> > +	TIMER_START(timer);
+> >  	TRACE_DEVICE(dev);
+> >  	TRACE_RESUME(0);
+> >  
+> > @@ -523,6 +552,7 @@ static int __device_resume_noirq(struct 
+> >  	wake_up_all(&dev->power.wait_queue);
+> >  
+> >  	TRACE_RESUME(error);
+> > +	TIMER_STOP(timer, dev, state, "EARLY");
+> >  	return error;
+> 
+> Hm, these CPP macros are rather ugly. Why is there a need for the 
+> TIMER_DECLARE() wrapper - if a proper inline function is used 
+> there's no need for that.
 
-Acked-by: Jack Steiner <steiner@sgi.com>
+I need a variable to be declared so that I can save the "start" timestamp
+in it.  I don't need the variable if DEBUG is unset, though.
 
-> ---
-> diff --git a/drivers/misc/sgi-gru/grukservices.c b/drivers/misc/sgi-gru/grukservices.c
-> index 79689b1..766e21e 100644
-> --- a/drivers/misc/sgi-gru/grukservices.c
-> +++ b/drivers/misc/sgi-gru/grukservices.c
-> @@ -937,6 +937,8 @@ static int quicktest1(unsigned long arg)
->  
->  	/* Need  1K cacheline aligned that does not cross page boundary */
->  	p = kmalloc(4096, 0);
-> +	if (p == NULL)
-> +		return -ENOMEM;
->  	mq = ALIGNUP(p, 1024);
->  	memset(mes, 0xee, sizeof(mes));
->  	dw = mq;
+How would you do that without using a macro?  Or #ifdef #endif block that
+would be uglier IMO (which is why I didn't do that)?
+
+> There's other all-capitals macros in that code implementing code (and not
+> constants) - is that really justified/clean?
+
+Do you mean the TRACE_* macros?  Please ask Linus about that, they are from
+him. :-)
+
+Thanks,
+Rafael
