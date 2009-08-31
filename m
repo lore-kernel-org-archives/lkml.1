@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbZHaOHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752065AbZHaOJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751981AbZHaOHV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 10:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZHaOHV
+	id S1752065AbZHaOJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 10:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZHaOJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 10:07:21 -0400
-Received: from mga14.intel.com ([143.182.124.37]:56955 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751012AbZHaOHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 10:07:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="182354744"
-Date: Mon, 31 Aug 2009 22:07:13 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Fernando Silveira <fsilveira@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: I/O and pdflush
-Message-ID: <20090831140713.GA24185@localhost>
-References: <6afc6d4a0907111027w76234c8fv11ab77864515fdb0@mail.gmail.com> <20090712080410.GA8512@localhost> <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com> <20090829101247.GA20786@localhost> <20090829102126.GA22409@localhost> <6afc6d4a0908310624j47f9d8c7h47d98ecd95811883@mail.gmail.com> <20090831140006.GA23668@localhost> <20090831140113.GA24005@localhost>
+	Mon, 31 Aug 2009 10:09:54 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56711 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750929AbZHaOJx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 10:09:53 -0400
+Date: Mon, 31 Aug 2009 10:09:54 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH 10] PM: Measure suspend and resume times for individual
+ devices (was: Re: [PATCH 2/6] PM: Asynchronous resume of devices)
+In-Reply-To: <200908302313.52945.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0908311006490.10295-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090831140113.GA24005@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 10:01:13PM +0800, Wu Fengguang wrote:
-> On Mon, Aug 31, 2009 at 10:00:06PM +0800, Wu Fengguang wrote:
-> > Hi Fernando,
-> > 
-> > What's your SSD's IO parameters? Ie. output of this command:
-> > 
-> >         grep -r . /sys/block/sda/queue/        
-> > 
-> > Please replace 'sda' with your SSD device name.
-> 
-> Oh I guess it's sdc:
-> 
->          grep -r . /sys/block/sdc/queue/        
+On Sun, 30 Aug 2009, Rafael J. Wysocki wrote:
 
-BTW, would you run "iostat -x 1 5" (which will run 5 seconds) when
-doing I/O in ideal throughput, and when in 25MB/s thoughput state?
+> > > For testing purposes it would be nice to have a one-line summary for
+> > > each device containing a thread ID, start timestamp, end timestamp, and
+> > > elapsed time.  With that information you could evaluate the amount of
+> > > parallelism and determine where the bottlenecks are.  It would give a
+> > > much more detailed picture of the entire process than the total time of
+> > > your recent patch 9.
+> > 
+> > Of course it would.  I think I'll implement it.
+> 
+> OK, below is a patch for that.  It only prints the time elapsed, because the
+> timestamps themselves can be obtained from the usual kernel timestamping.
 
-Thanks,
-Fengguang
+Does that include the start timestamps?  I don't see them anywhere in
+the patch.  Without the start timestamps we have no way to know how
+much time was spent waiting for dpm_list_mtx or other resources as
+opposed to actually carrying out the operation.
+
+Alan Stern
+
+
