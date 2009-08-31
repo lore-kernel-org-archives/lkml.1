@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797AbZHaI36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZHaIe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752797AbZHaI36 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 04:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbZHaI35
+	id S1752543AbZHaIe5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 04:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZHaIe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 04:29:57 -0400
-Received: from smtp104.sbc.mail.gq1.yahoo.com ([67.195.15.63]:48446 "HELO
-	smtp104.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751732AbZHaI3f (ORCPT
+	Mon, 31 Aug 2009 04:34:56 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60057 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751488AbZHaIe4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 04:29:35 -0400
-X-Yahoo-SMTP: RrAacJSswBBjW0Obe5dhTHj7mfiuboERhd4hX4HvWHq2RmBoxiTUVqFaT6p3
-X-YMail-OSG: ivq6sd4VM1keX0jPh37OhtJ80AcqTLZ1crAnVIi7Nwetmna9_nkntsFC0036JfT_WMChoSEIgMEdry6dlXYlunRZpwE3BauIQq8H8E20cB7k5zKtKLwEVp1P.Vqf4B00JC0jMmuJ.m9YxAs5JMrQ5TISR6D1sXcyqp.2txM98bIo6ViLZKGBGyFTkjPgeriPcZzkIqkZ15HgCebwvlCWoHptXehZxdovnoZWld5KlGGA5UtSWmvtw_1EEtu2oK2cIzy5wxWfcxXwyMglDociVqoR5QEuyGGTUDjo6iIT3g--
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 3/4] [Target_Core_Mod]: Add alua mutex initialization in
-	core_alloc_port()
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Douglas Gilbert <dgilbert@interlog.com>, Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Alasdair G Kergon <agk@redhat.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Content-Type: text/plain
-Date: Mon, 31 Aug 2009 01:27:33 -0700
-Message-Id: <1251707253.4136.42.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Aug 2009 04:34:56 -0400
+Date: Mon, 31 Aug 2009 10:34:49 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Len Brown <lenb@kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH V5 1/2] introduce ALS sysfs class
+Message-ID: <20090831083449.GB11117@elf.ucw.cz>
+References: <1251706028.3483.160.camel@rzhang-dt>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251706028.3483.160.camel@rzhang-dt>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi!
 
-This patch updates core_alloc_port() to call mutex_init() for the
-mutex protecting the ALUA secondary access state/status metadata.
+> @@ -0,0 +1,32 @@
+> +What:		/sys/class/als/als[0-N]/desc
+> +Date:		Aug. 2009
+> +KernelVersion:	2.6.32
+> +Contact:	Zhang Rui <rui.zhang@intel.com>
+> +Description:	Strings which descibes the current Ambient Light Sensor
+> +		device. This is given by native ALS driver as part of
+> +		registration. e.g: "acpi_als" for ACPI ALS devices.
+> +		RO
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/target/target_core_device.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
-index a088960..a3572ed 100644
---- a/drivers/target/target_core_device.c
-+++ b/drivers/target/target_core_device.c
-@@ -611,6 +611,7 @@ se_port_t *core_alloc_port(se_device_t *dev)
- 	INIT_LIST_HEAD(&port->sep_list);
- 	atomic_set(&port->sep_tg_pt_secondary_offline, 0);
- 	spin_lock_init(&port->sep_alua_lock);
-+	mutex_init(&port->sep_tg_pt_md_mutex);
- 
- 	spin_lock(&dev->se_port_lock);
- 	if (dev->dev_port_count == 0x0000ffff) {
+Normal way to do that (backlight class does it, for example) is to
+have acpi_als instead of als0, and get rid of desc field.
+									Pavel
 -- 
-1.5.4.1
-
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
