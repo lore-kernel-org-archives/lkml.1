@@ -1,150 +1,382 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZHaRWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbZHaR0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbZHaRWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 13:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZHaRWg
+	id S1753566AbZHaR0M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 13:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbZHaR0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 13:22:36 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:44603 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbZHaRWf (ORCPT
+	Mon, 31 Aug 2009 13:26:11 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:56902 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753415AbZHaR0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 13:22:35 -0400
-Message-ID: <4A9C06B2.3040009@vflare.org>
-Date: Mon, 31 Aug 2009 22:51:54 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] swap: Fix swap size in case of block devices
-References: <200908302149.10981.ngupta@vflare.org> <Pine.LNX.4.64.0908311151190.16326@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0908311151190.16326@sister.anvils>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 31 Aug 2009 13:26:09 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@vmware.com>, Maxime Austruy <maustruy@vmware.com>
+In-Reply-To: <200908280803.52025.eike-kernel@sf-tec.de>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <200908280803.52025.eike-kernel@sf-tec.de>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 31 Aug 2009 10:26:11 -0700
+Message-Id: <1251739571.16169.17.camel@ank32.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/31/2009 04:57 PM, Hugh Dickins wrote:
-> On Sun, 30 Aug 2009, Nitin Gupta wrote:
->
->> During swapon, swap size is set to number of usable pages in the given
->> swap file/block device minus 1 (for header page). In case of block devices,
->> this size is incorrectly set as one page less than the actual due to an
->> off-by-one error. For regular files, this size is set correctly.
->>
->> Signed-off-by: Nitin Gupta<ngupta@vflare.org>
->
-> I agree that there's an off-by-one disagreement between swapon and mkswap
-> regarding last_page.  The kernel seems to interpret it as the index of
-> what I'd call the end page, the first page beyond the swap area.
->
-> I'd never noticed that until the beginning of this year, and out of
-> caution I've done nothing about it.  I believe that the kernel has
-> been wrong since Linux 2.2.? or 2.3.?, ever since swap header version 1
-> was first introduced; and that mkswap has set it the same way all along.
->
-> But I've not spent time on the research to establish that for sure.
->
-> What if there used to be a version of mkswap which set last_page one
-> greater as the kernel expects?  Neither Karel nor I think that's the
-> case, but we're not absolutely certain.  And what if (I suppose I'm
-> getting even more wildly cautious here!) someone has learnt that
-> that page remains untouched and is now putting it to other use?
-> or has compensated for the off-by-one and is setting it one greater,
-> beyond the end of the partition, not using mkswap?
->
+Hi Eike,
 
-All this regarding mkswap is even more unlikely considering that for
-regular files, kernel uses last page too (details below). Only for block
-devices, we leave last page unused due to this bug.
+Thanks a lot for taking a look. Please find my replies inline.
 
+On Thu, 2009-08-27 at 23:03 -0700, Rolf Eike Beer wrote: 
+> Alok Kataria wrote:
+> > Greetings to all,
+> >
+> > Please find below a patch which adds support for the VMware
+> > paravirtualized SCSI device (PVSCSI).
+> 
+> > +static const struct pci_device_id pvscsi_pci_tbl[] = {
+> > +	{ PCI_DEVICE(PCI_VENDOR_ID_VMWARE, PCI_DEVICE_ID_VMWARE_PVSCSI) },
+> > +	{ 0 }
+> > +};
+> 
+> This can be written shorter as PCI_VDEVICE(VMWARE, 0x07C0). Putting the device 
+> id into the header doesn't get any benefit I see, it just makes harder to 
+> collect the pieces together.
+Done, I have kept the device id too, for readability.
 
-> Since nobody has been hurt by it in all these years, I felt safer
-> to go on leaving that discrepancy as is.  Call me over cautious.
->
-> Regarding your patch comment: I'm puzzled by the remark "For regular
-> files, this size is set correctly".  Do you mean that mkswap is
-> setting last_page one higher when dealing with a regular file rather
-> than a block device (I was unaware of that, but never looked to see)?
-> But your patch appears to be to code shared equally between block
-> devices and regular files, so then you'd be introducing a bug on
-> regular files?  And shouldn't mkswap be fixed to be consistent
-> with itself?  Hopefully I've misunderstood: please explain further.
->
+> It's used only here AFAICT so just write it down 
+> here and be done with it. The vendor id might be better places in 
+> include/linux/pci_ids.h.
+> 
+Yes will move it to the header file, right now the VMware vendor id is
+also being used by the x86 paravirt-vmi code, will delay that cleanup
+till the patch is in mainline, to avoid putting dependency on multiple
+trees.
 
-mkswap sets last_page correctly: 0-based index of last usable
-swap page. To explain why this bug affects only block swap devices,
-some code walkthrough is done below:
-(BTW, I only checked mkswap which is part of util-linux-ng 2.14.2).
+> > +static struct pvscsi_ctx *
+> > +pvscsi_acquire_context(struct pvscsi_adapter *adapter, struct scsi_cmnd
+> > *cmd) +{
+> > +	struct pvscsi_ctx *ctx;
+> > +
+> > +	if (list_empty(&adapter->cmd_pool))
+> > +		return NULL;
+> > +
+> > +	ctx = list_entry(adapter->cmd_pool.next, struct pvscsi_ctx, list);
+> 
+> list_first_entry(&adapter->cmd_pool, struct pvscsi_ctx, list);
+Done. 
+> 
+> > +/*
+> > + * Map a pvscsi_ctx struct to a context ID field value; we map to a simple
+> > + * non-zero integer.
+> > + */
+> > +static u64 pvscsi_map_context(const struct pvscsi_adapter *adapter,
+> > +			      const struct pvscsi_ctx *ctx)
+> > +{
+> > +	return ctx - adapter->cmd_map + 1;
+> > +}
+> 
+> Is this guaranteed to always be !=0? Maybe add a BUG_ON or WARN_ON here? And 
+> if it is guaranteed please add a short comment to say /how/ this works, as 
+> just from the first look this is at least suspicious.
 
-swapon()
-{
-  ...
-         nr_good_pages = swap_header->info.last_page -
-                         swap_header->info.nr_badpages -
-                         1 /* header page */;
+ctx always points to an entry in the adapter->cmd_map array. So the
+return value can never be less than 1. Will add a comment. 
+> 
+> > +static void pvscsi_write_cmd_desc(const struct pvscsi_adapter *adapter,
+> > +				  u32 cmd, const void *desc, size_t len)
+> > +{
+> > +	const u32 *ptr = desc;
+> > +	unsigned i;
+> > +
+> > +	len /= sizeof(u32);
+> 
+> How about sizeof(*ptr)? This would just remove the "magic" knowledge about the 
+> size.
+> 
+Yep, done. 
+> > +static int pvscsi_setup_msg_workqueue(struct pvscsi_adapter *adapter)
+> > +{
+> > +	char name[32];
+> > +
+> > +	if (!pvscsi_use_msg)
+> > +		return 0;
+> > +
+> > +	pvscsi_reg_write(adapter, PVSCSI_REG_OFFSET_COMMAND,
+> > +			 PVSCSI_CMD_SETUP_MSG_RING);
+> > +
+> > +	if (pvscsi_reg_read(adapter, PVSCSI_REG_OFFSET_COMMAND_STATUS) == -1)
+> > +		return 0;
+> > +
+> > +	snprintf(name, sizeof name, "pvscsi_wq_%u", adapter->host->host_no);
+> 
+> sizeof(name)
+Yep, have put parenthesis for all sizeof usage's.
 
-====
-	off-by-one error: for both regular and block device case, but...
-====
+> 
+> > +	adapter->workqueue = create_singlethread_workqueue(name);
+> > +	if (!adapter->workqueue) {
+> > +		printk(KERN_ERR "pvscsi: failed to create work queue\n");
+> > +		return 0;
+> > +	}
+> > +	INIT_WORK(&adapter->work, pvscsi_msg_workqueue_handler);
+> > +
+> > +	return 1;
+> > +}
+> > +
+> > +static irqreturn_t pvscsi_isr(int irq, void *devp)
+> > +{
+> > +	struct pvscsi_adapter *adapter = devp;
+> > +	int handled;
+> > +
+> > +	if (adapter->use_msi || adapter->use_msix)
+> > +		handled = true;
+> > +	else {
+> > +		u32 val = pvscsi_read_intr_status(adapter);
+> > +		handled = (val & PVSCSI_INTR_ALL_SUPPORTED) != 0;
+> > +		if (handled)
+> > +			pvscsi_write_intr_status(devp, val);
+> > +	}
+> > +
+> > +	if (handled) {
+> > +		unsigned long flags;
+> > +
+> > +		spin_lock_irqsave(&adapter->hw_lock, flags);
+> > +
+> > +		pvscsi_process_completion_ring(adapter);
+> > +		if (adapter->use_msg && pvscsi_msg_pending(adapter))
+> > +			queue_work(adapter->workqueue, &adapter->work);
+> > +
+> > +		spin_unlock_irqrestore(&adapter->hw_lock, flags);
+> > +	}
+> > +
+> > +	return IRQ_RETVAL(handled);
+> > +}
+> > +
+> > +static void pvscsi_free_sgls(const struct pvscsi_adapter *adapter)
+> > +{
+> > +	struct pvscsi_ctx *ctx = adapter->cmd_map;
+> > +	unsigned i;
+> > +
+> > +	for (i = 0; i < adapter->req_depth; ++i, ++ctx)
+> > +		pci_free_consistent(adapter->dev, PAGE_SIZE, ctx->sgl,
+> > +				    ctx->sglPA);
+> > +}
+> > +
+> > +static int pvscsi_setup_msix(const struct pvscsi_adapter *adapter, int
+> > *irq) +{
+> > +#ifdef CONFIG_PCI_MSI
+> > +	struct msix_entry entry = { 0, PVSCSI_VECTOR_COMPLETION };
+> > +	int ret;
+> > +
+> > +	ret = pci_enable_msix(adapter->dev, &entry, 1);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	*irq = entry.vector;
+> > +
+> > +	return 0;
+> > +#else
+> > +	return -1;
+> > +#endif
+> > +}
+> 
+> You don't need those #ifdef's here. If CONFIG_PCI_MSI is not defined 
+> pci_enable_msix() is a static inline that always returns -1 (see 
+> include/linux/pci.h).
 
-         if (nr_good_pages) {
-                 swap_map[0] = SWAP_MAP_BAD;
-                 p->max = maxpages;
-                 p->pages = nr_good_pages;
-                 nr_extents = setup_swap_extents(p, &span);
-====
-For block devices, setup_swap_extents() leaves p->pages untouched.
-For regular files, it sets p->pages
-	== total usable swap pages (including header page) - 1;
-====
-                 if (nr_extents < 0) {
-                         error = nr_extents;
-                         goto bad_swap;
-                 }
-                 nr_good_pages = p->pages;
+True, removed. 
+> 
+> > +static void pvscsi_shutdown_intr(struct pvscsi_adapter *adapter)
+> > +{
+> > +	if (adapter->irq) {
+> > +		free_irq(adapter->irq, adapter);
+> > +		adapter->irq = 0;
+> > +	}
+> > +#ifdef CONFIG_PCI_MSI
+> > +	if (adapter->use_msi) {
+> > +		pci_disable_msi(adapter->dev);
+> > +		adapter->use_msi = 0;
+> > +	}
+> > +
+> > +	if (adapter->use_msix) {
+> > +		pci_disable_msix(adapter->dev);
+> > +		adapter->use_msix = 0;
+> > +	}
+> > +#endif
+> > +}
+> 
+> Those can go away then too, I think.
+Yep. 
+> 
+> > +static int __devinit pvscsi_probe(struct pci_dev *pdev,
+> > +				  const struct pci_device_id *id)
+> > +{
+> > +	struct pvscsi_adapter *adapter;
+> > +	struct Scsi_Host *host;
+> > +	unsigned long base, i;
+> > +	int error;
+> > +
+> > +	error = -ENODEV;
+> > +
+> > +	if (pci_enable_device(pdev))
+> > +		return error;
+> 
+> As always I suggest having a look on devres (see Documentation/driver-
+> model/devres.txt) which could simplify your error handling here and your 
+> release function a lot. You only need to make sure it doesn't hurt if all the 
+> PCI resources are freed after the scsi ones as you would end up cleaning the 
+> scsi ones by hand and afterwards devres would throw all it handles (which will 
+> probably be most of your PCI stuff) away itself.
+> 
+I took a quick look, but would prefer not to change this right now. Will
+do this as a incremental change later. Hope that is fine.
 
-====
-So, for block device, nr_good_pages == last_page - nr_badpages - 1
-				== (total pages - 1) - nr_badpages - 1 (error)
-			
-For regular files, nr_good_pages == total pages - 1 (correct)
-====
+> > +	if (pci_set_dma_mask(pdev, DMA_BIT_MASK(64)) == 0 &&
+> > +	    pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64)) == 0) {
+> > +		printk(KERN_INFO "pvscsi: using 64bit dma\n");
+> > +	} else if (pci_set_dma_mask(pdev, DMA_BIT_MASK(32)) == 0 &&
+> > +		   pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32)) == 0) {
+> > +		printk(KERN_INFO "pvscsi: using 32bit dma\n");
+> > +	} else {
+> > +		printk(KERN_ERR "pvscsi: failed to set DMA mask\n");
+> > +		goto out_disable_device;
+> > +	}
+> > +
+> > +	pvscsi_template.can_queue =
+> > +		min(PVSCSI_MAX_NUM_PAGES_REQ_RING, pvscsi_ring_pages) *
+> > +		PVSCSI_MAX_NUM_REQ_ENTRIES_PER_PAGE;
+> > +	pvscsi_template.cmd_per_lun =
+> > +		min(pvscsi_template.can_queue, pvscsi_cmd_per_lun);
+> > +	host = scsi_host_alloc(&pvscsi_template, sizeof(struct pvscsi_adapter));
+> > +	if (!host) {
+> > +		printk(KERN_ERR "pvscsi: failed to allocate host\n");
+> > +		goto out_disable_device;
+> > +	}
+> > +
+> > +	adapter = shost_priv(host);
+> > +	memset(adapter, 0, sizeof *adapter);
+> 
+> sizeof(*adapter)
+> 
+> > +	adapter->dev  = pdev;
+> > +	adapter->host = host;
+> > +
+> > +	spin_lock_init(&adapter->hw_lock);
+> > +
+> > +	host->max_channel = 0;
+> > +	host->max_id      = 16;
+> > +	host->max_lun     = 1;
+> > +
+> > +	pci_read_config_byte(pdev, PCI_CLASS_REVISION, &adapter->rev);
+> 
+> That's in pdev->revision anyway, isn't it?
 
-         }
-...
-}
+Yep, though, its needed in pvscsi_info, so will keep this in adapter
+too.
 
+> 
+> > +	if (pci_request_regions(pdev, "pvscsi")) {
+> > +		printk(KERN_ERR "pvscsi: pci memory selection failed\n");
+> > +		goto out_free_host;
+> > +	}
+> > +
+> > +	base = 0;
+> > +	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+> > +		if ((pci_resource_flags(pdev, i) & PCI_BASE_ADDRESS_SPACE_IO))
+> > +			continue;
+> > +
+> > +		if (pci_resource_len(pdev, i) <
+> > +					PVSCSI_MEM_SPACE_NUM_PAGES * PAGE_SIZE)
+> > +			continue;
+> > +
+> > +		base = pci_resource_start(pdev, i);
+> > +		break;
+> > +	}
+> > +
+> > +	if (base == 0) {
+> > +		printk(KERN_ERR "pvscsi: adapter has no suitable MMIO region\n");
+> > +		goto out_release_resources;
+> > +	}
+> > +
+> > +	adapter->mmioBase = ioremap(base, PVSCSI_MEM_SPACE_SIZE);
+> 
+> You are mapping this here with a (probably) different size than the one you 
+> checked above.
+Actually no, PVSCSI_MEM_SPACE_SIZE is defined as
+PVSCSI_MEM_SPACE_NUM_PAGES * PAGE_SIZE.
 
-With this fix, block device case is corrected to last_page - nr_badpages - 1
-while regular file case remain correct since setup_swap_extents() still gives
-same correct value in p->pages (== total pages - 1).
+> Also pci_iomap() could simplify that as you don't have to get 
+> the base address and only need to tell it the bar number.
 
+Yeah done. 
+> 
+> > +	if (!adapter->mmioBase) {
+> > +		printk(KERN_ERR "pvscsi: can't ioremap 0x%lx\n", base);
+> > +		goto out_release_resources;
+> > +	}
+> > +
+> > +	pci_set_master(pdev);
+> > +	pci_set_drvdata(pdev, host);
+> > +
+> > +	ll_adapter_reset(adapter);
+> > +
+> > +	adapter->use_msg = pvscsi_setup_msg_workqueue(adapter);
+> > +
+> > +	error = pvscsi_allocate_rings(adapter);
+> > +	if (error) {
+> > +		printk(KERN_ERR "pvscsi: unable to allocate ring memory\n");
+> > +		goto out_release_resources;
+> > +	}
+> > +
+> > +	/*
+> > +	 * From this point on we should reset the adapter if anything goes
+> > +	 * wrong.
+> > +	 */
+> > +	pvscsi_setup_all_rings(adapter);
+> > +
+> > +	adapter->cmd_map = kmalloc(adapter->req_depth *
+> > +				   sizeof(struct pvscsi_ctx), GFP_KERNEL);
+> 
+> kcalloc(), this will do overflow checking and also clear the memory for you.
+Done. 
+> 
+> 
+> > +	printk(KERN_INFO "VMware PVSCSI rev %d on bus:%u slot:%u func:%u host
+> > #%u\n", +	       adapter->rev, pdev->bus->number, PCI_SLOT(pdev->devfn),
+> > +	       PCI_FUNC(pdev->devfn), host->host_no);
+> 
+> dev_info(&pdev->dev, ..), this should also give you the PCI 
+> domain/bus/slot/function information for free.
+> 
+Ok. 
+> > +static int __init pvscsi_init(void)
+> > +{
+> > +	printk(KERN_DEBUG "%s - version %s\n",
+> > +	       PVSCSI_LINUX_DRIVER_DESC, PVSCSI_DRIVER_VERSION_STRING);
+> 
+> pr_debug()
+Ok.
 
-> And regarding the patch itself: my understanding is that the problem
-> is with the interpretation of last_page, so I don't think one change
-> to nr_good_pages would be enough to fix it - you'd need to change the
-> other places where last_page is referred to too.
->
+Will send the V2 patch with all changes.
+Thanks again for your comments.
 
-I looked at other instances of last_page in swapon() -- all these other
-instances looked correct to me.
+Alok 
+> 
+> HTH & HAND
+> 
+> Eike
 
-> I'm still disinclined to make any change here myself (beyond
-> a comment noting the discrepancy); but tell me I'm a fool.
->
-
-I agree that nobody would bother losing 1 swap slot, so it might
-not be desirable to have this fix. But IMHO, I don't see any reason
-to leave this discrepancy between regular files and swap devices -- its
-just so odd.
-
-Thanks for your detailed comments.
-
-Regards,
-Nitin
