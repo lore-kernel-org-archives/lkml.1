@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZHaUTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZHaU1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbZHaUTM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 16:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbZHaUTL
+	id S1754603AbZHaU1u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 16:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbZHaU1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 16:19:11 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:58974 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752704AbZHaUTL (ORCPT
+	Mon, 31 Aug 2009 16:27:50 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45453 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752854AbZHaU1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 16:19:11 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH] Fix proc_file_write missing ppos update
-Date: Mon, 31 Aug 2009 22:19:09 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-6-generic; KDE/4.3.0; x86_64; ; )
-Cc: Stefani Seibold <stefani@seibold.net>,
-       Christoph Hellwig <hch@infradead.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1251563892.13287.11.camel@wall-e> <200908311744.52972.arnd@arndb.de> <20090831171956.GA3036@x200.localdomain>
-In-Reply-To: <20090831171956.GA3036@x200.localdomain>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 31 Aug 2009 16:27:49 -0400
+Date: Mon, 31 Aug 2009 16:27:51 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+cc: Linus Walleij <linus.ml.walleij@gmail.com>, <linux-kernel@vger.kernel.org>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Russell King <linux@arm.linux.org.uk>,
+       <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] AB3100 regulator support v1
+In-Reply-To: <20090830190102.GA4235@sirena.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0908311623490.2646-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908312219.09629.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19OBOs/BxWNVsoZz/+DHMUAxybdUfcdxg4PUDa
- NgQnoTqmbVS50Bmdpw5dguQH7niyap7woPyeBhwmEE6G6xHa5V
- IKe4P6j5JQNcyNeo/lCwA==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 31 August 2009, Alexey Dobriyan wrote:
-> I don't like any churn in that area. Everything is ready for ->proc_fops usage.
-> So we should simply convert users away.
-> Actually most of SCSI and IDE is already done, just wasn't sent yet.
+On Sun, 30 Aug 2009, Mark Brown wrote:
 
-Ok, fair enough. I was expecting that the remaining drivers are suffering from
-lack of testing options, as many of them are rather obscure. If you think we can
-just convert them in one step, that's even better.
+> On Sun, Aug 30, 2009 at 12:27:32PM -0400, Alan Stern wrote:
+> > On Sun, 30 Aug 2009, Mark Brown wrote:
+> 
+> > > On the face of it (and without having actually looked at a running
+> > > system or anything yet) I'm rather surprised that platform based MFD
+> > > drivers aren't running into this issue more often.  CCing in Alan who
+> > > made the change.
+> 
+> > I'm not at all familiar with the detailed issues involved here.  
+> > Perhaps because of this, I don't see why there's any reason for
+> > deadlocking.  __driver_attach() is invoked when a new driver is
+> > registered; to avoid problems all you have to do is make sure you
+> > aren't holding any device locks when you register a driver.
+> 
+> Ah, it's platform_driver_probe() that's causing issues.  When it is used
+> the devices need to have been registered previously since the driver
+> probe function isn't kept around.  In order to do this for the child
+> device the driver for the subdevice has to be registered from within the
+> probe function of the parent, which is itself happening within the
+> parent device registration.
 
-	Arnd <><
+I see.  Well, in the absence of any more sophisticated solutions,
+unlocking the parent's semaphore before registering the driver (and
+then re-locking it afterward) should work.
+
+Alan Stern
+
