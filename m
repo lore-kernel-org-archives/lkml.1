@@ -1,122 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZHaNXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZHaNYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753485AbZHaNXL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 09:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZHaNXK
+	id S1753468AbZHaNYk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 09:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbZHaNYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 09:23:10 -0400
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:54171 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753301AbZHaNXJ (ORCPT
+	Mon, 31 Aug 2009 09:24:39 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:34481 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529AbZHaNYj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 09:23:09 -0400
-Date: Mon, 31 Aug 2009 10:47:28 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, manfred@colorfullife.com,
-       Ihno Krumreich <ihno@suse.de>, Greg KH <gregkh@suse.de>
-Subject: Re: [BUG] race of RCU vs NOHU
-Message-ID: <20090831104728.1b439a54@skybase>
-In-Reply-To: <20090821155418.GB6735@linux.vnet.ibm.com>
-References: <20090807151529.2806b8b4@skybase>
-	<20090807142957.GB6700@linux.vnet.ibm.com>
-	<20090810142535.3e685109@skybase>
-	<20090810150807.GA6791@linux.vnet.ibm.com>
-	<20090811125653.12c35ee8@skybase>
-	<20090811145222.GA6739@linux.vnet.ibm.com>
-	<20090811171751.34ca3b3b@skybase>
-	<20090811180407.GD6739@linux.vnet.ibm.com>
-	<20090812093233.4006b9a1@skybase>
-	<20090821155418.GB6735@linux.vnet.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Aug 2009 09:24:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=l2luGuCa1tHWa3lv0Bx5EYe4WqpAHtvxriAFMWaUxM9qEdPEe4H757DVqmkQ6G0GBe
+         42ImwpArCPMraGmlXQCyz9y65bbhxb/om1/2+fkotRrSpHAG1k5sX9acqGFAR/NTJFuL
+         L1xv45+MB9+5a26zjL3+CQVDI4FzaRnSe4JZ8=
+MIME-Version: 1.0
+In-Reply-To: <20090829102126.GA22409@localhost>
+References: <6afc6d4a0907111027w76234c8fv11ab77864515fdb0@mail.gmail.com> 
+	<20090712080410.GA8512@localhost> <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com> 
+	<20090829101247.GA20786@localhost> <20090829102126.GA22409@localhost>
+From: Fernando Silveira <fsilveira@gmail.com>
+Date: Mon, 31 Aug 2009 10:24:20 -0300
+Message-ID: <6afc6d4a0908310624j47f9d8c7h47d98ecd95811883@mail.gmail.com>
+Subject: Re: I/O and pdflush
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 21 Aug 2009 08:54:18 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Sat, Aug 29, 2009 at 07:21, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> On Sat, Aug 29, 2009 at 06:12:47PM +0800, Wu Fengguang wrote:
+>> On Sat, Aug 29, 2009 at 05:48:40AM +0800, Fernando Silveira wrote:
+>> > On Sun, Jul 12, 2009 at 05:04, Wu Fengguang<fengguang.wu@intel.com> wrote:
+>> > > On Sat, Jul 11, 2009 at 02:27:25PM -0300, Fernando Silveira wrote:
+>> > >> I'm having a hard time with an application that writes sequentially
+>> > >> 250GB of non-stop data directly to a solid state disk (OCZ SSD CORE
+>> > >> v2) device and I hope you can help me. The command "dd if=/dev/zero
+>> > >> of=/dev/sdc bs=4M" reproduces the same symptoms I'm having and writes
+>> > >> exactly as that application does.
+>>
+>> Sure. Attached is a writeback debug patch. It will generate lots of
+>> kernel messages. You can just stop your klogd, start your workload
+>> and monitor the SSD writeback throughput via tools like iostat/dstat.
+>
+> Fernando, will you post the output of iostat/dstat too? Thanks!
+> The ssd-no_dirty_buffer_with_random_192mb_writes.png is a good overview,
+> however I'd like to also check out the numbers for each second :)
+>
+>> When it goes into the suboptimal 25MB/s state for several seconds, run
+>>         dmesg > dmesg-writeback
+>> and send me the log.
+>>
+>> And it is advised to turn on the kconfig option CONFIG_PRINTK_TIME=y.
 
-> On Wed, Aug 12, 2009 at 09:32:33AM +0200, Martin Schwidefsky wrote:
-> > On Tue, 11 Aug 2009 11:04:07 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Tue, Aug 11, 2009 at 05:17:51PM +0200, Martin Schwidefsky wrote:
-> > > > On Tue, 11 Aug 2009 07:52:22 -0700
-> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > On Tue, Aug 11, 2009 at 12:56:53PM +0200, Martin Schwidefsky wrote:
-> > > > > > On Mon, 10 Aug 2009 08:08:07 -0700
-> > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > 
-> > > > > > > On Mon, Aug 10, 2009 at 02:25:35PM +0200, Martin Schwidefsky wrote:
-> > > > > > > > On Fri, 7 Aug 2009 07:29:57 -0700
-> > > > > > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > > > 
-> > > > > > > > > On Fri, Aug 07, 2009 at 03:15:29PM +0200, Martin Schwidefsky wrote:
-> > > > > > > > > > Hi Paul,
-> > > > > > > > > > I analysed a dump of a hanging 2.6.30 system and found what I think is
-> > > > > > > > > > a bug of RCU vs NOHZ. There are a number of patches ontop of that
-> > > > > > > > > > kernel but they should be independent of the bug.
-> > > > > > > > > > 
-> > > > > > > > > > The systems has 4 cpus and uses classic RCU. cpus #0, #2 and #3 woke up
-> > > > > > > > > > recently, cpu #1 has been sleeping for 5 minutes, but there is a pending
-> > > > > > > > > > rcu batch. The timer wheel for cpu #1 is empty, it will continue to
-> > > > > > > > > > sleep for NEXT_TIMER_MAX_DELTA ticks.
-> > > > > > > > > 
-> > > > > > > > > Congratulations, Martin!  You have exercised what to date has been a
-> > > > > > > > > theoretical bug identified last year by Manfred Spraul.  The fix is to
-> > > > > > > > > switch from CONFIG_RCU_CLASSIC to CONFIG_RCU_TREE, which was added in
-> > > > > > > > > 2.6.29.
-> > > > > > > > > 
-> > > > > > > > > Of course, if you need to work with an old kernel version, you might
-> > > > > > > > > still need a patch, perhaps for the various -stable versions.  If so,
-> > > > > > > > > please let me know -- otherwise, I will focus forward on CONFIG_RCU_TREE
-> > > > > > > > > rather than backwards on CONFIG_RCU_CLASSIC.
-> > > > > > > > 
-> > > > > > > > SLES11 is 2.6.27 and uses classic RCU. The not-so theoretical bug is
-> > > > > > > > present there and I think it needs to be fixed :-/
-> > > > > > > 
-> > > > > > > I was afraid of that.  ;-)
-> > > > > > > 
-> > > > > > > Given that there are some other theoretical bugs in Classic RCU involving
-> > > > > > > interrupts and CONFIG_NO_HZ, would backporting CONFIG_TREE_RCU make more
-> > > > > > > sense than playing whack-a-mole on Classic RCU bugs?
-> > > > > > 
-> > > > > > Fine with me but I don't know if SuSE/Novell is willing to accept such a
-> > > > > > big change for an existing distribution. I've put Ihno and Greg on Cc.
-> > > > > 
-> > > > > Good point!  While they are thinking about the tradeoff between
-> > > > > whack-a-mole on Classic RCU and backporting CONFIG_TREE_RCU, if I was
-> > > > > to send you a patch backporting CONFIG_TREE_RCU, to exactly which kernel
-> > > > > version(s) should I backport it to?
-> > > > 
-> > > > We found the bug with kernel version 2.6.30 - the kernel on our test systems
-> > > > still use classic RCU. For us it is easy to switch to tree-RCU, no patch
-> > > > required.
-> > > 
-> > > Ah!  Could you please send me the test you use?  My tests were
-> > > insufficient to force this problem to happen.
-> > 
-> > There is no specific test, just a regular system boot. The boot did not
-> > finish and our tester took a dump. This boot failure seems to happen from
-> > time to time.
-> 
-> OK.  Has CONFIG_TREE_RCU been working for you?  If so, which variant
-> of 2.6.27 do you need a backport to?
+Thanks for your help.
 
-We changed the configuration of our test kernels to CONFIG_TREE_RCU. So
-far the problem has not shown up again. As we a dealing with a rare race
-here this has to be taken with a grain of salt.
+You can reach in the URL below a tarball which contains the data I
+logged after patching the kernel with only your last patch.
+
+http://rootshell.be/~swrh/ssd-tests/log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M.tar.gz
+
+Each file contained in the tarball is described below:
+
+- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-{0-ddv,1-table,2-plot}.*
+  Logging statistics. The "0-ddv" file is the log of a modified
+version of the dd(1) utility to print writing statistics after every
+write(2), "1-table" is a table version of the "0-ddv" file parsed with
+awk(1) and "2-plot" is the a plot image of the writing statistics.
+
+- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-0-dstat.log
+  The result of "dstat > dstat.log" executed ~3 seconds after "ddv" started.
+
+- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-0-iostat.log
+  The result of "iostat 1 > iostat.log" executed ~15 seconds after
+"ddv" started.
+
+- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-0-dmesg_writeback_{1..67}.log
+  The result of "for i in {1..67}; do dmesg > dmesg-writeback-$i.log;
+sleep 1; done" executed when "ddv" had written about 42GB of data.
+
+- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-0-dmesg_writeback_{100..186}.log
+  The result of "for i in {100..186}; do dmesg >
+dmesg-writeback-$i.log; sleep 1; done" executed when "ddv" had written
+about 51GB of data.
+
+Please tell me if you need anything else. I could make a more
+synchronized or informative logging output if you need.
+
+Best regards,
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Fernando Silveira <fsilveira@gmail.com>
