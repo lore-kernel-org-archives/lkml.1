@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbZHaNPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZHaNQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753262AbZHaNPV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 09:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZHaNPU
+	id S1753293AbZHaNQo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 09:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZHaNQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 09:15:20 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:33011 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbZHaNPU (ORCPT
+	Mon, 31 Aug 2009 09:16:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52767 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752690AbZHaNQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 09:15:20 -0400
-Date: Mon, 31 Aug 2009 14:15:14 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Mike Mohr <akihana@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: expresscard hotplug not working
-Message-ID: <20090831131514.GA11752@srcf.ucam.org>
-References: <4746469c0908251817u225609bax66ea27261a1ef038@mail.gmail.com> <4A96819D.7060708@rtr.ca> <20090830225542.GB901@srcf.ucam.org> <4A9BC239.9060009@rtr.ca> <4A9BC5FB.20000@rtr.ca> <20090831125609.GA11121@srcf.ucam.org> <4A9BCC0B.1010107@rtr.ca>
+	Mon, 31 Aug 2009 09:16:43 -0400
+Date: Mon, 31 Aug 2009 09:16:26 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Michael Tokarev <mjt@tls.msk.ru>,
+       david@lang.hm, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>, NeilBrown <neilb@suse.de>,
+       Rob Landley <rob@landley.net>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+	document conditions when reliable operation is possible)
+Message-ID: <20090831131626.GA17325@infradead.org>
+References: <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com> <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz> <alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm> <4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru> <20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A9BCC0B.1010107@rtr.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <4A9BCCEF.7010402@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 09:11:39AM -0400, Mark Lord wrote:
+On Mon, Aug 31, 2009 at 09:15:27AM -0400, Ric Wheeler wrote:
+>> While most common filesystem do have barrier support it is:
+>>
+>>   - not actually enabled for the two most common filesystems
+>>   - the support for write barriers an cache flushing tends to be buggy
+>>     all over our software stack,
+>>
+>
+> Or just missing - I think that MD5/6 simply drop the requests at present.
+>
+> I wonder if it would be worth having MD probe for write cache enabled & 
+> warn if barriers are not supported?
 
-> Another thing that could be a factor here, is that neither method
-> (acpiphp or pciehp) seems "automatic".  The user has to know to load
-> one or the other module, or at least manually add them to /etc/modules.
+In my opinion even that is too weak.  We know how to control the cache
+settings on all common disks (that is scsi and ata), so we should always
+disable the write cache unless we know that the whole stack (filesystem,
+raid, volume managers) supports barriers.  And even then we should make
+sure the filesystems does actually use barriers everywhere that's needed
+which failed at for years.
 
-Yes. There's no reasonable way of dealing with this - even if you came 
-up with some sort of modaliases, the order in which the drivers are 
-probed is significant (some hardware will work with both pciehp and 
-acpiphp, but prefers the former). The only real way to handle this is to 
-build them both in.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
