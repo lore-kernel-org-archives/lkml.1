@@ -1,76 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZHaIgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752804AbZHaIhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814AbZHaIgj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 04:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZHaIgi
+	id S1752804AbZHaIhh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 04:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZHaIhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 04:36:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48297 "EHLO mx3.mail.elte.hu"
+	Mon, 31 Aug 2009 04:37:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57204 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752749AbZHaIgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 04:36:35 -0400
-Date: Mon, 31 Aug 2009 10:35:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jason Baron <jbaron@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
-Subject: Re: [GIT PULL] tracing/syscalls: The next bunch
-Message-ID: <20090831083512.GC15619@elte.hu>
-References: <1251395015-6329-1-git-send-email-fweisbec@gmail.com> <20090829104334.GA17156@elte.hu> <20090829233304.GA6101@nowhere>
+	id S1751848AbZHaIhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 04:37:35 -0400
+Date: Mon, 31 Aug 2009 08:37:05 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, fweisbec@gmail.com, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
+References: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perfcounters/core] perf tools: Add missing parameters documentation
+Message-ID: <tip-ec7ba4ea1d605029fb09601ab4ad3053bc1f519c@git.kernel.org>
+Git-Commit-ID: ec7ba4ea1d605029fb09601ab4ad3053bc1f519c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090829233304.GA6101@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 08:37:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  ec7ba4ea1d605029fb09601ab4ad3053bc1f519c
+Gitweb:     http://git.kernel.org/tip/ec7ba4ea1d605029fb09601ab4ad3053bc1f519c
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Mon, 31 Aug 2009 03:32:03 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 31 Aug 2009 10:04:47 +0200
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+perf tools: Add missing parameters documentation
 
-> On Sat, Aug 29, 2009 at 12:43:34PM +0200, Ingo Molnar wrote:
-> > 
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > Ingo,
-> > > 
-> > > Here is another bunch of syscalls tracing patches.
-> > 
-> > i have tested them, and something in this batch, when merged into 
-> > tip/master:
-> > 
-> > 0dd7b74: tracing: Fix double CPP substitution in TRACE_EVENT_FN
-> > 66c6e29: Merge branch 'tracing/core' of git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing into tracing/core
-> > 117226d: tracing: Remove FTRACE_SYSCALL_MAX definitions
-> > 57421db: tracing: Convert event tracing code to use NR_syscalls
-> > a5a2f8e: tracing: Define NR_syscalls for x86_64
-> > dd86dda: tracing: Define NR_syscalls for x86 (32)
-> > cc3b13c: tracing: Don't trace kernel thread syscalls
-> > cd0980f: tracing: Check invalid syscall nr while tracing syscalls
-> > 7515bf5: tracing: Add syscall tracepoints - s390 arch update
-> 
-> Argh, I've just tested a merge of tip:tracing/core into tip:master 
-> and I can't reproduce the hang, neither in x86-64 SMP nor in a 
-> pentium III :-(
+Add missing documentation for the following parameters:
 
-I'll re-try it again, maybe i'll find a config with better 
-reproducibility. Also, lots of stuff was merged recently, maybe 
-there was some other bit interacting.
+- perf record -R
+- perf report -g
 
-	Ingo
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/Documentation/perf-record.txt |    4 ++++
+ tools/perf/Documentation/perf-report.txt |   10 ++++++++++
+ 2 files changed, 14 insertions(+), 0 deletions(-)
+
+diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
+index 6be696b..0ff23de 100644
+--- a/tools/perf/Documentation/perf-record.txt
++++ b/tools/perf/Documentation/perf-record.txt
+@@ -91,6 +91,10 @@ OPTIONS
+ --no-samples::
+ 	Don't sample.
+ 
++-R::
++--raw-samples::
++Collect raw sample records from all opened counters (typically for tracepoint counters).
++
+ SEE ALSO
+ --------
+ linkperf:perf-stat[1], linkperf:perf-list[1]
+diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
+index 370344a..59f0b84 100644
+--- a/tools/perf/Documentation/perf-report.txt
++++ b/tools/perf/Documentation/perf-report.txt
+@@ -51,6 +51,16 @@ OPTIONS
+ 	all occurances of this separator in symbol names (and other output)
+ 	with a '.' character, that thus it's the only non valid separator.
+ 
++-g [type,min]::
++--call-graph::
++        Display callchains using type and min percent threshold.
++	type can be either:
++	- flat: single column, linear exposure of callchains.
++	- graph: use a graph tree, displaying absolute overhead rates.
++	- fractal: like graph, but displays relative rates. Each branch of
++		 the tree is considered as a new profiled object. +
++	Default: fractal,0.5.
++
+ SEE ALSO
+ --------
+ linkperf:perf-stat[1]
