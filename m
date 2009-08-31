@@ -1,132 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbZHaNDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbZHaND7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753228AbZHaNDo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 09:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZHaNDn
+	id S1753270AbZHaND7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 09:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZHaND6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 09:03:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42489 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753068AbZHaNDm convert rfc822-to-8bit (ORCPT
+	Mon, 31 Aug 2009 09:03:58 -0400
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:14334
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752619AbZHaND5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 09:03:42 -0400
-Date: Mon, 31 Aug 2009 10:03:32 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: =?ISO-8859-1?B?TultZXRoIE3hcnRvbg==?= <nm127@freemail.hu>,
-       "Jean-Francois Moine" <moinejf@free.fr>,
-       Thomas Kaiser <thomas@kaiser-linux.li>, linux-media@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND][PATCH 1/2] v4l2: modify the webcam video standard
- handling
-Message-ID: <20090831100332.2176c7c4@pedra.chehab.org>
-In-Reply-To: <200908310858.24763.laurent.pinchart@ideasonboard.com>
-References: <4A52E897.8000607@freemail.hu>
-	<4A910C42.5000001@freemail.hu>
-	<20090830234114.16b90c36@pedra.chehab.org>
-	<200908310858.24763.laurent.pinchart@ideasonboard.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 31 Aug 2009 09:03:57 -0400
+X-SpamScore: 0
+X-BigFish: VPS0(z34a4jz936eMzz1202hzzz32i6bh203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KP8S7Y-01-A3R-02
+X-M-MSG: 
+Date: Mon, 31 Aug 2009 15:02:09 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: Borislav Petkov <borislav.petkov@amd.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 5/5] x86, mcheck: Make use of cpu_node_mask instead of
+	cpu_core_mask
+Message-ID: <20090831130209.GF21867@alberich.amd.com>
+References: <20090831125349.GA21867@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090831125349.GA21867@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 31 Aug 2009 13:02:09.0484 (UTC) FILETIME=[3FC5B8C0:01CA2A3B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 31 Aug 2009 08:58:24 +0200
-Laurent Pinchart <laurent.pinchart@ideasonboard.com> escreveu:
 
-> Hi Mauro,
-> 
-> On Monday 31 August 2009 04:41:14 Mauro Carvalho Chehab wrote:
-> > Hi Németh,
-> >
-> > Em Sun, 23 Aug 2009 11:30:42 +0200
-> >
-> > Németh Márton <nm127@freemail.hu> escreveu:
-> > > From: Márton Németh <nm127@freemail.hu>
-> > >
-> > > Change the handling of the case when vdev->tvnorms == 0.
-> >
-> > This patch (together with a few others related to tvnorms and camera
-> > drivers) reopens an old discussion: should webcams report a tvnorm?
-> >
-> > There's no easy answer for it since:
-> >
-> > 1) removing support for VIDIOC_G_STD/VIDIOC_S_STD causes regressions, since
-> > some userspace apps stops working;
-> 
-> Then those applications don't work with the uvcvideo driver in the first 
-> place. This is getting less and less common :-)
+This fixes threshold_bank4 support on multi-node processors.
 
-Good to know. Yet, removing VIDIOC_[GS]_STD will break a behavior used on
-webcams for a long time. One thing is to accept new webcam drivers without it.
-This can be done (and were already done, when we accepted uvc). A separate
-issue is to change the behavior of the userspace API on existing drivers.
+We need to create 2 sets of symlinks for sibling shared banks -- one
+set for each internal node, symlinks of each set should target the
+first core on same internal node.
 
-> > 2) It is a common scenario to use cameras connected to some capture only
-> > devices like several bttv boards used on surveillance systems. Those
-> > drivers report STD, since they are used also on TV;
-> >
-> > 3) There are even some devices that allows cameras to be connected to one
-> > input and TV on another input. This is another case were the driver will
-> > report a TV std;
-> 
-> TV standards are ill-named, they are actually analog standards. 
-> VIDIOC_[GS]_STD are perfectly valid for capture devices with analog inputs, 
-> even if they don't use a TV tuner.
+Currently only one set is created where all symlinks are targeting
+the first core of the entire socket.
 
-It is not that simple. In general, at the bridge chip, all inputs are digital.
-The analog to digital conversion is done by a separate chip on most devices,
-and there are some boards where you have, for example, digital sensors
-connected to it.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/cpu/mcheck/mce_amd.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-> > 4) Most webcam formats are based on ITU-T formats designed to be compatible
-> > with TV (formats like CIF and like 640x480 - and their
-> > multiple/sub-multiples);
-> 
-> Even HD formats still have roots in the analog TV world. It's a real mess. 
-> Nonetheless, even if the actual frame size is compatible with TV, there is 
-> simply no concept of PAL/NTSC for webcams.
-
-Ok, but still it is possible to use V4L2_STD_525_60 and V4L2_STD_625_50 when all
-you need is to set the number of lines and the basis of the sampling rate.
-There is also V4L2_STD_UNKNOWN standard used on some drivers.
-
-> > 5) There are formats that weren't originated from TV on some digital
-> > webcams, so, for those formats, it makes no sense to report an existing
-> > std.
-> >
-> > Once people proposed to create an special format for those cases
-> > (V4L2_STD_DIGITAL or something like that), but, after lots of discussions,
-> > no changes were done at API nor at the drivers.
-> 
-> TV standards only apply to analog video. Let's simply not use it for digital 
-> video. We don't expect drivers to implement VIDIOC_[GS]_JPEGCOMP with fake 
-> values when they don't support JPEG compression, so we should not expect them 
-> to implement VIDIOC_[GS]_STD when they don't support analog TV.
-
-If you look at the tree, several drivers that returns compressed formats
-implements those ioctls. This is even required on several cases, where you may
-have an analog TV connected on it.
-
-That's said, I understand your arguments that implementing [G/S]_STD is
-senseless on almost all camera drivers, since it won't actually control
-anything. So, IMO, a good compromise is to keep the existing implementation on
-the legacy drivers [1], but think twice before implementing
-it on a new driver.
-
-[1] We could eventually drop it even for the existing drivers, provided that the
-ioctl won't control anything at the device and that we properly document it in
-Documentation/feature-removal-schedule.txt, giving enough time for the remaining
-userspace apps and distros to change to the new behavior.
-
-> > While we don't have an agreement on this, I don't think we should apply a
-> > patch like this.
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
+index ddae216..595cbe5 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
+@@ -494,7 +494,7 @@ static __cpuinit int threshold_create_bank(unsigned int cpu, unsigned int bank)
+ 
+ #ifdef CONFIG_SMP
+ 	if (cpu_data(cpu).cpu_core_id && shared_bank[bank]) {	/* symlink */
+-		i = cpumask_first(cpu_core_mask(cpu));
++		i = cpumask_first(cpu_node_mask(cpu));
+ 
+ 		/* first core not up yet */
+ 		if (cpu_data(i).cpu_core_id)
+@@ -514,7 +514,7 @@ static __cpuinit int threshold_create_bank(unsigned int cpu, unsigned int bank)
+ 		if (err)
+ 			goto out;
+ 
+-		cpumask_copy(b->cpus, cpu_core_mask(cpu));
++		cpumask_copy(b->cpus, cpu_node_mask(cpu));
+ 		per_cpu(threshold_banks, cpu)[bank] = b;
+ 
+ 		goto out;
+@@ -539,7 +539,7 @@ static __cpuinit int threshold_create_bank(unsigned int cpu, unsigned int bank)
+ #ifndef CONFIG_SMP
+ 	cpumask_setall(b->cpus);
+ #else
+-	cpumask_copy(b->cpus, cpu_core_mask(cpu));
++	cpumask_copy(b->cpus, cpu_node_mask(cpu));
+ #endif
+ 
+ 	per_cpu(threshold_banks, cpu)[bank] = b;
+-- 
+1.6.4
 
 
 
-Cheers,
-Mauro
