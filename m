@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbZHaLp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbZHaLqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751937AbZHaLp3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 07:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbZHaLp3
+	id S1752145AbZHaLqy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 07:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbZHaLqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 07:45:29 -0400
-Received: from tundra.namei.org ([65.99.196.166]:58931 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750872AbZHaLp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 07:45:28 -0400
-Date: Mon, 31 Aug 2009 21:44:05 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH V2] x86: NX protection for kernel data
-In-Reply-To: <20090831103948.GA1353@ucw.cz>
-Message-ID: <alpine.LRH.2.00.0908312143140.19946@tundra.namei.org>
-References: <817ecb6f0908261020y2267218h8f435e8dc392f69a@mail.gmail.com> <20090831103948.GA1353@ucw.cz>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 31 Aug 2009 07:46:53 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45468
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751105AbZHaLqw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 07:46:52 -0400
+Date: Mon, 31 Aug 2009 04:47:06 -0700 (PDT)
+Message-Id: <20090831.044706.230442890.davem@davemloft.net>
+To: nhorman@tuxdriver.com
+Cc: eric.dumazet@gmail.com, xiaoguangrong@cn.fujitsu.com, yjwei@cn.fujitsu.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH resend] drop_monitor: fix trace_napi_poll_hit()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090831111245.GA2105@hmsreliant.think-freely.org>
+References: <4A9B6963.5090207@cn.fujitsu.com>
+	<4A9B6E57.7090703@gmail.com>
+	<20090831111245.GA2105@hmsreliant.think-freely.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Aug 2009, Pavel Machek wrote:
+From: Neil Horman <nhorman@tuxdriver.com>
+Date: Mon, 31 Aug 2009 07:12:46 -0400
 
-> .c files are considered bad these days. (Feel free to kill the old
-> entries, too.)
+> If its not going to be consistently updated, why are still carrying
+> that field in dev?  Are we just waiting on someone to do the
+> janitorial work to remove it?  If so, I can, and I'll fix up the
+> drop monitor in the process, to use a private timestamp.
 
-No, please don't delete historical information.
+It's used only for bonding, so we only update it when a device
+receives packet as part of a bond.
 
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+%99.9999 of people are not in that situation, and in that case this is
+a very wasteful and expensive cacheline dirtying, so we elide it when
+we can.
