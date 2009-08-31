@@ -1,315 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751390AbZHaKLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbZHaKLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751390AbZHaKLh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 06:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZHaKLh
+	id S1751963AbZHaKLm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 06:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZHaKLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 06:11:37 -0400
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:45353 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbZHaKLg convert rfc822-to-8bit (ORCPT
+	Mon, 31 Aug 2009 06:11:41 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41453 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750997AbZHaKLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 06:11:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vEtIggkR00Avk55AU1zXndd8lm3q0CMbWZCYGEcvwoZKP4nHKooCNzPx6KTLoAONfB
-         rc/0Df/gO/wuXTl8K4iSEh2EViaTkus8FaGuOhj2UNawQh+X87NH3FrqqCLAg3GGxmMd
-         0+fw+CTGh1WpMOXAv02RG8scShatCprCWp4YU=
-MIME-Version: 1.0
-In-Reply-To: <6d53329e0908302227l63420351m1005d0c76346e2ec@mail.gmail.com>
-References: <6d53329e0908250342g2cfb73f6v90f73c283c0d391c@mail.gmail.com>
-	 <alpine.LFD.2.00.0908251333410.6044@xanadu.home>
-	 <6d53329e0908302227l63420351m1005d0c76346e2ec@mail.gmail.com>
-Date: Mon, 31 Aug 2009 15:41:37 +0530
-Message-ID: <6d53329e0908310311v55ef3909na0cbec756e63ccab@mail.gmail.com>
-Subject: Re: ARM + jprobes/kretprobes SEGV/hangs/OOPS in 2.6.29 kernel
-From: venki kaps <venkiece2005@gmail.com>
-To: Nicolas Pitre <nico@cam.org>
-Cc: "sagar.abhishek@gmail.com" <sagar.abhishek@gmail.com>,
-       "jkenisto@us.ibm.com" <jkenisto@us.ibm.com>,
-       "rmk+kernel@arm.linux.org.uk" <rmk+kernel@arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "prasanna@in.ibm.com" <prasanna@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 31 Aug 2009 06:11:39 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 31 Aug 2009 19:09:44 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       benh@kernel.crashing.org, ralf@linux-mips.org, xiyou.wangcong@gmail.com,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       jirislaby@gmail.com
+Subject: [PATCH 7/8][mmotm] kcore register vmemmap range
+Message-Id: <20090831190944.0104d5a7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090831190024.fadc3b50.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090831190024.fadc3b50.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This new patch is for enhancement.
+=
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-After dump_stack change, most of the system calls
-(do_fork,do_execve,do_gettimeofday,
-sys_gettimeofday,sys_open,sys_close, sys_read,sys_write) are working
-fine with kprobes
-and kretprobes.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> pointed out that
+vmemmap range is not included in KCORE_RAM, KCORE_VMALLOC ....
 
-But in jprobes, still 'SEGV,sysetm hangs,OOPS' will be getting for 'do_execve,
-do_gettimeofday,sys_gettimeofday,sys_close, sys_read,sys_write' system calls.
+This adds KCORE_VMEMMAP if SPARSEMEM_VMEMMAP is used.
+By this, vmemmap can be readable via /proc/kcore
 
- I have surprised with jprobes which are working well for
-'do_fork,sys_open' system calls.
+Because it's not vmalloc area, vread/vwrite cannot be used.
+But the range is static against the memory layout, this patch
+handles vmemmap area by the same scheme with physical memory.
 
-Best Regards,
-Venkappa
+This patch assumes SPARSEMEM_VMEMMAP range is not in VMALLOC range.
+It's correct now.
 
-On Mon, Aug 31, 2009 at 10:57 AM, venki kaps<venkiece2005@gmail.com> wrote:
-> Hi,
->
-> I have further investigated with respect to this issue and found the
-> problem with
-> 'dump_stack()' which calls in my sample kprobe,kretprobe and jprobe
-> modules to get
-> the stack dump.
->
-> Here it is giving sample example module which covers all the probes.
->
-> Sample module test program:
-> ---------------------------
-> #include <linux/module.h>
-> #include <linux/init.h>
-> #include <linux/kprobes.h>
->
-> static int k_count1 = 0;
-> static int k_count2 = 0;
-> static int k_count3 = 0;
-> static int k_count4 = 0;
->
-> /* Proxy routine having the same arguments as actual sys_open() routine */
-> long jsys_open(unsigned int fd, char __user * buf, size_t count)
-> {
->        printk("%s %d, Proxy sys_open, arguments are %d, %d\n",
-> __FILE__, __LINE__, fd, count);
->        printk("%s %d, Stack_dump :\n", __FILE__, __LINE__);
->        dump_stack();
->        /* Always end with a call to jprobe_return(). */
->        k_count1++;
->        jprobe_return();
->        /* NOTREACHED */
->        return 0;
-> }
->
-> static struct jprobe my_jprobe = {
->        .entry = JPROBE_ENTRY(jsys_open)
-> };
->
-> static const char *probed_func = "sys_open";
->
-> /* Return-probe handler: Log the return value from the probed function. */
-> static int ret_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
-> {
->        int retval = regs_return_value(regs);
->
->        printk("%s %d, %s returns %d\n", __FILE__, __LINE__,
-> probed_func, retval);
->        printk("%s %d, Stack_dump :\n", __FILE__, __LINE__);
->        dump_stack();
->        k_count2++;
->        return 0;
-> }
->
-> static struct kretprobe my_kretprobe = {
->        .handler = ret_handler,
->        /* Probe up to 20 instances concurrently. */
->        .maxactive = 20
-> };
->
-> static struct kprobe k_001_kpr;
->
-> static int k_001_before_hook(struct kprobe *k_001_kpr, struct pt_regs *p)
-> {
->        printk("%s %d\nStack dump for the kprobe pre handler for
-> instruction at %p\n", __FILE__, __LINE__, k_001_kpr->addr);
->        dump_stack();
->        k_count3++;
->        return 0;
-> }
->
-> void k_001_after_hook(struct kprobe *k_001_kpr, struct pt_regs *p,
-> unsigned long flags)
-> {
->        printk("%s %d\nStack dump for the kprobe post handler at
-> %p\n", __FILE__, __LINE__, k_001_kpr->addr);
->        dump_stack();
->        printk("%s %d, The Registers are:\n", __FILE__, __LINE__);
->        k_count4++;
-> }
->
->
-> static int __init k_001_init_probe(void)
-> {
->        int ret;
->        int retj;
->        printk("%s %d\nInserting the kprobe for sys_open\n", __FILE__,
-> __LINE__);
->
->        /* Registering a kprobe */
->        k_001_kpr.pre_handler = (kprobe_pre_handler_t) k_001_before_hook;
->        k_001_kpr.post_handler = (kprobe_post_handler_t) k_001_after_hook;
->        k_001_kpr.symbol_name = "sys_open", __FILE__, __LINE__;
->        if (register_kprobe(&k_001_kpr) < 0) {
->                printk("%s %dk-001.c:register_kprobe is failed\n",
-> __FILE__, __LINE__);
->                return -1;
->        }
->        printk("%s %d, register_kprobe is successful\n", __FILE__, __LINE__);
->
->        printk("%s %d, Inserting the kretprobe for sys_open\n",
-> __FILE__, __LINE__);
->        my_kretprobe.kp.symbol_name = (char *)probed_func;
->
->        if ((ret = register_kretprobe(&my_kretprobe)) < 0) {
->                printk("%s %d, register_kretprobe failed, returned
-> %d\n", __FILE__, __LINE__, ret);
->                return -1;
->        }
->        printk("%s %d, Planted return probe for sys_open at %p\n",
-> __FILE__, __LINE__, my_kretprobe.kp.addr);
->
->        my_jprobe.kp.symbol_name = "sys_open";
->
->        if ((retj = register_jprobe(&my_jprobe)) < 0) {
->                printk("%s %d,register_jprobe failed, returned %d\n",
-> __FILE__, __LINE__, ret);
->                return -1;
->        }
->        printk("%s %d,Planted jprobe at %p, handler addr %p\n",
-> __FILE__, __LINE__, my_jprobe.kp.addr, my_jprobe.entry);
->
->        return 0;
-> }
->
-> static void __exit k_001_exit_probe(void)
-> {
->        unregister_kprobe(&k_001_kpr);
->        printk("%s %d\nkprobe unregistered from sys_open \n",
-> __FILE__, __LINE__);
->
->        unregister_kretprobe(&my_kretprobe);
->        printk("%s %dkretprobe unregistered\n", __FILE__, __LINE__);
->        /* nmissed > 0 suggests that maxactive was set too low. */
->        printk("%s %dMissed probing %d instances of %s\n", __FILE__,
-> __LINE__, my_kretprobe.nmissed, probed_func);
->
->        unregister_jprobe(&my_jprobe);
->        printk("%s %d,jprobe unregistered\n", __FILE__, __LINE__);
->
->        if (k_count1 > 0 && k_count2 > 0 && k_count3 > 0 && k_count4 > 0)
->                printk("TEST PASS");
->        else
->                printk("TEST FAIL");
-> }
->
-> module_init(k_001_init_probe);
-> module_exit(k_001_exit_probe);
->
-> MODULE_DESCRIPTION("Kprobes test module");
-> MODULE_LICENSE("GPL");
->
-> I have tested the above program and got result as system hang.
->
-> Disable dump_stack:
-> ------------------------------
-> I have disabled dump_stack(ARM specific) in the above program
-> and did not notice any problem.
->
-> After disabling the dump_stack(), all the probes are working
-> fine for 'do_fork,sys_open and sys_close system calls.
->
-> ARM dump_stack implementation has been changed in 2.6.29 kernel:
-> ----------------------------------------------------------------------------------------------------
-> I have found in 2.6.29 kernel the current ARM dump_stack implementation
-> has been changed.Due to that change the kprobes,jprobes and kretprobes
-> are failing for 'do_fork,sys_open and sys_close' system calls.
->
-> Current dump_stack implementation:
->
-> Location: arch/arm/kernel/traps.c
->
-> void dump_stack(void)
-> {
->        dump_backtrace(NULL, NULL);
-> }
->
->
-> I have just reverted back the above source to old kernel implementation.
->
-> Index: b/arch/arm/kernel/traps.c
-> ===================================================================
-> --- a/arch/arm/kernel/traps.c
-> +++ b/arch/arm/kernel/traps.c
-> @@ -202,7 +202,11 @@ static void dump_backtrace(struct pt_reg
->
->  void dump_stack(void)
->  {
-> +#if 0
->        dump_backtrace(NULL, NULL);
-> +#else
-> +       __backtrace();
-> +#endif
->  }
->
->  EXPORT_SYMBOL(dump_stack);
->
->
-> After the above change,All probes are working fine with
-> enabling of dump_stack() in my sample modules.
->
-> I have some queries with repect to the above changes.
->
-> Queries:
-> ========
-> 1) Revert back the old kernel implementation might not be a good solution.
->        I anticipate it needs to be fixed in 2.6.29 kernel implementations.
->        Am i right/wrong.
->
-> 2) Shall i avoid by calling dump_stack() in my sample test modules?
->
-> 3) Only do_fork, sys_open and sys_close system calls are working fine with
->        dump_stack() but still 'SEGV,sysetm hangs' for do_execve,do_gettimeofday,
->        sys_gettimeofday,sys_read,sys_write, etc system calls.
->
-> I have been further investigating with respect to the above issues
-> Meanwhile could you please provide the inputs with respect to the above queries?
->
-> Thanks in advance.
->
-> Best regards,
-> Venkappa
->
->
-> On Tue, Aug 25, 2009 at 11:07 PM, Nicolas Pitre<nico@cam.org> wrote:
->> On Tue, 25 Aug 2009, venki kaps wrote:
->>
->>> Hi,
->>>
->>> I have been tracing kernel system call information using
->>> the Kprobes/jprobes/kretprobes implementation in the 2.6.29 kernel on
->>> ARM architecture.
->>> Although the mainline kprobe/jprobe/kretprobe examples are working
->>> fine (do_fork),
->>> I have been facing some issues while running my own jprobe/kretprobe tests.
->>>
->> [...]
->>>
->>> Query:
->>> =====
->>>       - Are there any limitations for jptobes/kretporbes in mainline kernel for ARM?
->>
->> No limitation in particular that I know of.
->>
->>>       - Why it works for only do_fork and why not for others
->>> (do_execve/sys_open/sys_close/sys_read/sys_write)?
->>
->> I don't know.  Will try to have a look.
->>
->>>       - Is it required any additional setup to achieve this?
->>
->> Not supposed to need anything special.
->>
->>
->> Nicolas
->>
->
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+---
+ fs/proc/kcore.c         |   52 ++++++++++++++++++++++++++++++++++++++++++++++--
+ include/linux/proc_fs.h |    1 
+ 2 files changed, 51 insertions(+), 2 deletions(-)
+
+Index: mmotm-2.6.31-Aug27/fs/proc/kcore.c
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/fs/proc/kcore.c
++++ mmotm-2.6.31-Aug27/fs/proc/kcore.c
+@@ -103,7 +103,7 @@ static void free_kclist_ents(struct list
+ 	}
+ }
+ /*
+- * Replace all KCORE_RAM information with passed list.
++ * Replace all KCORE_RAM/KCORE_VMEMMAP information with passed list.
+  */
+ static void __kcore_update_ram(struct list_head *list)
+ {
+@@ -113,7 +113,8 @@ static void __kcore_update_ram(struct li
+ 	write_lock(&kclist_lock);
+ 	if (kcore_need_update) {
+ 		list_for_each_entry_safe(pos, tmp, &kclist_head, list) {
+-			if (pos->type == KCORE_RAM)
++			if (pos->type == KCORE_RAM
++				|| pos->type == KCORE_VMEMMAP)
+ 				list_move(&pos->list, &garbage);
+ 		}
+ 		list_splice_tail(list, &kclist_head);
+@@ -151,6 +152,47 @@ static int kcore_update_ram(void)
+ 
+ #else /* !CONFIG_HIGHMEM */
+ 
++#ifdef CONFIG_SPARSEMEM_VMEMMAP
++/* calculate vmemmap's address from given system ram pfn and register it */
++int get_sparsemem_vmemmap_info(struct kcore_list *ent, struct list_head *head)
++{
++	unsigned long pfn = __pa(ent->addr) >> PAGE_SHIFT;
++	unsigned long nr_pages = ent->size >> PAGE_SHIFT;
++	unsigned long start, end;
++	struct kcore_list *vmm, *tmp;
++
++
++	start = ((unsigned long)pfn_to_page(pfn)) & PAGE_MASK;
++	end = ((unsigned long)pfn_to_page(pfn + nr_pages)) - 1;
++	end = ALIGN(end, PAGE_SIZE);
++	/* overlap check (because we have to align page */
++	list_for_each_entry(tmp, head, list) {
++		if (tmp->type != KCORE_VMEMMAP)
++			continue;
++		if (start < tmp->addr + tmp->size)
++			if (end > tmp->addr)
++				end = tmp->addr;
++	}
++	if (start < end) {
++		vmm = kmalloc(sizeof(*vmm), GFP_KERNEL);
++		if (!vmm)
++			return 0;
++		vmm->addr = start;
++		vmm->size = end - start;
++		vmm->type = KCORE_VMEMMAP;
++		list_add_tail(&vmm->list, head);
++	}
++	return 1;
++
++}
++#else
++int get_sparsemem_vmemamp_info(struct kcore_list *ent, struct list_head *head)
++{
++	return 1;
++}
++
++#endif
++
+ static int
+ kclist_add_private(unsigned long pfn, unsigned long nr_pages, void *arg)
+ {
+@@ -181,6 +223,12 @@ kclist_add_private(unsigned long pfn, un
+ 
+ 	ent->type = KCORE_RAM;
+ 	list_add_tail(&ent->list, head);
++
++	if (!get_sparsemem_vmemmap_info(ent, head)) {
++		list_del(&ent->list);
++		goto free_out;
++	}
++
+ 	return 0;
+ free_out:
+ 	kfree(ent);
+Index: mmotm-2.6.31-Aug27/include/linux/proc_fs.h
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/include/linux/proc_fs.h
++++ mmotm-2.6.31-Aug27/include/linux/proc_fs.h
+@@ -82,6 +82,7 @@ enum kcore_type {
+ 	KCORE_TEXT,
+ 	KCORE_VMALLOC,
+ 	KCORE_RAM,
++	KCORE_VMEMMAP,
+ 	KCORE_OTHER,
+ };
+ 
+
