@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZHaItl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbZHaIvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753030AbZHaItl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 04:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZHaItk
+	id S1753193AbZHaIvF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 04:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZHaIvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 04:49:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56404 "EHLO mx2.mail.elte.hu"
+	Mon, 31 Aug 2009 04:51:04 -0400
+Received: from mga01.intel.com ([192.55.52.88]:4994 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751606AbZHaItj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 04:49:39 -0400
-Date: Mon, 31 Aug 2009 10:49:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: David Miller <davem@davemloft.net>, Neil Horman <nhorman@tuxdriver.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wei Yongjun <yjwei@cn.fujitsu.com>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH resend] tracing/events: convert NAPI's tracepoint via
-	TRACE_EVENT
-Message-ID: <20090831084922.GB25811@elte.hu>
-References: <4A9B6AA7.5020508@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A9B6AA7.5020508@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752851AbZHaIvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 04:51:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,304,1249282800"; 
+   d="scan'208";a="722461453"
+Subject: Re: [PATCH V5 1/2] introduce ALS sysfs class
+From: Zhang Rui <rui.zhang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+In-Reply-To: <20090831083449.GB11117@elf.ucw.cz>
+References: <1251706028.3483.160.camel@rzhang-dt>
+	 <20090831083449.GB11117@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 31 Aug 2009 16:48:57 +0800
+Message-Id: <1251708537.3483.191.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-08-31 at 16:34 +0800, Pavel Machek wrote:
+> Hi!
+> 
+> > @@ -0,0 +1,32 @@
+> > +What:		/sys/class/als/als[0-N]/desc
+> > +Date:		Aug. 2009
+> > +KernelVersion:	2.6.32
+> > +Contact:	Zhang Rui <rui.zhang@intel.com>
+> > +Description:	Strings which descibes the current Ambient Light Sensor
+> > +		device. This is given by native ALS driver as part of
+> > +		registration. e.g: "acpi_als" for ACPI ALS devices.
+> > +		RO
+> 
+> Normal way to do that (backlight class does it, for example) is to
+> have acpi_als instead of als0, and get rid of desc field.
 
-* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+IMO, both are okay, hard to say which is preferred.
+Other sysfs classes like scsi_host, hwmon, input use this as well.
+and you don't have a really strong objection to this, right? :)
 
-> - Convert NAPI's tracepoint via TRACE_EVENT macro, the output information
->   like below:
+thanks,
+rui
 
-I think as long as it does not touch tracing infrastructure (which 
-your patches dont do in their current form) this should be 
-done/merged via the networking tree.
-
-[ There might be some small collisions in define_trace.h (because
-  these tracepoints move from legacy to new-style TRACE_EVENT() 
-  form) but that's OK. ]
-
-	Ingo
