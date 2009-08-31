@@ -1,100 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbZHaPzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbZHaP41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753076AbZHaPzZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 11:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbZHaPzY
+	id S1753118AbZHaP41 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 11:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZHaP40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 11:55:24 -0400
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:51951 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbZHaPzX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 11:55:23 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/Y2BJ4HixKhqbjWXiOMy1T
-Date: Mon, 31 Aug 2009 08:55:20 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: "Hiremath, Vaibhav" <hvaibhav@ti.com>
-Cc: "Syed Mohammed, Khasim" <khasim@ti.com>, Steve Sakoman <sakoman@gmail.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org Mailing List" 
-	<linux-omap@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
-Message-ID: <20090831155518.GC16876@atomide.com>
-References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com> <4A9B96A7.5040005@gmail.com> <5e088bd90908310720p290ba68dwd6106a778fd7c740@mail.gmail.com> <0680EC522D0CC943BC586913CF3768C0037CE48136@dbde02.ent.ti.com> <19F8576C6E063C45BE387C64729E73940436A4A9B6@dbde02.ent.ti.com>
+	Mon, 31 Aug 2009 11:56:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53003 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750872AbZHaP4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 11:56:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 10] PM: Measure suspend and resume times for individual devices (was: Re: [PATCH 2/6] PM: Asynchronous resume of devices)
+Date: Mon, 31 Aug 2009 17:56:54 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0908292043500.26533-100000@netrider.rowland.org> <200908311453.47138.rjw@sisk.pl> <20090831135222.GB29281@elte.hu>
+In-Reply-To: <20090831135222.GB29281@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19F8576C6E063C45BE387C64729E73940436A4A9B6@dbde02.ent.ti.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908311756.54624.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Hiremath, Vaibhav <hvaibhav@ti.com> [090831 07:44]:
+On Monday 31 August 2009, Ingo Molnar wrote:
 > 
-> > -----Original Message-----
-> > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> > owner@vger.kernel.org] On Behalf Of Syed Mohammed, Khasim
-> > Sent: Monday, August 31, 2009 8:11 PM
-> > To: Steve Sakoman; Artem Bityutskiy; linux-kernel@vger.kernel.org;
-> > linux-omap@vger.kernel.org Mailing List
-> > Cc: Andrew Morton; Tony Lindgren; Tomi Valkeinen
-> > Subject: RE: [PATCH 00/18] OMAP: DSS2: Intro
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > On Monday 31 August 2009, Ingo Molnar wrote:
+> > > 
+> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > 
+> > > > On Sunday 30 August 2009, Rafael J. Wysocki wrote:
+> > > > > On Sunday 30 August 2009, Alan Stern wrote:
+> > > > > > On Sat, 29 Aug 2009, Rafael J. Wysocki wrote:
+> > > > > > 
+> > > > > > > I only wanted to say that the advantage is not really that "big". :-)
+> > > > > > > 
+> > > > > > > > I must agree, 14 threads isn't a lot.  But at the moment that number is 
+> > > > > > > > random, not under your control.
+> > > > > > > 
+> > > > > > > It's not directly controlled, but there are some interactions between the
+> > > > > > > async threads, the main threads and the async framework that don't allow this
+> > > > > > > number to grow too much.
+> > > > > > > 
+> > > > > > > IMO it sometimes is better to allow things to work themselves out, as long as
+> > > > > > > they don't explode, than to try to keep everything under strict control.  YMMV.
+> > > > > > 
+> > > > > > For testing purposes it would be nice to have a one-line summary for
+> > > > > > each device containing a thread ID, start timestamp, end timestamp, and
+> > > > > > elapsed time.  With that information you could evaluate the amount of
+> > > > > > parallelism and determine where the bottlenecks are.  It would give a
+> > > > > > much more detailed picture of the entire process than the total time of
+> > > > > > your recent patch 9.
+> > > > > 
+> > > > > Of course it would.  I think I'll implement it.
+> > > > 
+> > > > OK, below is a patch for that.  It only prints the time elapsed, because the
+> > > > timestamps themselves can be obtained from the usual kernel timestamping.
+> > > > 
+> > > > It's on top of all the previous patches.
+> > > > 
+> > > > Thanks,
+> > > > Rafael
+> > > > 
+> > > > ---
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > Subject: PM: Measure suspend and resume times for individual devices
+> > > > 
+> > > > If verbose PM debugging is enabled, measure and print the time of
+> > > > suspending and resuming of individual devices.
+> > > > 
+> > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > ---
+> > > >  drivers/base/power/main.c |   51 +++++++++++++++++++++++++++++++++++++++++-----
+> > > >  kernel/power/swsusp.c     |    2 -
+> > > >  2 files changed, 47 insertions(+), 6 deletions(-)
+> > > > 
+> > > > Index: linux-2.6/drivers/base/power/main.c
+> > > > ===================================================================
+> > > > --- linux-2.6.orig/drivers/base/power/main.c
+> > > > +++ linux-2.6/drivers/base/power/main.c
+> > > > @@ -442,11 +442,11 @@ static bool pm_op_started(struct device 
+> > > >   */
+> > > >  int pm_time_elapsed(struct timeval *start, struct timeval *stop)
+> > > >  {
+> > > > -	s64 elapsed_centisecs64;
+> > > > +	s64 elapsed_msecs64;
+> > > >  
+> > > > -	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
+> > > > -	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
+> > > > -	return elapsed_centisecs64;
+> > > > +	elapsed_msecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
+> > > > +	do_div(elapsed_msecs64, NSEC_PER_SEC / 1000);
+> > > > +	return elapsed_msecs64;
+> > > >  }
+> > > >  
+> > > >  static char *pm_verb(int event)
+> > > > @@ -476,7 +476,7 @@ static char *pm_verb(int event)
+> > > >  static void dpm_show_time(struct timeval *start, struct timeval *stop,
+> > > >  			  pm_message_t state, const char *info)
+> > > >  {
+> > > > -	int centisecs = pm_time_elapsed(start, stop);
+> > > > +	int centisecs = pm_time_elapsed(start, stop) / 10;
+> > > >  
+> > > >  	printk(KERN_INFO "PM: %s%s%s of devices complete in %d.%02d seconds\n",
+> > > >  		info ? info : "", info ? " " : "", pm_verb(state.event),
+> > > > @@ -497,6 +497,33 @@ static void pm_dev_err(struct device *de
+> > > >  		kobject_name(&dev->kobj), pm_verb(state.event), info, error);
+> > > >  }
+> > > >  
+> > > > +#ifdef DEBUG
+> > > > +static void device_show_time(struct timeval *start, struct device *dev,
+> > > > +			     pm_message_t state, char *info)
+> > > > +{
+> > > > +	struct timeval stop;
+> > > > +	int msecs;
+> > > > +
+> > > > +	do_gettimeofday(&stop);
+> > > > +	msecs = pm_time_elapsed(start, &stop);
+> > > > +	dev_dbg(dev, "PID %d: %s%s%s complete in %d.%03d seconds\n",
+> > > > +		task_pid_nr(current), info ? info : "", info ? " " : "",
+> > > > +		pm_verb(state.event), msecs / 1000, msecs % 1000);
+> > > > +}
+> > > > +
+> > > > +#define TIMER_DECLARE(timer)	struct timeval timer
+> > > > +#define TIMER_START(timer)	do { \
+> > > > +		do_gettimeofday(&timer); \
+> > > > +	} while (0)
+> > > > +#define TIMER_STOP(timer, dev, state, info)	do { \
+> > > > +		device_show_time(&timer, dev, state, info); \
+> > > > +	} while (0)
+> > > > +#else /* !DEBUG */
+> > > > +#define TIMER_DECLARE(timer)
+> > > > +#define TIMER_START(timer)	do { } while (0)
+> > > > +#define TIMER_STOP(timer, dev, state, info)	do { } while (0)
+> > > > +#endif /* !DEBUG */
+> > > > +
+> > > >  /*------------------------- Resume routines -------------------------*/
+> > > >  
+> > > >  /**
+> > > > @@ -510,7 +537,9 @@ static void pm_dev_err(struct device *de
+> > > >  static int __device_resume_noirq(struct device *dev, pm_message_t state)
+> > > >  {
+> > > >  	int error = 0;
+> > > > +	TIMER_DECLARE(timer);
+> > > >  
+> > > > +	TIMER_START(timer);
+> > > >  	TRACE_DEVICE(dev);
+> > > >  	TRACE_RESUME(0);
+> > > >  
+> > > > @@ -523,6 +552,7 @@ static int __device_resume_noirq(struct 
+> > > >  	wake_up_all(&dev->power.wait_queue);
+> > > >  
+> > > >  	TRACE_RESUME(error);
+> > > > +	TIMER_STOP(timer, dev, state, "EARLY");
+> > > >  	return error;
+> > > 
+> > > Hm, these CPP macros are rather ugly. Why is there a need for 
+> > > the TIMER_DECLARE() wrapper - if a proper inline function is 
+> > > used there's no need for that.
 > > 
+> > I need a variable to be declared so that I can save the "start" 
+> > timestamp in it.  I don't need the variable if DEBUG is unset, 
+> > though.
 > > 
-> > 
-> > > -----Original Message-----
-> > > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> > owner@vger.kernel.org] On Behalf Of Steve
-> > > Sakoman
-> > > Sent: Monday, August 31, 2009 7:50 PM
-> > > To: Artem Bityutskiy
-> > > Cc: Andrew Morton; Tony Lindgren; Tomi Valkeinen; linux-
-> > kernel@vger.kernel.org; linux-
-> > > omap@vger.kernel.org Mailing List
-> > > Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
-> > >
-> > > On Mon, Aug 31, 2009 at 2:23 AM, Artem
-> > Bityutskiy<dedekind1@gmail.com> wrote:
-> > >
-> > > > We are using DSS2 in Nokia for about a year already. N900 is
-> > using this
-> > > > code, for example. Other (non-Nokia) projects are using DSS2 as
-> > well.
-> > > > The code was public for long time and was sent several times for
-> > review.
-> > > >
-> > > > In any case,
-> > > >
-> > > > Tested-by: Artem Bityutskiy <artem.bityutskiy@nokia.com>
-> > >
-> > > Gumstix has also been shipping with DSS2 on their Overo product
-> > for
-> > > many months now.
-> > >
-> > > Tested-by: Steve Sakoman <steve@sakoman.com>
-> > 
-> > If there is a concern on OMAP2 support, I can confirm that there is
-> > no difference between OMAP2 and OMAP3 Display Subsystem from
-> > Register level. So what ever works on OMAP3 DSS2 should straight
-> > away work for OMAP2 as well.
-> > 
-> > I agree with rest of the folks here, we should get DSS2 merged in
-> > mainline. It is being extensively used on all OMAP3 platforms.
-> > 
-> [Hiremath, Vaibhav] I am also agreeing with the point that we should merge the DSS2; it's now almost year we have migrated to DSS2. Most of our customers are based out of it.
+> > How would you do that without using a macro?  Or #ifdef #endif 
+> > block that would be uglier IMO (which is why I didn't do that)?
+> 
+> Well, why not use an inline function like i suggested? [which does 
+> nothing in the !enabled case] You can keep the local variable always 
+> defined.
 
-Yeh I agree this should get merged.
+Well, I used the macros _exactly_ because I didn't want to keep the local
+variable always defined.
 
-I think it's best to merge this via the fb list and I've acked the
-patches that I'm concerned with already.
+Now, if you think that adding several useless bytes to the stack frame is OK,
+perhaps it can be always defined.  However, IMnsHO that would be
+(a) confusing (why define a variable you don't use) and (b) wasteful.
 
-Regards,
+Perhaps the names of the macros should be directly related to debugging?
 
-Tony
+Best,
+Rafael
