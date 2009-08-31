@@ -1,95 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbZHaM76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753133AbZHaNAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753086AbZHaM76 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 08:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbZHaM75
+	id S1753133AbZHaNAI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 09:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZHaNAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 08:59:57 -0400
-Received: from mga14.intel.com ([143.182.124.37]:32551 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752642AbZHaM7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 08:59:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="182333842"
-Date: Mon, 31 Aug 2009 20:59:41 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 0/4] memcg: add support for hwpoison testing
-Message-ID: <20090831125941.GA20982@localhost>
-References: <20090831102640.092092954@intel.com> <20090831124920.GN4770@balbir.in.ibm.com>
+	Mon, 31 Aug 2009 09:00:06 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:19263
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753106AbZHaNAB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 09:00:01 -0400
+X-SpamScore: -2
+X-BigFish: VPS-2(zz936eMzz1202hzzz32i6bh203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KP8S3T-01-9Z3-02
+X-M-MSG: 
+Date: Mon, 31 Aug 2009 14:59:47 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: Borislav Petkov <borislav.petkov@amd.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/5] x86: Store CPU topology information for multi-node
+	processors
+Message-ID: <20090831125947.GC21867@alberich.amd.com>
+References: <20090831125349.GA21867@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20090831124920.GN4770@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090831125349.GA21867@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 31 Aug 2009 12:59:47.0872 (UTC) FILETIME=[EB5D7200:01CA2A3A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 08:49:20PM +0800, Balbir Singh wrote:
-> * Wu Fengguang <fengguang.wu@intel.com> [2009-08-31 18:26:40]:
-> 
-> > Hi all,
-> > 
-> > In hardware poison testing, we want to inject hwpoison errors to pages
-> > of a collection of selected tasks, so that random tasks (eg. init) won't
-> > be killed in stress tests and lead to test failure.
-> > 
-> > Memory cgroup provides an ideal tool for tracking and testing these target
-> > process pages. All we have to do is to
-> > - export the memory cgroup id via cgroupfs
-> > - export two functions/structs for hwpoison_inject.c
-> > 
-> > This might be an unexpected usage of memory cgroup. The last patch and this
-> > script demonstrates how the exported interfaces are to be used to limit the
-> > scope of hwpoison injection.
-> > 
-> > 	test -d /cgroup/hwpoison && rmdir /cgroup/hwpoison
-> > 	mkdir /cgroup/hwpoison
-> > 
-> > 	usemem -m 100 -s 100 &   # eat 100MB and sleep 100s
-> > 	echo `pidof usemem` > /cgroup/hwpoison/tasks
-> > 
-> > ==>     memcg_id=$(</cgroup/hwpoison/memory.id)
-> > ==>     echo $memcg_id > /debug/hwpoison/corrupt-filter-memcg
-> > 
-> > 	# hwpoison all pfn
-> > 	pfn=0
-> > 	while true
-> > 	do      
-> > 		let pfn=pfn+1
-> > 		echo $pfn > /debug/hwpoison/corrupt-pfn
-> > 		if [ $? -ne 0 ]; then
-> > 			break
-> > 		fi
-> > 	done
-> > 
-> > Comments are welcome, thanks!
-> >
-> 
-> I took a quick look and the patches seem OKAY to me, but I have
-> question, can't we do all of this from user space? The bits about
-> id export and import the ids look like they can be replaced by names
-> in user space.
 
-You mean to match by cgrp->dentry->d_name.name in kernel hwpoison_inject.c
-and do this in user space?
+Introduce cpu_node_map, i.e. map of CPUs on same internal node.
+CPUs with matching phys_proc_id and cpu_node_id belong to the same
+cpu_node.
 
-        DIR_NAME=hwpoison
-        mkdir /cgroup/$DIR_NAME
-        echo $DIR_NAME > /debug/hwpoison/corrupt-filter-memcg
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/include/asm/processor.h |    2 ++
+ arch/x86/include/asm/smp.h       |    6 ++++++
+ arch/x86/kernel/smpboot.c        |   12 ++++++++++++
+ 3 files changed, 20 insertions(+), 0 deletions(-)
 
-Looks like a good idea!
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 2b03f70..0e0b363 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -107,6 +107,8 @@ struct cpuinfo_x86 {
+ 	u16			booted_cores;
+ 	/* Physical processor id: */
+ 	u16			phys_proc_id;
++	/* Node id in case of multi-node processor: */
++	u16			cpu_node_id;
+ 	/* Core id: */
+ 	u16			cpu_core_id;
+ 	/* Index into per_cpu list: */
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index 6a84ed1..aad37c6 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -22,6 +22,7 @@ extern int smp_num_siblings;
+ extern unsigned int num_processors;
+ 
+ DECLARE_PER_CPU(cpumask_var_t, cpu_sibling_map);
++DECLARE_PER_CPU(cpumask_var_t, cpu_node_map);
+ DECLARE_PER_CPU(cpumask_var_t, cpu_core_map);
+ DECLARE_PER_CPU(u16, cpu_llc_id);
+ DECLARE_PER_CPU(int, cpu_number);
+@@ -31,6 +32,11 @@ static inline struct cpumask *cpu_sibling_mask(int cpu)
+ 	return per_cpu(cpu_sibling_map, cpu);
+ }
+ 
++static inline struct cpumask *cpu_node_mask(int cpu)
++{
++	return per_cpu(cpu_node_map, cpu);
++}
++
+ static inline struct cpumask *cpu_core_mask(int cpu)
+ {
+ 	return per_cpu(cpu_core_map, cpu);
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 4701f90..b80b46b 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -109,6 +109,10 @@ EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
+ DEFINE_PER_CPU(cpumask_var_t, cpu_core_map);
+ EXPORT_PER_CPU_SYMBOL(cpu_core_map);
+ 
++/* representing node silbings on multi-node CPU */
++DEFINE_PER_CPU(cpumask_var_t, cpu_node_map);
++EXPORT_PER_CPU_SYMBOL(cpu_node_map);
++
+ /* Per CPU bogomips and other parameters */
+ DEFINE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
+ EXPORT_PER_CPU_SYMBOL(cpu_info);
+@@ -403,6 +407,11 @@ void __cpuinit set_cpu_sibling_map(int cpu)
+ 			cpumask_set_cpu(i, c->llc_shared_map);
+ 			cpumask_set_cpu(cpu, cpu_data(i).llc_shared_map);
+ 		}
++		if ((c->phys_proc_id == cpu_data(i).phys_proc_id) &&
++		    (c->cpu_node_id == cpu_data(i).cpu_node_id)) {
++			cpumask_set_cpu(i, cpu_node_mask(cpu));
++			cpumask_set_cpu(cpu, cpu_node_mask(i));
++		}
+ 		if (c->phys_proc_id == cpu_data(i).phys_proc_id) {
+ 			cpumask_set_cpu(i, cpu_core_mask(cpu));
+ 			cpumask_set_cpu(cpu, cpu_core_mask(i));
+@@ -1062,6 +1071,7 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 		zalloc_cpumask_var(&per_cpu(cpu_sibling_map, i), GFP_KERNEL);
+ 		zalloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
+ 		zalloc_cpumask_var(&cpu_data(i).llc_shared_map, GFP_KERNEL);
++		zalloc_cpumask_var(&per_cpu(cpu_node_map, i), GFP_KERNEL);
+ 	}
+ 	set_cpu_sibling_map(0);
+ 
+@@ -1221,6 +1231,7 @@ static void remove_siblinginfo(int cpu)
+ 
+ 	for_each_cpu(sibling, cpu_core_mask(cpu)) {
+ 		cpumask_clear_cpu(cpu, cpu_core_mask(sibling));
++		cpumask_clear_cpu(cpu, cpu_node_mask(sibling));
+ 		/*/
+ 		 * last thread sibling in this cpu core going down
+ 		 */
+@@ -1233,6 +1244,7 @@ static void remove_siblinginfo(int cpu)
+ 	cpumask_clear(cpu_sibling_mask(cpu));
+ 	cpumask_clear(cpu_core_mask(cpu));
+ 	c->phys_proc_id = 0;
++	c->cpu_node_id = 0;
+ 	c->cpu_core_id = 0;
+ 	cpumask_clear_cpu(cpu, cpu_sibling_setup_mask);
+ }
+-- 
+1.6.4
 
-Thanks,
-Fengguang
+
+
