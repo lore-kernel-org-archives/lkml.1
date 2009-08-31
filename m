@@ -1,198 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751365AbZHaHjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751408AbZHaHlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751365AbZHaHjR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 03:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751135AbZHaHjQ
+	id S1751408AbZHaHlc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 03:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZHaHlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 03:39:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48853 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751166AbZHaHjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 03:39:15 -0400
-Message-ID: <4A9B7E1E.8060909@kernel.org>
-Date: Mon, 31 Aug 2009 16:39:10 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 31 Aug 2009 03:41:31 -0400
+Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:3068 "EHLO
+	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbZHaHla (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 03:41:30 -0400
+X-Greylist: delayed 467 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Aug 2009 03:41:30 EDT
+Message-ID: <f37f7dc3d82cf5482ba08b90bde4795c.squirrel@webmail.xs4all.nl>
+In-Reply-To: <200908310858.24763.laurent.pinchart@ideasonboard.com>
+References: <4A52E897.8000607@freemail.hu> <4A910C42.5000001@freemail.hu>
+    <20090830234114.16b90c36@pedra.chehab.org>
+    <200908310858.24763.laurent.pinchart@ideasonboard.com>
+Date: Mon, 31 Aug 2009 09:33:23 +0200
+Subject: Re: [RESEND][PATCH 1/2] v4l2: modify the webcam video standard 
+ handling
+From: "Hans Verkuil" <hverkuil@xs4all.nl>
+To: "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>
+Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>,
+       =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
+       "Jean-Francois Moine" <moinejf@free.fr>,
+       "Thomas Kaiser" <thomas@kaiser-linux.li>, linux-media@vger.kernel.org,
+       "LKML" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.18
 MIME-Version: 1.0
-To: Tim Blechmann <tim@klingt.org>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: 2.6.31-rc5 regression: hd don't show up
-References: <h63737$b2a$1@ger.gmane.org> <4A852BC0.1090404@kernel.org> <4A8559D7.6090405@klingt.org> <4A8774E5.4070609@kernel.org> <4A87D9FC.9070408@klingt.org> <4A96460F.3020600@kernel.org> <4A965E3B.3000808@klingt.org> <4A966F7D.60707@kernel.org> <4A97B9C0.9090003@klingt.org>
-In-Reply-To: <4A97B9C0.9090003@klingt.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------010406060106060808090906"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 07:39:13 +0000 (UTC)
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010406060106060808090906
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-Tim Blechmann wrote:
-> booting the machine today, one hd is missing again ... bootlog attached
+> Hi Mauro,
+>
+> On Monday 31 August 2009 04:41:14 Mauro Carvalho Chehab wrote:
+>> Hi Németh,
+>>
+>> Em Sun, 23 Aug 2009 11:30:42 +0200
+>>
+>> Németh Márton <nm127@freemail.hu> escreveu:
+>> > From: Márton Németh <nm127@freemail.hu>
+>> >
+>> > Change the handling of the case when vdev->tvnorms == 0.
+>>
+>> This patch (together with a few others related to tvnorms and camera
+>> drivers) reopens an old discussion: should webcams report a tvnorm?
+>>
+>> There's no easy answer for it since:
+>>
+>> 1) removing support for VIDIOC_G_STD/VIDIOC_S_STD causes regressions,
+>> since
+>> some userspace apps stops working;
+>
+> Then those applications don't work with the uvcvideo driver in the first
+> place. This is getting less and less common :-)
+>
+>> 2) It is a common scenario to use cameras connected to some capture only
+>> devices like several bttv boards used on surveillance systems. Those
+>> drivers report STD, since they are used also on TV;
+>>
+>> 3) There are even some devices that allows cameras to be connected to
+>> one
+>> input and TV on another input. This is another case were the driver will
+>> report a TV std;
+>
+> TV standards are ill-named, they are actually analog standards.
+> VIDIOC_[GS]_STD are perfectly valid for capture devices with analog
+> inputs,
+> even if they don't use a TV tuner.
+>
+>> 4) Most webcam formats are based on ITU-T formats designed to be
+>> compatible
+>> with TV (formats like CIF and like 640x480 - and their
+>> multiple/sub-multiples);
+>
+> Even HD formats still have roots in the analog TV world. It's a real mess.
+> Nonetheless, even if the actual frame size is compatible with TV, there is
+> simply no concept of PAL/NTSC for webcams.
+>
+>> 5) There are formats that weren't originated from TV on some digital
+>> webcams, so, for those formats, it makes no sense to report an existing
+>> std.
+>>
+>> Once people proposed to create an special format for those cases
+>> (V4L2_STD_DIGITAL or something like that), but, after lots of
+>> discussions,
+>> no changes were done at API nor at the drivers.
+>
+> TV standards only apply to analog video. Let's simply not use it for
+> digital
+> video. We don't expect drivers to implement VIDIOC_[GS]_JPEGCOMP with fake
+> values when they don't support JPEG compression, so we should not expect
+> them
+> to implement VIDIOC_[GS]_STD when they don't support analog TV.
 
-Hmmm... strange.  I don't really see how it could be escaping.  Can
-you please apply the attached patch?  It still won't change the
-behavior but should be able to catch where it's escaping.
+Exactly. Work is underway to add an API for HDTV and similar digital video
+formats. But we should just freeze the v4l2_std_id API and only use it for
+the analog PAL/NTSC/SECAM type formats. This nicely corresponds with the
+underlying standards as those have been frozen as well.
 
-Thanks.
+Regards,
+
+        Hans
+
+>
+>> While we don't have an agreement on this, I don't think we should apply
+>> a
+>> patch like this.
+>
+> --
+> Regards,
+>
+> Laurent Pinchart
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
 
 -- 
-tejun
+Hans Verkuil - video4linux developer - sponsored by TANDBERG
 
---------------010406060106060808090906
-Content-Type: text/x-patch;
- name="nodev-debug.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="nodev-debug.patch"
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 98af50f..6edd2c4 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -3656,12 +3656,19 @@ int ata_wait_ready(struct ata_link *link, unsigned long deadline,
- 				 !ata_link_offline(link) &&
- 				 time_before(now, nodev_deadline))
- 				ready = 0;
-+			else
-+				ata_link_printk(link, KERN_INFO, "XXX wait_ready ready=%d link_offline=%d\n",
-+						ready, ata_link_offline(link));
- 		}
- 
--		if (ready)
-+		if (ready) {
-+			ata_link_printk(link, KERN_INFO, "XXX wait_read returning %d\n", ready);
- 			return ready;
--		if (time_after(now, deadline))
-+		}
-+		if (time_after(now, deadline)) {
-+			ata_link_printk(link, KERN_INFO, "XXX wait_read returning -EBUSY\n");
- 			return -EBUSY;
-+		}
- 
- 		if (!warned && time_after(now, start + 5 * HZ) &&
- 		    (deadline - now > 3 * HZ)) {
-@@ -3792,6 +3799,7 @@ int sata_link_resume(struct ata_link *link, const unsigned long *params,
- 
- 	scontrol = (scontrol & 0x0f0) | 0x300;
- 
-+	ata_link_printk(link, KERN_INFO, "XXX bringing up link\n");
- 	if ((rc = sata_scr_write(link, SCR_CONTROL, scontrol)))
- 		return rc;
- 
-@@ -3800,7 +3808,9 @@ int sata_link_resume(struct ata_link *link, const unsigned long *params,
- 	 */
- 	msleep(200);
- 
--	if ((rc = sata_link_debounce(link, params, deadline)))
-+	rc = sata_link_debounce(link, params, deadline);
-+	ata_link_printk(link, KERN_INFO, "XXX debounced rc=%d\n", rc);
-+	if (rc)
- 		return rc;
- 
- 	/* clear SError, some PHYs require this even for SRST to work */
-@@ -3926,12 +3936,16 @@ int sata_link_hardreset(struct ata_link *link, const unsigned long *timing,
- 	if (rc)
- 		goto out;
- 	/* if link is offline nothing more to do */
--	if (ata_phys_link_offline(link))
-+	if (ata_phys_link_offline(link)) {
-+		ata_link_printk(link, KERN_INFO, "XXX phys link offline\n");
- 		goto out;
-+	}
- 
- 	/* Link is online.  From this point, -ENODEV too is an error. */
--	if (online)
-+	if (online) {
-+		ata_link_printk(link, KERN_INFO, "XXX setting online\n");
- 		*online = true;
-+	}
- 
- 	if (sata_pmp_supported(link->ap) && ata_is_host_link(link)) {
- 		/* If PMP is supported, we have to do follow-up SRST.
-@@ -3964,6 +3978,8 @@ int sata_link_hardreset(struct ata_link *link, const unsigned long *timing,
- 				"COMRESET failed (errno=%d)\n", rc);
- 	}
- 	DPRINTK("EXIT, rc=%d\n", rc);
-+	ata_link_printk(link, KERN_INFO, "XXX link_hardreset online=%d returning %d\n",
-+			online ? *online : -1, rc);
- 	return rc;
- }
- 
-@@ -6082,7 +6098,7 @@ static void async_port_probe(void *data, async_cookie_t cookie)
- 
- 		ehi->probe_mask |= ATA_ALL_DEVICES;
- 		ehi->action |= ATA_EH_RESET | ATA_EH_LPM;
--		ehi->flags |= ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET;
-+		ehi->flags |= ATA_EHI_NO_AUTOPSY/* | ATA_EHI_QUIET*/;
- 
- 		ap->pflags &= ~ATA_PFLAG_INITIALIZING;
- 		ap->pflags |= ATA_PFLAG_LOADING;
-diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
-index bbbb1fa..468b5b9 100644
---- a/drivers/ata/libata-sff.c
-+++ b/drivers/ata/libata-sff.c
-@@ -1998,6 +1998,9 @@ unsigned int ata_sff_dev_classify(struct ata_device *dev, int present,
- 	if (r_err)
- 		*r_err = err;
- 
-+	ata_dev_printk(dev, KERN_INFO, "XXX CLASSIFY TF %02x/%02x:%02x:%02x:%02x\n",
-+		       tf.command, tf.feature, tf.lbal, tf.lbam, tf.lbah);
-+
- 	/* see if device passed diags: continue and warn later */
- 	if (err == 0)
- 		/* diagnostic fail : do nothing _YET_ */
-@@ -2006,11 +2009,14 @@ unsigned int ata_sff_dev_classify(struct ata_device *dev, int present,
- 		/* do nothing */ ;
- 	else if ((dev->devno == 0) && (err == 0x81))
- 		/* do nothing */ ;
--	else
-+	else {
-+		ata_dev_printk(dev, KERN_INFO, "XXX diag nodev\n");
- 		return ATA_DEV_NONE;
-+	}
- 
- 	/* determine if device is ATA or ATAPI */
- 	class = ata_dev_classify(&tf);
-+	ata_dev_printk(dev, KERN_INFO, "XXX ata_dev_classify=%d\n", class);
- 
- 	if (class == ATA_DEV_UNKNOWN) {
- 		/* If the device failed diagnostic, it's likely to
-@@ -2019,13 +2025,18 @@ unsigned int ata_sff_dev_classify(struct ata_device *dev, int present,
- 		 * device signature is invalid with diagnostic
- 		 * failure.
- 		 */
--		if (present && (dev->horkage & ATA_HORKAGE_DIAGNOSTIC))
-+		if (present && (dev->horkage & ATA_HORKAGE_DIAGNOSTIC)) {
-+			ata_dev_printk(dev, KERN_INFO, "XXX UNK && present -> ATA\n");
- 			class = ATA_DEV_ATA;
--		else
-+		} else {
- 			class = ATA_DEV_NONE;
-+			ata_dev_printk(dev, KERN_INFO, "XXX UNK && !present -> NONE\n");
-+		}
- 	} else if ((class == ATA_DEV_ATA) &&
--		   (ap->ops->sff_check_status(ap) == 0))
-+		   (ap->ops->sff_check_status(ap) == 0)) {
- 		class = ATA_DEV_NONE;
-+		ata_dev_printk(dev, KERN_INFO, "XXX stat==0 -> NONE\n");
-+	}
- 
- 	return class;
- }
-@@ -2211,6 +2222,8 @@ int sata_sff_hardreset(struct ata_link *link, unsigned int *class,
- 		*class = ata_sff_dev_classify(link->device, 1, NULL);
- 
- 	DPRINTK("EXIT, class=%u\n", *class);
-+	ata_link_printk(link, KERN_INFO, "XXX sff_hardreset rc=%d online=%d *class=%d\n",
-+			rc, online, *class);
- 	return rc;
- }
- EXPORT_SYMBOL_GPL(sata_sff_hardreset);
-
---------------010406060106060808090906--
