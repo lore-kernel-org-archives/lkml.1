@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752804AbZHaIhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbZHaIhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752804AbZHaIhh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 04:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZHaIhg
+	id S1752888AbZHaIhq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 04:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZHaIhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 04:37:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57204 "EHLO hera.kernel.org"
+	Mon, 31 Aug 2009 04:37:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57212 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751848AbZHaIhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 04:37:35 -0400
-Date: Mon, 31 Aug 2009 08:37:05 GMT
+	id S1752459AbZHaIhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 04:37:43 -0400
+Date: Mon, 31 Aug 2009 08:37:18 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
        mingo@redhat.com, fweisbec@gmail.com, peterz@infradead.org,
@@ -17,80 +17,180 @@ Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
        linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
-References: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1251693921-6579-1-git-send-email-fweisbec@gmail.com>
+References: <1251693921-6579-1-git-send-email-fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf tools: Add missing parameters documentation
-Message-ID: <tip-ec7ba4ea1d605029fb09601ab4ad3053bc1f519c@git.kernel.org>
-Git-Commit-ID: ec7ba4ea1d605029fb09601ab4ad3053bc1f519c
+Subject: [tip:perfcounters/core] perf tools: Librarize idle thread registration
+Message-ID: <tip-5b447a6a13ea823b698bf4c01193654fd7ebf4ec@git.kernel.org>
+Git-Commit-ID: 5b447a6a13ea823b698bf4c01193654fd7ebf4ec
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 08:37:06 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 08:37:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ec7ba4ea1d605029fb09601ab4ad3053bc1f519c
-Gitweb:     http://git.kernel.org/tip/ec7ba4ea1d605029fb09601ab4ad3053bc1f519c
+Commit-ID:  5b447a6a13ea823b698bf4c01193654fd7ebf4ec
+Gitweb:     http://git.kernel.org/tip/5b447a6a13ea823b698bf4c01193654fd7ebf4ec
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Mon, 31 Aug 2009 03:32:03 +0200
+AuthorDate: Mon, 31 Aug 2009 06:45:18 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 31 Aug 2009 10:04:47 +0200
+CommitDate: Mon, 31 Aug 2009 10:04:48 +0200
 
-perf tools: Add missing parameters documentation
+perf tools: Librarize idle thread registration
 
-Add missing documentation for the following parameters:
-
-- perf record -R
-- perf report -g
+Librarize register_idle_thread() used by annotate and report.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1251693921-6579-1-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/Documentation/perf-record.txt |    4 ++++
- tools/perf/Documentation/perf-report.txt |   10 ++++++++++
- 2 files changed, 14 insertions(+), 0 deletions(-)
+ tools/perf/builtin-annotate.c |   13 +------------
+ tools/perf/builtin-report.c   |   32 +++++++++++++++-----------------
+ tools/perf/util/thread.c      |   13 +++++++++++++
+ tools/perf/util/thread.h      |    2 ++
+ 4 files changed, 31 insertions(+), 29 deletions(-)
 
-diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
-index 6be696b..0ff23de 100644
---- a/tools/perf/Documentation/perf-record.txt
-+++ b/tools/perf/Documentation/perf-record.txt
-@@ -91,6 +91,10 @@ OPTIONS
- --no-samples::
- 	Don't sample.
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 4c7bc44..043d85b 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -472,17 +472,6 @@ static void output__resort(void)
+ 	}
+ }
  
-+-R::
-+--raw-samples::
-+Collect raw sample records from all opened counters (typically for tracepoint counters).
-+
- SEE ALSO
- --------
- linkperf:perf-stat[1], linkperf:perf-list[1]
-diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
-index 370344a..59f0b84 100644
---- a/tools/perf/Documentation/perf-report.txt
-+++ b/tools/perf/Documentation/perf-report.txt
-@@ -51,6 +51,16 @@ OPTIONS
- 	all occurances of this separator in symbol names (and other output)
- 	with a '.' character, that thus it's the only non valid separator.
+-static void register_idle_thread(void)
+-{
+-	struct thread *thread = threads__findnew(0, &threads, &last_match);
+-
+-	if (thread == NULL ||
+-			thread__set_comm(thread, "[idle]")) {
+-		fprintf(stderr, "problem inserting idle task.\n");
+-		exit(-1);
+-	}
+-}
+-
+ static unsigned long total = 0,
+ 		     total_mmap = 0,
+ 		     total_comm = 0,
+@@ -970,7 +959,7 @@ static int __cmd_annotate(void)
+ 	uint32_t size;
+ 	char *buf;
  
-+-g [type,min]::
-+--call-graph::
-+        Display callchains using type and min percent threshold.
-+	type can be either:
-+	- flat: single column, linear exposure of callchains.
-+	- graph: use a graph tree, displaying absolute overhead rates.
-+	- fractal: like graph, but displays relative rates. Each branch of
-+		 the tree is considered as a new profiled object. +
-+	Default: fractal,0.5.
+-	register_idle_thread();
++	register_idle_thread(&threads, &last_match);
+ 
+ 	input = open(input_name, O_RDONLY);
+ 	if (input < 0) {
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index cdd46ab..cdf9a8d 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -666,12 +666,9 @@ static void dso__calc_col_width(struct dso *self)
+ 	self->slen_calculated = 1;
+ }
+ 
+-static int thread__set_comm_adjust(struct thread *self, const char *comm)
++static void thread__comm_adjust(struct thread *self)
+ {
+-	int ret = thread__set_comm(self, comm);
+-
+-	if (ret)
+-		return ret;
++	char *comm = self->comm;
+ 
+ 	if (!col_width_list_str && !field_sep &&
+ 	    (!comm_list || strlist__has_entry(comm_list, comm))) {
+@@ -682,6 +679,16 @@ static int thread__set_comm_adjust(struct thread *self, const char *comm)
+ 			threads__col_width = slen + 6;
+ 		}
+ 	}
++}
 +
- SEE ALSO
- --------
- linkperf:perf-stat[1]
++static int thread__set_comm_adjust(struct thread *self, const char *comm)
++{
++	int ret = thread__set_comm(self, comm);
++
++	if (ret)
++		return ret;
++
++	thread__comm_adjust(self);
+ 
+ 	return 0;
+ }
+@@ -1073,17 +1080,6 @@ print_entries:
+ 	return ret;
+ }
+ 
+-static void register_idle_thread(void)
+-{
+-	struct thread *thread = threads__findnew(0, &threads, &last_match);
+-
+-	if (thread == NULL ||
+-			thread__set_comm_adjust(thread, "[idle]")) {
+-		fprintf(stderr, "problem inserting idle task.\n");
+-		exit(-1);
+-	}
+-}
+-
+ static unsigned long total = 0,
+ 		     total_mmap = 0,
+ 		     total_comm = 0,
+@@ -1381,11 +1377,13 @@ static int __cmd_report(void)
+ 	unsigned long offset = 0;
+ 	unsigned long head, shift;
+ 	struct stat input_stat;
++	struct thread *idle;
+ 	event_t *event;
+ 	uint32_t size;
+ 	char *buf;
+ 
+-	register_idle_thread();
++	idle = register_idle_thread(&threads, &last_match);
++	thread__comm_adjust(idle);
+ 
+ 	if (show_threads)
+ 		perf_read_values_init(&show_threads_values);
+diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
+index f98032c..3acd37f 100644
+--- a/tools/perf/util/thread.c
++++ b/tools/perf/util/thread.c
+@@ -80,6 +80,19 @@ threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match)
+ 	return th;
+ }
+ 
++struct thread *
++register_idle_thread(struct rb_root *threads, struct thread **last_match)
++{
++	struct thread *thread = threads__findnew(0, threads, last_match);
++
++	if (!thread || thread__set_comm(thread, "[idle]")) {
++		fprintf(stderr, "problem inserting idle task.\n");
++		exit(-1);
++	}
++
++	return thread;
++}
++
+ void thread__insert_map(struct thread *self, struct map *map)
+ {
+ 	struct map *pos, *tmp;
+diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
+index b1c6671..634f280 100644
+--- a/tools/perf/util/thread.h
++++ b/tools/perf/util/thread.h
+@@ -13,6 +13,8 @@ struct thread {
+ int thread__set_comm(struct thread *self, const char *comm);
+ struct thread *
+ threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match);
++struct thread *
++register_idle_thread(struct rb_root *threads, struct thread **last_match);
+ void thread__insert_map(struct thread *self, struct map *map);
+ int thread__fork(struct thread *self, struct thread *parent);
+ struct map *thread__find_map(struct thread *self, u64 ip);
