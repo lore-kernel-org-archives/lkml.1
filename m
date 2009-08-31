@@ -1,112 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751682AbZHaMFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751556AbZHaMHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751682AbZHaMFZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 08:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZHaMFY
+	id S1751556AbZHaMHM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 08:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbZHaMHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 08:05:24 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:9577 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751091AbZHaMFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 08:05:23 -0400
-Message-ID: <4A9BBC4A.6070708@redhat.com>
-Date: Mon, 31 Aug 2009 08:04:26 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Mon, 31 Aug 2009 08:07:11 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44198 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZHaMHK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 08:07:10 -0400
+Message-ID: <b18a62cbada2801ab34d591ba65ef906.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090831111027.GI4770@balbir.in.ibm.com>
+References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090828132706.e35caf80.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090831111027.GI4770@balbir.in.ibm.com>
+Date: Mon, 31 Aug 2009 21:07:10 +0900 (JST)
+Subject: Re: [RFC][PATCH 4/5] memcg: per-cpu charge stock
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
-       Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org>
-In-Reply-To: <4A9B8583.9050601@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/31/2009 04:10 AM, Tejun Heo wrote:
-> Ric Wheeler wrote:
->    
->> On 08/27/2009 05:22 PM, Andrei Tanas wrote:
->>      
->>> Hello,
->>>
->>> This is about the same problem that I wrote two days ago (md gets an
->>> error
->>> while writing superblock and fails a hard drive).
->>>
->>> I've tried to figure out what's really going on, and as far as I can
->>> tell,
->>> the disk doesn't really fail (as confirmed by multiple tests), it
->>> times out
->>> trying to execute ATA_CMD_FLUSH_EXT ("at2.00 cmd ea..." in the log)
->>> command. The reason for this I believe is that md_super_write queues the
->>> write comand with BIO_RW_SYNCIO flag.
->>> As I wrote before, with 32MB cache it is conceivable that it will take
->>> the
->>> drive longer than 30 seconds (defined by SD_TIMEOUT in scsi/sd.h) to
->>> flush
->>> its buffers.
->>>
->>> Changing safe_mode_delay to more conservative 2 seconds should definitely
->>> help, but is it really necessary to write the superblock synchronously
->>> when
->>> array changes status from active to active-idle?
->>>
->>> [90307.328266] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
->>> frozen
->>> [90307.328275] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->>> [90307.328277]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
->>> (timeout)
->>> [90307.328280] ata2.00: status: { DRDY }
->>> [90307.328288] ata2: hard resetting link
->>> [90313.218511] ata2: link is slow to respond, please be patient (ready=0)
->>> [90317.377711] ata2: SRST failed (errno=-16)
->>> [90317.377720] ata2: hard resetting link
->>> [90318.251720] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->>> [90318.338026] ata2.00: configured for UDMA/133
->>> [90318.338062] ata2: EH complete
->>> [90318.370625] end_request: I/O error, dev sdb, sector 1953519935
->>> [90318.370632] md: super_written gets error=-5, uptodate=0
->>>
->>>
->>>        
->> 30 seconds is a very long time for a drive to respond, but I think that
->> your explanation fits the facts pretty well...
->>      
-> Even with 32MB cache, 30secs should be more than enough.  It's not
-> like the drive is gonna do random write on those.  It's likely to make
-> only very few number of strokes over the platter and it really
-> shouldn't take very long.  I'm yet to see an actual case where a
-> properly functioning drive timed out flush because the flush itself
-> took long enough.
+Balbir Singh wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28
+> 13:27:06]:
 >
->    
-
-I agree - vendors put a lot of pressure on drive manufacturers to finish 
-up (even during error recovery) in much less than 30 seconds. The push 
-was always for something closer to 15 seconds iirc.
-
->> The drive might take a longer time like this when doing error handling
->> (sector remapping, etc), but then I would expect to see your remapped
->> sector count grow.
->>      
-> Yes, this is a possibility and according to the spec, libata EH should
-> be retrying flushes a few times before giving up but I'm not sure
-> whether keeping retrying for several minutes is a good idea either.
-> Is it?
+>>
+>> For avoiding frequent access to res_counter at charge, add per-cpu
+>> local charge. Comparing with modifing res_coutner (with percpu_counter),
+>> this approach
+>> Pros.
+>> 	- we don't have to touch res_counter's cache line
+>> 	- we don't have to chase res_counter's hierarchy
+>> 	- we don't have to call res_counter function.
+>> Cons.
+>> 	- we need our own code.
+>>
+>> Considering trade-off, I think this is worth to do.
 >
-> Thanks.
+> I prefer the other part due to
 >
->    
+> 1. Code reuse (any enhancements made will benefit us)
+> 2. Custom batching that can be done easily
+> 3. Remember hierarchy is explicitly enabled and we've documented that
+> it is expensive
 
-I don't think that retrying for minutes is a good idea. I wonder if this 
-could be caused by power issues or cable issues to the drive?
+Hmm. the important point is we don't touch res_counter's cacheline in
+fast path. And if we don't use memcg's percpu counter, more cacheline/TLB
+will be necesary. (I think percpu counter is slow.)
+plz rewrite memcg's percpu counter by youself if you want something generic.
 
-Ric
+I can't understand what you mention by (3).
+
+Thanks,
+-Kame
+
 
