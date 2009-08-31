@@ -1,133 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZHaS6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZHaTCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbZHaS6b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 14:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZHaS6a
+	id S1754088AbZHaTCT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 15:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZHaTCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 14:58:30 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:30121 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753212AbZHaS63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 14:58:29 -0400
-Date: Mon, 31 Aug 2009 14:56:40 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
-	track async bios.
-Message-ID: <20090831185640.GF3758@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-19-git-send-email-vgoyal@redhat.com> <4A9C09BE.4060404@redhat.com>
+	Mon, 31 Aug 2009 15:02:17 -0400
+Received: from qmta15.emeryville.ca.mail.comcast.net ([76.96.27.228]:53503
+	"EHLO QMTA15.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750927AbZHaTCQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 15:02:16 -0400
+Date: Mon, 31 Aug 2009 14:02:09 -0500
+From: Tim Walberg <twalberg@comcast.net>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Tim Walberg <twalberg@comcast.net>, Michael Tokarev <mjt@tls.msk.ru>,
+       Linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: xfs compat_ioctl?
+Message-ID: <20090831190209.GD19343@comcast.net>
+Reply-To: Tim Walberg <twalberg@comcast.net>
+Mail-Followup-To: Tim Walberg <twalberg@comcast.net>,
+	Christoph Hellwig <hch@infradead.org>,
+	Michael Tokarev <mjt@tls.msk.ru>,
+	Linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs@oss.sgi.com
+References: <4A9B759B.7020401@msgid.tls.msk.ru> <20090831123010.GA2368@infradead.org> <20090831183751.GC19343@comcast.net> <20090831184822.GA10393@infradead.org> <20090831184918.GB10393@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="48TaNjbzBVislYPb"
 Content-Disposition: inline
-In-Reply-To: <4A9C09BE.4060404@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090831184918.GB10393@infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 01:34:54PM -0400, Rik van Riel wrote:
-> Vivek Goyal wrote:
->> o blkio_cgroup patches from Ryo to track async bios.
->>
->> o This functionality is used to determine the group of async IO from page
->>   instead of context of submitting task.
->>
->> Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
->> Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
->> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
->
-> This seems to be the most complex part of the code so far,
-> but I see why this code is necessary.
->
 
-Hi Rik,
+--48TaNjbzBVislYPb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for reviewing the patches. I wanted to have better understanding of
-where all does it help to associate a bio to the group of process who
-created/owned the page. Hence few thoughts.
 
-When a bio is submitted to IO scheduler, it needs to determine the group
-bio belongs to and group which should be charged to. There seem to be two 
-methods.
 
-- Attribute the bio to cgroup submitting process belongs to.
-- For async requests, track the original owner hence cgroup of the page
-  and charge that group for the bio. 
+On 08/31/2009 14:49 -0400, Christoph Hellwig wrote:
+>>	On Mon, Aug 31, 2009 at 02:48:22PM -0400, Christoph Hellwig wrote:
+>>	> On Mon, Aug 31, 2009 at 01:37:51PM -0500, Tim Walberg wrote:
+>>	> > Linux sparcy 2.6.30.4-sparcy #2 Sat Aug 1 21:14:46 CDT 2009 sparc64 =
+GNU/Linux
+>>	> > sparcy:~# file $(which xfs_fsr)
+>>	> > /usr/sbin/xfs_fsr: ELF 32-bit MSB executable, SPARC32PLUS, V8+ Requi=
+red, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux=
+ 2.6.18, stripped
+>>	>=20
+>>	> I'll take a look at that, thanks.
+>>=09
+>>	Err, sorry - is that with the patch I posted in this thread or without?
+End of included message
 
-One can think of pros/cons of both the approaches.
 
-- The primary use case of tracking async context seems be that if a
-  process T1 in group G1 mmaps a big file and then another process T2 in
-  group G2, asks for memory and triggers reclaim and generates writes of
-  the file pages mapped by T1, then these writes should not be charged to
-  T2, hence blkio_cgroup pages.
+No, that's the generic 2.6.30.4... I can attempt with that patch as well, b=
+ut
+it might be a day or two...
 
-  But the flip side of this might be that group G2 is a low weight group
-  and probably too busy also right now, which will delay the write out
-  and possibly T2 will wait longer for memory to be allocated.
+				tw
 
-- At one point of time Andrew mentioned that buffered writes are generally a
-  big problem and one needs to map these to owner's group. Though I am not
-  very sure what specific problem he was referring to. Can we attribute
-  buffered writes to pdflush threads and move all pdflush threads in a 
-  cgroup to limit system wide write out activity?
 
-- Somebody also gave an example where there is a memory hogging process and
-  possibly pushes out some processes to swap. It does not sound fair to 
-  charge those proccess for that swap writeout. These processes never
-  requested swap IO.
+--=20
++----------------------+
+| Tim Walberg          |
+| 830 Carriage Dr.     |
+| Algonquin, IL 60102  |
+| twalberg@comcast.net |
++----------------------+
 
-- If there are multiple buffered writers in the system, then those writers
-  can also be forced to writeout some pages to disk before they are
-  allowed to dirty more pages. As per the page cache design, any writer
-  can pick any inode and start writing out pages. So it can happen a
-  weight group task is writting out pages dirtied by a lower weight group
-  task. If, async bio is mapped to owner's group, it might happen that
-  higher weight group task might be made to sleep on lower weight group
-  task because request descriptors are all consumed up.
+--48TaNjbzBVislYPb
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-It looks like there does not seem to be a clean way which covers all the
-cases without issues. I am just trying to think, what is a simple way
-which covers most of the cases. Can we just stick to using submitting task
-context to determine a bio's group (as cfq does). Which can result in
-following.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-- Less code and reduced complexity.
+iEYEARECAAYFAkqcHjEACgkQw+Wcj22rJWafGgCfezgV5i6D9BQzkaIjuDF2OaGe
+OPMAoL74DPQlOVe+jY1lAVjM+lrj5bDJ
+=ucVX
+-----END PGP SIGNATURE-----
 
-- Buffered writes will be charged to pdflush and its group. If one wish to
-  limit buffered write activity for pdflush, one can move all the pdflush
-  threads into a group and assign desired weight. Writes submitted in
-  process context will continue to be charged to that process irrespective
-  of the fact who dirtied that page.
-
-- swap activity will be charged to kswapd and its group. If swap writes
-  are coming from process context, it gets charged to process and its
-  group. 
-
-- If one is worried about the case of one process being charged for write
-  out of file mapped by another process during reclaim, then we can
-  probably make use of memory controller and mount memory controller and
-  io controller together on same hierarchy. I am told that with memory
-  controller, group's memory will be reclaimed by the process requesting
-  more memory. If that's the case, then IO will automatically be charged
-  to right group if we use submitting task context.
-
-I just wanted to bring this point forward for more discussions to know
-what is the right thing to do? Use bio tracking or not.
-
-Ryo, any thoughts on this?
-
-Thanks
-Vivek
-
-> Acked-by: Rik van Riel <riel@redhat.com>
+--48TaNjbzBVislYPb--
