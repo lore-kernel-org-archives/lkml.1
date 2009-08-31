@@ -1,76 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbZHaKad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967AbZHaKax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751881AbZHaKad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 06:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbZHaKac
+	id S1751967AbZHaKax (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 06:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZHaKax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 06:30:32 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:60056 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751733AbZHaKab convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 06:30:31 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 4/6] thermal: add sanity check for the passive attribute
-Date: Mon, 31 Aug 2009 12:30:30 +0200
-User-Agent: KMail/1.9.9
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1251303445-25317-1-git-send-email-elendil@planet.nl> <200908261848.29897.elendil@planet.nl> <1251707630.3483.181.camel@rzhang-dt>
-In-Reply-To: <1251707630.3483.181.camel@rzhang-dt>
+	Mon, 31 Aug 2009 06:30:53 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49528 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750770AbZHaKaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 06:30:52 -0400
+Date: Mon, 31 Aug 2009 11:30:56 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Paul Mundt <lethal@linux-sh.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: page allocator regression on nommu
+Message-ID: <20090831103056.GA29627@csn.ul.ie>
+References: <20090831074842.GA28091@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200908311230.32021.elendil@planet.nl>
-X-OriginalArrivalTime: 31 Aug 2009 10:30:32.0534 (UTC) FILETIME=[11914F60:01CA2A26]
+In-Reply-To: <20090831074842.GA28091@linux-sh.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 31 August 2009, Zhang Rui wrote:
-> On Thu, 2009-08-27 at 00:48 +0800, Frans Pop wrote:
-> > On Wednesday 26 August 2009, Matthew Garrett wrote:
-> > > On Wed, Aug 26, 2009 at 06:17:23PM +0200, Frans Pop wrote:
-> > > > Values below 40000 milli-celsius (limit is somewhat arbitrary)
-> > > > don't make sense and can cause the system to go into a thermal
-> > > > heart attack: the actual temperature will always be lower and
-> > > > thus the system will be throttled down to its lowest setting.
-> > >
-> > > Not keen on this - it's a pretty arbitrary cutoff, and there are
-> > > some cases where someone might want this value. Policy belongs in
-> > > userspace, and all that.
-> >
-> > What cases do you see? Testing? Or systems that might have to operate
-> > at such a low temperature? I deliberately chose a value that's at a
-> > level that's easy to reach.
-> >
-> > I agree it is arbitrary, but it will prevent major confusion when
-> > someone like me echo's 95 directly in sysfs.
->
-> this is a problem.
-> how about something like:
-> #define THERMAL_PASSIVE_WARNING_LEVEL 0x40000
+On Mon, Aug 31, 2009 at 04:48:43PM +0900, Paul Mundt wrote:
+> Hi Mel,
+> 
+> It seems we've managed to trigger a fairly interesting conflict between
+> the anti-fragmentation disabling code and the nommu region rbtree. I've
+> bisected it down to:
+> 
+> commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e
+> Author: Mel Gorman <mel@csn.ul.ie>
+> Date:   Tue Jun 16 15:31:58 2009 -0700
+> 
+>     page allocator: move check for disabled anti-fragmentation out of fastpath
+> 
+>     On low-memory systems, anti-fragmentation gets disabled as there is
+>     nothing it can do and it would just incur overhead shuffling pages between
+>     lists constantly.  Currently the check is made in the free page fast path
+>     for every page.  This patch moves it to a slow path.  On machines with low
+>     memory, there will be small amount of additional overhead as pages get
+>     shuffled between lists but it should quickly settle.
+> 
+> which causes death on unpacking initramfs on my nommu board. With this
+> reverted, everything works as expected. Note that this blows up with all of
+> SLOB/SLUB/SLAB.
+> 
+> I'll continue debugging it, and can post my .config if it will be helpful, but
+> hopefully you have some suggestions on what to try :-)
+> 
 
-Hmmm. 40000 hexadecimal? That seems a bit high ;-)
+Based on the output you have given me, it would appear the real
+underlying cause is that fragmentation caused the allocation to fail.
+The following patch might fix the problem.
 
-> if (state < THERMAL_PASSIVE_WARNING_LEVEL)
->    printk(KERN_WARNING PREFIX "Passive trip point too low, this may"
->           "slow down your laptop because processors are throttled "
->           "whenever the temperature is higher than %dC\n", state/1000);
+====
+page-allocator: Always change pageblock ownership when anti-fragmentation is disabled
 
-Disadvantage is that users are unlikely to actually see that message at 
-the time they set the value, especially if they're working in some xterm. 
-They'd have to check dmesg or log files. It also increases the .text size 
-of the module for an option that very few people are likely to use.
+On low-memory systems, anti-fragmentation gets disabled as there is nothing
+it can do and it would just incur overhead shuffling pages between lists
+constantly. When the system starts up, there is a period of time when
+all the pageblocks are marked MOVABLE and the expectation is that they
+get marked UNMOVABLE.
 
-> > Would 1000 (1 °C) perhaps be more acceptable as a limit? I doubt
-> > there are valid use-cases for below 0 temps :-)
+However, when MAX_ORDER is a large number, the pageblocks may not change
+ownership because the normal criteria do not apply. This can have the
+effect of prematurely breaking up too many large contiguous blocks which
+can be a problem on NOMMU systems.
 
-I'd prefer this option. Do you see any downside to this?
+This patch causes pageblocks to change ownership ever time a fallback
+occurs when anti-fragmentation is disabled. This should prevent the
+large blocks being prematurely broken up.
 
-Cheers,
-FJP
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ mm/page_alloc.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index d052abb..cfe9a5b 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -817,7 +817,8 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
+ 			 * agressive about taking ownership of free pages
+ 			 */
+ 			if (unlikely(current_order >= (pageblock_order >> 1)) ||
+-					start_migratetype == MIGRATE_RECLAIMABLE) {
++					start_migratetype == MIGRATE_RECLAIMABLE ||
++					page_group_by_mobility_disabled) {
+ 				unsigned long pages;
+ 				pages = move_freepages_block(zone, page,
+ 								start_migratetype);
