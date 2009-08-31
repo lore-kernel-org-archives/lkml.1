@@ -1,1819 +1,1011 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214AbZHaLul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbZHaLvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752214AbZHaLul (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 07:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZHaLul
+	id S1752278AbZHaLvq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 07:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZHaLvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 07:50:41 -0400
-Received: from mail128.messagelabs.com ([216.82.250.131]:37580 "EHLO
-	mail128.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039AbZHaLug convert rfc822-to-8bit (ORCPT
+	Mon, 31 Aug 2009 07:51:45 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:55965 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752124AbZHaLvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 07:50:36 -0400
-X-VirusChecked: Checked
-X-Env-Sender: taohu@motorola.com
-X-Msg-Ref: server-12.tower-128.messagelabs.com!1251719438!16795923!1
-X-StarScan-Version: 6.1.3; banners=-,-,-
-X-Originating-IP: [136.182.1.12]
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 31 Aug 2009 07:51:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=EttqYW6T6R8j/l4bgaQmlp+K2Oh3zRRm81U89c3hvNAcdejzD6hMK1EuRfBcqTyG0p
+         DprLu2EuKoADoOJxkXE6Eb1BgQ/Zila/7fLI1t/SXsQTX7/sTsh1TkNph35zPX2A5/30
+         PUuoDrjsC8cweE0Yyfj+Roz77m7GxbbM7hrJc=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [RFC][PATCH]: Adding support for omap-serail driver
-Date: Mon, 31 Aug 2009 19:50:11 +0800
-Message-ID: <F12CE1A68F023D498A2691C7B539311503935B24@ZMY16EXM66.ds.mot.com>
-In-Reply-To: <ce9ab5790908280649n77765dedm9161316a181b6a07@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [RFC][PATCH]: Adding support for omap-serail driver
-Thread-Index: Acon5twzb/OF0N3YQRWpvTx9DBm0EACQAN1A
-References: <ce9ab5790908280649n77765dedm9161316a181b6a07@mail.gmail.com>
-From: "HU TAO-TGHK48" <taohu@motorola.com>
-To: "vimal singh" <vimal.newwork@gmail.com>, <linux-omap@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>, <linux-serial@vger.kernel.org>
-Cc: "Ye Yuan.Bo-A22116" <yuan-bo.ye@motorola.com>,
-       "Chen Xiaolong-A21785" <A21785@motorola.com>
-X-CFilter-Loop: Reflected
+Date: Mon, 31 Aug 2009 13:51:42 +0200
+Message-ID: <c4e36d110908310451t7c238e09u5af112fa3321cc23@mail.gmail.com>
+Subject: Regression in suspend to ram in 2.6.31-rc kernels
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mmc@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-1. Shall we cleanup PM related stuff in arch/arm/mach-omap2/serial.c as
-well?
-    Originally serail.c register UART IRQ  to decide if UART idle for a
-while and is able to enter low power mode (e.g. retention).
-    To work with original 8250 driver, it is probably the only way since
-8250 is not aware of OMAP PM.
-   
-    However  it would be more reasonable to merge PM stuff to
-omap-serial.c. since the new driver is already OMAP specific
-    
-2. There is an issue for DMA  with current implementation in serial.c 
-    When Rx DMA is active NO Rx IRQ will be generated.
-    So serial.c will easily set uart->can_sleep with "1" even there is
-Rx DMA ongoing
-    +	if ((iir & 0x4) && up->use_dma) {
-    +		up->ier &= ~UART_IER_RDI;
-    +		serial_out(up, UART_IER, up->ier
+Hi
 
-   In my view, the best way is to do the idle detection in
-omap_serial.c.
+I've noticed that my machine freezes while doing s2r and having
+mounted filesystem from SD card.
 
-3. Can a flag be added to enable auto-RTS and auto-CRT individually?
-   OMAP HW supports independent auto-RTS and auto-CTS.
-   And we had a case that only auto-RTS can be enabled due to HW design.
+My system: Lenovo T61, 4GB, C2D, kernel 2.6.31-rc8
 
-Below is the idea.
+Here is the trace of  suspend when SD card is inserted, follows resume
+and again suspend and this time with mounted filesystem from SD card.
 
- In arch/arm/mach-omap2/serial.c
- static struct plat_serialomap_port serial_platform_data[] = {
-       {
-                 .membase        = IO_ADDRESS(OMAP_UART1_BASE),
-                 .irq            = 72,
-                .regshift       = 2,
- +              .rtscts         = UART_EFR_RTS
+System locks with: PM: Removing info for mmc:mmc0:b368
+Also btusb_bulk_complete: errors are interesting - I've noticed few
+bugzillas in the google.
+I could try bisect to find the patch - but it will take time....
+So hopefully this trace will help.
+
+Zdenek
 
 
-In omap_serial.c
-+static int serial_omap_probe(struct platform_device *pdev) {
-struct plat_serialomap_port *pdata = pdev->dev.platform_data;
-... ...
-+	up->rtscts =  pdata->rtscts;
-
-   
-serial_omap_set_termios(struct uart_port *port, struct ktermios
-*termios,
-			struct ktermios *old)
-{
-... ...
-	if (termios->c_cflag & CRTSCTS)
-+		efr |= up->rtscts;
-
-   
-
-Thanks
-
-Tao Hu
-
-
-
------Original Message-----
-From: linux-omap-owner@vger.kernel.org
-[mailto:linux-omap-owner@vger.kernel.org] On Behalf Of vimal singh
-Sent: Friday, August 28, 2009 9:50 PM
-To: linux-omap@vger.kernel.org; LKML; linux-serial@vger.kernel.org
-Subject: [RFC][PATCH]: Adding support for omap-serail driver
-
-From: Govindraj R <govindraj.raja@ti.com>
-
-This patch adds support for OMAP3430-HIGH SPEED UART Controller.
-
-It currently adds support for the following features.
-
-        1. Supports Interrupt Mode for all three UARTs on SDP/ZOOM2.
-        2. Supports DMA Mode for all three UARTs on SDP/ZOOM2.
-        3. Supports Hardware flow control (CTS/RTS) on SDP/ZOOM2.
-        4. Supports 3.6Mbps baudrate on SDP/ZOOM2.
-        5. Debug Console support on all UARTs on SDP/ZOOM2.
-        6. Support for quad uart on ZOOM2 board.
-
-The reason for adding this new driver alternative to 8250 is to avoid
-polluting 8250 driver with too many omap specific data as 8250 already
-supports more than 16 different uart controllers and may need too many
-omap-platform checks to implement feature like DMA support.
-
-Signed-off-by: Govindraj R <govindraj.raja@ti.com>
----
- arch/arm/plat-omap/include/mach/omap-serial.h |   84 +
- drivers/serial/Kconfig                        |   92 +
- drivers/serial/Makefile                       |    1
- drivers/serial/omap-serial.c                  | 1431
-++++++++++++++++++++++++++
- 4 files changed, 1608 insertions(+)
-
-diff --git a/arch/arm/plat-omap/include/mach/omap-serial.h
-b/arch/arm/plat-omap/include/mach/omap-serial.h
-new file mode 100644
-index 0000000..d1b0bf2
---- /dev/null
-+++ b/arch/arm/plat-omap/include/mach/omap-serial.h
-@@ -0,0 +1,84 @@
-+/*
-+ * arch/arm/plat-omap/include/mach/omap-serial.h
-+ *
-+ * Driver for OMAP3430 UART controller.
-+ *
-+ * Copyright (C) 2009 Texas Instruments.
-+ *
-+ * Authors:
-+ *	Thara Gopinath	<thara@ti.com>
-+ *	Govindraj R	<govindraj.raja@ti.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public 
-+License
-+ * version 2. This program is licensed "as is" without any warranty of 
-+any
-+ * kind, whether express or implied.
-+ */
-+
-+#ifndef __OMAP_SERIAL_H__
-+#define __OMAP_SERIAL_H__
-+
-+#include <linux/serial_core.h>
-+#include <linux/platform_device.h>
-+
-+/* TI OMAP CONSOLE */
-+#define PORT_OMAP       86
-+
-+#define DRIVER_NAME	"omap-hsuart"
-+
-+/*
-+ * We default to IRQ0 for the "no irq" hack.   Some
-+ * machine types want  others as well - they're free
-+ * to redefine this in their header file.
-+ */
-+#define is_real_interrupt(irq)  ((irq) != 0)
-+
-+#if defined(CONFIG_SERIAL_OMAP_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ) 
-+#define SUPPORT_SYSRQ #endif
-+
-+#ifdef CONFIG_ARCH_OMAP34XX
-+#define OMAP_MDR1_DISABLE 	0x07
-+#define OMAP_MDR1_MODE13X 	0x03
-+#define OMAP_MDR1_MODE16X 	0x00
-+#define OMAP_MODE13X_SPEED	230400
-+#endif
-+
-+#define CONSOLE_NAME	"console="
-+
-+#define UART_CLK	(48000000)
-+#define QUART_CLK	(1843200)
-+
-+/* UART NUMBERS */
-+#define UART1		(0x0)
-+#define UART2		(0x1)
-+#define UART3		(0x2)
-+#define QUART		(0x3)
-+
-+#ifdef CONFIG_MACH_OMAP_ZOOM2
-+#define MAX_UARTS	QUART
-+#else
-+#define MAX_UARTS	UART3
-+#endif
-+
-+#define UART_BASE(uart_no)		(uart_no == UART1) ?
-OMAP_UART1_BASE :\
-+					(uart_no == UART2) ?
-OMAP_UART2_BASE :\
-+					 OMAP_UART3_BASE
-+
-+#define UART_MODULE_BASE(uart_no)	(UART1 == uart_no ? \
-+
-IO_ADDRESS(OMAP_UART1_BASE) :\
-+					(UART2 == uart_no ? \
-+
-IO_ADDRESS(OMAP_UART2_BASE) :\
-+
-IO_ADDRESS(OMAP_UART3_BASE)))
-+extern unsigned int fcr[MAX_UARTS];
-+extern char *saved_command_line;
-+
-+struct plat_serialomap_port {
-+	void __iomem    *membase;       /* ioremap cookie or NULL */
-+	 resource_size_t mapbase;       /* resource base */
-+	unsigned int    irq;            /* interrupt number */
-+	unsigned char   regshift;       /* register shift */
-+	upf_t           flags;          /* UPF_* flags */
-+	void            *private_data;
-+};
-+
-+#endif /* __OMAP_SERIAL_H__ */
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig index
-037c1e0..906fb61 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -1359,6 +1359,98 @@ config SERIAL_OF_PLATFORM
- 	  Currently, only 8250 compatible ports are supported, but
- 	  others can easily be added.
-
-+config SERIAL_OMAP
-+	bool "OMAP serial port support"
-+	depends on ARM && ARCH_OMAP
-+	select SERIAL_CORE
-+	help
-+	If you have a machine based on an Texas Instruments OMAP CPU you
-+	can enable its onboard serial ports by enabling this option.
-+
-+config SERIAL_OMAP_CONSOLE
-+	bool "Console on OMAP serial port"
-+	depends on SERIAL_OMAP
-+	select SERIAL_CORE_CONSOLE
-+	help
-+	If you have enabled the serial port on the Texas Instruments
-OMAP
-+	CPU you can make it the console by answering Y to this option.
-+
-+	Even if you say Y here, the currently visible virtual console
-+	(/dev/tty0) will still be used as the system console by default,
-but
-+	you can alter that using a kernel command line option such as
-+	"console=ttyS0". (Try "man bootparam" or see the documentation
-of
-+	your boot loader (lilo or loadlin) about how to pass options to
-the
-+	kernel at boot time.)
-+
-+config SERIAL_OMAP_DMA_UART1
-+	bool "UART1 DMA support"
-+	depends on SERIAL_OMAP
-+	help
-+	If you have enabled the serial port on the Texas Instruments
-OMAP
-+	CPU you can enable the DMA transfer on UART 1 by answering
-+	 to this option.
-+
-+config SERIAL_OMAP_UART1_RXDMA_TIMEOUT
-+	int "Timeout value for RX DMA in microseconds"
-+	depends on SERIAL_OMAP_DMA_UART1
-+	default "1"
-+	help
-+	  Set the timeout value in which you want the data pulled by RX
-dma to
-+	  be passed to the tty framework.
-+
-+config SERIAL_OMAP_UART1_RXDMA_BUFSIZE
-+	int "DMA buffer size for RX in bytes"
-+	depends on SERIAL_OMAP_DMA_UART1
-+	default "4096"
-+	help
-+	  Set the dma buffer size for UART Rx
-+
-+config SERIAL_OMAP_DMA_UART2
-+	bool "UART2 DMA support"
-+	depends on SERIAL_OMAP
-+	help
-+	  If you have enabled the serial port on the Texas Instruments
-OMAP
-+	  CPU you can enable the DMA transfer on UART 2 by answering
-+	  to this option.
-+
-+config SERIAL_OMAP_UART2_RXDMA_TIMEOUT
-+	int "Timeout value for RX DMA in microseconds"
-+	depends on SERIAL_OMAP_DMA_UART2
-+	default "1"
-+	help
-+	  Set the timeout value in which you want the data pulled by RX
-dma to
-+	  be passed to the tty framework.
-+
-+config SERIAL_OMAP_UART2_RXDMA_BUFSIZE
-+	int "DMA buffer size for RX in bytes"
-+	depends on SERIAL_OMAP_DMA_UART2
-+	default "4096"
-+	help
-+	  Set the dma buffer size for UART Rx
-+
-+config SERIAL_OMAP_DMA_UART3
-+	bool "UART3 DMA support"
-+	depends on SERIAL_OMAP
-+	help
-+	  If you have enabled the serial port on the Texas Instruments
-OMAP
-+	  CPU you can enable the DMA transfer on UART 3 by answering
-+	  to this option.
-+
-+config SERIAL_OMAP_UART3_RXDMA_TIMEOUT
-+	int "Timeout value for RX DMA in microseconds"
-+	depends on SERIAL_OMAP_DMA_UART3
-+	default "1"
-+	help
-+	  Set the timeout value in which you want the data pulled by RX
-dma to
-+	  be passed to the tty framework.
-+
-+config SERIAL_OMAP_UART3_RXDMA_BUFSIZE
-+	int "DMA buffer size for RX in bytes"
-+	depends on SERIAL_OMAP_DMA_UART3
-+	default "4096"
-+	help
-+	  Set the dma buffer size for UART Rx
-+
- config SERIAL_OF_PLATFORM_NWPSERIAL
- 	tristate "NWP serial port driver"
- 	depends on PPC_OF && PPC_DCR
-diff --git a/drivers/serial/Makefile b/drivers/serial/Makefile index
-d5a2998..db38f2c 100644
---- a/drivers/serial/Makefile
-+++ b/drivers/serial/Makefile
-@@ -79,3 +79,4 @@ obj-$(CONFIG_SERIAL_KS8695) += serial_ks8695.o
- obj-$(CONFIG_KGDB_SERIAL_CONSOLE) += kgdboc.o
- obj-$(CONFIG_SERIAL_QE) += ucc_uart.o
- obj-$(CONFIG_SERIAL_TIMBERDALE)	+= timbuart.o
-+obj-$(CONFIG_SERIAL_OMAP) += omap-serial.o
-diff --git a/drivers/serial/omap-serial.c b/drivers/serial/omap-serial.c
-new file mode 100644 index 0000000..3b84740
---- /dev/null
-+++ b/drivers/serial/omap-serial.c
-@@ -0,0 +1,1431 @@
-+/*
-+ * drivers/serial/omap-serial.c
-+ *
-+ * Driver for OMAP3430 UART controller.
-+ *
-+ * Copyright (C) 2009 Texas Instruments.
-+ *
-+ * Authors:
-+ *	Thara Gopinath	<thara@ti.com>
-+ *	Govindraj R	<govindraj.raja@ti.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public 
-+License
-+ * version 2. This program is licensed "as is" without any warranty of 
-+any
-+ * kind, whether express or implied.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/console.h>
-+#include <linux/serial_reg.h>
-+#include <linux/delay.h>
-+#include <linux/tty.h>
-+#include <linux/tty_flip.h>
-+#include <linux/io.h>
-+#include <linux/dma-mapping.h>
-+
-+#include <asm/irq.h>
-+#include <mach/dma.h>
-+#include <mach/dmtimer.h>
-+#include <mach/omap-serial.h>
-+
-+#ifdef DEBUG
-+#define DPRINTK  printk
-+#else
-+#define DPRINTK(x...)
-+#endif
-+
-+static u8 uart_dma_tx[MAX_UARTS + 1] =
-+	{OMAP24XX_DMA_UART1_TX, OMAP24XX_DMA_UART2_TX,
-OMAP24XX_DMA_UART3_TX}; 
-+static u8 uart_dma_rx[MAX_UARTS + 1] =
-+	{OMAP24XX_DMA_UART1_RX, OMAP24XX_DMA_UART2_RX,
-OMAP24XX_DMA_UART3_RX};
-+
-+struct uart_omap_dma {
-+	int rx_dma_channel;
-+	int tx_dma_channel;
-+	dma_addr_t rx_buf_dma_phys;	/* Physical adress of RX DMA
-buffer */
-+	dma_addr_t tx_buf_dma_phys;	/* Physical adress of TX DMA
-buffer */
-+	/*
-+	 * Buffer for rx dma.It is not required for tx because the
-buffer
-+	 * comes from port structure
-+	 */
-+	unsigned char *rx_buf;
-+	unsigned int prev_rx_dma_pos;
-+	int tx_buf_size;
-+	int tx_dma_state;
-+	int rx_dma_state;
-+	spinlock_t tx_lock;
-+	spinlock_t rx_lock;
-+	struct timer_list 	rx_timer;/* timer to poll activity on rx
-dma */
-+	int rx_buf_size;
-+	int rx_timeout;
-+};
-+
-+struct uart_omap_port {
-+	struct uart_port	port;
-+	struct uart_omap_dma	uart_dma;
-+	struct platform_device	*pdev;
-+
-+	unsigned char		ier;
-+	unsigned char		lcr;
-+	unsigned char		mcr;
-+	int			use_dma;
-+	int			is_buf_dma_alloced;
-+	/*
-+	 * Some bits in registers are cleared on a read, so they must
-+	 * be saved whenever the register is read but the bits will not
-+	 * be immediately processed.
-+	 */
-+	unsigned int		lsr_break_flag;
-+#define MSR_SAVE_FLAGS UART_MSR_ANY_DELTA
-+	unsigned char		msr_saved_flags;
-+	char			name[20];
-+	spinlock_t		uart_lock;
-+};
-+
-+static struct uart_omap_port *ui[MAX_UARTS + 1]; unsigned int 
-+fcr[MAX_UARTS]; unsigned long up_activity;
-+
-+/* Forward declaration of dma callback functions */ static void 
-+uart_tx_dma_callback(int lch, u16 ch_status, void *data); #ifdef DEBUG 
-+static void serial_omap_display_reg(struct uart_port *port); #endif 
-+static void serial_omap_rx_timeout(unsigned long uart_no); static void 
-+serial_omap_start_rxdma(struct uart_omap_port *up);
-+
-+int console_detect(char *str)
-+{
-+	char *next, *start = NULL;
-+	int i;
-+
-+	i = strlen(CONSOLE_NAME);
-+	next = saved_command_line;
-+
-+	while ((next = strchr(next, 'c')) != NULL) {
-+		if (!strncmp(next, CONSOLE_NAME, i)) {
-+			start = next;
-+			break;
-+		} else
-+			next++;
-+	}
-+	if (!start)
-+		return -EPERM;
-+	i = 0;
-+	start = strchr(start, '=') + 1;
-+	while (*start != ',') {
-+		str[i++] = *start++;
-+		if (i > 6) {
-+			printk(KERN_INFO "Invalid Console Name\n");
-+			return -EPERM;
-+		}
-+	}
-+	str[i] = '\0';
-+	return 0;
-+}
-+
-+static inline unsigned int serial_in(struct uart_omap_port *up, int 
-+offset) {
-+	offset <<= up->port.regshift;
-+	if (up->pdev->id != 4)
-+		return readb(up->port.membase + offset);
-+	else
-+		return readw(up->port.membase + offset); }
-+
-+static inline void serial_out(struct uart_omap_port *up, int offset, 
-+int value) {
-+	offset <<= up->port.regshift;
-+	if (up->pdev->id != 4)
-+		writeb(value, up->port.membase + offset);
-+	else
-+		writew(value, up->port.membase + offset); }
-+
-+static inline void serial_omap_clear_fifos(struct uart_omap_port *p) {
-+		serial_out(p, UART_FCR, UART_FCR_ENABLE_FIFO);
-+		serial_out(p, UART_FCR, UART_FCR_ENABLE_FIFO |
-+			       UART_FCR_CLEAR_RCVR |
-UART_FCR_CLEAR_XMIT);
-+		serial_out(p, UART_FCR, 0);
-+		fcr[p->pdev->id - 1] = 0;
-+}
-+
-+/*
-+ * We have written our own function to get the divisor so as to support
-+ * 13x mode.
-+ */
-+static unsigned int
-+serial_omap_get_divisor(struct uart_port *port, unsigned int baud) {
-+	unsigned int divisor;
-+	if (baud > OMAP_MODE13X_SPEED && baud != 3000000)
-+		divisor = 13;
-+	else
-+		divisor = 16;
-+	return port->uartclk/(baud * divisor); }
-+
-+static void serial_omap_stop_rxdma(struct uart_omap_port *up) {
-+	if (up->uart_dma.rx_dma_state) {
-+		del_timer_sync(&up->uart_dma.rx_timer);
-+		omap_stop_dma(up->uart_dma.rx_dma_channel);
-+		omap_free_dma(up->uart_dma.rx_dma_channel);
-+		up->uart_dma.rx_dma_channel = 0xFF;
-+		up->uart_dma.rx_dma_state = 0x0;
-+	}
-+}
-+
-+static void serial_omap_enable_ms(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+
-+	DPRINTK("serial_omap_enable_ms+%d\n", up->pdev->id);
-+	up->ier |= UART_IER_MSI;
-+	serial_out(up, UART_IER, up->ier);
-+}
-+
-+static void serial_omap_stop_tx(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	if (up->use_dma) {
-+		if (up->uart_dma.tx_dma_channel != 0xFF) {
-+			/*
-+			 * Check if dma is still active . If yes do
-nothing,
-+			 * return. Else stop dma
-+			 */
-+			int status = omap_readl(OMAP34XX_DMA4_BASE +
-+
-OMAP_DMA4_CCR(up->uart_dma.tx_dma_channel));
-+			if (status & (1 << 7))
-+				return;
-+			omap_stop_dma(up->uart_dma.tx_dma_channel);
-+			omap_free_dma(up->uart_dma.tx_dma_channel);
-+			up->uart_dma.tx_dma_channel = 0xFF;
-+		}
-+	}
-+
-+	if (up->ier & UART_IER_THRI) {
-+		up->ier &= ~UART_IER_THRI;
-+		serial_out(up, UART_IER, up->ier);
-+	}
-+#ifdef CONFIG_PM
-+	if (!up->uart_dma.rx_dma_state) {
-+		unsigned int tmp;
-+		tmp = (serial_in(up, UART_OMAP_SYSC) & 0x7) | (2 << 3);
-+		serial_out(up, UART_OMAP_SYSC, tmp); /* smart-idle */
-+	}
-+#endif
-+}
-+
-+static void serial_omap_stop_rx(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	serial_omap_stop_rxdma(up);
-+	up->ier &= ~UART_IER_RLSI;
-+	up->port.read_status_mask &= ~UART_LSR_DR;
-+	serial_out(up, UART_IER, up->ier);
-+
-+}
-+
-+static inline void receive_chars(struct uart_omap_port *up, int 
-+*status) {
-+	struct tty_struct *tty = up->port.info->port.tty;
-+	unsigned int ch, flag;
-+	int max_count = 256;
-+
-+	do {
-+		ch = serial_in(up, UART_RX);
-+		flag = TTY_NORMAL;
-+		up->port.icount.rx++;
-+
-+		if (unlikely(*status & (UART_LSR_BI | UART_LSR_PE |
-+				       UART_LSR_FE | UART_LSR_OE))) {
-+			/*
-+			 * For statistics only
-+			 */
-+			if (*status & UART_LSR_BI) {
-+				*status &= ~(UART_LSR_FE | UART_LSR_PE);
-+				up->port.icount.brk++;
-+				/*
-+				 * We do the SysRQ and SAK checking
-+				 * here because otherwise the break
-+				 * may get masked by ignore_status_mask
-+				 * or read_status_mask.
-+				 */
-+				if (uart_handle_break(&up->port))
-+					goto ignore_char;
-+			} else if (*status & UART_LSR_PE)
-+				up->port.icount.parity++;
-+			else if (*status & UART_LSR_FE)
-+				up->port.icount.frame++;
-+			if (*status & UART_LSR_OE)
-+				up->port.icount.overrun++;
-+
-+			/*
-+			 * Mask off conditions which should be ignored.
-+			 */
-+			*status &= up->port.read_status_mask;
-+
-+#ifdef CONFIG_SERIAL_OMAP_CONSOLE
-+			if (up->port.line == up->port.cons->index) {
-+				/* Recover the break flag from console
-xmit */
-+				*status |= up->lsr_break_flag;
-+				up->lsr_break_flag = 0;
-+			}
-+#endif
-+			if (*status & UART_LSR_BI)
-+				flag = TTY_BREAK;
-+			else if (*status & UART_LSR_PE)
-+				flag = TTY_PARITY;
-+			else if (*status & UART_LSR_FE)
-+				flag = TTY_FRAME;
-+		}
-+
-+		if (uart_handle_sysrq_char(&up->port, ch))
-+			goto ignore_char;
-+
-+		uart_insert_char(&up->port, *status, UART_LSR_OE, ch,
-flag);
-+
-+ignore_char:
-+		*status = serial_in(up, UART_LSR);
-+	} while ((*status & UART_LSR_DR) && (max_count-- > 0));
-+	tty_flip_buffer_push(tty);
-+
-+
-+}
-+
-+static void transmit_chars(struct uart_omap_port *up) {
-+	struct circ_buf *xmit = &up->port.info->xmit;
-+	int count;
-+
-+	if (up->port.x_char) {
-+		serial_out(up, UART_TX, up->port.x_char);
-+		up->port.icount.tx++;
-+		up->port.x_char = 0;
-+		return;
-+	}
-+	if (uart_circ_empty(xmit) || uart_tx_stopped(&up->port)) {
-+		serial_omap_stop_tx(&up->port);
-+		return;
-+	}
-+
-+	count = up->port.fifosize / 4;
-+	do {
-+		serial_out(up, UART_TX, xmit->buf[xmit->tail]);
-+		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
-+		up->port.icount.tx++;
-+		if (uart_circ_empty(xmit))
-+			break;
-+	} while (--count > 0);
-+
-+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
-+		uart_write_wakeup(&up->port);
-+
-+	if (uart_circ_empty(xmit))
-+		serial_omap_stop_tx(&up->port);
-+}
-+
-+static void serial_omap_start_tx(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-#ifdef 
-+CONFIG_PM
-+		/* Disallow OCP bus idle. UART TX irqs are not seen
-during
-+		 * bus idle. Alternative is to set kernel timer at fifo
-+		 * drain rate.
-+		 */
-+		unsigned int tmp;
-+		tmp = (serial_in(up, UART_OMAP_SYSC) & 0x7) | (1 << 3);
-+		serial_out(up, UART_OMAP_SYSC, tmp); /* no-idle */
-#endif
-+
-+	if (up->use_dma && !(up->port.x_char)) {
-+
-+		struct circ_buf *xmit = &up->port.info->xmit;
-+		unsigned int start = up->uart_dma.tx_buf_dma_phys +
-+				     (xmit->tail & (UART_XMIT_SIZE -
-1));
-+		if (uart_circ_empty(xmit) || up->uart_dma.tx_dma_state)
-+			return;
-+		spin_lock(&(up->uart_dma.tx_lock));
-+		up->uart_dma.tx_dma_state = 1;
-+		spin_unlock(&(up->uart_dma.tx_lock));
-+
-+		up->uart_dma.tx_buf_size =
-uart_circ_chars_pending(xmit);
-+		/* It is a circular buffer. See if the buffer has
-wounded back.
-+		 * If yes it will have to be transferred in two separate
-dma
-+		 * transfers */
-+		if (start + up->uart_dma.tx_buf_size >=
-+				up->uart_dma.tx_buf_dma_phys +
-UART_XMIT_SIZE)
-+			up->uart_dma.tx_buf_size =
-+				(up->uart_dma.tx_buf_dma_phys +
-+				UART_XMIT_SIZE) - start;
-+
-+		if (up->uart_dma.tx_dma_channel == 0xFF)
-+			omap_request_dma(uart_dma_tx[up->pdev->id-1],
-+					"UART Tx DMA",
-+					(void *)uart_tx_dma_callback,
-up,
-+					&(up->uart_dma.tx_dma_channel));
-+		omap_set_dma_dest_params(up->uart_dma.tx_dma_channel, 0,
-+					 OMAP_DMA_AMODE_CONSTANT,
-+					 UART_BASE(up->pdev->id - 1), 0,
-0);
-+		omap_set_dma_src_params(up->uart_dma.tx_dma_channel, 0,
-+					OMAP_DMA_AMODE_POST_INC, start,
-0, 0);
-+
-+
-omap_set_dma_transfer_params(up->uart_dma.tx_dma_channel,
-+					     OMAP_DMA_DATA_TYPE_S8,
-+					     up->uart_dma.tx_buf_size,
-1,
-+					     OMAP_DMA_SYNC_ELEMENT,
-+
-uart_dma_tx[(up->pdev->id)-1], 0);
-+
-+		omap_start_dma(up->uart_dma.tx_dma_channel);
-+
-+	} else if (!(up->ier & UART_IER_THRI)) {
-+		up->ier |= UART_IER_THRI;
-+		serial_out(up, UART_IER, up->ier);
-+	}
-+}
-+
-+static unsigned int check_modem_status(struct uart_omap_port *up) {
-+	int status;
-+	status = serial_in(up, UART_MSR);
-+
-+	status |= up->msr_saved_flags;
-+	up->msr_saved_flags = 0;
-+
-+	if ((status & UART_MSR_ANY_DELTA) == 0)
-+		return status;
-+	if (status & UART_MSR_ANY_DELTA && up->ier & UART_IER_MSI &&
-+	    up->port.info != NULL) {
-+		if (status & UART_MSR_TERI)
-+			up->port.icount.rng++;
-+		if (status & UART_MSR_DDSR)
-+			up->port.icount.dsr++;
-+		if (status & UART_MSR_DDCD)
-+			uart_handle_dcd_change
-+				(&up->port, status & UART_MSR_DCD);
-+		if (status & UART_MSR_DCTS)
-+			uart_handle_cts_change
-+				(&up->port, status & UART_MSR_CTS);
-+		wake_up_interruptible(&up->port.info->delta_msr_wait);
-+	}
-+
-+	return status;
-+}
-+
-+/*
-+ * This handles the interrupt from one port.
-+ */
-+static inline irqreturn_t serial_omap_irq(int irq, void *dev_id) {
-+	struct uart_omap_port *up = dev_id;
-+	unsigned int iir, lsr;
-+
-+	iir = serial_in(up, UART_IIR);
-+	if (iir & UART_IIR_NO_INT)
-+		return IRQ_NONE;
-+	lsr = serial_in(up, UART_LSR);
-+	if ((iir & 0x4) && up->use_dma) {
-+		up->ier &= ~UART_IER_RDI;
-+		serial_out(up, UART_IER, up->ier);
-+		serial_omap_start_rxdma(up);
-+	} else if (lsr & UART_LSR_DR)
-+		receive_chars(up, &lsr);
-+	check_modem_status(up);
-+	if ((lsr & UART_LSR_THRE) && (iir & 0x2))
-+		transmit_chars(up);
-+	up_activity = jiffies;
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static unsigned int serial_omap_tx_empty(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	unsigned long flags;
-+	unsigned int ret;
-+
-+	DPRINTK("serial_omap_tx_empty+%d\n", up->pdev->id);
-+	spin_lock_irqsave(&up->port.lock, flags);
-+	ret = serial_in(up, UART_LSR) & UART_LSR_TEMT ? TIOCSER_TEMT :
-0;
-+	spin_unlock_irqrestore(&up->port.lock, flags);
-+
-+	return ret;
-+}
-+
-+static unsigned int serial_omap_get_mctrl(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	unsigned char status;
-+	unsigned int ret;
-+
-+	status = check_modem_status(up);
-+	DPRINTK("serial_omap_get_mctrl+%d\n", up->pdev->id);
-+
-+	ret = 0;
-+	if (status & UART_MSR_DCD)
-+		ret |= TIOCM_CAR;
-+	if (status & UART_MSR_RI)
-+		ret |= TIOCM_RNG;
-+	if (status & UART_MSR_DSR)
-+		ret |= TIOCM_DSR;
-+	if (status & UART_MSR_CTS)
-+		ret |= TIOCM_CTS;
-+	return ret;
-+}
-+
-+static void serial_omap_set_mctrl(struct uart_port *port, unsigned int 
-+mctrl) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	unsigned char mcr = 0;
-+
-+	DPRINTK("serial_omap_set_mctrl+%d\n", up->pdev->id);
-+	if (mctrl & TIOCM_RTS)
-+		mcr |= UART_MCR_RTS;
-+	if (mctrl & TIOCM_DTR)
-+		mcr |= UART_MCR_DTR;
-+	if (mctrl & TIOCM_OUT1)
-+		mcr |= UART_MCR_OUT1;
-+	if (mctrl & TIOCM_OUT2)
-+		mcr |= UART_MCR_OUT2;
-+	if (mctrl & TIOCM_LOOP)
-+		mcr |= UART_MCR_LOOP;
-+
-+	mcr |= up->mcr;
-+	serial_out(up, UART_MCR, mcr);
-+}
-+
-+static void serial_omap_break_ctl(struct uart_port *port, int 
-+break_state) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	unsigned long flags;
-+
-+	DPRINTK("serial_omap_break_ctl+%d\n", up->pdev->id);
-+	spin_lock_irqsave(&up->port.lock, flags);
-+	if (break_state == -1)
-+		up->lcr |= UART_LCR_SBC;
-+	else
-+		up->lcr &= ~UART_LCR_SBC;
-+	serial_out(up, UART_LCR, up->lcr);
-+	spin_unlock_irqrestore(&up->port.lock, flags); }
-+
-+static int serial_omap_startup(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	unsigned long flags;
-+	int irq_flags = 0;
-+	int retval;
-+
-+	/* Zoom2 has GPIO_102 connected to Serial device:
-+	 * Active High
-+	 */
-+	if (up->port.flags & UPF_IOREMAP)
-+		irq_flags |= IRQF_TRIGGER_HIGH;
-+
-+	if (up->port.flags & UPF_SHARE_IRQ)
-+		irq_flags |= IRQF_SHARED;
-+
-+	/*
-+	 * Allocate the IRQ
-+	 */
-+	retval = request_irq(up->port.irq, serial_omap_irq, irq_flags,
-+				up->name, up);
-+	if (retval)
-+		return retval;
-+	DPRINTK("serial_omap_startup+%d\n", up->pdev->id);
-+	/*
-+	 * Stop the baud clock and disable the UART. UART will be
-enabled
-+	 * back in set_termios. This is essential for DMA mode
-operations.
-+	 */
-+	serial_out(up, UART_LCR, UART_LCR_DLAB);
-+	serial_out(up, UART_DLL, 0);
-+	serial_out(up, UART_DLM, 0);
-+	serial_out(up, UART_LCR, 0);
-+	serial_out(up, UART_OMAP_MDR1, OMAP_MDR1_DISABLE);
-+
-+	/*
-+	 * Clear the FIFO buffers and disable them.
-+	 * (they will be reenabled in set_termios())
-+	 */
-+	serial_omap_clear_fifos(up);
-+	serial_out(up, UART_SCR, 0x00);
-+	/* For Hardware flow control */
-+	serial_out(up, UART_MCR, 0x2);
-+
-+	/*
-+	 * Clear the interrupt registers.
-+	 */
-+	(void) serial_in(up, UART_LSR);
-+	(void) serial_in(up, UART_RX);
-+	(void) serial_in(up, UART_IIR);
-+	(void) serial_in(up, UART_MSR);
-+	/*
-+	 * Now, initialize the UART
-+	 */
-+	serial_out(up, UART_LCR, UART_LCR_WLEN8);
-+	spin_lock_irqsave(&up->port.lock, flags);
-+	if (up->port.flags & UPF_FOURPORT) {
-+		if (!is_real_interrupt(up->port.irq))
-+			up->port.mctrl |= TIOCM_OUT1;
-+	} else {
-+		/*
-+		 * Most PC uarts need OUT2 raised to enable interrupts.
-+		 */
-+		if (is_real_interrupt(up->port.irq))
-+			up->port.mctrl |= TIOCM_OUT2;
-+	}
-+	serial_omap_set_mctrl(&up->port, up->port.mctrl);
-+	spin_unlock_irqrestore(&up->port.lock, flags);
-+
-+	up->msr_saved_flags = 0;
-+
-+	if (up->port.flags & UPF_FOURPORT) {
-+		unsigned int icp;
-+		/*
-+		 * Enable interrupts on the AST Fourport board
-+		 */
-+		icp = (up->port.iobase & 0xfe0) | 0x01f;
-+		outb_p(0x80, icp);
-+		(void) inb_p(icp);
-+	}
-+	if (up->use_dma) {
-+		if (!up->is_buf_dma_alloced) {
-+			free_page((unsigned
-long)up->port.info->xmit.buf);
-+			up->port.info->xmit.buf = NULL;
-+			up->port.info->xmit.buf =
-dma_alloc_coherent(NULL,
-+				UART_XMIT_SIZE,
-+				(dma_addr_t
-*)&(up->uart_dma.tx_buf_dma_phys),
-+				0);
-+			up->is_buf_dma_alloced = 1;
-+		}
-+		init_timer(&(up->uart_dma.rx_timer));
-+		up->uart_dma.rx_timer.function = serial_omap_rx_timeout;
-+		up->uart_dma.rx_timer.data = up->pdev->id;
-+		/* Currently the buffer size is 4KB. Can increase it
-later*/
-+		up->uart_dma.rx_buf = dma_alloc_coherent(NULL,
-+			up->uart_dma.rx_buf_size,
-+			(dma_addr_t *)&(up->uart_dma.rx_buf_dma_phys),
-0);
-+	}
-+		/*
-+		* Finally, enable interrupts.  Note: Modem status
-interrupts
-+		* are set via set_termios(), which will be occurring
-imminently
-+		* anyway, so we don't enable them here.
-+		*/
-+		up->ier = UART_IER_RLSI | UART_IER_RDI;
-+		serial_out(up, UART_IER, up->ier);
-+
-+	up_activity = jiffies;
-+	return 0;
-+}
-+
-+static void serial_omap_shutdown(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	unsigned long flags;
-+
-+	DPRINTK("serial_omap_shutdown+%d\n", up->pdev->id);
-+	/*
-+	 * Disable interrupts from this port
-+	 */
-+	up->ier = 0;
-+	serial_out(up, UART_IER, 0);
-+
-+	spin_lock_irqsave(&up->port.lock, flags);
-+	if (up->port.flags & UPF_FOURPORT) {
-+		/* reset interrupts on the AST Fourport board */
-+		inb((up->port.iobase & 0xfe0) | 0x1f);
-+		up->port.mctrl |= TIOCM_OUT1;
-+	} else
-+		up->port.mctrl &= ~TIOCM_OUT2;
-+	serial_omap_set_mctrl(&up->port, up->port.mctrl);
-+	spin_unlock_irqrestore(&up->port.lock, flags);
-+
-+	/*
-+	 * Disable break condition and FIFOs
-+	 */
-+	serial_out(up, UART_LCR, serial_in(up, UART_LCR) &
-~UART_LCR_SBC);
-+	serial_omap_clear_fifos(up);
-+
-+	/*
-+	 * Read data port to reset things, and then free the irq
-+	 */
-+	(void) serial_in(up, UART_RX);
-+	if (up->use_dma) {
-+		int tmp;
-+		if (up->is_buf_dma_alloced) {
-+			dma_free_coherent(up->port.dev,
-+				  UART_XMIT_SIZE,
-+				  up->port.info->xmit.buf,
-+				  up->uart_dma.tx_buf_dma_phys);
-+			up->port.info->xmit.buf = NULL;
-+			up->is_buf_dma_alloced = 0;
-+		}
-+		serial_omap_stop_rx(port);
-+		dma_free_coherent(up->port.dev,
-+				  up->uart_dma.rx_buf_size,
-+				  up->uart_dma.rx_buf,
-+				  up->uart_dma.rx_buf_dma_phys);
-+		up->uart_dma.rx_buf = NULL;
-+		tmp = serial_in(up, UART_OMAP_SYSC) & 0x7;
-+		serial_out(up, UART_OMAP_SYSC, tmp); /* force-idle */
-+	}
-+
-+	free_irq(up->port.irq, up);
-+}
-+
-+static void
-+serial_omap_set_termios(struct uart_port *port, struct ktermios
-*termios,
-+			struct ktermios *old)
-+{
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	unsigned char cval;
-+	unsigned char efr = 0;
-+	unsigned long flags;
-+	unsigned int baud, quot;
-+
-+	serial_out(up, UART_LCR, UART_LCR_DLAB);
-+	serial_out(up, UART_DLL, 0);
-+	serial_out(up, UART_DLM, 0);
-+	serial_out(up, UART_LCR, 0);
-+	serial_out(up, UART_OMAP_MDR1, OMAP_MDR1_DISABLE);
-+	switch (termios->c_cflag & CSIZE) {
-+	case CS5:
-+		cval = UART_LCR_WLEN5;
-+		break;
-+	case CS6:
-+		cval = UART_LCR_WLEN6;
-+		break;
-+	case CS7:
-+		cval = UART_LCR_WLEN7;
-+		break;
-+	default:
-+	case CS8:
-+		cval = UART_LCR_WLEN8;
-+		break;
-+	}
-+
-+	if (termios->c_cflag & CSTOPB)
-+		cval |= UART_LCR_STOP;
-+	if (termios->c_cflag & PARENB)
-+		cval |= UART_LCR_PARITY;
-+	if (!(termios->c_cflag & PARODD))
-+		cval |= UART_LCR_EPAR;
-+
-+	/*
-+	 * Ask the core to calculate the divisor for us.
-+	 */
-+
-+	baud = uart_get_baud_rate(port, termios, old, 0,
-port->uartclk/13);
-+	quot = serial_omap_get_divisor(port, baud);
-+
-+	if (up->use_dma)
-+		fcr[up->pdev->id - 1] = UART_FCR_ENABLE_FIFO
-+					| 0x1 << 6 | 0x1 << 4
-+					| UART_FCR_DMA_SELECT;
-+	else
-+		fcr[up->pdev->id - 1] = UART_FCR_ENABLE_FIFO
-+					| 0x1 << 6 | 0x1 << 4;
-+
-+	/*
-+	 * Ok, we're now changing the port state.  Do it with
-+	 * interrupts disabled.
-+	 */
-+	spin_lock_irqsave(&up->port.lock, flags);
-+
-+	/*
-+	 * Update the per-port timeout.
-+	 */
-+	uart_update_timeout(port, termios->c_cflag, baud);
-+
-+	up->port.read_status_mask = UART_LSR_OE | UART_LSR_THRE |
-UART_LSR_DR;
-+	if (termios->c_iflag & INPCK)
-+		up->port.read_status_mask |= UART_LSR_FE | UART_LSR_PE;
-+	if (termios->c_iflag & (BRKINT | PARMRK))
-+		up->port.read_status_mask |= UART_LSR_BI;
-+
-+	/*
-+	 * Characters to ignore
-+	 */
-+	up->port.ignore_status_mask = 0;
-+	if (termios->c_iflag & IGNPAR)
-+		up->port.ignore_status_mask |= UART_LSR_PE |
-UART_LSR_FE;
-+	if (termios->c_iflag & IGNBRK) {
-+		up->port.ignore_status_mask |= UART_LSR_BI;
-+		/*
-+		 * If we're ignoring parity and break indicators,
-+		 * ignore overruns too (for real raw support).
-+		 */
-+		if (termios->c_iflag & IGNPAR)
-+			up->port.ignore_status_mask |= UART_LSR_OE;
-+	}
-+
-+	/*
-+	 * ignore all characters if CREAD is not set
-+	 */
-+	if ((termios->c_cflag & CREAD) == 0)
-+		up->port.ignore_status_mask |= UART_LSR_DR;
-+
-+	/*
-+	 * CTS flow control flag and modem status interrupts
-+	 */
-+	up->ier &= ~UART_IER_MSI;
-+	if (UART_ENABLE_MS(&up->port, termios->c_cflag))
-+		up->ier |= UART_IER_MSI;
-+	serial_out(up, UART_IER, up->ier);
-+
-+	if (termios->c_cflag & CRTSCTS)
-+		efr |= (UART_EFR_CTS | UART_EFR_RTS);
-+
-+	serial_out(up, UART_LCR, cval | UART_LCR_DLAB);	/* set DLAB */
-+	serial_out(up, UART_DLL, quot & 0xff);		/* LS of divisor
-*/
-+	serial_out(up, UART_DLM, quot >> 8);		/* MS of divisor
-*/
-+
-+	serial_out(up, UART_LCR, cval);		/* reset DLAB */
-+	up->lcr = cval;				/* Save LCR */
-+	if (up->use_dma)
-+		serial_out(up, UART_OMAP_SCR  , ((1 << 6) | (1 << 7)));
-+
-+	serial_out(up, UART_LCR, 0xbf);		/* Access EFR */
-+	serial_out(up, UART_EFR, UART_EFR_ECB);
-+	serial_out(up, UART_LCR, 0x0);		/* Access FCR */
-+	serial_out(up, UART_FCR, fcr[up->pdev->id - 1]);
-+	serial_out(up, UART_LCR, 0xbf);		/* Access EFR */
-+	serial_out(up, UART_EFR, efr);
-+	serial_out(up, UART_LCR, cval);		/* Restore LCR */
-+
-+	serial_omap_set_mctrl(&up->port, up->port.mctrl);
-+	/*
-+	 * Clear all the status registers and RX register before
-+	 * enabling UART
-+	 */
-+	(void) serial_in(up, UART_LSR);
-+	(void) serial_in(up, UART_RX);
-+	(void) serial_in(up, UART_IIR);
-+	(void) serial_in(up, UART_MSR);
-+
-+	if (baud > 230400 && baud != 3000000)
-+		serial_out(up, UART_OMAP_MDR1, OMAP_MDR1_MODE13X);
-+	else if (baud == 3000000)
-+		serial_out(up, UART_OMAP_MDR1, OMAP_MDR1_MODE16X);
-+	else
-+		serial_out(up, UART_OMAP_MDR1, OMAP_MDR1_MODE16X);
-+	spin_unlock_irqrestore(&up->port.lock, flags);
-+
-+	DPRINTK("serial_omap_set_termios+%d\n", up->pdev->id); #ifdef
-DEBUG
-+	serial_omap_display_reg(port);
-+#endif
-+}
-+
-+static void
-+serial_omap_pm(struct uart_port *port, unsigned int state,
-+	       unsigned int oldstate)
-+{
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	unsigned char efr;
-+	DPRINTK("serial_omap_pm+%d\n", up->pdev->id);
-+	efr = serial_in(up, UART_EFR);
-+	serial_out(up, UART_LCR, 0xBF);
-+	serial_out(up, UART_EFR, efr | UART_EFR_ECB);
-+	serial_out(up, UART_LCR, 0);
-+
-+	serial_out(up, UART_IER, (state != 0) ? UART_IERX_SLEEP : 0);
-+	serial_out(up, UART_LCR, 0xBF);
-+	serial_out(up, UART_EFR, efr);
-+	serial_out(up, UART_LCR, 0);
-+}
-+
-+static void serial_omap_release_port(struct uart_port *port) {
-+	DPRINTK("serial_omap_release_port+\n");
-+}
-+
-+static int serial_omap_request_port(struct uart_port *port) {
-+	DPRINTK("serial_omap_request_port+\n");
-+	return 0;
-+}
-+
-+static void serial_omap_config_port(struct uart_port *port, int flags) 
-+{
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+
-+	DPRINTK("serial_omap_config_port+%d\n", up->pdev->id);
-+	up->port.type = PORT_OMAP;
-+}
-+
-+static int
-+serial_omap_verify_port(struct uart_port *port, struct serial_struct 
-+*ser) {
-+	/* we don't want the core code to modify any port params */
-+	DPRINTK("serial_omap_verify_port+\n");
-+	return -EINVAL;
-+}
-+
-+static const char *
-+serial_omap_type(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+
-+	DPRINTK("serial_omap_type+%d\n", up->pdev->id);
-+	return up->name;
-+}
-+
-+#ifdef CONFIG_SERIAL_OMAP_CONSOLE
-+
-+static struct uart_omap_port *serial_omap_console_ports[4];
-+
-+static struct uart_driver serial_omap_reg;
-+
-+#define BOTH_EMPTY (UART_LSR_TEMT | UART_LSR_THRE)
-+
-+/*
-+ *	Wait for transmitter & holding register to empty
-+ */
-+static inline void wait_for_xmitr(struct uart_omap_port *up) {
-+	unsigned int status, tmout = 10000;
-+
-+	/* Wait up to 10ms for the character(s) to be sent. */
-+	do {
-+		status = serial_in(up, UART_LSR);
-+
-+		if (status & UART_LSR_BI)
-+			up->lsr_break_flag = UART_LSR_BI;
-+
-+		if (--tmout == 0)
-+			break;
-+		udelay(1);
-+	} while ((status & BOTH_EMPTY) != BOTH_EMPTY);
-+
-+	/* Wait up to 1s for flow control if necessary */
-+	if (up->port.flags & UPF_CONS_FLOW) {
-+		tmout = 1000000;
-+		for (tmout = 1000000; tmout; tmout--) {
-+			unsigned int msr = serial_in(up, UART_MSR);
-+			up->msr_saved_flags |= msr & MSR_SAVE_FLAGS;
-+			if (msr & UART_MSR_CTS)
-+				break;
-+			udelay(1);
-+		}
-+	}
-+}
-+
-+static void serial_omap_console_putchar(struct uart_port *port, int ch)
-
-+{
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+
-+	wait_for_xmitr(up);
-+	serial_out(up, UART_TX, ch);
-+}
-+
-+/*
-+ * Print a string to the serial port trying not to disturb
-+ * any possible real use of the port...
-+ *
-+ *	The console_lock must be held when we get here.
-+ */
-+static void
-+serial_omap_console_write(struct console *co, const char *s,
-+		unsigned int count)
-+{
-+	struct uart_omap_port *up =
-serial_omap_console_ports[co->index];
-+	unsigned int ier;
-+
-+	/*
-+	 *	First save the IER then disable the interrupts
-+	 */
-+	ier = serial_in(up, UART_IER);
-+	serial_out(up, UART_IER, 0);
-+
-+	uart_console_write(&up->port, s, count,
-serial_omap_console_putchar);
-+
-+	/*
-+	 *	Finally, wait for transmitter to become empty
-+	 *	and restore the IER
-+	 */
-+	wait_for_xmitr(up);
-+	serial_out(up, UART_IER, ier);
-+	/*
-+	 *	The receive handling will happen properly because the
-+	 *	receive ready bit will still be set; it is not cleared
-+	 *	on read.  However, modem control will not, we must
-+	 *	call it if we have saved something in the saved flags
-+	 *	while processing with interrupts off.
-+	 */
-+	if (up->msr_saved_flags)
-+		check_modem_status(up);
-+}
-+
-+static int __init
-+serial_omap_console_setup(struct console *co, char *options) {
-+	struct uart_omap_port *up;
-+	int baud = 9600;
-+	int bits = 8;
-+	int parity = 'n';
-+	int flow = 'n';
-+	int r;
-+
-+	if (serial_omap_console_ports[co->index] == NULL)
-+		return -ENODEV;
-+	up = serial_omap_console_ports[co->index];
-+
-+	if (options)
-+		uart_parse_options(options, &baud, &parity, &bits,
-&flow);
-+
-+	r = uart_set_options(&up->port, co, baud, parity, bits, flow);
-+
-+	return r;
-+}
-+
-+static struct console serial_omap_console = {
-+	.name		= "ttyS",
-+	.write		= serial_omap_console_write,
-+	.device		= uart_console_device,
-+	.setup		= serial_omap_console_setup,
-+	.flags		= CON_PRINTBUFFER,
-+	.index		= -1,
-+	.data		= &serial_omap_reg,
-+};
-+
-+static void serial_omap_add_console_port(struct uart_omap_port *up) {
-+	serial_omap_console_ports[up->pdev->id - 1] = up; }
-+
-+#define OMAP_CONSOLE	(&serial_omap_console)
-+
-+#else
-+
-+#define OMAP_CONSOLE	NULL
-+
-+static inline void serial_omap_add_console_port(struct uart_omap_port 
-+*up) {}
-+
-+#endif
-+
-+struct uart_ops serial_omap_pops = {
-+	.tx_empty	= serial_omap_tx_empty,
-+	.set_mctrl	= serial_omap_set_mctrl,
-+	.get_mctrl	= serial_omap_get_mctrl,
-+	.stop_tx	= serial_omap_stop_tx,
-+	.start_tx	= serial_omap_start_tx,
-+	.stop_rx	= serial_omap_stop_rx,
-+	.enable_ms	= serial_omap_enable_ms,
-+	.break_ctl	= serial_omap_break_ctl,
-+	.startup	= serial_omap_startup,
-+	.shutdown	= serial_omap_shutdown,
-+	.set_termios	= serial_omap_set_termios,
-+	.pm		= serial_omap_pm,
-+	.type		= serial_omap_type,
-+	.release_port	= serial_omap_release_port,
-+	.request_port	= serial_omap_request_port,
-+	.config_port	= serial_omap_config_port,
-+	.verify_port	= serial_omap_verify_port,
-+};
-+
-+static struct uart_driver serial_omap_reg = {
-+	.owner		= THIS_MODULE,
-+	.driver_name	= "OMAP-SERIAL",
-+	.dev_name	= "ttyS",
-+	.major		= TTY_MAJOR,
-+	.minor		= 64,
-+	.nr		= 4,
-+	.cons		= OMAP_CONSOLE,
-+};
-+
-+static int serial_omap_remove(struct platform_device *dev);
-+
-+static
-+int serial_omap_suspend(struct platform_device *pdev, pm_message_t 
-+state) {
-+	struct uart_omap_port *up = platform_get_drvdata(pdev);
-+	unsigned int tmp;
-+
-+	if (up)
-+		uart_suspend_port(&serial_omap_reg, &up->port);
-+	if (up->use_dma) {
-+		/*
-+		 * Silicon Errata 2.15 workaround.
-+		 * UART Module has to be put in force idle if it is
-+		 * configured in DMA mode and when there is no activity
-+		 * expected.
-+		 */
-+		tmp = (serial_in(up, UART_OMAP_SYSC) & 0x7);
-+		serial_out(up, UART_OMAP_SYSC, tmp); /* force-idle */
-+	}
-+	return 0;
-+}
-+
-+static int serial_omap_resume(struct platform_device *dev) {
-+	struct uart_omap_port *up = platform_get_drvdata(dev);
-+	if (up)
-+		uart_resume_port(&serial_omap_reg, &up->port);
-+
-+	return 0;
-+}
-+
-+static void serial_omap_rx_timeout(unsigned long uart_no) {
-+	struct uart_omap_port *up = ui[uart_no - 1];
-+	unsigned int curr_dma_pos;
-+	curr_dma_pos = omap_readl(OMAP34XX_DMA4_BASE +
-+
-OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
-+	if ((curr_dma_pos == up->uart_dma.prev_rx_dma_pos) ||
-+			     (curr_dma_pos == 0)) {
-+		if (jiffies_to_msecs(jiffies - up_activity) < 10000) {
-+			mod_timer(&up->uart_dma.rx_timer, jiffies +
-+
-usecs_to_jiffies(up->uart_dma.rx_timeout));
-+		} else {
-+			serial_omap_stop_rxdma(up);
-+			up->ier |= UART_IER_RDI;
-+			serial_out(up, UART_IER, up->ier);
-+		}
-+
-+		return;
-+	} else {
-+		unsigned int curr_transmitted_size = curr_dma_pos -
-+
-up->uart_dma.prev_rx_dma_pos;
-+		up->port.icount.rx += curr_transmitted_size;
-+		tty_insert_flip_string(up->port.info->port.tty,
-+				up->uart_dma.rx_buf +
-+				(up->uart_dma.prev_rx_dma_pos -
-+				up->uart_dma.rx_buf_dma_phys),
-+				curr_transmitted_size);
-+		tty_flip_buffer_push(up->port.info->port.tty);
-+		up->uart_dma.prev_rx_dma_pos = curr_dma_pos;
-+		if (up->uart_dma.rx_buf_size +
-+				up->uart_dma.rx_buf_dma_phys ==
-curr_dma_pos)
-+			serial_omap_start_rxdma(up);
-+		else
-+			mod_timer(&up->uart_dma.rx_timer, jiffies +
-+
-usecs_to_jiffies(up->uart_dma.rx_timeout));
-+		up_activity = jiffies;
-+
-+	}
-+}
-+
-+static void uart_rx_dma_callback(int lch, u16 ch_status, void *data) {
-+	return;
-+}
-+
-+static void serial_omap_start_rxdma(struct uart_omap_port *up) { #ifdef
-
-+CONFIG_PM
-+	/* Disallow OCP bus idle. UART TX irqs are not seen during
-+	 * bus idle. Alternative is to set kernel timer at fifo
-+	 * drain rate.
-+	 */
-+	unsigned int tmp;
-+	tmp = (serial_in(up, UART_OMAP_SYSC) & 0x7) | (1 << 3);
-+	serial_out(up, UART_OMAP_SYSC, tmp); /* no-idle */ #endif
-+	if (up->uart_dma.rx_dma_channel == 0xFF) {
-+		omap_request_dma(uart_dma_rx[up->pdev->id-1], "UART Rx
-DMA",
-+			(void *)uart_rx_dma_callback, up,
-+				&(up->uart_dma.rx_dma_channel));
-+
-+		omap_set_dma_src_params(up->uart_dma.rx_dma_channel, 0,
-+					OMAP_DMA_AMODE_CONSTANT,
-+					UART_BASE(up->pdev->id - 1), 0,
-0);
-+		omap_set_dma_dest_params(up->uart_dma.rx_dma_channel, 0,
-+					OMAP_DMA_AMODE_POST_INC,
-+					up->uart_dma.rx_buf_dma_phys, 0,
-0);
-+
-omap_set_dma_transfer_params(up->uart_dma.rx_dma_channel,
-+					OMAP_DMA_DATA_TYPE_S8,
-+					up->uart_dma.rx_buf_size, 1,
-+					OMAP_DMA_SYNC_ELEMENT,
-+					uart_dma_rx[up->pdev->id-1], 0);
-+	}
-+	up->uart_dma.prev_rx_dma_pos = up->uart_dma.rx_buf_dma_phys;
-+	omap_writel(0, OMAP34XX_DMA4_BASE
-+			+ OMAP_DMA4_CDAC(up->uart_dma.rx_dma_channel));
-+	omap_start_dma(up->uart_dma.rx_dma_channel);
-+	mod_timer(&up->uart_dma.rx_timer, jiffies +
-+
-usecs_to_jiffies(up->uart_dma.rx_timeout));
-+	up->uart_dma.rx_dma_state = 1;
-+}
-+
-+static void serial_omap_continue_tx(struct uart_omap_port *up) {
-+	struct circ_buf *xmit = &up->port.info->xmit;
-+	int start = up->uart_dma.tx_buf_dma_phys
-+			+ (xmit->tail & (UART_XMIT_SIZE - 1));
-+	if (uart_circ_empty(xmit))
-+		return;
-+
-+	up->uart_dma.tx_buf_size = uart_circ_chars_pending(xmit);
-+	/* It is a circular buffer. See if the buffer has wounded back.
-+	* If yes it will have to be transferred in two separate dma
-+	* transfers
-+	*/
-+	if (start + up->uart_dma.tx_buf_size >=
-+			up->uart_dma.tx_buf_dma_phys + UART_XMIT_SIZE)
-+		up->uart_dma.tx_buf_size =
-+			(up->uart_dma.tx_buf_dma_phys + UART_XMIT_SIZE)
-- start;
-+	omap_set_dma_dest_params(up->uart_dma.tx_dma_channel, 0,
-+				 OMAP_DMA_AMODE_CONSTANT,
-+				 UART_BASE(up->pdev->id - 1), 0, 0);
-+	omap_set_dma_src_params(up->uart_dma.tx_dma_channel, 0,
-+		OMAP_DMA_AMODE_POST_INC, start, 0, 0);
-+
-+	omap_set_dma_transfer_params(up->uart_dma.tx_dma_channel,
-+				     OMAP_DMA_DATA_TYPE_S8,
-+				     up->uart_dma.tx_buf_size, 1,
-+				     OMAP_DMA_SYNC_ELEMENT,
-+				     uart_dma_tx[(up->pdev->id)-1], 0);
-+
-+	omap_start_dma(up->uart_dma.tx_dma_channel);
-+}
-+
-+static void uart_tx_dma_callback(int lch, u16 ch_status, void *data) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)data;
-+	struct circ_buf *xmit = &up->port.info->xmit;
-+	xmit->tail = (xmit->tail + up->uart_dma.tx_buf_size) & \
-+			(UART_XMIT_SIZE - 1);
-+	up->port.icount.tx += up->uart_dma.tx_buf_size;
-+
-+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
-+		uart_write_wakeup(&up->port);
-+
-+	if (uart_circ_empty(xmit)) {
-+
-+		spin_lock(&(up->uart_dma.tx_lock));
-+		serial_omap_stop_tx(&up->port);
-+		up->uart_dma.tx_dma_state = 0;
-+		spin_unlock(&(up->uart_dma.tx_lock));
-+	} else {
-+		omap_stop_dma(up->uart_dma.tx_dma_channel);
-+		serial_omap_continue_tx(up);
-+	}
-+	up_activity = jiffies;
-+	return;
-+}
-+
-+static int serial_omap_probe(struct platform_device *pdev) {
-+	struct uart_omap_port	*up;
-+	struct resource		*mem, *irq;
-+	int ret = -ENOSPC;
-+	char str[7];
-+
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!mem) {
-+		dev_err(&pdev->dev, "no mem resource?\n");
-+		return -ENODEV;
-+	}
-+	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-+	if (!irq) {
-+		dev_err(&pdev->dev, "no irq resource?\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = (int) request_mem_region(mem->start, (mem->end -
-mem->start) + 1,
-+				     pdev->dev.driver->name);
-+	if (!ret) {
-+		dev_err(&pdev->dev, "memory region already claimed\n");
-+		return -EBUSY;
-+	}
-+	up = kzalloc(sizeof(*up), GFP_KERNEL);
-+	if (up == NULL) {
-+		ret = -ENOMEM;
-+		goto do_release_region;
-+	}
-+	sprintf(up->name, "OMAP UART%d", pdev->id);
-+
-+	up->pdev = pdev;
-+	up->port.dev = &pdev->dev;
-+	up->port.type = PORT_OMAP;
-+	up->port.iotype = UPIO_MEM;
-+	up->port.mapbase = mem->start;
-+	up->port.irq = irq->start;
-+	up->port.fifosize = 64;
-+	up->port.ops = &serial_omap_pops;
-+	up->port.line = pdev->id - 1;
-+	if ((pdev->id-1) == QUART) {
-+		up->port.membase = ioremap_nocache(mem->start, 0x16 <<
-1);
-+		up->port.flags = UPF_BOOT_AUTOCONF | UPF_IOREMAP;
-+		up->port.uartclk = QUART_CLK;
-+		up->port.regshift = 1;
-+	} else {
-+		up->port.membase = (void *) IO_ADDRESS(mem->start);
-+		up->port.flags = UPF_BOOT_AUTOCONF;
-+		up->port.uartclk = UART_CLK;
-+		up->port.regshift = 2;
-+	}
-+#ifdef CONFIG_PM
-+		up->port.flags |= UPF_SHARE_IRQ;
-+#endif
-+	if ((pdev->id-1) == UART1) {
-+#ifdef CONFIG_SERIAL_OMAP_DMA_UART1
-+		up->use_dma = 1;
-+		up->uart_dma.rx_buf_size =
-+			CONFIG_SERIAL_OMAP_UART1_RXDMA_BUFSIZE;
-+		up->uart_dma.rx_timeout =
-+			CONFIG_SERIAL_OMAP_UART1_RXDMA_TIMEOUT;
-+#endif
-+	} else if ((pdev->id-1) == UART2) {
-+#ifdef CONFIG_SERIAL_OMAP_DMA_UART2
-+		up->use_dma = 1;
-+		up->uart_dma.rx_buf_size =
-+			CONFIG_SERIAL_OMAP_UART2_RXDMA_BUFSIZE;
-+		up->uart_dma.rx_timeout =
-+			CONFIG_SERIAL_OMAP_UART2_RXDMA_TIMEOUT;
-+#endif
-+	} else if ((pdev->id-1) == UART3) {
-+#ifdef CONFIG_SERIAL_OMAP_DMA_UART3
-+		up->use_dma = 1;
-+		up->uart_dma.rx_buf_size =
-+			CONFIG_SERIAL_OMAP_UART3_RXDMA_BUFSIZE;
-+		up->uart_dma.rx_timeout =
-+			CONFIG_SERIAL_OMAP_UART3_RXDMA_TIMEOUT;
-+#endif
-+	}
-+	if (up->use_dma) {
-+		spin_lock_init(&(up->uart_dma.tx_lock));
-+		spin_lock_init(&(up->uart_dma.rx_lock));
-+		up->uart_dma.tx_dma_channel = 0xFF;
-+		up->uart_dma.rx_dma_channel = 0xFF;
-+	}
-+	if (console_detect(str)) {
-+		pr_err("\n %s: Invalid console paramter...\n",
-__func__);
-+		pr_err("\n %s: UART Driver Init Failed!\n", __func__);
-+		return -EPERM;
-+	}
-+	fcr[pdev->id - 1] = 0;
-+	ui[pdev->id - 1] = up;
-+	serial_omap_add_console_port(up);
-+
-+	ret = uart_add_one_port(&serial_omap_reg, &up->port);
-+	if (ret != 0)
-+		goto do_release_region;
-+
-+	platform_set_drvdata(pdev, up);
-+	return 0;
-+do_release_region:
-+	release_mem_region(mem->start, (mem->end - mem->start) + 1);
-+	return ret;
-+}
-+
-+static int serial_omap_remove(struct platform_device *dev) {
-+	struct uart_omap_port *up = platform_get_drvdata(dev);
-+	platform_set_drvdata(dev, NULL);
-+	if (up) {
-+		uart_remove_one_port(&serial_omap_reg, &up->port);
-+		kfree(up);
-+	}
-+	return 0;
-+}
-+
-+static struct platform_driver serial_omap_driver = {
-+	.probe          = serial_omap_probe,
-+	.remove         = serial_omap_remove,
-+
-+	.suspend	= serial_omap_suspend,
-+	.resume		= serial_omap_resume,
-+	.driver		= {
-+		.name	= "omap-uart",
-+	},
-+};
-+
-+int __init serial_omap_init(void)
-+{
-+	int ret;
-+
-+	ret = uart_register_driver(&serial_omap_reg);
-+	if (ret != 0)
-+		return ret;
-+	ret = platform_driver_register(&serial_omap_driver);
-+	if (ret != 0)
-+		uart_unregister_driver(&serial_omap_reg);
-+	return ret;
-+}
-+
-+void __exit serial_omap_exit(void)
-+{
-+	platform_driver_unregister(&serial_omap_driver);
-+	uart_unregister_driver(&serial_omap_reg);
-+}
-+
-+#ifdef DEBUG
-+static void serial_omap_display_reg(struct uart_port *port) {
-+	struct uart_omap_port *up = (struct uart_omap_port *)port;
-+	unsigned int lcr, efr, mcr, dll, dlh, xon1, xon2, xoff1, xoff2;
-+	unsigned int tcr, tlr, uasr;
-+	DPRINTK("Register dump for UART%d\n", up->pdev->id);
-+	DPRINTK("IER_REG = 0x%x\n", serial_in(up, UART_IER));
-+	DPRINTK("IIR_REG = 0x%x\n", serial_in(up, UART_IIR));
-+	lcr = serial_in(up, UART_LCR);
-+	DPRINTK("LCR_REG = 0x%x\n", lcr);
-+	mcr = serial_in(up, UART_MCR);
-+	DPRINTK("MCR_REG = 0x%x\n", mcr);
-+	DPRINTK("LSR_REG = 0x%x\n", serial_in(up, UART_LSR));
-+	DPRINTK("MSR_REG = 0x%x\n", serial_in(up, UART_MSR));
-+	DPRINTK("SPR_REG = 0x%x\n", serial_in(up, UART_OMAP_SPR));
-+	DPRINTK("MDR1_REG = 0x%x\n", serial_in(up, UART_OMAP_MDR1));
-+	DPRINTK("MDR2_REG = 0x%x\n", serial_in(up, UART_OMAP_MDR2));
-+	DPRINTK("SCR_REG = 0x%x\n", serial_in(up, UART_OMAP_SCR));
-+	DPRINTK("SSR_REG = 0x%x\n", serial_in(up, UART_OMAP_SSR));
-+	DPRINTK("MVR_REG = 0x%x\n", serial_in(up, UART_OMAP_MVER));
-+	DPRINTK("SYSC_REG = 0x%x\n", serial_in(up, UART_OMAP_SYSC));
-+	DPRINTK("SYSS_REG = 0x%x\n", serial_in(up, UART_OMAP_SYSS));
-+	DPRINTK("WER_REG = 0x%x\n", serial_in(up, UART_OMAP_WER));
-+
-+	serial_out(up, UART_LCR, 0xBF);
-+	dll = serial_in(up, UART_DLL);
-+	dlh = serial_in(up, UART_DLM);
-+	efr = serial_in(up, UART_EFR);
-+	xon1 = serial_in(up, UART_XON1);
-+	xon2 = serial_in(up, UART_XON2);
-+
-+	serial_out(up, UART_EFR, efr | UART_EFR_ECB);
-+	serial_out(up, UART_LCR, lcr);
-+	serial_out(up, UART_MCR, mcr | UART_MCR_TCRTLR);
-+	serial_out(up, UART_LCR, 0xBF);
-+
-+	tcr = serial_in(up, UART_TI752_TCR);
-+	tlr = serial_in(up, UART_TI752_TLR);
-+
-+	serial_out(up, UART_LCR, lcr);
-+	serial_out(up, UART_MCR, mcr);
-+	serial_out(up, UART_LCR, 0xBF);
-+
-+	xoff1 = serial_in(up, UART_XOFF1);
-+	xoff2 = serial_in(up, UART_XOFF2);
-+	uasr = serial_in(up, UART_OMAP_UASR);
-+
-+	serial_out(up, UART_EFR, efr);
-+	serial_out(up, UART_LCR, lcr);
-+
-+
-+	DPRINTK("DLL_REG = 0x%x\n", dll);
-+	DPRINTK("DLH_REG = 0x%x\n", dlh);
-+	DPRINTK("EFR_REG = 0x%x\n", efr);
-+
-+	DPRINTK("XON1_ADDR_REG = 0x%x\n", xon1);
-+	DPRINTK("XON2_ADDR_REG = 0x%x\n", xon2);
-+	DPRINTK("TCR_REG = 0x%x\n", tcr);
-+	DPRINTK("TLR_REG = 0x%x\n", tlr);
-+
-+
-+	DPRINTK("XOFF1_REG = 0x%x\n", xoff1);
-+	DPRINTK("XOFF2_REG = 0x%x\n", xoff2);
-+	DPRINTK("UASR_REG = 0x%x\n", uasr);
-+}
-+#endif
-+
-+subsys_initcall(serial_omap_init);
-+module_exit(serial_omap_exit);
-+
-+MODULE_DESCRIPTION("OMAP High Speed UART driver"); 
-+MODULE_LICENSE("GPL"); MODULE_ALIAS("platform:" DRIVER_NAME); 
-+MODULE_AUTHOR("Texas Instruments Inc");
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-the body of a message to majordomo@vger.kernel.org More majordomo info
-at  http://vger.kernel.org/majordomo-info.html
+[   48.518773] PM: Adding info for mmc:mmc0:b368
+[   48.548729] mmcblk0: mmc0:b368 NCard 7.46 GiB
+[   48.553560] PM: Adding info for No Bus:mmcblk0
+[   48.558472]  mmcblk0: p1
+[   48.564469] PM: Adding info for No Bus:mmcblk0p1
+[   48.569513] PM: Adding info for No Bus:179:0
+[   54.347771] usb 3-1: USB disconnect, address 2
+[   54.348749] btusb_bulk_complete: hci0 urb ffff880138240948 failed
+to resubmit (19)
+[   54.359989] btusb_intr_complete: hci0 urb ffff880138240630 failed
+to resubmit (19)
+[   54.363287] btusb_bulk_complete: hci0 urb ffff880138240a50 failed
+to resubmit (19)
+[   54.375890] PM: Removing info for No Bus:ep_81
+[   54.380563] PM: Removing info for No Bus:ep_82
+[   54.385168] PM: Removing info for No Bus:ep_02
+[   54.389853] PM: Removing info for usb:3-1:1.0
+[   54.394592] btusb_send_frame: hci0 urb ffff880135f21318 submission failed
+[   54.616119] PM: Adding info for No Bus:vcs63
+[   54.616212] PM: Adding info for No Bus:vcsa63
+[   54.643659] PM: Removing info for No Bus:rfkill0
+[   54.648859] PM: Removing info for No Bus:hci0
+[   54.653832] PM: Removing info for No Bus:ep_83
+[   54.658478] PM: Removing info for No Bus:ep_03
+[   54.663634] PM: Removing info for usb:3-1:1.1
+[   54.669073] PM: Removing info for No Bus:ep_84
+[   54.673712] PM: Removing info for No Bus:ep_04
+[   54.674255] PM: Syncing filesystems ...
+[   54.682217] PM: Removing info for usb:3-1:1.2
+[   54.687086] done.
+[   54.687189] PM: Removing info for usb:3-1:1.3
+[   54.687398] PM: Removing info for No Bus:ep_00
+[   54.687704] PM: Removing info for usb:3-1
+[   54.688201] PM: Removing info for No Bus:usbdev3.2
+[   54.708703] PM: Preparing system for mem sleep
+[   54.714747] Freezing user space processes ... (elapsed 0.01 seconds) done.
+[   54.738508] Freezing remaining freezable tasks ... (elapsed 0.06
+seconds) done.
+[   54.812909] PM: Entering mem sleep
+[   54.816665] platform dock.0: preparing suspend
+[   54.821181] platform dock.1: preparing suspend
+[   54.825687] platform dock.2: preparing suspend
+[   54.830210] agpgart-intel 0000:00:00.0: preparing suspend
+[   54.835695] pci 0000:00:02.0: preparing suspend
+[   54.840296] pci 0000:00:02.1: preparing suspend
+[   54.844901] e1000e 0000:00:19.0: preparing suspend, may wakeup
+[   54.850827] uhci_hcd 0000:00:1a.0: preparing suspend
+[   54.855866] uhci_hcd 0000:00:1a.1: preparing suspend
+[   54.860911] ehci_hcd 0000:00:1a.7: preparing suspend
+[   54.865957] HDA Intel 0000:00:1b.0: preparing suspend
+[   54.871089] pcieport-driver 0000:00:1c.0: preparing suspend
+[   54.876746] pcieport-driver 0000:00:1c.1: preparing suspend
+[   54.882396] pcieport-driver 0000:00:1c.2: preparing suspend
+[   54.888048] pcieport-driver 0000:00:1c.3: preparing suspend
+[   54.893695] pcieport-driver 0000:00:1c.4: preparing suspend
+[   54.899340] uhci_hcd 0000:00:1d.0: preparing suspend
+[   54.904383] uhci_hcd 0000:00:1d.1: preparing suspend
+[   54.909503] uhci_hcd 0000:00:1d.2: preparing suspend
+[   54.914545] ehci_hcd 0000:00:1d.7: preparing suspend
+[   54.919583] pci 0000:00:1e.0: preparing suspend
+[   54.924193] pci 0000:00:1f.0: preparing suspend
+[   54.928795] ata_piix 0000:00:1f.1: preparing suspend
+[   54.933842] ahci 0000:00:1f.2: preparing suspend
+[   54.938533] i801_smbus 0000:00:1f.3: preparing suspend
+[   54.943751] iwl3945 0000:03:00.0: preparing suspend
+[   54.948717] pci 0000:15:00.0: preparing suspend
+[   54.953329] sdhci-pci 0000:15:00.2: preparing suspend
+[   54.958451] pci 0000:15:00.3: preparing suspend
+[   54.963063] pci 0000:15:00.4: preparing suspend
+[   54.967669] pci 0000:15:00.5: preparing suspend
+[   54.972361] platform vesafb.0: preparing suspend
+[   54.977217] serial8250 serial8250: preparing suspend
+[   54.982358] i8042 i8042: preparing suspend
+[   54.986545] platform hdaps: preparing suspend
+[   54.991032] usb usb1: preparing type suspend, may wakeup
+[   54.996430] usb usb2: preparing type suspend, may wakeup
+[   55.001841] usb usb3: preparing type suspend, may wakeup
+[   55.007243] usb usb4: preparing type suspend, may wakeup
+[   55.012647] usb usb5: preparing type suspend, may wakeup
+[   55.018044] usb usb6: preparing type suspend, may wakeup
+[   55.023552] usb usb7: preparing type suspend, may wakeup
+[   55.028949] usb 1-4: preparing type suspend, may wakeup
+[   55.034262] usb 3-2: preparing type suspend, may wakeup
+[   55.039573] usb 1-4.4: preparing type suspend, may wakeup
+[   55.045076] iTCO_wdt iTCO_wdt: preparing suspend
+[   55.049806] platform regulatory.0: preparing suspend
+[   55.054870] thinkpad_acpi thinkpad_acpi: preparing suspend
+[   55.060432] thinkpad_hwmon thinkpad_hwmon: preparing suspend
+[   55.066312] mmcblk mmc0:b368: legacy suspend
+[   55.070728] leds iwl-phy0::TX: legacy class suspend
+[   55.075682] leds iwl-phy0::RX: legacy class suspend
+[   55.080639] leds iwl-phy0::assoc: legacy class suspend
+[   55.085849] leds iwl-phy0::radio: legacy class suspend
+[   55.091087] backlight acpi_video0: legacy class suspend
+[   55.096384] drm card0: legacy class suspend
+[   55.113694] pci 0000:00:02.0: power state changed by ACPI to D3
+[   55.119766] rfkill rfkill2: legacy class suspend
+[   55.124504] ieee80211 phy0: legacy class suspend
+[   55.142622] PM: Removing info for No Bus:iwl-phy0::assoc
+[   55.148410] PM: Removing info for No Bus:iwl-phy0::RX
+[   55.153723] PM: Removing info for No Bus:iwl-phy0::TX
+[   55.159036] PM: Removing info for No Bus:iwl-phy0::radio
+[   55.168882] leds tpacpi::thinkvantage: legacy class suspend
+[   55.174579] leds tpacpi::standby: legacy class suspend
+[   55.179842] leds tpacpi::power: legacy class suspend
+[   55.184932] leds tpacpi::thinklight: legacy class suspend
+[   55.190451] rfkill rfkill1: legacy class suspend
+[   55.195192] psmouse serio2: legacy suspend
+[   55.417071] thinkpad_hwmon thinkpad_hwmon: suspend
+[   55.421984] thinkpad_acpi thinkpad_acpi: suspend
+[   55.427617] leds mmc0::: legacy class suspend
+[   55.432093] platform regulatory.0: suspend
+[   55.436364] iTCO_wdt iTCO_wdt: suspend
+[   55.440254] usb 1-4.4: type suspend, may wakeup
+[   55.456971] usb 3-2: type suspend, may wakeup
+[   55.473573] usb 1-4: type suspend, may wakeup
+[   55.490111] usb usb7: type suspend, may wakeup
+[   55.494682] usb usb6: type suspend, may wakeup
+[   55.499257] usb usb5: type suspend, may wakeup
+[   55.503833] usb usb4: type suspend, may wakeup
+[   55.508400] usb usb3: type suspend, may wakeup
+[   55.513087] usb usb2: type suspend, may wakeup
+[   55.517652] usb usb1: type suspend, may wakeup
+[   55.522280] sr 3:0:0:0: legacy suspend
+[   55.526191] scsi target3:0:0: legacy suspend
+[   55.530587] sd 0:0:0:0: legacy suspend
+[   55.534474] sd 0:0:0:0: [sda] Synchronizing SCSI cache
+[   55.540193] sd 0:0:0:0: [sda] Stopping disk
+[   57.578287] scsi target0:0:0: legacy suspend
+[   57.582691] platform hdaps: suspend
+[   57.586294] psmouse serio1: legacy suspend
+[   57.995366] atkbd serio0: legacy suspend
+[   58.603402] i8042 i8042: suspend
+[   58.606943] scsi host4: legacy suspend
+[   58.610811] scsi host3: legacy suspend
+[   58.614682] scsi host2: legacy suspend
+[   58.618549] scsi host1: legacy suspend
+[   58.622418] scsi host0: legacy suspend
+[   58.626359] serial8250 serial8250: suspend
+[   58.630763] platform vesafb.0: suspend
+[   58.634685] pnp 00:0a: legacy suspend
+[   58.638463] i8042 aux 00:09: legacy suspend
+[   58.642793] i8042 kbd 00:08: legacy suspend
+[   58.647110] rtc_cmos 00:07: legacy suspend, may wakeup
+[   58.652420] pnp 00:06: legacy suspend
+[   58.656199] pnp 00:05: legacy suspend
+[   58.659977] pnp 00:04: legacy suspend
+[   58.663750] pnp 00:03: legacy suspend
+[   58.667531] system 00:02: legacy suspend
+[   58.671582] pnp 00:01: legacy suspend
+[   58.675364] system 00:00: legacy suspend
+[   58.679424] pci 0000:15:00.5: suspend
+[   58.683203] pci 0000:15:00.4: suspend
+[   58.686983] pci 0000:15:00.3: suspend
+[   58.690765] sdhci-pci 0000:15:00.2: suspend
+[   58.695455] mmc0: card b368 removed
+[   58.699058] PM: Removing info for mmc:mmc0:b368
+[   58.704358] PM: Removing info for No Bus:mmcblk0p1
+[   58.709743] PM: Removing info for No Bus:179:0
+[   58.714660] PM: Removing info for No Bus:mmcblk0
+[   58.721890] ACPI handle has no context!
+[   58.725852] sdhci-pci 0000:15:00.2: PME# disabled
+[   58.730711] sdhci-pci 0000:15:00.2: PCI INT C disabled
+[   58.735978] ACPI handle has no context!
+[   58.750081] pci 0000:15:00.0: suspend
+[   58.753881] iwl3945 0000:03:00.0: suspend
+[   58.770107] i801_smbus 0000:00:1f.3: suspend
+[   58.774636] ahci 0000:00:1f.2: suspend
+[   58.816766] ata_piix 0000:00:1f.1: suspend
+[   58.821149] ata5: port disabled. ignoring.
+[   58.825528] ata_piix 0000:00:1f.1: PCI INT C disabled
+[   58.830746] pci 0000:00:1f.0: suspend
+[   58.834535] pci 0000:00:1e.0: suspend
+[   58.838333] ehci_hcd 0000:00:1d.7: suspend
+[   58.842639] ehci_hcd 0000:00:1d.7: PCI INT D disabled
+[   58.847883] uhci_hcd 0000:00:1d.2: suspend
+[   58.852194] uhci_hcd 0000:00:1d.2: PCI INT C disabled
+[   58.857428] uhci_hcd 0000:00:1d.1: suspend
+[   58.861670] uhci_hcd 0000:00:1d.1: PCI INT B disabled
+[   58.866863] uhci_hcd 0000:00:1d.0: suspend
+[   58.871137] uhci_hcd 0000:00:1d.0: PCI INT A disabled
+[   58.876361] pcieport-driver 0000:00:1c.4: suspend
+[   58.881241] pcieport-driver 0000:00:1c.3: suspend
+[   58.886084] pcieport-driver 0000:00:1c.2: suspend
+[   58.890958] pcieport-driver 0000:00:1c.1: suspend
+[   58.895833] pcieport-driver 0000:00:1c.0: suspend
+[   58.900695] HDA Intel 0000:00:1b.0: suspend
+[   58.917161] HDA Intel 0000:00:1b.0: PCI INT B disabled
+[   58.933436] ehci_hcd 0000:00:1a.7: suspend
+[   58.937710] ehci_hcd 0000:00:1a.7: PCI INT C disabled
+[   58.942930] uhci_hcd 0000:00:1a.1: suspend
+[   58.947199] uhci_hcd 0000:00:1a.1: PCI INT B disabled
+[   58.952419] uhci_hcd 0000:00:1a.0: suspend
+[   58.956696] uhci_hcd 0000:00:1a.0: PCI INT A disabled
+[   58.961906] e1000e 0000:00:19.0: suspend, may wakeup
+[   58.969801] e1000e 0000:00:19.0: PCI INT A disabled
+[   58.974851] e1000e 0000:00:19.0: PME# enabled
+[   58.979405] e1000e 0000:00:19.0: wake-up capability enabled by ACPI
+[   58.996757] pci 0000:00:02.1: suspend
+[   59.000586] pci 0000:00:02.0: suspend
+[   59.004424] agpgart-intel 0000:00:00.0: suspend
+[   59.009140] platform dock.2: suspend
+[   59.012871] platform dock.1: suspend
+[   59.016594] platform dock.0: suspend
+[   59.020326] thermal LNXTHERM:02: legacy suspend
+[   59.025023] thermal LNXTHERM:01: legacy suspend
+[   59.029728] acpi LNXTHERM:00: legacy suspend
+[   59.034140] acpi IBM0079:00: legacy suspend
+[   59.038477] acpi PNP0C14:00: legacy suspend
+[   59.042822] acpi device:2a: legacy suspend
+[   59.047077] acpi device:29: legacy suspend
+[   59.051345] acpi device:28: legacy suspend
+[   59.055584] acpi device:27: legacy suspend
+[   59.059855] acpi device:26: legacy suspend
+[   59.064080] acpi device:25: legacy suspend
+[   59.068333] acpi device:24: legacy suspend
+[   59.072599] acpi device:23: legacy suspend
+[   59.076837] acpi device:22: legacy suspend
+[   59.081101] acpi device:21: legacy suspend
+[   59.085369] acpi device:20: legacy suspend
+[   59.089630] acpi device:1f: legacy suspend
+[   59.093878] acpi device:1e: legacy suspend
+[   59.098129] acpi device:1d: legacy suspend
+[   59.102377] acpi device:1c: legacy suspend
+[   59.107508] acpi device:1b: legacy suspend
+[   59.111789] acpi device:1a: legacy suspend
+[   59.116063] acpi device:19: legacy suspend
+[   59.120320] acpi device:18: legacy suspend
+[   59.124571] acpi device:17: legacy suspend
+[   59.128815] acpi device:16: legacy suspend
+[   59.133065] acpi device:15: legacy suspend
+[   59.137313] acpi device:14: legacy suspend
+[   59.141573] acpi device:13: legacy suspend
+[   59.145839] acpi device:12: legacy suspend
+[   59.150108] acpi device:11: legacy suspend
+[   59.154368] acpi device:10: legacy suspend
+[   59.158617] acpi device:0f: legacy suspend
+[   59.162849] acpi device:0e: legacy suspend
+[   59.167095] acpi device:0d: legacy suspend
+[   59.171352] acpi device:0c: legacy suspend
+[   59.175614] acpi device:0b: legacy suspend
+[   59.180218] acpi device:0a: legacy suspend
+[   59.184503] acpi device:09: legacy suspend
+[   59.188754] acpi device:08: legacy suspend
+[   59.192993] acpi device:07: legacy suspend
+[   59.197246] acpi device:06: legacy suspend
+[   59.201501] acpi device:05: legacy suspend
+[   59.205774] acpi device:04: legacy suspend
+[   59.210045] acpi device:03: legacy suspend
+[   59.214311] video device:02: legacy suspend
+[   59.218655] thinkpad_hotkey IBM0068:00: legacy suspend
+[   59.223985] ac ACPI0003:00: legacy suspend
+[   59.228236] battery PNP0C0A:00: legacy suspend
+[   59.232845] power LNXPOWER:00: legacy suspend
+[   59.237383] ec PNP0C09:00: legacy suspend
+[   59.241594] acpi ATM1200:00: legacy suspend
+[   59.245941] acpi IBM0057:00: legacy suspend
+[   59.250298] acpi PNP0303:00: legacy suspend
+[   59.254674] acpi PNP0B00:00: legacy suspend
+[   59.259005] acpi PNP0C04:00: legacy suspend
+[   59.263327] acpi PNP0800:00: legacy suspend
+[   59.267665] acpi PNP0200:00: legacy suspend
+[   59.271994] acpi PNP0103:00: legacy suspend
+[   59.276356] acpi PNP0100:00: legacy suspend
+[   59.280704] acpi PNP0000:00: legacy suspend
+[   59.285043] acpi PNP0C02:00: legacy suspend
+[   59.289367] acpi device:01: legacy suspend
+[   59.293628] pci_root PNP0A08:00: legacy suspend
+[   59.298332] button PNP0C0E:00: legacy suspend
+[   59.302860] button PNP0C0D:00: legacy suspend
+[   59.307351] acpi PNP0C01:00: legacy suspend
+[   59.311697] pci_link PNP0C0F:07: legacy suspend
+[   59.316391] pci_link PNP0C0F:06: legacy suspend
+[   59.321074] pci_link PNP0C0F:05: legacy suspend
+[   59.325773] pci_link PNP0C0F:04: legacy suspend
+[   59.330477] pci_link PNP0C0F:03: legacy suspend
+[   59.335175] pci_link PNP0C0F:02: legacy suspend
+[   59.340146] pci_link PNP0C0F:01: legacy suspend
+[   59.344843] pci_link PNP0C0F:00: legacy suspend
+[   59.349529] acpi device:00: legacy suspend
+[   59.353773] processor LNXCPU:01: legacy suspend
+[   59.358435] processor LNXCPU:00: legacy suspend
+[   59.363122] button LNXPWRBN:00: legacy suspend
+[   59.367738] acpi LNXSYSTM:00: legacy suspend
+[   59.372341] thinkpad_hwmon thinkpad_hwmon: LATE suspend
+[   59.377725] thinkpad_acpi thinkpad_acpi: LATE suspend
+[   59.382919] platform regulatory.0: LATE suspend
+[   59.387612] iTCO_wdt iTCO_wdt: LATE suspend
+[   59.391962] platform hdaps: LATE suspend
+[   59.396066] i8042 i8042: LATE suspend
+[   59.399933] serial8250 serial8250: LATE suspend
+[   59.404631] platform vesafb.0: LATE suspend
+[   59.408993] pci 0000:15:00.5: LATE suspend
+[   59.413441] pci 0000:15:00.4: LATE suspend
+[   59.417840] pci 0000:15:00.3: LATE suspend
+[   59.422231] sdhci-pci 0000:15:00.2: LATE suspend
+[   59.427021] pci 0000:15:00.0: LATE suspend
+[   59.431406] iwl3945 0000:03:00.0: LATE suspend
+[   59.436012] i801_smbus 0000:00:1f.3: LATE suspend
+[   59.440898] ahci 0000:00:1f.2: LATE suspend
+[   59.445237] ata_piix 0000:00:1f.1: LATE suspend
+[   59.449947] pci 0000:00:1f.0: LATE suspend
+[   59.454348] pci 0000:00:1e.0: LATE suspend
+[   59.458725] ehci_hcd 0000:00:1d.7: LATE suspend
+[   59.463640] ehci_hcd 0000:00:1d.7: PME# disabled
+[   59.566817] ehci_hcd 0000:00:1d.7: power state changed by ACPI to D3
+[   59.573377] uhci_hcd 0000:00:1d.2: LATE suspend
+[   59.656865] uhci_hcd 0000:00:1d.2: power state changed by ACPI to D3
+[   59.663421] uhci_hcd 0000:00:1d.1: LATE suspend
+[   59.668202] uhci_hcd 0000:00:1d.0: LATE suspend
+[   59.750198] uhci_hcd 0000:00:1d.0: power state changed by ACPI to D3
+[   59.756727] pcieport-driver 0000:00:1c.4: LATE suspend
+[   59.762186] pcieport-driver 0000:00:1c.3: LATE suspend
+[   59.767640] pcieport-driver 0000:00:1c.2: LATE suspend
+[   59.773130] pcieport-driver 0000:00:1c.1: LATE suspend
+[   59.778625] pcieport-driver 0000:00:1c.0: LATE suspend
+[   59.784077] HDA Intel 0000:00:1b.0: LATE suspend
+[   59.788832] ehci_hcd 0000:00:1a.7: LATE suspend
+[   59.793711] ehci_hcd 0000:00:1a.7: PME# disabled
+[   59.890198] ehci_hcd 0000:00:1a.7: power state changed by ACPI to D3
+[   59.896738] uhci_hcd 0000:00:1a.1: LATE suspend
+[   59.980198] uhci_hcd 0000:00:1a.1: power state changed by ACPI to D3
+[   59.986707] uhci_hcd 0000:00:1a.0: LATE suspend
+[   59.991487] e1000e 0000:00:19.0: LATE suspend, may wakeup
+[   59.997046] pci 0000:00:02.1: LATE suspend
+[   60.001327] pci 0000:00:02.0: LATE suspend
+[   60.005605] agpgart-intel 0000:00:00.0: LATE suspend
+[   60.010766] platform dock.2: LATE suspend
+[   60.014914] platform dock.1: LATE suspend
+[   60.019094] platform dock.0: LATE suspend
+[   60.143490] ACPI: Preparing to enter system sleep state S3
+[   60.640815] Disabling non-boot CPUs ...
+[   60.648297] kvm: disabling virtualization on CPU1
+[   60.648558] CPU 1 is now offline
+[   60.656776] lockdep: fixing up alternatives.
+[   60.661179] SMP alternatives: switching to UP code
+[   60.673821] CPU0 attaching NULL sched-domain.
+[   60.678563] CPU1 attaching NULL sched-domain.
+[   60.683171] CPU0 attaching NULL sched-domain.
+[   60.688863] CPU1 is down
+[   60.691691] Extended CMOS year: 2000
+[   60.691691] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+[   60.691691] Back to C!
+[   60.691691] CPU0: Thermal monitoring handled by SMI
+[   60.691691] Extended CMOS year: 2000
+[   60.695683] Enabling non-boot CPUs ...
+[   60.703883] lockdep: fixing up alternatives.
+[   60.708336] SMP alternatives: switching to SMP code
+[   60.719176] Booting processor 1 APIC 0x1 ip 0x6000
+[   60.672915] Initializing CPU#1
+[   60.672915] Calibrating delay using timer specific routine..
+4390.91 BogoMIPS (lpj=7315059)
+[   60.672915] CPU: L1 I cache: 32K, L1 D cache: 32K
+[   60.672915] CPU: L2 cache: 4096K
+[   60.672915] CPU: Physical Processor ID: 0
+[   60.672915] CPU: Processor Core ID: 1
+[   60.672915] mce: CPU supports 6 MCE banks
+[   60.672915] CPU1: Thermal monitoring handled by SMI
+[   60.672915] x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
+[   60.821634] CPU1:
+[   60.823364] Switched to high resolution mode on CPU 1
+[   60.873115] Intel(R) Core(TM)2 Duo CPU     T7500  @ 2.20GHz stepping 0a
+[   60.879992] kvm: enabling virtualization on CPU1
+[   60.884812] CPU0 attaching NULL sched-domain.
+[   60.896740] CPU0 attaching sched-domain:
+[   60.900824]  domain 0: span 0-1 level CPU
+[   60.905093]   groups: 0 1
+[   60.908127] CPU1 attaching sched-domain:
+[   60.912199]  domain 0: span 0-1 level CPU
+[   60.916449]   groups: 1 0
+[   60.923587] CPU1 is up
+[   60.926052] ACPI: Waking up from system sleep state S3
+[   61.973640] platform dock.0: EARLY resume
+[   61.977819] platform dock.1: EARLY resume
+[   61.981973] platform dock.2: EARLY resume
+[   61.986132] agpgart-intel 0000:00:00.0: EARLY resume
+[   61.991316] pci 0000:00:02.0: EARLY resume
+[   61.995574] pci 0000:00:02.0: restoring config space at offset 0x1
+(was 0x900007, writing 0x900403)
+[   62.004872] pci 0000:00:02.1: EARLY resume
+[   62.009158] pci 0000:00:02.1: restoring config space at offset 0x1
+(was 0x900000, writing 0x900007)
+[   62.018380] e1000e 0000:00:19.0: EARLY resume
+[   62.023044] uhci_hcd 0000:00:1a.0: EARLY resume
+[   62.027813] uhci_hcd 0000:00:1a.0: restoring config space at offset
+0x1 (was 0x2800005, writing 0x2800001)
+[   62.037680] uhci_hcd 0000:00:1a.1: EARLY resume
+[   62.180146] uhci_hcd 0000:00:1a.1: power state changed by ACPI to D0
+[   62.186768] uhci_hcd 0000:00:1a.1: restoring config space at offset
+0x1 (was 0x2800005, writing 0x2800001)
+[   62.196703] ehci_hcd 0000:00:1a.7: EARLY resume
+[   62.201481] ehci_hcd 0000:00:1a.7: restoring config space at offset
+0x1 (was 0x2900106, writing 0x2900102)
+[   62.211398] ehci_hcd 0000:00:1a.7: PME# disabled
+[   62.216171] HDA Intel 0000:00:1b.0: EARLY resume
+[   62.221063] HDA Intel 0000:00:1b.0: restoring config space at
+offset 0x1 (was 0x100106, writing 0x100102)
+[   62.230849] pcieport-driver 0000:00:1c.0: EARLY resume
+[   62.236221] pcieport-driver 0000:00:1c.0: restoring config space at
+offset 0x7 (was 0x20002020, writing 0x2020)
+[   62.246562] pcieport-driver 0000:00:1c.0: restoring config space at
+offset 0x1 (was 0x100107, writing 0x100507)
+[   62.256993] pcieport-driver 0000:00:1c.1: EARLY resume
+[   62.262374] pcieport-driver 0000:00:1c.1: restoring config space at
+offset 0x7 (was 0x3030, writing 0x20003030)
+[   62.273320] pcieport-driver 0000:00:1c.1: restoring config space at
+offset 0x1 (was 0x100107, writing 0x100507)
+[   62.283707] pcieport-driver 0000:00:1c.2: EARLY resume
+[   62.289102] pcieport-driver 0000:00:1c.2: restoring config space at
+offset 0x7 (was 0x20004040, writing 0x4040)
+[   62.299437] pcieport-driver 0000:00:1c.2: restoring config space at
+offset 0x1 (was 0x100107, writing 0x100507)
+[   62.310189] pcieport-driver 0000:00:1c.3: EARLY resume
+[   62.315573] pcieport-driver 0000:00:1c.3: restoring config space at
+offset 0x7 (was 0x20005050, writing 0x5050)
+[   62.325920] pcieport-driver 0000:00:1c.3: restoring config space at
+offset 0x1 (was 0x100107, writing 0x100507)
+[   62.336345] pcieport-driver 0000:00:1c.4: EARLY resume
+[   62.341723] pcieport-driver 0000:00:1c.4: restoring config space at
+offset 0x7 (was 0x20006060, writing 0x6060)
+[   62.352054] pcieport-driver 0000:00:1c.4: restoring config space at
+offset 0x1 (was 0x100107, writing 0x100507)
+[   62.362441] uhci_hcd 0000:00:1d.0: EARLY resume
+[   62.393526] uhci_hcd 0000:00:1d.0: power state changed by ACPI to D0
+[   62.400134] uhci_hcd 0000:00:1d.0: restoring config space at offset
+0x1 (was 0x2800005, writing 0x2800001)
+[   62.410042] uhci_hcd 0000:00:1d.1: EARLY resume
+[   62.414831] uhci_hcd 0000:00:1d.1: restoring config space at offset
+0x1 (was 0x2800005, writing 0x2800001)
+[   62.424687] uhci_hcd 0000:00:1d.2: EARLY resume
+[   62.453526] uhci_hcd 0000:00:1d.2: power state changed by ACPI to D0
+[   62.460124] uhci_hcd 0000:00:1d.2: restoring config space at offset
+0x1 (was 0x2800005, writing 0x2800001)
+[   62.469978] ehci_hcd 0000:00:1d.7: EARLY resume
+[   62.474778] ehci_hcd 0000:00:1d.7: restoring config space at offset
+0x1 (was 0x2900106, writing 0x2900102)
+[   62.484688] ehci_hcd 0000:00:1d.7: PME# disabled
+[   62.489471] pci 0000:00:1e.0: EARLY resume
+[   62.493821] pci 0000:00:1e.0: restoring config space at offset 0x1
+(was 0x100005, writing 0x100007)
+[   62.503060] pci 0000:00:1f.0: EARLY resume
+[   62.507420] ata_piix 0000:00:1f.1: EARLY resume
+[   62.512189] ata_piix 0000:00:1f.1: restoring config space at offset
+0x1 (was 0x2800005, writing 0x2880005)
+[   62.522012] ahci 0000:00:1f.2: EARLY resume
+[   62.526491] ahci 0000:00:1f.2: restoring config space at offset 0x1
+(was 0x2b00007, writing 0x2b00407)
+[   62.536115] i801_smbus 0000:00:1f.3: EARLY resume
+[   62.541061] iwl3945 0000:03:00.0: EARLY resume
+[   62.545861] iwl3945 0000:03:00.0: restoring config space at offset
+0x1 (was 0x100106, writing 0x100506)
+[   62.555601] pci 0000:15:00.0: EARLY resume
+[   62.559960] sdhci-pci 0000:15:00.2: EARLY resume
+[   62.576810] sdhci-pci 0000:15:00.2: restoring config space at
+offset 0x3 (was 0x800000, writing 0x804000)
+[   62.586623] sdhci-pci 0000:15:00.2: restoring config space at
+offset 0x1 (was 0x2100000, writing 0x2100006)
+[   62.596580] pci 0000:15:00.3: EARLY resume
+[   62.600953] pci 0000:15:00.4: EARLY resume
+[   62.605342] pci 0000:15:00.5: EARLY resume
+[   62.609714] platform vesafb.0: EARLY resume
+[   62.614017] serial8250 serial8250: EARLY resume
+[   62.618720] i8042 i8042: EARLY resume
+[   62.622526] platform hdaps: EARLY resume
+[   62.626611] iTCO_wdt iTCO_wdt: EARLY resume
+[   62.630957] platform regulatory.0: EARLY resume
+[   62.635667] thinkpad_acpi thinkpad_acpi: EARLY resume
+[   62.640895] thinkpad_hwmon thinkpad_hwmon: EARLY resume
+[   62.646397] acpi LNXSYSTM:00: legacy resume
+[   62.650790] button LNXPWRBN:00: legacy resume
+[   62.655315] processor LNXCPU:00: legacy resume
+[   62.659918] processor LNXCPU:01: legacy resume
+[   62.664531] acpi device:00: legacy resume
+[   62.668719] pci_link PNP0C0F:00: legacy resume
+[   62.673301] pci_link PNP0C0F:01: legacy resume
+[   62.678222] pci_link PNP0C0F:02: legacy resume
+[   62.682813] pci_link PNP0C0F:03: legacy resume
+[   62.687433] pci_link PNP0C0F:04: legacy resume
+[   62.692028] pci_link PNP0C0F:05: legacy resume
+[   62.696612] pci_link PNP0C0F:06: legacy resume
+[   62.701226] pci_link PNP0C0F:07: legacy resume
+[   62.705843] acpi PNP0C01:00: legacy resume
+[   62.710084] button PNP0C0D:00: legacy resume
+[   62.740310] button PNP0C0E:00: legacy resume
+[   62.744748] pci_root PNP0A08:00: legacy resume
+[   62.749355] acpi device:01: legacy resume
+[   62.753500] acpi PNP0C02:00: legacy resume
+[   62.757733] acpi PNP0000:00: legacy resume
+[   62.761987] acpi PNP0100:00: legacy resume
+[   62.766240] acpi PNP0103:00: legacy resume
+[   62.770497] acpi PNP0200:00: legacy resume
+[   62.774754] acpi PNP0800:00: legacy resume
+[   62.779027] acpi PNP0C04:00: legacy resume
+[   62.783288] acpi PNP0B00:00: legacy resume
+[   62.787535] acpi PNP0303:00: legacy resume
+[   62.791801] acpi IBM0057:00: legacy resume
+[   62.796049] acpi ATM1200:00: legacy resume
+[   62.800305] ec PNP0C09:00: legacy resume
+[   62.804372] power LNXPOWER:00: legacy resume
+[   62.809609] battery PNP0C0A:00: legacy resume
+[   62.861016] ac ACPI0003:00: legacy resume
+[   62.866037] thinkpad_hotkey IBM0068:00: legacy resume
+[   62.871273] video device:02: legacy resume
+[   62.881358] acpi device:03: legacy resume
+[   62.885540] acpi device:04: legacy resume
+[   62.889732] acpi device:05: legacy resume
+[   62.893897] acpi device:06: legacy resume
+[   62.898068] acpi device:07: legacy resume
+[   62.902230] acpi device:08: legacy resume
+[   62.906392] acpi device:09: legacy resume
+[   62.910557] acpi device:0a: legacy resume
+[   62.914723] acpi device:0b: legacy resume
+[   62.918892] acpi device:0c: legacy resume
+[   62.923049] acpi device:0d: legacy resume
+[   62.927219] acpi device:0e: legacy resume
+[   62.931374] acpi device:0f: legacy resume
+[   62.935540] acpi device:10: legacy resume
+[   62.939718] acpi device:11: legacy resume
+[   62.943864] acpi device:12: legacy resume
+[   62.948028] acpi device:13: legacy resume
+[   62.952184] acpi device:14: legacy resume
+[   62.956338] acpi device:15: legacy resume
+[   62.960485] acpi device:16: legacy resume
+[   62.964629] acpi device:17: legacy resume
+[   62.968788] acpi device:18: legacy resume
+[   62.972954] acpi device:19: legacy resume
+[   62.977131] acpi device:1a: legacy resume
+[   62.981256] acpi device:1b: legacy resume
+[   62.985428] acpi device:1c: legacy resume
+[   62.989570] acpi device:1d: legacy resume
+[   62.993740] acpi device:1e: legacy resume
+[   62.997919] acpi device:1f: legacy resume
+[   63.002081] acpi device:20: legacy resume
+[   63.006244] acpi device:21: legacy resume
+[   63.010437] acpi device:22: legacy resume
+[   63.014574] acpi device:23: legacy resume
+[   63.018735] acpi device:24: legacy resume
+[   63.022902] acpi device:25: legacy resume
+[   63.027054] acpi device:26: legacy resume
+[   63.031217] acpi device:27: legacy resume
+[   63.035389] acpi device:28: legacy resume
+[   63.039528] acpi device:29: legacy resume
+[   63.043706] acpi device:2a: legacy resume
+[   63.047853] acpi PNP0C14:00: legacy resume
+[   63.052110] acpi IBM0079:00: legacy resume
+[   63.056354] acpi LNXTHERM:00: legacy resume
+[   63.060675] thermal LNXTHERM:01: legacy resume
+[   63.067758] thermal LNXTHERM:02: legacy resume
+[   63.073703] platform dock.0: resume
+[   63.077314] platform dock.1: resume
+[   63.080971] platform dock.2: resume
+[   63.084616] agpgart-intel 0000:00:00.0: resume
+[   63.092075] pci 0000:00:02.0: resume
+[   63.095850] pci 0000:00:02.0: PME# disabled
+[   63.100194] pci 0000:00:02.1: resume
+[   63.103935] pci 0000:00:02.1: PME# disabled
+[   63.108270] e1000e 0000:00:19.0: resume
+[   63.112301] e1000e 0000:00:19.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+[   63.119459] e1000e 0000:00:19.0: setting latency timer to 64
+[   63.125316] e1000e 0000:00:19.0: wake-up capability disabled by ACPI
+[   63.131829] e1000e 0000:00:19.0: PME# disabled
+[   63.136414] e1000e 0000:00:19.0: wake-up capability disabled by ACPI
+[   63.142929] e1000e 0000:00:19.0: PME# disabled
+[   63.147628] e1000e 0000:00:19.0: irq 30 for MSI/MSI-X
+[   63.455553] uhci_hcd 0000:00:1a.0: resume
+[   63.459736] uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+[   63.467050] uhci_hcd 0000:00:1a.0: setting latency timer to 64
+[   63.473078] usb usb3: root hub lost power or was reset
+[   63.478539] uhci_hcd 0000:00:1a.1: resume
+[   63.482729] uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
+[   63.490050] uhci_hcd 0000:00:1a.1: setting latency timer to 64
+[   63.496062] usb usb4: root hub lost power or was reset
+[   63.501376] ehci_hcd 0000:00:1a.7: resume
+[   63.505533] ehci_hcd 0000:00:1a.7: PME# disabled
+[   63.510325] ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 22 (level, low) -> IRQ 22
+[   63.517674] ehci_hcd 0000:00:1a.7: setting latency timer to 64
+[   63.523803] HDA Intel 0000:00:1b.0: resume
+[   63.528059] HDA Intel 0000:00:1b.0: PCI INT B -> GSI 17 (level,
+low) -> IRQ 17
+[   63.535435] HDA Intel 0000:00:1b.0: setting latency timer to 64
+[   63.960513] pcieport-driver 0000:00:1c.0: resume
+[   63.965365] pcieport-driver 0000:00:1c.1: resume
+[   63.970151] pcieport-driver 0000:00:1c.2: resume
+[   63.974940] pcieport-driver 0000:00:1c.3: resume
+[   63.980334] pcieport-driver 0000:00:1c.4: resume
+[   63.985141] uhci_hcd 0000:00:1d.0: resume
+[   63.989304] uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[   63.996602] uhci_hcd 0000:00:1d.0: setting latency timer to 64
+[   64.002644] usb usb5: root hub lost power or was reset
+[   64.007960] uhci_hcd 0000:00:1d.1: resume
+[   64.012144] uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+[   64.019452] uhci_hcd 0000:00:1d.1: setting latency timer to 64
+[   64.025481] usb usb6: root hub lost power or was reset
+[   64.030779] uhci_hcd 0000:00:1d.2: resume
+[   64.034943] uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+[   64.042592] uhci_hcd 0000:00:1d.2: setting latency timer to 64
+[   64.048617] usb usb7: root hub lost power or was reset
+[   64.053953] ehci_hcd 0000:00:1d.7: resume
+[   64.058132] ehci_hcd 0000:00:1d.7: PME# disabled
+[   64.062922] ehci_hcd 0000:00:1d.7: PCI INT D -> GSI 19 (level, low) -> IRQ 19
+[   64.070572] ehci_hcd 0000:00:1d.7: setting latency timer to 64
+[   64.076591] pci 0000:00:1e.0: resume
+[   64.080338] pci 0000:00:1e.0: setting latency timer to 64
+[   64.085908] pci 0000:00:1f.0: resume
+[   64.089652] ata_piix 0000:00:1f.1: resume
+[   64.093850] ata_piix 0000:00:1f.1: PCI INT C -> GSI 16 (level, low) -> IRQ 16
+[   64.101153] ata_piix 0000:00:1f.1: setting latency timer to 64
+[   64.108756] ata5: port disabled. ignoring.
+[   64.114208] ahci 0000:00:1f.2: resume
+[   64.118034] ahci 0000:00:1f.2: setting latency timer to 64
+[   64.123712] i801_smbus 0000:00:1f.3: resume
+[   64.128027] iwl3945 0000:03:00.0: resume
+[   64.132163] pci 0000:15:00.0: resume
+[   64.135890] pci 0000:15:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[   64.142764] sdhci-pci 0000:15:00.2: resume
+[   64.147000] sdhci-pci 0000:15:00.2: PCI INT C -> GSI 18 (level,
+low) -> IRQ 18
+[   64.154424] sdhci-pci 0000:15:00.2: Will use DMA mode even though
+HW doesn't fully claim to support it.
+[   64.165083] pci 0000:15:00.3: resume
+[   64.168812] pci 0000:15:00.3: PME# disabled
+[   64.173139] pci 0000:15:00.4: resume
+[   64.176845] pci 0000:15:00.4: PME# disabled
+[   64.181179] pci 0000:15:00.5: resume
+[   64.184890] pci 0000:15:00.5: PME# disabled
+[   64.189241] system 00:00: legacy resume
+[   64.193213] pnp 00:01: legacy resume
+[   64.196984] system 00:02: legacy resume
+[   64.201089] pnp 00:03: legacy resume
+[   64.204920] pnp 00:04: legacy resume
+[   64.208737] pnp 00:05: legacy resume
+[   64.212562] pnp 00:06: legacy resume
+[   64.216382] rtc_cmos 00:07: legacy resume
+[   64.220679] i8042 kbd 00:08: legacy resume
+[   64.225053] i8042 aux 00:09: legacy resume
+[   64.229461] pnp 00:0a: legacy resume
+[   64.233378] platform vesafb.0: resume
+[   64.237424] serial8250 serial8250: resume
+[   64.241783] scsi host0: legacy resume
+[   64.245728] scsi host1: legacy resume
+[   64.249664] scsi host2: legacy resume
+[   64.253556] scsi host3: legacy resume
+[   64.257512] scsi host4: legacy resume
+[   64.261444] i8042 i8042: resume
+[   64.267243] atkbd serio0: legacy resume
+[   64.271395] psmouse serio1: legacy resume
+[   64.275703] platform hdaps: resume
+[   64.277631] ata4.00: ACPI cmd ef/03:42:00:00:00:a0 filtered out
+[   64.277634] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+[   64.278635] ata4.00: ACPI cmd e3/00:10:00:00:00:a0 succeeded
+[   64.279447] ata4.00: ACPI cmd e3/00:03:00:00:00:a0 succeeded
+[   64.297087] ata4.00: configured for UDMA/33
+[   64.308163] scsi target0:0:0: legacy resume
+[   64.312623] sd 0:0:0:0: legacy resume
+[   64.316561] sd 0:0:0:0: [sda] Starting disk
+[   64.444275] ata3: SATA link down (SStatus 0 SControl 300)
+[   64.450071] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[   64.459259] ata1.00: ACPI cmd ef/02:00:00:00:00:a0 succeeded
+[   64.465282] ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+[   64.471746] ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 succeeded
+[   64.477800] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+[   64.489003] ata1.00: ACPI cmd ef/02:00:00:00:00:a0 succeeded
+[   64.495043] ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+[   64.501577] ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 succeeded
+[   64.507638] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+[   64.515654] ata1.00: configured for UDMA/100
+[   64.526502] ata1.00: configured for UDMA/100
+[   64.531147] ata1: EH complete
+[   64.543961] scsi target3:0:0: legacy resume
+[   64.548405] sr 3:0:0:0: legacy resume
+[   64.552285] usb usb1: type resume
+[   64.558091] mmc0: new high speed SDHC card at address b368
+[   64.564027] PM: Adding info for mmc:mmc0:b368
+[   64.568686] mmc mmc0:b368: parent mmc0 should not be sleeping
+[   64.575244] mmcblk0: mmc0:b368 NCard 7.46 GiB
+[   64.580122] PM: Adding info for No Bus:mmcblk0
+[   64.585021]  mmcblk0: p1
+[   64.591007] PM: Adding info for No Bus:mmcblk0p1
+[   64.596195] PM: Adding info for No Bus:179:0
+[   64.800253] usb usb2: type resume
+[   64.830257] usb usb3: type resume
+[   65.076788] usb usb4: type resume
+[   65.080303] usb usb5: type resume
+[   65.083810] usb usb6: type resume
+[   65.087298] usb usb7: type resume
+[   65.090776] usb 1-4: type resume
+[   65.138368] usb 3-2: type resume
+[   65.246805] usb 3-2: reset full speed USB device using uhci_hcd and address 3
+[   65.397913] usb 1-4.4: type resume
+[   65.444675] iTCO_wdt iTCO_wdt: resume
+[   65.448555] platform regulatory.0: resume
+[   65.452685] leds mmc0::: legacy class resume
+[   65.457137] thinkpad_acpi thinkpad_acpi: resume
+[   65.465463] thinkpad_acpi: ACPI backlight control delay disabled
+[   65.473502] thinkpad_hwmon thinkpad_hwmon: resume
+[   65.478394] psmouse serio2: legacy resume
+[   65.482634] rfkill rfkill1: legacy class resume
+[   65.487403] leds tpacpi::thinklight: legacy class resume
+[   65.493012] leds tpacpi::power: legacy class resume
+[   65.498238] leds tpacpi::standby: legacy class resume
+[   65.503574] leds tpacpi::thinkvantage: legacy class resume
+[   65.509399] ieee80211 phy0: legacy class resume
+[   65.609020] PM: Adding info for No Bus:iwl-phy0::radio
+[   65.614309] Registered led device: iwl-phy0::radio
+[   65.619333] PM: Adding info for No Bus:iwl-phy0::assoc
+[   65.624596] Registered led device: iwl-phy0::assoc
+[   65.629520] PM: Adding info for No Bus:iwl-phy0::RX
+[   65.634518] Registered led device: iwl-phy0::RX
+[   65.639169] PM: Adding info for No Bus:iwl-phy0::TX
+[   65.644171] Registered led device: iwl-phy0::TX
+[   65.664304] rfkill rfkill2: legacy class resume
+[   65.669073] drm card0: legacy class resume
+[   65.673261] pci 0000:00:02.0: setting latency timer to 64
+[   65.680336] backlight acpi_video0: legacy class resume
+[   65.685703] thinkpad_hwmon thinkpad_hwmon: completing resume
+[   65.691441] thinkpad_acpi thinkpad_acpi: completing resume
+[   65.697018] platform regulatory.0: completing resume
+[   65.702091] iTCO_wdt iTCO_wdt: completing resume
+[   65.706813] usb 1-4.4: completing type resume
+[   65.711272] usb 3-2: completing type resume
+[   65.715548] usb 1-4: completing type resume
+[   65.720097] usb usb7: completing type resume
+[   65.724458] usb usb6: completing type resume
+[   65.728811] usb usb5: completing type resume
+[   65.733168] usb usb4: completing type resume
+[   65.737528] usb usb3: completing type resume
+[   65.742565] usb usb2: completing type resume
+[   65.746929] usb usb1: completing type resume
+[   65.751327] platform hdaps: completing resume
+[   65.755767] i8042 i8042: completing resume
+[   65.760045] serial8250 serial8250: completing resume
+[   65.765248] platform vesafb.0: completing resume
+[   65.770029] pci 0000:15:00.5: completing resume
+[   65.774634] pci 0000:15:00.4: completing resume
+[   65.779239] pci 0000:15:00.3: completing resume
+[   65.783848] sdhci-pci 0000:15:00.2: completing resume
+[   65.788977] pci 0000:15:00.0: completing resume
+[   65.793592] iwl3945 0000:03:00.0: completing resume
+[   65.798548] i801_smbus 0000:00:1f.3: completing resume
+[   65.803762] ahci 0000:00:1f.2: completing resume
+[   65.808456] ata_piix 0000:00:1f.1: completing resume
+[   65.813498] pci 0000:00:1f.0: completing resume
+[   65.818106] pci 0000:00:1e.0: completing resume
+[   65.822715] ehci_hcd 0000:00:1d.7: completing resume
+[   65.827755] uhci_hcd 0000:00:1d.2: completing resume
+[   65.832800] uhci_hcd 0000:00:1d.1: completing resume
+[   65.837839] uhci_hcd 0000:00:1d.0: completing resume
+[   65.842881] pcieport-driver 0000:00:1c.4: completing resume
+[   65.848544] pcieport-driver 0000:00:1c.3: completing resume
+[   65.854186] pcieport-driver 0000:00:1c.2: completing resume
+[   65.859834] pcieport-driver 0000:00:1c.1: completing resume
+[   65.865484] pcieport-driver 0000:00:1c.0: completing resume
+[   65.871131] HDA Intel 0000:00:1b.0: completing resume
+[   65.876258] ehci_hcd 0000:00:1a.7: completing resume
+[   65.881300] uhci_hcd 0000:00:1a.1: completing resume
+[   65.886349] uhci_hcd 0000:00:1a.0: completing resume
+[   65.891389] e1000e 0000:00:19.0: completing resume
+[   65.896258] pci 0000:00:02.1: completing resume
+[   65.900865] pci 0000:00:02.0: completing resume
+[   65.905473] agpgart-intel 0000:00:00.0: completing resume
+[   65.910954] platform dock.2: completing resume
+[   65.915469] platform dock.1: completing resume
+[   65.919990] platform dock.0: completing resume
+[   65.924729] PM: Finishing wakeup.
+[   65.928718] Restarting tasks ... done.
+[   65.987300] PM: Removing info for No Bus:iwl-phy0::assoc
+[   65.992930] PM: Removing info for No Bus:iwl-phy0::RX
+[   65.999983] PM: Removing info for No Bus:iwl-phy0::TX
+[   66.005410] PM: Removing info for No Bus:iwl-phy0::radio
+[   66.096621] PM: Removing info for No Bus:vcs63
+[   66.096844] PM: Removing info for No Bus:vcsa63
+[   66.792522] e1000e 0000:00:19.0: irq 30 for MSI/MSI-X
+[   66.851174] e1000e 0000:00:19.0: irq 30 for MSI/MSI-X
+[   66.857259] ADDRCONF(NETDEV_UP): eth0: link is not ready
+[   66.947981] PM: Adding info for No Bus:iwl-phy0::radio
+[   66.954868] Registered led device: iwl-phy0::radio
+[   66.959913] PM: Adding info for No Bus:iwl-phy0::assoc
+[   66.965984] Registered led device: iwl-phy0::assoc
+[   66.971499] PM: Adding info for No Bus:iwl-phy0::RX
+[   66.977686] Registered led device: iwl-phy0::RX
+[   66.982552] PM: Adding info for No Bus:iwl-phy0::TX
+[   66.988401] Registered led device: iwl-phy0::TX
+[   67.011146] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+[   67.323525] usb 3-1: new full speed USB device using uhci_hcd and address 4
+[   67.491109] usb 3-1: New USB device found, idVendor=0a5c, idProduct=2110
+[   67.498019] usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[   67.505308] usb 3-1: Product: BCM2045B
+[   67.509242] usb 3-1: Manufacturer: Broadcom Corp
+[   67.514086] PM: Adding info for usb:3-1
+[   67.518809] usb 3-1: configuration #1 chosen from 1 choice
+[   67.527931] PM: Adding info for usb:3-1:1.0
+[   67.533086] PM: Adding info for No Bus:hci0
+[   67.537789] PM: Adding info for No Bus:rfkill3
+[   67.543933] PM: Adding info for No Bus:ep_81
+[   67.549100] PM: Adding info for No Bus:ep_82
+[   67.553654] PM: Adding info for No Bus:ep_02
+[   67.558370] PM: Adding info for usb:3-1:1.1
+[   67.562897] PM: Adding info for No Bus:ep_83
+[   67.567480] PM: Adding info for No Bus:ep_03
+[   67.572063] PM: Adding info for usb:3-1:1.2
+[   67.577056] PM: Adding info for No Bus:ep_84
+[   67.581743] PM: Adding info for No Bus:ep_04
+[   67.586311] PM: Adding info for usb:3-1:1.3
+[   67.591036] PM: Adding info for No Bus:usbdev3.4
+[   67.596201] PM: Adding info for No Bus:ep_00
+[   69.671721] e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow
+Control: None
+[   69.680512] ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+[   79.773396] eth0: no IPv6 routers present
+[   83.231905] SysRq : Emergency Sync
+[   83.241326] Emergency Sync complete
+[   84.347695] usb 3-1: USB disconnect, address 4
+[   84.347898] btusb_bulk_complete: hci0 urb ffff88013967e108 failed
+to resubmit (19)
+[   84.348907] btusb_intr_complete: hci0 urb ffff88013967e210 failed
+to resubmit (19)
+[   84.348926] btusb_bulk_complete: hci0 urb ffff88013967e738 failed
+to resubmit (19)
+[   84.375644] PM: Removing info for No Bus:ep_81
+[   84.380319] PM: Removing info for No Bus:ep_82
+[   84.384974] PM: Removing info for No Bus:ep_02
+[   84.389640] PM: Removing info for usb:3-1:1.0
+[   84.394381] btusb_send_frame: hci0 urb ffff8801330df948 submission failed
+[   84.438357] PM: Adding info for No Bus:vcs63
+[   84.438450] PM: Adding info for No Bus:vcsa63
+[   84.476874] PM: Syncing filesystems ... done.
+[   84.488352] PM: Preparing system for mem sleep
+[   84.492989] Freezing user space processes ...
+[   84.644220] PM: Removing info for No Bus:rfkill3
+[   84.649374] PM: Removing info for No Bus:hci0
+[   84.654137] PM: Removing info for No Bus:ep_83
+[   84.658730] PM: Removing info for No Bus:ep_03
+[   84.663320] PM: Removing info for usb:3-1:1.1
+[   84.667941] PM: Removing info for No Bus:ep_84
+[   84.672513] PM: Removing info for No Bus:ep_04
+[   84.677093] PM: Removing info for usb:3-1:1.2
+[   84.681698] PM: Removing info for usb:3-1:1.3
+[   84.683383] (elapsed 0.18 seconds) done.
+[   84.683385] Freezing remaining freezable tasks ...
+[   84.695052] PM: Removing info for No Bus:ep_00
+[   84.699924] PM: Removing info for usb:3-1
+[   84.704376] PM: Removing info for No Bus:usbdev3.4
+[   84.827551] (elapsed 0.14 seconds) done.
+[   84.831701] PM: Entering mem sleep
+[   84.835394] platform dock.0: preparing suspend
+[   84.839911] platform dock.1: preparing suspend
+[   84.844424] platform dock.2: preparing suspend
+[   84.848941] agpgart-intel 0000:00:00.0: preparing suspend
+[   84.854427] pci 0000:00:02.0: preparing suspend
+[   84.859025] pci 0000:00:02.1: preparing suspend
+[   84.863637] e1000e 0000:00:19.0: preparing suspend, may wakeup
+[   84.869544] uhci_hcd 0000:00:1a.0: preparing suspend
+[   84.874637] uhci_hcd 0000:00:1a.1: preparing suspend
+[   84.879679] ehci_hcd 0000:00:1a.7: preparing suspend
+[   84.884718] HDA Intel 0000:00:1b.0: preparing suspend
+[   84.889844] pcieport-driver 0000:00:1c.0: preparing suspend
+[   84.895494] pcieport-driver 0000:00:1c.1: preparing suspend
+[   84.901139] pcieport-driver 0000:00:1c.2: preparing suspend
+[   84.906788] pcieport-driver 0000:00:1c.3: preparing suspend
+[   84.912436] pcieport-driver 0000:00:1c.4: preparing suspend
+[   84.918083] uhci_hcd 0000:00:1d.0: preparing suspend
+[   84.923123] uhci_hcd 0000:00:1d.1: preparing suspend
+[   84.928165] uhci_hcd 0000:00:1d.2: preparing suspend
+[   84.933227] ehci_hcd 0000:00:1d.7: preparing suspend
+[   84.938267] pci 0000:00:1e.0: preparing suspend
+[   84.942872] pci 0000:00:1f.0: preparing suspend
+[   84.947482] ata_piix 0000:00:1f.1: preparing suspend
+[   84.952523] ahci 0000:00:1f.2: preparing suspend
+[   84.957218] i801_smbus 0000:00:1f.3: preparing suspend
+[   84.962435] iwl3945 0000:03:00.0: preparing suspend
+[   84.967403] pci 0000:15:00.0: preparing suspend
+[   84.972012] sdhci-pci 0000:15:00.2: preparing suspend
+[   84.977236] pci 0000:15:00.3: preparing suspend
+[   84.981844] pci 0000:15:00.4: preparing suspend
+[   84.986452] pci 0000:15:00.5: preparing suspend
+[   84.991148] platform vesafb.0: preparing suspend
+[   84.996001] serial8250 serial8250: preparing suspend
+[   85.001156] i8042 i8042: preparing suspend
+[   85.005333] platform hdaps: preparing suspend
+[   85.009821] usb usb1: preparing type suspend, may wakeup
+[   85.015221] usb usb2: preparing type suspend, may wakeup
+[   85.020615] usb usb3: preparing type suspend, may wakeup
+[   85.026012] usb usb4: preparing type suspend, may wakeup
+[   85.031429] usb usb5: preparing type suspend, may wakeup
+[   85.036823] usb usb6: preparing type suspend, may wakeup
+[   85.042219] usb usb7: preparing type suspend, may wakeup
+[   85.047615] usb 1-4: preparing type suspend, may wakeup
+[   85.052923] usb 3-2: preparing type suspend, may wakeup
+[   85.058237] usb 1-4.4: preparing type suspend, may wakeup
+[   85.063738] iTCO_wdt iTCO_wdt: preparing suspend
+[   85.068470] platform regulatory.0: preparing suspend
+[   85.073531] thinkpad_acpi thinkpad_acpi: preparing suspend
+[   85.079148] thinkpad_hwmon thinkpad_hwmon: preparing suspend
+[   85.085020] leds iwl-phy0::TX: legacy class suspend
+[   85.089977] leds iwl-phy0::RX: legacy class suspend
+[   85.094930] leds iwl-phy0::assoc: legacy class suspend
+[   85.100143] leds iwl-phy0::radio: legacy class suspend
+[   85.105365] mmcblk mmc0:b368: legacy suspend
+[   85.109758] backlight acpi_video0: legacy class suspend
+[   85.115057] drm card0: legacy class suspend
+[   85.130315] pci 0000:00:02.0: power state changed by ACPI to D3
+[   85.136392] rfkill rfkill2: legacy class suspend
+[   85.141127] ieee80211 phy0: legacy class suspend
+[   85.161178] PM: Removing info for No Bus:iwl-phy0::assoc
+[   85.166773] PM: Removing info for No Bus:iwl-phy0::RX
+[   85.172064] PM: Removing info for No Bus:iwl-phy0::TX
+[   85.177356] PM: Removing info for No Bus:iwl-phy0::radio
+[   85.186994] leds tpacpi::thinkvantage: legacy class suspend
+[   85.192695] leds tpacpi::standby: legacy class suspend
+[   85.197956] leds tpacpi::power: legacy class suspend
+[   85.203047] leds tpacpi::thinklight: legacy class suspend
+[   85.208565] rfkill rfkill1: legacy class suspend
+[   85.213299] psmouse serio2: legacy suspend
+[   85.434146] thinkpad_hwmon thinkpad_hwmon: suspend
+[   85.439058] thinkpad_acpi thinkpad_acpi: suspend
+[   85.444644] leds mmc0::: legacy class suspend
+[   85.449124] platform regulatory.0: suspend
+[   85.453395] iTCO_wdt iTCO_wdt: suspend
+[   85.457279] usb 1-4.4: type suspend, may wakeup
+[   85.473449] usb 3-2: type suspend, may wakeup
+[   85.493439] usb 1-4: type suspend, may wakeup
+[   85.510106] usb usb7: type suspend, may wakeup
+[   85.514674] usb usb6: type suspend, may wakeup
+[   85.519248] usb usb5: type suspend, may wakeup
+[   85.523822] usb usb4: type suspend, may wakeup
+[   85.528392] usb usb3: type suspend, may wakeup
+[   85.532990] usb usb2: type suspend, may wakeup
+[   85.537556] usb usb1: type suspend, may wakeup
+[   85.542183] sr 3:0:0:0: legacy suspend
+[   85.546057] scsi target3:0:0: legacy suspend
+[   85.550452] sd 0:0:0:0: legacy suspend
+[   85.554317] sd 0:0:0:0: [sda] Synchronizing SCSI cache
+[   85.559971] sd 0:0:0:0: [sda] Stopping disk
+[   87.603694] scsi target0:0:0: legacy suspend
+[   87.608106] platform hdaps: suspend
+[   87.611717] psmouse serio1: legacy suspend
+[   88.018767] atkbd serio0: legacy suspend
+[   88.626739] i8042 i8042: suspend
+[   88.630210] scsi host4: legacy suspend
+[   88.634078] scsi host3: legacy suspend
+[   88.637950] scsi host2: legacy suspend
+[   88.641820] scsi host1: legacy suspend
+[   88.645691] scsi host0: legacy suspend
+[   88.649635] serial8250 serial8250: suspend
+[   88.654002] platform vesafb.0: suspend
+[   88.657919] pnp 00:0a: legacy suspend
+[   88.661696] i8042 aux 00:09: legacy suspend
+[   88.666024] i8042 kbd 00:08: legacy suspend
+[   88.670342] rtc_cmos 00:07: legacy suspend, may wakeup
+[   88.675624] pnp 00:06: legacy suspend
+[   88.679408] pnp 00:05: legacy suspend
+[   88.683190] pnp 00:04: legacy suspend
+[   88.686968] pnp 00:03: legacy suspend
+[   88.690744] system 00:02: legacy suspend
+[   88.694801] pnp 00:01: legacy suspend
+[   88.698585] system 00:00: legacy suspend
+[   88.702650] pci 0000:15:00.5: suspend
+[   88.706431] pci 0000:15:00.4: suspend
+[   88.710216] pci 0000:15:00.3: suspend
+[   88.713993] sdhci-pci 0000:15:00.2: suspend
+[   88.718337] mmc0: card b368 removed
+[   88.721944] PM: Removing info for mmc:mmc0:b368
