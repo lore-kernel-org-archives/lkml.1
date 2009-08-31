@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752359AbZHaOYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752444AbZHaO1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752359AbZHaOYI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 10:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZHaOYH
+	id S1752444AbZHaO1w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 10:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZHaO1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 10:24:07 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:24446 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbZHaOYH convert rfc822-to-8bit (ORCPT
+	Mon, 31 Aug 2009 10:27:51 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:53720 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873AbZHaO1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 10:24:07 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Randy Dunlap <rdunlap@xenotime.net>, lkml <linux-kernel@vger.kernel.org>
-CC: akpm <akpm@linux-foundation.org>, ISS StorageDev <iss_storagedev@hp.com>
-Date: Mon, 31 Aug 2009 14:23:30 +0000
-Subject: RE: [PATCH] cciss: fix schedule_timeout() parameters
-Thread-Topic: [PATCH] cciss: fix schedule_timeout() parameters
-Thread-Index: AcoprxV+0FfBH0d0SoSI4AijAUgnrQAl3TwA
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77886952D5F97E@GVW0547EXC.americas.hpqcorp.net>
-References: <4A9ADECE.7050900@xenotime.net>
-In-Reply-To: <4A9ADECE.7050900@xenotime.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 31 Aug 2009 10:27:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=rgYRduzr9jnnXdyuRZ/q3f4RZzPKj+mV/TfElVu7hM+YnO3QtMDRO+Mlfwzr1m9gx/
+         1IJxhE7qYqRB59lVVildolmzuGA9h3ANI3E871Vb/rmjL7I3m5q+QCh8u2ngMS70dEju
+         COeLJejAkcn+Ph+bBs8IB7+3G3X9T7e3BaL58=
 MIME-Version: 1.0
+In-Reply-To: <4A9B96A7.5040005@gmail.com>
+References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
+	 <4A9B96A7.5040005@gmail.com>
+Date: Mon, 31 Aug 2009 07:20:19 -0700
+Message-ID: <5e088bd90908310720p290ba68dwd6106a778fd7c740@mail.gmail.com>
+Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
+From: Steve Sakoman <sakoman@gmail.com>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Tony Lindgren <tony@atomide.com>,
+       Tomi Valkeinen <tomi.valkeinen@nokia.com>, linux-kernel@vger.kernel.org,
+       "linux-omap@vger.kernel.org Mailing List" 
+	<linux-omap@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Mon, Aug 31, 2009 at 2:23 AM, Artem Bityutskiy<dedekind1@gmail.com> wrote:
 
-> -----Original Message-----
-> From: Randy Dunlap [mailto:rdunlap@xenotime.net] 
-> Sent: Sunday, August 30, 2009 3:19 PM
-> To: lkml
-> Cc: akpm; Miller, Mike (OS Dev); ISS StorageDev
-> Subject: [PATCH] cciss: fix schedule_timeout() parameters
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Change schedule_timeout() parameter to not be specific to HZ=1000.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: Mike Miller <mike.miller@hp.com>
-> Cc: iss_storagedev@hp.com
+> We are using DSS2 in Nokia for about a year already. N900 is using this
+> code, for example. Other (non-Nokia) projects are using DSS2 as well.
+> The code was public for long time and was sent several times for review.
+>
+> In any case,
+>
+> Tested-by: Artem Bityutskiy <artem.bityutskiy@nokia.com>
 
-Acked-by: Mike Miller <mike.miller@hp.com>
+Gumstix has also been shipping with DSS2 on their Overo product for
+many months now.
 
-> ---
->  drivers/block/cciss.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> --- lnx-2631-rc7.orig/drivers/block/cciss.c
-> +++ lnx-2631-rc7/drivers/block/cciss.c
-> @@ -36,6 +36,7 @@
->  #include <linux/proc_fs.h>
->  #include <linux/seq_file.h>
->  #include <linux/init.h>
-> +#include <linux/jiffies.h>
->  #include <linux/hdreg.h>
->  #include <linux/spinlock.h>
->  #include <linux/compat.h>
-> @@ -3489,7 +3490,7 @@ static int __devinit cciss_pci_init(ctlr
->  		if (scratchpad == CCISS_FIRMWARE_READY)
->  			break;
->  		set_current_state(TASK_INTERRUPTIBLE);
-> -		schedule_timeout(HZ / 10);	/* wait 100ms */
-> +		schedule_timeout(msecs_to_jiffies(100));	
-> /* wait 100ms */
->  	}
->  	if (scratchpad != CCISS_FIRMWARE_READY) {
->  		printk(KERN_WARNING "cciss: Board not ready.  
-> Timed out.\n"); @@ -3615,7 +3616,7 @@ static int __devinit 
-> cciss_pci_init(ctlr
->  			break;
->  		/* delay and try again */
->  		set_current_state(TASK_INTERRUPTIBLE);
-> -		schedule_timeout(10);
-> +		schedule_timeout(msecs_to_jiffies(1));
->  	}
->  
->  #ifdef CCISS_DEBUG
-> 
+Tested-by: Steve Sakoman <steve@sakoman.com>
