@@ -1,130 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751529AbZHaK0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbZHaKad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751529AbZHaK0q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 06:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZHaK0p
+	id S1751881AbZHaKad (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 06:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbZHaKac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 06:26:45 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:54727 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751072AbZHaK0o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 06:26:44 -0400
-Date: Mon, 31 Aug 2009 19:26:43 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Mel Gorman <mel@csn.ul.ie>, Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: page allocator regression on nommu
-Message-ID: <20090831102642.GA30264@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
-	Christoph Lameter <cl@linux-foundation.org>,
-	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Dave Hansen <dave@linux.vnet.ibm.com>,
-	Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org
-References: <20090831074842.GA28091@linux-sh.org> <84144f020908310308i48790f78g5a7d73a60ea854f8@mail.gmail.com>
+	Mon, 31 Aug 2009 06:30:32 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:60056 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751733AbZHaKab convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 06:30:31 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 4/6] thermal: add sanity check for the passive attribute
+Date: Mon, 31 Aug 2009 12:30:30 +0200
+User-Agent: KMail/1.9.9
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1251303445-25317-1-git-send-email-elendil@planet.nl> <200908261848.29897.elendil@planet.nl> <1251707630.3483.181.camel@rzhang-dt>
+In-Reply-To: <1251707630.3483.181.camel@rzhang-dt>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <84144f020908310308i48790f78g5a7d73a60ea854f8@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200908311230.32021.elendil@planet.nl>
+X-OriginalArrivalTime: 31 Aug 2009 10:30:32.0534 (UTC) FILETIME=[11914F60:01CA2A26]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 01:08:19PM +0300, Pekka Enberg wrote:
-> On Mon, Aug 31, 2009 at 10:48 AM, Paul Mundt<lethal@linux-sh.org> wrote:
-> > modprobe: page allocation failure. order:7, mode:0xd0
-> 
-> OK, so we have order 7 page allocation here...
-> 
-[snip]
-> > Active_anon:0 active_file:0 inactive_anon:0
-> > ?inactive_file:0 unevictable:323 dirty:0 writeback:0 unstable:0
-> > ?free:2967 slab:0 mapped:0 pagetables:0 bounce:0
-> > Normal free:11868kB min:0kB low:0kB high:0kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:1292kB present:16256kB pages_scanned:0 all_unreclaimable? no
-> > lowmem_reserve[]: 0 0
-> > Normal: 267*4kB 268*8kB 251*16kB 145*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB 0*8192kB 0*16384kB 0*32768kB = 11868kB
-> 
-> ...but we seem to be all out of order > 3 pages. I'm not sure why
-> commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e changes any of this,
-> though.
-> 
-Nor am I, but it does. With it reverted, all of the order-7 allocations
-succeed just fine. With some debugging printks added:
-
-usbcore: registered new device driver usb
-alloc order 7 for 49000: pages 0c21c000
-alloc order 7 for 49000: pages 0c21c000
-...
-
-While with it applied:
-
-alloc order 7 for 49000:
-modprobe: page allocation failure. order:7, mode:0xd0
-...
-Mem-Info:
-Normal per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-Active_anon:0 active_file:0 inactive_anon:0
- inactive_file:0 unevictable:323 dirty:0 writeback:0 unstable:0
- free:2911 slab:0 mapped:0 pagetables:0 bounce:0
-Normal free:11644kB min:0kB low:0kB high:0kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:1292kB present:16256kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0
-Normal: 259*4kB 264*8kB 247*16kB 142*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB 0*8192kB 0*16384kB 0*32768kB = 11644kB
-323 total pagecache pages
-4096 pages RAM
-662 pages reserved
-226 pages shared
-288 pages non-shared
-0 pages in pagetable cache
--ENOMEM
-Allocation of length 299008 from process 50 (modprobe) failed
-Normal per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-Active_anon:0 active_file:0 inactive_anon:0
- inactive_file:0 unevictable:323 dirty:0 writeback:0 unstable:0
- free:2911 slab:0 mapped:0 pagetables:0 bounce:0
-Normal free:11644kB min:0kB low:0kB high:0kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:1292kB present:16256kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0
-Normal: 259*4kB 264*8kB 247*16kB 142*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB 0*8192kB 0*16384kB 0*32768kB = 11644kB
-323 total pagecache pages
-
-the -ENOMEM printk() I've placed in the alloc_pages() error path.
-
-> > ------------[ cut here ]------------
-> > kernel BUG at mm/nommu.c:598!
-> > Kernel BUG: 003e [#1]
-> > Modules linked in:
+On Monday 31 August 2009, Zhang Rui wrote:
+> On Thu, 2009-08-27 at 00:48 +0800, Frans Pop wrote:
+> > On Wednesday 26 August 2009, Matthew Garrett wrote:
+> > > On Wed, Aug 26, 2009 at 06:17:23PM +0200, Frans Pop wrote:
+> > > > Values below 40000 milli-celsius (limit is somewhat arbitrary)
+> > > > don't make sense and can cause the system to go into a thermal
+> > > > heart attack: the actual temperature will always be lower and
+> > > > thus the system will be throttled down to its lowest setting.
+> > >
+> > > Not keen on this - it's a pretty arbitrary cutoff, and there are
+> > > some cases where someone might want this value. Policy belongs in
+> > > userspace, and all that.
 > >
-> > Pid : 51, Comm: ? ? ? ? ? ? ? ? modprobe
-> > CPU : 0 ? ? ? ? ? ? ? ? Not tainted ?(2.6.31-rc7 #2835)
+> > What cases do you see? Testing? Or systems that might have to operate
+> > at such a low temperature? I deliberately chose a value that's at a
+> > level that's easy to reach.
 > >
-> > PC is at __put_nommu_region+0xe/0xb0
-> > PR is at do_mmap_pgoff+0x8dc/0xa68
-> 
-> This looks to be a bug in nommu do_mmap_pgoff() error handling. I
-> guess we shouldn't call __put_nommu_region() if add_nommu_region()
-> hasn't been called?
-> 
-Yeah, that looks a bit suspect. __put_nommu_region() is safe to be called
-without a call to add_nommu_region(), but we happen to trip over the BUG_ON()
-in this case because we've never made a single addition to the region tree.
+> > I agree it is arbitrary, but it will prevent major confusion when
+> > someone like me echo's 95 directly in sysfs.
+>
+> this is a problem.
+> how about something like:
+> #define THERMAL_PASSIVE_WARNING_LEVEL 0x40000
 
-We probably ought to just up_write() and return if nommu_region_tree == RB_ROOT,
-which is what I'll do unless David objects.
+Hmmm. 40000 hexadecimal? That seems a bit high ;-)
+
+> if (state < THERMAL_PASSIVE_WARNING_LEVEL)
+>    printk(KERN_WARNING PREFIX "Passive trip point too low, this may"
+>           "slow down your laptop because processors are throttled "
+>           "whenever the temperature is higher than %dC\n", state/1000);
+
+Disadvantage is that users are unlikely to actually see that message at 
+the time they set the value, especially if they're working in some xterm. 
+They'd have to check dmesg or log files. It also increases the .text size 
+of the module for an option that very few people are likely to use.
+
+> > Would 1000 (1 °C) perhaps be more acceptable as a limit? I doubt
+> > there are valid use-cases for below 0 temps :-)
+
+I'd prefer this option. Do you see any downside to this?
+
+Cheers,
+FJP
