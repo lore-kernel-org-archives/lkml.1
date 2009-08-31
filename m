@@ -1,101 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbZHaSQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbZHaSYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbZHaSQk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 14:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbZHaSQi
+	id S1752782AbZHaSYx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 14:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750927AbZHaSYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 14:16:38 -0400
-Received: from clegg.madduck.net ([193.242.105.96]:52350 "EHLO
-	clegg.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbZHaSQg (ORCPT
+	Mon, 31 Aug 2009 14:24:53 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:33258 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZHaSYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 14:16:36 -0400
-X-Greylist: delayed 468 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Aug 2009 14:16:35 EDT
-Date: Mon, 31 Aug 2009 20:07:46 +0200
-From: martin f krafft <madduck@debian.org>
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-       NeilBrown <neilb@suse.de>, Ric Wheeler <rwheeler@redhat.com>,
-       Rob Landley <rob@landley.net>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
- document conditions when reliable operation is possible)
-Message-ID: <20090831180746.GA32110@piper.oerlikon.madduck.net>
-Mail-Followup-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-	Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-	NeilBrown <neilb@suse.de>, Ric Wheeler <rwheeler@redhat.com>,
-	Rob Landley <rob@landley.net>, Florian Weimer <fweimer@bfk.de>,
-	Goswin von Brederlow <goswin-v-b@web.de>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-	linux-ext4@vger.kernel.org, corbet@lwn.net
-References: <4A947682.2010204@redhat.com>
- <200908262253.17886.rob@landley.net>
- <4A967175.5070700@redhat.com>
- <20090827221319.GA1601@ucw.cz>
- <4A9733C1.2070904@redhat.com>
- <20090828064449.GA27528@elf.ucw.cz>
- <20090828120854.GA8153@mit.edu>
- <20090830075135.GA1874@ucw.cz>
- <20090830152023.GB23828@mit.edu>
- <4807377b0908311049id9a2167r937bc8447c2b3546@mail.gmail.com>
+	Mon, 31 Aug 2009 14:24:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=trI23SGox0Xwd8pA+MaJ3TTvcJwDQW/98WY69n9jy2X5McVZpIxEMXqi4YwnJXzSpM
+         89Kj5+O2p7qa+85pnXuUZ3SOgb1GikMXSHwi9/umWCwFD8A6H2ACrVFX2ae8Kzy6mH4x
+         M1sIZrzsJQNvqM/Gcpu9frxyJmuXPxWVvowTo=
+Message-ID: <4A9C156D.5080701@gmail.com>
+Date: Mon, 31 Aug 2009 20:24:45 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-ripemd160;
-	protocol="application/pgp-signature"; boundary="h31gzZEtNLTqOjlF"
-Content-Disposition: inline
-In-Reply-To: <4807377b0908311049id9a2167r937bc8447c2b3546@mail.gmail.com>
-X-Motto: Keep the good times rollin'
-X-OS: Debian GNU/Linux squeeze/sid kernel 2.6.31-rc3-amd64 x86_64
-X-Subliminal-Message: debian/rules!
-Organization: The Debian project
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       Mike Miller <mike.miller@hp.com>, iss_storagedev@hp.com
+Subject: Re: [PATCH] cciss: fix schedule_timeout() parameters
+References: <4A9ADECE.7050900@xenotime.net>
+In-Reply-To: <4A9ADECE.7050900@xenotime.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Change schedule_timeout() parameter to not be specific to HZ=1000.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Mike Miller <mike.miller@hp.com>
+> Cc: iss_storagedev@hp.com
+> ---
+>  drivers/block/cciss.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> --- lnx-2631-rc7.orig/drivers/block/cciss.c
+> +++ lnx-2631-rc7/drivers/block/cciss.c
+> @@ -36,6 +36,7 @@
+>  #include <linux/proc_fs.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/init.h>
+> +#include <linux/jiffies.h>
+>  #include <linux/hdreg.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/compat.h>
+> @@ -3489,7 +3490,7 @@ static int __devinit cciss_pci_init(ctlr
+>  		if (scratchpad == CCISS_FIRMWARE_READY)
+>  			break;
+>  		set_current_state(TASK_INTERRUPTIBLE);
+> -		schedule_timeout(HZ / 10);	/* wait 100ms */
+> +		schedule_timeout(msecs_to_jiffies(100));	/* wait 100ms */
+>  	}
+>  	if (scratchpad != CCISS_FIRMWARE_READY) {
+>  		printk(KERN_WARNING "cciss: Board not ready.  Timed out.\n");
+> @@ -3615,7 +3616,7 @@ static int __devinit cciss_pci_init(ctlr
+>  			break;
+>  		/* delay and try again */
+>  		set_current_state(TASK_INTERRUPTIBLE);
+> -		schedule_timeout(10);
+> +		schedule_timeout(msecs_to_jiffies(1));
 
---h31gzZEtNLTqOjlF
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-also sprach Jesse Brandeburg <jesse.brandeburg@gmail.com> [2009.08.31.1949 =
-+0200]:
-> In the case of a degraded array, could the kernel be more
-> proactive (or maybe even mdadm) and have the filesystem remount
-> itself withOUT journalling enabled? =A0This seems on the surface to
-> be possible, but I don't know the internal particulars that might
-> prevent/allow it.
-
-Why would I want to disable the filesystem journal in that case?
-
---=20
- .''`.   martin f. krafft <madduck@d.o>      Related projects:
-: :'  :  proud Debian developer               http://debiansystem.info
-`. `'`   http://people.debian.org/~madduck    http://vcs-pkg.org
-  `-  Debian - when you have better things to do than fixing systems
-=20
-"i can stand brute force, but brute reason is quite unbearable. there
- is something unfair about its use. it is hitting below the
- intellect."
-                                                        -- oscar wilde
-
---h31gzZEtNLTqOjlF
-Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
-Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEAREDAAYFAkqcEXEACgkQIgvIgzMMSnWmoQCggF5B5eXZnpgB+Gl3BwXUtEaU
-DJEAoL8ml704eMQojLX4Pepo6IajlrUV
-=VeIZ
------END PGP SIGNATURE-----
-
---h31gzZEtNLTqOjlF--
+shouldn't it be msecs_to_jiffies(10)?
