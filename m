@@ -1,86 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZHaANm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZHaAzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbZHaANm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 20:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbZHaANl
+	id S1753128AbZHaAzE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 20:55:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZHaAzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 20:13:41 -0400
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:33590 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbZHaANk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 20:13:40 -0400
-X-Greylist: delayed 403 seconds by postgrey-1.27 at vger.kernel.org; Sun, 30 Aug 2009 20:13:40 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=WpJh3/T3gf3qC/FX6z/2nmi0BQ9XGwu2bapwPTg946w5S96cVc9TcBN4Zn5HmaHH5T
-         x1Z01aamWdXzcxUc9OowgTfb2m+4nq+FN8pk9TjHKL1XKYQObNzPIDes+sUCY8ckjcRR
-         tl60W8Akzns4rxQ6U7YQGQSif07w+k2LbPgWY=
-Date: Sun, 30 Aug 2009 20:06:56 -0400
-From: Celejar <celejar@gmail.com>
-To: Sebastian Andrzej Siewior <sebastian@ml.breakpoint.cc>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Jonas Meurer <jonas@freesources.org>, 541835@bugs.debian.org,
-       lkml <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org
-Subject: Re: [pkg-cryptsetup-devel] Bug#541835: crypto configuration /
- dependencies broken
-Message-Id: <20090830200656.dbd56f89.celejar@gmail.com>
-In-Reply-To: <20090830153722.GA28497@Chamillionaire.breakpoint.cc>
-References: <20090825195852.1dfacb6c.celejar@gmail.com>
-	<20090827095516.6817be1e.randy.dunlap@oracle.com>
-	<20090827183500.GC24973@resivo.wgnet.de>
-	<20090827123401.86cd4319.randy.dunlap@oracle.com>
-	<20090828080056.GA3204@Chamillionaire.breakpoint.cc>
-	<20090830153722.GA28497@Chamillionaire.breakpoint.cc>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Sun, 30 Aug 2009 20:55:03 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:46912 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751396AbZHaAzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 20:55:01 -0400
+Subject: Re: [Patch 0/8] V5 Implement crashkernel=auto
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
+       "M. Mohan Kumar" <mohan@in.ibm.com>, akpm@linux-foundation.org,
+       bernhard.walle@gmx.de, Fenghua Yu <fenghua.yu@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
+References: <20090827031800.4534.94868.sendpatchset@localhost.localdomain>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-j9EEpo+dHFhto0hRq2AN"
+Date: Mon, 31 Aug 2009 10:54:56 +1000
+Message-Id: <1251680096.5279.6.camel@concordia>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 30 Aug 2009 17:37:22 +0200
-Sebastian Andrzej Siewior <sebastian@ml.breakpoint.cc> wrote:
 
-> * Sebastian Andrzej Siewior | 2009-08-28 10:00:56 [+0200]:
-> 
-> >>> the problem is not reproducible with a debian/unstable 2.6.30.6 kernel,
-> >>> even though it has cbc compiled as module as well. but if I recompile
-> >>> the same kernel sources with Celejars kernel .config, the problem
-> >>> occurs. thus it must be related to the kernel config in some way.
-> >It must be the kernel confing since I run .30.stable and it works. I try
-> >to look at it later.
-> 
-> Your kernel config is fine, the problem is that the initramfs tools do
-> not copy all of the required modules into the initramfs. The missing
-> modles are:
-> - cryptomgr: that one is responsible to load the cbc and aes module and
->   bind them to cbc(aes)
-> - chainiv: that one creates IVs if the "user" does not specify one.
->   dm-crypt probably does not use that one but is required due to the way
->   crypto works atm.
-> - krng: provides random numbers and is required by chainiv.
-> 
-> If you add those three to /etc/initramfs/modules than it should work.
+--=-j9EEpo+dHFhto0hRq2AN
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Right your are!  It now works, thanks very much.  I guess the catch was
-that the working (stock Debian) kernel config built cryptomgr
-(CRYPTO_MANAGER and CRYPTO_MANAGER2) and krng (CRYPTO_RNG2, although
-not CRYPTO_RNG) and chainiv (CRYPTO_BLKCIPHER2, although not
-CRYPTO_BLKCIPHER - I have the impression that chainiv is now
-controlled by the BLKCIPHER options?) into the kernel, not as modules,
-so I wasn't hit by the initramfs failure until I built them as modules
-(I have a bit of a fetish for building everything as a module,
-especially when using initrd's :/).
+On Wed, 2009-08-26 at 23:15 -0400, Amerigo Wang wrote:
+> V4 -> V5:
+>  - Rename the global functions, as suggested by Andrew.
+>  - Save some macros, as suggested by Andrew.
+>  - Change the high threshold, from 32G to 4G.
+>  - Change the low threshold on ppc, suggested by ppc developers.
+>  - Make the mm part as a seperate function, suggest by Eric.
+>  - Make the IA64 code more readable.
+>  - Reorder the patchset again, since review from mm people is done.
+>=20
+> V3 -> V4:
+>  - Reorder the patches.
+>  - Really free the reserved memory, instead of remapping it.
+>    (Thanks to KAMEZAWA Hiroyuki!)
+>  - Release the reserved memory resource when the size is 0.
+>  - Use strict_strtoul() instead of simple_strtoul().
+>=20
+> V2 -> V3:
+>  - Use more clever way to calculate reserved memory size, especially for =
+IA64.
+>  - Add that patch that implements shrinking reserved memory
+>=20
+> V1 -> V2:
+>  - Use include/asm-generic/kexec.h, suggested by Neil.
+>  - Rename a local variable, suggested by Fenghua.
+>  - Fix some style problems found by checkpatch.pl.
+>  - Unify the Kconfig docs.
+>=20
+> This series of patch implements automatically reserved memory for crashke=
+rnel,
+> by introducing a new boot option "crashkernel=3Dauto". This idea is from =
+Neil.
+>=20
+> In case of breaking user-space applications, it modifies this boot option=
+ after
+> it decides how much memory should be reserved.
+>=20
+> On different arch, the threshold and reserved memory size is different. P=
+lease
+> refer patch 7/8 which contains an update for the documentation.
+>=20
+> Patch 8/8 implements shrinking reserved memory at run-time, which is usef=
+ul
+> when more than enough memory is reserved automatically.
+>=20
+> This patchset _is_ already tested on x86_64, IA64 and ppc64.
 
-> Could someone please look at initramfs to figure out why those three
-> modules are not copied in this reduced setup?
+I don't want to sound like a micro-kernel zealot, I'm not, but I'm still
+unconvinced as to why the auto logic needs to go in the kernel. What is
+the compelling reason that the kernel needs to do this calculation vs
+some userspace tool? We already have the syntax that allows defining a
+different crash size depending on the size of RAM.
 
-Celejar
--- 
-mailmin.sourceforge.net - remote access via secure (OpenPGP) email
-ssuds.sourceforge.net - A Simple Sudoku Solver and Generator
+The shrinking of reserved memory is cool.
+
+cheers
+
+--=-j9EEpo+dHFhto0hRq2AN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkqbH10ACgkQdSjSd0sB4dJaxwCgsfE86zo4J6zXMwhsgkoUEeKo
+6kEAn1dFOuXTv6RBw8cM3k3yr1fPawLH
+=yOoo
+-----END PGP SIGNATURE-----
+
+--=-j9EEpo+dHFhto0hRq2AN--
 
