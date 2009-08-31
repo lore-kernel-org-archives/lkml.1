@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbZHaUDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZHaUGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbZHaUDm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 16:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbZHaUDm
+	id S1754338AbZHaUGq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 16:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZHaUGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 16:03:42 -0400
-Received: from xenotime.net ([72.52.64.118]:52474 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752470AbZHaUDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 16:03:41 -0400
-Date: Mon, 31 Aug 2009 13:03:42 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       Mike Miller <mike.miller@hp.com>, iss_storagedev@hp.com
-Subject: Re: [PATCH] cciss: fix schedule_timeout() parameters
-Message-Id: <20090831130342.a5f3d821.rdunlap@xenotime.net>
-In-Reply-To: <4A9C156D.5080701@gmail.com>
-References: <4A9ADECE.7050900@xenotime.net>
-	<4A9C156D.5080701@gmail.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Aug 2009 16:06:45 -0400
+Received: from mga09.intel.com ([134.134.136.24]:52696 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752470AbZHaUGo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 16:06:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,307,1249282800"; 
+   d="scan'208";a="546448069"
+From: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
+To: Rik van Riel <riel@redhat.com>
+CC: "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>, Avi Kivity <avi@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Date: Mon, 31 Aug 2009 13:06:09 -0700
+Subject: RE: [RFC] respect the referenced bit of KVM guest pages?
+Thread-Topic: [RFC] respect the referenced bit of KVM guest pages?
+Thread-Index: AcoqdLZqZ4CzMl+YTKW5fSFJirxFtQAAXYVQ
+Message-ID: <9EECC02A4CC333418C00A85D21E893260184183339@azsmsx502.amr.corp.intel.com>
+References: <4A7AAE07.1010202@redhat.com>
+ <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost>
+ <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost>
+ <4A7AD79E.4020604@redhat.com> <20090816032822.GB6888@localhost>
+ <4A878377.70502@redhat.com> <20090816045522.GA13740@localhost>
+ <9EECC02A4CC333418C00A85D21E89326B6611F25@azsmsx502.amr.corp.intel.com>
+ <20090821182439.GN29572@balbir.in.ibm.com>
+ <9EECC02A4CC333418C00A85D21E8932601841832F9@azsmsx502.amr.corp.intel.com>
+ <4A9C2A17.3080802@redhat.com>
+In-Reply-To: <4A9C2A17.3080802@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Aug 2009 20:24:45 +0200 Marcin Slusarz wrote:
+> This will be because the VM does not start aging pages
+> from the active to the inactive list unless there is
+> some memory pressure.
 
-> Randy Dunlap wrote:
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Change schedule_timeout() parameter to not be specific to HZ=1000.
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > Cc: Mike Miller <mike.miller@hp.com>
-> > Cc: iss_storagedev@hp.com
-> > ---
-> >  drivers/block/cciss.c |    5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > 
-> > --- lnx-2631-rc7.orig/drivers/block/cciss.c
-> > +++ lnx-2631-rc7/drivers/block/cciss.c
-> > @@ -36,6 +36,7 @@
-> >  #include <linux/proc_fs.h>
-> >  #include <linux/seq_file.h>
-> >  #include <linux/init.h>
-> > +#include <linux/jiffies.h>
-> >  #include <linux/hdreg.h>
-> >  #include <linux/spinlock.h>
-> >  #include <linux/compat.h>
-> > @@ -3489,7 +3490,7 @@ static int __devinit cciss_pci_init(ctlr
-> >  		if (scratchpad == CCISS_FIRMWARE_READY)
-> >  			break;
-> >  		set_current_state(TASK_INTERRUPTIBLE);
-> > -		schedule_timeout(HZ / 10);	/* wait 100ms */
-> > +		schedule_timeout(msecs_to_jiffies(100));	/* wait 100ms */
-> >  	}
-> >  	if (scratchpad != CCISS_FIRMWARE_READY) {
-> >  		printk(KERN_WARNING "cciss: Board not ready.  Timed out.\n");
-> > @@ -3615,7 +3616,7 @@ static int __devinit cciss_pci_init(ctlr
-> >  			break;
-> >  		/* delay and try again */
-> >  		set_current_state(TASK_INTERRUPTIBLE);
-> > -		schedule_timeout(10);
-> > +		schedule_timeout(msecs_to_jiffies(1));
-> 
-> shouldn't it be msecs_to_jiffies(10)?
+Which is the reason I gave the VM a puny amount of memory.  We know the thing is under memory pressure because I've been complaining about page discards.  I didn't collect that data on this run, but I'll do it again to make sure.
 
-Hm, thanks, that's a good observation -- and possibly correct.
+					Jeff
 
-
-The reason that I used (1) was that I looked at the loop:
-
-	for (i = 0; i < MAX_CONFIG_WAIT; i++) {
-		if (!(readl(c->vaddr + SA5_DOORBELL) & CFGTBL_ChangeReq))
-			break;
-		/* delay and try again */
-		set_current_state(TASK_INTERRUPTIBLE);
-		schedule_timeout(msecs_to_jiffies(1));
-	}
-
-and this:
-/* How long to wait (in milliseconds) for board to go into simple mode */
-#define MAX_CONFIG_WAIT 30000
-
-and then I tried to make the loop run for a max. of 30000 milliseconds.
-
-Mike M., any comments here?
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
