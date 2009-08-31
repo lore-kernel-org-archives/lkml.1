@@ -1,72 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbZHaOov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZHaOpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752719AbZHaOov (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 10:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbZHaOou
+	id S1752907AbZHaOpI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 10:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZHaOpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 10:44:50 -0400
-Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:1174 "EHLO
-	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184AbZHaOot (ORCPT
+	Mon, 31 Aug 2009 10:45:07 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:36973 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752576AbZHaOpF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 10:44:49 -0400
-Message-ID: <42d1ca6a2d2f29851cc1ea228bbc7121.squirrel@webmail.xs4all.nl>
-In-Reply-To: <20090831100855.677d16d6@pedra.chehab.org>
-References: <4A52E897.8000607@freemail.hu> <4A910C42.5000001@freemail.hu>
-    <20090830234114.16b90c36@pedra.chehab.org>
-    <200908310858.24763.laurent.pinchart@ideasonboard.com>
-    <f37f7dc3d82cf5482ba08b90bde4795c.squirrel@webmail.xs4all.nl>
-    <20090831100855.677d16d6@pedra.chehab.org>
-Date: Mon, 31 Aug 2009 16:44:20 +0200
-Subject: Re: [RESEND][PATCH 1/2] v4l2: modify the webcam video standard  
- handling
-From: "Hans Verkuil" <hverkuil@xs4all.nl>
-To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
-Cc: "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>,
-       =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
-       "Jean-Francois Moine" <moinejf@free.fr>,
-       "Thomas Kaiser" <thomas@kaiser-linux.li>, linux-media@vger.kernel.org,
-       "LKML" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.18
+	Mon, 31 Aug 2009 10:45:05 -0400
+From: "Hiremath, Vaibhav" <hvaibhav@ti.com>
+To: "Syed Mohammed, Khasim" <khasim@ti.com>, Steve Sakoman <sakoman@gmail.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org Mailing List" 
+	<linux-omap@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Tony Lindgren <tony@atomide.com>,
+       Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Date: Mon, 31 Aug 2009 20:14:43 +0530
+Subject: RE: [PATCH 00/18] OMAP: DSS2: Intro
+Thread-Topic: [PATCH 00/18] OMAP: DSS2: Intro
+Thread-Index: AcoqR0n2W0I5RdOXR5+xDReB8va5ogAAQjmQAABDbhA=
+Message-ID: <19F8576C6E063C45BE387C64729E73940436A4A9B6@dbde02.ent.ti.com>
+References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
+	 <4A9B96A7.5040005@gmail.com>
+ <5e088bd90908310720p290ba68dwd6106a778fd7c740@mail.gmail.com>
+ <0680EC522D0CC943BC586913CF3768C0037CE48136@dbde02.ent.ti.com>
+In-Reply-To: <0680EC522D0CC943BC586913CF3768C0037CE48136@dbde02.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Em Mon, 31 Aug 2009 09:33:23 +0200
-> "Hans Verkuil" <hverkuil@xs4all.nl> escreveu:
->
->> > TV standards only apply to analog video. Let's simply not use it for
->> > digital
->> > video. We don't expect drivers to implement VIDIOC_[GS]_JPEGCOMP with
->> fake
->> > values when they don't support JPEG compression, so we should not
->> expect
->> > them
->> > to implement VIDIOC_[GS]_STD when they don't support analog TV.
->>
->> Exactly. Work is underway to add an API for HDTV and similar digital
->> video
->> formats. But we should just freeze the v4l2_std_id API and only use it
->> for
->> the analog PAL/NTSC/SECAM type formats. This nicely corresponds with the
->> underlying standards as those have been frozen as well.
->
-> Could you please point the thread where this API is being discussed
+> -----Original Message-----
+> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> owner@vger.kernel.org] On Behalf Of Syed Mohammed, Khasim
+> Sent: Monday, August 31, 2009 8:11 PM
+> To: Steve Sakoman; Artem Bityutskiy; linux-kernel@vger.kernel.org;
+> linux-omap@vger.kernel.org Mailing List
+> Cc: Andrew Morton; Tony Lindgren; Tomi Valkeinen
+> Subject: RE: [PATCH 00/18] OMAP: DSS2: Intro
+> 
+> 
+> 
+> > -----Original Message-----
+> > From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+> owner@vger.kernel.org] On Behalf Of Steve
+> > Sakoman
+> > Sent: Monday, August 31, 2009 7:50 PM
+> > To: Artem Bityutskiy
+> > Cc: Andrew Morton; Tony Lindgren; Tomi Valkeinen; linux-
+> kernel@vger.kernel.org; linux-
+> > omap@vger.kernel.org Mailing List
+> > Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
+> >
+> > On Mon, Aug 31, 2009 at 2:23 AM, Artem
+> Bityutskiy<dedekind1@gmail.com> wrote:
+> >
+> > > We are using DSS2 in Nokia for about a year already. N900 is
+> using this
+> > > code, for example. Other (non-Nokia) projects are using DSS2 as
+> well.
+> > > The code was public for long time and was sent several times for
+> review.
+> > >
+> > > In any case,
+> > >
+> > > Tested-by: Artem Bityutskiy <artem.bityutskiy@nokia.com>
+> >
+> > Gumstix has also been shipping with DSS2 on their Overo product
+> for
+> > many months now.
+> >
+> > Tested-by: Steve Sakoman <steve@sakoman.com>
+> 
+> If there is a concern on OMAP2 support, I can confirm that there is
+> no difference between OMAP2 and OMAP3 Display Subsystem from
+> Register level. So what ever works on OMAP3 DSS2 should straight
+> away work for OMAP2 as well.
+> 
+> I agree with rest of the folks here, we should get DSS2 merged in
+> mainline. It is being extensively used on all OMAP3 platforms.
+> 
+[Hiremath, Vaibhav] I am also agreeing with the point that we should merge the DSS2; it's now almost year we have migrated to DSS2. Most of our customers are based out of it.
 
-Sure, here is the thread:
+Thanks,
+Vaibhav
 
-http://osdir.com/ml/linux-media/2009-08/msg00452.html
-
-It's currently just brainstorming and not an official RFC.
-
-Regards,
-
-         Hans
-
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
+> Regards,
+> Khasim
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-
+> omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
