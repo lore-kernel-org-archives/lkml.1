@@ -1,223 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751901AbZHaKIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbZHaKIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751901AbZHaKIU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 06:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbZHaKIT
+	id S1751981AbZHaKIn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 06:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZHaKIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 06:08:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:36267 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbZHaKIS convert rfc822-to-8bit (ORCPT
+	Mon, 31 Aug 2009 06:08:42 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53597 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbZHaKIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 06:08:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=MFhGNQauzc2RmJtk53Kjyw954VvMAsRnyRqD0nMxc+YX/qxR0A+Cq5/i7E72zTZmAn
-         zTzNE8kvWyM1IY7NAN7C9AKl1LoQ5c7jP8z0zVzNnZ+AxjlVBs069in4YWIL+9whhnRt
-         cf0UcEZrniwX/PBfzLnuF0bfH5qBHTW/KAd3w=
-MIME-Version: 1.0
-In-Reply-To: <20090831074842.GA28091@linux-sh.org>
-References: <20090831074842.GA28091@linux-sh.org>
-Date: Mon, 31 Aug 2009 13:08:19 +0300
-X-Google-Sender-Auth: c5b2163849d4420e
-Message-ID: <84144f020908310308i48790f78g5a7d73a60ea854f8@mail.gmail.com>
-Subject: Re: page allocator regression on nommu
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Paul Mundt <lethal@linux-sh.org>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 31 Aug 2009 06:08:41 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 31 Aug 2009 19:06:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       benh@kernel.crashing.org, ralf@linux-mips.org, xiyou.wangcong@gmail.com,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       jirislaby@gmail.com
+Subject: [PATCH 5/8][mmotm] walk system ram range
+Message-Id: <20090831190641.dcc56269.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090831190024.fadc3b50.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090831190024.fadc3b50.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-On Mon, Aug 31, 2009 at 10:48 AM, Paul Mundt<lethal@linux-sh.org> wrote:
-> It seems we've managed to trigger a fairly interesting conflict between
-> the anti-fragmentation disabling code and the nommu region rbtree. I've
-> bisected it down to:
->
-> commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e
-> Author: Mel Gorman <mel@csn.ul.ie>
-> Date:   Tue Jun 16 15:31:58 2009 -0700
->
->    page allocator: move check for disabled anti-fragmentation out of fastpath
->
->    On low-memory systems, anti-fragmentation gets disabled as there is
->    nothing it can do and it would just incur overhead shuffling pages between
->    lists constantly.  Currently the check is made in the free page fast path
->    for every page.  This patch moves it to a slow path.  On machines with low
->    memory, there will be small amount of additional overhead as pages get
->    shuffled between lists but it should quickly settle.
->
-> which causes death on unpacking initramfs on my nommu board. With this
-> reverted, everything works as expected. Note that this blows up with all of
-> SLOB/SLUB/SLAB.
->
-> I'll continue debugging it, and can post my .config if it will be helpful, but
-> hopefully you have some suggestions on what to try :-)
->
-> ---
->
-> modprobe: page allocation failure. order:7, mode:0xd0
+Originally, walk_memory_resource() was introduced to traverse all memory
+of "System RAM" for detecting memory hotplug/unplug range.  For doing so,
+flags of IORESOUCE_MEM|IORESOURCE_BUSY was used and this was enough for
+memory hotplug.
 
-OK, so we have order 7 page allocation here...
+But for using other purpose, /proc/kcore, this may includes some firmware
+area marked as IORESOURCE_BUSY | IORESOUCE_MEM.  This patch makes the
+check strict to find out busy "System RAM".
 
-> Stack: (0x0c909d2c to 0x0c90a000)
-> 9d20:                            0c0387d2 00000000 00000000 0c107fcc 00000000
-> 9d40: 00000000 0c107fcc 0c2f8960 00000000 00000010 00000000 00000000 000200d0
-> 9d60: 00000000 0c041614 0c9f8cf4 00000000 0c9f8d1c 00000000 00000004 00000000
-> 9d80: 00000007 0c01a582 0c2f8cd0 00000000 00000000 00049000 00000049 00048fff
-> 9da0: 00049fff 00049000 00000007 0c06633a 00000001 0c909f30 0003e950 0c0bad00
-> 9dc0: 0000984a 0c2f8ea0 ffffe000 00000002 00000000 0c065314 0c2f8ea0 0c077f60
-> 9de0: 00049000 0000673c 00000050 000369a0 000019cf 00000004 00004e20 0003e950
-> 9e00: 000481aa 00000001 00004eaa 000049a0 00007fb0 000369a0 00000000 00000000
-> 9e20: 0c909e50 00000000 00000000 0c066790 00000000 0c909f30 00000000 00000000
-> 9e40: 0c2f8ea0 0c909f30 0c909e50 00004eaa 00000000 00000000 00000000 00000000
-> 9e60: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> 9e80: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> 9ea0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> 9ec0: 0c0482ee 00000000 fffffff8 0c2f8ea0 0c104ff8 0c04884e 0c0feb64 00000001
-> 9ee0: 0c048570 ffffe000 0c2f8ea0 00000000 00000000 0c813eb8 0c909f30 0c002e68
-> 9f00: 00000000 00000000 00000000 0c0feb64 0c813eb8 0c909f30 0c960000 0c007972
-> 9f20: ffffff0f 00000071 00000100 0c002e38 0000000b ffffff0f 00000001 0000000b
-> 9f40: 0c0fea64 0c813eb8 0c0feb64 0c2f898c 00000000 ffffe000 0c9f8990 00000000
-> 9f60: 00000000 00000000 00000000 0c909f8c 0c0050ca 0c01e874 40000001 00000000
-> 9f80: 00000000 4795ce40 0000004c 0c002cca 00000000 00000000 00000000 00000000
-> 9fa0: 00000000 00000000 00000000 00000000 00000000 0c9f8990 0c01e7a4 00000000
-> 9fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> 9fe0: 0c909f9c 0c002cc4 00000000 40000000 00000000 00000000 00000000 00000000
->
-> Call trace:
->  [<0c041614>] do_mmap_pgoff+0x638/0xa68
->  [<0c01a582>] flush_itimer_signals+0x36/0x60
->  [<0c06633a>] load_flat_file+0x32a/0x738
->  [<0c0bad00>] down_write+0x0/0xc
->  [<0c065314>] load_elf_fdpic_binary+0x44/0xa8c
->  [<0c077f60>] memset+0x0/0x60
->  [<0c066790>] load_flat_binary+0x48/0x2fc
->  [<0c0482ee>] search_binary_handler+0x4a/0x1fc
->  [<0c04884e>] do_execve+0x156/0x2bc
->  [<0c048570>] copy_strings+0x0/0x150
->  [<0c002e68>] sys_execve+0x30/0x5c
->  [<0c007972>] syscall_call+0xc/0x10
->  [<0c002e38>] sys_execve+0x0/0x5c
->  [<0c0050ca>] kernel_execve+0x6/0xc
->  [<0c01e874>] ____call_usermodehelper+0xd0/0xfc
->  [<0c002cca>] kernel_thread_helper+0x6/0x10
->  [<0c01e7a4>] ____call_usermodehelper+0x0/0xfc
->  [<0c002cc4>] kernel_thread_helper+0x0/0x10
->
-> Mem-Info:
-> Normal per-cpu:
-> CPU    0: hi:    0, btch:   1 usd:   0
-> Active_anon:0 active_file:0 inactive_anon:0
->  inactive_file:0 unevictable:323 dirty:0 writeback:0 unstable:0
->  free:2967 slab:0 mapped:0 pagetables:0 bounce:0
-> Normal free:11868kB min:0kB low:0kB high:0kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:1292kB present:16256kB pages_scanned:0 all_unreclaimable? no
-> lowmem_reserve[]: 0 0
-> Normal: 267*4kB 268*8kB 251*16kB 145*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB 0*8192kB 0*16384kB 0*32768kB = 11868kB
+Note: PPC64 keeps their own walk_memory_resouce(), which walk through
+ppc64's lmb informaton.  Because old kclist_add() is called per lmb, this
+patch makes no difference in behavior, finally.
 
-...but we seem to be all out of order > 3 pages. I'm not sure why
-commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e changes any of this,
-though.
+And this patch removes CONFIG_MEMORY_HOTPLUG check from this function. 
+Because pfn_valid() just show "there is memmap or not* and cannot be used
+for "there is physical memory or not", this function is useful in generic
+to scan physical memory range.
 
-> 323 total pagecache pages
-> ------------[ cut here ]------------
-> kernel BUG at mm/nommu.c:598!
-> Kernel BUG: 003e [#1]
-> Modules linked in:
->
-> Pid : 51, Comm:                 modprobe
-> CPU : 0                 Not tainted  (2.6.31-rc7 #2835)
->
-> PC is at __put_nommu_region+0xe/0xb0
-> PR is at do_mmap_pgoff+0x8dc/0xa68
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-This looks to be a bug in nommu do_mmap_pgoff() error handling. I
-guess we shouldn't call __put_nommu_region() if add_nommu_region()
-hasn't been called?
+ arch/powerpc/mm/mem.c          |    4 ++--
+ drivers/net/ehea/ehea_qmr.c    |    2 +-
+ include/linux/ioport.h         |    4 ++++
+ include/linux/memory_hotplug.h |    8 --------
+ kernel/resource.c              |   23 ++++++++++++++++-------
+ mm/memory_hotplug.c            |    6 +++---
+ 6 files changed, 26 insertions(+), 21 deletions(-)
 
-> PC  : 0c040e7a SP  : 0c909d7c SR  : 40000001
-> R0  : 0000001d R1  : 00000000 R2  : 00000000 R3  : 0000000d
-> R4  : 0c9f8cf4 R5  : 000017de R6  : ffffffff R7  : 00000035
-> R8  : 0c9f8cf4 R9  : 00000000 R10 : 00000000 R11 : fffffff4
-> R12 : 0c9f8d1c R13 : 00000000 R14 : 0c9f8cf4
-> MACH: 0000017e MACL: baf11680 GBR : 00000000 PR  : 0c0418b8
->
-> Call trace:
->  [<0c0418b8>] do_mmap_pgoff+0x8dc/0xa68
->  [<0c01a582>] flush_itimer_signals+0x36/0x60
->  [<0c06633a>] load_flat_file+0x32a/0x738
->  [<0c0bad00>] down_write+0x0/0xc
->  [<0c065314>] load_elf_fdpic_binary+0x44/0xa8c
->  [<0c077f60>] memset+0x0/0x60
->  [<0c066790>] load_flat_binary+0x48/0x2fc
->  [<0c0482ee>] search_binary_handler+0x4a/0x1fc
->  [<0c04884e>] do_execve+0x156/0x2bc
->  [<0c048570>] copy_strings+0x0/0x150
->  [<0c002e68>] sys_execve+0x30/0x5c
->  [<0c007972>] syscall_call+0xc/0x10
->  [<0c002e38>] sys_execve+0x0/0x5c
->  [<0c0050ca>] kernel_execve+0x6/0xc
->  [<0c01e874>] ____call_usermodehelper+0xd0/0xfc
->  [<0c002cca>] kernel_thread_helper+0x6/0x10
->  [<0c01e7a4>] ____call_usermodehelper+0x0/0xfc
->  [<0c002cc4>] kernel_thread_helper+0x0/0x10
->
-> Code:
->  0c040e74:  tst       r1, r1
->  0c040e76:  bf.s      0c040e7c
->  0c040e78:  mov       r4, r8
-> ->0c040e7a:  trapa     #62
->  0c040e7c:  stc       sr, r1
->  0c040e7e:  mov       r1, r0
->  0c040e80:  or        #-16, r0
->  0c040e82:  ldc       r0, sr
->  0c040e84:  mov       r1, r0
->
-> Process: modprobe (pid: 51, stack limit = 0c908001)
-> Stack: (0x0c909d7c to 0x0c90a000)
-> 9d60:                                                                0c0418b8
-> 9d80: 00000007 0c01a582 0c2f8cd0 00000000 00000000 00049000 00000049 00048fff
-> 9da0: 00049fff 00049000 00000007 0c06633a 00000001 0c909f30 0003e950 0c0bad00
-> 9dc0: 0000984a 0c2f8ea0 ffffe000 00000002 00000000 0c065314 0c2f8ea0 0c077f60
-> 9de0: 00049000 0000673c 00000050 000369a0 000019cf 00000004 00004e20 0003e950
-> 9e00: 000481aa 00000001 00004eaa 000049a0 00007fb0 000369a0 00000000 00000000
-> 9e20: 0c909e50 00000000 00000000 0c066790 00000000 0c909f30 00000000 00000000
-> 9e40: 0c2f8ea0 0c909f30 0c909e50 00004eaa 00000000 00000000 00000000 00000000
-> 9e60: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> 9e80: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> 9ea0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> 9ec0: 0c0482ee 00000000 fffffff8 0c2f8ea0 0c104ff8 0c04884e 0c0feb64 00000001
-> 9ee0: 0c048570 ffffe000 0c2f8ea0 00000000 00000000 0c813eb8 0c909f30 0c002e68
-> 9f00: 00000000 00000000 00000000 0c0feb64 0c813eb8 0c909f30 0c960000 0c007972
-> 9f20: ffffff0f 00000071 00000100 0c002e38 0000000b ffffff0f 00000001 0000000b
-> 9f40: 0c0fea64 0c813eb8 0c0feb64 0c2f898c 00000000 ffffe000 0c9f8990 00000000
-> 9f60: 00000000 00000000 00000000 0c909f8c 0c0050ca 0c01e874 40000001 00000000
-> 9f80: 00000000 4795ce40 0000004c 0c002cca 00000000 00000000 00000000 00000000
-> 9fa0: 00000000 00000000 00000000 00000000 00000000 0c9f8990 0c01e7a4 00000000
-> 9fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> 9fe0: 0c909f9c 0c002cc4 00000000 40000000 00000000 00000000 00000000 00000000
-> ---[ end trace 139ce121c98e96c9 ]---
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+Index: mmotm-2.6.31-Aug27/arch/powerpc/mm/mem.c
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/arch/powerpc/mm/mem.c
++++ mmotm-2.6.31-Aug27/arch/powerpc/mm/mem.c
+@@ -143,8 +143,8 @@ int arch_add_memory(int nid, u64 start, 
+  * memory regions, find holes and callback for contiguous regions.
+  */
+ int
+-walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+-			int (*func)(unsigned long, unsigned long, void *))
++walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
++		void *arg, int (*func)(unsigned long, unsigned long, void *))
+ {
+ 	struct lmb_property res;
+ 	unsigned long pfn, len;
+Index: mmotm-2.6.31-Aug27/drivers/net/ehea/ehea_qmr.c
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/drivers/net/ehea/ehea_qmr.c
++++ mmotm-2.6.31-Aug27/drivers/net/ehea/ehea_qmr.c
+@@ -751,7 +751,7 @@ int ehea_create_busmap(void)
+ 
+ 	mutex_lock(&ehea_busmap_mutex);
+ 	ehea_mr_len = 0;
+-	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
++	ret = walk_system_ram_range(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
+ 				   ehea_create_busmap_callback);
+ 	mutex_unlock(&ehea_busmap_mutex);
+ 	return ret;
+Index: mmotm-2.6.31-Aug27/include/linux/ioport.h
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/include/linux/ioport.h
++++ mmotm-2.6.31-Aug27/include/linux/ioport.h
+@@ -184,5 +184,9 @@ extern void __devm_release_region(struct
+ extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
+ extern int iomem_is_exclusive(u64 addr);
+ 
++extern int
++walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
++		void *arg, int (*func)(unsigned long, unsigned long, void *));
++
+ #endif /* __ASSEMBLY__ */
+ #endif	/* _LINUX_IOPORT_H */
+Index: mmotm-2.6.31-Aug27/include/linux/memory_hotplug.h
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/include/linux/memory_hotplug.h
++++ mmotm-2.6.31-Aug27/include/linux/memory_hotplug.h
+@@ -191,14 +191,6 @@ static inline void register_page_bootmem
+ 
+ #endif /* ! CONFIG_MEMORY_HOTPLUG */
+ 
+-/*
+- * Walk through all memory which is registered as resource.
+- * arg is (start_pfn, nr_pages, private_arg_pointer)
+- */
+-extern int walk_memory_resource(unsigned long start_pfn,
+-			unsigned long nr_pages, void *arg,
+-			int (*func)(unsigned long, unsigned long, void *));
+-
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+ 
+ extern int is_mem_section_removable(unsigned long pfn, unsigned long nr_pages);
+Index: mmotm-2.6.31-Aug27/kernel/resource.c
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/kernel/resource.c
++++ mmotm-2.6.31-Aug27/kernel/resource.c
+@@ -233,13 +233,13 @@ int release_resource(struct resource *ol
+ 
+ EXPORT_SYMBOL(release_resource);
+ 
+-#if defined(CONFIG_MEMORY_HOTPLUG) && !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
++#if !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
+ /*
+  * Finds the lowest memory reosurce exists within [res->start.res->end)
+- * the caller must specify res->start, res->end, res->flags.
++ * the caller must specify res->start, res->end, res->flags and "name".
+  * If found, returns 0, res is overwritten, if not found, returns -1.
+  */
+-static int find_next_system_ram(struct resource *res)
++static int find_next_system_ram(struct resource *res, char *name)
+ {
+ 	resource_size_t start, end;
+ 	struct resource *p;
+@@ -255,6 +255,8 @@ static int find_next_system_ram(struct r
+ 		/* system ram is just marked as IORESOURCE_MEM */
+ 		if (p->flags != res->flags)
+ 			continue;
++		if (name && strcmp(p->name, name))
++			continue;
+ 		if (p->start > end) {
+ 			p = NULL;
+ 			break;
+@@ -272,19 +274,26 @@ static int find_next_system_ram(struct r
+ 		res->end = p->end;
+ 	return 0;
+ }
+-int
+-walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+-			int (*func)(unsigned long, unsigned long, void *))
++
++/*
++ * This function calls callback against all memory range of "System RAM"
++ * which are marked as IORESOURCE_MEM and IORESOUCE_BUSY.
++ * Now, this function is only for "System RAM".
++ */
++int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
++		void *arg, int (*func)(unsigned long, unsigned long, void *))
+ {
+ 	struct resource res;
+ 	unsigned long pfn, len;
+ 	u64 orig_end;
+ 	int ret = -1;
++
+ 	res.start = (u64) start_pfn << PAGE_SHIFT;
+ 	res.end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
+ 	res.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 	orig_end = res.end;
+-	while ((res.start < res.end) && (find_next_system_ram(&res) >= 0)) {
++	while ((res.start < res.end) &&
++		(find_next_system_ram(&res, "System RAM") >= 0)) {
+ 		pfn = (unsigned long)(res.start >> PAGE_SHIFT);
+ 		len = (unsigned long)((res.end + 1 - res.start) >> PAGE_SHIFT);
+ 		ret = (*func)(pfn, len, arg);
+Index: mmotm-2.6.31-Aug27/mm/memory_hotplug.c
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/mm/memory_hotplug.c
++++ mmotm-2.6.31-Aug27/mm/memory_hotplug.c
+@@ -413,7 +413,7 @@ int online_pages(unsigned long pfn, unsi
+ 	if (!populated_zone(zone))
+ 		need_zonelists_rebuild = 1;
+ 
+-	ret = walk_memory_resource(pfn, nr_pages, &onlined_pages,
++	ret = walk_system_ram_range(pfn, nr_pages, &onlined_pages,
+ 		online_pages_range);
+ 	if (ret) {
+ 		printk(KERN_DEBUG "online_pages %lx at %lx failed\n",
+@@ -705,7 +705,7 @@ offline_isolated_pages_cb(unsigned long 
+ static void
+ offline_isolated_pages(unsigned long start_pfn, unsigned long end_pfn)
+ {
+-	walk_memory_resource(start_pfn, end_pfn - start_pfn, NULL,
++	walk_system_ram_range(start_pfn, end_pfn - start_pfn, NULL,
+ 				offline_isolated_pages_cb);
+ }
+ 
+@@ -731,7 +731,7 @@ check_pages_isolated(unsigned long start
+ 	long offlined = 0;
+ 	int ret;
+ 
+-	ret = walk_memory_resource(start_pfn, end_pfn - start_pfn, &offlined,
++	ret = walk_system_ram_range(start_pfn, end_pfn - start_pfn, &offlined,
+ 			check_pages_isolated_cb);
+ 	if (ret < 0)
+ 		offlined = (long)ret;
+
