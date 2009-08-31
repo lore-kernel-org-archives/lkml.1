@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbZHaTvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbZHaTvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754442AbZHaTvW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 15:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbZHaTvW
+	id S1754537AbZHaTvt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 15:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbZHaTvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 15:51:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23581 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752819AbZHaTvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 15:51:21 -0400
-Message-ID: <4A9C2946.4070006@redhat.com>
-Date: Mon, 31 Aug 2009 15:49:26 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 31 Aug 2009 15:51:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44068 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754460AbZHaTvr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 15:51:47 -0400
+Date: Mon, 31 Aug 2009 15:51:48 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v15
+Message-ID: <20090831195148.GA26130@infradead.org>
+References: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 21/23] io-controller: Per io group bdi congestion interface
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-22-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1251495072-7780-22-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> o So far there used to be only one pair or queue  of request descriptors
->   (one for sync and one for async) per device and number of requests allocated
->   used to decide whether associated bdi is congested or not.
+On Mon, Aug 31, 2009 at 09:41:26PM +0200, Jens Axboe wrote:
+> Christoph, let me know if there are things you are still not happy
+> with and I will reply/address them. Note that this series has only
+> received a light testing. This means that it boots and seems to work
+> (flushes data on sync and at intervals) and does not corrupt data,
+> but it hasn't received a thorough testing yet. That will come tomorrow.
+> But I wanted to push this out there, so we can settle the code base
+> quickly again.
 
-Acked-by: Rik van Riel <riel@redhat.com>
+I'll slowly look over it later.  But I think it would be extremly
+helpful if we could get it into -next ASAP for wider testing.
+
