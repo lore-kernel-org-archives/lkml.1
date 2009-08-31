@@ -1,99 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZHaNYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZHaN0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753468AbZHaNYk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 09:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbZHaNYj
+	id S1753518AbZHaN0j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 09:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbZHaN0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 09:24:39 -0400
-Received: from mail-gx0-f205.google.com ([209.85.217.205]:34481 "EHLO
-	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751529AbZHaNYj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 09:24:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=l2luGuCa1tHWa3lv0Bx5EYe4WqpAHtvxriAFMWaUxM9qEdPEe4H757DVqmkQ6G0GBe
-         42ImwpArCPMraGmlXQCyz9y65bbhxb/om1/2+fkotRrSpHAG1k5sX9acqGFAR/NTJFuL
-         L1xv45+MB9+5a26zjL3+CQVDI4FzaRnSe4JZ8=
+	Mon, 31 Aug 2009 09:26:39 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:35329 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753313AbZHaN0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 09:26:38 -0400
 MIME-Version: 1.0
-In-Reply-To: <20090829102126.GA22409@localhost>
-References: <6afc6d4a0907111027w76234c8fv11ab77864515fdb0@mail.gmail.com> 
-	<20090712080410.GA8512@localhost> <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com> 
-	<20090829101247.GA20786@localhost> <20090829102126.GA22409@localhost>
-From: Fernando Silveira <fsilveira@gmail.com>
-Date: Mon, 31 Aug 2009 10:24:20 -0300
-Message-ID: <6afc6d4a0908310624j47f9d8c7h47d98ecd95811883@mail.gmail.com>
-Subject: Re: I/O and pdflush
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19099.52899.620345.326521@pilspetsen.it.uu.se>
+Date: Mon, 31 Aug 2009 15:22:43 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
+In-Reply-To: <200908292101.38800.rjw@sisk.pl>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<19096.15539.205951.931871@pilspetsen.it.uu.se>
+	<19097.14413.89047.384281@pilspetsen.it.uu.se>
+	<200908292101.38800.rjw@sisk.pl>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 29, 2009 at 07:21, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> On Sat, Aug 29, 2009 at 06:12:47PM +0800, Wu Fengguang wrote:
->> On Sat, Aug 29, 2009 at 05:48:40AM +0800, Fernando Silveira wrote:
->> > On Sun, Jul 12, 2009 at 05:04, Wu Fengguang<fengguang.wu@intel.com> wrote:
->> > > On Sat, Jul 11, 2009 at 02:27:25PM -0300, Fernando Silveira wrote:
->> > >> I'm having a hard time with an application that writes sequentially
->> > >> 250GB of non-stop data directly to a solid state disk (OCZ SSD CORE
->> > >> v2) device and I hope you can help me. The command "dd if=/dev/zero
->> > >> of=/dev/sdc bs=4M" reproduces the same symptoms I'm having and writes
->> > >> exactly as that application does.
->>
->> Sure. Attached is a writeback debug patch. It will generate lots of
->> kernel messages. You can just stop your klogd, start your workload
->> and monitor the SSD writeback throughput via tools like iostat/dstat.
->
-> Fernando, will you post the output of iostat/dstat too? Thanks!
-> The ssd-no_dirty_buffer_with_random_192mb_writes.png is a good overview,
-> however I'd like to also check out the numbers for each second :)
->
->> When it goes into the suboptimal 25MB/s state for several seconds, run
->>         dmesg > dmesg-writeback
->> and send me the log.
->>
->> And it is advised to turn on the kconfig option CONFIG_PRINTK_TIME=y.
+Rafael J. Wysocki writes:
+ > On Saturday 29 August 2009, Mikael Pettersson wrote:
+ > > Mikael Pettersson writes:
+ > >  > Rafael J. Wysocki writes:
+ > >  >  > On Thursday 27 August 2009, Mikael Pettersson wrote:
+ > >  >  > > On Tue, 25 Aug 2009 22:34:53 +0200 (CEST), Rafael J. Wysocki wrote:
+ > >  >  > > > The following bug entry is on the current list of known regressions
+ > >  >  > > > from 2.6.30.  Please verify if it still should be listed and let me know
+ > >  >  > > > (either way).
+ > >  >  > > > 
+ > >  >  > > > 
+ > >  >  > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14015
+ > >  >  > > > Subject		: pty regressed again, breaking expect and gcc's testsuite
+ > >  >  > > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+ > >  >  > > > Date		: 2009-08-14 23:41 (12 days old)
+ > >  >  > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125029329805643&w=3D4
+ > >  >  > > 
+ > >  >  > > Not fixed. With 2.6.31-rc7 I'm still seeing repeatable testsuite
+ > >  >  > > failures on powerpc64. Reverting to 2.6.30 makes the failures go away.
+ > >  >  > 
+ > >  >  > Thanks for the update.
+ > >  >  > 
+ > >  >  > I guess 2.6.31-rc8 doesn't make any difference, does it?
+ > >  > 
+ > >  > I've scheduled a number of gcc bootstraps and testsuite runs
+ > >  > with -rc8 on x86, powerpc64, and arm. I'll post an update in
+ > >  > a day or so.
+ > > 
+ > > 2.6.31-rc8 results in bogus testsuite failures on all three platforms.
+ > 
+ > That may be a result of the known inotify borkage in -rc8 that has been fixed
+ > in the current Linus' tree.
 
-Thanks for your help.
+No, it's the same old semi-random pty breakage. My kernels are built
+without inotify.
 
-You can reach in the URL below a tarball which contains the data I
-logged after patching the kernel with only your last patch.
+A bisection has identified Alan's
 
-http://rootshell.be/~swrh/ssd-tests/log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M.tar.gz
+pty: Rework the pty layer to use the normal buffering logic
+d945cb9cce20ac7143c2de8d88b187f62db99bdc 
 
-Each file contained in the tarball is described below:
+as the culprit. This patch introduces a massive number of bogus
+failures in the gcc testsuite. Subsequent pty/tty patches do fix
+most of those failures, but clearly not all.
 
-- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-{0-ddv,1-table,2-plot}.*
-  Logging statistics. The "0-ddv" file is the log of a modified
-version of the dd(1) utility to print writing statistics after every
-write(2), "1-table" is a table version of the "0-ddv" file parsed with
-awk(1) and "2-plot" is the a plot image of the writing statistics.
-
-- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-0-dstat.log
-  The result of "dstat > dstat.log" executed ~3 seconds after "ddv" started.
-
-- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-0-iostat.log
-  The result of "iostat 1 > iostat.log" executed ~15 seconds after
-"ddv" started.
-
-- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-0-dmesg_writeback_{1..67}.log
-  The result of "for i in {1..67}; do dmesg > dmesg-writeback-$i.log;
-sleep 1; done" executed when "ddv" had written about 42GB of data.
-
-- log-20090831_0908-MK020903042C0001B-prosar_fcc2-bs_4M-0-dmesg_writeback_{100..186}.log
-  The result of "for i in {100..186}; do dmesg >
-dmesg-writeback-$i.log; sleep 1; done" executed when "ddv" had written
-about 51GB of data.
-
-Please tell me if you need anything else. I could make a more
-synchronized or informative logging output if you need.
-
-Best regards,
-
--- 
-Fernando Silveira <fsilveira@gmail.com>
+/Mikael
