@@ -1,100 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751947AbZHaIL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752109AbZHaILp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751947AbZHaIL1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 04:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZHaILZ
+	id S1752109AbZHaILp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 04:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZHaILo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 04:11:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48942 "EHLO hera.kernel.org"
+	Mon, 31 Aug 2009 04:11:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44475 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751819AbZHaILX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 04:11:23 -0400
-Message-ID: <4A9B8583.9050601@kernel.org>
-Date: Mon, 31 Aug 2009 17:10:43 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1751834AbZHaILo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 04:11:44 -0400
+Date: Mon, 31 Aug 2009 10:11:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 4/4] perf tools: Complete support for dynamic strings
+Message-ID: <20090831081133.GA15619@elte.hu>
+References: <1251682323-10395-1-git-send-email-fweisbec@gmail.com> <1251693921-6579-4-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
-To: Ric Wheeler <rwheeler@redhat.com>
-CC: Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
-       Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com>
-In-Reply-To: <4A970154.2020507@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 08:10:46 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251693921-6579-4-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0002]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ric Wheeler wrote:
-> On 08/27/2009 05:22 PM, Andrei Tanas wrote:
->> Hello,
->>
->> This is about the same problem that I wrote two days ago (md gets an
->> error
->> while writing superblock and fails a hard drive).
->>
->> I've tried to figure out what's really going on, and as far as I can
->> tell,
->> the disk doesn't really fail (as confirmed by multiple tests), it
->> times out
->> trying to execute ATA_CMD_FLUSH_EXT ("at2.00 cmd ea..." in the log)
->> command. The reason for this I believe is that md_super_write queues the
->> write comand with BIO_RW_SYNCIO flag.
->> As I wrote before, with 32MB cache it is conceivable that it will take
->> the
->> drive longer than 30 seconds (defined by SD_TIMEOUT in scsi/sd.h) to
->> flush
->> its buffers.
->>
->> Changing safe_mode_delay to more conservative 2 seconds should definitely
->> help, but is it really necessary to write the superblock synchronously
->> when
->> array changes status from active to active-idle?
->>
->> [90307.328266] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
->> frozen
->> [90307.328275] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->> [90307.328277]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
->> (timeout)
->> [90307.328280] ata2.00: status: { DRDY }
->> [90307.328288] ata2: hard resetting link
->> [90313.218511] ata2: link is slow to respond, please be patient (ready=0)
->> [90317.377711] ata2: SRST failed (errno=-16)
->> [90317.377720] ata2: hard resetting link
->> [90318.251720] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
->> [90318.338026] ata2.00: configured for UDMA/133
->> [90318.338062] ata2: EH complete
->> [90318.370625] end_request: I/O error, dev sdb, sector 1953519935
->> [90318.370632] md: super_written gets error=-5, uptodate=0
->>
->>    
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> Complete support for __str_loc type strings of ftrace events which
+> have dynamic offsets values set for each of them inside their sammples.
 > 
-> 30 seconds is a very long time for a drive to respond, but I think that
-> your explanation fits the facts pretty well...
+> Before:
+>         geany-5759  [000]     0.000000: lock_release: name
+>         geany-5759  [000]     0.000000: lock_release: name
+>         geany-5759  [000]     0.000000: lock_release: name
+>   kondemand/0-362   [000]     0.000000: lock_release: name
+>       pdflush-421   [000]     0.000000: lock_release: name
+> 
+> After:
+>         geany-5759  [000]     0.000000: lock_release: &u->lock
+>         geany-5759  [000]     0.000000: lock_release: key
+>         geany-5759  [000]     0.000000: lock_release: &group->notification_mutex
+>   kondemand/0-362   [000]     0.000000: lock_release: &rq->lock
+>       pdflush-421   [000]     0.000000: lock_release: &rq->lock
 
-Even with 32MB cache, 30secs should be more than enough.  It's not
-like the drive is gonna do random write on those.  It's likely to make
-only very few number of strokes over the platter and it really
-shouldn't take very long.  I'm yet to see an actual case where a
-properly functioning drive timed out flush because the flush itself
-took long enough.
+I've applied all five patches, thanks Frederic!
 
-> The drive might take a longer time like this when doing error handling
-> (sector remapping, etc), but then I would expect to see your remapped
-> sector count grow.
+Also, i think this makes perf trace quite functional already so i 
+merged that topic (and these commits) into tracing/core, for v2.6.32 
+merging.
 
-Yes, this is a possibility and according to the spec, libata EH should
-be retrying flushes a few times before giving up but I'm not sure
-whether keeping retrying for several minutes is a good idea either.
-Is it?
+One thing that i noticed which is still quite quirky are the 
+parameters to perf record. (needing -R and the :r postfix to events) 
+Could something more intuitive be done here?
 
-Thanks.
+Also, i think people would like to use wildcards in event 
+specifiers, such as:
 
--- 
-tejun
+  perf record -e timer/*
+
+To capture all timer events:
+
+ hrtimer_cancel
+ hrtimer_expire_entry
+ hrtimer_expire_exit
+ hrtimer_init
+ hrtimer_start
+ itimer_expire
+ itimer_state
+ timer_cancel
+ timer_expire_entry
+ timer_expire_exit
+ timer_init
+ timer_start
+
+Instead of having to type:
+
+perf record -e hrtimer_cancel -e hrtimer_expire_entry \
+ -e hrtimer_expire_exit -e hrtimer_init -e hrtimer_start \
+ -e itimer_expire -e itimer_state -e timer_cancel \
+ -e timer_expire_entry -e timer_expire_exit -e timer_init \
+ -e timer_start
+
+which is not quite realistic.
+
+	Ingo
