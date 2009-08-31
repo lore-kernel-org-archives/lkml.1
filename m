@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZHaRvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbZHaR4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753808AbZHaRvz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 13:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZHaRvy
+	id S1753841AbZHaR4p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 13:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZHaR4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 13:51:54 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:53759 "EHLO mx1.redhat.com"
+	Mon, 31 Aug 2009 13:56:44 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:26649 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751004AbZHaRvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 13:51:53 -0400
-Message-ID: <4A9C0DC2.6080704@redhat.com>
-Date: Mon, 31 Aug 2009 20:52:02 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1753670AbZHaR4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 13:56:41 -0400
+Message-ID: <4A9C0E64.8000401@redhat.com>
+Date: Mon, 31 Aug 2009 13:54:44 -0400
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: "Xin, Xiaohui" <xiaohui.xin@intel.com>
-CC: "mst@redhat.com" <mst@redhat.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <E88DD564E9DC5446A76B2B47C3BCCA150219600F9B@pdsmsx503.ccr.corp.intel.com> <C85CEDA13AB1CF4D9D597824A86D2B9006AEB944B8@PDSMSX501.ccr.corp.intel.com>
-In-Reply-To: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB944B8@PDSMSX501.ccr.corp.intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 20/23] io-controller: Per cgroup request descriptor support
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-21-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1251495072-7780-21-git-send-email-vgoyal@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/31/2009 02:42 PM, Xin, Xiaohui wrote:
-> Hi, Michael
-> That's a great job. We are now working on support VMDq on KVM, and since the VMDq hardware presents L2 sorting based on MAC addresses and VLAN tags, our target is to implement a zero copy solution using VMDq. We stared from the virtio-net architecture. What we want to proposal is to use AIO combined with direct I/O:
-> 1) Modify virtio-net Backend service in Qemu to submit aio requests composed from virtqueue.
-> 2) Modify TUN/TAP device to support aio operations and the user space buffer directly mapping into the host kernel.
-> 3) Let a TUN/TAP device binds to single rx/tx queue from the NIC.
-> 4) Modify the net_dev and skb structure to permit allocated skb to use user space directly mapped payload buffer address rather then kernel allocated.
->
-> As zero copy is also your goal, we are interested in what's in your mind, and would like to collaborate with you if possible.
->    
+Vivek Goyal wrote:
+> o Currently a request queue has got fixed number of request descriptors for
+>   sync and async requests. Once the request descriptors are consumed, new
+>   processes are put to sleep and they effectively become serialized. Because
+>   sync and async queues are separate, async requests don't impact sync ones
+>   but if one is looking for fairness between async requests, that is not
+>   achievable if request queue descriptors become bottleneck.
+> 
+> o Make request descriptor's per io group so that if there is lots of IO
+>   going on in one cgroup, it does not impact the IO of other group.
+> 
+> o This patch implements the per cgroup request descriptors. request pool per
+>   queue is still common but every group will have its own wait list and its
+>   own count of request descriptors allocated to that group for sync and async
+>   queues. So effectively request_list becomes per io group property and not a
+>   global request queue feature.
+> 
+> o Currently one can define q->nr_requests to limit request descriptors
+>   allocated for the queue. Now there is another tunable q->nr_group_requests
+>   which controls the requests descriptr limit per group. q->nr_requests
+>   supercedes q->nr_group_requests to make sure if there are lots of groups
+>   present, we don't end up allocating too many request descriptors on the
+>   queue.
+> 
+> Signed-off-by: Nauman Rafique <nauman@google.com>
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 
-One way to share the effort is to make vmdq queues available as normal 
-kernel interfaces.  It would take quite a bit of work, but the end 
-result is that no other components need to be change, and it makes vmdq 
-useful outside kvm.  It also greatly reduces the amount of integration 
-work needed throughout the stack (kvm/qemu/libvirt).
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Acked-by: Rik van Riel <riel@redhat.com>
