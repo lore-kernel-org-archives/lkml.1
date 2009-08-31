@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZHaSZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbZHaS1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbZHaSZH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 14:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZHaSZF
+	id S1753986AbZHaS1z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 14:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZHaS1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 14:25:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33820 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753620AbZHaSZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 14:25:01 -0400
-Date: Mon, 31 Aug 2009 18:24:41 GMT
-From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       suresh.siddha@intel.com, venkatesh.pallipadi@intel.com,
-       tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       suresh.siddha@intel.com, venkatesh.pallipadi@intel.com,
-       tglx@linutronix.de
-In-Reply-To: <4A9828F4.4040905@zytor.com>
-References: <4A9828F4.4040905@zytor.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/pat] mm: remove !NUMA condition from PAGEFLAGS_EXTENDED condition set
-Message-ID: <tip-a269cca9926faf8e44b340b017be0d884203141b@git.kernel.org>
-Git-Commit-ID: a269cca9926faf8e44b340b017be0d884203141b
-X-Mailer: tip-git-log-daemon
+	Mon, 31 Aug 2009 14:27:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42642 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753664AbZHaS1x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 14:27:53 -0400
+Date: Mon, 31 Aug 2009 14:27:54 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Michael Tokarev <mjt@tls.msk.ru>,
+       Linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: xfs compat_ioctl?
+Message-ID: <20090831182754.GA3620@infradead.org>
+References: <4A9B759B.7020401@msgid.tls.msk.ru> <20090831123010.GA2368@infradead.org> <64bb37e0908311114t4a3cefc3v8ea5092e1558c578@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 18:24:42 +0000 (UTC)
+In-Reply-To: <64bb37e0908311114t4a3cefc3v8ea5092e1558c578@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a269cca9926faf8e44b340b017be0d884203141b
-Gitweb:     http://git.kernel.org/tip/a269cca9926faf8e44b340b017be0d884203141b
-Author:     H. Peter Anvin <hpa@zytor.com>
-AuthorDate: Mon, 31 Aug 2009 11:17:44 -0700
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 31 Aug 2009 11:17:44 -0700
+On Mon, Aug 31, 2009 at 08:14:58PM +0200, Torsten Kaiser wrote:
+> On a slightly related note: I also have a system with a 32bit userland
+> and a 64bit kernel.
+> After switching to the 64bit kernel, xfs_fsr was no longer working,
+> but that was caused by the then still missing compat ioctls.
+> 
+> Today I retried it, but it still fails:
+> XFS_IOC_SWAPEXT failed: ino=<number>: Invalid argument
+> 
+> Looking at the compat code SWAPEXT looks somewhat suspicious:
+> 
+> fs/xfs/linux-2.6/xfs_ioctl32.h defines XFS_IOC_SWAPEXT_32, but I can't
+> find a single place where this is used.
+> And in the big switch of xfs_compat_ioctl() the value XFS_IOC_SWAPEXT
+> is surrounded by contants that all end in 32.
+> 
+> I don't have any experience with the linux ioctl code, I only read
+> fs/xfs/linux-2.6/xfs_ioctl32.c, but for my untrained eye it looks like
+> there is a _32 missing.
+> 
+> Or am I misreading this completely?
 
-mm: remove !NUMA condition from PAGEFLAGS_EXTENDED condition set
+I think you are right, the constant used is incorrect.  Does the small
+patch below fix it for you?
 
-CONFIG_PAGEFLAGS_EXTENDED disables a trick to conserve pageflags.
-This trick is indended to be enabled when the pressure on page flags
-is very high.
-
-The previous condition was:
-
--       depends on 64BIT || SPARSEMEM_VMEMMAP || !NUMA || !SPARSEMEM
-
-... however, the sparsemem code already has a way to crowd out the
-node number from the pageflags, which means that !NUMA actually
-doesn't contribute to hard pageflags exhaustion.
-
-This is required for the new PG_uncached flag to not cause pageflags
-exhaustion on x86_32 + PAE + SPARSEMEM + !NUMA.
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-LKML-Reference: <4A9828F4.4040905@zytor.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Suresh Siddha <suresh.siddha@intel.com>
-
-
----
- mm/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/mm/Kconfig b/mm/Kconfig
-index c948d4c..fe221c7 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -153,7 +153,7 @@ config MEMORY_HOTREMOVE
- #
- config PAGEFLAGS_EXTENDED
- 	def_bool y
--	depends on 64BIT || SPARSEMEM_VMEMMAP || !NUMA || !SPARSEMEM
-+	depends on 64BIT || SPARSEMEM_VMEMMAP || !SPARSEMEM
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl32.c	2009-08-31 15:25:06.093044591 -0300
++++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c	2009-08-31 15:25:10.856544216 -0300
+@@ -619,7 +619,7 @@ xfs_file_compat_ioctl(
+ 	case XFS_IOC_GETVERSION_32:
+ 		cmd = _NATIVE_IOC(cmd, long);
+ 		return xfs_file_ioctl(filp, cmd, p);
+-	case XFS_IOC_SWAPEXT: {
++	case XFS_IOC_SWAPEXT_32: {
+ 		struct xfs_swapext	  sxp;
+ 		struct compat_xfs_swapext __user *sxu = arg;
  
- # Heavily threaded applications may benefit from splitting the mm-wide
- # page_table_lock, so that faults on different parts of the user address
