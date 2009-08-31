@@ -1,148 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbZHaS4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZHaS6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754310AbZHaS4z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 14:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZHaS4y
+	id S1754142AbZHaS6b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 14:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZHaS6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 14:56:54 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:36641 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754067AbZHaS4L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 14:56:11 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: akpm@linux-foundation.org
-Cc: mingo@redhat.com, oleg@redhat.com, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 6/6] FS: proc, make limits writable
-Date: Mon, 31 Aug 2009 20:56:14 +0200
-Message-Id: <1251744974-29398-6-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1251744974-29398-1-git-send-email-jirislaby@gmail.com>
-References: <1251744974-29398-1-git-send-email-jirislaby@gmail.com>
+	Mon, 31 Aug 2009 14:58:30 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:30121 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753212AbZHaS63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 14:58:29 -0400
+Date: Mon, 31 Aug 2009 14:56:40 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
+	track async bios.
+Message-ID: <20090831185640.GF3758@redhat.com>
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-19-git-send-email-vgoyal@redhat.com> <4A9C09BE.4060404@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9C09BE.4060404@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow writing strings such as
-Max core file size=0:unlimited
-to /proc/<pid>/limits to change limits.
+On Mon, Aug 31, 2009 at 01:34:54PM -0400, Rik van Riel wrote:
+> Vivek Goyal wrote:
+>> o blkio_cgroup patches from Ryo to track async bios.
+>>
+>> o This functionality is used to determine the group of async IO from page
+>>   instead of context of submitting task.
+>>
+>> Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+>> Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+>> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+>
+> This seems to be the most complex part of the code so far,
+> but I see why this code is necessary.
+>
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- fs/proc/base.c |   78 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 76 insertions(+), 2 deletions(-)
+Hi Rik,
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index ea71cae..0d9e3e9 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -129,6 +129,8 @@ struct pid_entry {
- 		NULL, &proc_single_file_operations,	\
- 		{ .proc_show = show } )
- 
-+static ssize_t proc_info_read(struct file * file, char __user * buf,
-+			  size_t count, loff_t *ppos);
- /*
-  * Count the number of hardlinks for the pid_entry table, excluding the .
-  * and .. links.
-@@ -522,6 +524,74 @@ static int proc_pid_limits(struct task_struct *task, char *buffer)
- 	return count;
- }
- 
-+static ssize_t limits_write(struct file *file, const char __user *buf,
-+		size_t count, loff_t *ppos)
-+{
-+	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
-+	char str[32 + 1 + 16 + 1 + 16 + 1], *delim, *next;
-+	struct rlimit new_rlimit;
-+	unsigned int i;
-+	int ret;
-+
-+	if (!task) {
-+		count = -ESRCH;
-+		goto out;
-+	}
-+	if (copy_from_user(str, buf, min(count, sizeof(str) - 1))) {
-+		count = -EFAULT;
-+		goto put_task;
-+	}
-+
-+	str[min(count, sizeof(str) - 1)] = 0;
-+
-+	delim = strchr(str, '=');
-+	if (!delim) {
-+		count = -EINVAL;
-+		goto put_task;
-+	}
-+	*delim++ = 0; /* for easy 'str' usage */
-+	new_rlimit.rlim_cur = simple_strtoul(delim, &next, 0);
-+	if (*next != ':') {
-+		if (strncmp(delim, "unlimited:", 10)) {
-+			count = -EINVAL;
-+			goto put_task;
-+		}
-+		new_rlimit.rlim_cur = RLIM_INFINITY;
-+		next = delim + 9; /* move to ':' */
-+	}
-+	delim = next + 1;
-+	new_rlimit.rlim_max = simple_strtoul(delim, &next, 0);
-+	if (*next != 0) {
-+		if (strcmp(delim, "unlimited")) {
-+			count = -EINVAL;
-+			goto put_task;
-+		}
-+		new_rlimit.rlim_max = RLIM_INFINITY;
-+	}
-+
-+	for (i = 0; i < RLIM_NLIMITS; i++)
-+		if (!strcmp(str, lnames[i].name))
-+			break;
-+	if (i >= RLIM_NLIMITS) {
-+		count = -EINVAL;
-+		goto put_task;
-+	}
-+
-+	ret = setrlimit(task, i, &new_rlimit);
-+	if (ret)
-+		count = ret;
-+
-+put_task:
-+	put_task_struct(task);
-+out:
-+	return count;
-+}
-+
-+static const struct file_operations proc_pid_limits_operations = {
-+	.read		= proc_info_read,
-+	.write		= limits_write,
-+};
-+
- #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
- static int proc_pid_syscall(struct task_struct *task, char *buffer)
- {
-@@ -2501,7 +2571,9 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	INF("auxv",       S_IRUSR, proc_pid_auxv),
- 	ONE("status",     S_IRUGO, proc_pid_status),
- 	ONE("personality", S_IRUSR, proc_pid_personality),
--	INF("limits",	  S_IRUSR, proc_pid_limits),
-+	NOD("limits",	  S_IFREG|S_IRUSR|S_IWUSR, NULL,
-+			&proc_pid_limits_operations,
-+			{ .proc_read = proc_pid_limits }),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
-@@ -2836,7 +2908,9 @@ static const struct pid_entry tid_base_stuff[] = {
- 	INF("auxv",      S_IRUSR, proc_pid_auxv),
- 	ONE("status",    S_IRUGO, proc_pid_status),
- 	ONE("personality", S_IRUSR, proc_pid_personality),
--	INF("limits",	 S_IRUSR, proc_pid_limits),
-+	NOD("limits",	  S_IFREG|S_IRUSR|S_IWUSR, NULL,
-+			&proc_pid_limits_operations,
-+			{ .proc_read = proc_pid_limits }),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
--- 
-1.6.3.3
+Thanks for reviewing the patches. I wanted to have better understanding of
+where all does it help to associate a bio to the group of process who
+created/owned the page. Hence few thoughts.
 
+When a bio is submitted to IO scheduler, it needs to determine the group
+bio belongs to and group which should be charged to. There seem to be two 
+methods.
+
+- Attribute the bio to cgroup submitting process belongs to.
+- For async requests, track the original owner hence cgroup of the page
+  and charge that group for the bio. 
+
+One can think of pros/cons of both the approaches.
+
+- The primary use case of tracking async context seems be that if a
+  process T1 in group G1 mmaps a big file and then another process T2 in
+  group G2, asks for memory and triggers reclaim and generates writes of
+  the file pages mapped by T1, then these writes should not be charged to
+  T2, hence blkio_cgroup pages.
+
+  But the flip side of this might be that group G2 is a low weight group
+  and probably too busy also right now, which will delay the write out
+  and possibly T2 will wait longer for memory to be allocated.
+
+- At one point of time Andrew mentioned that buffered writes are generally a
+  big problem and one needs to map these to owner's group. Though I am not
+  very sure what specific problem he was referring to. Can we attribute
+  buffered writes to pdflush threads and move all pdflush threads in a 
+  cgroup to limit system wide write out activity?
+
+- Somebody also gave an example where there is a memory hogging process and
+  possibly pushes out some processes to swap. It does not sound fair to 
+  charge those proccess for that swap writeout. These processes never
+  requested swap IO.
+
+- If there are multiple buffered writers in the system, then those writers
+  can also be forced to writeout some pages to disk before they are
+  allowed to dirty more pages. As per the page cache design, any writer
+  can pick any inode and start writing out pages. So it can happen a
+  weight group task is writting out pages dirtied by a lower weight group
+  task. If, async bio is mapped to owner's group, it might happen that
+  higher weight group task might be made to sleep on lower weight group
+  task because request descriptors are all consumed up.
+
+It looks like there does not seem to be a clean way which covers all the
+cases without issues. I am just trying to think, what is a simple way
+which covers most of the cases. Can we just stick to using submitting task
+context to determine a bio's group (as cfq does). Which can result in
+following.
+
+- Less code and reduced complexity.
+
+- Buffered writes will be charged to pdflush and its group. If one wish to
+  limit buffered write activity for pdflush, one can move all the pdflush
+  threads into a group and assign desired weight. Writes submitted in
+  process context will continue to be charged to that process irrespective
+  of the fact who dirtied that page.
+
+- swap activity will be charged to kswapd and its group. If swap writes
+  are coming from process context, it gets charged to process and its
+  group. 
+
+- If one is worried about the case of one process being charged for write
+  out of file mapped by another process during reclaim, then we can
+  probably make use of memory controller and mount memory controller and
+  io controller together on same hierarchy. I am told that with memory
+  controller, group's memory will be reclaimed by the process requesting
+  more memory. If that's the case, then IO will automatically be charged
+  to right group if we use submitting task context.
+
+I just wanted to bring this point forward for more discussions to know
+what is the right thing to do? Use bio tracking or not.
+
+Ryo, any thoughts on this?
+
+Thanks
+Vivek
+
+> Acked-by: Rik van Riel <riel@redhat.com>
