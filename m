@@ -1,62 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbZHaRkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZHaRlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752986AbZHaRkg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 13:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZHaRkf
+	id S1753793AbZHaRlL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 13:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZHaRlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 13:40:35 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41778 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbZHaRke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 13:40:34 -0400
-Message-ID: <4A9C0AEB.6000506@redhat.com>
-Date: Mon, 31 Aug 2009 13:39:55 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 31 Aug 2009 13:41:11 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:37669 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbZHaRlJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 13:41:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sBThIrKhw4YmIshQ/SkOw+E0C6E1+WSuUQHeEpyEP8XubBItz9KDZWBsInvaum1iWP
+         sH1SEmz4P+WAtn7hEJFshqqKEeG1yJNekA74F7hB1mQosEc78o0aJBpa7K9fY5Sm3iHd
+         cpK2df6QVrvB7lf8Y4hFI+6hMwwh7XShYT0jw=
+Date: Mon, 31 Aug 2009 19:41:08 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/filters: Defer pred allocation
+Message-ID: <20090831174107.GB6048@nowhere>
+References: <4A9B8EA5.6020700@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 19/23] io-controller: map async requests to appropriate
- cgroup
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-20-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1251495072-7780-20-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9B8EA5.6020700@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> o So far we were assuming that a bio/rq belongs to the task who is submitting
->   it. It did not hold good in case of async writes. This patch makes use of
->   blkio_cgroup pataches to attribute the aysnc writes to right group instead
->   of task submitting the bio.
-> 
-> o For sync requests, we continue to assume that io belongs to the task
->   submitting it. Only in case of async requests, we make use of io tracking
->   patches to track the owner cgroup.
-> 
-> o So far cfq always caches the async queue pointer. With async requests now
->   not necessarily being tied to submitting task io context, caching the
->   pointer will not help for async queues. This patch introduces a new config
->   option CONFIG_TRACK_ASYNC_CONTEXT. If this option is not set, cfq retains
->   old behavior where async queue pointer is cached in task context. If it
->   is set, async queue pointer is not cached and we take help of bio
->   tracking patches to determine group bio belongs to and then map it to
->   async queue of that group.
-> 
-> Signed-off-by: Nauman Rafique <nauman@google.com>
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+On Mon, Aug 31, 2009 at 04:49:41PM +0800, Li Zefan wrote:
+> @@ -1094,6 +1118,10 @@ int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
+>  
+>  	mutex_lock(&event_mutex);
+>  
+> +	err = init_preds(call);
+> +	if (err)
+> +		goto out_unlock;
 
-Acked-by: Rik van Riel <riel@redhat.com>
+
+
+Hmm, but what happens if the filter already has its preds initialized
+by a previous filter?
+
+The first thing that init_preds() does is:
+
+filter = call->filter = kzalloc(sizeof(*filter), GFP_KERNEL);
+
+That looks like a memory leak.
+
+
+>  	if (!strcmp(strstrip(filter_string), "0")) {
+>  		filter_disable_preds(call);
+>  		remove_filter_string(call->filter);
+> @@ -1139,6 +1167,10 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
+>  
+>  	mutex_lock(&event_mutex);
+>  
+> +	err = init_subsystem_preds(system);
+
+
+Whereas this one has a check:
+	if (!call->filter)
+		alloc...
+
+
+
+> +	if (err)
+> +		goto out_unlock;
+> +
+>  	if (!strcmp(strstrip(filter_string), "0")) {
+>  		filter_free_subsystem_preds(system, FILTER_DISABLE_ALL);
+>  		remove_filter_string(system->filter);
+> diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+> index 029a91f..df1bf6e 100644
+> --- a/kernel/trace/trace_export.c
+> +++ b/kernel/trace/trace_export.c
+> @@ -135,7 +135,6 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+>  static int ftrace_raw_init_event_##call(void)				\
+>  {									\
+>  	INIT_LIST_HEAD(&event_##call.fields);				\
+> -	init_preds(&event_##call);					\
+>  	return 0;							\
+>  }									\
+>  
+> -- 
+> 1.6.3
+> 
+
+
+Other than the above doubts, that looks good.
 
