@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZHaRoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZHaRvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbZHaRoc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 13:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZHaRoc
+	id S1753808AbZHaRvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 13:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753466AbZHaRvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 13:44:32 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:62451 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbZHaRob (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 13:44:31 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAPqom0qrR7PD/2dsb2JhbADCAohBAY58BYQa
-X-IronPort-AV: E=Sophos;i="4.44,306,1249257600"; 
-   d="scan'208";a="200353614"
-From: Roland Dreier <rdreier@cisco.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>, Rik van Riel <riel@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-References: <1251282598.3514.20.camel@raz>
-	<alpine.DEB.1.10.0908260943090.9924@gentwo.org>
-	<1251297910.1791.22.camel@maxim-laptop> <1251322663.3882.48.camel@raz>
-	<4A96B997.1070001@nortel.com>
-	<alpine.DEB.1.10.0908271257270.17470@gentwo.org>
-	<alpine.LFD.2.00.0908272242500.2888@localhost.localdomain>
-	<4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com>
-	<4A975025.8030500@novell.com> <4A975CC4.1090208@novell.com>
-	<alpine.LFD.2.00.0908281218560.2888@localhost.localdomain>
-	<alpine.DEB.1.10.0908281446520.7317@gentwo.org>
-	<alpine.LFD.2.00.0908282100040.19335@localhost.localdomain>
-	<alpine.DEB.1.10.0908281551450.17784@gentwo.org>
-	<alpine.LFD.2.00.0908282158100.19335@localhost.localdomain>
-	<alpine.DEB.1.10.0908281619520.15573@gentwo.org>
-	<alpine.LFD.2.00.0908282231260.19335@localhost.localdomain>
-	<alpine.DEB.1.10.0908311517410.26046@V090114053VZO-1>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 31 Aug 2009 10:44:31 -0700
-In-Reply-To: <alpine.DEB.1.10.0908311517410.26046@V090114053VZO-1> (Christoph
-	Lameter's message of "Mon, 31 Aug 2009 15:19:15 -0400 (EDT)")
-Message-ID: <adavdk3q3nk.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Mon, 31 Aug 2009 13:51:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:53759 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751004AbZHaRvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 13:51:53 -0400
+Message-ID: <4A9C0DC2.6080704@redhat.com>
+Date: Mon, 31 Aug 2009 20:52:02 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 31 Aug 2009 17:44:31.0646 (UTC) FILETIME=[B2167BE0:01CA2A62]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+To: "Xin, Xiaohui" <xiaohui.xin@intel.com>
+CC: "mst@redhat.com" <mst@redhat.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <E88DD564E9DC5446A76B2B47C3BCCA150219600F9B@pdsmsx503.ccr.corp.intel.com> <C85CEDA13AB1CF4D9D597824A86D2B9006AEB944B8@PDSMSX501.ccr.corp.intel.com>
+In-Reply-To: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB944B8@PDSMSX501.ccr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/31/2009 02:42 PM, Xin, Xiaohui wrote:
+> Hi, Michael
+> That's a great job. We are now working on support VMDq on KVM, and since the VMDq hardware presents L2 sorting based on MAC addresses and VLAN tags, our target is to implement a zero copy solution using VMDq. We stared from the virtio-net architecture. What we want to proposal is to use AIO combined with direct I/O:
+> 1) Modify virtio-net Backend service in Qemu to submit aio requests composed from virtqueue.
+> 2) Modify TUN/TAP device to support aio operations and the user space buffer directly mapping into the host kernel.
+> 3) Let a TUN/TAP device binds to single rx/tx queue from the NIC.
+> 4) Modify the net_dev and skb structure to permit allocated skb to use user space directly mapped payload buffer address rather then kernel allocated.
+>
+> As zero copy is also your goal, we are interested in what's in your mind, and would like to collaborate with you if possible.
+>    
 
- > Some devices now have per cpu threads. See f.e. Mellanox IB drivers. Maybe
- > there is a way to restrict that.
+One way to share the effort is to make vmdq queues available as normal 
+kernel interfaces.  It would take quite a bit of work, but the end 
+result is that no other components need to be change, and it makes vmdq 
+useful outside kvm.  It also greatly reduces the amount of integration 
+work needed throughout the stack (kvm/qemu/libvirt).
 
-AFAIK the Mellanox drivers just create a single-threaded workqueue.
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
- - R.
