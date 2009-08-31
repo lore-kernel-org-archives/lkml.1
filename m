@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZHaPLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752034AbZHaPPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752118AbZHaPLE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 11:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZHaPLD
+	id S1752034AbZHaPPy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 11:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbZHaPPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 11:11:03 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39435 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbZHaPLD (ORCPT
+	Mon, 31 Aug 2009 11:15:53 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:47521 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbZHaPPv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 11:11:03 -0400
-Date: Mon, 31 Aug 2009 11:10:45 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@linux.intel.com>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Valerie Aurora <vaurora@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH mmotm] vfs: optimize touch_time too fix
-Message-ID: <20090831151045.GA23901@infradead.org>
-References: <Pine.LNX.4.64.0908311558220.4384@sister.anvils>
+	Mon, 31 Aug 2009 11:15:51 -0400
+Message-ID: <4A9BE8BE.4040108@hp.com>
+Date: Mon, 31 Aug 2009 11:14:06 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908311558220.4384@sister.anvils>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Christoph Hellwig <hch@infradead.org>
+CC: Mark Lord <lkml@rtr.ca>, Ric Wheeler <rwheeler@redhat.com>,
+       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
+       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+References: <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz> <alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm> <4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru> <20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com> <20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca> <20090831132139.GA5425@infradead.org>
+In-Reply-To: <20090831132139.GA5425@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 04:03:02PM +0100, Hugh Dickins wrote:
-> Recent mmotms give me WARNING: at fs/namespace.c:612 mntput_no_expire()+...
-> when unmounting: __mntput()'s WARN_ON(count_mnt_writers(mnt)).
+Christoph Hellwig wrote:
+> On Mon, Aug 31, 2009 at 09:19:58AM -0400, Mark Lord wrote:
+>>> In my opinion even that is too weak.  We know how to control the cache
+>>> settings on all common disks (that is scsi and ata), so we should always
+>>> disable the write cache unless we know that the whole stack (filesystem,
+>>> raid, volume managers) supports barriers.  And even then we should make
+>>> sure the filesystems does actually use barriers everywhere that's needed
+>>> which failed at for years.
+>> ..
+>>
+>> That stack does not know that my MD device has full battery backup,
+>> so it bloody well better NOT prevent me from enabling the write caches.
 > 
-> That's because vfs-optimize-touch_time-too.patch inverted the sense
-> of mnt_want_write_file(), which is error-returning, not a boolean.
-> 
-> Presumably filetime updates went missing too, but I didn't notice those.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
-> 
->  fs/inode.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- mmotm/fs/inode.c	2009-08-28 10:07:56.000000000 +0100
-> +++ linux/fs/inode.c	2009-08-31 14:08:24.000000000 +0100
-> @@ -1481,7 +1481,7 @@ void file_update_time(struct file *file)
->  		return;
->  
->  	/* Finally allowed to write? Takes lock. */
-> -	if (!mnt_want_write_file(file))
-> +	if (mnt_want_write_file(file))
+> No one is going to prevent you from doing it.  That question is one of
+> sane defaults.  And always safe, but slower if you have advanced
+> equipment is a much better default than usafe by default on most of
+> the install base.
 
-Eeek.  having an error return from a function called want_foo is rather
-strange.  It's a name the implies a bolean return value.
+I've always agreed with "be safe first" and have worked where
+we always shut write cache off unless we knew it had battery.
 
+But before we make disabling cache the default, this is the impact:
+
+- users will see it as a performance regression
+
+- trashy OS vendors who never disable cache will benchmark
+   better than "out of the box" linux.
+
+Because as we all know, users don't read release notes.
+
+Been there, done that, felt the pain.
+
+jim
