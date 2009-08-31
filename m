@@ -1,91 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751543AbZHaWBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751798AbZHaWCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751543AbZHaWBi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 18:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZHaWBh
+	id S1751798AbZHaWCM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 18:02:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbZHaWCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 18:01:37 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:58060 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751026AbZHaWBh (ORCPT
+	Mon, 31 Aug 2009 18:02:11 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:40137 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751155AbZHaWCK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 18:01:37 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: akpm@linux-foundation.org
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 1/1] hw_breakpoints: fix locking in load_debug_registers
-Date: Tue,  1 Sep 2009 00:01:38 +0200
-Message-Id: <1251756098-22852-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
+	Mon, 31 Aug 2009 18:02:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MGOj2y77LevTRTu3TkEzdaY53m/LKAcU6C35er1QRYOoauvfGFefSZ87v9He8k7DHP
+         SJKINWvFFlS2ud2NEGxw5W3wfDo1/jpfjHthhQe+Rz4sRYsRrheSZD0e/xe/XWWOshOh
+         AhdluJBjDPaAcBHHdyMVCtfbs1r4uSFoS7zcw=
+MIME-Version: 1.0
+In-Reply-To: <1251724267.4254.73.camel@finisterre.sirena.org.uk>
+References: <1251667855-31806-1-git-send-email-linus.walleij@stericsson.com>
+	 <1251724267.4254.73.camel@finisterre.sirena.org.uk>
+Date: Tue, 1 Sep 2009 00:02:11 +0200
+Message-ID: <63386a3d0908311502v386339d2oc13b5fd880444b18@mail.gmail.com>
+Subject: Re: [PATCH 2/2] U300 AB3100 boardinfo
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Linus Walleij <linus.walleij@stericsson.com>,
+       linux-arm-kernel@lists.infradead.org,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Russell King <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-load_debug_registers is called with interrupts disabled from
-many contexts and causes a warning to be dropped, e.g.:
-------------[ cut here ]------------
-WARNING: at kernel/softirq.c:143 local_bh_enable_ip+0x75/0xa0()
-Hardware name: To Be Filled By O.E.M.
-Modules linked in: nfs lockd auth_rpcgss sunrpc ath5k ath
-Pid: 15083, comm: pm-suspend Tainted: G        W  2.6.31-rc7-mm1_64 #687
-Call Trace:
- [<ffffffff8103f6c8>] warn_slowpath_common+0x78/0xb0
- [<ffffffff8103f70f>] warn_slowpath_null+0xf/0x20
- [<ffffffff81045875>] local_bh_enable_ip+0x75/0xa0
- [<ffffffff8142feff>] _spin_unlock_bh+0xf/0x20
- [<ffffffff81089141>] load_debug_registers+0x51/0x60
- [<ffffffff8134fa93>] restore_processor_state+0x1b3/0x240
- [<ffffffff8119ba54>] acpi_suspend_enter+0x56/0xaf
- [<ffffffff8106e66d>] suspend_devices_and_enter+0x14d/0x1a0
- [<ffffffff8106e79b>] enter_state+0xdb/0xf0
- [<ffffffff8106ded1>] state_store+0x91/0x100
- [<ffffffff8116ac77>] kobj_attr_store+0x17/0x20
- [<ffffffff8111b2e0>] sysfs_write_file+0xe0/0x160
- [<ffffffff810c33e8>] vfs_write+0xb8/0x1b0
- [<ffffffff81432735>] ? do_page_fault+0x185/0x350
- [<ffffffff810c3a4c>] sys_write+0x4c/0x80
- [<ffffffff8100beeb>] system_call_fastpath+0x16/0x1b
----[ end trace fc3dd2304adb23aa ]---
+2009/8/31 Mark Brown <broonie@opensource.wolfsonmicro.com>:
 
-Fix it by switching from spin_lock_bh to spin_lock_irqsave and
-removing nested local_irq_save.
+> On Sun, 2009-08-30 at 23:30 +0200, Linus Walleij wrote:
+>
+>>  arch/arm/mach-u300/Makefile    |    1 +
+>>  arch/arm/mach-u300/i2c.c       |  304 ++++++++++++++++++++++++++++++++++++++++
+>>  arch/arm/mach-u300/regulator.c |  150 ++++++++++++++++++++
+>
+> Is mach-u300 for all machines with a given processor or is it for a
+> specific system?
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/hw_breakpoint.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+It is a series of systems (U330, U365, U335) but they all feature the same
+connections and rails to the AB3100 circuit so regulator-wise they are
+identical.
 
-diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-index c1f64e6..bc5368d 100644
---- a/kernel/hw_breakpoint.c
-+++ b/kernel/hw_breakpoint.c
-@@ -80,17 +80,15 @@ void load_debug_registers(void)
- 	unsigned long flags;
- 	struct task_struct *tsk = current;
- 
--	spin_lock_bh(&hw_breakpoint_lock);
-+	spin_lock_irqsave(&hw_breakpoint_lock, flags);
- 
- 	/* Prevent IPIs for new kernel breakpoint updates */
--	local_irq_save(flags);
- 	arch_update_kernel_hw_breakpoint(NULL);
--	local_irq_restore(flags);
- 
- 	if (test_tsk_thread_flag(tsk, TIF_DEBUG))
- 		arch_install_thread_hw_breakpoint(tsk);
- 
--	spin_unlock_bh(&hw_breakpoint_lock);
-+	spin_unlock_irqrestore(&hw_breakpoint_lock, flags);
- }
- 
- /*
--- 
-1.6.3.3
+>> +static struct regulator_consumer_supply supply_ldo_c[] = {
+>> +     {
+>> +             .dev_name = "ab3100-codec",
+>> +             .supply = "vaudio", /* Powers the codec */
+>> +     },
+>> +};
+>
+> Does the CODEC really take a single supply called vaudio or are there
+> several inputs to the CODEC?
 
+It's only one actually.
+
+>> +             /* Buck converter in sleep mode routing and constraints */
+>> +             {
+>> +                     .constraints = {
+>> +                             .min_uV = 0,
+>> +                             .max_uV = 1800000,
+>> +                             .valid_modes_mask = REGULATOR_MODE_NORMAL,
+>> +                             .valid_ops_mask =
+>> +                             REGULATOR_CHANGE_VOLTAGE |
+>> +                             REGULATOR_CHANGE_STATUS,
+>> +                     },
+>> +                     .num_consumer_supplies = ARRAY_SIZE(supply_buck_sleep),
+>> +                     .consumer_supplies = supply_buck_sleep,
+>> +             },
+>
+> Hrm, I didn't pick this up when reading the regulator driver but does
+> this mean that you're registering two different regulators for the same
+> buck convertor?
+
+Yeah I did. So I removed the sleep mode "regulators" and added
+the set_suspend_voltage() hook instead. Works like a charm.
+
+>> +/*
+>> + * Hog the regulators needed to power up the board.
+>> + */
+>> +static int __init u300_init_boardpower(void)
+>> +{
+>> +     int err;
+>> +     u32 val;
+>> +
+>> +     pr_info("U300: setting up board power\n");
+>> +     radio_power = regulator_get(NULL, "vrad");
+>> +     if (IS_ERR(radio_power)) {
+>> +             pr_err("could not get vrad\n");
+>> +             return PTR_ERR(radio_power);
+>> +     }
+>> +     err = regulator_enable(radio_power);
+>> +     if (err) {
+>> +             pr_err("could not enable vrad\n");
+>> +             return err;
+>> +     }
+>
+> This all looks like it can be supported with the existing constraints
+> code; look at boot_on and always_on. Normally the only thing that should
+> need deviceless supplies like you have here is cpufreq (due to the fact
+> that there's no struct device available for cpufreq to use).
+
+I switched to using always_on and boot_on and it's just as good.
+Though I kept one of them: vana15, because disabling that
+regulator is what I use for shutdown hook for the system.
+
+Thanks for all the great comments Mark, v3 is due in a minute.
+
+Yours,
+Linus Walleij
