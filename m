@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbZHaGWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZHaGcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754487AbZHaGWE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 02:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbZHaGWD
+	id S1754504AbZHaGcH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 02:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZHaGcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 02:22:03 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39094 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754166AbZHaGWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 02:22:02 -0400
-Message-ID: <4A9B6BF6.1030000@kernel.org>
-Date: Mon, 31 Aug 2009 15:21:42 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 31 Aug 2009 02:32:06 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:41475 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754484AbZHaGcG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 02:32:06 -0400
+Message-ID: <4A9B6E57.7090703@gmail.com>
+Date: Mon, 31 Aug 2009 08:31:51 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Michal Schmidt <mschmidt@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: detect stack protector for i386 builds on x86_64
-References: <20090829182718.10f566b1@leela>
-In-Reply-To: <20090829182718.10f566b1@leela>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 06:21:44 +0000 (UTC)
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+CC: David Miller <davem@davemloft.net>, Neil Horman <nhorman@tuxdriver.com>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH resend] drop_monitor: fix trace_napi_poll_hit()
+References: <4A9B6963.5090207@cn.fujitsu.com>
+In-Reply-To: <4A9B6963.5090207@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 31 Aug 2009 08:31:54 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Schmidt wrote:
-> Stack protector support was not detected when building with ARCH=i386
-> on x86_64 systems:
-> arch/x86/Makefile:80: stack protector enabled but no compiler support
+Xiao Guangrong a écrit :
+> The net_dev of backlog napi is NULL, like below:
 > 
-> The "-m32" argument needs to be passed to the detection script.
+> __get_cpu_var(softnet_data).backlog.dev == NULL
 > 
-> Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
+> So, we should check it in napi tracepoint's probe function
+> 
+> Acked-by: Neil Horman <nhorman@tuxdriver.com>
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  net/core/drop_monitor.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/core/drop_monitor.c b/net/core/drop_monitor.c
+> index 9d66fa9..d311202 100644
+> --- a/net/core/drop_monitor.c
+> +++ b/net/core/drop_monitor.c
+> @@ -182,7 +182,8 @@ static void trace_napi_poll_hit(struct napi_struct *napi)
+>  	/*
+>  	 * Ratelimit our check time to dm_hw_check_delta jiffies
+>  	 */
+> -	if (!time_after(jiffies, napi->dev->last_rx + dm_hw_check_delta))
+> +	if (!napi->dev ||
+> +	    !time_after(jiffies, napi->dev->last_rx + dm_hw_check_delta))
+>  		return;
+>  
+>  	rcu_read_lock();
 
-Acked-by: Tejun Heo <tj@kernel.org>
 
-Thanks.
+This reminds me dev->last_rx is not anymore updated, unless special conditions
+are met.
 
--- 
-tejun
+Test done in trace_napi_poll_hit() is probably not good, even with a non null napi->dev
