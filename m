@@ -1,53 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751836AbZHaKj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751452AbZHaKnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751836AbZHaKj4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 06:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZHaKjz
+	id S1751452AbZHaKnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 06:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbZHaKnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 06:39:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58221 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbZHaKjy (ORCPT
+	Mon, 31 Aug 2009 06:43:18 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:51444 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZHaKnS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 06:39:54 -0400
-Date: Mon, 31 Aug 2009 12:39:49 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Siarhei Liakh <sliakh.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH V2] x86: NX protection for kernel data
-Message-ID: <20090831103948.GA1353@ucw.cz>
-References: <817ecb6f0908261020y2267218h8f435e8dc392f69a@mail.gmail.com>
+	Mon, 31 Aug 2009 06:43:18 -0400
+Date: Mon, 31 Aug 2009 19:43:15 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: page allocator regression on nommu
+Message-ID: <20090831104315.GB30264@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mel Gorman <mel@csn.ul.ie>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Dave Hansen <dave@linux.vnet.ibm.com>,
+	Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+References: <20090831074842.GA28091@linux-sh.org> <20090831103056.GA29627@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <817ecb6f0908261020y2267218h8f435e8dc392f69a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090831103056.GA29627@csn.ul.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Aug 31, 2009 at 11:30:56AM +0100, Mel Gorman wrote:
+> On Mon, Aug 31, 2009 at 04:48:43PM +0900, Paul Mundt wrote:
+> > Hi Mel,
+> > 
+> > It seems we've managed to trigger a fairly interesting conflict between
+> > the anti-fragmentation disabling code and the nommu region rbtree. I've
+> > bisected it down to:
+> > 
+> > commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e
+> > Author: Mel Gorman <mel@csn.ul.ie>
+> > Date:   Tue Jun 16 15:31:58 2009 -0700
+> > 
+> >     page allocator: move check for disabled anti-fragmentation out of fastpath
+> > 
+> >     On low-memory systems, anti-fragmentation gets disabled as there is
+> >     nothing it can do and it would just incur overhead shuffling pages between
+> >     lists constantly.  Currently the check is made in the free page fast path
+> >     for every page.  This patch moves it to a slow path.  On machines with low
+> >     memory, there will be small amount of additional overhead as pages get
+> >     shuffled between lists but it should quickly settle.
+> > 
+> > which causes death on unpacking initramfs on my nommu board. With this
+> > reverted, everything works as expected. Note that this blows up with all of
+> > SLOB/SLUB/SLAB.
+> > 
+> > I'll continue debugging it, and can post my .config if it will be helpful, but
+> > hopefully you have some suggestions on what to try :-)
+> > 
+> 
+> Based on the output you have given me, it would appear the real
+> underlying cause is that fragmentation caused the allocation to fail.
+> The following patch might fix the problem.
+>
+Unfortunately this has no impact, the same issue occurs.
 
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -7,6 +7,8 @@
->   *  Added initrd & change_root: Werner Almesberger & Hans Lermen, Feb '96
->   *  Moan early if gcc is old, avoiding bogus kernels - Paul Gortmaker, May '96
->   *  Simplified starting of init:  Michael A. Griffith <grif@acm.org>
-> + *  Data NX protection by Siarhei Liakh <sliakh.lkml@gmail.com>
-> + *  and Xuxian Jiang <jiang@cs.ncsu.edu>
->   */
+Note that with 49255c619fbd482d704289b5eb2795f8e3b7ff2e reverted, show_mem()
+shows the following:
 
-Better delete the changelog and add yourself to credits. Changelogs in
-.c files are considered bad these days. (Feel free to kill the old
-entries, too.)
+alloc order 7 for 49000: pages 0c21c000
+Mem-Info:
+Normal per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+Active_anon:0 active_file:2 inactive_anon:0
+ inactive_file:320 unevictable:0 dirty:0 writeback:0 unstable:0
+ free:2782 slab:0 mapped:0 pagetables:0 bounce:0
+Normal free:11128kB min:0kB low:0kB high:0kB active_anon:0kB inactive_anon:0kB active_file:8kB inactive_file:1280kB unevictable:0kB present:16256kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0
+Normal: 0*4kB 1*8kB 1*16kB 1*32kB 1*64kB 0*128kB 1*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB 1*8192kB 0*16384kB 0*32768kB = 11128kB
+323 total pagecache pages
+4096 pages RAM
+662 pages reserved
+227 pages shared
+289 pages non-shared
+0 pages in pagetable cache
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+while with it applied, consistently:
+
+alloc order 7 for 49000:
+modprobe: page allocation failure. order:7, mode:0xd0
+...
+Mem-Info:
+Normal per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+Active_anon:0 active_file:0 inactive_anon:0
+ inactive_file:0 unevictable:323 dirty:0 writeback:0 unstable:0
+ free:2910 slab:0 mapped:0 pagetables:0 bounce:0
+Normal free:11640kB min:0kB low:0kB high:0kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:1292kB present:16256kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0
+Normal: 252*4kB 245*8kB 238*16kB 152*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB 0*8192kB 0*16384kB 0*32768kB = 11640kB
+323 total pagecache pages
+4096 pages RAM
+662 pages reserved
+226 pages shared
+289 pages non-shared
+0 pages in pagetable cache
+-ENOMEM
