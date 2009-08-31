@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751417AbZHaKCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751657AbZHaKCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751417AbZHaKCN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 06:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbZHaKCN
+	id S1751657AbZHaKCX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 06:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZHaKCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 06:02:13 -0400
-Received: from www.tglx.de ([62.245.132.106]:48806 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750773AbZHaKCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 06:02:12 -0400
-Date: Mon, 31 Aug 2009 12:01:50 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Daniele Calore <orkaan@orkaan.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Anvin <hpa@zytor.com>, Arjan van de Veen <arjan@infradead.org>,
-       Pan Jacob jun <jacob.jun.pan@intel.com>
-Subject: Re: [patch 2/3] x86/boot: adding hw subarch ID for Moorestown
-In-Reply-To: <20090831131359.0cc90d4d@buddha>
-Message-ID: <alpine.LFD.2.00.0908311121340.19335@localhost.localdomain>
-References: <20090830134446.843410397@linutronix.de> <20090830134517.705603639@linutronix.de> <20090831131359.0cc90d4d@buddha>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 31 Aug 2009 06:02:23 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40108 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751452AbZHaKCW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 06:02:22 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 31 Aug 2009 19:00:24 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: benh@kernel.crashing.org, ralf@linux-mips.org, xiyou.wangcong@gmail.com,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       jirislaby@gmail.com
+Subject: [PATCH 0/8][mmotm] kcore clean-up and enhance (retry).
+Message-Id: <20090831190024.fadc3b50.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Aug 2009, Daniele Calore wrote:
-> I think there is a typo (copy/paste error), see below:
->
-> >  #endif /* _ASM_X86_BOOTPARAM_H */
-> > Index: linux-2.6-tip/arch/x86/kernel/head_32.S
-> > ===================================================================
-> > --- linux-2.6-tip.orig/arch/x86/kernel/head_32.S
-> > +++ linux-2.6-tip/arch/x86/kernel/head_32.S
-> > @@ -157,6 +157,7 @@ subarch_entries:
-> >  	.long default_entry		/* normal x86/PC */
-> >  	.long lguest_entry		/* lguest hypervisor */
-> >  	.long xen_entry			/* Xen hypervisor */
-> > +	.long default_entry		/* Moorestown MID */
-> 
-> Typo: s/default_entry/mrst_entry
+Hi, sorry for messes previous version. This is renewed one onto mmotm-Aug27.
 
-That's not a typo. :)
+Changes from prerious one are
+ - merged compile fix etc. 
+ - support module's vaddr range
+ - support vmemmap.
 
-MRST will not go via an separate entry it uses the default one and we
-evaluate the hardware_subarch id later in i386_start_kernel. That
-change is just necessecary that a paravirt enabled kernel does not end
-up in bad_subarch for the MRST id.
+Following is kcore's program header. after this patch applied.
+This x86-64 host's memory layout is
+[root@bluextal mmotm-2.6.31-Aug27]# grep RAM /proc/iomem
+00010000-0009e7ff : System RAM
+00100000-bfedffff : System RAM
+bff00000-bff7ffff : System RAM
+100000000-63fffffff : System RAM
+
+Kcore header is.
+[root@bluextal mmotm-2.6.31-Aug27]# readelf -l /proc/kcore | grep LOAD
+  LOAD           0x00007fffff602000 0xffffffffff600000 0x0000000000000000 (0)
+  LOAD           0x00007fff8100b000 0xffffffff81009000 0x0000000000000000 (1)
+  LOAD           0x0000490000002000 0xffffc90000000000 0x0000000000000000 (2)
+  LOAD           0x00007fffa0002000 0xffffffffa0000000 0x0000000000000000 (3)
+  LOAD           0x0000080000012000 0xffff880000010000 0x0000000000000000 (4)
+  LOAD           0x00006a0000002000 0xffffea0000000000 0x0000000000000000 (5)
+  LOAD           0x0000080000102000 0xffff880000100000 0x0000000000000000 (6)
+  LOAD           0x00006a0000008000 0xffffea0000006000 0x0000000000000000 (7)
+  LOAD           0x00000800bff02000 0xffff8800bff00000 0x0000000000000000 (8)
+  LOAD           0x00006a0004dfb000 0xffffea0004df9000 0x0000000000000000 (9)
+  LOAD           0x0000080100002000 0xffff880100000000 0x0000000000000000 (10)
+  LOAD           0x00006a0006802000 0xffffea0006800000 0x0000000000000000 (11)
+
+(0) is NOTE section.
+(1) is text.
+(2) is VMALLOC area
+(3) is MODULE area
+(4)(6)(8)(10) is physical memory
+(5)(7)(9)(11) is vmemmap for ranges.
 
 Thanks,
+-Kame
 
-	tglx
+
